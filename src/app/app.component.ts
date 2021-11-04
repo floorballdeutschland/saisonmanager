@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core'
-import { LeagueService, MetaService } from './_services'
+import { GameService, LeagueService, MetaService } from './_services'
 
 @Component({
   selector: 'app-root',
@@ -12,6 +12,7 @@ export class AppComponent implements OnInit {
   constructor(
     private metaService: MetaService,
     private leagueService: LeagueService,
+    private gameService: GameService,
   ) { }
 
   ngOnInit(): void {
@@ -53,6 +54,15 @@ export class AppComponent implements OnInit {
     )
 
     this.leagueService.getScorer(1044).subscribe(
+      (data) => {
+        console.log("getScorer", data)
+      },
+      (err) => {
+        console.error("getScorer", err)
+      },
+    )
+
+    this.gameService.getGame(24428).subscribe(
       (data) => {
         console.log("getScorer", data)
       },

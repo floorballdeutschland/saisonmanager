@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
-import { LeagueService, MetaService } from './_services'
+import { GameService, LeagueService, MetaService } from './_services'
 
 @NgModule({
   declarations: [
@@ -18,6 +18,7 @@ import { LeagueService, MetaService } from './_services'
   providers: [
     MetaService,
     LeagueService,
+    GameService,
   ],
   bootstrap: [AppComponent]
 })
