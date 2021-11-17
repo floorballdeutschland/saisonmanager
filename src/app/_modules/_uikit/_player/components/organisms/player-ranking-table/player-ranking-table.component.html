@@ -11,7 +11,11 @@
     >
   </ng-container>
 
-  <ng-container cdkColumnDef="table.team"> </ng-container>
+  <ng-container cdkColumnDef="table.team">
+    <cdk-cell *cdkCellDef="let element"
+      >{{ element.first_name }} {{ element.club }}</cdk-cell
+    >
+  </ng-container>
 
   <ng-container cdkColumnDef="table.games">
     <cdk-header-cell *cdkHeaderCellDef>S</cdk-header-cell>
@@ -23,34 +27,34 @@
     <cdk-cell *cdkCellDef="let element">{{ element.goals }}</cdk-cell>
   </ng-container>
 
-  <ng-container cdkColumnDef="table.v">
+  <ng-container cdkColumnDef="table.assists">
     <cdk-header-cell *cdkHeaderCellDef>V</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.assists }}</cdk-cell>
   </ng-container>
 
-  <ng-container cdkColumnDef="table.p">
+  <ng-container cdkColumnDef="table.penalty_2and2">
     <cdk-header-cell *cdkHeaderCellDef>P</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.penalty_2and2 }}</cdk-cell>
   </ng-container>
 
-  <ng-container cdkColumnDef="table.2">
+  <ng-container cdkColumnDef="table.penalty_2">
     <cdk-header-cell *cdkHeaderCellDef>2'</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.penalty_2 }}</cdk-cell>
   </ng-container>
 
-  <ng-container cdkColumnDef="table.5">
+  <ng-container cdkColumnDef="table.penalty_5">
     <cdk-header-cell *cdkHeaderCellDef>5'</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.penalty_5 }}</cdk-cell>
   </ng-container>
 
-  <ng-container cdkColumnDef="table.10">
+  <ng-container cdkColumnDef="table.penalty_10">
     <cdk-header-cell *cdkHeaderCellDef>10'</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.penalty_10 }}</cdk-cell>
   </ng-container>
 
-  <ng-container cdkColumnDef="table.ms">
+  <ng-container cdkColumnDef="table.penalty_ms">
     <cdk-header-cell *cdkHeaderCellDef>MS'</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.penalty_ms }}</cdk-cell>
   </ng-container>
 
   <cdk-header-row
@@ -59,7 +63,14 @@
       'table.position',
       'table.player',
       'table.team',
-      'table.games'
+      'table.games',
+      'table.goals',
+      'table.assists',
+      'table.penalty_2and2',
+      'table.penalty_2',
+      'table.penalty_5',
+      'table.penalty_10',
+      'table.penalty_ms'
     ]"
   ></cdk-header-row>
   <cdk-row
@@ -68,7 +79,19 @@
     *cdkRowDef="
       let row;
       let i = index;
-      columns: ['table.position', 'table.player', 'table.team', 'table.games']
+      columns: [
+        'table.position',
+        'table.player',
+        'table.team',
+        'table.games',
+        'table.goals',
+        'table.assists',
+        'table.penalty_2and2',
+        'table.penalty_2',
+        'table.penalty_5',
+        'table.penalty_10',
+        'table.penalty_ms'
+      ]
     "
   >
   </cdk-row>
