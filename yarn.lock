@@ -128,6 +128,15 @@
   dependencies:
     tslib "^2.3.0"
 
+"@angular/cdk@^13.0.1":
+  version "13.0.1"
+  resolved "https://registry.yarnpkg.com/@angular/cdk/-/cdk-13.0.1.tgz#ec817eed0de78de6324bf7a0285ea2e4eb1f244f"
+  integrity sha512-P7jAw2ivoz5wJ5V+JLRf18PUr3kF6kktzVO+qaLQhL9A4psMk4GvBRgF5VAXjgYJVXXiIZ6A3IVHPnO2ItMGYw==
+  dependencies:
+    tslib "^2.3.0"
+  optionalDependencies:
+    parse5 "^5.0.0"
+
 "@angular/cli@~13.0.1":
   version "13.0.2"
   resolved "https://registry.yarnpkg.com/@angular/cli/-/cli-13.0.2.tgz#b3a922adae67ce5f0584df5bbee3195a902e7b20"
@@ -4885,6 +4894,11 @@ parse5-sax-parser@^6.0.1:
   integrity sha512-kXX+5S81lgESA0LsDuGjAlBybImAChYRMT+/uKCEXFBFOeEhS52qUCydGhU3qLRD8D9DVjaUo821WK7DM4iCeg==
   dependencies:
     parse5 "^6.0.1"
+
+parse5@^5.0.0:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/parse5/-/parse5-5.1.1.tgz#f68e4e5ba1852ac2cadc00f4555fff6c2abb6178"
+  integrity sha512-ugq4DFI0Ptb+WWjAdOK16+u/nHfiIrcE+sh8kZMaM0WllQKLI9rOUq6c2b7cwPkXdzfQESqvoqK6ug7U/Yyzug==
 
 parse5@^6.0.1:
   version "6.0.1"
