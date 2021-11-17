@@ -12,6 +12,7 @@
   </ng-container>
 
   <ng-container cdkColumnDef="table.team">
+    <cdk-header-cell *cdkHeaderCellDef></cdk-header-cell>
     <cdk-cell *cdkCellDef="let element"
       >{{ element.first_name }} {{ element.club }}</cdk-cell
     >
@@ -58,7 +59,7 @@
   </ng-container>
 
   <cdk-header-row
-    class="grid"
+    class="grid grid-cols-11"
     *cdkHeaderRowDef="[
       'table.position',
       'table.player',
@@ -74,7 +75,7 @@
     ]"
   ></cdk-header-row>
   <cdk-row
-    class="grid"
+    class="grid grid-cols-11"
     [id]="row.uuid"
     *cdkRowDef="
       let row;
