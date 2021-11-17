@@ -1,1 +1,75 @@
-<cdk-table [dataSource]="dataSource"></cdk-table>
+<cdk-table [dataSource]="dataSource">
+  <ng-container cdkColumnDef="table.position">
+    <cdk-header-cell *cdkHeaderCellDef>#</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.position }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.player">
+    <cdk-header-cell *cdkHeaderCellDef>Spieler</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element"
+      >{{ element.first_name }} {{ element.last_name }}</cdk-cell
+    >
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.team"> </ng-container>
+
+  <ng-container cdkColumnDef="table.games">
+    <cdk-header-cell *cdkHeaderCellDef>S</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.games }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.goals">
+    <cdk-header-cell *cdkHeaderCellDef>T</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.goals }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.v">
+    <cdk-header-cell *cdkHeaderCellDef>V</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.p">
+    <cdk-header-cell *cdkHeaderCellDef>P</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.2">
+    <cdk-header-cell *cdkHeaderCellDef>2'</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.5">
+    <cdk-header-cell *cdkHeaderCellDef>5'</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.10">
+    <cdk-header-cell *cdkHeaderCellDef>10'</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.ms">
+    <cdk-header-cell *cdkHeaderCellDef>MS'</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element"></cdk-cell>
+  </ng-container>
+
+  <cdk-header-row
+    class="grid"
+    *cdkHeaderRowDef="[
+      'table.position',
+      'table.player',
+      'table.team',
+      'table.games'
+    ]"
+  ></cdk-header-row>
+  <cdk-row
+    class="grid"
+    [id]="row.uuid"
+    *cdkRowDef="
+      let row;
+      let i = index;
+      columns: ['table.position', 'table.player', 'table.team', 'table.games']
+    "
+  >
+  </cdk-row>
+</cdk-table>

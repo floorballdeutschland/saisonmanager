@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { PlayerRankingTableDatasoure } from './player-ranking-table.datasource';
+import { ScorerEntry } from '../../../../../../_models';
 
 @Component({
   selector: 'fb-player-ranking-table',
@@ -15,7 +16,7 @@ import { PlayerRankingTableDatasoure } from './player-ranking-table.datasource';
 })
 export class PlayerRankingTableComponent {
   @Input()
-  data!: unknown[];
+  data!: ScorerEntry[];
 
   dataSource = new PlayerRankingTableDatasoure();
 
