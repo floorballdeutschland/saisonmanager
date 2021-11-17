@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { PlayerRankingTableComponent } from './components/organisms/player-ranking-table/player-ranking-table.component';
+import * as Organisms from './components/organisms';
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [
-    PlayerRankingTableComponent
-  ],
+  declarations: [Organisms.PlayerRankingTableComponent],
+  exports: [Organisms.PlayerRankingTableComponent],
 })
 export class UikitPlayerModule {}

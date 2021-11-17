@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'app-player-ranking-table',
+  selector: 'fb-player-ranking-table',
   templateUrl: './player-ranking-table.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,

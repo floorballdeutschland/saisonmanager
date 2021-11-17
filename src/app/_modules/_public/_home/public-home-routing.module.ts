@@ -13,6 +13,12 @@ const routes: Routes = [
       scrollTop: true,
     },
   },
+  // Just temporary to test components. TODO Delete when unnecessary
+  {
+    path: 'styleguide',
+    pathMatch: 'full',
+    component: Views.StyleguideComponent,
+  },
 ];
 
 @NgModule({
