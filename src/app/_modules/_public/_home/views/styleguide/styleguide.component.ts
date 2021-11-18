@@ -6,7 +6,7 @@ import {
 import { GamePlayerEntry, ScorerEntry, TableEntry } from '@floorball/models';
 
 @Component({
-  selector: 'app-styleguide',
+  selector: 'fb-styleguide',
   templateUrl: './styleguide.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

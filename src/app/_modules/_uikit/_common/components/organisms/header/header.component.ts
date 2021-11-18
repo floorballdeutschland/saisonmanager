@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
 
 @Component({
@@ -11,14 +11,13 @@ import {
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-
 export class HeaderComponent {
   @Input()
-  headline: string = '';
+  headline = '';
 
   @Input()
-  subline: string = '';
+  subline = '';
 
   @Input()
-  type: string = 'league';
+  type = 'league';
 }

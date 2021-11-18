@@ -1,27 +1,16 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Params, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import {
   BehaviorSubject,
-  distinctUntilChanged,
-  filter,
   map,
   Observable,
   of,
   shareReplay,
   switchMap,
   tap,
-  withLatestFrom,
 } from 'rxjs';
-import { Association, GameOperation } from 'src/app/_models';
+import { GameOperation } from 'src/app/_models';
 import { MetaService } from 'src/app/_services';
-
-const allAssociations: Association[] = [
-  {
-    title: 'Floorball Deutschland',
-    logo: '/asset/association/ger.png',
-    slug: 'floorball-deutschland',
-  },
-];
 
 @Injectable({
   providedIn: 'root',
@@ -33,11 +22,7 @@ export class AssociationService {
   selectedAssociation$?: Observable<GameOperation | null>;
   private _route$ = new BehaviorSubject<ActivatedRoute | null>(null);
 
-  constructor(
-    private _route: ActivatedRoute,
-    private _router: Router,
-    private _metaService: MetaService
-  ) {
+  constructor(private _metaService: MetaService) {
     this.associationsIsLoading$.next(true);
 
     this.associations$ = this._metaService.getInit().pipe(

@@ -1,9 +1,51 @@
 <div class="flex items-end p-5 content-between border-b border-fb-gray-200">
-  <h1 *ngIf="headline" class="font-bold text-black text-4.5xl leading-[52px]">{{ headline }}</h1>
-  <h2 *ngIf="subline" class="ml-5 font-bold text-fb-gray-400 text-2xl leading-[39px]">{{ subline }}</h2>
+  <h1 *ngIf="headline" class="font-bold text-black text-4.5xl leading-[52px]">
+    {{ headline }}
+  </h1>
+  <h2
+    *ngIf="subline"
+    class="ml-5 font-bold text-fb-gray-400 text-2xl leading-[39px]"
+  >
+    {{ subline }}
+  </h2>
 
   <div class="ml-auto">
-    <button *ngIf="type == 'match' || type == 'team'" class="font-bold text-black leading-[17px] text-sm  px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]">Zurück</button>
-    <button *ngIf="type == 'league'" class="font-bold text-black leading-[17px] text-sm  px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]" ml->Als Favorit markieren</button>
+    <button
+      *ngIf="type === 'match' || type === 'team'"
+      class="
+        font-bold
+        text-black
+        leading-[17px]
+        text-sm
+        px-5
+        py-2.5
+        border
+        bg-white
+        hover:bg-fb-gray-200
+        border-fb-gray-600
+        rounded-[5px]
+      "
+    >
+      Zurück
+    </button>
+    <button
+      *ngIf="type === 'league'"
+      class="
+        font-bold
+        text-black
+        leading-[17px]
+        text-sm
+        px-5
+        py-2.5
+        border
+        bg-white
+        hover:bg-fb-gray-200
+        border-fb-gray-600
+        rounded-[5px]
+      "
+      ml-
+    >
+      Als Favorit markieren
+    </button>
   </div>
 </div>

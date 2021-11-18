@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  OnChanges,
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
@@ -14,7 +15,7 @@ import { ScorerEntry } from '@floorball/models';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PlayerRankingTableComponent {
+export class PlayerRankingTableComponent implements OnChanges {
   @Input()
   data!: ScorerEntry[];
 

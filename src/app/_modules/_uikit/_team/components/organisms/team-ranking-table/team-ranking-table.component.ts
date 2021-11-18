@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  OnChanges,
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
@@ -14,7 +15,7 @@ import { TeamRankingTableDatasoure } from './team-ranking-table.datasource';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TeamRankingTableComponent {
+export class TeamRankingTableComponent implements OnChanges {
   @Input()
   data!: TableEntry[];
 
