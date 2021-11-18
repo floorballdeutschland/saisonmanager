@@ -3,7 +3,7 @@ import {
   Component,
   ViewEncapsulation,
 } from '@angular/core';
-import { ScorerEntry } from '../../../../../_models';
+import { ScorerEntry, TableEntry } from '../../../../../_models';
 
 @Component({
   selector: 'app-styleguide',
@@ -42,6 +42,68 @@ export class StyleguideComponent {
       sort: 1,
       penalty_5: 5,
       penalty_ms: 2,
+    },
+    {
+      last_name: 'Last',
+      first_name: 'test',
+      penalty_2: 2,
+      assists: 1,
+      penalty_10: 10,
+      position: 1,
+      player_id: 1,
+      games: 3,
+      goals: 3,
+      penalty_2and2: 2,
+      sort: 1,
+      penalty_5: 5,
+      penalty_ms: 2,
+    },
+  ];
+
+  teamRankingMock: TableEntry[] = [
+    {
+      goals_diff: 20,
+      games: 8,
+      goals_received: 40,
+      goals_scored: 60,
+      sort: 1,
+      draw: 2,
+      team_id: 1,
+      lost: 2,
+      won: 4,
+      position: 1,
+      lost_ot: 2,
+      team_name: 'Team Name',
+      points: 50,
+      point_corrections: {
+        points: 5,
+        team_name: 'Team Name',
+        reason: 'test reason',
+        reference_number: '1',
+      },
+      won_ot: 2,
+    },
+    {
+      goals_diff: 20,
+      games: 8,
+      goals_received: 40,
+      goals_scored: 60,
+      sort: 1,
+      draw: 2,
+      team_id: 1,
+      lost: 2,
+      won: 4,
+      position: 1,
+      lost_ot: 2,
+      team_name: 'Team Name',
+      points: 50,
+      point_corrections: {
+        points: 5,
+        team_name: 'Team Name',
+        reason: 'test reason',
+        reference_number: '1',
+      },
+      won_ot: 2,
     },
   ];
 }

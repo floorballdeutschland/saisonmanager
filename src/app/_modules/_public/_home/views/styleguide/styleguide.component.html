@@ -1,4 +1,27 @@
 <h1 class="text-3xl text-center font-bold">Styleguide</h1>
 <p class="text-lg text-center">To test components</p>
 
-<fb-player-ranking-table [data]="playerRankingMock"></fb-player-ranking-table>
+<div class="container mx-auto">
+  <div>
+    <h2 class="text-xl text-center font-bold">Player Ranking table</h2>
+    <fb-player-ranking-table
+      [data]="playerRankingMock"
+    ></fb-player-ranking-table>
+  </div>
+
+  <div class="mt-3">
+    <h2 class="text-xl text-center font-bold">Team Ranking table</h2>
+    <fb-team-ranking-table [data]="teamRankingMock"></fb-team-ranking-table>
+
+    <h3 class="text-lg text-center font-bold mt-3">Team Ranking table small</h3>
+    <fb-team-ranking-table
+      type="small"
+      [data]="teamRankingMock"
+    ></fb-team-ranking-table>
+  </div>
+
+  <div class="mt-3">
+    <h2 class="text-xl text-center font-bold">Match Pairing</h2>
+    <fb-match-pairing></fb-match-pairing>
+  </div>
+</div>

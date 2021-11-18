@@ -1,0 +1,131 @@
+<cdk-table [dataSource]="dataSource">
+  <ng-container cdkColumnDef="table.position">
+    <cdk-header-cell *cdkHeaderCellDef>#</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.position }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.team">
+    <cdk-header-cell class="text-left" *cdkHeaderCellDef
+      >Mannschaft</cdk-header-cell
+    >
+    <cdk-cell class="text-left" *cdkCellDef="let element">{{
+      element.team_name
+    }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.games">
+    <cdk-header-cell *cdkHeaderCellDef>Sp</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.games }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.wins">
+    <cdk-header-cell *cdkHeaderCellDef>S</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.won }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.draws">
+    <cdk-header-cell *cdkHeaderCellDef>U</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.draw }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.defeats">
+    <cdk-header-cell *cdkHeaderCellDef>N</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.lost }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.suddenDeathWins">
+    <cdk-header-cell *cdkHeaderCellDef>SDS</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.won_ot }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.suddenDeathDefeats">
+    <cdk-header-cell *cdkHeaderCellDef>SDN</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.lost_ot }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.goals">
+    <cdk-header-cell *cdkHeaderCellDef>Tore</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element"
+      >{{ element.goals_scored }}:{{ element.goals_received }}</cdk-cell
+    >
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.goalsDiff">
+    <cdk-header-cell *cdkHeaderCellDef>Tdiff.</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.goals_diff }}</cdk-cell>
+  </ng-container>
+
+  <ng-container cdkColumnDef="table.points">
+    <cdk-header-cell *cdkHeaderCellDef>Pkt.</cdk-header-cell>
+    <cdk-cell *cdkCellDef="let element">{{ element.points }}</cdk-cell>
+  </ng-container>
+
+  <cdk-header-row
+    class="
+      grid
+      items-center
+      text-center
+      border-b border-fb-gray-200
+      font-bold
+      text-sm
+      px-[10px]
+      h-12
+    "
+    [ngClass]="{
+      'grid-cols-[25px,1fr,repeat(9,60px)]': type !== 'small',
+      'grid-cols-[25px,1fr,repeat(2,60px)]': type === 'small'
+    }"
+    *cdkHeaderRowDef="
+      type === 'small'
+        ? ['table.position', 'table.team', 'table.games', 'table.points']
+        : [
+            'table.position',
+            'table.team',
+            'table.games',
+            'table.wins',
+            'table.draws',
+            'table.defeats',
+            'table.suddenDeathWins',
+            'table.suddenDeathDefeats',
+            'table.goals',
+            'table.goalsDiff',
+            'table.points'
+          ]
+    "
+  ></cdk-header-row>
+  <cdk-row
+    class="
+      grid
+      items-center
+      text-center text-sm
+      px-[10px]
+      h-12
+      odd:bg-fb-gray-300
+    "
+    [ngClass]="{
+      'grid-cols-[25px,1fr,repeat(9,60px)]': type !== 'small',
+      'grid-cols-[25px,1fr,repeat(2,60px)]': type === 'small'
+    }"
+    [id]="row.uuid"
+    *cdkRowDef="
+      let row;
+      let i = index;
+      columns: type === 'small'
+        ? ['table.position', 'table.team', 'table.games', 'table.points']
+        : [
+            'table.position',
+            'table.team',
+            'table.games',
+            'table.wins',
+            'table.draws',
+            'table.defeats',
+            'table.suddenDeathWins',
+            'table.suddenDeathDefeats',
+            'table.goals',
+            'table.goalsDiff',
+            'table.points'
+          ]
+    "
+  >
+  </cdk-row>
+</cdk-table>

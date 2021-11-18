@@ -23,7 +23,12 @@ module.exports = {
   purge: ["./src/**/*.{html,ts}"],
   darkMode: "class",
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        "fb-gray-200": "#E7E7E7",
+        "fb-gray-300": "#FBFBFB",
+      },
+    },
   },
   variants: {
     extend: {},
