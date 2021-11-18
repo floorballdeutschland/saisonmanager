@@ -15,7 +15,7 @@ export interface GameEvent {
 
 export interface GamePlayerEntry {
     player_id: number
-    goalkeeper: boolean
+    goalkeeper?: boolean
     player_name: string
     trikot_number: number
     player_firstname: string
@@ -36,4 +36,6 @@ export interface Game {
     guest_team_name: string
     events: GameEvent[]
     players: GamePlayers
+    referees: string
+    location: string
 }
