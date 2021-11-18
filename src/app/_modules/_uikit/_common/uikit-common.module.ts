@@ -7,11 +7,13 @@ import * as Organisms from './components/organisms';
   imports: [CommonModule],
   declarations: [
     Atoms.LogoComponent,
-    Organisms.LeagueNavigationComponent
+    Organisms.LeagueNavigationComponent,
+    Organisms.SidebarComponent,
   ],
   exports: [
     Atoms.LogoComponent,
-    Organisms.LeagueNavigationComponent
+    Organisms.LeagueNavigationComponent,
+    Organisms.SidebarComponent,
   ],
 })
 export class UikitCommonModule {}
