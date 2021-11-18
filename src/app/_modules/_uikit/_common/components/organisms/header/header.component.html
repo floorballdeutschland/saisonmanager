@@ -1,0 +1,7 @@
+<div class="flex items-end p-5 content-between">
+  <h1 *ngIf="headline" class="font-bold text-black text-4.5xl leading-10">{{ headline }}</h1>
+  <h2 *ngIf="subline" class="ml-5 font-bold text-fb-gray-400 text-2xl leading-6">{{ subline }}</h2>
+
+  <button *ngIf="type == 'match'">Zurück</button>
+  <button *ngIf="type == 'league'" class="font-bold text-black text-sm  px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]">Als Favorit speichern</button>
+</div>
