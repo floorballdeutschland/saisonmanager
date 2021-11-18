@@ -27,6 +27,9 @@ module.exports = {
       fontSize: {
         '4.5xl': calculateRem(42),
       },
+      fontFamily: {
+        helvetica: ['Helvetica', 'Arial', 'sans-serif'],
+      },
       colors: {
         "fb-gray-100": "#A9A9A9",
         "fb-gray-200": "#E7E7E7",
