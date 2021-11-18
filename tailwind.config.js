@@ -27,6 +27,7 @@ module.exports = {
       colors: {
         "fb-gray-200": "#E7E7E7",
         "fb-gray-300": "#FBFBFB",
+        "fb-gray-400": "#999999",
       },
     },
   },
