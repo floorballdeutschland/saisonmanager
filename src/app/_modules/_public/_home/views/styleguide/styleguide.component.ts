@@ -3,7 +3,7 @@ import {
   Component,
   ViewEncapsulation,
 } from '@angular/core';
-import { ScorerEntry, TableEntry } from '../../../../../_models';
+import { ScorerEntry, TableEntry } from '@floorball/models';
 
 @Component({
   selector: 'app-styleguide',

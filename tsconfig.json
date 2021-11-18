@@ -25,7 +25,8 @@
       "@floorball/uikit/player": ["src/app/_modules/_uikit/_player"],
       "@floorball/uikit/team": ["src/app/_modules/_uikit/_team"],
       "@floorball/public/home": ["src/app/_modules/_public/_home"],
-      "@floorball/public/overview": ["src/app/_modules/_public/_overview"]
+      "@floorball/public/overview": ["src/app/_modules/_public/_overview"],
+      "@floorball/models": ["src/app/_models"],
     }
   },
   "angularCompilerOptions": {

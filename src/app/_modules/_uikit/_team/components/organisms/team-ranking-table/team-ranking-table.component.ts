@@ -5,7 +5,7 @@ import {
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import { TableEntry } from '../../../../../../_models';
+import { TableEntry } from '@floorball/models';
 import { TeamRankingTableDatasoure } from './team-ranking-table.datasource';
 
 @Component({
