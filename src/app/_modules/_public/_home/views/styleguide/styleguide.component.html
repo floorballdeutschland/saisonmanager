@@ -2,5 +2,15 @@
 <p class="text-lg text-center">To test components</p>
 
 <div class="container mx-auto">
-  <fb-player-ranking-table [data]="playerRankingMock"></fb-player-ranking-table>
+  <div>
+    <h2 class="text-xl text-center font-bold">Player Ranking table</h2>
+    <fb-player-ranking-table
+      [data]="playerRankingMock"
+    ></fb-player-ranking-table>
+  </div>
+
+  <div class="mt-3">
+    <h2 class="text-xl text-center font-bold">Team Ranking table</h2>
+    <fb-team-ranking-table [data]="teamRankingMock"></fb-team-ranking-table>
+  </div>
 </div>
