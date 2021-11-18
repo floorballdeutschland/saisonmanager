@@ -20,6 +20,7 @@
     "module": "es2020",
     "lib": ["es2020", "dom"],
     "paths": {
+      "@floorball/core": ["src/app/_modules/_core"],
       "@floorball/uikit/common": ["src/app/_modules/_uikit/_common"],
       "@floorball/public/home": ["src/app/_modules/_public/_home"],
       "@floorball/public/overview": ["src/app/_modules/_public/_overview"]

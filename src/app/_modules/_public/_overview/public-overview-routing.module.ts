@@ -6,7 +6,8 @@ import * as Views from './views';
 
 const routes: Routes = [
   {
-    path: 'overview',
+    path: '',
+    pathMatch: 'full',
     component: Views.OverviewComponent,
     data: {
       scrollTop: true,
@@ -15,7 +16,6 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [Views.OverviewComponent],
   exports: [RouterModule],
   imports: [RouterModule.forChild(routes)],
 })

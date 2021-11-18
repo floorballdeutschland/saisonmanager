@@ -4,6 +4,10 @@ import {
   ViewEncapsulation,
   ChangeDetectionStrategy,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { AssociationService } from '@floorball/core';
+import { Observable } from 'rxjs';
+import { GameOperation } from 'src/app/_models';
 
 @Component({
   templateUrl: './overview.component.html',
@@ -11,7 +15,15 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OverviewComponent implements OnInit {
-  constructor() {}
+  selectedAssociation$?: Observable<GameOperation | null>;
 
-  ngOnInit(): void {}
+  constructor(
+    private _associationService: AssociationService,
+    private _route: ActivatedRoute
+  ) {}
+
+  ngOnInit(): void {
+    this.selectedAssociation$ = this._associationService.selectedAssociation$;
+    this._associationService.selectAssociation(this._route);
+  }
 }

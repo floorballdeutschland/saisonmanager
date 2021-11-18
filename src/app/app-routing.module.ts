@@ -8,14 +8,25 @@ const routes: Routes = [
       import('@floorball/public/home').then((m) => m.PublicHomeModule),
   },
   {
-    path: '',
-    loadChildren: () =>
-      import('@floorball/public/overview').then((m) => m.PublicOverviewModule),
+    path: ':association',
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/public/overview').then(
+            (m) => m.PublicOverviewModule
+          ),
+      },
+    ],
   },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [
+    RouterModule.forRoot(routes, {
+      paramsInheritanceStrategy: 'always',
+    }),
+  ],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

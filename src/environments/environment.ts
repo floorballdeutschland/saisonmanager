@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiURL: 'http://localhost:3000/api/v2/',
+  apiURL: 'https://api.saisonmanager.de/api/v2/',
 };
 
 /*

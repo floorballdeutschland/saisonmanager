@@ -1,1 +1,9 @@
 <h1>Start</h1>
+
+<ng-container *ngIf="associations$ | async as associations">
+  <ng-container *ngFor="let association of associations">
+    <a [routerLink]="['/', association.path]" [title]="association.name">
+      <h1>{{ association.name }}</h1>
+    </a>
+  </ng-container>
+</ng-container>

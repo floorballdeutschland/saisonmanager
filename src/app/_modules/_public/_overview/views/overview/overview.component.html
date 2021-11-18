@@ -1,1 +1,5 @@
-<p>overview works!</p>
+<ng-container *ngIf="selectedAssociation$ | async as association">
+  <h1>{{ association.name }}</h1>
+</ng-container>
+
+<a [routerLink]="['/']">Back</a>
