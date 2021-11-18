@@ -1,6 +1,18 @@
 <h1 class="text-3xl text-center font-bold">Styleguide</h1>
 <p class="text-lg text-center">To test components</p>
 
+<div class="flex">
+  <div>
+    <fb-sidebar></fb-sidebar>
+  </div>
+  <div>
+    <fb-header headline="Headline H1" subline="Sided Headline" type="league"></fb-header>
+    <fb-header headline="Headline H1" subline="Sided Headline" type="match"></fb-header>
+    <fb-player-ranking-table [data]="playerRankingMock"></fb-player-ranking-table>
+  </div>
+</div>
+
+
 <div class="container mx-auto">
   <div>
     <h2 class="text-xl text-center font-bold">Player Ranking table</h2>
