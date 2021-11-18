@@ -10,12 +10,14 @@ import * as Organisms from './components/organisms';
     Organisms.LeagueNavigationComponent,
     Organisms.SidebarComponent,
     Organisms.MetanavigationComponent,
+    Organisms.HeaderComponent,
   ],
   exports: [
     Atoms.LogoComponent,
     Organisms.LeagueNavigationComponent,
     Organisms.SidebarComponent,
     Organisms.MetanavigationComponent,
+    Organisms.HeaderComponent,
   ],
 })
 export class UikitCommonModule {}
