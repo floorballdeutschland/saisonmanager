@@ -5,7 +5,10 @@ import { CdkTableModule } from '@angular/cdk/table';
 
 @NgModule({
   imports: [CommonModule, CdkTableModule],
-  declarations: [Organisms.TeamRankingTableComponent],
-  exports: [Organisms.TeamRankingTableComponent],
+  declarations: [
+    Organisms.TeamRankingTableComponent,
+    Organisms.TeamLineupComponent,
+  ],
+  exports: [Organisms.TeamRankingTableComponent, Organisms.TeamLineupComponent],
 })
 export class UikitTeamModule {}

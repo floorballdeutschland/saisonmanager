@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import { DataSource } from '@angular/cdk/collections';
-import { TableEntry } from '../../../../../../_models';
+import { TableEntry } from '@floorball/models';
 
 export class TeamRankingTableDatasoure extends DataSource<TableEntry> {
   data = new BehaviorSubject<TableEntry[]>([]);

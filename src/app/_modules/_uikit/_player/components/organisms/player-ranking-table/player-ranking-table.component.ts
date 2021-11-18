@@ -6,7 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { PlayerRankingTableDatasoure } from './player-ranking-table.datasource';
-import { ScorerEntry } from '../../../../../../_models';
+import { ScorerEntry } from '@floorball/models';
 
 @Component({
   selector: 'fb-player-ranking-table',

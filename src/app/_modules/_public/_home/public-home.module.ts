@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-// TODO Path of modules
-import { UikitPlayerModule } from '../../_uikit/_player';
 import { PublicHomeRoutingModule } from './public-home-routing.module';
+import { UikitCommonModule } from '@floorball/uikit/common';
+import { UikitPlayerModule } from '@floorball/uikit/player';
+import { UikitTeamModule } from '@floorball/uikit/team';
+import { UikitMatchesModule } from '@floorball/uikit/matches';
 
 import * as Views from './views';
-import { UikitTeamModule } from '../../_uikit/_team';
-import { UikitMatchesModule } from '../../_uikit/_matches';
 
 @NgModule({
   imports: [
@@ -15,6 +15,7 @@ import { UikitMatchesModule } from '../../_uikit/_matches';
     UikitPlayerModule,
     UikitTeamModule,
     UikitMatchesModule,
+    UikitCommonModule,
   ],
   declarations: [Views.HomeComponent, Views.StyleguideComponent],
 })

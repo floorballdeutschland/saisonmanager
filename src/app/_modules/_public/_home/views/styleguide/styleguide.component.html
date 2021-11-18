@@ -1,6 +1,33 @@
 <h1 class="text-3xl text-center font-bold">Styleguide</h1>
 <p class="text-lg text-center">To test components</p>
 
+<div class="flex w-screen">
+  <div>
+    <fb-sidebar></fb-sidebar>
+  </div>
+  <div class="flex-auto">
+    <fb-header
+      headline="1. Floorball Bundesliga"
+      subline="1. FBL"
+      type="league"
+    ></fb-header>
+    <fb-header
+      headline="Spieldetails"
+      subline="Red Devils vs. Prianhas ETV"
+      type="match"
+    ></fb-header>
+    <fb-header
+      headline="Red Devils"
+      subline="Teamprofil"
+      type="team"
+    ></fb-header>
+    <fb-player-ranking-table
+      [data]="playerRankingMock"
+    ></fb-player-ranking-table>
+  </div>
+</div>
+
+
 <div class="container mx-auto">
   <div>
     <h2 class="text-xl text-center font-bold">Player Ranking table</h2>
@@ -25,5 +52,17 @@
     <fb-match-pairing-list
       [matches]="[].constructor(4)"
     ></fb-match-pairing-list>
+  </div>
+
+  <div class="mt-10">
+    <h2 class="text-xl text-center font-bold">Match Encounter</h2>
+    <fb-match-encounter-list
+      [matches]="[].constructor(5)"
+    ></fb-match-encounter-list>
+  </div>
+
+  <div class="mt-10">
+    <h2 class="text-xl text-center font-bold">Kader</h2>
+    <fb-team-lineup [lineup]="[].constructor(5)"></fb-team-lineup>
   </div>
 </div>

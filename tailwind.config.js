@@ -24,9 +24,19 @@ module.exports = {
   darkMode: "class",
   theme: {
     extend: {
+      fontSize: {
+        '4.5xl': calculateRem(42),
+      },
+      fontFamily: {
+        helvetica: ['Helvetica', 'Arial', 'sans-serif'],
+      },
       colors: {
+        "fb-gray-100": "#A9A9A9",
         "fb-gray-200": "#E7E7E7",
         "fb-gray-300": "#FBFBFB",
+        "fb-gray-400": "#999999",
+        "fb-gray-500": "#616161",
+        "fb-gray-600": "#BBBBBB",
       },
     },
   },

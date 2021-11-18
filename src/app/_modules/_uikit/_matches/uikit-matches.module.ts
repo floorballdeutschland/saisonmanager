@@ -7,8 +7,13 @@ import * as Organisms from './components/organisms';
   imports: [CommonModule],
   declarations: [
     Molecules.MatchPairingComponent,
+    Molecules.MatchEncounterComponent,
     Organisms.MatchPairingListComponent,
+    Organisms.MatchEncounterListComponent,
   ],
-  exports: [Organisms.MatchPairingListComponent],
+  exports: [
+    Organisms.MatchPairingListComponent,
+    Organisms.MatchEncounterListComponent,
+  ],
 })
 export class UikitMatchesModule {}
