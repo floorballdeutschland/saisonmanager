@@ -1,69 +1,130 @@
 <cdk-table [dataSource]="dataSource">
   <ng-container cdkColumnDef="table.position">
-    <cdk-header-cell *cdkHeaderCellDef>#</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.position }}</cdk-cell>
+    <cdk-header-cell class="flex items-center justify-center" *cdkHeaderCellDef
+      >#</cdk-header-cell
+    >
+    <cdk-cell
+      class="flex items-center justify-center"
+      *cdkCellDef="let element"
+      >{{ element.position }}</cdk-cell
+    >
   </ng-container>
 
   <ng-container cdkColumnDef="table.player">
-    <cdk-header-cell *cdkHeaderCellDef>Spieler</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element"
-      >{{ element.first_name }} {{ element.last_name }}</cdk-cell
+    <cdk-header-cell class="flex items-center" *cdkHeaderCellDef
+      >Spieler</cdk-header-cell
     >
-  </ng-container>
-
-  <ng-container cdkColumnDef="table.team">
-    <cdk-header-cell *cdkHeaderCellDef></cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element"
-      >{{ element.first_name }} {{ element.club }}</cdk-cell
-    >
+    <cdk-cell class="flex items-center" *cdkCellDef="let element">
+      <div class="text-left">
+        {{ element.first_name }} {{ element.last_name }}{{ element.club }}
+      </div>
+    </cdk-cell>
   </ng-container>
 
   <ng-container cdkColumnDef="table.games">
-    <cdk-header-cell *cdkHeaderCellDef>S</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.games }}</cdk-cell>
+    <cdk-header-cell class="flex items-center justify-center" *cdkHeaderCellDef
+      >S</cdk-header-cell
+    >
+    <cdk-cell
+      class="flex items-center justify-center"
+      *cdkCellDef="let element"
+      >{{ element.games }}</cdk-cell
+    >
   </ng-container>
 
   <ng-container cdkColumnDef="table.goals">
-    <cdk-header-cell *cdkHeaderCellDef>T</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.goals }}</cdk-cell>
+    <cdk-header-cell class="flex items-center justify-center" *cdkHeaderCellDef
+      >T</cdk-header-cell
+    >
+    <cdk-cell
+      class="flex items-center justify-center"
+      *cdkCellDef="let element"
+      >{{ element.goals }}</cdk-cell
+    >
   </ng-container>
 
   <ng-container cdkColumnDef="table.assists">
-    <cdk-header-cell *cdkHeaderCellDef>V</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.assists }}</cdk-cell>
+    <cdk-header-cell class="flex items-center justify-center" *cdkHeaderCellDef
+      >V</cdk-header-cell
+    >
+    <cdk-cell
+      class="flex items-center justify-center"
+      *cdkCellDef="let element"
+      >{{ element.assists }}</cdk-cell
+    >
   </ng-container>
 
   <ng-container cdkColumnDef="table.penalty_2and2">
-    <cdk-header-cell *cdkHeaderCellDef>P</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.penalty_2and2 }}</cdk-cell>
+    <cdk-header-cell
+      class="flex items-center justify-center border-r border-fb-gray-200"
+      *cdkHeaderCellDef
+      >P
+    </cdk-header-cell>
+    <cdk-cell
+      class="flex items-center justify-center border-r border-fb-gray-200"
+      *cdkCellDef="let element"
+      >{{ element.penalty_2and2 }}</cdk-cell
+    >
   </ng-container>
 
   <ng-container cdkColumnDef="table.penalty_2">
-    <cdk-header-cell *cdkHeaderCellDef>2'</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.penalty_2 }}</cdk-cell>
+    <cdk-header-cell class="flex items-center justify-center" *cdkHeaderCellDef
+      >2'</cdk-header-cell
+    >
+    <cdk-cell
+      class="flex items-center justify-center"
+      *cdkCellDef="let element"
+      >{{ element.penalty_2 }}</cdk-cell
+    >
   </ng-container>
 
   <ng-container cdkColumnDef="table.penalty_5">
-    <cdk-header-cell *cdkHeaderCellDef>5'</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.penalty_5 }}</cdk-cell>
+    <cdk-header-cell class="flex items-center justify-center" *cdkHeaderCellDef
+      >5'</cdk-header-cell
+    >
+    <cdk-cell
+      class="flex items-center justify-center"
+      *cdkCellDef="let element"
+      >{{ element.penalty_5 }}</cdk-cell
+    >
   </ng-container>
 
   <ng-container cdkColumnDef="table.penalty_10">
-    <cdk-header-cell *cdkHeaderCellDef>10'</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.penalty_10 }}</cdk-cell>
+    <cdk-header-cell class="flex items-center justify-center" *cdkHeaderCellDef
+      >10'</cdk-header-cell
+    >
+    <cdk-cell
+      class="flex items-center justify-center"
+      *cdkCellDef="let element"
+      >{{ element.penalty_10 }}</cdk-cell
+    >
   </ng-container>
 
   <ng-container cdkColumnDef="table.penalty_ms">
-    <cdk-header-cell *cdkHeaderCellDef>MS'</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.penalty_ms }}</cdk-cell>
+    <cdk-header-cell class="flex items-center justify-center" *cdkHeaderCellDef
+      >MS'</cdk-header-cell
+    >
+    <cdk-cell
+      class="flex items-center justify-center"
+      *cdkCellDef="let element"
+      >{{ element.penalty_ms }}</cdk-cell
+    >
   </ng-container>
 
   <cdk-header-row
-    class="grid grid-cols-11"
+    class="
+      grid grid-cols-[25px,1fr,repeat(8,60px)]
+      text-center
+      border-b border-fb-gray-200
+      items-stretch
+      font-bold
+      text-sm
+      px-[10px]
+      h-12
+    "
     *cdkHeaderRowDef="[
       'table.position',
       'table.player',
-      'table.team',
       'table.games',
       'table.goals',
       'table.assists',
@@ -75,7 +136,14 @@
     ]"
   ></cdk-header-row>
   <cdk-row
-    class="grid grid-cols-11"
+    class="
+      grid grid-cols-[25px,1fr,repeat(8,60px)]
+      text-center text-sm
+      px-[10px]
+      h-12
+      items-stretch
+      odd:bg-fb-gray-300
+    "
     [id]="row.uuid"
     *cdkRowDef="
       let row;
@@ -83,7 +151,6 @@
       columns: [
         'table.position',
         'table.player',
-        'table.team',
         'table.games',
         'table.goals',
         'table.assists',
