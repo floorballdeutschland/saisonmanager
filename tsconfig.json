@@ -21,6 +21,9 @@
     "lib": ["es2020", "dom"],
     "paths": {
       "@floorball/uikit/common": ["src/app/_modules/_uikit/_common"],
+      "@floorball/uikit/matches": ["src/app/_modules/_uikit/_matches"],
+      "@floorball/uikit/player": ["src/app/_modules/_uikit/_player"],
+      "@floorball/uikit/team": ["src/app/_modules/_uikit/_team"],
       "@floorball/public/home": ["src/app/_modules/_public/_home"],
       "@floorball/public/overview": ["src/app/_modules/_public/_overview"]
     }
