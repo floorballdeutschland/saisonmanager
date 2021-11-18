@@ -9,11 +9,13 @@ import * as Organisms from './components/organisms';
     Atoms.LogoComponent,
     Organisms.LeagueNavigationComponent,
     Organisms.SidebarComponent,
+    Organisms.MetanavigationComponent,
   ],
   exports: [
     Atoms.LogoComponent,
     Organisms.LeagueNavigationComponent,
     Organisms.SidebarComponent,
+    Organisms.MetanavigationComponent,
   ],
 })
 export class UikitCommonModule {}
