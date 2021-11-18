@@ -1,7 +1,7 @@
-<h2 class="uppercase text-tertiary font-bold mt-12">Ligen</h2>
+<h2 class="uppercase text-fb-gray-100 font-bold mt-12">Ligen</h2>
 
 <nav>
   <ul>
-    <li *ngFor="let item of data" class="mt-4 mb-4"><a href="{{ item.route }}" class="font-bold text-secondary text-base">{{ item.name }}</a></li>
+    <li *ngFor="let item of data" class="mt-4 mb-4"><a href="{{ item.route }}" class="font-bold text-fb-gray-500 hover:text-black text-base" title="{{ item.name }}">{{ item.name }}</a></li>
   </ul>
 </nav>

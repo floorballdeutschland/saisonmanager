@@ -19,5 +19,5 @@ export class HeaderComponent {
   subline = '';
 
   @Input()
-  type = 'league';
+  type: 'league' | 'match' | 'team' = 'league';
 }
