@@ -1,0 +1,36 @@
+
+<h3 class="text-black font-bold text-2xl mb-[30px]">Weiteres</h3>
+<h4 class="text-black font-bold text-base mb-[30px]">Spielinfos</h4>
+
+<ng-container *ngIf="game">
+  <ul>
+    <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
+      <span class="text-sm">Liga</span>
+      <span class="text-sm font-bold text-right">1.FBL</span>
+    </li>
+    <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
+      <span class="text-sm">Spielenummer</span>
+      <span class="text-sm font-bold text-right">{{ game.game_number }}</span>
+    </li>
+    <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
+      <span class="text-sm">Datum</span>
+      <span class="text-sm font-bold text-right">25.10.2020</span>
+    </li>
+    <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
+      <span class="text-sm">Austragungsort</span>
+      <span class="text-sm font-bold text-right">{{ game.location }}</span>
+    </li>
+    <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
+      <span class="text-sm">Spielbeginn</span>
+      <span class="text-sm font-bold text-right">{{ game.start_time }} Uhr</span>
+    </li>
+    <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
+      <span class="text-sm">Zuschauerzahl</span>
+      <span class="text-sm font-bold text-right">{{ game.audience }}</span>
+    </li>
+    <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
+      <span class="text-sm">Schiedsrichter</span>
+      <span class="text-sm font-bold text-right">{{ game.referees }}</span>
+    </li>
+  </ul>
+</ng-container>

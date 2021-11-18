@@ -1,7 +1,7 @@
 <h1 class="text-3xl text-center font-bold">Styleguide</h1>
 <p class="text-lg text-center">To test components</p>
 
-<div class="flex w-screen">
+<div class="flex w-[100%]">
   <div>
     <fb-sidebar></fb-sidebar>
   </div>
@@ -61,8 +61,13 @@
     ></fb-match-encounter-list>
   </div>
 
+  <div class="mt-10 max-w-[50%]">
+    <fb-match-info [game]="gameMock"></fb-match-info>
+  </div>
+
   <div class="mt-10">
     <h2 class="text-xl text-center font-bold">Kader</h2>
     <fb-team-lineup [lineup]="[].constructor(5)"></fb-team-lineup>
   </div>
+
 </div>

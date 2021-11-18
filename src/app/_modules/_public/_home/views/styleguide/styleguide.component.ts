@@ -3,7 +3,7 @@ import {
   Component,
   ViewEncapsulation,
 } from '@angular/core';
-import { GamePlayerEntry, ScorerEntry, TableEntry } from '@floorball/models';
+import { Game, GamePlayerEntry, ScorerEntry, TableEntry } from '@floorball/models';
 
 @Component({
   selector: 'fb-styleguide',
@@ -133,4 +133,47 @@ export class StyleguideComponent {
       trikot_number: 12,
     },
   ];
+
+  gameMock: Game = {
+    id: 7509,
+    game_number: '101',
+    start_time: '11:45',
+    audience: 67,
+    home_team_name: 'SG Wyk/Husum',
+    guest_team_name: 'SG FTC+ Berlin',
+    events: [],
+    players: {
+      home: [
+        {
+          player_id: 5181,
+          player_name: 'Clausen',
+          trikot_number: 6,
+          player_firstname: 'Justus',
+        },
+        {
+          player_id: 1409,
+          player_name: 'Obojiagbe',
+          trikot_number: 7,
+          player_firstname: 'Justin',
+        }
+      ],
+      guest: [
+        {
+          player_id: 13535,
+          goalkeeper: true,
+          player_name: 'Vaclavek',
+          trikot_number: 1,
+          player_firstname: 'Svatoslav'
+        },
+        {
+          player_id: 4829,
+          player_name: 'Reisig',
+          trikot_number: 3,
+          player_firstname: 'Adam'
+        }
+      ]
+    },
+    location: 'Leipzig, Sporthalle am Rabet',
+    referees: 'Galetzka, Tim / Köstler, Tobias'
+  };
 }

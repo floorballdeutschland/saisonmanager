@@ -10,10 +10,12 @@ import * as Organisms from './components/organisms';
     Molecules.MatchEncounterComponent,
     Organisms.MatchPairingListComponent,
     Organisms.MatchEncounterListComponent,
+    Organisms.MatchInfoComponent,
   ],
   exports: [
     Organisms.MatchPairingListComponent,
     Organisms.MatchEncounterListComponent,
+    Organisms.MatchInfoComponent,
   ],
 })
 export class UikitMatchesModule {}
