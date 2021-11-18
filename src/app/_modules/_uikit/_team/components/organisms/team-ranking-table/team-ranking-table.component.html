@@ -62,7 +62,7 @@
 
   <cdk-header-row
     class="
-      grid grid-cols-[25px,1fr,repeat(9,60px)]
+      grid
       items-center
       text-center
       border-b border-fb-gray-200
@@ -71,46 +71,60 @@
       px-[10px]
       h-12
     "
-    *cdkHeaderRowDef="[
-      'table.position',
-      'table.team',
-      'table.games',
-      'table.wins',
-      'table.draws',
-      'table.defeats',
-      'table.suddenDeathWins',
-      'table.suddenDeathDefeats',
-      'table.goals',
-      'table.goalsDiff',
-      'table.points'
-    ]"
+    [ngClass]="{
+      'grid-cols-[25px,1fr,repeat(9,60px)]': type !== 'small',
+      'grid-cols-[25px,1fr,repeat(2,60px)]': type === 'small'
+    }"
+    *cdkHeaderRowDef="
+      type === 'small'
+        ? ['table.position', 'table.team', 'table.games', 'table.points']
+        : [
+            'table.position',
+            'table.team',
+            'table.games',
+            'table.wins',
+            'table.draws',
+            'table.defeats',
+            'table.suddenDeathWins',
+            'table.suddenDeathDefeats',
+            'table.goals',
+            'table.goalsDiff',
+            'table.points'
+          ]
+    "
   ></cdk-header-row>
   <cdk-row
     class="
-      grid grid-cols-[25px,1fr,repeat(9,60px)]
+      grid
       items-center
       text-center text-sm
       px-[10px]
       h-12
       odd:bg-fb-gray-300
     "
+    [ngClass]="{
+      'grid-cols-[25px,1fr,repeat(9,60px)]': type !== 'small',
+      'grid-cols-[25px,1fr,repeat(2,60px)]': type === 'small'
+    }"
     [id]="row.uuid"
     *cdkRowDef="
       let row;
       let i = index;
-      columns: [
-        'table.position',
-        'table.team',
-        'table.games',
-        'table.wins',
-        'table.draws',
-        'table.defeats',
-        'table.suddenDeathWins',
-        'table.suddenDeathDefeats',
-        'table.goals',
-        'table.goalsDiff',
-        'table.points'
-      ]
+      columns: type === 'small'
+        ? ['table.position', 'table.team', 'table.games', 'table.points']
+        : [
+            'table.position',
+            'table.team',
+            'table.games',
+            'table.wins',
+            'table.draws',
+            'table.defeats',
+            'table.suddenDeathWins',
+            'table.suddenDeathDefeats',
+            'table.goals',
+            'table.goalsDiff',
+            'table.points'
+          ]
     "
   >
   </cdk-row>

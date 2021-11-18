@@ -18,6 +18,9 @@ export class TeamRankingTableComponent {
   @Input()
   data!: TableEntry[];
 
+  @Input()
+  type: 'small' | 'default' = 'default';
+
   dataSource = new TeamRankingTableDatasoure();
 
   ngOnChanges(changes: SimpleChanges): void {
