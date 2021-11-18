@@ -1,0 +1,7 @@
+<h2 class="uppercase text-tertiary font-bold mt-12">Ligen</h2>
+
+<nav>
+  <ul>
+    <li *ngFor="let item of data" class="mt-4 mb-4"><a href="{{ item.route }}" class="font-bold text-secondary text-base">{{ item.name }}</a></li>
+  </ul>
+</nav>
