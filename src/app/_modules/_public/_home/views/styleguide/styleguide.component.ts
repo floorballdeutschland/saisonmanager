@@ -3,7 +3,7 @@ import {
   Component,
   ViewEncapsulation,
 } from '@angular/core';
-import { ScorerEntry, TableEntry } from '@floorball/models';
+import { GamePlayerEntry, ScorerEntry, TableEntry } from '@floorball/models';
 
 @Component({
   selector: 'app-styleguide',
@@ -104,6 +104,33 @@ export class StyleguideComponent {
         reference_number: '1',
       },
       won_ot: 2,
+    },
+  ];
+
+  lineupMock: GamePlayerEntry[] = [
+    {
+      player_id: 1,
+      captain: false,
+      goalkeeper: false,
+      player_firstname: 'Firstname',
+      player_name: 'Lastname',
+      trikot_number: 12,
+    },
+    {
+      player_id: 1,
+      captain: false,
+      goalkeeper: false,
+      player_firstname: 'Firstname',
+      player_name: 'Lastname',
+      trikot_number: 12,
+    },
+    {
+      player_id: 1,
+      captain: false,
+      goalkeeper: false,
+      player_firstname: 'Firstname',
+      player_name: 'Lastname',
+      trikot_number: 12,
     },
   ];
 }

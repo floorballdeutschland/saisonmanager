@@ -6,12 +6,21 @@
     <fb-sidebar></fb-sidebar>
   </div>
   <div>
-    <fb-header headline="Headline H1" subline="Sided Headline" type="league"></fb-header>
-    <fb-header headline="Headline H1" subline="Sided Headline" type="match"></fb-header>
-    <fb-player-ranking-table [data]="playerRankingMock"></fb-player-ranking-table>
+    <fb-header
+      headline="Headline H1"
+      subline="Sided Headline"
+      type="league"
+    ></fb-header>
+    <fb-header
+      headline="Headline H1"
+      subline="Sided Headline"
+      type="match"
+    ></fb-header>
+    <fb-player-ranking-table
+      [data]="playerRankingMock"
+    ></fb-player-ranking-table>
   </div>
 </div>
-
 
 <div class="container mx-auto">
   <div>
@@ -48,6 +57,6 @@
 
   <div class="mt-10">
     <h2 class="text-xl text-center font-bold">Kader</h2>
-    <fb-team-lineup [lineup]="[].constructor(5)"></fb-team-lineup>
+    <fb-team-lineup [lineup]="lineupMock"></fb-team-lineup>
   </div>
 </div>

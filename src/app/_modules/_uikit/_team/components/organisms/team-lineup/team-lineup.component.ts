@@ -4,6 +4,7 @@ import {
   Input,
   ViewEncapsulation,
 } from '@angular/core';
+import { GamePlayerEntry } from '@floorball/models';
 
 @Component({
   selector: 'fb-team-lineup',
@@ -13,6 +14,5 @@ import {
 })
 export class TeamLineupComponent {
   @Input()
-  // TODO: type;
-  lineup!: any;
+  lineup!: GamePlayerEntry[];
 }
