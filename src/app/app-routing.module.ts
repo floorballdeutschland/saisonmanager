@@ -8,16 +8,11 @@ const routes: Routes = [
       import('@floorball/public/home').then((m) => m.PublicHomeModule),
   },
   {
-    path: ':association',
-    children: [
-      {
-        path: '',
-        loadChildren: () =>
-          import('@floorball/public/overview').then(
-            (m) => m.PublicOverviewModule
-          ),
-      },
-    ],
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/association/host').then(
+        (m) => m.PublicAssociationHostModule
+      ),
   },
 ];
 
