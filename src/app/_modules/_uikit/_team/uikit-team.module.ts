@@ -8,7 +8,12 @@ import { CdkTableModule } from '@angular/cdk/table';
   declarations: [
     Organisms.TeamRankingTableComponent,
     Organisms.TeamLineupComponent,
+    Organisms.TeamInfoComponent,
   ],
-  exports: [Organisms.TeamRankingTableComponent, Organisms.TeamLineupComponent],
+  exports: [
+    Organisms.TeamRankingTableComponent,
+    Organisms.TeamLineupComponent,
+    Organisms.TeamInfoComponent
+  ],
 })
 export class UikitTeamModule {}
