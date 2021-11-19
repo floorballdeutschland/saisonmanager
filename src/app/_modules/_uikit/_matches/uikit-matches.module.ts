@@ -9,16 +9,19 @@ import * as Organisms from './components/organisms';
     Molecules.MatchPairingComponent,
     Molecules.MatchEncounterComponent,
     Molecules.NextMatchItemComponent,
+    Molecules.MatchHistoryItemComponent,
     Organisms.MatchPairingListComponent,
     Organisms.MatchEncounterListComponent,
     Organisms.MatchInfoComponent,
     Organisms.NextMatchListComponent,
+    Organisms.MatchHistoryComponent,
   ],
   exports: [
     Organisms.MatchPairingListComponent,
     Organisms.MatchEncounterListComponent,
     Organisms.MatchInfoComponent,
     Organisms.NextMatchListComponent,
+    Organisms.MatchHistoryComponent,
   ],
 })
 export class UikitMatchesModule {}
