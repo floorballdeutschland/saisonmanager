@@ -6,8 +6,8 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AssociationService } from '@floorball/core';
+import { GameOperation } from '@floorball/types';
 import { Observable } from 'rxjs';
-import { GameOperation } from 'src/app/_models';
 
 @Component({
   templateUrl: './overview.component.html',
