@@ -18,19 +18,19 @@
     </li>
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Austragungsort</span>
-      <span class="text-sm font-bold text-right">{{ game.location }}</span>
+      <span class="text-sm font-bold text-right">{{ game.location ? game.location : '-' }}</span>
     </li>
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Spielbeginn</span>
-      <span class="text-sm font-bold text-right">{{ game.start_time }} Uhr</span>
+      <span class="text-sm font-bold text-right">{{ game.start_time ? game.start_time + ' Uhr' : '' }}</span>
     </li>
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Zuschauerzahl</span>
-      <span class="text-sm font-bold text-right">{{ game.audience }}</span>
+      <span class="text-sm font-bold text-right">{{ game.audience ? game.audience : '0' }}</span>
     </li>
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Schiedsrichter</span>
-      <span class="text-sm font-bold text-right">{{ game.referees }}</span>
+      <span class="text-sm font-bold text-right">{{ game.referees ? game.referees : '-' }}</span>
     </li>
   </ul>
 </ng-container>
