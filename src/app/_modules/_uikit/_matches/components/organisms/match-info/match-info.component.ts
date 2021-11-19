@@ -16,6 +16,4 @@ import { Game } from '@floorball/models';
 export class MatchInfoComponent {
   @Input()
   game!: Game;
-
-  test = 'Hallo Welt 2000';
 }

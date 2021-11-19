@@ -62,7 +62,9 @@
   </div>
 
   <div class="mt-10 max-w-[50%]">
-    <fb-match-info [game]="gameMock"></fb-match-info>
+    <ng-container *ngIf="game">
+      <fb-match-info [game]="game"></fb-match-info>
+    </ng-container>
   </div>
 
   <div class="mt-10">

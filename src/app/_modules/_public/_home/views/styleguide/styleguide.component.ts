@@ -4,6 +4,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Game, GamePlayerEntry, ScorerEntry, TableEntry } from '@floorball/models';
+import { GameService } from 'src/app/_services';
 
 @Component({
   selector: 'fb-styleguide',
@@ -176,4 +177,13 @@ export class StyleguideComponent {
     location: 'Leipzig, Sporthalle am Rabet',
     referees: 'Galetzka, Tim / Köstler, Tobias'
   };
+
+  game?: Game | null;
+
+  constructor(private _gameService: GameService)
+  {
+    this._gameService.getGame(7110).subscribe(_ => {
+      if (_) { this.game = _; }
+    })
+  }
 }
