@@ -3,7 +3,13 @@ import {
   Component,
   ViewEncapsulation,
 } from '@angular/core';
-import { Game, GamePlayerEntry, ScorerEntry, TableEntry } from '@floorball/models';
+import { GameService } from '@floorball/core';
+import {
+  Game,
+  GamePlayerEntry,
+  ScorerEntry,
+  TableEntry,
+} from '@floorball/models';
 
 @Component({
   selector: 'fb-styleguide',
@@ -155,7 +161,7 @@ export class StyleguideComponent {
           player_name: 'Obojiagbe',
           trikot_number: 7,
           player_firstname: 'Justin',
-        }
+        },
       ],
       guest: [
         {
@@ -163,17 +169,27 @@ export class StyleguideComponent {
           goalkeeper: true,
           player_name: 'Vaclavek',
           trikot_number: 1,
-          player_firstname: 'Svatoslav'
+          player_firstname: 'Svatoslav',
         },
         {
           player_id: 4829,
           player_name: 'Reisig',
           trikot_number: 3,
-          player_firstname: 'Adam'
-        }
-      ]
+          player_firstname: 'Adam',
+        },
+      ],
     },
     location: 'Leipzig, Sporthalle am Rabet',
-    referees: 'Galetzka, Tim / Köstler, Tobias'
+    referees: 'Galetzka, Tim / Köstler, Tobias',
   };
+
+  game?: Game | null;
+
+  constructor(private _gameService: GameService) {
+    this._gameService.getGame(7110).subscribe((_) => {
+      if (_) {
+        this.game = _;
+      }
+    });
+  }
 }

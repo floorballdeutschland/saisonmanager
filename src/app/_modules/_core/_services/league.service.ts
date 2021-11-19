@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
+import { GameScheduleEntry, ScorerEntry, TableEntry } from '@floorball/types';
 
-import { environment } from '../../environments/environment';
-import { GameScheduleEntry, ScorerEntry, TableEntry } from '../_models';
-
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class LeagueService {
   constructor(private http: HttpClient) {}
 
