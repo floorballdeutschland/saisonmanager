@@ -8,14 +8,17 @@ import * as Organisms from './components/organisms';
   declarations: [
     Molecules.MatchPairingComponent,
     Molecules.MatchEncounterComponent,
+    Molecules.NextMatchItemComponent,
     Organisms.MatchPairingListComponent,
     Organisms.MatchEncounterListComponent,
     Organisms.MatchInfoComponent,
+    Organisms.NextMatchListComponent,
   ],
   exports: [
     Organisms.MatchPairingListComponent,
     Organisms.MatchEncounterListComponent,
     Organisms.MatchInfoComponent,
+    Organisms.NextMatchListComponent,
   ],
 })
 export class UikitMatchesModule {}

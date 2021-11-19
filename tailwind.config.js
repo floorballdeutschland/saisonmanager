@@ -25,10 +25,10 @@ module.exports = {
   theme: {
     extend: {
       fontSize: {
-        '4.5xl': calculateRem(42),
+        "4.5xl": calculateRem(42),
       },
       fontFamily: {
-        helvetica: ['Helvetica', 'Arial', 'sans-serif'],
+        helvetica: ["Helvetica", "Arial", "sans-serif"],
       },
       colors: {
         "fb-gray-100": "#A9A9A9",
@@ -38,6 +38,7 @@ module.exports = {
         "fb-gray-500": "#616161",
         "fb-gray-600": "#BBBBBB",
         "fb-gray-700": "#E5E5E5",
+        "fb-gray-800": "#FAFAFA",
       },
     },
   },
