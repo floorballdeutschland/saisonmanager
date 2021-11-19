@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { GameOperation } from '@floorball/types';
 import {
   BehaviorSubject,
   map,
@@ -9,8 +10,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { GameOperation } from 'src/app/_models';
-import { MetaService } from 'src/app/_services';
+import { MetaService } from './meta.service';
 
 @Injectable({
   providedIn: 'root',

@@ -11,7 +11,7 @@ export class AppComponent {
 
   isLoading$;
 
-  constructor(private _asociationService: AssociationService) {
-    this.isLoading$ = this._asociationService.associationsIsLoading$;
+  constructor(private _associationService: AssociationService) {
+    this.isLoading$ = this._associationService.associationsIsLoading$;
   }
 }

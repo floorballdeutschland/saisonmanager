@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
+import { InitData } from '@floorball/types';
 
-import { environment } from '../../environments/environment';
-import { InitData } from '../_models';
-
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class MetaService {
   constructor(private http: HttpClient) {}
 
