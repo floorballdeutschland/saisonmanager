@@ -1,5 +1,8 @@
 <div>
   <ng-container *ngFor="let event of gameEvents">
-    <fb-match-history-item [gameEvent]="event"></fb-match-history-item>
+    <fb-match-history-item
+      class="block even:bg-fb-gray-300"
+      [gameEvent]="event"
+    ></fb-match-history-item>
   </ng-container>
 </div>
