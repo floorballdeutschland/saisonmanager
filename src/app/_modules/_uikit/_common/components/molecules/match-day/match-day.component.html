@@ -1,0 +1,42 @@
+<div class="group w-[125px]">
+  <div
+    class="
+      font-bold
+      text-black
+      leading-[17px]
+      text-sm
+      px-5
+      py-2.5
+      border
+      bg-white
+      hover:bg-fb-gray-200
+      group-hover:rounded-b-none
+      border-fb-gray-600
+      cursor-pointer
+      rounded-[5px]
+      transition
+    "
+  >
+    5. Spieltag
+  </div>
+
+  <div class="hidden group-hover:block transition">
+    <ng-container *ngFor="let item of [].constructor(4)">
+      <div
+        class="
+          border border-t-0 border-fb-gray-600
+          last:rounded-b-[5px]
+          px-5
+          py-2.5
+          hover:bg-fb-gray-200
+          leading-[17px]
+          font-bold
+          cursor-pointer
+          text-sm
+        "
+      >
+        6. Spieltag
+      </div>
+    </ng-container>
+  </div>
+</div>

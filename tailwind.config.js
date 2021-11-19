@@ -43,6 +43,10 @@ module.exports = {
     },
   },
   variants: {
-    extend: {},
+    extend: {
+      height: ["group-hover"],
+      visibility: ["group-hover"],
+      display: ["group-hover"],
+    },
   },
 };
