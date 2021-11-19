@@ -13,6 +13,7 @@ import * as Organisms from './components/organisms';
     Organisms.SidebarComponent,
     Organisms.MetanavigationComponent,
     Organisms.HeaderComponent,
+    Organisms.SimilarLeaguesComponent,
   ],
   exports: [
     Atoms.LogoComponent,
@@ -21,6 +22,7 @@ import * as Organisms from './components/organisms';
     Organisms.SidebarComponent,
     Organisms.MetanavigationComponent,
     Organisms.HeaderComponent,
+    Organisms.SimilarLeaguesComponent,
   ],
 })
 export class UikitCommonModule {}
