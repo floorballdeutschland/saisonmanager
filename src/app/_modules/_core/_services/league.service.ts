@@ -9,10 +9,10 @@ import { GameScheduleEntry, ScorerEntry, TableEntry } from '@floorball/types';
 export class LeagueService {
   constructor(private http: HttpClient) {}
 
-  // public getLeagues(gameOperation: number, season: number) {
-  //   const path = environment.apiURL + 'init.json'
-  //   return this.http.get<InitData[]>(path)
-  // }
+  public getLeagues(gameOperation: number, season: number) {
+    const path = environment.apiURL + 'leagues.json';
+    return this.http.get<any>(path);
+  }
 
   public getGameSchedule(league: number) {
     const path = environment.apiURL + 'leagues/' + league + '/schedule.json';

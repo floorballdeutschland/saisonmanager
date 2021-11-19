@@ -1,6 +1,7 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { GameOperation } from '@floorball/types';
+import { GameOperation, InitData, Season } from '@floorball/types';
 import {
   BehaviorSubject,
   map,
@@ -10,7 +11,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { MetaService } from './meta.service';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -18,16 +19,26 @@ import { MetaService } from './meta.service';
 export class AssociationService {
   associationsIsLoading$ = new BehaviorSubject(false);
   associations$: Observable<GameOperation[]>;
+  selectedAssociation$: Observable<GameOperation | null>;
 
-  selectedAssociation$?: Observable<GameOperation | null>;
+  currentSeasonId$: Observable<number>;
+  seasons$: Observable<Season[]>;
+
   private _route$ = new BehaviorSubject<ActivatedRoute | null>(null);
 
-  constructor(private _metaService: MetaService) {
+  constructor(private http: HttpClient) {
     this.associationsIsLoading$.next(true);
 
-    this.associations$ = this._metaService.getInit().pipe(
-      map((_result) => _result.game_operations),
-      shareReplay()
+    const initData$ = this.getInit().pipe(shareReplay());
+
+    this.associations$ = initData$.pipe(
+      map((_result) => _result.game_operations)
+    );
+
+    this.seasons$ = initData$.pipe(map((_result) => _result.seasons));
+
+    this.currentSeasonId$ = initData$.pipe(
+      map((_result) => _result.current_season_id)
     );
 
     this.associations$
@@ -59,5 +70,10 @@ export class AssociationService {
 
   clearAssociation() {
     this._route$.next(null);
+  }
+
+  public getInit() {
+    const path = environment.apiURL + 'init.json';
+    return this.http.get<InitData>(path);
   }
 }
