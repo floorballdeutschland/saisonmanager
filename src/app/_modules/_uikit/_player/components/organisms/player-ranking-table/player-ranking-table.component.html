@@ -15,8 +15,13 @@
       >Spieler</cdk-header-cell
     >
     <cdk-cell class="flex items-center" *cdkCellDef="let element">
-      <div class="text-left">
-        {{ element.first_name }} {{ element.last_name }}{{ element.club }}
+      <div class="flex items-center">
+        <div class="h-8 w-8 mr-2.5">
+          <img src="http://via.placeholder.com/32x32" />
+        </div>
+        <div class="text-left">
+          {{ element.first_name }} {{ element.last_name }}{{ element.club }}
+        </div>
       </div>
     </cdk-cell>
   </ng-container>

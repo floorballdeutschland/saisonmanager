@@ -8,9 +8,16 @@
     <cdk-header-cell class="text-left" *cdkHeaderCellDef
       >Mannschaft</cdk-header-cell
     >
-    <cdk-cell class="text-left" *cdkCellDef="let element">{{
-      element.team_name
-    }}</cdk-cell>
+    <cdk-cell class="text-left" *cdkCellDef="let element">
+      <div class="flex items-center">
+        <div class="h-8 w-8 mr-2.5">
+          <img src="http://via.placeholder.com/32x32" />
+        </div>
+        <div>
+          {{ element.team_name }}
+        </div>
+      </div>
+    </cdk-cell>
   </ng-container>
 
   <ng-container cdkColumnDef="table.games">
