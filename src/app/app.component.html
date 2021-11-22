@@ -1,3 +1,10 @@
 <ng-container *ngIf="(isLoading$ | async) === false">
-  <router-outlet></router-outlet>
+  <div class="flex">
+    <div class="hidden md:block fixed h-full w-[300px]">
+      <fb-sidebar></fb-sidebar>
+    </div>
+    <div class="md:ml-[300px] container mx-auto px-8">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
 </ng-container>
