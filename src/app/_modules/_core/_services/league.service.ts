@@ -8,17 +8,31 @@ import {
   TableEntry,
 } from '@floorball/types';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, Observable, of, switchMap } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  switchMap,
+  tap,
+} from 'rxjs';
+import { AssociationService } from '.';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LeagueService {
   selectedLeague$: Observable<League | null>;
+  leagues$: Observable<League[] | null>;
 
   private _route$ = new BehaviorSubject<ActivatedRoute | null>(null);
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private _associationService: AssociationService
+  ) {
     this.selectedLeague$ = this._route$.pipe(
       switchMap((_route) => {
         if (!_route) {
@@ -29,8 +43,21 @@ export class LeagueService {
           return of(null);
         }
 
-        return this.getLeague(_route.snapshot.params['leagueId']);
+        return this.getLeague(parseInt(_route.snapshot.params['leagueId']));
       })
+    );
+
+    this.leagues$ = combineLatest([
+      this._associationService.selectedAssociation$,
+      this._associationService.currentSeasonId$,
+    ]).pipe(
+      switchMap(([association, currentSeasonId]) => {
+        if (!association || !currentSeasonId) {
+          return of(null);
+        }
+        return this.getLeagues(association.id, currentSeasonId);
+      }),
+      shareReplay()
     );
   }
 
@@ -46,8 +73,9 @@ export class LeagueService {
   }
 
   public getLeague(leagueId: number) {
-    const path = environment.apiURL + 'leagues/' + leagueId + '.json';
-    return this.http.get<League>(path);
+    return this.leagues$.pipe(
+      map((_leagues) => _leagues?.find((_l) => _l.id === leagueId) ?? null)
+    );
   }
 
   public getGameSchedule(league: number) {
