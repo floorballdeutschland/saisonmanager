@@ -9,6 +9,7 @@ import * as Organisms from './components/organisms';
   declarations: [
     Atoms.LogoComponent,
     Molecules.MatchDayComponent,
+    Molecules.OperationComponent,
     Organisms.LeagueNavigationComponent,
     Organisms.SidebarComponent,
     Organisms.MetanavigationComponent,
@@ -18,6 +19,7 @@ import * as Organisms from './components/organisms';
   exports: [
     Atoms.LogoComponent,
     Molecules.MatchDayComponent,
+    Molecules.OperationComponent,
     Organisms.LeagueNavigationComponent,
     Organisms.SidebarComponent,
     Organisms.MetanavigationComponent,
