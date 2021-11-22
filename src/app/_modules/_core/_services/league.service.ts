@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { GameScheduleEntry, ScorerEntry, TableEntry } from '@floorball/types';
+import {
+  GameScheduleEntry,
+  InitData,
+  ScorerEntry,
+  TableEntry,
+} from '@floorball/types';
 
 @Injectable({
   providedIn: 'root',
@@ -10,8 +15,14 @@ export class LeagueService {
   constructor(private http: HttpClient) {}
 
   public getLeagues(gameOperation: number, season: number) {
-    const path = environment.apiURL + 'leagues.json';
-    return this.http.get<any>(path);
+    const path =
+      environment.apiURL +
+      'game_operations/' +
+      gameOperation +
+      '/leagues/' +
+      season +
+      '.json';
+    return this.http.get<InitData[]>(path);
   }
 
   public getGameSchedule(league: number) {
