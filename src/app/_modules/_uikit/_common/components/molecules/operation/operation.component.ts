@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Input,
   ViewEncapsulation,
 } from '@angular/core';
+import { GameOperation } from '@floorball/types';
 
 @Component({
   selector: 'fb-operation',
@@ -10,4 +12,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
-export class OperationComponent {}
+export class OperationComponent {
+  @Input()
+  gameOperation!: GameOperation;
+}

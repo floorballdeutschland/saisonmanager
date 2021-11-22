@@ -1,9 +1,8 @@
-<h1>Start</h1>
-
+<h2 class="font-bold text-2xl">Spielbetriebe</h2>
 <ng-container *ngIf="associations$ | async as associations">
-  <ng-container *ngFor="let association of associations">
-    <a [routerLink]="['/', association.path]" [title]="association.name">
-      <h1>{{ association.name }}</h1>
-    </a>
-  </ng-container>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-[25px] mt-9">
+    <ng-container *ngFor="let association of associations">
+      <fb-operation [gameOperation]="association"></fb-operation>
+    </ng-container>
+  </div>
 </ng-container>
