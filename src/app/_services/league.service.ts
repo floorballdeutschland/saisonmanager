@@ -14,7 +14,7 @@ export class LeagueService {
 
   public getLeagues(gameOperation: number, season: number) {
     const path = environment.apiURL + 'game_operations/' + gameOperation + '/leagues/' + season + '.json'
-    return this.http.get<InitData[]>(path)
+    return this.http.get<League[]>(path)
   }
 
   public getGameSchedule(league: number) {
