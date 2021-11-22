@@ -9,6 +9,7 @@ import * as Organisms from './components/organisms';
   imports: [CommonModule, RouterModule],
   declarations: [
     Atoms.LogoComponent,
+    Atoms.TabItemComponent,
     Molecules.MatchDayComponent,
     Molecules.OperationComponent,
     Organisms.LeagueNavigationComponent,
@@ -19,6 +20,7 @@ import * as Organisms from './components/organisms';
   ],
   exports: [
     Atoms.LogoComponent,
+    Atoms.TabItemComponent,
     Molecules.MatchDayComponent,
     Molecules.OperationComponent,
     Organisms.LeagueNavigationComponent,
