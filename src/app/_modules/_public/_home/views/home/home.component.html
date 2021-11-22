@@ -1,9 +1,16 @@
-<h1 class="font-bold text-[42px] font-bold mt-8">Saisonmanager</h1>
-<h2 class="font-bold text-2xl mt-20">Spielbetriebe</h2>
-<ng-container *ngIf="associations$ | async as associations">
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-[25px] mt-9">
-    <ng-container *ngFor="let association of associations">
-      <fb-operation [gameOperation]="association"></fb-operation>
+<div class="flex">
+  <div class="hidden md:block fixed h-full w-[300px]">
+    <fb-sidebar [withLeagues]="false"></fb-sidebar>
+  </div>
+  <div class="md:ml-[300px] container mx-auto px-8">
+    <h1 class="font-bold text-[42px] font-bold mt-8">Saisonmanager</h1>
+    <h2 class="font-bold text-2xl mt-20">Spielbetriebe</h2>
+    <ng-container *ngIf="associations$ | async as associations">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-[25px] mt-9">
+        <ng-container *ngFor="let association of associations">
+          <fb-operation [gameOperation]="association"></fb-operation>
+        </ng-container>
+      </div>
     </ng-container>
   </div>
-</ng-container>
+</div>
