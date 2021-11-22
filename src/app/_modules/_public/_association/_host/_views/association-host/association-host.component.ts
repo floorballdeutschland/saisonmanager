@@ -1,16 +1,8 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AssociationService, LeagueService } from '@floorball/core';
-import { GameOperation } from '@floorball/types';
-import {
-  combineLatest,
-  map,
-  Observable,
-  of,
-  switchMap,
-  tap,
-  withLatestFrom,
-} from 'rxjs';
+import { GameOperation, League } from '@floorball/types';
+import { combineLatest, Observable, of, switchMap, tap } from 'rxjs';
 
 @Component({
   templateUrl: './association-host.component.html',
@@ -19,7 +11,7 @@ import {
 export class AssociationHostComponent implements OnInit {
   selectedAssociation$!: Observable<GameOperation | null>;
   association$!: Observable<GameOperation[]>;
-  leagues$?: Observable<any>;
+  leagues$?: Observable<League[]>;
 
   constructor(
     private _associationService: AssociationService,
@@ -29,9 +21,11 @@ export class AssociationHostComponent implements OnInit {
 
   ngOnInit(): void {
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
-    this.association$ = this._associationService.associations$;
 
+    this.association$ = this._associationService.associations$;
+    console.log(this._route);
     this._associationService.selectAssociation(this._route);
+
     this.leagues$ = combineLatest([
       this.selectedAssociation$,
       this._associationService.currentSeasonId$,

@@ -1,25 +1,19 @@
 <div class="grid grid-cols-[200px,1fr]">
   <div>
-    <!-- <ul>
+    <ul>
       <li *ngFor="let league of leagues$ | async">
-        <a [routerLink]="['./']">aa</a>
+        <a [routerLink]="['./', league.id]">{{ league.name }}</a>
       </li>
-    </ul> -->
+    </ul>
   </div>
   <div>
     <ng-container *ngIf="selectedAssociation$ | async as association">
       <h1 class="text-2xl">
         {{ association.name }} ({{ association.short_name }})
       </h1>
+
+      <router-outlet></router-outlet>
     </ng-container>
-
-    <ul>
-      <li><a [routerLink]="['./']">Übersicht</a></li>
-      <li><a [routerLink]="['./', 'tabelle']">Tabelle</a></li>
-      <li><a [routerLink]="['./', 'scorer']">Scorer</a></li>
-    </ul>
-
-    <router-outlet></router-outlet>
 
     <a [routerLink]="['/']">Back</a>
   </div>

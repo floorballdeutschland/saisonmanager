@@ -1,0 +1,9 @@
+<ng-container *ngIf="selectedLeague$ | async as league">
+  <ul>
+    <li><a [routerLink]="['./', league.id]">Übersicht</a></li>
+    <li><a [routerLink]="['./', league.id, 'tabelle']">Tabelle</a></li>
+    <li><a [routerLink]="['./', league.id, 'scorer']">Scorer</a></li>
+  </ul>
+
+  <router-outlet></router-outlet>
+</ng-container>

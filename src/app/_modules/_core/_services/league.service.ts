@@ -3,16 +3,36 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import {
   GameScheduleEntry,
-  InitData,
+  League,
   ScorerEntry,
   TableEntry,
 } from '@floorball/types';
+import { ActivatedRoute } from '@angular/router';
+import { BehaviorSubject, Observable, of, switchMap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LeagueService {
-  constructor(private http: HttpClient) {}
+  selectedLeague$: Observable<League | null>;
+
+  private _route$ = new BehaviorSubject<ActivatedRoute | null>(null);
+
+  constructor(private http: HttpClient) {
+    this.selectedLeague$ = this._route$.pipe(
+      switchMap((_route) => {
+        if (!_route) {
+          return of(null);
+        }
+
+        if (!_route.snapshot.params['leagueId']) {
+          return of(null);
+        }
+
+        return this.getLeague(_route.snapshot.params['leagueId']);
+      })
+    );
+  }
 
   public getLeagues(gameOperation: number, season: number) {
     const path =
@@ -22,7 +42,12 @@ export class LeagueService {
       '/leagues/' +
       season +
       '.json';
-    return this.http.get<InitData[]>(path);
+    return this.http.get<League[]>(path);
+  }
+
+  public getLeague(leagueId: number) {
+    const path = environment.apiURL + 'leagues/' + leagueId + '.json';
+    return this.http.get<League>(path);
   }
 
   public getGameSchedule(league: number) {
@@ -38,5 +63,13 @@ export class LeagueService {
   public getScorer(league: number) {
     const path = environment.apiURL + 'leagues/' + league + '/scorer.json';
     return this.http.get<ScorerEntry[]>(path);
+  }
+
+  selectLeague(route: ActivatedRoute) {
+    this._route$.next(route);
+  }
+
+  clearLeague() {
+    this._route$.next(null);
   }
 }

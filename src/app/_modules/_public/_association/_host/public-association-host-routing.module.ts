@@ -7,16 +7,19 @@ const routes: Routes = [
   {
     path: ':association',
     component: Views.AssociationHostComponent,
-    data: {
-      scrollTop: true,
-    },
     children: [
       {
-        path: '',
-        loadChildren: () =>
-          import('@floorball/public/association/overview').then(
-            (m) => m.PublicAssociationOverviewModule
-          ),
+        path: ':leagueId',
+        component: Views.LeagueHostComponent,
+        children: [
+          {
+            path: '',
+            loadChildren: () =>
+              import('@floorball/public/association/overview').then(
+                (m) => m.PublicAssociationOverviewModule
+              ),
+          },
+        ],
       },
     ],
   },
