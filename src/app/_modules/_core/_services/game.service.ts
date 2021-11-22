@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 
 import { Game } from '@floorball/types';
 import { environment } from 'src/environments/environment';
-
 @Injectable({
   providedIn: 'root',
 })
