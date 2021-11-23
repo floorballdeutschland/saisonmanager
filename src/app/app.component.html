@@ -2,15 +2,11 @@
   <div class="grid grid-cols-[300px,1fr]">
     <div class="hidden md:block h-full w-full">
       <fb-sidebar>
-        <ng-container
-          *ngIf="selectedAssociation$ | async as selectedAssociation"
-        >
-          <fb-league-navigation
-            *ngIf="leagues$ | async as leagues"
-            [leagues]="leagues"
-            [selectedAssociation]="selectedAssociation"
-          ></fb-league-navigation>
-        </ng-container>
+        <fb-league-navigation
+          *ngIf="leagues$ | async as leagues"
+          [leagues]="leagues"
+          [selectedAssociation]="selectedAssociation$ | async"
+        ></fb-league-navigation>
       </fb-sidebar>
     </div>
     <div class="h-screen overflow-y-auto">

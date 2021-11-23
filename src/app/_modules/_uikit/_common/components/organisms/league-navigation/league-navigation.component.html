@@ -1,6 +1,6 @@
 <h2 class="uppercase text-fb-gray-100 font-bold mt-12">Ligen</h2>
 
-<nav>
+<nav *ngIf="selectedAssociation">
   <ul>
     <li *ngFor="let item of leagues" class="mt-4 mb-4">
       <a
