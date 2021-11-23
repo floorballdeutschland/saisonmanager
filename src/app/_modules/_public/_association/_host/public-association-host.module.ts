@@ -4,9 +4,14 @@ import { PublicAssociationHostRoutingModule } from './public-association-host-ro
 
 import * as Views from './_views';
 import { LeagueHostComponent } from './_views/league-host/league-host.component';
+import { UikitCommonModule } from '@floorball/uikit/common';
 
 @NgModule({
-  imports: [CommonModule, PublicAssociationHostRoutingModule],
+  imports: [
+    CommonModule,
+    PublicAssociationHostRoutingModule,
+    UikitCommonModule,
+  ],
   declarations: [Views.AssociationHostComponent, LeagueHostComponent],
 })
 export class PublicAssociationHostModule {}
