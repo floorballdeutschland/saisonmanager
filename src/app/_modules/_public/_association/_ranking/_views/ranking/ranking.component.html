@@ -1,1 +1,9 @@
-<p>ranking works!</p>
+<div class="container mx-auto px-8">
+  <h2 class="font-bold text-2xl mt-8">Tabelle</h2>
+
+  <div class="mt-8">
+    <ng-container *ngIf="teamRankings$ | async as teamRankings">
+      <fb-team-ranking-table [data]="teamRankings"></fb-team-ranking-table>
+    </ng-container>
+  </div>
+</div>
