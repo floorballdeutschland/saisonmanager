@@ -26,6 +26,13 @@ const routes: Routes = [
                 (m) => m.PublicAssociationRankingModule
               ),
           },
+          {
+            path: '',
+            loadChildren: () =>
+              import('@floorball/public/association/scorer').then(
+                (m) => m.PublicAssociationScorerModule
+              ),
+          },
         ],
       },
     ],
