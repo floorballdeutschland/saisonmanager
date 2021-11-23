@@ -15,4 +15,13 @@
       </ng-container>
     </div>
   </div>
+
+  <div>
+    <h2 class="font-bold text-2xl mt-8">Top 10 Scorer</h2>
+    <ng-container *ngIf="playerRankings$ | async as playerRankings">
+      <fb-player-ranking-table
+        [data]="playerRankings.slice(0, 10)"
+      ></fb-player-ranking-table>
+    </ng-container>
+  </div>
 </div>

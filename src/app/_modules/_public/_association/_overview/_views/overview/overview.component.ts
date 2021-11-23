@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AssociationService, LeagueService } from '@floorball/core';
-import { GameOperation, TableEntry } from '@floorball/types';
+import { GameOperation, ScorerEntry, TableEntry } from '@floorball/types';
 import { Observable, Subject, takeUntil, tap } from 'rxjs';
 
 @Component({
@@ -18,6 +18,7 @@ import { Observable, Subject, takeUntil, tap } from 'rxjs';
 export class OverviewComponent implements OnInit, OnDestroy {
   selectedAssociation$?: Observable<GameOperation | null>;
   teamRankings$?: Observable<TableEntry[] | null>;
+  playerRankings$?: Observable<ScorerEntry[] | null>;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -36,6 +37,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
         tap((league) => {
           if (league?.id) {
             this.getTeamRanking(league.id);
+            this.getPlayerRanking(league.id);
           }
         }),
         takeUntil(this._destroy$)
@@ -50,5 +52,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
   getTeamRanking(leagueNumber: number) {
     this.teamRankings$ = this._leagueService.getTable(leagueNumber);
+  }
+
+  getPlayerRanking(leagueNumber: number) {
+    this.playerRankings$ = this._leagueService.getScorer(leagueNumber);
   }
 }
