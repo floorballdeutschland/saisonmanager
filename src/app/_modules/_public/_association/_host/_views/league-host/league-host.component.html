@@ -9,17 +9,9 @@
 
   <div class="container mx-auto px-8">
     <div class="h-[80px] flex items-center gap-[25px]">
-      <fb-tab-item
-        [isActive]="true"
-        [link]="['./', selectedLeague.id.toString()]"
-        >Übersicht</fb-tab-item
-      >
-      <fb-tab-item [link]="['./', selectedLeague.id.toString(), 'tabelle']"
-        >Tabelle</fb-tab-item
-      >
-      <fb-tab-item [link]="['./', selectedLeague.id.toString(), 'scorer']"
-        >Scorer</fb-tab-item
-      >
+      <fb-tab-item [isActive]="true" [link]="['./']">Übersicht</fb-tab-item>
+      <fb-tab-item [link]="['./', 'tabelle']">Tabelle</fb-tab-item>
+      <fb-tab-item [link]="['./', 'scorer']">Scorer</fb-tab-item>
     </div>
   </div>
 
