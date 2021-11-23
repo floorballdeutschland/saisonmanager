@@ -33,6 +33,9 @@
       "@floorball/public/association/overview": [
         "src/app/_modules/_public/_association/_overview"
       ],
+      "@floorball/public/association/ranking": [
+        "src/app/_modules/_public/_association/_ranking"
+      ],
       "@floorball/models": ["src/app/_models"]
     }
   },
