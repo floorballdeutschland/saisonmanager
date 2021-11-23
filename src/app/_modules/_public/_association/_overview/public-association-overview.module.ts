@@ -5,6 +5,7 @@ import { PublicAssociationOverviewRoutingModule } from './public-association-ove
 import * as Views from './_views';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitTeamModule } from '@floorball/uikit/team';
+import { UikitPlayerModule } from '@floorball/uikit/player';
 
 @NgModule({
   imports: [
@@ -12,6 +13,7 @@ import { UikitTeamModule } from '@floorball/uikit/team';
     PublicAssociationOverviewRoutingModule,
     UikitMatchesModule,
     UikitTeamModule,
+    UikitPlayerModule,
   ],
   declarations: [Views.OverviewComponent],
 })
