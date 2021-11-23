@@ -1,16 +1,3 @@
-<div class="grid grid-cols-[200px,1fr]">
-  <div>
-    <ul>
-      <li *ngFor="let league of leagues$ | async">
-        <a [routerLink]="['./', league.id]">{{ league.name }}</a>
-      </li>
-    </ul>
-  </div>
-  <div>
-    <ng-container *ngIf="selectedAssociation$ | async as association">
-      <router-outlet></router-outlet>
-    </ng-container>
-
-    <a [routerLink]="['/']">Back</a>
-  </div>
-</div>
+<ng-container *ngIf="selectedAssociation$ | async as association">
+  <router-outlet></router-outlet>
+</ng-container>

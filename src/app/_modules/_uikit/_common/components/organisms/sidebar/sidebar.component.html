@@ -11,9 +11,6 @@
   "
 >
   <fb-logo></fb-logo>
-  <fb-league-navigation
-    *ngIf="withLeagues"
-    [data]="leagueNavigationMock"
-  ></fb-league-navigation>
+  <ng-content></ng-content>
   <fb-metanavigation></fb-metanavigation>
 </div>

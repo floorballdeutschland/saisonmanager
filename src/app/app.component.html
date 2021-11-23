@@ -1,3 +1,20 @@
 <ng-container *ngIf="(isLoading$ | async) === false">
-  <router-outlet></router-outlet>
+  <div class="grid grid-cols-[300px,1fr]">
+    <div class="hidden md:block h-full w-full">
+      <fb-sidebar>
+        <ng-container
+          *ngIf="selectedAssociation$ | async as selectedAssociation"
+        >
+          <fb-league-navigation
+            *ngIf="leagues$ | async as leagues"
+            [data]="leagues"
+            [selectedAssociation]="selectedAssociation"
+          ></fb-league-navigation>
+        </ng-container>
+      </fb-sidebar>
+    </div>
+    <div class="h-screen overflow-y-auto">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
 </ng-container>

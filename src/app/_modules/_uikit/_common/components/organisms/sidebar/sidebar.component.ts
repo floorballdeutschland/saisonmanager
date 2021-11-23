@@ -43,7 +43,4 @@ export class SidebarComponent {
       route: 'fd-pokal-damen',
     },
   ];
-
-  @Input()
-  withLeagues = true;
 }
