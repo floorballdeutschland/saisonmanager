@@ -39,6 +39,12 @@
       "@floorball/public/association/scorer": [
         "src/app/_modules/_public/_association/_scorer"
       ],
+      "@floorball/public/association/match": [
+        "src/app/_modules/_public/_association/_match"
+      ],
+      "@floorball/public/association/team": [
+        "src/app/_modules/_public/_association/_team"
+      ],
       "@floorball/models": ["src/app/_models"]
     }
   },

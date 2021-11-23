@@ -33,6 +33,20 @@ const routes: Routes = [
                 (m) => m.PublicAssociationScorerModule
               ),
           },
+          {
+            path: '',
+            loadChildren: () =>
+              import('@floorball/public/association/match').then(
+                (m) => m.PublicAssociationMatchModule
+              ),
+          },
+          {
+            path: '',
+            loadChildren: () =>
+              import('@floorball/public/association/team').then(
+                (m) => m.PublicAssociationTeamModule
+              ),
+          },
         ],
       },
     ],

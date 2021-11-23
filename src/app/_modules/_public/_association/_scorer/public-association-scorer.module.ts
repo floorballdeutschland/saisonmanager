@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PublicAssociationScorerRoutingModule } from './public-association-scorer-routing.module';
-import { ScorerComponent } from './_views/scorer/scorer.component';
 
+import * as Views from './_views';
 @NgModule({
-  declarations: [ScorerComponent],
+  declarations: [Views.ScorerComponent],
   imports: [CommonModule, PublicAssociationScorerRoutingModule],
 })
 export class PublicAssociationScorerModule {}
