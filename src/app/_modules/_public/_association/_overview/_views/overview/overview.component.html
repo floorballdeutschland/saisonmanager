@@ -1,1 +1,18 @@
-<h1>Overview</h1>
+<div class="container mx-auto px-8">
+  <h2 class="font-bold text-2xl mt-8">Aktueller Spieltag</h2>
+
+  <div class="grid grid-cols-5">
+    <div class="col-span-3">
+      <fb-match-pairing-list [matches]="[]"></fb-match-pairing-list>
+    </div>
+
+    <div class="col-span-2">
+      <ng-container *ngIf="teamRankings$ | async as teamRankings">
+        <fb-team-ranking-table
+          type="small"
+          [data]="teamRankings"
+        ></fb-team-ranking-table>
+      </ng-container>
+    </div>
+  </div>
+</div>

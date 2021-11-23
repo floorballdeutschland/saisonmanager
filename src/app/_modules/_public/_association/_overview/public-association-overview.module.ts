@@ -3,9 +3,16 @@ import { NgModule } from '@angular/core';
 import { PublicAssociationOverviewRoutingModule } from './public-association-overview-routing.module';
 
 import * as Views from './_views';
+import { UikitMatchesModule } from '@floorball/uikit/matches';
+import { UikitTeamModule } from '@floorball/uikit/team';
 
 @NgModule({
-  imports: [CommonModule, PublicAssociationOverviewRoutingModule],
+  imports: [
+    CommonModule,
+    PublicAssociationOverviewRoutingModule,
+    UikitMatchesModule,
+    UikitTeamModule,
+  ],
   declarations: [Views.OverviewComponent],
 })
 export class PublicAssociationOverviewModule {}
