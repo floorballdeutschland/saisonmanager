@@ -1,5 +1,19 @@
-<div class="flex lg:block items-center h-full top-0 bg-fb-gray-200 max-w-[300px] p-5">
+<div
+  class="
+    flex
+    lg:block
+    items-center
+    h-full
+    top-0
+    bg-fb-gray-200
+    max-w-[300px]
+    p-5
+  "
+>
   <fb-logo></fb-logo>
-  <fb-league-navigation [data]="leagueNavigationMock"></fb-league-navigation>
+  <fb-league-navigation
+    *ngIf="withLeagues"
+    [data]="leagueNavigationMock"
+  ></fb-league-navigation>
   <fb-metanavigation></fb-metanavigation>
 </div>

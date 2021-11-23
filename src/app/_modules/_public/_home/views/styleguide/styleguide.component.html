@@ -101,8 +101,19 @@
 
   <div class="mt-10">
     <h2 class="text-xl text-center font-bold">Operation component</h2>
-    <div class="bg-fb-gray-500 p-5 grid grid-cols-3 gap-[25px]">
-      <fb-operation class="block"></fb-operation>
+    <div class="p-5 grid grid-cols-3 gap-[25px]">
+      <fb-operation [gameOperation]="gameOperationMock"></fb-operation>
+    </div>
+  </div>
+
+  <div class="mt-10">
+    <h2 class="text-xl text-center font-bold">Tab items</h2>
+    <div class="h-[80px] flex items-center gap-[25px]">
+      <fb-tab-item [isActive]="true" [link]="['/', 'styleguide']"
+        >Test Item</fb-tab-item
+      >
+      <fb-tab-item>Test Item</fb-tab-item>
+      <fb-tab-item>Test Item</fb-tab-item>
     </div>
   </div>
 </div>

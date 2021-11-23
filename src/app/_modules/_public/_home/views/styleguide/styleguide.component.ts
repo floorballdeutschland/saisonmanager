@@ -6,6 +6,7 @@ import {
 import { GameService } from '@floorball/core';
 import {
   Game,
+  GameOperation,
   GamePlayerEntry,
   ScorerEntry,
   TableEntry,
@@ -181,6 +182,14 @@ export class StyleguideComponent {
     },
     location: 'Leipzig, Sporthalle am Rabet',
     referees: 'Galetzka, Tim / Köstler, Tobias',
+  };
+
+  gameOperationMock: GameOperation = {
+    name: 'Test Name',
+    path: 'styleguide',
+    logo_url: 'http://via.placeholder.com/260x61',
+    id: 1,
+    short_name: 'Tes',
   };
 
   game?: Game | null;

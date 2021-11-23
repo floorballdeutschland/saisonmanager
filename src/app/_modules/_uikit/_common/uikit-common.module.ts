@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import * as Atoms from './components/atoms';
 import * as Molecules from './components/molecules';
 import * as Organisms from './components/organisms';
 
 @NgModule({
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   declarations: [
     Atoms.LogoComponent,
+    Atoms.TabItemComponent,
     Molecules.MatchDayComponent,
     Molecules.OperationComponent,
     Organisms.LeagueNavigationComponent,
@@ -18,6 +20,7 @@ import * as Organisms from './components/organisms';
   ],
   exports: [
     Atoms.LogoComponent,
+    Atoms.TabItemComponent,
     Molecules.MatchDayComponent,
     Molecules.OperationComponent,
     Organisms.LeagueNavigationComponent,

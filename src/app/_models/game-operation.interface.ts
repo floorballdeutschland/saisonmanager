@@ -1,8 +1,8 @@
 export interface GameOperation {
-  id: number
-  name: string
-  short_name: string
-  path: string
-  logo_url?: any
-  logo_quad_url?: any
+  id: number;
+  name: string;
+  short_name: string;
+  path: string;
+  logo_url?: string | null;
+  logo_quad_url?: string | null;
 }

@@ -1,0 +1,18 @@
+<a
+  class="
+    text-2xl
+    font-bold
+    inline-block
+    cursor-pointer
+    hover:text-black
+    transition
+  "
+  [routerLink]="link"
+  [ngClass]="{
+    'text-black border-b-[3px]': isActive,
+    'text-fb-gray-400 border-transparent': !isActive
+  }"
+  [ngStyle]="{ borderColor: activeColor }"
+>
+  <ng-content></ng-content>
+</a>
