@@ -1,9 +1,11 @@
 <div class="container mx-auto px-8">
   <h2 class="font-bold text-2xl mt-8">Aktueller Spieltag</h2>
 
-  <div class="grid grid-cols-5">
+  <div class="grid grid-cols-5 mt-8 gap-8">
     <div class="col-span-3">
-      <fb-match-pairing-list [matches]="[]"></fb-match-pairing-list>
+      <ng-container *ngIf="matches$ | async as matches">
+        <fb-match-pairing-list [matches]="matches"></fb-match-pairing-list>
+      </ng-container>
     </div>
 
     <div class="col-span-2">
@@ -16,8 +18,8 @@
     </div>
   </div>
 
-  <div>
-    <h2 class="font-bold text-2xl mt-8">Top 10 Scorer</h2>
+  <div class="mt-8">
+    <h2 class="font-bold text-2xl mb-8">Top 10 Scorer</h2>
     <ng-container *ngIf="playerRankings$ | async as playerRankings">
       <fb-player-ranking-table
         [data]="playerRankings.slice(0, 10)"

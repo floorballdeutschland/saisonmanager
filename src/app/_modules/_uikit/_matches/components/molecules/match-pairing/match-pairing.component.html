@@ -1,13 +1,15 @@
 <div class="grid grid-cols-[1fr,42px,80px,42px,1fr] gap-5 items-center h-20">
-  <div class="text-right text-sm font-bold">Blau-Weiß 96 Schenefeld</div>
+  <div class="text-right text-sm font-bold">{{ match.home_team_name }}</div>
   <div>
     <img src="http://via.placeholder.com/42x42" />
   </div>
 
-  <div class="text-center font-bold text-2xl tracking-widest">5 : 5</div>
+  <div class="text-center font-bold text-2xl tracking-widest">
+    {{ match.result_string }}
+  </div>
 
   <div>
     <img src="http://via.placeholder.com/42x42" />
   </div>
-  <div class="text-sm font-bold">UHC Sparkasse Weißenfels</div>
+  <div class="text-sm font-bold">{{ match.guest_team_name }}</div>
 </div>

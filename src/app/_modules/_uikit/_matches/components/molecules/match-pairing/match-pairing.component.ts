@@ -4,6 +4,7 @@ import {
   Input,
   ViewEncapsulation,
 } from '@angular/core';
+import { GameScheduleEntry } from '@floorball/types';
 
 @Component({
   selector: 'fb-match-pairing',
@@ -13,5 +14,5 @@ import {
 })
 export class MatchPairingComponent {
   @Input()
-  match: unknown;
+  match!: GameScheduleEntry;
 }
