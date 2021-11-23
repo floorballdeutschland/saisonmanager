@@ -19,7 +19,8 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnDestroy(): void {
-    throw new Error('Method not implemented.');
+    this._destroy$.next(true);
+    this._destroy$.complete();
   }
 
   ngOnInit(): void {
