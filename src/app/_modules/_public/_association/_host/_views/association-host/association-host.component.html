@@ -8,10 +8,6 @@
   </div>
   <div>
     <ng-container *ngIf="selectedAssociation$ | async as association">
-      <h1 class="text-2xl">
-        {{ association.name }} ({{ association.short_name }})
-      </h1>
-
       <router-outlet></router-outlet>
     </ng-container>
 

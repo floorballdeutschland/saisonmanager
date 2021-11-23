@@ -42,7 +42,6 @@ export class LeagueService {
         if (!_route.snapshot.params['leagueId']) {
           return of(null);
         }
-
         return this.getLeague(parseInt(_route.snapshot.params['leagueId']));
       })
     );
