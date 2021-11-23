@@ -1,6 +1,4 @@
-<ng-container
-  *ngIf="selectedLeague$ && selectedLeague$ | async as selectedLeague"
->
+<ng-container *ngIf="selectedLeague$ | async as selectedLeague">
   <fb-header
     [headline]="selectedLeague.name"
     type="league"

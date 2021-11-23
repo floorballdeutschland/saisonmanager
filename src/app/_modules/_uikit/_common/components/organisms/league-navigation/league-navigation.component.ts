@@ -17,5 +17,5 @@ export class LeagueNavigationComponent {
   leagues!: League[];
 
   @Input()
-  selectedAssociation!: GameOperation;
+  selectedAssociation!: GameOperation | null;
 }

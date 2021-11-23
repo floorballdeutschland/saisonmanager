@@ -4,6 +4,7 @@ import {
   ViewEncapsulation,
   ChangeDetectionStrategy,
   OnDestroy,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AssociationService, LeagueService } from '@floorball/core';
@@ -31,7 +32,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
-    private _route: ActivatedRoute
+    private _route: ActivatedRoute,
+    private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -45,6 +47,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
             this.getTeamRanking(league.id);
             this.getPlayerRanking(league.id);
             this.getMatches(league.id);
+            this._cdr.markForCheck();
           }
         }),
         takeUntil(this._destroy$)
