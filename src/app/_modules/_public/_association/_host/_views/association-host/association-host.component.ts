@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AssociationService, LeagueService } from '@floorball/core';
 import { GameOperation, League } from '@floorball/types';
-import { Observable, Subject, takeUntil, tap } from 'rxjs';
+import { Observable, of, Subject, takeUntil, tap } from 'rxjs';
 
 @Component({
   templateUrl: './association-host.component.html',
@@ -28,16 +28,17 @@ export class AssociationHostComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
-
+    this.leagues$ = this._leagueService.leagues$;
     this.association$ = this._associationService.associations$;
+
     this._route.params
       .pipe(
         tap(() => {
+          //this._leagueService.leagues$ = of([]);
           this._associationService.selectAssociation(this._route);
         }),
         takeUntil(this._destroy$)
       )
       .subscribe();
-    this.leagues$ = this._leagueService.leagues$;
   }
 }
