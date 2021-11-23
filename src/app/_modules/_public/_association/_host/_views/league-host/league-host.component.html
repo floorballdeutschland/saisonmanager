@@ -1,9 +1,9 @@
 <ng-container *ngIf="selectedLeague$ | async as league">
   <h1 class="text-2xl">{{ league.name }} ({{ league.short_name }})</h1>
   <ul>
-    <li><a [routerLink]="['./', league.id]">Übersicht</a></li>
-    <li><a [routerLink]="['./', league.id, 'tabelle']">Tabelle</a></li>
-    <li><a [routerLink]="['./', league.id, 'scorer']">Scorer</a></li>
+    <li><a [routerLink]="['./']">Übersicht</a></li>
+    <li><a [routerLink]="['./', 'tabelle']">Tabelle</a></li>
+    <li><a [routerLink]="['./', 'scorer']">Scorer</a></li>
   </ul>
 
   <router-outlet></router-outlet>
