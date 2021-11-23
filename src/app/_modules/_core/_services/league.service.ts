@@ -35,6 +35,7 @@ export class LeagueService {
   ) {
     this.selectedLeague$ = this._route$.pipe(
       switchMap((_route) => {
+        console.log('aaa');
         if (!_route) {
           return of(null);
         }

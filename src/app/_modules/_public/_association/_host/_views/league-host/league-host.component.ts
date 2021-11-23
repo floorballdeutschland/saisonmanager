@@ -18,6 +18,13 @@ export class LeagueHostComponent implements OnInit {
 
   ngOnInit(): void {
     this.selectedLeague$ = this._leagueService.selectedLeague$;
-    this._leagueService.selectLeague(this._route);
+
+    this._route.params
+      .pipe(
+        tap((_params) => {
+          this._leagueService.selectLeague(this._route);
+        })
+      )
+      .subscribe();
   }
 }
