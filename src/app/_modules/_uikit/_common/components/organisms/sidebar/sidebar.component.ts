@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -11,36 +10,4 @@ import {
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SidebarComponent {
-  // TODO Remove Mock
-  leagueNavigationMock: any[] = [
-    {
-      name: '1.FBL',
-      route: '1-fbl',
-    },
-    {
-      name: '1.FBL Damen',
-      route: '1-fbl-damen',
-    },
-    {
-      name: '2.FBL Ost',
-      route: '2-fbl-ost',
-    },
-    {
-      name: '2.FBL Nord-West',
-      route: '2-fbl-nord-west',
-    },
-    {
-      name: '2.FBL Süd-West',
-      route: '2-fbl-sued-west',
-    },
-    {
-      name: 'FD Pokal Herren',
-      route: 'fd-pokal-herren',
-    },
-    {
-      name: 'FD Pokal Damen',
-      route: 'fd-pokal-damen',
-    },
-  ];
-}
+export class SidebarComponent {}

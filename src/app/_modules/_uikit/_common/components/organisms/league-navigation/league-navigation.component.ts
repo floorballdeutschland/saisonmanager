@@ -14,7 +14,7 @@ import { GameOperation, League } from '@floorball/types';
 })
 export class LeagueNavigationComponent {
   @Input()
-  data!: League[];
+  leagues!: League[];
 
   @Input()
   selectedAssociation!: GameOperation;
