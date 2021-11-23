@@ -2,11 +2,49 @@ import {
   Component,
   ViewEncapsulation,
   ChangeDetectionStrategy,
+  OnInit,
+  ChangeDetectorRef,
+  OnDestroy,
 } from '@angular/core';
+import { Observable, Subject, takeUntil, tap } from 'rxjs';
+import { ScorerEntry } from '@floorball/types';
+import { LeagueService } from '@floorball/core';
 
 @Component({
   templateUrl: './scorer.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScorerComponent {}
+export class ScorerComponent implements OnInit, OnDestroy {
+  playerRankings$?: Observable<ScorerEntry[] | null>;
+
+  private _destroy$ = new Subject<boolean>();
+
+  constructor(
+    private _leagueService: LeagueService,
+    private _cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this._leagueService.selectedLeague$
+      .pipe(
+        tap((league) => {
+          if (league?.id) {
+            this.getPlayerRanking(league.id);
+            this._cdr.markForCheck();
+          }
+        }),
+        takeUntil(this._destroy$)
+      )
+      .subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next(true);
+    this._destroy$.complete();
+  }
+
+  getPlayerRanking(leagueNumber: number) {
+    this.playerRankings$ = this._leagueService.getScorer(leagueNumber);
+  }
+}

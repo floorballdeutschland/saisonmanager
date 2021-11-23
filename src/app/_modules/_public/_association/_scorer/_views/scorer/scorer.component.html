@@ -1,1 +1,11 @@
-<p>scorer works!</p>
+<div class="container mx-auto px-8">
+  <h2 class="font-bold text-2xl mt-8">Top 30 Scorer</h2>
+
+  <div class="mt-8">
+    <ng-container *ngIf="playerRankings$ | async as playerRankings">
+      <fb-player-ranking-table
+        [data]="playerRankings.slice(0, 30)"
+      ></fb-player-ranking-table>
+    </ng-container>
+  </div>
+</div>
