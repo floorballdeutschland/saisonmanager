@@ -2,8 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
+import { GameOperation, League } from '@floorball/types';
 
 @Component({
   selector: 'fb-league-navigation',
@@ -12,8 +13,9 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LeagueNavigationComponent {
+  @Input()
+  data!: League[];
 
   @Input()
-  data!: any[];
-
+  selectedAssociation!: GameOperation;
 }
