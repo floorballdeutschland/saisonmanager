@@ -7,7 +7,7 @@
         >
           <fb-league-navigation
             *ngIf="leagues$ | async as leagues"
-            [data]="leagues"
+            [leagues]="leagues"
             [selectedAssociation]="selectedAssociation"
           ></fb-league-navigation>
         </ng-container>
