@@ -18,7 +18,7 @@ import * as Pipes from './pipes';
     Organisms.MetanavigationComponent,
     Organisms.HeaderComponent,
     Organisms.SimilarLeaguesComponent,
-    Pipes.ColorPipe,
+    Pipes.GradientPipe,
   ],
   exports: [
     Atoms.LogoComponent,
@@ -30,7 +30,7 @@ import * as Pipes from './pipes';
     Organisms.MetanavigationComponent,
     Organisms.HeaderComponent,
     Organisms.SimilarLeaguesComponent,
-    Pipes.ColorPipe,
+    Pipes.GradientPipe,
   ],
 })
 export class UikitCommonModule {}

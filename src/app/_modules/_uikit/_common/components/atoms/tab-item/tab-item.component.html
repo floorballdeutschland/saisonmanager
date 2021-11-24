@@ -7,13 +7,17 @@
     hover:text-black
     transition
     text-fb-gray-400
-    border-b-[3px]
+    border-transparent border-b-[3px]
   "
   [routerLink]="link"
   [routerLinkActive]="'!text-black'"
   #activeLink="routerLinkActive"
   [routerLinkActiveOptions]="{ exact: true }"
-  [ngStyle]="{ borderColor: activeLink.isActive ? activeColor : 'transparent' }"
+  [ngStyle]="{
+    'border-image': activeLink.isActive
+      ? 'linear-gradient(' + activeColor + ') 1'
+      : 'none'
+  }"
 >
   <ng-content></ng-content>
 </a>

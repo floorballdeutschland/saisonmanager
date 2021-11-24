@@ -3,9 +3,9 @@ import { GameOperation } from '@floorball/types';
 import associationJson from '../../../../associations.json';
 
 @Pipe({
-  name: 'color',
+  name: 'gradient',
 })
-export class ColorPipe implements PipeTransform {
+export class GradientPipe implements PipeTransform {
   associations = associationJson;
 
   transform(association: GameOperation | null | undefined): string {
@@ -14,9 +14,11 @@ export class ColorPipe implements PipeTransform {
         (a) => a.path === association.path
       );
 
-      return associationWithColor ? associationWithColor.color : '#000000';
+      return associationWithColor
+        ? associationWithColor.gradient
+        : '90deg, #000000, #000000';
     }
 
-    return '#000000';
+    return '90deg, #000000, #000000';
   }
 }
