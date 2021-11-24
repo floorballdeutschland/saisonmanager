@@ -28,6 +28,7 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnDestroy(): void {
+    this._leagueService.clearLeague();
     this._destroy$.next(true);
     this._destroy$.complete();
   }

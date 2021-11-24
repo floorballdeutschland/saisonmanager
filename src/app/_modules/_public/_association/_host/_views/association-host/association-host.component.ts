@@ -31,6 +31,7 @@ export class AssociationHostComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnDestroy(): void {
+    this._associationService.clearAssociation();
     this._destroy$.next(true);
     this._destroy$.complete();
   }

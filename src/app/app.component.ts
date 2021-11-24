@@ -15,8 +15,6 @@ import { GameOperation, League } from '@floorball/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnInit {
-  title = 'saisonmanager';
-
   isLoading$!: Observable<boolean>;
   leagues$!: Observable<League[] | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
