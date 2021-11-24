@@ -1,1 +1,3 @@
-<p>match works!</p>
+<ng-container *ngIf="match$ | async as match">
+  <pre>{{ match | json }}</pre>
+</ng-container>
