@@ -7,7 +7,7 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { Observable, Subject, takeUntil, tap } from 'rxjs';
-import { TableEntry } from '@floorball/types';
+import { GameScheduleEntry, TableEntry } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
 
 @Component({
@@ -17,6 +17,7 @@ import { LeagueService } from '@floorball/core';
 })
 export class RankingComponent implements OnInit, OnDestroy {
   teamRankings$?: Observable<TableEntry[] | null>;
+  matches$?: Observable<GameScheduleEntry[] | null>;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -31,6 +32,7 @@ export class RankingComponent implements OnInit, OnDestroy {
         tap((league) => {
           if (league?.id) {
             this.getTeamRanking(league.id);
+            this.getMatches(league.id);
             this._cdr.markForCheck();
           }
         }),
@@ -46,5 +48,9 @@ export class RankingComponent implements OnInit, OnDestroy {
 
   getTeamRanking(leagueNumber: number) {
     this.teamRankings$ = this._leagueService.getTable(leagueNumber);
+  }
+
+  getMatches(leagueNumber: number) {
+    this.matches$ = this._leagueService.getGameSchedule(leagueNumber);
   }
 }

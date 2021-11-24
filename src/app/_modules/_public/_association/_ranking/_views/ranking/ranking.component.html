@@ -6,4 +6,11 @@
       <fb-team-ranking-table [data]="teamRankings"></fb-team-ranking-table>
     </ng-container>
   </div>
+
+  <div class="mt-12">
+    <h2 class="font-bold text-2xl mb-8">Spielbegegnungen</h2>
+    <ng-container *ngIf="matches$ | async as matches">
+      <fb-match-encounter-list [matches]="matches"></fb-match-encounter-list>
+    </ng-container>
+  </div>
 </div>

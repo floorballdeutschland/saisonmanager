@@ -4,12 +4,14 @@ import { PublicAssociationRankingRoutingModule } from './public-association-rank
 
 import * as Views from './_views';
 import { UikitTeamModule } from '@floorball/uikit/team';
+import { UikitMatchesModule } from '@floorball/uikit/matches';
 @NgModule({
   declarations: [Views.RankingComponent],
   imports: [
     CommonModule,
     PublicAssociationRankingRoutingModule,
     UikitTeamModule,
+    UikitMatchesModule,
   ],
 })
 export class PublicAssociationRankingModule {}
