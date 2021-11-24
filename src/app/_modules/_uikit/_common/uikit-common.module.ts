@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import * as Atoms from './components/atoms';
 import * as Molecules from './components/molecules';
 import * as Organisms from './components/organisms';
-import { ColorPipe } from './pipes/color.pipe';
+import * as Pipes from './pipes';
 
 @NgModule({
   imports: [CommonModule, RouterModule],
@@ -18,7 +18,7 @@ import { ColorPipe } from './pipes/color.pipe';
     Organisms.MetanavigationComponent,
     Organisms.HeaderComponent,
     Organisms.SimilarLeaguesComponent,
-    ColorPipe,
+    Pipes.ColorPipe,
   ],
   exports: [
     Atoms.LogoComponent,
@@ -30,7 +30,7 @@ import { ColorPipe } from './pipes/color.pipe';
     Organisms.MetanavigationComponent,
     Organisms.HeaderComponent,
     Organisms.SimilarLeaguesComponent,
-    ColorPipe,
+    Pipes.ColorPipe,
   ],
 })
 export class UikitCommonModule {}
