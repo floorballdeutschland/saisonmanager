@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "name": "Floorball Deutschland",
+    "short_name": "FVD",
+    "path": "fvd",
+    "color": "#F8D628"
+  },
+  {
+    "id": 2,
+    "name": "Floorball Niedersachsen",
+    "short_name": "FVN",
+    "path": "fvn",
+    "color": "#B21917"
+  },
+  {
+    "id": 3,
+    "name": "Floorball Verband Berlin-Brandenburg",
+    "short_name": "FVBB",
+    "path": "fvbb",
+    "color": "#B21917"
+  },
+  {
+    "id": 4,
+    "name": "Floorball-Verband Baden-Württemberg",
+    "short_name": "FVBW",
+    "path": "fvbw",
+    "color": "#B21917"
+  },
+  {
+    "id": 5,
+    "name": "Floorballverband Schleswig-Holstein",
+    "short_name": "FLV-SH",
+    "path": "flvsh",
+    "color": "#B21917"
+  },
+  {
+    "id": 6,
+    "name": "SBK Ost",
+    "short_name": "SBK Ost",
+    "path": "sbkost",
+    "color": "#B21917"
+  },
+  {
+    "id": 8,
+    "name": "Floorball Verband Hessen",
+    "short_name": "FVH",
+    "path": "fvh",
+    "color": "#B21917"
+  },
+  {
+    "id": 9,
+    "name": "Floorballverband Bayern e.V.",
+    "short_name": "FVB",
+    "path": "fvb",
+    "color": "#B21917"
+  },
+  {
+    "id": 10,
+    "name": "Nordrhein-Westfälischer Floorball Verband",
+    "short_name": "NWFV",
+    "path": "nwuv",
+    "color": "#B21917"
+  },
+  {
+    "id": 11,
+    "name": "Rheinland-Pfalz/Saar",
+    "short_name": "rlpsaar",
+    "path": "rlpsaar",
+    "color": "#B21917"
+  }
+]

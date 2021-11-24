@@ -1,17 +1,32 @@
 <ng-container *ngIf="selectedLeague$ | async as selectedLeague">
-  <fb-header
-    [headline]="selectedLeague.name"
-    type="league"
-    [subline]="selectedLeague.short_name"
-  ></fb-header>
+  <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
+    <fb-header
+      [headline]="selectedLeague.name"
+      type="league"
+      [subline]="selectedLeague.short_name"
+    ></fb-header>
 
-  <div class="container mx-auto px-8">
-    <div class="h-[80px] flex items-center gap-[25px]">
-      <fb-tab-item [isActive]="true" [link]="['./']">Übersicht</fb-tab-item>
-      <fb-tab-item [link]="['./', 'tabelle']">Tabelle</fb-tab-item>
-      <fb-tab-item [link]="['./', 'scorer']">Scorer</fb-tab-item>
+    <div class="container mx-auto px-8">
+      <div class="h-[80px] flex items-center gap-[25px]">
+        <fb-tab-item
+          [isActive]="true"
+          [link]="['./']"
+          [activeColor]="selectedAssociation | color"
+          >Übersicht</fb-tab-item
+        >
+        <fb-tab-item
+          [link]="['./', 'tabelle']"
+          [activeColor]="selectedAssociation | color"
+          >Tabelle</fb-tab-item
+        >
+        <fb-tab-item
+          [link]="['./', 'scorer']"
+          [activeColor]="selectedAssociation | color"
+          >Scorer</fb-tab-item
+        >
+      </div>
     </div>
-  </div>
 
-  <router-outlet></router-outlet>
+    <router-outlet></router-outlet>
+  </ng-container>
 </ng-container>

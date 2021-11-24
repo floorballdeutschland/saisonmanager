@@ -6,8 +6,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { LeagueService } from '@floorball/core';
-import { League } from '@floorball/types';
+import { AssociationService, LeagueService } from '@floorball/core';
+import { GameOperation, League } from '@floorball/types';
 import { Observable, Subject, takeUntil, tap } from 'rxjs';
 
 @Component({
@@ -17,11 +17,13 @@ import { Observable, Subject, takeUntil, tap } from 'rxjs';
 })
 export class LeagueHostComponent implements OnInit, OnDestroy {
   selectedLeague$!: Observable<League | null>;
+  selectedAssociation$!: Observable<GameOperation | null>;
 
   private _destroy$ = new Subject<boolean>();
 
   constructor(
     private _leagueService: LeagueService,
+    private _associationService: AssociationService,
     private _route: ActivatedRoute
   ) {}
 
@@ -32,6 +34,7 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.selectedLeague$ = this._leagueService.selectedLeague$;
+    this.selectedAssociation$ = this._associationService.selectedAssociation$;
 
     this._route.params
       .pipe(
