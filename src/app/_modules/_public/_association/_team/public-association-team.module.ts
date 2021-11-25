@@ -1,9 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TeamComponent } from './_views/team/team.component';
+import { PublicAssociationTeamRoutingModule } from './public-association-team-routing.module';
+
+import * as Views from './_views';
 
 @NgModule({
-  declarations: [TeamComponent],
-  imports: [CommonModule],
+  declarations: [Views.TeamComponent],
+  imports: [CommonModule, PublicAssociationTeamRoutingModule],
 })
 export class PublicAssociationTeamModule {}
