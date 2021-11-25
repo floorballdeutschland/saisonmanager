@@ -1,0 +1,38 @@
+<div class="flex justify-center p-[45px] border-b-[10px] border-fb-gray-200">
+  <div class="grid gap-4 grid-cols-3">
+    <div class="flex flex-col justify-end">
+      <img
+        src="http://via.placeholder.com/160x160"
+        [alt]="game.home_team_name"
+        [title]="'Logo: ' + game.home_team_name"
+      />
+    </div>
+    <div
+      class="
+        flex flex-col
+        content-center
+        justify-center
+        text-center
+        max-w-[282px]
+      "
+    >
+      <span class="block text-base text-fb-gray-400 font-bold"
+        ><i>25.10.2021,</i>
+        {{ game.start_time ? game.start_time + " Uhr" : "-" }}</span
+      >
+      <span class="block text-4.5xl font-bold">3 : 0</span>
+      <ul class="grid grid-cols-3 row justify-center gap-3">
+        <li class="text-black text-base font-bold">4:2</li>
+        <li class="text-black text-base font-bold">1:0</li>
+        <li class="text-black text-base font-bold">3:2</li>
+      </ul>
+    </div>
+    <div class="flex flex-col justify-start">
+      <img
+        src="http://via.placeholder.com/160x160"
+        [alt]="game.guest_team_name"
+        [title]="'Logo: ' + game.guest_team_name"
+      />
+    </div>
+  </div>
+</div>

@@ -16,6 +16,7 @@ import { RouterModule } from '@angular/router';
     Organisms.MatchInfoComponent,
     Organisms.NextMatchListComponent,
     Organisms.MatchHistoryComponent,
+    Organisms.MatchHeaderComponent,
   ],
   exports: [
     Organisms.MatchPairingListComponent,
@@ -23,6 +24,7 @@ import { RouterModule } from '@angular/router';
     Organisms.MatchInfoComponent,
     Organisms.NextMatchListComponent,
     Organisms.MatchHistoryComponent,
+    Organisms.MatchHeaderComponent,
   ],
 })
 export class UikitMatchesModule {}
