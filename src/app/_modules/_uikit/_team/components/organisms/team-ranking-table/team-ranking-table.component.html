@@ -17,6 +17,12 @@
           {{ element.team_name }}
         </div>
       </div>
+
+      <a
+        class="absolute left-0 top-0 w-full h-full"
+        [title]="element.team_name"
+        [routerLink]="routerPrefix.concat([element.team_id])"
+      ></a>
     </cdk-cell>
   </ng-container>
 
@@ -102,12 +108,15 @@
   ></cdk-header-row>
   <cdk-row
     class="
+      relative
       grid
       items-center
       text-center text-sm
       px-[10px]
       h-12
       odd:bg-fb-gray-300
+      hover:bg-fb-gray-200
+      transition
     "
     [ngClass]="{
       'grid-cols-[25px,1fr,repeat(9,60px)]': type !== 'small',

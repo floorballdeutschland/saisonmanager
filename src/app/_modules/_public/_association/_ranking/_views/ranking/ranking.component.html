@@ -3,7 +3,10 @@
 
   <div class="mt-8">
     <ng-container *ngIf="teamRankings$ | async as teamRankings">
-      <fb-team-ranking-table [data]="teamRankings"></fb-team-ranking-table>
+      <fb-team-ranking-table
+        [routerPrefix]="['../', 'team']"
+        [data]="teamRankings"
+      ></fb-team-ranking-table>
     </ng-container>
   </div>
 

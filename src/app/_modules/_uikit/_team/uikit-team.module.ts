@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import * as Organisms from './components/organisms';
 import { CdkTableModule } from '@angular/cdk/table';
+import { RouterModule } from '@angular/router';
+
+import * as Organisms from './components/organisms';
 
 @NgModule({
-  imports: [CommonModule, CdkTableModule],
+  imports: [CommonModule, CdkTableModule, RouterModule],
   declarations: [
     Organisms.TeamRankingTableComponent,
     Organisms.TeamLineupComponent,

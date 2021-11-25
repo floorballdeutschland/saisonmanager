@@ -22,6 +22,9 @@ export class TeamRankingTableComponent implements OnChanges {
   @Input()
   type: 'small' | 'default' = 'default';
 
+  @Input()
+  routerPrefix: string[] = ['./', 'team'];
+
   dataSource = new TeamRankingTableDatasoure();
 
   ngOnChanges(changes: SimpleChanges): void {
