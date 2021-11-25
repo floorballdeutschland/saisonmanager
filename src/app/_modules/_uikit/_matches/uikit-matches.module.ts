@@ -2,9 +2,10 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import * as Molecules from './components/molecules';
 import * as Organisms from './components/organisms';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   declarations: [
     Molecules.MatchPairingComponent,
     Molecules.MatchEncounterComponent,
