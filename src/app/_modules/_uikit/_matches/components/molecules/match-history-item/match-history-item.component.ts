@@ -15,4 +15,7 @@ import { NormalizedEvent } from '@floorball/types';
 export class MatchHistoryItemComponent {
   @Input()
   gameEvent!: NormalizedEvent;
+
+  @Input()
+  isLast = false;
 }

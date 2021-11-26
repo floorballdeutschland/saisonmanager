@@ -1,8 +1,27 @@
 <div>
-  <ng-container *ngFor="let event of match.events">
+  <ng-container
+    *ngFor="
+      let event of match.events;
+      let index = index;
+      let isFirst = first;
+      let isLast = last
+    "
+  >
+    <ng-container
+      *ngIf="
+        isFirst || (!isFirst && match.events[index - 1].period !== event.period)
+      "
+    >
+      <div class="font-bold w-full border-b border-fb-gray-200 pb-5 mt-8">
+        {{ event.period }}. Drittel
+      </div>
+    </ng-container>
     <ng-container *ngIf="event | normalizeEvent: match as normalizedEvent">
       <fb-match-history-item
         class="block even:bg-fb-gray-300"
+        [isLast]="
+          isLast || (!isLast && match.events[index + 1].period !== event.period)
+        "
         [gameEvent]="normalizedEvent"
       ></fb-match-history-item>
     </ng-container>
