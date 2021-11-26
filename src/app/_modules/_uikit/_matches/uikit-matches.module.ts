@@ -3,9 +3,10 @@ import { NgModule } from '@angular/core';
 import * as Molecules from './components/molecules';
 import * as Organisms from './components/organisms';
 import { RouterModule } from '@angular/router';
+import { UikitCommonModule } from '@floorball/uikit/common';
 
 @NgModule({
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, UikitCommonModule],
   declarations: [
     Molecules.MatchPairingComponent,
     Molecules.MatchEncounterComponent,

@@ -19,6 +19,7 @@ import * as Pipes from './pipes';
     Organisms.HeaderComponent,
     Organisms.SimilarLeaguesComponent,
     Pipes.GradientPipe,
+    Pipes.NormalizeEventPipe,
   ],
   exports: [
     Atoms.LogoComponent,
@@ -31,6 +32,7 @@ import * as Pipes from './pipes';
     Organisms.HeaderComponent,
     Organisms.SimilarLeaguesComponent,
     Pipes.GradientPipe,
+    Pipes.NormalizeEventPipe,
   ],
 })
 export class UikitCommonModule {}
