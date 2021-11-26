@@ -1,13 +1,10 @@
 <div>
   <ng-container *ngFor="let event of match.events">
     <ng-container *ngIf="event | normalizeEvent: match as normalizedEvent">
-      <pre>{{ event | json }}</pre>
-      <pre>{{ normalizedEvent | json }}</pre>
+      <fb-match-history-item
+        class="block even:bg-fb-gray-300"
+        [gameEvent]="normalizedEvent"
+      ></fb-match-history-item>
     </ng-container>
-
-    <fb-match-history-item
-      class="block even:bg-fb-gray-300"
-      [gameEvent]="event"
-    ></fb-match-history-item>
   </ng-container>
 </div>

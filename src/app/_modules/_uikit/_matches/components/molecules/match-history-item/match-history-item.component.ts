@@ -4,7 +4,7 @@ import {
   Input,
   ViewEncapsulation,
 } from '@angular/core';
-import { GameEvent } from '@floorball/types';
+import { NormalizedEvent } from '@floorball/types';
 
 @Component({
   selector: 'fb-match-history-item',
@@ -14,5 +14,5 @@ import { GameEvent } from '@floorball/types';
 })
 export class MatchHistoryItemComponent {
   @Input()
-  gameEvent!: GameEvent;
+  gameEvent!: NormalizedEvent;
 }
