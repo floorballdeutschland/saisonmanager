@@ -58,8 +58,10 @@
       col-start-7
     "
   >
-    <!--    05'34"-->
-    {{ gameEvent.time }}
+    <ng-container *ngIf="gameEvent.time.split(':') as time">
+      {{ time[0]?.length === 1 ? "0" : "" }}{{ time[0] }}'&nbsp;
+      <span class="text-fb-gray-400">{{ time[1] }}"</span>
+    </ng-container>
   </div>
   <ng-container *ngIf="gameEvent.guest.scorer">
     <div class="h-px bg-fb-gray-200 w-full"></div>
