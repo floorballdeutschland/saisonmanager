@@ -1,20 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Game, GameEvent, GamePlayerEntry } from '@floorball/types';
-
-interface Side {
-  scorer?: GamePlayerEntry;
-  assist?: GamePlayerEntry;
-  goals: number;
-}
-
-interface NormalizedEvent {
-  time: string;
-  period: number;
-  home: Side;
-  guest: Side;
-  penalty_id?: string;
-  penalty_code_id?: string;
-}
+import { Game, GameEvent, NormalizedEvent, Side } from '@floorball/types';
 
 @Pipe({
   name: 'normalizeEvent',
@@ -55,7 +40,7 @@ export class NormalizeEventPipe implements PipeTransform {
       };
     }
 
-    const normalizedEvent = {
+    return {
       time: gameEvent.time,
       period: gameEvent.period,
       penalty_code_id: gameEvent.penalty_code_id,
@@ -63,9 +48,5 @@ export class NormalizeEventPipe implements PipeTransform {
       guest: guest,
       home: home,
     };
-
-    console.log(normalizedEvent);
-
-    return normalizedEvent;
   }
 }

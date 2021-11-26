@@ -11,3 +11,4 @@ export { GamePlayerEntry } from './game.interface';
 export { GameEvent } from './game.interface';
 export { Association } from './association.interface';
 export * from './league.interface';
+export * from './normalized-event.interface';
