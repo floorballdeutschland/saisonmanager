@@ -56,4 +56,8 @@ export interface Game {
     game_operation_id: number
     game_operation_name: string
     game_operation_short_name: string
+    arena: number
+    arena_name: string
+    arena_address: string
+    arena_short: string
 }
