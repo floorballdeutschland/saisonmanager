@@ -6,7 +6,11 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AssociationService, LeagueService } from '@floorball/core';
+import {
+  AssociationService,
+  LeagueService,
+  StorageService,
+} from '@floorball/core';
 import { GameOperation, League } from '@floorball/types';
 import { Observable, Subject, takeUntil, tap } from 'rxjs';
 
@@ -24,7 +28,8 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
   constructor(
     private _leagueService: LeagueService,
     private _associationService: AssociationService,
-    private _route: ActivatedRoute
+    private _route: ActivatedRoute,
+    private _storageService: StorageService
   ) {}
 
   ngOnDestroy(): void {
@@ -45,5 +50,14 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
         takeUntil(this._destroy$)
       )
       .subscribe();
+  }
+
+  addToFavorites(leagueId: number, associationId: number): void {
+    console.log('test');
+
+    this._storageService.setItem(
+      'fav',
+      JSON.stringify({ leagueId: leagueId, associationId: associationId })
+    );
   }
 }

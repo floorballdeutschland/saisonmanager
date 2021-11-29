@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -20,4 +22,7 @@ export class HeaderComponent {
 
   @Input()
   type: 'league' | 'match' | 'team' = 'league';
+
+  @Output()
+  markAsFavorite: EventEmitter<void> = new EventEmitter<void>();
 }
