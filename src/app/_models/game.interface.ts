@@ -16,6 +16,7 @@ export interface GameEvent {
 export interface GamePlayerEntry {
     player_id: number
     goalkeeper: boolean
+    position?: string
     player_name: string
     trikot_number: number
     player_firstname: string
