@@ -11,5 +11,7 @@ export interface ScorerEntry {
   first_name: string
   last_name: string
   sort: number
+  team_id: number
+  team_name: string
   position: number
 }
