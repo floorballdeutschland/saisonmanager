@@ -18,6 +18,8 @@ export interface TableEntry {
   points: number
   team_name: string
   team_id: number
+  team_logo: string
+  team_small_logo: string
   point_corrections: TablePointCorrections
   sort: number
   position: number
