@@ -10,5 +10,7 @@ export interface League {
   enable_scorer: boolean
   short_name: string
   season_id: string
+  team_id: number
+  team_name: string
   order_key: string
 }
