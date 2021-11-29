@@ -3,3 +3,4 @@ export * from './sidebar/sidebar.component';
 export * from './metanavigation/metanavigation.component';
 export * from './header/header.component';
 export * from './similar-leagues/similar-leagues.component';
+export * from './favorites-navigation/favorites-navigation.component';

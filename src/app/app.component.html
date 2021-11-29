@@ -7,6 +7,11 @@
           [leagues]="leagues"
           [selectedAssociation]="selectedAssociation$ | async"
         ></fb-league-navigation>
+
+        <fb-favorites-navigation
+          [favorites]="favoriteLeagues"
+          [selectedAssociation]="selectedAssociation$ | async"
+        ></fb-favorites-navigation>
       </fb-sidebar>
     </div>
     <div class="h-screen overflow-y-auto">

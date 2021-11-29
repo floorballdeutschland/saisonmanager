@@ -1,0 +1,17 @@
+<ng-container *ngIf="selectedAssociation">
+  <h2 class="uppercase text-fb-gray-100 font-bold mt-12">Favoriten</h2>
+
+  <nav>
+    <ul>
+      <li *ngFor="let league of favorites" class="mt-4 mb-4">
+        <a
+          [routerLinkActive]="'!text-black'"
+          [routerLink]="['/', selectedAssociation.path, league.id]"
+          class="font-bold text-fb-gray-500 hover:text-black text-base"
+          title="{{ league.name }}"
+          >{{ league.name }}</a
+        >
+      </li>
+    </ul>
+  </nav>
+</ng-container>

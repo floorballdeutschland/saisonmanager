@@ -52,12 +52,14 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
       .subscribe();
   }
 
-  addToFavorites(leagueId: number, associationId: number): void {
-    console.log('test');
+  addToFavorites(league: League): void {
+    const storageItems = this._storageService.getItem('fav');
+    let items: League[] = [];
 
-    this._storageService.setItem(
-      'fav',
-      JSON.stringify({ leagueId: leagueId, associationId: associationId })
-    );
+    if (storageItems) {
+      items = [...JSON.parse(storageItems)];
+    }
+
+    this._storageService.setItem('fav', JSON.stringify([league, ...items]));
   }
 }
