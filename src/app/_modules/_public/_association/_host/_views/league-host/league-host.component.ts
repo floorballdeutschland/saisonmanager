@@ -57,7 +57,12 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
     let items: League[] = [];
 
     if (storageItems) {
-      items = [...JSON.parse(storageItems)];
+      const parsedItems: League[] = JSON.parse(storageItems);
+      items = [...parsedItems];
+
+      if (parsedItems.some((item) => item.id === league.id)) {
+        return;
+      }
     }
 
     this._storageService.setItem('fav', JSON.stringify([league, ...items]));
