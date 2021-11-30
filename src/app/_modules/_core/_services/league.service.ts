@@ -76,8 +76,33 @@ export class LeagueService {
     );
   }
 
+  public getSingleLeague(league: number) {
+    const path = environment.apiURL + 'leagues/' + league + '.json';
+    return this.http.get<League>(path);
+  }
+
   public getGameSchedule(league: number) {
     const path = environment.apiURL + 'leagues/' + league + '/schedule.json';
+    return this.http.get<GameScheduleEntry[]>(path);
+  }
+
+  public getGameScheduleForGameDay(league: number, game_day_number: number) {
+    const path =
+      environment.apiURL +
+      'leagues/' +
+      league +
+      '/game_days/' +
+      game_day_number +
+      '/schedule.json';
+    return this.http.get<GameScheduleEntry[]>(path);
+  }
+
+  public getGameScheduleForCurrentGameDay(league: number) {
+    const path =
+      environment.apiURL +
+      'leagues/' +
+      league +
+      '/game_days/current/schedule.json';
     return this.http.get<GameScheduleEntry[]>(path);
   }
 

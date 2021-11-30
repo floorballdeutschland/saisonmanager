@@ -10,4 +10,5 @@ export interface League {
   short_name: string;
   season_id: string;
   order_key: string;
+  game_day_numbers: number[];
 }
