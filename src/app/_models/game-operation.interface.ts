@@ -5,4 +5,5 @@ export interface GameOperation {
   path: string
   logo_url?: any
   logo_quad_url?: any
+  top_league_ids: number[]
 }
