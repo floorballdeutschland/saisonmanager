@@ -69,6 +69,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
   }
 
   getMatches(leagueNumber: number) {
-    this.matches$ = this._leagueService.getGameSchedule(leagueNumber);
+    this.matches$ =
+      this._leagueService.getGameScheduleForCurrentGameDay(leagueNumber);
   }
 }
