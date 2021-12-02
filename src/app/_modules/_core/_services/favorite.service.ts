@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { StorageService } from '@floorball/core';
 import { League } from '@floorball/types';
-import { Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FavoriteService {
-  favoriteLeagues$: Subject<League[]> = new Subject<League[]>();
+  favoriteLeagues$: BehaviorSubject<League[]> = new BehaviorSubject<League[]>(
+    []
+  );
 
   constructor(private _storageService: StorageService) {
     this.getFavorites();

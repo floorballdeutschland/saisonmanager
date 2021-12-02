@@ -10,7 +10,7 @@ import {
   LeagueService,
   StorageService,
 } from '@floorball/core';
-import { Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { GameOperation, League } from '@floorball/types';
 
 @Component({
@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
   leagues$!: Observable<League[] | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
 
-  favoriteLeagues$?: Subject<League[]>;
+  favoriteLeagues$?: BehaviorSubject<League[]>;
 
   constructor(
     private _associationService: AssociationService,
