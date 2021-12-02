@@ -1,4 +1,5 @@
 <ng-container *ngIf="(isLoading$ | async) === false">
+  {{ favoriteLeagues$ | async | json }}
   <div class="grid grid-cols-[300px,1fr]">
     <div class="hidden md:block h-full w-full">
       <fb-sidebar>
@@ -8,10 +9,12 @@
           [selectedAssociation]="selectedAssociation$ | async"
         ></fb-league-navigation>
 
-        <fb-favorites-navigation
-          [favorites]="favoriteLeagues"
-          [selectedAssociation]="selectedAssociation$ | async"
-        ></fb-favorites-navigation>
+        <ng-container *ngIf="favoriteLeagues$ | async as favoriteLeagues">
+          <fb-favorites-navigation
+            [favorites]="favoriteLeagues"
+            [selectedAssociation]="selectedAssociation$ | async"
+          ></fb-favorites-navigation>
+        </ng-container>
       </fb-sidebar>
     </div>
     <div class="h-screen overflow-y-auto">

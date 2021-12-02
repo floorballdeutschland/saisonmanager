@@ -3,3 +3,4 @@ export { MetaService } from './meta.service';
 export { GameService } from './game.service';
 export * from './association.service';
 export * from './storage.service';
+export * from './favorite.service';

@@ -8,6 +8,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import {
   AssociationService,
+  FavoriteService,
   LeagueService,
   StorageService,
 } from '@floorball/core';
@@ -29,7 +30,8 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
     private _leagueService: LeagueService,
     private _associationService: AssociationService,
     private _route: ActivatedRoute,
-    private _storageService: StorageService
+    private _storageService: StorageService,
+    private _favoriteService: FavoriteService
   ) {}
 
   ngOnDestroy(): void {
@@ -53,18 +55,6 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
   }
 
   addToFavorites(league: League): void {
-    const storageItems = this._storageService.getItem('fav');
-    let items: League[] = [];
-
-    if (storageItems) {
-      const parsedItems: League[] = JSON.parse(storageItems);
-      items = [...parsedItems];
-
-      if (parsedItems.some((item) => item.id === league.id)) {
-        return;
-      }
-    }
-
-    this._storageService.setItem('fav', JSON.stringify([league, ...items]));
+    this._favoriteService.addToFavorites(league);
   }
 }
