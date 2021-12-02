@@ -17,10 +17,14 @@
     <cdk-cell class="flex items-center" *cdkCellDef="let element">
       <div class="flex items-center">
         <div class="h-8 w-8 mr-2.5">
-          <img src="http://via.placeholder.com/32x32" />
+          <img
+            [src]="element.image_small"
+            class="w-full h-full object-contain"
+          />
         </div>
         <div class="text-left">
-          {{ element.first_name }} {{ element.last_name }}{{ element.club }}
+          {{ element.first_name }} {{ element.last_name }}
+          <span class="ml-2.5 text-fb-gray-400">{{ element.team_name }}</span>
         </div>
       </div>
     </cdk-cell>
