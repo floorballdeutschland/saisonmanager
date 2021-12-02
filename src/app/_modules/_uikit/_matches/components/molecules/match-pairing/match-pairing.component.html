@@ -14,7 +14,10 @@
     {{ match.home_team_name }}
   </div>
   <div>
-    <img src="http://via.placeholder.com/42x42" />
+    <img
+      [src]="match.home_team_small_logo"
+      class="h-full w-full object-contain"
+    />
   </div>
 
   <div class="text-center font-bold text-2xl tracking-widest">
@@ -22,7 +25,10 @@
   </div>
 
   <div>
-    <img src="http://via.placeholder.com/42x42" />
+    <img
+      [src]="match.guest_team_small_logo"
+      class="h-full w-full object-contain"
+    />
   </div>
   <div class="text-sm font-bold">{{ match.guest_team_name }}</div>
 </a>
