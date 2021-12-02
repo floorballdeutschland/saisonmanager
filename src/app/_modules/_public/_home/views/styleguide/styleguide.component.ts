@@ -219,6 +219,8 @@ export class StyleguideComponent {
     logo_url: 'http://via.placeholder.com/260x61',
     id: 1,
     short_name: 'Tes',
+    logo_quad_url: '',
+    top_league_ids: [],
   };
 
   game?: Game | null;
