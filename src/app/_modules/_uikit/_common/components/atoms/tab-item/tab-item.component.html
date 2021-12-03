@@ -14,9 +14,7 @@
   #activeLink="routerLinkActive"
   [routerLinkActiveOptions]="{ exact: true }"
   [ngStyle]="{
-    'border-image': activeLink.isActive
-      ? 'linear-gradient(' + activeColor + ') 1'
-      : 'none'
+    'border-image': activeLink.isActive ? activeColor + '1' : 'none'
   }"
 >
   <ng-content></ng-content>

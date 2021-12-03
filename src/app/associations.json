@@ -2,51 +2,51 @@
   {
     "id": 1,
     "path": "fvd",
-    "gradient": "90deg, #000000, #B21917, #F8D628"
+    "gradient": "linear-gradient(90deg, #000000 33%, #B21917 33% 66%, #F8D628 66%)"
   },
   {
     "id": 2,
     "path": "fvn",
-    "gradient": "90deg, #C01010, #FFFFFF, #C01010"
+    "gradient": "linear-gradient(90deg, #C01010 33%, #FFFFFF 33% 66%, #C01010 66%)"
   },
   {
     "id": 3,
     "path": "fvbb",
-    "gradient": "90deg, #ED1A3B, #FFFFFF, #ED1A3B"
+    "gradient": "linear-gradient(90deg, #ED1A3B 33%, #FFFFFF 33% 66%, #ED1A3B 66%)"
   },
   {
     "id": 4,
     "path": "fvbw",
-    "gradient": "90deg, #F2BD04, #A85631"
+    "gradient": "linear-gradient(90deg, #F2BD04 50%, #A85631 50%)"
   },
   {
     "id": 5,
     "path": "flvsh",
-    "gradient": "90deg, #0000FE, #FEFEFE, #FE0000"
+    "gradient": "linear-gradient(90deg, #0000FE 33%, #FEFEFE 33% 66%, #FE0000 66%)"
   },
   {
     "id": 6,
     "path": "sbkost",
-    "gradient": "90deg, #203911, #F1E26D"
+    "gradient": "linear-gradient(90deg, #203911 50%, #F1E26D 50%)"
   },
   {
     "id": 8,
     "path": "fvh",
-    "gradient": "90deg, #E2001A, #FFFFFF"
+    "gradient": "linear-gradient(90deg, #E2001A 50%, #FFFFFF 50%)"
   },
   {
     "id": 9,
     "path": "fvb",
-    "gradient": "90deg, #FFFFFF, #0E71B4"
+    "gradient": "linear-gradient(90deg, #FFFFFF 50%, #0E71B4 50%)"
   },
   {
     "id": 10,
     "path": "nwuv",
-    "gradient": "90deg, #139139, #FFFFFF, #E2061B"
+    "gradient": "linear-gradient(90deg, #139139 33%, #FFFFFF 33% 66%, #E2061B 66%)"
   },
   {
     "id": 11,
     "path": "rlpsaar",
-    "gradient": "90deg, #000000, #000000"
+    "gradient": "linear-gradient(90deg, #000000, #000000)"
   }
 ]
