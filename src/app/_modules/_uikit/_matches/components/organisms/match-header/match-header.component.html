@@ -1,8 +1,9 @@
 <div class="flex justify-center p-[45px] border-b-[10px] border-fb-gray-200">
   <div class="grid gap-4 grid-cols-3">
-    <div class="flex flex-col justify-end">
+    <div class="flex flex-col justify-end h-[160px]">
       <img
-        src="http://via.placeholder.com/160x160"
+        class="w-full h-full object-contain"
+        [src]="game.home_team_logo"
         [alt]="game.home_team_name"
         [title]="'Logo: ' + game.home_team_name"
       />
@@ -27,9 +28,10 @@
         <li class="text-black text-base font-bold">3:2</li>
       </ul>
     </div>
-    <div class="flex flex-col justify-start">
+    <div class="flex flex-col justify-start h-[160px]">
       <img
-        src="http://via.placeholder.com/160x160"
+        class="w-full h-full object-contain"
+        [src]="game.guest_team_logo"
         [alt]="game.guest_team_name"
         [title]="'Logo: ' + game.guest_team_name"
       />

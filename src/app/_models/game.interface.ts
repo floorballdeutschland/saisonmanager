@@ -43,6 +43,10 @@ export interface Game {
   audience: number;
   home_team_name: string;
   guest_team_name: string;
+  home_team_logo: string;
+  home_team_small_logo: string;
+  guest_team_logo: string;
+  guest_team_small_logo: string;
   events: GameEvent[];
   players: GamePlayers;
   started: boolean;
