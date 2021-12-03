@@ -32,7 +32,9 @@
     </button>
     <button
       *ngIf="type === 'league'"
-      (click)="markAsFavorite.emit()"
+      (click)="
+        isMarkedAsFavorite ? removeFromFavorites.emit() : markAsFavorite.emit()
+      "
       class="
         font-bold
         text-black
@@ -47,7 +49,9 @@
         rounded-[5px]
       "
     >
-      Als Favorit markieren
+      {{
+        isMarkedAsFavorite ? "Aus Favoriten entfernen" : "Als Favorit markieren"
+      }}
     </button>
   </div>
 </div>

@@ -23,6 +23,12 @@ export class HeaderComponent {
   @Input()
   type: 'league' | 'match' | 'team' = 'league';
 
+  @Input()
+  isMarkedAsFavorite = false;
+
   @Output()
   markAsFavorite: EventEmitter<void> = new EventEmitter<void>();
+
+  @Output()
+  removeFromFavorites: EventEmitter<void> = new EventEmitter<void>();
 }

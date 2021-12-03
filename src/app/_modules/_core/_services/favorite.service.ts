@@ -79,4 +79,15 @@ export class FavoriteService {
       this.favoriteLeagues$.next(filteredItems);
     }
   }
+
+  isLeagueFavorite(leagueId: number): boolean {
+    const storageItems = this._storageService.getItem('fav');
+
+    if (storageItems) {
+      const parsedItems: LeagueWithOperation[] = JSON.parse(storageItems);
+      return parsedItems.some((item) => item.league?.id === leagueId);
+    }
+
+    return false;
+  }
 }

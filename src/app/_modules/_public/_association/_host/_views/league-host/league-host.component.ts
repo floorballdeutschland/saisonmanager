@@ -57,4 +57,12 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
   addToFavorites(league: League): void {
     this._favoriteService.addToFavorites(league);
   }
+
+  removeFavorite(leagueId: number) {
+    this._favoriteService.removeFavorite(leagueId);
+  }
+
+  isLeagueFavorite(leagueId: number): boolean {
+    return this._favoriteService.isLeagueFavorite(leagueId);
+  }
 }
