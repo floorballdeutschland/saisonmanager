@@ -6,6 +6,7 @@ export interface League {
   league_category_id: string
   league_class_id: string
   league_system_id: string
+  league_type: 'league' | 'cup' | 'champ'
   name: string
   female: boolean
   enable_scorer: boolean
