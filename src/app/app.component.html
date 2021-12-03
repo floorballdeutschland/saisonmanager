@@ -11,7 +11,6 @@
         <ng-container *ngIf="favoriteLeagues$ | async as favoriteLeagues">
           <fb-favorites-navigation
             [favorites]="favoriteLeagues"
-            [selectedAssociation]="selectedAssociation$ | async"
           ></fb-favorites-navigation>
         </ng-container>
       </fb-sidebar>

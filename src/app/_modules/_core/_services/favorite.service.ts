@@ -1,42 +1,66 @@
 import { Injectable } from '@angular/core';
-import { StorageService } from '@floorball/core';
-import { League } from '@floorball/types';
-import { BehaviorSubject } from 'rxjs';
+import { AssociationService, StorageService } from '@floorball/core';
+import { GameOperation, League } from '@floorball/types';
+import { BehaviorSubject, take, tap } from 'rxjs';
+
+interface LeagueWithOperation {
+  league: League;
+  operation: GameOperation;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class FavoriteService {
-  favoriteLeagues$: BehaviorSubject<League[]> = new BehaviorSubject<League[]>(
-    []
-  );
+  favoriteLeagues$: BehaviorSubject<LeagueWithOperation[]> =
+    new BehaviorSubject<LeagueWithOperation[]>([]);
 
-  constructor(private _storageService: StorageService) {
+  constructor(
+    private _storageService: StorageService,
+    private _associationService: AssociationService
+  ) {
     this.getFavorites();
   }
 
   addToFavorites(league: League): void {
     const storageItems = this._storageService.getItem('fav');
-    let items: League[] = [];
+    let items: LeagueWithOperation[] = [];
 
     if (storageItems) {
-      const parsedItems: League[] = JSON.parse(storageItems);
+      const parsedItems: LeagueWithOperation[] = JSON.parse(storageItems);
       items = [...parsedItems];
 
-      if (parsedItems.some((item) => item.id === league.id)) {
+      if (parsedItems.some((item) => item.league?.id === league.id)) {
         return;
       }
     }
 
-    this._storageService.setItem('fav', JSON.stringify([league, ...items]));
-    this.favoriteLeagues$.next([league, ...items]);
+    this._associationService.selectedAssociation$
+      .pipe(
+        take(1),
+        tap((association) => {
+          if (association) {
+            this._storageService.setItem(
+              'fav',
+              JSON.stringify([
+                { league: league, operation: association },
+                ...items,
+              ])
+            );
+            this.favoriteLeagues$.next([
+              { league: league, operation: association },
+              ...items,
+            ]);
+          }
+        })
+      )
+      .subscribe();
   }
 
   getFavorites(): void {
     const storageLeagues = this._storageService.getItem('fav');
 
     if (storageLeagues) {
-      console.log('test', JSON.parse(storageLeagues));
       this.favoriteLeagues$.next(JSON.parse(storageLeagues));
     }
   }

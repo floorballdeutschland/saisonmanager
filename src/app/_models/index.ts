@@ -14,3 +14,4 @@ export { League } from './league.interface';
 export { Association } from './association.interface';
 export * from './league.interface';
 export * from './normalized-event.interface';
+export * from './league-with-operation.interface';
