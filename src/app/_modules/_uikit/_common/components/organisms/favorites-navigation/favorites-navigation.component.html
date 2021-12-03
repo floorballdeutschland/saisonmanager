@@ -1,19 +1,21 @@
-<h2 class="uppercase text-fb-gray-100 font-bold mt-12">Favoriten</h2>
+<ng-container *ngIf="favorites?.length">
+  <h2 class="uppercase text-fb-gray-100 font-bold mt-12">Favoriten</h2>
 
-<nav>
-  <ul>
-    <li *ngFor="let leagueWithOperation of favorites" class="mt-4 mb-4">
-      <a
-        [routerLinkActive]="'!text-black'"
-        [routerLink]="[
-          '/',
-          leagueWithOperation.operation.path,
-          leagueWithOperation.league.id
-        ]"
-        class="font-bold text-fb-gray-500 hover:text-black text-base"
-        title="{{ leagueWithOperation.league.name }}"
-        >{{ leagueWithOperation.league.name }}</a
-      >
-    </li>
-  </ul>
-</nav>
+  <nav>
+    <ul>
+      <li *ngFor="let leagueWithOperation of favorites" class="mt-4 mb-4">
+        <a
+          [routerLinkActive]="'!text-black'"
+          [routerLink]="[
+            '/',
+            leagueWithOperation.operation.path,
+            leagueWithOperation.league.id
+          ]"
+          class="font-bold text-fb-gray-500 hover:text-black text-base"
+          title="{{ leagueWithOperation.league.name }}"
+          >{{ leagueWithOperation.league.name }}</a
+        >
+      </li>
+    </ul>
+  </nav>
+</ng-container>
