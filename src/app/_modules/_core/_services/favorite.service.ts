@@ -64,4 +64,19 @@ export class FavoriteService {
       this.favoriteLeagues$.next(JSON.parse(storageLeagues));
     }
   }
+
+  removeFavorite(leagueId: number): void {
+    const storageLeagues = this._storageService.getItem('fav');
+
+    if (storageLeagues) {
+      const parsedItems: LeagueWithOperation[] = JSON.parse(storageLeagues);
+
+      const filteredItems = parsedItems.filter(
+        (leagueWithOperation) => leagueWithOperation.league.id !== leagueId
+      );
+
+      this._storageService.setItem('fav', JSON.stringify(filteredItems));
+      this.favoriteLeagues$.next(filteredItems);
+    }
+  }
 }
