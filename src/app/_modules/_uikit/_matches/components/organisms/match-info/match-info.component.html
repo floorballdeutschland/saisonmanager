@@ -2,7 +2,9 @@
   <ul>
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Liga</span>
-      <span class="text-sm font-bold text-right">TODO</span>
+      <span class="text-sm font-bold text-right">{{
+        game.league_short_name
+      }}</span>
     </li>
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Spielenummer</span>
@@ -10,7 +12,9 @@
     </li>
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Datum</span>
-      <span class="text-sm font-bold text-right">TODO</span>
+      <span class="text-sm font-bold text-right">{{
+        game.date | date: "dd.MM.YYYY"
+      }}</span>
     </li>
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Austragungsort</span>
