@@ -1,148 +1,153 @@
-<div
-  class="
-    grid
-    grid-cols-[36px,1fr,30px,50px,30px,20px,60px,20px,30px,50px,30px,1fr,36px]
-    items-center
-    grid-rows-2
-    text-sm
-    h-[78px]
-  "
->
-  <ng-container *ngIf="gameEvent.home.scorer">
-    <div>
-      <img src="http://via.placeholder.com/36x36" />
-    </div>
-
-    <div>
-      <div class="ml-3.5">
-        {{ gameEvent.home.scorer?.player_firstname }}
-        {{ gameEvent.home.scorer?.player_name }}
-      </div>
-    </div>
-
-    <div class="text-center">
-      <ng-container *ngIf="!gameEvent.penalty_id">
-        {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
-      </ng-container>
-    </div>
-    <div class="font-bold text-center">
-      {{ gameEvent.penalty_id ? "Strafe" : "Tor" }}
-    </div>
-
-    <div
-      class="
-        rounded-full
-        border border-fb-gray-200
-        w-[30px]
-        h-[30px]
-        flex
-        items-center
-        justify-center
-      "
-    >
-      <img
-        src="./assets/images/union.svg"
-        alt="Tor"
-        class="w-full h-full p-[6px]"
-      />
-    </div>
-
-    <div class="h-px bg-fb-gray-200 w-full"></div>
-  </ng-container>
+<ng-container *ngIf="event | normalizeEvent: match as gameEvent">
   <div
     class="
-      rounded-[30px]
-      w-full
-      h-[30px]
-      border border-fb-gray-200
-      font-bold
-      flex
+      grid
+      grid-cols-[36px,1fr,30px,50px,30px,20px,60px,20px,30px,50px,30px,1fr,36px]
       items-center
-      justify-center
-      col-start-7
+      grid-rows-2
+      text-sm
+      h-[78px]
     "
   >
-    <ng-container *ngIf="gameEvent.time.split(':') as time">
-      {{ time[0]?.length === 1 ? "0" : "" }}{{ time[0] }}'&nbsp;
-      <span class="text-fb-gray-400">{{ time[1] }}"</span>
+    <ng-container *ngIf="gameEvent.home.scorer">
+      <div>
+        <img [src]="match.home_team_small_logo" [alt]="match.home_team_name" />
+      </div>
+
+      <div>
+        <div class="ml-3.5">
+          {{ gameEvent.home.scorer?.player_firstname }}
+          {{ gameEvent.home.scorer?.player_name }}
+        </div>
+      </div>
+
+      <div class="text-center">
+        <ng-container *ngIf="!gameEvent.penalty_id">
+          {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
+        </ng-container>
+      </div>
+      <div class="font-bold text-center">
+        {{ gameEvent.penalty_id ? "Strafe" : "Tor" }}
+      </div>
+
+      <div
+        class="
+          rounded-full
+          border border-fb-gray-200
+          w-[30px]
+          h-[30px]
+          flex
+          items-center
+          justify-center
+        "
+      >
+        <img
+          src="./assets/images/union.svg"
+          alt="Tor"
+          class="w-full h-full p-[6px]"
+        />
+      </div>
+
+      <div class="h-px bg-fb-gray-200 w-full"></div>
     </ng-container>
-  </div>
-  <ng-container *ngIf="gameEvent.guest.scorer">
-    <div class="h-px bg-fb-gray-200 w-full"></div>
     <div
       class="
-        rounded-full
-        border border-fb-gray-200
-        w-[30px]
+        rounded-[30px]
+        w-full
         h-[30px]
+        border border-fb-gray-200
+        font-bold
         flex
         items-center
         justify-center
+        col-start-7
       "
     >
-      <img
-        src="./assets/images/union.svg"
-        alt="Tor"
-        class="w-full h-full p-[6px]"
-      />
-    </div>
-
-    <div class="font-bold text-center">
-      {{ gameEvent.penalty_id ? "Strafe" : "Tor" }}
-    </div>
-
-    <div class="text-center">
-      <ng-container *ngIf="!gameEvent.penalty_id">
-        {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
+      <ng-container *ngIf="gameEvent.time.split(':') as time">
+        {{ time[0]?.length === 1 ? "0" : "" }}{{ time[0] }}'&nbsp;
+        <span class="text-fb-gray-400">{{ time[1] }}"</span>
       </ng-container>
     </div>
-
-    <div class="text-right">
-      <div class="mr-3.5">
-        {{ gameEvent.guest.scorer?.player_firstname }}
-        {{ gameEvent.guest.scorer?.player_name }}
+    <ng-container *ngIf="gameEvent.guest.scorer">
+      <div class="h-px bg-fb-gray-200 w-full"></div>
+      <div
+        class="
+          rounded-full
+          border border-fb-gray-200
+          w-[30px]
+          h-[30px]
+          flex
+          items-center
+          justify-center
+        "
+      >
+        <img
+          src="./assets/images/union.svg"
+          alt="Tor"
+          class="w-full h-full p-[6px]"
+        />
       </div>
+
+      <div class="font-bold text-center">
+        {{ gameEvent.penalty_id ? "Strafe" : "Tor" }}
+      </div>
+
+      <div class="text-center">
+        <ng-container *ngIf="!gameEvent.penalty_id">
+          {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
+        </ng-container>
+      </div>
+
+      <div class="text-right">
+        <div class="mr-3.5">
+          {{ gameEvent.guest.scorer?.player_firstname }}
+          {{ gameEvent.guest.scorer?.player_name }}
+        </div>
+      </div>
+      <div>
+        <img
+          [src]="match.guest_team_small_logo"
+          [alt]="match.guest_team_name"
+        />
+      </div>
+    </ng-container>
+
+    <div
+      class="row-start-2 col-start-2 text-fb-gray-400 self-start ml-3.5"
+      *ngIf="gameEvent.home.assist"
+    >
+      <span class="text-xs font-bold">Vorl.</span>
+      {{ gameEvent.home.assist?.player_firstname }}
+      {{ gameEvent.home.assist?.player_name }}
     </div>
-    <div>
-      <img src="http://via.placeholder.com/36x36" />
+
+    <div
+      *ngIf="!isLast"
+      class="
+        row-start-2
+        col-start-7
+        h-full
+        w-full
+        self-center
+        justify-self-center
+      "
+    >
+      <div class="bg-fb-gray-200 h-[49px] mt-[-5px] w-px mx-auto"></div>
     </div>
-  </ng-container>
 
-  <div
-    class="row-start-2 col-start-2 text-fb-gray-400 self-start ml-3.5"
-    *ngIf="gameEvent.home.assist"
-  >
-    <span class="text-xs font-bold">Vorl.</span>
-    {{ gameEvent.home.assist?.player_firstname }}
-    {{ gameEvent.home.assist?.player_name }}
+    <div
+      class="
+        row-start-2
+        col-start-12
+        text-fb-gray-400 text-right
+        self-start
+        mr-3.5
+      "
+      *ngIf="gameEvent.guest.assist"
+    >
+      <span class="text-xs font-bold">Vorl.</span>
+      {{ gameEvent.guest.assist?.player_firstname }}
+      {{ gameEvent.guest.assist?.player_name }}
+    </div>
   </div>
-
-  <div
-    *ngIf="!isLast"
-    class="
-      row-start-2
-      col-start-7
-      h-full
-      w-full
-      self-center
-      justify-self-center
-    "
-  >
-    <div class="bg-fb-gray-200 h-[49px] mt-[-5px] w-px mx-auto"></div>
-  </div>
-
-  <div
-    class="
-      row-start-2
-      col-start-12
-      text-fb-gray-400 text-right
-      self-start
-      mr-3.5
-    "
-    *ngIf="gameEvent.guest.assist"
-  >
-    <span class="text-xs font-bold">Vorl.</span>
-    {{ gameEvent.guest.assist?.player_firstname }}
-    {{ gameEvent.guest.assist?.player_name }}
-  </div>
-</div>
+</ng-container>

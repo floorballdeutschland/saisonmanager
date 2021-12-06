@@ -16,14 +16,14 @@
         {{ event.period }}. Drittel
       </div>
     </ng-container>
-    <ng-container *ngIf="event | normalizeEvent: match as normalizedEvent">
-      <fb-match-history-item
-        class="block even:bg-fb-gray-300"
-        [isLast]="
-          isLast || (!isLast && match.events[index + 1].period !== event.period)
-        "
-        [gameEvent]="normalizedEvent"
-      ></fb-match-history-item>
-    </ng-container>
+
+    <fb-match-history-item
+      class="block even:bg-fb-gray-300"
+      [isLast]="
+        isLast || (!isLast && match.events[index + 1].period !== event.period)
+      "
+      [match]="match"
+      [event]="event"
+    ></fb-match-history-item>
   </ng-container>
 </div>
