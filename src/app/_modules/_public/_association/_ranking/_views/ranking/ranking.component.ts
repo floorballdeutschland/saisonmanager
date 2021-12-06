@@ -60,7 +60,12 @@ export class RankingComponent implements OnInit, OnDestroy {
       this._leagueService.getGameScheduleForCurrentGameDay(leagueNumber);
   }
 
-  selectMatchDay(matchDay: number) {
+  selectMatchDay(matchDay: number, leagueNumber: number) {
     this.selectedMatchDay = matchDay;
+
+    this.matches$ = this._leagueService.getGameScheduleForGameDay(
+      leagueNumber,
+      matchDay
+    );
   }
 }

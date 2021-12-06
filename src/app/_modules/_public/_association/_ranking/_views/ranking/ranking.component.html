@@ -20,7 +20,7 @@
           <fb-match-day
             [matchDays]="selectedLeague.game_day_numbers"
             [selectedMatchDay]="selectedMatchDay"
-            (selectMatchDay)="selectMatchDay($event)"
+            (selectMatchDay)="selectMatchDay($event, selectedLeague.id)"
           ></fb-match-day>
         </ng-container>
       </div>
