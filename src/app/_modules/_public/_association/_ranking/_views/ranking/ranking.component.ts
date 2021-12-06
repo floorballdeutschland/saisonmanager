@@ -6,7 +6,7 @@ import {
   OnDestroy,
   ChangeDetectorRef,
 } from '@angular/core';
-import { Observable, Subject, takeUntil, tap } from 'rxjs';
+import { Observable, Subject, take, takeUntil, tap } from 'rxjs';
 import { GameScheduleEntry, League, TableEntry } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
 
@@ -58,6 +58,17 @@ export class RankingComponent implements OnInit, OnDestroy {
   getMatches(leagueNumber: number) {
     this.matches$ =
       this._leagueService.getGameScheduleForCurrentGameDay(leagueNumber);
+
+    this._leagueService
+      .getGameScheduleForCurrentGameDay(leagueNumber)
+      .pipe(
+        take(1),
+        tap((games) => {
+          this.selectedMatchDay = games[0].game_day;
+        }),
+        takeUntil(this._destroy$)
+      )
+      .subscribe();
   }
 
   selectMatchDay(matchDay: number, leagueNumber: number) {
