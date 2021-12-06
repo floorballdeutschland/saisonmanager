@@ -19,6 +19,8 @@
         <ng-container *ngIf="selectedLeague$ | async as selectedLeague">
           <fb-match-day
             [matchDays]="selectedLeague.game_day_numbers"
+            [selectedMatchDay]="selectedMatchDay"
+            (selectMatchDay)="selectMatchDay($event)"
           ></fb-match-day>
         </ng-container>
       </div>

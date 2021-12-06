@@ -20,6 +20,8 @@ export class RankingComponent implements OnInit, OnDestroy {
   matches$?: Observable<GameScheduleEntry[] | null>;
   selectedLeague$!: Observable<League | null>;
 
+  selectedMatchDay = 1;
+
   private _destroy$ = new Subject<boolean>();
 
   constructor(
@@ -56,5 +58,9 @@ export class RankingComponent implements OnInit, OnDestroy {
   getMatches(leagueNumber: number) {
     this.matches$ =
       this._leagueService.getGameScheduleForCurrentGameDay(leagueNumber);
+  }
+
+  selectMatchDay(matchDay: number) {
+    this.selectedMatchDay = matchDay;
   }
 }

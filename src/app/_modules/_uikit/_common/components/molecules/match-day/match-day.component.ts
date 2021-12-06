@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -14,4 +16,10 @@ import {
 export class MatchDayComponent {
   @Input()
   matchDays: number[] = [];
+
+  @Input()
+  selectedMatchDay!: number;
+
+  @Output()
+  selectMatchDay: EventEmitter<number> = new EventEmitter<number>();
 }

@@ -17,14 +17,15 @@
       transition
     "
   >
-    5. Spieltag
+    {{ selectedMatchDay }}. Spieltag
   </div>
 
   <div class="hidden group-hover:block transition absolute w-full">
     <ng-container *ngFor="let matchDay of matchDays">
-      <div
+      <button
         class="
           bg-white
+          w-full
           border border-t-0 border-fb-gray-600
           last:rounded-b-[5px]
           px-5
@@ -35,9 +36,10 @@
           cursor-pointer
           text-sm
         "
+        (click)="selectMatchDay.emit(matchDay)"
       >
         {{ matchDay }}. Spieltag
-      </div>
+      </button>
     </ng-container>
   </div>
 </div>
