@@ -21,7 +21,7 @@
   </div>
 
   <div class="hidden group-hover:block transition absolute w-full">
-    <ng-container *ngFor="let item of [].constructor(4)">
+    <ng-container *ngFor="let matchDay of matchDays">
       <div
         class="
           bg-white
@@ -36,7 +36,7 @@
           text-sm
         "
       >
-        6. Spieltag
+        {{ matchDay }}. Spieltag
       </div>
     </ng-container>
   </div>
