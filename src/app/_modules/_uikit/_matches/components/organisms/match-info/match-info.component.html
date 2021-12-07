@@ -31,7 +31,7 @@
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Zuschauerzahl</span>
       <span class="text-sm font-bold text-right">{{
-        game.audience ? game.audience : "0"
+        game.audience && game.started ? game.audience : "-"
       }}</span>
     </li>
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
