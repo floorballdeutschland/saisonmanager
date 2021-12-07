@@ -16,7 +16,15 @@
   "
 >
   <a [routerLink]="['/']">
-    <fb-logo></fb-logo>
+    <img
+      *ngIf="association?.logo_url; else fbLogo"
+      [src]="association!.logo_url"
+      class="w-full h-full max-h-14 object-contain"
+    />
+
+    <ng-template #fbLogo>
+      <fb-logo></fb-logo>
+    </ng-template>
   </a>
 
   <a href="#" class="w-[20px] h-[18px] cursor-pointer lg:hidden">

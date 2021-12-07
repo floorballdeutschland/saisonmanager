@@ -1,7 +1,7 @@
 <ng-container *ngIf="(isLoading$ | async) === false">
   <div class="grid grid-cols-[300px,1fr]">
     <div class="hidden md:block min-h-screen h-full w-full">
-      <fb-sidebar>
+      <fb-sidebar [association]="selectedAssociation$ | async">
         <fb-league-navigation
           *ngIf="leagues$ | async as leagues"
           [leagues]="leagues"
