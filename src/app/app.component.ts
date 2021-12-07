@@ -13,6 +13,11 @@ import {
 import { BehaviorSubject, Observable } from 'rxjs';
 import { GameOperation, League, LeagueWithOperation } from '@floorball/types';
 
+import { registerLocaleData } from '@angular/common';
+import localeDe from '@angular/common/locales/de';
+
+registerLocaleData(localeDe);
+
 @Component({
   selector: 'fb-root',
   templateUrl: './app.component.html',

@@ -21,6 +21,7 @@ import * as Pipes from './pipes';
     Organisms.SimilarLeaguesComponent,
     Pipes.GradientPipe,
     Pipes.NormalizeEventPipe,
+    Pipes.NormalizeMatchResultPipe,
   ],
   exports: [
     Atoms.LogoComponent,
@@ -35,6 +36,7 @@ import * as Pipes from './pipes';
     Organisms.SimilarLeaguesComponent,
     Pipes.GradientPipe,
     Pipes.NormalizeEventPipe,
+    Pipes.NormalizeMatchResultPipe,
   ],
 })
 export class UikitCommonModule {}
