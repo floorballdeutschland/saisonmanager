@@ -2,7 +2,7 @@
   <div class="bg-white flex flex-col items-center justify-center">
     <div class="mt-8 h-[65px]">
       <img
-        class="h-full w-full object-contain"
+        class="h-full w-full object-contain px-2"
         [src]="gameOperation.logo_url"
         [alt]="gameOperation.name"
       />
@@ -14,15 +14,23 @@
   </div>
 
   <div class="bg-white my-[5px] py-[15px] px-[30px]">
-    <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-      Liga Favoriten
-    </div>
-    <div
-      *ngFor="let item of [].constructor(2)"
-      class="mb-4 last:mb-0 font-bold text-base"
+    <div class="uppercase font-bold text-gray-400 text-sm mb-5">Top Ligen</div>
+    <a
+      *ngFor="let league of gameOperation.top_leagues"
+      [routerLink]="['/', gameOperation.path, league.id]"
+      class="
+        block
+        mb-4
+        last:mb-0
+        font-bold
+        text-base
+        truncate
+        text-fb-gray-500
+        hover:text-black
+      "
     >
-      Test
-    </div>
+      {{ league.name }}
+    </a>
   </div>
 
   <div class="bg-white h-[57px] flex items-center justify-center">
