@@ -11,6 +11,7 @@ import { AssociationService, LeagueService } from '@floorball/core';
 import {
   GameOperation,
   GameScheduleEntry,
+  League,
   ScorerEntry,
   TableEntry,
 } from '@floorball/types';
@@ -22,7 +23,8 @@ import { Observable, Subject, takeUntil, tap } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OverviewComponent implements OnInit, OnDestroy {
-  selectedAssociation$?: Observable<GameOperation | null>;
+  selectedAssociation$!: Observable<GameOperation | null>;
+  selectedLeague$!: Observable<League | null>;
   teamRankings$?: Observable<TableEntry[] | null>;
   playerRankings$?: Observable<ScorerEntry[] | null>;
   matches$?: Observable<GameScheduleEntry[] | null>;
@@ -38,8 +40,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
+    this.selectedLeague$ = this._leagueService.selectedLeague$;
     this._associationService.selectAssociation(this._route);
-
     this._leagueService.selectedLeague$
       .pipe(
         tap((league) => {
