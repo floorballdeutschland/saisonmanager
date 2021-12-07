@@ -1,42 +1,53 @@
-<div class="container mx-auto px-4 lg:px-8">
-  <h2 class="font-bold text-xl lg:text-2xl mt-4 lg:mt-8">Aktueller Spieltag</h2>
+<ng-container *ngIf="selectedLeague$ | async as selectedLeague">
+  <div
+    class="container mx-auto px-4 lg:px-8"
+    *ngIf="selectedLeague.league_type === 'league'"
+  >
+    <h2 class="font-bold text-xl lg:text-2xl mt-4 lg:mt-8">
+      Aktueller Spieltag
+    </h2>
 
-  <div class="grid grid-cols-5 mt-4 lg:mt-8 gap-8">
-    <div class="lg:col-span-3">
-      <ng-container *ngIf="matches$ | async as matches">
-        <fb-match-pairing-list [matches]="matches"></fb-match-pairing-list>
+    <div class="grid grid-cols-5 mt-4 lg:mt-8 gap-8">
+      <div class="lg:col-span-3">
+        <ng-container *ngIf="matches$ | async as matches">
+          <fb-match-pairing-list [matches]="matches"></fb-match-pairing-list>
+        </ng-container>
+      </div>
+
+      <div class="lg:col-span-2">
+        <ng-container *ngIf="teamRankings$ | async as teamRankings">
+          <fb-team-ranking-table
+            type="small"
+            [data]="teamRankings"
+          ></fb-team-ranking-table>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <fb-matches-with-rounds
+    *ngIf="selectedLeague.league_type === 'cup'"
+  ></fb-matches-with-rounds>
+
+  <div class="mt-6 lg:mt-12 border-b-[10px] border-fb-gray-200 pb-5">
+    <div class="container mx-auto px-4 lg:px-8">
+      <h2 class="font-bold text-xl lg:text-2xl mb-4 lg:mb-8">Top 10 Scorer</h2>
+      <ng-container *ngIf="playerRankings$ | async as playerRankings">
+        <fb-player-ranking-table
+          [data]="playerRankings.slice(0, 10)"
+        ></fb-player-ranking-table>
       </ng-container>
     </div>
+  </div>
 
-    <div class="lg:col-span-2">
-      <ng-container *ngIf="teamRankings$ | async as teamRankings">
-        <fb-team-ranking-table
-          type="small"
-          [data]="teamRankings"
-        ></fb-team-ranking-table>
+  <div class="mt-5 lg:mt-10 pb-2.5 lg:pb-5 border-b-[50px] border-fb-gray-200">
+    <div class="container mx-auto px-8">
+      <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
+        <!--      TODO Use similar leagues instead of top leagues-->
+        <fb-similar-leagues
+          [leagues]="selectedAssociation.top_leagues"
+        ></fb-similar-leagues>
       </ng-container>
     </div>
   </div>
-</div>
-
-<div class="mt-6 lg:mt-12 border-b-[10px] border-fb-gray-200 pb-5">
-  <div class="container mx-auto px-4 lg:px-8">
-    <h2 class="font-bold text-xl lg:text-2xl mb-4 lg:mb-8">Top 10 Scorer</h2>
-    <ng-container *ngIf="playerRankings$ | async as playerRankings">
-      <fb-player-ranking-table
-        [data]="playerRankings.slice(0, 10)"
-      ></fb-player-ranking-table>
-    </ng-container>
-  </div>
-</div>
-
-<div class="mt-5 lg:mt-10 pb-2.5 lg:pb-5 border-b-[50px] border-fb-gray-200">
-  <div class="container mx-auto px-8">
-    <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
-      <!--      TODO Use similar leagues instead of top leagues-->
-      <fb-similar-leagues
-        [leagues]="selectedAssociation.top_leagues"
-      ></fb-similar-leagues>
-    </ng-container>
-  </div>
-</div>
+</ng-container>

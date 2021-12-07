@@ -11,6 +11,7 @@ export interface League {
   short_name: string;
   season_id: string;
   order_key: string;
+  league_type: 'cup' | 'league';
   game_day_numbers: number[];
   similar_leagues?: League[];
 }

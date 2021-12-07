@@ -33,6 +33,7 @@
           <fb-tab-item
             [link]="['./', 'tabelle']"
             [activeColor]="selectedAssociation | gradient"
+            *ngIf="selectedLeague.league_type === 'league'"
             >Tabelle</fb-tab-item
           >
           <fb-tab-item
