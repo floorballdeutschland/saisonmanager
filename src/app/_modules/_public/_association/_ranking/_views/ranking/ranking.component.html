@@ -1,7 +1,7 @@
-<div class="container mx-auto px-8 mb-5">
-  <h2 class="font-bold text-2xl mt-8">Tabelle</h2>
+<div class="container mx-auto px-4 lg:px-8 mb-5">
+  <h2 class="font-bold text-xl lg:text-2xl mt-8">Tabelle</h2>
 
-  <div class="mt-8">
+  <div class="mt-4 lg:mt-8">
     <ng-container *ngIf="teamRankings$ | async as teamRankings">
       <fb-team-ranking-table
         [routerPrefix]="['../', 'team']"
@@ -12,10 +12,10 @@
 </div>
 
 <div class="border-t border-fb-gray-200">
-  <div class="container mx-auto px-8">
-    <div class="mt-12">
-      <div class="flex items-center justify-between mb-8">
-        <h2 class="font-bold text-2xl">Spielbegegnungen</h2>
+  <div class="container mx-auto px-4 lg:px-8">
+    <div class="mt-6 lg:mt-12">
+      <div class="flex items-center justify-between mb-4 lg:mb-8">
+        <h2 class="font-bold text-xl lg:text-2xl">Spielbegegnungen</h2>
         <ng-container *ngIf="selectedLeague$ | async as selectedLeague">
           <fb-match-day
             [matchDays]="selectedLeague.game_day_numbers"
