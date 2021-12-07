@@ -35,6 +35,12 @@ export interface GameResult {
   overtime: boolean;
 }
 
+export interface Referee {
+  license_id: string;
+  first_name: string;
+  last_name: string;
+}
+
 export interface Game {
   id: number;
   game_number: string;
@@ -63,4 +69,5 @@ export interface Game {
   arena_name: string;
   arena_address: string;
   arena_short: string;
+  referees: Referee[];
 }
