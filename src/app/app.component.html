@@ -1,6 +1,6 @@
 <ng-container *ngIf="(isLoading$ | async) === false">
   <div class="grid grid-cols-[300px,1fr]">
-    <div class="hidden md:block h-full w-full">
+    <div class="hidden md:block min-h-screen h-full w-full">
       <fb-sidebar>
         <fb-league-navigation
           *ngIf="leagues$ | async as leagues"
