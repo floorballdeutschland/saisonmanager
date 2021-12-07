@@ -70,5 +70,4 @@ export interface Game {
   arena_address: string;
   arena_short: string;
   referees: Referee[];
-  state: 'record_created' | 'no_record';
 }

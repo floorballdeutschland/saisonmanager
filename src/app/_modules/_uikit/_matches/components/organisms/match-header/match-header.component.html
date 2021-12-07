@@ -11,32 +11,61 @@
     </div>
     <div
       class="
-        flex flex-col
+        grid grid-cols-1
+        gap-3
         content-center
         justify-center
         text-center
-        max-w-[282px]
+        max-w-[300px]
+        min-w-[250px]
       "
     >
-      <span class="block text-base text-fb-gray-400 font-bold"
-        ><i>{{ game.date | date: "dd.MM.YYYY" }}</i>
-        {{ game.start_time ? game.start_time + " Uhr" : "-" }}</span
+      <p
+        class="block text-base font-bold"
+        [ngClass]="{ 'text-fb-gray-400': game.started }"
       >
-      <span class="block text-4.5xl font-bold"
-        >{{ game.result.home_goals }} : {{ game.result.guest_goals }}</span
-      >
-      <ul class="grid grid-cols-3 row justify-center gap-3">
+        {{ game.date | date: "dd.MM.YYYY" }}
+        <ng-container *ngIf="game.start_time"
+          >– {{ game.start_time }} Uhr</ng-container
+        >
+      </p>
+      <div *ngIf="game.result_string && game.started">
+        <ng-container
+          *ngIf="game.result_string | normalizeMatchResult as resultData"
+        >
+          <p
+            *ngIf="resultData.result"
+            class="text-4.5xl font-bold leading-none whitespace-nowrap"
+          >
+            {{ resultData.result }}
+          </p>
+          <p
+            *ngIf="resultData.extraTime"
+            class="text-lg leading-none whitespace-nowrap"
+          >
+            {{ resultData.extraTime }}
+          </p>
+        </ng-container>
+      </div>
+      <ul class="flex justify-center gap-5" *ngIf="game.result && game.started">
         <ng-container
           *ngFor="
             let periodResult of game.result.home_goals_period;
+            let isLast = last;
             let i = index
           "
         >
-          <li class="text-black text-base font-bold">
-            {{ periodResult }} : {{ game.result.guest_goals_period[i] }}
+          <li
+            class="text-black text-base font-bold"
+            *ngIf="!isLast || (game.result.overtime && isLast)"
+          >
+            {{ periodResult }} : {{ game.result.guest_goals_period?.[i] }}
           </li>
         </ng-container>
       </ul>
+      <div *ngIf="!game.started" class="text-fb-gray-400">
+        {{ game.arena_address }}
+      </div>
     </div>
     <div class="flex flex-col justify-start h-[160px]">
       <img
