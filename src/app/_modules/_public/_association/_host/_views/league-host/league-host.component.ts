@@ -10,10 +10,9 @@ import {
   AssociationService,
   FavoriteService,
   LeagueService,
-  StorageService,
 } from '@floorball/core';
 import { GameOperation, League } from '@floorball/types';
-import { Observable, Subject, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, takeUntil, tap } from 'rxjs';
 
 @Component({
   templateUrl: './league-host.component.html',
@@ -23,6 +22,7 @@ import { Observable, Subject, takeUntil, tap } from 'rxjs';
 export class LeagueHostComponent implements OnInit, OnDestroy {
   selectedLeague$!: Observable<League | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
+  displayAssociationHeader$!: BehaviorSubject<boolean>;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -30,7 +30,6 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
     private _leagueService: LeagueService,
     private _associationService: AssociationService,
     private _route: ActivatedRoute,
-    private _storageService: StorageService,
     private _favoriteService: FavoriteService
   ) {}
 
@@ -41,6 +40,8 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.displayAssociationHeader$ =
+      this._associationService.displayAssociationHeader$;
     this.selectedLeague$ = this._leagueService.selectedLeague$;
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
 

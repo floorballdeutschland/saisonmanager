@@ -24,6 +24,8 @@ export class AssociationService {
   currentSeasonId$: Observable<number>;
   seasons$: Observable<Season[]>;
 
+  displayAssociationHeader$ = new BehaviorSubject(true);
+
   private _route$ = new BehaviorSubject<ActivatedRoute | null>(null);
 
   constructor(private http: HttpClient) {
