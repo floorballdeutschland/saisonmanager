@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Input,
   ViewEncapsulation,
 } from '@angular/core';
+import { League } from '@floorball/types';
 
 @Component({
   selector: 'fb-similar-leagues',
@@ -10,4 +12,7 @@ import {
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SimilarLeaguesComponent {}
+export class SimilarLeaguesComponent {
+  @Input()
+  leagues!: League[];
+}
