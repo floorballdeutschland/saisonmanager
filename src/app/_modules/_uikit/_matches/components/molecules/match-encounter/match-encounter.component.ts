@@ -15,4 +15,7 @@ import { GameScheduleEntry } from '@floorball/types';
 export class MatchEncounterComponent {
   @Input()
   match!: GameScheduleEntry;
+
+  @Input()
+  baseRoute: string[] = ['../'];
 }

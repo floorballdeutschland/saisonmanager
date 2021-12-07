@@ -16,7 +16,10 @@
     </ul>
 
     <ng-container *ngIf="matches$ | async as matches">
-      <fb-match-encounter-list [matches]="matches"></fb-match-encounter-list>
+      <fb-match-encounter-list
+        [matches]="matches"
+        [baseRoute]="['./']"
+      ></fb-match-encounter-list>
     </ng-container>
   </div>
 </ng-container>

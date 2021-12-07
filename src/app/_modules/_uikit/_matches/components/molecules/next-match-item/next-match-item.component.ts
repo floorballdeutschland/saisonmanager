@@ -15,4 +15,7 @@ import { GameScheduleEntry } from '@floorball/types';
 export class NextMatchItemComponent {
   @Input()
   match!: GameScheduleEntry;
+
+  @Input()
+  routerPrefix: string[] = ['./', 'spiel'];
 }

@@ -1,5 +1,5 @@
 <a
-  [routerLink]="['../', 'spiel', match.game_id]"
+  [routerLink]="['spiel', match.game_id.toString()] | routeMerge: baseRoute"
   class="
     grid grid-cols-[1fr,1fr,42px,80px,42px,1fr,1fr]
     gap-5
