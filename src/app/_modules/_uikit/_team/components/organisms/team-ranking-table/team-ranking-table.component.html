@@ -55,40 +55,66 @@
   </ng-container>
 
   <ng-container cdkColumnDef="table.wins">
-    <cdk-header-cell *cdkHeaderCellDef>S</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.won }}</cdk-cell>
+    <cdk-header-cell class="hidden md:flex" *cdkHeaderCellDef
+      >S</cdk-header-cell
+    >
+    <cdk-cell class="hidden md:flex" *cdkCellDef="let element">{{
+      element.won
+    }}</cdk-cell>
   </ng-container>
 
   <ng-container cdkColumnDef="table.draws">
-    <cdk-header-cell *cdkHeaderCellDef>U</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.draw }}</cdk-cell>
+    <cdk-header-cell class="hidden md:flex" *cdkHeaderCellDef
+      >U</cdk-header-cell
+    >
+    <cdk-cell class="hidden md:flex" *cdkCellDef="let element">{{
+      element.draw
+    }}</cdk-cell>
   </ng-container>
 
   <ng-container cdkColumnDef="table.defeats">
-    <cdk-header-cell *cdkHeaderCellDef>N</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.lost }}</cdk-cell>
+    <cdk-header-cell class="hidden md:flex" *cdkHeaderCellDef
+      >N</cdk-header-cell
+    >
+    <cdk-cell class="hidden md:flex" *cdkCellDef="let element">{{
+      element.lost
+    }}</cdk-cell>
   </ng-container>
 
   <ng-container cdkColumnDef="table.suddenDeathWins">
-    <cdk-header-cell *cdkHeaderCellDef>SDS</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.won_ot }}</cdk-cell>
+    <cdk-header-cell class="hidden md:hidden xl:flex" *cdkHeaderCellDef
+      >SDS</cdk-header-cell
+    >
+    <cdk-cell class="hidden md:hidden xl:flex" *cdkCellDef="let element">{{
+      element.won_ot
+    }}</cdk-cell>
   </ng-container>
 
   <ng-container cdkColumnDef="table.suddenDeathDefeats">
-    <cdk-header-cell *cdkHeaderCellDef>SDN</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.lost_ot }}</cdk-cell>
+    <cdk-header-cell class="hidden md:hidden xl:flex" *cdkHeaderCellDef
+      >SDN</cdk-header-cell
+    >
+    <cdk-cell class="hidden md:hidden xl:flex" *cdkCellDef="let element">{{
+      element.lost_ot
+    }}</cdk-cell>
   </ng-container>
 
   <ng-container cdkColumnDef="table.goals">
-    <cdk-header-cell *cdkHeaderCellDef>Tore</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element"
+    <cdk-header-cell class="hidden md:flex" *cdkHeaderCellDef
+      >Tore</cdk-header-cell
+    >
+    <cdk-cell class="hidden md:flex" *cdkCellDef="let element"
       >{{ element.goals_scored }}:{{ element.goals_received }}</cdk-cell
     >
   </ng-container>
 
   <ng-container cdkColumnDef="table.goalsDiff">
-    <cdk-header-cell *cdkHeaderCellDef>Tdiff.</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.goals_diff }}</cdk-cell>
+    <cdk-header-cell class="hidden md:flex" *cdkHeaderCellDef
+      >Tdiff.</cdk-header-cell
+    >
+    <cdk-cell class="hidden md:flex" *cdkCellDef="let element">{{
+      element.goals_diff
+    }}</cdk-cell>
   </ng-container>
 
   <ng-container cdkColumnDef="table.points">
@@ -98,7 +124,7 @@
 
   <cdk-header-row
     class="
-      grid
+      grid grid-cols-[35px,1fr,repeat(2,35px)]
       items-center
       text-center
       border-b border-fb-gray-200
@@ -108,8 +134,9 @@
       h-12
     "
     [ngClass]="{
-      'grid-cols-[25px,1fr,repeat(9,60px)]': type !== 'small',
-      'grid-cols-[25px,1fr,repeat(2,60px)]': type === 'small'
+      'md:grid-cols-[25px,1fr,repeat(7,60px)] lg:grid-cols-[25px,1fr,repeat(7,60px)] xl:grid-cols-[25px,1fr,repeat(9,60px)]':
+        type !== 'small',
+      'md:grid-cols-[25px,1fr,repeat(2,60px)]': type === 'small'
     }"
     *cdkHeaderRowDef="
       type === 'small'
@@ -132,7 +159,7 @@
   <cdk-row
     class="
       relative
-      grid
+      grid grid-cols-[35px,1fr,repeat(2,35px)]
       items-center
       text-center text-sm
       px-[10px]
@@ -142,8 +169,9 @@
       transition
     "
     [ngClass]="{
-      'grid-cols-[25px,1fr,repeat(9,60px)]': type !== 'small',
-      'grid-cols-[25px,1fr,repeat(2,60px)]': type === 'small'
+      'md:grid-cols-[25px,1fr,repeat(7,60px)] lg:grid-cols-[25px,1fr,repeat(7,60px)] xl:grid-cols-[25px,1fr,repeat(9,60px)]':
+        type !== 'small',
+      'md:grid-cols-[25px,1fr,repeat(2,60px)]': type === 'small'
     }"
     [id]="row.uuid"
     *cdkRowDef="

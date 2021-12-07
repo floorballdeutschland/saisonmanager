@@ -97,7 +97,7 @@
     <cdk-header-cell
       class="
         hidden
-        lg:flex
+        md:flex
         items-center
         justify-center
         border-r border-fb-gray-200
@@ -108,7 +108,7 @@
     <cdk-cell
       class="
         hidden
-        lg:flex
+        md:flex
         items-center
         justify-center
         border-r border-fb-gray-200
@@ -120,12 +120,12 @@
 
   <ng-container cdkColumnDef="table.penalty_2">
     <cdk-header-cell
-      class="hidden lg:flex items-center justify-center"
+      class="hidden md:flex items-center justify-center"
       *cdkHeaderCellDef
       >2'</cdk-header-cell
     >
     <cdk-cell
-      class="hidden lg:flex items-center justify-center"
+      class="hidden md:flex items-center justify-center"
       *cdkCellDef="let element"
       >{{ element.penalty_2 }}</cdk-cell
     >
@@ -133,12 +133,12 @@
 
   <ng-container cdkColumnDef="table.penalty_5">
     <cdk-header-cell
-      class="hidden lg:flex items-center justify-center"
+      class="hidden md:flex items-center justify-center"
       *cdkHeaderCellDef
       >5'</cdk-header-cell
     >
     <cdk-cell
-      class="hidden lg:flex items-center justify-center"
+      class="hidden md:flex items-center justify-center"
       *cdkCellDef="let element"
       >{{ element.penalty_5 }}</cdk-cell
     >
@@ -146,12 +146,12 @@
 
   <ng-container cdkColumnDef="table.penalty_10">
     <cdk-header-cell
-      class="hidden lg:flex items-center justify-center"
+      class="hidden md:flex items-center justify-center"
       *cdkHeaderCellDef
       >10'</cdk-header-cell
     >
     <cdk-cell
-      class="hidden lg:flex items-center justify-center"
+      class="hidden md:flex items-center justify-center"
       *cdkCellDef="let element"
       >{{ element.penalty_10 }}</cdk-cell
     >
@@ -159,12 +159,12 @@
 
   <ng-container cdkColumnDef="table.penalty_ms">
     <cdk-header-cell
-      class="hidden lg:flex items-center justify-center"
+      class="hidden md:flex items-center justify-center"
       *cdkHeaderCellDef
       >MS'</cdk-header-cell
     >
     <cdk-cell
-      class="hidden lg:flex items-center justify-center"
+      class="hidden md:flex items-center justify-center"
       *cdkCellDef="let element"
       >{{ element.penalty_ms }}</cdk-cell
     >
@@ -173,7 +173,8 @@
   <cdk-header-row
     class="
       grid grid-cols-[25px,1fr,repeat(3,35px)]
-      lg:grid-cols-[25px,1fr,repeat(8,60px)]
+      md:grid-cols-[25px,1fr,repeat(8,50px)]
+      xl:grid-cols-[25px,1fr,repeat(8,60px)]
       text-center
       border-b border-fb-gray-200
       items-stretch
@@ -198,7 +199,8 @@
   <cdk-row
     class="
       grid grid-cols-[25px,1fr,repeat(3,35px)]
-      lg:grid-cols-[25px,1fr,repeat(8,60px)]
+      md:grid-cols-[25px,1fr,repeat(8,50px)]
+      xl:grid-cols-[25px,1fr,repeat(8,60px)]
       text-center text-sm
       px-[10px]
       lg:h-12
