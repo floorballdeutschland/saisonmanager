@@ -1,16 +1,42 @@
-<div class="flex flex-col items-center justify-center px-3 py-1">
-  <div class="text-xs text-fb-gray-400">Date</div>
-  <div class="grid grid-cols-3 items-center my-2">
-    <div>
-      <img src="http://via.placeholder.com/42x42" />
+<div class="flex flex-col items-center justify-center px-3 pb-1 pt-4">
+  <div class="text-xs text-fb-gray-400">{{ match.date | date }}</div>
+  <div class="grid grid-cols-3 items-center justify-items-center my-2">
+    <div class="w-[42px] h-[42px]">
+      <img
+        [src]="match.home_team_small_logo"
+        class="w-full h-full object-contain"
+      />
     </div>
 
-    <div class="text-center text-sm text-fb-gray-500 font-bold">0 : 0</div>
+    <div class="text-center text-sm text-fb-gray-500 font-bold w-[75px]">
+      <ng-container *ngIf="match.state === 'no_record'">
+        <p class="text-base whitespace-nowrap" *ngIf="match.time">
+          {{ match.time }} Uhr
+        </p>
+        <p class="text-xs leading-3" *ngIf="!match.time">k.A.</p>
+      </ng-container>
+      <ng-container *ngIf="match.state !== 'no_record'">
+        <p class="text-2xl" *ngIf="!match.result_string">- : -</p>
+        <ng-container
+          *ngIf="match.result_string | normalizeMatchResult as resultData"
+        >
+          <p *ngIf="resultData.result" class="text-2xl">
+            {{ resultData.result }}
+          </p>
+          <p *ngIf="resultData.extraTime" class="text-xs">
+            {{ resultData.extraTime }}
+          </p>
+        </ng-container>
+      </ng-container>
+    </div>
 
-    <div>
-      <img src="http://via.placeholder.com/42x42" />
+    <div class="w-[42px] h-[42px]">
+      <img
+        [src]="match.guest_team_small_logo"
+        class="w-full h-full object-contain"
+      />
     </div>
   </div>
 
-  <div class="text-xs text-fb-gray-400">(0 : 0 ; 0 : 0 ; 0 : 0)</div>
+  <div class="text-xs text-fb-gray-400">{{ match.arena_address }}</div>
 </div>

@@ -11,7 +11,7 @@ import {
   FavoriteService,
   LeagueService,
 } from '@floorball/core';
-import { GameOperation, League } from '@floorball/types';
+import { GameOperation, GameScheduleEntry, League } from '@floorball/types';
 import { BehaviorSubject, Observable, Subject, takeUntil, tap } from 'rxjs';
 
 @Component({
@@ -22,6 +22,7 @@ import { BehaviorSubject, Observable, Subject, takeUntil, tap } from 'rxjs';
 export class LeagueHostComponent implements OnInit, OnDestroy {
   selectedLeague$!: Observable<League | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
+  matches$?: Observable<GameScheduleEntry[] | null>;
   displayAssociationHeader$!: BehaviorSubject<boolean>;
 
   private _destroy$ = new Subject<boolean>();
@@ -53,6 +54,17 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
         takeUntil(this._destroy$)
       )
       .subscribe();
+
+    this._leagueService.selectedLeague$
+      .pipe(
+        tap((league) => {
+          if (league?.id) {
+            this.getMatches(league.id);
+          }
+        }),
+        takeUntil(this._destroy$)
+      )
+      .subscribe();
   }
 
   addToFavorites(league: League): void {
@@ -65,5 +77,10 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
 
   isLeagueFavorite(leagueId: number): boolean {
     return this._favoriteService.isLeagueFavorite(leagueId);
+  }
+
+  getMatches(leagueNumber: number) {
+    this.matches$ =
+      this._leagueService.getGameScheduleForCurrentGameDay(leagueNumber);
   }
 }

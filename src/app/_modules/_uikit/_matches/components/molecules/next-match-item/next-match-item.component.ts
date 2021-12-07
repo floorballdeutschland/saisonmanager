@@ -4,6 +4,7 @@ import {
   Input,
   ViewEncapsulation,
 } from '@angular/core';
+import { GameScheduleEntry } from '@floorball/types';
 
 @Component({
   selector: 'fb-next-match-item',
@@ -13,6 +14,5 @@ import {
 })
 export class NextMatchItemComponent {
   @Input()
-  // TODO Type
-  match!: unknown;
+  match!: GameScheduleEntry;
 }

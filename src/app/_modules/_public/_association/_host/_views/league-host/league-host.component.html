@@ -1,5 +1,9 @@
 <ng-container *ngIf="selectedLeague$ | async as selectedLeague">
   <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
+    <ng-container *ngIf="matches$ | async as matches">
+      <fb-next-match-list [matches]="matches"></fb-next-match-list>
+    </ng-container>
+
     <div *ngIf="displayAssociationHeader$ | async">
       <fb-header
         [headline]="selectedLeague.name"
