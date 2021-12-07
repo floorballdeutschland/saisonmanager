@@ -1,12 +1,39 @@
 <div
-  class="flex items-end py-5 px-8 content-between border-b border-fb-gray-200"
+  class="
+    flex flex-col
+    sm:flex-row
+    items-start
+    sm:items-end
+    py-5
+    px-4
+    lg:px-8
+    content-between
+    border-b border-fb-gray-200
+  "
 >
-  <h1 *ngIf="headline" class="font-bold text-black text-4.5xl leading-[52px]">
+  <h1
+    *ngIf="headline"
+    class="
+      font-bold
+      text-black text-2xl
+      lg:text-4.5xl
+      leading-[26px]
+      lg:leading-[52px]
+    "
+  >
     {{ headline }}
   </h1>
   <h2
     *ngIf="subline"
-    class="ml-5 font-bold text-fb-gray-400 text-2xl leading-[39px]"
+    class="
+      mt-4
+      sm:mt-0 sm:ml-5
+      font-bold
+      text-fb-gray-400 text-1xl
+      lg:text-2xl
+      leading-[18px]
+      lg:leading-[39px]
+    "
   >
     {{ subline }}
   </h2>
@@ -40,8 +67,10 @@
         text-black
         leading-[17px]
         text-sm
-        px-5
-        py-2.5
+        px-2.5
+        md:px-5
+        py-1.5
+        md:py-2.5
         border
         bg-white
         hover:bg-fb-gray-200
