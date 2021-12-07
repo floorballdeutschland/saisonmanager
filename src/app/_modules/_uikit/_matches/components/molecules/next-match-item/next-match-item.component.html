@@ -1,4 +1,7 @@
-<div class="flex flex-col items-center justify-center px-3 pb-1 pt-4">
+<a
+  class="flex flex-col items-center justify-center px-3 pb-1 pt-4"
+  [routerLink]="routerPrefix.concat([match.game_id.toString()])"
+>
   <div class="text-xs text-fb-gray-400">{{ match.date | date }}</div>
   <div class="grid grid-cols-3 items-center justify-items-center my-2">
     <div class="w-[42px] h-[42px]">
@@ -41,7 +44,7 @@
   </div>
 
   <div class="text-xs text-fb-gray-400">{{ match.arena_address }}</div>
-</div>
+</a>
 
 <ng-template #fallback>
   <svg
