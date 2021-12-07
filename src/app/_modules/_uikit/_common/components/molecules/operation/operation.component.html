@@ -35,7 +35,13 @@
 
   <div class="bg-white h-[57px] flex items-center justify-center">
     <a
-      [routerLink]="['/', gameOperation.path]"
+      [routerLink]="[
+        '/',
+        gameOperation.path,
+        gameOperation.top_leagues?.length && gameOperation.top_leagues[0]?.id
+          ? gameOperation.top_leagues[0].id
+          : ''
+      ]"
       [title]="gameOperation.name"
       class="
         font-bold
