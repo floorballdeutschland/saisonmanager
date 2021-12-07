@@ -17,13 +17,26 @@
       </ng-container>
     </div>
   </div>
+</div>
 
-  <div class="mt-12">
+<div class="mt-12 border-b-[10px] border-fb-gray-200 pb-5">
+  <div class="container mx-auto px-8">
     <h2 class="font-bold text-2xl mb-8">Top 10 Scorer</h2>
     <ng-container *ngIf="playerRankings$ | async as playerRankings">
       <fb-player-ranking-table
         [data]="playerRankings.slice(0, 10)"
       ></fb-player-ranking-table>
+    </ng-container>
+  </div>
+</div>
+
+<div class="mt-10 pb-5 border-b-[50px] border-fb-gray-200">
+  <div class="container mx-auto px-8">
+    <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
+      <!--      TODO Use similar leagues instead of top leagues-->
+      <fb-similar-leagues
+        [leagues]="selectedAssociation.top_leagues"
+      ></fb-similar-leagues>
     </ng-container>
   </div>
 </div>

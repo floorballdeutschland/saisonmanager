@@ -226,7 +226,7 @@ export class StyleguideComponent {
     id: 1,
     short_name: 'Tes',
     logo_quad_url: '',
-    top_league_ids: [],
+    top_leagues: [],
   };
 
   game?: Game | null;

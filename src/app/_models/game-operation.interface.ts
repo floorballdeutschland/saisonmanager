@@ -1,3 +1,5 @@
+import { League } from './league.interface';
+
 export interface GameOperation {
   id: number;
   name: string;
@@ -5,5 +7,5 @@ export interface GameOperation {
   path: string;
   logo_url?: string;
   logo_quad_url?: string;
-  top_league_ids: number[];
+  top_leagues: League[];
 }
