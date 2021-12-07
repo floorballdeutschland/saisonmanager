@@ -9,8 +9,10 @@ export interface NormalizedMatchResult {
   name: 'normalizeMatchResult',
 })
 export class NormalizeMatchResultPipe implements PipeTransform {
-  transform(value: string): NormalizedMatchResult {
-    console.log(value, value.replace('n.V', ''));
+  transform(value: string | undefined): NormalizedMatchResult {
+    if (!value) {
+      return { result: '', extraTime: '' };
+    }
     return {
       result: value.replace('n.V', '').trim(),
       extraTime: value.includes('n.V') ? 'n.V' : null,
