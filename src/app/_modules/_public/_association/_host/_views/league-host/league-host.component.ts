@@ -12,7 +12,16 @@ import {
   LeagueService,
 } from '@floorball/core';
 import { GameOperation, GameScheduleEntry, League } from '@floorball/types';
-import { BehaviorSubject, Observable, Subject, takeUntil, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  retry,
+  Subject,
+  switchMap,
+  takeUntil,
+  tap,
+  timer,
+} from 'rxjs';
 
 @Component({
   templateUrl: './league-host.component.html',
@@ -80,7 +89,14 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
   }
 
   getMatches(leagueNumber: number) {
-    this.matches$ =
-      this._leagueService.getGameScheduleForCurrentGameDay(leagueNumber);
+    this.matches$ = timer(1, 30000).pipe(
+      switchMap(() =>
+        this._leagueService
+          .getGameScheduleForCurrentGameDay(leagueNumber)
+          .pipe()
+      ),
+      retry(),
+      takeUntil(this._destroy$)
+    );
   }
 }

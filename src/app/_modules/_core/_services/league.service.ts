@@ -42,7 +42,8 @@ export class LeagueService {
           return of(null);
         }
         return this.getLeague(parseInt(_route.snapshot.params['leagueId']));
-      })
+      }),
+      shareReplay()
     );
 
     this.leagues$ = combineLatest([

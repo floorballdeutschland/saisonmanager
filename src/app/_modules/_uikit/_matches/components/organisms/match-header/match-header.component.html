@@ -22,14 +22,36 @@
     >
       <p
         class="block text-base font-bold"
-        [ngClass]="{ 'text-fb-gray-400': game.started }"
+        [ngClass]="{ 'text-fb-gray-400': game.started && game.ended }"
       >
-        {{ game.date | date: "dd.MM.YYYY" }}
-        <ng-container *ngIf="game.start_time"
-          >– {{ game.start_time }} Uhr</ng-container
-        >
+        <ng-container *ngIf="game.started && !game.ended; else gameDate">
+          <div
+            class="
+              uppercase
+              bg-pink-500
+              text-sm text-white
+              inline-block
+              mx-auto
+              rounded
+              px-2
+            "
+          >
+            Live
+          </div>
+        </ng-container>
+        <ng-template #gameDate>
+          {{ game.date | date: "dd.MM.YYYY" }}
+          <ng-container *ngIf="game.start_time">
+            – {{ game.start_time }} Uhr
+          </ng-container>
+        </ng-template>
       </p>
-      <div *ngIf="game.result_string && game.started">
+      <div
+        *ngIf="game.result_string && game.started"
+        [ngClass]="{
+          'animate-pulse text-pink-500': game.started && !game.ended
+        }"
+      >
         <ng-container
           *ngIf="game.result_string | normalizeMatchResult as resultData"
         >

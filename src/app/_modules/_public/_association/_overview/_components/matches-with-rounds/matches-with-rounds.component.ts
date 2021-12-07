@@ -1,33 +1,33 @@
 import {
   Component,
-  OnInit,
   ViewEncapsulation,
   ChangeDetectionStrategy,
+  OnInit,
   OnDestroy,
-  ChangeDetectorRef,
 } from '@angular/core';
-import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
-import { GameScheduleEntry, League, TableEntry } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
+import { GameScheduleEntry, League } from '@floorball/types';
+import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
 
 @Component({
-  templateUrl: './ranking.component.html',
+  selector: 'fb-matches-with-rounds',
+  templateUrl: './matches-with-rounds.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RankingComponent implements OnInit, OnDestroy {
-  teamRankings$?: Observable<TableEntry[] | null>;
-  matches$?: Observable<GameScheduleEntry[] | null>;
+export class MatchesWithRoundsComponent implements OnInit, OnDestroy {
   selectedLeague$!: Observable<League | null>;
-
   selectedMatchDay = 1;
+  matches$?: Observable<GameScheduleEntry[] | null>;
 
   private _destroy$ = new Subject<boolean>();
 
-  constructor(
-    private _leagueService: LeagueService,
-    private _cdr: ChangeDetectorRef
-  ) {}
+  constructor(private _leagueService: LeagueService) {}
+
+  ngOnDestroy(): void {
+    this._destroy$.next(true);
+    this._destroy$.complete();
+  }
 
   ngOnInit(): void {
     this.selectedLeague$ = this._leagueService.selectedLeague$;
@@ -36,23 +36,12 @@ export class RankingComponent implements OnInit, OnDestroy {
       .pipe(
         tap((league) => {
           if (league?.id) {
-            this.getTeamRanking(league.id);
             this.getMatches(league.id);
-            this._cdr.markForCheck();
           }
         }),
         takeUntil(this._destroy$)
       )
       .subscribe();
-  }
-
-  ngOnDestroy(): void {
-    this._destroy$.next(true);
-    this._destroy$.complete();
-  }
-
-  getTeamRanking(leagueNumber: number) {
-    this.teamRankings$ = this._leagueService.getTable(leagueNumber);
   }
 
   getMatches(leagueNumber: number) {
@@ -77,8 +66,9 @@ export class RankingComponent implements OnInit, OnDestroy {
   selectMatchDay(matchDay: number, leagueNumber: number) {
     this.selectedMatchDay = matchDay;
 
-    this.matches$ = this._leagueService
-      .getGameScheduleForGameDay(leagueNumber, matchDay)
-      .pipe(shareReplay());
+    this.matches$ = this._leagueService.getGameScheduleForGameDay(
+      leagueNumber,
+      matchDay
+    );
   }
 }
