@@ -17,6 +17,6 @@ import * as Views from './views';
     UikitMatchesModule,
     UikitCommonModule,
   ],
-  declarations: [Views.HomeComponent, Views.StyleguideComponent],
+  declarations: [Views.HomeComponent],
 })
 export class PublicHomeModule {}
