@@ -1,5 +1,15 @@
 <a
-  class="flex flex-col items-center justify-center px-3 pb-1 pt-4"
+  class="
+    flex flex-col
+    items-center
+    justify-center
+    px-3
+    pb-1
+    pt-4
+    transform
+    hover:scale-105 hover:bg-fb-gray-200
+    transition
+  "
   [routerLink]="routerPrefix.concat([match.game_id.toString()])"
 >
   <div class="text-xs text-fb-gray-400">{{ match.date | date }}</div>
