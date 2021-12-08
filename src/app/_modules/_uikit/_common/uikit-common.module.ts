@@ -23,6 +23,7 @@ import * as Pipes from './pipes';
     Pipes.NormalizeEventPipe,
     Pipes.NormalizeMatchResultPipe,
     Pipes.RouteMergePipe,
+    Organisms.MobileHeaderComponent,
   ],
   exports: [
     Atoms.LogoComponent,
@@ -39,6 +40,7 @@ import * as Pipes from './pipes';
     Pipes.NormalizeEventPipe,
     Pipes.NormalizeMatchResultPipe,
     Pipes.RouteMergePipe,
+    Organisms.MobileHeaderComponent,
   ],
 })
 export class UikitCommonModule {}
