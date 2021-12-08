@@ -6,7 +6,7 @@ import * as Views from './_views';
 import { LeagueHostComponent } from './_views/league-host/league-host.component';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
-import { UikitLoadingSkeletonsModule } from '../../../_uikit/_loading-skeletons';
+import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
 
 @NgModule({
   imports: [

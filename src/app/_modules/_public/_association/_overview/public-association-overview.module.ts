@@ -8,7 +8,7 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitTeamModule } from '@floorball/uikit/team';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitCommonModule } from '@floorball/uikit/common';
-import { UikitLoadingSkeletonsModule } from '../../../_uikit/_loading-skeletons';
+import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
 
 @NgModule({
   imports: [

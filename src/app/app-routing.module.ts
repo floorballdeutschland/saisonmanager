@@ -4,8 +4,19 @@ import { RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    loadChildren: () =>
-      import('@floorball/public/home').then((m) => m.PublicHomeModule),
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/public/home').then((m) => m.PublicHomeModule),
+      },
+
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/public/login').then((m) => m.PublicLoginModule),
+      },
+    ],
   },
   {
     path: '',
