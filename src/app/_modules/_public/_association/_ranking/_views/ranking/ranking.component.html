@@ -2,12 +2,18 @@
   <h2 class="font-bold text-xl lg:text-2xl mt-8">Tabelle</h2>
 
   <div class="mt-4 lg:mt-8">
-    <ng-container *ngIf="teamRankings$ | async as teamRankings">
+    <ng-container
+      *ngIf="teamRankings$ | async as teamRankings; else loadingTeamRankings"
+    >
       <fb-team-ranking-table
         [routerPrefix]="['../', 'team']"
         [data]="teamRankings"
       ></fb-team-ranking-table>
     </ng-container>
+
+    <ng-template #loadingTeamRankings>
+      <fb-skeleton-table></fb-skeleton-table>
+    </ng-template>
   </div>
 </div>
 
@@ -25,9 +31,13 @@
         </ng-container>
       </div>
 
-      <ng-container *ngIf="matches$ | async as matches">
+      <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
         <fb-match-encounter-list [matches]="matches"></fb-match-encounter-list>
       </ng-container>
+
+      <ng-template #loadingMatches>
+        <fb-skeleton-match-encounter-list></fb-skeleton-match-encounter-list>
+      </ng-template>
     </div>
   </div>
 </div>

@@ -6,6 +6,7 @@ import * as Views from './_views';
 import { UikitTeamModule } from '@floorball/uikit/team';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { UikitLoadingSkeletonsModule } from '../../../_uikit/_loading-skeletons';
 @NgModule({
   declarations: [Views.RankingComponent],
   imports: [
@@ -14,6 +15,7 @@ import { UikitCommonModule } from '@floorball/uikit/common';
     UikitTeamModule,
     UikitMatchesModule,
     UikitCommonModule,
+    UikitLoadingSkeletonsModule,
   ],
 })
 export class PublicAssociationRankingModule {}

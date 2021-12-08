@@ -7,15 +7,18 @@ import * as Organisms from './components/organisms';
   declarations: [
     Molecules.SkeletonNextMatchItemComponent,
     Molecules.SkeletonMatchPairingComponent,
+    Molecules.SkeletonMatchEncounterComponent,
     Organisms.SkeletonNextMatchListComponent,
     Organisms.SkeletonMatchPairingListComponent,
     Organisms.SkeletonTableComponent,
+    Organisms.SkeletonMatchEncounterListComponent,
   ],
   imports: [CommonModule],
   exports: [
     Organisms.SkeletonNextMatchListComponent,
     Organisms.SkeletonMatchPairingListComponent,
     Organisms.SkeletonTableComponent,
+    Organisms.SkeletonMatchEncounterListComponent,
   ],
 })
 export class UikitLoadingSkeletonsModule {}
