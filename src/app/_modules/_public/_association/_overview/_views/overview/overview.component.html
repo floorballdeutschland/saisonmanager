@@ -9,9 +9,13 @@
 
     <div class="grid grid-cols-5 mt-4 lg:mt-8 gap-8">
       <div class="lg:col-span-3">
-        <ng-container *ngIf="matches$ | async as matches">
+        <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
           <fb-match-pairing-list [matches]="matches"></fb-match-pairing-list>
         </ng-container>
+
+        <ng-template #loadingMatches>
+          <fb-skeleton-match-pairing-list></fb-skeleton-match-pairing-list>
+        </ng-template>
       </div>
 
       <div class="lg:col-span-2">

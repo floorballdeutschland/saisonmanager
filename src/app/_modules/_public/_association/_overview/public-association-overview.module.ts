@@ -8,6 +8,7 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitTeamModule } from '@floorball/uikit/team';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { UikitLoadingSkeletonsModule } from '../../../_uikit/_loading-skeletons';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { UikitCommonModule } from '@floorball/uikit/common';
     UikitTeamModule,
     UikitPlayerModule,
     UikitCommonModule,
+    UikitLoadingSkeletonsModule,
   ],
   declarations: [
     Views.OverviewComponent,

@@ -6,12 +6,14 @@ import * as Organisms from './components/organisms';
 @NgModule({
   declarations: [
     Molecules.SkeletonNextMatchItemComponent,
+    Molecules.SkeletonMatchPairingComponent,
     Organisms.SkeletonNextMatchListComponent,
+    Organisms.SkeletonMatchPairingListComponent,
   ],
   imports: [CommonModule],
   exports: [
-    Molecules.SkeletonNextMatchItemComponent,
     Organisms.SkeletonNextMatchListComponent,
+    Organisms.SkeletonMatchPairingListComponent,
   ],
 })
 export class UikitLoadingSkeletonsModule {}
