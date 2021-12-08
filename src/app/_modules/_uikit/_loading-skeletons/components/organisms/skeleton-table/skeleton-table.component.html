@@ -1,0 +1,90 @@
+<div
+  class="
+    grid
+    h-12
+    border-b border-fb-gray-200
+    place-items-center
+    px-[10px]
+    animate-pulse
+  "
+  [ngClass]="{
+    'grid-cols-[35px,1fr,repeat(2,35px)] md:grid-cols-[25px,1fr,repeat(2,60px)]':
+      type === 'small',
+    'grid-cols-[35px,1fr,repeat(3,35px)] md:grid-cols-[25px,1fr,repeat(8,60px)] ':
+      type === 'default'
+  }"
+>
+  <div><div class="h-[8px] w-[10px] bg-fb-gray-200"></div></div>
+  <div class="justify-self-start">
+    <div class="h-[8px] w-[80px] bg-fb-gray-200"></div>
+  </div>
+  <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
+  <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
+
+  <ng-container *ngIf="type === 'default'">
+    <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
+    <div class="hidden md:block">
+      <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
+    </div>
+    <div class="hidden md:block">
+      <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
+    </div>
+    <div class="hidden md:block">
+      <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
+    </div>
+    <div class="hidden md:block">
+      <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
+    </div>
+    <div class="hidden md:block">
+      <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
+    </div>
+  </ng-container>
+</div>
+<ng-container *ngFor="let item of [].constructor(10)">
+  <div
+    class="
+      h-12
+      grid
+      place-items-center
+      px-[10px]
+      items-center
+      odd:bg-fb-gray-300
+      animate-pulse
+    "
+    [ngClass]="{
+      'grid-cols-[35px,1fr,repeat(2,35px)] md:grid-cols-[25px,1fr,repeat(2,60px)]':
+        type === 'small',
+      'grid-cols-[35px,1fr,repeat(3,35px)] md:grid-cols-[25px,1fr,repeat(8,60px)]':
+        type === 'default'
+    }"
+  >
+    <div><div class="h-[8px] w-[10px] bg-fb-gray-200"></div></div>
+    <div class="flex items-center justify-self-start">
+      <div class="w-8 h-8 rounded-full bg-fb-gray-200 mr-2.5"></div>
+      <div class="h-[8px] min-w-[20px] md:min-w-[150px] bg-fb-gray-200"></div>
+    </div>
+    <div>
+      <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
+    </div>
+    <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
+
+    <ng-container *ngIf="type === 'default'">
+      <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
+      <div class="hidden md:block">
+        <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
+      </div>
+      <div class="hidden md:block">
+        <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
+      </div>
+      <div class="hidden md:block">
+        <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
+      </div>
+      <div class="hidden md:block">
+        <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
+      </div>
+      <div class="hidden md:block">
+        <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
+      </div>
+    </ng-container>
+  </div>
+</ng-container>

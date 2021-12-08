@@ -9,11 +9,13 @@ import * as Organisms from './components/organisms';
     Molecules.SkeletonMatchPairingComponent,
     Organisms.SkeletonNextMatchListComponent,
     Organisms.SkeletonMatchPairingListComponent,
+    Organisms.SkeletonTableComponent,
   ],
   imports: [CommonModule],
   exports: [
     Organisms.SkeletonNextMatchListComponent,
     Organisms.SkeletonMatchPairingListComponent,
+    Organisms.SkeletonTableComponent,
   ],
 })
 export class UikitLoadingSkeletonsModule {}

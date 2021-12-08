@@ -19,12 +19,21 @@
       </div>
 
       <div class="lg:col-span-2">
-        <ng-container *ngIf="teamRankings$ | async as teamRankings">
+        <ng-container
+          *ngIf="
+            teamRankings$ | async as teamRankings;
+            else loadingTeamRankings
+          "
+        >
           <fb-team-ranking-table
             type="small"
             [data]="teamRankings"
           ></fb-team-ranking-table>
         </ng-container>
+
+        <ng-template #loadingTeamRankings>
+          <fb-skeleton-table type="small"></fb-skeleton-table>
+        </ng-template>
       </div>
     </div>
   </div>
@@ -36,11 +45,20 @@
   <div class="mt-6 lg:mt-12 border-b-[10px] border-fb-gray-200 pb-5">
     <div class="container mx-auto px-4 lg:px-8">
       <h2 class="font-bold text-xl lg:text-2xl mb-4 lg:mb-8">Top 10 Scorer</h2>
-      <ng-container *ngIf="playerRankings$ | async as playerRankings">
+      <ng-container
+        *ngIf="
+          playerRankings$ | async as playerRankings;
+          else loadingPlayerRankings
+        "
+      >
         <fb-player-ranking-table
           [data]="playerRankings.slice(0, 10)"
         ></fb-player-ranking-table>
       </ng-container>
+
+      <ng-template #loadingPlayerRankings>
+        <fb-skeleton-table></fb-skeleton-table>
+      </ng-template>
     </div>
   </div>
 
