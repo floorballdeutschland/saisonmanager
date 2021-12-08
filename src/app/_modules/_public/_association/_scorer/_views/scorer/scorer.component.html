@@ -2,10 +2,19 @@
   <h2 class="font-bold text-xl lg:text-2xl mt-8">Top 30 Scorer</h2>
 
   <div class="mt-4 lg:mt-8">
-    <ng-container *ngIf="playerRankings$ | async as playerRankings">
+    <ng-container
+      *ngIf="
+        playerRankings$ | async as playerRankings;
+        else loadingPlayerRankings
+      "
+    >
       <fb-player-ranking-table
         [data]="playerRankings.slice(0, 30)"
       ></fb-player-ranking-table>
     </ng-container>
+
+    <ng-template #loadingPlayerRankings>
+      <fb-skeleton-table></fb-skeleton-table>
+    </ng-template>
   </div>
 </div>

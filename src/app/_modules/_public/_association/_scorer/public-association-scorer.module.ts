@@ -4,12 +4,14 @@ import { PublicAssociationScorerRoutingModule } from './public-association-score
 
 import * as Views from './_views';
 import { UikitPlayerModule } from '@floorball/uikit/player';
+import { UikitLoadingSkeletonsModule } from '../../../_uikit/_loading-skeletons';
 @NgModule({
   declarations: [Views.ScorerComponent],
   imports: [
     CommonModule,
     PublicAssociationScorerRoutingModule,
     UikitPlayerModule,
+    UikitLoadingSkeletonsModule,
   ],
 })
 export class PublicAssociationScorerModule {}
