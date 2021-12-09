@@ -1,7 +1,7 @@
 <div class="container mx-auto px-4 lg:px-8">
   <h2 class="font-bold text-xl lg:text-2xl mt-8">Top Scorer</h2>
 
-  <div class="mt-4 lg:mt-8">
+  <div class="mt-4 lg:mt-8 pb-16">
     <ng-container
       *ngIf="
         playerRankings$ | async as playerRankings;
@@ -12,11 +12,13 @@
         [data]="playerRankings.slice((currentPage - 1) * 30, 30 * currentPage)"
       ></fb-player-ranking-table>
 
-      <fb-pagination
-        [numberOfPages]="getPages(playerRankings.length)"
-        (changePage)="changePage($event)"
-        [currentPage]="currentPage"
-      ></fb-pagination>
+      <div class="mt-3">
+        <fb-pagination
+          [numberOfPages]="getPages(playerRankings.length)"
+          (changePage)="changePage($event)"
+          [currentPage]="currentPage"
+        ></fb-pagination>
+      </div>
     </ng-container>
 
     <ng-template #loadingPlayerRankings>
