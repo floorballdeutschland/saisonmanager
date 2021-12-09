@@ -51,6 +51,7 @@ export class ScorerComponent implements OnInit, OnDestroy {
   }
 
   changePage(page: number) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     this.currentPage = page;
   }
 
