@@ -3,9 +3,14 @@
     class="container mx-auto px-4 lg:px-8"
     *ngIf="selectedLeague.league_type === 'league'"
   >
-    <h2 class="font-bold text-xl lg:text-2xl mt-4 lg:mt-8">
-      Aktueller Spieltag
-    </h2>
+    <div class="flex items-end mt-4 lg:mt-8">
+      <h2 class="font-bold text-xl lg:text-2xl">Aktueller Spieltag</h2>
+      <ng-container *ngIf="matches$ | async as matches">
+        <span class="font-bold text-fb-gray-400 text-base ml-3"
+          >{{ matches[0].game_day }}. Spieltag</span
+        >
+      </ng-container>
+    </div>
 
     <div class="grid grid-cols-5 mt-4 lg:mt-8 gap-8">
       <div class="lg:col-span-3">
@@ -62,7 +67,7 @@
     </div>
   </div>
 
-  <div class="mt-5 lg:mt-10 pb-2.5 lg:pb-5 border-b-[50px] border-fb-gray-200">
+  <div class="mt-5 lg:mt-10 pb-2.5 lg:pb-16">
     <div class="container mx-auto px-8">
       <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
         <!--      TODO Use similar leagues instead of top leagues-->
