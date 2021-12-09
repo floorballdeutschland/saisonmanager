@@ -13,76 +13,82 @@
       Manager Login
     </h1>
 
-    <div class="flex flex-col">
-      <label for="username" class="font-medium text-base text-fb-gray-500"
-        >Benutzername</label
-      >
-      <input
-        type="text"
-        id="username"
-        class="
-          outline-none
-          text-fb-gray-500
-          box-shadow-none
-          w-full
-          md:w-[260px]
-          h-11
-          p-2
-          border border-fb-gray-400
-          focus-visible:border-fb-gray-900
-          hover:border-fb-gray-900
-          transition
-          rounded
-          text-base
-        "
-      />
-    </div>
+    <form [formGroup]="loginForm" (ngSubmit)="loginSubmit(loginForm.value)">
+      <div class="flex flex-col">
+        <label for="username" class="font-medium text-base text-fb-gray-500"
+          >Benutzername</label
+        >
+        <input
+          type="text"
+          id="username"
+          class="
+            outline-none
+            text-fb-gray-500
+            box-shadow-none
+            w-full
+            md:w-[260px]
+            h-11
+            p-2
+            border border-fb-gray-400
+            focus-visible:border-fb-gray-900
+            hover:border-fb-gray-900
+            transition
+            rounded
+            text-base
+          "
+          [formControl]="loginForm.controls.username"
+        />
+      </div>
 
-    <div class="flex flex-col mt-4">
-      <label for="password" class="font-medium text-base text-fb-gray-500"
-        >Passwort</label
-      >
-      <input
-        type="password"
-        id="password"
-        class="
-          outline-none
-          text-fb-gray-500
-          box-shadow-none
-          w-full
-          md:w-[260px]
-          h-11
-          p-2
-          border border-fb-gray-400
-          focus-visible:border-fb-gray-900
-          hover:border-fb-gray-900
-          transition
-          rounded
-          text-base
-        "
-      />
-    </div>
+      <div class="flex flex-col mt-4">
+        <label for="password" class="font-medium text-base text-fb-gray-500"
+          >Passwort</label
+        >
+        <input
+          type="password"
+          id="password"
+          class="
+            outline-none
+            text-fb-gray-500
+            box-shadow-none
+            w-full
+            md:w-[260px]
+            h-11
+            p-2
+            border border-fb-gray-400
+            focus-visible:border-fb-gray-900
+            hover:border-fb-gray-900
+            transition
+            rounded
+            text-base
+          "
+          [formControl]="loginForm.controls.password"
+        />
+      </div>
 
-    <div class="flex flex-col mt-6">
-      <button
-        class="
-          font-bold
-          text-black
-          leading-[17px]
-          text-sm
-          px-2.5
-          md:px-5
-          py-1.5
-          md:py-2.5
-          border
-          bg-white
-          hover:bg-fb-gray-200
-          border-fb-gray-600
-          rounded-[5px]
-        "
-      >
-        Login
-      </button>
-    </div>
+      <div class="flex flex-col mt-6">
+        <button
+          class="
+            w-[150px]
+            mx-auto
+            font-bold
+            text-black
+            leading-[17px]
+            text-sm
+            px-2.5
+            md:px-5
+            py-1.5
+            md:py-2.5
+            border
+            bg-white
+            hover:bg-fb-gray-200
+            border-fb-gray-600
+            rounded-[5px]
+          "
+        >
+          Login
+        </button>
+      </div>
+    </form>
   </div>
 </div>
