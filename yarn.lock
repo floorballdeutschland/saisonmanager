@@ -1335,6 +1335,13 @@
   resolved "https://registry.yarnpkg.com/@jridgewell/resolve-uri/-/resolve-uri-1.0.0.tgz#3fdf5798f0b49e90155896f6291df186eac06c83"
   integrity sha512-9oLAnygRMi8Q5QkYEU4XWK04B+nuoXoxjRvRxgjuChkLZFBja0YPSgdZ7dZtwhncLBcQe/I/E+fLuk5qxcYVJA==
 
+"@ngneat/reactive-forms@^4.0.0":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@ngneat/reactive-forms/-/reactive-forms-4.0.2.tgz#b65bc64fdc0a39f8a41971fff84fd3518e0de891"
+  integrity sha512-ufEgbXY28w2ZfmYxhL+eGV1/QUYu/477fPesS3zFAehs0dPGdbKwUxeWNTk7BJaGo2cu5uTzL9G29tuZy2yoRw==
+  dependencies:
+    tslib "^2.3.0"
+
 "@ngtools/webpack@13.0.4":
   version "13.0.4"
   resolved "https://registry.yarnpkg.com/@ngtools/webpack/-/webpack-13.0.4.tgz#9389c95fdbefb48fe061a30d81aab2f83bbf2081"
