@@ -9,14 +9,16 @@
     </ng-template>
 
     <div *ngIf="displayAssociationHeader$ | async">
-      <fb-header
-        [headline]="selectedLeague.name"
-        type="league"
-        [subline]="selectedLeague.short_name"
-        [isMarkedAsFavorite]="isLeagueFavorite(selectedLeague.id)"
-        (markAsFavorite)="addToFavorites(selectedLeague)"
-        (removeFromFavorites)="removeFavorite(selectedLeague.id)"
-      ></fb-header>
+      <ng-container *ngIf="selectedSeason$ | async as season">
+        <fb-header
+          [headline]="selectedLeague.name"
+          type="league"
+          [subline]="season.name"
+          [isMarkedAsFavorite]="isLeagueFavorite(selectedLeague.id)"
+          (markAsFavorite)="addToFavorites(selectedLeague)"
+          (removeFromFavorites)="removeFavorite(selectedLeague.id)"
+        ></fb-header>
+      </ng-container>
 
       <div class="container mx-auto px-4 lg:px-8">
         <div class="h-[80px] flex items-center gap-[25px]">
