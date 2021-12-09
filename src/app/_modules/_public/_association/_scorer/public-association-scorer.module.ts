@@ -5,6 +5,7 @@ import { PublicAssociationScorerRoutingModule } from './public-association-score
 import * as Views from './_views';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
+import { UikitCommonModule } from '@floorball/uikit/common';
 @NgModule({
   declarations: [Views.ScorerComponent],
   imports: [
@@ -12,6 +13,7 @@ import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
     PublicAssociationScorerRoutingModule,
     UikitPlayerModule,
     UikitLoadingSkeletonsModule,
+    UikitCommonModule,
   ],
 })
 export class PublicAssociationScorerModule {}

@@ -1,0 +1,7 @@
+<div>
+  <ng-container
+    *ngFor="let page of [].constructor(numberOfPages); let i = index"
+  >
+    <button (click)="changePage.emit(i + 1)">{{ i + 1 }}</button>
+  </ng-container>
+</div>

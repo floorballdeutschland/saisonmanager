@@ -18,6 +18,8 @@ import { LeagueService } from '@floorball/core';
 export class ScorerComponent implements OnInit, OnDestroy {
   playerRankings$?: Observable<ScorerEntry[] | null>;
 
+  currentPage = 1;
+
   private _destroy$ = new Subject<boolean>();
 
   constructor(
@@ -46,5 +48,13 @@ export class ScorerComponent implements OnInit, OnDestroy {
 
   getPlayerRanking(leagueNumber: number) {
     this.playerRankings$ = this._leagueService.getScorer(leagueNumber);
+  }
+
+  changePage(page: number) {
+    this.currentPage = page;
+  }
+
+  getPages(arrayLength: number): number {
+    return Math.ceil(arrayLength / 30);
   }
 }
