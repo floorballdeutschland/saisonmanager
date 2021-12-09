@@ -17,6 +17,9 @@ export class PaginationComponent {
   @Input()
   numberOfPages!: number;
 
+  @Input()
+  currentPage!: number;
+
   @Output()
   changePage: EventEmitter<number> = new EventEmitter<number>();
 }

@@ -15,6 +15,7 @@
       <fb-pagination
         [numberOfPages]="getPages(playerRankings.length)"
         (changePage)="changePage($event)"
+        [currentPage]="currentPage"
       ></fb-pagination>
     </ng-container>
 
