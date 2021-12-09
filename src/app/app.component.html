@@ -1,35 +1,21 @@
 <ng-container *ngIf="(isLoading$ | async) === false">
   <div class="lg:grid lg:grid-cols-[300px,1fr] min-h-screen">
     <div class="lg:block h-full w-full">
-      <fb-sidebar
-        class="hidden lg:inline"
-        [association]="selectedAssociation$ | async"
-      >
+      <fb-sidebar [association]="selectedAssociation$ | async">
         <fb-league-navigation
           *ngIf="leagues$ | async as leagues"
           [leagues]="leagues"
           [selectedAssociation]="selectedAssociation$ | async"
+          class="hidden lg:block"
         ></fb-league-navigation>
 
         <ng-container *ngIf="favoriteLeagues$ | async as favoriteLeagues">
           <fb-favorites-navigation
             [favorites]="favoriteLeagues"
+            class="hidden lg:block"
           ></fb-favorites-navigation>
         </ng-container>
       </fb-sidebar>
-
-      <fb-mobile-header class="flex lg:hidden">
-        <fb-league-navigation
-          *ngIf="leagues$ | async as leagues"
-          [leagues]="leagues"
-          [selectedAssociation]="selectedAssociation$ | async"
-        ></fb-league-navigation>
-        <ng-container *ngIf="favoriteLeagues$ | async as favoriteLeagues">
-          <fb-favorites-navigation
-            [favorites]="favoriteLeagues"
-          ></fb-favorites-navigation>
-        </ng-container>
-      </fb-mobile-header>
     </div>
     <div class="h-full mt-[95px] lg:mt-0">
       <router-outlet></router-outlet>

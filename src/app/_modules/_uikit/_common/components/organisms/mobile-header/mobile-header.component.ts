@@ -1,15 +1,21 @@
-import { ThrowStmt } from '@angular/compiler';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  EventEmitter,
   Input,
-  OnDestroy,
   OnInit,
+  Output,
+  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { GameOperation } from '@floorball/types';
-import { Subject } from 'rxjs';
+import {
+  AssociationService,
+  FavoriteService,
+  LeagueService,
+} from '@floorball/core';
+import { GameOperation, League, LeagueWithOperation } from '@floorball/types';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 @Component({
   selector: 'fb-mobile-header',
@@ -17,32 +23,34 @@ import { Subject } from 'rxjs';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MobileHeaderComponent implements OnInit, OnDestroy {
-  @Input()
-  association?: GameOperation | null;
+export class MobileHeaderComponent implements OnInit {
+  isLoading$!: Observable<boolean>;
+  leagues$!: Observable<League[] | null>;
+  selectedAssociation$!: Observable<GameOperation | null>;
+  favoriteLeagues$?: BehaviorSubject<LeagueWithOperation[]>;
 
-  status = false;
+  @Output()
+  closeNavigationOverlay: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  routerEventSubscription: any;
-  private destroy$: Subject<boolean> = new Subject<boolean>();
+  @ViewChild('closeButton')
+  closeButton!: ElementRef<HTMLButtonElement>;
 
-  constructor(protected router: Router) {}
+  onClose$ = new Subject<boolean>();
+
+  constructor(
+    private _associationService: AssociationService,
+    private _leagueService: LeagueService,
+    private _favoriteService: FavoriteService
+  ) {}
 
   ngOnInit(): void {
-    this.routerEventSubscription = this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd && this.status == true) {
-        this.status = !this.status;
-        console.log(this.status);
-      }
-    });
+    this.isLoading$ = this._associationService.associationsIsLoading$;
+    this.leagues$ = this._leagueService.leagues$;
+    this.selectedAssociation$ = this._associationService.selectedAssociation$;
+    this.favoriteLeagues$ = this._favoriteService.favoriteLeagues$;
   }
 
-  openCloseMenu() {
-    this.status = !this.status;
-  }
-
-  ngOnDestroy(): void {
-    this.routerEventSubscription.unsubscribe();
-    this.destroy$.next(true);
+  close() {
+    this.onClose$.next(true);
   }
 }

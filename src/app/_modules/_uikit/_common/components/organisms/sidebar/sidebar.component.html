@@ -1,16 +1,15 @@
 <div
   class="
     flex flex-row
-    lg:flex-col lg:block
+    lg:block
     justify-between
     items-center
     lg:h-full
+    fixed
     top-0
     bg-fb-gray-200
     lg:max-w-[300px]
     p-5
-    fixed
-    top-0
     w-full
     lg:relative
   "
@@ -27,7 +26,12 @@
     </ng-template>
   </a>
 
-  <a href="#" class="w-[20px] h-[18px] cursor-pointer lg:hidden">
+  <!-- open menu -->
+  <a
+    href="#"
+    class="w-[20px] h-[18px] cursor-pointer lg:hidden"
+    (click)="$event.preventDefault(); openMenu()"
+  >
     <svg
       width="40"
       height="36"

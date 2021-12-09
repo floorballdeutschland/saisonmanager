@@ -1,99 +1,97 @@
-<div
-  class="
-    flex flex-row
-    justify-between
-    items-center
-    top-0
-    bg-fb-gray-200
-    p-5
-    fixed
-    top-0
-    w-full
-    h-[80px]
-    z-40
-  "
->
-  <a [routerLink]="['/']">
-    <img
-      *ngIf="association?.logo_url; else fbLogo"
-      [src]="association!.logo_url"
-      class="w-full h-full max-h-14 object-contain"
-    />
-
-    <ng-template #fbLogo>
-      <fb-logo></fb-logo>
-    </ng-template>
-  </a>
-
-  <!-- open -->
-  <a
-    href="#"
-    class="w-[20px] h-[18px] cursor-pointer"
-    (click)="$event.preventDefault(); openCloseMenu()"
-    [ngClass]="{ hidden: status === true }"
-  >
-    <svg
-      width="40"
-      height="36"
-      viewBox="0 0 20 18"
-      xmlns="http://www.w3.org/2000/svg"
-      class="
-        currentColor
-        object-contain
-        w-full
-        h-full
-        text-black
-        focus-visible:text-red
-        fill-white
-        group-hover:fill-vbl-red
-        group-focus:fill-red
-      "
+<div class="top-0 fixed w-full left-0 bg-fb-gray-200 p-5">
+  <div class="h-14 flex flex-row justify-end items-center">
+    <!-- Close -->
+    <button
+      class="w-[20px] h-[18px] cursor-pointer"
+      (click)="close()"
+      #closeButton
     >
-      <path
+      <svg
+        class="currentColor object-contain w-full h-full fill-white"
+        width="17"
+        height="16"
+        viewBox="0 0 17 16"
         fill="currentColor"
-        d="M0.6875 3.42188H18.5625C18.9062 3.42188 19.25 3.12109 19.25 2.73438V1.01562C19.25 0.671875 18.9062 0.328125 18.5625 0.328125H0.6875C0.300781 0.328125 0 0.671875 0 1.01562V2.73438C0 3.12109 0.300781 3.42188 0.6875 3.42188ZM0.6875 10.2969H18.5625C18.9062 10.2969 19.25 9.99609 19.25 9.60938V7.89062C19.25 7.54688 18.9062 7.20312 18.5625 7.20312H0.6875C0.300781 7.20312 0 7.54688 0 7.89062V9.60938C0 9.99609 0.300781 10.2969 0.6875 10.2969ZM0.6875 17.1719H18.5625C18.9062 17.1719 19.25 16.8711 19.25 16.4844V14.7656C19.25 14.4219 18.9062 14.0781 18.5625 14.0781H0.6875C0.300781 14.0781 0 14.4219 0 14.7656V16.4844C0 16.8711 0.300781 17.1719 0.6875 17.1719Z"
-      />
-    </svg>
-  </a>
-  <!-- Close -->
-  <button
-    class="w-[20px] h-[18px] cursor-pointer"
-    [ngClass]="{
-      block: status === true,
-      hidden: status !== true
-    }"
-    (click)="openCloseMenu()"
-  >
-    <svg
-      class="currentColor object-contain w-full h-full fill-white"
-      width="17"
-      height="16"
-      viewBox="0 0 17 16"
-      fill="currentColor"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M11.3984 7.75L15.6953 3.45312C16.2539 2.9375 16.2539 2.07812 15.6953 1.5625L14.75 0.617188C14.2344 0.0585938 13.375 0.0585938 12.8594 0.617188L8.5625 4.91406L4.22266 0.617188C3.70703 0.0585938 2.84766 0.0585938 2.33203 0.617188L1.38672 1.5625C0.828125 2.07812 0.828125 2.9375 1.38672 3.45312L5.68359 7.75L1.38672 12.0898C0.828125 12.6055 0.828125 13.4648 1.38672 13.9805L2.33203 14.9258C2.84766 15.4844 3.70703 15.4844 4.22266 14.9258L8.5625 10.6289L12.8594 14.9258C13.375 15.4844 14.2344 15.4844 14.75 14.9258L15.6953 13.9805C16.2539 13.4648 16.2539 12.6055 15.6953 12.0898L11.3984 7.75Z"
-      />
-    </svg>
-  </button>
-
-  <div
-    class="
-      absolute
-      left-0
-      top-[80px]
-      p-4
-      w-full
-      h-auto
-      bg-gray-100
-      drop-shadow-md
-      z-10
-    "
-    [ngClass]="{ block: status === true, hidden: status !== true }"
-  >
-    <ng-content></ng-content>
-
-    <fb-metanavigation class=""></fb-metanavigation>
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M11.3984 7.75L15.6953 3.45312C16.2539 2.9375 16.2539 2.07812 15.6953 1.5625L14.75 0.617188C14.2344 0.0585938 13.375 0.0585938 12.8594 0.617188L8.5625 4.91406L4.22266 0.617188C3.70703 0.0585938 2.84766 0.0585938 2.33203 0.617188L1.38672 1.5625C0.828125 2.07812 0.828125 2.9375 1.38672 3.45312L5.68359 7.75L1.38672 12.0898C0.828125 12.6055 0.828125 13.4648 1.38672 13.9805L2.33203 14.9258C2.84766 15.4844 3.70703 15.4844 4.22266 14.9258L8.5625 10.6289L12.8594 14.9258C13.375 15.4844 14.2344 15.4844 14.75 14.9258L15.6953 13.9805C16.2539 13.4648 16.2539 12.6055 15.6953 12.0898L11.3984 7.75Z"
+        />
+      </svg>
+    </button>
   </div>
+
+  <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
+    <h2 class="uppercase text-fb-gray-100 font-bold mt-6 lg:mt-12">Ligen</h2>
+
+    <nav *ngIf="leagues$ | async as leagues">
+      <ul>
+        <li *ngFor="let item of leagues" class="mt-4 mb-4">
+          <a
+            [routerLinkActive]="'!text-black'"
+            [routerLink]="['/', selectedAssociation.path, item.id]"
+            class="font-bold text-fb-gray-500 hover:text-black text-base"
+            title="{{ item.name }}"
+            (click)="close()"
+            >{{ item.name }}</a
+          >
+        </li>
+
+        <li class="mt-5">
+          <a
+            [routerLink]="['/']"
+            class="
+              block
+              text-center
+              font-bold
+              text-black
+              leading-[17px]
+              text-sm
+              px-5
+              py-2.5
+              border
+              bg-white
+              hover:bg-fb-gray-800
+              border-fb-gray-600
+              rounded-[5px]
+              cursor-pointer
+              w-full
+            "
+            (click)="close()"
+          >
+            Spielbetrieb wechseln
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </ng-container>
+
+  <ng-container *ngIf="favoriteLeagues$ | async as favoriteLeagues">
+    <ng-container *ngIf="favoriteLeagues?.length">
+      <h2 class="uppercase text-fb-gray-100 font-bold mt-4">Favoriten</h2>
+      <nav>
+        <ul>
+          <li
+            *ngFor="let leagueWithOperation of favoriteLeagues"
+            class="mt-4 mb-4"
+          >
+            <a
+              [routerLinkActive]="'!text-black'"
+              [routerLink]="[
+                '/',
+                leagueWithOperation.operation.path,
+                leagueWithOperation.league.id
+              ]"
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              title="{{ leagueWithOperation.league.name }}"
+              (click)="close()"
+              >{{ leagueWithOperation.league.name }}</a
+            >
+          </li>
+        </ul>
+      </nav>
+    </ng-container>
+  </ng-container>
+
+  <fb-metanavigation></fb-metanavigation>
 </div>
