@@ -11,7 +11,12 @@ import {
   FavoriteService,
   LeagueService,
 } from '@floorball/core';
-import { GameOperation, GameScheduleEntry, League } from '@floorball/types';
+import {
+  GameOperation,
+  GameScheduleEntry,
+  League,
+  Season,
+} from '@floorball/types';
 import {
   BehaviorSubject,
   Observable,
@@ -31,6 +36,7 @@ import {
 export class LeagueHostComponent implements OnInit, OnDestroy {
   selectedLeague$!: Observable<League | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
+  selectedSeason$!: Observable<Season | null>;
   matches$?: Observable<GameScheduleEntry[] | null>;
   displayAssociationHeader$!: BehaviorSubject<boolean>;
 
@@ -54,6 +60,7 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
       this._associationService.displayAssociationHeader$;
     this.selectedLeague$ = this._leagueService.selectedLeague$;
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
+    this.selectedSeason$ = this._associationService.selectedSeason$;
 
     this._route.params
       .pipe(

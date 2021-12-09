@@ -10,6 +10,7 @@ import {
   shareReplay,
   switchMap,
   tap,
+  withLatestFrom,
 } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -22,6 +23,7 @@ export class AssociationService {
   selectedAssociation$: Observable<GameOperation | null>;
 
   currentSeasonId$: Observable<number>;
+  selectedSeason$: Observable<Season | null>;
   seasons$: Observable<Season[]>;
 
   displayAssociationHeader$ = new BehaviorSubject(true);
@@ -41,6 +43,16 @@ export class AssociationService {
 
     this.currentSeasonId$ = initData$.pipe(
       map((_result) => _result.current_season_id)
+    );
+
+    this.selectedSeason$ = this.seasons$.pipe(
+      switchMap((seasons) => {
+        if (!seasons) {
+          return of(null);
+        }
+
+        return of(seasons.find((_s) => _s.current) ?? null);
+      })
     );
 
     this.associations$
