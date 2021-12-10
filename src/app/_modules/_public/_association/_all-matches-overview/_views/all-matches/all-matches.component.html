@@ -1,1 +1,5 @@
 <p>all-matches works!</p>
+
+<ng-container *ngIf="matches$ | async as matches">
+  <pre>{{ matches | json }}</pre>
+</ng-container>
