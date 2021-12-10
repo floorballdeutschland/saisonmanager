@@ -3,7 +3,7 @@ import { GamePlayerEntry } from './game.interface';
 export interface Side {
   scorer?: GamePlayerEntry;
   assist?: GamePlayerEntry;
-  goals: number;
+  goals?: number;
 }
 
 export interface NormalizedEvent {
@@ -11,6 +11,8 @@ export interface NormalizedEvent {
   period: number;
   home: Side;
   guest: Side;
-  penalty_id?: string;
-  penalty_code_id?: string;
+  penalty_type?: string;
+  penalty_type_string?: string;
+  penalty_reason?: number;
+  penalty_reason_string?: string;
 }

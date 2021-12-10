@@ -2,7 +2,7 @@
   <div
     class="
       grid
-      grid-cols-[36px,1fr,30px,50px,30px,20px,60px,20px,30px,50px,30px,1fr,36px]
+      grid-cols-[36px,1fr,30px,80px,30px,20px,60px,20px,30px,80px,30px,1fr,36px]
       items-center
       grid-rows-2
       text-sm
@@ -26,12 +26,16 @@
       </div>
 
       <div class="text-center">
-        <ng-container *ngIf="!gameEvent.penalty_id">
+        <ng-container *ngIf="!gameEvent.penalty_type">
           {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
         </ng-container>
       </div>
       <div class="font-bold text-center">
-        {{ gameEvent.penalty_id ? "Strafe" : "Tor" }}
+        {{
+          gameEvent.penalty_type
+            ? "Strafe " + gameEvent.penalty_type_string
+            : "Tor"
+        }}
       </div>
 
       <div
@@ -93,11 +97,15 @@
       </div>
 
       <div class="font-bold text-center">
-        {{ gameEvent.penalty_id ? "Strafe" : "Tor" }}
+        {{
+          gameEvent.penalty_type
+            ? "Strafe " + gameEvent.penalty_type_string
+            : "Tor"
+        }}
       </div>
 
       <div class="text-center">
-        <ng-container *ngIf="!gameEvent.penalty_id">
+        <ng-container *ngIf="!gameEvent.penalty_type">
           {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
         </ng-container>
       </div>

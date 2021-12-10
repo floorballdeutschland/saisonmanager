@@ -1,4 +1,4 @@
-export interface GameEvent {
+export interface GameEventLegacy {
   row: number;
   time: string;
   period: number;
@@ -10,6 +10,23 @@ export interface GameEvent {
   penalty_code_id: string;
   guest_number?: number;
   guest_assist?: number;
+}
+
+export interface GameEvent {
+  event_type: string;
+  event_team: string;
+  period: number;
+  time: string;
+  home_goals?: number;
+  guest_goals?: number;
+  number?: number;
+  assist?: number;
+  goal_type?: string;
+  goal_type_string?: string;
+  penalty_type?: string;
+  penalty_type_string?: string;
+  penalty_reason?: number;
+  penalty_reason_string?: string;
 }
 
 export interface GamePlayerEntry {
@@ -53,6 +70,7 @@ export interface Game {
   home_team_small_logo: string;
   guest_team_logo: string;
   guest_team_small_logo: string;
+  events_legacy: GameEventLegacy[];
   events: GameEvent[];
   players: GamePlayers;
   started: boolean;

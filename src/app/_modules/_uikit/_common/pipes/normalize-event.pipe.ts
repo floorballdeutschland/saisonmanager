@@ -13,40 +13,53 @@ export class NormalizeEventPipe implements PipeTransform {
       return null;
     }
 
-    let home: Side = { goals: gameEvent.home_goals };
-    let guest: Side = { goals: gameEvent.guest_goals };
+    let home: Side = {};
+    let guest: Side = {};
 
-    if (gameEvent.home_number) {
+    if (gameEvent.event_type) {
       home = {
         ...home,
         scorer: game.players.home.find(
-          (player) => player.trikot_number === gameEvent.home_number
+          (player) => player.trikot_number === gameEvent.number
         ),
-        assist: game.players.home.find(
-          (player) => player.trikot_number === gameEvent.home_assist
-        ),
+        assist:
+          gameEvent.event_team === 'home'
+            ? game.players.home.find(
+                (player) => player.trikot_number === gameEvent.assist
+              )
+            : undefined,
+        goals: gameEvent.home_goals,
       };
     }
 
-    if (gameEvent.guest_number) {
+    if (gameEvent.event_type) {
       guest = {
         ...guest,
         scorer: game.players.guest.find(
-          (player) => player.trikot_number === gameEvent.guest_number
+          (player) => player.trikot_number === gameEvent.number
         ),
-        assist: game.players.guest.find(
-          (player) => player.trikot_number === gameEvent.guest_assist
-        ),
+        assist:
+          gameEvent.event_team === 'guest'
+            ? game.players.guest.find(
+                (player) => player.trikot_number === gameEvent.assist
+              )
+            : undefined,
+        goals: gameEvent.guest_goals,
       };
     }
 
     return {
       time: gameEvent.time,
       period: gameEvent.period,
-      penalty_code_id: gameEvent.penalty_code_id,
-      penalty_id: gameEvent.penalty_id,
+      penalty_type: gameEvent.penalty_type,
+      penalty_reason: gameEvent.penalty_reason,
+      penalty_reason_string: gameEvent.penalty_reason_string,
+      penalty_type_string: gameEvent.penalty_type_string,
       guest: guest,
       home: home,
     };
   }
 }
+
+// goal_type?: string;
+// goal_type_string?: string;
