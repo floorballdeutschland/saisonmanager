@@ -1,5 +1,9 @@
-<p>all-matches works!</p>
+<div class="container mx-auto px-4 lg:px-8 mb-5">
+  <h2 class="font-bold text-xl lg:text-2xl mt-8">Alle Spielbegegnungen</h2>
 
-<ng-container *ngIf="matches$ | async as matches">
-  <pre>{{ matches | json }}</pre>
-</ng-container>
+  <div class="mt-4 lg:mt-8 pb-16">
+    <ng-container *ngIf="matches$ | async as matches">
+      <fb-match-encounter-list [matches]="matches"></fb-match-encounter-list>
+    </ng-container>
+  </div>
+</div>
