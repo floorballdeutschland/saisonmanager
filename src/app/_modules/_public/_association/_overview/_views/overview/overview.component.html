@@ -12,8 +12,8 @@
       </ng-container>
     </div>
 
-    <div class="grid grid-cols-5 mt-4 lg:mt-8 gap-8">
-      <div class="lg:col-span-3">
+    <div class="grid grid-cols-1 xl:grid-cols-5 mt-4 lg:mt-8 gap-8">
+      <div class="xl:col-span-3">
         <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
           <fb-match-pairing-list [matches]="matches"></fb-match-pairing-list>
 
@@ -47,7 +47,7 @@
         </ng-template>
       </div>
 
-      <div class="lg:col-span-2">
+      <div class="xl:col-span-2">
         <ng-container
           *ngIf="
             teamRankings$ | async as teamRankings;
@@ -57,6 +57,11 @@
           <fb-team-ranking-table
             type="small"
             [data]="teamRankings"
+            class="hidden xl:block"
+          ></fb-team-ranking-table>
+          <fb-team-ranking-table
+            [data]="teamRankings"
+            class="xl:hidden"
           ></fb-team-ranking-table>
         </ng-container>
 
