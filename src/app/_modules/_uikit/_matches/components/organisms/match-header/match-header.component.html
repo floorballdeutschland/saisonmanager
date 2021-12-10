@@ -1,6 +1,15 @@
-<div class="flex justify-center p-[45px] border-b-[10px] border-fb-gray-200">
-  <div class="grid gap-4 grid-cols-3">
-    <div class="flex flex-col justify-end h-[160px]">
+<div
+  class="
+    flex
+    justify-center
+    px-2
+    py-[30px]
+    md:p-[45px]
+    border-b-[10px] border-fb-gray-200
+  "
+>
+  <div class="grid gap-4 grid-cols-3 items-center">
+    <div class="flex flex-col justify-end h-[90px] md:h-[160px]">
       <img
         *ngIf="game.home_team_logo; else fallback"
         class="w-full h-full object-contain"
@@ -17,11 +26,19 @@
         justify-center
         text-center
         max-w-[300px]
-        min-w-[250px]
+        md:min-w-[250px]
       "
     >
       <p
-        class="block text-base font-bold"
+        class="
+          flex
+          md:block
+          text-base
+          font-bold
+          justify-center
+          whitespace-nowrap
+          md:whitespace-normal
+        "
         [ngClass]="{ 'text-fb-gray-400': game.started && game.ended }"
       >
         <ng-container *ngIf="game.started && !game.ended; else gameDate">
@@ -69,7 +86,10 @@
           </p>
         </ng-container>
       </div>
-      <ul class="flex justify-center gap-5" *ngIf="game.result && game.started">
+      <ul
+        class="flex justify-center gap-5 whitespace-nowrap md:whitespace-normal"
+        *ngIf="game.result && game.started"
+      >
         <ng-container
           *ngFor="
             let periodResult of game.result.home_goals_period;
@@ -89,7 +109,7 @@
         {{ game.arena_address }}
       </div>
     </div>
-    <div class="flex flex-col justify-start h-[160px]">
+    <div class="flex flex-col justify-start h-[90px] md:h-[160px]">
       <img
         *ngIf="game.guest_team_logo; else fallback"
         class="w-full h-full object-contain"
