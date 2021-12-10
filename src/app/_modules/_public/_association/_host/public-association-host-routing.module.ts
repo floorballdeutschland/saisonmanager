@@ -47,6 +47,13 @@ const routes: Routes = [
                 (m) => m.PublicAssociationTeamModule
               ),
           },
+          {
+            path: '',
+            loadChildren: () =>
+              import('@floorball/public/association/all-matches-overview').then(
+                (m) => m.PublicAllMatchesOverviewModule
+              ),
+          },
         ],
       },
     ],

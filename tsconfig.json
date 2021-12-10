@@ -33,6 +33,9 @@
       ],
       "@floorball/public/home": ["src/app/_modules/_public/_home"],
       "@floorball/public/login": ["src/app/_modules/_public/_login"],
+      "@floorball/public/association/all-matches-overview": [
+        "src/app/_modules/_public/_association/_all-matches-overview"
+      ],
       "@floorball/public/association/host": [
         "src/app/_modules/_public/_association/_host"
       ],
