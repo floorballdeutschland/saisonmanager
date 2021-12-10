@@ -16,9 +16,10 @@
     class="
       font-bold
       text-black text-2xl
-      lg:text-4.5xl
-      leading-[26px]
-      lg:leading-[52px]
+      md:text-3xl
+      xl:text-4.5xl
+      !leading-[26px]
+      !lg:leading-[52px]
     "
   >
     {{ headline }}
@@ -30,15 +31,16 @@
       sm:mt-0 sm:ml-5
       font-bold
       text-fb-gray-400 text-1xl
-      lg:text-2xl
-      leading-[18px]
-      lg:leading-[39px]
+      lg:text-1xl
+      xl:text-2xl
+      !leading-[18px]
+      !xl:leading-[39px]
     "
   >
     {{ subline }}
   </h2>
 
-  <div class="ml-auto">
+  <div class="md:ml-auto mt-5 md:m-0">
     <button
       *ngIf="type === 'match' || type === 'team'"
       class="
