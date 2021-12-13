@@ -19,9 +19,12 @@ export class NormalizeEventPipe implements PipeTransform {
     if (gameEvent.event_type) {
       home = {
         ...home,
-        scorer: game.players.home.find(
-          (player) => player.trikot_number === gameEvent.number
-        ),
+        scorer:
+          gameEvent.event_team === 'home'
+            ? game.players.home.find(
+                (player) => player.trikot_number === gameEvent.number
+              )
+            : undefined,
         assist:
           gameEvent.event_team === 'home'
             ? game.players.home.find(
@@ -35,9 +38,12 @@ export class NormalizeEventPipe implements PipeTransform {
     if (gameEvent.event_type) {
       guest = {
         ...guest,
-        scorer: game.players.guest.find(
-          (player) => player.trikot_number === gameEvent.number
-        ),
+        scorer:
+          gameEvent.event_team === 'guest'
+            ? game.players.guest.find(
+                (player) => player.trikot_number === gameEvent.number
+              )
+            : undefined,
         assist:
           gameEvent.event_team === 'guest'
             ? game.players.guest.find(
@@ -49,6 +55,8 @@ export class NormalizeEventPipe implements PipeTransform {
     }
 
     return {
+      event_type: gameEvent.event_type,
+      event_team: gameEvent.event_team,
       time: gameEvent.time,
       period: gameEvent.period,
       penalty_type: gameEvent.penalty_type,
@@ -61,6 +69,3 @@ export class NormalizeEventPipe implements PipeTransform {
     };
   }
 }
-
-// goal_type?: string;
-// goal_type_string?: string;

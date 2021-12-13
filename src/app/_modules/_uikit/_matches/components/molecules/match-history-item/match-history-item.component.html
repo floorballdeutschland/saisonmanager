@@ -9,7 +9,12 @@
       h-[78px]
     "
   >
-    <ng-container *ngIf="gameEvent.home.scorer">
+    <ng-container
+      *ngIf="
+        gameEvent.home.scorer ||
+        (gameEvent.event_type === 'timeout' && gameEvent.event_team === 'home')
+      "
+    >
       <div>
         <img
           *ngIf="match.home_team_small_logo; else fallback"
@@ -26,16 +31,22 @@
       </div>
 
       <div class="text-center">
-        <ng-container *ngIf="!gameEvent.penalty_type">
+        <ng-container *ngIf="gameEvent.event_type === 'goal'">
           {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
         </ng-container>
       </div>
       <div class="font-bold text-right px-3">
-        {{
-          gameEvent.penalty_type
-            ? "Strafe " + gameEvent.penalty_type_string
-            : gameEvent.goal_type_string
-        }}
+        <ng-container [ngSwitch]="gameEvent.event_type">
+          <ng-container *ngSwitchCase="'goal'">
+            {{ gameEvent.goal_type_string }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'penalty'">
+            {{ "Strafe " + gameEvent.penalty_type_string }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'timeout'">
+            {{ "Auszeit" }}
+          </ng-container>
+        </ng-container>
       </div>
 
       <div
@@ -76,7 +87,12 @@
         <span class="text-fb-gray-400">{{ time[1] }}"</span>
       </ng-container>
     </div>
-    <ng-container *ngIf="gameEvent.guest.scorer">
+    <ng-container
+      *ngIf="
+        gameEvent.guest.scorer ||
+        (gameEvent.event_type === 'timeout' && gameEvent.event_team === 'guest')
+      "
+    >
       <div class="h-px bg-fb-gray-200 w-full"></div>
       <div
         class="
@@ -97,15 +113,21 @@
       </div>
 
       <div class="font-bold px-3">
-        {{
-          gameEvent.penalty_type
-            ? "Strafe " + gameEvent.penalty_type_string
-            : gameEvent.goal_type_string
-        }}
+        <ng-container [ngSwitch]="gameEvent.event_type">
+          <ng-container *ngSwitchCase="'goal'">
+            {{ gameEvent.goal_type_string }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'penalty'">
+            {{ "Strafe " + gameEvent.penalty_type_string }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'timeout'">
+            {{ "Auszeit" }}
+          </ng-container>
+        </ng-container>
       </div>
 
       <div class="text-center">
-        <ng-container *ngIf="!gameEvent.penalty_type">
+        <ng-container *ngIf="gameEvent.event_type === 'goal'">
           {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
         </ng-container>
       </div>

@@ -7,6 +7,8 @@ export interface Side {
 }
 
 export interface NormalizedEvent {
+  event_type: string;
+  event_team: string;
   time: string;
   period: number;
   home: Side;
