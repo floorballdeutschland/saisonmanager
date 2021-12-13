@@ -28,7 +28,7 @@
       md:text-left
     "
   >
-    {{ match.date | date }} - {{ match.time }} Uhr
+    {{ match.date | date }} {{ match.time && "- " + match.time + " Uhr" }}
   </div>
   <div class="md:text-right text-sm font-bold order-3 md:order-2">
     {{ match.home_team_name }}
