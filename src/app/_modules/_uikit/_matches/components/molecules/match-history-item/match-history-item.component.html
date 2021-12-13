@@ -60,11 +60,29 @@
           justify-center
         "
       >
-        <img
-          src="./assets/images/union.svg"
-          alt="Tor"
-          class="w-full h-full p-[6px]"
-        />
+        <ng-container [ngSwitch]="gameEvent.event_type">
+          <ng-container *ngSwitchCase="'goal'">
+            <img
+              src="./assets/images/union.svg"
+              alt="Tor"
+              class="w-full h-full p-[6px]"
+            />
+          </ng-container>
+          <ng-container *ngSwitchCase="'penalty'">
+            <img
+              src="./assets/images/ban.svg"
+              alt="Tor"
+              class="w-full h-full p-[6px]"
+            />
+          </ng-container>
+          <ng-container *ngSwitchCase="'timeout'">
+            <img
+              src="./assets/images/clock.svg"
+              alt="Tor"
+              class="w-full h-full p-[6px]"
+            />
+          </ng-container>
+        </ng-container>
       </div>
 
       <div class="h-px bg-fb-gray-200 w-full"></div>
@@ -105,11 +123,29 @@
           justify-center
         "
       >
-        <img
-          src="./assets/images/union.svg"
-          alt="Tor"
-          class="w-full h-full p-[6px]"
-        />
+        <ng-container [ngSwitch]="gameEvent.event_type">
+          <ng-container *ngSwitchCase="'goal'">
+            <img
+              src="./assets/images/union.svg"
+              alt="Tor"
+              class="w-full h-full p-[6px]"
+            />
+          </ng-container>
+          <ng-container *ngSwitchCase="'penalty'">
+            <img
+              src="./assets/images/ban.svg"
+              alt="Tor"
+              class="w-full h-full p-[6px]"
+            />
+          </ng-container>
+          <ng-container *ngSwitchCase="'timeout'">
+            <img
+              src="./assets/images/clock.svg"
+              alt="Tor"
+              class="w-full h-full p-[6px]"
+            />
+          </ng-container>
+        </ng-container>
       </div>
 
       <div class="font-bold px-3">
