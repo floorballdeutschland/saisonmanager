@@ -2,8 +2,8 @@
   [routerLink]="['spiel', match.game_id.toString()] | routeMerge: baseRoute"
   class="
     grid grid-cols-[42px,1fr,80px]
-    md:grid
-    grid-cols-[1fr,1fr,42px,80px,42px,1fr,1fr] grid-rows-[30px,40px,40px]
+    md:grid-cols-[1fr,1fr,42px,80px,42px,1fr,1fr]
+    grid-rows-[30px,40px,40px]
     md:grid-rows-1
     gap-2
     md:gap-5
@@ -88,6 +88,7 @@
       md:text-right
       text-fb-gray-400 text-sm
       col-span-3
+      md:col-span-1
       order-7
       pb-2
       md:pb-0
