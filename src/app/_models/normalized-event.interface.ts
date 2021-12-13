@@ -15,4 +15,5 @@ export interface NormalizedEvent {
   penalty_type_string?: string;
   penalty_reason?: number;
   penalty_reason_string?: string;
+  goal_type_string?: string;
 }
