@@ -97,6 +97,12 @@
       md:pb-0
     "
   >
+    <div
+      *ngIf="withMatchDay"
+      class="hidden md:block text-right text-sm text-fb-gray-400 font-bold"
+    >
+      Spieltag {{ match.game_day }}
+    </div>
     <div>Schiedsrichter</div>
     <div>
       {{

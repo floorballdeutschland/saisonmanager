@@ -18,4 +18,7 @@ export class MatchEncounterListComponent {
 
   @Input()
   baseRoute: string[] = ['../'];
+
+  @Input()
+  withMatchDay = false;
 }

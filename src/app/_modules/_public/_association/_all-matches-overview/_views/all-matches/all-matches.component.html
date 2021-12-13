@@ -3,7 +3,10 @@
 
   <div class="mt-4 lg:mt-8 pb-16">
     <ng-container *ngIf="matches$ | async as matches">
-      <fb-match-encounter-list [matches]="matches"></fb-match-encounter-list>
+      <fb-match-encounter-list
+        [matches]="matches"
+        [withMatchDay]="true"
+      ></fb-match-encounter-list>
     </ng-container>
   </div>
 </div>
