@@ -30,7 +30,7 @@
           {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
         </ng-container>
       </div>
-      <div class="font-bold text-center">
+      <div class="font-bold text-right px-3">
         {{
           gameEvent.penalty_type
             ? "Strafe " + gameEvent.penalty_type_string
@@ -96,7 +96,7 @@
         />
       </div>
 
-      <div class="font-bold text-center">
+      <div class="font-bold px-3">
         {{
           gameEvent.penalty_type
             ? "Strafe " + gameEvent.penalty_type_string
@@ -135,6 +135,20 @@
     </div>
 
     <div
+      class="
+        row-start-2
+        col-start-4
+        text-fb-gray-400 text-right
+        whitespace-nowrap
+        px-3
+        justify-self-end
+      "
+      *ngIf="gameEvent.penalty_reason_string && gameEvent.home.scorer"
+    >
+      {{ gameEvent.penalty_reason_string }}
+    </div>
+
+    <div
       *ngIf="!isLast"
       class="
         row-start-2
@@ -146,6 +160,13 @@
       "
     >
       <div class="bg-fb-gray-200 h-[49px] mt-[-5px] w-px mx-auto"></div>
+    </div>
+
+    <div
+      class="row-start-2 col-start-10 text-fb-gray-400 whitespace-nowrap px-3"
+      *ngIf="gameEvent.penalty_reason_string && gameEvent.guest.scorer"
+    >
+      {{ gameEvent.penalty_reason_string }}
     </div>
 
     <div
