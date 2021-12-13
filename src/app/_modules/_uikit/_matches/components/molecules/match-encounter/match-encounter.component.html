@@ -28,7 +28,10 @@
       md:text-left
     "
   >
-    {{ match.date | date }} {{ match.time && "- " + match.time + " Uhr" }}
+    <span>
+      {{ match.date | date }} {{ match.time && "- " + match.time + " Uhr" }}
+    </span>
+    <div>{{ match.arena_short }}</div>
   </div>
   <div class="md:text-right text-sm font-bold order-3 md:order-2">
     {{ match.home_team_name }}
@@ -94,7 +97,14 @@
       md:pb-0
     "
   >
-    {{ match.arena_short }}
+    <div>Schiedsrichter</div>
+    <div>
+      {{
+        match.nominated_referee_string
+          ? match.nominated_referee_string
+          : "keine Angabe"
+      }}
+    </div>
   </div>
 </a>
 
