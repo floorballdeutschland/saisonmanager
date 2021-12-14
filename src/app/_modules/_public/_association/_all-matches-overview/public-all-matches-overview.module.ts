@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import * as Views from './_views';
 import { PublicAllMatchesOverviewRoutingModule } from './public-all-matches-overview-routing.module';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
+import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
 
 @NgModule({
   declarations: [Views.AllMatchesComponent],
@@ -10,6 +11,7 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
     CommonModule,
     PublicAllMatchesOverviewRoutingModule,
     UikitMatchesModule,
+    UikitLoadingSkeletonsModule,
   ],
 })
 export class PublicAllMatchesOverviewModule {}

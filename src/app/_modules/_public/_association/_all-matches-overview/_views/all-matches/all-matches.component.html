@@ -2,11 +2,15 @@
   <h2 class="font-bold text-xl lg:text-2xl mt-8">Alle Spielbegegnungen</h2>
 
   <div class="mt-4 lg:mt-8 pb-16">
-    <ng-container *ngIf="matches$ | async as matches">
+    <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
       <fb-match-encounter-list
         [matches]="matches"
         [withMatchDay]="true"
       ></fb-match-encounter-list>
     </ng-container>
+
+    <ng-template #loadingMatches>
+      <fb-skeleton-match-encounter-list></fb-skeleton-match-encounter-list>
+    </ng-template>
   </div>
 </div>
