@@ -33,6 +33,30 @@
 
       <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
         <fb-match-encounter-list [matches]="matches"></fb-match-encounter-list>
+
+        <div class="mt-5 flex items-center justify-end">
+          <a
+            [routerLink]="['../', 'all-matches']"
+            class="
+              inline-block
+              text-center
+              font-bold
+              text-black
+              leading-[17px]
+              text-sm
+              px-5
+              py-2.5
+              border
+              bg-white
+              hover:bg-fb-gray-800
+              border-fb-gray-600
+              rounded-[5px]
+              cursor-pointer
+            "
+          >
+            Alle Anzeigen
+          </a>
+        </div>
       </ng-container>
 
       <ng-template #loadingMatches>
