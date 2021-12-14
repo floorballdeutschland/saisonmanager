@@ -86,8 +86,15 @@
         "
       >
         <fb-player-ranking-table
+          *ngIf="playerRankings.length; else noRankingsMessage"
           [data]="playerRankings.slice(0, 10)"
         ></fb-player-ranking-table>
+
+        <ng-template #noRankingsMessage>
+          <div class="text-center text-fb-gray-400 my-12">
+            Noch keine Scorer vorhanden
+          </div>
+        </ng-template>
       </ng-container>
 
       <ng-template #loadingPlayerRankings>
