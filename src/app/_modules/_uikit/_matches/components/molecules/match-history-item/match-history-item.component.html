@@ -38,7 +38,7 @@
       <div class="font-bold text-right px-3">
         <ng-container [ngSwitch]="gameEvent.event_type">
           <ng-container *ngSwitchCase="'goal'">
-            {{ gameEvent.goal_type_string }}
+            {{ "Tor" }}
           </ng-container>
           <ng-container *ngSwitchCase="'penalty'">
             {{ "Strafe " + gameEvent.penalty_type_string }}
@@ -151,7 +151,7 @@
       <div class="font-bold px-3">
         <ng-container [ngSwitch]="gameEvent.event_type">
           <ng-container *ngSwitchCase="'goal'">
-            {{ gameEvent.goal_type_string }}
+            {{ "Tor" }}
           </ng-container>
           <ng-container *ngSwitchCase="'penalty'">
             {{ "Strafe " + gameEvent.penalty_type_string }}
@@ -202,9 +202,17 @@
         self-start
         justify-self-end
       "
-      *ngIf="gameEvent.penalty_reason_string && gameEvent.home.scorer"
     >
-      {{ gameEvent.penalty_reason_string }}
+      <ng-container
+        *ngIf="gameEvent.penalty_reason_string && gameEvent.home.scorer"
+      >
+        {{ gameEvent.penalty_reason_string }}
+      </ng-container>
+
+      <ng-container
+        *ngIf="gameEvent.home.scorer && gameEvent.goal_type_string !== 'Tor'"
+        >{{ gameEvent.goal_type_string }}</ng-container
+      >
     </div>
 
     <div
@@ -230,9 +238,17 @@
         px-3
         self-start
       "
-      *ngIf="gameEvent.penalty_reason_string && gameEvent.guest.scorer"
     >
-      {{ gameEvent.penalty_reason_string }}
+      <ng-container
+        *ngIf="gameEvent.penalty_reason_string && gameEvent.guest.scorer"
+      >
+        {{ gameEvent.penalty_reason_string }}
+      </ng-container>
+
+      <ng-container
+        *ngIf="gameEvent.guest.scorer && gameEvent.goal_type_string !== 'Tor'"
+        >{{ gameEvent.goal_type_string }}</ng-container
+      >
     </div>
 
     <div
