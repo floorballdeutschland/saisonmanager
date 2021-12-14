@@ -67,7 +67,7 @@ export class RankingComponent implements OnInit, OnDestroy {
           if (!games) {
             return;
           }
-          this.selectedMatchDay = games[0].game_day;
+          this.selectedMatchDay = games[0]?.game_day ? games[0].game_day : 1;
         }),
         takeUntil(this._destroy$)
       )

@@ -6,9 +6,16 @@
       *ngIf="teamRankings$ | async as teamRankings; else loadingTeamRankings"
     >
       <fb-team-ranking-table
+        *ngIf="teamRankings.length; else noTeamRankingsMessage"
         [routerPrefix]="['../', 'team']"
         [data]="teamRankings"
       ></fb-team-ranking-table>
+
+      <ng-template #noTeamRankingsMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Tabelle vorhanden
+        </div>
+      </ng-template>
     </ng-container>
 
     <ng-template #loadingTeamRankings>
@@ -32,7 +39,16 @@
       </div>
 
       <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
-        <fb-match-encounter-list [matches]="matches"></fb-match-encounter-list>
+        <fb-match-encounter-list
+          *ngIf="matches.length; else noMatchesMessage"
+          [matches]="matches"
+        ></fb-match-encounter-list>
+
+        <ng-template #noMatchesMessage>
+          <div class="text-center text-fb-gray-400 my-12">
+            Noch keine Spiele vorhanden
+          </div>
+        </ng-template>
 
         <div class="mt-5 flex items-center justify-end">
           <a

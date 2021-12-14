@@ -4,9 +4,16 @@
   <div class="mt-4 lg:mt-8 pb-16">
     <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
       <fb-match-encounter-list
+        *ngIf="matches.length; else noMatchesMessage"
         [matches]="matches"
         [withMatchDay]="true"
       ></fb-match-encounter-list>
+
+      <ng-template #noMatchesMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Spiele für diesen Spieltag
+        </div>
+      </ng-template>
     </ng-container>
 
     <ng-template #loadingMatches>

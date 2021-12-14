@@ -6,8 +6,10 @@
     <div class="flex items-end mt-4 lg:mt-8">
       <h2 class="font-bold text-xl lg:text-2xl">Aktueller Spieltag</h2>
       <ng-container *ngIf="matches$ | async as matches">
-        <span class="font-bold text-fb-gray-400 text-base ml-3"
-          >{{ matches[0].game_day }}. Spieltag</span
+        <span
+          class="font-bold text-fb-gray-400 text-base ml-3"
+          *ngIf="matches.length && matches[0]"
+          >{{ matches[0]?.game_day }}. Spieltag</span
         >
       </ng-container>
     </div>
@@ -15,7 +17,16 @@
     <div class="grid grid-cols-1 xl:grid-cols-5 mt-4 lg:mt-8 gap-8">
       <div class="xl:col-span-3">
         <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
-          <fb-match-pairing-list [matches]="matches"></fb-match-pairing-list>
+          <fb-match-pairing-list
+            *ngIf="matches.length; else noMatchesMessage"
+            [matches]="matches"
+          ></fb-match-pairing-list>
+
+          <ng-template #noMatchesMessage>
+            <div class="text-center text-fb-gray-400 my-12">
+              Noch keine Spiele für diesen Spieltag
+            </div>
+          </ng-template>
 
           <div class="mt-5 flex items-center justify-end">
             <a
@@ -54,15 +65,23 @@
             else loadingTeamRankings
           "
         >
-          <fb-team-ranking-table
-            type="small"
-            [data]="teamRankings"
-            class="hidden xl:block"
-          ></fb-team-ranking-table>
-          <fb-team-ranking-table
-            [data]="teamRankings"
-            class="xl:hidden"
-          ></fb-team-ranking-table>
+          <ng-container *ngIf="teamRankings.length; else noTeamRankingsMessage">
+            <fb-team-ranking-table
+              type="small"
+              [data]="teamRankings"
+              class="hidden xl:block"
+            ></fb-team-ranking-table>
+            <fb-team-ranking-table
+              [data]="teamRankings"
+              class="xl:hidden"
+            ></fb-team-ranking-table>
+          </ng-container>
+
+          <ng-template #noTeamRankingsMessage>
+            <div class="text-center text-fb-gray-400 my-12">
+              Noch keine Tabelle vorhanden
+            </div>
+          </ng-template>
         </ng-container>
 
         <ng-template #loadingTeamRankings>
