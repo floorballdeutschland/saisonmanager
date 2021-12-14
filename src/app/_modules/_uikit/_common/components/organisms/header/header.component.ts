@@ -31,4 +31,7 @@ export class HeaderComponent {
 
   @Output()
   removeFromFavorites: EventEmitter<void> = new EventEmitter<void>();
+
+  @Output()
+  navigateBack: EventEmitter<void> = new EventEmitter<void>();
 }

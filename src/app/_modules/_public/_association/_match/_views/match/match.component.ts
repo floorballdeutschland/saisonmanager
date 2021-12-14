@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 import { Game } from '@floorball/types';
 import { AssociationService, GameService } from '@floorball/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 @Component({
   templateUrl: './match.component.html',
@@ -24,7 +25,8 @@ export class MatchComponent implements OnInit, OnDestroy {
     private _gameService: GameService,
     private _route: ActivatedRoute,
     private _router: Router,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private _location: Location
   ) {
     _router.events.subscribe(() => {
       const matchId = this._route.snapshot?.paramMap.get('matchId');
@@ -49,5 +51,9 @@ export class MatchComponent implements OnInit, OnDestroy {
   getMatch(id: string) {
     this.match$ = this._gameService.getGame(parseInt(id));
     this._cdr.markForCheck();
+  }
+
+  navigateBack() {
+    this._location.back();
   }
 }

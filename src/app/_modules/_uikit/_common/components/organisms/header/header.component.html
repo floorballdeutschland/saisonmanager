@@ -43,6 +43,7 @@
   <div class="md:ml-auto mt-5 md:m-0">
     <button
       *ngIf="type === 'match' || type === 'team'"
+      (click)="navigateBack.emit()"
       class="
         font-bold
         text-black
