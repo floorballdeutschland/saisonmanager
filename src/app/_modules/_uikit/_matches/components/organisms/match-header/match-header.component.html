@@ -106,7 +106,8 @@
         </ng-container>
       </ul>
       <div *ngIf="!game.started" class="text-fb-gray-400">
-        {{ game.arena_address }}
+        <div>{{ game.arena_name }}</div>
+        <div>{{ game.arena_address }}</div>
       </div>
     </div>
     <div class="flex flex-col justify-start h-[90px] md:h-[160px]">
