@@ -1,7 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ComponentRef,
+  ElementRef,
   Input,
+  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import { OverlayService } from '@floorball/core';
@@ -18,14 +21,22 @@ import { MobileHeaderComponent } from '..';
 export class SidebarComponent {
   @Input()
   association?: GameOperation | null;
+  overlayComponentRef?: ComponentRef<MobileHeaderComponent>;
 
-  onClose$ = new Subject<boolean>();
+  menuIsOpen = false;
 
   constructor(private _overlayService: OverlayService) {}
 
   openMenu() {
-    const ref = this._overlayService.showScrollBlockingOverlay(
+    this.overlayComponentRef = this._overlayService.showScrollBlockingOverlay(
       MobileHeaderComponent
     );
+    this.menuIsOpen = true;
+  }
+
+  closeMenu() {
+    this.overlayComponentRef?.instance.onClose$.next(true);
+
+    this.menuIsOpen = false;
   }
 }

@@ -29,6 +29,7 @@
 
   <!-- open menu -->
   <a
+    *ngIf="!menuIsOpen"
     href="#"
     class="w-[20px] h-[18px] cursor-pointer lg:hidden"
     (click)="$event.preventDefault(); openMenu()"
@@ -56,6 +57,25 @@
       />
     </svg>
   </a>
+
+  <button
+    *ngIf="menuIsOpen"
+    class="w-[20px] h-[18px] cursor-pointer"
+    (click)="closeMenu()"
+  >
+    <svg
+      class="currentColor object-contain w-full h-full fill-white"
+      width="17"
+      height="16"
+      viewBox="0 0 17 16"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M11.3984 7.75L15.6953 3.45312C16.2539 2.9375 16.2539 2.07812 15.6953 1.5625L14.75 0.617188C14.2344 0.0585938 13.375 0.0585938 12.8594 0.617188L8.5625 4.91406L4.22266 0.617188C3.70703 0.0585938 2.84766 0.0585938 2.33203 0.617188L1.38672 1.5625C0.828125 2.07812 0.828125 2.9375 1.38672 3.45312L5.68359 7.75L1.38672 12.0898C0.828125 12.6055 0.828125 13.4648 1.38672 13.9805L2.33203 14.9258C2.84766 15.4844 3.70703 15.4844 4.22266 14.9258L8.5625 10.6289L12.8594 14.9258C13.375 15.4844 14.2344 15.4844 14.75 14.9258L15.6953 13.9805C16.2539 13.4648 16.2539 12.6055 15.6953 12.0898L11.3984 7.75Z"
+      />
+    </svg>
+  </button>
 
   <ng-content></ng-content>
   <fb-metanavigation class="hidden lg:block"></fb-metanavigation>
