@@ -124,11 +124,18 @@
 
   <div class="mt-5 lg:mt-10 pb-2.5 lg:pb-16">
     <div class="container mx-auto px-8">
-      <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
-        <!--      TODO Use similar leagues instead of top leagues-->
-        <fb-similar-leagues
-          [leagues]="selectedAssociation.top_leagues"
-        ></fb-similar-leagues>
+      <ng-container *ngIf="singleLeague$ | async as singleLeague">
+        <ng-container
+          *ngIf="selectedAssociation$ | async as selectedAssociation"
+        >
+          <fb-similar-leagues
+            [leagues]="
+              singleLeague.similar_leagues
+                ? singleLeague.similar_leagues
+                : selectedAssociation.top_leagues
+            "
+          ></fb-similar-leagues>
+        </ng-container>
       </ng-container>
     </div>
   </div>

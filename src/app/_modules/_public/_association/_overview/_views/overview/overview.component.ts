@@ -25,6 +25,7 @@ import { Observable, Subject, takeUntil, tap } from 'rxjs';
 export class OverviewComponent implements OnInit, OnDestroy {
   selectedAssociation$!: Observable<GameOperation | null>;
   selectedLeague$!: Observable<League | null>;
+  singleLeague$!: Observable<League | null>;
   teamRankings$?: Observable<TableEntry[] | null>;
   playerRankings$?: Observable<ScorerEntry[] | null>;
   matches$?: Observable<GameScheduleEntry[] | null>;
@@ -49,6 +50,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
             this.getTeamRanking(league.id);
             this.getPlayerRanking(league.id);
             this.getMatches(league.id);
+            this.getSingleLeague(league.id);
             this._cdr.markForCheck();
           }
         }),
@@ -73,5 +75,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
   getMatches(leagueNumber: number) {
     this.matches$ =
       this._leagueService.getGameScheduleForCurrentGameDay(leagueNumber);
+  }
+
+  getSingleLeague(leagueNumber: number) {
+    this.singleLeague$ = this._leagueService.getSingleLeague(leagueNumber);
   }
 }
