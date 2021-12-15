@@ -26,6 +26,7 @@ export class OverlayService {
     const scrollPosition = window.pageYOffset;
 
     if (!this._overlayRefs.length) {
+      document.body.classList.add('overflow-hidden');
       document.body.style.top = -scrollPosition + 'px';
       document.body.classList.add(this._bodyOverlayClass);
     }
@@ -50,6 +51,7 @@ export class OverlayService {
 
           if (!this._overlayRefs.length) {
             document.body.classList.remove(this._bodyOverlayClass);
+            document.body.classList.remove('overflow-hidden');
             document.body.style.top = '';
             window.scrollTo(0, scrollPosition);
           }
