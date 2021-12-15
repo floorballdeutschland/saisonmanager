@@ -40,7 +40,17 @@
     {{ subline }}
   </h2>
 
-  <div class="md:ml-auto mt-5 md:mt-0 min-w-[205px] flex justify-end">
+  <div
+    class="
+      md:ml-auto
+      mt-5
+      md:mt-0
+      min-w-[205px]
+      flex
+      justify-start
+      md:justify-end
+    "
+  >
     <button
       *ngIf="type === 'match' || type === 'team'"
       (click)="navigateBack.emit()"

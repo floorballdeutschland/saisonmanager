@@ -1,15 +1,14 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ComponentRef,
-  ElementRef,
   Input,
-  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import { OverlayService } from '@floorball/core';
 import { GameOperation } from '@floorball/types';
-import { Subject } from 'rxjs';
+import { take, tap } from 'rxjs';
 import { MobileHeaderComponent } from '..';
 
 @Component({
@@ -21,22 +20,34 @@ import { MobileHeaderComponent } from '..';
 export class SidebarComponent {
   @Input()
   association?: GameOperation | null;
-  overlayComponentRef?: ComponentRef<MobileHeaderComponent>;
 
+  overlayComponentRef?: ComponentRef<MobileHeaderComponent>;
   menuIsOpen = false;
 
-  constructor(private _overlayService: OverlayService) {}
+  constructor(
+    private _overlayService: OverlayService,
+    private _cdr: ChangeDetectorRef
+  ) {}
 
   openMenu() {
     this.overlayComponentRef = this._overlayService.showScrollBlockingOverlay(
       MobileHeaderComponent
     );
+
     this.menuIsOpen = true;
+
+    this.overlayComponentRef?.instance.onClose$
+      .pipe(
+        tap(() => {
+          this.menuIsOpen = false;
+          this._cdr.markForCheck();
+        }),
+        take(1)
+      )
+      .subscribe();
   }
 
   closeMenu() {
     this.overlayComponentRef?.instance.onClose$.next(true);
-
-    this.menuIsOpen = false;
   }
 }
