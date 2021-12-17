@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiURL: 'https://saisonmanager.de/api/v2/',
+  apiURL: 'https://api.saisonmanager.de/api/v2/',
 };
