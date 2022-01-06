@@ -40,6 +40,12 @@
           <ng-container *ngSwitchCase="'goal'">
             {{ "Tor" }}
           </ng-container>
+          <ng-container *ngSwitchCase="'penalty_shots'">
+            {{ "Tor" }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'penalty_shot'">
+            {{ "Tor" }}
+          </ng-container>
           <ng-container *ngSwitchCase="'penalty'">
             {{ "Strafe " + gameEvent.penalty_type_string }}
           </ng-container>

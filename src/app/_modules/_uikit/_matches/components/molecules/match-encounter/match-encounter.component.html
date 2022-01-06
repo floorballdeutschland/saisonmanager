@@ -24,14 +24,14 @@
       col-span-3
       md:col-span-1
       order-1
-      text-center
-      md:text-left
+      flex flex-row
+      md:flex-col
     "
   >
-    <span>
+    <p class="flex-1">
       {{ match.date | date }} {{ match.time && "- " + match.time + " Uhr" }}
-    </span>
-    <div>{{ match.arena_short }}</div>
+    </p>
+    <p>{{ match.arena_short }}</p>
   </div>
   <div class="md:text-right text-sm font-bold order-3 md:order-2">
     {{ match.home_team_name }}
@@ -55,10 +55,16 @@
     "
   >
     <ng-container *ngIf="match.state === 'no_record'">
-      <p class="text-base whitespace-nowrap" *ngIf="match.time">
+      <p
+        class="text-base whitespace-nowrap"
+        *ngIf="match.time && match.state === 'no_record'"
+      >
         {{ match.time }} Uhr
       </p>
-      <p class="text-xs leading-3" *ngIf="!match.time">
+      <p
+        class="text-xs leading-3"
+        *ngIf="!match.time && match.state !== 'no_record'"
+      >
         Keine Uhrzeit angegeben
       </p>
     </ng-container>
@@ -95,6 +101,8 @@
       order-7
       pb-2
       md:pb-0
+      flex flex-row
+      md:flex-col
     "
   >
     <div
@@ -103,8 +111,8 @@
     >
       Spieltag {{ match.game_day }}
     </div>
-    <div>Schiedsrichter</div>
     <div>
+      Schiedsrichter:
       {{
         match.nominated_referee_string
           ? match.nominated_referee_string
