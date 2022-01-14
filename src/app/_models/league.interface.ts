@@ -13,5 +13,8 @@ export interface League {
   order_key: string;
   league_type: 'cup' | 'league';
   game_day_numbers: number[];
+  game_day_titles: {
+    [key: string]: string;
+  };
   similar_leagues?: League[];
 }

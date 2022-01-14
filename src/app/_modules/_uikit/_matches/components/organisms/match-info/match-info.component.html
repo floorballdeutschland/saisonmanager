@@ -43,17 +43,7 @@
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Schiedsrichter</span>
       <span class="text-sm font-bold text-right">
-        <ng-container
-          *ngIf="game.referees && game.referees.length; else noReferees"
-        >
-          <ng-container
-            *ngFor="let referee of game.referees; let isLast = last"
-          >
-            {{ referee.first_name }} {{ referee.last_name }}{{ !isLast && "," }}
-          </ng-container>
-        </ng-container>
-
-        <ng-template #noReferees> - </ng-template>
+        {{ game.referees | normalizeReferee: game.nominated_referees }}
       </span>
     </li>
   </ul>

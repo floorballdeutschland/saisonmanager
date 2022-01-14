@@ -3,6 +3,7 @@
     headline="Spieledetails"
     type="match"
     [subline]="match.home_team_name + ' vs. ' + match.guest_team_name"
+    (navigateBack)="navigateBack()"
   ></fb-header>
 
   <fb-match-header [game]="match"></fb-match-header>

@@ -1,4 +1,4 @@
-import { GameResult } from './game.interface';
+import { GameResult, Referee } from './game.interface';
 
 export interface GameScheduleEntry {
   game_id: number;
@@ -19,6 +19,7 @@ export interface GameScheduleEntry {
   guest_team_logo: string;
   guest_team_small_logo: string;
   nominated_referee_string: string;
+  referees: Referee[];
   state: 'record_created' | 'no_record';
   result_string: string;
   result: GameResult;

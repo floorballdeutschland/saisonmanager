@@ -70,11 +70,7 @@
     </div>
     <div>
       Schiedsrichter:
-      {{
-        match.nominated_referee_string
-          ? match.nominated_referee_string
-          : "keine Angabe"
-      }}
+      {{ match.referees | normalizeReferee: match.nominated_referee_string }}
     </div>
   </div>
 </a>

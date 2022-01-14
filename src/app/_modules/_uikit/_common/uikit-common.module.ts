@@ -24,7 +24,9 @@ import * as Pipes from './pipes';
     Pipes.GradientPipe,
     Pipes.NormalizeEventPipe,
     Pipes.NormalizeMatchResultPipe,
+    Pipes.NormalizeRefereePipe,
     Pipes.RouteMergePipe,
+    Pipes.ToNumberPipe,
     Organisms.MobileHeaderComponent,
   ],
   exports: [
@@ -42,7 +44,9 @@ import * as Pipes from './pipes';
     Pipes.GradientPipe,
     Pipes.NormalizeEventPipe,
     Pipes.NormalizeMatchResultPipe,
+    Pipes.NormalizeRefereePipe,
     Pipes.RouteMergePipe,
+    Pipes.ToNumberPipe,
     Organisms.MobileHeaderComponent,
   ],
 })
