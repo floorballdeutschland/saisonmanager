@@ -15,7 +15,7 @@ export class NormalizeMatchResultPipe implements PipeTransform {
     options: { detailed?: boolean } = {}
   ): NormalizedMatchResult {
     if (!result) {
-      return { result: '', extraTime: '' };
+      return { result: '-:-', extraTime: '' };
     }
     return {
       result: `${result.home_goals}:${result.guest_goals}`,

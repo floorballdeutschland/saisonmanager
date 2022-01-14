@@ -7,7 +7,15 @@ import {
 } from '@angular/core';
 import { LeagueService } from '@floorball/core';
 import { GameScheduleEntry, League } from '@floorball/types';
-import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
+import {
+  interval,
+  Observable,
+  shareReplay,
+  Subject,
+  take,
+  takeUntil,
+  tap,
+} from 'rxjs';
 
 @Component({
   selector: 'fb-matches-with-rounds',
@@ -37,6 +45,12 @@ export class MatchesWithRoundsComponent implements OnInit, OnDestroy {
         tap((league) => {
           if (league?.id) {
             this.getMatches(league.id);
+            interval(30000)
+              .pipe(
+                tap(() => this.getMatches(league.id)),
+                takeUntil(this._destroy$)
+              )
+              .subscribe();
           }
         }),
         takeUntil(this._destroy$)

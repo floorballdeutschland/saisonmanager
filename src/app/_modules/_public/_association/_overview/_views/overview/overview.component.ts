@@ -15,7 +15,7 @@ import {
   ScorerEntry,
   TableEntry,
 } from '@floorball/types';
-import { Observable, Subject, takeUntil, tap } from 'rxjs';
+import { interval, Observable, Subject, takeUntil, tap } from 'rxjs';
 
 @Component({
   templateUrl: './overview.component.html',
@@ -49,8 +49,16 @@ export class OverviewComponent implements OnInit, OnDestroy {
           if (league?.id) {
             this.getTeamRanking(league.id);
             this.getPlayerRanking(league.id);
-            this.getMatches(league.id);
             this.getSingleLeague(league.id);
+            this.getMatches(league.id);
+
+            interval(30000)
+              .pipe(
+                tap(() => this.getMatches(league.id)),
+                takeUntil(this._destroy$)
+              )
+              .subscribe();
+
             this._cdr.markForCheck();
           }
         }),

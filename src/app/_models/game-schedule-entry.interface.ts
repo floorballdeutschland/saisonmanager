@@ -23,4 +23,6 @@ export interface GameScheduleEntry {
   state: 'record_created' | 'no_record';
   result_string: string;
   result: GameResult;
+  ended: boolean;
+  started: boolean;
 }

@@ -16,7 +16,7 @@
   <div
     class="order-3 row-span-2 md:order-3 text-center font-bold tracking-widest md:grid md:grid-cols-1"
   >
-    <ng-container *ngIf="match.state === 'no_record'">
+    <ng-container *ngIf="!match.started">
       <p class="text-base whitespace-nowrap" *ngIf="match.time">
         {{ match.time }} Uhr
       </p>
@@ -24,13 +24,24 @@
         Keine Uhrzeit angegeben
       </p>
     </ng-container>
-    <ng-container *ngIf="match.state !== 'no_record'">
-      <p class="text-2xl" *ngIf="!match.result_string">- : -</p>
+    <ng-container *ngIf="match.started">
       <ng-container *ngIf="match.result | normalizeMatchResult as resultData">
-        <p *ngIf="resultData.result" class="text-2xl">
+        <p
+          *ngIf="resultData.result"
+          class="text-2xl"
+          [ngClass]="{
+            'bg-pink-500 animate-pulse': match.started && !match.ended
+          }"
+        >
           {{ resultData.result }}
         </p>
-        <p *ngIf="resultData.extraTime" class="text-xs">
+        <p
+          *ngIf="resultData.extraTime"
+          class="text-xs"
+          [ngClass]="{
+            'bg-pink-500 animate-pulse': match.started && !match.ended
+          }"
+        >
           {{ resultData.extraTime }}
         </p>
       </ng-container>
