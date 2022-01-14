@@ -1,19 +1,30 @@
 <a
-  class="flex flex-col items-center justify-center px-3 pb-1 pt-4 transform hover:scale-105 hover:bg-fb-gray-200 transition"
+  class="md:flex flex-col items-center justify-center p-3 transform hover:scale-105 hover:bg-fb-gray-200 transition max-w-[80vw] md:max-w-none"
   [routerLink]="routerPrefix.concat([match.game_id.toString()])"
 >
-  <div class="text-xs text-fb-gray-400">{{ match.date | date }}</div>
-  <div class="grid grid-cols-3 items-center justify-items-center my-2">
-    <div class="w-[42px] h-[42px]">
-      <img
-        *ngIf="match.home_team_small_logo; else fallback"
-        [src]="match.home_team_small_logo"
-        class="w-full h-full object-contain"
-      />
+  <div
+    class="grid grid-cols-[1fr,auto] grid-rows-2 gap-x-[10px] gap-y-[5px] md:grid-rows-1 md:grid-cols-3 items-center md:justify-items-center my-2"
+  >
+    <div
+      class="grid grid-cols-[32px,1fr] md:grid-cols-1 gap-3 row-start-1 items-center"
+    >
+      <div class="w-[32px] h-[32px] md:w-[42px] md:h-[42px]">
+        <img
+          *ngIf="match.home_team_small_logo; else fallback"
+          [src]="match.home_team_small_logo"
+          class="w-full h-full object-contain"
+        />
+      </div>
+      <p clasS="md:hidden text-sm font-bold whitespace-nowrap truncate">
+        {{ match.home_team_name }}
+      </p>
     </div>
 
-    <div class="text-center text-sm text-fb-gray-500 font-bold w-[75px]">
+    <div
+      class="text-center text-sm text-fb-gray-500 tracking-widest font-bold w-[75px] row-span-2 col-start-2 md:row-start-1 md:cols-start-1 md:row-span-1 items-center justify-center grid grid-cols-1"
+    >
       <ng-container *ngIf="!match.started">
+        <p class="text-xs text-fb-gray-400">{{ match.date | date }}</p>
         <p class="text-base whitespace-nowrap" *ngIf="match.time">
           {{ match.time }} Uhr
         </p>
@@ -43,16 +54,25 @@
       </ng-container>
     </div>
 
-    <div class="w-[42px] h-[42px]">
-      <img
-        *ngIf="match.guest_team_small_logo; else fallback"
-        [src]="match.guest_team_small_logo"
-        class="w-full h-full object-contain"
-      />
+    <div
+      class="grid grid-cols-[32px,1fr] md:grid-cols-1 gap-3 row-start-2 md:row-start-1 items-center"
+    >
+      <div class="w-[32px] h-[32px] md:w-[42px] md:h-[42px]">
+        <img
+          *ngIf="match.guest_team_small_logo; else fallback"
+          [src]="match.guest_team_small_logo"
+          class="w-full h-full object-contain"
+        />
+      </div>
+      <p clasS="md:hidden text-sm font-bold whitespace-nowrap truncate">
+        {{ match.guest_team_name }}
+      </p>
     </div>
   </div>
 
-  <div class="text-xs text-fb-gray-400">{{ match.arena_address }}</div>
+  <div class="text-xs text-fb-gray-400 hidden md:block">
+    {{ match.arena_address }}
+  </div>
 </a>
 
 <ng-template #fallback>

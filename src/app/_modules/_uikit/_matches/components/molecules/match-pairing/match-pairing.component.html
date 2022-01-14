@@ -17,6 +17,7 @@
     class="order-3 row-span-2 md:order-3 text-center font-bold tracking-widest md:grid md:grid-cols-1"
   >
     <ng-container *ngIf="!match.started">
+      <p class="text-xs text-fb-gray-400">{{ match.date | date }}</p>
       <p class="text-base whitespace-nowrap" *ngIf="match.time">
         {{ match.time }} Uhr
       </p>
