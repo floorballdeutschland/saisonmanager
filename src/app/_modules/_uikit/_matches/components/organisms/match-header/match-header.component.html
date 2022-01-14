@@ -1,101 +1,148 @@
-<div
-  class="flex justify-center px-2 py-[30px] md:p-[45px] border-b-[10px] border-fb-gray-200"
->
-  <div class="grid gap-4 grid-cols-3 items-center">
-    <div class="flex flex-col justify-end h-[90px] md:h-[160px]">
-      <img
-        *ngIf="game.home_team_logo; else fallback"
-        class="w-full h-full object-contain"
-        [src]="game.home_team_logo"
-        [alt]="game.home_team_name"
-        [title]="'Logo: ' + game.home_team_name"
-      />
-    </div>
+<div class="border-b-[10px] border-fb-gray-200">
+  <div class="container mx-auto px-4 lg:px-8 mt-4 lg:mt-8">
     <div
-      class="grid grid-cols-1 gap-3 content-center justify-center text-center max-w-[300px] md:min-w-[250px]"
+      class="grid gap-4 grid-cols-2 lg:grid-cols-[1fr,auto,1fr] items-center px-2 py-[30px] md:p-[45px]"
     >
-      <p
-        class="flex md:block text-base font-bold justify-center whitespace-nowrap md:whitespace-normal"
-        [ngClass]="{ 'text-fb-gray-400': game.started && game.ended }"
-      >
-        <ng-container *ngIf="game.started && !game.ended; else gameDate">
-          <div
-            class="uppercase bg-pink-500 text-sm text-white inline-block mx-auto rounded px-2"
-          >
-            Live
+      <div class="flex flex-col justify-center order-1 lg:order-1 relative">
+        <div class="grid grid-cols-1 gap-2 justify-center items-center">
+          <div class="flex justify-center">
+            <img
+              *ngIf="game.home_team_logo; else fallback"
+              class="object-contain h-[90px] md:h-[160px]"
+              [src]="game.home_team_logo"
+              [alt]="game.home_team_name"
+              [title]="'Logo: ' + game.home_team_name"
+            />
           </div>
-        </ng-container>
-        <ng-template #gameDate>
-          {{ game.date | date: "dd.MM.YYYY" }}
-          <ng-container *ngIf="game.start_time">
-            – {{ game.start_time }} Uhr
-          </ng-container>
-        </ng-template>
-      </p>
-      <div
-        *ngIf="game.result_string && game.started"
-        [ngClass]="{
-          'animate-pulse text-pink-500': game.started && !game.ended
-        }"
-      >
-        <ng-container *ngIf="game.result | normalizeMatchResult as resultData">
-          <p
-            *ngIf="resultData.result"
-            class="text-4.5xl font-bold leading-none whitespace-nowrap"
-          >
-            {{ resultData.result }}
-          </p>
-          <p
-            *ngIf="resultData.extraTime"
-            class="text-lg leading-none whitespace-nowrap"
-          >
-            {{ resultData.extraTime }}
-          </p>
-        </ng-container>
-      </div>
-      <ul
-        class="flex justify-center gap-5 whitespace-nowrap md:whitespace-normal"
-        *ngIf="game.result && game.started"
-      >
-        <ng-container
-          *ngFor="
-            let periodResult of game.result.home_goals_period;
-            let isLast = last;
-            let i = index
-          "
+          <div class="text-base lg:text-xl font-bold text-center truncate">
+            {{ game.home_team_name }}
+          </div>
+        </div>
+        <div
+          class="absolute font-bold text-lg lg:hidden left-full top-1/2 -translate-y-1/2 text-gray-400"
         >
-          <li
-            class="text-black text-base font-bold"
-            *ngIf="!isLast || (game.result.overtime && isLast)"
-          >
-            {{ periodResult }} : {{ game.result.guest_goals_period?.[i] }}
-          </li>
-        </ng-container>
-      </ul>
-      <div *ngIf="!game.started" class="text-fb-gray-400">
-        <div>{{ game.arena_name }}</div>
-        <div>{{ game.arena_address }}</div>
+          VS
+        </div>
       </div>
-    </div>
-    <div class="flex flex-col justify-start h-[90px] md:h-[160px]">
-      <img
-        *ngIf="game.guest_team_logo; else fallback"
-        class="w-full h-full object-contain"
-        [src]="game.guest_team_logo"
-        [alt]="game.guest_team_name"
-        [title]="'Logo: ' + game.guest_team_name"
-      />
+      <div
+        class="col-span-2 lg:col-span-1 order-3 lg:order-2 grid grid-cols-1 gap-3 content-center justify-center text-center lg:max-w-[300px] md:min-w-[250px]"
+      >
+        <p
+          class="flex md:block text-base font-bold justify-center whitespace-nowrap md:whitespace-normal"
+          [ngClass]="{ 'text-fb-gray-400': game.started && game.ended }"
+        >
+          <ng-container *ngIf="game.started && !game.ended; else gameDate">
+            <div
+              class="uppercase bg-pink-500 text-sm text-white inline-block mx-auto rounded px-2"
+            >
+              Live
+            </div>
+          </ng-container>
+          <ng-template #gameDate>
+            {{ game.date | date: "dd.MM.YYYY" }}
+            <ng-container *ngIf="game.start_time">
+              – {{ game.start_time }} Uhr
+            </ng-container>
+          </ng-template>
+        </p>
+        <div
+          *ngIf="game.result_string && game.started"
+          [ngClass]="{
+            'animate-pulse text-pink-500': game.started && !game.ended
+          }"
+        >
+          <ng-container
+            *ngIf="game.result | normalizeMatchResult as resultData"
+          >
+            <p
+              *ngIf="resultData.result"
+              class="text-4.5xl font-bold leading-none whitespace-nowrap"
+            >
+              {{ resultData.result }}
+            </p>
+            <p
+              *ngIf="resultData.extraTime"
+              class="text-lg leading-none whitespace-nowrap"
+            >
+              {{ resultData.extraTime }}
+            </p>
+          </ng-container>
+        </div>
+        <ul
+          class="flex justify-center gap-5 whitespace-nowrap md:whitespace-normal"
+          *ngIf="game.result && game.started"
+        >
+          <ng-container
+            *ngFor="
+              let periodResult of game.result.home_goals_period;
+              let isLast = last;
+              let i = index
+            "
+          >
+            <li
+              class="text-black text-base font-bold"
+              *ngIf="!isLast || (game.result.overtime && isLast)"
+            >
+              {{ periodResult }} : {{ game.result.guest_goals_period?.[i] }}
+            </li>
+          </ng-container>
+        </ul>
+        <div *ngIf="!game.started" class="text-fb-gray-400">
+          <div>{{ game.arena_name }}</div>
+          <div>{{ game.arena_address }}</div>
+          <div class="mt-3">
+            <a
+              href="https://www.google.de/maps/place/{{ game.arena_address }}"
+              title="Adresse auf Google Maps anzeigen"
+              target="_blank"
+              class="flex gap-2 justify-center items-center hover:text-gray-800 transition"
+            >
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                data-prefix="fas"
+                data-icon="map-marked-alt"
+                class="w-6 h-6 object-contain svg-inline--fa fa-map-marked-alt fa-w-18"
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 576 512"
+              >
+                <path
+                  fill="currentColor"
+                  d="M288 0c-69.59 0-126 56.41-126 126 0 56.26 82.35 158.8 113.9 196.02 6.39 7.54 17.82 7.54 24.2 0C331.65 284.8 414 182.26 414 126 414 56.41 357.59 0 288 0zm0 168c-23.2 0-42-18.8-42-42s18.8-42 42-42 42 18.8 42 42-18.8 42-42 42zM20.12 215.95A32.006 32.006 0 0 0 0 245.66v250.32c0 11.32 11.43 19.06 21.94 14.86L160 448V214.92c-8.84-15.98-16.07-31.54-21.25-46.42L20.12 215.95zM288 359.67c-14.07 0-27.38-6.18-36.51-16.96-19.66-23.2-40.57-49.62-59.49-76.72v182l192 64V266c-18.92 27.09-39.82 53.52-59.49 76.72-9.13 10.77-22.44 16.95-36.51 16.95zm266.06-198.51L416 224v288l139.88-55.95A31.996 31.996 0 0 0 576 426.34V176.02c0-11.32-11.43-19.06-21.94-14.86z"
+                ></path>
+              </svg>
+              Adresse auf Google Maps anzeigen
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col justify-center order-2 lg:order-3">
+        <div class="grid grid-cols-1 gap-2 justify-center items-center">
+          <div class="flex justify-center">
+            <img
+              *ngIf="game.guest_team_logo; else fallback"
+              class="object-contain h-[90px] md:h-[160px] mx-auto"
+              [src]="game.guest_team_logo"
+              [alt]="game.guest_team_name"
+              [title]="'Logo: ' + game.guest_team_name"
+            />
+          </div>
+          <div class="text-base lg:text-xl font-bold text-center truncate">
+            {{ game.guest_team_name }}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-
 <ng-template #fallback>
   <svg
     aria-hidden="true"
     focusable="false"
     data-prefix="fas"
     data-icon="shield-alt"
-    class="text-fb-gray-400 p-0.5"
+    class="text-fb-gray-400 h-[90px] md:h-[160px]"
     role="img"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 512 512"
