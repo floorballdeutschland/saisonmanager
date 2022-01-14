@@ -13,17 +13,8 @@
     <div class="uppercase font-bold text-gray-400 text-sm mb-5">Top Ligen</div>
     <a
       *ngFor="let league of gameOperation.top_leagues"
-      [routerLink]="['/', gameOperation.path, league.id]"
-      class="
-        block
-        mb-4
-        last:mb-0
-        font-bold
-        text-base
-        truncate
-        text-fb-gray-500
-        hover:text-black
-      "
+      [routerLink]="['/', gameOperation.path, league | normalizeLeagueRoute]"
+      class="block mb-4 last:mb-0 font-bold text-base truncate text-fb-gray-500 hover:text-black"
     >
       {{ league.name }}
     </a>
@@ -34,25 +25,10 @@
       [routerLink]="[
         '/',
         gameOperation.path,
-        gameOperation.top_leagues?.length && gameOperation.top_leagues[0]?.id
-          ? gameOperation.top_leagues[0].id
-          : ''
+        gameOperation.top_leagues[0] | normalizeLeagueRoute
       ]"
       [title]="gameOperation.name"
-      class="
-        font-bold
-        text-black
-        leading-[17px]
-        text-sm
-        px-5
-        py-2.5
-        border
-        bg-white
-        hover:bg-fb-gray-200
-        border-fb-gray-600
-        rounded-[5px]
-        cursor-pointer
-      "
+      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
     >
       Zum Spielbetrieb
     </a>
