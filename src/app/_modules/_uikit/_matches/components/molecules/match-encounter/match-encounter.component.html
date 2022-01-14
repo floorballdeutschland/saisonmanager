@@ -1,32 +1,9 @@
 <a
   [routerLink]="['spiel', match.game_id.toString()] | routeMerge: baseRoute"
-  class="
-    grid grid-cols-[42px,1fr,80px]
-    md:grid-cols-[1fr,1fr,42px,80px,42px,1fr,1fr]
-    grid-rows-[30px,40px,40px]
-    md:grid-rows-1
-    gap-2
-    md:gap-5
-    items-center
-    md:h-20
-    px-2.5
-    md:px-5
-    cursor-pointer
-    hover:bg-fb-gray-200
-    transition
-    my-4
-    md:my-0
-  "
+  class="grid grid-cols-[42px,1fr,80px] md:grid-cols-[1fr,1fr,42px,80px,42px,1fr,1fr] grid-rows-[30px,40px,40px] md:grid-rows-1 gap-2 md:gap-5 items-center md:h-20 px-2.5 md:px-5 cursor-pointer hover:bg-fb-gray-200 transition my-4 md:my-0"
 >
   <div
-    class="
-      text-fb-gray-400 text-sm
-      col-span-3
-      md:col-span-1
-      order-1
-      flex flex-row
-      md:flex-col
-    "
+    class="text-fb-gray-400 text-sm col-span-3 md:col-span-1 order-1 flex flex-row md:flex-col"
   >
     <p class="flex-1">
       {{ match.date | date }} {{ match.time && "- " + match.time + " Uhr" }}
@@ -45,14 +22,7 @@
   </div>
 
   <div
-    class="
-      text-center
-      font-bold
-      tracking-widest
-      order-4
-      row-span-2
-      md:row-span-1
-    "
+    class="text-center font-bold tracking-widest order-4 row-span-2 md:row-span-1"
   >
     <ng-container *ngIf="match.state === 'no_record'">
       <p
@@ -70,9 +40,7 @@
     </ng-container>
     <ng-container *ngIf="match.state !== 'no_record'">
       <p class="text-2xl" *ngIf="!match.result_string">- : -</p>
-      <ng-container
-        *ngIf="match.result_string | normalizeMatchResult as resultData"
-      >
+      <ng-container *ngIf="match.result | normalizeMatchResult as resultData">
         <p *ngIf="resultData.result" class="text-2xl">
           {{ resultData.result }}
         </p>
@@ -92,18 +60,7 @@
   </div>
   <div class="text-sm font-bold order-6">{{ match.guest_team_name }}</div>
   <div
-    class="
-      text-center
-      md:text-right
-      text-fb-gray-400 text-sm
-      col-span-3
-      md:col-span-1
-      order-7
-      pb-2
-      md:pb-0
-      flex flex-row
-      md:flex-col
-    "
+    class="text-center md:text-right text-fb-gray-400 text-sm col-span-3 md:col-span-1 order-7 pb-2 md:pb-0 flex flex-row md:flex-col"
   >
     <div
       *ngIf="withMatchDay"

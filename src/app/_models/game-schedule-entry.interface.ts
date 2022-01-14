@@ -1,3 +1,5 @@
+import { GameResult } from './game.interface';
+
 export interface GameScheduleEntry {
   game_id: number;
   game_number: number;
@@ -19,4 +21,5 @@ export interface GameScheduleEntry {
   nominated_referee_string: string;
   state: 'record_created' | 'no_record';
   result_string: string;
+  result: GameResult;
 }

@@ -1,18 +1,6 @@
 <a
   [routerLink]="['./', 'spiel', match.game_id]"
-  class="
-    grid grid-cols-[42px,1fr,100px]
-    md:grid-cols-[1fr,42px,80px,42px,1fr]
-    grid-rows-[40px,40px]
-    md:grid-rows-1 md:gap-x-5
-    items-center
-    md:h-20
-    cursor-pointer
-    hover:bg-fb-gray-200
-    transition
-    my-4
-    md:my-0
-  "
+  class="grid grid-cols-[42px,1fr,100px] md:grid-cols-[1fr,42px,80px,42px,1fr] grid-rows-[40px,40px] md:grid-rows-1 md:gap-x-5 items-center md:h-20 cursor-pointer hover:bg-fb-gray-200 transition my-4 md:my-0"
 >
   <div class="md:text-right text-sm font-bold order-2 md:order-1">
     {{ match.home_team_name }}
@@ -26,15 +14,7 @@
   </div>
 
   <div
-    class="
-      order-3
-      row-span-2
-      md:order-3
-      text-center
-      font-bold
-      tracking-widest
-      md:grid md:grid-cols-1
-    "
+    class="order-3 row-span-2 md:order-3 text-center font-bold tracking-widest md:grid md:grid-cols-1"
   >
     <ng-container *ngIf="match.state === 'no_record'">
       <p class="text-base whitespace-nowrap" *ngIf="match.time">
@@ -46,9 +26,7 @@
     </ng-container>
     <ng-container *ngIf="match.state !== 'no_record'">
       <p class="text-2xl" *ngIf="!match.result_string">- : -</p>
-      <ng-container
-        *ngIf="match.result_string | normalizeMatchResult as resultData"
-      >
+      <ng-container *ngIf="match.result | normalizeMatchResult as resultData">
         <p *ngIf="resultData.result" class="text-2xl">
           {{ resultData.result }}
         </p>

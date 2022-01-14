@@ -50,6 +50,10 @@ export interface GameResult {
   home_goals_period: number[];
   guest_goals_period: number[];
   overtime: boolean;
+  postfix: {
+    long: string;
+    short: string;
+  };
 }
 
 export interface Referee {

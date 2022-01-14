@@ -1,4 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { GameResult } from '@floorball/types';
 
 export interface NormalizedMatchResult {
   result: string;
@@ -9,13 +10,16 @@ export interface NormalizedMatchResult {
   name: 'normalizeMatchResult',
 })
 export class NormalizeMatchResultPipe implements PipeTransform {
-  transform(value: string | undefined): NormalizedMatchResult {
-    if (!value) {
+  transform(
+    result: GameResult | undefined,
+    options: { detailed?: boolean } = {}
+  ): NormalizedMatchResult {
+    if (!result) {
       return { result: '', extraTime: '' };
     }
     return {
-      result: value.replace('n.V', '').trim(),
-      extraTime: value.includes('n.V') ? 'n.V' : null,
+      result: `${result.home_goals}:${result.guest_goals}`,
+      extraTime: options.detailed ? result.postfix.long : result.postfix.short,
     };
   }
 }
