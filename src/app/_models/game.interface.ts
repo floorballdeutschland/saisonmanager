@@ -93,6 +93,6 @@ export interface Game {
   arena_short: string;
   referees: Referee[];
   nominated_referees: string;
-  period_titles: { [key: number]: string };
+  period_titles: Array<{ period: number; title: string }>;
   live_stream_link?: string | null;
 }

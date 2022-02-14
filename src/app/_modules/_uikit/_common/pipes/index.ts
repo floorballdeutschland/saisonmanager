@@ -5,3 +5,4 @@ export * from './normalize-referee.pipe';
 export * from './normalize-league-route.pipe';
 export * from './route-merge.pipe';
 export * from './to-number.pipe';
+export * from './match-events.pipe';

@@ -28,6 +28,7 @@ import * as Pipes from './pipes';
     Pipes.NormalizeLeagueRoutePipe,
     Pipes.RouteMergePipe,
     Pipes.ToNumberPipe,
+    Pipes.MatchEventsPipe,
     Organisms.MobileHeaderComponent,
   ],
   exports: [
@@ -49,6 +50,7 @@ import * as Pipes from './pipes';
     Pipes.NormalizeLeagueRoutePipe,
     Pipes.RouteMergePipe,
     Pipes.ToNumberPipe,
+    Pipes.MatchEventsPipe,
     Organisms.MobileHeaderComponent,
   ],
 })

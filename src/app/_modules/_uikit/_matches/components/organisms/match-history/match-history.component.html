@@ -1,29 +1,22 @@
 <div>
-  <ng-container
-    *ngFor="
-      let event of match.events;
-      let index = index;
-      let isFirst = first;
-      let isLast = last
-    "
-  >
-    <ng-container
-      *ngIf="
-        isFirst || (!isFirst && match.events[index - 1].period !== event.period)
-      "
-    >
-      <div class="font-bold w-full border-b border-fb-gray-200 pb-5 mt-8">
-        {{ event.period }}. Drittel
-      </div>
-    </ng-container>
+  <ng-container *ngFor="let period of match.period_titles; let index = index">
+    <ng-container *ngIf="match.events | matchEvents: period.period as events">
+      <ng-container *ngIf="events.length">
+        <div class="font-bold w-full border-b border-fb-gray-200 pb-5 mt-8">
+          {{ period.title }}
+        </div>
 
-    <fb-match-history-item
-      class="block even:bg-fb-gray-300"
-      [isLast]="
-        isLast || (!isLast && match.events[index + 1].period !== event.period)
-      "
-      [match]="match"
-      [event]="event"
-    ></fb-match-history-item>
+        <fb-match-history-item
+          class="block even:bg-fb-gray-300"
+          *ngFor="
+            let event of match.events | matchEvents: period.period;
+            let isLast = last
+          "
+          [isLast]="isLast"
+          [match]="match"
+          [event]="event"
+        ></fb-match-history-item>
+      </ng-container>
+    </ng-container>
   </ng-container>
 </div>
