@@ -1,44 +1,17 @@
 <div class="group w-[125px] relative z-10">
   <div
-    class="
-      font-bold
-      text-black
-      leading-[17px]
-      text-sm
-      px-5
-      py-2.5
-      border
-      bg-white
-      hover:bg-fb-gray-200
-      group-hover:rounded-b-none
-      border-fb-gray-600
-      cursor-pointer
-      rounded-[5px]
-      transition
-    "
+    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 group-hover:rounded-b-none border-fb-gray-600 cursor-pointer rounded-[5px] transition"
   >
-    {{ selectedMatchDay }}. Spieltag
+    {{ selectedMatchDay.title }}
   </div>
 
   <div class="hidden group-hover:block transition absolute w-full">
     <ng-container *ngFor="let matchDay of matchDays">
       <button
-        class="
-          bg-white
-          w-full
-          border border-t-0 border-fb-gray-600
-          last:rounded-b-[5px]
-          px-5
-          py-2.5
-          hover:bg-fb-gray-200
-          leading-[17px]
-          font-bold
-          cursor-pointer
-          text-sm
-        "
-        (click)="selectMatchDay.emit(matchDay)"
+        class="bg-white w-full border border-t-0 border-fb-gray-600 last:rounded-b-[5px] px-5 py-2.5 hover:bg-fb-gray-200 leading-[17px] font-bold cursor-pointer text-sm"
+        (click)="selectMatchDay.emit(matchDay.game_day_number)"
       >
-        {{ matchDay }}. Spieltag
+        {{ matchDay.title }}
       </button>
     </ng-container>
   </div>

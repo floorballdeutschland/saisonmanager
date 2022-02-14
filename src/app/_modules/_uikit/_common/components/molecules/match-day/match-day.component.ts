@@ -15,10 +15,10 @@ import {
 })
 export class MatchDayComponent {
   @Input()
-  matchDays: number[] = [];
+  matchDays: Array<{ game_day_number: number; title: string }> = [];
 
   @Input()
-  selectedMatchDay!: number;
+  selectedMatchDay!: { game_day_number: number; title: string };
 
   @Output()
   selectMatchDay: EventEmitter<number> = new EventEmitter<number>();

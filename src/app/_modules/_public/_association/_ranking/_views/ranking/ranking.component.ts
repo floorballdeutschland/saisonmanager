@@ -20,7 +20,7 @@ export class RankingComponent implements OnInit, OnDestroy {
   matches$?: Observable<GameScheduleEntry[] | null>;
   selectedLeague$!: Observable<League | null>;
 
-  selectedMatchDay = 1;
+  selectedMatchDay: { game_day_number: number; title: string } | null = null;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -37,7 +37,8 @@ export class RankingComponent implements OnInit, OnDestroy {
         tap((league) => {
           if (league?.id) {
             this.getTeamRanking(league.id);
-            this.getMatches(league.id);
+            this.getMatches(league);
+            this.selectedMatchDay = league.game_day_titles[0];
             this._cdr.markForCheck();
           }
         }),
@@ -55,9 +56,9 @@ export class RankingComponent implements OnInit, OnDestroy {
     this.teamRankings$ = this._leagueService.getTable(leagueNumber);
   }
 
-  getMatches(leagueNumber: number) {
+  getMatches(league: League) {
     this.matches$ = this._leagueService
-      .getGameScheduleForCurrentGameDay(leagueNumber)
+      .getGameScheduleForCurrentGameDay(league.id)
       .pipe(shareReplay());
 
     this.matches$
@@ -67,18 +68,24 @@ export class RankingComponent implements OnInit, OnDestroy {
           if (!games) {
             return;
           }
-          this.selectedMatchDay = games[0]?.game_day ? games[0].game_day : 1;
+          this.selectedMatchDay =
+            league.game_day_titles.find(
+              (_item) => _item.game_day_number === games[0].game_day
+            ) ?? league.game_day_titles[0];
         }),
         takeUntil(this._destroy$)
       )
       .subscribe();
   }
 
-  selectMatchDay(matchDay: number, leagueNumber: number) {
-    this.selectedMatchDay = matchDay;
+  selectMatchDay(matchDay: number, league: League) {
+    this.selectedMatchDay =
+      league.game_day_titles.find(
+        (_item) => _item.game_day_number === matchDay
+      ) ?? null;
 
     this.matches$ = this._leagueService
-      .getGameScheduleForGameDay(leagueNumber, matchDay)
+      .getGameScheduleForGameDay(league.id, matchDay)
       .pipe(shareReplay());
   }
 }

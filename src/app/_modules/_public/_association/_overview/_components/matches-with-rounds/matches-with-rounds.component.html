@@ -1,20 +1,25 @@
 <ng-container *ngIf="selectedLeague$ | async as selectedLeague">
-  <div class="container mx-auto px-4 lg:px-8">
-    <ul
-      class="flex gap-1 items-center text-xl lg:text-2xl font-bold my-4 lg:my-8"
-    >
-      <li class="mr-2">Runde</li>
-      <li *ngFor="let round of selectedLeague.game_day_numbers">
-        <button
-          class="transition hover:bg-fb-gray-200 rounded px-2"
-          [ngClass]="{ 'bg-fb-gray-200': round === selectedMatchDay }"
-          (click)="selectMatchDay(round, selectedLeague.id)"
-        >
-          {{ round }}
-        </button>
-      </li>
-    </ul>
+  <div class="overflow-x-auto">
+    <div class="container mx-auto px-4 lg:px-8">
+      <ul
+        class="flex gap-1 items-center text-xl lg:text-2xl font-bold my-4 lg:my-8"
+      >
+        <li *ngFor="let round of selectedLeague.game_day_titles">
+          <button
+            class="transition hover:bg-fb-gray-200 rounded px-3 whitespace-nowrap"
+            [ngClass]="{
+              'bg-fb-gray-200': round.game_day_number === selectedMatchDay
+            }"
+            (click)="selectMatchDay(round.game_day_number, selectedLeague.id)"
+          >
+            {{ round.title }}
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
 
+  <div class="container mx-auto px-4 lg:px-8">
     <ng-container *ngIf="matches$ | async as matches">
       <fb-match-encounter-list
         [matches]="matches"
