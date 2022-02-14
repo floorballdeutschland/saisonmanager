@@ -13,19 +13,30 @@
     </div>
 
     <div class="text-center text-sm text-fb-gray-500 font-bold w-[75px]">
-      <ng-container *ngIf="match.state === 'no_record'">
+      <ng-container *ngIf="!match.started">
         <p class="text-base whitespace-nowrap" *ngIf="match.time">
           {{ match.time }} Uhr
         </p>
         <p class="text-xs leading-3" *ngIf="!match.time">k.A.</p>
       </ng-container>
-      <ng-container *ngIf="match.state !== 'no_record'">
-        <p class="text-2xl" *ngIf="!match.result_string">- : -</p>
+      <ng-container *ngIf="match.started">
         <ng-container *ngIf="match.result | normalizeMatchResult as resultData">
-          <p *ngIf="resultData.result" class="text-2xl">
+          <p
+            *ngIf="resultData.result"
+            class="text-2xl"
+            [ngClass]="{
+              'bg-pink-500 animate-pulse': match.started && !match.ended
+            }"
+          >
             {{ resultData.result }}
           </p>
-          <p *ngIf="resultData.extraTime" class="text-xs">
+          <p
+            *ngIf="resultData.extraTime"
+            class="text-xs"
+            [ngClass]="{
+              'bg-pink-500 animate-pulse': match.started && !match.ended
+            }"
+          >
             {{ resultData.extraTime }}
           </p>
         </ng-container>

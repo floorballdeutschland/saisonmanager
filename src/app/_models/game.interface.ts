@@ -93,4 +93,5 @@ export interface Game {
   arena_short: string;
   referees: Referee[];
   nominated_referees: string;
+  period_titles: { [key: number]: string };
 }

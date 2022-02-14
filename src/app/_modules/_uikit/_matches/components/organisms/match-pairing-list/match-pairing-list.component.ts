@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  TrackByFunction,
   ViewEncapsulation,
 } from '@angular/core';
 import { GameScheduleEntry } from '@floorball/types';
@@ -15,4 +16,6 @@ import { GameScheduleEntry } from '@floorball/types';
 export class MatchPairingListComponent {
   @Input()
   matches!: GameScheduleEntry[];
+
+  trackByFn: TrackByFunction<GameScheduleEntry> = (_, option) => option.game_id;
 }

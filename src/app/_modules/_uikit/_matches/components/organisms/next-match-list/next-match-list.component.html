@@ -1,12 +1,7 @@
 <div class="flex bg-fb-gray-800 pb-3 overflow-x-auto flex-nowrap">
-  <ng-container *ngFor="let match of matches">
+  <ng-container *ngFor="let match of matches; trackBy: trackByFn">
     <fb-next-match-item
-      class="
-        flex flex-grow-0 flex-shrink-0
-        border-r
-        last:border-0
-        border-fb-gray-200
-      "
+      class="flex flex-grow-0 flex-shrink-0 border-r last:border-0 border-fb-gray-200"
       [match]="match"
     ></fb-next-match-item>
   </ng-container>
