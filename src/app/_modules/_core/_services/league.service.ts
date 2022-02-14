@@ -72,6 +72,7 @@ export class LeagueService {
   }
 
   public getLeague(leagueId: number) {
+    //return this.getSingleLeague(leagueId);
     return this.leagues$.pipe(
       map((_leagues) => _leagues?.find((_l) => _l.id === leagueId) ?? null)
     );
