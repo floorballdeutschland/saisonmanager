@@ -30,7 +30,7 @@
           *ngIf="resultData.result"
           class="text-2xl"
           [ngClass]="{
-            'bg-pink-500 animate-pulse': match.started && !match.ended
+            'text-pink-500 animate-pulse': match.started && !match.ended
           }"
         >
           {{ resultData.result }}
@@ -39,7 +39,7 @@
           *ngIf="resultData.extraTime"
           class="text-xs"
           [ngClass]="{
-            'bg-pink-500 animate-pulse': match.started && !match.ended
+            'text-pink-500 animate-pulse': match.started && !match.ended
           }"
         >
           {{ resultData.extraTime }}

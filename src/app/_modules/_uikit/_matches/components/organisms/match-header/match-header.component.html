@@ -39,10 +39,12 @@
             </div>
           </ng-container>
           <ng-template #gameDate>
-            {{ game.date | date: "dd.MM.YYYY" }}
-            <ng-container *ngIf="game.start_time">
-              – {{ game.start_time }} Uhr
-            </ng-container>
+            <span class="tracking-widest">
+              {{ game.date | date: "dd.MM.YYYY" }}
+              <ng-container *ngIf="game.start_time">
+                – {{ game.start_time }} Uhr
+              </ng-container>
+            </span>
           </ng-template>
         </p>
         <div

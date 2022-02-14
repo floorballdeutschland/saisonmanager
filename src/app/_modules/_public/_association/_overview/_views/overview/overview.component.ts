@@ -52,7 +52,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
             this.getSingleLeague(league.id);
             this.getMatches(league.id);
 
-            interval(3000)
+            interval(30000)
               .pipe(
                 tap(() => this.getMatches(league.id)),
                 takeUntil(this._destroy$)
