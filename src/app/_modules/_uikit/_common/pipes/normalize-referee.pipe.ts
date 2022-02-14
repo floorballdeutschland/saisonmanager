@@ -1,5 +1,4 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Game, GameEvent, NormalizedEvent, Side } from '@floorball/types';
 import { Referee } from 'src/app/_models/game.interface';
 
 @Pipe({
