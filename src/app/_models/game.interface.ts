@@ -94,4 +94,5 @@ export interface Game {
   referees: Referee[];
   nominated_referees: string;
   period_titles: { [key: number]: string };
+  live_stream_link?: string | null;
 }

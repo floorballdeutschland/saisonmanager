@@ -6,7 +6,7 @@
     class="grid grid-cols-[1fr,auto] grid-rows-2 gap-x-[10px] gap-y-[5px] md:grid-rows-1 md:grid-cols-3 items-center md:justify-items-center my-2"
   >
     <div
-      class="grid grid-cols-[32px,1fr] md:grid-cols-1 gap-3 row-start-1 items-center"
+      class="grid grid-cols-[32px,1fr] md:grid-cols-1 gap-3 row-start-1 items-center md:col-start-1"
     >
       <div class="w-[32px] h-[32px] md:w-[42px] md:h-[42px]">
         <img
@@ -20,7 +20,9 @@
       </p>
     </div>
 
-    <div class="text-center text-sm text-fb-gray-500 font-bold w-[75px]">
+    <div
+      class="text-center text-sm text-fb-gray-500 font-bold w-[75px] md:col-start-2"
+    >
       <ng-container *ngIf="!match.started">
         <p class="text-base whitespace-nowrap" *ngIf="match.time">
           {{ match.time }} Uhr
@@ -52,7 +54,7 @@
     </div>
 
     <div
-      class="grid grid-cols-[32px,1fr] md:grid-cols-1 gap-3 row-start-2 md:row-start-1 items-center"
+      class="grid grid-cols-[32px,1fr] md:grid-cols-1 gap-3 row-start-2 md:row-start-1 md:col-start-3 items-center"
     >
       <div class="w-[32px] h-[32px] md:w-[42px] md:h-[42px]">
         <img

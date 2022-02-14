@@ -89,10 +89,10 @@
             </li>
           </ng-container>
         </ul>
-        <div *ngIf="!game.started" class="text-fb-gray-400">
-          <div>{{ game.arena_name }}</div>
-          <div>{{ game.arena_address }}</div>
-          <div class="mt-3">
+        <div *ngIf="!game.ended" class="text-fb-gray-400">
+          <div *ngIf="game.started">{{ game.arena_name }}</div>
+          <div *ngIf="game.started">{{ game.arena_address }}</div>
+          <div class="mt-3" *ngIf="game.arena_address">
             <a
               href="https://www.google.de/maps/place/{{ game.arena_address }}"
               title="Adresse auf Google Maps anzeigen"
@@ -115,6 +115,26 @@
                 ></path>
               </svg>
               Adresse auf Google Maps anzeigen
+            </a>
+          </div>
+          <div class="mt-1" *ngIf="game.arena_address">
+            <a
+              [href]="game.live_stream_link"
+              target="_blank"
+              class="flex gap-2 justify-center items-center hover:text-gray-800 transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-6 h-6 object-contain"
+                viewBox="0 0 576 512"
+              >
+                <path
+                  fill="currentColor"
+                  d="M384 112v288c0 26.51-21.49 48-48 48h-288c-26.51 0-48-21.49-48-48v-288c0-26.51 21.49-48 48-48h288C362.5 64 384 85.49 384 112zM576 127.5v256.9c0 25.5-29.17 40.39-50.39 25.79L416 334.7V177.3l109.6-75.56C546.9 87.13 576 102.1 576 127.5z"
+                />
+              </svg>
+
+              Live-Stream anzeigen
             </a>
           </div>
         </div>
