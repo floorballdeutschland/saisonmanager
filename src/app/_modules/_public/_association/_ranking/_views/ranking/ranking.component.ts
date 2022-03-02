@@ -9,6 +9,7 @@ import {
 import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
 import { GameScheduleEntry, League, TableEntry } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './ranking.component.html',
@@ -26,7 +27,8 @@ export class RankingComponent implements OnInit, OnDestroy {
 
   constructor(
     private _leagueService: LeagueService,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private _metaTitle: Title
   ) {}
 
   ngOnInit(): void {
@@ -36,6 +38,9 @@ export class RankingComponent implements OnInit, OnDestroy {
       .pipe(
         tap((league) => {
           if (league?.id) {
+            this._metaTitle.setTitle(
+              `${league.name} - Tabelle | SaisonManager`
+            );
             this.getTeamRanking(league.id);
             this.getMatches(league);
             this.selectedMatchDay = league.game_day_titles[0];

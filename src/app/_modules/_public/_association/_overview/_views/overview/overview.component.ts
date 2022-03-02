@@ -6,6 +6,7 @@ import {
   OnDestroy,
   ChangeDetectorRef,
 } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { AssociationService, LeagueService } from '@floorball/core';
 import {
@@ -36,7 +37,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
     private _route: ActivatedRoute,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private _metaTitle: Title
   ) {}
 
   ngOnInit(): void {
@@ -51,6 +53,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
             this.getPlayerRanking(league.id);
             this.getSingleLeague(league.id);
             this.getMatches(league.id);
+
+            this._metaTitle.setTitle(
+              `${league.name} - Übersicht | SaisonManager`
+            );
 
             interval(30000)
               .pipe(

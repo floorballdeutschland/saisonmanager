@@ -9,6 +9,7 @@ import {
 import { Observable, Subject, takeUntil, tap } from 'rxjs';
 import { ScorerEntry } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './scorer.component.html',
@@ -24,7 +25,8 @@ export class ScorerComponent implements OnInit, OnDestroy {
 
   constructor(
     private _leagueService: LeagueService,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private _metaTitle: Title
   ) {}
 
   ngOnInit(): void {
@@ -32,6 +34,7 @@ export class ScorerComponent implements OnInit, OnDestroy {
       .pipe(
         tap((league) => {
           if (league?.id) {
+            this._metaTitle.setTitle(`${league.name} - Scorer | SaisonManager`);
             this.getPlayerRanking(league.id);
             this._cdr.markForCheck();
           }
