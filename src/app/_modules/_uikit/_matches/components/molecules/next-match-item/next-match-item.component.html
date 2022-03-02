@@ -21,8 +21,14 @@
     </div>
 
     <div
-      class="text-center text-sm text-fb-gray-500 font-bold w-[75px] md:col-start-2"
+      class="text-center text-sm text-fb-gray-500 font-bold w-[75px] md:col-start-2 row-span-2 md:row-span-1"
     >
+      <p
+        class="text-xs text-fb-gray-400 font-normal whitespace-nowrap"
+        *ngIf="match.date"
+      >
+        {{ match.date | date: "dd.MM.YYYY" }}
+      </p>
       <ng-container *ngIf="!match.started">
         <p class="text-base whitespace-nowrap" *ngIf="match.time">
           {{ match.time }} Uhr

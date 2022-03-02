@@ -15,4 +15,7 @@ import { GameOperation } from '@floorball/types';
 export class OperationComponent {
   @Input()
   gameOperation!: GameOperation;
+
+  @Input()
+  full = false;
 }

@@ -2,7 +2,7 @@
   [routerLink]="['./', 'spiel', match.game_id]"
   class="grid grid-cols-[42px,1fr,100px] md:grid-cols-[1fr,42px,80px,42px,1fr] grid-rows-[40px,40px] md:grid-rows-1 md:gap-x-5 items-center md:h-20 cursor-pointer hover:bg-fb-gray-200 transition my-4 md:my-0"
 >
-  <div class="md:text-right text-sm font-bold order-2 md:order-1">
+  <div class="md:text-right text-sm font-bold order-2 md:order-1 truncate">
     {{ match.home_team_name }}
   </div>
   <div class="order-1 md:order-2 pr-3 md:pr-0">
@@ -16,6 +16,12 @@
   <div
     class="order-3 row-span-2 md:order-3 text-center font-bold tracking-widest md:grid md:grid-cols-1"
   >
+    <p
+      class="text-xs text-fb-gray-400 font-normal whitespace-nowrap"
+      *ngIf="match.date"
+    >
+      {{ match.date | date: "dd.MM.YYYY" }}
+    </p>
     <ng-container *ngIf="!match.started">
       <p class="text-base whitespace-nowrap" *ngIf="match.time">
         {{ match.time }} Uhr
@@ -55,7 +61,7 @@
       class="h-8 md:h-full w-full object-contain"
     />
   </div>
-  <div class="text-sm font-bold order-3 md:order-5">
+  <div class="text-sm font-bold order-3 md:order-5 truncate">
     {{ match.guest_team_name }}
   </div>
 </a>
