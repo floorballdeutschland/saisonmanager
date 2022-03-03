@@ -23,7 +23,7 @@
               focusable="false"
               data-prefix="fas"
               data-icon="shield-alt"
-              class="text-fb-gray-400 p-0.5"
+              class="text-fb-gray-400 p-0.5 w-full h-full object-contain"
               role="img"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 512 512"
@@ -123,16 +123,7 @@
   </ng-container>
 
   <cdk-header-row
-    class="
-      grid grid-cols-[35px,1fr,repeat(2,35px)]
-      items-center
-      text-center
-      border-b border-fb-gray-200
-      font-bold
-      text-sm
-      px-[10px]
-      h-12
-    "
+    class="grid grid-cols-[35px,1fr,repeat(2,35px)] items-center text-center border-b border-fb-gray-200 font-bold text-sm px-[10px] h-12"
     [ngClass]="{
       'md:grid-cols-[25px,1fr,repeat(7,60px)] lg:grid-cols-[25px,1fr,repeat(7,60px)] xl:grid-cols-[25px,1fr,repeat(9,60px)]':
         type !== 'small',
@@ -157,17 +148,7 @@
     "
   ></cdk-header-row>
   <cdk-row
-    class="
-      relative
-      grid grid-cols-[35px,1fr,repeat(2,35px)]
-      items-center
-      text-center text-sm
-      px-[10px]
-      h-12
-      odd:bg-fb-gray-300
-      hover:bg-fb-gray-200
-      transition
-    "
+    class="relative grid grid-cols-[35px,1fr,repeat(2,35px)] items-center text-center text-sm px-[10px] h-12 odd:bg-fb-gray-300 hover:bg-fb-gray-200 transition"
     [ngClass]="{
       'md:grid-cols-[25px,1fr,repeat(7,60px)] lg:grid-cols-[25px,1fr,repeat(7,60px)] xl:grid-cols-[25px,1fr,repeat(9,60px)]':
         type !== 'small',

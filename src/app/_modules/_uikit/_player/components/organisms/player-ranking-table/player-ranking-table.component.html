@@ -24,7 +24,7 @@
           />
           <ng-template #fallback>
             <svg
-              class="text-fb-gray-400 p-1"
+              class="text-fb-gray-400 p-1 h-full w-full"
               aria-hidden="true"
               focusable="false"
               data-prefix="fas"
@@ -43,16 +43,7 @@
         <div class="text-left">
           {{ element.first_name }} {{ element.last_name }}
           <span
-            class="
-              block
-              truncate
-              w-[140px]
-              sm:w-full
-              lg:w-full
-              md:inline
-              xl:ml-2.5
-              text-fb-gray-400
-            "
+            class="block truncate w-[140px] sm:w-full lg:w-full md:inline xl:ml-2.5 text-fb-gray-400"
             >{{ element.team_name }}</span
           >
         </div>
@@ -95,24 +86,12 @@
 
   <ng-container cdkColumnDef="table.penalty_2and2">
     <cdk-header-cell
-      class="
-        hidden
-        md:flex
-        items-center
-        justify-center
-        border-r border-fb-gray-200
-      "
+      class="hidden md:flex items-center justify-center border-r border-fb-gray-200"
       *cdkHeaderCellDef
       >P
     </cdk-header-cell>
     <cdk-cell
-      class="
-        hidden
-        md:flex
-        items-center
-        justify-center
-        border-r border-fb-gray-200
-      "
+      class="hidden md:flex items-center justify-center border-r border-fb-gray-200"
       *cdkCellDef="let element"
       >{{ element.penalty_2and2 }}</cdk-cell
     >
@@ -172,18 +151,7 @@
   </ng-container>
 
   <cdk-header-row
-    class="
-      grid grid-cols-[25px,1fr,repeat(3,35px)]
-      md:grid-cols-[25px,1fr,repeat(8,50px)]
-      xl:grid-cols-[25px,1fr,repeat(8,60px)]
-      text-center
-      border-b border-fb-gray-200
-      items-stretch
-      font-bold
-      text-sm
-      px-[10px]
-      h-12
-    "
+    class="grid grid-cols-[25px,1fr,repeat(3,35px)] md:grid-cols-[25px,1fr,repeat(8,50px)] xl:grid-cols-[25px,1fr,repeat(8,60px)] text-center border-b border-fb-gray-200 items-stretch font-bold text-sm px-[10px] h-12"
     *cdkHeaderRowDef="[
       'table.position',
       'table.player',
@@ -198,16 +166,7 @@
     ]"
   ></cdk-header-row>
   <cdk-row
-    class="
-      grid grid-cols-[25px,1fr,repeat(3,35px)]
-      md:grid-cols-[25px,1fr,repeat(8,50px)]
-      xl:grid-cols-[25px,1fr,repeat(8,60px)]
-      text-center text-sm
-      px-[10px]
-      lg:h-12
-      items-stretch
-      odd:bg-fb-gray-300
-    "
+    class="grid grid-cols-[25px,1fr,repeat(3,35px)] md:grid-cols-[25px,1fr,repeat(8,50px)] xl:grid-cols-[25px,1fr,repeat(8,60px)] text-center text-sm px-[10px] lg:h-12 items-stretch odd:bg-fb-gray-300"
     [id]="row.uuid"
     *cdkRowDef="
       let row;

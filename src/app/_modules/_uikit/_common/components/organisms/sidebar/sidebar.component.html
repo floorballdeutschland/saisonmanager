@@ -1,25 +1,11 @@
 <div
-  class="
-    flex flex-row
-    lg:block
-    justify-between
-    items-center
-    lg:h-full
-    fixed
-    z-40
-    top-0
-    bg-fb-gray-200
-    lg:max-w-[300px]
-    p-5
-    w-full
-    lg:relative
-  "
+  class="flex flex-row lg:block justify-between items-center lg:h-full fixed z-40 top-0 bg-fb-gray-200 lg:max-w-[300px] p-5 w-full lg:relative gap-[20px]"
 >
-  <a [routerLink]="['/']">
+  <a [routerLink]="['/']" title="Startseite" class="flex-1">
     <img
       *ngIf="association?.logo_url; else fbLogo"
       [src]="association!.logo_url"
-      class="w-full h-full max-h-14 object-contain"
+      class="h-full max-w-full object-contain max-h-14"
     />
 
     <ng-template #fbLogo>
@@ -39,17 +25,7 @@
       height="36"
       viewBox="0 0 20 18"
       xmlns="http://www.w3.org/2000/svg"
-      class="
-        currentColor
-        object-contain
-        w-full
-        h-full
-        text-black
-        focus-visible:text-red
-        fill-white
-        group-hover:fill-vbl-red
-        group-focus:fill-red
-      "
+      class="currentColor object-contain w-full h-full text-black focus-visible:text-red fill-white group-hover:fill-vbl-red group-focus:fill-red"
     >
       <path
         fill="currentColor"
