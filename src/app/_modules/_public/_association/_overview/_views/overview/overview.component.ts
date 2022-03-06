@@ -55,7 +55,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
             this.getMatches(league.id);
 
             this._metaTitle.setTitle(
-              `${league.name} - Übersicht | SaisonManager`
+              `${league.name} - Übersicht | Floorball Saisonmanager`
             );
 
             interval(30000)

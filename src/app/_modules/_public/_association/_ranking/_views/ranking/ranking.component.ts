@@ -39,7 +39,7 @@ export class RankingComponent implements OnInit, OnDestroy {
         tap((league) => {
           if (league?.id) {
             this._metaTitle.setTitle(
-              `${league.name} - Tabelle | SaisonManager`
+              `${league.name} - Tabelle | Floorball Saisonmanager`
             );
             this.getTeamRanking(league.id);
             this.getMatches(league);

@@ -16,6 +16,6 @@ export class HomeComponent {
     private _metaTitle: Title
   ) {
     this.associations$ = this._associationService.associations$;
-    this._metaTitle.setTitle('Floorball - SaisonManager');
+    this._metaTitle.setTitle('Floorball Saisonmanager');
   }
 }

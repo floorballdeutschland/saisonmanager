@@ -71,7 +71,7 @@ export class MatchComponent implements OnInit, OnDestroy {
             return;
           }
           this._metaTitle.setTitle(
-            `Spiel ${match.home_team_name} gegen ${match.guest_team_name} - ${match.league_name} | SaisonManager`
+            `Spiel ${match.home_team_name} gegen ${match.guest_team_name} - ${match.league_name} | Floorball Saisonmanager`
           );
         }),
         take(1),
