@@ -54,6 +54,7 @@ export interface GameResult {
     long: string;
     short: string;
   };
+  forfait: boolean;
 }
 
 export interface Referee {
