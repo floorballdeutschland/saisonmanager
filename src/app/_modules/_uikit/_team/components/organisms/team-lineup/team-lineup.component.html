@@ -1,13 +1,6 @@
 <ng-container *ngFor="let player of lineup">
   <div
-    class="
-      grid grid-cols-[20px,20px,1fr,auto]
-      gap-2.5
-      border-b border-fb-gray-200
-      text-sm
-      items-center
-      py-2
-    "
+    class="grid grid-cols-[20px,20px,1fr,auto] gap-2.5 border-b border-fb-gray-200 text-sm items-center py-2"
   >
     <div>
       <svg
@@ -25,6 +18,8 @@
     </div>
     <div class="font-bold">{{ player.trikot_number }}</div>
     <div>{{ player.player_firstname }} {{ player.player_name }}</div>
-    <div>{{ player.position }}</div>
+    <div>
+      <span *ngIf="player.captain">Kapitän, </span>{{ player.position }}
+    </div>
   </div>
 </ng-container>
