@@ -25,9 +25,7 @@
       </div>
       <div class="font-bold md:text-right px-3">
         <ng-container [ngSwitch]="gameEvent.event_type">
-          <ng-container *ngSwitchCase="'goal'">
-            {{ gameEvent.goal_type_string }}
-          </ng-container>
+          <ng-container *ngSwitchCase="'goal'"> Tor </ng-container>
           <ng-container *ngSwitchCase="'penalty'">
             {{ "Strafe " + gameEvent.penalty_type_string }}
           </ng-container>
@@ -109,9 +107,7 @@
 
       <div class="font-bold px-3 row-start-1 col-start-4 md:col-start-10">
         <ng-container [ngSwitch]="gameEvent.event_type">
-          <ng-container *ngSwitchCase="'goal'">
-            {{ gameEvent.goal_type_string }}
-          </ng-container>
+          <ng-container *ngSwitchCase="'goal'"> Tor </ng-container>
           <ng-container *ngSwitchCase="'penalty'">
             {{ "Strafe " + gameEvent.penalty_type_string }}
           </ng-container>
