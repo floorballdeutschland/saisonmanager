@@ -13,6 +13,7 @@ export { GameEvent } from './game.interface';
 export { League } from './league.interface';
 export { Association } from './association.interface';
 export * from './user.interface';
+export * from './user-notification.interface';
 export * from './league.interface';
 export * from './normalized-event.interface';
 export * from './league-with-operation.interface';

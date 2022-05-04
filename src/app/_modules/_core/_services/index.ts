@@ -6,3 +6,4 @@ export * from './association.service';
 export * from './storage.service';
 export * from './favorite.service';
 export * from './session.service';
+export * from './notification.service';
