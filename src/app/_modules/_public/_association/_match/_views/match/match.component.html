@@ -21,39 +21,74 @@
 
   <fb-match-header [game]="match"></fb-match-header>
 
-  <div class="container mx-auto px-4 lg:px-8 mt-4 lg:mt-8">
-    <ng-container *ngIf="match.started">
-      <div>
-        <h2 class="font-bold text-xl lg:text-2xl mb-4 lg:mb-8">Spielverlauf</h2>
-        <fb-match-history [match]="match"></fb-match-history>
-      </div>
-
-      <div class="mt-8">
-        <h2 class="font-bold text-xl lg:text-2xl">Aufstellung</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 lg:mt-8">
-          <div>
-            <h3 class="font-bold mb-4 lg:mb-8">{{ match.home_team_name }}</h3>
-            <fb-team-lineup [lineup]="match.players.home"></fb-team-lineup>
-          </div>
-
-          <div>
-            <h3 class="font-bold mb-4 lg:mb-8">{{ match.guest_team_name }}</h3>
-            <fb-team-lineup [lineup]="match.players.guest"></fb-team-lineup>
-          </div>
+  <ng-container *ngIf="isLoggedIn$ | async">
+    <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
+      <div class="container mx-auto px-4 lg:px-8">
+        <div class="h-[80px] flex items-center gap-[25px]">
+          <fb-tab-item
+            [isActive]="isTabActive('public')"
+            [link]="['./']"
+            (click)="$event.preventDefault(); setTab('public')"
+            [activeColor]="selectedAssociation | gradient"
+            >Öffentliche Ansicht</fb-tab-item
+          >
+          <fb-tab-item
+            [isActive]="isTabActive('secretary')"
+            [link]="['./']"
+            (click)="$event.preventDefault(); setTab('secretary')"
+            [activeColor]="selectedAssociation | gradient"
+            >Benutzer: Eingabe Spielbericht</fb-tab-item
+          >
         </div>
       </div>
     </ng-container>
-    <ng-container *ngIf="!match.started">
-      <div class="text-center text-fb-gray-400 my-12">
-        Noch keine Spieldaten vorhanden
-      </div>
-    </ng-container>
+  </ng-container>
 
-    <div class="mt-4 lg:my-8 md:max-w-3xl mx-auto pb-16">
-      <h3 class="text-black font-bold text-base">Spielinfos</h3>
-      <div class="grid grid-cols-1 gap-8 mt-4 lg:mt-8">
-        <fb-match-info [game]="match"></fb-match-info>
+  <div class="h-[10px] bg-fb-gray-200"></div>
+
+  <ng-container *ngIf="isTabActive('public')">
+    <div class="container mx-auto px-4 lg:px-8 mt-4 lg:mt-8">
+      <ng-container *ngIf="match.started">
+        <div>
+          <h2 class="font-bold text-xl lg:text-2xl mb-4 lg:mb-8">
+            Spielverlauf
+          </h2>
+          <fb-match-history [match]="match"></fb-match-history>
+        </div>
+
+        <div class="mt-8">
+          <h2 class="font-bold text-xl lg:text-2xl">Aufstellung</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 lg:mt-8">
+            <div>
+              <h3 class="font-bold mb-4 lg:mb-8">{{ match.home_team_name }}</h3>
+              <fb-team-lineup [lineup]="match.players.home"></fb-team-lineup>
+            </div>
+
+            <div>
+              <h3 class="font-bold mb-4 lg:mb-8">
+                {{ match.guest_team_name }}
+              </h3>
+              <fb-team-lineup [lineup]="match.players.guest"></fb-team-lineup>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="!match.started">
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Spieldaten vorhanden
+        </div>
+      </ng-container>
+
+      <div class="mt-4 lg:my-8 md:max-w-3xl mx-auto pb-16">
+        <h3 class="text-black font-bold text-base">Spielinfos</h3>
+        <div class="grid grid-cols-1 gap-8 mt-4 lg:mt-8">
+          <fb-match-info [game]="match"></fb-match-info>
+        </div>
       </div>
     </div>
-  </div>
+  </ng-container>
+
+  <ng-container *ngIf="isTabActive('secretary')">
+    <div class="container mx-auto px-4 lg:px-8 mt-4 lg:mt-8"></div>
+  </ng-container>
 </ng-container>
