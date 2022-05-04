@@ -13,6 +13,7 @@ import * as Sentry from '@sentry/angular';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { SessionService } from './_modules/_core/_services';
 
 @NgModule({
   declarations: [AppComponent],
@@ -40,6 +41,7 @@ import { UikitCommonModule } from '@floorball/uikit/common';
       deps: [Sentry.TraceService],
       multi: true,
     },
+    SessionService,
     { provide: LOCALE_ID, useValue: 'de' },
   ],
   bootstrap: [AppComponent],

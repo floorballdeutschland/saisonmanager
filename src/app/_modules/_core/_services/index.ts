@@ -5,3 +5,4 @@ export { OverlayService } from './overlay.service';
 export * from './association.service';
 export * from './storage.service';
 export * from './favorite.service';
+export * from './session.service';

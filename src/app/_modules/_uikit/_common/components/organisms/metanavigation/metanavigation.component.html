@@ -8,6 +8,14 @@
         >Login</a
       >
     </li>
+    <li class="mt-4 mb-4" *ngIf="isLoggedIn$ | async">
+      <a
+        href=""
+        (click)="logout()"
+        class="font-bold text-fb-gray-500 hover:text-black text-base"
+        >Logout</a
+      >
+    </li>
     <li class="mt-4 mb-4">
       <a
         href="https://fvd.saisonmanager.de/index.php?seite=impressum"
