@@ -5,6 +5,7 @@
     "prepare": "husky install",
     "ng": "ng",
     "start": "ng serve",
+    "start-local": "ng serve --disable-host-check",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
