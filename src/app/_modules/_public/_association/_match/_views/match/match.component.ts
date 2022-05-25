@@ -28,6 +28,8 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   public isLoggedIn$ = this._sessionService.isLoggedIn$;
   public tab = 'public';
+  public addDialogOpen = '';
+  public squadHistoryDialogOpen = '';
 
   private _destroy$ = new Subject<boolean>();
 
@@ -102,5 +104,31 @@ export class MatchComponent implements OnInit, OnDestroy {
   public setTab(tabName: string) {
     this.tab = tabName;
     this._cdr.markForCheck();
+  }
+
+  public openAddHomeDialog() {
+    this.addDialogOpen = this.addDialogOpen !== '' ? '' : 'home';
+  }
+
+  public openAddGuestDialog() {
+    this.addDialogOpen = this.addDialogOpen !== '' ? '' : 'guest';
+  }
+
+  public closeAddDialog() {
+    this.addDialogOpen = '';
+  }
+
+  public openSquadHistoryHomeDialog() {
+    this.squadHistoryDialogOpen =
+      this.squadHistoryDialogOpen !== '' ? '' : 'home';
+  }
+
+  public openSquadHistoryGuestDialog() {
+    this.squadHistoryDialogOpen =
+      this.squadHistoryDialogOpen !== '' ? '' : 'guest';
+  }
+
+  public closeSquadHistoryDialog() {
+    this.squadHistoryDialogOpen = '';
   }
 }

@@ -6,6 +6,7 @@ import * as Views from './_views';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitTeamModule } from '@floorball/uikit/team';
+import { UikitPlayerModule } from '@floorball/uikit/player';
 
 @NgModule({
   declarations: [Views.MatchComponent],
@@ -15,6 +16,7 @@ import { UikitTeamModule } from '@floorball/uikit/team';
     UikitCommonModule,
     UikitMatchesModule,
     UikitTeamModule,
+    UikitPlayerModule,
   ],
 })
 export class PublicAssociationMatchModule {}

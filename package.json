@@ -25,6 +25,7 @@
     "@ngneat/reactive-forms": "^4.0.3",
     "@sentry/angular": "^6.18.1",
     "@sentry/tracing": "^6.18.1",
+    "@tailwindcss/forms": "^0.5.2",
     "jshint": "^2.13.1",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",
