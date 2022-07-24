@@ -125,4 +125,13 @@ export class LeagueService {
   clearLeague() {
     this._route$.next(null);
   }
+
+  //
+  // admin routes
+  //
+  public getAdminLeagues() {
+    const path = environment.apiURL + 'admin/leagues';
+    ('.json');
+    return this.http.get<League[]>(path);
+  }
 }

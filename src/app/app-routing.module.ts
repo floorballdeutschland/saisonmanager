@@ -16,6 +16,11 @@ const routes: Routes = [
         loadChildren: () =>
           import('@floorball/public/login').then((m) => m.PublicLoginModule),
       },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/admin/league').then((m) => m.AdminLeagueModule),
+      },
     ],
   },
   {
