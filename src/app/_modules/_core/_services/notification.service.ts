@@ -17,4 +17,11 @@ export class NotificationService {
       message: msg,
     });
   }
+
+  public error(msg: string) {
+    this.notificationSubject.next({
+      messageType: 'error',
+      message: msg,
+    });
+  }
 }

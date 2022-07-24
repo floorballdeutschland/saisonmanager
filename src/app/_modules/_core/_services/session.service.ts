@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 
 import { LoginAnswer, User } from '@floorball/types';
 import { environment } from 'src/environments/environment';
-import { Observable, ReplaySubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of, ReplaySubject } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
 import { Subscription } from 'rxjs';
 
@@ -47,17 +47,31 @@ export class SessionService {
     return this.http.post<LoginAnswer>(path, data).pipe(
       map((loginAnswer) => {
         if (loginAnswer.success) {
-          this.currentUserSubject.next(loginAnswer.user);
-          localStorage.setItem('user', JSON.stringify(loginAnswer.user));
-          this._notificationService.success('Login erfolgreich.');
+          if (loginAnswer.user.permissions['login_blocked']) {
+            this._notificationService.error(
+              'Der Login ist für dich noch nicht freigeschaltet. Sorry.'
+            );
+            this.logout(false);
+          } else {
+            this.currentUserSubject.next(loginAnswer.user);
+            localStorage.setItem('user', JSON.stringify(loginAnswer.user));
+            this._notificationService.success('Login erfolgreich.');
+          }
         }
 
         return loginAnswer;
+      }),
+      catchError((error) => {
+        console.error(error);
+
+        this._notificationService.error('Login fehlgeschlagen.');
+
+        return of();
       })
     );
   }
 
-  public logout() {
+  public logout(showotification = true) {
     this.currentUserSubject.next(null);
     localStorage.removeItem('user');
 
@@ -66,7 +80,9 @@ export class SessionService {
     this.logoutSubscription = this.http
       .post<LoginAnswer>(path, data)
       .subscribe(() => {
-        this._notificationService.success('Logout erfolgreich.');
+        if (showotification) {
+          this._notificationService.success('Logout erfolgreich.');
+        }
       });
 
     setTimeout(() => {

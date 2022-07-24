@@ -46,7 +46,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this._sessionService.login(data.username, data.password).subscribe({
         next: (data) => {
-          console.log(data);
           // this.router.navigate([this.returnUrl])
         },
         error: (err) => {
@@ -55,7 +54,5 @@ export class LoginComponent implements OnInit, OnDestroy {
         },
       })
     );
-
-    console.log(data);
   }
 }
