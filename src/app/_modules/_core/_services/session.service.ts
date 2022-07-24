@@ -3,9 +3,10 @@ import { HttpClient } from '@angular/common/http';
 
 import { LoginAnswer, User } from '@floorball/types';
 import { environment } from 'src/environments/environment';
-import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
+import { Observable, ReplaySubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
+import { Subscription } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -20,6 +21,8 @@ export class SessionService {
   public isLoggedIn$: Observable<boolean> = this.currentUserSubject.pipe(
     map((user) => !!user)
   );
+
+  private logoutSubscription!: Subscription;
 
   //   private flightsSubject = new BehaviorSubject<Flight[]>([]);
   // public flights$ = flightsSubject.asObservable();
@@ -55,8 +58,27 @@ export class SessionService {
   }
 
   public logout() {
-    localStorage.removeItem('user');
-    this._notificationService.success('Logout erfolgreich.');
     this.currentUserSubject.next(null);
+    localStorage.removeItem('user');
+
+    const path = environment.apiURL + 'logout.json';
+    const data = {};
+    this.logoutSubscription = this.http
+      .post<LoginAnswer>(path, data)
+      .subscribe(() => {
+        this._notificationService.success('Logout erfolgreich.');
+      });
+
+    setTimeout(() => {
+      this.logoutSubscription.unsubscribe();
+    }, 5000);
+  }
+
+  public canLoadPage(page: string): boolean {
+    if (this.currentUser && this.currentUser.permissions[page]) {
+      return true;
+    }
+
+    return false;
   }
 }
