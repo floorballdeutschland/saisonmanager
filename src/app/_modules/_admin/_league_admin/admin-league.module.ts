@@ -17,6 +17,6 @@ import * as Views from './views';
     UikitMatchesModule,
     UikitCommonModule,
   ],
-  declarations: [Views.LeagueIndexComponent],
+  declarations: [Views.LeagueIndexComponent, Views.LeagueEditComponent],
 })
 export class AdminLeagueModule {}

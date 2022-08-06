@@ -19,6 +19,7 @@ export class MetanavigationComponent implements OnInit {
   currentUser$ = this._sessionService.currentUser$;
 
   permissions: { [key: string]: any } = {};
+  username = '';
 
   constructor(
     private _sessionService: SessionService,
@@ -30,6 +31,7 @@ export class MetanavigationComponent implements OnInit {
       next: (user) => {
         if (user) {
           this.permissions = user.permissions;
+          this.username = user.username;
         }
       },
     });

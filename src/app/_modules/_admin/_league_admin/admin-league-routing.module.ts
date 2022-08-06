@@ -12,6 +12,22 @@ const routes: Routes = [
       scrollTop: true,
     },
   },
+  {
+    path: 'verwaltung/ligen/:leagueId/bearbeiten',
+    pathMatch: 'full',
+    component: Views.LeagueEditComponent,
+    data: {
+      scrollTop: true,
+    },
+  },
+  {
+    path: 'verwaltung/ligen/neu',
+    pathMatch: 'full',
+    component: Views.LeagueEditComponent,
+    data: {
+      scrollTop: true,
+    },
+  },
 ];
 
 @NgModule({

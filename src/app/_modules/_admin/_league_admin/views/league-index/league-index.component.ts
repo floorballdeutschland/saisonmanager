@@ -3,6 +3,7 @@ import { AssociationService, LeagueService } from '@floorball/core';
 import { GameOperation } from 'src/app/_models';
 import { Observable } from 'rxjs';
 import { Title } from '@angular/platform-browser';
+import { GameOperationWithLeagues } from 'src/app/_models/game-operation.interface';
 
 @Component({
   templateUrl: './league-index.component.html',
@@ -11,7 +12,7 @@ import { Title } from '@angular/platform-browser';
 export class LeagueIndexComponent implements OnInit {
   associations$: Observable<GameOperation[]>;
 
-  goLeagueItems$?: Observable<any[] | null>; // TODO: TYPE ME!
+  goLeagueItems$?: Observable<GameOperationWithLeagues[]>;
 
   constructor(
     private _associationService: AssociationService,

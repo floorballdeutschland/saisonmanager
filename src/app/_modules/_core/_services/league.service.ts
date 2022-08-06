@@ -18,6 +18,7 @@ import {
   switchMap,
 } from 'rxjs';
 import { AssociationService } from '.';
+import { GameOperationWithLeagues } from 'src/app/_models/game-operation.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -130,8 +131,7 @@ export class LeagueService {
   // admin routes
   //
   public getAdminLeagues() {
-    const path = environment.apiURL + 'admin/leagues';
-    ('.json');
-    return this.http.get<League[]>(path);
+    const path = environment.apiURL + 'admin/leagues.json';
+    return this.http.get<GameOperationWithLeagues[]>(path);
   }
 }
