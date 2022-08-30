@@ -28,6 +28,7 @@
     "@tailwindcss/forms": "^0.5.2",
     "jshint": "^2.13.1",
     "rxjs": "~7.4.0",
+    "source-map-explorer": "^2.5.2",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
   },

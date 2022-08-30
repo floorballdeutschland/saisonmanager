@@ -10,27 +10,27 @@ import {
   LeagueService,
   NotificationService,
 } from '@floorball/core';
-import { GameOperation, League, LeagueClass } from 'src/app/_models';
+import { Club, GameOperation, Team } from 'src/app/_models';
 import { Observable, Subject, share, tap, take, takeUntil, of } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameOperationWithLeagues } from 'src/app/_models/game-operation.interface';
 
 @Component({
-  templateUrl: './league-edit.component.html',
+  templateUrl: './team-edit.component.html',
   encapsulation: ViewEncapsulation.None,
 })
-export class LeagueEditComponent implements OnInit, OnDestroy {
+export class TeamEditComponent implements OnInit, OnDestroy {
   associations$: Observable<GameOperation[]>;
 
   leagueId?: number;
-  league$?: Observable<League>;
+  team$?: Observable<Team>;
   editMode = true;
 
   loading$?: Observable<boolean>;
   permittedGameOperations: GameOperationWithLeagues[] = [];
+  clubs: Club[] = [];
   isBuliPermitted = false;
-  leagueClasses: LeagueClass[] = [];
 
   private _destroy$ = new Subject<boolean>();
 
@@ -48,14 +48,6 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this._leagueService.getAdminLeagueClasses().subscribe({
-      next: (result) => {
-        this.leagueClasses = result;
-
-        this._cdr.markForCheck();
-      },
-    });
-
     this._leagueService.getAdminLeagues().subscribe({
       next: (result) => {
         // this is the case, when we have enough permissions
@@ -69,13 +61,14 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
 
         this._route.params.subscribe((params) => {
           console.log('_route');
-          if (params['leagueId']) {
-            console.log(params['leagueId']);
-
-            this.getLeague(params['leagueId']);
+          if (params['teamId']) {
+            this.getClubs(parseInt(params['teamId']), 't');
+            this.getTeam(params['teamId']);
           } else {
             this.editMode = false;
-            this.newLeague();
+            const leagueId = parseInt(params['leagueId']);
+            this.getClubs(leagueId, 'l');
+            this.newTeam(leagueId);
           }
         });
       },
@@ -93,15 +86,23 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
-  public getLeague(id: string) {
-    this.league$ = this._leagueService
-      .getSingleLeague(parseInt(id))
-      .pipe(share());
+  public getClubs(id: number, type: string) {
+    this._leagueService.getLeagueClubs(id, type).subscribe({
+      next: (result) => {
+        this.clubs = result;
 
-    this.league$
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  public getTeam(id: string) {
+    this.team$ = this._leagueService.adminGetTeam(parseInt(id)).pipe(share());
+
+    this.team$
       .pipe(
-        tap((league) => {
-          if (!league) {
+        tap((team) => {
+          if (!team) {
             return;
           }
         }),
@@ -112,93 +113,88 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
-  public newLeague() {
-    const league: League = {
+  public newTeam(leagueId: number) {
+    const team: Team = {
       id: 0,
-      game_operation_id: 1,
-      game_operation_name: '',
-      league_category_id: '',
-      league_class_id: '40',
-      league_system_id: '',
       name: '',
-      female: false,
-      enable_scorer: true,
       short_name: '',
-      season_id: '0',
-      order_key: '1',
-      league_type: 'league',
-      game_day_numbers: [],
-      game_day_titles: [],
+      league_id: leagueId,
+      cup_leagues: [],
 
-      legacy_league: false,
-      field_size: 'GF',
-      league_modus: 'league',
-      has_preround: false,
+      club_id: 0,
+      syndicate_clubs: [],
 
-      table_modus: 'classic',
-      periods: 3,
-      period_length: 20,
-      overtime_length: 10,
+      logo_url: '',
+      logo_small: '',
+      syndicate: false,
+
+      contact_email: '',
+      contact_person: '',
     };
 
-    this.league$ = of(league);
+    this.team$ = of(team);
     this._cdr.markForCheck();
   }
 
-  public error(league: League): boolean {
-    return this.errorMsg(league).length > 0;
+  public error(team: Team): boolean {
+    return this.errorMsg(team).length > 0;
   }
 
-  public errorMsg(league: League): string[] {
+  public errorMsg(team: Team): string[] {
     // eslint-disable-next-line prefer-const
     let msg = [];
 
-    if (league.name.length < 1) {
-      msg.push('Es muss ein Liganame gesetzt werden');
+    if (team.name.length < 1) {
+      msg.push('Es muss ein Teamname gesetzt werden');
     }
 
-    if (league.short_name.length < 1) {
-      msg.push('Es muss ein kurzer Liganame gesetzt werden');
+    if (team.short_name.length < 1) {
+      msg.push('Es muss ein kurzer Teamname gesetzt werden');
     }
 
-    if (league.game_operation_id < 1) {
-      msg.push('Spielbetrieb falsch ausgewählt');
+    if (team.league_id < 1) {
+      msg.push('Liga ID falsch');
     }
 
-    const regexpNum = new RegExp(/^\d+$/);
-    if (!league.order_key || !regexpNum.test(league.order_key)) {
-      msg.push('Der Sortierschlüssel muss eine Zahl >= 0 sein');
+    if (team.club_id < 1) {
+      msg.push('Es muss ein Verein ausgewählt werden');
     }
 
-    if (!league.periods || !(league.periods > 0)) {
-      msg.push('Der Anzahl Spielabschnitte muss eine Zahl >= 0 sein');
+    if (team.syndicate && team.syndicate_clubs.length < 2) {
+      msg.push('Eine SG muss aus zwei Teams bestehen.');
     }
 
-    if (!league.period_length || !(league.period_length > 0)) {
-      msg.push('Die Abschnittsdauer muss eine Zahl >= 0 sein');
+    if (team.syndicate && !team.syndicate_clubs.includes(team.club_id)) {
+      msg.push('Der Hauptverein muss auch SG-Verein sein');
     }
 
-    console.log(league);
-    if (!league.overtime_length || !(league.overtime_length > 0)) {
-      msg.push('Die Verlängerungsdauer muss eine Zahl >= 0 sein');
+    const regexp = new RegExp(
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+    if (
+      !team.contact_email ||
+      team.contact_email.length < 1 ||
+      !regexp.test(team.contact_email)
+    ) {
+      msg.push('Es muss eine korrekte Ansprechpartner E-Mail gesetzt werden');
     }
 
-    if (league.legacy_league) {
-      msg.push('Eine alte Liga kann hier nicht geändert werden.');
+    if (!team.contact_person || team.contact_person.length < 6) {
+      msg.push('Es muss eine Kontaktperson benannt werden');
     }
 
     return msg;
   }
 
-  public submit(league: League) {
-    this._leagueService.adminCreateLeagues(league).subscribe({
+  public submit(team: Team) {
+    this._leagueService.adminCreateTeam(team).subscribe({
       next: (result) => {
         console.log(result);
         const message = [
-          'Liga ',
-          league.name,
+          'Team ',
+          result.name,
           '(',
-          league.id,
+          result.id,
           ') erfolgreich geändert.',
         ].join('');
         this._notificationService.success(message, {

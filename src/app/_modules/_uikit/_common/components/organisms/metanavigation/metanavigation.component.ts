@@ -47,10 +47,7 @@ export class MetanavigationComponent implements OnInit {
 
   public logout() {
     this._sessionService.logout();
-
-    setTimeout(() => {
-      this.router.navigate(['/']);
-    }, 500);
+    this.router.navigate(['/']);
 
     return false;
   }

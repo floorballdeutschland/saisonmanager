@@ -55,6 +55,7 @@
         "src/app/_modules/_public/_association/_team"
       ],
       "@floorball/admin/league": ["src/app/_modules/_admin/_league_admin"],
+      "@floorball/admin/teams": ["src/app/_modules/_admin/_team_admin"],
       "@floorball/models": ["src/app/_models"]
     }
   },

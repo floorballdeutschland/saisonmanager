@@ -2,7 +2,7 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Ligaverwaltung
+    Teamverwaltung
   </h1>
 </div>
 
@@ -35,32 +35,30 @@
           </div>
         </ng-template>
 
-        <div
-          *ngFor="let gameOperation of goLeagueItems$ | async; else: loading"
-        >
+        <div *ngIf="league$ | async as league; else loading">
           <div class="bg-white flex items-center justify-center">
             <div
               class="h-[65px] my-2.5 lg:my-5 flex-1 px-[20px] flex justify-center"
             >
-              <img
-                class="h-full max-w-full object-contain px-2"
-                [src]="gameOperation.logo_url"
-                [alt]="gameOperation.name"
-              />
+              <h1
+                class="font-bold text-[24px] lg:text-[24px] font-bold my-2 lg:my-4"
+              >
+                {{ league.name }}
+              </h1>
             </div>
           </div>
 
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Ligen
+              Teams
             </div>
-            <div class="flex flex-col gap-2">
-              <ng-container *ngFor="let league of gameOperation.leagues">
+
+            <ng-container *ngFor="let team of league.teams">
+              <div class="flex flex-col gap-2">
                 <a
                   class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
-                  [routerLink]="['/', gameOperation.path, league.id]"
                 >
-                  {{ league.name }} ({{ league.id }})
+                  {{ team.name }} ({{ team.id }})
                 </a>
                 <div class="flex items-center mb-4">
                   <a
@@ -68,46 +66,21 @@
                     [routerLink]="[
                       '/',
                       'verwaltung',
-                      'ligen',
-                      league.id,
+                      'teams',
+                      team.id,
                       'bearbeiten'
                     ]"
                   >
-                    Liga bearbeiten
-                  </a>
-                  <a
-                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                    [routerLink]="[
-                      '/',
-                      'verwaltung',
-                      'ligen',
-                      league.id,
-                      'teams'
-                    ]"
-                  >
-                    Teamverwaltung
-                  </a>
-                  <a
-                    class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                    deactivated="true"
-                    [routerLink]="[
-                      '/',
-                      'verwaltung',
-                      'ligen',
-                      league.id,
-                      'bearbeiten'
-                    ]"
-                  >
-                    Liga löschen
+                    Team bearbeiten
                   </a>
                 </div>
-              </ng-container>
-
+              </div>
+            </ng-container>
+            <div class="flex flex-col gap-2" *ngIf="league.teams.length === 0">
               <p
                 class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
-                *ngIf="gameOperation.leagues.length === 0"
               >
-                noch keine Liga hinterlegt
+                noch keine Teams hinterlegt
               </p>
             </div>
           </div>
@@ -115,9 +88,16 @@
           <div class="bg-white h-[57px] flex items-center justify-center">
             <a
               class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-              [routerLink]="['/', 'verwaltung', 'ligen', 'neu']"
+              [routerLink]="[
+                '/',
+                'verwaltung',
+                'ligen',
+                league.id,
+                'teams',
+                'neu'
+              ]"
             >
-              Neue Liga anlegen
+              Neues Team anlegen
             </a>
           </div>
         </div>

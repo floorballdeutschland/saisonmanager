@@ -2,10 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import {
+  Club,
   GameScheduleEntry,
   League,
+  LeagueClass,
+  LeagueWithTeams,
   ScorerEntry,
   TableEntry,
+  Team,
 } from '@floorball/types';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -133,5 +137,36 @@ export class LeagueService {
   public getAdminLeagues() {
     const path = environment.apiURL + 'admin/leagues.json';
     return this.http.get<GameOperationWithLeagues[]>(path);
+  }
+
+  public adminCreateLeagues(league: League) {
+    const path = environment.apiURL + 'admin/leagues.json';
+    return this.http.post<League>(path, league);
+  }
+
+  public getAdminLeagueClasses() {
+    const path = environment.apiURL + 'admin/league_classes.json';
+    return this.http.get<LeagueClass[]>(path);
+  }
+
+  public getLeagueWithTeams(league: number) {
+    const path = environment.apiURL + 'admin/leagues/' + league + '/teams.json';
+    return this.http.get<LeagueWithTeams>(path);
+  }
+
+  public adminCreateTeam(team: Team) {
+    const path = environment.apiURL + 'admin/teams.json';
+    return this.http.post<League>(path, team);
+  }
+
+  public adminGetTeam(teamId: number) {
+    const path = environment.apiURL + 'admin/teams/' + teamId + '.json';
+    return this.http.get<Team>(path);
+  }
+
+  public getLeagueClubs(id: number, type: string) {
+    const path =
+      environment.apiURL + 'admin/league/clubs/' + type + '/' + id + '.json';
+    return this.http.get<Club[]>(path);
   }
 }
