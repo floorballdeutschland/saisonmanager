@@ -24,8 +24,8 @@ export class NotificationService {
     this.notify({ ...options, type: NotificationType.Success, message });
   }
 
-  public error(msg: string, options?: any) {
-    this.notify({ ...options, type: NotificationType.Success, Error });
+  public error(message: string, options?: any) {
+    this.notify({ ...options, type: NotificationType.Error, message });
   }
 
   public notify(notification: UserNotification) {

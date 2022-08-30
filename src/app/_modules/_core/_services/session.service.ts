@@ -7,6 +7,7 @@ import { Observable, of, ReplaySubject } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
 import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +30,7 @@ export class SessionService {
 
   constructor(
     private http: HttpClient,
+    private _router: Router,
     private _notificationService: NotificationService
   ) {
     const stored_user = localStorage.getItem('user');
@@ -71,7 +73,12 @@ export class SessionService {
     );
   }
 
-  public logout(showotification = true) {
+  public logout(
+    showotification = true,
+    showError = false,
+    message = '',
+    redirect = false
+  ) {
     this.currentUserSubject.next(null);
     localStorage.removeItem('user');
 
@@ -82,6 +89,17 @@ export class SessionService {
       .subscribe(() => {
         if (showotification) {
           this._notificationService.success('Logout erfolgreich.');
+        }
+
+        if (showError) {
+          this._notificationService.error(message, {
+            autoClose: false,
+            keepAfterRouteChange: true,
+          });
+        }
+
+        if (redirect) {
+          this._router.navigate(['/']);
         }
       });
 
