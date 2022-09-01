@@ -7,8 +7,12 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { filter, Observable, share, Subject, take, takeUntil, tap } from 'rxjs';
-import { Game } from '@floorball/types';
-import { AssociationService, GameService } from '@floorball/core';
+import { Game, GameOperation } from '@floorball/types';
+import {
+  AssociationService,
+  GameService,
+  SessionService,
+} from '@floorball/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
@@ -20,6 +24,12 @@ import { Title } from '@angular/platform-browser';
 })
 export class MatchComponent implements OnInit, OnDestroy {
   match$?: Observable<Game | null>;
+  selectedAssociation$!: Observable<GameOperation | null>;
+
+  public isLoggedIn$ = this._sessionService.isLoggedIn$;
+  public tab = 'public';
+  public addDialogOpen = '';
+  public squadHistoryDialogOpen = '';
 
   private _destroy$ = new Subject<boolean>();
 
@@ -27,6 +37,7 @@ export class MatchComponent implements OnInit, OnDestroy {
     private _associationService: AssociationService,
     private _gameService: GameService,
     private _route: ActivatedRoute,
+    private _sessionService: SessionService,
     private _router: Router,
     private _cdr: ChangeDetectorRef,
     private _location: Location,
@@ -48,6 +59,7 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._associationService.displayAssociationHeader$.next(false);
+    this.selectedAssociation$ = this._associationService.selectedAssociation$;
 
     this._route.params
       .pipe(
@@ -83,5 +95,40 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   navigateBack() {
     this._location.back();
+  }
+
+  public isTabActive(tabName: string): boolean {
+    return this.tab === tabName;
+  }
+
+  public setTab(tabName: string) {
+    this.tab = tabName;
+    this._cdr.markForCheck();
+  }
+
+  public openAddHomeDialog() {
+    this.addDialogOpen = this.addDialogOpen !== '' ? '' : 'home';
+  }
+
+  public openAddGuestDialog() {
+    this.addDialogOpen = this.addDialogOpen !== '' ? '' : 'guest';
+  }
+
+  public closeAddDialog() {
+    this.addDialogOpen = '';
+  }
+
+  public openSquadHistoryHomeDialog() {
+    this.squadHistoryDialogOpen =
+      this.squadHistoryDialogOpen !== '' ? '' : 'home';
+  }
+
+  public openSquadHistoryGuestDialog() {
+    this.squadHistoryDialogOpen =
+      this.squadHistoryDialogOpen !== '' ? '' : 'guest';
+  }
+
+  public closeSquadHistoryDialog() {
+    this.squadHistoryDialogOpen = '';
   }
 }

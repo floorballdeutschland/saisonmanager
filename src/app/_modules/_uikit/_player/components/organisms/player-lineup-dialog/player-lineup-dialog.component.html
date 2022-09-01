@@ -1,0 +1,117 @@
+<div
+  class="relative z-40"
+  aria-labelledby="modal-title"
+  role="dialog"
+  aria-modal="true"
+>
+  <div
+    class="fixed inset-0 bg-gray-500 backdrop-blur-sm bg-opacity-75 transition-opacity"
+  ></div>
+
+  <div class="fixed z-10 inset-0 overflow-y-auto">
+    <div
+      class="flex sm:items-center justify-center sm:min-h-full p-4 text-center sm:p-0"
+    >
+      <div
+        class="relative bg-white rounded-lg w-full px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:p-6"
+      >
+        <div class="sm:flex sm:items-start">
+          <div
+            class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-gray-200 sm:mx-0"
+          >
+            <!-- Heroicon name: outline/user -->
+            <svg
+              class="h-6 w-6 text-gray-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+          </div>
+          <div class="w-full mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+            <h3
+              class="text-lg leading-6 font-medium text-gray-900"
+              id="modal-title"
+            >
+              Max Mustermann
+            </h3>
+            <div class="mt-2 text-left sm:grid sm:grid-cols-3 sm:gap-2">
+              <div class="py-2">Kapitän:</div>
+              <div
+                class="flex items-center col-span-2 text-gray-600 self-center"
+              >
+                <input
+                  id="is-captain"
+                  name="is-captain"
+                  type="checkbox"
+                  class="rounded-full focus:ring-gray-400 h-6 w-6 text-gray-500 border-gray-300 rounded"
+                />
+                <label class="pl-3 flex-grow" for="is-captain">Ja</label>
+              </div>
+
+              <div class="py-2">Nummer:</div>
+              <div class="col-span-2 text-gray-600 self-center">
+                <input
+                  type="number"
+                  name="street-address"
+                  id="street-address"
+                  autocomplete="street-address"
+                  class="block max-w-lg w-full shadow-sm focus:ring-gray-500 focus:border-gray-500 sm:text-sm border-gray-300 rounded-md"
+                />
+              </div>
+
+              <div class="py-2">Position:</div>
+              <div class="col-span-2 text-gray-600 self-center">
+                <select
+                  id="position"
+                  name="position"
+                  autocomplete="position-name"
+                  class="max-w-lg block focus:ring-gray-500 focus:border-gray-500 w-full shadow-sm sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
+                >
+                  <option>Tor</option>
+                  <option selected>Feld</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 sm:mt-4 sm:ml-10 sm:pl-4 sm:flex sm:flex-row-reverse">
+          <button
+            type="button"
+            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+          >
+            <svg
+              class="-ml-0.5 mr-2 h-5 w-5"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            Speichern
+          </button>
+          <button
+            type="button"
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:w-auto sm:text-sm"
+          >
+            Abbrechen
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

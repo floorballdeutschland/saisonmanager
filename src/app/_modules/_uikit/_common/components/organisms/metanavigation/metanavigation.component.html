@@ -1,4 +1,28 @@
-<h2 class="uppercase text-fb-gray-100 font-bold mt-12">Weiteres</h2>
+<ng-container *ngIf="isLoggedIn$ | async">
+  <h2 class="uppercase text-fb-gray-100 font-bold mt-12">Verwaltung</h2>
+  <nav>
+    <ul>
+      <li class="mt-4 mb-4" *ngIf="showItem('menu_item_league_admin')">
+        <a
+          [routerLink]="['/', 'verwaltung', 'ligen']"
+          class="font-bold text-fb-gray-500 hover:text-black text-base"
+          >Ligaverwaltung</a
+        >
+      </li>
+      <li class="mt-4 mb-4" *ngIf="showItem('menu_item_league_admin')">
+        <a
+          class="font-bold text-fb-gray-500 hover:text-black text-base"
+          [routerLink]="['/', 'verwaltung', 'vereine']"
+          >Vereinsverwaltung</a
+        >
+      </li>
+    </ul>
+  </nav>
+</ng-container>
+
+<h2 class="uppercase text-fb-gray-100 font-bold mt-12">
+  Weitere<a href="/login">s</a>
+</h2>
 <nav>
   <ul>
     <li class="mt-4 mb-4" *ngIf="false">
@@ -13,7 +37,7 @@
         href=""
         (click)="logout()"
         class="font-bold text-fb-gray-500 hover:text-black text-base"
-        >Logout</a
+        >Logout ({{ username }})</a
       >
     </li>
     <li class="mt-4 mb-4">

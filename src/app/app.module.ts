@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import {
   APP_INITIALIZER,
   ErrorHandler,
@@ -14,6 +14,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { SessionService } from './_modules/_core/_services';
+import { ErrorInterceptor } from './_helpers/_interceptors/error.interceptor';
 
 @NgModule({
   declarations: [AppComponent],
@@ -27,13 +28,14 @@ import { SessionService } from './_modules/_core/_services';
     {
       provide: ErrorHandler,
       useValue: Sentry.createErrorHandler({
-        showDialog: true,
+        showDialog: false,
       }),
     },
     {
       provide: Sentry.TraceService,
       deps: [Router],
     },
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     {
       provide: APP_INITIALIZER,
       // eslint-disable-next-line

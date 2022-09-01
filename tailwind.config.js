@@ -17,6 +17,8 @@ let calculateRem = (size) => {
   return size / fontBase + "rem";
 };
 
+const colors = require("tailwindcss/colors");
+
 module.exports = {
   mode: "jit",
   prefix: "",
@@ -40,6 +42,10 @@ module.exports = {
         "fb-gray-700": "#E5E5E5",
         "fb-gray-800": "#FAFAFA",
         "fb-gray-900": "#666666",
+        primary: {
+          DEFAULT: colors.sky[500],
+          light: colors.sky[300],
+        },
       },
     },
   },
@@ -50,4 +56,5 @@ module.exports = {
       display: ["group-hover"],
     },
   },
+  plugins: [require("@tailwindcss/forms")],
 };

@@ -44,7 +44,6 @@ export class MatchesWithRoundsComponent implements OnInit, OnDestroy {
       .pipe(
         tap((league) => {
           if (league?.id) {
-            console.log(league);
             this.getMatches(league.id);
             interval(30000)
               .pipe(

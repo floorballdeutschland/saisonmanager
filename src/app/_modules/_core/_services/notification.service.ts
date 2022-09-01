@@ -1,20 +1,39 @@
 import { Injectable } from '@angular/core';
-import { UserNotification } from '@floorball/types';
+import { NotificationType, UserNotification } from '@floorball/types';
 
-import { Observable, Subject } from 'rxjs';
+import { filter, Observable, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
   private notificationSubject = new Subject<UserNotification>();
+
+  private defaultId = 'default-notification';
+
   public notification$: Observable<UserNotification> =
     this.notificationSubject.asObservable();
 
-  public success(msg: string) {
-    this.notificationSubject.next({
-      messageType: 'success',
-      message: msg,
-    });
+  onNotification(id = this.defaultId): Observable<UserNotification> {
+    return this.notificationSubject
+      .asObservable()
+      .pipe(filter((x) => x && x.id === id));
+  }
+
+  success(message: string, options?: any) {
+    this.notify({ ...options, type: NotificationType.Success, message });
+  }
+
+  public error(message: string, options?: any) {
+    this.notify({ ...options, type: NotificationType.Error, message });
+  }
+
+  public notify(notification: UserNotification) {
+    notification.id = notification.id || this.defaultId;
+    this.notificationSubject.next(notification);
+  }
+
+  public clear(id = this.defaultId) {
+    this.notificationSubject.next({ id });
   }
 }

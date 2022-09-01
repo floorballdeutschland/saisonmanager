@@ -3,6 +3,7 @@ export interface User {
   email: string;
   username: string;
   name: string;
+  permissions: { [key: string]: boolean }; // TODO: type this later
 }
 
 export interface LoginAnswer {

@@ -3,6 +3,7 @@ import { ControlsOf, FormControl, FormGroup } from '@ngneat/reactive-forms';
 import { Validators } from '@angular/forms';
 import { SessionService } from '@floorball/core';
 import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 export interface LoginFormValue {
   username: string;
@@ -19,7 +20,10 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
-  constructor(private _sessionService: SessionService) {}
+  constructor(
+    private _sessionService: SessionService,
+    private _router: Router
+  ) {}
 
   public ngOnInit(): void {
     this.loginForm = new FormGroup({
@@ -46,8 +50,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this._sessionService.login(data.username, data.password).subscribe({
         next: (data) => {
-          console.log(data);
           // this.router.navigate([this.returnUrl])
+          this._router.navigate(['verwaltung', 'ligen']);
         },
         error: (err) => {
           console.error(err);
@@ -55,7 +59,5 @@ export class LoginComponent implements OnInit, OnDestroy {
         },
       })
     );
-
-    console.log(data);
   }
 }

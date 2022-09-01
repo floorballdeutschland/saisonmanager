@@ -1,3 +1,4 @@
+import { Club } from './club.interface';
 import { League } from './league.interface';
 
 export interface GameOperation {
@@ -8,4 +9,12 @@ export interface GameOperation {
   logo_url?: string;
   logo_quad_url?: string;
   top_leagues: League[];
+}
+
+export interface GameOperationWithLeagues extends GameOperation {
+  leagues: League[];
+}
+
+export interface GameOperationWithClubs extends GameOperation {
+  clubs: Club[];
 }
