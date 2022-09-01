@@ -18,6 +18,8 @@ import { ActivatedRoute } from '@angular/router';
 export class ScheduleIndexComponent implements OnInit {
   gameDays: any[] = [];
 
+  loading = true;
+
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
@@ -35,6 +37,7 @@ export class ScheduleIndexComponent implements OnInit {
           next: (result) => {
             console.log('getAdminGameSchedule', result);
             this.gameDays = result;
+            this.loading = false;
 
             this._cdr.markForCheck();
           },
