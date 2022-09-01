@@ -122,40 +122,6 @@
                 </select>
               </div>
 
-              <div class="font-bold">Ligaklasse</div>
-              <div>
-                <select
-                  name="league_class_id"
-                  [(ngModel)]="league.league_class_id"
-                >
-                  <optgroup label="nur bei FD">
-                    <option
-                      *ngFor="let lc of leagueClasses | leagueClass: 'fd'"
-                      [value]="lc.id"
-                      [disabled]="!isBuliPermitted"
-                    >
-                      {{ lc.name }}
-                    </option>
-                  </optgroup>
-                  <optgroup label="zulässige Klassen">
-                    <option
-                      *ngFor="let lc of leagueClasses | leagueClass: 'ok'"
-                      [value]="lc.id"
-                    >
-                      {{ lc.name }}
-                    </option>
-                  </optgroup>
-                  <optgroup label="nicht zulässige Klassen">
-                    <option
-                      *ngFor="let lc of leagueClasses | leagueClass: 'not_ok'"
-                      [value]="lc.id"
-                    >
-                      {{ lc.name }}
-                    </option>
-                  </optgroup>
-                </select>
-              </div>
-
               <div class="font-bold">Damen/Herren</div>
               <div>
                 <select name="female" [(ngModel)]="league.female">

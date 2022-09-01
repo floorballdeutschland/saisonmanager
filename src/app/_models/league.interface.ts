@@ -24,6 +24,9 @@ export interface League {
   preround_point_modus?: string;
   preround_scorer_modus?: string;
 
+  deadline?: string;
+  before_deadline?: boolean;
+
   table_modus: string;
   periods: number;
   period_length: number;

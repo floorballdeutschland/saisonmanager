@@ -1,3 +1,4 @@
+import { Club } from './club.interface';
 import { League } from './league.interface';
 
 export interface GameOperation {
@@ -12,4 +13,8 @@ export interface GameOperation {
 
 export interface GameOperationWithLeagues extends GameOperation {
   leagues: League[];
+}
+
+export interface GameOperationWithClubs extends GameOperation {
+  clubs: Club[];
 }

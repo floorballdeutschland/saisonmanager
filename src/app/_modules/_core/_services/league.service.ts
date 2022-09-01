@@ -154,6 +154,17 @@ export class LeagueService {
     return this.http.get<LeagueWithTeams>(path);
   }
 
+  public getAdminGameSchedule(id: number) {
+    const path =
+      environment.apiURL + 'admin/leagues/' + id + '/game_schedule.json';
+    return this.http.get<any[]>(path);
+  }
+
+  public adminImportGameSchedule(data: FormData) {
+    const path = environment.apiURL + 'admin/leagues/import_schedule.json';
+    return this.http.post<any>(path, data);
+  }
+
   public adminCreateTeam(team: Team) {
     const path = environment.apiURL + 'admin/teams.json';
     return this.http.post<League>(path, team);

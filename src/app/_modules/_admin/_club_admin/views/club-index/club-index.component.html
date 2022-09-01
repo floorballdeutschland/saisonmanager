@@ -2,7 +2,7 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Ligaverwaltung
+    Vereinsverwaltung
   </h1>
 </div>
 
@@ -35,9 +35,7 @@
           </div>
         </ng-template>
 
-        <div
-          *ngFor="let gameOperation of goLeagueItems$ | async; else: loading"
-        >
+        <div *ngFor="let gameOperation of goClubItems$ | async; else: loading">
           <div class="bg-white flex items-center justify-center">
             <div
               class="h-[65px] my-2.5 lg:my-5 flex-1 px-[20px] flex justify-center"
@@ -52,84 +50,36 @@
 
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Ligen
+              Vereine
             </div>
             <div class="flex flex-col gap-2">
-              <ng-container *ngFor="let league of gameOperation.leagues">
-                <a
-                  class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
-                  [routerLink]="['/', gameOperation.path, league.id]"
-                >
-                  {{ league.name }} ({{ league.id }})
-                </a>
-                <div class="flex items-center mb-4">
+              <ng-container *ngFor="let club of gameOperation.clubs">
+                <div>
                   <a
-                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    class="font-bold text-base truncate text-fb-gray-500 hover:text-black"
+                  >
+                    {{ club.name }} ({{ club.id }})
+                  </a>
+                  <a
+                    class="font-bold text-black leading-[17px] text-sm px-2 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                     [routerLink]="[
                       '/',
                       'verwaltung',
-                      'ligen',
-                      league.id,
-                      'teams'
-                    ]"
-                  >
-                    Teamverwaltung
-                  </a>
-                  <a
-                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                    [routerLink]="[
-                      '/',
-                      'verwaltung',
-                      'ligen',
-                      league.id,
-                      'spielplan'
-                    ]"
-                  >
-                    Spielplanverwaltung
-                  </a>
-                  <a
-                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                    href="/api/v2/admin/leagues/{{
-                      league.id
-                    }}/schedule_import_template.xlsx"
-                  >
-                    Importvorlage
-                  </a>
-                </div>
-                <div class="flex items-center mb-4">
-                  <a
-                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                    [routerLink]="[
-                      '/',
-                      'verwaltung',
-                      'ligen',
-                      league.id,
+                      'vereine',
+                      club.id,
                       'bearbeiten'
                     ]"
                   >
-                    Liga bearbeiten
-                  </a>
-                  <a
-                    class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                    deactivated="true"
-                    [routerLink]="[
-                      '/',
-                      'verwaltung',
-                      'ligen',
-                      league.id,
-                      'bearbeiten'
-                    ]"
-                  >
-                    Liga löschen
+                    bearbeiten
                   </a>
                 </div>
               </ng-container>
 
               <p
                 class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
-                *ngIf="gameOperation.leagues.length === 0"
+                *ngIf="gameOperation.clubs.length === 0"
               >
-                noch keine Liga hinterlegt
+                noch kein Verein hinterlegt
               </p>
             </div>
           </div>
@@ -137,9 +87,9 @@
           <div class="bg-white h-[57px] flex items-center justify-center">
             <a
               class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-              [routerLink]="['/', 'verwaltung', 'ligen', 'neu']"
+              [routerLink]="['/', 'verwaltung', 'vereine', 'neu']"
             >
-              Neue Liga anlegen
+              Neuen Verein anlegen
             </a>
           </div>
         </div>

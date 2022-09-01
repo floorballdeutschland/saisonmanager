@@ -24,7 +24,19 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/club').then((m) => m.AdminClubModule),
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/teams').then((m) => m.AdminTeamModule),
+      },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/admin/schedule').then(
+            (m) => m.AdminScheduleModule
+          ),
       },
     ],
   },

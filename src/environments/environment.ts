@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiURL: 'https://api.saisonmanager.de/api/v2/',
+  apiURL: 'https://sm.jholocal.de/api/v2/',
 };
 
 /*
