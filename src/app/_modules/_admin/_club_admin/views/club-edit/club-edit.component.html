@@ -53,7 +53,13 @@
 
               <div class="font-bold">Name</div>
               <div>
-                <input [(ngModel)]="club.name" type="text" id="name" required />
+                <input
+                  [(ngModel)]="club.name"
+                  type="text"
+                  id="name"
+                  required
+                  class="w-full"
+                />
               </div>
               <div class="font-bold">Name (kurz)</div>
               <div>
@@ -61,6 +67,7 @@
                   [(ngModel)]="club.short_name"
                   type="text"
                   id="short_name"
+                  class="w-full"
                   required
                 />
               </div>
@@ -71,13 +78,14 @@
                   [(ngModel)]="club.long_name"
                   type="text"
                   id="long_name"
+                  class="w-full"
                   required
                 />
               </div>
 
               <div class="font-bold">Bundesland (Vereinssitz)</div>
               <div>
-                <select name="state" [(ngModel)]="club.state">
+                <select name="state" [(ngModel)]="club.state" class="w-full">
                   <option *ngFor="let s of states" [ngValue]="s.isocode">
                     {{ s.name }}
                   </option>
@@ -88,6 +96,7 @@
               <div>
                 <select
                   name="game_operation_id"
+                  class="w-full"
                   [(ngModel)]="club.game_operation_id"
                 >
                   <option *ngFor="let go of gameOperations" [ngValue]="go.id">
