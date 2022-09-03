@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { LoginAnswer, User } from '@floorball/types';
 import { environment } from 'src/environments/environment';
-import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
+import { Observable, ReplaySubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
 

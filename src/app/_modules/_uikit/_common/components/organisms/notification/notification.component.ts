@@ -6,7 +6,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { NotificationService, OverlayService } from '@floorball/core';
+import { NotificationService } from '@floorball/core';
 
 import { MobileHeaderComponent } from '..';
 

@@ -6,12 +6,15 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'fb-team-squad-history',
-  templateUrl: './team-squad-history.component.html',
+  selector: 'fb-match-event-form',
+  templateUrl: './match-event-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
-export class TeamSquadHistoryComponent {
-  @Input() onClose: (() => void) | undefined;
-  @Input() team!: string;
+export class MatchEventFormComponent {
+  @Input()
+  type!: string;
+
+  @Input()
+  team!: string;
 }

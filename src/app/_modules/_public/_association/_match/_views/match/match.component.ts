@@ -28,6 +28,7 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   public isLoggedIn$ = this._sessionService.isLoggedIn$;
   public tab = 'public';
+  public event = '';
   public addDialogOpen = '';
   public squadHistoryDialogOpen = '';
 
@@ -104,6 +105,20 @@ export class MatchComponent implements OnInit, OnDestroy {
   public setTab(tabName: string) {
     this.tab = tabName;
     this._cdr.markForCheck();
+  }
+
+  public setEvent(eventName: string) {
+    console.log(eventName);
+    if (this.event === eventName) {
+      this.event = '';
+    } else {
+      this.event = eventName;
+    }
+    this._cdr.markForCheck();
+  }
+
+  public isEventActive(eventName: string): boolean {
+    return this.event === eventName;
   }
 
   public openAddHomeDialog() {

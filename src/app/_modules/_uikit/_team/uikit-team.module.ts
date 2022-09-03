@@ -4,7 +4,6 @@ import { CdkTableModule } from '@angular/cdk/table';
 import { RouterModule } from '@angular/router';
 
 import * as Organisms from './components/organisms';
-import { TeamSquadComponent } from './components/organisms';
 
 @NgModule({
   imports: [CommonModule, CdkTableModule, RouterModule],

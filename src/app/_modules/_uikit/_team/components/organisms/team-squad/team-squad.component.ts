@@ -13,7 +13,7 @@ import { GamePlayerEntry } from '@floorball/models';
   encapsulation: ViewEncapsulation.None,
 })
 export class TeamSquadComponent {
-  @Input() onClose: any;
+  @Input() onClose: (() => void) | undefined;
   @Input() players!: GamePlayerEntry[];
   @Input() team!: string;
 
