@@ -12,6 +12,6 @@ import {
   encapsulation: ViewEncapsulation.None,
 })
 export class TeamSquadHistoryComponent {
-  @Input() onClose: (() => void) | undefined;
+  @Input() onClose!: () => void;
   @Input() team!: string;
 }
