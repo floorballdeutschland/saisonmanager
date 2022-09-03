@@ -67,7 +67,7 @@ export class MatchesWithRoundsComponent implements OnInit, OnDestroy {
       .pipe(
         take(1),
         tap((games) => {
-          if (!games) {
+          if (!games || !games[0]) {
             return;
           }
           this.selectedMatchDay = games[0].game_day;
