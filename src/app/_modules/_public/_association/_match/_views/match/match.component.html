@@ -104,15 +104,15 @@
           type="goal"
           team="home"
           [event]="event"
-          [setEvent]="setEvent"
           [team_name]="match.home_team_name"
+          (setEvent)="setEvent($event)"
         ></fb-match-event-button>
         <fb-match-event-button
           type="goal"
           team="guest"
           [event]="event"
-          [setEvent]="setEvent"
           [team_name]="match.guest_team_name"
+          (setEvent)="setEvent($event)"
         ></fb-match-event-button>
         <ng-container *ngIf="event === 'goal-home'">
           <fb-match-event-form
@@ -133,15 +133,15 @@
           type="penalty"
           team="home"
           [event]="event"
-          [setEvent]="setEvent"
           [team_name]="match.home_team_name"
+          (setEvent)="setEvent($event)"
         ></fb-match-event-button>
         <fb-match-event-button
           type="penalty"
           team="guest"
           [event]="event"
-          [setEvent]="setEvent"
           [team_name]="match.guest_team_name"
+          (setEvent)="setEvent($event)"
         ></fb-match-event-button>
         <ng-container *ngIf="event === 'penalty-home'">
           <fb-match-event-form
@@ -162,15 +162,15 @@
           type="timeout"
           team="home"
           [event]="event"
-          [setEvent]="setEvent"
           [team_name]="match.home_team_name"
+          (setEvent)="setEvent($event)"
         ></fb-match-event-button>
         <fb-match-event-button
           type="timeout"
           team="guest"
           [event]="event"
-          [setEvent]="setEvent"
           [team_name]="match.guest_team_name"
+          (setEvent)="setEvent($event)"
         ></fb-match-event-button>
         <ng-container *ngIf="event === 'timeout-home'">
           <fb-match-event-form
@@ -244,7 +244,7 @@
 
       <ng-container *ngIf="addDialogOpen !== ''">
         <fb-team-squad
-          [onClose]="closeAddDialog"
+          (handleClose)="closeAddDialog()"
           [team]="
             addDialogOpen === 'guest'
               ? match.guest_team_name
@@ -258,7 +258,7 @@
 
       <ng-container *ngIf="squadHistoryDialogOpen !== ''">
         <fb-team-squad-history
-          [onClose]="closeSquadHistoryDialog"
+          (handleClose)="closeSquadHistoryDialog()"
           [team]="
             addDialogOpen === 'guest'
               ? match.guest_team_name

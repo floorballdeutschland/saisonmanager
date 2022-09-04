@@ -107,8 +107,7 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
-  public setEvent(eventName: string) {
-    console.log(eventName);
+  public setEvent(eventName: string): void {
     if (this.event === eventName) {
       this.event = '';
     } else {

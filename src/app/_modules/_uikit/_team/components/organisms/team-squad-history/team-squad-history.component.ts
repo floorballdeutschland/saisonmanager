@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -12,6 +14,10 @@ import {
   encapsulation: ViewEncapsulation.None,
 })
 export class TeamSquadHistoryComponent {
-  @Input() onClose!: () => void;
   @Input() team!: string;
+  @Output() handleClose: EventEmitter<void> = new EventEmitter<void>();
+
+  onClose(): void {
+    this.handleClose.emit();
+  }
 }

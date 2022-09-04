@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 import { GamePlayerEntry } from '@floorball/models';
@@ -13,9 +15,9 @@ import { GamePlayerEntry } from '@floorball/models';
   encapsulation: ViewEncapsulation.None,
 })
 export class TeamSquadComponent {
-  @Input() onClose!: () => void;
   @Input() players!: GamePlayerEntry[];
   @Input() team!: string;
+  @Output() handleClose: EventEmitter<void> = new EventEmitter<void>();
 
   public filter = '';
   public filterTypes = [
@@ -26,5 +28,9 @@ export class TeamSquadComponent {
 
   setFilter(filterType: string) {
     this.filter = filterType;
+  }
+
+  onClose(): void {
+    this.handleClose.emit();
   }
 }

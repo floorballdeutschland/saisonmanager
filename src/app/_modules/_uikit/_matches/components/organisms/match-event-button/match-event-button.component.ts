@@ -2,7 +2,9 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -25,8 +27,8 @@ export class MatchEventButtonComponent {
   @Input()
   event!: string;
 
-  @Input()
-  setEvent!: (eventType: string) => void;
+  @Output()
+  setEvent: EventEmitter<string> = new EventEmitter<string>();
 
   constructor(private _cdr: ChangeDetectorRef) {}
 
@@ -48,7 +50,6 @@ export class MatchEventButtonComponent {
   }
 
   handleButtonClick(eventType: string): void {
-    this.setEvent(eventType);
-    this._cdr.markForCheck();
+    this.setEvent.emit(eventType);
   }
 }
