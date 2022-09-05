@@ -2,8 +2,9 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Teamverwaltung
+    Spielerverwaltung
   </h1>
+  <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8"></h2>
 </div>
 
 <ng-container>
@@ -35,7 +36,7 @@
           </div>
         </ng-template>
 
-        <div *ngIf="league$ | async as league; else loading">
+        <div *ngIf="club$ | async as club; else loading">
           <div class="bg-white flex items-center justify-center">
             <div
               class="h-[65px] my-2.5 lg:my-5 flex-1 px-[20px] flex justify-center"
@@ -43,61 +44,53 @@
               <h2
                 class="font-bold text-[24px] lg:text-[24px] font-bold my-2 lg:my-4"
               >
-                {{ league.name }}
+                {{ club.name }}
               </h2>
             </div>
           </div>
 
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Teams
+              Spieler
             </div>
-
-            <ng-container *ngFor="let team of league.teams">
-              <div class="flex flex-col gap-2">
-                <a
-                  class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
-                >
-                  {{ team.name }} ({{ team.id }})
-                </a>
-                <div class="flex items-center mb-4">
+            <div class="flex flex-col gap-2">
+              <ng-container *ngFor="let player of club.players">
+                <div>
                   <a
-                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    class="font-bold text-base truncate text-fb-gray-500 hover:text-black"
+                  >
+                    {{ player.last_name }}, {{ player.first_name }}
+                  </a>
+                  <a
+                    class="font-bold text-black leading-[17px] text-sm px-2 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                     [routerLink]="[
                       '/',
                       'verwaltung',
-                      'teams',
-                      team.id,
+                      'spieler',
+                      player.id,
                       'bearbeiten'
                     ]"
                   >
-                    Team bearbeiten
+                    bearbeiten
                   </a>
                 </div>
-              </div>
-            </ng-container>
-            <div class="flex flex-col gap-2" *ngIf="league.teams.length === 0">
-              <p
-                class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
-              >
-                noch keine Teams hinterlegt
-              </p>
+              </ng-container>
+
+              <!--              <p-->
+              <!--                class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"-->
+              <!--                *ngIf="club.players.length === 0"-->
+              <!--              >-->
+              <!--                noch kein Verein hinterlegt-->
+              <!--              </p>-->
             </div>
           </div>
 
           <div class="bg-white h-[57px] flex items-center justify-center">
             <a
               class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-              [routerLink]="[
-                '/',
-                'verwaltung',
-                'ligen',
-                league.id,
-                'teams',
-                'neu'
-              ]"
+              [routerLink]="['/', 'verwaltung', 'vereine', 'neu']"
             >
-              Neues Team anlegen
+              Neuen Verein anlegen
             </a>
           </div>
         </div>

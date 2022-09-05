@@ -2,6 +2,7 @@ export { LeagueService } from './league.service';
 export { ClubService } from './club.service';
 export { MetaService } from './meta.service';
 export { GameService } from './game.service';
+export { PlayerService } from './player.service';
 export { OverlayService } from './overlay.service';
 export * from './association.service';
 export * from './storage.service';

@@ -123,6 +123,18 @@
                   Änderungen speichern
                 </a>
                 <a
+                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                  [routerLink]="[
+                    '/',
+                    'verwaltung',
+                    'vereine',
+                    club.id,
+                    'spieler'
+                  ]"
+                >
+                  Spieler bearbeiten
+                </a>
+                <a
                   class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                   deactivated="true"
                   [routerLink]="['/', 'verwaltung', 'vereine']"

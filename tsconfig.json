@@ -56,6 +56,7 @@
       ],
       "@floorball/admin/league": ["src/app/_modules/_admin/_league_admin"],
       "@floorball/admin/club": ["src/app/_modules/_admin/_club_admin"],
+      "@floorball/admin/player": ["src/app/_modules/_admin/_player_admin"],
       "@floorball/admin/teams": ["src/app/_modules/_admin/_team_admin"],
       "@floorball/admin/schedule": ["src/app/_modules/_admin/_schedule_admin"],
       "@floorball/models": ["src/app/_models"]
