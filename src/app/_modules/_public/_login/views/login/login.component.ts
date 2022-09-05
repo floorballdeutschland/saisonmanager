@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ControlsOf, FormControl, FormGroup } from '@ngneat/reactive-forms';
 import { Validators } from '@angular/forms';
-import { SessionService } from '@floorball/core';
+import { NotificationService, SessionService } from '@floorball/core';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 
@@ -22,7 +22,8 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   constructor(
     private _sessionService: SessionService,
-    private _router: Router
+    private _router: Router,
+    private _notificationService: NotificationService
   ) {}
 
   public ngOnInit(): void {
@@ -52,6 +53,32 @@ export class LoginComponent implements OnInit, OnDestroy {
         next: (data) => {
           // this.router.navigate([this.returnUrl])
           this._router.navigate(['verwaltung', 'ligen']);
+        },
+        error: (err) => {
+          console.error(err);
+          this.error = err;
+        },
+      })
+    );
+  }
+
+  public lostPassword(data: LoginFormValue) {
+    if (!data.username) {
+      this._notificationService.error(
+        'Bitte fülle das Benutzernamen Feld aus. Benutzername nicht E-Mail',
+        {
+          autoClose: false,
+          keepAfterRouteChange: true,
+        }
+      );
+      return;
+    }
+
+    this.subscriptions.push(
+      this._sessionService.lostPassword(data.username).subscribe({
+        next: (data) => {
+          // this.router.navigate([this.returnUrl])
+          this._router.navigate(['/', 'login']);
         },
         error: (err) => {
           console.error(err);

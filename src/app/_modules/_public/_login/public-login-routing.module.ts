@@ -12,6 +12,14 @@ const routes: Routes = [
       scrollTop: true,
     },
   },
+  {
+    path: 'neues-passwort/:resetToken',
+    component: Views.LostPasswordComponent,
+    pathMatch: 'full',
+    data: {
+      scrollTop: true,
+    },
+  },
 ];
 
 @NgModule({

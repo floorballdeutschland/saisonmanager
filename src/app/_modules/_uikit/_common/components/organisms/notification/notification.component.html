@@ -1,6 +1,6 @@
 <ng-container *ngIf="notifications">
   <div
-    class="flex flex-row lg:block justify-between items-center lg:h-full fixed z-40 top-0 lg:max-w-[300px] p-5 w-full lg:relative gap-[10px]"
+    class="flex flex-row lg:block justify-between items-center lg:h-full fixed z-40 top-0 lg:max-w-[800px] p-5 w-full lg:relative gap-[10px]"
   >
     <ng-container *ngFor="let notification of notifications">
       <ng-container *ngIf="notification.type === getType('success')">
