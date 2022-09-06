@@ -36,7 +36,7 @@
           </div>
         </ng-template>
 
-        <div *ngIf="club$ | async as club; else loading">
+        <div *ngIf="club; else loading">
           <div class="bg-white flex items-center justify-center">
             <div
               class="h-[65px] my-2.5 lg:my-5 flex-1 px-[20px] flex justify-center"
@@ -66,31 +66,40 @@
                     [routerLink]="[
                       '/',
                       'verwaltung',
+                      'vereine',
+                      club.id,
                       'spieler',
                       player.id,
                       'bearbeiten'
                     ]"
                   >
-                    bearbeiten
+                    {{ canEdit() ? "bearbeiten" : "anzeigen" }}
                   </a>
                 </div>
               </ng-container>
 
-              <!--              <p-->
-              <!--                class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"-->
-              <!--                *ngIf="club.players.length === 0"-->
-              <!--              >-->
-              <!--                noch kein Verein hinterlegt-->
-              <!--              </p>-->
+              <p
+                class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
+                *ngIf="club.players?.length === 0"
+              >
+                noch kein Spieler hinterlegt
+              </p>
             </div>
           </div>
 
           <div class="bg-white h-[57px] flex items-center justify-center">
             <a
               class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-              [routerLink]="['/', 'verwaltung', 'vereine', 'neu']"
+              [routerLink]="[
+                '/',
+                'verwaltung',
+                'vereine',
+                club.id,
+                'spieler',
+                'neu'
+              ]"
             >
-              Neuen Verein anlegen
+              Neuen Spieler anlegen
             </a>
           </div>
         </div>

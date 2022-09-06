@@ -39,135 +39,115 @@
           </div>
         </ng-template>
 
-        <div *ngIf="player$ | async as player; else loading">
+        <div *ngIf="player; else loading">
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               Spielerdaten
             </div>
 
+            <div *ngIf="canEdit()">Edit</div>
+
             <div class="grid grid-cols-2 gap-4">
-              <div class="font-bold">Vorname</div>
+              <label for="first_name" class="font-bold">Vorname</label>
               <div>
                 <input
+                  *ngIf="canEdit()"
                   [(ngModel)]="player.first_name"
                   type="text"
                   id="first_name"
                   required
                   class="w-full"
                 />
+                <ng-container *ngIf="!canEdit()">
+                  {{ player.first_name }}
+                </ng-container>
               </div>
 
-              <div class="font-bold">Nachname</div>
+              <label for="last_name" class="font-bold">Nachname</label>
               <div>
                 <input
+                  *ngIf="canEdit()"
                   [(ngModel)]="player.last_name"
                   type="text"
                   id="last_name"
                   class="w-full"
                   required
                 />
+                <ng-container *ngIf="!canEdit()">
+                  {{ player.last_name }}
+                </ng-container>
               </div>
 
-              <div class="font-bold">Geburtsdatum</div>
+              <label for="birthdate" class="font-bold">Geburtsdatum</label>
               <div>
                 <input
+                  *ngIf="canEdit()"
                   [(ngModel)]="player.birthdate"
-                  type="text"
+                  type="date"
                   id="birthdate"
                   class="w-full"
                   required
                 />
+                <ng-container *ngIf="!canEdit()">
+                  {{ player.birthdate }}
+                </ng-container>
               </div>
 
-              <div class="font-bold">Geschlecht</div>
+              <label for="male" class="font-bold">Geschlecht</label>
               <div>
                 <select
+                  *ngIf="canEdit()"
                   [(ngModel)]="player.male"
-                  type="text"
                   id="male"
                   class="w-full"
                   required
                 >
-                  <option>Bitte wählen...</option>
                   <option value="true">Männlich</option>
                   <option value="false">Weiblich</option>
                 </select>
+                <ng-container *ngIf="!canEdit()">
+                  {{ player.male ? "Männlich" : "Weiblich" }}
+                </ng-container>
               </div>
 
-              <div class="font-bold">Straße</div>
+              <label for="nation_id" class="font-bold">Nationalität</label>
               <div>
-                <input
-                  [(ngModel)]="player.street"
-                  type="text"
-                  id="street"
-                  class="w-full"
-                  required
-                />
-              </div>
-
-              <div class="font-bold">Hausnummer</div>
-              <div>
-                <input
-                  [(ngModel)]="player.housenumber"
-                  type="text"
-                  id="housenumber"
-                  class="w-full"
-                  required
-                />
-              </div>
-
-              <div class="font-bold">Postleitzahl</div>
-              <div>
-                <input
-                  [(ngModel)]="player.postcode"
-                  type="text"
-                  id="postcode"
-                  class="w-full"
-                  required
-                />
-              </div>
-              <div class="font-bold">Stadt</div>
-              <div>
-                <input
-                  [(ngModel)]="player.city"
-                  type="text"
-                  id="city"
-                  class="w-full"
-                  required
-                />
-              </div>
-
-              <div class="font-bold">Nationalität</div>
-              <div>
-                <input
+                <select
+                  *ngIf="canEdit()"
                   [(ngModel)]="player.nation_id"
-                  type="text"
                   id="nation_id"
                   class="w-full"
                   required
-                />
+                >
+                  <option *ngFor="let nation of nations" [value]="nation.id">
+                    {{ nation.name }}
+                  </option>
+                </select>
+                <ng-container *ngIf="!canEdit()">
+                  {{ getPlayersNationString() }}
+                </ng-container>
               </div>
             </div>
           </div>
 
-          <!--          <div class="bg-white my-[5px] py-[15px] px-[30px]">-->
-          <!--            <div class="flex flex-col gap-2">-->
-          <!--              <div class="mb-4" *ngIf="error(club)">-->
-          <!--                <h3 class="text-lg leading-6 font-medium text-red-600">-->
-          <!--                  Speichern nicht möglich-->
-          <!--                </h3>-->
-          <!--                <p *ngFor="let msg of errorMsg(club)">{{ msg }}</p>-->
-          <!--              </div>-->
-          <!--              <div class="flex items-center mb-4" *ngIf="!error(club)">-->
-          <!--                <a-->
-          <!--                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"-->
-          <!--                  [routerLink]="['/', 'verwaltung', 'spieler', club.id, 'neu']"-->
-          <!--                >-->
-          <!--                  Spieler anlegen-->
-          <!--                </a>-->
-          <!--              </div>-->
-          <!--            </div>-->
-          <!--          </div>-->
+          <div class="bg-white my-[5px] py-[15px] px-[30px]" *ngIf="canEdit()">
+            <div class="flex flex-col gap-2">
+              <div class="mb-4" *ngIf="error(player)">
+                <h3 class="text-lg leading-6 font-medium text-red-600">
+                  Speichern nicht möglich
+                </h3>
+                <p *ngFor="let msg of errorMsg(player)">{{ msg }}</p>
+              </div>
+              <div class="flex items-center mb-4" *ngIf="!error(player)">
+                <a
+                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                  (click)="submit(player)"
+                >
+                  Änderungen speichern
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

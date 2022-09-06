@@ -4,9 +4,6 @@ export interface Player {
   first_name: string;
   birthdate: string;
   male: boolean;
-  city: string;
-  housenumber: string;
   nation_id: number;
-  postcode: string;
-  street: string;
+  club_id?: number;
 }

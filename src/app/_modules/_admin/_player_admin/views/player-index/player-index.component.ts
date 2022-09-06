@@ -1,7 +1,12 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { PlayerService } from '@floorball/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  ViewEncapsulation,
+} from '@angular/core';
+import { PlayerService, SessionService } from '@floorball/core';
 import { Club } from '@floorball/models';
-import { Observable, share, Subject, take, takeUntil, tap } from 'rxjs';
+import { Subject } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 
@@ -10,13 +15,16 @@ import { ActivatedRoute } from '@angular/router';
   encapsulation: ViewEncapsulation.None,
 })
 export class PlayerIndexComponent implements OnInit {
-  club$?: Observable<Club>;
+  permissions: { [key: string]: any } = {};
+  club?: Club;
 
   private _destroy$ = new Subject<boolean>();
 
   constructor(
     private _playerService: PlayerService,
     private _route: ActivatedRoute,
+    private _cdr: ChangeDetectorRef,
+    private _sessionService: SessionService,
     private _metaTitle: Title
   ) {
     this._metaTitle.setTitle('Floorball Saisonmanager');
@@ -28,6 +36,12 @@ export class PlayerIndexComponent implements OnInit {
         this.getClub(params['clubId']);
       }
     });
+
+    this._sessionService.currentUser$.subscribe({
+      next: (user) => {
+        this.permissions = user?.permissions || {};
+      },
+    });
   }
 
   ngOnDestroy(): void {
@@ -36,18 +50,16 @@ export class PlayerIndexComponent implements OnInit {
   }
 
   public getClub(id: string): void {
-    this.club$ = this._playerService.getClubPlayers(parseInt(id)).pipe(share());
+    this._playerService.getClubPlayers(parseInt(id)).subscribe({
+      next: (result) => {
+        this.club = result;
 
-    this.club$
-      .pipe(
-        tap((league) => {
-          if (!league) {
-            return;
-          }
-        }),
-        take(1),
-        takeUntil(this._destroy$)
-      )
-      .subscribe();
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  public canEdit(): boolean {
+    return this.permissions['update_player'] || false;
   }
 }

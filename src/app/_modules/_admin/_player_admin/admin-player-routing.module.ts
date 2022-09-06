@@ -13,7 +13,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'verwaltung/spieler/:playerId/bearbeiten',
+    path: 'verwaltung/vereine/:clubId/spieler/:playerId/bearbeiten',
     pathMatch: 'full',
     component: Views.PlayerEditComponent,
     data: {
@@ -21,7 +21,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'verwaltung/spieler/neu',
+    path: 'verwaltung/vereine/:clubId/spieler/neu',
     pathMatch: 'full',
     component: Views.PlayerEditComponent,
     data: {
