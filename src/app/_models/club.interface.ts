@@ -1,3 +1,4 @@
+import { Team } from './team.interface';
 export interface Club {
   id: number;
   name: string;
@@ -7,4 +8,8 @@ export interface Club {
   game_operation_id: number;
   additional_game_operation_ids: number[];
   logo?: string;
+}
+
+export interface ClubWithTeams extends Club {
+  teams: Team[];
 }

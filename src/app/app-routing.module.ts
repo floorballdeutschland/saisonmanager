@@ -38,6 +38,11 @@ const routes: Routes = [
             (m) => m.AdminScheduleModule
           ),
       },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/admin/licenses').then((m) => m.AdminLicenseModule),
+      },
     ],
   },
   {

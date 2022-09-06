@@ -52,7 +52,22 @@ export class LoginComponent implements OnInit, OnDestroy {
       this._sessionService.login(data.username, data.password).subscribe({
         next: (data) => {
           // this.router.navigate([this.returnUrl])
-          this._router.navigate(['verwaltung', 'ligen']);
+          if (data.success) {
+            if (data.user.permissions['show_league_index_admin']) {
+              this._router.navigate(['verwaltung', 'ligen']);
+            } else if (data.user.permissions['menu_item_licence_club_admin']) {
+              this._router.navigate([
+                '/',
+                'verwaltung',
+                'lizenzwesen',
+                'verein',
+              ]);
+            } else {
+              this._router.navigate(['/']);
+            }
+          } else {
+            this._router.navigate(['/']);
+          }
         },
         error: (err) => {
           console.error(err);
