@@ -16,7 +16,7 @@ export class PlayerService {
   }
 
   public getPlayer(playerId: number) {
-    const path = environment.apiURL + 'admin/player/' + playerId + '.json';
+    const path = environment.apiURL + 'admin/players/' + playerId + '.json';
     return this.http.get<Player>(path);
   }
 }

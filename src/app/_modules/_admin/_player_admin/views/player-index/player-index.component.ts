@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { AssociationService, PlayerService } from '@floorball/core';
-import { Club, GameOperation } from 'src/app/_models';
+import { PlayerService } from '@floorball/core';
+import { Club } from '@floorball/models';
 import { Observable, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -10,19 +10,15 @@ import { ActivatedRoute } from '@angular/router';
   encapsulation: ViewEncapsulation.None,
 })
 export class PlayerIndexComponent implements OnInit {
-  associations$: Observable<GameOperation[]>;
-
   club$?: Observable<Club>;
 
   private _destroy$ = new Subject<boolean>();
 
   constructor(
-    private _associationService: AssociationService,
     private _playerService: PlayerService,
     private _route: ActivatedRoute,
     private _metaTitle: Title
   ) {
-    this.associations$ = this._associationService.associations$;
     this._metaTitle.setTitle('Floorball Saisonmanager');
   }
 
