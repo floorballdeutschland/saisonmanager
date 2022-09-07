@@ -39,22 +39,27 @@
           </div>
         </ng-template>
 
-        <div *ngIf="player; else loading">
+        <div class="xl:col-span-2" *ngIf="player; else loading">
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               Spielerdaten
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+              <label for="first_name" class="font-bold">Spieler ID</label>
+              <div class="md:col-span-2 xl:col-span-3">
+                {{ editMode ? player.id : "Wird nach dem Anlegen festgelegt" }}
+              </div>
+
               <label for="first_name" class="font-bold">Vorname</label>
-              <div>
+              <div class="md:col-span-2 xl:col-span-3">
                 <input
                   *ngIf="canEdit()"
                   [(ngModel)]="player.first_name"
                   type="text"
                   id="first_name"
                   required
-                  class="w-full"
+                  class="w-full xl:w-1/3"
                 />
                 <ng-container *ngIf="!canEdit()">
                   {{ player.first_name }}
@@ -62,13 +67,13 @@
               </div>
 
               <label for="last_name" class="font-bold">Nachname</label>
-              <div>
+              <div class="md:col-span-2 xl:col-span-3">
                 <input
                   *ngIf="canEdit()"
                   [(ngModel)]="player.last_name"
                   type="text"
                   id="last_name"
-                  class="w-full"
+                  class="w-full xl:w-1/3"
                   required
                 />
                 <ng-container *ngIf="!canEdit()">
@@ -77,27 +82,27 @@
               </div>
 
               <label for="birthdate" class="font-bold">Geburtsdatum</label>
-              <div>
+              <div class="md:col-span-2 xl:col-span-3">
                 <input
                   *ngIf="canEdit()"
                   [(ngModel)]="player.birthdate"
                   type="date"
                   id="birthdate"
-                  class="w-full"
+                  class="w-full xl:w-1/3"
                   required
                 />
                 <ng-container *ngIf="!canEdit()">
-                  {{ player.birthdate }}
+                  {{ player.birthdate | date: "dd.MM.yyyy" }}
                 </ng-container>
               </div>
 
               <label for="male" class="font-bold">Geschlecht</label>
-              <div>
+              <div class="md:col-span-2 xl:col-span-3">
                 <select
                   *ngIf="canEdit()"
                   [(ngModel)]="player.male"
                   id="male"
-                  class="w-full"
+                  class="w-full xl:w-1/3"
                   required
                 >
                   <option value="true">Männlich</option>
@@ -109,12 +114,12 @@
               </div>
 
               <label for="nation_id" class="font-bold">Nationalität</label>
-              <div>
+              <div class="md:col-span-2 xl:col-span-3">
                 <select
                   *ngIf="canEdit()"
                   [(ngModel)]="player.nation_id"
                   id="nation_id"
-                  class="w-full"
+                  class="w-full xl:w-1/3"
                   required
                 >
                   <option *ngFor="let nation of nations" [value]="nation.id">
@@ -147,6 +152,142 @@
             </div>
           </div>
         </div>
+
+        <ng-container *ngIf="editMode">
+          <div>
+            <div class="bg-white my-[5px] py-[15px] px-[30px]">
+              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                Freigaben
+              </div>
+
+              <p
+                class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
+                *ngIf="false"
+              >
+                keine Freigaben vorhanden
+              </p>
+
+              <div class="grid grid-cols-1 gap-4">
+                <div
+                  *ngFor="let additionalClub of additionalClubs()"
+                  class="grid grid-cols-4"
+                >
+                  <div class="col-span-3">
+                    <p class="font-bold">
+                      {{ getClubNameById(additionalClub.club_id) }}
+                      {{ additionalClub.club_id }}
+                    </p>
+                    <p>
+                      <ng-container *ngIf="additionalClub.created_at"
+                        >vom
+                        {{
+                          additionalClub.created_at | date: "dd.MM.yyyy"
+                        }}</ng-container
+                      >
+                      bis {{ additionalClub.valid_until | date: "dd.MM.yyyy" }}
+                    </p>
+                  </div>
+                  <div class="flex flex-row items-center">
+                    <a
+                      *ngIf="!isAdditionalClubActive(additionalClub.club_id)"
+                      class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                      (click)="
+                        addAdditionalClub(player, additionalClub.club_id)
+                      "
+                    >
+                      Verlängern
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white my-[5px] py-[15px] px-[30px]">
+              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                Neue Freigabe erteilen
+              </div>
+
+              <div class="grid grid-cols-1 gap-4">
+                <select [(ngModel)]="additionalClubId">
+                  <option value="0">Verein auswählen...</option>
+                  <ng-container *ngFor="let club of allClubs">
+                    <option
+                      [value]="club.id"
+                      *ngIf="
+                        !isAdditionalClubActive(club.id) && !isHomeClub(club.id)
+                      "
+                    >
+                      {{ club.name }}
+                    </option>
+                  </ng-container>
+                </select>
+
+                <div>
+                  <a
+                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    (click)="addAdditionalClub(player, additionalClubId)"
+                  >
+                    Spieler freigeben
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="bg-white my-[5px] py-[15px] px-[30px]">
+              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                Hauptverein
+              </div>
+
+              <div class="grid grid-cols-1 gap-4">
+                <div *ngFor="let club of homeClubs()">
+                  <p class="font-bold">
+                    {{ getClubNameById(club.club_id) }} {{ club.club_id }}
+                  </p>
+                  <p>
+                    <ng-container *ngIf="club.created_at"
+                      >vom {{ club.created_at | date: "dd.MM.yyyy" }}
+                    </ng-container>
+                    <ng-container *ngIf="club.valid_until"
+                      >bis
+                      {{ club.valid_until | date: "dd.MM.yyyy" }}</ng-container
+                    >
+                    <ng-container *ngIf="!club.valid_until"
+                      >bis heute</ng-container
+                    >
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white my-[5px] py-[15px] px-[30px]">
+              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                Transfer durchführen
+              </div>
+
+              <div class="grid grid-cols-1 gap-4">
+                <select [(ngModel)]="transferClubId">
+                  <option value="0">Verein auswählen...</option>
+                  <ng-container *ngFor="let club of allClubs">
+                    <option [value]="club.id" *ngIf="!isHomeClub(club.id)">
+                      {{ club.name }}
+                    </option>
+                  </ng-container>
+                </select>
+
+                <div>
+                  <a
+                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    (click)="transfer(player, transferClubId)"
+                  >
+                    Spieler transferieren
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
       </div>
     </div>
   </div>

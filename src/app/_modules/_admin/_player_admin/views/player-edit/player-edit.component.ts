@@ -6,11 +6,12 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {
+  ClubService,
   NotificationService,
   PlayerService,
   SessionService,
 } from '@floorball/core';
-import { Player, Nation } from '@floorball/models';
+import { Player, Nation, Club } from '@floorball/models';
 import { Subject } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,7 +24,11 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   permissions: { [key: string]: any } = {};
   player?: Player;
   nations?: Nation[] = [];
+  allClubs: Club[] = [];
   club_id?: number;
+
+  additionalClubId?: string = '0';
+  transferClubId?: string = '0';
 
   editMode = true;
 
@@ -34,6 +39,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _sessionService: SessionService,
+    private _clubService: ClubService,
     private _router: Router,
     private _notificationService: NotificationService,
     private _metaTitle: Title
@@ -45,10 +51,12 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     this._route.params.subscribe((params) => {
       this.club_id = params['clubId'];
       this.getNations();
+      this.getAllClubs();
 
       if (params['playerId']) {
         this.getPlayer(params['playerId']);
       } else {
+        this.editMode = false;
         this.newPlayer();
       }
     });
@@ -75,6 +83,14 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     });
   }
 
+  public additionalClubs() {
+    return this.player?.clubs?.filter((club) => !club.home_club) || [];
+  }
+
+  public homeClubs() {
+    return this.player?.clubs?.filter((club) => club.home_club) || [];
+  }
+
   public getNations(): void {
     this._playerService.getNations().subscribe({
       next: (result) => {
@@ -83,6 +99,53 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         this._cdr.markForCheck();
       },
     });
+  }
+
+  public getAllClubs(): void {
+    this._clubService.getAdminClubAll().subscribe({
+      next: (result) => {
+        this.allClubs = result.sort((a, b) => {
+          if (a.name <= b.name) {
+            return -1;
+          }
+          if (a.name > b.name) {
+            return 1;
+          }
+
+          return 0;
+        });
+
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  public isAdditionalClubActive(clubId: number | undefined): boolean {
+    return (
+      (this.player?.clubs || []).findIndex((club) => {
+        const validUntil = new Date(club.valid_until || '');
+        const now = new Date(Date.now());
+        return club.club_id === clubId && validUntil >= now;
+      }) >= 0
+    );
+  }
+
+  public isHomeClub(clubId: number | undefined): boolean {
+    return (
+      (this.player?.clubs || []).findIndex((club) => {
+        const validUntil = new Date(club.valid_until || '');
+        const now = new Date(Date.now());
+        return (
+          club.club_id === clubId &&
+          club.home_club &&
+          (!club.valid_until || validUntil >= now)
+        );
+      }) >= 0
+    );
+  }
+
+  public getClubNameById(id: number): string {
+    return this.allClubs.find((club) => club.id === id)?.name || '(unbekannt)';
   }
 
   public newPlayer(): void {
@@ -159,6 +222,46 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             this.club_id,
             'spieler',
           ]);
+        },
+        error: (error) => {
+          console.error(error, {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          });
+        },
+      });
+  }
+
+  public addAdditionalClub(player: Player | undefined, clubId: any) {
+    this._playerService
+      .adminAddAdditionalClub(player?.id || 0, clubId || '0')
+      .subscribe({
+        next: (result) => {
+          const message = 'Spieler wurde erfolgreich freigegeben.';
+          this._notificationService.success(message, {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          });
+        },
+        error: (error) => {
+          console.error(error, {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          });
+        },
+      });
+  }
+
+  public transfer(player: Player | undefined, clubId: any) {
+    this._playerService
+      .adminTransferPlayer(player?.id || 0, clubId || '0')
+      .subscribe({
+        next: (result) => {
+          const message = 'Spieler wurde erfolgreich transferiert.';
+          this._notificationService.success(message, {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          });
         },
         error: (error) => {
           console.error(error, {

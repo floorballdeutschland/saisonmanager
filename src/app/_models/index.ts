@@ -22,3 +22,4 @@ export * from './team.interface';
 export * from './club.interface';
 export * from './player.interface';
 export * from './nation.interface';
+export * from './club-membership.interface';

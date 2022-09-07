@@ -29,4 +29,21 @@ export class PlayerService {
     const path = environment.apiURL + 'admin/players.json';
     return this.http.post<Player>(path, player);
   }
+
+  public adminAddAdditionalClub(playerId: number, clubId: string) {
+    console.log(playerId, clubId);
+    const path = environment.apiURL + 'admin/players.json';
+    return this.http.post<Player>(path, {
+      playerId,
+      clubId: parseInt(clubId, 10),
+    });
+  }
+
+  public adminTransferPlayer(playerId: number, clubId: string) {
+    const path = environment.apiURL + 'admin/players.json';
+    return this.http.post<Player>(path, {
+      playerId,
+      clubId: parseInt(clubId, 10),
+    });
+  }
 }
