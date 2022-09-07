@@ -16,7 +16,7 @@ import { ActivatedRoute } from '@angular/router';
   encapsulation: ViewEncapsulation.None,
 })
 export class PlayerIndexComponent implements OnInit, OnDestroy {
-  permissions: { [key: string]: any } = {};
+  permissions: { [key: string]: boolean } = {};
   clubs: Club[] = [];
 
   private _destroy$ = new Subject<boolean>();
