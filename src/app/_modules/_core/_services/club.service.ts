@@ -1,39 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import {
-  Club,
-  GameScheduleEntry,
-  League,
-  LeagueClass,
-  LeagueWithTeams,
-  ScorerEntry,
-  TableEntry,
-  Team,
-} from '@floorball/types';
-import { ActivatedRoute } from '@angular/router';
-import {
-  BehaviorSubject,
-  combineLatest,
-  map,
-  Observable,
-  of,
-  shareReplay,
-  switchMap,
-} from 'rxjs';
-import { AssociationService } from '.';
+import { Club, ClubWithTeams, LicenseHash } from '@floorball/types';
 import { GameOperationWithClubs } from 'src/app/_models/game-operation.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ClubService {
-  private _route$ = new BehaviorSubject<ActivatedRoute | null>(null);
-
-  constructor(
-    private http: HttpClient,
-    private _associationService: AssociationService
-  ) {}
+  constructor(private http: HttpClient) {}
 
   //
   // admin routes
@@ -56,5 +31,32 @@ export class ClubService {
   public adminCreateClub(club: Club) {
     const path = environment.apiURL + 'admin/clubs.json';
     return this.http.post<Club>(path, club);
+  }
+
+  public adminGetClubAndTeams() {
+    const path = environment.apiURL + 'user/clubs_and_teams.json';
+    return this.http.get<ClubWithTeams[]>(path);
+  }
+
+  public userGetTeamLicenses(teamId: number) {
+    const path = environment.apiURL + 'user/team/' + teamId + '/licenses.json';
+    return this.http.get<LicenseHash>(path);
+  }
+
+  public userCreateLicenseRequest(playerId: number, teamId: number) {
+    const path =
+      environment.apiURL + 'user/players/' + playerId + '/request_license.json';
+    return this.http.post<{ success: boolean }>(path, { team_id: teamId });
+  }
+
+  public userWithdrawLicenseRequest(playerId: number, licenseId: string) {
+    const path =
+      environment.apiURL +
+      'user/players/' +
+      playerId +
+      '/withdraw_license.json';
+    return this.http.post<{ success: boolean }>(path, {
+      license_id: licenseId,
+    });
   }
 }

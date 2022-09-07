@@ -59,6 +59,7 @@
       "@floorball/admin/player": ["src/app/_modules/_admin/_player_admin"],
       "@floorball/admin/teams": ["src/app/_modules/_admin/_team_admin"],
       "@floorball/admin/schedule": ["src/app/_modules/_admin/_schedule_admin"],
+      "@floorball/admin/licenses": ["src/app/_modules/_admin/_license_admin"],
       "@floorball/models": ["src/app/_models"]
     }
   },

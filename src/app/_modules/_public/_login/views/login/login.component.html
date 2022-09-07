@@ -7,8 +7,10 @@
     </h1>
 
     <p class="font-bold text-center mb-4 text-red-600">
-      Aktuell sind wir in der Umstellung. Der Login für "normale" Benutzer ist
-      noch nicht freigegeben. :)
+      Wir sind noch mitten in der Entwicklung. Euer Feedback richtet ihr bitte
+      an eure zuständige SBK.<br />
+      Für Team und Vereinsmanager fällt die Unterscheidung zwischen den
+      Spielbetrieben in Zukunft komplett weg, ein Login für alles.
     </p>
 
     <form [formGroup]="loginForm" (ngSubmit)="loginSubmit(loginForm.value)">
@@ -43,6 +45,15 @@
           class="w-[150px] mx-auto font-bold text-black leading-[17px] text-sm px-2.5 md:px-5 py-1.5 md:py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
         >
           Login
+        </button>
+      </div>
+
+      <div class="flex flex-col mt-6">
+        <button
+          (click)="lostPassword(loginForm.value); (false)"
+          class="text-fb-gray-500 hover:text-black text-base text-center"
+        >
+          Passwort vergessen
         </button>
       </div>
     </form>

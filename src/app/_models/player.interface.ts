@@ -1,3 +1,4 @@
+
 import { ClubMembership } from './club-membership.interface';
 
 export interface Player {
@@ -9,4 +10,31 @@ export interface Player {
   nation_id: number;
   club_id?: number;
   clubs?: ClubMembership[];
+  security_id: string;
+}
+
+export interface PlayerWithLicense extends Player {
+  team_license: PlayerLicense;
+  current_status: {
+    created_at: Date;
+    created_by: number;
+    license_status_id: number;
+    created_by_name: string;
+    license_status: string;
+  };
+  can_withdraw: boolean;
+}
+
+export interface PlayerLicenseHistory {
+  created_at: Date;
+  created_by: number;
+  license_status_id: number;
+}
+
+export interface PlayerLicense {
+  id: string;
+  male: boolean;
+  history: PlayerLicenseHistory[];
+  team_id: number;
+  league_class_id: string;
 }

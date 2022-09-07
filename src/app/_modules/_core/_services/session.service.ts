@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { LoginAnswer, User } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { Observable, of, ReplaySubject } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, startWith } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
@@ -20,6 +20,7 @@ export class SessionService {
   public currentUser$: Observable<User | null> =
     this.currentUserSubject.asObservable();
   public isLoggedIn$: Observable<boolean> = this.currentUserSubject.pipe(
+    startWith(false),
     map((user) => !!user)
   );
 
@@ -51,7 +52,11 @@ export class SessionService {
         if (loginAnswer.success) {
           if (loginAnswer.user.permissions['login_blocked']) {
             this._notificationService.error(
-              'Der Login ist für dich noch nicht freigeschaltet. Sorry.'
+              'Der Login ist für dich nicht freigeschaltet. Sorry.',
+              {
+                autoClose: false,
+                keepAfterRouteChange: true,
+              }
             );
             this.logout(false);
           } else {
@@ -106,6 +111,71 @@ export class SessionService {
     setTimeout(() => {
       this.logoutSubscription.unsubscribe();
     }, 5000);
+  }
+
+  public lostPassword(username: string) {
+    const path = environment.apiURL + 'lost_password.json';
+    const data = {
+      username: username,
+    };
+    return this.http.post<LoginAnswer>(path, data).pipe(
+      map((loginAnswer) => {
+        this._notificationService.success(
+          'Wenn ein Zugang existiert, erhältst du eine E-Mail.',
+          {
+            autoClose: false,
+            keepAfterRouteChange: true,
+          }
+        );
+
+        return loginAnswer;
+      }),
+      catchError((error) => {
+        console.error(error);
+
+        this._notificationService.error('Fehler beim zurücksetzen', {
+          autoClose: false,
+          keepAfterRouteChange: false,
+        });
+
+        return of();
+      })
+    );
+  }
+
+  public resetPassword(
+    resetToken: string,
+    password: string,
+    password_confirmation: string
+  ) {
+    const path = environment.apiURL + 'reset_password.json';
+    const data = {
+      user: {
+        password: password,
+        password_confirmation: password_confirmation,
+      },
+      reset_token: resetToken,
+    };
+    return this.http.post<LoginAnswer>(path, data).pipe(
+      map((loginAnswer) => {
+        this._notificationService.success('Passwort erfolgreich gesetzt.', {
+          autoClose: true,
+          keepAfterRouteChange: true,
+        });
+
+        return loginAnswer;
+      }),
+      catchError((error) => {
+        console.error(error);
+
+        this._notificationService.error('Fehler beim Zurücksetzen', {
+          autoClose: false,
+          keepAfterRouteChange: false,
+        });
+
+        return of();
+      })
+    );
   }
 
   public canLoadPage(page: string): boolean {

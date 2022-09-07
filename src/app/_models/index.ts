@@ -23,3 +23,4 @@ export * from './club.interface';
 export * from './player.interface';
 export * from './nation.interface';
 export * from './club-membership.interface';
+export * from './license-hash.interface';

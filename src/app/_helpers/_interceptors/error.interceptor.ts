@@ -24,7 +24,8 @@ export class ErrorInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((err) => {
-        if (err.status === 401) {
+        console.log(request, next);
+        if (err.status === 401 && !request.url.includes('login.json')) {
           // auto logout if 401 response returned from api
           this.sessionService.logout(false, true, 'Bitte einloggen.', true);
         }

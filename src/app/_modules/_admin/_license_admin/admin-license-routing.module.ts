@@ -5,17 +5,17 @@ import * as Views from './views';
 
 const routes: Routes = [
   {
-    path: 'login',
-    component: Views.LoginComponent,
+    path: 'verwaltung/lizenzwesen/verein',
     pathMatch: 'full',
+    component: Views.LicenseClubIndexComponent,
     data: {
       scrollTop: true,
     },
   },
   {
-    path: 'neues-passwort/:resetToken',
-    component: Views.LostPasswordComponent,
+    path: 'verwaltung/lizenzwesen/team/:teamId',
     pathMatch: 'full',
+    component: Views.LicenseTeamDetailComponent,
     data: {
       scrollTop: true,
     },
@@ -26,4 +26,4 @@ const routes: Routes = [
   exports: [RouterModule],
   imports: [RouterModule.forChild(routes)],
 })
-export class PublicLoginRoutingModule {}
+export class AdminLicenseRoutingModule {}
