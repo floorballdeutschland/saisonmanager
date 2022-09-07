@@ -5,6 +5,14 @@ import * as Views from './views';
 
 const routes: Routes = [
   {
+    path: 'verwaltung/vereine/alle/spieler',
+    pathMatch: 'full',
+    component: Views.PlayerIndexComponent,
+    data: {
+      scrollTop: true,
+    },
+  },
+  {
     path: 'verwaltung/vereine/:clubId/spieler',
     pathMatch: 'full',
     component: Views.PlayerIndexComponent,

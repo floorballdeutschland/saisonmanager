@@ -18,6 +18,7 @@ import { ActivatedRoute } from '@angular/router';
 export class PlayerIndexComponent implements OnInit, OnDestroy {
   permissions: { [key: string]: boolean } = {};
   clubs: Club[] = [];
+  club_ids: number[] = [];
 
   private _destroy$ = new Subject<boolean>();
 
@@ -33,15 +34,21 @@ export class PlayerIndexComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this._route.params.subscribe((params) => {
-      if (params['clubId']) {
-        this.getClub(params['clubId']);
-      }
-    });
+      this._sessionService.currentUser$.subscribe({
+        next: (user) => {
+          if (user) {
+            this.permissions = user.permissions;
+            this.club_ids = user.club_ids;
 
-    this._sessionService.currentUser$.subscribe({
-      next: (user) => {
-        this.permissions = user?.permissions || {};
-      },
+            if (params['clubId']) {
+              this.getClub(parseInt(params['clubId']));
+            } else {
+              // get user clubs
+              this.club_ids.forEach((cid) => this.getClub(cid));
+            }
+          }
+        },
+      });
     });
   }
 
@@ -50,8 +57,9 @@ export class PlayerIndexComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
-  public getClub(id: string): void {
-    this._playerService.getClubPlayers(parseInt(id)).subscribe({
+  public getClub(id: number): void {
+    console.log(id);
+    this._playerService.getClubPlayers(id).subscribe({
       next: (result) => {
         this.clubs.push(result);
 
