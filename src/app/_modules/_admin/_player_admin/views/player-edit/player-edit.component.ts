@@ -262,6 +262,13 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             autoClose: true,
             keepAfterRouteChange: true,
           });
+          this._router.navigate([
+            '/',
+            'verwaltung',
+            'vereine',
+            this.club_id,
+            'spieler',
+          ]);
         },
         error: (error) => {
           console.error(error, {
