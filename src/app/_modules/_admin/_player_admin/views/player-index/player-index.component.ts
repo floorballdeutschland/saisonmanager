@@ -1,6 +1,7 @@
 import {
   ChangeDetectorRef,
   Component,
+  OnDestroy,
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
@@ -14,9 +15,9 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './player-index.component.html',
   encapsulation: ViewEncapsulation.None,
 })
-export class PlayerIndexComponent implements OnInit {
+export class PlayerIndexComponent implements OnInit, OnDestroy {
   permissions: { [key: string]: any } = {};
-  club?: Club;
+  clubs: Club[] = [];
 
   private _destroy$ = new Subject<boolean>();
 
@@ -52,7 +53,7 @@ export class PlayerIndexComponent implements OnInit {
   public getClub(id: string): void {
     this._playerService.getClubPlayers(parseInt(id)).subscribe({
       next: (result) => {
-        this.club = result;
+        this.clubs.push(result);
 
         this._cdr.markForCheck();
       },
