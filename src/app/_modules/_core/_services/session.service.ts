@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { LoginAnswer, User } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { Observable, of, ReplaySubject } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, startWith } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
@@ -20,6 +20,7 @@ export class SessionService {
   public currentUser$: Observable<User | null> =
     this.currentUserSubject.asObservable();
   public isLoggedIn$: Observable<boolean> = this.currentUserSubject.pipe(
+    startWith(false),
     map((user) => !!user)
   );
 
