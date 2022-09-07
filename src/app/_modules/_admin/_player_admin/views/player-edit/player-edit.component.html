@@ -175,7 +175,7 @@
                   <div class="col-span-3">
                     <p class="font-bold">
                       {{ getClubNameById(additionalClub.club_id) }}
-                      {{ additionalClub.club_id }}
+                      ({{ additionalClub.club_id }})
                     </p>
                     <p>
                       <ng-container *ngIf="additionalClub.created_at"
@@ -243,7 +243,7 @@
               <div class="grid grid-cols-1 gap-4">
                 <div *ngFor="let club of homeClubs()">
                   <p class="font-bold">
-                    {{ getClubNameById(club.club_id) }} {{ club.club_id }}
+                    {{ getClubNameById(club.club_id) }} ({{ club.club_id }})
                   </p>
                   <p>
                     <ng-container *ngIf="club.created_at"
@@ -270,7 +270,12 @@
                 <select [(ngModel)]="transferClubId">
                   <option value="0">Verein auswählen...</option>
                   <ng-container *ngFor="let club of allClubs">
-                    <option [value]="club.id" *ngIf="!isHomeClub(club.id)">
+                    <option
+                      [value]="club.id"
+                      *ngIf="
+                        !isAdditionalClubActive(club.id) && !isHomeClub(club.id)
+                      "
+                    >
                       {{ club.name }}
                     </option>
                   </ng-container>
