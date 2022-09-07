@@ -23,6 +23,11 @@ export class ClubService {
     return this.http.get<Club>(path);
   }
 
+  public getAdminClubAll() {
+    const path = environment.apiURL + 'admin/clubs/all.json';
+    return this.http.get<Club[]>(path);
+  }
+
   public adminCreateClub(club: Club) {
     const path = environment.apiURL + 'admin/clubs.json';
     return this.http.post<Club>(path, club);

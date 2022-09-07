@@ -72,6 +72,18 @@
                   >
                     bearbeiten
                   </a>
+                  <a
+                    class="font-bold text-black leading-[17px] text-sm px-2 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    [routerLink]="[
+                      '/',
+                      'verwaltung',
+                      'vereine',
+                      club.id,
+                      'spieler'
+                    ]"
+                  >
+                    Spieler bearbeiten
+                  </a>
                 </div>
               </ng-container>
 

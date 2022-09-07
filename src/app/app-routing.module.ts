@@ -29,6 +29,11 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/player').then((m) => m.AdminPlayerModule),
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/teams').then((m) => m.AdminTeamModule),
       },
       {
