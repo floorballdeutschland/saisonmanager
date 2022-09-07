@@ -224,7 +224,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           ]);
         },
         error: (error) => {
-          console.error(error, {
+          this._notificationService.error(error, {
             autoClose: false,
             keepAfterRouteChange: false,
           });
@@ -247,7 +247,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error(error, {
+          this._notificationService.error(error, {
             autoClose: false,
             keepAfterRouteChange: false,
           });
@@ -274,7 +274,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           ]);
         },
         error: (error) => {
-          console.error(error, {
+          this._notificationService.error(error, {
             autoClose: false,
             keepAfterRouteChange: false,
           });

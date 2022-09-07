@@ -163,7 +163,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
         this._router.navigate(['verwaltung', 'vereine']);
       },
       error: (error) => {
-        console.error(error, {
+        this._notificationService.error(error, {
           autoClose: false,
           keepAfterRouteChange: false,
         });

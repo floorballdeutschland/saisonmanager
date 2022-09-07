@@ -207,7 +207,7 @@ export class GameDayEditComponent implements OnInit, OnDestroy {
         this._router.navigate(['verwaltung', 'ligen']);
       },
       error: (error) => {
-        console.error(error, {
+        this._notificationService.error(error, {
           autoClose: false,
           keepAfterRouteChange: false,
         });
