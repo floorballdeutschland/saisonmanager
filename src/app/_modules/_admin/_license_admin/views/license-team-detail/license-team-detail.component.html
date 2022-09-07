@@ -96,7 +96,7 @@
                 <div>
                   <select name="player_id" [(ngModel)]="playerId">
                     <option
-                      *ngFor="let p of licenseHash.other_players"
+                      *ngFor="let p of licenseHash.other_players | sortPlayers"
                       [ngValue]="p.id"
                     >
                       {{ p.last_name }}, {{ p.first_name }} ({{

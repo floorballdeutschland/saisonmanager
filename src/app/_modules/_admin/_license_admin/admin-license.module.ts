@@ -8,6 +8,7 @@ import { UikitTeamModule } from '@floorball/uikit/team';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 
 import * as Views from './views';
+import { SortPlayersPipe } from 'src/app/_helpers';
 
 @NgModule({
   imports: [
@@ -22,6 +23,7 @@ import * as Views from './views';
   declarations: [
     Views.LicenseClubIndexComponent,
     Views.LicenseTeamDetailComponent,
+    SortPlayersPipe,
   ],
 })
 export class AdminLicenseModule {}
