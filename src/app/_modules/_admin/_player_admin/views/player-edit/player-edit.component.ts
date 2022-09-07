@@ -242,6 +242,9 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             autoClose: true,
             keepAfterRouteChange: true,
           });
+          if (player?.id) {
+            this.getPlayer(player.id.toString());
+          }
         },
         error: (error) => {
           console.error(error, {
