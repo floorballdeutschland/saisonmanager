@@ -9,14 +9,25 @@
           >Ligaverwaltung</a
         >
       </li>
-      <!--      TODO: Vorbereitet für später, wenn Ladegeschwindigkeiten optimiert sind -->
-      <!--      <li class="mt-4 mb-4" *ngIf="showItem('menu_item_league_admin')">-->
-      <!--        <a-->
-      <!--          class="font-bold text-fb-gray-500 hover:text-black text-base"-->
-      <!--          [routerLink]="['/', 'verwaltung', 'spieler']"-->
-      <!--        >Spielerverwaltung</a-->
-      <!--        >-->
-      <!--      </li>-->
+      <ng-container *ngIf="false">
+        <!-- TODO: Vorbereitet für später, wenn Ladegeschwindigkeiten optimiert sind  -->
+        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_league_admin')">
+          <a
+            class="font-bold text-fb-gray-500 hover:text-black text-base"
+            [routerLink]="['/', 'verwaltung', 'spieler']"
+            >Spielerverwaltung</a
+          >
+        </li>
+      </ng-container>
+
+      <li class="mt-4 mb-4" *ngIf="showItem('menu_item_player_admin_vm')">
+        <a
+          class="font-bold text-fb-gray-500 hover:text-black text-base"
+          [routerLink]="['/', 'verwaltung', 'vereine', 'alle', 'spieler']"
+          >Spielerverwaltung</a
+        >
+      </li>
+
       <li class="mt-4 mb-4" *ngIf="showItem('menu_item_league_admin')">
         <a
           class="font-bold text-fb-gray-500 hover:text-black text-base"

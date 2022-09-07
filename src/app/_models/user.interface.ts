@@ -3,7 +3,8 @@ export interface User {
   email: string;
   username: string;
   name: string;
-  permissions: { [key: string]: boolean }; // TODO: type this later
+  permissions: { [key: string]: boolean };
+  club_ids: number[];
 }
 
 export interface LoginAnswer {
