@@ -168,8 +168,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  public canEdit(): boolean {
-    return this.permissions['update_player'] || false;
+  public can(permissionString: string): boolean {
+    return this.permissions[permissionString] || false;
   }
 
   public error(player: Player): boolean {

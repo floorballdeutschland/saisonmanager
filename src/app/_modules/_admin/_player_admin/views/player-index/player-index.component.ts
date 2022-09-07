@@ -61,6 +61,6 @@ export class PlayerIndexComponent implements OnInit, OnDestroy {
   }
 
   public canEdit(): boolean {
-    return this.permissions['update_player'] || false;
+    return this.permissions['player_update'] || false;
   }
 }
