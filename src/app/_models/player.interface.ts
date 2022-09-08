@@ -1,4 +1,3 @@
-
 import { ClubMembership } from './club-membership.interface';
 
 export interface Player {
@@ -10,7 +9,7 @@ export interface Player {
   nation_id: number;
   club_id?: number;
   clubs?: ClubMembership[];
-  security_id: string;
+  security_id?: string;
 }
 
 export interface PlayerWithLicense extends Player {
