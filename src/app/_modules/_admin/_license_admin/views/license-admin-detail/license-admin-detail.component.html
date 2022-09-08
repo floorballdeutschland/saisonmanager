@@ -159,20 +159,26 @@
       </div>
 
       <div class="flex flex-col items-start justify-start">
-        <a
+        <button
           class="w-full h-10 font-bold text-center text-green-700 leading-[17px] text-sm px-5 py-2.5 mr-4 mb-2 border bg-green-100 hover:bg-green-200 border-green-900 rounded-[5px] cursor-pointer"
+          (click)="approveLicense(player)"
         >
-          Annehmen
-        </a>
-        <a
+          Lizenz erteilen
+        </button>
+        <button
           class="w-full h-10 font-bold text-center text-red-700 leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-red-100 hover:bg-fb-gray-200 border-red-900 rounded-[5px] cursor-pointer"
+          (click)="cancelLicense(player)"
         >
-          Ablehnen
-        </a>
+          Antrag ablehnen
+        </button>
 
         <div class="mt-2">
           <label class="font-bold text-[14px] leading-[12px]">Begründung</label>
-          <input type="text" class="w-full rounded" />
+          <input
+            type="text"
+            class="w-full rounded"
+            [(ngModel)]="reasons[player.team_license.license.id]"
+          />
         </div>
       </div>
     </div>

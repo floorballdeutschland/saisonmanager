@@ -6,7 +6,11 @@ import {
   TeamWithPlayers,
   PlayerWithLicense,
 } from '@floorball/types';
-import { ClubService } from '@floorball/core';
+import {
+  ClubService,
+  NotificationService,
+  PlayerService,
+} from '@floorball/core';
 
 @Component({
   selector: 'fb-license-admin-detail',
@@ -29,9 +33,16 @@ export class LicenseAdminDetailComponent implements OnInit {
   @Input()
   license!: PlayerLicense;
 
+  reasons: { [key: string]: string } = {};
+
+  hidePlayer: { [key: number]: boolean } = {};
+
   open = false;
 
-  constructor(private _clubService: ClubService) {}
+  constructor(
+    private _playerService: PlayerService,
+    private _notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.open = this.initiallyOpen;
@@ -54,5 +65,55 @@ export class LicenseAdminDetailComponent implements OnInit {
       age--;
     }
     return age;
+  }
+
+  public approveLicense(player: PlayerWithLicense) {
+    const licenseId = player.team_license.license.id;
+
+    this._playerService
+      .updateLicenseStatus(player.id, licenseId, 1, this.reasons[licenseId])
+      .subscribe({
+        next: (_) => {
+          this.hidePlayer[player.id] = true;
+          this._notificationService.success(
+            'Lizenz für Spieler ' +
+              player.first_name +
+              ' ' +
+              player.last_name +
+              ' (' +
+              player.id +
+              ') erteilt',
+            {
+              autoClose: true,
+              keepAfterRouteChange: false,
+            }
+          );
+        },
+      });
+  }
+
+  public cancelLicense(player: PlayerWithLicense) {
+    const licenseId = player.team_license.license.id;
+
+    this._playerService
+      .updateLicenseStatus(player.id, licenseId, 3, this.reasons[licenseId])
+      .subscribe({
+        next: (_) => {
+          this.hidePlayer[player.id] = true;
+          this._notificationService.success(
+            'Lizenzantrag für Spieler ' +
+              player.first_name +
+              ' ' +
+              player.last_name +
+              ' (' +
+              player.id +
+              ') abgelehnt',
+            {
+              autoClose: true,
+              keepAfterRouteChange: false,
+            }
+          );
+        },
+      });
   }
 }

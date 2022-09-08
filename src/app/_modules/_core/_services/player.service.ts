@@ -50,4 +50,23 @@ export class PlayerService {
       club_id: parseInt(clubId, 10),
     });
   }
+
+  public updateLicenseStatus(
+    playerId: number,
+    licenseId: string,
+    licenseStatusId: number,
+    reason: string
+  ) {
+    const path =
+      environment.apiURL +
+      'admin/players/' +
+      playerId +
+      '/handle_license_request.json';
+    return this.http.post<Player>(path, {
+      player_id: playerId,
+      license_id: licenseId,
+      license_status_id: licenseStatusId,
+      reason: reason,
+    });
+  }
 }

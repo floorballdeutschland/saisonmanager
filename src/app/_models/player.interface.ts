@@ -14,7 +14,18 @@ export interface Player {
 }
 
 export interface PlayerWithLicense extends Player {
-  team_license: PlayerLicense;
+  team_license: {
+    license: PlayerLicense;
+
+    last_status: {
+      created_at: string;
+      created_by: number;
+      license_status_id: number;
+    };
+    last_status_id: string;
+    approved_at?: number;
+    requested_at: string;
+  };
   current_status: {
     created_at: Date;
     created_by: number;
