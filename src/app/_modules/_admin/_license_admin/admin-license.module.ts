@@ -26,6 +26,7 @@ import { LicenseAdminDetailComponent } from './views/license-admin-detail/licens
   declarations: [
     Views.LicenseClubIndexComponent,
     Views.LicenseTeamDetailComponent,
+    Views.LicenseAdminTeamEntryComponent,
     SortPlayersPipe,
     LicenseAdminIndexComponent,
     LicenseAdminLeagueDetailComponent,

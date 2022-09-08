@@ -1,5 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Club, PlayerLicense, Player } from '@floorball/types';
+import {
+  Club,
+  PlayerLicense,
+  Player,
+  TeamWithPlayers,
+  PlayerWithLicense,
+} from '@floorball/types';
 import { ClubService } from '@floorball/core';
 
 @Component({
@@ -12,10 +18,10 @@ export class LicenseAdminDetailComponent implements OnInit {
   initiallyOpen = false;
 
   @Input()
-  player!: Player;
+  player!: PlayerWithLicense;
 
   @Input()
-  club!: Club;
+  team!: TeamWithPlayers;
 
   @Input()
   allClubs!: Club[];

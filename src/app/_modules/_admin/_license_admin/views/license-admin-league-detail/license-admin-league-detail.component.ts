@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { Club } from '@floorball/types';
+import { Club, TeamWithPlayers } from '@floorball/types';
 import { ClubService, LeagueService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
   styleUrls: ['./license-admin-league-detail.component.scss'],
 })
 export class LicenseAdminLeagueDetailComponent implements OnInit {
-  clubs: Club[] = [];
+  teams: TeamWithPlayers[] = [];
   allClubs: Club[] = [];
 
   constructor(
@@ -31,8 +31,8 @@ export class LicenseAdminLeagueDetailComponent implements OnInit {
   public getGameOperations(): void {
     this._route.params.subscribe((params) => {
       this._leagueService.getAdminLeagueLicenses(params['leagueId']).subscribe({
-        next: (clubs) => {
-          this.clubs = clubs;
+        next: (teams) => {
+          this.teams = teams;
 
           this._cdr.markForCheck();
         },

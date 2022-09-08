@@ -10,6 +10,7 @@ import {
   ScorerEntry,
   TableEntry,
   Team,
+  TeamWithPlayers,
 } from '@floorball/types';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -184,6 +185,6 @@ export class LeagueService {
   public getAdminLeagueLicenses(leagueId: number) {
     const path =
       environment.apiURL + '/admin/leagues/' + leagueId + '/licenses.json';
-    return this.http.get<Club[]>(path);
+    return this.http.get<TeamWithPlayers[]>(path);
   }
 }

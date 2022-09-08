@@ -1,3 +1,5 @@
+import { PlayerWithLicense } from './player.interface';
+
 export interface Team {
   id: number;
   name: string;
@@ -17,4 +19,8 @@ export interface Team {
   logo_small: string;
   contact_person?: string;
   contact_email?: string;
+}
+
+export interface TeamWithPlayers extends Team {
+  players: PlayerWithLicense[];
 }
