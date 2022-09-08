@@ -161,8 +161,13 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   public getPlayersNationString(): string {
-    if (this.player?.nation_id && this.nations) {
-      return this.nations[this.player.nation_id].name || '';
+    const player = this.player;
+
+    if (player && this.nations) {
+      const foundNations = this.nations.filter(
+        (n) => n.id === player.nation_id
+      );
+      return foundNations ? foundNations[0].name : '';
     }
 
     return '';
@@ -174,8 +179,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     if (p === 'player_create_update') {
       p = this.editMode ? 'update_player' : 'create_player';
     }
-
-    console.log(this.permissions, permissionString, p);
 
     return this.permissions[p] || false;
   }
