@@ -21,7 +21,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   encapsulation: ViewEncapsulation.None,
 })
 export class PlayerEditComponent implements OnInit, OnDestroy {
-  permissions: { [key: string]: any } = {};
+  permissions: { [key: string]: boolean } = {};
   player?: Player;
   nations?: Nation[] = [];
   allClubs: Club[] = [];
@@ -169,7 +169,15 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   public can(permissionString: string): boolean {
-    return this.permissions[permissionString] || false;
+    let p = permissionString;
+
+    if (p === 'player_create_update') {
+      p = this.editMode ? 'update_player' : 'create_player';
+    }
+
+    console.log(this.permissions, permissionString, p);
+
+    return this.permissions[p] || false;
   }
 
   public error(player: Player): boolean {
