@@ -56,7 +56,7 @@ export class LicenseAdminDetailComponent implements OnInit {
     return this.allClubs.find((club) => club.id === id)?.name || '(unbekannt)';
   }
 
-  public calcularteAge(dateString: string): number {
+  public calculateAge(dateString: string): number {
     const today = new Date();
     const birthDate = new Date(dateString);
     let age = today.getFullYear() - birthDate.getFullYear();
