@@ -12,7 +12,6 @@ import { AdditionalClubFilterPipe, SortPlayersPipe } from 'src/app/_helpers';
 import { LicenseAdminIndexComponent } from './views/license-admin-index/license-admin-index.component';
 import { LicenseAdminLeagueDetailComponent } from './views/license-admin-league-detail/license-admin-league-detail.component';
 import { LicenseAdminDetailComponent } from './views/license-admin-detail/license-admin-detail.component';
-import { FlattenTeamLicensesPipe } from '../../../_helpers/_pipes/flatten-team-licenses.pipe';
 
 @NgModule({
   imports: [
@@ -33,7 +32,6 @@ import { FlattenTeamLicensesPipe } from '../../../_helpers/_pipes/flatten-team-l
     LicenseAdminLeagueDetailComponent,
     LicenseAdminDetailComponent,
     AdditionalClubFilterPipe,
-    FlattenTeamLicensesPipe,
   ],
 })
 export class AdminLicenseModule {}
