@@ -37,4 +37,5 @@ export interface PlayerLicense {
   history: PlayerLicenseHistory[];
   team_id: number;
   league_class_id: string;
+  requested_at: string;
 }

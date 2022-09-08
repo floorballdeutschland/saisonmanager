@@ -45,7 +45,14 @@ export class LicenseAdminDetailComponent implements OnInit {
     return this.allClubs.find((club) => club.id === id)?.name || '(unbekannt)';
   }
 
-  // public getTeamById(id: number) {
-  //   return this._clubService.getAdminTeam(id)
-  // }
+  public calcularteAge(dateString: string): number {
+    const today = new Date();
+    const birthDate = new Date(dateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  }
 }

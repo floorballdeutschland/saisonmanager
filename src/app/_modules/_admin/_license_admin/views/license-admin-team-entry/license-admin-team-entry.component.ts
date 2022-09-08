@@ -1,10 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import {
   Club,
   PlayerLicense,
   Player,
   TeamWithPlayers,
   PlayerWithLicense,
+  Team,
 } from '@floorball/types';
 import { ClubService } from '@floorball/core';
 
@@ -16,12 +17,18 @@ import { ClubService } from '@floorball/core';
 export class LicenseAdminTeamEntryComponent implements OnInit {
   @Input()
   teamId!: number;
-  constructor(private _clubService: ClubService) {}
+
+  team?: Team;
+  constructor(
+    private _clubService: ClubService,
+    private _cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this._clubService.getAdminTeam(this.teamId).subscribe({
-      next: (result) => {
-        console.log(result);
+      next: (team) => {
+        this.team = team;
+        this._cdr.markForCheck();
       },
     });
   }

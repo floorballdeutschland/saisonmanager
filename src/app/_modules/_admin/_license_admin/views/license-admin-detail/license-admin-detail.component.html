@@ -47,13 +47,16 @@
           <div>
             <p class="text-sm text-gray-900">
               <span class="font-bold">Beantragt:</span>
-              <!-- {{
-              (license.history[0].created_at
-              | date: "EEEE, dd.MM.yyyy HH:mm") || ""
-              }} -->
+              {{
+                (player.team_license.requested_at
+                  | date: "EEEE, dd.MM.yyyy HH:mm") || ""
+              }}
               Uhr
             </p>
-            <p class="mt-2 flex items-center text-sm text-gray-500">
+            <p
+              class="mt-2 flex items-center text-sm text-gray-500"
+              *ngIf="false"
+            >
               <!-- Heroicon name: mini/check-circle -->
               <svg
                 class="mr-1.5 h-5 w-5 flex-shrink-0 text-green-400"
@@ -117,39 +120,52 @@
     class="p-4 bg-fb-gray-300 border-b border-fb-gray-600 shadow"
     *ngIf="open"
   >
-    <div class="grid gap-4 md:grid-cols-6">
-      <div class="col-span-2">
-        <p>Lizenzen</p>
-        <ul>
-          <li *ngFor="let license of player.licenses || []">
-            <fb-license-admin-team-entry
-              [teamId]="license.team_id"
-            ></fb-license-admin-team-entry>
-          </li>
-        </ul>
+    <div class="grid gap-4 lg:grid-cols-3">
+      <div class="grid gap-4 md:grid-cols-2 lg:col-span-2">
+        <div class="md:col-span-2">
+          <p class="uppercase font-bold text-gray-400 text-sm mb-3">Alter</p>
+          <p class="font-bold">{{ calcularteAge(player.birthdate) }} Jahre</p>
+          <p class="text-[14px]">
+            Geb. {{ player.birthdate | date: "dd.MM.yyyy" }}
+          </p>
+        </div>
+
+        <div>
+          <p class="uppercase font-bold text-gray-400 text-sm mb-3">Lizenzen</p>
+          <ul class="grid gap-4">
+            <li *ngFor="let license of player.licenses || []">
+              <fb-license-admin-team-entry
+                [teamId]="license.team_id"
+              ></fb-license-admin-team-entry>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <p class="uppercase font-bold text-gray-400 text-sm mb-3">
+            Freigaben
+          </p>
+          <ul class="grid gap-2">
+            <li
+              class="text-[14px]"
+              *ngFor="
+                let clubs of player.clubs || [] | additionalClubFilter: true
+              "
+            >
+              {{ getClubNameById(clubs.club_id) }}
+            </li>
+          </ul>
+        </div>
       </div>
 
-      <div class="col-span-2">
-        <p>Freigaben</p>
-        <ul>
-          <li
-            *ngFor="
-              let clubs of player.clubs || [] | additionalClubFilter: true
-            "
-          >
-            {{ getClubNameById(clubs.club_id) }}
-          </li>
-        </ul>
-      </div>
-
-      <div class="grid gap-2 col-span-2">
+      <div class="flex flex-col items-start justify-start">
         <a
-          class="w-full font-bold text-center text-green-700 leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-green-100 hover:bg-green-200 border-green-900 rounded-[5px] cursor-pointer"
+          class="w-full h-10 font-bold text-center text-green-700 leading-[17px] text-sm px-5 py-2.5 mr-4 mb-2 border bg-green-100 hover:bg-green-200 border-green-900 rounded-[5px] cursor-pointer"
         >
           Annehmen
         </a>
         <a
-          class="w-full font-bold text-center text-red-700 leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-red-100 hover:bg-fb-gray-200 border-red-900 rounded-[5px] cursor-pointer"
+          class="w-full h-10 font-bold text-center text-red-700 leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-red-100 hover:bg-fb-gray-200 border-red-900 rounded-[5px] cursor-pointer"
         >
           Ablehnen
         </a>
