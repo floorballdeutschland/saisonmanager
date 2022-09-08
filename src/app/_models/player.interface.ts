@@ -9,6 +9,7 @@ export interface Player {
   nation_id: number;
   club_id?: number;
   clubs?: ClubMembership[];
+  licenses?: PlayerLicense[];
   security_id?: string;
 }
 

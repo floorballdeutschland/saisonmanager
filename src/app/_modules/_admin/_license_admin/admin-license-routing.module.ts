@@ -20,6 +20,22 @@ const routes: Routes = [
       scrollTop: true,
     },
   },
+  {
+    path: 'verwaltung/lizenzwesen/verband',
+    pathMatch: 'full',
+    component: Views.LicenseAdminIndexComponent,
+    data: {
+      scrollTop: true,
+    },
+  },
+  {
+    path: 'verwaltung/lizenzwesen/verband/liga/:leagueId',
+    pathMatch: 'full',
+    component: Views.LicenseAdminLeagueDetailComponent,
+    data: {
+      scrollTop: true,
+    },
+  },
 ];
 
 @NgModule({

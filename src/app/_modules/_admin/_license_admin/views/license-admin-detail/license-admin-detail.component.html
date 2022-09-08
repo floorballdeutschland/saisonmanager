@@ -1,0 +1,145 @@
+<li>
+  <a class="block hover:bg-fb-gray-300" (click)="toggleDetails()">
+    <div class="flex items-center py-4">
+      <div class="flex min-w-0 flex-1 items-start">
+        <div class="flex-shrink-0 text-gray-400">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="0.7"
+            stroke="currentColor"
+            class="w-14 h-14"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+          </svg>
+        </div>
+        <div class="min-w-0 grid gap-4 px-4 md:grid md:grid-cols-2 md:gap-4">
+          <div>
+            <p class="truncate text-sm font-bold">
+              {{ player?.last_name }}, {{ player?.first_name }} ({{
+                player.id
+              }})
+            </p>
+            <p class="mt-2 flex items-center text-sm text-gray-500">
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                data-prefix="fas"
+                data-icon="shield-alt"
+                class="text-fb-gray-400 p-0.5 w-5 h-5 object-contain"
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 512 512"
+              >
+                <path
+                  fill="currentColor"
+                  d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
+                ></path>
+              </svg>
+              <span class="truncate pl-1">{{ club?.name }}</span>
+            </p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-900">
+              <span class="font-bold">Beantragt:</span>
+              {{
+                (license.history[0].created_at
+                  | date: "EEEE, dd.MM.yyyy HH:mm") || ""
+              }}
+              Uhr
+            </p>
+            <p class="mt-2 flex items-center text-sm text-gray-500">
+              <!-- Heroicon name: mini/check-circle -->
+              <svg
+                class="mr-1.5 h-5 w-5 flex-shrink-0 text-green-400"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Prüfungen erfolgreich
+            </p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <ng-container *ngIf="open">
+          <!-- Heroicon name: mini/chevron-up -->
+          <svg
+            class="h-5 w-5 text-gray-400"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 20 20"
+            stroke-width="1.5"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M4.5 15.75l7.5-7.5 7.5 7.5"
+            />
+          </svg>
+        </ng-container>
+
+        <ng-container *ngIf="!open">
+          <!-- Heroicon name: mini/chevron-down -->
+          <svg
+            class="h-5 w-5 text-gray-400"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 20 20"
+            stroke-width="1.5"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+            />
+          </svg>
+        </ng-container>
+      </div>
+    </div>
+  </a>
+
+  <div
+    class="p-4 bg-fb-gray-300 border-b border-fb-gray-600 shadow"
+    *ngIf="open"
+  >
+    <div class="grid gap-4 md:grid-cols-3">
+      <div>
+        <p>Lizenzen</p>
+        <ul>
+          <li *ngFor="let license of player.licenses || []">
+            {{ license.team_id }}
+            <!--            {{ getTeamById(license.team_id) }}-->
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <p>Freigaben</p>
+        <ul>
+          <li
+            *ngFor="
+              let clubs of player.clubs || [] | additionalClubFilter: true
+            "
+          >
+            {{ getClubNameById(clubs.club_id) }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</li>

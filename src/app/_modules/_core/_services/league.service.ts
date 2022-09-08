@@ -180,4 +180,10 @@ export class LeagueService {
       environment.apiURL + 'admin/league/clubs/' + type + '/' + id + '.json';
     return this.http.get<Club[]>(path);
   }
+
+  public getAdminLeagueLicenses(leagueId: number) {
+    const path =
+      environment.apiURL + '/admin/leagues/' + leagueId + '/licenses.json';
+    return this.http.get<Club[]>(path);
+  }
 }
