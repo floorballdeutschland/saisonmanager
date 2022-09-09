@@ -2,12 +2,12 @@
   (click)="handleButtonClick(type + '-' + team)"
   [ngClass]="
     isActive()
-      ? 'flex-col w-full font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-fb-gray-200 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer'
-      : 'flex-col w-full font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer'
+      ? 'w-full font-bold text-black leading-[17px] text-sm py-2.5 border bg-fb-gray-200 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer'
+      : 'w-full font-bold text-black leading-[17px] text-sm py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer'
   "
 >
-  <span class="w-full block mb-1 text-center">{{ getEventString() }}</span>
-  <span class="w-full block text-xs text-center font-normal">{{
-    team_name
-  }}</span>
+  <p class="block w-full px-5 mb-1 text-center">{{ getEventString() }}</p>
+  <p class="block w-full px-5 text-xs text-center font-normal">
+    {{ team_name }}
+  </p>
 </button>
