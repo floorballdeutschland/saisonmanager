@@ -68,6 +68,18 @@ export class LicenseTeamDetailComponent implements OnInit {
       });
   }
 
+  public recreateLicenseRequest(playerId: number) {
+    // check if set!
+    this._clubService
+      .userCreateLicenseRequest(playerId, this.teamId)
+      .subscribe({
+        next: (result) => {
+          // reload user licenses
+          this.loadUserLicenses();
+        },
+      });
+  }
+
   public withdrawRequest(playerId: number, licenseId: string) {
     this._clubService
       .userWithdrawLicenseRequest(playerId, licenseId)
