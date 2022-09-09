@@ -4,6 +4,7 @@ import * as Molecules from './components/molecules';
 import * as Organisms from './components/organisms';
 import { RouterModule } from '@angular/router';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { MatchEventButtonComponent } from './components/organisms';
 
 @NgModule({
   imports: [CommonModule, RouterModule, UikitCommonModule],
@@ -18,6 +19,8 @@ import { UikitCommonModule } from '@floorball/uikit/common';
     Organisms.NextMatchListComponent,
     Organisms.MatchHistoryComponent,
     Organisms.MatchHeaderComponent,
+    Organisms.MatchEventFormComponent,
+    Organisms.MatchEventButtonComponent,
   ],
   exports: [
     Organisms.MatchPairingListComponent,
@@ -26,6 +29,8 @@ import { UikitCommonModule } from '@floorball/uikit/common';
     Organisms.NextMatchListComponent,
     Organisms.MatchHistoryComponent,
     Organisms.MatchHeaderComponent,
+    Organisms.MatchEventFormComponent,
+    MatchEventButtonComponent,
   ],
 })
 export class UikitMatchesModule {}

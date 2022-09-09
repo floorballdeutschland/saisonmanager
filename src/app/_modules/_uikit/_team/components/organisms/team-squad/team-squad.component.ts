@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
   OnInit,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -22,10 +24,10 @@ import { Title } from '@angular/platform-browser';
   encapsulation: ViewEncapsulation.None,
 })
 export class TeamSquadComponent implements OnInit {
-  @Input() onClose: any;
   @Input() players!: GamePlayerEntry[];
   @Input() team!: string;
   @Input() teamId!: number;
+  @Output() handleClose: EventEmitter<void> = new EventEmitter<void>();
 
   licenseHash!: LicenseHash;
   captainPlayerId: number | null = null;
@@ -78,5 +80,9 @@ export class TeamSquadComponent implements OnInit {
     if (captain) {
       this.captainPlayerId = captain.player_id;
     }
+  }
+
+  onClose(): void {
+    this.handleClose.emit();
   }
 }
