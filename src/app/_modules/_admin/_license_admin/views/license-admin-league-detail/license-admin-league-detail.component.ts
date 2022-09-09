@@ -13,6 +13,8 @@ export class LicenseAdminLeagueDetailComponent implements OnInit {
   teams: TeamWithPlayers[] = [];
   allClubs: Club[] = [];
 
+  handledPlayerIds: number[] = [];
+
   constructor(
     private _leagueService: LeagueService,
     private _clubService: ClubService,
@@ -47,5 +49,9 @@ export class LicenseAdminLeagueDetailComponent implements OnInit {
         this._cdr.markForCheck();
       },
     });
+  }
+
+  public handledPlayer(playerId: number) {
+    this.handledPlayerIds.push(playerId);
   }
 }

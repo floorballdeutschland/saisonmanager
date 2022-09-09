@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   Club,
   PlayerLicense,
@@ -32,6 +32,8 @@ export class LicenseAdminDetailComponent implements OnInit {
 
   @Input()
   license!: PlayerLicense;
+
+  @Output() handledPlayer = new EventEmitter<number>();
 
   reasons: { [key: string]: string } = {};
 
@@ -74,6 +76,7 @@ export class LicenseAdminDetailComponent implements OnInit {
       .updateLicenseStatus(player.id, licenseId, 1, this.reasons[licenseId])
       .subscribe({
         next: (_) => {
+          this.handledPlayer.emit(player.id);
           this.hidePlayer[player.id] = true;
           this._notificationService.success(
             'Lizenz für Spieler ' +
@@ -99,6 +102,7 @@ export class LicenseAdminDetailComponent implements OnInit {
       .updateLicenseStatus(player.id, licenseId, 3, this.reasons[licenseId])
       .subscribe({
         next: (_) => {
+          this.handledPlayer.emit(player.id);
           this.hidePlayer[player.id] = true;
           this._notificationService.success(
             'Lizenzantrag für Spieler ' +

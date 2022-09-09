@@ -22,7 +22,9 @@ export interface PlayerWithLicense extends Player {
       created_by: number;
       license_status_id: number;
     };
-    last_status_id: string;
+    last_status_id: number;
+    last_status_code: string;
+
     approved_at?: number;
     requested_at: string;
   };

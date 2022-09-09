@@ -44,7 +44,12 @@
               Offene Lizenzanträge
             </div>
             <ul role="list" class="divide-y divide-gray-400">
-              <ng-container *ngFor="let team of teams; let teamIndex = index">
+              <ng-container
+                *ngFor="
+                  let team of teams | clubPlayerLicense: 2:false;
+                  let teamIndex = index
+                "
+              >
                 <ng-container
                   *ngFor="let player of team.players; let playerIndex = index"
                 >
@@ -53,6 +58,7 @@
                     [player]="player"
                     [team]="team"
                     [allClubs]="allClubs"
+                    (handledPlayer)="handledPlayer($event)"
                   ></fb-license-admin-detail>
                 </ng-container>
               </ng-container>
@@ -62,12 +68,17 @@
 
         <div
           class="bg-white my-[5px] py-[15px] px-[30px]"
-          *ngFor="let team of teams"
+          *ngFor="let team of teams | clubPlayerLicense: 2:true"
         >
           <div class="uppercase font-bold text-gray-400 text-sm mb-5">
             {{ team.name }}
           </div>
-          <div class="flex flex-col gap-2"></div>
+          <div class="flex flex-col gap-2">
+            <p *ngFor="let player of team.players">
+              {{ player.last_name }}, {{ player.first_name }}
+              {{ player.team_license.last_status_code }}
+            </p>
+          </div>
         </div>
       </div>
     </div>
