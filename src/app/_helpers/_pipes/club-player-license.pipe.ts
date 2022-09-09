@@ -8,15 +8,23 @@ export class ClubPlayerLicensePipe implements PipeTransform {
     requestStatus: number,
     negate: boolean
   ): TeamWithPlayers[] {
-    return allTeams.map((team) => {
-      const t = { ...team };
-      t.players = team.players.filter((player) => {
+    const teams: TeamWithPlayers[] = [];
+
+    allTeams.forEach((team) => {
+      const players = team.players.filter((player) => {
         return negate
-          ? player.team_license.last_status_id == requestStatus
-          : player.team_license.last_status_id == requestStatus;
+          ? player.team_license.last_status.license_status_id == requestStatus
+          : player.team_license.last_status.license_status_id == requestStatus;
       });
 
-      return t;
+      if (players.length) {
+        teams.push({
+          ...team,
+          players,
+        });
+      }
     });
+
+    return teams;
   }
 }

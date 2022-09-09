@@ -53,5 +53,6 @@ export class LicenseAdminLeagueDetailComponent implements OnInit {
 
   public handledPlayer(playerId: number) {
     this.handledPlayerIds.push(playerId);
+    this.getGameOperations();
   }
 }

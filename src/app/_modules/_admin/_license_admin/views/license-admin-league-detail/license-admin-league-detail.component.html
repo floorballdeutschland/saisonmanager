@@ -44,18 +44,24 @@
               Offene Lizenzanträge
             </div>
             <ul role="list" class="divide-y divide-gray-400">
-              <ng-container *ngFor="let team of teams; let teamIndex = index">
+              <ng-container
+                *ngFor="let team of teams | clubPlayerLicense: 2:false"
+              >
                 <ng-container
                   *ngFor="let player of team.players; let playerIndex = index"
                 >
-                  <li>
+                  <li
+                    *ngIf="
+                      player.team_license.last_status.license_status_id === 2 &&
+                      !handledPlayerIds.includes(player.id)
+                    "
+                  >
                     <fb-license-admin-detail
-                      [initiallyOpen]="!teamIndex && !playerIndex"
+                      [initiallyOpen]="!playerIndex"
                       [player]="player"
                       [team]="team"
                       [allClubs]="allClubs"
                       (handledPlayer)="handledPlayer($event)"
-                      *ngIf="!handledPlayerIds.includes(player.id)"
                     ></fb-license-admin-detail>
                   </li>
                 </ng-container>
