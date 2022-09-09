@@ -13,7 +13,7 @@ export class ClubPlayerLicensePipe implements PipeTransform {
     allTeams.forEach((team) => {
       const players = team.players.filter((player) => {
         return negate
-          ? player.team_license.last_status.license_status_id == requestStatus
+          ? player.team_license.last_status.license_status_id != requestStatus
           : player.team_license.last_status.license_status_id == requestStatus;
       });
 

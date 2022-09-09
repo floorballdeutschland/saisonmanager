@@ -45,7 +45,10 @@
             </div>
             <ul role="list" class="divide-y divide-gray-400">
               <ng-container
-                *ngFor="let team of teams | clubPlayerLicense: 2:false"
+                *ngFor="
+                  let team of teams | clubPlayerLicense: 2:false;
+                  let teamIndex = index
+                "
               >
                 <ng-container
                   *ngFor="let player of team.players; let playerIndex = index"
@@ -57,7 +60,7 @@
                     "
                   >
                     <fb-license-admin-detail
-                      [initiallyOpen]="!playerIndex"
+                      [initiallyOpen]="!teamIndex && !playerIndex"
                       [player]="player"
                       [team]="team"
                       [allClubs]="allClubs"
