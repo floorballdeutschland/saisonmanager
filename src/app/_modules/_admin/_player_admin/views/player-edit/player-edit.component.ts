@@ -167,7 +167,9 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       const foundNations = this.nations.filter(
         (n) => n.id === player.nation_id
       );
-      return foundNations ? foundNations[0].name : '';
+      return foundNations && foundNations.length > 0
+        ? foundNations[0].name
+        : '';
     }
 
     return '';
