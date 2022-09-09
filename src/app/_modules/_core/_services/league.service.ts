@@ -7,6 +7,7 @@ import {
   League,
   LeagueClass,
   LeagueWithTeams,
+  Penalty,
   ScorerEntry,
   TableEntry,
   Team,
@@ -24,6 +25,7 @@ import {
 } from 'rxjs';
 import { AssociationService } from '.';
 import { GameOperationWithLeagues } from 'src/app/_models/game-operation.interface';
+import { PenaltyCode } from '../../../_models/penalty-code.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -186,5 +188,15 @@ export class LeagueService {
     const path =
       environment.apiURL + '/admin/leagues/' + leagueId + '/licenses.json';
     return this.http.get<TeamWithPlayers[]>(path);
+  }
+
+  public getPenalties() {
+    const path = environment.apiURL + 'user/leagues/penalties.json';
+    return this.http.get<Penalty[]>(path);
+  }
+
+  public getPenaltyCodes() {
+    const path = environment.apiURL + 'user/leagues/penalty_codes.json';
+    return this.http.get<PenaltyCode[]>(path);
   }
 }

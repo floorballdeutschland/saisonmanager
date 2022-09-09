@@ -9,7 +9,8 @@ import {
 import { AssociationService, ClubService, GameService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { Game } from '@floorball/types';
+import { Game, Penalty } from '@floorball/types';
+import { PenaltyCode } from '../../../../../../_models/penalty-code.interface';
 
 @Component({
   selector: 'fb-match-event-form',
@@ -26,6 +27,12 @@ export class MatchEventFormComponent implements OnInit {
 
   @Input()
   match!: Game;
+
+  @Input()
+  penalties!: Penalty[];
+
+  @Input()
+  penaltyCodes!: PenaltyCode[];
 
   period = '';
   minutes?: number;
@@ -71,17 +78,42 @@ export class MatchEventFormComponent implements OnInit {
 
   public submitEvent() {
     const time = this.minutes + ':' + this.pad(this.seconds || 0, 2);
+
     const home_goals =
-      this.team === 'home'
+      this.type === 'goal' && this.team === 'home'
         ? (this.match.result?.home_goals || 0) + 1
         : this.match.result?.home_goals || 0;
+
     const guest_goals =
-      this.team === 'guest'
+      this.type === 'goal' && this.team === 'guest'
         ? (this.match.result?.guest_goals || 0) + 1
         : this.match.result?.guest_goals || 0;
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const player =
+      this.match.players[this.team].find((p) => p.player_id == this.playerId)
+        ?.trikot_number || 0;
+
+    console.log(player);
+
     switch (this.type) {
+      case 'next':
+        console.log('next');
+        break;
       case 'goal':
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const assist =
+          this.match.players[this.team].find(
+            (p) => p.player_id == this.assistPlayerId
+          )?.trikot_number || 0;
+
+        const goal =
+          this.team === 'home'
+            ? { home_number: player, home_assist: assist }
+            : { guest_number: player, guest_assist: assist };
+
         this._gameService
           .addEvent(this.match.id, {
             time,
@@ -89,11 +121,23 @@ export class MatchEventFormComponent implements OnInit {
             period: parseInt(this.period, 10),
             home_goals,
             guest_goals,
+            ...goal,
           })
           .subscribe((result) => console.log(result));
         break;
       case 'penalty':
-        // this._gameService.addEvent({
+        this._gameService
+          .addEvent(this.match.id, {
+            time,
+            event_type: 'goal',
+            period: parseInt(this.period, 10),
+            home_goals,
+            guest_goals,
+            [this.team === 'home' ? 'home_number' : 'guest_number']: player,
+            penalty_id: this.penalty,
+            penalty_code_id: this.penaltyCode,
+          })
+          .subscribe((result) => console.log(result));
         //   time,
         //   event_type,
         //   period,
@@ -106,7 +150,6 @@ export class MatchEventFormComponent implements OnInit {
         //   penalty_id,
         //   penalty_code_id,
         //   goal_type,
-        // })
         break;
       case 'timeout':
         // this._gameService.addEvent({

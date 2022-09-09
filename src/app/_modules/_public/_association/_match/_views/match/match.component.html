@@ -92,12 +92,19 @@
     <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
       <h2 class="font-bold text-xl lg:text-2xl">Events</h2>
       <div class="grid grid-cols-1 gap-8 mt-4 lg:mt-8">
-        <fb-match-event-button
-          type="next"
-          [event]="event"
-          [team_name]="match.home_team_name"
-          (setEvent)="setEvent($event)"
-        ></fb-match-event-button>
+        <button
+          [ngClass]="
+            event === 'next'
+              ? 'w-full font-bold text-black leading-[17px] text-sm py-2.5 border bg-fb-gray-200 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer'
+              : 'w-full font-bold text-black leading-[17px] text-sm py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer'
+          "
+          (click)="setEvent('next')"
+        >
+          Nächster Spielabschnitt
+        </button>
+        <div *ngIf="event === 'next'">
+          <button class="">starten</button>
+        </div>
       </div>
 
       <div class="grid grid-cols-2 gap-4 mt-4 lg:mt-8">
@@ -120,6 +127,8 @@
             class="col-span-2"
             type="goal"
             team="home"
+            [penalties]="penalties"
+            [penaltyCodes]="penaltyCodes"
             [match]="match"
           ></fb-match-event-form>
         </ng-container>
@@ -128,6 +137,8 @@
             class="col-span-2"
             type="goal"
             team="guest"
+            [penalties]="penalties"
+            [penaltyCodes]="penaltyCodes"
             [match]="match"
           ></fb-match-event-form>
         </ng-container>
@@ -151,6 +162,8 @@
             class="col-span-2"
             type="penalty"
             team="home"
+            [penalties]="penalties"
+            [penaltyCodes]="penaltyCodes"
             [match]="match"
           ></fb-match-event-form>
         </ng-container>
@@ -159,6 +172,8 @@
             class="col-span-2"
             type="penalty"
             team="guest"
+            [penalties]="penalties"
+            [penaltyCodes]="penaltyCodes"
             [match]="match"
           ></fb-match-event-form>
         </ng-container>
@@ -182,6 +197,8 @@
             class="col-span-2"
             type="timeout"
             team="home"
+            [penalties]="penalties"
+            [penaltyCodes]="penaltyCodes"
             [match]="match"
           ></fb-match-event-form>
         </ng-container>
@@ -190,6 +207,8 @@
             class="col-span-2"
             type="timeout"
             team="guest"
+            [penalties]="penalties"
+            [penaltyCodes]="penaltyCodes"
             [match]="match"
           ></fb-match-event-form>
         </ng-container>

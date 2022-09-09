@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { Game, GameEventInput, GamePlayerEntry } from '@floorball/types';
 import { environment } from 'src/environments/environment';
+import { GameFlags } from '../../../_models/game-flags.interface';
 @Injectable({
   providedIn: 'root',
 })
@@ -69,5 +70,10 @@ export class GameService {
     const path =
       environment.apiURL + 'user/games/' + gameId + '/events/add.json';
     return this.http.post<GamePlayerEntry[]>(path, event);
+  }
+
+  public setGameFlags(gameId: number, flags: GameFlags) {
+    const path = environment.apiURL + 'user/games/' + gameId + '/set_flag.json';
+    return this.http.post<GamePlayerEntry[]>(path, flags);
   }
 }

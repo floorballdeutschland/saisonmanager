@@ -7,15 +7,17 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { filter, Observable, share, Subject, take, takeUntil, tap } from 'rxjs';
-import { Game, GameOperation } from '@floorball/types';
+import { Game, GameOperation, Penalty } from '@floorball/types';
 import {
   AssociationService,
   GameService,
+  LeagueService,
   SessionService,
 } from '@floorball/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
+import { PenaltyCode } from '../../../../../../_models/penalty-code.interface';
 
 @Component({
   templateUrl: './match.component.html',
@@ -31,12 +33,15 @@ export class MatchComponent implements OnInit, OnDestroy {
   public event = '';
   public addDialogOpen = '';
   public squadHistoryDialogOpen = '';
+  public penalties: Penalty[] = [];
+  public penaltyCodes: PenaltyCode[] = [];
 
   private _destroy$ = new Subject<boolean>();
 
   constructor(
     private _associationService: AssociationService,
     private _gameService: GameService,
+    private _leagueService: LeagueService,
     private _route: ActivatedRoute,
     private _sessionService: SessionService,
     private _router: Router,
@@ -72,6 +77,18 @@ export class MatchComponent implements OnInit, OnDestroy {
         takeUntil(this._destroy$)
       )
       .subscribe();
+
+    this._leagueService.getPenalties().subscribe({
+      next: (penalties) => {
+        this.penalties = penalties;
+      },
+    });
+
+    this._leagueService.getPenaltyCodes().subscribe({
+      next: (penalties) => {
+        this.penaltyCodes = penalties;
+      },
+    });
   }
 
   getMatch(id: string) {

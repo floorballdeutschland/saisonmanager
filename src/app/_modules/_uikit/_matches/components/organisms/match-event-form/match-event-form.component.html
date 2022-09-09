@@ -92,11 +92,9 @@
           class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
           [(ngModel)]="penalty"
         >
-          <option value="2">2 Min.</option>
-          <option value="2+2">2 + 2 Min.</option>
-          <option value="10">10 Min.</option>
-          <option value="MS1">MS I</option>
-          <option value="MS2">MS II</option>
+          <option [value]="p.id" *ngFor="let p of penalties">
+            {{ p.name }}
+          </option>
         </select>
       </div>
 
@@ -106,11 +104,9 @@
           class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
           [(ngModel)]="penaltyCode"
         >
-          <option value="901">901 - Stockschlag</option>
-          <option value="901">901 - Stockschlag</option>
-          <option value="901">901 - Stockschlag</option>
-          <option value="901">901 - Stockschlag</option>
-          <option value="901">901 - Stockschlag</option>
+          <option [value]="p.id" *ngFor="let p of penaltyCodes">
+            {{ p.code }} - {{ p.description }}
+          </option>
         </select>
       </div>
     </ng-container>
