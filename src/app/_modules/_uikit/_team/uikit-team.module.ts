@@ -5,9 +5,12 @@ import { RouterModule } from '@angular/router';
 
 import * as Organisms from './components/organisms';
 import { TeamSquadComponent } from './components/organisms';
+import { TeamSquadPlayerComponent } from './components/organisms/team-squad-player/team-squad-player.component';
+import { TeamLineupPlayerPipe } from '../../../_helpers/_pipes/team-lineup-player.pipe';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
-  imports: [CommonModule, CdkTableModule, RouterModule],
+  imports: [CommonModule, CdkTableModule, RouterModule, FormsModule],
   declarations: [
     Organisms.TeamRankingTableComponent,
     Organisms.TeamLineupComponent,
@@ -15,6 +18,8 @@ import { TeamSquadComponent } from './components/organisms';
     Organisms.TeamHistoryComponent,
     Organisms.TeamSquadComponent,
     Organisms.TeamSquadHistoryComponent,
+    TeamSquadPlayerComponent,
+    TeamLineupPlayerPipe,
   ],
   exports: [
     Organisms.TeamRankingTableComponent,

@@ -37,7 +37,6 @@
             [link]="['./']"
             (click)="$event.preventDefault(); setTab('secretary')"
             [activeColor]="selectedAssociation | gradient"
-            *ngIf="false"
             >Benutzer: Eingabe Spielbericht</fb-tab-item
           >
         </div>
@@ -96,8 +95,8 @@
         <div>
           <h3 class="font-bold mb-4">{{ match.home_team_name }}</h3>
 
-          <div class="flex -mx-1 mb-4">
-            <div class="px-1">
+          <div class="grid grid-cols-1 gap-2 mb-4">
+            <div *ngIf="false">
               <button
                 class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                 (click)="openSquadHistoryHomeDialog()"
@@ -105,7 +104,7 @@
                 Kaderliste laden
               </button>
             </div>
-            <div class="px-1">
+            <div>
               <button
                 class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                 (click)="openAddHomeDialog()"
@@ -123,8 +122,8 @@
             {{ match.guest_team_name }}
           </h3>
 
-          <div class="flex -mx-1 mb-4">
-            <div class="px-1">
+          <div class="grid grid-cols-1 gap-2 mb-4">
+            <div *ngIf="false">
               <button
                 class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                 (click)="openSquadHistoryGuestDialog()"
@@ -132,7 +131,7 @@
                 Kaderliste laden
               </button>
             </div>
-            <div class="px-1">
+            <div>
               <button
                 class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                 (click)="openAddGuestDialog()"
@@ -148,7 +147,9 @@
 
       <ng-container *ngIf="addDialogOpen !== ''">
         <fb-team-squad
-          [onClose]="closeAddDialog()"
+          [teamId]="
+            addDialogOpen === 'guest' ? match.guest_team_id : match.home_team_id
+          "
           [team]="
             addDialogOpen === 'guest'
               ? match.guest_team_name

@@ -53,6 +53,7 @@
               <div class="sm:hidden">
                 <label for="tabs" class="sr-only">Select a tab</label>
                 <select
+                  [(ngModel)]="filter"
                   id="tabs"
                   name="tabs"
                   class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
@@ -71,6 +72,7 @@
                   <nav class="-mb-px flex space-x-4" aria-label="Tabs">
                     <button
                       *ngFor="let filterItem of filterTypes"
+                      (click)="setFilter(filterItem.type)"
                       [class]="
                         filterItem.type === filter
                           ? 'border-primary cursor-pointer text-primary text-600 whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm'
@@ -85,41 +87,25 @@
             </div>
 
             <div class="mt-1">
-              <ul role="list" class="divide-y divide-gray-200">
-                <li class="py-2" *ngFor="let player of players">
-                  <div class="relative flex items-center">
-                    <div class="ml-3 pr-4 flex items-center h-5">
-                      <input
-                        id="person-1"
-                        name="person-1"
-                        type="checkbox"
-                        class="rounded-full focus:ring-gray-400 h-6 w-6 text-gray-500 border-gray-300 rounded"
-                      />
-                    </div>
-                    <div class="min-w-0 flex-1 text-sm text-left">
-                      <label
-                        for="person-1"
-                        class="font-medium text-gray-700 select-none"
-                      >
-                        {{ player.player_firstname }} {{ player.player_name }}
-                      </label>
-                    </div>
-                    <div class="min-w-0 text-sm">
-                      <input
-                        type="number"
-                        placeholder="Nr."
-                        name="first-name"
-                        id="first-name"
-                        class="py-2 w-16 block shadow-sm text-center focus:ring-gray-500 focus:border-gray-500 sm:max-w-xs sm:text-sm border border-gray-200 rounded-md"
-                      />
-                    </div>
-                    <!-- TODO: Direktzugriff auf Spielereigenschaften -->
-                    <!-- <div class="min-w-0 text-sm text-gray-400 hover:cursor-pointer">-->
-                    <!--   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">-->
-                    <!--     <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />-->
-                    <!--   </svg>-->
-                    <!-- </div>-->
-                  </div>
+              <ul
+                role="list"
+                class="divide-y divide-gray-200"
+                *ngIf="licenseHash?.current_requests"
+              >
+                <li
+                  class="py-2"
+                  *ngFor="
+                    let player of licenseHash.current_requests
+                      | teamLineupPlayer: players:filter
+                  "
+                >
+                  <fb-team-squad-player
+                    (updateLineup)="updateLineup($event)"
+                    (setCaptainPlayerId)="setCaptainPlayerId($event)"
+                    [player]="player.player"
+                    [gamePlayerEntry]="player.gamePlayerEntry"
+                    [captainPlayerId]="captainPlayerId"
+                  ></fb-team-squad-player>
                 </li>
               </ul>
             </div>

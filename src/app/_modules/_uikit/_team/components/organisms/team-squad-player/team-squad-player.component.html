@@ -1,0 +1,56 @@
+<div class="relative flex items-center">
+  <div class="ml-3 pr-4 flex items-center h-5">
+    <input
+      type="checkbox"
+      class="rounded-full focus:ring-gray-400 h-6 w-6 text-gray-500 border-gray-300 rounded"
+      [ngClass]="changed ? 'ring ring-red-300' : ''"
+      [ngModel]="checked"
+      [disabled]="!trikotNumber"
+      (click)="handleButtonClick()"
+    />
+  </div>
+  <div class="min-w-0 flex-1 text-sm text-left">
+    <label class="font-medium text-gray-700 select-none">
+      {{ player?.last_name }} {{ player?.first_name }}
+    </label>
+    <p *ngIf="changed" class="block mr-2 text-[11px] text-red-700">
+      Füge den Spieler hinzu, um die Änderung zu übernehmen
+    </p>
+  </div>
+  <div class="flex items-center min-w-0 text-sm">
+    <button
+      class="w-6 h-6 border border-fb-gray-500 rounded-full mx-1.5"
+      [ngClass]="goalkeeper ? 'text-white bg-fb-gray-500 font-extrabold' : ''"
+      (click)="toggleGoalkeeper()"
+    >
+      T
+    </button>
+    <button
+      class="w-6 h-6 border border-fb-gray-500 rounded-full mx-1.5"
+      [ngClass]="
+        captainPlayerId === player.id
+          ? 'text-white bg-fb-gray-500 font-extrabold'
+          : ''
+      "
+      (click)="toggleCaptain()"
+    >
+      K
+    </button>
+    <input
+      type="number"
+      inputmode="numeric"
+      placeholder="Nr."
+      name="first-name"
+      id="first-name"
+      [(ngModel)]="trikotNumber"
+      (ngModelChange)="handleTrikotNumberChange()"
+      class="ml-1 py-2 w-16 block shadow-sm text-center focus:ring-gray-500 focus:border-gray-500 sm:max-w-xs sm:text-sm border border-gray-200 rounded-md"
+    />
+  </div>
+  <!-- TODO: Direktzugriff auf Spielereigenschaften -->
+  <!-- <div class="min-w-0 text-sm text-gray-400 hover:cursor-pointer">-->
+  <!--   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">-->
+  <!--     <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />-->
+  <!--   </svg>-->
+  <!-- </div>-->
+</div>

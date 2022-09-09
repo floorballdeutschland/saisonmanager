@@ -27,7 +27,7 @@ export class MatchComponent implements OnInit, OnDestroy {
   selectedAssociation$!: Observable<GameOperation | null>;
 
   public isLoggedIn$ = this._sessionService.isLoggedIn$;
-  public tab = 'public';
+  public tab = 'secretary';
   public addDialogOpen = '';
   public squadHistoryDialogOpen = '';
 

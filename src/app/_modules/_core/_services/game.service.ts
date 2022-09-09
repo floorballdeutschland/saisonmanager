@@ -13,4 +13,21 @@ export class GameService {
     const path = environment.apiURL + 'games/' + gameId + '.json';
     return this.http.get<Game>(path);
   }
+
+  public addLineupPlayerToGame(
+    gameId: number,
+    team: 'home' | 'guest',
+    player_id: number,
+    trikot_number: number,
+    goalkeeper: boolean
+  ) {
+    const path =
+      environment.apiURL +
+      'user/games/' +
+      gameId +
+      '/lineup_player/' +
+      team +
+      '.json';
+    return this.http.post<Game>(path, { player_id, trikot_number, goalkeeper });
+  }
 }
