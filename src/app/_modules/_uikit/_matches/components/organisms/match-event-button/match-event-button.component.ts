@@ -40,6 +40,8 @@ export class MatchEventButtonComponent {
         return 'Strafe';
       case 'timeout':
         return 'Time-Out';
+      case 'next':
+        return 'Spielabschnitt starten';
       default:
         return '';
     }

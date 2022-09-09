@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Game, GamePlayerEntry } from '@floorball/types';
+import { Game, GameEventInput, GamePlayerEntry } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root',
@@ -63,5 +63,11 @@ export class GameService {
     return this.http.post<GamePlayerEntry[]>(path, {
       trikot_number: parseInt(trikot_number, 10),
     });
+  }
+
+  public addEvent(gameId: number, event: GameEventInput) {
+    const path =
+      environment.apiURL + 'user/games/' + gameId + '/events/add.json';
+    return this.http.post<GamePlayerEntry[]>(path, event);
   }
 }

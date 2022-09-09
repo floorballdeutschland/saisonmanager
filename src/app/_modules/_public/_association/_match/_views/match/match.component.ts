@@ -27,7 +27,7 @@ export class MatchComponent implements OnInit, OnDestroy {
   selectedAssociation$!: Observable<GameOperation | null>;
 
   public isLoggedIn$ = this._sessionService.isLoggedIn$;
-  public tab = 'public';
+  public tab = 'secretary';
   public event = '';
   public addDialogOpen = '';
   public squadHistoryDialogOpen = '';
@@ -132,7 +132,6 @@ export class MatchComponent implements OnInit, OnDestroy {
     this.addDialogOpen = '';
 
     this._route.params.forEach((value) => {
-      console.log(value['matchId']);
       this.getMatch(value['matchId']);
     });
   }
