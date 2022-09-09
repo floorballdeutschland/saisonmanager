@@ -46,7 +46,7 @@
             <ul role="list" class="divide-y divide-gray-400">
               <ng-container
                 *ngFor="
-                  let team of teams | clubPlayerLicense: 2:false;
+                  let team of teams | clubPlayerLicense: 2:true;
                   let teamIndex = index
                 "
               >
@@ -59,6 +59,7 @@
                     [team]="team"
                     [allClubs]="allClubs"
                     (handledPlayer)="handledPlayer($event)"
+                    *ngIf="!handledPlayerIds.includes(player.id)"
                   ></fb-license-admin-detail>
                 </ng-container>
               </ng-container>
@@ -68,14 +69,14 @@
 
         <div
           class="bg-white my-[5px] py-[15px] px-[30px]"
-          *ngFor="let team of teams | clubPlayerLicense: 2:true"
+          *ngFor="let team of teams"
         >
           <div class="uppercase font-bold text-gray-400 text-sm mb-5">
             {{ team.name }}
           </div>
           <div class="flex flex-col gap-2">
             <p *ngFor="let player of team.players">
-              {{ player.last_name }}, {{ player.first_name }}
+              {{ player.last_name }}, {{ player.first_name }} ({{ player.id }})
               {{ player.team_license.last_status_code }}
             </p>
           </div>

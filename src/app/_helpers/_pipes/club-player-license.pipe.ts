@@ -9,13 +9,14 @@ export class ClubPlayerLicensePipe implements PipeTransform {
     negate: boolean
   ): TeamWithPlayers[] {
     return allTeams.map((team) => {
-      team.players = team.players.filter((player) => {
+      const t = { ...team };
+      t.players = team.players.filter((player) => {
         return negate
           ? player.team_license.last_status_id == requestStatus
-          : player.team_license.last_status_id != requestStatus;
+          : player.team_license.last_status_id == requestStatus;
       });
 
-      return team;
+      return t;
     });
   }
 }
