@@ -29,7 +29,7 @@ export class MatchComponent implements OnInit, OnDestroy {
   selectedAssociation$!: Observable<GameOperation | null>;
 
   public isLoggedIn$ = this._sessionService.isLoggedIn$;
-  public tab = 'secretary';
+  public tab = 'public';
   public event = '';
   public addDialogOpen = '';
   public squadHistoryDialogOpen = '';
@@ -165,5 +165,13 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   public closeSquadHistoryDialog() {
     this.squadHistoryDialogOpen = '';
+  }
+
+  public canEdit(game: Game): boolean {
+    if (game.permission) {
+      return game.permission.includes('edit_game_report');
+    } else {
+      return false;
+    }
   }
 }

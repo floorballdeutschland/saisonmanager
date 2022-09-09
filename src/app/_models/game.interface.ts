@@ -98,4 +98,5 @@ export interface Game {
   nominated_referees: string;
   period_titles: Array<{ period: number; title: string }>;
   live_stream_link?: string | null;
+  permission?: string[];
 }
