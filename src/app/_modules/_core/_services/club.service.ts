@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { Club, ClubWithTeams, LicenseHash } from '@floorball/types';
+import { Club, ClubWithTeams, LicenseHash, Team } from '@floorball/types';
 import { GameOperationWithClubs } from 'src/app/_models/game-operation.interface';
 
 @Injectable({
@@ -21,6 +21,11 @@ export class ClubService {
   public getAdminClub(clubId: number) {
     const path = environment.apiURL + 'admin/clubs/' + clubId + '.json';
     return this.http.get<Club>(path);
+  }
+
+  public getAdminTeam(teamId: number) {
+    const path = environment.apiURL + 'admin/teams/' + teamId + '.json';
+    return this.http.get<Team>(path);
   }
 
   public getAdminClubAll() {

@@ -8,7 +8,11 @@ import { UikitTeamModule } from '@floorball/uikit/team';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 
 import * as Views from './views';
-import { SortPlayersPipe } from 'src/app/_helpers';
+import { AdditionalClubFilterPipe, SortPlayersPipe } from 'src/app/_helpers';
+import { LicenseAdminIndexComponent } from './views/license-admin-index/license-admin-index.component';
+import { LicenseAdminLeagueDetailComponent } from './views/license-admin-league-detail/license-admin-league-detail.component';
+import { LicenseAdminDetailComponent } from './views/license-admin-detail/license-admin-detail.component';
+import { ClubPlayerLicensePipe } from 'src/app/_helpers/_pipes/club-player-license.pipe';
 
 @NgModule({
   imports: [
@@ -23,7 +27,13 @@ import { SortPlayersPipe } from 'src/app/_helpers';
   declarations: [
     Views.LicenseClubIndexComponent,
     Views.LicenseTeamDetailComponent,
+    Views.LicenseAdminTeamEntryComponent,
     SortPlayersPipe,
+    LicenseAdminIndexComponent,
+    LicenseAdminLeagueDetailComponent,
+    LicenseAdminDetailComponent,
+    AdditionalClubFilterPipe,
+    ClubPlayerLicensePipe,
   ],
 })
 export class AdminLicenseModule {}
