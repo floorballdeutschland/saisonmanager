@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Game } from '@floorball/types';
+import { Game, GamePlayerEntry } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root',
@@ -16,18 +16,52 @@ export class GameService {
 
   public addLineupPlayerToGame(
     gameId: number,
-    team: 'home' | 'guest',
+    team: string,
     player_id: number,
-    trikot_number: number,
+    trikot_number: string,
     goalkeeper: boolean
   ) {
     const path =
       environment.apiURL +
       'user/games/' +
       gameId +
-      '/lineup_player/' +
+      '/lineup/' +
       team +
-      '.json';
-    return this.http.post<Game>(path, { player_id, trikot_number, goalkeeper });
+      '/add_player.json';
+    return this.http.post<GamePlayerEntry[]>(path, {
+      player_id,
+      trikot_number,
+      goalkeeper,
+    });
+  }
+
+  public removeLineupPlayerToGame(
+    gameId: number,
+    team: string,
+    trikot_number: string
+  ) {
+    const path =
+      environment.apiURL +
+      'user/games/' +
+      gameId +
+      '/lineup/' +
+      team +
+      '/remove_player.json';
+    return this.http.post<GamePlayerEntry[]>(path, {
+      trikot_number: parseInt(trikot_number, 10),
+    });
+  }
+
+  public setLineupCaptain(gameId: number, team: string, trikot_number: string) {
+    const path =
+      environment.apiURL +
+      'user/games/' +
+      gameId +
+      '/lineup/' +
+      team +
+      '/set_captain.json';
+    return this.http.post<GamePlayerEntry[]>(path, {
+      trikot_number: parseInt(trikot_number, 10),
+    });
   }
 }

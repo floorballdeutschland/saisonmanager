@@ -130,6 +130,11 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   public closeAddDialog() {
     this.addDialogOpen = '';
+
+    this._route.params.forEach((value) => {
+      console.log(value['matchId']);
+      this.getMatch(value['matchId']);
+    });
   }
 
   public openSquadHistoryHomeDialog() {

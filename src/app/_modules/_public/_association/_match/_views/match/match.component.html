@@ -245,6 +245,7 @@
       <ng-container *ngIf="addDialogOpen !== ''">
         <fb-team-squad
           (handleClose)="closeAddDialog()"
+          [side]="addDialogOpen"
           [teamId]="
             addDialogOpen === 'guest' ? match.guest_team_id : match.home_team_id
           "

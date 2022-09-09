@@ -102,6 +102,7 @@
                   <fb-team-squad-player
                     (updateLineup)="updateLineup($event)"
                     (setCaptainPlayerId)="setCaptainPlayerId($event)"
+                    [side]="side"
                     [player]="player.player"
                     [gamePlayerEntry]="player.gamePlayerEntry"
                     [captainPlayerId]="captainPlayerId"
@@ -115,30 +116,10 @@
         <div class="mt-5 sm:mt-4 sm:ml-10 sm:pl-4 sm:flex sm:flex-row-reverse">
           <button
             type="button"
-            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
-          >
-            <svg
-              class="-ml-0.5 mr-2 h-5 w-5"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            Speichern
-          </button>
-          <button
-            type="button"
             class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:w-auto sm:text-sm"
             (click)="onClose()"
           >
-            Abbrechen
+            Schließen
           </button>
         </div>
       </div>

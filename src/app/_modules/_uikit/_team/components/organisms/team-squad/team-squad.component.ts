@@ -13,7 +13,7 @@ import {
   LicenseHash,
   SquatFilterType,
 } from '@floorball/models';
-import { ClubService, LeagueService } from '@floorball/core';
+import { ClubService, GameService, LeagueService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
@@ -25,12 +25,14 @@ import { Title } from '@angular/platform-browser';
 })
 export class TeamSquadComponent implements OnInit {
   @Input() players!: GamePlayerEntry[];
+  @Input() side!: string;
   @Input() team!: string;
   @Input() teamId!: number;
   @Output() handleClose: EventEmitter<void> = new EventEmitter<void>();
 
   licenseHash!: LicenseHash;
   captainPlayerId: number | null = null;
+  gameId?: number;
 
   public filter: 'all' | 'selected' | 'not-selected' = 'all';
   public filterTypes: SquatFilterType[] = [
@@ -43,6 +45,7 @@ export class TeamSquadComponent implements OnInit {
 
   constructor(
     private _clubService: ClubService,
+    private _gameService: GameService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title
@@ -53,6 +56,12 @@ export class TeamSquadComponent implements OnInit {
   ngOnInit(): void {
     this.loadUserLicenses();
     this.updateLineup(this.players);
+
+    this._route.params.subscribe({
+      next: (value) => {
+        this.gameId = value['matchId'];
+      },
+    });
   }
 
   public loadUserLicenses() {
@@ -69,16 +78,31 @@ export class TeamSquadComponent implements OnInit {
     this.filter = filterType;
   }
 
-  setCaptainPlayerId(id: number | null) {
-    this.captainPlayerId = id;
+  setCaptainPlayerId(playerId: number | null) {
+    const trikotNumber = this.players.find(
+      (p) => p.player_id === playerId
+    )?.trikot_number;
+    if (this.gameId && trikotNumber) {
+      this._gameService
+        .setLineupCaptain(this.gameId, this.side, trikotNumber.toString())
+        .subscribe({
+          next: (result) => {
+            this.updateLineup(result);
+          },
+        });
+    }
   }
 
   updateLineup(lineup: GamePlayerEntry[]) {
-    this.players = lineup;
+    if (lineup) {
+      this.players = lineup;
 
-    const captain = lineup.find((player) => player.captain);
-    if (captain) {
-      this.captainPlayerId = captain.player_id;
+      const captain = lineup.find((player) => player.captain);
+      if (captain) {
+        this.captainPlayerId = captain.player_id;
+      }
+
+      this._cdr.markForCheck();
     }
   }
 

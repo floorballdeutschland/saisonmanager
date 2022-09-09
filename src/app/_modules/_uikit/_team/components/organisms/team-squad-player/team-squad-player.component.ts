@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { GamePlayerEntry, PlayerWithLicense } from '@floorball/types';
 import { GameService, NotificationService } from '@floorball/core';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'fb-team-squad-player',
@@ -15,6 +16,7 @@ import { GameService, NotificationService } from '@floorball/core';
   styleUrls: ['./team-squad-player.component.scss'],
 })
 export class TeamSquadPlayerComponent implements OnInit {
+  @Input() side!: string;
   @Input() player!: PlayerWithLicense;
   @Input() gamePlayerEntry!: GamePlayerEntry | null;
   @Input() captainPlayerId!: number | null;
@@ -25,75 +27,122 @@ export class TeamSquadPlayerComponent implements OnInit {
     number | null
   >();
 
-  trikotNumber?: number;
+  gameId?: number;
+  trikotNumber?: string;
   checked = false;
   changed = false;
   goalkeeper = false;
 
   constructor(
     private _gameService: GameService,
+    private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
     if (this.gamePlayerEntry) {
-      this.trikotNumber = this.gamePlayerEntry.trikot_number;
+      this.trikotNumber = this.gamePlayerEntry.trikot_number
+        ? this.gamePlayerEntry.trikot_number.toString()
+        : '';
       this.goalkeeper = this.gamePlayerEntry.goalkeeper || false;
       this.checked = true;
     }
+
+    this._route.params.subscribe({
+      next: (value) => {
+        this.gameId = value['matchId'];
+      },
+    });
   }
 
   handleButtonClick() {
-    if (this.trikotNumber) {
-      console.log(this.trikotNumber);
+    if (!this.gamePlayerEntry) {
+      console.log('click');
+      this.addLinupPlayer();
+    } else if (this.changed) {
+      this.updateLinupPlayer();
+    } else {
+      this.removeLinupPlayer();
+    }
+  }
+
+  public addLinupPlayer() {
+    console.log(this.trikotNumber);
+    if (this.trikotNumber && this.gameId) {
       this._gameService
         .addLineupPlayerToGame(
-          12,
-          'home',
+          this.gameId,
+          this.side,
           this.player.id,
           this.trikotNumber,
           this.goalkeeper
         )
         .subscribe({
           next: (result) => {
-            console.log(result);
+            this.updateLineup.emit(result);
           },
         });
-      this.updateLineup.emit([]);
     } else {
       this._notificationService.error('Bitte gib eine Trikotnummer an', {
         autoClose: true,
         keepAfterRouteChange: false,
       });
     }
+  }
 
-    console.log(this.checked);
+  public updateLinupPlayer() {
+    if (this.gamePlayerEntry?.trikot_number && this.gameId) {
+      this._gameService
+        .removeLineupPlayerToGame(
+          this.gameId,
+          this.side,
+          this.gamePlayerEntry?.trikot_number.toString()
+        )
+        .subscribe(() => this.addLinupPlayer());
+    } else {
+      this._notificationService.error('Bitte gib eine Trikotnummer an', {
+        autoClose: true,
+        keepAfterRouteChange: false,
+      });
+    }
+  }
 
-    this._cdr.markForCheck();
+  public removeLinupPlayer() {
+    if (this.trikotNumber && this.gameId) {
+      this._gameService
+        .removeLineupPlayerToGame(this.gameId, this.side, this.trikotNumber)
+        .subscribe({
+          next: (result) => {
+            this.updateLineup.emit(result);
+          },
+        });
+    } else {
+      this._notificationService.error('Bitte gib eine Trikotnummer an', {
+        autoClose: true,
+        keepAfterRouteChange: false,
+      });
+    }
   }
 
   handleTrikotNumberChange() {
-    console.log('trikot');
-    if (this.gamePlayerEntry) {
-      if (this.gamePlayerEntry.trikot_number !== this.trikotNumber) {
-        this.checked = false;
-        this.changed = true;
-      } else {
-        this.checked = true;
-        this.changed = false;
-      }
+    if (
+      this.gamePlayerEntry &&
+      this.gamePlayerEntry.trikot_number.toString() !== this.trikotNumber
+    ) {
+      console.log('tiko');
+      this.updateLinupPlayer();
+    } else {
+      this.addLinupPlayer();
     }
   }
 
   toggleGoalkeeper() {
-    console.log('goal');
     this.goalkeeper = !this.goalkeeper;
 
     if (this.gamePlayerEntry) {
       if (this.gamePlayerEntry.goalkeeper !== this.goalkeeper) {
-        this.checked = false;
-        this.changed = true;
+        this.updateLinupPlayer();
       } else {
         this.checked = true;
         this.changed = false;
