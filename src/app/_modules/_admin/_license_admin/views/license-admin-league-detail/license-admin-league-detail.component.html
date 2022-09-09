@@ -44,23 +44,20 @@
               Offene Lizenzanträge
             </div>
             <ul role="list" class="divide-y divide-gray-400">
-              <ng-container
-                *ngFor="
-                  let team of teams | clubPlayerLicense: 2:true;
-                  let teamIndex = index
-                "
-              >
+              <ng-container *ngFor="let team of teams; let teamIndex = index">
                 <ng-container
                   *ngFor="let player of team.players; let playerIndex = index"
                 >
-                  <fb-license-admin-detail
-                    [initiallyOpen]="!teamIndex && !playerIndex"
-                    [player]="player"
-                    [team]="team"
-                    [allClubs]="allClubs"
-                    (handledPlayer)="handledPlayer($event)"
-                    *ngIf="!handledPlayerIds.includes(player.id)"
-                  ></fb-license-admin-detail>
+                  <li>
+                    <fb-license-admin-detail
+                      [initiallyOpen]="!teamIndex && !playerIndex"
+                      [player]="player"
+                      [team]="team"
+                      [allClubs]="allClubs"
+                      (handledPlayer)="handledPlayer($event)"
+                      *ngIf="!handledPlayerIds.includes(player.id)"
+                    ></fb-license-admin-detail>
+                  </li>
                 </ng-container>
               </ng-container>
             </ul>
@@ -75,10 +72,62 @@
             {{ team.name }}
           </div>
           <div class="flex flex-col gap-2">
-            <p *ngFor="let player of team.players">
-              {{ player.last_name }}, {{ player.first_name }} ({{ player.id }})
-              {{ player.team_license.last_status_code }}
-            </p>
+            <ul role="list" class="divide-y divide-gray-200">
+              <li *ngFor="let p of team.players">
+                <div href="#" class="block hover:bg-gray-50">
+                  <div class="-mx-4 px-4 py-4 sm:px-6 sm:-mx-6">
+                    <div class="flex items-start justify-between">
+                      <p class="truncate text-sm font-medium">
+                        {{ p.last_name }}, {{ p.first_name }}
+                      </p>
+                      <div class="ml-2 flex flex-shrink-0 items-end">
+                        <div>
+                          <p
+                            class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-green-800 text-[13px]"
+                            [ngClass]="
+                              p.team_license.last_status.license_status_id === 3
+                                ? 'bg-red-100 text-red-800'
+                                : p.team_license.last_status
+                                    .license_status_id === 1
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                            "
+                          >
+                            {{ p.team_license.last_status_code }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-2 sm:flex sm:justify-between">
+                      <div class="sm:flex">
+                        <p class="flex items-start text-sm text-gray-500">
+                          <!-- Heroicon name: mini/calendar -->
+                          <svg
+                            class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                          Geb.
+                          {{
+                            p.birthdate
+                              ? (p.birthdate | date: "dd.MM.YYYY")
+                              : "-"
+                          }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

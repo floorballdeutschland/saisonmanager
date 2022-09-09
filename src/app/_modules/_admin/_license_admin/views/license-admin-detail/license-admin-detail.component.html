@@ -1,4 +1,4 @@
-<li>
+<ng-container>
   <a class="block hover:bg-fb-gray-300" (click)="toggleDetails()">
     <div class="flex items-center py-4">
       <div class="flex min-w-0 flex-1 items-start">
@@ -116,10 +116,7 @@
     </div>
   </a>
 
-  <div
-    class="p-4 bg-fb-gray-300 border-b border-fb-gray-600 shadow"
-    *ngIf="open"
-  >
+  <div class="p-4 bg-fb-gray-300 shadow" *ngIf="open">
     <div class="grid gap-4 lg:grid-cols-3">
       <div class="grid gap-4 md:grid-cols-2 lg:col-span-2">
         <div class="md:col-span-2">
@@ -140,6 +137,7 @@
             <li *ngFor="let license of player.licenses || []">
               <fb-license-admin-team-entry
                 [teamId]="license.team_id"
+                [lastHistory]="license.history[license.history.length - 1]"
               ></fb-license-admin-team-entry>
             </li>
           </ul>
@@ -187,4 +185,4 @@
       </div>
     </div>
   </div>
-</li>
+</ng-container>

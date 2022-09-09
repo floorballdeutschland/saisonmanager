@@ -6,6 +6,7 @@ import {
   TeamWithPlayers,
   PlayerWithLicense,
   Team,
+  PlayerLicenseHistory,
 } from '@floorball/types';
 import { ClubService } from '@floorball/core';
 
@@ -17,6 +18,9 @@ import { ClubService } from '@floorball/core';
 export class LicenseAdminTeamEntryComponent implements OnInit {
   @Input()
   teamId!: number;
+
+  @Input()
+  lastHistory!: PlayerLicenseHistory;
 
   team?: Team;
   constructor(
