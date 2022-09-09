@@ -4,7 +4,11 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { AssociationService, ClubService } from '@floorball/core';
+import {
+  AssociationService,
+  ClubService,
+  PlayerService,
+} from '@floorball/core';
 import { GameOperation, LicenseHash } from 'src/app/_models';
 import { Observable } from 'rxjs';
 import { Title } from '@angular/platform-browser';
@@ -27,6 +31,7 @@ export class LicenseTeamDetailComponent implements OnInit {
   constructor(
     private _associationService: AssociationService,
     private _clubService: ClubService,
+    private _playerService: PlayerService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title
@@ -68,16 +73,14 @@ export class LicenseTeamDetailComponent implements OnInit {
       });
   }
 
-  public recreateLicenseRequest(playerId: number) {
+  public recreateLicenseRequest(playerId: number, licenseId: string) {
     // check if set!
-    this._clubService
-      .userCreateLicenseRequest(playerId, this.teamId)
-      .subscribe({
-        next: (result) => {
-          // reload user licenses
-          this.loadUserLicenses();
-        },
-      });
+    this._playerService.reenableLicenseRequest(playerId, licenseId).subscribe({
+      next: (result) => {
+        // reload user licenses
+        this.loadUserLicenses();
+      },
+    });
   }
 
   public withdrawRequest(playerId: number, licenseId: string) {

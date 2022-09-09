@@ -93,7 +93,9 @@
                             <a
                               class="hidden shrink-0 mr-2 px-2 border border-fb-gray-600 rounded-xl sm:flex sm:items-center hover:cursor-pointer hover:bg-fb-gray-200"
                               *ngIf="p.current_status.license_status_id === 8"
-                              (click)="recreateLicenseRequest(p.id)"
+                              (click)="
+                                recreateLicenseRequest(p.id, p.team_license.id)
+                              "
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
