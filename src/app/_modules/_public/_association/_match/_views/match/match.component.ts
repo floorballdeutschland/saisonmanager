@@ -18,6 +18,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { PenaltyCode } from '../../../../../../_models/penalty-code.interface';
+import { GameAdditionalFields } from '../../../../../../_models/game-additional-fields.interface';
 
 @Component({
   templateUrl: './match.component.html',
@@ -27,6 +28,7 @@ import { PenaltyCode } from '../../../../../../_models/penalty-code.interface';
 export class MatchComponent implements OnInit, OnDestroy {
   match$?: Observable<Game | null>;
   game?: Game;
+  additionalFields?: GameAdditionalFields;
   selectedAssociation$!: Observable<GameOperation | null>;
 
   public isLoggedIn$ = this._sessionService.isLoggedIn$;
@@ -92,7 +94,12 @@ export class MatchComponent implements OnInit, OnDestroy {
   getMatch(id: string) {
     this._gameService.getGame(parseInt(id, 10)).subscribe({
       next: (game) => {
-        this.updateGame(game);
+        this._gameService.getAdditionalFields(parseInt(id, 10)).subscribe({
+          next: (additionalFields) => {
+            this.additionalFields = additionalFields;
+            this.updateGame(game);
+          },
+        });
       },
     });
   }

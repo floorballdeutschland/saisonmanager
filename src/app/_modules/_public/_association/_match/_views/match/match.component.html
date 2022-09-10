@@ -101,11 +101,12 @@
         bis zum Spielbeginn eingegeben werden.
       </p>
 
-      <div class="grid grid-cols-2 gap-4 mt-4 lg:mt-8">
+      <div class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8">
         <div>
           <fb-match-event-form
             type="recordkeeper"
             team="both"
+            [fieldValue]="additionalFields?.record_keeper_string || ''"
             (updateGame)="reloadGame()"
             [penalties]="penalties"
             [penaltyCodes]="penaltyCodes"
@@ -116,12 +117,27 @@
           <fb-match-event-form
             type="timekeeper"
             team="both"
+            [fieldValue]="additionalFields?.time_keeper_string || ''"
             (updateGame)="reloadGame()"
             [penalties]="penalties"
             [penaltyCodes]="penaltyCodes"
             [match]="game"
           ></fb-match-event-form>
         </div>
+      </div>
+    </div>
+
+    <div
+      class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8"
+      *ngIf="game.started"
+    >
+      <h2 class="font-bold text-xl lg:text-2xl">Schiedsrichter</h2>
+
+      <p class="pt-4">
+        <span class="font-bold">Wichtig:</span> Dieser Informationen können nur
+        bis zum Spielbeginn eingegeben werden.
+      </p>
+      <div class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8">
         <div>
           <fb-match-event-form
             type="referee1"
@@ -315,6 +331,7 @@
           <fb-match-event-form
             type="timekeepersigned"
             team="both"
+            [fieldChecked]="additionalFields?.time_keeper_signed || false"
             (updateGame)="reloadGame()"
             [penalties]="penalties"
             [penaltyCodes]="penaltyCodes"
@@ -326,6 +343,7 @@
           <fb-match-event-form
             type="recordkeepersigned"
             team="both"
+            [fieldChecked]="additionalFields?.record_keeper_signed || false"
             (updateGame)="reloadGame()"
             [penalties]="penalties"
             [penaltyCodes]="penaltyCodes"
@@ -337,6 +355,7 @@
           <fb-match-event-form
             type="referee1signed"
             team="both"
+            [fieldChecked]="additionalFields?.referee1_signed || false"
             (updateGame)="reloadGame()"
             [penalties]="penalties"
             [penaltyCodes]="penaltyCodes"
@@ -348,6 +367,7 @@
           <fb-match-event-form
             type="referee2signed"
             team="both"
+            [fieldChecked]="additionalFields?.referee2_signed || false"
             (updateGame)="reloadGame()"
             [penalties]="penalties"
             [penaltyCodes]="penaltyCodes"
@@ -359,6 +379,7 @@
           <fb-match-event-form
             type="captainsigned"
             team="home"
+            [fieldChecked]="additionalFields?.home_captain_signed || false"
             (updateGame)="reloadGame()"
             [penalties]="penalties"
             [penaltyCodes]="penaltyCodes"
@@ -370,6 +391,7 @@
           <fb-match-event-form
             type="captainsigned"
             team="guest"
+            [fieldChecked]="additionalFields?.guest_captain_signed || false"
             (updateGame)="reloadGame()"
             [penalties]="penalties"
             [penaltyCodes]="penaltyCodes"

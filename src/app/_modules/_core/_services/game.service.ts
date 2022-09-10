@@ -10,6 +10,8 @@ import {
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { GameFlags } from '../../../_models/game-flags.interface';
+import { GameAdditionalFields } from '../../../_models/game-additional-fields.interface';
+import { RefereeEntry } from '../../../_models/referee-entry.interface';
 @Injectable({
   providedIn: 'root',
 })
@@ -87,5 +89,30 @@ export class GameService {
     const path =
       environment.apiURL + 'user/games/' + gameId + '/set_field.json';
     return this.http.post<GamePlayerEntry[]>(path, fields);
+  }
+
+  public setReferee(
+    gameId: number,
+    refereeNumber: number,
+    licenseNumber: number,
+    name: string
+  ) {
+    const path =
+      environment.apiURL +
+      'user/games/' +
+      gameId +
+      '/set_referee/' +
+      refereeNumber +
+      '.json';
+    return this.http.post<Game[]>(path, {
+      number: licenseNumber,
+      name: name,
+    });
+  }
+
+  public getAdditionalFields(gameId: number) {
+    const path =
+      environment.apiURL + 'user/games/' + gameId + '/additional_fields.json';
+    return this.http.get<GameAdditionalFields>(path);
   }
 }

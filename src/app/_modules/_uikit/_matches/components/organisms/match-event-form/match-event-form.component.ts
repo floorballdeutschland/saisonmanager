@@ -13,6 +13,7 @@ import {
   ClubService,
   GameService,
   NotificationService,
+  RefereeService,
 } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
@@ -29,6 +30,9 @@ import { GameFlags } from '../../../../../../_models/game-flags.interface';
 export class MatchEventFormComponent implements OnInit {
   @Input()
   fieldValue?: string;
+
+  @Input()
+  fieldChecked = false;
 
   @Input()
   type!: string;
@@ -60,7 +64,9 @@ export class MatchEventFormComponent implements OnInit {
   recordkeeper?: string;
   timekeeper?: string;
   refereeNumber1?: number;
+  refereeName1?: string;
   refereeNumber2?: number;
+  refereeName2?: string;
 
   timekeepersigned?: boolean;
   recordkeepersigned?: boolean;
@@ -73,6 +79,7 @@ export class MatchEventFormComponent implements OnInit {
     private _associationService: AssociationService,
     private _gameService: GameService,
     private _clubService: ClubService,
+    private _refereeService: RefereeService,
     private _route: ActivatedRoute,
     private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef,
@@ -88,14 +95,40 @@ export class MatchEventFormComponent implements OnInit {
           this.visitors = parseInt(this.fieldValue || '', 10);
           break;
         case 'recordkeeper':
+          this.recordkeeper = this.fieldValue;
           break;
         case 'timekeeper':
+          this.timekeeper = this.fieldValue;
           break;
         case 'referee1':
           this.refereeNumber1 = parseInt(this.fieldValue || '', 10);
           break;
         case 'referee2':
           this.refereeNumber2 = parseInt(this.fieldValue || '', 10);
+          break;
+      }
+    }
+
+    if (this.fieldChecked) {
+      switch (this.type) {
+        case 'timekeepersigned':
+          this.timekeepersigned = this.fieldChecked;
+          break;
+        case 'recordkeepersigned':
+          this.recordkeepersigned = this.fieldChecked;
+          break;
+        case 'referee1signed':
+          this.referee1signed = this.fieldChecked;
+          break;
+        case 'referee2signed':
+          this.referee2signed = this.fieldChecked;
+          break;
+        case 'captainsigned':
+          if (this.team === 'home') {
+            this.captainsignedhome = this.fieldChecked;
+          } else {
+            this.captainsignedvisitor = this.fieldChecked;
+          }
           break;
       }
     }
@@ -228,21 +261,48 @@ export class MatchEventFormComponent implements OnInit {
         }
         break;
       case 'timeout':
-        // this._gameService.addEvent({
-        //   time,
-        //   event_type,
-        //   period,
-        //   home_goals,
-        //   guest_goals,
-        //   home_number,
-        //   home_assist,
-        //   guest_number,
-        //   guest_assist,
-        //   penalty_id,
-        //   penalty_code_id,
-        //   goal_type,
-        // })
+        const field =
+          this.team === 'home' ? 'home_timeout_string' : 'guest_timeout_string';
+        this._gameService
+          .setGameField(this.match.id, {
+            [field]: `${time} / ${this.period}`,
+          })
+          .subscribe({
+            next: () => {
+              this._notificationService.success('Timout hinzugefügt', {
+                autoClose: true,
+                keepAfterRouteChange: true,
+              });
+              this.updateGame.emit();
+            },
+          });
         break;
+    }
+  }
+
+  public getRefereeInfos() {
+    if (this.type === 'referee1') {
+      if (this.refereeNumber1) {
+        this._refereeService
+          .getRefereeByLicenseNumber(this.refereeNumber1)
+          .subscribe({
+            next: (referee) => {
+              this.refereeName1 = `${referee.lastname}, ${referee.firstname}`;
+              this._cdr.markForCheck();
+            },
+          });
+      }
+    } else {
+      if (this.refereeNumber2) {
+        this._refereeService
+          .getRefereeByLicenseNumber(this.refereeNumber2)
+          .subscribe({
+            next: (referee) => {
+              this.refereeName2 = `${referee.lastname}, ${referee.firstname}`;
+              this._cdr.markForCheck();
+            },
+          });
+      }
     }
   }
 
@@ -263,10 +323,46 @@ export class MatchEventFormComponent implements OnInit {
         saveMessage = 'Zeitnehmer/in gespeichert';
         break;
       case 'referee1':
-        saveMessage = 'Schiedsrichter 1 gespeichert';
+        if (this.refereeNumber1) {
+          this._gameService
+            .setReferee(
+              this.match.id,
+              1,
+              this.refereeNumber1 || 0,
+              this.refereeName1 || ''
+            )
+            .subscribe({
+              next: () => {
+                this._notificationService.success(saveMessage, {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                });
+                this.updateGame.emit();
+              },
+            });
+          saveMessage = 'Schiedsrichter 1 gespeichert';
+        }
         break;
       case 'referee2':
-        saveMessage = 'Schiedsrichter 2 gespeichert';
+        if (this.refereeNumber1) {
+          this._gameService
+            .setReferee(
+              this.match.id,
+              2,
+              this.refereeNumber2 || 0,
+              this.refereeName2 || ''
+            )
+            .subscribe({
+              next: () => {
+                this._notificationService.success(saveMessage, {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                });
+                this.updateGame.emit();
+              },
+            });
+          saveMessage = 'Schiedsrichter 2 gespeichert';
+        }
         break;
     }
 

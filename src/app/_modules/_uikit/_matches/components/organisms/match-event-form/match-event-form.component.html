@@ -111,31 +111,61 @@
   </div>
 
   <div *ngIf="type === 'referee1'">
-    <label class="font-medium text-base text-fb-gray-500"
-      >Schiedsrichter 1</label
-    >
-    <input
-      type="number"
-      inputmode="numeric"
-      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-      placeholder="Lizenznummer"
-      (change)="submitField()"
-      [(ngModel)]="refereeNumber1"
-    />
+    <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 1</p>
+    <div class="grid md:grid-cols-4 gap-1">
+      <input
+        type="number"
+        inputmode="numeric"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nr."
+        (change)="getRefereeInfos()"
+        [(ngModel)]="refereeNumber1"
+      />
+
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-3"
+        placeholder="Nachname, Vorname"
+        [(ngModel)]="refereeName1"
+      />
+
+      <button class="flex md:col-span-4" (click)="submitField()">
+        <span
+          class="grow w-full font-bold text-black leading-[17px] text-sm px-5 py-2 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
+        >
+          Speichern
+        </span>
+      </button>
+    </div>
   </div>
 
   <div *ngIf="type === 'referee2'">
-    <label class="font-medium text-base text-fb-gray-500"
-      >Schiedsrichter 2</label
-    >
-    <input
-      type="number"
-      inputmode="numeric"
-      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-      placeholder="Lizenznummer"
-      (change)="submitField()"
-      [(ngModel)]="refereeNumber2"
-    />
+    <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 2</p>
+    <div class="grid md:grid-cols-4 gap-1">
+      <input
+        type="number"
+        inputmode="numeric"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nr."
+        (change)="getRefereeInfos()"
+        [(ngModel)]="refereeNumber2"
+      />
+
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-3"
+        placeholder="Nachname, Vorname"
+        [(ngModel)]="refereeName2"
+      />
+
+      <button class="flex md:col-span-4" (click)="submitField()">
+        <span
+          class="grow w-full font-bold text-black leading-[17px] text-sm px-5 py-2 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
+        >
+          Speichern
+        </span>
+      </button>
+    </div>
   </div>
 </div>
 <div
