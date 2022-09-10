@@ -1,6 +1,7 @@
 <ng-container *ngIf="event | normalizeEvent: match as gameEvent">
   <div
-    class="grid grid-cols-[36px,1fr,30px,80px,60px] md:grid-cols-[36px,1fr,30px,80px,30px,20px,60px,20px,30px,80px,30px,1fr,36px] items-center grid-rows-2 text-sm h-[78px]"
+    class="grid grid-cols-[36px,1fr,30px,80px,60px] md:grid-cols-[36px,1fr,30px,80px,30px,20px,60px,20px,30px,80px,30px,1fr,36px] items-center text-sm h-[78px]"
+    [ngClass]="!allowCancel ? 'grid-rows-2' : ''"
   >
     <ng-container *ngIf="gameEvent.event_team === 'home'">
       <div>
@@ -161,13 +162,29 @@
         >{{ gameEvent.goal_type_string }}</ng-container
       >
     </div>
+    <div
+      (click)="handleDelete('EVENTID')"
+      *ngIf="allowCancel"
+      class="md:hidden col-span-5 text-center px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
+    >
+      Löschen
+    </div>
 
     <div
       *ngIf="!isLast"
       class="hidden md:block row-start-2 col-start-7 h-full w-full self-center justify-self-center"
     >
       <div
+        (click)="handleDelete('EVENTID')"
+        *ngIf="allowCancel"
+        class="px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
+      >
+        Löschen
+      </div>
+      <div
         class="bg-fb-gray-200 h-[49px] mt-[-5px] w-px mx-auto hidden md:block"
+        [ngClass]="allowCancel ? 'h-[29px]' : 'h-[49px]'"
+        *ngIf="!allowCancel"
       ></div>
     </div>
 

@@ -12,9 +12,11 @@
             let event of match.events | matchEvents: period.period;
             let isLast = last
           "
+          [allowCancel]="allowCancel"
           [isLast]="isLast"
           [match]="match"
           [event]="event"
+          (reloadGame)="handleReload()"
         ></fb-match-history-item>
       </ng-container>
     </ng-container>
