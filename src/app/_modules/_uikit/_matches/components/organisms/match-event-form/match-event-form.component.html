@@ -186,7 +186,9 @@
 
     <ng-container *ngIf="type !== 'timeout'">
       <div class="col-span-2">
-        <label class="font-medium text-base text-fb-gray-500">Torschütze</label>
+        <label class="font-medium text-base text-fb-gray-500">{{
+          type === "goal" ? "Torschütze" : "Spieler/in"
+        }}</label>
         <select
           class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
           [(ngModel)]="playerId"

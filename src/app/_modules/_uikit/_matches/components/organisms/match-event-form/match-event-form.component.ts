@@ -8,7 +8,12 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import { AssociationService, ClubService, GameService } from '@floorball/core';
+import {
+  AssociationService,
+  ClubService,
+  GameService,
+  NotificationService,
+} from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Game, GameFields, Penalty } from '@floorball/types';
@@ -41,7 +46,7 @@ export class MatchEventFormComponent implements OnInit {
   penaltyCodes!: PenaltyCode[];
 
   @Output()
-  updateGame: EventEmitter<Game> = new EventEmitter<Game>();
+  updateGame: EventEmitter<void> = new EventEmitter<void>();
 
   period = '';
   minutes?: number;
@@ -69,6 +74,7 @@ export class MatchEventFormComponent implements OnInit {
     private _gameService: GameService,
     private _clubService: ClubService,
     private _route: ActivatedRoute,
+    private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title
   ) {}
@@ -149,54 +155,77 @@ export class MatchEventFormComponent implements OnInit {
           .setGameFlags(this.match.id, {
             [gameFlag]: true,
           })
-          .subscribe((result) => console.log(result));
-        console.log('next');
+          .subscribe(() => {
+            this._notificationService.success(
+              !this.match.started ? 'Spiel gestartet' : 'Spiel beendet',
+              {
+                autoClose: true,
+                keepAfterRouteChange: true,
+              }
+            );
+          });
         break;
       case 'goal':
-        let assist;
-        if (this.team === 'home') {
-          assist =
-            this.match.players.home.find(
-              (p: { player_id: number | undefined }) =>
-                p.player_id == this.assistPlayerId
-            )?.trikot_number || 0;
-        } else {
-          assist =
-            this.match.players.guest.find(
-              (p: { player_id: number | undefined }) =>
-                p.player_id == this.assistPlayerId
-            )?.trikot_number || 0;
+        if (this.period) {
+          let assist;
+          if (this.team === 'home') {
+            assist =
+              this.match.players.home.find(
+                (p: { player_id: number | undefined }) =>
+                  p.player_id == this.assistPlayerId
+              )?.trikot_number || 0;
+          } else {
+            assist =
+              this.match.players.guest.find(
+                (p: { player_id: number | undefined }) =>
+                  p.player_id == this.assistPlayerId
+              )?.trikot_number || 0;
+          }
+
+          const goal =
+            this.team === 'home'
+              ? { home_number: player, home_assist: assist }
+              : { guest_number: player, guest_assist: assist };
+
+          this._gameService
+            .addEvent(this.match.id, {
+              time,
+              event_type: 'goal',
+              period: parseInt(this.period, 10),
+              home_goals,
+              guest_goals,
+              ...goal,
+            })
+            .subscribe(() => {
+              this.updateGame.emit();
+              this._notificationService.success('Tor hinzugefügt', {
+                autoClose: true,
+                keepAfterRouteChange: true,
+              });
+            });
         }
-
-        const goal =
-          this.team === 'home'
-            ? { home_number: player, home_assist: assist }
-            : { guest_number: player, guest_assist: assist };
-
-        this._gameService
-          .addEvent(this.match.id, {
-            time,
-            event_type: 'goal',
-            period: parseInt(this.period, 10),
-            home_goals,
-            guest_goals,
-            ...goal,
-          })
-          .subscribe((result) => console.log(result));
         break;
       case 'penalty':
-        this._gameService
-          .addEvent(this.match.id, {
-            time,
-            event_type: 'penalty',
-            period: parseInt(this.period, 10),
-            home_goals,
-            guest_goals,
-            [this.team === 'home' ? 'home_number' : 'guest_number']: player,
-            penalty_id: this.penalty,
-            penalty_code_id: this.penaltyCode,
-          })
-          .subscribe((result) => console.log(result));
+        if (this.period) {
+          this._gameService
+            .addEvent(this.match.id, {
+              time,
+              event_type: 'penalty',
+              period: parseInt(this.period, 10),
+              home_goals,
+              guest_goals,
+              [this.team === 'home' ? 'home_number' : 'guest_number']: player,
+              penalty_id: this.penalty,
+              penalty_code_id: this.penaltyCode,
+            })
+            .subscribe(() => {
+              this._notificationService.success('Tor hinzugefügt', {
+                autoClose: true,
+                keepAfterRouteChange: true,
+              });
+              this.updateGame.emit();
+            });
+        }
         break;
       case 'timeout':
         // this._gameService.addEvent({
@@ -219,25 +248,36 @@ export class MatchEventFormComponent implements OnInit {
 
   public submitField() {
     let fields: GameFields = {};
+    let saveMessage = '';
     switch (this.type) {
       case 'visitors':
         fields = { audience: this.visitors?.toString() || '' };
+        saveMessage = 'Zuschauerzahl gespeichert';
         break;
       case 'recordkeeper':
         fields = { record_keeper_string: this.recordkeeper };
+        saveMessage = 'Schriftführer/in gespeichert';
         break;
       case 'timekeeper':
         fields = { time_keeper_string: this.timekeeper };
+        saveMessage = 'Zeitnehmer/in gespeichert';
         break;
       case 'referee1':
+        saveMessage = 'Schiedsrichter 1 gespeichert';
         break;
       case 'referee2':
+        saveMessage = 'Schiedsrichter 2 gespeichert';
         break;
     }
 
     if (Object.keys(fields).length) {
       this._gameService.setGameField(this.match.id, fields).subscribe({
-        next: (result) => console.log(result),
+        next: (result) => {
+          this._notificationService.success(saveMessage, {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          });
+        },
       });
     }
   }
@@ -273,7 +313,9 @@ export class MatchEventFormComponent implements OnInit {
 
     if (Object.keys(flags).length) {
       this._gameService.setGameFlags(this.match.id, flags).subscribe({
-        next: (result) => console.log(result),
+        next: (result) => {
+          console.log(result);
+        },
       });
     }
   }

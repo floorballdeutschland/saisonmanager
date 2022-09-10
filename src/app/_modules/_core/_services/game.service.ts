@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 import {
   Game,
+  GameEvent,
   GameEventInput,
   GameFields,
   GamePlayerEntry,
@@ -74,12 +75,12 @@ export class GameService {
   public addEvent(gameId: number, event: GameEventInput) {
     const path =
       environment.apiURL + 'user/games/' + gameId + '/events/add.json';
-    return this.http.post<Game>(path, event);
+    return this.http.post<GameEvent[]>(path, event);
   }
 
   public setGameFlags(gameId: number, flags: GameFlags) {
     const path = environment.apiURL + 'user/games/' + gameId + '/set_flag.json';
-    return this.http.post<GamePlayerEntry[]>(path, flags);
+    return this.http.post<Game>(path, flags);
   }
 
   public setGameField(gameId: number, fields: GameFields) {

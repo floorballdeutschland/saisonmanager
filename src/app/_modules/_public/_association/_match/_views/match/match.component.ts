@@ -97,6 +97,13 @@ export class MatchComponent implements OnInit, OnDestroy {
     });
   }
 
+  reloadGame() {
+    if (this.game?.id) {
+      this.getMatch(this.game.id.toString());
+      this.event = '';
+    }
+  }
+
   public updateGame(game: Game) {
     this.game = game;
 
