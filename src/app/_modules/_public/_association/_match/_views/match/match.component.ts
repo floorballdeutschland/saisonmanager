@@ -26,10 +26,11 @@ import { PenaltyCode } from '../../../../../../_models/penalty-code.interface';
 })
 export class MatchComponent implements OnInit, OnDestroy {
   match$?: Observable<Game | null>;
+  game?: Game;
   selectedAssociation$!: Observable<GameOperation | null>;
 
   public isLoggedIn$ = this._sessionService.isLoggedIn$;
-  public tab = 'public';
+  public tab = 'secretary';
   public event = '';
   public addDialogOpen = '';
   public squadHistoryDialogOpen = '';
@@ -67,16 +68,13 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._associationService.displayAssociationHeader$.next(false);
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
 
-    this._route.params
-      .pipe(
-        tap((params) => {
-          if (params['matchId']) {
-            this.getMatch(params['matchId']);
-          }
-        }),
-        takeUntil(this._destroy$)
-      )
-      .subscribe();
+    this._route.params.subscribe({
+      next: (params) => {
+        if (params['matchId']) {
+          this.getMatch(params['matchId']);
+        }
+      },
+    });
 
     this._leagueService.getPenalties().subscribe({
       next: (penalties) => {
@@ -92,22 +90,20 @@ export class MatchComponent implements OnInit, OnDestroy {
   }
 
   getMatch(id: string) {
-    this.match$ = this._gameService.getGame(parseInt(id)).pipe(share());
-    this.match$
-      .pipe(
-        filter((m) => !!m),
-        tap((match) => {
-          if (!match) {
-            return;
-          }
-          this._metaTitle.setTitle(
-            `Spiel ${match.home_team_name} gegen ${match.guest_team_name} - ${match.league_name} | Floorball Saisonmanager`
-          );
-        }),
-        take(1),
-        takeUntil(this._destroy$)
-      )
-      .subscribe();
+    this._gameService.getGame(parseInt(id, 10)).subscribe({
+      next: (game) => {
+        this.updateGame(game);
+      },
+    });
+  }
+
+  public updateGame(game: Game) {
+    this.game = game;
+
+    this._metaTitle.setTitle(
+      `Spiel ${game.home_team_name} gegen ${game.guest_team_name} - ${game.league_name} | Floorball Saisonmanager`
+    );
+
     this._cdr.markForCheck();
   }
 

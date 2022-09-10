@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Game, GameEventInput, GamePlayerEntry } from '@floorball/types';
+import {
+  Game,
+  GameEventInput,
+  GameFields,
+  GamePlayerEntry,
+} from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { GameFlags } from '../../../_models/game-flags.interface';
 @Injectable({
@@ -69,11 +74,17 @@ export class GameService {
   public addEvent(gameId: number, event: GameEventInput) {
     const path =
       environment.apiURL + 'user/games/' + gameId + '/events/add.json';
-    return this.http.post<GamePlayerEntry[]>(path, event);
+    return this.http.post<Game>(path, event);
   }
 
   public setGameFlags(gameId: number, flags: GameFlags) {
     const path = environment.apiURL + 'user/games/' + gameId + '/set_flag.json';
     return this.http.post<GamePlayerEntry[]>(path, flags);
+  }
+
+  public setGameField(gameId: number, fields: GameFields) {
+    const path =
+      environment.apiURL + 'user/games/' + gameId + '/set_field.json';
+    return this.http.post<GamePlayerEntry[]>(path, fields);
   }
 }
