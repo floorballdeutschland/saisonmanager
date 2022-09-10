@@ -101,11 +101,11 @@ export class GameService {
       environment.apiURL +
       'user/games/' +
       gameId +
-      '/set_referee/' +
+      '/referees/' +
       refereeNumber +
       '.json';
     return this.http.post<Game[]>(path, {
-      number: licenseNumber,
+      license_id: licenseNumber,
       name: name,
     });
   }

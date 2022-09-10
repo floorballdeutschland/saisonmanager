@@ -1,4 +1,30 @@
 <div *ngIf="!['goal', 'penalty', 'timeout', 'next'].includes(type)">
+  <div *ngIf="type === 'protest'">
+    <input
+      id="protest"
+      type="checkbox"
+      class="mr-3"
+      (change)="submitFlag()"
+      [(ngModel)]="protest"
+    />
+    <label for="protest" class="font-medium text-base text-fb-gray-500"
+      >Protest</label
+    >
+  </div>
+
+  <div *ngIf="type === 'specialevent'">
+    <input
+      id="specialevent"
+      type="checkbox"
+      class="mr-3"
+      (change)="submitFlag()"
+      [(ngModel)]="timekeepersigned"
+    />
+    <label for="specialevent" class="font-medium text-base text-fb-gray-500"
+      >Besonderes Ereignis</label
+    >
+  </div>
+
   <div *ngIf="type === 'timekeepersigned'">
     <input
       id="timekeepersigned"

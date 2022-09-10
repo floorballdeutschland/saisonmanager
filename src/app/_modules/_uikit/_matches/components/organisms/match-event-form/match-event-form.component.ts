@@ -32,7 +32,7 @@ export class MatchEventFormComponent implements OnInit {
   fieldValue?: string;
 
   @Input()
-  fieldChecked = false;
+  fieldChecked? = false;
 
   @Input()
   type!: string;
@@ -68,6 +68,9 @@ export class MatchEventFormComponent implements OnInit {
   refereeNumber2?: number;
   refereeName2?: string;
 
+  protest?: boolean;
+  specialevent?: boolean;
+
   timekeepersigned?: boolean;
   recordkeepersigned?: boolean;
   referee1signed?: boolean;
@@ -89,6 +92,22 @@ export class MatchEventFormComponent implements OnInit {
   public ngOnInit(): void {
     console.log(this.match);
 
+    if (this.type === 'referee1') {
+      this.refereeNumber1 = parseInt(this.match.referees[0]?.license_id, 10);
+      this.refereeName1 =
+        this.match.referees[0]?.last_name +
+        ', ' +
+        this.match.referees[0]?.first_name;
+    }
+
+    if (this.type === 'referee2') {
+      this.refereeNumber2 = parseInt(this.match.referees[1]?.license_id, 10);
+      this.refereeName2 =
+        this.match.referees[1]?.last_name +
+        ', ' +
+        this.match.referees[1]?.first_name;
+    }
+
     if (this.fieldValue) {
       switch (this.type) {
         case 'visitors':
@@ -101,10 +120,10 @@ export class MatchEventFormComponent implements OnInit {
           this.timekeeper = this.fieldValue;
           break;
         case 'referee1':
-          this.refereeNumber1 = parseInt(this.fieldValue || '', 10);
+          // this.refereeNumber1 = parseInt(this.fieldValue || '', 10);
           break;
         case 'referee2':
-          this.refereeNumber2 = parseInt(this.fieldValue || '', 10);
+          // this.refereeNumber2 = parseInt(this.fieldValue || '', 10);
           break;
       }
     }
@@ -122,6 +141,12 @@ export class MatchEventFormComponent implements OnInit {
           break;
         case 'referee2signed':
           this.referee2signed = this.fieldChecked;
+          break;
+        case 'protest':
+          this.protest = this.fieldChecked;
+          break;
+        case 'specialevent':
+          this.specialevent = this.fieldChecked;
           break;
         case 'captainsigned':
           if (this.team === 'home') {
@@ -196,6 +221,7 @@ export class MatchEventFormComponent implements OnInit {
                 keepAfterRouteChange: true,
               }
             );
+            this.updateGame.emit();
           });
         break;
       case 'goal':
@@ -380,29 +406,39 @@ export class MatchEventFormComponent implements OnInit {
 
   public submitFlag() {
     let flags: GameFlags = {};
+    let saveMessage = '';
     switch (this.type) {
+      case 'protest':
+        flags = { protest: this.protest };
+        saveMessage = 'Protest gespeichert';
+        break;
+      case 'specialevent':
+        flags = { special_event: this.specialevent };
+        saveMessage = 'Besonderes Ereignis gespeichert';
+        break;
       case 'timekeepersigned':
         flags = { time_keeper_signed: this.timekeepersigned };
+        saveMessage = 'Unterschrift Zeitnehmer/in gespeichert';
         break;
       case 'recordkeepersigned':
         flags = { record_keeper_signed: this.recordkeepersigned };
+        saveMessage = 'Unterschrift Schriftführer/in gespeichert';
         break;
       case 'referee1signed':
         flags = { referee1_signed: this.referee1signed };
+        saveMessage = 'Unterschrift Schiedsrichter 1 gespeichert';
         break;
       case 'referee2signed':
         flags = { referee2_signed: this.referee2signed };
+        saveMessage = 'Unterschrift Schiedsrichter 2 gespeichert';
         break;
       case 'captainsigned':
-        console.log(
-          this.captainsignedhome,
-          this.captainsignedvisitor,
-          this.team
-        );
         if (this.team === 'home') {
           flags = { home_captain_signed: this.captainsignedhome };
+          saveMessage = 'Unterschrift Kapitän Heim gespeichert';
         } else {
           flags = { guest_captain_signed: this.captainsignedvisitor };
+          saveMessage = 'Unterschrift Kapitän Gast gespeichert';
         }
         break;
     }
@@ -410,7 +446,11 @@ export class MatchEventFormComponent implements OnInit {
     if (Object.keys(flags).length) {
       this._gameService.setGameFlags(this.match.id, flags).subscribe({
         next: (result) => {
-          console.log(result);
+          this._notificationService.success(saveMessage, {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          });
+          this.updateGame.emit();
         },
       });
     }
