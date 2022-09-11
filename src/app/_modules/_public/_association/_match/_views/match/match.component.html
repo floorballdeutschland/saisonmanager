@@ -319,7 +319,7 @@
           <fb-match-event-form
             type="visitors"
             team="both"
-            [fieldValue]="game.audience.toString()"
+            [fieldValue]="game.audience?.toString() || ''"
             (updateGame)="reloadGame()"
             [penalties]="penalties"
             [penaltyCodes]="penaltyCodes"
