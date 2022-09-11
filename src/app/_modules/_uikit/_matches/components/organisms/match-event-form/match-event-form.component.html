@@ -116,7 +116,7 @@
 
   <div *ngIf="type === 'recordkeeper'">
     <label class="font-medium text-base text-fb-gray-500"
-      >Schriftführer/in</label
+      >Schriftführer/in (Nachname, Vorname)</label
     >
     <input
       type="text"
@@ -127,7 +127,9 @@
   </div>
 
   <div *ngIf="type === 'timekeeper'">
-    <label class="font-medium text-base text-fb-gray-500">Zeitnehmer/in</label>
+    <label class="font-medium text-base text-fb-gray-500"
+      >Zeitnehmer/in (Nachname, Vorname)</label
+    >
     <input
       type="text"
       class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
