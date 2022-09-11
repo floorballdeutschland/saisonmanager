@@ -116,7 +116,7 @@ export class GameService {
     return this.http.get<GameAdditionalFields>(path);
   }
 
-  public deleteEvent(gameId: number, eventId: string) {
+  public deleteEvent(gameId: number, eventId: number) {
     const path =
       environment.apiURL + 'user/games/' + gameId + '/events/remove.json';
     return this.http.post<GameEvent>(path, { event_id: eventId });

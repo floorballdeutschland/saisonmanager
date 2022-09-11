@@ -55,6 +55,7 @@ export class NormalizeEventPipe implements PipeTransform {
     }
 
     return {
+      event_id: gameEvent.event_id,
       event_type: gameEvent.event_type,
       event_team: gameEvent.event_team,
       time: gameEvent.time,

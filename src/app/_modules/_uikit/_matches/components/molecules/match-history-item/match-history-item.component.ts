@@ -54,7 +54,7 @@ export class MatchHistoryItemComponent {
     private _cdr: ChangeDetectorRef
   ) {}
 
-  public handleDelete(id: string) {
+  public handleDelete(id: number) {
     this._gameService.deleteEvent(this.match.id, id).subscribe({
       next: (result) => {
         this.reloadGame.emit();

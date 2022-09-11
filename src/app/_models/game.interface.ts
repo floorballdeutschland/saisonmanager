@@ -13,6 +13,7 @@ export interface GameEventLegacy {
 }
 
 export interface GameEvent {
+  event_id: number;
   event_type: string;
   event_team: string;
   period: number;

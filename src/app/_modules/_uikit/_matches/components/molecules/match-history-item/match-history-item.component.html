@@ -163,7 +163,7 @@
       >
     </div>
     <div
-      (click)="handleDelete('EVENTID')"
+      (click)="handleDelete(gameEvent.event_id)"
       *ngIf="allowCancel"
       class="md:hidden col-span-5 text-center px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
     >
@@ -175,7 +175,7 @@
       class="hidden md:block row-start-2 col-start-7 h-full w-full self-center justify-self-center"
     >
       <div
-        (click)="handleDelete('EVENTID')"
+        (click)="handleDelete(gameEvent.event_id)"
         *ngIf="allowCancel"
         class="px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
       >
