@@ -57,6 +57,8 @@ export class MatchEventFormComponent implements OnInit {
   updateGame: EventEmitter<void> = new EventEmitter<void>();
 
   period = '';
+  editLive = true;
+  startTime = '';
   minutes?: number;
   seconds?: number;
   playerId?: number;
@@ -223,6 +225,18 @@ export class MatchEventFormComponent implements OnInit {
             [gameFlag]: true,
           })
           .subscribe(() => {
+            if (!this.match.started) {
+              const hours = new Date(Date.now()).getHours();
+              const minutes = new Date(Date.now()).getMinutes();
+              this._gameService
+                .setGameField(this.match.id, {
+                  start_time: this.editLive
+                    ? `${hours}:${this.pad(minutes, 2)}`
+                    : this.startTime,
+                })
+                .subscribe();
+            }
+
             this._notificationService.success(
               !this.match.started ? 'Spiel gestartet' : 'Spiel beendet',
               {

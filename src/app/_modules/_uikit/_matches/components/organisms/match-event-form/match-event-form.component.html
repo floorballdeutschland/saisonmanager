@@ -337,8 +337,36 @@
     </ng-container>
   </ng-container>
 
+  <ng-container *ngIf="type === 'next'">
+    <div class="col-span-2">
+      <input
+        id="editlive"
+        type="checkbox"
+        class="mr-3"
+        [(ngModel)]="editLive"
+      />
+      <label for="editlive" class="font-medium text-base text-fb-gray-500"
+        >Live eintragen?</label
+      >
+    </div>
+
+    <div class="col-span-2" *ngIf="!editLive">
+      <label for="starttime" class="font-medium text-base text-fb-gray-500"
+        >Startzeit</label
+      >
+      <input
+        id="starttime"
+        type="time"
+        placeholder="HH:mm"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        [(ngModel)]="startTime"
+      />
+    </div>
+  </ng-container>
+
   <button
     (click)="submitEvent()"
+    [disabled]="!editLive && startTime === ''"
     *ngIf="['goal', 'penalty', 'timeout', 'next'].includes(type)"
     class="col-span-2 w-full font-bold text-black leading-[17px] text-sm px-5 py-4 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
   >
