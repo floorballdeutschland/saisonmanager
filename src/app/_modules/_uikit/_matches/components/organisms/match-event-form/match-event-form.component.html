@@ -18,7 +18,7 @@
       type="checkbox"
       class="mr-3"
       (change)="submitFlag()"
-      [(ngModel)]="timekeepersigned"
+      [(ngModel)]="specialevent"
     />
     <label for="specialevent" class="font-medium text-base text-fb-gray-500"
       >Besonderes Ereignis</label
@@ -158,7 +158,7 @@
 
   <div *ngIf="type === 'referee1'">
     <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 1</p>
-    <div class="grid md:grid-cols-4 gap-1">
+    <div class="grid md:grid-cols-5 gap-1">
       <input
         type="number"
         inputmode="numeric"
@@ -170,12 +170,19 @@
 
       <input
         type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-3"
-        placeholder="Nachname, Vorname"
-        [(ngModel)]="refereeName1"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
+        placeholder="Vorname"
+        [(ngModel)]="refereeFirstname1"
       />
 
-      <button class="flex md:col-span-4" (click)="submitField()">
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
+        placeholder="Nachname"
+        [(ngModel)]="refereeLastname1"
+      />
+
+      <button class="flex md:col-span-5" (click)="submitField()">
         <span
           class="grow w-full font-bold text-black leading-[17px] text-sm px-5 py-2 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
         >
@@ -187,7 +194,7 @@
 
   <div *ngIf="type === 'referee2'">
     <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 2</p>
-    <div class="grid md:grid-cols-4 gap-1">
+    <div class="grid md:grid-cols-5 gap-1">
       <input
         type="number"
         inputmode="numeric"
@@ -199,12 +206,19 @@
 
       <input
         type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-3"
-        placeholder="Nachname, Vorname"
-        [(ngModel)]="refereeName2"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
+        placeholder="Vorname"
+        [(ngModel)]="refereeFirstname2"
       />
 
-      <button class="flex md:col-span-4" (click)="submitField()">
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
+        placeholder="Nachname"
+        [(ngModel)]="refereeLastname2"
+      />
+
+      <button class="flex md:col-span-5" (click)="submitField()">
         <span
           class="grow w-full font-bold text-black leading-[17px] text-sm px-5 py-2 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
         >

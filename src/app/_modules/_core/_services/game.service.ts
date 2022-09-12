@@ -94,8 +94,10 @@ export class GameService {
     gameId: number,
     refereeNumber: number,
     licenseNumber: number,
-    name: string
+    lastname: string,
+    firstname: string
   ) {
+    console.log(lastname, firstname);
     const path =
       environment.apiURL +
       'user/games/' +
@@ -104,8 +106,9 @@ export class GameService {
       refereeNumber +
       '.json';
     return this.http.post<Game>(path, {
-      license_id: licenseNumber,
-      name: name,
+      license_id: licenseNumber || '',
+      firstname: firstname,
+      lastname: lastname,
     });
   }
 

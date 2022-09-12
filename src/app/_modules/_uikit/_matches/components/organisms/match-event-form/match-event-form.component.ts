@@ -72,10 +72,12 @@ export class MatchEventFormComponent implements OnInit {
   recordkeeperLastname?: string;
   timekeeperFirstname?: string;
   timekeeperLastname?: string;
-  refereeNumber1?: number;
-  refereeName1?: string;
-  refereeNumber2?: number;
-  refereeName2?: string;
+  refereeNumber1?: number | '';
+  refereeLastname1?: string;
+  refereeFirstname1?: string;
+  refereeNumber2?: number | '';
+  refereeLastname2?: string;
+  refereeFirstname2?: string;
 
   protest?: boolean;
   specialevent?: boolean;
@@ -100,19 +102,17 @@ export class MatchEventFormComponent implements OnInit {
 
   public ngOnInit(): void {
     if (this.type === 'referee1') {
-      this.refereeNumber1 = parseInt(this.match.referees[0]?.license_id, 10);
-      this.refereeName1 =
-        this.match.referees[0]?.last_name +
-        ', ' +
-        this.match.referees[0]?.first_name;
+      this.refereeNumber1 =
+        parseInt(this.match.referees[0]?.license_id, 10) || '';
+      this.refereeLastname1 = this.match.referees[0]?.last_name;
+      this.refereeFirstname1 = this.match.referees[0]?.first_name;
     }
 
     if (this.type === 'referee2') {
-      this.refereeNumber2 = parseInt(this.match.referees[1]?.license_id, 10);
-      this.refereeName2 =
-        this.match.referees[1]?.last_name +
-        ', ' +
-        this.match.referees[1]?.first_name;
+      this.refereeNumber2 =
+        parseInt(this.match.referees[1]?.license_id, 10) || '';
+      this.refereeLastname2 = this.match.referees[1]?.last_name;
+      this.refereeFirstname2 = this.match.referees[1]?.first_name;
     }
 
     if (this.fieldValue) {
@@ -337,7 +337,8 @@ export class MatchEventFormComponent implements OnInit {
           .subscribe({
             next: (referee) => {
               if (referee) {
-                this.refereeName1 = `${referee.lastname}, ${referee.firstname}`;
+                this.refereeLastname1 = referee.lastname;
+                this.refereeFirstname1 = referee.firstname;
                 this._notificationService.error(
                   'Schiedsrichter nicht gefunden',
                   {
@@ -357,7 +358,8 @@ export class MatchEventFormComponent implements OnInit {
           .subscribe({
             next: (referee) => {
               if (referee) {
-                this.refereeName2 = `${referee.lastname}, ${referee.firstname}`;
+                this.refereeLastname2 = referee.lastname;
+                this.refereeFirstname2 = referee.firstname;
                 this._cdr.markForCheck();
               }
             },
@@ -393,46 +395,44 @@ export class MatchEventFormComponent implements OnInit {
         saveMessage = 'Zeitnehmer/in gespeichert';
         break;
       case 'referee1':
-        if (this.refereeNumber1) {
-          this._gameService
-            .setReferee(
-              this.match.id,
-              1,
-              this.refereeNumber1 || 0,
-              this.refereeName1 || ''
-            )
-            .subscribe({
-              next: () => {
-                this._notificationService.success(saveMessage, {
-                  autoClose: true,
-                  keepAfterRouteChange: true,
-                });
-                this.updateGame.emit();
-              },
-            });
-          saveMessage = 'Schiedsrichter 1 gespeichert';
-        }
+        this._gameService
+          .setReferee(
+            this.match.id,
+            1,
+            this.refereeNumber1 || 0,
+            this.refereeLastname1 || '',
+            this.refereeFirstname1 || ''
+          )
+          .subscribe({
+            next: () => {
+              this._notificationService.success(saveMessage, {
+                autoClose: true,
+                keepAfterRouteChange: true,
+              });
+              this.updateGame.emit();
+            },
+          });
+        saveMessage = 'Schiedsrichter 1 gespeichert';
         break;
       case 'referee2':
-        if (this.refereeNumber1) {
-          this._gameService
-            .setReferee(
-              this.match.id,
-              2,
-              this.refereeNumber2 || 0,
-              this.refereeName2 || ''
-            )
-            .subscribe({
-              next: () => {
-                this._notificationService.success(saveMessage, {
-                  autoClose: true,
-                  keepAfterRouteChange: true,
-                });
-                this.updateGame.emit();
-              },
-            });
-          saveMessage = 'Schiedsrichter 2 gespeichert';
-        }
+        this._gameService
+          .setReferee(
+            this.match.id,
+            2,
+            this.refereeNumber2 || 0,
+            this.refereeLastname2 || '',
+            this.refereeFirstname2 || ''
+          )
+          .subscribe({
+            next: () => {
+              this._notificationService.success(saveMessage, {
+                autoClose: true,
+                keepAfterRouteChange: true,
+              });
+              this.updateGame.emit();
+            },
+          });
+        saveMessage = 'Schiedsrichter 2 gespeichert';
         break;
     }
 
