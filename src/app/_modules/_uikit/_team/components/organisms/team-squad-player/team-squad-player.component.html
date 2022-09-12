@@ -3,6 +3,7 @@
     <input
       type="checkbox"
       class="rounded-full focus:ring-gray-400 h-6 w-6 text-gray-500 border-gray-300 rounded"
+      tabindex="-1"
       [ngClass]="changed ? 'ring ring-red-300' : ''"
       [ngModel]="checked"
       [disabled]="!trikotNumber"
@@ -12,7 +13,7 @@
   </div>
   <div class="min-w-0 flex-1 text-sm text-left">
     <label class="font-medium text-gray-700 select-none">
-      {{ player?.last_name }} {{ player?.first_name }}
+      {{ player?.last_name }}, {{ player?.first_name }}
     </label>
     <p *ngIf="changed" class="block mr-2 text-[11px] text-red-700">
       Füge den Spieler hinzu, um die Änderung zu übernehmen
@@ -21,6 +22,7 @@
   <div class="flex items-center min-w-0 text-sm">
     <button
       class="w-6 h-6 border border-fb-gray-500 rounded-full mx-1.5"
+      tabindex="-1"
       [ngClass]="
         captainPlayerId === player.id
           ? 'text-white bg-fb-gray-500 font-extrabold'
@@ -33,20 +35,25 @@
     </button>
     <button
       class="w-6 h-6 border border-fb-gray-500 rounded-full mx-1.5"
+      tabindex="-1"
       [ngClass]="goalkeeper ? 'text-white bg-fb-gray-500 font-extrabold' : ''"
       (click)="toggleGoalkeeper()"
+      *ngIf="gamePlayerEntry && !changed"
     >
       T
     </button>
     <input
+      #trikotNumberInput
       type="number"
       inputmode="numeric"
       placeholder="Nr."
       name="first-name"
       id="first-name"
+      (focusin)="handleFocusChange()"
       [(ngModel)]="trikotNumber"
       (change)="handleTrikotNumberChange()"
       class="ml-1 py-2 w-16 block shadow-sm text-center focus:ring-gray-500 focus:border-gray-500 sm:max-w-xs sm:text-sm border border-gray-200 rounded-md"
+      [ngClass]="hasError ? 'border-red-600' : ''"
     />
   </div>
   <!-- TODO: Direktzugriff auf Spielereigenschaften -->

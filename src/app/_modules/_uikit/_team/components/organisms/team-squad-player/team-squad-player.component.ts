@@ -1,10 +1,13 @@
 import {
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnInit,
   Output,
+  ViewChild,
 } from '@angular/core';
 import { GamePlayerEntry, PlayerWithLicense } from '@floorball/types';
 import { GameService, NotificationService } from '@floorball/core';
@@ -15,8 +18,13 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './team-squad-player.component.html',
   styleUrls: ['./team-squad-player.component.scss'],
 })
-export class TeamSquadPlayerComponent implements OnInit {
+export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
+  @ViewChild('trikotNumberInput')
+  trikotNumberInputElement!: ElementRef<HTMLInputElement>;
+
+  @Input() playerFocus?: number;
   @Input() side!: string;
+  @Input() lineup!: GamePlayerEntry[];
   @Input() player!: PlayerWithLicense;
   @Input() gamePlayerEntry!: GamePlayerEntry | null;
   @Input() captainPlayerId!: number | null;
@@ -26,7 +34,9 @@ export class TeamSquadPlayerComponent implements OnInit {
   @Output() setCaptainPlayerId: EventEmitter<number | null> = new EventEmitter<
     number | null
   >();
+  @Output() setPlayerFocus: EventEmitter<number> = new EventEmitter<number>();
 
+  hasError = false;
   gameId?: number;
   trikotNumber?: string;
   checked = false;
@@ -56,19 +66,45 @@ export class TeamSquadPlayerComponent implements OnInit {
     });
   }
 
+  ngAfterViewInit() {
+    if (this.player.id === this.playerFocus) {
+      this.trikotNumberInputElement.nativeElement.focus();
+    }
+  }
+
+  handleFocusChange() {
+    this.setPlayerFocus.emit(this.player.id);
+  }
+
   handleButtonClick() {
     if (!this.gamePlayerEntry) {
-      console.log('click');
       this.addLinupPlayer();
     } else if (this.changed) {
-      this.updateLinupPlayer();
+      this.updateLinupPlayer(true);
     } else {
       this.removeLinupPlayer();
     }
   }
 
-  public addLinupPlayer() {
-    console.log(this.trikotNumber);
+  public addLinupPlayer(checkDuplicateNumbers = true) {
+    if (
+      checkDuplicateNumbers &&
+      this.lineup.findIndex(
+        (p) => p.trikot_number === parseInt(this.trikotNumber || '', 10)
+      ) >= 0
+    ) {
+      this._notificationService.error('Trikotnummer bereits vergeben', {
+        autoClose: true,
+        keepAfterRouteChange: true,
+      });
+
+      this.hasError = true;
+
+      return;
+    }
+
+    this.hasError = false;
+
     if (this.trikotNumber && this.gameId) {
       this._gameService
         .addLineupPlayerToGame(
@@ -80,6 +116,13 @@ export class TeamSquadPlayerComponent implements OnInit {
         )
         .subscribe({
           next: (result) => {
+            this._notificationService.success(
+              'Spieler/in im Lineup gespeichert',
+              {
+                autoClose: true,
+                keepAfterRouteChange: false,
+              }
+            );
             this.updateLineup.emit(result);
           },
         });
@@ -91,7 +134,7 @@ export class TeamSquadPlayerComponent implements OnInit {
     }
   }
 
-  public updateLinupPlayer() {
+  public updateLinupPlayer(checkDuplicateNumbers: boolean) {
     if (this.gamePlayerEntry?.trikot_number && this.gameId) {
       this._gameService
         .removeLineupPlayerToGame(
@@ -99,7 +142,7 @@ export class TeamSquadPlayerComponent implements OnInit {
           this.side,
           this.gamePlayerEntry?.trikot_number.toString()
         )
-        .subscribe(() => this.addLinupPlayer());
+        .subscribe(() => this.addLinupPlayer(checkDuplicateNumbers));
     } else {
       this._notificationService.error('Bitte gib eine Trikotnummer an', {
         autoClose: true,
@@ -114,6 +157,13 @@ export class TeamSquadPlayerComponent implements OnInit {
         .removeLineupPlayerToGame(this.gameId, this.side, this.trikotNumber)
         .subscribe({
           next: (result) => {
+            this._notificationService.success(
+              'Spieler/in aus Lineup entfernt',
+              {
+                autoClose: true,
+                keepAfterRouteChange: false,
+              }
+            );
             this.updateLineup.emit(result);
           },
         });
@@ -130,8 +180,7 @@ export class TeamSquadPlayerComponent implements OnInit {
       this.gamePlayerEntry &&
       this.gamePlayerEntry.trikot_number.toString() !== this.trikotNumber
     ) {
-      console.log('tiko');
-      this.updateLinupPlayer();
+      this.updateLinupPlayer(true);
     } else {
       this.addLinupPlayer();
     }
@@ -142,7 +191,7 @@ export class TeamSquadPlayerComponent implements OnInit {
 
     if (this.gamePlayerEntry) {
       if (this.gamePlayerEntry.goalkeeper !== this.goalkeeper) {
-        this.updateLinupPlayer();
+        this.updateLinupPlayer(false);
       } else {
         this.checked = true;
         this.changed = false;

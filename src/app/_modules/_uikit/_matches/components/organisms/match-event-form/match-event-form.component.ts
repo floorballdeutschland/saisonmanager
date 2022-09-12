@@ -93,8 +93,6 @@ export class MatchEventFormComponent implements OnInit {
   ) {}
 
   public ngOnInit(): void {
-    console.log(this.match);
-
     if (this.type === 'referee1') {
       this.refereeNumber1 = parseInt(this.match.referees[0]?.license_id, 10);
       this.refereeName1 =

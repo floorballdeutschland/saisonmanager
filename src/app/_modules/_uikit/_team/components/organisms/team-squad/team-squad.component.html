@@ -44,8 +44,11 @@
               <span class="text-sm font-normal">{{ team }}</span>
             </h3>
             <div class="mt-2">
-              <p class="text-sm text-gray-500">
+              <p class="mb-2 text-sm text-gray-500">
                 Füge Spielerinnen und Spieler zu deiner Kaderliste hinzu.
+              </p>
+              <p class="text-sm font-bold text-gray-500">
+                Spieler/innen im Kader: {{ players.length }}
               </p>
             </div>
 
@@ -102,8 +105,11 @@
                   <fb-team-squad-player
                     (updateLineup)="updateLineup($event)"
                     (setCaptainPlayerId)="setCaptainPlayerId($event)"
+                    (setPlayerFocus)="setPlayerFocus($event)"
+                    [playerFocus]="playerFocus"
                     [side]="side"
                     [player]="player.player"
+                    [lineup]="players"
                     [gamePlayerEntry]="player.gamePlayerEntry"
                     [captainPlayerId]="captainPlayerId"
                   ></fb-team-squad-player>

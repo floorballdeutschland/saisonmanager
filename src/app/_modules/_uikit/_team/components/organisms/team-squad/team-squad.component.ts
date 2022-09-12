@@ -33,6 +33,7 @@ export class TeamSquadComponent implements OnInit {
   licenseHash!: LicenseHash;
   captainPlayerId: number | null = null;
   gameId?: number;
+  playerFocus?: number;
 
   public filter: 'all' | 'selected' | 'not-selected' = 'all';
   public filterTypes: SquatFilterType[] = [
@@ -104,5 +105,9 @@ export class TeamSquadComponent implements OnInit {
 
   onClose(): void {
     this.handleClose.emit();
+  }
+
+  setPlayerFocus(playerId: number) {
+    this.playerFocus = playerId;
   }
 }

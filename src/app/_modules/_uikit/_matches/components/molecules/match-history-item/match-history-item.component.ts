@@ -58,7 +58,6 @@ export class MatchHistoryItemComponent {
     this._gameService.deleteEvent(this.match.id, id).subscribe({
       next: (result) => {
         this.reloadGame.emit();
-        console.log(result);
       },
     });
   }

@@ -58,8 +58,6 @@ export class TeamLineupPlayerPipe implements PipeTransform {
       }
     });
 
-    console.log(items);
-
     return items;
   }
 }
