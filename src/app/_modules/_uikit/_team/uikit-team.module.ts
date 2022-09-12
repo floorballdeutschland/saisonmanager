@@ -7,9 +7,16 @@ import * as Organisms from './components/organisms';
 import { TeamSquadPlayerComponent } from './components/organisms/team-squad-player/team-squad-player.component';
 import { TeamLineupPlayerPipe } from '../../../_helpers/_pipes/team-lineup-player.pipe';
 import { FormsModule } from '@angular/forms';
+import { UikitMatchesModule } from '@floorball/uikit/matches';
 
 @NgModule({
-  imports: [CommonModule, CdkTableModule, RouterModule, FormsModule],
+  imports: [
+    CommonModule,
+    CdkTableModule,
+    RouterModule,
+    FormsModule,
+    UikitMatchesModule,
+  ],
   declarations: [
     Organisms.TeamRankingTableComponent,
     Organisms.TeamLineupComponent,

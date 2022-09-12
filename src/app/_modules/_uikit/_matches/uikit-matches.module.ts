@@ -34,6 +34,7 @@ import { SortTrikotnumbersPipe } from '../../../_helpers/_pipes/sort-trikotnumbe
     Organisms.MatchHeaderComponent,
     Organisms.MatchEventFormComponent,
     MatchEventButtonComponent,
+    SortTrikotnumbersPipe,
   ],
 })
 export class UikitMatchesModule {}
