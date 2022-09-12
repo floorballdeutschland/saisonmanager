@@ -2,20 +2,14 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   Club,
   PlayerLicense,
-  Player,
   TeamWithPlayers,
   PlayerWithLicense,
 } from '@floorball/types';
-import {
-  ClubService,
-  NotificationService,
-  PlayerService,
-} from '@floorball/core';
+import { NotificationService, PlayerService } from '@floorball/core';
 
 @Component({
   selector: 'fb-license-admin-detail',
   templateUrl: './license-admin-detail.component.html',
-  styleUrls: ['./license-admin-detail.component.scss'],
 })
 export class LicenseAdminDetailComponent implements OnInit {
   @Input()
@@ -75,7 +69,7 @@ export class LicenseAdminDetailComponent implements OnInit {
     this._playerService
       .updateLicenseStatus(player.id, licenseId, 1, this.reasons[licenseId])
       .subscribe({
-        next: (_) => {
+        next: () => {
           this.handledPlayer.emit(player.id);
           this.hidePlayer[player.id] = true;
           this._notificationService.success(
@@ -101,7 +95,7 @@ export class LicenseAdminDetailComponent implements OnInit {
     this._playerService
       .updateLicenseStatus(player.id, licenseId, 3, this.reasons[licenseId])
       .subscribe({
-        next: (_) => {
+        next: () => {
           this.handledPlayer.emit(player.id);
           this.hidePlayer[player.id] = true;
           this._notificationService.success(

@@ -7,7 +7,6 @@ import { Title } from '@angular/platform-browser';
 @Component({
   selector: 'fb-license-admin-league-detail',
   templateUrl: './license-admin-league-detail.component.html',
-  styleUrls: ['./license-admin-league-detail.component.scss'],
 })
 export class LicenseAdminLeagueDetailComponent implements OnInit {
   teams: TeamWithPlayers[] = [];

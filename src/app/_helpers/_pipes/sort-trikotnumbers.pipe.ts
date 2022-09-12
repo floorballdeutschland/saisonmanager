@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { GamePlayerEntry, Player } from '@floorball/types';
+import { GamePlayerEntry } from '@floorball/types';
 
 @Pipe({ name: 'sortTrikotNumber' })
 export class SortTrikotnumbersPipe implements PipeTransform {

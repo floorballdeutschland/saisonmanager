@@ -17,9 +17,13 @@ import {
 } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { Game, GameFields, Penalty } from '@floorball/types';
-import { PenaltyCode } from '../../../../../../_models/penalty-code.interface';
-import { GameFlags } from '../../../../../../_models/game-flags.interface';
+import {
+  Game,
+  GameFlags,
+  GameFields,
+  Penalty,
+  PenaltyCode,
+} from '@floorball/types';
 
 @Component({
   selector: 'fb-match-event-form',
@@ -420,7 +424,7 @@ export class MatchEventFormComponent implements OnInit {
 
     if (Object.keys(fields).length) {
       this._gameService.setGameField(this.match.id, fields).subscribe({
-        next: (result) => {
+        next: () => {
           this._notificationService.success(saveMessage, {
             autoClose: true,
             keepAfterRouteChange: true,
@@ -472,7 +476,7 @@ export class MatchEventFormComponent implements OnInit {
 
     if (Object.keys(flags).length) {
       this._gameService.setGameFlags(this.match.id, flags).subscribe({
-        next: (result) => {
+        next: () => {
           this._notificationService.success(saveMessage, {
             autoClose: true,
             keepAfterRouteChange: true,

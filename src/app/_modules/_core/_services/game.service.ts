@@ -3,15 +3,14 @@ import { HttpClient } from '@angular/common/http';
 
 import {
   Game,
+  GameAdditionalFields,
   GameEvent,
   GameEventInput,
   GameFields,
+  GameFlags,
   GamePlayerEntry,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
-import { GameFlags } from '../../../_models/game-flags.interface';
-import { GameAdditionalFields } from '../../../_models/game-additional-fields.interface';
-import { RefereeEntry } from '../../../_models/referee-entry.interface';
 @Injectable({
   providedIn: 'root',
 })

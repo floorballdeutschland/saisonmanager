@@ -3,11 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import {
   Club,
+  GameOperationWithLeagues,
   GameScheduleEntry,
   League,
   LeagueClass,
   LeagueWithTeams,
   Penalty,
+  PenaltyCode,
   ScorerEntry,
   TableEntry,
   Team,
@@ -24,8 +26,6 @@ import {
   switchMap,
 } from 'rxjs';
 import { AssociationService } from '.';
-import { GameOperationWithLeagues } from 'src/app/_models/game-operation.interface';
-import { PenaltyCode } from '../../../_models/penalty-code.interface';
 
 @Injectable({
   providedIn: 'root',

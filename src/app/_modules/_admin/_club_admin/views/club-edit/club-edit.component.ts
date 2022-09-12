@@ -11,11 +11,10 @@ import {
   GameOperationService,
   NotificationService,
 } from '@floorball/core';
-import { Club, GameOperation, League, LeagueClass } from 'src/app/_models';
+import { Club, GameOperation } from '@floorball/types';
 import { Observable, Subject, share, tap, take, takeUntil, of } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GameOperationWithLeagues } from 'src/app/_models/game-operation.interface';
 
 @Component({
   templateUrl: './club-edit.component.html',

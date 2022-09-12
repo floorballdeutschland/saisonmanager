@@ -13,7 +13,7 @@ import {
   LicenseHash,
   SquatFilterType,
 } from '@floorball/models';
-import { ClubService, GameService, LeagueService } from '@floorball/core';
+import { ClubService, GameService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 

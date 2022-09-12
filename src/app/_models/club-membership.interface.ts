@@ -1,5 +1,3 @@
-import { Player } from './player.interface';
-
 export interface ClubMembership {
   club_id: number;
   home_club: boolean;

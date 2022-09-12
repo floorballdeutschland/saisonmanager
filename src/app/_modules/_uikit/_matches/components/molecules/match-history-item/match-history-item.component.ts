@@ -4,20 +4,11 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnInit,
   Output,
   ViewEncapsulation,
 } from '@angular/core';
 import { Game, GameEvent } from '@floorball/types';
-import {
-  AssociationService,
-  GameService,
-  LeagueService,
-  SessionService,
-} from '@floorball/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Location } from '@angular/common';
-import { Title } from '@angular/platform-browser';
+import { GameService } from '@floorball/core';
 
 @Component({
   selector: 'fb-match-history-item',
@@ -56,7 +47,7 @@ export class MatchHistoryItemComponent {
 
   public handleDelete(id: number) {
     this._gameService.deleteEvent(this.match.id, id).subscribe({
-      next: (result) => {
+      next: () => {
         this.reloadGame.emit();
       },
     });

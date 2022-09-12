@@ -5,10 +5,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { AssociationService, LeagueService } from '@floorball/core';
-import { GameOperation } from 'src/app/_models';
-import { Observable } from 'rxjs';
 import { Title } from '@angular/platform-browser';
-import { GameOperationWithLeagues } from 'src/app/_models/game-operation.interface';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({

@@ -6,8 +6,14 @@ import {
   OnDestroy,
   ChangeDetectorRef,
 } from '@angular/core';
-import { filter, Observable, share, Subject, take, takeUntil, tap } from 'rxjs';
-import { Game, GameOperation, Penalty } from '@floorball/types';
+import { Observable, Subject } from 'rxjs';
+import {
+  Game,
+  GameOperation,
+  Penalty,
+  PenaltyCode,
+  GameAdditionalFields,
+} from '@floorball/types';
 import {
   AssociationService,
   GameService,
@@ -17,8 +23,6 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
-import { PenaltyCode } from '../../../../../../_models/penalty-code.interface';
-import { GameAdditionalFields } from '../../../../../../_models/game-additional-fields.interface';
 
 @Component({
   templateUrl: './match.component.html',

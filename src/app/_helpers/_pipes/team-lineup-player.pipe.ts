@@ -1,9 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import {
-  GamePlayerEntry,
-  PlayerWithLicense,
-  TeamWithPlayers,
-} from '@floorball/types';
+import { GamePlayerEntry, PlayerWithLicense } from '@floorball/types';
 
 @Pipe({ name: 'teamLineupPlayer' })
 export class TeamLineupPlayerPipe implements PipeTransform {

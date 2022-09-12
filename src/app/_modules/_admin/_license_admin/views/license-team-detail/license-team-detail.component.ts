@@ -5,10 +5,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { AssociationService, ClubService } from '@floorball/core';
-import { GameOperation, LicenseHash } from 'src/app/_models';
+import {
+  GameOperation,
+  LicenseHash,
+  GameOperationWithClubs,
+} from '@floorball/types';
 import { Observable } from 'rxjs';
 import { Title } from '@angular/platform-browser';
-import { GameOperationWithClubs } from 'src/app/_models/game-operation.interface';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -61,7 +64,7 @@ export class LicenseTeamDetailComponent implements OnInit {
     this._clubService
       .userCreateLicenseRequest(this.playerId, this.teamId)
       .subscribe({
-        next: (result) => {
+        next: () => {
           // reload user licenses
           this.loadUserLicenses();
         },
@@ -72,7 +75,7 @@ export class LicenseTeamDetailComponent implements OnInit {
     this._clubService
       .userWithdrawLicenseRequest(playerId, licenseId)
       .subscribe({
-        next: (result) => {
+        next: () => {
           // reload user licenses
           this.loadUserLicenses();
         },
