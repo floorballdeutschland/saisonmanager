@@ -21,6 +21,6 @@ export class RefereeService {
   public getRefereeByLicenseNumber(licenseNumber: number) {
     const path =
       environment.apiURL + 'user/referees/' + licenseNumber + '.json';
-    return this.http.get<RefereeEntry>(path);
+    return this.http.get<RefereeEntry | null>(path);
   }
 }

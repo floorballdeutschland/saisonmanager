@@ -118,24 +118,42 @@
     <label class="font-medium text-base text-fb-gray-500"
       >Schriftführer/in (Nachname, Vorname)</label
     >
-    <input
-      type="text"
-      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-      (change)="submitField()"
-      [(ngModel)]="recordkeeper"
-    />
+    <div class="grid grid-cols-2 gap-1">
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Vorname"
+        (change)="submitField()"
+        [(ngModel)]="recordkeeperFirstname"
+      />
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nachname"
+        (change)="submitField()"
+        [(ngModel)]="recordkeeperLastname"
+      />
+    </div>
   </div>
 
   <div *ngIf="type === 'timekeeper'">
-    <label class="font-medium text-base text-fb-gray-500"
-      >Zeitnehmer/in (Nachname, Vorname)</label
-    >
-    <input
-      type="text"
-      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-      (change)="submitField()"
-      [(ngModel)]="timekeeper"
-    />
+    <label class="font-medium text-base text-fb-gray-500">Zeitnehmer/in</label>
+    <div class="grid grid-cols-2 gap-1">
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Vorname"
+        (change)="submitField()"
+        [(ngModel)]="timekeeperFirstname"
+      />
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nachname"
+        (change)="submitField()"
+        [(ngModel)]="timekeeperLastname"
+      />
+    </div>
   </div>
 
   <div *ngIf="type === 'referee1'">

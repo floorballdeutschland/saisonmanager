@@ -104,7 +104,7 @@ export class GameService {
       '/referees/' +
       refereeNumber +
       '.json';
-    return this.http.post<Game[]>(path, {
+    return this.http.post<Game>(path, {
       license_id: licenseNumber,
       name: name,
     });

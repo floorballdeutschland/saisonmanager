@@ -41,17 +41,13 @@ export class TeamSquadComponent implements OnInit {
     { type: 'not-selected', title: 'Nicht ausgewählt' },
   ];
 
-  licenseList: { playerId: number; trikotNumber: number }[] = [];
-
   constructor(
     private _clubService: ClubService,
     private _gameService: GameService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title
-  ) {
-    this._metaTitle.setTitle('Floorball Saisonmanager Lizenzverwaltung');
-  }
+  ) {}
 
   ngOnInit(): void {
     this.loadUserLicenses();

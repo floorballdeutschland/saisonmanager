@@ -62,7 +62,10 @@ export class MatchEventFormComponent implements OnInit {
 
   visitors?: number;
   recordkeeper?: string;
-  timekeeper?: string;
+  recordkeeperFirstname?: string;
+  recordkeeperLastname?: string;
+  timekeeperFirstname?: string;
+  timekeeperLastname?: string;
   refereeNumber1?: number;
   refereeName1?: string;
   refereeNumber2?: number;
@@ -114,10 +117,14 @@ export class MatchEventFormComponent implements OnInit {
           this.visitors = parseInt(this.fieldValue || '', 10);
           break;
         case 'recordkeeper':
-          this.recordkeeper = this.fieldValue;
+          const recordKeeperName = this.fieldValue.split(', ');
+          this.recordkeeperLastname = recordKeeperName[0];
+          this.recordkeeperFirstname = recordKeeperName[1];
           break;
         case 'timekeeper':
-          this.timekeeper = this.fieldValue;
+          const timekeeperName = this.fieldValue.split(', ');
+          this.timekeeperLastname = timekeeperName[0];
+          this.timekeeperFirstname = timekeeperName[1];
           break;
         case 'referee1':
           // this.refereeNumber1 = parseInt(this.fieldValue || '', 10);
@@ -313,8 +320,17 @@ export class MatchEventFormComponent implements OnInit {
           .getRefereeByLicenseNumber(this.refereeNumber1)
           .subscribe({
             next: (referee) => {
-              this.refereeName1 = `${referee.lastname}, ${referee.firstname}`;
-              this._cdr.markForCheck();
+              if (referee) {
+                this.refereeName1 = `${referee.lastname}, ${referee.firstname}`;
+                this._notificationService.error(
+                  'Schiedsrichter nicht gefunden',
+                  {
+                    autoClose: true,
+                    keepAfterRouteChange: true,
+                  }
+                );
+                this._cdr.markForCheck();
+              }
             },
           });
       }
@@ -324,8 +340,10 @@ export class MatchEventFormComponent implements OnInit {
           .getRefereeByLicenseNumber(this.refereeNumber2)
           .subscribe({
             next: (referee) => {
-              this.refereeName2 = `${referee.lastname}, ${referee.firstname}`;
-              this._cdr.markForCheck();
+              if (referee) {
+                this.refereeName2 = `${referee.lastname}, ${referee.firstname}`;
+                this._cdr.markForCheck();
+              }
             },
           });
       }
@@ -341,11 +359,21 @@ export class MatchEventFormComponent implements OnInit {
         saveMessage = 'Zuschauerzahl gespeichert';
         break;
       case 'recordkeeper':
-        fields = { record_keeper_string: this.recordkeeper };
+        fields = {
+          record_keeper_string: `${this.recordkeeperLastname?.replace(
+            ',',
+            ''
+          )}, ${this.recordkeeperFirstname?.replace(',', '')}`,
+        };
         saveMessage = 'Schriftführer/in gespeichert';
         break;
       case 'timekeeper':
-        fields = { time_keeper_string: this.timekeeper };
+        fields = {
+          time_keeper_string: `${this.timekeeperLastname?.replace(
+            ',',
+            ''
+          )}, ${this.timekeeperFirstname?.replace(',', '')}`,
+        };
         saveMessage = 'Zeitnehmer/in gespeichert';
         break;
       case 'referee1':
@@ -399,6 +427,7 @@ export class MatchEventFormComponent implements OnInit {
             autoClose: true,
             keepAfterRouteChange: true,
           });
+          this.updateGame.emit();
         },
       });
     }
