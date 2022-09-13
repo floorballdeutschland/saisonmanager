@@ -69,4 +69,15 @@ export class PlayerService {
       reason: reason,
     });
   }
+
+  public reenableLicenseRequest(playerId: number, licenseId: string) {
+    const path =
+      environment.apiURL +
+      'user/players/' +
+      playerId +
+      '/reenable_license_request.json';
+    return this.http.post<Player>(path, {
+      license_id: licenseId,
+    });
+  }
 }
