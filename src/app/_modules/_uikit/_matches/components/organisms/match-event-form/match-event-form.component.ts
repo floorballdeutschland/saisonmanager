@@ -230,7 +230,7 @@ export class MatchEventFormComponent implements OnInit {
               const minutes = new Date(Date.now()).getMinutes();
               this._gameService
                 .setGameField(this.match.id, {
-                  start_time: this.editLive
+                  actual_start_time: this.editLive
                     ? `${hours}:${this.pad(minutes, 2)}`
                     : this.startTime,
                 })
