@@ -41,8 +41,8 @@ export interface GamePlayerEntry {
 }
 
 export interface GamePlayers {
-  home: GamePlayerEntry[];
-  guest: GamePlayerEntry[];
+  home?: GamePlayerEntry[];
+  guest?: GamePlayerEntry[];
 }
 
 export interface GameResult {
