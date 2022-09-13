@@ -1,0 +1,413 @@
+<div *ngIf="!['goal', 'penalty', 'timeout', 'next'].includes(type)">
+  <div *ngIf="type === 'overtime'">
+    <input
+      id="overtime"
+      type="checkbox"
+      class="mr-3"
+      (change)="submitFlag()"
+      [(ngModel)]="overtime"
+    />
+    <label for="overtime" class="font-medium text-base text-fb-gray-500"
+      >Verlängerung</label
+    >
+  </div>
+
+  <div *ngIf="type === 'protest'">
+    <input
+      id="protest"
+      type="checkbox"
+      class="mr-3"
+      (change)="submitFlag()"
+      [(ngModel)]="protest"
+    />
+    <label for="protest" class="font-medium text-base text-fb-gray-500"
+      >Protest</label
+    >
+  </div>
+
+  <div *ngIf="type === 'specialevent'">
+    <input
+      id="specialevent"
+      type="checkbox"
+      class="mr-3"
+      (change)="submitFlag()"
+      [(ngModel)]="specialevent"
+    />
+    <label for="specialevent" class="font-medium text-base text-fb-gray-500"
+      >Besonderes Ereignis</label
+    >
+  </div>
+
+  <div *ngIf="type === 'timekeepersigned'">
+    <input
+      id="timekeepersigned"
+      type="checkbox"
+      class="mr-3"
+      (change)="submitFlag()"
+      [(ngModel)]="timekeepersigned"
+    />
+    <label for="timekeepersigned" class="font-medium text-base text-fb-gray-500"
+      >Unterschrift Zeitnehmer/in</label
+    >
+  </div>
+
+  <div *ngIf="type === 'recordkeepersigned'">
+    <input
+      id="recordkeepersigned"
+      type="checkbox"
+      class="mr-3"
+      (change)="submitFlag()"
+      [(ngModel)]="recordkeepersigned"
+    />
+    <label
+      for="recordkeepersigned"
+      class="font-medium text-base text-fb-gray-500"
+      >Unterschrift Schriftführer/in</label
+    >
+  </div>
+
+  <div *ngIf="type === 'referee1signed'">
+    <input
+      id="referee1signed"
+      type="checkbox"
+      class="mr-3"
+      (change)="submitFlag()"
+      [(ngModel)]="referee1signed"
+    />
+    <label for="referee1signed" class="font-medium text-base text-fb-gray-500"
+      >Unterschrift Schiedsrichter 1</label
+    >
+  </div>
+
+  <div *ngIf="type === 'referee2signed'">
+    <input
+      id="referee2signed"
+      type="checkbox"
+      class="mr-3"
+      (change)="submitFlag()"
+      [(ngModel)]="referee2signed"
+    />
+    <label for="referee2signed" class="font-medium text-base text-fb-gray-500"
+      >Unterschrift Schiedsrichter 2</label
+    >
+  </div>
+
+  <div *ngIf="type === 'captainsigned'">
+    <input
+      [id]="'captainsigned-' + team"
+      type="checkbox"
+      class="mr-3"
+      (change)="submitFlag()"
+      [(ngModel)]="captainsignedhome"
+      *ngIf="team === 'home'"
+    />
+    <input
+      [id]="'captainsigned-' + team"
+      type="checkbox"
+      class="mr-3"
+      (change)="submitFlag()"
+      [(ngModel)]="captainsignedvisitor"
+      *ngIf="team === 'guest'"
+    />
+    <label
+      [for]="'captainsigned-' + team"
+      class="font-medium text-base text-fb-gray-500"
+      >Unterschrift {{ team === "home" ? "Heim" : "Gast" }}</label
+    >
+  </div>
+
+  <div *ngIf="type === 'visitors'">
+    <label class="font-medium text-base text-fb-gray-500">Zuschauerzahl</label>
+    <input
+      type="number"
+      inputmode="numeric"
+      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+      (change)="submitField()"
+      [(ngModel)]="visitors"
+    />
+  </div>
+
+  <div *ngIf="type === 'recordkeeper'">
+    <label class="font-medium text-base text-fb-gray-500"
+      >Schriftführer/in (Nachname, Vorname)</label
+    >
+    <div class="grid grid-cols-2 gap-1">
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Vorname"
+        (change)="submitField()"
+        [(ngModel)]="recordkeeperFirstname"
+      />
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nachname"
+        (change)="submitField()"
+        [(ngModel)]="recordkeeperLastname"
+      />
+    </div>
+  </div>
+
+  <div *ngIf="type === 'timekeeper'">
+    <label class="font-medium text-base text-fb-gray-500">Zeitnehmer/in</label>
+    <div class="grid grid-cols-2 gap-1">
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Vorname"
+        (change)="submitField()"
+        [(ngModel)]="timekeeperFirstname"
+      />
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nachname"
+        (change)="submitField()"
+        [(ngModel)]="timekeeperLastname"
+      />
+    </div>
+  </div>
+
+  <div *ngIf="type === 'referee1'">
+    <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 1</p>
+    <div class="grid md:grid-cols-5 gap-1">
+      <input
+        type="number"
+        inputmode="numeric"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nr."
+        (change)="getRefereeInfos()"
+        [(ngModel)]="refereeNumber1"
+      />
+
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
+        placeholder="Vorname"
+        [(ngModel)]="refereeFirstname1"
+      />
+
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
+        placeholder="Nachname"
+        [(ngModel)]="refereeLastname1"
+      />
+
+      <button class="flex md:col-span-5" (click)="submitField()">
+        <span
+          class="grow w-full font-bold text-black leading-[17px] text-sm px-5 py-2 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
+        >
+          Speichern
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="type === 'referee2'">
+    <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 2</p>
+    <div class="grid md:grid-cols-5 gap-1">
+      <input
+        type="number"
+        inputmode="numeric"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nr."
+        (change)="getRefereeInfos()"
+        [(ngModel)]="refereeNumber2"
+      />
+
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
+        placeholder="Vorname"
+        [(ngModel)]="refereeFirstname2"
+      />
+
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
+        placeholder="Nachname"
+        [(ngModel)]="refereeLastname2"
+      />
+
+      <button class="flex md:col-span-5" (click)="submitField()">
+        <span
+          class="grow w-full font-bold text-black leading-[17px] text-sm px-5 py-2 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
+        >
+          Speichern
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+<div
+  *ngIf="['goal', 'penalty', 'timeout', 'next'].includes(type)"
+  class="relative grid grid-cols-2 gap-3 p-4 bg-fb-gray-200"
+  [ngClass]="
+    team !== undefined && team !== 'both'
+      ? team === 'home'
+        ? 'before:block before:absolute before:top-0 before:left-1/4 before:w-6 before:h-6 before:bg-gray-200 before:-translate-y-full before:-translate-x-full before:origin-bottom-left before:rotate-45'
+        : 'before:block before:absolute before:top-0 before:left-3/4 before:w-6 before:h-6 before:bg-gray-200 before:-translate-y-full before:-translate-x-1/2 before:origin-bottom-left before:rotate-45'
+      : ''
+  "
+>
+  <ng-container *ngIf="['goal', 'penalty', 'timeout'].includes(type)">
+    <div class="col-span-2">
+      <label class="font-medium text-base text-fb-gray-500"
+        >Spielabschnitt</label
+      >
+      <select
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        [ngModel]="currentPeriod"
+        (change)="changePeriod($event)"
+      >
+        <option value="">Spielabschnitt auswählen...</option>
+        <option [value]="p.period" *ngFor="let p of match.period_titles">
+          {{ p.title }}
+        </option>
+      </select>
+    </div>
+
+    <div>
+      <label class="font-medium text-base text-fb-gray-500">Minuten</label>
+      <input
+        type="number"
+        inputmode="numeric"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        [(ngModel)]="minutes"
+      />
+    </div>
+    <div>
+      <label class="font-medium text-base text-fb-gray-500">Sekunden</label>
+      <input
+        type="number"
+        inputmode="numeric"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        [(ngModel)]="seconds"
+      />
+    </div>
+
+    <ng-container *ngIf="type !== 'timeout'">
+      <div class="col-span-2">
+        <label class="font-medium text-base text-fb-gray-500">{{
+          type === "goal" ? "Torschütze" : "Spieler/in"
+        }}</label>
+        <select
+          class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+          [(ngModel)]="playerId"
+        >
+          <option
+            [value]="player.player_id"
+            *ngFor="
+              let player of (team === 'home'
+                ? match.players.home || []
+                : match.players.guest || []
+              ) | sortTrikotNumber
+            "
+          >
+            {{ player.trikot_number }} - {{ player.player_name }},
+            {{ player.player_firstname }}
+          </option>
+        </select>
+      </div>
+
+      <ng-container *ngIf="type === 'goal'">
+        <div class="col-span-2">
+          <label class="font-medium text-base text-fb-gray-500">Assist</label>
+          <select
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            [(ngModel)]="assistPlayerId"
+          >
+            <option
+              [value]="player.player_id"
+              *ngFor="
+                let player of (team === 'home'
+                  ? match.players.home || []
+                  : match.players.guest || []
+                ) | sortTrikotNumber
+              "
+            >
+              {{ player.trikot_number }} - {{ player.player_name }},
+              {{ player.player_firstname }}
+            </option>
+          </select>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="type === 'penalty'">
+        <div class="col-span-2">
+          <label class="font-medium text-base text-fb-gray-500">Strafe</label>
+          <select
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            [(ngModel)]="penalty"
+          >
+            <option [value]="p.id" *ngFor="let p of penalties">
+              {{ p.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-span-2">
+          <label class="font-medium text-base text-fb-gray-500"
+            >Strafcode</label
+          >
+          <select
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            [(ngModel)]="penaltyCode"
+          >
+            <option [value]="p.id" *ngFor="let p of penaltyCodes">
+              {{ p.code }} - {{ p.description }}
+            </option>
+          </select>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+
+  <ng-container *ngIf="type === 'next' && !match.started">
+    <div class="col-span-2">
+      <input
+        id="editlive"
+        type="checkbox"
+        class="mr-3"
+        [(ngModel)]="editLive"
+      />
+      <label for="editlive" class="font-medium text-base text-fb-gray-500"
+        >Live eintragen?</label
+      >
+    </div>
+
+    <div class="col-span-2" *ngIf="!editLive">
+      <label for="starttime" class="font-medium text-base text-fb-gray-500"
+        >Startzeit</label
+      >
+      <input
+        id="starttime"
+        type="time"
+        placeholder="HH:mm"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        [(ngModel)]="startTime"
+      />
+    </div>
+  </ng-container>
+
+  <button
+    (click)="submitEvent()"
+    [disabled]="!editLive && startTime === ''"
+    *ngIf="['goal', 'penalty', 'timeout', 'next'].includes(type)"
+    class="col-span-2 w-full font-bold text-black leading-[17px] text-sm px-5 py-4 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
+  >
+    <ng-container *ngIf="['goal', 'penalty', 'timeout'].includes(type)">
+      {{ getEventString() }} eintragen
+    </ng-container>
+    <ng-container *ngIf="['next'].includes(type) && !match.ended">
+      <ng-container *ngIf="!match.started && !match.ended"
+        >Spiel starten</ng-container
+      >
+      <ng-container *ngIf="match.started && !match.ended"
+        >Spiel beenden</ng-container
+      >
+    </ng-container>
+  </button>
+</div>

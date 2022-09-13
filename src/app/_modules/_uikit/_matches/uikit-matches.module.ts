@@ -4,9 +4,12 @@ import * as Molecules from './components/molecules';
 import * as Organisms from './components/organisms';
 import { RouterModule } from '@angular/router';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { MatchEventButtonComponent } from './components/organisms';
+import { FormsModule } from '@angular/forms';
+import { SortTrikotnumbersPipe } from '../../../_helpers/_pipes/sort-trikotnumbers.pipe';
 
 @NgModule({
-  imports: [CommonModule, RouterModule, UikitCommonModule],
+  imports: [CommonModule, RouterModule, UikitCommonModule, FormsModule],
   declarations: [
     Molecules.MatchPairingComponent,
     Molecules.MatchEncounterComponent,
@@ -18,6 +21,9 @@ import { UikitCommonModule } from '@floorball/uikit/common';
     Organisms.NextMatchListComponent,
     Organisms.MatchHistoryComponent,
     Organisms.MatchHeaderComponent,
+    Organisms.MatchEventFormComponent,
+    Organisms.MatchEventButtonComponent,
+    SortTrikotnumbersPipe,
   ],
   exports: [
     Organisms.MatchPairingListComponent,
@@ -26,6 +32,9 @@ import { UikitCommonModule } from '@floorball/uikit/common';
     Organisms.NextMatchListComponent,
     Organisms.MatchHistoryComponent,
     Organisms.MatchHeaderComponent,
+    Organisms.MatchEventFormComponent,
+    MatchEventButtonComponent,
+    SortTrikotnumbersPipe,
   ],
 })
 export class UikitMatchesModule {}

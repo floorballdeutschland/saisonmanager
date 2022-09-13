@@ -91,7 +91,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this.subscriptions.push(
       this._sessionService.lostPassword(data.username).subscribe({
-        next: (data) => {
+        next: () => {
           // this.router.navigate([this.returnUrl])
           this._router.navigate(['/', 'login']);
         },

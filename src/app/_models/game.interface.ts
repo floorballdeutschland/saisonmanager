@@ -13,6 +13,7 @@ export interface GameEventLegacy {
 }
 
 export interface GameEvent {
+  event_id: number;
   event_type: string;
   event_team: string;
   period: number;
@@ -40,8 +41,8 @@ export interface GamePlayerEntry {
 }
 
 export interface GamePlayers {
-  home: GamePlayerEntry[];
-  guest: GamePlayerEntry[];
+  home?: GamePlayerEntry[];
+  guest?: GamePlayerEntry[];
 }
 
 export interface GameResult {
@@ -69,10 +70,12 @@ export interface Game {
   start_time: string;
   date: Date;
   audience: number;
+  home_team_id: number;
   home_team_name: string;
   guest_team_name: string;
   home_team_logo: string;
   home_team_small_logo: string;
+  guest_team_id: number;
   guest_team_logo: string;
   guest_team_small_logo: string;
   events_legacy: GameEventLegacy[];
@@ -96,4 +99,5 @@ export interface Game {
   nominated_referees: string;
   period_titles: Array<{ period: number; title: string }>;
   live_stream_link?: string | null;
+  permission?: string[];
 }

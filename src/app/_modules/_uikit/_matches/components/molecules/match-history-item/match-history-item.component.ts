@@ -1,10 +1,14 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 import { Game, GameEvent } from '@floorball/types';
+import { GameService } from '@floorball/core';
 
 @Component({
   selector: 'fb-match-history-item',
@@ -29,4 +33,23 @@ export class MatchHistoryItemComponent {
 
   @Input()
   isLast = false;
+
+  @Input()
+  allowCancel = false;
+
+  @Output()
+  reloadGame: EventEmitter<void> = new EventEmitter<void>();
+
+  constructor(
+    private _gameService: GameService,
+    private _cdr: ChangeDetectorRef
+  ) {}
+
+  public handleDelete(id: number) {
+    this._gameService.deleteEvent(this.match.id, id).subscribe({
+      next: () => {
+        this.reloadGame.emit();
+      },
+    });
+  }
 }

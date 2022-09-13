@@ -218,7 +218,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     this._playerService
       .adminCreateOrUpdatePlayer({ ...player, club_id: this.club_id })
       .subscribe({
-        next: (result) => {
+        next: () => {
           const message = [
             isNewPlayer
               ? 'Spieler erfolgreich hinzugefügt.'
@@ -249,7 +249,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     this._playerService
       .adminAddAdditionalClub(player?.id || 0, clubId || '0')
       .subscribe({
-        next: (result) => {
+        next: () => {
           const message = 'Spieler wurde erfolgreich freigegeben.';
           this._notificationService.success(message, {
             autoClose: true,
@@ -272,7 +272,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     this._playerService
       .adminTransferPlayer(player?.id || 0, clubId || '0')
       .subscribe({
-        next: (result) => {
+        next: () => {
           const message = 'Spieler wurde erfolgreich transferiert.';
           this._notificationService.success(message, {
             autoClose: true,

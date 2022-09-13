@@ -1,12 +1,12 @@
 <ng-container *ngIf="notifications">
   <div
-    class="flex flex-row lg:block justify-between items-center lg:h-full fixed z-40 top-0 lg:max-w-[800px] p-5 w-full lg:relative gap-[10px]"
+    class="flex flex-row lg:block justify-between items-center lg:h-full fixed z-50 top-0 lg:max-w-[800px] p-5 w-full lg:relative gap-[10px]"
   >
     <ng-container *ngFor="let notification of notifications">
       <ng-container *ngIf="notification.type === getType('success')">
         <div
           id="toast-success"
-          class="z-40 flex items-center w-full max-w-xs p-2 mb-2 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
+          class="fixed z-40 flex items-center w-full max-w-xs p-2 translate-y-[20px] text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800 lg:translate-y-0"
           role="alert"
         >
           <div
@@ -53,7 +53,7 @@
       <ng-container *ngIf="notification.type === getType('error')">
         <div
           id="toast-danger"
-          class="z-40 flex items-center w-full max-w-xs p-2 mb-2 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
+          class="fixed z-40 flex items-center w-full max-w-xs p-2 mb-2 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
           role="alert"
         >
           <div
@@ -100,7 +100,7 @@
       <ng-container *ngIf="notification.type === getType('warning')">
         <div
           id="toast-warning"
-          class="z-40 flex items-center w-full max-w-xs p-2 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
+          class="fixed z-40 flex items-center w-full max-w-xs p-2 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
           role="alert"
         >
           <div

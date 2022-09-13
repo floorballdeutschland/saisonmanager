@@ -1,9 +1,8 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { AssociationService, ClubService } from '@floorball/core';
-import { GameOperation } from 'src/app/_models';
+import { GameOperation, GameOperationWithClubs } from '@floorball/types';
 import { Observable } from 'rxjs';
 import { Title } from '@angular/platform-browser';
-import { GameOperationWithClubs } from 'src/app/_models/game-operation.interface';
 
 @Component({
   templateUrl: './club-index.component.html',

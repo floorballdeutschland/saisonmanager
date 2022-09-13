@@ -1,19 +1,10 @@
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import {
-  Club,
-  PlayerLicense,
-  Player,
-  TeamWithPlayers,
-  PlayerWithLicense,
-  Team,
-  PlayerLicenseHistory,
-} from '@floorball/types';
+import { Team, PlayerLicenseHistory } from '@floorball/types';
 import { ClubService } from '@floorball/core';
 
 @Component({
   selector: 'fb-license-admin-team-entry',
   templateUrl: './license-admin-team-entry.component.html',
-  styleUrls: ['./license-admin-team-entry.component.scss'],
 })
 export class LicenseAdminTeamEntryComponent implements OnInit {
   @Input()

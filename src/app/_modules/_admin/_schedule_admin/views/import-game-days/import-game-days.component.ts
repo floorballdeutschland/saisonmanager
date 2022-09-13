@@ -10,8 +10,6 @@ import { LeagueService, NotificationService } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
-import { catchError, throwError } from 'rxjs';
 
 @Component({
   templateUrl: './import-game-days.component.html',
@@ -58,7 +56,7 @@ export class ImportGameDaysComponent implements OnInit {
     formData.append('file', this.form?.get('importfile')?.value);
 
     this._leagueService.adminImportGameSchedule(formData).subscribe({
-      next: (result) => {
+      next: () => {
         // notification: alles super
         // redirect liga index
         this._notificationService.success('Import erfolgreich', {

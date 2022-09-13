@@ -6,7 +6,6 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { SessionService } from '@floorball/core';
-import { User } from 'src/app/_models';
 
 @Component({
   selector: 'fb-metanavigation',

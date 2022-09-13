@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 import { Game } from '@floorball/types';
@@ -15,4 +17,14 @@ import { Game } from '@floorball/types';
 export class MatchHistoryComponent {
   @Input()
   match!: Game;
+
+  @Input()
+  allowCancel = false;
+
+  @Output()
+  reloadGame: EventEmitter<void> = new EventEmitter<void>();
+
+  public handleReload() {
+    this.reloadGame.emit();
+  }
 }

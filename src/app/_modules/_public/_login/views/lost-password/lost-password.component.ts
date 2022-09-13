@@ -83,7 +83,7 @@ export class LostPasswordComponent implements OnInit, OnDestroy {
           data.password_confirmation
         )
         .subscribe({
-          next: (data) => {
+          next: () => {
             // this.router.navigate([this.returnUrl])
             this._router.navigate(['/', 'login']);
           },

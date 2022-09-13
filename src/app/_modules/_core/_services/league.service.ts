@@ -3,10 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import {
   Club,
+  GameOperationWithLeagues,
   GameScheduleEntry,
   League,
   LeagueClass,
   LeagueWithTeams,
+  Penalty,
+  PenaltyCode,
   ScorerEntry,
   TableEntry,
   Team,
@@ -23,7 +26,6 @@ import {
   switchMap,
 } from 'rxjs';
 import { AssociationService } from '.';
-import { GameOperationWithLeagues } from 'src/app/_models/game-operation.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -186,5 +188,15 @@ export class LeagueService {
     const path =
       environment.apiURL + '/admin/leagues/' + leagueId + '/licenses.json';
     return this.http.get<TeamWithPlayers[]>(path);
+  }
+
+  public getPenalties() {
+    const path = environment.apiURL + 'user/leagues/penalties.json';
+    return this.http.get<Penalty[]>(path);
+  }
+
+  public getPenaltyCodes() {
+    const path = environment.apiURL + 'user/leagues/penalty_codes.json';
+    return this.http.get<PenaltyCode[]>(path);
   }
 }

@@ -8,7 +8,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
-import { NotificationService, OverlayService } from '@floorball/core';
+import { NotificationService } from '@floorball/core';
 import { NotificationType, UserNotification } from '@floorball/types';
 import { Subscription } from 'rxjs';
 
