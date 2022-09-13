@@ -1,6 +1,7 @@
 export interface GameEventInput {
   time: string;
   event_type: string;
+  event_team: string;
   period: number;
   home_goals: number;
   guest_goals: number;

@@ -273,6 +273,7 @@ export class MatchEventFormComponent implements OnInit {
             .addEvent(this.match.id, {
               time,
               event_type: 'goal',
+              event_team: this.team,
               period: parseInt(this.period, 10),
               home_goals,
               guest_goals,
@@ -293,6 +294,7 @@ export class MatchEventFormComponent implements OnInit {
             .addEvent(this.match.id, {
               time,
               event_type: 'penalty',
+              event_team: this.team,
               period: parseInt(this.period, 10),
               home_goals,
               guest_goals,
