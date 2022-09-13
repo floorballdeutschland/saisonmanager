@@ -40,6 +40,7 @@ export class MatchComponent implements OnInit, OnDestroy {
   public event = '';
   public addDialogOpen = '';
   public squadHistoryDialogOpen = '';
+  public currentPeriod = '1';
   public penalties: Penalty[] = [];
   public penaltyCodes: PenaltyCode[] = [];
 
@@ -187,5 +188,9 @@ export class MatchComponent implements OnInit, OnDestroy {
     } else {
       return false;
     }
+  }
+
+  public setCurrentPeriod(period: string) {
+    this.currentPeriod = period;
   }
 }

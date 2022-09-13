@@ -246,7 +246,8 @@
       >
       <select
         class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        [(ngModel)]="period"
+        [ngModel]="currentPeriod"
+        (change)="changePeriod($event)"
       >
         <option value="">Spielabschnitt auswählen...</option>
         <option [value]="p.period" *ngFor="let p of match.period_titles">
