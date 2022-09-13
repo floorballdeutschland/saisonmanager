@@ -364,6 +364,14 @@ export class MatchEventFormComponent implements OnInit {
                 this.refereeLastname2 = referee.lastname;
                 this.refereeFirstname2 = referee.firstname;
                 this._cdr.markForCheck();
+              } else {
+                this._notificationService.error(
+                  'Schiedsrichter nicht gefunden',
+                  {
+                    autoClose: true,
+                    keepAfterRouteChange: true,
+                  }
+                );
               }
             },
           });
