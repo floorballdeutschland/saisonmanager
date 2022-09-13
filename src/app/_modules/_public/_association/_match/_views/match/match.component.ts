@@ -5,6 +5,8 @@ import {
   OnInit,
   OnDestroy,
   ChangeDetectorRef,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import {
@@ -30,7 +32,9 @@ import { Title } from '@angular/platform-browser';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MatchComponent implements OnInit, OnDestroy {
-  match$?: Observable<Game | null>;
+  @ViewChild('sbbNavigation')
+  sbbNavigation!: ElementRef<HTMLElement>;
+
   game?: Game;
   additionalFields?: GameAdditionalFields;
   selectedAssociation$!: Observable<GameOperation | null>;
@@ -128,6 +132,10 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   navigateBack() {
     this._location.back();
+  }
+
+  scrollToSbbNavigation() {
+    this.sbbNavigation.nativeElement.scrollIntoView({ behavior: 'smooth' });
   }
 
   public isTabActive(tabName: string): boolean {

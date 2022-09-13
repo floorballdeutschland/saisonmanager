@@ -62,6 +62,9 @@ export class MatchEventFormComponent implements OnInit {
   @Output()
   updateGame: EventEmitter<void> = new EventEmitter<void>();
 
+  @Output()
+  scrollToSbbNavigation: EventEmitter<void> = new EventEmitter<void>();
+
   editLive = true;
   startTime = '';
   minutes?: number;
@@ -225,32 +228,34 @@ export class MatchEventFormComponent implements OnInit {
     switch (this.type) {
       case 'next':
         const gameFlag = !this.match.started ? 'started' : 'ended';
-        this._gameService
-          .setGameFlags(this.match.id, {
-            [gameFlag]: true,
-          })
-          .subscribe(() => {
-            if (!this.match.started) {
-              const hours = new Date(Date.now()).getHours();
-              const minutes = new Date(Date.now()).getMinutes();
-              this._gameService
-                .setGameField(this.match.id, {
-                  actual_start_time: this.editLive
-                    ? `${hours}:${this.pad(minutes, 2)}`
-                    : this.startTime,
-                })
-                .subscribe();
-            }
-
-            this._notificationService.success(
-              !this.match.started ? 'Spiel gestartet' : 'Spiel beendet',
-              {
-                autoClose: true,
-                keepAfterRouteChange: true,
-              }
-            );
-            this.updateGame.emit();
-          });
+        this.scrollToSbbNavigation.emit();
+        console.log('asdf');
+        // this._gameService
+        //   .setGameFlags(this.match.id, {
+        //     [gameFlag]: true,
+        //   })
+        //   .subscribe(() => {
+        //     if (!this.match.started) {
+        //       const hours = new Date(Date.now()).getHours();
+        //       const minutes = new Date(Date.now()).getMinutes();
+        //       this._gameService
+        //         .setGameField(this.match.id, {
+        //           actual_start_time: this.editLive
+        //             ? `${hours}:${this.pad(minutes, 2)}`
+        //             : this.startTime,
+        //         })
+        //         .subscribe();
+        //     }
+        //
+        //     this._notificationService.success(
+        //       !this.match.started ? 'Spiel gestartet' : 'Spiel beendet',
+        //       {
+        //         autoClose: true,
+        //         keepAfterRouteChange: true,
+        //       }
+        //     );
+        //     this.updateGame.emit();
+        //   });
         break;
       case 'goal':
         if (this.currentPeriod) {
