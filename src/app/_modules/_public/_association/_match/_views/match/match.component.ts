@@ -103,12 +103,16 @@ export class MatchComponent implements OnInit, OnDestroy {
   getMatch(id: string) {
     this._gameService.getGame(parseInt(id, 10)).subscribe({
       next: (game) => {
-        this._gameService.getAdditionalFields(parseInt(id, 10)).subscribe({
-          next: (additionalFields) => {
-            this.additionalFields = additionalFields;
-            this.updateGame(game);
-          },
-        });
+        if (this.tab !== 'public') {
+          this._gameService.getAdditionalFields(parseInt(id, 10)).subscribe({
+            next: (additionalFields) => {
+              this.additionalFields = additionalFields;
+              this.updateGame(game);
+            },
+          });
+        } else {
+          this.updateGame(game);
+        }
       },
     });
   }
@@ -144,6 +148,7 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   public setTab(tabName: string) {
     this.tab = tabName;
+    this.reloadGame();
     this._cdr.markForCheck();
   }
 
