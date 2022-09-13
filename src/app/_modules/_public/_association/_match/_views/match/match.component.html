@@ -439,34 +439,6 @@
 
           <div>
             <fb-match-event-form
-              type="referee1signed"
-              team="both"
-              [fieldChecked]="additionalFields?.referee1_signed || false"
-              (updateGame)="reloadGame()"
-              (updatePeriod)="setCurrentPeriod($event)"
-              [currentPeriod]="currentPeriod"
-              [penalties]="penalties"
-              [penaltyCodes]="penaltyCodes"
-              [match]="game"
-            ></fb-match-event-form>
-          </div>
-
-          <div>
-            <fb-match-event-form
-              type="referee2signed"
-              team="both"
-              [fieldChecked]="additionalFields?.referee2_signed || false"
-              (updateGame)="reloadGame()"
-              (updatePeriod)="setCurrentPeriod($event)"
-              [currentPeriod]="currentPeriod"
-              [penalties]="penalties"
-              [penaltyCodes]="penaltyCodes"
-              [match]="game"
-            ></fb-match-event-form>
-          </div>
-
-          <div>
-            <fb-match-event-form
               type="captainsigned"
               team="home"
               [fieldChecked]="additionalFields?.home_captain_signed || false"
@@ -484,6 +456,34 @@
               type="captainsigned"
               team="guest"
               [fieldChecked]="additionalFields?.guest_captain_signed || false"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+
+          <div>
+            <fb-match-event-form
+              type="referee1signed"
+              team="both"
+              [fieldChecked]="additionalFields?.referee1_signed || false"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+
+          <div>
+            <fb-match-event-form
+              type="referee2signed"
+              team="both"
+              [fieldChecked]="additionalFields?.referee2_signed || false"
               (updateGame)="reloadGame()"
               (updatePeriod)="setCurrentPeriod($event)"
               [currentPeriod]="currentPeriod"
