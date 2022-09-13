@@ -75,6 +75,7 @@ export class MatchEventFormComponent implements OnInit {
   penaltyCode?: number;
 
   visitors?: number;
+  livestream?: string;
   recordkeeper?: string;
   recordkeeperFirstname?: string;
   recordkeeperLastname?: string;
@@ -128,6 +129,9 @@ export class MatchEventFormComponent implements OnInit {
       switch (this.type) {
         case 'visitors':
           this.visitors = parseInt(this.fieldValue || '', 10);
+          break;
+        case 'livestream':
+          this.livestream = this.fieldValue;
           break;
         case 'recordkeeper':
           const recordKeeperName = this.fieldValue.split(', ');
@@ -401,6 +405,10 @@ export class MatchEventFormComponent implements OnInit {
       case 'visitors':
         fields = { audience: this.visitors?.toString() || '' };
         saveMessage = 'Zuschauerzahl gespeichert';
+        break;
+      case 'livestream':
+        fields = { live_stream_link: this.livestream || '' };
+        saveMessage = 'Livestream Link gespeichert';
         break;
       case 'recordkeeper':
         fields = {

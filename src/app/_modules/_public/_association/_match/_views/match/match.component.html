@@ -104,6 +104,20 @@
         </p>
 
         <div class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8">
+          <div class="md:col-span-2">
+            <fb-match-event-form
+              type="livestream"
+              team="both"
+              [fieldValue]="game.live_stream_link || ''"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+
           <div>
             <fb-match-event-form
               type="recordkeeper"
@@ -117,6 +131,7 @@
               [match]="game"
             ></fb-match-event-form>
           </div>
+
           <div>
             <fb-match-event-form
               type="timekeeper"

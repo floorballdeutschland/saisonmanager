@@ -1,6 +1,7 @@
 export interface GameFields {
   audience?: string;
   actual_start_time?: string;
+  live_stream_link?: string;
   guest_timeout_string?: string;
   referee1_signed?: string;
   time_keeper_string?: string;

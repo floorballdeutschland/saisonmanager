@@ -119,6 +119,7 @@
           </div>
           <div class="mt-1" *ngIf="game.arena_address">
             <a
+              *ngIf="game.live_stream_link"
               [href]="game.live_stream_link"
               target="_blank"
               class="flex gap-2 justify-center items-center hover:text-gray-800 transition"
@@ -136,6 +137,7 @@
 
               Live-Stream anzeigen
             </a>
+            <p *ngIf="!game.live_stream_link">Kein Live-Stream vorhanden</p>
           </div>
         </div>
       </div>
