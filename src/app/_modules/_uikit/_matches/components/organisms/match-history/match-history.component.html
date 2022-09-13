@@ -1,4 +1,8 @@
 <div>
+  <div class="text-center text-fb-gray-400 my-12" *ngIf="false">
+    Noch keine Ereignisse vorhanden
+  </div>
+
   <ng-container *ngFor="let period of match.period_titles; let index = index">
     <ng-container *ngIf="match.events | matchEvents: period.period as events">
       <ng-container *ngIf="events.length">
