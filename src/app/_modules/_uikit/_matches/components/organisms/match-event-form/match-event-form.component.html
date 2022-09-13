@@ -287,8 +287,8 @@
             [value]="player.player_id"
             *ngFor="
               let player of (team === 'home'
-                ? match.players.home
-                : match.players.guest
+                ? match.players.home || []
+                : match.players.guest || []
               ) | sortTrikotNumber
             "
           >
@@ -309,8 +309,8 @@
               [value]="player.player_id"
               *ngFor="
                 let player of (team === 'home'
-                  ? match.players.home
-                  : match.players.guest
+                  ? match.players.home || []
+                  : match.players.guest || []
                 ) | sortTrikotNumber
               "
             >

@@ -252,13 +252,13 @@ export class MatchEventFormComponent implements OnInit {
           let assist;
           if (this.team === 'home') {
             assist =
-              this.match.players.home.find(
+              this.match.players.home?.find(
                 (p: { player_id: number | undefined }) =>
                   p.player_id == this.assistPlayerId
               )?.trikot_number || 0;
           } else {
             assist =
-              this.match.players.guest.find(
+              this.match.players.guest?.find(
                 (p: { player_id: number | undefined }) =>
                   p.player_id == this.assistPlayerId
               )?.trikot_number || 0;

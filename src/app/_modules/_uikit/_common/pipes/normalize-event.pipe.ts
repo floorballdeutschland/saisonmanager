@@ -21,13 +21,13 @@ export class NormalizeEventPipe implements PipeTransform {
         ...home,
         scorer:
           gameEvent.event_team === 'home'
-            ? game.players.home.find(
+            ? (game.players.home || []).find(
                 (player) => player.trikot_number === gameEvent.number
               )
             : undefined,
         assist:
           gameEvent.event_team === 'home'
-            ? game.players.home.find(
+            ? (game.players.home || []).find(
                 (player) => player.trikot_number === gameEvent.assist
               )
             : undefined,
@@ -40,13 +40,13 @@ export class NormalizeEventPipe implements PipeTransform {
         ...guest,
         scorer:
           gameEvent.event_team === 'guest'
-            ? game.players.guest.find(
+            ? (game.players.guest || []).find(
                 (player) => player.trikot_number === gameEvent.number
               )
             : undefined,
         assist:
           gameEvent.event_team === 'guest'
-            ? game.players.guest.find(
+            ? (game.players.guest || []).find(
                 (player) => player.trikot_number === gameEvent.assist
               )
             : undefined,
