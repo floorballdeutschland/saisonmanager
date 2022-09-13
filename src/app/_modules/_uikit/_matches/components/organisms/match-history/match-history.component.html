@@ -1,5 +1,8 @@
 <div>
-  <div class="text-center text-fb-gray-400 my-12" *ngIf="false">
+  <div
+    class="text-center text-fb-gray-400 my-12"
+    *ngIf="!match.events || match.events.length === 0"
+  >
     Noch keine Ereignisse vorhanden
   </div>
 
