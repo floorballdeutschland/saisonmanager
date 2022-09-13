@@ -33,7 +33,7 @@
             >Öffentliche Ansicht</fb-tab-item
           >
           <fb-tab-item
-            *ngIf="canEdit"
+            *ngIf="canEdit(game)"
             [isActive]="isTabActive('secretary')"
             [link]="['./']"
             (click)="$event.preventDefault(); setTab('secretary')"
