@@ -89,6 +89,7 @@ export class MatchEventFormComponent implements OnInit {
 
   protest?: boolean;
   specialevent?: boolean;
+  overtime?: boolean;
 
   timekeepersigned?: boolean;
   recordkeepersigned?: boolean;
@@ -163,6 +164,9 @@ export class MatchEventFormComponent implements OnInit {
           break;
         case 'protest':
           this.protest = this.fieldChecked;
+          break;
+        case 'overtime':
+          this.overtime = this.fieldChecked;
           break;
         case 'specialevent':
           this.specialevent = this.fieldChecked;
@@ -482,6 +486,10 @@ export class MatchEventFormComponent implements OnInit {
       case 'specialevent':
         flags = { special_event: this.specialevent };
         saveMessage = 'Besonderes Ereignis gespeichert';
+        break;
+      case 'overtime':
+        flags = { overtime: this.overtime };
+        saveMessage = 'Verlängerung gespeichert';
         break;
       case 'timekeepersigned':
         flags = { time_keeper_signed: this.timekeepersigned };
