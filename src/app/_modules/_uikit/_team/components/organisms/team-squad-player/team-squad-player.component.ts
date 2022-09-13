@@ -89,6 +89,7 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
   public addLinupPlayer(checkDuplicateNumbers = true) {
     if (
       checkDuplicateNumbers &&
+      this.lineup &&
       this.lineup.findIndex(
         (p) => p.trikot_number === parseInt(this.trikotNumber || '', 10)
       ) >= 0
