@@ -125,13 +125,31 @@
       (change)="submitField()"
       [(ngModel)]="visitors"
     />
+    <p class="text-fb-gray-400 text-xs">
+      Dieses Feld wird automatisch gespeichert.
+    </p>
+  </div>
+
+  <div *ngIf="type === 'livestream'">
+    <label class="font-medium text-base text-fb-gray-500"
+      >Livestream Link</label
+    >
+    <input
+      type="text"
+      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+      (change)="submitField()"
+      [(ngModel)]="livestream"
+    />
+    <p class="text-fb-gray-400 text-xs">
+      Dieses Feld wird automatisch gespeichert.
+    </p>
   </div>
 
   <div *ngIf="type === 'recordkeeper'">
     <label class="font-medium text-base text-fb-gray-500"
-      >Schriftführer/in (Nachname, Vorname)</label
+      >Schriftführer/in</label
     >
-    <div class="grid grid-cols-2 gap-1">
+    <div class="grid md:grid-cols-2 gap-1">
       <input
         type="text"
         class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
@@ -146,12 +164,15 @@
         (change)="submitField()"
         [(ngModel)]="recordkeeperLastname"
       />
+      <p class="md:col-span-2 text-fb-gray-400 text-xs">
+        Diese Felder werden automatisch gespeichert.
+      </p>
     </div>
   </div>
 
   <div *ngIf="type === 'timekeeper'">
     <label class="font-medium text-base text-fb-gray-500">Zeitnehmer/in</label>
-    <div class="grid grid-cols-2 gap-1">
+    <div class="grid md:grid-cols-2 gap-1">
       <input
         type="text"
         class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
@@ -166,6 +187,9 @@
         (change)="submitField()"
         [(ngModel)]="timekeeperLastname"
       />
+      <p class="md:col-span-2 text-fb-gray-400 text-xs">
+        Diese Felder werden automatisch gespeichert.
+      </p>
     </div>
   </div>
 
