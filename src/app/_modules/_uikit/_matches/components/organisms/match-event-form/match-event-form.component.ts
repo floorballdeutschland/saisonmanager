@@ -341,6 +341,8 @@ export class MatchEventFormComponent implements OnInit {
               if (referee) {
                 this.refereeLastname1 = referee.lastname;
                 this.refereeFirstname1 = referee.firstname;
+                this._cdr.markForCheck();
+              } else {
                 this._notificationService.error(
                   'Schiedsrichter nicht gefunden',
                   {
@@ -348,7 +350,6 @@ export class MatchEventFormComponent implements OnInit {
                     keepAfterRouteChange: true,
                   }
                 );
-                this._cdr.markForCheck();
               }
             },
           });
