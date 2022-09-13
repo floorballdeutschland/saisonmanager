@@ -5,6 +5,8 @@ import {
   OnInit,
   OnDestroy,
   ChangeDetectorRef,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import {
@@ -30,7 +32,9 @@ import { Title } from '@angular/platform-browser';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MatchComponent implements OnInit, OnDestroy {
-  match$?: Observable<Game | null>;
+  @ViewChild('sbbNavigation')
+  sbbNavigation!: ElementRef<HTMLElement>;
+
   game?: Game;
   additionalFields?: GameAdditionalFields;
   selectedAssociation$!: Observable<GameOperation | null>;
@@ -40,6 +44,7 @@ export class MatchComponent implements OnInit, OnDestroy {
   public event = '';
   public addDialogOpen = '';
   public squadHistoryDialogOpen = '';
+  public currentPeriod = '1';
   public penalties: Penalty[] = [];
   public penaltyCodes: PenaltyCode[] = [];
 
@@ -129,6 +134,10 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._location.back();
   }
 
+  scrollToSbbNavigation() {
+    this.sbbNavigation.nativeElement.scrollIntoView({ behavior: 'smooth' });
+  }
+
   public isTabActive(tabName: string): boolean {
     return this.tab === tabName;
   }
@@ -187,5 +196,9 @@ export class MatchComponent implements OnInit, OnDestroy {
     } else {
       return false;
     }
+  }
+
+  public setCurrentPeriod(period: string) {
+    this.currentPeriod = period;
   }
 }

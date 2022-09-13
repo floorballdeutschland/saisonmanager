@@ -39,6 +39,9 @@ export class MatchEventFormComponent implements OnInit {
   fieldChecked? = false;
 
   @Input()
+  currentPeriod!: string;
+
+  @Input()
   type!: string;
 
   @Input()
@@ -54,9 +57,14 @@ export class MatchEventFormComponent implements OnInit {
   penaltyCodes!: PenaltyCode[];
 
   @Output()
+  updatePeriod: EventEmitter<string> = new EventEmitter<string>();
+
+  @Output()
   updateGame: EventEmitter<void> = new EventEmitter<void>();
 
-  period = '';
+  @Output()
+  scrollToSbbNavigation: EventEmitter<void> = new EventEmitter<void>();
+
   editLive = true;
   startTime = '';
   minutes?: number;
@@ -220,6 +228,7 @@ export class MatchEventFormComponent implements OnInit {
     switch (this.type) {
       case 'next':
         const gameFlag = !this.match.started ? 'started' : 'ended';
+
         this._gameService
           .setGameFlags(this.match.id, {
             [gameFlag]: true,
@@ -237,6 +246,8 @@ export class MatchEventFormComponent implements OnInit {
                 .subscribe();
             }
 
+            this.scrollToSbbNavigation.emit();
+
             this._notificationService.success(
               !this.match.started ? 'Spiel gestartet' : 'Spiel beendet',
               {
@@ -248,7 +259,7 @@ export class MatchEventFormComponent implements OnInit {
           });
         break;
       case 'goal':
-        if (this.period) {
+        if (this.currentPeriod) {
           let assist;
           if (this.team === 'home') {
             assist =
@@ -274,7 +285,7 @@ export class MatchEventFormComponent implements OnInit {
               time,
               event_type: 'goal',
               event_team: this.team,
-              period: parseInt(this.period, 10),
+              period: parseInt(this.currentPeriod, 10),
               home_goals,
               guest_goals,
               ...goal,
@@ -289,13 +300,13 @@ export class MatchEventFormComponent implements OnInit {
         }
         break;
       case 'penalty':
-        if (this.period) {
+        if (this.currentPeriod) {
           this._gameService
             .addEvent(this.match.id, {
               time,
               event_type: 'penalty',
               event_team: this.team,
-              period: parseInt(this.period, 10),
+              period: parseInt(this.currentPeriod, 10),
               home_goals,
               guest_goals,
               [this.team === 'home' ? 'home_number' : 'guest_number']: player,
@@ -316,7 +327,7 @@ export class MatchEventFormComponent implements OnInit {
           this.team === 'home' ? 'home_timeout_string' : 'guest_timeout_string';
         this._gameService
           .setGameField(this.match.id, {
-            [field]: `${time} / ${this.period}`,
+            [field]: `${time} / ${this.currentPeriod}`,
           })
           .subscribe({
             next: () => {
@@ -341,6 +352,8 @@ export class MatchEventFormComponent implements OnInit {
               if (referee) {
                 this.refereeLastname1 = referee.lastname;
                 this.refereeFirstname1 = referee.firstname;
+                this._cdr.markForCheck();
+              } else {
                 this._notificationService.error(
                   'Schiedsrichter nicht gefunden',
                   {
@@ -348,7 +361,6 @@ export class MatchEventFormComponent implements OnInit {
                     keepAfterRouteChange: true,
                   }
                 );
-                this._cdr.markForCheck();
               }
             },
           });
@@ -363,6 +375,14 @@ export class MatchEventFormComponent implements OnInit {
                 this.refereeLastname2 = referee.lastname;
                 this.refereeFirstname2 = referee.firstname;
                 this._cdr.markForCheck();
+              } else {
+                this._notificationService.error(
+                  'Schiedsrichter nicht gefunden',
+                  {
+                    autoClose: true,
+                    keepAfterRouteChange: true,
+                  }
+                );
               }
             },
           });
@@ -501,5 +521,9 @@ export class MatchEventFormComponent implements OnInit {
         },
       });
     }
+  }
+
+  public changePeriod(e: any) {
+    this.updatePeriod.emit(e.target.value);
   }
 }
