@@ -125,6 +125,9 @@
       (change)="submitField()"
       [(ngModel)]="visitors"
     />
+    <p class="text-fb-gray-400 text-xs">
+      Dieses Feld wird automatisch gespeichert.
+    </p>
   </div>
 
   <div *ngIf="type === 'recordkeeper'">
@@ -146,6 +149,9 @@
         (change)="submitField()"
         [(ngModel)]="recordkeeperLastname"
       />
+      <p class="col-span-2 text-fb-gray-400 text-xs">
+        Diese Felder werden automatisch gespeichert.
+      </p>
     </div>
   </div>
 
@@ -166,6 +172,9 @@
         (change)="submitField()"
         [(ngModel)]="timekeeperLastname"
       />
+      <p class="col-span-2 text-fb-gray-400 text-xs">
+        Diese Felder werden automatisch gespeichert.
+      </p>
     </div>
   </div>
 
