@@ -228,7 +228,7 @@ export class MatchEventFormComponent implements OnInit {
     switch (this.type) {
       case 'next':
         const gameFlag = !this.match.started ? 'started' : 'ended';
-        this.scrollToSbbNavigation.emit();
+
         this._gameService
           .setGameFlags(this.match.id, {
             [gameFlag]: true,
@@ -245,6 +245,8 @@ export class MatchEventFormComponent implements OnInit {
                 })
                 .subscribe();
             }
+
+            this.scrollToSbbNavigation.emit();
 
             this._notificationService.success(
               !this.match.started ? 'Spiel gestartet' : 'Spiel beendet',
