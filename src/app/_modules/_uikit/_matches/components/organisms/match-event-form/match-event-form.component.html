@@ -357,6 +357,19 @@
             </option>
           </select>
         </div>
+        <div class="col-span-2">
+          <input
+            type="checkbox"
+            id="with_ps"
+            name="with_ps"
+            [(ngModel)]="with_ps"
+          />
+          <label
+            for="with_ps"
+            class="font-medium text-base text-fb-gray-500 p-2"
+            >durch Strafstoß?</label
+          >
+        </div>
       </ng-container>
 
       <ng-container *ngIf="type === 'penalty'">

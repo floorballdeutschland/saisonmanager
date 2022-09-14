@@ -73,6 +73,7 @@ export class MatchEventFormComponent implements OnInit {
   assistPlayerId?: number;
   penalty?: number;
   penaltyCode?: number;
+  with_ps?: boolean;
 
   visitors?: number;
   livestream?: string;
@@ -283,10 +284,21 @@ export class MatchEventFormComponent implements OnInit {
               )?.trikot_number || 0;
           }
 
-          const goal =
+          // eslint-disable-next-line prefer-const
+          let goal: {
+            home_number?: number;
+            home_assist?: number;
+            guest_number?: number;
+            guest_assist?: number;
+            penalty_code_id?: number;
+          } =
             this.team === 'home'
               ? { home_number: player, home_assist: assist }
               : { guest_number: player, guest_assist: assist };
+
+          if (this.with_ps) {
+            goal.penalty_code_id = 23;
+          }
 
           this._gameService
             .addEvent(this.match.id, {
