@@ -157,6 +157,9 @@ export class MatchComponent implements OnInit, OnDestroy {
       this.event = '';
     } else {
       this.event = eventName;
+      if (!this.game?.started && eventName === 'next') {
+        setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 150);
+      }
     }
     this._cdr.markForCheck();
   }
