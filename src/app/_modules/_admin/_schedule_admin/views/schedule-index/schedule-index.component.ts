@@ -14,6 +14,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class ScheduleIndexComponent implements OnInit {
   gameDays: any[] = [];
+  leagueId = 0;
 
   loading = true;
 
@@ -30,6 +31,7 @@ export class ScheduleIndexComponent implements OnInit {
   public ngOnInit(): void {
     this._route.params.subscribe((params) => {
       if (params['leagueId']) {
+        this.leagueId = params['leagueId'];
         this._leagueService.getAdminGameSchedule(params['leagueId']).subscribe({
           next: (result) => {
             console.log('getAdminGameSchedule', result);

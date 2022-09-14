@@ -2,11 +2,11 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Ligaverwaltung
+    Spielplanverwaltung
   </h1>
 
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    {{ editMode ? "Bearbeiten einer Liga" : "Neue Liga anlegen" }}
+    {{ editMode ? "Bearbeiten eines Spieltags" : "Neuen Spieltag anlegen" }}
   </h2>
 </div>
 
@@ -39,204 +39,84 @@
           </div>
         </ng-template>
 
-        <div *ngIf="league$ | async as league; else loading">
+        <div *ngIf="gameday; else loading">
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Hauptdaten
+              Spieltagseinstellungen
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-              <div class="font-bold">Liga ID</div>
+              <div class="font-bold">Spieltags ID</div>
               <div>
                 {{
-                  league.id > 0 ? league.id : "Wird nach dem Anlegen festgelegt"
+                  gameday && gameday.id > 0
+                    ? gameday.id
+                    : "Wird nach dem Anlegen festgelegt"
                 }}
               </div>
 
-              <div class="font-bold">Verband</div>
+              <div class="font-bold">Spieltagsnummer</div>
               <div>
-                <select
-                  name="game_operation_id"
-                  [(ngModel)]="league.game_operation_id"
-                >
-                  <option
-                    *ngFor="let go of permittedGameOperations"
-                    [value]="go.id"
-                  >
-                    {{ go.name }}
+                <input
+                  class="w-full"
+                  type="number"
+                  [(ngModel)]="gameday.number"
+                  required
+                />
+              </div>
+
+              <div class="font-bold">Datum</div>
+              <div>
+                <input
+                  class="w-full"
+                  type="date"
+                  [(ngModel)]="gameday.date"
+                  required
+                />
+              </div>
+
+              <div class="font-bold">Austragungsort</div>
+              <div>
+                <select class="w-full" required [(ngModel)]="gameday.arena_id">
+                  <option [value]="arena.id" *ngFor="let arena of areans">
+                    {{ arena.name }}
                   </option>
                 </select>
               </div>
 
-              <div class="font-bold">Name</div>
+              <div class="font-bold">Ausrichter</div>
               <div>
-                <input
-                  [(ngModel)]="league.name"
-                  type="text"
-                  id="name"
-                  required
-                />
-              </div>
-
-              <div class="font-bold">Kurzbezeichnung</div>
-              <div>
-                <input
-                  [(ngModel)]="league.short_name"
-                  type="text"
-                  id="name"
-                  required
-                />
-              </div>
-
-              <div class="font-bold">Sortierschlüssel</div>
-              <div>
-                <input
-                  [(ngModel)]="league.order_key"
-                  type="number"
-                  id="name"
-                  required
-                />
-              </div>
-
-              <div class="font-bold">Ligamodus</div>
-              <div>
-                <select name="league_modus" [(ngModel)]="league.league_modus">
-                  <option value="league">Liga</option>
-                  <option value="cup">Pokal</option>
+                <select class="w-full" required [(ngModel)]="gameday.club_id">
+                  <option></option>
                 </select>
               </div>
             </div>
           </div>
 
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              weitere Daten
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div class="font-bold">Feldgröße</div>
-              <div>
-                <select name="field_size" [(ngModel)]="league.field_size">
-                  <option value="GF">Großfeld</option>
-                  <option value="KF">Kleinfeld</option>
-                </select>
-              </div>
-
-              <div class="font-bold">Damen/Herren</div>
-              <div>
-                <select name="female" [(ngModel)]="league.female">
-                  <option value="false">Herrenliga</option>
-                  <option value="true">Damenliga</option>
-                </select>
-              </div>
-
-              <div class="font-bold">Punktsystem</div>
-              <div>
-                <select name="table_modus" [(ngModel)]="league.table_modus">
-                  <option value="classic">3 Punkte</option>
-                </select>
-              </div>
-
-              <div class="font-bold">Scorer aktiv?</div>
-              <div>
-                <select name="enable_scorer" [(ngModel)]="league.enable_scorer">
-                  <option value="true">aktiviert</option>
-                  <option value="false">deaktiviert</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Spielereinstellungen
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div class="font-bold">Stichtag</div>
-              <div>
-                <input
-                  [(ngModel)]="league.deadline"
-                  type="date"
-                  id="deadline"
-                />
-              </div>
-
-              <div class="font-bold">vor Stichtag?</div>
-              <div>
-                <select
-                  name="before_deadline"
-                  [(ngModel)]="league.before_deadline"
-                >
-                  <option value="false">Geburtstag nach Stichtag</option>
-                  <option value="true">Geburtstag vor Stichtag</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Spieleinstellungen
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div class="font-bold">Anzahl Spielabschnitte</div>
-              <div>
-                <input
-                  [(ngModel)]="league.periods"
-                  type="number"
-                  id="name"
-                  required
-                />
-              </div>
-
-              <div class="font-bold">Dauer Spielabschnitte (min)</div>
-              <div>
-                <input
-                  [(ngModel)]="league.period_length"
-                  type="number"
-                  id="name"
-                  required
-                />
-              </div>
-
-              <div class="font-bold">Dauer Verlängerung (min)</div>
-              <div>
-                <input
-                  [(ngModel)]="league.overtime_length"
-                  type="number"
-                  id="name"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div class="flex flex-col gap-2">
-              <div class="mb-4" *ngIf="error(league)">
-                <h3 class="text-lg leading-6 font-medium text-red-600">
-                  Speichern nicht möglich
-                </h3>
-                <p *ngFor="let msg of errorMsg(league)">{{ msg }}</p>
-              </div>
-              <div class="flex items-center mb-4" *ngIf="!error(league)">
-                <a
-                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                  (click)="submit(league)"
-                >
-                  Änderungen speichern
-                </a>
-                <a
-                  class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                  deactivated="true"
-                  [routerLink]="['/', 'verwaltung', 'ligen']"
-                >
-                  Abbrechen
-                </a>
-              </div>
-            </div>
+            <!--            <div class="flex flex-col gap-2">-->
+            <!--              <div class="mb-4" *ngIf="error(league)">-->
+            <!--                <h3 class="text-lg leading-6 font-medium text-red-600">-->
+            <!--                  Speichern nicht möglich-->
+            <!--                </h3>-->
+            <!--                <p *ngFor="let msg of errorMsg(league)">{{ msg }}</p>-->
+            <!--              </div>-->
+            <!--              <div class="flex items-center mb-4" *ngIf="!error(league)">-->
+            <!--                <a-->
+            <!--                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"-->
+            <!--                  (click)="submit(league)"-->
+            <!--                >-->
+            <!--                  Änderungen speichern-->
+            <!--                </a>-->
+            <!--                <a-->
+            <!--                  class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"-->
+            <!--                  deactivated="true"-->
+            <!--                  [routerLink]="['/', 'verwaltung', 'ligen']"-->
+            <!--                >-->
+            <!--                  Abbrechen-->
+            <!--                </a>-->
+            <!--              </div>-->
+            <!--            </div>-->
           </div>
         </div>
       </div>
