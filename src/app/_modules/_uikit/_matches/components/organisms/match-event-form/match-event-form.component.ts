@@ -23,6 +23,7 @@ import {
   GameFields,
   Penalty,
   PenaltyCode,
+  GameAdditionalFields,
 } from '@floorball/types';
 
 @Component({
@@ -51,6 +52,9 @@ export class MatchEventFormComponent implements OnInit {
   match!: Game;
 
   @Input()
+  additionalFields!: GameAdditionalFields;
+
+  @Input()
   penalties!: Penalty[];
 
   @Input()
@@ -75,6 +79,11 @@ export class MatchEventFormComponent implements OnInit {
   penaltyCode?: number;
   with_ps?: boolean;
 
+  coach1 = { firstname: '', lastname: '' };
+  coach2 = { firstname: '', lastname: '' };
+  coach3 = { firstname: '', lastname: '' };
+  coach4 = { firstname: '', lastname: '' };
+  coach5 = { firstname: '', lastname: '' };
   visitors?: number;
   livestream?: string;
   recordkeeper?: string;
@@ -124,6 +133,68 @@ export class MatchEventFormComponent implements OnInit {
         parseInt(this.match.referees[1]?.license_id, 10) || '';
       this.refereeLastname2 = this.match.referees[1]?.last_name;
       this.refereeFirstname2 = this.match.referees[1]?.first_name;
+    }
+
+    if (this.type === 'coach1') {
+      console.log(this.additionalFields?.home_team_coaches.coach1_first_name);
+      this.coach1 = {
+        firstname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches.coach1_first_name || ''
+            : this.additionalFields?.guest_team_coaches.coach1_last_name || '',
+        lastname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches.coach1_first_name || ''
+            : this.additionalFields?.guest_team_coaches.coach1_last_name || '',
+      };
+    }
+    if (this.type === 'coach2') {
+      this.coach2 = {
+        firstname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches.coach2_first_name || ''
+            : this.additionalFields?.guest_team_coaches.coach2_last_name || '',
+        lastname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches.coach2_first_name || ''
+            : this.additionalFields?.guest_team_coaches.coach2_last_name || '',
+      };
+    }
+    if (this.type === 'coach3') {
+      this.coach3 = {
+        firstname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches.coach3_first_name || ''
+            : this.additionalFields?.guest_team_coaches.coach3_last_name || '',
+        lastname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches.coach3_first_name || ''
+            : this.additionalFields?.guest_team_coaches.coach3_last_name || '',
+      };
+    }
+    if (this.type === 'coach4') {
+      this.coach4 = {
+        firstname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches.coach4_first_name || ''
+            : this.additionalFields?.guest_team_coaches.coach4_last_name || '',
+        lastname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches.coach4_first_name || ''
+            : this.additionalFields?.guest_team_coaches.coach4_last_name || '',
+      };
+    }
+    if (this.type === 'coach5') {
+      this.coach5 = {
+        firstname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches.coach5_first_name || ''
+            : this.additionalFields?.guest_team_coaches.coach5_last_name || '',
+        lastname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches.coach5_first_name || ''
+            : this.additionalFields?.guest_team_coaches.coach5_last_name || '',
+      };
     }
 
     if (this.fieldValue) {
@@ -414,6 +485,32 @@ export class MatchEventFormComponent implements OnInit {
     let fields: GameFields = {};
     let saveMessage = '';
     switch (this.type) {
+      case 'coach1':
+      case 'coach2':
+      case 'coach3':
+      case 'coach4':
+      case 'coach5':
+        this._gameService
+          .setCoach(
+            this.match.id,
+            this.team,
+            parseInt(this.type.replace('coach', ''), 10),
+            this[this.type].firstname,
+            this[this.type].lastname
+          )
+          .subscribe({
+            next: () => {
+              this._notificationService.success(
+                'Betreuer ' + this.type.replace('coach', '') + ' gespeichert',
+                {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                }
+              );
+              this.updateGame.emit();
+            },
+          });
+        break;
       case 'visitors':
         fields = { audience: this.visitors?.toString() || '' };
         saveMessage = 'Zuschauerzahl gespeichert';

@@ -170,6 +170,109 @@
     </div>
   </div>
 
+  <div *ngIf="type === 'coach1'">
+    <label class="font-medium text-base text-fb-gray-500">Betreuer 1</label>
+    <div class="grid md:grid-cols-2 gap-1">
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:rounded-tr-none md:rounded-br-none"
+        placeholder="Vorname"
+        (change)="submitField()"
+        [(ngModel)]="coach1.firstname"
+      />
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nachname"
+        (change)="submitField()"
+        [(ngModel)]="coach1.lastname"
+      />
+    </div>
+  </div>
+
+  <div *ngIf="type === 'coach2'">
+    <label class="font-medium text-base text-fb-gray-500">Betreuer 2</label>
+    <div class="grid md:grid-cols-2 gap-1">
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Vorname"
+        (change)="submitField()"
+        [(ngModel)]="coach2.firstname"
+      />
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nachname"
+        (change)="submitField()"
+        [(ngModel)]="coach2.lastname"
+      />
+    </div>
+  </div>
+
+  <div *ngIf="type === 'coach3'">
+    <label class="font-medium text-base text-fb-gray-500">Betreuer 3</label>
+    <div class="grid md:grid-cols-2 gap-1">
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Vorname"
+        (change)="submitField()"
+        [(ngModel)]="coach3.firstname"
+      />
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nachname"
+        (change)="submitField()"
+        [(ngModel)]="coach3.lastname"
+      />
+    </div>
+  </div>
+
+  <div *ngIf="type === 'coach4'">
+    <label class="font-medium text-base text-fb-gray-500">Betreuer 4</label>
+    <div class="grid md:grid-cols-2 gap-1">
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Vorname"
+        (change)="submitField()"
+        [(ngModel)]="coach4.firstname"
+      />
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nachname"
+        (change)="submitField()"
+        [(ngModel)]="coach4.lastname"
+      />
+    </div>
+  </div>
+
+  <div *ngIf="type === 'coach5'">
+    <label class="font-medium text-base text-fb-gray-500">Betreuer 5</label>
+    <div class="grid md:grid-cols-2 gap-1">
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Vorname"
+        (change)="submitField()"
+        [(ngModel)]="coach5.firstname"
+      />
+      <input
+        type="text"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Nachname"
+        (change)="submitField()"
+        [(ngModel)]="coach5.lastname"
+      />
+      <p class="md:col-span-2 text-fb-gray-400 text-xs">
+        Diese Felder werden automatisch gespeichert.
+      </p>
+    </div>
+  </div>
+
   <div *ngIf="type === 'timekeeper'">
     <label class="font-medium text-base text-fb-gray-500">Zeitnehmer/in</label>
     <div class="grid md:grid-cols-2 gap-1">

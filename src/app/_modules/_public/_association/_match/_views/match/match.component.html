@@ -93,7 +93,55 @@
     </div>
   </ng-container>
 
-  <ng-container *ngIf="isTabActive('secretary') && canEdit(game)">
+  <ng-container
+    *ngIf="isTabActive('secretary') && canEdit(game) && additionalFields"
+  >
+    <div class="border-b-4 border-fb-gray-200" *ngIf="!game.started">
+      <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+        <h2 class="font-bold text-xl lg:text-2xl">Betreuer</h2>
+
+        <p class="pt-4">
+          <span class="font-bold">Wichtig:</span> Dieser Informationen können
+          nur bis zum Spielbeginn eingegeben werden.
+        </p>
+
+        <div class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8">
+          <div class="grid gap-4">
+            <p class="font-bold">{{ game.home_team_name }}</p>
+            <fb-match-event-form
+              *ngFor="let num of [1, 2, 3, 4, 5]"
+              [type]="'coach' + num"
+              [fieldValue]="getCoachByNumber('home', num)"
+              team="home"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+              [additionalFields]="additionalFields"
+            ></fb-match-event-form>
+          </div>
+          <div class="grid gap-4">
+            <p class="font-bold">{{ game.guest_team_name }}</p>
+            <fb-match-event-form
+              *ngFor="let num of [1, 2, 3, 4, 5]"
+              [type]="'coach' + num"
+              team="guest"
+              [fieldValue]="getCoachByNumber('guest', num)"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+              [additionalFields]="additionalFields"
+            ></fb-match-event-form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="border-b-4 border-fb-gray-200" *ngIf="!game.started">
       <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
         <h2 class="font-bold text-xl lg:text-2xl">Spielinformationen</h2>
