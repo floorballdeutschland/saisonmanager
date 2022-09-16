@@ -27,6 +27,7 @@
         <div class="h-[80px] flex items-center gap-[25px]">
           <fb-tab-item
             [isActive]="isTabActive('public')"
+            [markedAsActive]="isTabActive('public')"
             [link]="['./']"
             (click)="$event.preventDefault(); setTab('public')"
             [activeColor]="selectedAssociation | gradient"
@@ -35,6 +36,7 @@
           <fb-tab-item
             *ngIf="canEdit(game)"
             [isActive]="isTabActive('secretary')"
+            [markedAsActive]="isTabActive('secretary')"
             [link]="['./']"
             (click)="$event.preventDefault(); setTab('secretary')"
             [activeColor]="selectedAssociation | gradient"
