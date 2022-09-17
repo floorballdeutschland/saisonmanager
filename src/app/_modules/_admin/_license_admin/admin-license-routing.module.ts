@@ -36,6 +36,22 @@ const routes: Routes = [
       scrollTop: true,
     },
   },
+  {
+    path: 'verwaltung/lizenzwesen/lizenzlisten',
+    pathMatch: 'full',
+    component: Views.LicenseUserLeagueIndexComponent,
+    data: {
+      scrollTop: true,
+    },
+  },
+  {
+    path: 'verwaltung/lizenzwesen/lizenzlisten/liga/:leagueId',
+    pathMatch: 'full',
+    component: Views.LicenseUserLeagueDetailComponent,
+    data: {
+      scrollTop: true,
+    },
+  },
 ];
 
 @NgModule({
