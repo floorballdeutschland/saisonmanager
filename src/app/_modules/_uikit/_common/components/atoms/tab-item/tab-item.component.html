@@ -1,21 +1,18 @@
 <a
-  class="
-    text-xl
-    lg:text-2xl
-    font-bold
-    inline-block
-    cursor-pointer
-    hover:text-black
-    transition
-    text-fb-gray-400
-    border-transparent border-b-[3px]
-  "
+  class="text-xl lg:text-2xl font-bold inline-block cursor-pointer hover:text-black transition text-fb-gray-400 border-transparent border-b-[3px]"
   [routerLink]="link"
   [routerLinkActive]="'!text-black'"
   #activeLink="routerLinkActive"
   [routerLinkActiveOptions]="{ exact: true }"
   [ngStyle]="{
-    'border-image': activeLink.isActive ? activeColor + '1' : 'none'
+    'border-image':
+      markedAsActive !== undefined
+        ? markedAsActive
+          ? activeColor + '1'
+          : 'none'
+        : activeLink.isActive
+        ? activeColor + '1'
+        : 'none'
   }"
 >
   <ng-content></ng-content>
