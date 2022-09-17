@@ -80,4 +80,8 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
     this.handledPlayerIds.push(playerId);
     this.getGameOperations();
   }
+
+  public currentTime() {
+    return new Date();
+  }
 }
