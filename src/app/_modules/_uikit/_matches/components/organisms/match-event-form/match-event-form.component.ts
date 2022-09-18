@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -33,7 +34,10 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
-export class MatchEventFormComponent implements OnInit {
+export class MatchEventFormComponent implements OnInit, AfterViewInit {
+  @ViewChild('minutefield')
+  minutefieldElement!: ElementRef<HTMLInputElement>;
+
   @Input()
   fieldValue?: string;
 
@@ -192,6 +196,10 @@ export class MatchEventFormComponent implements OnInit {
           break;
       }
     }
+  }
+
+  public ngAfterViewInit() {
+    this.minutefieldElement?.nativeElement.focus();
   }
 
   getEventString(): string {
