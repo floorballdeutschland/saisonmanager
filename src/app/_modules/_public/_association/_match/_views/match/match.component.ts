@@ -213,31 +213,31 @@ export class MatchComponent implements OnInit, OnDestroy {
         console.log(this.additionalFields?.home_team_coaches);
         return side === 'home'
           ? `${
-              this.additionalFields?.home_team_coaches.coach1_first_name || ''
+              this.additionalFields?.home_team_coaches?.coach1_first_name || ''
             }###${
-              this.additionalFields?.home_team_coaches.coach1_last_name || ''
+              this.additionalFields?.home_team_coaches?.coach1_last_name || ''
             }`
           : `${
-              this.additionalFields?.guest_team_coaches.coach1_first_name || ''
+              this.additionalFields?.guest_team_coaches?.coach1_first_name || ''
             }###${
-              this.additionalFields?.guest_team_coaches.coach1_last_name || ''
+              this.additionalFields?.guest_team_coaches?.coach1_last_name || ''
             }`;
       case 2:
         return side === 'home'
-          ? this.additionalFields?.home_team_coaches.coach2_string || ''
-          : this.additionalFields?.guest_team_coaches.coach2_string || '';
+          ? this.additionalFields?.home_team_coaches?.coach2_string || ''
+          : this.additionalFields?.guest_team_coaches?.coach2_string || '';
       case 3:
         return side === 'home'
-          ? this.additionalFields?.home_team_coaches.coach3_string || ''
-          : this.additionalFields?.guest_team_coaches.coach3_string || '';
+          ? this.additionalFields?.home_team_coaches?.coach3_string || ''
+          : this.additionalFields?.guest_team_coaches?.coach3_string || '';
       case 4:
         return side === 'home'
-          ? this.additionalFields?.home_team_coaches.coach4_string || ''
-          : this.additionalFields?.guest_team_coaches.coach4_string || '';
+          ? this.additionalFields?.home_team_coaches?.coach4_string || ''
+          : this.additionalFields?.guest_team_coaches?.coach4_string || '';
       case 5:
         return side === 'home'
-          ? this.additionalFields?.home_team_coaches.coach5_string || ''
-          : this.additionalFields?.guest_team_coaches.coach5_string || '';
+          ? this.additionalFields?.home_team_coaches?.coach5_string || ''
+          : this.additionalFields?.guest_team_coaches?.coach5_string || '';
     }
 
     return '';
