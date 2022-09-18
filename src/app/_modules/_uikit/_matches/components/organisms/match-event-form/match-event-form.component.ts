@@ -38,6 +38,12 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   @ViewChild('minutefield')
   minutefieldElement!: ElementRef<HTMLInputElement>;
 
+  @ViewChild('secondsfield')
+  secondsfieldElement!: ElementRef<HTMLInputElement>;
+
+  @ViewChild('playerSearchField')
+  playerSearchFieldElement!: ElementRef<HTMLInputElement>;
+
   @Input()
   fieldValue?: string;
 
@@ -583,5 +589,27 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
 
   public changePeriod(e: any) {
     this.updatePeriod.emit(e.target.value);
+  }
+
+  public onMinutesChange() {
+    if (this.minutes && this.minutes.toString().length >= 2) {
+      if (this.minutes.toString().length > 2) {
+        this.minutes = parseInt(this.minutes.toString().substring(0, 2), 10);
+        this._cdr.markForCheck();
+      }
+
+      this.secondsfieldElement?.nativeElement.focus();
+    }
+  }
+
+  public onSecondsChange() {
+    if (this.seconds && this.seconds.toString().length >= 2) {
+      if (this.seconds.toString().length > 2) {
+        this.seconds = parseInt(this.seconds.toString().substring(0, 2), 10);
+        this._cdr.markForCheck();
+      }
+
+      this.playerSearchFieldElement?.nativeElement.focus();
+    }
   }
 }
