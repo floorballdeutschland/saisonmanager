@@ -136,16 +136,15 @@ export class MatchEventFormComponent implements OnInit {
     }
 
     if (this.type === 'coach1') {
-      console.log(this.additionalFields?.home_team_coaches.coach1_first_name);
       this.coach1 = {
         firstname:
           this.team === 'home'
-            ? this.additionalFields?.home_team_coaches.coach1_first_name || ''
-            : this.additionalFields?.guest_team_coaches.coach1_last_name || '',
+            ? this.additionalFields?.home_team_coaches?.coach1_first_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach1_last_name || '',
         lastname:
           this.team === 'home'
-            ? this.additionalFields?.home_team_coaches.coach1_first_name || ''
-            : this.additionalFields?.guest_team_coaches.coach1_last_name || '',
+            ? this.additionalFields?.home_team_coaches?.coach1_first_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach1_last_name || '',
       };
     }
     if (this.type === 'coach2') {

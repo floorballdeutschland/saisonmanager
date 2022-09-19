@@ -111,7 +111,6 @@
             <fb-match-event-form
               *ngFor="let num of [1, 2, 3, 4, 5]"
               [type]="'coach' + num"
-              [fieldValue]="getCoachByNumber('home', num)"
               team="home"
               (updateGame)="reloadGame()"
               (updatePeriod)="setCurrentPeriod($event)"
@@ -128,7 +127,6 @@
               *ngFor="let num of [1, 2, 3, 4, 5]"
               [type]="'coach' + num"
               team="guest"
-              [fieldValue]="getCoachByNumber('guest', num)"
               (updateGame)="reloadGame()"
               (updatePeriod)="setCurrentPeriod($event)"
               [currentPeriod]="currentPeriod"
