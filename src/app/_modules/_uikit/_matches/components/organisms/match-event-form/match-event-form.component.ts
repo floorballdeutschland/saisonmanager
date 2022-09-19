@@ -86,7 +86,6 @@ export class MatchEventFormComponent implements OnInit {
   penaltyCode = 0;
   with_ps?: boolean;
 
-
   coach1 = { firstname: '', lastname: '' };
   coach2 = { firstname: '', lastname: '' };
   coach3 = { firstname: '', lastname: '' };
@@ -150,10 +149,11 @@ export class MatchEventFormComponent implements OnInit {
         firstname:
           this.team === 'home'
             ? this.additionalFields?.home_team_coaches?.coach1_first_name || ''
-            : this.additionalFields?.guest_team_coaches?.coach1_last_name || '',
+            : this.additionalFields?.guest_team_coaches?.coach1_first_name ||
+              '',
         lastname:
           this.team === 'home'
-            ? this.additionalFields?.home_team_coaches?.coach1_first_name || ''
+            ? this.additionalFields?.home_team_coaches?.coach1_last_name || ''
             : this.additionalFields?.guest_team_coaches?.coach1_last_name || '',
       };
     }
@@ -161,48 +161,52 @@ export class MatchEventFormComponent implements OnInit {
       this.coach2 = {
         firstname:
           this.team === 'home'
-            ? this.additionalFields?.home_team_coaches.coach2_first_name || ''
-            : this.additionalFields?.guest_team_coaches.coach2_last_name || '',
+            ? this.additionalFields?.home_team_coaches?.coach2_first_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach2_first_name ||
+              '',
         lastname:
           this.team === 'home'
-            ? this.additionalFields?.home_team_coaches.coach2_first_name || ''
-            : this.additionalFields?.guest_team_coaches.coach2_last_name || '',
+            ? this.additionalFields?.home_team_coaches?.coach2_last_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach2_last_name || '',
       };
     }
     if (this.type === 'coach3') {
       this.coach3 = {
         firstname:
           this.team === 'home'
-            ? this.additionalFields?.home_team_coaches.coach3_first_name || ''
-            : this.additionalFields?.guest_team_coaches.coach3_last_name || '',
+            ? this.additionalFields?.home_team_coaches?.coach3_first_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach3_first_name ||
+              '',
         lastname:
           this.team === 'home'
-            ? this.additionalFields?.home_team_coaches.coach3_first_name || ''
-            : this.additionalFields?.guest_team_coaches.coach3_last_name || '',
+            ? this.additionalFields?.home_team_coaches?.coach3_last_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach3_last_name || '',
       };
     }
     if (this.type === 'coach4') {
       this.coach4 = {
         firstname:
           this.team === 'home'
-            ? this.additionalFields?.home_team_coaches.coach4_first_name || ''
-            : this.additionalFields?.guest_team_coaches.coach4_last_name || '',
+            ? this.additionalFields?.home_team_coaches?.coach4_first_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach4_first_name ||
+              '',
         lastname:
           this.team === 'home'
-            ? this.additionalFields?.home_team_coaches.coach4_first_name || ''
-            : this.additionalFields?.guest_team_coaches.coach4_last_name || '',
+            ? this.additionalFields?.home_team_coaches?.coach4_last_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach4_last_name || '',
       };
     }
     if (this.type === 'coach5') {
       this.coach5 = {
         firstname:
           this.team === 'home'
-            ? this.additionalFields?.home_team_coaches.coach5_first_name || ''
-            : this.additionalFields?.guest_team_coaches.coach5_last_name || '',
+            ? this.additionalFields?.home_team_coaches?.coach5_first_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach5_first_name ||
+              '',
         lastname:
           this.team === 'home'
-            ? this.additionalFields?.home_team_coaches.coach5_first_name || ''
-            : this.additionalFields?.guest_team_coaches.coach5_last_name || '',
+            ? this.additionalFields?.home_team_coaches?.coach5_last_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach5_last_name || '',
       };
     }
 

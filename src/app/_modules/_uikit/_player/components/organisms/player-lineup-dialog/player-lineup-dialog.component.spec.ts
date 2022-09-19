@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { PlayerLineupDialogComponent } from './team-squad.component';
+import { PlayerLineupDialogComponent } from './player-lineup-dialog.component';
 
 describe('TeamSquadComponent', () => {
   let component: PlayerLineupDialogComponent;
