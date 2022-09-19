@@ -19,5 +19,8 @@ export class TabItemComponent {
   isActive = false;
 
   @Input()
+  markedAsActive?: boolean;
+
+  @Input()
   link!: string | string[];
 }

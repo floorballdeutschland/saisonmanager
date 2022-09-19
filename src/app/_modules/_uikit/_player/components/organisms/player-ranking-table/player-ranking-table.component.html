@@ -84,7 +84,7 @@
     >
   </ng-container>
 
-  <ng-container cdkColumnDef="table.penalty_2and2">
+  <ng-container cdkColumnDef="table.total_points">
     <cdk-header-cell
       class="hidden md:flex items-center justify-center border-r border-fb-gray-200"
       *cdkHeaderCellDef
@@ -110,16 +110,16 @@
     >
   </ng-container>
 
-  <ng-container cdkColumnDef="table.penalty_5">
+  <ng-container cdkColumnDef="table.penalty_2and2">
     <cdk-header-cell
       class="hidden md:flex items-center justify-center"
       *cdkHeaderCellDef
-      >5'</cdk-header-cell
+      >2'+2'</cdk-header-cell
     >
     <cdk-cell
       class="hidden md:flex items-center justify-center"
       *cdkCellDef="let element"
-      >{{ element.penalty_5 }}</cdk-cell
+      >{{ element.penalty_2and2 }}</cdk-cell
     >
   </ng-container>
 
@@ -140,14 +140,13 @@
     <cdk-header-cell
       class="hidden md:flex items-center justify-center"
       *cdkHeaderCellDef
-      >MS'</cdk-header-cell
+      >MS</cdk-header-cell
     >
     <cdk-cell
       class="hidden md:flex items-center justify-center"
       *cdkCellDef="let element"
-      >{{ element.penalty_ms1 }} - {{ element.penalty_ms2 }} -
-      {{ element.penalty_ms3 }}</cdk-cell
-    >
+      >{{ element.penalty_ms_tech }} - {{ element.penalty_ms_full }}
+    </cdk-cell>
   </ng-container>
 
   <cdk-header-row
@@ -158,9 +157,9 @@
       'table.games',
       'table.goals',
       'table.assists',
-      'table.penalty_2and2',
+      'table.total_points',
       'table.penalty_2',
-      'table.penalty_5',
+      'table.penalty_2and2',
       'table.penalty_10',
       'table.penalty_ms'
     ]"
@@ -177,9 +176,9 @@
         'table.games',
         'table.goals',
         'table.assists',
-        'table.penalty_2and2',
+        'table.total_points',
         'table.penalty_2',
-        'table.penalty_5',
+        'table.penalty_2and2',
         'table.penalty_10',
         'table.penalty_ms'
       ]
