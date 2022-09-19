@@ -417,37 +417,54 @@
 
     <ng-container *ngIf="type !== 'timeout'">
       <div class="col-span-2">
-        <label class="font-medium text-base text-fb-gray-500">{{
-          type === "goal" ? "Torschütze" : "Spieler/in"
-        }}</label>
-        <select
-          class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-          [(ngModel)]="playerId"
-        >
-          <option
-            [value]="player.player_id"
-            *ngFor="
-              let player of (team === 'home'
-                ? match.players.home || []
-                : match.players.guest || []
-              ) | sortTrikotNumber
-            "
-          >
-            {{ player.trikot_number }} - {{ player.player_name }},
-            {{ player.player_firstname }}
-          </option>
-        </select>
-      </div>
+        <div class="grid grid-cols-[80px,1fr] gap-x-2">
+          <label class="col-span-2 font-medium text-base text-fb-gray-500">{{
+            type === "goal" ? "Torschütze" : "Spieler/in"
+          }}</label>
 
-      <ng-container *ngIf="type === 'goal'">
-        <div class="col-span-2">
-          <label class="font-medium text-base text-fb-gray-500">Assist</label>
+          <div
+            class="flex w-full bg-white border border-fb-gray-600 rounded-[5px] focus:ring-0 overflow-hidden"
+            [ngClass]="playerError ? 'border-0 ring-2 ring-red-500' : ''"
+          >
+            <label class="flex items-center pl-2 text-fb-gray-500">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="block w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
+              </svg>
+            </label>
+
+            <input
+              [(ngModel)]="playerSearchNumber"
+              (ngModelChange)="
+                searchPlayerByNumber(team, playerSearchNumber || 0, false)
+              "
+              type="number"
+              inputmode="numeric"
+              placeholder="Nr."
+              class="inline w-full p-2 border-0 focus:ring-0"
+            />
+          </div>
+
           <select
             class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-            [(ngModel)]="assistPlayerId"
+            tabindex="-1"
+            [(ngModel)]="playerNumber"
+            (change)="playerSearchNumber = undefined"
           >
+            <option value="0">Bitte wählen...</option>
+            <option *ngIf="type === 'goal'" [value]="1000">Eigentor</option>
             <option
-              [value]="player.player_id"
+              [value]="player.trikot_number"
               *ngFor="
                 let player of (team === 'home'
                   ? match.players.home || []
@@ -458,8 +475,79 @@
               {{ player.trikot_number }} - {{ player.player_name }},
               {{ player.player_firstname }}
             </option>
+            <option *ngIf="type === 'goal'" value="2000">
+              Nicht angegeben
+            </option>
           </select>
         </div>
+      </div>
+
+      <ng-container *ngIf="type === 'goal'">
+        <div class="col-span-2">
+          <div class="grid grid-cols-[80px,1fr] gap-x-2">
+            <label class="col-span-2 font-medium text-base text-fb-gray-500"
+              >Assist</label
+            >
+
+            <div
+              class="flex w-full bg-white border border-fb-gray-600 rounded-[5px] focus:ring-0 overflow-hidden"
+            >
+              <label class="flex items-center pl-2 text-fb-gray-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="block w-5 h-5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                  />
+                </svg>
+              </label>
+
+              <input
+                [(ngModel)]="assistPlayerSearchNumber"
+                (ngModelChange)="
+                  searchPlayerByNumber(
+                    team,
+                    assistPlayerSearchNumber || 0,
+                    true
+                  )
+                "
+                type="number"
+                inputmode="numeric"
+                placeholder="Nr."
+                class="inline w-full p-2 border-0 focus:ring-0"
+              />
+            </div>
+
+            <select
+              class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+              tabindex="-1"
+              [(ngModel)]="assistPlayerNumber"
+              (change)="assistPlayerSearchNumber = undefined"
+            >
+              <option value="0">Kein Assist</option>
+              <option
+                [value]="player.trikot_number"
+                *ngFor="
+                  let player of (team === 'home'
+                    ? match.players.home || []
+                    : match.players.guest || []
+                  ) | sortTrikotNumber
+                "
+              >
+                {{ player.trikot_number }} - {{ player.player_name }},
+                {{ player.player_firstname }}
+              </option>
+            </select>
+          </div>
+        </div>
+
         <div class="col-span-2">
           <input
             type="checkbox"
@@ -482,6 +570,7 @@
             class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
             [(ngModel)]="penalty"
           >
+            <option value="0">Bitte wählen...</option>
             <option [value]="p.id" *ngFor="let p of penalties">
               {{ p.name }}
             </option>
@@ -496,6 +585,7 @@
             class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
             [(ngModel)]="penaltyCode"
           >
+            <option value="0">Bitte wählen...</option>
             <option [value]="p.id" *ngFor="let p of penaltyCodes">
               {{ p.code }} - {{ p.description }}
             </option>
@@ -534,20 +624,23 @@
 
   <button
     (click)="submitEvent()"
-    [disabled]="!editLive && startTime === ''"
+    [disabled]="submitDisabled()"
     *ngIf="['goal', 'penalty', 'timeout', 'next'].includes(type)"
-    class="col-span-2 w-full font-bold text-black leading-[17px] text-sm px-5 py-4 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
+    class="col-span-2 w-full font-bold text-black leading-[17px] text-sm px-5 py-4 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
   >
     <ng-container *ngIf="['goal', 'penalty', 'timeout'].includes(type)">
-      {{ getEventString() }} eintragen
+      <ng-template #missingInfo>Angaben unvollständig</ng-template>
+      <ng-container *ngIf="!submitDisabled(); else missingInfo">
+        {{ getEventString() }} eintragen
+      </ng-container>
     </ng-container>
     <ng-container *ngIf="['next'].includes(type) && !match.ended">
       <ng-container *ngIf="!match.started && !match.ended"
-        >Spiel starten</ng-container
-      >
+        >Spiel starten
+      </ng-container>
       <ng-container *ngIf="match.started && !match.ended"
-        >Spiel beenden</ng-container
-      >
+        >Spiel beenden
+      </ng-container>
     </ng-container>
   </button>
 </div>
