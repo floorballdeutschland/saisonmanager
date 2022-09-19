@@ -145,6 +145,19 @@
     </p>
   </div>
 
+  <div *ngIf="type === 'comment'">
+    <label class="font-medium text-base text-fb-gray-500">Kommentar</label>
+    <input
+      type="text"
+      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+      (change)="submitField()"
+      [(ngModel)]="comment"
+    />
+    <p class="text-fb-gray-400 text-xs">
+      Dieses Feld wird automatisch gespeichert.
+    </p>
+  </div>
+
   <div *ngIf="type === 'recordkeeper'">
     <label class="font-medium text-base text-fb-gray-500"
       >Schriftführer/in</label

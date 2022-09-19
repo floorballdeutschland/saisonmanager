@@ -86,11 +86,14 @@ export class MatchEventFormComponent implements OnInit {
   penaltyCode = 0;
   with_ps?: boolean;
 
+
   coach1 = { firstname: '', lastname: '' };
   coach2 = { firstname: '', lastname: '' };
   coach3 = { firstname: '', lastname: '' };
   coach4 = { firstname: '', lastname: '' };
   coach5 = { firstname: '', lastname: '' };
+
+  comment?: string;
   visitors?: number;
   livestream?: string;
   recordkeeper?: string;
@@ -205,6 +208,10 @@ export class MatchEventFormComponent implements OnInit {
 
     if (this.fieldValue) {
       switch (this.type) {
+        case 'comment':
+          console.log(this.fieldValue);
+          this.comment = this.fieldValue || '';
+          break;
         case 'visitors':
           this.visitors = parseInt(this.fieldValue || '', 10);
           break;
@@ -531,6 +538,10 @@ export class MatchEventFormComponent implements OnInit {
               this.updateGame.emit();
             },
           });
+        break;
+      case 'comment':
+        fields = { record_comment: this.comment?.toString() || '' };
+        saveMessage = 'Kommentar gespeichert';
         break;
       case 'visitors':
         fields = { audience: this.visitors?.toString() || '' };

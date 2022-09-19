@@ -1,4 +1,5 @@
 export interface GameFields {
+  record_comment?: string;
   audience?: string;
   actual_start_time?: string;
   live_stream_link?: string;

@@ -15,6 +15,7 @@ export interface GameAdditionalFields {
   record_keeper_string: string;
   home_team_coaches: Coach;
   guest_team_coaches: Coach;
+  record_comment: string;
 }
 
 export interface Coach {
