@@ -13,4 +13,5 @@ export interface GameAdditionalFields {
   guest_timeout_string: string;
   time_keeper_string: string;
   record_keeper_string: string;
+  record_comment: string;
 }

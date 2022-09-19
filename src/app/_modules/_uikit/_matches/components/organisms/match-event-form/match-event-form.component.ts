@@ -82,6 +82,7 @@ export class MatchEventFormComponent implements OnInit {
   penaltyCode = 0;
   with_ps?: boolean;
 
+  comment?: string;
   visitors?: number;
   livestream?: string;
   recordkeeper?: string;
@@ -135,6 +136,10 @@ export class MatchEventFormComponent implements OnInit {
 
     if (this.fieldValue) {
       switch (this.type) {
+        case 'comment':
+          console.log(this.fieldValue);
+          this.comment = this.fieldValue || '';
+          break;
         case 'visitors':
           this.visitors = parseInt(this.fieldValue || '', 10);
           break;
@@ -436,6 +441,10 @@ export class MatchEventFormComponent implements OnInit {
     let fields: GameFields = {};
     let saveMessage = '';
     switch (this.type) {
+      case 'comment':
+        fields = { record_comment: this.comment?.toString() || '' };
+        saveMessage = 'Kommentar gespeichert';
+        break;
       case 'visitors':
         fields = { audience: this.visitors?.toString() || '' };
         saveMessage = 'Zuschauerzahl gespeichert';
