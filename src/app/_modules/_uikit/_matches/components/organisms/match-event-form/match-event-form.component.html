@@ -412,19 +412,25 @@
     <div>
       <label class="font-medium text-base text-fb-gray-500">Minuten</label>
       <input
+        #minutefield
         type="number"
         inputmode="numeric"
+        maxlength="2"
         class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
         [(ngModel)]="minutes"
+        (ngModelChange)="onMinutesChange()"
       />
     </div>
     <div>
       <label class="font-medium text-base text-fb-gray-500">Sekunden</label>
       <input
+        #secondsfield
         type="number"
         inputmode="numeric"
+        maxlength="2"
         class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
         [(ngModel)]="seconds"
+        (ngModelChange)="onSecondsChange()"
       />
     </div>
 
@@ -457,6 +463,7 @@
             </label>
 
             <input
+              #playerSearchField
               [(ngModel)]="playerSearchNumber"
               (ngModelChange)="
                 searchPlayerByNumber(team, playerSearchNumber || 0, false)
