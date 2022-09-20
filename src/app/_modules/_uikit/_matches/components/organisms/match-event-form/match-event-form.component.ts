@@ -205,7 +205,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   }
 
   public ngAfterViewInit() {
-    this.minutefieldElement?.nativeElement.focus();
+    this.minutefieldElement?.nativeElement?.focus();
   }
 
   getEventString(): string {
@@ -598,7 +598,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         this._cdr.markForCheck();
       }
 
-      this.secondsfieldElement?.nativeElement.focus();
+      this.secondsfieldElement?.nativeElement?.focus();
     }
   }
 
@@ -609,7 +609,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         this._cdr.markForCheck();
       }
 
-      this.playerSearchFieldElement?.nativeElement.focus();
+      this.playerSearchFieldElement?.nativeElement?.focus();
     }
   }
 }
