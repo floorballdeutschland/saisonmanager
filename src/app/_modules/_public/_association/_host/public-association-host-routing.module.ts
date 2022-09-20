@@ -9,6 +9,11 @@ const routes: Routes = [
     component: Views.AssociationHostComponent,
     children: [
       {
+        path: '',
+        pathMatch: 'full',
+        component: Views.AssociationIndexComponent,
+      },
+      {
         path: ':leagueId',
         component: Views.LeagueHostComponent,
         children: [

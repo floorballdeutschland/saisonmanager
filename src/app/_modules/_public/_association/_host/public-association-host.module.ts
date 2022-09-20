@@ -7,6 +7,7 @@ import { LeagueHostComponent } from './_views/league-host/league-host.component'
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
+import { AssociationIndexComponent } from './_views/association-index/association-index.component';
 
 @NgModule({
   imports: [
@@ -16,6 +17,10 @@ import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
     UikitMatchesModule,
     UikitLoadingSkeletonsModule,
   ],
-  declarations: [Views.AssociationHostComponent, LeagueHostComponent],
+  declarations: [
+    Views.AssociationHostComponent,
+    LeagueHostComponent,
+    AssociationIndexComponent,
+  ],
 })
 export class PublicAssociationHostModule {}
