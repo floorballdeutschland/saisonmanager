@@ -25,6 +25,7 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 export class MobileHeaderComponent implements OnInit {
   isLoading$!: Observable<boolean>;
   leagues$!: Observable<League[] | null>;
+  associations$!: Observable<GameOperation[]>;
   selectedAssociation$!: Observable<GameOperation | null>;
   favoriteLeagues$?: BehaviorSubject<LeagueWithOperation[]>;
 
@@ -47,6 +48,7 @@ export class MobileHeaderComponent implements OnInit {
     this.leagues$ = this._leagueService.leagues$;
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.favoriteLeagues$ = this._favoriteService.favoriteLeagues$;
+    this.associations$ = this._associationService.associations$;
   }
 
   close() {

@@ -2,6 +2,10 @@
   <div class="lg:grid lg:grid-cols-[300px,1fr] min-h-screen">
     <div class="lg:block h-full w-full">
       <fb-sidebar [association]="selectedAssociation$ | async">
+        <fb-association-navigation
+          *ngIf="(selectedAssociation$ | async) === null"
+        ></fb-association-navigation>
+
         <fb-league-navigation
           *ngIf="leagues$ | async as leagues"
           [leagues]="leagues"

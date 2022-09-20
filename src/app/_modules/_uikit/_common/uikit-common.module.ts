@@ -31,6 +31,7 @@ import * as Pipes from './pipes';
     Pipes.ToNumberPipe,
     Pipes.MatchEventsPipe,
     Organisms.MobileHeaderComponent,
+    Organisms.AssociationNavigationComponent,
   ],
   exports: [
     Atoms.LogoComponent,
@@ -54,6 +55,7 @@ import * as Pipes from './pipes';
     Pipes.ToNumberPipe,
     Pipes.MatchEventsPipe,
     Organisms.MobileHeaderComponent,
+    Organisms.AssociationNavigationComponent,
   ],
 })
 export class UikitCommonModule {}
