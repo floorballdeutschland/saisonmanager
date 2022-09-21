@@ -14,8 +14,23 @@
 
       <div>
         <div class="ml-3.5">
-          {{ gameEvent.home.scorer?.player_firstname }}
-          {{ gameEvent.home.scorer?.player_name }}
+          <ng-container
+            *ngIf="
+              gameEvent.event_type === 'goal' &&
+                ['owngoal', 'not_assigned'].includes(gameEvent.goal_type || '');
+              then alternativeHomeName;
+              else homePlayerName
+            "
+          >
+          </ng-container>
+
+          <ng-template #homePlayerName>
+            {{ gameEvent.home.scorer?.player_firstname }}
+            {{ gameEvent.home.scorer?.player_name }}
+          </ng-template>
+          <ng-template #alternativeHomeName>
+            {{ gameEvent.goal_type_string }}
+          </ng-template>
         </div>
       </div>
 
@@ -126,8 +141,23 @@
 
       <div class="md:text-right row-start-1 col-start-2 md:col-start-12">
         <div class="ml-3.5 md:mr-3.5">
-          {{ gameEvent.guest.scorer?.player_firstname }}
-          {{ gameEvent.guest.scorer?.player_name }}
+          <ng-container
+            *ngIf="
+              gameEvent.event_type === 'goal' &&
+                ['owngoal', 'not_assigned'].includes(gameEvent.goal_type || '');
+              then alternativeGuestName;
+              else guestPlayerName
+            "
+          >
+          </ng-container>
+
+          <ng-template #guestPlayerName>
+            {{ gameEvent.guest.scorer?.player_firstname }}
+            {{ gameEvent.guest.scorer?.player_name }}
+          </ng-template>
+          <ng-template #alternativeGuestName>
+            {{ gameEvent.goal_type_string }}
+          </ng-template>
         </div>
       </div>
       <div class="row-start-1 col-start-1 md:col-start-13">
