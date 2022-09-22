@@ -64,8 +64,10 @@
               [ngClass]="last ? '' : ''"
             >
               <div class="block hover:bg-gray-50 print:h-[22px]">
-                <div class="py-4 print:py-0">
-                  <div class="grid grid-cols-[115px,40px,40px,1fr]">
+                <div class="py-3 print:py-0">
+                  <div
+                    class="license-direction grid grid-cols-[140px,40px,40px,1fr] print:grid-cols-[115px,40px,40px,1fr]"
+                  >
                     <div class="ml-2 flex flex-shrink-0">
                       <div class="">
                         <p
@@ -89,13 +91,15 @@
 
                     <div class="flex flex-col justify-center">
                       <p
-                        class="truncate text-xs font-medium print:leading-[22px]"
+                        class="text-center truncate text-sm print:text-xs font-medium print:leading-[22px]"
                       >
                         {{ getAgeCategory(p.birthdate) }}
                       </p>
                     </div>
 
-                    <div class="flex flex-col justify-center">
+                    <div
+                      class="flex flex-col justify-center items-end print:items-start"
+                    >
                       <svg
                         version="1.1"
                         id="Capa_1"
@@ -105,7 +109,7 @@
                         y="0px"
                         viewBox="0 0 489.6 489.6"
                         style="enable-background: new 0 0 489.6 489.6"
-                        class="w-3 h-3"
+                        class="w-5 h-5 print:w-3 print:h-3"
                         xml:space="preserve"
                         *ngIf="calculateAge(p.birthdate) < 18"
                       >
@@ -130,7 +134,7 @@
                     </div>
 
                     <p
-                      class="truncate text-xs font-medium print:leading-[22px]"
+                      class="truncate text-sm print:text-xs font-medium print:leading-[22px]"
                     >
                       {{ p.last_name }}, {{ p.first_name }}
                     </p>
