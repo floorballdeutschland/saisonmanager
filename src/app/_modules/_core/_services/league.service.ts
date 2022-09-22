@@ -190,6 +190,12 @@ export class LeagueService {
     return this.http.get<TeamWithPlayers[]>(path);
   }
 
+  public getUserLeagueLicenses(leagueId: number) {
+    const path =
+      environment.apiURL + '/user/leagues/' + leagueId + '/licenses.json';
+    return this.http.get<TeamWithPlayers[]>(path);
+  }
+
   public getPenalties() {
     const path = environment.apiURL + 'user/leagues/penalties.json';
     return this.http.get<Penalty[]>(path);
