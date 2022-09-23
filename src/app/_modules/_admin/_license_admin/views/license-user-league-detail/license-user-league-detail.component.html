@@ -45,106 +45,149 @@
 
         <div
           class="bg-white my-[5px] py-[15px] px-[30px] print:px-0 print:m-0 print:p-0 pagebreak"
-          *ngFor="let team of teams"
         >
-          <p class="hidden print:block text-[14px] pt-4">
-            {{ league?.game_operation_name }}
-            <span class="block text-[20px]">{{ league?.name }}</span>
-            <span class="block text-[10px] pb-2"
-              >Diese Lizenzliste wurde am
-              {{ currentTime() | date: "dd.MM.YYYY HH:mm" }} Uhr erstellt.</span
-            >
-          </p>
-          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-            {{ team.name }}
+          <div
+            class="uppercase font-bold text-gray-400 text-sm mb-5 print:hidden"
+          >
+            Spieltags-Datum
           </div>
-          <ul role="list" class="divide-y divide-gray-200">
-            <li
-              *ngFor="let p of team.players; let last = last"
-              [ngClass]="last ? '' : ''"
+          <div class="grid md:grid-cols-3 gap-2">
+            <p class="text-sm md:col-span-3">
+              Bitte wähle das Datum, an dem der Spieltag stattfindet, aus, um
+              die Lizenzliste anzuzeigen.
+            </p>
+            <input
+              type="date"
+              class="w-full md:col-span-3"
+              [(ngModel)]="gamedayDate"
+            />
+
+            <button
+              (click)="setGamedayDate(0)"
+              class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
             >
-              <div class="block hover:bg-gray-50 print:h-[22px]">
-                <div class="py-3 print:py-0">
-                  <div
-                    class="license-direction grid grid-cols-[140px,40px,40px,1fr] print:grid-cols-[115px,40px,40px,1fr]"
-                  >
-                    <div class="ml-2 flex flex-shrink-0">
-                      <div class="">
-                        <p
-                          class="license-status block rounded-full px-2 text-[13px] font-semibold leading-5 text-green-800 print:mt-[3px] print:text-[10px] print:leading-4"
-                          [ngClass]="
-                            p.team_license.last_status.license_status_id === 3
-                              ? 'bg-red-100 text-red-800'
-                              : p.team_license.last_status.license_status_id ===
-                                1
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
-                          "
-                        >
-                          {{ p.team_license.last_status_code }}
-                        </p>
-                        <!--                          <span class="block text-fb-gray-500 text-[10px] pt-1">-->
-                        <!--                            Bearbeitet: 20.03.2022-->
-                        <!--                          </span>-->
-                      </div>
-                    </div>
-
-                    <div class="flex flex-col justify-center">
-                      <p
-                        class="text-center truncate text-sm print:text-xs font-medium print:leading-[22px]"
-                      >
-                        {{ getAgeCategory(p.birthdate) }}
-                      </p>
-                    </div>
-
+              Heute
+            </button>
+            <button
+              (click)="setGamedayDate(1)"
+              class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+            >
+              Morgen
+            </button>
+            <button
+              (click)="setGamedayDate(2)"
+              class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+            >
+              Übermorgen
+            </button>
+          </div>
+        </div>
+        <div class="print:hidden"></div>
+        <ng-container *ngIf="gamedayDate">
+          <div
+            class="bg-white my-[5px] py-[15px] px-[30px] print:px-0 print:m-0 print:p-0 pagebreak"
+            *ngFor="let team of teams"
+          >
+            <p class="hidden print:block text-[14px] pt-4">
+              {{ league?.game_operation_name }}
+              <span class="block text-[20px]">{{ league?.name }}</span>
+              <span class="block text-[10px] pb-2"
+                >Diese Lizenzliste wurde am
+                {{ currentTime() | date: "dd.MM.YYYY HH:mm" }} Uhr
+                erstellt.</span
+              >
+            </p>
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              {{ team.name }}
+            </div>
+            <ul role="list" class="divide-y divide-gray-200">
+              <li
+                *ngFor="let p of team.players; let last = last"
+                [ngClass]="last ? '' : ''"
+              >
+                <div class="block hover:bg-gray-50 print:h-[22px]">
+                  <div class="py-3 print:py-0">
                     <div
-                      class="flex flex-col justify-center items-end print:items-start"
+                      class="license-direction grid grid-cols-[140px,40px,40px,1fr] print:grid-cols-[115px,40px,40px,1fr]"
                     >
-                      <svg
-                        version="1.1"
-                        id="Capa_1"
-                        xmlns="http://www.w3.org/2000/svg"
-                        xmlns:xlink="http://www.w3.org/1999/xlink"
-                        x="0px"
-                        y="0px"
-                        viewBox="0 0 489.6 489.6"
-                        style="enable-background: new 0 0 489.6 489.6"
-                        class="w-5 h-5 print:w-3 print:h-3"
-                        xml:space="preserve"
-                        *ngIf="calculateAge(p.birthdate) < 18"
+                      <div class="ml-2 flex flex-shrink-0">
+                        <div class="">
+                          <p
+                            class="license-status block rounded-full px-2 text-[13px] font-semibold leading-5 text-green-800 print:mt-[3px] print:text-[10px] print:leading-4"
+                            [ngClass]="
+                              p.team_license.last_status.license_status_id === 3
+                                ? 'bg-red-100 text-red-800'
+                                : p.team_license.last_status
+                                    .license_status_id === 1
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                            "
+                          >
+                            {{ p.team_license.last_status_code }}
+                          </p>
+                          <!--                          <span class="block text-fb-gray-500 text-[10px] pt-1">-->
+                          <!--                            Bearbeitet: 20.03.2022-->
+                          <!--                          </span>-->
+                        </div>
+                      </div>
+
+                      <div class="flex flex-col justify-center">
+                        <p
+                          class="text-center truncate text-sm print:text-xs font-medium print:leading-[22px]"
+                        >
+                          {{ getAgeCategory(p.birthdate) }}
+                        </p>
+                      </div>
+
+                      <div
+                        class="flex flex-col justify-center items-end print:items-start"
                       >
-                        <g>
+                        <svg
+                          version="1.1"
+                          id="Capa_1"
+                          xmlns="http://www.w3.org/2000/svg"
+                          xmlns:xlink="http://www.w3.org/1999/xlink"
+                          x="0px"
+                          y="0px"
+                          viewBox="0 0 489.6 489.6"
+                          style="enable-background: new 0 0 489.6 489.6"
+                          class="w-5 h-5 print:w-3 print:h-3"
+                          xml:space="preserve"
+                          *ngIf="calculateAge(p.birthdate) < 18"
+                        >
                           <g>
                             <g>
-                              <path
-                                d="M353.7,85.738c6.5-2,13.5-1.3,19.5,1.9c6,3.2,10.4,8.6,12.4,15.1v0.1c0,0,0,0,0,0.1l43,136.4c-13-5.9-27.5-9.2-42.7-9.2
-                                c-52,0-95.1,38.4-102.5,88.4H206c-8.2-49-50.9-86.5-102.3-86.5c-15.3,0-29.8,3.3-42.8,9.3l43.5-138.3c0,0,0,0,0-0.1v-0.1
-                                c4.1-13.5,18.4-21.1,31.9-17c9.1,2.7,18.6-2.4,21.4-11.4c2.8-9.1-2.4-18.6-11.4-21.4c-31.5-9.6-64.9,8.2-74.6,39.6c0,0,0,0,0,0.1
-                                v0.1l0,0l0,0l-63.8,202.6c-0.2,0.6-0.3,1.2-0.5,1.8c-4.8,11.9-7.4,24.9-7.4,38.4c0,57.2,46.5,103.7,103.7,103.7
-                                c51.3,0,94.1-37.5,102.3-86.5h78c8.9,48.1,51.2,84.7,101.9,84.7c57.2,0,103.7-46.5,103.7-103.7c0-13.7-2.7-26.7-7.5-38.7
-                                l-63.8-202.5v-0.1c-4.7-15.2-15-27.7-29-35.2c-14.1-7.5-30.3-9.1-45.6-4.5c-9.1,2.8-14.2,12.3-11.4,21.4
-                                C335,83.438,344.6,88.538,353.7,85.738z M103.7,405.038c-38.3,0-69.4-31.1-69.4-69.4s31.1-69.4,69.4-69.4s69.4,31.1,69.4,69.4
-                                S142,405.038,103.7,405.038z M385.9,403.238c-38.3,0-69.4-31.1-69.4-69.4s31.1-69.4,69.4-69.4s69.4,31.1,69.4,69.4
-                                S424.1,403.238,385.9,403.238z"
-                              />
+                              <g>
+                                <path
+                                  d="M353.7,85.738c6.5-2,13.5-1.3,19.5,1.9c6,3.2,10.4,8.6,12.4,15.1v0.1c0,0,0,0,0,0.1l43,136.4c-13-5.9-27.5-9.2-42.7-9.2
+                                  c-52,0-95.1,38.4-102.5,88.4H206c-8.2-49-50.9-86.5-102.3-86.5c-15.3,0-29.8,3.3-42.8,9.3l43.5-138.3c0,0,0,0,0-0.1v-0.1
+                                  c4.1-13.5,18.4-21.1,31.9-17c9.1,2.7,18.6-2.4,21.4-11.4c2.8-9.1-2.4-18.6-11.4-21.4c-31.5-9.6-64.9,8.2-74.6,39.6c0,0,0,0,0,0.1
+                                  v0.1l0,0l0,0l-63.8,202.6c-0.2,0.6-0.3,1.2-0.5,1.8c-4.8,11.9-7.4,24.9-7.4,38.4c0,57.2,46.5,103.7,103.7,103.7
+                                  c51.3,0,94.1-37.5,102.3-86.5h78c8.9,48.1,51.2,84.7,101.9,84.7c57.2,0,103.7-46.5,103.7-103.7c0-13.7-2.7-26.7-7.5-38.7
+                                  l-63.8-202.5v-0.1c-4.7-15.2-15-27.7-29-35.2c-14.1-7.5-30.3-9.1-45.6-4.5c-9.1,2.8-14.2,12.3-11.4,21.4
+                                  C335,83.438,344.6,88.538,353.7,85.738z M103.7,405.038c-38.3,0-69.4-31.1-69.4-69.4s31.1-69.4,69.4-69.4s69.4,31.1,69.4,69.4
+                                  S142,405.038,103.7,405.038z M385.9,403.238c-38.3,0-69.4-31.1-69.4-69.4s31.1-69.4,69.4-69.4s69.4,31.1,69.4,69.4
+                                  S424.1,403.238,385.9,403.238z"
+                                />
+                              </g>
                             </g>
                           </g>
-                        </g>
-                      </svg>
-                    </div>
+                        </svg>
+                      </div>
 
-                    <p
-                      class="truncate text-sm print:text-xs font-medium print:leading-[22px]"
-                    >
-                      {{ p.last_name }}, {{ p.first_name }}
-                    </p>
+                      <p
+                        class="truncate text-sm print:text-xs font-medium print:leading-[22px]"
+                      >
+                        {{ p.last_name }}, {{ p.first_name }}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </li>
-          </ul>
-          <!--          <p class="pagebreak">&nbsp;l</p>-->
-        </div>
+              </li>
+            </ul>
+            <!--          <p class="pagebreak">&nbsp;l</p>-->
+          </div>
+        </ng-container>
       </div>
     </div>
   </div>

@@ -31,6 +31,7 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
   league?: League;
   teams: TeamWithPlayers[] = [];
   allClubs: Club[] = [];
+  gamedayDate?: string;
 
   handledPlayerIds: number[] = [];
 
@@ -110,7 +111,11 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
   }
 
   public calculateAge(dateString: string): number {
-    const today = new Date();
+    if (!this.gamedayDate) {
+      return 0;
+    }
+
+    const today = new Date(this.gamedayDate);
     const birthDate = new Date(dateString);
     let age = today.getFullYear() - birthDate.getFullYear();
     const m = today.getMonth() - birthDate.getMonth();
@@ -118,5 +123,18 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
       age--;
     }
     return age;
+  }
+
+  public setGamedayDate(daysFromToday: number) {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + daysFromToday);
+
+    const year = tomorrow.getFullYear();
+    const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const day = String(tomorrow.getDate()).padStart(2, '0');
+    const joined = [year, month, day].join('-');
+
+    this.gamedayDate = joined;
   }
 }
