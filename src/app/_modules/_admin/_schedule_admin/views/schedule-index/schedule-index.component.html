@@ -25,7 +25,7 @@
         </a>
       </div>
 
-      <ng-container *ngIf="loading">
+      <ng-container *ngIf="loading || !arenas.length">
         <div class="bg-white my-[5px] py-[15px] px-[30px]">
           <div class="uppercase font-bold text-gray-400 text-sm mb-5">
             <svg
@@ -43,7 +43,7 @@
                 fill="currentFill"
               />
             </svg>
-            Daten werden geladen...
+            Spielplan wird geladen...
           </div>
         </div>
       </ng-container>
@@ -54,17 +54,36 @@
           </div>
         </div>
       </ng-container>
-      <ng-container *ngIf="!loading">
+      <ng-container *ngIf="!loading && arenas.length">
         <div *ngFor="let gameDay of gameDays">
           <div class="bg-white h-[80px]">
-            <div class="my-2.5 lg:my-5 px-[30px] py-[20px]">
-              <div class="uppercase font-bold text-gray-400 text-sm">
-                Spieltag {{ gameDay.number }},
-                {{ gameDay.date | date: "dd.MM.YYYY" }}
+            <div class="flex my-2.5 lg:my-5 px-[30px] py-[20px]">
+              <div>
+                <div class="uppercase font-bold text-gray-400 text-sm">
+                  Spieltag {{ gameDay.number }},
+                  {{ gameDay.date | date: "dd.MM.YYYY" }}
+                </div>
+                <div
+                  class="text-gray-400 text-sm"
+                  *ngIf="gameDay.arena as arena"
+                >
+                  {{ arena.city }}, {{ arena.name }} ({{ arena.id }})
+                </div>
               </div>
-              <div class="text-gray-400 text-sm" *ngIf="gameDay.arena as arena">
-                {{ arena.city }}, {{ arena.name }} ({{ arena.id }})
-              </div>
+              <a
+                class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 ml-auto mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                [routerLink]="[
+                  '/',
+                  'verwaltung',
+                  'ligen',
+                  leagueId,
+                  'spieltag',
+                  gameDay.id,
+                  'bearbeiten'
+                ]"
+              >
+                Spieltag bearbeiten
+              </a>
             </div>
           </div>
 
@@ -75,30 +94,19 @@
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               Spiele
             </div>
-            <div class="grid grid-cols-[60px,200px,2fr,2fr,1fr,40px] gap-2">
-              <ng-container *ngFor="let games of gameDay.games">
-                <div>Nr.</div>
-                <div>Anpfiff</div>
-                <div>Heim</div>
-                <div>Gast</div>
-                <div>Schiedsrichter</div>
-                <div></div>
-
-                <div>
-                  <input class="w-full text-center" type="text" />
-                </div>
-                <div>
-                  <input class="w-full" type="time" />
-                </div>
-                <div>
-                  <select class="w-full" type="text"></select>
-                </div>
-                <div>
-                  <select class="w-full" type="text"></select>
-                </div>
-                <div>
-                  <input class="w-full" type="text" />
-                </div>
+            <div class="grid gap-2">
+              <ng-container
+                *ngFor="let game of gameDay.games; let first = first"
+              >
+                <fb-game-edit
+                  [first]="first"
+                  [existingGame]="game"
+                  [gameDayId]="gameDay.id"
+                  [teams]="teams"
+                  [clubs]="clubs"
+                  [arenas]="arenas"
+                  (refreshSchedule)="getSchdule(leagueId)"
+                ></fb-game-edit>
               </ng-container>
               <!--              <table>-->
               <!--                <tr>-->
@@ -118,51 +126,56 @@
           </div>
 
           <div class="bg-white my-[5px] px-[30px] py-[20px]">
-            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Neues Spiel hinzufügen
-            </div>
-            <div class="grid grid-cols-[60px,200px,2fr,2fr,1fr,40px] gap-2">
-              <div>Nr.</div>
-              <div>Anpfiff</div>
-              <div>Heim</div>
-              <div>Gast</div>
-              <div>Schiedsrichter</div>
-              <div></div>
+            <button
+              (click)="toggleNewGame(gameDay.id)"
+              class="flex uppercase font-bold text-gray-400 text-sm"
+              [ngClass]="{ 'mb-5': newGameOpen.includes(gameDay.id) }"
+            >
+              <span> Neues Spiel hinzufügen </span>
 
-              <div>
-                <input class="w-full text-center" type="text" />
-              </div>
-              <div>
-                <input class="w-full" type="time" />
-              </div>
-              <div>
-                <select class="w-full" type="text"></select>
-              </div>
-              <div>
-                <select class="w-full" type="text"></select>
-              </div>
-              <div>
-                <input class="w-full" type="text" />
-              </div>
-              <div class="flex items-center justify-end">
-                <button>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="w-6 h-6"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
+              <span>
+                <svg
+                  *ngIf="!newGameOpen.includes(gameDay.id)"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="ml-2 w-5 h-5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                  />
+                </svg>
+
+                <svg
+                  *ngIf="newGameOpen.includes(gameDay.id)"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="ml-2 w-5 h-5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M4.5 15.75l7.5-7.5 7.5 7.5"
+                  />
+                </svg>
+              </span>
+            </button>
+            <fb-game-edit
+              *ngIf="newGameOpen.includes(gameDay.id)"
+              [first]="true"
+              [gameDayId]="gameDay.id"
+              [teams]="teams"
+              [clubs]="clubs"
+              [arenas]="arenas"
+              (refreshSchedule)="getSchdule(leagueId)"
+            ></fb-game-edit>
           </div>
         </div>
       </ng-container>

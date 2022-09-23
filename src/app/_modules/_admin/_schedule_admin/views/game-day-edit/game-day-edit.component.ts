@@ -11,7 +11,7 @@ import {
   LeagueService,
   NotificationService,
 } from '@floorball/core';
-import { Arena, Club, Gameday } from '@floorball/types';
+import { Arena, Club, GamedayInput } from '@floorball/types';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -20,7 +20,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   encapsulation: ViewEncapsulation.None,
 })
 export class GameDayEditComponent implements OnInit {
-  public gameday!: Gameday;
+  public gameday!: GamedayInput;
   public leagueId?: number;
   public editMode = true;
 
@@ -42,19 +42,27 @@ export class GameDayEditComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this._arenaService.getArenas().subscribe({
-      next: (arenas) => (this.areans = arenas),
-    });
-
-    this._clubService.getAdminClubAll().subscribe({
-      // next: clubs => this.clubs = clubs;
-    });
-
     this._route.params.subscribe((params) => {
-      this.leagueId = params['leagueId'];
+      if (params['leagueId']) {
+        this.leagueId = params['leagueId'];
+        this._leagueService
+          .getAdminLeagueAdditionalReferences(params['leagueId'])
+          .subscribe({
+            next: (result) => {
+              this.clubs = result.clubs;
+              this.areans = result.arenas;
+              this._cdr.markForCheck();
+            },
+          });
+      }
 
       if (params['gameDayId']) {
-        // this.getGameday(params['gameDayId']);
+        this._leagueService.getAdminGameDay(params['gameDayId']).subscribe({
+          next: (gameDay) => {
+            this.gameday = gameDay;
+            this._cdr.markForCheck();
+          },
+        });
       } else {
         this.editMode = false;
         this.newGameday();
@@ -75,18 +83,48 @@ export class GameDayEditComponent implements OnInit {
     this._cdr.markForCheck();
   }
 
-  // public error(league: League): boolean {
-  //   return this.errorMsg(league).length > 0;
-  // }
+  public submit() {
+    if (!this.leagueId) {
+      return;
+    }
 
-  // public errorMsg(league: League): string[] {
-  //   // eslint-disable-next-line prefer-const
-  //   let msg = [];
-  //
-  //   return msg;
-  // }
+    if (this.editMode) {
+      const gameday = { ...this.gameday, league_id: this.leagueId };
+      this._leagueService.adminUpdateGameDay(gameday).subscribe({
+        next: () => {
+          this._notificationService.success('Spieltag gespeichert', {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          });
 
-  // public submit(league: League) {
-  //
-  // }
+          this._router.navigate([
+            '/',
+            'verwaltung',
+            'ligen',
+            this.leagueId,
+            'spielplan',
+          ]);
+        },
+      });
+    } else {
+      const gameday = { ...this.gameday, league_id: this.leagueId };
+      delete gameday['id'];
+      this._leagueService.adminCreateGameDay(gameday).subscribe({
+        next: () => {
+          this._notificationService.success('Spieltag erstellt', {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          });
+
+          this._router.navigate([
+            '/',
+            'verwaltung',
+            'ligen',
+            this.leagueId,
+            'spielplan',
+          ]);
+        },
+      });
+    }
+  }
 }

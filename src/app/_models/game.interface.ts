@@ -101,3 +101,16 @@ export interface Game {
   live_stream_link?: string | null;
   permission?: string[];
 }
+
+export interface GameInput {
+  id?: number;
+  forfait?: boolean;
+  game_day_id: number;
+  game_number: string;
+  start_time: string;
+  nominated_referee_string: string;
+  notice_type?: string;
+  notice_string?: string;
+  home_team_id: number;
+  guest_team_id: number;
+}

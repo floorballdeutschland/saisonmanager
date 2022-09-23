@@ -49,7 +49,7 @@
               <div class="font-bold">Spieltags ID</div>
               <div>
                 {{
-                  gameday && gameday.id > 0
+                  gameday && gameday.id && gameday.id > 0
                     ? gameday.id
                     : "Wird nach dem Anlegen festgelegt"
                 }}
@@ -87,36 +87,37 @@
               <div class="font-bold">Ausrichter</div>
               <div>
                 <select class="w-full" required [(ngModel)]="gameday.club_id">
-                  <option></option>
+                  <option *ngFor="let club of clubs" [value]="club.id">
+                    {{ club.name }}
+                  </option>
                 </select>
               </div>
             </div>
           </div>
 
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <!--            <div class="flex flex-col gap-2">-->
-            <!--              <div class="mb-4" *ngIf="error(league)">-->
-            <!--                <h3 class="text-lg leading-6 font-medium text-red-600">-->
-            <!--                  Speichern nicht möglich-->
-            <!--                </h3>-->
-            <!--                <p *ngFor="let msg of errorMsg(league)">{{ msg }}</p>-->
-            <!--              </div>-->
-            <!--              <div class="flex items-center mb-4" *ngIf="!error(league)">-->
-            <!--                <a-->
-            <!--                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"-->
-            <!--                  (click)="submit(league)"-->
-            <!--                >-->
-            <!--                  Änderungen speichern-->
-            <!--                </a>-->
-            <!--                <a-->
-            <!--                  class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"-->
-            <!--                  deactivated="true"-->
-            <!--                  [routerLink]="['/', 'verwaltung', 'ligen']"-->
-            <!--                >-->
-            <!--                  Abbrechen-->
-            <!--                </a>-->
-            <!--              </div>-->
-            <!--            </div>-->
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center mb-4">
+                <a
+                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                  (click)="submit()"
+                >
+                  Änderungen speichern
+                </a>
+                <a
+                  class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                  [routerLink]="[
+                    '/',
+                    'verwaltung',
+                    'ligen',
+                    leagueId,
+                    'spielplan'
+                  ]"
+                >
+                  Zurück zur Liga
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { AdminLeagueRoutingModule } from './admin-schedule-routing.module';
 import { UikitCommonModule } from '@floorball/uikit/common';
 
 import * as Views from './views';
+import { GameEditComponent } from './views/game-edit/game-edit.component';
 
 @NgModule({
   imports: [
@@ -19,6 +20,7 @@ import * as Views from './views';
     Views.ScheduleIndexComponent,
     Views.GameDayEditComponent,
     Views.ImportGameDaysComponent,
+    GameEditComponent,
   ],
 })
 export class AdminScheduleModule {}
