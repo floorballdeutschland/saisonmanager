@@ -40,7 +40,7 @@
     (click)="closeMenu()"
   >
     <svg
-      class="currentColor object-contain w-full h-full fill-white"
+      class="currentColor object-contain w-full h-full fill-black"
       width="17"
       height="16"
       viewBox="0 0 17 16"
@@ -54,5 +54,8 @@
   </button>
 
   <ng-content></ng-content>
-  <fb-metanavigation class="hidden lg:block"></fb-metanavigation>
+  <fb-metanavigation
+    (closeHandler)="closeMenu()"
+    class="hidden lg:block"
+  ></fb-metanavigation>
 </div>
