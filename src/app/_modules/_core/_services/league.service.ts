@@ -196,6 +196,11 @@ export class LeagueService {
     return this.http.get<TeamWithPlayers[]>(path);
   }
 
+  public getUserLeaguesLicenseIndex() {
+    const path = environment.apiURL + 'user/leagues/licenses/index.json';
+    return this.http.get<GameOperationWithLeagues[]>(path);
+  }
+
   public getPenalties() {
     const path = environment.apiURL + 'user/leagues/penalties.json';
     return this.http.get<Penalty[]>(path);

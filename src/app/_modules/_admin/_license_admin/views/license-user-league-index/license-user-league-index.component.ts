@@ -25,7 +25,7 @@ export class LicenseUserLeagueIndexComponent implements OnInit {
   }
 
   public getGameOperations(): void {
-    this._leagueService.getAdminLeagues().subscribe({
+    this._leagueService.getUserLeaguesLicenseIndex().subscribe({
       next: (gameOperations) => {
         this.gameOperations = gameOperations;
 
