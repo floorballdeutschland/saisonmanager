@@ -1,0 +1,38 @@
+.license-direction {
+  direction: rtl;
+}
+
+@media print {
+  .pagebreak {
+    //width: 100vw;
+    min-height: 100vh;
+    page-break-after: always;
+  }
+
+  .pagebreak:before {
+    content: " ";
+    page-break-after: always;
+  }
+
+  .pagebreak2 {
+    page: chapter;
+  }
+
+  .pagebreakbefore {
+    page-break-before: always;
+  }
+
+  .license-status {
+    -webkit-print-color-adjust: exact;
+  }
+
+  .license-direction {
+    direction: ltr;
+  }
+}
+
+@page {
+  //margin-top: 1cm;
+  //
+  //size: landscape;
+}
