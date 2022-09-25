@@ -84,7 +84,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   editLive = true;
   startTime = '';
   minutes?: number;
+  minutesValid = false;
   seconds?: number;
+  secondsValid = false;
 
   playerSearchNumber?: number;
   playerNumber = 0;
@@ -336,7 +338,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         (!this.penaltyCode || !this.penalty)) ||
       (['goal', 'penalty'].includes(this.type) && !this.playerNumber) ||
       (['goal', 'penalty', 'timeout'].includes(this.type) &&
-        (!this.minutes || !this.seconds))
+        (!this.minutesValid || !this.secondsValid))
     );
   }
 
@@ -711,6 +713,8 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
 
       this.secondsfieldElement?.nativeElement?.focus();
     }
+
+    this.minutesValid = this.minutes !== undefined && this.minutes !== null;
   }
 
   public onSecondsChange() {
@@ -722,5 +726,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
 
       this.playerSearchFieldElement?.nativeElement?.focus();
     }
+
+    this.secondsValid = this.seconds !== undefined && this.seconds !== null;
   }
 }
