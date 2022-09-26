@@ -100,11 +100,14 @@ export interface Game {
   period_titles: Array<{ period: number; title: string }>;
   live_stream_link?: string | null;
   permission?: string[];
+  forfait?: number;
+  notice_type?: string;
+  notice_string?: string;
 }
 
 export interface GameInput {
   id?: number;
-  forfait?: boolean;
+  forfait?: number;
   game_day_id: number;
   game_number: string;
   start_time: string;

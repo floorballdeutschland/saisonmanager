@@ -7,7 +7,7 @@ import {
   Output,
 } from '@angular/core';
 import { Arena, Club, Game, GameInput, Team } from '@floorball/types';
-import { GameService } from '@floorball/core';
+import { GameService, NotificationService } from '@floorball/core';
 
 @Component({
   selector: 'fb-game-edit',
@@ -42,6 +42,7 @@ export class GameEditComponent implements OnInit {
 
   constructor(
     private _gameService: GameService,
+    private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef
   ) {
     this.newGame();
@@ -57,10 +58,17 @@ export class GameEditComponent implements OnInit {
     if (this.existingGame) {
       this.game.id = this.existingGame.id;
       this.game.game_number = this.existingGame.game_number;
+      this.game.forfait = this.existingGame.forfait;
       this.game.start_time = this.existingGame.start_time;
       this.game.home_team_id = this.existingGame.home_team_id;
       this.game.guest_team_id = this.existingGame.guest_team_id;
       this.game.nominated_referee_string = this.existingGame.nominated_referees;
+      this.game.notice_type = this.existingGame.notice_type;
+      this.game.notice_string = this.existingGame.notice_string;
+
+      this.hasNotice = !(
+        this.game.notice_type === '' || this.game.notice_type === null
+      );
     }
 
     this.processing = false;
@@ -74,7 +82,10 @@ export class GameEditComponent implements OnInit {
       start_time: '',
       home_team_id: 0,
       guest_team_id: 0,
+      forfait: 0,
       nominated_referee_string: '',
+      notice_type: '',
+      notice_string: '',
     };
 
     this._cdr.markForCheck();
@@ -86,10 +97,13 @@ export class GameEditComponent implements OnInit {
     }
 
     return (
+      this.game.forfait !== this.existingGame.forfait ||
       this.game.game_number !== this.existingGame.game_number ||
       this.game.start_time !== this.existingGame.start_time ||
       this.game.home_team_id !== this.existingGame.home_team_id ||
       this.game.guest_team_id !== this.existingGame.guest_team_id ||
+      this.game.notice_type !== this.existingGame.notice_type ||
+      this.game.notice_string !== this.existingGame.notice_string ||
       this.game.nominated_referee_string !==
         this.existingGame.nominated_referees
     );
@@ -99,11 +113,17 @@ export class GameEditComponent implements OnInit {
     this.processing = true;
     this._cdr.markForCheck();
 
-    const game = { ...this.game };
+    const game = { ...this.game, game_day_id: this.gameDayId };
     delete game.id;
 
     this._gameService.createGame(game).subscribe({
-      next: () => this.refreshSchedule.emit(),
+      next: () => {
+        this.refreshSchedule.emit();
+        this._notificationService.success('Spiel erfolgreich erstellt', {
+          autoClose: true,
+          keepAfterRouteChange: true,
+        });
+      },
       error: () => {
         this.processing = false;
         this._cdr.markForCheck();
@@ -120,11 +140,84 @@ export class GameEditComponent implements OnInit {
     this._cdr.markForCheck();
 
     this._gameService.updateGame(this.game).subscribe({
-      next: () => this.refreshSchedule.emit(),
+      next: () => {
+        this.refreshSchedule.emit();
+        this._notificationService.success('Spiel erfolgreich gespeichert', {
+          autoClose: true,
+          keepAfterRouteChange: true,
+        });
+      },
       error: () => {
         this.processing = false;
         this._cdr.markForCheck();
       },
     });
+  }
+
+  public deleteGame() {
+    this.processing = true;
+    this._cdr.markForCheck();
+
+    this._gameService.deleteGame(this.game).subscribe({
+      next: () => {
+        this.refreshSchedule.emit();
+        this._notificationService.success('Spiel erfolgreich gelöscht', {
+          autoClose: true,
+          keepAfterRouteChange: true,
+        });
+      },
+      error: () => {
+        this.processing = false;
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  public setRatingMode(ratingString: string) {
+    let message = '';
+    switch (ratingString) {
+      case 'forfait-home':
+        this.game.forfait = 1;
+        message = 'Forfait Heim gespeichert';
+        break;
+      case 'forfait-guest':
+        this.game.forfait = 2;
+        message = 'Forfait Gast gespeichert';
+        break;
+      case 'forfait-both':
+        this.game.forfait = 3;
+        message = 'Forfait beide gespeichert';
+        break;
+      default:
+        this.game.forfait = 0;
+        message = 'Reguläre-Wertung gespeichert';
+        break;
+    }
+
+    this._gameService
+      .setGameFlags(this.existingGame?.id || 0, {
+        started: this.game.forfait > 0,
+        ended: this.game.forfait > 0,
+      })
+      .subscribe({
+        next: () => {
+          this.updateGame();
+          this._notificationService.success(message, {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          });
+        },
+      });
+  }
+
+  public toggleNotice(event: any) {
+    event.preventDefault();
+    console.log(event);
+    if (this.hasNotice) {
+      this.game.notice_type = '';
+      this.game.notice_string = '';
+    }
+
+    this.hasNotice = !this.hasNotice;
   }
 }

@@ -33,6 +33,11 @@ export class GameService {
     return this.http.put<any>(path, game);
   }
 
+  public deleteGame(game: GameInput) {
+    const path = environment.apiURL + 'games/' + game.id || '0' + '.json';
+    return this.http.delete<any>(path);
+  }
+
   public addLineupPlayerToGame(
     gameId: number,
     team: string,
