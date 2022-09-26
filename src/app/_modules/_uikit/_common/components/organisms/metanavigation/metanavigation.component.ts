@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   OnInit,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -14,6 +16,9 @@ import { SessionService } from '@floorball/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MetanavigationComponent implements OnInit {
+  @Output()
+  closeHandler = new EventEmitter<void>();
+
   isLoggedIn$ = this._sessionService.isLoggedIn$;
   currentUser$ = this._sessionService.currentUser$;
 
@@ -49,5 +54,9 @@ export class MetanavigationComponent implements OnInit {
     this.router.navigate(['/']);
 
     return false;
+  }
+
+  public closeMenu() {
+    this.closeHandler.emit();
   }
 }

@@ -20,23 +20,7 @@
         <li class="mt-5">
           <a
             [routerLink]="['/']"
-            class="
-              block
-              text-center
-              font-bold
-              text-black
-              leading-[17px]
-              text-sm
-              px-5
-              py-2.5
-              border
-              bg-white
-              hover:bg-fb-gray-800
-              border-fb-gray-600
-              rounded-[5px]
-              cursor-pointer
-              w-full
-            "
+            class="block text-center font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-800 border-fb-gray-600 rounded-[5px] cursor-pointer w-full"
             (click)="close()"
           >
             Spielbetrieb wechseln
@@ -73,5 +57,5 @@
     </ng-container>
   </ng-container>
 
-  <fb-metanavigation></fb-metanavigation>
+  <fb-metanavigation (closeHandler)="close()"></fb-metanavigation>
 </div>
