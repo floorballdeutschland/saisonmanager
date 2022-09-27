@@ -6,6 +6,7 @@ import * as Atoms from './components/atoms';
 import * as Molecules from './components/molecules';
 import * as Organisms from './components/organisms';
 import * as Pipes from './pipes';
+import { ButtonComponent } from './components/atoms/button/button.component';
 
 @NgModule({
   imports: [CommonModule, RouterModule, OverlayModule],
@@ -31,6 +32,7 @@ import * as Pipes from './pipes';
     Pipes.ToNumberPipe,
     Pipes.MatchEventsPipe,
     Organisms.MobileHeaderComponent,
+    ButtonComponent,
   ],
   exports: [
     Atoms.LogoComponent,
@@ -54,6 +56,7 @@ import * as Pipes from './pipes';
     Pipes.ToNumberPipe,
     Pipes.MatchEventsPipe,
     Organisms.MobileHeaderComponent,
+    ButtonComponent,
   ],
 })
 export class UikitCommonModule {}
