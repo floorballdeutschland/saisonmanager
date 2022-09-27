@@ -175,7 +175,11 @@
           </svg>
         </button>
 
-        <button (click)="toggleNotice($event)">
+        <button
+          (click)="toggleNotice($event)"
+          class="relative"
+          [ngClass]="{ 'megaphone-stroke': hasNotice }"
+        >
           <!-- Heroicon name: megaphone -->
           <svg
             class="w-6 h-6"
