@@ -174,6 +174,7 @@ export class GameEditComponent implements OnInit {
   }
 
   public setRatingMode(ratingString: string) {
+    this.processing = true;
     let message = '';
     switch (ratingString) {
       case 'forfait-home':
@@ -201,18 +202,28 @@ export class GameEditComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.updateGame();
-          this._notificationService.success(message, {
-            autoClose: true,
-            keepAfterRouteChange: true,
-          });
+          this._gameService
+            .updateGameRating(this.game.id || 0, this.game.forfait || 0)
+            .subscribe({
+              next: () => {
+                this.refreshSchedule.emit();
+                this._notificationService.success(message, {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                });
+              },
+              error: () => {
+                this.processing = false;
+                this._cdr.markForCheck();
+              },
+            });
         },
       });
   }
 
   public toggleNotice(event: any) {
     event.preventDefault();
-    console.log(event);
+
     if (this.hasNotice) {
       this.game.notice_type = '';
       this.game.notice_string = '';

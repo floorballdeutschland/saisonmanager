@@ -33,6 +33,11 @@ export class GameService {
     return this.http.put<any>(path, game);
   }
 
+  public updateGameRating(gameId: number, ratingMode: number) {
+    const path = environment.apiURL + 'games/' + gameId + '.json';
+    return this.http.put<any>(path, { forfait: ratingMode });
+  }
+
   public deleteGame(game: GameInput) {
     const path = environment.apiURL + 'games/' + game.id || '0' + '.json';
     return this.http.delete<any>(path);

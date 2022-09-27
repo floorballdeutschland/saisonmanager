@@ -11,7 +11,7 @@
     <div class="grid gap-[25px] mt-4 lg:mt-9">
       <div>
         <a
-          class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+          class="inline-flex items-center font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
           [routerLink]="[
             '/',
             'verwaltung',
@@ -21,7 +21,21 @@
             'neu'
           ]"
         >
-          Neuen Spieltag anlegen
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-4 h-4 md:mr-3"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 4.5v15m7.5-7.5h-15"
+            />
+          </svg>
+          <span> Neuen Spieltag anlegen </span>
         </a>
       </div>
 
@@ -56,7 +70,7 @@
       </ng-container>
       <ng-container *ngIf="!loading && arenas.length">
         <div *ngFor="let gameDay of gameDays">
-          <div class="bg-white h-[80px]">
+          <div class="bg-white md:h-[80px]">
             <div class="flex my-2.5 lg:my-5 px-[30px] py-[20px]">
               <div>
                 <div class="uppercase font-bold text-gray-400 text-sm">
@@ -71,7 +85,7 @@
                 </div>
               </div>
               <a
-                class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 ml-auto mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                class="flex items-center font-bold text-black leading-[17px] text-sm px-5 py-2.5 ml-auto border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                 [routerLink]="[
                   '/',
                   'verwaltung',
@@ -82,23 +96,42 @@
                   'bearbeiten'
                 ]"
               >
-                Spieltag bearbeiten
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-4 h-4 md:mr-3"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
+                  />
+                </svg>
+                <span class="hidden md:inline"> Spieltag bearbeiten </span>
               </a>
             </div>
           </div>
 
-          <div
-            class="bg-white my-[5px] py-[15px] px-[30px]"
-            *ngIf="gameDay.games.length"
-          >
-            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+          <div class="bg-white my-[5px] py-[15px]" *ngIf="gameDay.games.length">
+            <div
+              class="uppercase font-bold text-gray-400 text-sm mb-5 px-[30px]"
+            >
               Spiele
             </div>
             <div class="grid gap-2">
               <ng-container
-                *ngFor="let game of gameDay.games; let first = first"
+                *ngFor="
+                  let game of gameDay.games;
+                  let first = first;
+                  let index = index
+                "
               >
                 <fb-game-edit
+                  class="px-[30px] py-1 odd:bg-fb-gray-300"
+                  [ngClass]="{ 'bg-gray-100': index % 2 === 1 }"
                   [first]="first"
                   [existingGame]="game"
                   [gameDayId]="gameDay.id"

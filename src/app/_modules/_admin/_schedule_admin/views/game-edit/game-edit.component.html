@@ -1,6 +1,6 @@
 <form
   (ngSubmit)="existingGame ? updateGame() : createGame()"
-  class="grid grid-cols-2 md:grid-cols-[60px,200px,2fr,2fr,1fr,75px,40px] gap-2"
+  class="relative my-3 md:my-0 grid grid-cols-2 md:grid-cols-[60px,130px,2fr,2fr,1fr,75px,40px] gap-2"
 >
   <ng-container *ngIf="first">
     <div class="hidden md:block">Nr.</div>
@@ -17,7 +17,8 @@
       <input
         [(ngModel)]="game.game_number"
         [disabled]="processing || existingGame?.started || false"
-        class="w-full md:text-center"
+        class="w-full bg-transparent border-gray-300 md:text-center"
+        placeholder="Spielnummer"
         name="gameNumber"
         type="text"
       />
@@ -26,7 +27,8 @@
       <input
         [(ngModel)]="game.start_time"
         [disabled]="processing || existingGame?.started || false"
-        class="w-full"
+        class="w-full bg-transparent border-gray-300"
+        placeholder="Anpfiff"
         name="startTime"
         type="time"
       />
@@ -35,7 +37,7 @@
       <select
         [(ngModel)]="game.home_team_id"
         [disabled]="processing || existingGame?.started || false"
-        class="w-full"
+        class="w-full bg-transparent border-gray-300"
         name="homeTeamId"
         type="text"
       >
@@ -48,7 +50,7 @@
       <select
         [(ngModel)]="game.guest_team_id"
         [disabled]="processing || existingGame?.started || false"
-        class="w-full"
+        class="w-full bg-transparent border-gray-300"
         name="guestTeamId"
         type="text"
       >
@@ -61,12 +63,15 @@
       <input
         [(ngModel)]="game.nominated_referee_string"
         [disabled]="processing || existingGame?.started || false"
-        class="w-full"
+        class="w-full bg-transparent border-gray-300"
+        placeholder="Schiedsrichter"
         name="referees"
         type="text"
       />
     </div>
-    <div class="flex items-center justify-start col-span-2 md:col-span-1">
+    <div
+      class="flex items-center justify-start col-span-2 order-2 md:order-none md:col-span-1"
+    >
       <ng-template #loading>
         <svg
           class="inline mx-1 mr-2 w-5 h-5 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
@@ -89,7 +94,7 @@
         <button
           (click)="createGame()"
           *ngIf="!existingGame"
-          class="px-1"
+          class="px-3 md:px-1"
           type="submit"
         >
           <!-- Heroicon name: add -->
@@ -111,7 +116,7 @@
 
         <button
           *ngIf="existingGame && !existingGame.started && hasChanges()"
-          class="px-1"
+          class="px-3 md:px-1"
           type="submit"
         >
           <!-- Heroicon name: check -->
@@ -134,7 +139,7 @@
         <button
           (click)="resetGame()"
           *ngIf="existingGame && !existingGame.started && hasChanges()"
-          class="px-1"
+          class="px-3 md:px-1"
         >
           <!-- Heroicon name: check -->
           <svg
@@ -156,7 +161,7 @@
         <button
           (click)="deleteGame()"
           *ngIf="existingGame && !existingGame.started && !hasChanges()"
-          class="px-1"
+          class="px-3 md:px-1"
         >
           <!-- Heroicon name: check -->
           <svg
@@ -177,7 +182,7 @@
 
         <button
           (click)="toggleNotice($event)"
-          class="relative"
+          class="relative px-3 md:px-1"
           [ngClass]="{ 'megaphone-stroke': hasNotice }"
         >
           <!-- Heroicon name: megaphone -->
@@ -199,12 +204,15 @@
       </ng-container>
     </div>
 
-    <div class="relative flex items-center justify-end">
+    <div
+      class="absolute bottom-0 right-0 md:bottom-auto md:right-auto md:relative flex items-center justify-end"
+    >
       <ng-container *ngIf="existingGame">
         <label
           [for]="'context-' + existingGame.id"
           class="relative cursor-pointer"
         >
+          <!-- Heroicon name: menu -->
           <svg
             class="w-6 h-6"
             fill="none"
@@ -237,7 +245,7 @@
               <label
                 (click)="setRatingMode('regular')"
                 [for]="'context-' + existingGame.id"
-                [ngClass]="{ 'bg-fb-gray-700': true }"
+                [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 0 }"
                 class="block px-3 py-1.5 hover:bg-fb-gray-700 cursor-pointer"
                 >Reguläre Wertung</label
               >
@@ -246,6 +254,7 @@
               <label
                 (click)="setRatingMode('forfait-home')"
                 [for]="'context-' + existingGame.id"
+                [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 1 }"
                 class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
                 >Forfait Heim</label
               >
@@ -254,6 +263,7 @@
               <label
                 (click)="setRatingMode('forfait-guest')"
                 [for]="'context-' + existingGame.id"
+                [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 2 }"
                 class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
                 >Forfait Gast</label
               >
@@ -262,6 +272,7 @@
               <label
                 (click)="setRatingMode('forfait-both')"
                 [for]="'context-' + existingGame.id"
+                [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 3 }"
                 class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
                 >Forfait beide Teams</label
               >
@@ -272,7 +283,7 @@
     </div>
 
     <ng-container *ngIf="hasNotice">
-      <div class="w-7 overflow-hidden inline-block">
+      <div class="hidden w-7 overflow-hidden md:inline-block">
         <div class="h-7 bg-red-300 rotate-45 transform origin-top-left"></div>
       </div>
       <div class="flex items-center font-medium text-fb-gray-900">
@@ -281,7 +292,7 @@
 
       <div class="col-span-2">
         <input
-          class="w-full"
+          class="w-full bg-transparent border-gray-300"
           type="text"
           [(ngModel)]="game.notice_string"
           [ngModelOptions]="{ standalone: true }"
@@ -290,7 +301,7 @@
 
       <div>
         <select
-          class="w-full"
+          class="w-full bg-transparent border-gray-300"
           [(ngModel)]="game.notice_type"
           [ngModelOptions]="{ standalone: true }"
         >
