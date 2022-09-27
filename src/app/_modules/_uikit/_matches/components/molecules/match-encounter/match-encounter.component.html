@@ -6,7 +6,12 @@
     class="text-fb-gray-400 text-sm col-span-3 md:col-span-1 order-1 flex flex-row md:flex-col gap-[10px]"
   >
     <p class="flex-1">
-      {{ match.date | date }} {{ match.time && "- " + match.time + " Uhr" }}
+      <ng-container *ngIf="match.notice_type | gameNoticeVisibility: 'date'">{{
+        match.date | date
+      }}</ng-container>
+      <ng-container *ngIf="match.notice_type | gameNoticeVisibility: 'time'">{{
+        match.time && "- " + match.time + " Uhr"
+      }}</ng-container>
     </p>
     <p *ngIf="!match.started" class="hidden md:block">
       {{ match.arena_short }}
@@ -27,18 +32,25 @@
     class="text-center font-bold tracking-widest order-4 row-span-2 md:row-span-1"
   >
     <div
-      *ngIf="false"
+      *ngIf="match.notice_type"
       class="absolute drop-shadow-lg tracking-[0.5px] w-[150px] md:w-[170px] top-1/2 right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 -translate-y-1/2 px-2 py-1.5 rounded border border-red-500 bg-red-200"
     >
       <div class="uppercase text-[13px] leading-none whitespace-nowrap">
-        Termin folgt
+        {{ match.notice_type | gameNoticeHeadline }}
       </div>
-      <div class="text-[10px] font-medium leading-none mt-1">
-        Das Spiel wird verschoben, der neue Termin steht noch nicht fest.
+      <div
+        class="text-[10px] font-medium leading-none mt-1"
+        *ngIf="match.notice_string"
+      >
+        {{ match.notice_string }}
       </div>
     </div>
 
-    <ng-container *ngIf="!match.started">
+    <ng-container
+      *ngIf="
+        !match.started && (match.notice_type | gameNoticeVisibility: 'time')
+      "
+    >
       <p
         class="text-base whitespace-nowrap"
         *ngIf="match.time && !match.result"

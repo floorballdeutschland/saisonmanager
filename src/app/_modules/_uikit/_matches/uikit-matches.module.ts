@@ -7,6 +7,10 @@ import { UikitCommonModule } from '@floorball/uikit/common';
 import { MatchEventButtonComponent } from './components/organisms';
 import { FormsModule } from '@angular/forms';
 import { SortTrikotnumbersPipe } from '../../../_helpers/_pipes/sort-trikotnumbers.pipe';
+import {
+  GameNoticeHeadlinePipe,
+  GameNoticeVisibilityPipe,
+} from '../../../_helpers';
 
 @NgModule({
   imports: [CommonModule, RouterModule, UikitCommonModule, FormsModule],
@@ -24,6 +28,8 @@ import { SortTrikotnumbersPipe } from '../../../_helpers/_pipes/sort-trikotnumbe
     Organisms.MatchEventFormComponent,
     Organisms.MatchEventButtonComponent,
     SortTrikotnumbersPipe,
+    GameNoticeHeadlinePipe,
+    GameNoticeVisibilityPipe,
   ],
   exports: [
     Organisms.MatchPairingListComponent,
