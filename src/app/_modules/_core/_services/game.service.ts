@@ -113,7 +113,6 @@ export class GameService {
     lastname: string,
     firstname: string
   ) {
-    console.log(lastname, firstname);
     const path =
       environment.apiURL +
       'user/games/' +
@@ -125,6 +124,28 @@ export class GameService {
       license_id: licenseNumber || '',
       firstname: firstname,
       lastname: lastname,
+    });
+  }
+
+  public setCoach(
+    gameId: number,
+    side: string,
+    coachNumber: number,
+    firstname: string,
+    lastname: string
+  ) {
+    const path =
+      environment.apiURL +
+      'user/games/' +
+      gameId +
+      '/lineup/' +
+      side +
+      '/add_coach/' +
+      coachNumber +
+      '.json';
+    return this.http.post<Game>(path, {
+      first_name: firstname,
+      last_name: lastname,
     });
   }
 

@@ -6,6 +6,8 @@ export interface ScorerEntry {
   penalty_2and2: number;
   penalty_5: number;
   penalty_10: number;
+  penalty_ms_tech: number;
+  penalty_ms_full: number;
   penalty_ms1: number;
   penalty_ms2: number;
   penalty_ms3: number;

@@ -1,7 +1,7 @@
 <ng-container *ngIf="event | normalizeEvent: match as gameEvent">
   <div
     class="grid grid-cols-[36px,1fr,30px,80px,60px] md:grid-cols-[36px,1fr,30px,80px,30px,20px,60px,20px,30px,80px,30px,1fr,36px] items-center text-sm h-[78px]"
-    [ngClass]="!allowCancel ? 'grid-rows-2' : ''"
+    [ngClass]="!allowCancel ? 'grid-rows-2' : 'grid-rows-3 h-[119px]'"
   >
     <ng-container *ngIf="gameEvent.event_team === 'home'">
       <div>
@@ -14,8 +14,23 @@
 
       <div>
         <div class="ml-3.5">
-          {{ gameEvent.home.scorer?.player_firstname }}
-          {{ gameEvent.home.scorer?.player_name }}
+          <ng-container
+            *ngIf="
+              gameEvent.event_type === 'goal' &&
+                ['owngoal', 'not_assigned'].includes(gameEvent.goal_type || '');
+              then alternativeHomeName;
+              else homePlayerName
+            "
+          >
+          </ng-container>
+
+          <ng-template #homePlayerName>
+            {{ gameEvent.home.scorer?.player_firstname }}
+            {{ gameEvent.home.scorer?.player_name }}
+          </ng-template>
+          <ng-template #alternativeHomeName>
+            {{ gameEvent.goal_type_string }}
+          </ng-template>
         </div>
       </div>
 
@@ -126,8 +141,23 @@
 
       <div class="md:text-right row-start-1 col-start-2 md:col-start-12">
         <div class="ml-3.5 md:mr-3.5">
-          {{ gameEvent.guest.scorer?.player_firstname }}
-          {{ gameEvent.guest.scorer?.player_name }}
+          <ng-container
+            *ngIf="
+              gameEvent.event_type === 'goal' &&
+                ['owngoal', 'not_assigned'].includes(gameEvent.goal_type || '');
+              then alternativeGuestName;
+              else guestPlayerName
+            "
+          >
+          </ng-container>
+
+          <ng-template #guestPlayerName>
+            {{ gameEvent.guest.scorer?.player_firstname }}
+            {{ gameEvent.guest.scorer?.player_name }}
+          </ng-template>
+          <ng-template #alternativeGuestName>
+            {{ gameEvent.goal_type_string }}
+          </ng-template>
         </div>
       </div>
       <div class="row-start-1 col-start-1 md:col-start-13">
@@ -165,7 +195,7 @@
     <div
       (click)="handleDelete(gameEvent.event_id)"
       *ngIf="allowCancel"
-      class="md:hidden col-span-5 text-center px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
+      class="md:hidden mb-2 col-span-5 text-center px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
     >
       Löschen
     </div>

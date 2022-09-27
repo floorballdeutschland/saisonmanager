@@ -65,6 +65,7 @@ export class NormalizeEventPipe implements PipeTransform {
       penalty_reason_string: gameEvent.penalty_reason_string,
       penalty_type_string: gameEvent.penalty_type_string,
       goal_type_string: gameEvent.goal_type_string,
+      goal_type: gameEvent.goal_type,
       guest: guest,
       home: home,
     };

@@ -1,11 +1,14 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnInit,
   Output,
+  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -23,6 +26,7 @@ import {
   GameFields,
   Penalty,
   PenaltyCode,
+  GameAdditionalFields,
 } from '@floorball/types';
 
 @Component({
@@ -31,7 +35,16 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
-export class MatchEventFormComponent implements OnInit {
+export class MatchEventFormComponent implements OnInit, AfterViewInit {
+  @ViewChild('minutefield')
+  minutefieldElement!: ElementRef<HTMLInputElement>;
+
+  @ViewChild('secondsfield')
+  secondsfieldElement!: ElementRef<HTMLInputElement>;
+
+  @ViewChild('playerSearchField')
+  playerSearchFieldElement!: ElementRef<HTMLInputElement>;
+
   @Input()
   fieldValue?: string;
 
@@ -49,6 +62,9 @@ export class MatchEventFormComponent implements OnInit {
 
   @Input()
   match!: Game;
+
+  @Input()
+  additionalFields!: GameAdditionalFields;
 
   @Input()
   penalties!: Penalty[];
@@ -69,11 +85,24 @@ export class MatchEventFormComponent implements OnInit {
   startTime = '';
   minutes?: number;
   seconds?: number;
-  playerId?: number;
-  assistPlayerId?: number;
-  penalty?: number;
-  penaltyCode?: number;
 
+  playerSearchNumber?: number;
+  playerNumber = 0;
+  assistError = false;
+  assistPlayerSearchNumber?: number;
+  assistPlayerNumber = 0;
+  playerError = false;
+  penalty = 0;
+  penaltyCode = 0;
+  with_ps?: boolean;
+
+  coach1 = { firstname: '', lastname: '' };
+  coach2 = { firstname: '', lastname: '' };
+  coach3 = { firstname: '', lastname: '' };
+  coach4 = { firstname: '', lastname: '' };
+  coach5 = { firstname: '', lastname: '' };
+
+  comment?: string;
   visitors?: number;
   livestream?: string;
   recordkeeper?: string;
@@ -125,8 +154,78 @@ export class MatchEventFormComponent implements OnInit {
       this.refereeFirstname2 = this.match.referees[1]?.first_name;
     }
 
+    if (this.type === 'coach1') {
+      this.coach1 = {
+        firstname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches?.coach1_first_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach1_first_name ||
+              '',
+        lastname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches?.coach1_last_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach1_last_name || '',
+      };
+    }
+    if (this.type === 'coach2') {
+      this.coach2 = {
+        firstname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches?.coach2_first_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach2_first_name ||
+              '',
+        lastname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches?.coach2_last_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach2_last_name || '',
+      };
+    }
+    if (this.type === 'coach3') {
+      this.coach3 = {
+        firstname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches?.coach3_first_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach3_first_name ||
+              '',
+        lastname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches?.coach3_last_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach3_last_name || '',
+      };
+    }
+    if (this.type === 'coach4') {
+      this.coach4 = {
+        firstname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches?.coach4_first_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach4_first_name ||
+              '',
+        lastname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches?.coach4_last_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach4_last_name || '',
+      };
+    }
+    if (this.type === 'coach5') {
+      this.coach5 = {
+        firstname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches?.coach5_first_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach5_first_name ||
+              '',
+        lastname:
+          this.team === 'home'
+            ? this.additionalFields?.home_team_coaches?.coach5_last_name || ''
+            : this.additionalFields?.guest_team_coaches?.coach5_last_name || '',
+      };
+    }
+
     if (this.fieldValue) {
       switch (this.type) {
+        case 'comment':
+          console.log(this.fieldValue);
+          this.comment = this.fieldValue || '';
+          break;
         case 'visitors':
           this.visitors = parseInt(this.fieldValue || '', 10);
           break;
@@ -186,6 +285,10 @@ export class MatchEventFormComponent implements OnInit {
     }
   }
 
+  public ngAfterViewInit() {
+    this.minutefieldElement?.nativeElement?.focus();
+  }
+
   getEventString(): string {
     switch (this.type) {
       case 'goal':
@@ -207,6 +310,36 @@ export class MatchEventFormComponent implements OnInit {
     return s;
   }
 
+  public searchPlayerByNumber(side: string, number: number, isAssist: boolean) {
+    const tmpSide = side === 'home' ? 'home' : 'guest';
+    const player = this.match.players[tmpSide]?.find(
+      (p) => p.trikot_number === number
+    );
+
+    if (isAssist) {
+      this.assistError = number !== 0 && !player;
+    } else {
+      this.playerError = number !== 0 && !player;
+    }
+
+    if (isAssist) {
+      this.assistPlayerNumber = player?.trikot_number || 0;
+    } else {
+      this.playerNumber = player?.trikot_number || 0;
+    }
+  }
+
+  public submitDisabled(): boolean {
+    return (
+      (!this.editLive && this.startTime === '') ||
+      (['penalty'].includes(this.type) &&
+        (!this.penaltyCode || !this.penalty)) ||
+      (['goal', 'penalty'].includes(this.type) && !this.playerNumber) ||
+      (['goal', 'penalty', 'timeout'].includes(this.type) &&
+        (!this.minutes || !this.seconds))
+    );
+  }
+
   public submitEvent() {
     const time = this.minutes + ':' + this.pad(this.seconds || 0, 2);
 
@@ -219,19 +352,6 @@ export class MatchEventFormComponent implements OnInit {
       this.type === 'goal' && this.team === 'guest'
         ? (this.match.result?.guest_goals || 0) + 1
         : this.match.result?.guest_goals || 0;
-
-    let player;
-    if (this.team === 'home') {
-      player =
-        this.match.players.home?.find(
-          (p: { player_id: number | undefined }) => p.player_id == this.playerId
-        )?.trikot_number || 0;
-    } else {
-      player =
-        this.match.players.guest?.find(
-          (p: { player_id: number | undefined }) => p.player_id == this.playerId
-        )?.trikot_number || 0;
-    }
 
     switch (this.type) {
       case 'next':
@@ -268,25 +388,31 @@ export class MatchEventFormComponent implements OnInit {
         break;
       case 'goal':
         if (this.currentPeriod) {
-          let assist;
-          if (this.team === 'home') {
-            assist =
-              this.match.players.home?.find(
-                (p: { player_id: number | undefined }) =>
-                  p.player_id == this.assistPlayerId
-              )?.trikot_number || 0;
-          } else {
-            assist =
-              this.match.players.guest?.find(
-                (p: { player_id: number | undefined }) =>
-                  p.player_id == this.assistPlayerId
-              )?.trikot_number || 0;
-          }
-
-          const goal =
+          // fix typeerror with tostring and parseint
+          // eslint-disable-next-line prefer-const
+          let goal: {
+            home_number?: number;
+            home_assist?: number;
+            guest_number?: number;
+            guest_assist?: number;
+            penalty_code_id?: number;
+          } =
             this.team === 'home'
-              ? { home_number: player, home_assist: assist }
-              : { guest_number: player, guest_assist: assist };
+              ? {
+                  home_number: parseInt(this.playerNumber.toString(), 10),
+                  home_assist: parseInt(this.assistPlayerNumber.toString(), 10),
+                }
+              : {
+                  guest_number: parseInt(this.playerNumber.toString(), 10),
+                  guest_assist: parseInt(
+                    this.assistPlayerNumber.toString(),
+                    10
+                  ),
+                };
+
+          if (this.with_ps) {
+            goal.penalty_code_id = 23;
+          }
 
           this._gameService
             .addEvent(this.match.id, {
@@ -317,7 +443,10 @@ export class MatchEventFormComponent implements OnInit {
               period: parseInt(this.currentPeriod, 10),
               home_goals,
               guest_goals,
-              [this.team === 'home' ? 'home_number' : 'guest_number']: player,
+              [this.team === 'home' ? 'home_number' : 'guest_number']: parseInt(
+                this.playerNumber.toString(),
+                10
+              ),
               penalty_id: this.penalty,
               penalty_code_id: this.penaltyCode,
             })
@@ -402,6 +531,36 @@ export class MatchEventFormComponent implements OnInit {
     let fields: GameFields = {};
     let saveMessage = '';
     switch (this.type) {
+      case 'coach1':
+      case 'coach2':
+      case 'coach3':
+      case 'coach4':
+      case 'coach5':
+        this._gameService
+          .setCoach(
+            this.match.id,
+            this.team,
+            parseInt(this.type.replace('coach', ''), 10),
+            this[this.type].firstname,
+            this[this.type].lastname
+          )
+          .subscribe({
+            next: () => {
+              this._notificationService.success(
+                'Betreuer ' + this.type.replace('coach', '') + ' gespeichert',
+                {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                }
+              );
+              this.updateGame.emit();
+            },
+          });
+        break;
+      case 'comment':
+        fields = { record_comment: this.comment?.toString() || '' };
+        saveMessage = 'Kommentar gespeichert';
+        break;
       case 'visitors':
         fields = { audience: this.visitors?.toString() || '' };
         saveMessage = 'Zuschauerzahl gespeichert';
@@ -541,5 +700,27 @@ export class MatchEventFormComponent implements OnInit {
 
   public changePeriod(e: any) {
     this.updatePeriod.emit(e.target.value);
+  }
+
+  public onMinutesChange() {
+    if (this.minutes && this.minutes.toString().length >= 2) {
+      if (this.minutes.toString().length > 2) {
+        this.minutes = parseInt(this.minutes.toString().substring(0, 2), 10);
+        this._cdr.markForCheck();
+      }
+
+      this.secondsfieldElement?.nativeElement?.focus();
+    }
+  }
+
+  public onSecondsChange() {
+    if (this.seconds && this.seconds.toString().length >= 2) {
+      if (this.seconds.toString().length > 2) {
+        this.seconds = parseInt(this.seconds.toString().substring(0, 2), 10);
+        this._cdr.markForCheck();
+      }
+
+      this.playerSearchFieldElement?.nativeElement?.focus();
+    }
   }
 }
