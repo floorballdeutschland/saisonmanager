@@ -30,7 +30,11 @@ export class GameService {
 
   public updateGame(game: GameInput) {
     const path = environment.apiURL + 'games/' + game.id || '0' + '.json';
-    return this.http.put<any>(path, game);
+    return this.http.put<any>(path, {
+      ...game,
+      notice_type: game.notice_type !== '' ? game.notice_type : null,
+      notice_string: game.notice_string !== '' ? game.notice_string : null,
+    });
   }
 
   public updateGameRating(gameId: number, ratingMode: number) {
