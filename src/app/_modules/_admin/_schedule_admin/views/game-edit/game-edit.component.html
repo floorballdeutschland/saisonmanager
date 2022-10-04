@@ -184,7 +184,7 @@
           (click)="toggleNotice($event)"
           class="relative px-3 md:px-1"
           [ngClass]="{ 'megaphone-stroke': hasNotice }"
-          *ngIf="!existingGame?.started"
+          *ngIf="!existingGame?.started || false"
         >
           <!-- Heroicon name: megaphone -->
           <svg
@@ -303,7 +303,7 @@
           class="w-full bg-transparent border-gray-300"
           type="text"
           [(ngModel)]="game.notice_string"
-          [disabled]="existingGame?.started"
+          [disabled]="existingGame?.started || false"
           [ngModelOptions]="{ standalone: true }"
         />
       </div>
@@ -312,7 +312,7 @@
         <select
           class="w-full bg-transparent border-gray-300"
           [(ngModel)]="game.notice_type"
-          [disabled]="existingGame?.started"
+          [disabled]="existingGame?.started || false"
           [ngModelOptions]="{ standalone: true }"
         >
           <option [value]="null">Bitte wählen...</option>
