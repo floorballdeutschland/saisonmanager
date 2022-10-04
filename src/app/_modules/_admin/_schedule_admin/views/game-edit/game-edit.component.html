@@ -303,6 +303,7 @@
           class="w-full bg-transparent border-gray-300"
           type="text"
           [(ngModel)]="game.notice_string"
+          [disabled]="existingGame?.started"
           [ngModelOptions]="{ standalone: true }"
         />
       </div>
@@ -311,6 +312,7 @@
         <select
           class="w-full bg-transparent border-gray-300"
           [(ngModel)]="game.notice_type"
+          [disabled]="existingGame?.started"
           [ngModelOptions]="{ standalone: true }"
         >
           <option [value]="null">Bitte wählen...</option>
