@@ -112,8 +112,8 @@ export interface GameInput {
   game_number: string;
   start_time: string;
   nominated_referee_string: string;
-  notice_type?: string;
-  notice_string?: string;
+  notice_type?: string | null;
+  notice_string?: string | null;
   home_team_id: number;
   guest_team_id: number;
 }

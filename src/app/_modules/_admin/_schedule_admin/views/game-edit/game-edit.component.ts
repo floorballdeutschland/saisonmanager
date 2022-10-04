@@ -225,8 +225,8 @@ export class GameEditComponent implements OnInit {
     event.preventDefault();
 
     if (this.hasNotice) {
-      this.game.notice_type = '';
-      this.game.notice_string = '';
+      this.game.notice_type = null;
+      this.game.notice_string = null;
     }
 
     this.hasNotice = !this.hasNotice;

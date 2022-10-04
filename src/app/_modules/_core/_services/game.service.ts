@@ -32,8 +32,8 @@ export class GameService {
     const path = environment.apiURL + 'games/' + game.id || '0' + '.json';
     return this.http.put<any>(path, {
       ...game,
-      notice_type: game.notice_type !== '' ? game.notice_type : null,
-      notice_string: game.notice_string !== '' ? game.notice_string : null,
+      notice_type: game.notice_type !== 'null' ? game.notice_type : null,
+      notice_string: game.notice_string !== 'null' ? game.notice_string : null,
     });
   }
 

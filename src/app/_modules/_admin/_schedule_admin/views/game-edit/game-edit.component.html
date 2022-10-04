@@ -184,6 +184,7 @@
           (click)="toggleNotice($event)"
           class="relative px-3 md:px-1"
           [ngClass]="{ 'megaphone-stroke': hasNotice }"
+          *ngIf="!existingGame?.started"
         >
           <!-- Heroicon name: megaphone -->
           <svg
@@ -201,6 +202,13 @@
             />
           </svg>
         </button>
+
+        <p
+          class="text-xs font-bold uppercase"
+          *ngIf="existingGame && existingGame.forfait"
+        >
+          forfait
+        </p>
       </ng-container>
     </div>
 
@@ -305,7 +313,7 @@
           [(ngModel)]="game.notice_type"
           [ngModelOptions]="{ standalone: true }"
         >
-          <option [value]="''">Bitte wählen...</option>
+          <option [value]="null">Bitte wählen...</option>
           <option [value]="'Postponed'">Spiel verschoben</option>
           <option [value]="'Canceled'">Spiel abgesagt</option>
           <option [value]="'NoDateAndTime'">Noch nicht terminiert</option>
