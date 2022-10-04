@@ -4,7 +4,7 @@ import { Player } from '@floorball/types';
 @Pipe({ name: 'gameNoticeVisibility' })
 export class GameNoticeVisibilityPipe implements PipeTransform {
   transform(
-    noticeType: string,
+    noticeType: string | undefined,
     visibilityType: 'time' | 'date' | 'arena'
   ): boolean {
     switch (noticeType) {
