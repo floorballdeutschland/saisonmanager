@@ -23,13 +23,32 @@
     <div
       class="text-center text-sm text-fb-gray-500 font-bold w-[75px] md:col-start-2 row-span-2 md:row-span-1"
     >
+      <div
+        *ngIf="match.notice_type"
+        class="absolute drop-shadow-lg tracking-[0.5px] w-[150px] md:w-[170px] top-1/2 right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 -translate-y-1/2 px-2 py-1.5 rounded border border-red-500 bg-red-200"
+      >
+        <div class="uppercase text-[13px] leading-none whitespace-nowrap">
+          {{ match.notice_type | gameNoticeHeadline }}
+        </div>
+        <div
+          class="text-[10px] font-medium leading-none mt-1"
+          *ngIf="match.notice_string"
+        >
+          {{ match.notice_string }}
+        </div>
+      </div>
+
       <p
         class="text-xs text-fb-gray-400 font-normal whitespace-nowrap"
-        *ngIf="match.date"
+        *ngIf="match.date && (match.notice_type | gameNoticeVisibility: 'date')"
       >
         {{ match.date | date: "dd.MM.YYYY" }}
       </p>
-      <ng-container *ngIf="!match.started">
+      <ng-container
+        *ngIf="
+          !match.started && (match.notice_type | gameNoticeVisibility: 'time')
+        "
+      >
         <p class="text-base whitespace-nowrap" *ngIf="match.time">
           {{ match.time }} Uhr
         </p>

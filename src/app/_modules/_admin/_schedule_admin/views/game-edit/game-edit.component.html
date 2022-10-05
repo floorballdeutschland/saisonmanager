@@ -1,0 +1,326 @@
+<form
+  (ngSubmit)="existingGame ? updateGame() : createGame()"
+  class="relative my-3 md:my-0 grid grid-cols-2 md:grid-cols-[60px,130px,2fr,2fr,1fr,75px,40px] gap-2"
+>
+  <ng-container *ngIf="first">
+    <div class="hidden md:block">Nr.</div>
+    <div class="hidden md:block">Anpfiff</div>
+    <div class="hidden md:block">Heim</div>
+    <div class="hidden md:block">Gast</div>
+    <div class="hidden md:block">Schiedsrichter</div>
+    <div class="hidden md:block"></div>
+    <div class="hidden md:block"></div>
+  </ng-container>
+
+  <ng-container *ngIf="game">
+    <div class="col-span-2 md:col-span-1">
+      <input
+        [(ngModel)]="game.game_number"
+        [disabled]="processing || existingGame?.started || false"
+        class="w-full bg-transparent border-gray-300 md:text-center"
+        placeholder="Spielnummer"
+        name="gameNumber"
+        type="text"
+      />
+    </div>
+    <div class="col-span-2 md:col-span-1">
+      <input
+        [(ngModel)]="game.start_time"
+        [disabled]="processing || existingGame?.started || false"
+        class="w-full bg-transparent border-gray-300"
+        placeholder="Anpfiff"
+        name="startTime"
+        type="time"
+      />
+    </div>
+    <div>
+      <select
+        [(ngModel)]="game.home_team_id"
+        [disabled]="processing || existingGame?.started || false"
+        class="w-full bg-transparent border-gray-300"
+        name="homeTeamId"
+        type="text"
+      >
+        <option *ngFor="let team of teams" [value]="team.id">
+          {{ team.name }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <select
+        [(ngModel)]="game.guest_team_id"
+        [disabled]="processing || existingGame?.started || false"
+        class="w-full bg-transparent border-gray-300"
+        name="guestTeamId"
+        type="text"
+      >
+        <option *ngFor="let team of teams" [value]="team.id">
+          {{ team.name }}
+        </option>
+      </select>
+    </div>
+    <div class="col-span-2 md:col-span-1">
+      <input
+        [(ngModel)]="game.nominated_referee_string"
+        [disabled]="processing || existingGame?.started || false"
+        class="w-full bg-transparent border-gray-300"
+        placeholder="Schiedsrichter"
+        name="referees"
+        type="text"
+      />
+    </div>
+    <div
+      class="flex items-center justify-start col-span-2 order-2 md:order-none md:col-span-1"
+    >
+      <ng-template #loading>
+        <svg
+          class="inline mx-1 mr-2 w-5 h-5 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+          fill="none"
+          viewBox="0 0 100 101"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+            fill="currentColor"
+          />
+          <path
+            d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+            fill="currentFill"
+          />
+        </svg>
+      </ng-template>
+
+      <ng-container *ngIf="!processing; else loading">
+        <button
+          (click)="createGame()"
+          *ngIf="!existingGame"
+          class="px-3 md:px-1"
+          type="submit"
+        >
+          <!-- Heroicon name: add -->
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <button
+          *ngIf="existingGame && !existingGame.started && hasChanges()"
+          class="px-3 md:px-1"
+          type="submit"
+        >
+          <!-- Heroicon name: check -->
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <button
+          (click)="resetGame()"
+          *ngIf="existingGame && !existingGame.started && hasChanges()"
+          class="px-3 md:px-1"
+        >
+          <!-- Heroicon name: check -->
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <button
+          (click)="deleteGame()"
+          *ngIf="existingGame && !existingGame.started && !hasChanges()"
+          class="px-3 md:px-1"
+        >
+          <!-- Heroicon name: check -->
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <button
+          (click)="toggleNotice($event)"
+          class="relative px-3 md:px-1"
+          [ngClass]="{ 'megaphone-stroke': hasNotice }"
+          *ngIf="!existingGame?.started || false"
+        >
+          <!-- Heroicon name: megaphone -->
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.795 3m.38 1.125a23.91 23.91 0 011.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 001.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 010 3.46"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <p
+          class="text-xs font-bold uppercase"
+          *ngIf="existingGame && existingGame.forfait"
+        >
+          forfait
+        </p>
+      </ng-container>
+    </div>
+
+    <div
+      class="absolute bottom-0 right-0 md:bottom-auto md:right-auto md:relative flex items-center justify-end"
+    >
+      <ng-container *ngIf="existingGame">
+        <label
+          [for]="'context-' + existingGame.id"
+          class="relative cursor-pointer"
+        >
+          <!-- Heroicon name: menu -->
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </label>
+        <input
+          [id]="'context-' + existingGame.id"
+          class="context hidden"
+          type="checkbox"
+        />
+        <div class="absolute w-[300px] top-[32px] right-[10px] hidden">
+          <label
+            [for]="'context-' + existingGame.id"
+            class="fixed top-0 left-0 w-screen h-screen"
+          ></label>
+          <ul
+            class="relative bg-white rounded bg-fb-gray-300 border border-gray-300 divide-y divide-gray-300 shadow-xl text-sm z-30"
+          >
+            <li>
+              <label
+                (click)="setRatingMode('regular')"
+                [for]="'context-' + existingGame.id"
+                [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 0 }"
+                class="block px-3 py-1.5 hover:bg-fb-gray-700 cursor-pointer"
+                >Reguläre Wertung</label
+              >
+            </li>
+            <li>
+              <label
+                (click)="setRatingMode('forfait-home')"
+                [for]="'context-' + existingGame.id"
+                [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 1 }"
+                class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
+                >Forfait Heim</label
+              >
+            </li>
+            <li>
+              <label
+                (click)="setRatingMode('forfait-guest')"
+                [for]="'context-' + existingGame.id"
+                [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 2 }"
+                class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
+                >Forfait Gast</label
+              >
+            </li>
+            <li>
+              <label
+                (click)="setRatingMode('forfait-both')"
+                [for]="'context-' + existingGame.id"
+                [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 3 }"
+                class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
+                >Forfait beide Teams</label
+              >
+            </li>
+          </ul>
+        </div>
+      </ng-container>
+    </div>
+
+    <ng-container *ngIf="hasNotice">
+      <div class="hidden w-7 overflow-hidden md:inline-block">
+        <div class="h-7 bg-red-300 rotate-45 transform origin-top-left"></div>
+      </div>
+      <div class="flex items-center font-medium text-fb-gray-900">
+        <span>Spiel-Noitz</span>
+      </div>
+
+      <div class="col-span-2">
+        <input
+          class="w-full bg-transparent border-gray-300"
+          type="text"
+          [(ngModel)]="game.notice_string"
+          [disabled]="existingGame?.started || false"
+          [ngModelOptions]="{ standalone: true }"
+        />
+      </div>
+
+      <div>
+        <select
+          class="w-full bg-transparent border-gray-300"
+          [(ngModel)]="game.notice_type"
+          [disabled]="existingGame?.started || false"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <option [value]="null">Bitte wählen...</option>
+          <option [value]="'Postponed'">Spiel verschoben</option>
+          <option [value]="'Canceled'">Spiel abgesagt</option>
+          <option [value]="'NoDateAndTime'">Noch nicht terminiert</option>
+        </select>
+      </div>
+    </ng-container>
+  </ng-container>
+</form>

@@ -2,7 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import {
+  Arena,
   Club,
+  Gameday,
+  GamedayInput,
+  GamedayWithGames,
   GameOperationWithLeagues,
   GameScheduleEntry,
   League,
@@ -142,6 +146,21 @@ export class LeagueService {
     return this.http.get<GameOperationWithLeagues[]>(path);
   }
 
+  public getAdminGameDay(gameDayId: number) {
+    const path = environment.apiURL + 'game_days/' + gameDayId + '.json';
+    return this.http.get<Gameday>(path);
+  }
+
+  public adminCreateGameDay(gameday: GamedayInput) {
+    const path = environment.apiURL + 'game_days.json';
+    return this.http.post<{ success: boolean }>(path, gameday);
+  }
+
+  public adminUpdateGameDay(gameday: GamedayInput) {
+    const path = environment.apiURL + 'game_days/' + gameday.id || 0 + '.json';
+    return this.http.put<any>(path, gameday);
+  }
+
   public adminCreateLeagues(league: League) {
     const path = environment.apiURL + 'admin/leagues.json';
     return this.http.post<League>(path, league);
@@ -160,7 +179,18 @@ export class LeagueService {
   public getAdminGameSchedule(id: number) {
     const path =
       environment.apiURL + 'admin/leagues/' + id + '/game_schedule.json';
-    return this.http.get<any[]>(path);
+    return this.http.get<GamedayWithGames[]>(path);
+  }
+
+  public getAdminLeagueAdditionalReferences(id: number) {
+    const path =
+      environment.apiURL +
+      'admin/leagues/' +
+      id +
+      '/additional_references.json';
+    return this.http.get<{ arenas: Arena[]; teams: Team[]; clubs: Club[] }>(
+      path
+    );
   }
 
   public adminImportGameSchedule(data: FormData) {

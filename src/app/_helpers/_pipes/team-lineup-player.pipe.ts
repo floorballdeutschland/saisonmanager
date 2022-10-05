@@ -54,6 +54,10 @@ export class TeamLineupPlayerPipe implements PipeTransform {
       }
     });
 
-    return items;
+    return items.sort(
+      (a, b) =>
+        a.player.last_name.localeCompare(b.player.last_name) ||
+        a.player.first_name.localeCompare(b.player.first_name)
+    );
   }
 }

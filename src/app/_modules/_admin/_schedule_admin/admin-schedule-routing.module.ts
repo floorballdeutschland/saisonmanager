@@ -13,7 +13,15 @@ const routes: Routes = [
     },
   },
   {
-    path: 'verwaltung/spieltag/:gameDayId/bearbeiten',
+    path: 'verwaltung/ligen/:leagueId/spieltag/:gameDayId/bearbeiten',
+    pathMatch: 'full',
+    component: Views.GameDayEditComponent,
+    data: {
+      scrollTop: true,
+    },
+  },
+  {
+    path: 'verwaltung/ligen/:leagueId/spieltag/neu',
     pathMatch: 'full',
     component: Views.GameDayEditComponent,
     data: {
@@ -24,14 +32,6 @@ const routes: Routes = [
     path: 'verwaltung/spieltag/import',
     pathMatch: 'full',
     component: Views.ImportGameDaysComponent,
-    data: {
-      scrollTop: true,
-    },
-  },
-  {
-    path: 'verwaltung/spieltag/neu',
-    pathMatch: 'full',
-    component: Views.GameDayEditComponent,
     data: {
       scrollTop: true,
     },

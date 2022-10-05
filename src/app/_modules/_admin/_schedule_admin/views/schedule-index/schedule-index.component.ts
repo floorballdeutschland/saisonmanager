@@ -7,13 +7,20 @@ import {
 import { AssociationService, LeagueService } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
+import { Arena, Club, GamedayWithGames, Team } from '@floorball/types';
 
 @Component({
   templateUrl: './schedule-index.component.html',
   encapsulation: ViewEncapsulation.None,
 })
 export class ScheduleIndexComponent implements OnInit {
-  gameDays: any[] = [];
+  gameDays: GamedayWithGames[] = [];
+  clubs: Club[] = [];
+  teams: Team[] = [];
+  arenas: Arena[] = [];
+
+  newGameOpen: number[] = [];
+  leagueId = 0;
 
   loading = true;
 
@@ -30,19 +37,40 @@ export class ScheduleIndexComponent implements OnInit {
   public ngOnInit(): void {
     this._route.params.subscribe((params) => {
       if (params['leagueId']) {
-        this._leagueService.getAdminGameSchedule(params['leagueId']).subscribe({
-          next: (result) => {
-            console.log('getAdminGameSchedule', result);
-            this.gameDays = result;
-            this.loading = false;
-
-            this._cdr.markForCheck();
-          },
-          error: (error) => {
-            console.error(error);
-          },
-        });
+        this.leagueId = params['leagueId'];
+        this._leagueService
+          .getAdminLeagueAdditionalReferences(params['leagueId'])
+          .subscribe({
+            next: (result) => {
+              this.teams = result.teams;
+              this.clubs = result.clubs;
+              this.arenas = result.arenas;
+            },
+          });
+        this.getSchdule(params['leagueId']);
       }
     });
+  }
+
+  public getSchdule(leagueId: number) {
+    this._leagueService.getAdminGameSchedule(leagueId).subscribe({
+      next: (result) => {
+        this.gameDays = result;
+        this.loading = false;
+
+        this._cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
+
+  public toggleNewGame(gameday: number) {
+    if (this.newGameOpen.includes(gameday)) {
+      this.newGameOpen = this.newGameOpen.filter((item) => item !== gameday);
+    } else {
+      this.newGameOpen = [...this.newGameOpen, gameday];
+    }
   }
 }
