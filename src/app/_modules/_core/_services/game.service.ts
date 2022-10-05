@@ -8,6 +8,7 @@ import {
   GameEventInput,
   GameFields,
   GameFlags,
+  GameInput,
   GamePlayerEntry,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
@@ -20,6 +21,30 @@ export class GameService {
   public getGame(gameId: number) {
     const path = environment.apiURL + 'games/' + gameId + '.json';
     return this.http.get<Game>(path);
+  }
+
+  public createGame(game: GameInput) {
+    const path = environment.apiURL + 'games.json';
+    return this.http.post<any>(path, game);
+  }
+
+  public updateGame(game: GameInput) {
+    const path = environment.apiURL + 'games/' + game.id || '0' + '.json';
+    return this.http.put<any>(path, {
+      ...game,
+      notice_type: game.notice_type !== 'null' ? game.notice_type : null,
+      notice_string: game.notice_string !== 'null' ? game.notice_string : null,
+    });
+  }
+
+  public updateGameRating(gameId: number, ratingMode: number) {
+    const path = environment.apiURL + 'games/' + gameId + '.json';
+    return this.http.put<any>(path, { forfait: ratingMode });
+  }
+
+  public deleteGame(game: GameInput) {
+    const path = environment.apiURL + 'games/' + game.id || '0' + '.json';
+    return this.http.delete<any>(path);
   }
 
   public addLineupPlayerToGame(

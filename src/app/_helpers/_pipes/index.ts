@@ -5,3 +5,5 @@ export * from './sort-trikotnumbers.pipe';
 export * from './sort-players.pipe';
 export * from './sort-players.pipe';
 export * from './team-lineup-player.pipe';
+export * from './game-notice-headline.pipe';
+export * from './game-notice-visibility.pipe';
