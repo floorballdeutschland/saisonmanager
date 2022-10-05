@@ -110,4 +110,10 @@ export class TeamSquadComponent implements OnInit {
   setPlayerFocus(playerId: number) {
     this.playerFocus = playerId;
   }
+
+  isGoalieSet() {
+    return this.players.reduce((hasGoalie, player) => {
+      return hasGoalie || player.goalkeeper;
+    }, false);
+  }
 }
