@@ -405,7 +405,10 @@
         (change)="changePeriod($event)"
       >
         <option value="">Spielabschnitt auswählen...</option>
-        <option [value]="p.period" *ngFor="let p of match.period_titles">
+        <option
+          [value]="p.period"
+          *ngFor="let p of match.period_titles | onlyRunning"
+        >
           {{ p.title }}
         </option>
       </select>

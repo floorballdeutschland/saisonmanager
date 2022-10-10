@@ -6,7 +6,9 @@
     Noch keine Ereignisse vorhanden
   </div>
 
-  <ng-container *ngFor="let period of match.period_titles; let index = index">
+  <ng-container
+    *ngFor="let period of match.period_titles | onlyRunning; let index = index"
+  >
     <ng-container *ngIf="match.events | matchEvents: period.period as events">
       <ng-container *ngIf="events.length">
         <div class="font-bold w-full border-b border-fb-gray-200 pb-5 mt-8">

@@ -11,6 +11,7 @@ import {
   GameNoticeHeadlinePipe,
   GameNoticeVisibilityPipe,
 } from '../../../_helpers';
+import { PeriodFilterPipe } from 'src/app/_helpers/_pipes/period-filter.pipe';
 
 @NgModule({
   imports: [CommonModule, RouterModule, UikitCommonModule, FormsModule],

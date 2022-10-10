@@ -7,7 +7,7 @@ export { ScorerEntry } from './scorer-entry.interface';
 export { GameScheduleEntry } from './game-schedule-entry.interface';
 export { Game } from './game.interface';
 export { GameInput } from './game.interface';
-export { GameResult } from './game.interface';
+export * from './game.interface';
 export { GamePlayers } from './game.interface';
 export { GamePlayerEntry } from './game.interface';
 export { GameAdditionalFields } from './game-additional-fields.interface';
