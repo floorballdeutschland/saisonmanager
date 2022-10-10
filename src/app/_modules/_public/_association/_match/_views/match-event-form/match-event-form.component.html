@@ -383,14 +383,16 @@
 </div>
 <div
   *ngIf="['goal', 'penalty', 'timeout', 'next'].includes(type)"
-  class="relative grid grid-cols-2 gap-3 p-4 bg-fb-gray-200"
-  [ngClass]="
-    team !== undefined && team !== 'both'
-      ? team === 'home'
-        ? 'before:block before:absolute before:top-0 before:left-1/4 before:w-6 before:h-6 before:bg-gray-200 before:-translate-y-full before:-translate-x-full before:origin-bottom-left before:rotate-45'
-        : 'before:block before:absolute before:top-0 before:left-3/4 before:w-6 before:h-6 before:bg-gray-200 before:-translate-y-full before:-translate-x-1/2 before:origin-bottom-left before:rotate-45'
-      : ''
-  "
+  class="relative grid grid-cols-2 gap-3 p-4"
+  [ngClass]="{
+    'before:block before:absolute before:top-0 before:w-6 before:h-6 before:bg-gray-200 before:-translate-y-full before:origin-bottom-left before:rotate-45':
+      team !== undefined && team !== 'both',
+    'before:left-1/4 before:-translate-x-full':
+      team !== undefined && team !== 'both' && team === 'home',
+    'before:left-3/4 before:-translate-x-1/2':
+      team !== undefined && team !== 'both' && team === 'guest',
+    'bg-fb-gray-200': !noBackground
+  }"
 >
   <ng-container *ngIf="['goal', 'penalty', 'timeout'].includes(type)">
     <div class="col-span-2">

@@ -1,0 +1,213 @@
+<ng-template #loading>
+  <div class="bg-white my-[5px] py-[15px] px-[30px]">
+    <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+      <svg
+        class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+        viewBox="0 0 100 101"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+          fill="currentColor"
+        />
+        <path
+          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+          fill="currentFill"
+        />
+      </svg>
+      Daten werden geladen...
+    </div>
+  </div>
+</ng-template>
+
+<div class="border-b-4 border-fb-gray-200" *ngIf="!game.ended">
+  <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+    <h2 class="font-bold text-xl lg:text-2xl">Abpfiff</h2>
+
+    <div class="mt-4 mb-12">
+      <p class="pb-6">
+        Das Spiel ist aktuell noch nicht beendet. Klicke auf den untenstehenden
+        Button, um das Spiel und die Eingabe der Ereignisse zu beenden. Im
+        Anschluss kannst du die Unterschriften und besondere Ereignisse
+        dokumentieren.
+      </p>
+
+      <h3 class="text-lg font-bold pb-2">Wichtig</h3>
+      <p class="pb-3">Dieser Schritt kann nicht rückgängig gemacht werden!</p>
+
+      <fb-match-event-form
+        class="col-span-2"
+        type="next"
+        team="both"
+        (updateGame)="reloadGame()"
+        (updatePeriod)="(null)"
+        (scrollToSbbNavigation)="scrollToSbbNavigation()"
+        [match]="game"
+        [noBackground]="true"
+      ></fb-match-event-form>
+    </div>
+  </div>
+</div>
+
+<ng-container *ngIf="game.ended">
+  <div class="border-b-4 border-fb-gray-200">
+    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+      <h2 class="font-bold text-xl lg:text-2xl">Weitere Infos</h2>
+
+      <div
+        class="grid grid-cols-2 gap-4 mt-4 lg:mt-8"
+        *ngIf="additionalFields; else loading"
+      >
+        <div class="col-span-2">
+          <fb-match-event-form
+            type="visitors"
+            team="both"
+            [fieldValue]="game.audience?.toString() || ''"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-b-4 border-fb-gray-200">
+    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+      <h2 class="font-bold text-xl lg:text-2xl">Sonstige Ereignisse</h2>
+
+      <div
+        class="grid grid-cols-2 gap-4 mt-4 lg:mt-8"
+        *ngIf="additionalFields; else loading"
+      >
+        <div class="col-span-2">
+          <fb-match-event-form
+            type="overtime"
+            team="both"
+            [fieldChecked]="additionalFields?.overtime || false"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+
+        <div>
+          <fb-match-event-form
+            type="protest"
+            team="both"
+            [fieldChecked]="additionalFields?.protest || false"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+
+        <div>
+          <fb-match-event-form
+            type="specialevent"
+            team="both"
+            [fieldChecked]="additionalFields?.special_event || false"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-b-4 border-fb-gray-200">
+    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+      <h2 class="font-bold text-xl lg:text-2xl">Unterschriften</h2>
+
+      <div
+        class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8"
+        *ngIf="additionalFields; else loading"
+      >
+        <div>
+          <fb-match-event-form
+            type="timekeepersigned"
+            team="both"
+            [fieldChecked]="additionalFields?.time_keeper_signed || false"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+
+        <div>
+          <fb-match-event-form
+            type="recordkeepersigned"
+            team="both"
+            [fieldChecked]="additionalFields?.record_keeper_signed || false"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+
+        <div>
+          <fb-match-event-form
+            type="captainsigned"
+            team="home"
+            [fieldChecked]="additionalFields?.home_captain_signed || false"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+
+        <div>
+          <fb-match-event-form
+            type="captainsigned"
+            team="guest"
+            [fieldChecked]="additionalFields?.guest_captain_signed || false"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+
+        <div>
+          <fb-match-event-form
+            type="referee1signed"
+            team="both"
+            [fieldChecked]="additionalFields?.referee1_signed || false"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+
+        <div>
+          <fb-match-event-form
+            type="referee2signed"
+            team="both"
+            [fieldChecked]="additionalFields?.referee2_signed || false"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-b-4 border-fb-gray-200">
+    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+      <h2 class="font-bold text-xl lg:text-2xl">Kommentar</h2>
+
+      <div class="grid mt-4 lg:mt-8" *ngIf="additionalFields; else loading">
+        <fb-match-event-form
+          type="comment"
+          team="both"
+          [fieldValue]="additionalFields?.record_comment || ''"
+          (updateGame)="reloadGame()"
+          (updatePeriod)="(null)"
+          [match]="game"
+        ></fb-match-event-form>
+      </div>
+    </div>
+  </div>
+</ng-container>

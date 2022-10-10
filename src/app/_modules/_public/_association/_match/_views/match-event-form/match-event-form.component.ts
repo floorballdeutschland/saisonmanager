@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -9,8 +8,15 @@ import {
   OnInit,
   Output,
   ViewChild,
-  ViewEncapsulation,
 } from '@angular/core';
+import {
+  Game,
+  GameAdditionalFields,
+  GameFields,
+  GameFlags,
+  Penalty,
+  PenaltyCode,
+} from '@floorball/types';
 import {
   AssociationService,
   ClubService,
@@ -20,20 +26,11 @@ import {
 } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import {
-  Game,
-  GameFlags,
-  GameFields,
-  Penalty,
-  PenaltyCode,
-  GameAdditionalFields,
-} from '@floorball/types';
 
 @Component({
   selector: 'fb-match-event-form',
   templateUrl: './match-event-form.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./match-event-form.component.scss'],
 })
 export class MatchEventFormComponent implements OnInit, AfterViewInit {
   @ViewChild('minutefield')
@@ -71,6 +68,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
 
   @Input()
   penaltyCodes!: PenaltyCode[];
+
+  @Input()
+  noBackground = false;
 
   @Output()
   updatePeriod: EventEmitter<string> = new EventEmitter<string>();
@@ -701,7 +701,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   }
 
   public changePeriod(e: any) {
-    this.updatePeriod.emit(e.target.value);
+    this.updatePeriod?.emit(e.target.value);
   }
 
   public onMinutesChange() {
