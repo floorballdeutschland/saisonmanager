@@ -382,7 +382,7 @@
   </div>
 </div>
 <div
-  *ngIf="['goal', 'penalty', 'timeout', 'next'].includes(type)"
+  *ngIf="['goal', 'penalty', 'start', 'end', 'timeout', 'next'].includes(type)"
   class="relative grid grid-cols-2 gap-3 p-4"
   [ngClass]="{
     'before:block before:absolute before:top-0 before:w-6 before:h-6 before:bg-gray-200 before:-translate-y-full before:origin-bottom-left before:rotate-45':
@@ -620,7 +620,7 @@
     </ng-container>
   </ng-container>
 
-  <ng-container *ngIf="type === 'next' && !match.started">
+  <ng-container *ngIf="type === 'start'">
     <div class="col-span-2">
       <input
         id="editlive"
@@ -650,7 +650,7 @@
   <button
     (click)="submitEvent()"
     [disabled]="submitDisabled()"
-    *ngIf="['goal', 'penalty', 'timeout', 'next'].includes(type)"
+    *ngIf="['goal', 'penalty', 'timeout'].includes(type)"
     class="col-span-2 w-full font-bold text-black leading-[17px] text-sm px-5 py-4 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
   >
     <ng-container *ngIf="['goal', 'penalty', 'timeout'].includes(type)">
@@ -664,8 +664,28 @@
         >Spiel starten
       </ng-container>
       <ng-container *ngIf="match.started && !match.ended"
-        >Spiel beenden
+        >{{ nextPeriodTitle()?.title }} starten
       </ng-container>
     </ng-container>
   </button>
+
+  <ng-container *ngIf="['start', 'end', 'next'].includes(type)">
+    <button
+      (click)="submitEvent()"
+      *ngIf="type === 'next'"
+      class="col-span-2 w-full font-bold text-black leading-[17px] text-sm px-5 py-4 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
+    >
+      {{ nextPeriodTitle()?.title }} starten
+    </button>
+
+    <button
+      (click)="startOrEndGame(type === 'start')"
+      *ngIf="
+        type === 'start' || type === 'end' || currentPeriodTitle()?.can_end_game
+      "
+      class="col-span-2 w-full font-bold text-black leading-[17px] text-sm px-5 py-4 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
+    >
+      Spiel {{ type === "start" ? "starten" : "beenden" }}
+    </button>
+  </ng-container>
 </div>

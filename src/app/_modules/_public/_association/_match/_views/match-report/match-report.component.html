@@ -46,16 +46,14 @@
                 class="border border-gray-200 overflow-hidden border-b-0 rounded-t-md lg:border-0"
               >
                 <button
-                  (click)="appGameStatus = statusOption.key"
+                  (click)="handleGameStatusChange(statusOption.key)"
                   class="group text-left focus-visible:outline-0"
                 >
                   <span
                     class="absolute top-0 left-0 h-full w-1 lg:bottom-0 lg:top-auto lg:h-1 lg:w-full"
                     [ngClass]="{
-                      'bg-transparent group-hover:bg-gray-200':
-                        isGameStatusActive(index) === -1,
-                      'bg-indigo-600': isGameStatusActive(index) === 0,
-                      'bg-transparent': isGameStatusActive(index) === 1
+                      'bg-indigo-600': isGameStatusActive(index, 'game') <= 0,
+                      'bg-transparent': isGameStatusActive(index, 'game') === 1
                     }"
                     aria-hidden="true"
                   ></span>

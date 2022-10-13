@@ -48,7 +48,7 @@
       </p>
       <fb-match-event-form
         class="col-span-2"
-        type="next"
+        type="start"
         team="both"
         (updateGame)="reloadGame()"
         (updatePeriod)="setCurrentPeriod($event)"
@@ -73,90 +73,102 @@
           role="list"
           class="divide-y divide-gray-300 rounded-md border border-gray-300 md:flex md:divide-y-0"
         >
-          <li
-            class="relative md:flex md:flex-1"
+          <ng-container
             *ngFor="
-              let gamePeriodOption of gamePeriodOptions;
+              let gamePeriodOption of this.game.period_titles;
               let index = index;
+              let first = first;
               let last = last
             "
           >
-            <!-- Completed Step -->
-            <div class="group flex w-full items-center focus-visible:outline-0">
-              <span
-                class="flex items-center px-6 py-3 text-sm font-medium"
-                [ngClass]="{}"
-              >
-                <span
-                  class="relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2"
-                  [ngClass]="{
-                    'bg-indigo-600 group-hover:bg-indigo-800 border-0':
-                      isGamePeriodActive(index) === -1,
-                    'border-indigo-600 after:w-full after:absolute after:rounded-full after:animate-ping after:h-full after:bg-indigo-400 after:transparent-8 after:-z-1':
-                      isGamePeriodActive(index) === 0,
-                    'border-gray-300 group-hover:border-gray-400':
-                      isGamePeriodActive(index) === 1
-                  }"
-                >
-                  <ng-template #number>
-                    <span
-                      class="text-xs"
-                      [ngClass]="{
-                        'text-indigo-600': isGamePeriodActive(index) !== 1,
-                        'text-gray-500': isGamePeriodActive(index) === 1
-                      }"
-                      >{{ gamePeriodOption.key }}</span
-                    >
-                  </ng-template>
-
-                  <!-- Heroicon name: solid/check -->
-                  <svg
-                    *ngIf="isGamePeriodActive(index) === -1; else number"
-                    class="h-4 w-4 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="ml-4 text-sm font-medium"
-                  [ngClass]="{
-                    'text-indigo-600': isGamePeriodActive(index) !== 1,
-                    'text-gray-900': isGamePeriodActive(index) === 1
-                  }"
-                  >{{ gamePeriodOption.title }}</span
-                >
-              </span>
-            </div>
-
-            <!-- Arrow separator for lg screens and up -->
-            <div
-              *ngIf="!last"
-              class="absolute top-0 right-0 hidden h-full w-5 md:block"
-              aria-hidden="true"
+            <li
+              class="relative md:flex md:flex-1"
+              *ngIf="!game.ended || isGamePeriodActive(index) < 1"
             >
-              <svg
-                class="h-full w-full text-gray-300"
-                viewBox="0 0 22 80"
-                fill="none"
-                preserveAspectRatio="none"
+              <div
+                class="group flex w-full items-center focus-visible:outline-0"
               >
-                <path
-                  d="M0 -2L20 40L0 82"
-                  vector-effect="non-scaling-stroke"
-                  stroke="currentcolor"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </div>
-          </li>
+                <span
+                  class="flex items-center px-6 py-3 text-sm font-medium"
+                  [ngClass]="{}"
+                >
+                  <span
+                    class="relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2"
+                    [ngClass]="{
+                      'bg-indigo-600 group-hover:bg-indigo-800 border-0':
+                        isGamePeriodActive(index) === -1 ||
+                        (isGamePeriodActive(index) === 0 && game.ended),
+                      'border-indigo-600': isGamePeriodActive(index) === 0,
+                      'after:w-full after:absolute after:rounded-full after:animate-ping after:h-full after:bg-indigo-400 after:transparent-8 after:-z-1':
+                        isGamePeriodActive(index) === 0 && !game.ended,
+                      'border-gray-300 group-hover:border-gray-400':
+                        isGamePeriodActive(index) === 1
+                    }"
+                  >
+                    <ng-template #number>
+                      <span
+                        class="text-xs my-auto"
+                        [ngClass]="{
+                          'text-indigo-600': isGamePeriodActive(index) !== 1,
+                          'text-gray-500': isGamePeriodActive(index) === 1
+                        }"
+                        >{{ gamePeriodOption.period }}</span
+                      >
+                    </ng-template>
+
+                    <!-- Heroicon name: solid/check -->
+                    <svg
+                      *ngIf="
+                        isGamePeriodActive(index) === -1 ||
+                          (isGamePeriodActive(index) === 0 && game.ended);
+                        else number
+                      "
+                      class="h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                  <span
+                    class="ml-4 text-sm font-medium"
+                    [ngClass]="{
+                      'text-indigo-600': isGamePeriodActive(index) !== 1,
+                      'text-gray-900': isGamePeriodActive(index) === 1
+                    }"
+                    >{{ gamePeriodOption.title }}</span
+                  >
+                </span>
+              </div>
+
+              <!-- Arrow separator for lg screens and up -->
+              <div
+                *ngIf="!last"
+                class="absolute top-0 right-0 hidden h-full w-5 md:block"
+                aria-hidden="true"
+              >
+                <svg
+                  class="h-full w-full text-gray-300"
+                  viewBox="0 0 22 80"
+                  fill="none"
+                  preserveAspectRatio="none"
+                >
+                  <path
+                    d="M0 -2L20 40L0 82"
+                    vector-effect="non-scaling-stroke"
+                    stroke="currentcolor"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+            </li>
+          </ng-container>
         </ol>
       </nav>
 
@@ -169,7 +181,7 @@
           "
           (click)="setEvent('next')"
         >
-          Spiel starten / beenden
+          Nächster Spielabschnitt
         </button>
         <div *ngIf="event === 'next'">
           <fb-match-event-form
@@ -187,10 +199,7 @@
         </div>
       </div>
 
-      <div
-        class="grid grid-cols-2 gap-4 mt-4 lg:mt-8"
-        *ngIf="game.started && !game.ended"
-      >
+      <div class="grid grid-cols-2 gap-4 mt-4 lg:mt-8">
         <fb-match-event-button
           type="goal"
           team="home"

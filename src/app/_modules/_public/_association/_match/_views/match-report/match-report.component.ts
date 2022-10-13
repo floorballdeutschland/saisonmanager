@@ -4,7 +4,11 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
+  OnInit,
   Output,
+  SimpleChange,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import {
@@ -12,14 +16,15 @@ import {
   GameAdditionalFields,
   Penalty,
   PenaltyCode,
+  PeriodTitles,
 } from '@floorball/types';
-import { LeagueService } from '@floorball/core';
+import { GameService, LeagueService } from '@floorball/core';
 
 @Component({
   selector: 'fb-match-report',
   templateUrl: './match-report.component.html',
 })
-export class MatchReportComponent {
+export class MatchReportComponent implements OnInit, OnChanges {
   @ViewChild('sbbNavigation')
   sbbNavigation!: ElementRef<HTMLElement>;
 
@@ -83,7 +88,7 @@ export class MatchReportComponent {
 
   // match report properties
   public gameStatus = ''; // pregame, ingame, aftergame, match_record_closedgame, finalized
-  public appGameStatus = 'ingame'; // pregame, ingame, aftergame, match_record_closedgame, finalized
+  public appGameStatus = ''; // pregame, ingame, aftergame, match_record_closedgame, finalized
   public currentPeriod = '1';
   public penalties: Penalty[] = [];
   public penaltyCodes: PenaltyCode[] = [];
@@ -94,8 +99,54 @@ export class MatchReportComponent {
 
   constructor(
     private _leagueService: LeagueService,
+    private _gameService: GameService,
     private _cdr: ChangeDetectorRef
   ) {}
+
+  ngOnInit() {
+    this.appGameStatus = this.game.game_status;
+    console.log(this.gameStatus);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['game']) {
+      this.handleGameChange(changes['game']);
+    }
+    console.log(changes);
+  }
+
+  handleGameChange(game: SimpleChange) {
+    if (game.currentValue.id !== game.previousValue?.id) {
+      this.appGameStatus = this.game.game_status;
+    }
+
+    if (
+      game.currentValue.game_status === 'aftergame' &&
+      game.previousValue?.game_status === 'ingame'
+    ) {
+      this.appGameStatus = this.game.game_status;
+    }
+  }
+
+  handleGameStatusChange(newStatus: string) {
+    const statusIndex = this.gameStatusOptions.findIndex(
+      (item) => item.key === newStatus
+    );
+    const maxStatusIndex = this.gameStatusOptions.findIndex(
+      (item) => item.key === this.additionalFields?.game_status
+    );
+
+    if (statusIndex > maxStatusIndex) {
+      this._gameService.setGameStatus(this.game.id, newStatus).subscribe({
+        next: () => {
+          this.game.game_status = newStatus;
+          this.reloadGame();
+        },
+      });
+    }
+
+    this.appGameStatus = newStatus;
+  }
 
   scrollToSbbNavigation() {
     this.sbbNavigation.nativeElement.scrollIntoView({ behavior: 'smooth' });
@@ -105,9 +156,11 @@ export class MatchReportComponent {
     this.handleReload.emit();
   }
 
-  public isGameStatusActive(index: number) {
+  public isGameStatusActive(index: number, type: 'app' | 'game' = 'app') {
     const statusIndex = this.gameStatusOptions.findIndex(
-      (item) => item.key === this.appGameStatus
+      (item) =>
+        item.key ===
+        (type === 'app' ? this.appGameStatus : this.game.game_status)
     );
 
     if (statusIndex < 0) {

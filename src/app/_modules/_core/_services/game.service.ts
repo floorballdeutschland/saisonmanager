@@ -169,4 +169,16 @@ export class GameService {
       environment.apiURL + 'user/games/' + gameId + '/events/remove.json';
     return this.http.post<GameEvent>(path, { event_id: eventId });
   }
+
+  public setGameStatus(gameId: number, game_status: string) {
+    const path =
+      environment.apiURL + 'user/games/' + gameId + '/game_status.json';
+    return this.http.post<Game>(path, { game_status });
+  }
+
+  public setInGameStatus(gameId: number, ingame_status: string) {
+    const path =
+      environment.apiURL + 'user/games/' + gameId + '/game_status.json';
+    return this.http.post<Game>(path, { ingame_status });
+  }
 }

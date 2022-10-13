@@ -67,6 +67,8 @@ export interface Referee {
 export interface Game {
   id: number;
   game_number: string;
+  game_status: string;
+  ingame_status: string;
   start_time: string;
   date: Date;
   audience: number;
@@ -110,6 +112,7 @@ export interface PeriodTitles {
   title: string;
   status_id: string;
   running: boolean;
+  can_end_game: boolean;
 }
 
 export interface GameInput {
