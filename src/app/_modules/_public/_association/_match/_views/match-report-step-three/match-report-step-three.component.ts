@@ -24,11 +24,17 @@ export class MatchReportStepThreeComponent {
   @Input()
   additionalFields!: GameAdditionalFields;
 
+  @Input()
+  nextStatusOption!: any;
+
   @Output()
   handleReload = new EventEmitter<void>();
 
   @Output()
   updatePeriod: EventEmitter<string> = new EventEmitter<string>();
+
+  @Output()
+  closeMatchRecord: EventEmitter<void> = new EventEmitter<void>();
 
   constructor(
     private _leagueService: LeagueService,
@@ -41,5 +47,9 @@ export class MatchReportStepThreeComponent {
 
   reloadGame() {
     this.handleReload.emit();
+  }
+
+  handleFinalize() {
+    this.closeMatchRecord.emit();
   }
 }

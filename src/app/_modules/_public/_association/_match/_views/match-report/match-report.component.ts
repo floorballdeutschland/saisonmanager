@@ -19,6 +19,8 @@ import {
   PeriodTitles,
 } from '@floorball/types';
 import { GameService, LeagueService } from '@floorball/core';
+import { MobileHeaderComponent } from '../../../../../_uikit/_common/components/organisms';
+import { take, tap } from 'rxjs';
 
 @Component({
   selector: 'fb-match-report',
@@ -65,25 +67,22 @@ export class MatchReportComponent implements OnInit, OnChanges {
     },
     {
       key: this.MATCH_RECORD_CLOSED,
-      title: 'Eigabe abschließen',
-      description: 'Für Kontrolle durch die SBK freigegeben',
+      title: 'Kontrolle durch SBK',
+      description: 'Zur Kontrolle durch die SBK freigegeben',
+      confirm: true,
+      confirmationTitle: 'Spielbericht abschließen',
+      confirmationContent:
+        'Soll die Eingabe wirklich abgeschlossen werden? Das Bearbeiten ist im Anschluss nicht mehr möglich. Möchtest du wirklich fortfahren?',
     },
     {
       key: this.FINALIZED,
-      title: 'Kontrolle',
+      title: 'Spiel abgeschlossen',
       description: 'Spiel wurde durch die SBK kontrolliert',
+      confirm: true,
+      confirmationTitle: 'Kontrolle abschließen',
+      confirmationContent:
+        'Sind alle eingetragenen Daten korrekt? Durch den Abschluss der Kontrolle wird der Spielbericht geschlossen und kann nicht mehr bearbeitet werden. Möchtest du wirklich fortfahren?',
     },
-  ];
-
-  // game_periods
-  public gamePeriodOptions = [
-    { key: '1', title: '1. Drittel' },
-    { key: 'P1', title: '1. Drittelpause' },
-    { key: '2', title: '2. Drittel' },
-    { key: 'P2', title: '2. Drittelpause' },
-    { key: '3', title: '3. Drittel' },
-    { key: 'V', title: 'Verlängerung' },
-    // { key: 'PS', title: 'Penalty-Schließen' },
   ];
 
   // match report properties
@@ -166,11 +165,19 @@ export class MatchReportComponent implements OnInit, OnChanges {
     if (statusIndex < 0) {
       return 1;
     } else if (statusIndex === index) {
-      return 0;
+      return statusIndex === this.gameStatusOptions.length - 1 ? -1 : 0;
     } else if (statusIndex < index) {
       return 1;
     } else {
       return -1;
     }
+  }
+
+  public closeMatchRecord() {
+    this.handleGameStatusChange(this.MATCH_RECORD_CLOSED);
+  }
+
+  public finalizeGame() {
+    this.handleGameStatusChange(this.FINALIZED);
   }
 }

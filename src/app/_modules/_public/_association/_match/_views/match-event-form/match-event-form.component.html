@@ -659,17 +659,9 @@
         {{ getEventString() }} eintragen
       </ng-container>
     </ng-container>
-    <ng-container *ngIf="['next'].includes(type) && !match.ended">
-      <ng-container *ngIf="!match.started && !match.ended"
-        >Spiel starten
-      </ng-container>
-      <ng-container *ngIf="match.started && !match.ended"
-        >{{ nextPeriodTitle()?.title }} starten
-      </ng-container>
-    </ng-container>
   </button>
 
-  <ng-container *ngIf="['start', 'end', 'next'].includes(type)">
+  <ng-template #nextButton>
     <button
       (click)="submitEvent()"
       *ngIf="type === 'next'"
@@ -679,7 +671,6 @@
     </button>
 
     <button
-      (click)="startOrEndGame(type === 'start')"
       *ngIf="
         type === 'start' || type === 'end' || currentPeriodTitle()?.can_end_game
       "
@@ -687,5 +678,19 @@
     >
       Spiel {{ type === "start" ? "starten" : "beenden" }}
     </button>
+  </ng-template>
+
+  <ng-container *ngIf="['start', 'end', 'next'].includes(type)">
+    <fb-confirmation
+      class="col-span-2"
+      *ngIf="
+        ['start', 'end'].includes(type) || currentPeriodTitle()?.can_end_game;
+        else nextButton
+      "
+      (handleSubmit)="startOrEndGame(type === 'start')"
+      [title]="type === 'start' ? 'Spiel starten' : 'Spiel beenden'"
+    >
+      <ng-container *ngIf="false; else nextButton"></ng-container>
+    </fb-confirmation>
   </ng-container>
 </div>

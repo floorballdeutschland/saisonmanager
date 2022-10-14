@@ -6,3 +6,5 @@ export * from './similar-leagues/similar-leagues.component';
 export * from './favorites-navigation/favorites-navigation.component';
 export * from './mobile-header/mobile-header.component';
 export * from './notification/notification.component';
+export * from './confirmation-dialog/confirmation-dialog.component';
+export * from './confirmation/confirmation.component';

@@ -45,67 +45,89 @@
               <div
                 class="border border-gray-200 overflow-hidden border-b-0 rounded-t-md lg:border-0"
               >
-                <button
-                  (click)="handleGameStatusChange(statusOption.key)"
-                  class="group text-left focus-visible:outline-0"
-                >
-                  <span
-                    class="absolute top-0 left-0 h-full w-1 lg:bottom-0 lg:top-auto lg:h-1 lg:w-full"
-                    [ngClass]="{
-                      'bg-indigo-600': isGameStatusActive(index, 'game') <= 0,
-                      'bg-transparent': isGameStatusActive(index, 'game') === 1
-                    }"
-                    aria-hidden="true"
-                  ></span>
-                  <span class="px-6 py-5 flex items-start text-sm font-medium">
-                    <span class="flex-shrink-0">
-                      <span
-                        class="flex h-10 w-10 items-center justify-center rounded-full border-2"
-                        [ngClass]="{
-                          'bg-indigo-600 border-0':
-                            isGameStatusActive(index) === -1,
-                          'border-indigo-600': isGameStatusActive(index) === 0,
-                          'border-gray-300': isGameStatusActive(index) === 1
-                        }"
-                      >
-                        <!-- Heroicon name: solid/check -->
-                        <ng-template #number>
-                          <span
-                            class=""
-                            [ngClass]="{
-                              'text-indigo-600':
-                                isGameStatusActive(index) !== 1,
-                              'text-gray-500': isGameStatusActive(index) === 1
-                            }"
-                            >{{ index + 1 }}</span
-                          >
-                        </ng-template>
-                        <svg
-                          *ngIf="isGameStatusActive(index) === -1; else number"
-                          class="h-6 w-6 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                          aria-hidden="true"
+                <ng-template #listButton>
+                  <button
+                    (click)="
+                      !statusOption.confirm
+                        ? handleGameStatusChange(statusOption.key)
+                        : null
+                    "
+                    class="group text-left focus-visible:outline-0"
+                  >
+                    <span
+                      class="absolute top-0 left-0 h-full w-1 lg:bottom-0 lg:top-auto lg:h-1 lg:w-full"
+                      [ngClass]="{
+                        'bg-indigo-600': isGameStatusActive(index, 'game') <= 0,
+                        'bg-transparent':
+                          isGameStatusActive(index, 'game') === 1
+                      }"
+                      aria-hidden="true"
+                    ></span>
+                    <span
+                      class="px-6 py-5 flex items-start text-sm font-medium"
+                    >
+                      <span class="flex-shrink-0">
+                        <span
+                          class="flex h-10 w-10 items-center justify-center rounded-full border-2"
+                          [ngClass]="{
+                            'bg-indigo-600 border-0':
+                              isGameStatusActive(index) === -1,
+                            'border-indigo-600':
+                              isGameStatusActive(index) === 0,
+                            'border-gray-300': isGameStatusActive(index) === 1
+                          }"
                         >
-                          <path
-                            fill-rule="evenodd"
-                            d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z"
-                            clip-rule="evenodd"
-                          />
-                        </svg>
+                          <!-- Heroicon name: solid/check -->
+                          <ng-template #number>
+                            <span
+                              class=""
+                              [ngClass]="{
+                                'text-indigo-600':
+                                  isGameStatusActive(index) !== 1,
+                                'text-gray-500': isGameStatusActive(index) === 1
+                              }"
+                              >{{ index + 1 }}</span
+                            >
+                          </ng-template>
+                          <svg
+                            *ngIf="
+                              isGameStatusActive(index) === -1;
+                              else number
+                            "
+                            class="h-6 w-6 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </span>
+                      </span>
+                      <span class="mt-0.5 ml-4 flex min-w-0 flex-col">
+                        <span class="text-sm font-medium">{{
+                          statusOption.title
+                        }}</span>
+                        <span class="text-sm font-medium text-gray-500">{{
+                          statusOption.description
+                        }}</span>
                       </span>
                     </span>
-                    <span class="mt-0.5 ml-4 flex min-w-0 flex-col">
-                      <span class="text-sm font-medium">{{
-                        statusOption.title
-                      }}</span>
-                      <span class="text-sm font-medium text-gray-500">{{
-                        statusOption.description
-                      }}</span>
-                    </span>
-                  </span>
-                </button>
+                  </button>
+                </ng-template>
+
+                <fb-confirmation
+                  *ngIf="statusOption.confirm; else listButton"
+                  (handleSubmit)="handleGameStatusChange(statusOption.key)"
+                  [title]="statusOption.confirmationTitle"
+                  [content]="statusOption.confirmationContent"
+                >
+                  <ng-container *ngIf="false; else listButton"> </ng-container>
+                </fb-confirmation>
 
                 <!-- Separator -->
                 <div
@@ -151,8 +173,43 @@
       *ngIf="appGameStatus === AFTERGAME"
       [game]="game"
       [additionalFields]="additionalFields"
+      [nextStatusOption]="gameStatusOptions[3]"
       (handleReload)="reloadGame()"
+      (closeMatchRecord)="closeMatchRecord()"
     ></fb-match-report-step-three>
+
+    <ng-container *ngIf="appGameStatus === MATCH_RECORD_CLOSED">
+      <div class="border-b-4 border-fb-gray-200" *ngIf="!game.ended">
+        <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+          <h2 class="font-bold text-xl lg:text-2xl">Abpfiff</h2>
+
+          <div class="mt-4 mb-12">
+            <p class="pb-6">
+              Das Spiel ist aktuell noch nicht beendet. Klicke auf den
+              untenstehenden Button, um das Spiel und die Eingabe der Ereignisse
+              zu beenden. Im Anschluss kannst du die Unterschriften und
+              besondere Ereignisse dokumentieren.
+            </p>
+
+            <h3 class="text-lg font-bold pb-2">Wichtig</h3>
+            <p class="pb-3">
+              Dieser Schritt kann nicht rückgängig gemacht werden!
+            </p>
+
+            <fb-match-event-form
+              class="col-span-2"
+              type="end"
+              team="both"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              (scrollToSbbNavigation)="scrollToSbbNavigation()"
+              [match]="game"
+              [noBackground]="true"
+            ></fb-match-event-form>
+          </div>
+        </div>
+      </div>
+    </ng-container>
 
     <div class="border-b-4 border-fb-gray-200" *ngIf="game.started">
       <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
