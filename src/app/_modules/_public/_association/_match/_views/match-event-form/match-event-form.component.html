@@ -335,13 +335,14 @@
         [(ngModel)]="refereeLastname1"
       />
 
-      <button class="flex md:col-span-5" (click)="submitField()">
-        <span
-          class="grow w-full font-bold text-black leading-[17px] text-sm px-5 py-2 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
-        >
-          Speichern
-        </span>
-      </button>
+      <fb-button
+        class="flex md:col-span-5"
+        [fullWidth]="true"
+        [variant]="'success'"
+        (handleClick)="submitField()"
+      >
+        Speichern
+      </fb-button>
     </div>
   </div>
 
@@ -371,13 +372,14 @@
         [(ngModel)]="refereeLastname2"
       />
 
-      <button class="flex md:col-span-5" (click)="submitField()">
-        <span
-          class="grow w-full font-bold text-black leading-[17px] text-sm px-5 py-2 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
-        >
-          Speichern
-        </span>
-      </button>
+      <fb-button
+        class="flex md:col-span-5"
+        [fullWidth]="true"
+        [variant]="'success'"
+        (handleClick)="submitField()"
+      >
+        Speichern
+      </fb-button>
     </div>
   </div>
 </div>
@@ -647,11 +649,14 @@
     </div>
   </ng-container>
 
-  <button
-    (click)="submitEvent()"
+  <fb-button
+    (handleClick)="submitEvent()"
     [disabled]="submitDisabled()"
+    [size]="'large'"
+    [variant]="'success'"
+    [fullWidth]="true"
     *ngIf="['goal', 'penalty', 'timeout'].includes(type)"
-    class="col-span-2 w-full font-bold text-black leading-[17px] text-sm px-5 py-4 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
+    class="col-span-2 disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
   >
     <ng-container *ngIf="['goal', 'penalty', 'timeout'].includes(type)">
       <ng-template #missingInfo>Angaben unvollständig</ng-template>
@@ -659,38 +664,40 @@
         {{ getEventString() }} eintragen
       </ng-container>
     </ng-container>
-  </button>
+  </fb-button>
 
-  <ng-template #nextButton>
-    <button
-      (click)="submitEvent()"
-      *ngIf="type === 'next'"
-      class="col-span-2 w-full font-bold text-black leading-[17px] text-sm px-5 py-4 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
-    >
-      {{ nextPeriodTitle()?.title }} starten
-    </button>
+  <!--  <fb-button-->
+  <!--    (click)="submitEvent()"-->
+  <!--    [disabled]="submitDisabled()"-->
 
-    <button
-      *ngIf="
-        type === 'start' || type === 'end' || currentPeriodTitle()?.can_end_game
-      "
-      class="col-span-2 w-full font-bold text-black leading-[17px] text-sm px-5 py-4 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
-    >
-      Spiel {{ type === "start" ? "starten" : "beenden" }}
-    </button>
-  </ng-template>
+  <fb-button
+    *ngIf="type === 'next' && nextPeriodTitle()"
+    [fullWidth]="true"
+    [size]="'large'"
+    [variant]="'success'"
+    (handleClick)="submitEvent()"
+    class="col-span-2 uppercase"
+  >
+    {{ nextPeriodTitle()?.title }} starten
+  </fb-button>
 
   <ng-container *ngIf="['start', 'end', 'next'].includes(type)">
     <fb-confirmation
       class="col-span-2"
       *ngIf="
-        ['start', 'end'].includes(type) || currentPeriodTitle()?.can_end_game;
-        else nextButton
+        ['start', 'end'].includes(type) || currentPeriodTitle()?.can_end_game
       "
       (handleSubmit)="startOrEndGame(type === 'start')"
       [title]="type === 'start' ? 'Spiel starten' : 'Spiel beenden'"
     >
-      <ng-container *ngIf="false; else nextButton"></ng-container>
+      <fb-button
+        [size]="'large'"
+        [variant]="'success'"
+        [fullWidth]="true"
+        class="col-span-2 uppercase"
+      >
+        {{ type === "start" ? "Spiel starten" : "Spiel beenden" }}
+      </fb-button>
     </fb-confirmation>
   </ng-container>
 </div>

@@ -88,10 +88,7 @@
               <div
                 class="group flex w-full items-center focus-visible:outline-0"
               >
-                <span
-                  class="flex items-center px-6 py-3 text-sm font-medium"
-                  [ngClass]="{}"
-                >
+                <span class="flex items-center px-6 py-3 text-sm font-medium">
                   <span
                     class="relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2"
                     [ngClass]="{
@@ -173,16 +170,13 @@
       </nav>
 
       <div class="grid grid-cols-1 gap-8 mt-4 lg:mt-8" *ngIf="!game.ended">
-        <button
-          [ngClass]="
-            event === 'next'
-              ? 'w-full font-bold text-black leading-[17px] text-sm py-2.5 border bg-fb-gray-200 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer'
-              : 'w-full font-bold text-black leading-[17px] text-sm py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer'
-          "
-          (click)="setEvent('next')"
+        <fb-button
+          (handleClick)="setEvent('next')"
+          [fullWidth]="true"
+          [size]="'large'"
         >
           Nächster Spielabschnitt
-        </button>
+        </fb-button>
         <div *ngIf="event === 'next'">
           <fb-match-event-form
             class="col-span-2"

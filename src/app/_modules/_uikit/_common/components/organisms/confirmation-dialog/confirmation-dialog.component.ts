@@ -32,6 +32,7 @@ export class ConfirmationDialogComponent {
   public title = '';
   public content = '';
   public submitButtonTitle = 'Fortfahren';
+  public buttonVariant: 'success' | 'error' = 'error';
 
   close() {
     this.onClose$.next(true);

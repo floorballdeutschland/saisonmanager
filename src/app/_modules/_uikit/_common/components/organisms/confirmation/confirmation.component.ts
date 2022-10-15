@@ -25,6 +25,12 @@ export class ConfirmationComponent {
   @Input()
   content?: string;
 
+  @Input()
+  submitButtonTitle?: string;
+
+  @Input()
+  buttonVariant?: 'success' | 'error';
+
   overlayComponentRef?: ComponentRef<ConfirmationDialogComponent>;
 
   constructor(
@@ -60,6 +66,15 @@ export class ConfirmationComponent {
 
     this.overlayComponentRef.instance.title = this.title || '';
     this.overlayComponentRef.instance.content = this.content || '';
+
+    if (this.submitButtonTitle) {
+      this.overlayComponentRef.instance.submitButtonTitle =
+        this.submitButtonTitle;
+    }
+
+    if (this.buttonVariant) {
+      this.overlayComponentRef.instance.buttonVariant = this.buttonVariant;
+    }
 
     this._cdr.markForCheck();
   }

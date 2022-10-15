@@ -29,20 +29,14 @@
 
       <div class="grid grid-cols-1 gap-2 mb-4">
         <div *ngIf="false">
-          <button
-            class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-            (click)="openSquadHistoryHomeDialog()"
-          >
+          <fb-button (click)="openSquadHistoryHomeDialog()">
             Kaderliste laden
-          </button>
+          </fb-button>
         </div>
         <div>
-          <button
-            class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-            (click)="openAddHomeDialog()"
-          >
+          <fb-button (handleClick)="openAddHomeDialog()">
             Kader bearbeiten
-          </button>
+          </fb-button>
         </div>
       </div>
 
@@ -54,20 +48,14 @@
 
       <div class="grid grid-cols-1 gap-2 mb-4">
         <div *ngIf="false">
-          <button
-            class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-            (click)="openSquadHistoryGuestDialog()"
-          >
+          <fb-button (click)="openSquadHistoryGuestDialog()">
             Kaderliste laden
-          </button>
+          </fb-button>
         </div>
         <div>
-          <button
-            class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-            (click)="openAddGuestDialog()"
-          >
+          <fb-button (handleClick)="openAddGuestDialog()">
             Kader bearbeiten
-          </button>
+          </fb-button>
         </div>
       </div>
 
