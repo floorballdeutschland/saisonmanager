@@ -12,6 +12,7 @@ import * as Pipes from './pipes';
   declarations: [
     Atoms.LogoComponent,
     Atoms.TabItemComponent,
+    Atoms.ButtonComponent,
     Molecules.MatchDayComponent,
     Molecules.OperationComponent,
     Molecules.PaginationComponent,
@@ -35,6 +36,7 @@ import * as Pipes from './pipes';
   exports: [
     Atoms.LogoComponent,
     Atoms.TabItemComponent,
+    Atoms.ButtonComponent,
     Molecules.MatchDayComponent,
     Molecules.OperationComponent,
     Molecules.PaginationComponent,
