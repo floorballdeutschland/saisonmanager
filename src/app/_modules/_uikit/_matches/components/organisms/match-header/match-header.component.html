@@ -87,6 +87,11 @@
             >
               {{ resultData.result }}
             </p>
+
+            <ng-container *ngIf="game.started && !game.ended">
+              <p class="text-md text-pink-500">1. Drittelpause</p>
+            </ng-container>
+
             <p
               *ngIf="resultData.extraTime"
               class="text-lg leading-none whitespace-nowrap"
