@@ -15,9 +15,6 @@ import { LeagueService } from '@floorball/core';
   templateUrl: './match-report-step-three.component.html',
 })
 export class MatchReportStepThreeComponent {
-  @ViewChild('sbbNavigation')
-  sbbNavigation!: ElementRef<HTMLElement>;
-
   @Input()
   game!: Game;
 
@@ -31,6 +28,9 @@ export class MatchReportStepThreeComponent {
   handleReload = new EventEmitter<void>();
 
   @Output()
+  handleSbbScroll = new EventEmitter<void>();
+
+  @Output()
   updatePeriod: EventEmitter<string> = new EventEmitter<string>();
 
   @Output()
@@ -42,7 +42,7 @@ export class MatchReportStepThreeComponent {
   ) {}
 
   scrollToSbbNavigation() {
-    this.sbbNavigation.nativeElement.scrollIntoView({ behavior: 'smooth' });
+    this.handleSbbScroll.emit();
   }
 
   reloadGame() {

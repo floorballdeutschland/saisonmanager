@@ -1,0 +1,131 @@
+<div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+  <h2 class="font-bold text-xl lg:text-2xl mb-4">Spielbericht eingeben</h2>
+  <p>
+    Willkommen zur Eingabe des Spielberichts. Vorab erhältst du ein paar
+    wichtige Informationen, die dich bei der Eingabe unterstützen können.
+  </p>
+
+  <h4 class="mt-4 mb-1 font-bold text-lg">Du kennst dich aus?</h4>
+  <p class="mb-6">
+    Kein Problem, dann starte die Eingabe des Spielberichts direkt.
+  </p>
+
+  <fb-button
+    (handleClick)="start()"
+    [fullWidth]="true"
+    [variant]="'success'"
+    [size]="'large'"
+  >
+    Eingabe starten
+  </fb-button>
+</div>
+
+<div class="border border-t-4 border-fb-gray-200">
+  <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+    <h3 class="font-bold text-xl lg:text-2xl mb-4">Anleitung</h3>
+
+    <p>
+      Die Eingabe ist in vier Schritte unterteilt, die dir hier einmal erleutert
+      werden. Jeden einzelnen Schritt kannst du solange du in Schritt vier die
+      Eingabe des Spielberichts nicht geschlossen hast über das obenstehende
+      Menü ansteuern und bearbeiten.
+    </p>
+
+    <h3 class="mt-6 mb-2 font-bold text-lg lg:text-xl">1. Spiel vorbereiten</h3>
+    <h4 class="mt-4 mb-1 font-bold text-lg">Kader</h4>
+    <p class="mb-2">
+      In diesem Schritt werden die Kader beider Teams eingetragen. Beim Klick
+      auf <strong>"Kader bearbeiten"</strong> öffnet sich ein Fenster, in dem
+      die Trikotnummern den teilnehmenden Spieler:innen zugeordnet werden
+      müssen. Ist ein Spieler oder Spielerin im Kader registriert, erscheint
+      links ein Haken. Durch erneuten Klick auf diesen Haken, kann der Spieler
+      oder die Spielerin wieder vom Kader entfernt werden.
+    </p>
+
+    <p class="mb-2">
+      Ebenso ist es notwendig den <strong>Kapitän</strong> / die
+      <strong>Kapitänin</strong> sowieo <strong>Torhüter:innen</strong> zu
+      kennzeichnen. Hierfür erscheinen für einen bereits zum Kader hinzugefügten
+      Spieler links neben dem Feld für die Trikotnummer zwei Kreise mit jeweils
+      dem Buchstaben T für Torwart und K für Kapitän/Kapitänin. Die Klick kann
+      eine entsprechende Markierung vorgenommen werden.
+    </p>
+
+    <h4 class="mt-4 mb-1 font-bold text-lg">Automatische Speicherung</h4>
+    <p class="mb-2">
+      Einige Felder sind mit einem entsprechenden Hinweis zur automatischen
+      Speicherung versehen. Hier musst du nach dem Verlassen des Feldes nichts
+      weiter tun.
+      <strong>Tipp:</strong> Sofern etwas erfolgreich gespeichert wurde erkennst
+      du dies immer an der grünen Meldung in der oberen linken Bildschirmecke.
+    </p>
+
+    <h4 class="mt-4 mb-1 font-bold text-lg">Livestream</h4>
+    <p class="mb-2">
+      Der <strong>Livestream</strong> Link ist eine gute Möglichkeit, weitere
+      Zuschauer für den Stream zu gewinnen. Dieser wird in der Detailansicht
+      eines Spiels oben unter dem Ergebnis angezeigt.
+    </p>
+
+    <h3 class="mt-6 mb-2 font-bold text-lg lg:text-xl">
+      2. Ereignisse eintragen
+    </h3>
+    <p class="mb-2">
+      Klicke bei einem Ereignis (Tor, Strafe oder Auszeit) auf den Button des
+      entsprechenden Teams und fülle die Felder aus. <br />
+      <strong>Tipp:</strong> Hierbei kann das Nutzen der Tab-Taste hilfreich
+      sein
+    </p>
+
+    <h4 class="mt-4 mb-1 font-bold text-lg">Spielabschnitte</h4>
+    <p class="mb-2">
+      Zu Beginn eines jeden Spielabschnitts und jeder Pause muss dieser über den
+      Button "Nächster Spielabschnitt" gestartet werden. Die entsprechenden
+      Informationen werden bei einer Live Eingabe unter dem Ergebnis des Spiels
+      angezeigt. So erhält man einen guten Überblick, in welcher Phase sich das
+      Spiel befindet.
+    </p>
+
+    <h4 class="mt-4 mb-1 font-bold text-lg">Zuschauerzahl</h4>
+    <p class="mb-2">
+      In der Mitte des Spiels bzw. zu Beginn des letzten Spielabschnitts sollten
+      die Zuschauer gezählt werden und im entsprechenden Feld notiert werden.
+    </p>
+
+    <h3 class="mt-6 mb-2 font-bold text-lg lg:text-xl">
+      3. Spiel nachbereiten
+    </h3>
+    <p class="mb-2">
+      Ist das Spiel beendet, wird der letzte Eingabeschritt aktiviert. Hier
+      werden Unterschriften und besondere Vorkommnisse aus dem
+      Spielberichtsbogen notiert.
+    </p>
+
+    <h4 class="mt-4 mb-1 font-bold text-lg">Kommentar</h4>
+    <p class="mb-2">
+      Sollte es Unklarheiten bei der Eingabe geben, nutze gerne das
+      Kommentarfeld ganz am Ende, um der SBK deine Probleme mitzuteilen.
+    </p>
+
+    <h3 class="mt-6 mb-2 font-bold text-lg lg:text-xl">
+      4. Eingabe abschließen
+    </h3>
+    <p class="mb-2">
+      Wenn alle Unterschriften kontrolliert sind, kannst du die Eingabe des
+      Spielberichts abschließen. Im Anschluss kannst du keinen der ersten drei
+      Schritte mehr auswählen oder bearbeiten. Der Spielbericht wird dann im
+      Anschluss von der SBK kontrolliert.
+    </p>
+
+    <div class="my-4">
+      <fb-button
+        (handleClick)="start()"
+        [fullWidth]="true"
+        [variant]="'success'"
+        [size]="'large'"
+      >
+        Eingabe starten
+      </fb-button>
+    </div>
+  </div>
+</div>

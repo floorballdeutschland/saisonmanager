@@ -418,6 +418,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
           .setInGameStatus(this.match.id, nextPeriod?.status_id || '')
           .subscribe({
             next: () => {
+              this.scrollToSbbNavigation.emit();
               this._notificationService.success(
                 `${nextPeriod?.title || ''} gestartet`,
                 {

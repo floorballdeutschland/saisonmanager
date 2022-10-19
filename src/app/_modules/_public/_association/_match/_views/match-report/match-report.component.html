@@ -43,7 +43,7 @@
               "
             >
               <div
-                class="border border-gray-200 overflow-hidden border-b-0 rounded-t-md lg:border-0"
+                class="border border-gray-200 overflow-hidden border-b-0 rounded-t-md lg:h-full lg:border-0"
               >
                 <ng-template #listButton>
                   <button
@@ -52,7 +52,7 @@
                         ? handleGameStatusChange(statusOption.key)
                         : null
                     "
-                    class="group text-left focus-visible:outline-0"
+                    class="group text-left focus-visible:outline-0 lg:h-full lg:flex"
                   >
                     <span
                       class="absolute top-0 left-0 h-full w-1 lg:bottom-0 lg:top-auto lg:h-1 lg:w-full"
@@ -155,6 +155,12 @@
       </div>
     </div>
 
+    <fb-match-report-intro
+      *ngIf="game.game_status === null"
+      (handleGameStatusChange)="handleGameStatusChange(PREGAME)"
+    >
+    </fb-match-report-intro>
+
     <fb-match-report-step-one
       *ngIf="appGameStatus === PREGAME"
       [game]="game"
@@ -167,6 +173,7 @@
       [game]="game"
       [additionalFields]="additionalFields"
       (handleReload)="reloadGame()"
+      (handleSbbScroll)="scrollToSbbNavigation()"
     ></fb-match-report-step-two>
 
     <fb-match-report-step-three
@@ -176,6 +183,7 @@
       [nextStatusOption]="gameStatusOptions[3]"
       (handleReload)="reloadGame()"
       (closeMatchRecord)="closeMatchRecord()"
+      (handleSbbScroll)="scrollToSbbNavigation()"
     ></fb-match-report-step-three>
 
     <ng-container *ngIf="appGameStatus === MATCH_RECORD_CLOSED">

@@ -28,7 +28,7 @@ import { take, tap } from 'rxjs';
 })
 export class MatchReportComponent implements OnInit, OnChanges {
   @ViewChild('sbbNavigation')
-  sbbNavigation!: ElementRef<HTMLElement>;
+  sbbNavigationRef!: ElementRef<HTMLElement>;
 
   @Input()
   game!: Game;
@@ -148,7 +148,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
   }
 
   scrollToSbbNavigation() {
-    this.sbbNavigation.nativeElement.scrollIntoView({ behavior: 'smooth' });
+    this.sbbNavigationRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
   }
 
   reloadGame() {

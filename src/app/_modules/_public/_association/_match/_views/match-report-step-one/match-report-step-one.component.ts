@@ -15,9 +15,6 @@ import { LeagueService } from '@floorball/core';
   templateUrl: './match-report-step-one.component.html',
 })
 export class MatchReportStepOneComponent {
-  @ViewChild('sbbNavigation')
-  sbbNavigation!: ElementRef<HTMLElement>;
-
   @Input()
   game!: Game;
 

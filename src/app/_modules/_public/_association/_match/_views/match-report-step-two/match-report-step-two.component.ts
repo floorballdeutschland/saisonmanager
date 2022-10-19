@@ -21,14 +21,14 @@ import { LeagueService } from '@floorball/core';
   templateUrl: './match-report-step-two.component.html',
 })
 export class MatchReportStepTwoComponent implements OnInit {
-  @ViewChild('sbbNavigation')
-  sbbNavigation!: ElementRef<HTMLElement>;
-
   @Input()
   game!: Game;
 
   @Input()
   additionalFields!: GameAdditionalFields;
+
+  @Output()
+  handleSbbScroll = new EventEmitter<void>();
 
   @Output()
   handleReload = new EventEmitter<void>();
@@ -90,7 +90,7 @@ export class MatchReportStepTwoComponent implements OnInit {
   }
 
   scrollToSbbNavigation() {
-    this.sbbNavigation.nativeElement.scrollIntoView({ behavior: 'smooth' });
+    this.handleSbbScroll.emit();
   }
 
   reloadGame() {
