@@ -132,7 +132,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
       (item) => item.key === newStatus
     );
     const maxStatusIndex = this.gameStatusOptions.findIndex(
-      (item) => item.key === this.additionalFields?.game_status
+      (item) => item.key === this.game?.game_status
     );
 
     if (statusIndex > maxStatusIndex) {
