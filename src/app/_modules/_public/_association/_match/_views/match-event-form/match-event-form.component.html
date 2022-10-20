@@ -146,13 +146,19 @@
   </div>
 
   <div *ngIf="type === 'comment'">
-    <!--    <label class="font-medium text-base text-fb-gray-500">Kommentar</label>-->
+    <label class="block text-sm text-fb-gray-500 pb-4">
+      Sollte es Unklarheiten bei der Eingabe geben, nutze gerne dieses Feld, um
+      der SBK deine Probleme mitzuteilen. Dieses Feld wird nicht öffentlich
+      angezeigt.
+    </label>
+
     <textarea
       type="text"
       class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
       (change)="submitField()"
       [(ngModel)]="comment"
     ></textarea>
+
     <p class="text-fb-gray-400 text-xs">
       Dieses Feld wird automatisch gespeichert.
     </p>
@@ -688,7 +694,17 @@
         ['start', 'end'].includes(type) || currentPeriodTitle()?.can_end_game
       "
       (handleSubmit)="startOrEndGame(type === 'start')"
-      [title]="type === 'start' ? 'Spiel starten' : 'Spiel beenden'"
+      [title]="type === 'start' ? 'Spiel starten?' : 'Spiel beenden?'"
+      [content]="
+        type === 'start'
+          ? 'Bitte starte das Spiel erst, wenn der Schiedsrichter anpfeift. Anschließend kannst du Ereignisse des Spiels wie Tore, Strafen oder Auszeiten eingeben.'
+          : 'Bitte beende das Spiel erst, wenn der Schiedsrichter abgepfiffen hat. Dieser Schritt kann nicht rückgängig gemacht werden! Im Anschluss können Unterschriften und besondere Ereignisse notiert werden. Möchtest du das Spiel wirklich beenden?'
+      "
+      [submitButtonTitle]="
+        type === 'start' ? 'Spiel jetzt starten' : 'Das Spiel wurde abgepfiffen'
+      "
+      buttonVariant="success"
+      icon="whistle"
     >
       <fb-button
         [size]="'large'"

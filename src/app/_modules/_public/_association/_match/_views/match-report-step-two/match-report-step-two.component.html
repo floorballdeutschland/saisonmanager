@@ -109,7 +109,7 @@
                           'text-indigo-600': isGamePeriodActive(index) !== 1,
                           'text-gray-500': isGamePeriodActive(index) === 1
                         }"
-                        >{{ gamePeriodOption.period }}</span
+                        >{{ gamePeriodOption.short_title }}</span
                       >
                     </ng-template>
 
@@ -175,7 +175,11 @@
           [fullWidth]="true"
           [size]="'large'"
         >
-          Nächster Spielabschnitt
+          {{
+            (game | currentPeriod)?.running
+              ? "Nächste Unterbrechung"
+              : "Nächster Spielabschnitt"
+          }}
         </fb-button>
         <div *ngIf="event === 'next'">
           <fb-match-event-form

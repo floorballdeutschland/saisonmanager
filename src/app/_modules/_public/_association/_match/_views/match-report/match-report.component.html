@@ -48,10 +48,13 @@
                 <ng-template #listButton>
                   <button
                     (click)="
-                      !statusOption.confirm
+                      isStatusButtonEnabled(index) &&
+                      (!statusOption.confirm ||
+                        isGameStatusActive(index, 'game') <= 0)
                         ? handleGameStatusChange(statusOption.key)
                         : null
                     "
+                    [disabled]="!isStatusButtonEnabled(index)"
                     class="group text-left focus-visible:outline-0 lg:h-full lg:flex"
                   >
                     <span
@@ -121,10 +124,16 @@
                 </ng-template>
 
                 <fb-confirmation
-                  *ngIf="statusOption.confirm; else listButton"
+                  *ngIf="
+                    statusOption.confirm &&
+                      isStatusButtonEnabled(index) &&
+                      isGameStatusActive(index, 'game') > 0;
+                    else listButton
+                  "
                   (handleSubmit)="handleGameStatusChange(statusOption.key)"
                   [title]="statusOption.confirmationTitle"
                   [content]="statusOption.confirmationContent"
+                  [submitButtonTitle]="statusOption.confirmationButton"
                 >
                   <ng-container *ngIf="false; else listButton"> </ng-container>
                 </fb-confirmation>
@@ -155,68 +164,105 @@
       </div>
     </div>
 
-    <fb-match-report-intro
-      *ngIf="game.game_status === null"
-      (handleGameStatusChange)="handleGameStatusChange(PREGAME)"
-    >
-    </fb-match-report-intro>
-
-    <fb-match-report-step-one
-      *ngIf="appGameStatus === PREGAME"
-      [game]="game"
-      [additionalFields]="additionalFields"
-      (handleReload)="reloadGame()"
-    ></fb-match-report-step-one>
-
-    <fb-match-report-step-two
-      *ngIf="appGameStatus === INGAME"
-      [game]="game"
-      [additionalFields]="additionalFields"
-      (handleReload)="reloadGame()"
-      (handleSbbScroll)="scrollToSbbNavigation()"
-    ></fb-match-report-step-two>
-
-    <fb-match-report-step-three
-      *ngIf="appGameStatus === AFTERGAME"
-      [game]="game"
-      [additionalFields]="additionalFields"
-      [nextStatusOption]="gameStatusOptions[3]"
-      (handleReload)="reloadGame()"
-      (closeMatchRecord)="closeMatchRecord()"
-      (handleSbbScroll)="scrollToSbbNavigation()"
-    ></fb-match-report-step-three>
-
-    <ng-container *ngIf="appGameStatus === MATCH_RECORD_CLOSED">
-      <div class="border-b-4 border-fb-gray-200" *ngIf="!game.ended">
+    <ng-template #permissionDenied>
+      <div class="border-b-4 border-fb-gray-200">
         <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
-          <h2 class="font-bold text-xl lg:text-2xl">Abpfiff</h2>
+          <h2 class="font-bold text-xl mb-2 lg:text-2xl">Kein Zugriff</h2>
 
-          <div class="mt-4 mb-12">
-            <p class="pb-6">
-              Das Spiel ist aktuell noch nicht beendet. Klicke auf den
-              untenstehenden Button, um das Spiel und die Eingabe der Ereignisse
-              zu beenden. Im Anschluss kannst du die Unterschriften und
-              besondere Ereignisse dokumentieren.
-            </p>
+          <p *ngIf="gameStatus !== FINALIZED">
+            Dieses Spiel kann von dir leider nicht mehr bearbeitet werden, da es
+            bereits beendet und zur Kontrolle freigegeben wurde.
+          </p>
 
-            <h3 class="text-lg font-bold pb-2">Wichtig</h3>
-            <p class="pb-3">
-              Dieser Schritt kann nicht rückgängig gemacht werden!
-            </p>
-
-            <fb-match-event-form
-              class="col-span-2"
-              type="end"
-              team="both"
-              (updateGame)="reloadGame()"
-              (updatePeriod)="(null)"
-              (scrollToSbbNavigation)="scrollToSbbNavigation()"
-              [match]="game"
-              [noBackground]="true"
-            ></fb-match-event-form>
-          </div>
+          <p *ngIf="gameStatus === FINALIZED">
+            Dieses Spiel wurde bereits kontrolliert und abgeschlossen, sodass es
+            nicht mehr bearbeitet werden kann.
+          </p>
         </div>
       </div>
+    </ng-template>
+
+    <ng-container
+      *ngIf="
+        [this.PREGAME, this.INGAME, this.AFTERGAME].includes(this.appGameStatus)
+      "
+    >
+      <ng-container *ngIf="canEditGame(); else permissionDenied">
+        <fb-match-report-intro
+          *ngIf="game.game_status === null"
+          (handleGameStatusChange)="handleGameStatusChange(PREGAME)"
+        >
+        </fb-match-report-intro>
+
+        <fb-match-report-step-one
+          *ngIf="appGameStatus === PREGAME"
+          [game]="game"
+          [additionalFields]="additionalFields"
+          (handleReload)="reloadGame()"
+        ></fb-match-report-step-one>
+
+        <fb-match-report-step-two
+          *ngIf="appGameStatus === INGAME"
+          [game]="game"
+          [additionalFields]="additionalFields"
+          (handleReload)="reloadGame()"
+          (handleSbbScroll)="scrollToSbbNavigation()"
+        ></fb-match-report-step-two>
+
+        <fb-match-report-step-three
+          *ngIf="appGameStatus === AFTERGAME"
+          [game]="game"
+          [additionalFields]="additionalFields"
+          [nextStatusOption]="gameStatusOptions[3]"
+          (handleReload)="reloadGame()"
+          (closeMatchRecord)="closeMatchRecord()"
+          (handleSbbScroll)="scrollToSbbNavigation()"
+        ></fb-match-report-step-three>
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="appGameStatus === MATCH_RECORD_CLOSED">
+      <ng-container *ngIf="canCheckGame(); else permissionDenied">
+        <div class="border-b-4 border-fb-gray-200">
+          <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+            <h2 class="font-bold text-xl mb-2 lg:text-2xl">Kontrolle</h2>
+
+            <p class="mb-4">
+              Kontrolliere, ob die Ereignisse hier im Saisonmanager und auf dem
+              Spielberichtsbogen identisch sind. Prüfe auch, ob die sonstigen
+              Informationen wie Betreuer, Zuschauerzahl und Unterschriften
+              korrekt notiert wurden.
+            </p>
+
+            <p class="mb-4">
+              Sofern alles in Ordnung ist, kannst du das Spiel abschließen.
+              <br />
+              <strong>Wichtig:</strong> Nach dem Abschluss des Spiels ist das
+              Bearbeiten nicht mehr möglich!
+            </p>
+
+            <fb-confirmation
+              (handleSubmit)="finalizeGame()"
+              [title]="
+                this.gameStatusOptions[this.gameStatusOptions.length - 1]
+                  .confirmationTitle
+              "
+              [content]="
+                this.gameStatusOptions[this.gameStatusOptions.length - 1]
+                  .confirmationContent
+              "
+              [submitButtonTitle]="
+                this.gameStatusOptions[this.gameStatusOptions.length - 1]
+                  .confirmationButton
+              "
+            >
+              <fb-button variant="success" size="large" [fullWidth]="true">
+                Spiel abschließen
+              </fb-button>
+            </fb-confirmation>
+          </div>
+        </div>
+      </ng-container>
     </ng-container>
 
     <div class="border-b-4 border-fb-gray-200" *ngIf="game.started">

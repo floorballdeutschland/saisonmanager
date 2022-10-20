@@ -18,7 +18,7 @@ import {
   PenaltyCode,
   PeriodTitles,
 } from '@floorball/types';
-import { GameService, LeagueService } from '@floorball/core';
+import { GameService, LeagueService, SessionService } from '@floorball/core';
 import { MobileHeaderComponent } from '../../../../../_uikit/_common/components/organisms';
 import { take, tap } from 'rxjs';
 
@@ -73,15 +73,17 @@ export class MatchReportComponent implements OnInit, OnChanges {
       confirmationTitle: 'Spielbericht abschließen',
       confirmationContent:
         'Soll die Eingabe wirklich abgeschlossen werden? Das Bearbeiten ist im Anschluss nicht mehr möglich. Möchtest du wirklich fortfahren?',
+      confirmationButton: 'Eingabe abschließen',
     },
     {
       key: this.FINALIZED,
       title: 'Spiel abgeschlossen',
       description: 'Spiel wurde durch die SBK kontrolliert',
       confirm: true,
-      confirmationTitle: 'Kontrolle abschließen',
+      confirmationTitle: 'Spiel abschließen',
       confirmationContent:
         'Sind alle eingetragenen Daten korrekt? Durch den Abschluss der Kontrolle wird der Spielbericht geschlossen und kann nicht mehr bearbeitet werden. Möchtest du wirklich fortfahren?',
+      confirmationButton: 'Spiel abschließen',
     },
   ];
 
@@ -98,6 +100,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   constructor(
     private _leagueService: LeagueService,
+    private _sessionService: SessionService,
     private _gameService: GameService,
     private _cdr: ChangeDetectorRef
   ) {}
@@ -155,6 +158,22 @@ export class MatchReportComponent implements OnInit, OnChanges {
     this.handleReload.emit();
   }
 
+  public canEditGame() {
+    const teamPermission =
+      [this.PREGAME, this.INGAME, this.AFTERGAME].includes(this.gameStatus) &&
+      this.game?.permission?.includes('edit_game_report');
+
+    return teamPermission || this.canCheckGame();
+  }
+
+  public canCheckGame() {
+    const sbkPermission =
+      this.gameStatus !== this.FINALIZED &&
+      this.game?.permission?.includes('check_game');
+
+    return sbkPermission;
+  }
+
   public isGameStatusActive(index: number, type: 'app' | 'game' = 'app') {
     const statusIndex = this.gameStatusOptions.findIndex(
       (item) =>
@@ -171,6 +190,15 @@ export class MatchReportComponent implements OnInit, OnChanges {
     } else {
       return -1;
     }
+  }
+
+  public isStatusButtonEnabled(index: number) {
+    const status = this.gameStatusOptions[index];
+    console.log(this.game.game_status);
+    return (
+      this.game.game_status !== this.FINALIZED &&
+      (status?.key !== this.FINALIZED || this.canCheckGame())
+    );
   }
 
   public closeMatchRecord() {

@@ -70,7 +70,9 @@
     </ng-container>
 
     <ng-container *ngIf="match.started && !match.ended">
-      <p class="text-[10px] text-pink-500 tracking-[0.5px]">1. Drittelpause</p>
+      <p class="text-[10px] text-pink-500 tracking-[0.5px]">
+        {{ match.current_period_title.title }}
+      </p>
     </ng-container>
   </div>
 

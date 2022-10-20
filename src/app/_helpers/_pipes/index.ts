@@ -7,3 +7,5 @@ export * from './sort-players.pipe';
 export * from './team-lineup-player.pipe';
 export * from './game-notice-headline.pipe';
 export * from './game-notice-visibility.pipe';
+export * from './current-period.pipe';
+export * from './period-filter.pipe';

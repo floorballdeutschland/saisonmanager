@@ -11,8 +11,8 @@ import { UikitPlayerModule } from '@floorball/uikit/player';
 import { MatchReportStepOneComponent } from './_views/match-report-step-one/match-report-step-one.component';
 import { MatchReportStepThreeComponent } from './_views/match-report-step-three/match-report-step-three.component';
 import { MatchReportStepTwoComponent } from './_views/match-report-step-two/match-report-step-two.component';
-import { PeriodFilterPipe } from 'src/app/_helpers/_pipes/period-filter.pipe';
 import { MatchReportIntroComponent } from './_views/match-report-intro/match-report-intro.component';
+import { CurrentPeriodPipe } from '../../../../_helpers';
 
 @NgModule({
   declarations: [
@@ -24,6 +24,7 @@ import { MatchReportIntroComponent } from './_views/match-report-intro/match-rep
     MatchReportStepThreeComponent,
     MatchReportStepTwoComponent,
     MatchReportIntroComponent,
+    CurrentPeriodPipe,
   ],
   imports: [
     CommonModule,

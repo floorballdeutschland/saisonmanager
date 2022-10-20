@@ -100,6 +100,7 @@ export interface Game {
   referees: Referee[];
   nominated_referees: string;
   period_titles: PeriodTitles[];
+  current_period_title: PeriodTitles;
   live_stream_link?: string | null;
   permission?: string[];
   forfait?: number;
@@ -109,6 +110,7 @@ export interface Game {
 
 export interface PeriodTitles {
   period: number;
+  short_title: string;
   title: string;
   status_id: string;
   running: boolean;

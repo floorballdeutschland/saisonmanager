@@ -31,6 +31,7 @@ export class ConfirmationDialogComponent {
 
   public title = '';
   public content = '';
+  public iconType = '';
   public submitButtonTitle = 'Fortfahren';
   public buttonVariant: 'success' | 'error' = 'error';
 

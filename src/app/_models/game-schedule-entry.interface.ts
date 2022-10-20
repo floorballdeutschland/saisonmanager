@@ -1,4 +1,4 @@
-import { GameResult, Referee } from './game.interface';
+import { GameResult, PeriodTitles, Referee } from './game.interface';
 
 export interface GameScheduleEntry {
   game_id: number;
@@ -8,6 +8,7 @@ export interface GameScheduleEntry {
   arena_name: string;
   arena_address: string;
   arena_short: string;
+  current_period_title: PeriodTitles;
   hosting_club: string;
   game_day_id: number;
   date: string;

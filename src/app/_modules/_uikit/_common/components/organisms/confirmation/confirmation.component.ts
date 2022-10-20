@@ -26,6 +26,9 @@ export class ConfirmationComponent {
   content?: string;
 
   @Input()
+  icon?: string;
+
+  @Input()
   submitButtonTitle?: string;
 
   @Input()
@@ -66,6 +69,7 @@ export class ConfirmationComponent {
 
     this.overlayComponentRef.instance.title = this.title || '';
     this.overlayComponentRef.instance.content = this.content || '';
+    this.overlayComponentRef.instance.iconType = this.icon || '';
 
     if (this.submitButtonTitle) {
       this.overlayComponentRef.instance.submitButtonTitle =
