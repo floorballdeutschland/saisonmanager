@@ -1,10 +1,10 @@
 import {
-  Component,
-  ViewEncapsulation,
   ChangeDetectionStrategy,
-  OnInit,
   ChangeDetectorRef,
+  Component,
   OnDestroy,
+  OnInit,
+  ViewEncapsulation,
 } from '@angular/core';
 import { Observable, Subject, takeUntil, tap } from 'rxjs';
 import { ScorerEntry } from '@floorball/types';

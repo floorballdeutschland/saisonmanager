@@ -8,9 +8,8 @@ describe('MetanavigationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ MetanavigationComponent ]
-    })
-    .compileComponents();
+      declarations: [MetanavigationComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

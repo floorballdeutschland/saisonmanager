@@ -12,6 +12,7 @@ import {
   GamePlayerEntry,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
+
 @Injectable({
   providedIn: 'root',
 })

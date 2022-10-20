@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Club, Player, Nation } from '@floorball/types';
+import { Club, Nation, Player } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
 @Injectable({

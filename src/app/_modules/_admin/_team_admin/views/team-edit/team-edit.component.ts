@@ -11,7 +11,7 @@ import {
   NotificationService,
 } from '@floorball/core';
 import { Club, GameOperation, Team } from 'src/app/_models';
-import { Observable, Subject, share, tap, take, takeUntil, of } from 'rxjs';
+import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameOperationWithLeagues } from 'src/app/_models/game-operation.interface';

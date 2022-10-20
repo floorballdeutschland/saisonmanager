@@ -1,10 +1,10 @@
 import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
+  OnDestroy,
   OnInit,
   ViewEncapsulation,
-  ChangeDetectionStrategy,
-  OnDestroy,
-  ChangeDetectorRef,
 } from '@angular/core';
 import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
 import { GameScheduleEntry, League, TableEntry } from '@floorball/types';

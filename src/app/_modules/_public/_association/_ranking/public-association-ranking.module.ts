@@ -7,6 +7,7 @@ import { UikitTeamModule } from '@floorball/uikit/team';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
+
 @NgModule({
   declarations: [Views.RankingComponent],
   imports: [

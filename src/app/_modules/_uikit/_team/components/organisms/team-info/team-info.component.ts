@@ -1,16 +1,13 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
-  ChangeDetectionStrategy,
 } from '@angular/core';
 
 @Component({
   selector: 'fb-team-info',
   templateUrl: './team-info.component.html',
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-
-export class TeamInfoComponent {
-
-}
+export class TeamInfoComponent {}

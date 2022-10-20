@@ -6,6 +6,7 @@ import * as Views from './_views';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
 import { UikitCommonModule } from '@floorball/uikit/common';
+
 @NgModule({
   declarations: [Views.ScorerComponent],
   imports: [

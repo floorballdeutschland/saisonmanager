@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { Team, PlayerLicenseHistory } from '@floorball/types';
+import { PlayerLicenseHistory, Team } from '@floorball/types';
 import { ClubService } from '@floorball/core';
 
 @Component({

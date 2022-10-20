@@ -1,11 +1,9 @@
 import {
   ChangeDetectorRef,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   Output,
-  ViewChild,
 } from '@angular/core';
 import { Game, GameAdditionalFields } from '@floorball/types';
 import { LeagueService } from '@floorball/core';

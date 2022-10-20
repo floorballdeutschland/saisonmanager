@@ -2,18 +2,10 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  OnChanges,
-  OnInit,
   Output,
-  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { Subject } from 'rxjs';
-import {
-  AssociationService,
-  FavoriteService,
-  LeagueService,
-} from '@floorball/core';
 
 @Component({
   selector: 'fb-confirmation-dialog',

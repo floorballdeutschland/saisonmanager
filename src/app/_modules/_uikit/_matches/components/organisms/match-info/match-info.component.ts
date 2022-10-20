@@ -2,8 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  ViewEncapsulation
- } from '@angular/core';
+  ViewEncapsulation,
+} from '@angular/core';
 import { Game } from '@floorball/models';
 
 @Component({
@@ -12,7 +12,6 @@ import { Game } from '@floorball/models';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-
 export class MatchInfoComponent {
   @Input()
   game!: Game;

@@ -1,21 +1,13 @@
 import {
-  Component,
-  ViewEncapsulation,
   ChangeDetectionStrategy,
-  OnInit,
-  OnDestroy,
   ChangeDetectorRef,
-  ViewChild,
-  ElementRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation,
 } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import {
-  Game,
-  GameOperation,
-  Penalty,
-  PenaltyCode,
-  GameAdditionalFields,
-} from '@floorball/types';
+import { Game, GameAdditionalFields, GameOperation } from '@floorball/types';
 import {
   AssociationService,
   GameService,

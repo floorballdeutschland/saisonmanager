@@ -8,9 +8,8 @@ describe('PlayerRankingTableComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PlayerRankingTableComponent ]
-    })
-    .compileComponents();
+      declarations: [PlayerRankingTableComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

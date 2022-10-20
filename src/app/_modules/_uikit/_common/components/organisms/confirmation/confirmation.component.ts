@@ -6,7 +6,6 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { GameOperation } from '@floorball/types';
 import { OverlayService } from '@floorball/core';
 import { take, tap } from 'rxjs';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';

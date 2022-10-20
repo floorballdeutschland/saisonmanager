@@ -16,11 +16,8 @@ import {
   GameAdditionalFields,
   Penalty,
   PenaltyCode,
-  PeriodTitles,
 } from '@floorball/types';
 import { GameService, LeagueService, SessionService } from '@floorball/core';
-import { MobileHeaderComponent } from '../../../../../_uikit/_common/components/organisms';
-import { take, tap } from 'rxjs';
 
 @Component({
   selector: 'fb-match-report',

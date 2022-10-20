@@ -1,24 +1,6 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
-import {
-  Club,
-  League,
-  PlayerLicense,
-  PlayerWithLicense,
-  TeamWithPlayers,
-} from '@floorball/types';
-import {
-  ClubService,
-  LeagueService,
-  NotificationService,
-  PlayerService,
-} from '@floorball/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Club, League, TeamWithPlayers } from '@floorball/types';
+import { ClubService, LeagueService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 

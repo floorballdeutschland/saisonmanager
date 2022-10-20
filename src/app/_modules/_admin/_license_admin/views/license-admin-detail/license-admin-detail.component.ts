@@ -2,8 +2,8 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   Club,
   PlayerLicense,
-  TeamWithPlayers,
   PlayerWithLicense,
+  TeamWithPlayers,
 } from '@floorball/types';
 import { NotificationService, PlayerService } from '@floorball/core';
 

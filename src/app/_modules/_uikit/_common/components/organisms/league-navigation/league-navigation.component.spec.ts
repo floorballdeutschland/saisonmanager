@@ -8,9 +8,8 @@ describe('LeagueNavigationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LeagueNavigationComponent ]
-    })
-    .compileComponents();
+      declarations: [LeagueNavigationComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

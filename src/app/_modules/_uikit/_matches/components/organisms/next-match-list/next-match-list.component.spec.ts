@@ -8,9 +8,8 @@ describe('NextMatchListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ NextMatchListComponent ]
-    })
-    .compileComponents();
+      declarations: [NextMatchListComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

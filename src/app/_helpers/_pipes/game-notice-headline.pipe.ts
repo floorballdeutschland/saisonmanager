@@ -1,5 +1,4 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Player } from '@floorball/types';
 
 @Pipe({ name: 'gameNoticeHeadline' })
 export class GameNoticeHeadlinePipe implements PipeTransform {
