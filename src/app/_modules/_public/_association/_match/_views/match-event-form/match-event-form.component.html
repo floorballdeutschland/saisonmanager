@@ -146,13 +146,19 @@
   </div>
 
   <div *ngIf="type === 'comment'">
-    <!--    <label class="font-medium text-base text-fb-gray-500">Kommentar</label>-->
+    <label class="block text-sm text-fb-gray-500 pb-4">
+      Sollte es Unklarheiten bei der Eingabe geben, nutze gerne dieses Feld, um
+      der SBK deine Probleme mitzuteilen. Dieses Feld wird nicht öffentlich
+      angezeigt.
+    </label>
+
     <textarea
       type="text"
       class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
       (change)="submitField()"
       [(ngModel)]="comment"
     ></textarea>
+
     <p class="text-fb-gray-400 text-xs">
       Dieses Feld wird automatisch gespeichert.
     </p>
@@ -335,13 +341,14 @@
         [(ngModel)]="refereeLastname1"
       />
 
-      <button class="flex md:col-span-5" (click)="submitField()">
-        <span
-          class="grow w-full font-bold text-black leading-[17px] text-sm px-5 py-2 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
-        >
-          Speichern
-        </span>
-      </button>
+      <fb-button
+        class="flex md:col-span-5"
+        [fullWidth]="true"
+        [variant]="'success'"
+        (handleClick)="submitField()"
+      >
+        Speichern
+      </fb-button>
     </div>
   </div>
 
@@ -371,26 +378,29 @@
         [(ngModel)]="refereeLastname2"
       />
 
-      <button class="flex md:col-span-5" (click)="submitField()">
-        <span
-          class="grow w-full font-bold text-black leading-[17px] text-sm px-5 py-2 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer"
-        >
-          Speichern
-        </span>
-      </button>
+      <fb-button
+        class="flex md:col-span-5"
+        [fullWidth]="true"
+        [variant]="'success'"
+        (handleClick)="submitField()"
+      >
+        Speichern
+      </fb-button>
     </div>
   </div>
 </div>
 <div
-  *ngIf="['goal', 'penalty', 'timeout', 'next'].includes(type)"
-  class="relative grid grid-cols-2 gap-3 p-4 bg-fb-gray-200"
-  [ngClass]="
-    team !== undefined && team !== 'both'
-      ? team === 'home'
-        ? 'before:block before:absolute before:top-0 before:left-1/4 before:w-6 before:h-6 before:bg-gray-200 before:-translate-y-full before:-translate-x-full before:origin-bottom-left before:rotate-45'
-        : 'before:block before:absolute before:top-0 before:left-3/4 before:w-6 before:h-6 before:bg-gray-200 before:-translate-y-full before:-translate-x-1/2 before:origin-bottom-left before:rotate-45'
-      : ''
-  "
+  *ngIf="['goal', 'penalty', 'start', 'end', 'timeout', 'next'].includes(type)"
+  class="relative grid grid-cols-2 gap-3 p-4"
+  [ngClass]="{
+    'before:block before:absolute before:top-0 before:w-6 before:h-6 before:bg-gray-200 before:-translate-y-full before:origin-bottom-left before:rotate-45':
+      team !== undefined && team !== 'both',
+    'before:left-1/4 before:-translate-x-full':
+      team !== undefined && team !== 'both' && team === 'home',
+    'before:left-3/4 before:-translate-x-1/2':
+      team !== undefined && team !== 'both' && team === 'guest',
+    'bg-fb-gray-200': !noBackground
+  }"
 >
   <ng-container *ngIf="['goal', 'penalty', 'timeout'].includes(type)">
     <div class="col-span-2">
@@ -403,7 +413,10 @@
         (change)="changePeriod($event)"
       >
         <option value="">Spielabschnitt auswählen...</option>
-        <option [value]="p.period" *ngFor="let p of match.period_titles">
+        <option
+          [value]="p.period"
+          *ngFor="let p of match.period_titles | onlyRunning"
+        >
           {{ p.title }}
         </option>
       </select>
@@ -615,7 +628,7 @@
     </ng-container>
   </ng-container>
 
-  <ng-container *ngIf="type === 'next' && !match.started">
+  <ng-container *ngIf="type === 'start'">
     <div class="col-span-2">
       <input
         id="editlive"
@@ -642,11 +655,14 @@
     </div>
   </ng-container>
 
-  <button
-    (click)="submitEvent()"
+  <fb-button
+    (handleClick)="submitEvent()"
     [disabled]="submitDisabled()"
-    *ngIf="['goal', 'penalty', 'timeout', 'next'].includes(type)"
-    class="col-span-2 w-full font-bold text-black leading-[17px] text-sm px-5 py-4 border bg-green-400 text-center uppercase hover:bg-green-300 border-green-600 rounded-[5px] cursor-pointer disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
+    [size]="'large'"
+    [variant]="'success'"
+    [fullWidth]="true"
+    *ngIf="['goal', 'penalty', 'timeout'].includes(type)"
+    class="col-span-2 disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
   >
     <ng-container *ngIf="['goal', 'penalty', 'timeout'].includes(type)">
       <ng-template #missingInfo>Angaben unvollständig</ng-template>
@@ -654,13 +670,50 @@
         {{ getEventString() }} eintragen
       </ng-container>
     </ng-container>
-    <ng-container *ngIf="['next'].includes(type) && !match.ended">
-      <ng-container *ngIf="!match.started && !match.ended"
-        >Spiel starten
-      </ng-container>
-      <ng-container *ngIf="match.started && !match.ended"
-        >Spiel beenden
-      </ng-container>
-    </ng-container>
-  </button>
+  </fb-button>
+
+  <!--  <fb-button-->
+  <!--    (click)="submitEvent()"-->
+  <!--    [disabled]="submitDisabled()"-->
+
+  <fb-button
+    *ngIf="type === 'next' && nextPeriodTitle()"
+    [fullWidth]="true"
+    [size]="'large'"
+    [variant]="'success'"
+    (handleClick)="submitEvent()"
+    class="col-span-2 uppercase"
+  >
+    {{ nextPeriodTitle()?.title }} starten
+  </fb-button>
+
+  <ng-container *ngIf="['start', 'end', 'next'].includes(type)">
+    <fb-confirmation
+      class="col-span-2"
+      *ngIf="
+        ['start', 'end'].includes(type) || currentPeriodTitle()?.can_end_game
+      "
+      (handleSubmit)="startOrEndGame(type === 'start')"
+      [title]="type === 'start' ? 'Spiel starten?' : 'Spiel beenden?'"
+      [content]="
+        type === 'start'
+          ? 'Bitte starte das Spiel erst, wenn der Schiedsrichter anpfeift. Anschließend kannst du Ereignisse des Spiels wie Tore, Strafen oder Auszeiten eingeben.'
+          : 'Bitte beende das Spiel erst, wenn der Schiedsrichter abgepfiffen hat. Dieser Schritt kann nicht rückgängig gemacht werden! Im Anschluss können Unterschriften und besondere Ereignisse notiert werden. Möchtest du das Spiel wirklich beenden?'
+      "
+      [submitButtonTitle]="
+        type === 'start' ? 'Spiel jetzt starten' : 'Das Spiel wurde abgepfiffen'
+      "
+      buttonVariant="success"
+      icon="whistle"
+    >
+      <fb-button
+        [size]="'large'"
+        [variant]="'success'"
+        [fullWidth]="true"
+        class="col-span-2 uppercase"
+      >
+        {{ type === "start" ? "Spiel starten" : "Spiel beenden" }}
+      </fb-button>
+    </fb-confirmation>
+  </ng-container>
 </div>

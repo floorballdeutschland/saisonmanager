@@ -12,11 +12,11 @@ import {
 } from '@floorball/core';
 import {
   GameOperation,
+  GameOperationWithLeagues,
   League,
   LeagueClass,
-  GameOperationWithLeagues,
 } from '@floorball/types';
-import { Observable, Subject, share, tap, take, takeUntil, of } from 'rxjs';
+import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 

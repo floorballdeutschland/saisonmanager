@@ -1,21 +1,13 @@
 import {
-  Component,
-  ViewEncapsulation,
   ChangeDetectionStrategy,
-  OnInit,
-  OnDestroy,
   ChangeDetectorRef,
-  ViewChild,
-  ElementRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation,
 } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import {
-  Game,
-  GameOperation,
-  Penalty,
-  PenaltyCode,
-  GameAdditionalFields,
-} from '@floorball/types';
+import { Game, GameAdditionalFields, GameOperation } from '@floorball/types';
 import {
   AssociationService,
   GameService,
@@ -32,21 +24,12 @@ import { Title } from '@angular/platform-browser';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MatchComponent implements OnInit, OnDestroy {
-  @ViewChild('sbbNavigation')
-  sbbNavigation!: ElementRef<HTMLElement>;
-
   game?: Game;
   additionalFields?: GameAdditionalFields;
   selectedAssociation$!: Observable<GameOperation | null>;
 
   public isLoggedIn$ = this._sessionService.isLoggedIn$;
   public tab = 'public';
-  public event = '';
-  public addDialogOpen = '';
-  public squadHistoryDialogOpen = '';
-  public currentPeriod = '1';
-  public penalties: Penalty[] = [];
-  public penaltyCodes: PenaltyCode[] = [];
 
   private _destroy$ = new Subject<boolean>();
 
@@ -86,18 +69,6 @@ export class MatchComponent implements OnInit, OnDestroy {
         }
       },
     });
-
-    this._leagueService.getPenalties().subscribe({
-      next: (penalties) => {
-        this.penalties = penalties;
-      },
-    });
-
-    this._leagueService.getPenaltyCodes().subscribe({
-      next: (penalties) => {
-        this.penaltyCodes = penalties;
-      },
-    });
   }
 
   getMatch(id: string) {
@@ -120,7 +91,6 @@ export class MatchComponent implements OnInit, OnDestroy {
   reloadGame() {
     if (this.game?.id) {
       this.getMatch(this.game.id.toString());
-      this.event = '';
     }
   }
 
@@ -138,10 +108,6 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._location.back();
   }
 
-  scrollToSbbNavigation() {
-    this.sbbNavigation.nativeElement.scrollIntoView({ behavior: 'smooth' });
-  }
-
   public isTabActive(tabName: string): boolean {
     return this.tab === tabName;
   }
@@ -152,61 +118,11 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
-  public setEvent(eventName: string): void {
-    if (this.event === eventName) {
-      this.event = '';
-    } else {
-      this.event = eventName;
-      if (!this.game?.started && eventName === 'next') {
-        setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 150);
-      }
-    }
-    this._cdr.markForCheck();
-  }
-
-  public isEventActive(eventName: string): boolean {
-    return this.event === eventName;
-  }
-
-  public openAddHomeDialog() {
-    this.addDialogOpen = this.addDialogOpen !== '' ? '' : 'home';
-  }
-
-  public openAddGuestDialog() {
-    this.addDialogOpen = this.addDialogOpen !== '' ? '' : 'guest';
-  }
-
-  public closeAddDialog() {
-    this.addDialogOpen = '';
-
-    this._route.params.forEach((value) => {
-      this.getMatch(value['matchId']);
-    });
-  }
-
-  public openSquadHistoryHomeDialog() {
-    this.squadHistoryDialogOpen =
-      this.squadHistoryDialogOpen !== '' ? '' : 'home';
-  }
-
-  public openSquadHistoryGuestDialog() {
-    this.squadHistoryDialogOpen =
-      this.squadHistoryDialogOpen !== '' ? '' : 'guest';
-  }
-
-  public closeSquadHistoryDialog() {
-    this.squadHistoryDialogOpen = '';
-  }
-
   public canEdit(game: Game): boolean {
     if (game.permission) {
       return game.permission.includes('edit_game_report');
     } else {
       return false;
     }
-  }
-
-  public setCurrentPeriod(period: string) {
-    this.currentPeriod = period;
   }
 }

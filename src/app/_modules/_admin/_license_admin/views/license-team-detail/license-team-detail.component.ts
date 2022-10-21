@@ -6,8 +6,8 @@ import {
 } from '@angular/core';
 import {
   GameOperation,
-  LicenseHash,
   GameOperationWithClubs,
+  LicenseHash,
 } from '@floorball/types';
 import {
   AssociationService,
@@ -79,7 +79,7 @@ export class LicenseTeamDetailComponent implements OnInit {
   public recreateLicenseRequest(playerId: number, licenseId: string) {
     // check if set!
     this._playerService.reenableLicenseRequest(playerId, licenseId).subscribe({
-      next: (result) => {
+      next: () => {
         // reload user licenses
         this.loadUserLicenses();
       },

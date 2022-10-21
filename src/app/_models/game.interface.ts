@@ -67,6 +67,8 @@ export interface Referee {
 export interface Game {
   id: number;
   game_number: string;
+  game_status: string;
+  ingame_status: string;
   start_time: string;
   date: Date;
   audience: number;
@@ -97,12 +99,22 @@ export interface Game {
   arena_short: string;
   referees: Referee[];
   nominated_referees: string;
-  period_titles: Array<{ period: number; title: string }>;
+  period_titles: PeriodTitles[];
+  current_period_title: PeriodTitles;
   live_stream_link?: string | null;
   permission?: string[];
   forfait?: number;
   notice_type?: string;
   notice_string?: string;
+}
+
+export interface PeriodTitles {
+  period: number;
+  short_title: string;
+  title: string;
+  status_id: string;
+  running: boolean;
+  can_end_game: boolean;
 }
 
 export interface GameInput {

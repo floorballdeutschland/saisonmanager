@@ -11,7 +11,7 @@ import {
   PlayerService,
   SessionService,
 } from '@floorball/core';
-import { Player, Nation, Club } from '@floorball/models';
+import { Club, Nation, Player } from '@floorball/models';
 import { Subject } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';

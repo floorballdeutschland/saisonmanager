@@ -8,9 +8,8 @@ describe('MatchHistoryItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ MatchHistoryItemComponent ]
-    })
-    .compileComponents();
+      declarations: [MatchHistoryItemComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

@@ -12,7 +12,7 @@ import {
   NotificationService,
 } from '@floorball/core';
 import { Club, GameOperation } from '@floorball/types';
-import { Observable, Subject, share, tap, take, takeUntil, of } from 'rxjs';
+import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 

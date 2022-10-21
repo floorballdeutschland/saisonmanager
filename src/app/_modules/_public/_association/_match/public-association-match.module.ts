@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { PublicAssociationMatchRoutingModule } from './public-association-match-routing.module';
 
@@ -7,9 +8,24 @@ import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitTeamModule } from '@floorball/uikit/team';
 import { UikitPlayerModule } from '@floorball/uikit/player';
+import { MatchReportStepOneComponent } from './_views/match-report-step-one/match-report-step-one.component';
+import { MatchReportStepThreeComponent } from './_views/match-report-step-three/match-report-step-three.component';
+import { MatchReportStepTwoComponent } from './_views/match-report-step-two/match-report-step-two.component';
+import { MatchReportIntroComponent } from './_views/match-report-intro/match-report-intro.component';
+import { CurrentPeriodPipe } from '../../../../_helpers';
 
 @NgModule({
-  declarations: [Views.MatchComponent],
+  declarations: [
+    Views.MatchComponent,
+    Views.MatchEventFormComponent,
+    Views.MatchPublicComponent,
+    Views.MatchReportComponent,
+    MatchReportStepOneComponent,
+    MatchReportStepThreeComponent,
+    MatchReportStepTwoComponent,
+    MatchReportIntroComponent,
+    CurrentPeriodPipe,
+  ],
   imports: [
     CommonModule,
     PublicAssociationMatchRoutingModule,
@@ -17,6 +33,7 @@ import { UikitPlayerModule } from '@floorball/uikit/player';
     UikitMatchesModule,
     UikitTeamModule,
     UikitPlayerModule,
+    FormsModule,
   ],
 })
 export class PublicAssociationMatchModule {}

@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -9,8 +8,16 @@ import {
   OnInit,
   Output,
   ViewChild,
-  ViewEncapsulation,
 } from '@angular/core';
+import {
+  Game,
+  GameAdditionalFields,
+  GameFields,
+  GameFlags,
+  Penalty,
+  PenaltyCode,
+  PeriodTitles,
+} from '@floorball/types';
 import {
   AssociationService,
   ClubService,
@@ -20,20 +27,11 @@ import {
 } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import {
-  Game,
-  GameFlags,
-  GameFields,
-  Penalty,
-  PenaltyCode,
-  GameAdditionalFields,
-} from '@floorball/types';
 
 @Component({
   selector: 'fb-match-event-form',
   templateUrl: './match-event-form.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./match-event-form.component.scss'],
 })
 export class MatchEventFormComponent implements OnInit, AfterViewInit {
   @ViewChild('minutefield')
@@ -71,6 +69,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
 
   @Input()
   penaltyCodes!: PenaltyCode[];
+
+  @Input()
+  noBackground = false;
 
   @Output()
   updatePeriod: EventEmitter<string> = new EventEmitter<string>();
@@ -342,6 +343,61 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     );
   }
 
+  public startOrEndGame(startGame: boolean) {
+    const gameFlag = startGame ? 'started' : 'ended';
+
+    this._gameService
+      .setGameFlags(this.match.id, {
+        [gameFlag]: true,
+      })
+      .subscribe(() => {
+        if (!this.match.started) {
+          const hours = new Date(Date.now()).getHours();
+          const minutes = new Date(Date.now()).getMinutes();
+          this._gameService
+            .setGameField(this.match.id, {
+              actual_start_time: this.editLive
+                ? `${hours}:${this.pad(minutes, 2)}`
+                : this.startTime,
+            })
+            .subscribe();
+        }
+
+        if (this.match.period_titles && startGame) {
+          const nextPeriod = this.nextPeriodTitle();
+          this._gameService
+            .setInGameStatus(this.match.id, nextPeriod?.status_id || '')
+            .subscribe({
+              next: () => {
+                this.scrollToSbbNavigation.emit();
+
+                this._notificationService.success('Spiel gestartet', {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                });
+                this.updateGame.emit();
+              },
+            });
+        }
+
+        if (!startGame) {
+          this._gameService
+            .setGameStatus(this.match.id, 'aftergame')
+            .subscribe({
+              next: () => {
+                this.scrollToSbbNavigation.emit();
+
+                this._notificationService.success('Spiel beendet', {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                });
+                this.updateGame.emit();
+              },
+            });
+        }
+      });
+  }
+
   public submitEvent() {
     const time = this.minutes + ':' + this.pad(this.seconds || 0, 2);
 
@@ -357,35 +413,21 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
 
     switch (this.type) {
       case 'next':
-        const gameFlag = !this.match.started ? 'started' : 'ended';
-
+        const nextPeriod = this.nextPeriodTitle();
         this._gameService
-          .setGameFlags(this.match.id, {
-            [gameFlag]: true,
-          })
-          .subscribe(() => {
-            if (!this.match.started) {
-              const hours = new Date(Date.now()).getHours();
-              const minutes = new Date(Date.now()).getMinutes();
-              this._gameService
-                .setGameField(this.match.id, {
-                  actual_start_time: this.editLive
-                    ? `${hours}:${this.pad(minutes, 2)}`
-                    : this.startTime,
-                })
-                .subscribe();
-            }
-
-            this.scrollToSbbNavigation.emit();
-
-            this._notificationService.success(
-              !this.match.started ? 'Spiel gestartet' : 'Spiel beendet',
-              {
-                autoClose: true,
-                keepAfterRouteChange: true,
-              }
-            );
-            this.updateGame.emit();
+          .setInGameStatus(this.match.id, nextPeriod?.status_id || '')
+          .subscribe({
+            next: () => {
+              this.scrollToSbbNavigation.emit();
+              this._notificationService.success(
+                `${nextPeriod?.title || ''} gestartet`,
+                {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                }
+              );
+              this.updateGame.emit();
+            },
           });
         break;
       case 'goal':
@@ -701,7 +743,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   }
 
   public changePeriod(e: any) {
-    this.updatePeriod.emit(e.target.value);
+    this.updatePeriod?.emit(e.target.value);
   }
 
   public onMinutesChange() {
@@ -728,5 +770,21 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     }
 
     this.secondsValid = this.seconds !== undefined && this.seconds !== null;
+  }
+
+  public currentPeriodTitle(): PeriodTitles | null {
+    return (
+      this.match.period_titles.find(
+        (item) => this.match.ingame_status === item.status_id
+      ) || null
+    );
+  }
+
+  public nextPeriodTitle(): PeriodTitles | null {
+    const index =
+      this.match.period_titles.findIndex(
+        (item) => this.match.ingame_status === item.status_id
+      ) || 0;
+    return this.match.period_titles[index + 1] || null;
   }
 }

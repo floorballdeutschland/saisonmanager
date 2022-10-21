@@ -10,8 +10,8 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
 import * as Views from './views';
 import {
   AdditionalClubFilterPipe,
-  SortPlayersPipe,
   ClubPlayerLicensePipe,
+  SortPlayersPipe,
 } from 'src/app/_helpers';
 import { LicenseUserLeagueDetailComponent } from './views/license-user-league-detail/license-user-league-detail.component';
 import { LicenseUserLeagueIndexComponent } from './views/license-user-league-index/license-user-league-index.component';

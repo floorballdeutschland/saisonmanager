@@ -3,10 +3,9 @@ import { HttpClient } from '@angular/common/http';
 
 import { LoginAnswer, User } from '@floorball/types';
 import { environment } from 'src/environments/environment';
-import { Observable, of, ReplaySubject } from 'rxjs';
+import { Observable, of, ReplaySubject, Subscription } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
-import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 
 @Injectable({

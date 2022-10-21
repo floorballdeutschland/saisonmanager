@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'fb-button',
@@ -10,4 +10,16 @@ export class ButtonComponent {
 
   @Input()
   variant?: 'default' | 'success' | 'warning' | 'error';
+
+  @Input()
+  size: 'default' | 'large' = 'default';
+
+  @Input()
+  fullWidth = false;
+
+  @Input()
+  disabled = false;
+
+  @Output()
+  handleClick = new EventEmitter<void>();
 }

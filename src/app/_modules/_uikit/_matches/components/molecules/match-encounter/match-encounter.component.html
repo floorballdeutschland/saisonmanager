@@ -83,6 +83,12 @@
         </p>
       </ng-container>
     </ng-container>
+
+    <ng-container *ngIf="match.started && !match.ended">
+      <p class="text-[10px] text-pink-500 tracking-[0.5px]">
+        {{ match.current_period_title.title }}
+      </p>
+    </ng-container>
   </div>
 
   <div class="order-5">

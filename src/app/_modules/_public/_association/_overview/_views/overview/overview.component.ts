@@ -1,10 +1,10 @@
 import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
+  OnDestroy,
   OnInit,
   ViewEncapsulation,
-  ChangeDetectionStrategy,
-  OnDestroy,
-  ChangeDetectorRef,
 } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';

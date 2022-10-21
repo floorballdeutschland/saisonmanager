@@ -40,10 +40,15 @@
 
       <p
         class="text-xs text-fb-gray-400 font-normal whitespace-nowrap"
-        *ngIf="match.date && (match.notice_type | gameNoticeVisibility: 'date')"
+        *ngIf="
+          !match.started &&
+          match.date &&
+          (match.notice_type | gameNoticeVisibility: 'date')
+        "
       >
         {{ match.date | date: "dd.MM.YYYY" }}
       </p>
+
       <ng-container
         *ngIf="
           !match.started && (match.notice_type | gameNoticeVisibility: 'time')
@@ -76,6 +81,13 @@
           </p>
         </ng-container>
       </ng-container>
+
+      <p
+        class="text-[11px] leading-[11px] font-normal text-pink-500"
+        *ngIf="match.started && !match.ended"
+      >
+        {{ match.current_period_title.title }}
+      </p>
     </div>
 
     <div

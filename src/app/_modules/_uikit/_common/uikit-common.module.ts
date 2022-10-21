@@ -2,6 +2,7 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { PeriodFilterPipe } from 'src/app/_helpers/_pipes/period-filter.pipe';
 import * as Atoms from './components/atoms';
 import * as Molecules from './components/molecules';
 import * as Organisms from './components/organisms';
@@ -13,9 +14,12 @@ import * as Pipes from './pipes';
     Atoms.LogoComponent,
     Atoms.TabItemComponent,
     Atoms.ButtonComponent,
+    Atoms.WhistleIconComponent,
     Molecules.MatchDayComponent,
     Molecules.OperationComponent,
     Molecules.PaginationComponent,
+    Organisms.ConfirmationDialogComponent,
+    Organisms.ConfirmationComponent,
     Organisms.LeagueNavigationComponent,
     Organisms.SidebarComponent,
     Organisms.NotificationComponent,
@@ -32,14 +36,18 @@ import * as Pipes from './pipes';
     Pipes.ToNumberPipe,
     Pipes.MatchEventsPipe,
     Organisms.MobileHeaderComponent,
+    PeriodFilterPipe,
   ],
   exports: [
     Atoms.LogoComponent,
     Atoms.TabItemComponent,
     Atoms.ButtonComponent,
+    Atoms.WhistleIconComponent,
     Molecules.MatchDayComponent,
     Molecules.OperationComponent,
     Molecules.PaginationComponent,
+    Organisms.ConfirmationDialogComponent,
+    Organisms.ConfirmationComponent,
     Organisms.LeagueNavigationComponent,
     Organisms.SidebarComponent,
     Organisms.NotificationComponent,
@@ -56,6 +64,7 @@ import * as Pipes from './pipes';
     Pipes.ToNumberPipe,
     Pipes.MatchEventsPipe,
     Organisms.MobileHeaderComponent,
+    PeriodFilterPipe,
   ],
 })
 export class UikitCommonModule {}

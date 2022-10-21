@@ -1,0 +1,283 @@
+<ng-template #loading>
+  <div class="bg-white my-[5px] py-[15px] px-[30px]">
+    <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+      <svg
+        class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+        viewBox="0 0 100 101"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+          fill="currentColor"
+        />
+        <path
+          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+          fill="currentFill"
+        />
+      </svg>
+      Daten werden geladen...
+    </div>
+  </div>
+</ng-template>
+
+<ng-container *ngIf="additionalFields">
+  <div class="flex flex-col">
+    <div class="border-b-4 border-fb-gray-200 -order-12">
+      <div class="lg:border-t lg:border-b lg:border-gray-200">
+        <nav
+          class="mx-auto px-4 sm:px-6 lg:px-0"
+          aria-label="Progress"
+          #sbbNavigation
+        >
+          <ol
+            role="list"
+            class="overflow-hidden rounded-md lg:flex lg:rounded-none lg:border-l lg:border-r lg:border-gray-200"
+          >
+            <li
+              class="relative overflow-hidden lg:flex-1"
+              *ngFor="
+                let statusOption of gameStatusOptions;
+                let index = index;
+                let first = first
+              "
+            >
+              <div
+                class="border border-gray-200 overflow-hidden border-b-0 rounded-t-md lg:h-full lg:border-0"
+              >
+                <ng-template #listButton>
+                  <button
+                    (click)="
+                      isStatusButtonEnabled(index) &&
+                      (!statusOption.confirm ||
+                        isGameStatusActive(index, 'game') <= 0)
+                        ? handleGameStatusChange(statusOption.key)
+                        : null
+                    "
+                    [disabled]="!isStatusButtonEnabled(index)"
+                    class="group text-left focus-visible:outline-0 lg:h-full lg:flex"
+                  >
+                    <span
+                      class="absolute top-0 left-0 h-full w-1 lg:bottom-0 lg:top-auto lg:h-1 lg:w-full"
+                      [ngClass]="{
+                        'bg-indigo-600': isGameStatusActive(index, 'game') <= 0,
+                        'bg-transparent':
+                          isGameStatusActive(index, 'game') === 1
+                      }"
+                      aria-hidden="true"
+                    ></span>
+                    <span
+                      class="px-6 py-5 flex items-start text-sm font-medium"
+                    >
+                      <span class="flex-shrink-0">
+                        <span
+                          class="flex h-10 w-10 items-center justify-center rounded-full border-2"
+                          [ngClass]="{
+                            'bg-indigo-600 border-0':
+                              isGameStatusActive(index) === -1,
+                            'border-indigo-600':
+                              isGameStatusActive(index) === 0,
+                            'border-gray-300': isGameStatusActive(index) === 1
+                          }"
+                        >
+                          <!-- Heroicon name: solid/check -->
+                          <ng-template #number>
+                            <span
+                              class=""
+                              [ngClass]="{
+                                'text-indigo-600':
+                                  isGameStatusActive(index) !== 1,
+                                'text-gray-500': isGameStatusActive(index) === 1
+                              }"
+                              >{{ index + 1 }}</span
+                            >
+                          </ng-template>
+                          <svg
+                            *ngIf="
+                              isGameStatusActive(index) === -1;
+                              else number
+                            "
+                            class="h-6 w-6 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </span>
+                      </span>
+                      <span class="mt-0.5 ml-4 flex min-w-0 flex-col">
+                        <span class="text-sm font-medium">{{
+                          statusOption.title
+                        }}</span>
+                        <span class="text-sm font-medium text-gray-500">{{
+                          statusOption.description
+                        }}</span>
+                      </span>
+                    </span>
+                  </button>
+                </ng-template>
+
+                <fb-confirmation
+                  *ngIf="
+                    statusOption.confirm &&
+                      isStatusButtonEnabled(index) &&
+                      isGameStatusActive(index, 'game') > 0;
+                    else listButton
+                  "
+                  (handleSubmit)="handleGameStatusChange(statusOption.key)"
+                  [title]="statusOption.confirmationTitle"
+                  [content]="statusOption.confirmationContent"
+                  [submitButtonTitle]="statusOption.confirmationButton"
+                >
+                  <ng-container *ngIf="false; else listButton"> </ng-container>
+                </fb-confirmation>
+
+                <!-- Separator -->
+                <div
+                  class="absolute inset-0 top-0 left-0 hidden w-3 lg:block"
+                  aria-hidden="true"
+                  *ngIf="!first"
+                >
+                  <svg
+                    class="h-full w-full text-gray-300"
+                    viewBox="0 0 12 82"
+                    fill="none"
+                    preserveAspectRatio="none"
+                  >
+                    <path
+                      d="M0.5 0V31L10.5 41L0.5 51V82"
+                      stroke="currentcolor"
+                      vector-effect="non-scaling-stroke"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+
+    <ng-template #permissionDenied>
+      <div class="border-b-4 border-fb-gray-200">
+        <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+          <h2 class="font-bold text-xl mb-2 lg:text-2xl">Kein Zugriff</h2>
+
+          <p *ngIf="gameStatus !== FINALIZED">
+            Dieses Spiel kann von dir leider nicht mehr bearbeitet werden, da es
+            bereits beendet und zur Kontrolle freigegeben wurde.
+          </p>
+
+          <p *ngIf="gameStatus === FINALIZED">
+            Dieses Spiel wurde bereits kontrolliert und abgeschlossen, sodass es
+            nicht mehr bearbeitet werden kann.
+          </p>
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-container
+      *ngIf="
+        [this.PREGAME, this.INGAME, this.AFTERGAME].includes(this.appGameStatus)
+      "
+    >
+      <ng-container *ngIf="canEditGame(); else permissionDenied">
+        <fb-match-report-intro
+          *ngIf="game.game_status === null"
+          (handleGameStatusChange)="handleGameStatusChange(PREGAME)"
+        >
+        </fb-match-report-intro>
+
+        <fb-match-report-step-one
+          *ngIf="appGameStatus === PREGAME"
+          [game]="game"
+          [additionalFields]="additionalFields"
+          (handleReload)="reloadGame()"
+        ></fb-match-report-step-one>
+
+        <fb-match-report-step-two
+          *ngIf="appGameStatus === INGAME"
+          [game]="game"
+          [additionalFields]="additionalFields"
+          (handleReload)="reloadGame()"
+          (handleSbbScroll)="scrollToSbbNavigation()"
+        ></fb-match-report-step-two>
+
+        <fb-match-report-step-three
+          *ngIf="appGameStatus === AFTERGAME"
+          [game]="game"
+          [additionalFields]="additionalFields"
+          [nextStatusOption]="gameStatusOptions[3]"
+          (handleReload)="reloadGame()"
+          (closeMatchRecord)="closeMatchRecord()"
+          (handleSbbScroll)="scrollToSbbNavigation()"
+        ></fb-match-report-step-three>
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="appGameStatus === MATCH_RECORD_CLOSED">
+      <ng-container *ngIf="canCheckGame(); else permissionDenied">
+        <div class="border-b-4 border-fb-gray-200">
+          <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+            <h2 class="font-bold text-xl mb-2 lg:text-2xl">Kontrolle</h2>
+
+            <p class="mb-4">
+              Kontrolliere, ob die Ereignisse hier im Saisonmanager und auf dem
+              Spielberichtsbogen identisch sind. Prüfe auch, ob die sonstigen
+              Informationen wie Betreuer, Zuschauerzahl und Unterschriften
+              korrekt notiert wurden.
+            </p>
+
+            <p class="mb-4">
+              Sofern alles in Ordnung ist, kannst du das Spiel abschließen.
+              <br />
+              <strong>Wichtig:</strong> Nach dem Abschluss des Spiels ist das
+              Bearbeiten nicht mehr möglich!
+            </p>
+
+            <fb-confirmation
+              (handleSubmit)="finalizeGame()"
+              [title]="
+                this.gameStatusOptions[this.gameStatusOptions.length - 1]
+                  .confirmationTitle
+              "
+              [content]="
+                this.gameStatusOptions[this.gameStatusOptions.length - 1]
+                  .confirmationContent
+              "
+              [submitButtonTitle]="
+                this.gameStatusOptions[this.gameStatusOptions.length - 1]
+                  .confirmationButton
+              "
+            >
+              <fb-button variant="success" size="large" [fullWidth]="true">
+                Spiel abschließen
+              </fb-button>
+            </fb-confirmation>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <div class="border-b-4 border-fb-gray-200" *ngIf="game.started">
+      <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+        <div>
+          <h2 class="font-bold text-xl lg:text-2xl mb-4 lg:mb-8">
+            Spielverlauf
+          </h2>
+          <fb-match-history
+            [allowCancel]="true"
+            [match]="game"
+            (reloadGame)="reloadGame()"
+          ></fb-match-history>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

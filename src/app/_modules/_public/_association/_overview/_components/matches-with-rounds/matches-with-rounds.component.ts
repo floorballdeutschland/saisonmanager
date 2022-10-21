@@ -1,9 +1,9 @@
 import {
-  Component,
-  ViewEncapsulation,
   ChangeDetectionStrategy,
-  OnInit,
+  Component,
   OnDestroy,
+  OnInit,
+  ViewEncapsulation,
 } from '@angular/core';
 import { LeagueService } from '@floorball/core';
 import { GameScheduleEntry, League } from '@floorball/types';
