@@ -3,7 +3,6 @@ import { Component, EventEmitter, Output } from '@angular/core';
 @Component({
   selector: 'fb-match-report-intro',
   templateUrl: './match-report-intro.component.html',
-  styleUrls: ['./match-report-intro.component.scss'],
 })
 export class MatchReportIntroComponent {
   @Output()
