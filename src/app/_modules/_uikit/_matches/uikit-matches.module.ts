@@ -11,6 +11,7 @@ import {
   GameNoticeHeadlinePipe,
   GameNoticeVisibilityPipe,
 } from '../../../_helpers';
+import { MatchTimelineItemComponent } from './components/molecules';
 
 @NgModule({
   imports: [CommonModule, RouterModule, UikitCommonModule, FormsModule],
@@ -19,6 +20,7 @@ import {
     Molecules.MatchEncounterComponent,
     Molecules.NextMatchItemComponent,
     Molecules.MatchHistoryItemComponent,
+    Molecules.MatchTimelineItemComponent,
     Organisms.MatchPairingListComponent,
     Organisms.MatchEncounterListComponent,
     Organisms.MatchInfoComponent,
@@ -39,6 +41,7 @@ import {
     Organisms.MatchHeaderComponent,
     MatchEventButtonComponent,
     SortTrikotnumbersPipe,
+    MatchTimelineItemComponent,
   ],
 })
 export class UikitMatchesModule {}

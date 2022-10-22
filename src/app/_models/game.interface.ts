@@ -115,6 +115,7 @@ export interface PeriodTitles {
   status_id: string;
   running: boolean;
   can_end_game: boolean;
+  optional: boolean;
 }
 
 export interface GameInput {
