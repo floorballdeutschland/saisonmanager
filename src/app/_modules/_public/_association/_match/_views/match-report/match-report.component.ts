@@ -117,6 +117,10 @@ export class MatchReportComponent implements OnInit, OnChanges {
       this.appGameStatus = this.game.game_status;
     }
 
+    this.currentPeriod = Math.floor(
+      this.game.current_period_title.period
+    ).toString();
+
     if (
       game.currentValue.game_status === 'aftergame' &&
       game.previousValue?.game_status === 'ingame'
