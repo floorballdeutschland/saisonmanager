@@ -85,7 +85,6 @@ export class MatchReportComponent implements OnInit, OnChanges {
   ];
 
   // match report properties
-  public gameStatus = ''; // pregame, ingame, aftergame, match_record_closedgame, finalized
   public appGameStatus = ''; // pregame, ingame, aftergame, match_record_closedgame, finalized
   public currentPeriod = '1';
   public penalties: Penalty[] = [];
@@ -118,7 +117,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
     }
 
     this.currentPeriod = Math.floor(
-      this.game.current_period_title.period
+      this.game.current_period_title?.period || 0
     ).toString();
 
     if (
@@ -159,7 +158,9 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   public canEditGame() {
     const teamPermission =
-      ([this.PREGAME, this.INGAME, this.AFTERGAME].includes(this.gameStatus) ||
+      ([this.PREGAME, this.INGAME, this.AFTERGAME].includes(
+        this.game.game_status
+      ) ||
         this.game.game_status === null) &&
       this.game?.permission?.includes('edit_game_report');
 
@@ -168,7 +169,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   public canCheckGame() {
     const sbkPermission =
-      this.gameStatus !== this.FINALIZED &&
+      this.game.game_status !== this.FINALIZED &&
       this.game?.permission?.includes('check_game');
 
     return sbkPermission;
