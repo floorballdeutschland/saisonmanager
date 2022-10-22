@@ -245,7 +245,10 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       });
   }
 
-  public addAdditionalClub(player: Player | undefined, clubId: any) {
+  public addAdditionalClub(
+    player: Player | undefined,
+    clubId: string | undefined
+  ) {
     this._playerService
       .adminAddAdditionalClub(player?.id || 0, clubId || '0')
       .subscribe({
@@ -268,7 +271,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       });
   }
 
-  public transfer(player: Player | undefined, clubId: any) {
+  public transfer(player: Player | undefined, clubId: string | undefined) {
     this._playerService
       .adminTransferPlayer(player?.id || 0, clubId || '0')
       .subscribe({

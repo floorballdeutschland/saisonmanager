@@ -1,5 +1,9 @@
 import { Injectable } from '@angular/core';
-import { NotificationType, UserNotification } from '@floorball/types';
+import {
+  NotificationType,
+  UserNotification,
+  UserNotificationOptions,
+} from '@floorball/types';
 
 import { filter, Observable, Subject } from 'rxjs';
 
@@ -20,16 +24,25 @@ export class NotificationService {
       .pipe(filter((x) => x && x.id === id));
   }
 
-  success(message: string, options?: any) {
-    this.notify({ ...options, type: NotificationType.Success, message });
+  success(message: string, options?: UserNotificationOptions) {
+    this.notify({
+      id: this.defaultId,
+      ...options,
+      type: NotificationType.Success,
+      message,
+    });
   }
 
-  public error(message: string, options?: any) {
-    this.notify({ ...options, type: NotificationType.Error, message });
+  public error(message: string, options?: UserNotificationOptions) {
+    this.notify({
+      id: this.defaultId,
+      ...options,
+      type: NotificationType.Error,
+      message,
+    });
   }
 
   public notify(notification: UserNotification) {
-    notification.id = notification.id || this.defaultId;
     this.notificationSubject.next(notification);
   }
 

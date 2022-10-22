@@ -158,7 +158,7 @@ export class LeagueService {
 
   public adminUpdateGameDay(gameday: GamedayInput) {
     const path = environment.apiURL + 'game_days/' + gameday.id || 0 + '.json';
-    return this.http.put<any>(path, gameday);
+    return this.http.put<{ success: boolean }>(path, gameday);
   }
 
   public adminCreateLeagues(league: League) {
@@ -195,7 +195,7 @@ export class LeagueService {
 
   public adminImportGameSchedule(data: FormData) {
     const path = environment.apiURL + 'admin/leagues/import_schedule.json';
-    return this.http.post<any>(path, data);
+    return this.http.post<{ errors: [string]; warnings: [string] }>(path, data);
   }
 
   public adminCreateTeam(team: Team) {

@@ -19,19 +19,17 @@ export class ErrorInterceptor implements HttpInterceptor {
   ) {}
 
   public intercept(
-    request: HttpRequest<any>,
+    request: HttpRequest<unknown>,
     next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+  ): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(
       catchError((err) => {
-        console.log(request, next);
         if (err.status === 401 && !request.url.includes('login.json')) {
           // auto logout if 401 response returned from api
           this.sessionService.logout(false, true, 'Bitte einloggen.', true);
         }
 
         if (err.status === 403) {
-          console.error(err);
           this._notificationService.error(
             'Berechtigungsfehler:' + err.error.message,
             {

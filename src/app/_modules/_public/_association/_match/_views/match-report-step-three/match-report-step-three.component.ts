@@ -5,7 +5,7 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { Game, GameAdditionalFields } from '@floorball/types';
+import { Game, GameAdditionalFields, GameStatusOption } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
 
 @Component({
@@ -20,7 +20,7 @@ export class MatchReportStepThreeComponent {
   additionalFields!: GameAdditionalFields;
 
   @Input()
-  nextStatusOption!: any;
+  nextStatusOption!: GameStatusOption;
 
   @Output()
   handleReload = new EventEmitter<void>();
