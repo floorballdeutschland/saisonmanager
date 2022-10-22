@@ -10,7 +10,6 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { AssociationService, LeagueService } from '@floorball/core';
 import {
-  Game,
   GameOperation,
   GameScheduleEntry,
   League,
