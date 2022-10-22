@@ -2,17 +2,17 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { GameEvent } from '@floorball/types';
 
 @Pipe({
-  name: 'filterPeriodEvents',
+  name: 'reverseEvents',
 })
-export class FilterPeriodEventsPipe implements PipeTransform {
+export class ReverseEventsPipe implements PipeTransform {
   transform(
     events: GameEvent[] | null | undefined,
-    period: number
+    newestFirst = false
   ): GameEvent[] | null {
     if (!events) {
       return null;
     }
 
-    return events.filter((event) => event.period === period);
+    return newestFirst ? events.reverse() : events;
   }
 }
