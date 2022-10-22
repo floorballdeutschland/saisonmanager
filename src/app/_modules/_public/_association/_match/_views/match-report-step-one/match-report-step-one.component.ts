@@ -25,6 +25,9 @@ export class MatchReportStepOneComponent {
   @Output()
   updatePeriod: EventEmitter<string> = new EventEmitter<string>();
 
+  @Output()
+  handleGameStatusChange = new EventEmitter<void>();
+
   // lineup properties
   public squadHistoryDialogOpen = '';
   public addDialogOpen = '';
@@ -63,5 +66,9 @@ export class MatchReportStepOneComponent {
 
   public closeSquadHistoryDialog() {
     this.squadHistoryDialogOpen = '';
+  }
+
+  public startEvents() {
+    this.handleGameStatusChange.emit();
   }
 }
