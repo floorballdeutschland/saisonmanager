@@ -104,9 +104,6 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.appGameStatus = this.game.game_status;
-    this.currentPeriod = Math.floor(
-      this.game.current_period_title.period
-    ).toString();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -119,6 +116,10 @@ export class MatchReportComponent implements OnInit, OnChanges {
     if (game.currentValue.id !== game.previousValue?.id) {
       this.appGameStatus = this.game.game_status;
     }
+
+    this.currentPeriod = Math.floor(
+      this.game.current_period_title.period
+    ).toString();
 
     if (
       game.currentValue.game_status === 'aftergame' &&

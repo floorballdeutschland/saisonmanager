@@ -208,6 +208,7 @@
           *ngIf="appGameStatus === INGAME"
           [game]="game"
           [additionalFields]="additionalFields"
+          [currentPeriod]="currentPeriod"
           (handleReload)="reloadGame()"
           (handleSbbScroll)="scrollToSbbNavigation()"
         ></fb-match-report-step-two>
