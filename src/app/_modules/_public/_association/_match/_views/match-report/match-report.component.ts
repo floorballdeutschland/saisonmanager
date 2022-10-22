@@ -104,6 +104,9 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.appGameStatus = this.game.game_status;
+    this.currentPeriod = Math.floor(
+      this.game.current_period_title.period
+    ).toString();
   }
 
   ngOnChanges(changes: SimpleChanges) {
