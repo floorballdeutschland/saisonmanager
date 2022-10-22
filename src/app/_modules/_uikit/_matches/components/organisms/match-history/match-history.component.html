@@ -7,9 +7,16 @@
   </div>
 
   <ng-container
-    *ngFor="let period of match.period_titles | onlyRunning; let index = index"
+    *ngFor="
+      let period of match.period_titles
+        | onlyRunning
+        | reversePeriods: newestFirst;
+      let index = index
+    "
   >
-    <ng-container *ngIf="match.events | matchEvents: period.period as events">
+    <ng-container
+      *ngIf="match.events | matchEvents: period.period:newestFirst as events"
+    >
       <ng-container *ngIf="events.length">
         <div class="font-bold w-full border-b border-fb-gray-200 pb-5 mt-8">
           {{ period.title }}
@@ -18,7 +25,7 @@
         <fb-match-history-item
           class="block even:bg-fb-gray-300"
           *ngFor="
-            let event of match.events | matchEvents: period.period;
+            let event of match.events | matchEvents: period.period:newestFirst;
             let isLast = last
           "
           [allowCancel]="allowCancel"

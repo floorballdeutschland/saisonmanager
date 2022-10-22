@@ -21,6 +21,9 @@ export class MatchHistoryComponent {
   @Input()
   allowCancel = false;
 
+  @Input()
+  newestFirst = false;
+
   @Output()
   reloadGame: EventEmitter<void> = new EventEmitter<void>();
 
