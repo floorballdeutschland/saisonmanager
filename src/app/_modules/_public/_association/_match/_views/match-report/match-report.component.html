@@ -184,7 +184,9 @@
 
     <ng-container
       *ngIf="
-        [this.PREGAME, this.INGAME, this.AFTERGAME].includes(this.appGameStatus)
+        [this.PREGAME, this.INGAME, this.AFTERGAME].includes(
+          this.appGameStatus
+        ) || this.appGameStatus === null
       "
     >
       <ng-container *ngIf="canEditGame(); else permissionDenied">
@@ -199,6 +201,7 @@
           [game]="game"
           [additionalFields]="additionalFields"
           (handleReload)="reloadGame()"
+          (handleGameStatusChange)="handleGameStatusChange(INGAME)"
         ></fb-match-report-step-one>
 
         <fb-match-report-step-two
