@@ -16,7 +16,15 @@ import {
   ScorerEntry,
   TableEntry,
 } from '@floorball/types';
-import { interval, Observable, Subject, takeUntil, tap } from 'rxjs';
+import {
+  interval,
+  Observable,
+  shareReplay,
+  Subject,
+  take,
+  takeUntil,
+  tap,
+} from 'rxjs';
 
 @Component({
   templateUrl: './overview.component.html',
@@ -30,6 +38,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
   teamRankings$?: Observable<TableEntry[] | null>;
   playerRankings$?: Observable<ScorerEntry[] | null>;
   matches$?: Observable<GameScheduleEntry[] | null>;
+
+  selectedMatchDay: { game_day_number: number; title: string } | null = null;
+  maxGamedayNumber = 0;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -52,7 +63,13 @@ export class OverviewComponent implements OnInit, OnDestroy {
             this.getTeamRanking(league.id);
             this.getPlayerRanking(league.id);
             this.getSingleLeague(league.id);
-            this.getMatches(league.id);
+            this.getMatches(league);
+            this.selectedMatchDay = league.game_day_titles[0];
+
+            this.maxGamedayNumber = league.game_day_titles.reduce(
+              (max, item) => Math.max(max, item.game_day_number),
+              0
+            );
 
             this._metaTitle.setTitle(
               `${league.name} - Übersicht | Floorball Saisonmanager`
@@ -60,7 +77,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
             interval(30000)
               .pipe(
-                tap(() => this.getMatches(league.id)),
+                tap(() => this.getMatches(league)),
                 takeUntil(this._destroy$)
               )
               .subscribe();
@@ -86,12 +103,40 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.playerRankings$ = this._leagueService.getScorer(leagueNumber);
   }
 
-  getMatches(leagueNumber: number) {
-    this.matches$ =
-      this._leagueService.getGameScheduleForCurrentGameDay(leagueNumber);
+  getMatches(league: League) {
+    this.matches$ = this._leagueService
+      .getGameScheduleForCurrentGameDay(league.id)
+      .pipe(shareReplay());
+
+    this.matches$
+      .pipe(
+        take(1),
+        tap((games) => {
+          if (!games) {
+            return;
+          }
+          this.selectedMatchDay =
+            league.game_day_titles.find(
+              (_item) => _item.game_day_number === games[0].game_day
+            ) ?? league.game_day_titles[0];
+        }),
+        takeUntil(this._destroy$)
+      )
+      .subscribe();
   }
 
   getSingleLeague(leagueNumber: number) {
     this.singleLeague$ = this._leagueService.getSingleLeague(leagueNumber);
+  }
+
+  selectMatchDay(matchDay: number, league: League) {
+    this.selectedMatchDay =
+      league.game_day_titles.find(
+        (_item) => _item.game_day_number === matchDay
+      ) ?? null;
+
+    this.matches$ = this._leagueService
+      .getGameScheduleForGameDay(league.id, matchDay)
+      .pipe(shareReplay());
   }
 }

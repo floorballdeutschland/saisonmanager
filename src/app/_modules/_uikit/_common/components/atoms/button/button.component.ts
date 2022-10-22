@@ -12,7 +12,7 @@ export class ButtonComponent {
   variant?: 'default' | 'success' | 'warning' | 'error';
 
   @Input()
-  size: 'default' | 'large' = 'default';
+  size: 'default' | 'small' | 'large' = 'default';
 
   @Input()
   fullWidth = false;
