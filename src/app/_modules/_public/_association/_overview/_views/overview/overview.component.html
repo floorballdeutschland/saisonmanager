@@ -3,58 +3,86 @@
     class="container mx-auto px-4 lg:px-8"
     *ngIf="selectedLeague.league_type === 'league'"
   >
-    <div class="flex items-center justify-between mt-4 lg:mt-8">
-      <h2 class="font-bold text-xl lg:text-2xl">Aktueller Spieltag</h2>
-      <div *ngIf="matches$ | async as matches" class="flex items-center">
-        <fb-button
-          size="small"
-          (handleClick)="
-            selectMatchDay((matches[0]?.game_day || 0) - 1, selectedLeague)
-          "
-          [disabled]="(matches[0]?.game_day || 0) - 1 <= 0"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="w-5 h-5"
+    <div class="xl:grid xl:grid-cols-5">
+      <div class="flex items-center justify-between mt-4 lg:mt-8 xl:col-span-3">
+        <h2 class="font-bold text-xl lg:text-2xl">
+          <ng-container
+            *ngIf="
+              selectedMatchDay?.game_day_number === currentMatchDayNumber;
+              else gameDayTitle
+            "
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15.75 19.5L8.25 12l7.5-7.5"
-            />
-          </svg>
-        </fb-button>
-        <span
-          class="font-bold text-fb-gray-400 text-base mx-2"
-          *ngIf="matches.length && matches[0]"
-          >{{ matches[0]?.game_day }}. Spieltag</span
+            Aktueller Spieltag
+          </ng-container>
+          <ng-template #gameDayTitle>
+            <ng-container *ngIf="matches$ | async as matches">
+              {{ selectedMatchDayMinDate | date: "dd.MM.yyyy" }}
+              <ng-container
+                *ngIf="
+                  (selectedMatchDayMinDate | date: 'dd.MM.yyyy') !==
+                  (selectedMatchDayMaxDate | date: 'dd.MM.yyyy')
+                "
+              >
+                -
+                {{ selectedMatchDayMaxDate | date: "dd.MM.yyyy" }}</ng-container
+              >
+            </ng-container>
+          </ng-template>
+        </h2>
+        <div
+          *ngIf="matches$ | async as matches"
+          class="flex items-center ml-auto"
         >
-        <fb-button
-          size="small"
-          (handleClick)="
-            selectMatchDay((matches[0]?.game_day || 0) + 1, selectedLeague)
-          "
-          [disabled]="(matches[0]?.game_day || 0) + 1 >= maxGamedayNumber"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="w-5 h-5"
+          <fb-button
+            size="small"
+            (handleClick)="
+              selectMatchDay((matches[0]?.game_day || 0) - 1, selectedLeague)
+            "
+            [disabled]="(matches[0]?.game_day || 0) - 1 <= 0"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M8.25 4.5l7.5 7.5-7.5 7.5"
-            />
-          </svg>
-        </fb-button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-5 h-5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15.75 19.5L8.25 12l7.5-7.5"
+              />
+            </svg>
+          </fb-button>
+          <span
+            class="font-bold text-fb-gray-400 text-base mx-2"
+            *ngIf="matches.length && matches[0]"
+            >{{ matches[0]?.game_day }}. Spieltag</span
+          >
+          <fb-button
+            size="small"
+            (handleClick)="
+              selectMatchDay((matches[0]?.game_day || 0) + 1, selectedLeague)
+            "
+            [disabled]="(matches[0]?.game_day || 0) + 1 > maxGamedayNumber"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-5 h-5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M8.25 4.5l7.5 7.5-7.5 7.5"
+              />
+            </svg>
+          </fb-button>
+        </div>
       </div>
     </div>
 

@@ -10,6 +10,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { AssociationService, LeagueService } from '@floorball/core';
 import {
+  Game,
   GameOperation,
   GameScheduleEntry,
   League,
@@ -39,7 +40,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
   playerRankings$?: Observable<ScorerEntry[] | null>;
   matches$?: Observable<GameScheduleEntry[] | null>;
 
+  currentMatchDayNumber?: number;
   selectedMatchDay: { game_day_number: number; title: string } | null = null;
+  selectedMatchDayMinDate?: Date;
+  selectedMatchDayMaxDate?: Date;
   maxGamedayNumber = 0;
 
   private _destroy$ = new Subject<boolean>();
@@ -103,6 +107,18 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.playerRankings$ = this._leagueService.getScorer(leagueNumber);
   }
 
+  getDateRange(games: GameScheduleEntry[]) {
+    this.selectedMatchDayMinDate = games.reduce(
+      (min, item) => (min > new Date(item.date) ? new Date(item.date) : min),
+      new Date(2999, 1, 1)
+    );
+
+    this.selectedMatchDayMaxDate = games.reduce(
+      (min, item) => (min < new Date(item.date) ? new Date(item.date) : min),
+      new Date(1990, 1, 1)
+    );
+  }
+
   getMatches(league: League) {
     this.matches$ = this._leagueService
       .getGameScheduleForCurrentGameDay(league.id)
@@ -119,6 +135,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
             league.game_day_titles.find(
               (_item) => _item.game_day_number === games[0].game_day
             ) ?? league.game_day_titles[0];
+
+          this.getDateRange(games);
+
+          this.currentMatchDayNumber = this.selectedMatchDay.game_day_number;
         }),
         takeUntil(this._destroy$)
       )
@@ -137,6 +157,17 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
     this.matches$ = this._leagueService
       .getGameScheduleForGameDay(league.id, matchDay)
-      .pipe(shareReplay());
+      .pipe(shareReplay())
+      .pipe(
+        take(1),
+        tap((games) => {
+          if (!games) {
+            return;
+          }
+
+          this.getDateRange(games);
+        }),
+        takeUntil(this._destroy$)
+      );
   }
 }
