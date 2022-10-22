@@ -60,7 +60,6 @@ export class TeamEditComponent implements OnInit, OnDestroy {
         this.isBuliPermitted = iBP; // hack to trick the compiler ;-)
 
         this._route.params.subscribe((params) => {
-          console.log('_route');
           if (params['teamId']) {
             this.getClubs(parseInt(params['teamId']), 't');
             this.getTeam(params['teamId']);
@@ -189,7 +188,6 @@ export class TeamEditComponent implements OnInit, OnDestroy {
   public submit(team: Team) {
     this._leagueService.adminCreateTeam(team).subscribe({
       next: (result) => {
-        console.log(result);
         const message = [
           'Team ',
           result.name,

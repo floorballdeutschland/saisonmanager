@@ -129,3 +129,13 @@ export interface GameInput {
   home_team_id: number;
   guest_team_id: number;
 }
+
+export interface GameStatusOption {
+  key: string;
+  title: string;
+  description: string;
+  confirm?: boolean;
+  confirmationTitle?: string;
+  confirmationContent?: string;
+  confirmationButton?: string;
+}

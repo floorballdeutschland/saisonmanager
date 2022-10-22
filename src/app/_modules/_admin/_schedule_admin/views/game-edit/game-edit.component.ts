@@ -221,9 +221,7 @@ export class GameEditComponent implements OnInit {
       });
   }
 
-  public toggleNotice(event: any) {
-    event.preventDefault();
-
+  public toggleNotice() {
     if (this.hasNotice) {
       this.game.notice_type = null;
       this.game.notice_string = null;

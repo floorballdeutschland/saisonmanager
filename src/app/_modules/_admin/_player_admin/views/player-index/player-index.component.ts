@@ -58,7 +58,6 @@ export class PlayerIndexComponent implements OnInit, OnDestroy {
   }
 
   public getClub(id: number): void {
-    console.log(id);
     this._playerService.getClubPlayers(id).subscribe({
       next: (result) => {
         this.clubs.push(result);

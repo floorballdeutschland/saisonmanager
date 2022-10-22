@@ -26,12 +26,12 @@ export class GameService {
 
   public createGame(game: GameInput) {
     const path = environment.apiURL + 'games.json';
-    return this.http.post<any>(path, game);
+    return this.http.post<{ success: boolean }>(path, game);
   }
 
   public updateGame(game: GameInput) {
     const path = environment.apiURL + 'games/' + game.id || '0' + '.json';
-    return this.http.put<any>(path, {
+    return this.http.put<{ success: boolean }>(path, {
       ...game,
       notice_type: game.notice_type !== 'null' ? game.notice_type : null,
       notice_string: game.notice_string !== 'null' ? game.notice_string : null,
@@ -40,12 +40,12 @@ export class GameService {
 
   public updateGameRating(gameId: number, ratingMode: number) {
     const path = environment.apiURL + 'games/' + gameId + '.json';
-    return this.http.put<any>(path, { forfait: ratingMode });
+    return this.http.put<{ success: boolean }>(path, { forfait: ratingMode });
   }
 
   public deleteGame(game: GameInput) {
     const path = environment.apiURL + 'games/' + game.id || '0' + '.json';
-    return this.http.delete<any>(path);
+    return this.http.delete<{ success: boolean }>(path);
   }
 
   public addLineupPlayerToGame(

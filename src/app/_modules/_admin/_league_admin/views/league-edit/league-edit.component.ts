@@ -72,10 +72,7 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
         this.isBuliPermitted = iBP; // hack to trick the compiler ;-)
 
         this._route.params.subscribe((params) => {
-          console.log('_route');
           if (params['leagueId']) {
-            console.log(params['leagueId']);
-
             this.getLeague(params['leagueId']);
           } else {
             this.editMode = false;
@@ -182,7 +179,6 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
       msg.push('Die Abschnittsdauer muss eine Zahl >= 0 sein');
     }
 
-    console.log(league);
     if (!league.overtime_length || !(league.overtime_length > 0)) {
       msg.push('Die Verlängerungsdauer muss eine Zahl >= 0 sein');
     }
@@ -197,7 +193,6 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   public submit(league: League) {
     this._leagueService.adminCreateLeagues(league).subscribe({
       next: (result) => {
-        console.log(result);
         const message = [
           'Liga ',
           league.name,

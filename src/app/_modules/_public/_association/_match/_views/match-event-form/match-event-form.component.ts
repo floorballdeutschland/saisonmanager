@@ -226,7 +226,6 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     if (this.fieldValue) {
       switch (this.type) {
         case 'comment':
-          console.log(this.fieldValue);
           this.comment = this.fieldValue || '';
           break;
         case 'visitors':
@@ -742,8 +741,10 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     }
   }
 
-  public changePeriod(e: any) {
-    this.updatePeriod?.emit(e.target.value);
+  public changePeriod(event: Event) {
+    if ((event.target as HTMLInputElement).value) {
+      this.updatePeriod?.emit((event.target as HTMLInputElement).value);
+    }
   }
 
   public onMinutesChange() {

@@ -104,14 +104,12 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.appGameStatus = this.game.game_status;
-    console.log(this.gameStatus);
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['game']) {
       this.handleGameChange(changes['game']);
     }
-    console.log(changes);
   }
 
   handleGameChange(game: SimpleChange) {
@@ -191,7 +189,6 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   public isStatusButtonEnabled(index: number) {
     const status = this.gameStatusOptions[index];
-    console.log(this.game.game_status);
     return (
       this.game.game_status !== this.FINALIZED &&
       (status?.key !== this.FINALIZED || this.canCheckGame())

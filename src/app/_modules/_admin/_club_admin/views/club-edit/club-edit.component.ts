@@ -147,7 +147,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   public submit(club: Club) {
     this._clubService.adminCreateClub(club).subscribe({
       next: (result) => {
-        console.log(result);
         const message = [
           'Verein ',
           result.name,

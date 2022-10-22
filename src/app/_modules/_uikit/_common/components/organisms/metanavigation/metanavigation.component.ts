@@ -22,7 +22,7 @@ export class MetanavigationComponent implements OnInit {
   isLoggedIn$ = this._sessionService.isLoggedIn$;
   currentUser$ = this._sessionService.currentUser$;
 
-  permissions: { [key: string]: any } = {};
+  permissions: { [key: string]: boolean } = {};
   username = '';
 
   constructor(
