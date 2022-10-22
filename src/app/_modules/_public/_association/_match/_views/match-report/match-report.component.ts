@@ -155,7 +155,8 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   public canEditGame() {
     const teamPermission =
-      [this.PREGAME, this.INGAME, this.AFTERGAME].includes(this.gameStatus) &&
+      ([this.PREGAME, this.INGAME, this.AFTERGAME].includes(this.gameStatus) ||
+        this.game.game_status === null) &&
       this.game?.permission?.includes('edit_game_report');
 
     return teamPermission || this.canCheckGame();
