@@ -117,6 +117,10 @@ export class MatchReportComponent implements OnInit, OnChanges {
       this.appGameStatus = this.game.game_status;
     }
 
+    this.currentPeriod = Math.floor(
+      this.game.current_period_title.period
+    ).toString();
+
     if (
       game.currentValue.game_status === 'aftergame' &&
       game.previousValue?.game_status === 'ingame'
@@ -155,7 +159,8 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   public canEditGame() {
     const teamPermission =
-      [this.PREGAME, this.INGAME, this.AFTERGAME].includes(this.gameStatus) &&
+      ([this.PREGAME, this.INGAME, this.AFTERGAME].includes(this.gameStatus) ||
+        this.game.game_status === null) &&
       this.game?.permission?.includes('edit_game_report');
 
     return teamPermission || this.canCheckGame();

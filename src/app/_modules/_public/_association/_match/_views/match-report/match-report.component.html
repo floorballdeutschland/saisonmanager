@@ -208,6 +208,7 @@
           *ngIf="appGameStatus === INGAME"
           [game]="game"
           [additionalFields]="additionalFields"
+          [currentPeriod]="currentPeriod"
           (handleReload)="reloadGame()"
           (handleSbbScroll)="scrollToSbbNavigation()"
         ></fb-match-report-step-two>
@@ -272,10 +273,15 @@
       <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
         <div>
           <h2 class="font-bold text-xl lg:text-2xl mb-4 lg:mb-8">
-            Spielverlauf
+            Letzte Ereignisse <br />
+            <span class="text-sm font-normal"
+              >Hinweis: Das neuste Ereignis befindet sich ganz oben in der
+              Liste.</span
+            >
           </h2>
           <fb-match-history
             [allowCancel]="true"
+            [newestFirst]="true"
             [match]="game"
             (reloadGame)="reloadGame()"
           ></fb-match-history>

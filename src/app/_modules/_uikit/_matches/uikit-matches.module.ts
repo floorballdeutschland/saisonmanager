@@ -6,10 +6,11 @@ import { MatchEventButtonComponent } from './components/organisms';
 import { RouterModule } from '@angular/router';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { FormsModule } from '@angular/forms';
-import { SortTrikotnumbersPipe } from '../../../_helpers/_pipes/sort-trikotnumbers.pipe';
 import {
   GameNoticeHeadlinePipe,
   GameNoticeVisibilityPipe,
+  ReversePeriodsPipe,
+  SortTrikotnumbersPipe,
 } from '../../../_helpers';
 import { MatchTimelineItemComponent } from './components/molecules';
 
@@ -31,6 +32,7 @@ import { MatchTimelineItemComponent } from './components/molecules';
     SortTrikotnumbersPipe,
     GameNoticeHeadlinePipe,
     GameNoticeVisibilityPipe,
+    ReversePeriodsPipe,
   ],
   exports: [
     Organisms.MatchPairingListComponent,

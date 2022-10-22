@@ -7,12 +7,15 @@ import { GameEvent } from '@floorball/types';
 export class MatchEventsPipe implements PipeTransform {
   transform(
     events: GameEvent[] | null | undefined,
-    period: number
+    period: number,
+    newestFirst = false
   ): GameEvent[] | null {
     if (!events) {
       return null;
     }
 
-    return events.filter((event) => event.period === period);
+    return (newestFirst ? events.reverse() : events).filter(
+      (event) => event.period === period
+    );
   }
 }

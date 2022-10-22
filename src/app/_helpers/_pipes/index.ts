@@ -10,3 +10,4 @@ export * from './game-notice-visibility.pipe';
 export * from './current-period.pipe';
 export * from './period-filter.pipe';
 export * from './game-timeline-filter.pipe';
+export * from './reverse-periods.pipe';

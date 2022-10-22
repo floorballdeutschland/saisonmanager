@@ -26,6 +26,9 @@ export class MatchReportStepTwoComponent implements OnInit {
   @Input()
   additionalFields!: GameAdditionalFields;
 
+  @Input()
+  currentPeriod!: string;
+
   @Output()
   handleSbbScroll = new EventEmitter<void>();
 
@@ -38,7 +41,6 @@ export class MatchReportStepTwoComponent implements OnInit {
   // match report properties
   public game_period = '2';
   public event = '';
-  public currentPeriod = '1';
   public penalties: Penalty[] = [];
   public penaltyCodes: PenaltyCode[] = [];
 
