@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Game, LeagueClass, PeriodTitles } from '@floorball/types';
+import { Game, PeriodTitles } from '@floorball/types';
 
 @Pipe({ name: 'timelineFilter' })
 export class GameTimelineFilterPipe implements PipeTransform {
