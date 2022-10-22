@@ -11,6 +11,7 @@ import {
   GameAdditionalFields,
   Penalty,
   PenaltyCode,
+  PeriodTitles,
 } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
 
@@ -43,16 +44,25 @@ export class MatchReportStepTwoComponent implements OnInit {
   public penalties: Penalty[] = [];
   public penaltyCodes: PenaltyCode[] = [];
 
-  // game_periods
-  public gamePeriodOptions = [
-    { key: '1', title: '1. Drittel' },
-    { key: 'P1', title: '1. Drittelpause' },
-    { key: '2', title: '2. Drittel' },
-    { key: 'P2', title: '2. Drittelpause' },
-    { key: '3', title: '3. Drittel' },
-    { key: 'V', title: 'Verlängerung' },
-    // { key: 'PS', title: 'Penalty-Schließen' },
-  ];
+  public regularTimeSummary: PeriodTitles = {
+    period: 100,
+    short_title: 'REG',
+    title: 'Reguläre Spielzeit',
+    status_id: 'reg',
+    running: false,
+    can_end_game: false,
+    optional: false,
+  };
+
+  public overtimeSummary: PeriodTitles = {
+    period: 200,
+    short_title: 'V',
+    title: 'Verlängerung',
+    status_id: 'ot',
+    running: false,
+    can_end_game: false,
+    optional: true,
+  };
 
   constructor(
     private _leagueService: LeagueService,
@@ -99,9 +109,10 @@ export class MatchReportStepTwoComponent implements OnInit {
   }
 
   public isGamePeriodActive(index: number) {
-    const statusIndex = this.game.period_titles.findIndex(
-      (item) => item.status_id === this.game.ingame_status
-    );
+    const currentlyOptional = this.game.current_period_title.optional;
+    const statusIndex = this.game.period_titles
+      .filter((period) => period.optional === currentlyOptional)
+      .findIndex((item) => item.status_id === this.game.ingame_status);
 
     if (statusIndex < 0) {
       return 1;

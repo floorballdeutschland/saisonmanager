@@ -192,7 +192,7 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
 
   public submit(league: League) {
     this._leagueService.adminCreateLeagues(league).subscribe({
-      next: (result) => {
+      next: () => {
         const message = [
           'Liga ',
           league.name,

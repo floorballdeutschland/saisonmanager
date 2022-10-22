@@ -12,7 +12,10 @@ import { MatchReportStepOneComponent } from './_views/match-report-step-one/matc
 import { MatchReportStepThreeComponent } from './_views/match-report-step-three/match-report-step-three.component';
 import { MatchReportStepTwoComponent } from './_views/match-report-step-two/match-report-step-two.component';
 import { MatchReportIntroComponent } from './_views/match-report-intro/match-report-intro.component';
-import { CurrentPeriodPipe } from '../../../../_helpers';
+import {
+  CurrentPeriodPipe,
+  GameTimelineFilterPipe,
+} from '../../../../_helpers';
 
 @NgModule({
   declarations: [
@@ -25,6 +28,7 @@ import { CurrentPeriodPipe } from '../../../../_helpers';
     MatchReportStepTwoComponent,
     MatchReportIntroComponent,
     CurrentPeriodPipe,
+    GameTimelineFilterPipe,
   ],
   imports: [
     CommonModule,
