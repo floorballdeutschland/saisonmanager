@@ -748,29 +748,41 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   }
 
   public onMinutesChange() {
-    if (this.minutes && this.minutes.toString().length >= 2) {
-      if (this.minutes.toString().length > 2) {
-        this.minutes = parseInt(this.minutes.toString().substring(0, 2), 10);
+    if (this.minutefieldElement) {
+      const valueLength =
+        this.minutefieldElement.nativeElement.value.length || 0;
+      if (valueLength >= 2) {
+        const inputValue = (
+          this.minutefieldElement.nativeElement.value || ''
+        ).substring(0, 2);
+        this.minutes = parseInt(inputValue, 10);
+        this.minutefieldElement.nativeElement.value = inputValue;
+        this.secondsfieldElement?.nativeElement?.focus();
+        this.secondsfieldElement?.nativeElement?.select();
         this._cdr.markForCheck();
       }
 
-      this.secondsfieldElement?.nativeElement?.focus();
+      this.minutesValid = this.minutes !== undefined && this.minutes !== null;
     }
-
-    this.minutesValid = this.minutes !== undefined && this.minutes !== null;
   }
 
   public onSecondsChange() {
-    if (this.seconds && this.seconds.toString().length >= 2) {
-      if (this.seconds.toString().length > 2) {
-        this.seconds = parseInt(this.seconds.toString().substring(0, 2), 10);
+    if (this.secondsfieldElement) {
+      const valueLength =
+        this.secondsfieldElement.nativeElement.value.length || 0;
+      if (valueLength >= 2) {
+        const inputValue = (
+          this.secondsfieldElement.nativeElement.value || ''
+        ).substring(0, 2);
+        this.seconds = parseInt(inputValue, 10);
+        this.secondsfieldElement.nativeElement.value = inputValue;
+        this.playerSearchFieldElement?.nativeElement?.focus();
+        this.playerSearchFieldElement?.nativeElement?.select();
         this._cdr.markForCheck();
       }
 
-      this.playerSearchFieldElement?.nativeElement?.focus();
+      this.secondsValid = this.seconds !== undefined && this.seconds !== null;
     }
-
-    this.secondsValid = this.seconds !== undefined && this.seconds !== null;
   }
 
   public currentPeriodTitle(): PeriodTitles | null {
