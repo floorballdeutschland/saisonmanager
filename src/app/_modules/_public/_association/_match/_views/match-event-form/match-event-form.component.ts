@@ -43,6 +43,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   @ViewChild('playerSearchField')
   playerSearchFieldElement!: ElementRef<HTMLInputElement>;
 
+  @ViewChild('assistSearchField')
+  assistSearchFieldElement!: ElementRef<HTMLInputElement>;
+
   @Input()
   fieldValue?: string;
 
@@ -328,6 +331,19 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
       this.assistPlayerNumber = player?.trikot_number || 0;
     } else {
       this.playerNumber = player?.trikot_number || 0;
+    }
+
+    if (
+      !isAssist &&
+      this.playerSearchFieldElement &&
+      this.assistSearchFieldElement
+    ) {
+      if (
+        this.playerSearchFieldElement.nativeElement.value.length >= 2 &&
+        !this.playerError
+      ) {
+        this.assistSearchFieldElement.nativeElement.focus();
+      }
     }
   }
 
