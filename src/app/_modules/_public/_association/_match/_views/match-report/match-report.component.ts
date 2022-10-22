@@ -117,7 +117,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
     }
 
     this.currentPeriod = Math.floor(
-      this.game.current_period_title.period
+      this.game.current_period_title?.period || 0
     ).toString();
 
     if (
