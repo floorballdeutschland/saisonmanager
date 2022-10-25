@@ -79,6 +79,7 @@
               <div>
                 <select class="w-full" required [(ngModel)]="gameday.arena_id">
                   <option [value]="arena.id" *ngFor="let arena of areans">
+                    {{ arena.city || "* Fehler: KEINE ADRESSE HINTERLEGT" }},
                     {{ arena.name }}
                   </option>
                 </select>
