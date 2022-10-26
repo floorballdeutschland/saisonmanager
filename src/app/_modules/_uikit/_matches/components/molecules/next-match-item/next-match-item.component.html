@@ -41,7 +41,7 @@
       <p
         class="text-xs text-fb-gray-400 font-normal whitespace-nowrap"
         *ngIf="
-          !match.started &&
+          (!match.started || match.ended) &&
           match.date &&
           (match.notice_type | gameNoticeVisibility: 'date')
         "
