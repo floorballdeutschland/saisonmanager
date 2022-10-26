@@ -6,7 +6,7 @@ export class GameTimelineFilterPipe implements PipeTransform {
   transform(allPeriods: PeriodTitles[], game: Game): PeriodTitles[] {
     let active;
     const filteredPeriods = allPeriods.filter(
-      (period) => period.optional === game.current_period_title.optional
+      (period) => period.optional === game.current_period_title?.optional
     );
 
     return filteredPeriods.filter((period, index) => {

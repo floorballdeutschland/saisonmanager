@@ -109,7 +109,7 @@ export class MatchReportStepTwoComponent implements OnInit {
   }
 
   public isGamePeriodActive(index: number) {
-    const currentlyOptional = this.game.current_period_title.optional;
+    const currentlyOptional = this.game.current_period_title?.optional;
     const statusIndex = this.game.period_titles
       .filter((period) => period.optional === currentlyOptional)
       .findIndex((item) => item.status_id === this.game.ingame_status);

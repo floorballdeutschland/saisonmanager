@@ -79,7 +79,7 @@
             [game]="game"
             [gamePeriodOption]="regularTimeSummary"
             [periodActive]="-1"
-            *ngIf="game.current_period_title.optional"
+            *ngIf="game.current_period_title?.optional"
           ></fb-match-timeline-item>
           <ng-container
             *ngFor="
@@ -92,7 +92,7 @@
             <fb-match-timeline-item
               class="flex-grow"
               [last]="
-                game.current_period_title.optional
+                game.current_period_title?.optional
                   ? last
                   : last && this.game.ended
               "
@@ -100,7 +100,8 @@
               [gamePeriodOption]="gamePeriodOption"
               [periodActive]="isGamePeriodActive(index)"
               *ngIf="
-                gamePeriodOption.optional === game.current_period_title.optional
+                gamePeriodOption.optional ===
+                game.current_period_title?.optional
               "
             ></fb-match-timeline-item>
           </ng-container>
@@ -111,7 +112,7 @@
             [game]="game"
             [gamePeriodOption]="overtimeSummary"
             [periodActive]="1"
-            *ngIf="!game.current_period_title.optional && !this.game.ended"
+            *ngIf="!game.current_period_title?.optional && !this.game.ended"
           ></fb-match-timeline-item>
         </ol>
       </nav>
