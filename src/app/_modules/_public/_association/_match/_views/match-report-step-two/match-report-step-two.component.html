@@ -124,8 +124,12 @@
           [size]="'large'"
         >
           {{
-            (game | currentPeriod)?.running
-              ? "Nächste Unterbrechung"
+            game.current_period_title?.running
+              ? game.current_period_title?.can_end_game
+                ? game.current_period_title?.status_id === "penalty_shots"
+                  ? "Spiel beenden"
+                  : "Spiel beenden oder nächste Unterbrechung"
+                : "Nächste Unterbrechung"
               : "Nächster Spielabschnitt"
           }}
         </fb-button>
