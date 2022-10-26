@@ -3,18 +3,19 @@
     class="container mx-auto px-4 lg:px-8"
     *ngIf="selectedLeague.league_type === 'league'"
   >
-    <div class="xl:grid xl:grid-cols-5">
-      <div class="flex items-center justify-between mt-4 lg:mt-8 xl:col-span-3">
-        <h2 class="font-bold text-xl lg:text-2xl">
-          <ng-container
-            *ngIf="
-              selectedMatchDay?.game_day_number === currentMatchDayNumber;
-              else gameDayTitle
-            "
+    <div class="xl:grid xl:grid-cols-5 gap-8">
+      <div
+        *ngIf="matches$ | async as matches"
+        class="flex items-center justify-between mt-4 lg:mt-8 xl:col-span-3"
+      >
+        <div class="">
+          <h2 class="font-bold text-xl lg:text-2xl">
+            {{ matches[0]?.game_day }}. Spieltag
+          </h2>
+          <span
+            class="font-bold text-fb-gray-400 text-base"
+            *ngIf="matches.length && matches[0]"
           >
-            Aktueller Spieltag
-          </ng-container>
-          <ng-template #gameDayTitle>
             <ng-container *ngIf="matches$ | async as matches">
               {{ selectedMatchDayMinDate | date: "dd.MM.yyyy" }}
               <ng-container
@@ -27,12 +28,9 @@
                 {{ selectedMatchDayMaxDate | date: "dd.MM.yyyy" }}</ng-container
               >
             </ng-container>
-          </ng-template>
-        </h2>
-        <div
-          *ngIf="matches$ | async as matches"
-          class="flex items-center ml-auto"
-        >
+          </span>
+        </div>
+        <div class="flex items-center ml-auto gap-2">
           <fb-button
             size="small"
             (handleClick)="
@@ -55,14 +53,12 @@
                   d="M15.75 19.5L8.25 12l7.5-7.5"
                 />
               </svg>
-              <span class="leading-none pt-0.5 pr-1"> zurück </span>
+              <span class="hidden lg:block leading-none pt-0.5 pr-1"
+                >zurück</span
+              >
             </span>
           </fb-button>
-          <!--          <span-->
-          <!--            class="font-bold text-fb-gray-400 text-base mx-2"-->
-          <!--            *ngIf="matches.length && matches[0]"-->
-          <!--            >{{ matches[0]?.game_day }}. Spieltag</span-->
-          <!--          >-->
+
           <fb-button
             size="small"
             (handleClick)="
@@ -71,7 +67,9 @@
             [disabled]="(matches[0]?.game_day || 0) + 1 > maxGamedayNumber"
           >
             <span class="flex">
-              <span class="leading-none pt-0.5 pl-1"> weiter </span>
+              <span class="hidden lg:block leading-none pt-0.5 pl-1"
+                >weiter</span
+              >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
