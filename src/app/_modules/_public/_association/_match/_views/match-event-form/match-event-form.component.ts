@@ -275,7 +275,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
           break;
         case 'overtime':
           this.overtime =
-            this.fieldChecked || this.match.current_period_title.optional;
+            this.fieldChecked || this.match.current_period_title?.optional;
           break;
         case 'specialevent':
           this.specialevent = this.fieldChecked;
@@ -291,7 +291,8 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     }
 
     if (this.type === 'overtime') {
-      this.overtime = this.overtime || this.match.current_period_title.optional;
+      this.overtime =
+        this.overtime || this.match.current_period_title?.optional;
     }
   }
 
