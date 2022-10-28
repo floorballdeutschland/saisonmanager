@@ -36,7 +36,7 @@
             (handleClick)="
               selectMatchDay((matches[0]?.game_day || 0) - 1, selectedLeague)
             "
-            [disabled]="(matches[0]?.game_day || 0) - 1 <= 0"
+            [hidden]="(matches[0]?.game_day || 0) - 1 <= 0"
           >
             <span class="flex">
               <svg
@@ -64,7 +64,7 @@
             (handleClick)="
               selectMatchDay((matches[0]?.game_day || 0) + 1, selectedLeague)
             "
-            [disabled]="(matches[0]?.game_day || 0) + 1 > maxGamedayNumber"
+            [hidden]="(matches[0]?.game_day || 0) + 1 > maxGamedayNumber"
           >
             <span class="flex">
               <span class="hidden lg:block leading-none pt-0.5 pl-1"
