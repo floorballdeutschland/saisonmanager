@@ -41,12 +41,18 @@
       <p
         class="text-xs text-fb-gray-400 font-normal whitespace-nowrap"
         *ngIf="
-          !match.started &&
+          (!match.started || match.ended) &&
           match.date &&
           (match.notice_type | gameNoticeVisibility: 'date')
         "
+        [ngClass]="{
+          'leading-[11px]': match.ended
+        }"
       >
-        {{ match.date | date: "dd.MM.YYYY" }}
+        <ng-container *ngIf="!match.started">
+          {{ match.date | date: "dd.MM.YYYY" }}
+        </ng-container>
+        <ng-container *ngIf="match.ended"> Endstand </ng-container>
       </p>
 
       <ng-container
