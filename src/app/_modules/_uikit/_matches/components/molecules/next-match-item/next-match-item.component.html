@@ -41,12 +41,18 @@
       <p
         class="text-xs text-fb-gray-400 font-normal whitespace-nowrap"
         *ngIf="
-          !match.started &&
+          (!match.started || match.ended) &&
           match.date &&
           (match.notice_type | gameNoticeVisibility: 'date')
         "
+        [ngClass]="{
+          'leading-[11px]': match.ended
+        }"
       >
-        {{ match.date | date: "dd.MM.YYYY" }}
+        <ng-container *ngIf="!match.started">
+          {{ match.date | date: "dd.MM.YYYY" }}
+        </ng-container>
+        <ng-container *ngIf="match.ended"> Endstand </ng-container>
       </p>
 
       <ng-container
@@ -83,16 +89,10 @@
       </ng-container>
 
       <p
-        class="text-[11px] leading-[11px] font-normal"
-        [ngClass]="{
-          'text-pink-500': !match.ended
-        }"
-        *ngIf="match.started"
+        class="text-[11px] leading-[11px] font-normal text-pink-500"
+        *ngIf="match.started && !match.ended"
       >
-        <ng-container *ngIf="!match.ended">
-          {{ match.current_period_title?.title }}
-        </ng-container>
-        <ng-container *ngIf="match.ended"> Endstand </ng-container>
+        {{ match.current_period_title?.title }}
       </p>
     </div>
 
