@@ -9,7 +9,8 @@
     'bg-red-100 text-red-700 border-red-900 hover:bg-red-200':
       !disabled && variant === 'error',
     'w-full text-center': fullWidth,
-    'py-4': size === 'large'
+    'py-4': size === 'large',
+    'px-1.5 py-1.5': size === 'small'
   }"
   (click)="handleClick.emit()"
   [disabled]="disabled"

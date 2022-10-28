@@ -3,15 +3,91 @@
     class="container mx-auto px-4 lg:px-8"
     *ngIf="selectedLeague.league_type === 'league'"
   >
-    <div class="flex items-end mt-4 lg:mt-8">
-      <h2 class="font-bold text-xl lg:text-2xl">Aktueller Spieltag</h2>
-      <ng-container *ngIf="matches$ | async as matches">
-        <span
-          class="font-bold text-fb-gray-400 text-base ml-3"
-          *ngIf="matches.length && matches[0]"
-          >{{ matches[0]?.game_day }}. Spieltag</span
-        >
-      </ng-container>
+    <div class="xl:grid xl:grid-cols-5 gap-8">
+      <div
+        *ngIf="matches$ | async as matches"
+        class="flex items-center justify-between mt-4 lg:mt-8 xl:col-span-3"
+      >
+        <div class="">
+          <h2 class="font-bold text-xl lg:text-2xl">
+            {{ matches[0]?.game_day }}. Spieltag
+          </h2>
+          <span
+            class="font-bold text-fb-gray-400 text-base"
+            *ngIf="matches.length && matches[0]"
+          >
+            <ng-container *ngIf="matches$ | async as matches">
+              {{ selectedMatchDayMinDate | date: "dd.MM.yyyy" }}
+              <ng-container
+                *ngIf="
+                  (selectedMatchDayMinDate | date: 'dd.MM.yyyy') !==
+                  (selectedMatchDayMaxDate | date: 'dd.MM.yyyy')
+                "
+              >
+                -
+                {{ selectedMatchDayMaxDate | date: "dd.MM.yyyy" }}</ng-container
+              >
+            </ng-container>
+          </span>
+        </div>
+        <div class="flex items-center ml-auto gap-2">
+          <fb-button
+            size="small"
+            (handleClick)="
+              selectMatchDay((matches[0]?.game_day || 0) - 1, selectedLeague)
+            "
+            [hidden]="(matches[0]?.game_day || 0) - 1 <= 0"
+          >
+            <span class="flex">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
+                />
+              </svg>
+              <span class="hidden lg:block leading-none pt-0.5 pr-1"
+                >zurück</span
+              >
+            </span>
+          </fb-button>
+
+          <fb-button
+            size="small"
+            (handleClick)="
+              selectMatchDay((matches[0]?.game_day || 0) + 1, selectedLeague)
+            "
+            [hidden]="(matches[0]?.game_day || 0) + 1 > maxGamedayNumber"
+          >
+            <span class="flex">
+              <span class="hidden lg:block leading-none pt-0.5 pl-1"
+                >weiter</span
+              >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                />
+              </svg>
+            </span>
+          </fb-button>
+        </div>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-5 mt-4 lg:mt-8 gap-8">
@@ -31,22 +107,7 @@
           <div class="mt-5 flex items-center justify-end">
             <a
               [routerLink]="['./', 'all-matches']"
-              class="
-                inline-block
-                text-center
-                font-bold
-                text-black
-                leading-[17px]
-                text-sm
-                px-5
-                py-2.5
-                border
-                bg-white
-                hover:bg-fb-gray-800
-                border-fb-gray-600
-                rounded-[5px]
-                cursor-pointer
-              "
+              class="inline-block text-center font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-800 border-fb-gray-600 rounded-[5px] cursor-pointer"
             >
               Alle Anzeigen
             </a>
