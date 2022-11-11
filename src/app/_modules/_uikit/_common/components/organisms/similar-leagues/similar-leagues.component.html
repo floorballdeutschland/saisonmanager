@@ -12,19 +12,26 @@
         *ngFor="let league of leagues"
       >
         <div>
-          <span class="block lg:inline text-sm font-bold mr-1.5">{{
-            league.name
-          }}</span>
-          <span class="block lg:inline text-sm text-fb-gray-900">{{
-            league.game_operation_name
-          }}</span>
+          <span class="block lg:inline text-sm font-bold mr-1.5">
+            {{ league.name }}
+          </span>
+          <span class="block lg:inline text-sm text-fb-gray-900">
+            {{ league.game_operation_name }}
+          </span>
         </div>
         <span
           class="text-sm font-bold text-right text-fb-gray-500 hover:text-black"
-          ><a [routerLink]="['../', league | normalizeLeagueRoute]"
-            >Zur Liga</a
-          ></span
         >
+          <a
+            [routerLink]="[
+              '/',
+              league.game_operation_slug,
+              league | normalizeLeagueRoute
+            ]"
+          >
+            Zur Liga
+          </a>
+        </span>
       </li>
     </ul>
   </div>

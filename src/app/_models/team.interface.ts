@@ -13,6 +13,7 @@ export interface Team {
   game_operation_id?: number;
   game_operation_name?: string;
   game_operation_short_name?: string;
+  game_operation_slug?: string;
   syndicate: boolean;
   syndicate_clubs: number[];
   logo_url: string;

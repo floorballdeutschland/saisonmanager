@@ -4,6 +4,8 @@ export interface League {
   id: number;
   game_operation_id: number;
   game_operation_name: string;
+  game_operation_short_name?: string;
+  game_operation_slug?: string;
   league_category_id: string;
   league_class_id: string;
   league_system_id: string;
