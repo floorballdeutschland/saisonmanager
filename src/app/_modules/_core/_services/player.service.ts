@@ -42,6 +42,23 @@ export class PlayerService {
     });
   }
 
+  public adminRemoveAdditionalClub(
+    playerId: number,
+    clubId: string,
+    valid_until: string
+  ) {
+    const path =
+      environment.apiURL +
+      'admin/players/' +
+      playerId +
+      '/remove_additional_club.json';
+    return this.http.post<Player>(path, {
+      player_id: playerId,
+      club_id: parseInt(clubId, 10),
+      valid_until: valid_until,
+    });
+  }
+
   public adminTransferPlayer(playerId: number, clubId: string) {
     const path =
       environment.apiURL + 'admin/players/' + playerId + '/transfer.json';

@@ -271,6 +271,37 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       });
   }
 
+  public removeAdditionalClub(
+    player: Player | undefined,
+    clubId: string | undefined,
+    valid_until: string | undefined
+  ) {
+    this._playerService
+      .adminRemoveAdditionalClub(
+        player?.id || 0,
+        clubId || '0',
+        valid_until || '0'
+      )
+      .subscribe({
+        next: () => {
+          const message = 'Spieler wurde erfolgreich freigegeben.';
+          this._notificationService.success(message, {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          });
+          if (player?.id) {
+            this.getPlayer(player.id.toString());
+          }
+        },
+        error: (error) => {
+          this._notificationService.error(error, {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          });
+        },
+      });
+  }
+
   public transfer(player: Player | undefined, clubId: string | undefined) {
     this._playerService
       .adminTransferPlayer(player?.id || 0, clubId || '0')

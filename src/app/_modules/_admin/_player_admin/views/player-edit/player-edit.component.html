@@ -206,6 +206,23 @@
                     >
                       Erneut freigeben
                     </a>
+
+                    <a
+                      *ngIf="
+                        can('player_remove_additional_clubs') &&
+                        isAdditionalClubActive(additionalClub.club_id)
+                      "
+                      class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                      (click)="
+                        removeAdditionalClub(
+                          player,
+                          additionalClub.club_id.toString(),
+                          additionalClub.valid_until
+                        )
+                      "
+                    >
+                      Freigabe beenden
+                    </a>
                   </div>
                 </div>
               </div>
