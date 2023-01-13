@@ -11,7 +11,7 @@ import {
   PlayerService,
   SessionService,
 } from '@floorball/core';
-import { Club, Nation, Player } from '@floorball/models';
+import { Club, Nation, Player, PlayerLicense } from '@floorball/models';
 import { Subject } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -327,5 +327,37 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  public setLicenseToTransfer(license: PlayerLicense) {
+    const licenseId = license.id;
+
+    if (this.player) {
+      this._playerService
+        .updateLicenseStatus(
+          this.player.id,
+          licenseId,
+          6,
+          'für Transfer ungültig gesetzt'
+        )
+        .subscribe({
+          next: () => {
+            this._notificationService.success(
+              'Lizenz für Spieler ' +
+                this.player?.first_name +
+                ' ' +
+                this.player?.last_name +
+                ' (' +
+                this.player?.id +
+                ') für Transfer ungültig gesetzt',
+              {
+                autoClose: true,
+                keepAfterRouteChange: false,
+              }
+            );
+            this.getPlayer('' + this.player?.id);
+          },
+        });
+    }
   }
 }

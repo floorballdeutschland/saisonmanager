@@ -156,6 +156,43 @@
           </div>
         </div>
 
+        <div class="xl:col-span-2" *ngIf="player; else loading">
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Lizenzen
+            </div>
+
+            <ng-container *ngFor="let license of player.licenses">
+              <div class="mb-3">
+                <b>{{ license.team?.name }}</b> ({{ license.team?.id }}) -
+                {{ license?.league?.name }} ({{
+                  license?.league?.game_operation_name
+                }})
+                <a
+                  *ngIf="
+                    can('player_set_license_to_transfer') &&
+                    license.set_transfer_allowed
+                  "
+                  class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                  (click)="setLicenseToTransfer(license)"
+                >
+                  Für Transfer ungültig setzen
+                </a>
+                <br />
+                Verlauf:<br />
+                <div *ngFor="let hist of license.history">
+                  {{ hist.created_at | date: "dd.MM.yyyy HH:mm:ss" }},
+                  <b>{{ hist.license_status }}</b
+                  >, durch: {{ hist.created_by_name }}
+                  <span *ngIf="hist.reason"
+                    >- Begründung: {{ hist.reason }}</span
+                  >
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
         <ng-container *ngIf="editMode">
           <div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
