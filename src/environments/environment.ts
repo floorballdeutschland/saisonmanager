@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiURL: 'https://sm.jholocal.de/api/v2/',
+  apiURL: 'http://sm.jholocal.de:8080/api/v2/',
 };
 
 /*
