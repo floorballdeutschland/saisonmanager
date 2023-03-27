@@ -12,6 +12,7 @@ import {
   Observable,
   shareReplay,
   Subject,
+  Subscription,
   take,
   takeUntil,
   tap,
@@ -27,6 +28,7 @@ export class MatchesWithRoundsComponent implements OnInit, OnDestroy {
   selectedLeague$!: Observable<League | null>;
   selectedMatchDay = 1;
   matches$?: Observable<GameScheduleEntry[] | null>;
+  intervalSub?: Subscription;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -44,8 +46,13 @@ export class MatchesWithRoundsComponent implements OnInit, OnDestroy {
       .pipe(
         tap((league) => {
           if (league?.id) {
+            if (this.intervalSub) {
+              this.intervalSub.unsubscribe();
+            }
+
             this.getMatches(league.id);
-            interval(30000)
+
+            this.intervalSub = interval(30000)
               .pipe(
                 tap(() => this.getMatches(league.id)),
                 takeUntil(this._destroy$)

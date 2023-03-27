@@ -21,6 +21,7 @@ import {
   Observable,
   shareReplay,
   Subject,
+  Subscription,
   take,
   takeUntil,
   tap,
@@ -44,6 +45,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
   selectedMatchDayMinDate?: Date;
   selectedMatchDayMaxDate?: Date;
   maxGamedayNumber = 0;
+  intervalSub?: Subscription;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -63,6 +65,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
       .pipe(
         tap((league) => {
           if (league?.id) {
+            if (this.intervalSub) {
+              this.intervalSub.unsubscribe();
+            }
+
             this.getTeamRanking(league.id);
             this.getPlayerRanking(league.id);
             this.getSingleLeague(league.id);
@@ -78,12 +84,15 @@ export class OverviewComponent implements OnInit, OnDestroy {
               `${league.name} - Übersicht | Floorball Saisonmanager`
             );
 
-            interval(30000)
-              .pipe(
-                tap(() => this.getMatches(league)),
-                takeUntil(this._destroy$)
-              )
-              .subscribe();
+            // league type cup has its own refetch method in matches-with-rounds component
+            if (league.league_type === 'league') {
+              this.intervalSub = interval(30000)
+                .pipe(
+                  tap(() => this.getMatches(league)),
+                  takeUntil(this._destroy$)
+                )
+                .subscribe();
+            }
 
             this._cdr.markForCheck();
           }

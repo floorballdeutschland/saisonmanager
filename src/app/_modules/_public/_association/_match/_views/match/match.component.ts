@@ -6,7 +6,14 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import {
+  interval,
+  Observable,
+  Subject,
+  Subscription,
+  takeUntil,
+  tap,
+} from 'rxjs';
 import { Game, GameAdditionalFields, GameOperation } from '@floorball/types';
 import {
   AssociationService,
@@ -28,6 +35,7 @@ export class MatchComponent implements OnInit, OnDestroy {
   additionalFields?: GameAdditionalFields;
   selectedAssociation$!: Observable<GameOperation | null>;
 
+  intervalSub?: Subscription;
   public isLoggedIn$ = this._sessionService.isLoggedIn$;
   public tab = 'public';
 
@@ -66,6 +74,17 @@ export class MatchComponent implements OnInit, OnDestroy {
       next: (params) => {
         if (params['matchId']) {
           this.getMatch(params['matchId']);
+
+          if (this.intervalSub) {
+            this.intervalSub.unsubscribe();
+          }
+
+          this.intervalSub = interval(30000)
+            .pipe(
+              tap(() => this.getMatch(params['matchId'])),
+              takeUntil(this._destroy$)
+            )
+            .subscribe();
         }
       },
     });
@@ -95,11 +114,13 @@ export class MatchComponent implements OnInit, OnDestroy {
   }
 
   public updateGame(game: Game) {
-    this.game = game;
+    if (JSON.stringify(game) !== JSON.stringify(this.game)) {
+      this.game = game;
 
-    this._metaTitle.setTitle(
-      `Spiel ${game.home_team_name} gegen ${game.guest_team_name} - ${game.league_name} | Floorball Saisonmanager`
-    );
+      this._metaTitle.setTitle(
+        `Spiel ${game.home_team_name} gegen ${game.guest_team_name} - ${game.league_name} | Floorball Saisonmanager`
+      );
+    }
 
     this._cdr.markForCheck();
   }
