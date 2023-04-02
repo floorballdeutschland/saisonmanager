@@ -20,7 +20,7 @@ export class TeamRankingTableComponent implements OnChanges {
   data!: TableEntry[];
 
   @Input()
-  type: 'small' | 'default' = 'default';
+  type: 'small' | 'medium' | 'default' = 'default';
 
   @Input()
   routerPrefix: string[] = ['./', 'team'];

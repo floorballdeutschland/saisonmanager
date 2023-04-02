@@ -1,0 +1,101 @@
+<div
+  class="grid grid-cols-1 2xl:grid-cols-[1fr,1fr,1fr,1px,1fr,1fr,1fr] mt-4 lg:mt-8 gap-8"
+>
+  <div class="2xl:col-span-3">
+    <h3 class="mb-2 font-bold text-lg lg:text-xl">Gruppe A</h3>
+
+    <div
+      *ngIf="teamRankings$ | async as teamRankings; else loadingTeamRankings"
+    >
+      <ng-container *ngIf="teamRankings.length; else noTeamRankingsMessage">
+        <fb-team-ranking-table
+          type="medium"
+          [data]="teamRankings"
+          class="hidden xl:block"
+        ></fb-team-ranking-table>
+        <fb-team-ranking-table
+          [data]="teamRankings"
+          type="medium"
+          class="xl:hidden"
+        ></fb-team-ranking-table>
+      </ng-container>
+
+      <ng-template #noTeamRankingsMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Tabelle vorhanden
+        </div>
+      </ng-template>
+    </div>
+
+    <ng-template #loadingTeamRankings>
+      <fb-skeleton-table type="medium" [amount]="4"></fb-skeleton-table>
+    </ng-template>
+
+    <h3 class="mt-8 mb-2 font-bold text-lg lg:text-xl">Spielplan</h3>
+
+    <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
+      <fb-match-pairing-list
+        *ngIf="matches.length; else noMatchesMessage"
+        [matches]="matches"
+      ></fb-match-pairing-list>
+
+      <ng-template #noMatchesMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Spiele für diesen Spieltag
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <div class="h-[10px] xl:h-auto xl:block bg-fb-gray-200"></div>
+
+  <div class="2xl:col-span-3">
+    <h3 class="mb-2 font-bold text-lg lg:text-xl">Gruppe B</h3>
+
+    <ng-container
+      *ngIf="teamRankings$ | async as teamRankings; else loadingTeamRankings"
+    >
+      <ng-container *ngIf="teamRankings.length; else noTeamRankingsMessage">
+        <fb-team-ranking-table
+          [data]="teamRankings"
+          type="medium"
+          class="hidden xl:block"
+        ></fb-team-ranking-table>
+        <fb-team-ranking-table
+          [data]="teamRankings"
+          type="medium"
+          class="xl:hidden"
+        ></fb-team-ranking-table>
+      </ng-container>
+
+      <ng-template #noTeamRankingsMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Tabelle vorhanden
+        </div>
+      </ng-template>
+    </ng-container>
+
+    <ng-template #loadingTeamRankings>
+      <fb-skeleton-table type="medium" [amount]="4"></fb-skeleton-table>
+    </ng-template>
+
+    <h3 class="mt-8 mb-2 font-bold text-lg lg:text-xl">Spielplan</h3>
+
+    <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
+      <fb-match-pairing-list
+        *ngIf="matches.length; else noMatchesMessage"
+        [matches]="matches"
+      ></fb-match-pairing-list>
+
+      <ng-template #noMatchesMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Spiele für diesen Spieltag
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <ng-template #loadingMatches>
+    <fb-skeleton-match-pairing-list></fb-skeleton-match-pairing-list>
+  </ng-template>
+</div>

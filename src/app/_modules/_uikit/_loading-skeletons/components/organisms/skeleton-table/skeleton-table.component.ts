@@ -13,5 +13,8 @@ import {
 })
 export class SkeletonTableComponent {
   @Input()
-  type: 'default' | 'small' = 'default';
+  type: 'default' | 'medium' | 'small' = 'default';
+
+  @Input()
+  amount = 10;
 }
