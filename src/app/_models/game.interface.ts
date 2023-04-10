@@ -107,6 +107,14 @@ export interface Game {
   forfait?: number;
   notice_type?: string;
   notice_string?: string;
+
+  group_identifier?: string | null;
+  title?: string | null;
+
+  home_team_fulling_rule?: string | null;
+  home_team_fulling_parameter?: number | null;
+  guest_team_fulling_rule?: string | null;
+  guest_team_fulling_parameter?: number | null;
 }
 
 export interface PeriodTitles {
@@ -130,6 +138,14 @@ export interface GameInput {
   notice_string?: string | null;
   home_team_id: number;
   guest_team_id: number;
+
+  group_identifier?: string | null;
+  title?: string | null;
+
+  home_team_fulling_rule?: string | null;
+  home_team_fulling_parameter?: number | null;
+  guest_team_fulling_rule?: string | null;
+  guest_team_fulling_parameter?: number | null;
 }
 
 export interface GameStatusOption {
