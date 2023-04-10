@@ -45,6 +45,7 @@ export class ScheduleIndexComponent implements OnInit {
               this.teams = result.teams;
               this.clubs = result.clubs;
               this.arenas = result.arenas;
+              this._cdr.markForCheck();
             },
           });
         this.getSchdule(params['leagueId']);

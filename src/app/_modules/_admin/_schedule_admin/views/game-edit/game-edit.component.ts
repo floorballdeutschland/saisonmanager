@@ -69,6 +69,17 @@ export class GameEditComponent implements OnInit {
       this.hasNotice = !(
         this.game.notice_type === '' || this.game.notice_type === null
       );
+
+      this.game.group_identifier = this.existingGame.group_identifier;
+      this.game.title = this.existingGame.title;
+      this.game.home_team_fulling_rule =
+        this.existingGame.home_team_fulling_rule;
+      this.game.home_team_fulling_parameter =
+        this.existingGame.home_team_fulling_parameter;
+      this.game.guest_team_fulling_rule =
+        this.existingGame.guest_team_fulling_rule;
+      this.game.guest_team_fulling_parameter =
+        this.existingGame.guest_team_fulling_parameter;
     }
 
     this.processing = false;
@@ -86,6 +97,12 @@ export class GameEditComponent implements OnInit {
       nominated_referee_string: '',
       notice_type: '',
       notice_string: '',
+      group_identifier: null,
+      title: null,
+      home_team_fulling_rule: null,
+      home_team_fulling_parameter: null,
+      guest_team_fulling_rule: null,
+      guest_team_fulling_parameter: null,
     };
 
     this._cdr.markForCheck();
@@ -105,7 +122,17 @@ export class GameEditComponent implements OnInit {
       this.game.notice_type !== this.existingGame.notice_type ||
       this.game.notice_string !== this.existingGame.notice_string ||
       this.game.nominated_referee_string !==
-        this.existingGame.nominated_referees
+        this.existingGame.nominated_referees ||
+      this.game.group_identifier !== this.existingGame.group_identifier ||
+      this.game.title !== this.existingGame.title ||
+      this.game.home_team_fulling_rule !==
+        this.existingGame.home_team_fulling_rule ||
+      this.game.home_team_fulling_parameter !==
+        this.existingGame.home_team_fulling_parameter ||
+      this.game.guest_team_fulling_rule !==
+        this.existingGame.guest_team_fulling_rule ||
+      this.game.guest_team_fulling_parameter !==
+        this.existingGame.guest_team_fulling_parameter
     );
   }
 
