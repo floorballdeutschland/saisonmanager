@@ -1,6 +1,6 @@
 <form
   (ngSubmit)="existingGame ? updateGame() : createGame()"
-  class="relative my-3 md:my-0 grid grid-cols-2 md:grid-cols-[60px,130px,2fr,2fr,1fr,75px,40px] gap-2"
+  class="relative my-3 md:my-0 grid grid-cols-2 md:grid-cols-[60px,130px,2fr,2fr,1fr,105px,40px] gap-2"
 >
   <ng-container *ngIf="first">
     <div class="hidden md:block">Nr.</div>
@@ -203,6 +203,29 @@
           </svg>
         </button>
 
+        <button
+          (click)="toggleGameDependencies()"
+          class="relative px-3 md:px-1"
+          [ngClass]="{ 'calculator-stroke': hasGameDependencies }"
+          *ngIf="!existingGame?.started || false"
+        >
+          <!-- Heroicon name: calculator -->
+          <svg
+            class="w-6 h-6"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z"
+            />
+          </svg>
+        </button>
+
         <p
           class="text-xs font-bold uppercase"
           *ngIf="existingGame && existingGame.forfait"
@@ -324,15 +347,15 @@
       <div class="col-span-2"></div>
     </ng-container>
 
-    <ng-container *ngIf="hasNotice">
+    <ng-container *ngIf="hasGameDependencies">
       <div class="hidden w-7 overflow-hidden md:inline-block">
-        <div class="h-7 bg-red-300 rotate-45 transform origin-top-left"></div>
+        <div class="h-7 bg-blue-300 rotate-45 transform origin-top-left"></div>
       </div>
       <div class="flex items-center font-medium text-fb-gray-900">
         <span>Gruppe</span>
       </div>
 
-      <div>
+      <div class="col-span-2">
         <select
           class="w-full bg-transparent border-gray-300"
           [(ngModel)]="game.group_identifier"
@@ -346,24 +369,31 @@
         </select>
       </div>
 
+      <div class="col-span-3"></div>
+
+      <div class="hidden w-7 overflow-hidden md:inline-block">
+        <div class="h-7 bg-blue-300 rotate-45 transform origin-top-left"></div>
+      </div>
+
       <div class="flex items-center font-medium text-fb-gray-900">
-        <span>Sondertitel Spiel (z.B. Finale)</span>
+        <span>Sondertitel Spiel</span>
       </div>
 
       <div class="col-span-2">
         <input
           class="w-full bg-transparent border-gray-300"
           type="text"
+          placeholder="(z.B. Finale, Halbfinale, Spiel um Platz 3)"
           [(ngModel)]="game.title"
           [disabled]="existingGame?.started || false"
           [ngModelOptions]="{ standalone: true }"
         />
       </div>
 
-      <div class="col-span-1"></div>
+      <div class="col-span-3"></div>
 
       <div class="hidden w-7 overflow-hidden md:inline-block">
-        <div class="h-7 bg-red-300 rotate-45 transform origin-top-left"></div>
+        <div class="h-7 bg-blue-300 rotate-45 transform origin-top-left"></div>
       </div>
       <div class="flex items-center font-medium text-fb-gray-900">
         <span>Autobelegung Heimteam</span>
@@ -388,28 +418,45 @@
       <div>
         <select
           class="w-full bg-transparent border-gray-300"
+          [disabled]="!game.home_team_fulling_rule"
           [(ngModel)]="game.home_team_fulling_parameter"
           [ngModelOptions]="{ standalone: true }"
         >
-          <option [ngValue]="null">deaktiviert</option>
-          <option [ngValue]="1">1. Platz</option>
-          <option [ngValue]="2">2. Platz</option>
-          <option [ngValue]="3">3. Platz</option>
-          <option [ngValue]="4">4. Platz</option>
-          <option [ngValue]="5">5. Platz</option>
-          <option [ngValue]="6">6. Platz</option>
-          <option [ngValue]="3">7. Platz</option>
-          <option [ngValue]="4">8. Platz</option>
-          <option [ngValue]="5">9. Platz</option>
-          <option [ngValue]="6">10. Platz</option>
+          <ng-container
+            *ngIf="game.home_team_fulling_rule?.startsWith('place')"
+          >
+            <option [ngValue]="null">Platz wählen...</option>
+            <option [ngValue]="1">1. Platz</option>
+            <option [ngValue]="2">2. Platz</option>
+            <option [ngValue]="3">3. Platz</option>
+            <option [ngValue]="4">4. Platz</option>
+            <option [ngValue]="5">5. Platz</option>
+            <option [ngValue]="6">6. Platz</option>
+            <option [ngValue]="7">7. Platz</option>
+            <option [ngValue]="8">8. Platz</option>
+            <option [ngValue]="9">9. Platz</option>
+            <option [ngValue]="10">10. Platz</option>
+          </ng-container>
+          <ng-container *ngIf="game.home_team_fulling_rule?.startsWith('game')">
+            <option [ngValue]="null">Spiel wählen...</option>
+            <ng-container *ngFor="let gameDay of allGameDays">
+              <ng-container *ngFor="let g of gameDay.games">
+                <option *ngIf="g.id !== game.id" [ngValue]="g.id">
+                  {{ g.title || "Spiel" }} Nr.{{ g.game_number }}, ({{
+                    g.home_team_name
+                  }}
+                  - {{ g.guest_team_name }}), #{{ g.id }}
+                </option>
+              </ng-container>
+            </ng-container>
+          </ng-container>
         </select>
       </div>
 
-      <div class="col-span-2"></div>
-      <div class="col-span-1"></div>
+      <div class="col-span-3"></div>
 
       <div class="hidden w-7 overflow-hidden md:inline-block">
-        <div class="h-7 bg-red-300 rotate-45 transform origin-top-left"></div>
+        <div class="h-7 bg-blue-300 rotate-45 transform origin-top-left"></div>
       </div>
       <div class="flex items-center font-medium text-fb-gray-900">
         <span>Autobelegung Gastteam</span>
@@ -434,21 +481,44 @@
       <div>
         <select
           class="w-full bg-transparent border-gray-300"
+          [disabled]="!game.guest_team_fulling_rule"
           [(ngModel)]="game.guest_team_fulling_parameter"
           [ngModelOptions]="{ standalone: true }"
         >
-          <option [ngValue]="null">deaktiviert</option>
-          <option [ngValue]="12336">Spiel 17 (BAT - UHC), #12336</option>
-          <option [ngValue]="12343">Spiel 19 (BAT - UHC), #12343</option>
-          <option [ngValue]="12344">Spiel 20 (BAT - UHC), #12344</option>
-          <option [ngValue]="12345">Spiel 21 (BAT - UHC), #12345</option>
-          <option [ngValue]="12346">Spiel 22 (BAT - UHC), #12346</option>
-          <option [ngValue]="12347">Spiel 23 (BAT - UHC), #12347</option>
-          <option [ngValue]="12348">Spiel 55 (nn. - nn.), #12348</option>
+          <ng-container
+            *ngIf="game.guest_team_fulling_rule?.startsWith('place')"
+          >
+            <option [ngValue]="null">Platz wählen...</option>
+            <option [ngValue]="1">1. Platz</option>
+            <option [ngValue]="2">2. Platz</option>
+            <option [ngValue]="3">3. Platz</option>
+            <option [ngValue]="4">4. Platz</option>
+            <option [ngValue]="5">5. Platz</option>
+            <option [ngValue]="6">6. Platz</option>
+            <option [ngValue]="7">7. Platz</option>
+            <option [ngValue]="8">8. Platz</option>
+            <option [ngValue]="9">9. Platz</option>
+            <option [ngValue]="10">10. Platz</option>
+          </ng-container>
+          <ng-container
+            *ngIf="game.guest_team_fulling_rule?.startsWith('game')"
+          >
+            <option [ngValue]="null">Spiel wählen...</option>
+            <ng-container *ngFor="let gameDay of allGameDays">
+              <ng-container *ngFor="let g of gameDay.games">
+                <option *ngIf="g.id !== game.id" [ngValue]="g.id">
+                  {{ g.title || "Spiel" }} Nr.{{ g.game_number }}, ({{
+                    g.home_team_name
+                  }}
+                  - {{ g.guest_team_name }}), #{{ g.id }}
+                </option>
+              </ng-container>
+            </ng-container>
+          </ng-container>
         </select>
       </div>
 
-      <div class="col-span-2"></div>
+      <div class="col-span-3"></div>
     </ng-container>
   </ng-container>
 </form>

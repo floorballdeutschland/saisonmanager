@@ -6,7 +6,14 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { Arena, Club, Game, GameInput, Team } from '@floorball/types';
+import {
+  Arena,
+  Club,
+  Game,
+  GamedayWithGames,
+  GameInput,
+  Team,
+} from '@floorball/types';
 import { GameService, NotificationService } from '@floorball/core';
 
 @Component({
@@ -20,6 +27,9 @@ export class GameEditComponent implements OnInit {
 
   @Input()
   existingGame?: Game;
+
+  @Input()
+  allGameDays?: GamedayWithGames[];
 
   @Input()
   teams!: Team[];
@@ -38,6 +48,7 @@ export class GameEditComponent implements OnInit {
 
   game!: GameInput;
   hasNotice = false;
+  hasGameDependencies = false;
   processing = false;
 
   constructor(
@@ -80,6 +91,15 @@ export class GameEditComponent implements OnInit {
         this.existingGame.guest_team_fulling_rule;
       this.game.guest_team_fulling_parameter =
         this.existingGame.guest_team_fulling_parameter;
+
+      this.hasGameDependencies = !(
+        this.game.title === null &&
+        this.game.group_identifier === null &&
+        this.game.home_team_fulling_rule === null &&
+        this.game.home_team_fulling_parameter === null &&
+        this.game.guest_team_fulling_rule === null &&
+        this.game.guest_team_fulling_parameter === null
+      );
     }
 
     this.processing = false;
@@ -255,5 +275,20 @@ export class GameEditComponent implements OnInit {
     }
 
     this.hasNotice = !this.hasNotice;
+  }
+
+  public toggleGameDependencies() {
+    if (this.hasGameDependencies) {
+      this.game.group_identifier = null;
+      this.game.title = null;
+      this.game.home_team_fulling_rule = null;
+      this.game.home_team_fulling_parameter = null;
+      this.game.guest_team_fulling_rule = null;
+      this.game.guest_team_fulling_parameter = null;
+    }
+
+    this.hasGameDependencies = !this.hasGameDependencies;
+
+    this._cdr.markForCheck();
   }
 }
