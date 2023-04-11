@@ -38,6 +38,7 @@
 
         <div>
           {{ element.team_name }}
+          <span *ngIf="element.point_corrections">*</span>
         </div>
       </div>
 
@@ -177,3 +178,10 @@
   >
   </cdk-row>
 </cdk-table>
+<div *ngIf="point_corrections && point_corrections.length > 0">
+  <b>Punktabzüge:</b>
+
+  <p *ngFor="let c of point_corrections">
+    {{ c.team_name }}: {{ c.points }} Punkte ({{ c.reason }})
+  </p>
+</div>

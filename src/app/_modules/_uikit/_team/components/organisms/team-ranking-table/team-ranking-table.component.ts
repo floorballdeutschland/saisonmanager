@@ -6,7 +6,7 @@ import {
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import { TableEntry } from '@floorball/models';
+import { TableEntry, TablePointCorrections } from '@floorball/models';
 import { TeamRankingTableDatasoure } from './team-ranking-table.datasource';
 
 @Component({
@@ -27,9 +27,20 @@ export class TeamRankingTableComponent implements OnChanges {
 
   dataSource = new TeamRankingTableDatasoure();
 
+  point_corrections: TablePointCorrections[] = [];
+
+  public setCorrections(table: TableEntry[]) {
+    const corrections = table
+      .map((entry) => entry.point_corrections)
+      .filter((x): x is TablePointCorrections => x !== null);
+    this.point_corrections = corrections;
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']?.currentValue) {
       this.dataSource.data.next(changes['data'].currentValue);
+
+      this.setCorrections(changes['data']?.currentValue);
     }
   }
 }
