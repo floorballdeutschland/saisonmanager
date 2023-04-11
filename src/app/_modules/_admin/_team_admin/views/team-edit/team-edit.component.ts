@@ -199,7 +199,13 @@ export class TeamEditComponent implements OnInit, OnDestroy {
           autoClose: true,
           keepAfterRouteChange: true,
         });
-        this._router.navigate(['verwaltung', 'ligen']);
+
+        this._router.navigate([
+          'verwaltung',
+          'ligen',
+          result.league_id,
+          'teams',
+        ]);
       },
       error: (error) => {
         this._notificationService.error(error, {

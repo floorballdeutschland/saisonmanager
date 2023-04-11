@@ -1,0 +1,111 @@
+<div class="grid grid-cols-1 mt-4 lg:mt-8 gap-8">
+  <div>
+    <h3 class="mt-4 mb-2 font-bold text-lg lg:text-xl">Viertelfinale</h3>
+
+    <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
+      <fb-match-encounter-list
+        *ngIf="matches.length; else noMatchesMessage"
+        [widthMatchTitle]="true"
+        [widthTreeView]="true"
+        [matches]="matches.slice(2, 6)"
+      ></fb-match-encounter-list>
+
+      <ng-template #noMatchesMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Spiele für diesen Spieltag
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <div>
+    <h3 class="mt-4 mb-2 font-bold text-lg lg:text-xl">Halbfinale</h3>
+
+    <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
+      <fb-match-encounter-list
+        *ngIf="matches.length; else noMatchesMessage"
+        [widthMatchTitle]="true"
+        [widthTreeView]="true"
+        [matches]="matches.slice(2, 4)"
+      ></fb-match-encounter-list>
+
+      <ng-template #noMatchesMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Spiele für diesen Spieltag
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <div>
+    <h3 class="mt-4 mb-2 font-bold text-lg lg:text-xl">Spiel um Platz 7</h3>
+
+    <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
+      <fb-match-encounter-list
+        *ngIf="matches.length; else noMatchesMessage"
+        [matches]="matches.slice(4, 5)"
+      ></fb-match-encounter-list>
+
+      <ng-template #noMatchesMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Spiele für diesen Spieltag
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <div>
+    <h3 class="mt-4 mb-2 font-bold text-lg lg:text-xl">Spiel um Platz 5</h3>
+
+    <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
+      <fb-match-encounter-list
+        *ngIf="matches.length; else noMatchesMessage"
+        [matches]="matches.slice(1, 2)"
+      ></fb-match-encounter-list>
+
+      <ng-template #noMatchesMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Spiele für diesen Spieltag
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <div>
+    <h3 class="mt-4 mb-2 font-bold text-lg lg:text-xl">Spiel um Platz 3</h3>
+
+    <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
+      <fb-match-encounter-list
+        *ngIf="matches.length; else noMatchesMessage"
+        [matches]="matches.slice(2, 3)"
+      ></fb-match-encounter-list>
+
+      <ng-template #noMatchesMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Spiele für diesen Spieltag
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <div>
+    <h3 class="mt-4 mb-2 font-bold text-lg lg:text-xl">Finale</h3>
+
+    <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
+      <fb-match-encounter-list
+        *ngIf="matches.length; else noMatchesMessage"
+        [matches]="matches.slice(3, 4)"
+      ></fb-match-encounter-list>
+
+      <ng-template #noMatchesMessage>
+        <div class="text-center text-fb-gray-400 my-12">
+          Noch keine Spiele für diesen Spieltag
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <ng-template #loadingMatches>
+    <fb-skeleton-match-encounter-list></fb-skeleton-match-encounter-list>
+  </ng-template>
+</div>

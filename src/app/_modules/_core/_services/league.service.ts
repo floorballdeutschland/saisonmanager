@@ -200,7 +200,7 @@ export class LeagueService {
 
   public adminCreateTeam(team: Team) {
     const path = environment.apiURL + 'admin/teams.json';
-    return this.http.post<League>(path, team);
+    return this.http.post<Team>(path, team);
   }
 
   public adminGetTeam(teamId: number) {
