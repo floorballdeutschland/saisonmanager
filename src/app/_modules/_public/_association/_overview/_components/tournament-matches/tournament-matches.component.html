@@ -26,6 +26,7 @@
       ></fb-tournament-matches-group>
 
       <fb-tournament-matches-final
+        *ngIf="round === 1"
         [matches$]="matches$"
       ></fb-tournament-matches-final>
     </div>

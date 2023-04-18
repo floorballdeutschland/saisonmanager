@@ -162,7 +162,7 @@
     class="relative grid grid-cols-[35px,1fr,repeat(2,35px)] items-center text-center text-sm px-[10px] h-12 odd:bg-fb-gray-300 hover:bg-fb-gray-200 transition"
     [ngClass]="{
       'md:grid-cols-[25px,1fr,repeat(7,60px)] lg:grid-cols-[25px,1fr,repeat(7,60px)] xl:grid-cols-[25px,1fr,repeat(9,60px)]':
-        type !== 'small',
+        type === 'default',
       'md:grid-cols-[25px,1fr,repeat(4,60px)] lg:grid-cols-[25px,1fr,repeat(4,60px)] xl:grid-cols-[25px,1fr,repeat(4,60px)]':
         type === 'medium',
       'md:grid-cols-[25px,1fr,repeat(2,60px)]': type === 'small'

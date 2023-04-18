@@ -27,4 +27,7 @@ export class MatchEncounterComponent {
 
   @Input()
   currentIndex?: number;
+
+  @Input()
+  widthTreeView?: boolean;
 }

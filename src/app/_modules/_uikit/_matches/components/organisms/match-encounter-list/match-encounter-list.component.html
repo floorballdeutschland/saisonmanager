@@ -1,46 +1,11 @@
 <ng-container *ngFor="let match of matches; let currentIndex = index">
-  <div class="grid md:grid-cols-4">
-    <fb-match-encounter
-      class="block even:bg-fb-gray-300 odd:bg-fb-gray-800 md:odd:bg-white md:col-span-3"
-      [currentIndex]="currentIndex + 1"
-      [baseRoute]="baseRoute"
-      [match]="match"
-      [withMatchDay]="withMatchDay"
-      [widthMatchTitle]="widthMatchTitle"
-    ></fb-match-encounter>
-
-    <ng-container *ngIf="widthTreeView">
-      <div class="grid grid-cols-[53px,1fr]">
-        <div
-          class="grid grid-cols-[20px,2px,30px] grid-rows-[1fr,2px,1fr,2px,1fr,2px,1fr]"
-        >
-          <div class=""></div>
-          <div class=""></div>
-          <div class=""></div>
-          <div class=""></div>
-          <div class=""></div>
-          <div class="bg-fb-gray-700"></div>
-          <div class=""></div>
-          <div class="bg-fb-gray-700"></div>
-          <div class=""></div>
-          <div class="bg-fb-gray-700"></div>
-          <div class=""></div>
-          <div class=""></div>
-          <div class=""></div>
-          <div class="bg-fb-gray-700"></div>
-          <div class=""></div>
-          <div class=""></div>
-          <div class=""></div>
-          <div class="bg-fb-gray-700"></div>
-        </div>
-
-        <div
-          class="grid grid-cols-1 grid-rows-[1fr,1fr] items-center text-fb-gray-400 text-[14px]"
-        >
-          <div class="pl-4">Sieger: Halbfinale 1</div>
-          <div class="pl-4">Verlierer: Spiel um Platz 3</div>
-        </div>
-      </div>
-    </ng-container>
-  </div>
+  <fb-match-encounter
+    class="even:bg-fb-gray-300 odd:bg-fb-gray-800 md:odd:bg-white md:col-span-3"
+    [currentIndex]="currentIndex + 1"
+    [baseRoute]="baseRoute"
+    [match]="match"
+    [withMatchDay]="withMatchDay"
+    [widthMatchTitle]="widthMatchTitle"
+    [widthTreeView]="widthTreeView"
+  ></fb-match-encounter>
 </ng-container>
