@@ -5,6 +5,16 @@ export interface TablePointCorrections {
   reference_number: string;
 }
 
+export interface GroupedTableEntry {
+  group_identifier: string;
+  name: string;
+  table: TableEntry[];
+}
+
+export interface GroupedTable {
+  [group_identifier: string]: GroupedTableEntry;
+}
+
 export interface TableEntry {
   games: number;
   won: number;

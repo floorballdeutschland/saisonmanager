@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { LeagueService } from '@floorball/core';
-import { League, TableEntry } from '@floorball/types';
-import { interval, Observable, Subject, takeUntil, tap } from 'rxjs';
+import { League } from '@floorball/types';
+import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'fb-tournament-matches',
@@ -10,19 +10,23 @@ import { interval, Observable, Subject, takeUntil, tap } from 'rxjs';
 export class TournamentMatchesComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<boolean>();
 
-  round = 1;
-  teamRankings$?: Observable<TableEntry[] | null>;
+  round = 0;
 
   constructor(private _leagueService: LeagueService) {}
 
   @Input()
   selectedLeague?: League;
 
-  @Input()
   matches$?: Observable<any>;
 
-  getTeamRanking(leagueNumber: number) {
-    this.teamRankings$ = this._leagueService.getTable(leagueNumber);
+  getMatches(leagueNumber: number) {
+    this.matches$ = this._leagueService
+      .getGameSchedule(leagueNumber)
+      .pipe(shareReplay());
+
+    console.log('MATCHES');
+
+    this.matches$.pipe(take(1), takeUntil(this._destroy$)).subscribe();
   }
 
   ngOnDestroy(): void {
@@ -35,7 +39,7 @@ export class TournamentMatchesComponent implements OnInit, OnDestroy {
       .pipe(
         tap((league) => {
           if (league?.id) {
-            this.getTeamRanking(league.id);
+            this.getMatches(league.id);
           }
         }),
         takeUntil(this._destroy$)

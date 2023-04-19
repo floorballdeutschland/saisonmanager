@@ -28,4 +28,5 @@ export interface GameScheduleEntry {
   result: GameResult;
   ended: boolean;
   started: boolean;
+  group_identifier: string;
 }

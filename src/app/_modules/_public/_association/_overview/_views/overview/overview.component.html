@@ -158,17 +158,16 @@
 
   <div
     class="mt-6 lg:mt-8 border-b-[10px] border-fb-gray-200 pb-5"
-    *ngIf="selectedLeague.league_type === 'tournament'"
+    *ngIf="selectedLeague.league_type === 'champ'"
   >
     <fb-tournament-matches
       [selectedLeague]="selectedLeague"
-      [matches$]="matches$"
     ></fb-tournament-matches>
   </div>
 
   <div
     class="mt-6 lg:mt-12 border-b-[10px] border-fb-gray-200 pb-5"
-    *ngIf="selectedLeague.league_type !== 'tournament'"
+    *ngIf="selectedLeague.league_type !== 'champ'"
   >
     <div class="container mx-auto px-4 lg:px-8">
       <h2 class="font-bold text-xl lg:text-2xl mb-4 lg:mb-8">Top 10 Scorer</h2>

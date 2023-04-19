@@ -1,6 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { LeagueService } from '@floorball/core';
-import { League, TableEntry } from '@floorball/types';
+import { GroupedTableEntry, League } from '@floorball/types';
 import { Observable, Subject, takeUntil, tap } from 'rxjs';
 
 @Component({
@@ -11,7 +11,7 @@ export class TournamentMatchesGroupComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<boolean>();
 
   round = 0;
-  teamRankings$?: Observable<TableEntry[] | null>;
+  teamRanking: GroupedTableEntry[] = [];
 
   constructor(private _leagueService: LeagueService) {}
 
@@ -22,7 +22,14 @@ export class TournamentMatchesGroupComponent implements OnInit, OnDestroy {
   matches$?: Observable<any>;
 
   getTeamRanking(leagueNumber: number) {
-    this.teamRankings$ = this._leagueService.getTable(leagueNumber);
+    this._leagueService
+      .getGroupedTable(leagueNumber)
+      .pipe(
+        tap((group) => {
+          this.teamRanking = Object.values(group);
+        })
+      )
+      .subscribe();
   }
 
   ngOnDestroy(): void {

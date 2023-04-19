@@ -15,7 +15,7 @@ export interface League {
   short_name: string;
   season_id: string;
   order_key: string;
-  league_type: 'cup' | 'league' | 'tournament';
+  league_type: 'cup' | 'league' | 'champ';
 
   legacy_league: boolean;
   field_size: string;

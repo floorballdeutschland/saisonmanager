@@ -30,6 +30,7 @@ import {
   switchMap,
 } from 'rxjs';
 import { AssociationService } from '.';
+import { GroupedTable } from '../../../_models/table-entry.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -123,6 +124,12 @@ export class LeagueService {
   public getTable(league: number) {
     const path = environment.apiURL + 'leagues/' + league + '/table.json';
     return this.http.get<TableEntry[]>(path);
+  }
+
+  public getGroupedTable(league: number) {
+    const path =
+      environment.apiURL + 'leagues/' + league + '/grouped_table.json';
+    return this.http.get<GroupedTable>(path);
   }
 
   public getScorer(league: number) {

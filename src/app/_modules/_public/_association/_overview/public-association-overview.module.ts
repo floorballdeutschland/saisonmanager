@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { GroupIdentifierFilterPipe } from '../../../../_helpers';
 import { PublicAssociationOverviewRoutingModule } from './public-association-overview-routing.module';
 
 import * as Views from './_views';
@@ -29,6 +30,7 @@ import { TournamentMatchesFinalComponent } from './_components/tournament-matche
     TournamentMatchesComponent,
     TournamentMatchesGroupComponent,
     TournamentMatchesFinalComponent,
+    GroupIdentifierFilterPipe,
   ],
 })
 export class PublicAssociationOverviewModule {}

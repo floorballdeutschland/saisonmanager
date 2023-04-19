@@ -69,11 +69,14 @@ export class OverviewComponent implements OnInit, OnDestroy {
               this.intervalSub.unsubscribe();
             }
 
-            this.getTeamRanking(league.id);
-            this.getPlayerRanking(league.id);
             this.getSingleLeague(league.id);
-            this.getMatches(league);
-            this.selectedMatchDay = league.game_day_titles[0];
+
+            if (league.league_type !== 'cup') {
+              this.getTeamRanking(league.id);
+              this.getPlayerRanking(league.id);
+              this.getMatches(league);
+              this.selectedMatchDay = league.game_day_titles[0];
+            }
 
             this.maxGamedayNumber = league.game_day_titles.reduce(
               (max, item) => Math.max(max, item.game_day_number),
