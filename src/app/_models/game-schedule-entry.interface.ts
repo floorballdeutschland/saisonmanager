@@ -29,4 +29,10 @@ export interface GameScheduleEntry {
   ended: boolean;
   started: boolean;
   group_identifier: string;
+  title: string;
+}
+
+export interface FinalRound {
+  round_title: string;
+  matches: GameScheduleEntry[];
 }

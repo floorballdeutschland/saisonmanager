@@ -1,6 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { LeagueService } from '@floorball/core';
-import { League } from '@floorball/types';
+import { GameScheduleEntry, League } from '@floorball/types';
 import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
 
 @Component({
@@ -10,21 +10,19 @@ import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
 export class TournamentMatchesComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<boolean>();
 
-  round = 0;
+  round = 1;
 
   constructor(private _leagueService: LeagueService) {}
 
   @Input()
   selectedLeague?: League;
 
-  matches$?: Observable<any>;
+  matches$?: Observable<GameScheduleEntry[]>;
 
   getMatches(leagueNumber: number) {
     this.matches$ = this._leagueService
       .getGameSchedule(leagueNumber)
       .pipe(shareReplay());
-
-    console.log('MATCHES');
 
     this.matches$.pipe(take(1), takeUntil(this._destroy$)).subscribe();
   }
@@ -46,8 +44,4 @@ export class TournamentMatchesComponent implements OnInit, OnDestroy {
       )
       .subscribe();
   }
-
-  // changeRound(newRound: int): void {
-  //   this.
-  // }
 }
