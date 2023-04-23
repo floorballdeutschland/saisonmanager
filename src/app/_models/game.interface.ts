@@ -112,8 +112,10 @@ export interface Game {
   title?: string | null;
 
   home_team_fulling_rule?: string | null;
+  home_team_fulling_title?: string | null;
   home_team_fulling_parameter?: number | null;
   guest_team_fulling_rule?: string | null;
+  guest_team_fulling_title?: string | null;
   guest_team_fulling_parameter?: number | null;
 }
 

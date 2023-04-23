@@ -157,11 +157,18 @@
   </svg>
 </ng-template>
 
-<ng-container *ngIf="!widthTreeView">
+<ng-container
+  *ngIf="
+    match.home_team_fulling_parameter === null &&
+    match.guest_team_fulling_rule === null
+  "
+>
   <ng-container *ngTemplateOutlet="gamelink"></ng-container>
 </ng-container>
 
-<ng-container *ngIf="widthTreeView">
+<ng-container
+  *ngIf="match.home_team_fulling_parameter && match.guest_team_fulling_rule"
+>
   <ng-container *ngTemplateOutlet="gamelink"></ng-container>
 
   <div
@@ -181,9 +188,38 @@
         d="M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5"
       />
     </svg>
-    <a href="#" class="md:text-right md:col-span-2"> Sieger Viertelfinale 1 </a>
+    <div class="md:text-right md:col-span-2">
+      <a
+        [routerLink]="
+          ['spiel', match.home_team_fulling_parameter.toString()]
+            | routeMerge: baseRoute
+        "
+        *ngIf="match.home_team_fulling_rule?.startsWith('game')"
+      >
+        {{ match.home_team_fulling_title }}
+      </a>
+      <span *ngIf="!match.guest_team_fulling_rule?.startsWith('game')">{{
+        match.home_team_fulling_title
+      }}</span>
+    </div>
+
     <div>vs.</div>
-    <a href="#" class="md:text-left md:col-span-2"> Sieger Viertelfinale 1 </a>
+
+    <div class="md:text-left md:col-span-2">
+      <a
+        [routerLink]="
+          ['spiel', (match.guest_team_fulling_parameter || 0).toString()]
+            | routeMerge: baseRoute
+        "
+        *ngIf="match.guest_team_fulling_rule?.startsWith('game')"
+      >
+        {{ match.guest_team_fulling_title }}
+      </a>
+      <span *ngIf="!match.guest_team_fulling_rule?.startsWith('game')">{{
+        match.guest_team_fulling_title
+      }}</span>
+    </div>
+
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
@@ -199,36 +235,4 @@
       />
     </svg>
   </div>
-
-  <!--    <div class="grid xl:grid-cols-[53px,1fr]">-->
-  <!--      <div-->
-  <!--        class="hidden xl:grid grid-cols-[20px,2px,30px] grid-rows-[1fr,2px,1fr,2px,1fr,2px,1fr]"-->
-  <!--      >-->
-  <!--        <div class="col-span-3"></div>-->
-  <!--        <div class="col-span-2"></div>-->
-  <!--        <div class="bg-fb-gray-700"></div>-->
-  <!--        <div class=""></div>-->
-  <!--        <div class="bg-fb-gray-700"></div>-->
-  <!--        <div class=""></div>-->
-  <!--        <div class="bg-fb-gray-700"></div>-->
-  <!--        <div class="col-span-2"></div>-->
-  <!--        <div class=""></div>-->
-  <!--        <div class="bg-fb-gray-700"></div>-->
-  <!--        <div class=""></div>-->
-  <!--        <div class="col-span-2"></div>-->
-  <!--        <div class="bg-fb-gray-700"></div>-->
-  <!--      </div>-->
-
-  <!--      <div-->
-  <!--        class="flex justify-end bg-fb-gray-700 px-6 py-2 xl:px-0 xl:grid xl:grid-cols-1 xl:grid-rows-[1fr,1fr] xl:items-center text-fb-gray-400 text-[14px]"-->
-  <!--      >-->
-  <!--        <div class="pl-4 xl:hidden">-->
-  <!--          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">-->
-  <!--            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5" />-->
-  <!--          </svg>-->
-  <!--        </div>-->
-  <!--        <div class="px-4">Sieger: Halbfinale 1</div>-->
-  <!--        <div class="px-4">Verlierer: Spiel um Platz 3</div>-->
-  <!--      </div>-->
-  <!--    </div>-->
 </ng-container>

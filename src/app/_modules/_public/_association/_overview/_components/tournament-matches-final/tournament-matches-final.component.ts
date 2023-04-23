@@ -34,7 +34,7 @@ export class TournamentMatchesFinalComponent implements OnInit {
       const identifier = Math.floor(match.game_number / 10);
       this.groupedMatches[identifier] = {
         round_title:
-          this.groupedMatches[identifier]?.round_title || match.title,
+          this.groupedMatches[identifier]?.round_title || match.title || '',
         matches: [...(this.groupedMatches[identifier]?.matches || []), match],
       };
     });

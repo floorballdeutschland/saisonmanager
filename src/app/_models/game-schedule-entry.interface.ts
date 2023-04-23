@@ -28,8 +28,16 @@ export interface GameScheduleEntry {
   result: GameResult;
   ended: boolean;
   started: boolean;
-  group_identifier: string;
-  title: string;
+
+  group_identifier?: string | null;
+  title?: string | null;
+
+  home_team_fulling_rule?: string | null;
+  home_team_fulling_title?: string | null;
+  home_team_fulling_parameter?: number | null;
+  guest_team_fulling_rule?: string | null;
+  guest_team_fulling_title?: string | null;
+  guest_team_fulling_parameter?: number | null;
 }
 
 export interface FinalRound {

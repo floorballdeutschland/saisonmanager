@@ -8,6 +8,7 @@
       <ng-container *ngIf="round.matches">
         <fb-match-encounter-list
           [matches]="round.matches"
+          [baseRoute]="['./']"
         ></fb-match-encounter-list>
 
         <ng-template #noMatchesMessage>
