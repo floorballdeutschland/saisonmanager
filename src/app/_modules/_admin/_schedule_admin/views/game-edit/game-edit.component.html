@@ -376,7 +376,7 @@
       </div>
 
       <div class="flex items-center font-medium text-fb-gray-900">
-        <span>Sondertitel Spiel</span>
+        <span>Serien-Titel</span>
       </div>
 
       <div class="col-span-2">
@@ -384,7 +384,28 @@
           class="w-full bg-transparent border-gray-300"
           type="text"
           placeholder="(z.B. Finale, Halbfinale, Spiel um Platz 3)"
-          [(ngModel)]="game.title"
+          [(ngModel)]="game.series_title"
+          [disabled]="existingGame?.started || false"
+          [ngModelOptions]="{ standalone: true }"
+        />
+      </div>
+
+      <div class="col-span-3"></div>
+
+      <div class="hidden w-7 overflow-hidden md:inline-block">
+        <div class="h-7 bg-blue-300 rotate-45 transform origin-top-left"></div>
+      </div>
+
+      <div class="flex items-center font-medium text-fb-gray-900">
+        <span>Nummer in Serie</span>
+      </div>
+
+      <div class="col-span-2">
+        <input
+          class="w-full bg-transparent border-gray-300"
+          type="text"
+          placeholder='(z.B. "1" für "Halbfinale 1")'
+          [(ngModel)]="game.series_number"
           [disabled]="existingGame?.started || false"
           [ngModelOptions]="{ standalone: true }"
         />

@@ -83,6 +83,8 @@ export class GameEditComponent implements OnInit {
 
       this.game.group_identifier = this.existingGame.group_identifier;
       this.game.title = this.existingGame.title;
+      this.game.series_title = this.existingGame.series_title;
+      this.game.series_number = this.existingGame.series_number;
       this.game.home_team_filling_rule =
         this.existingGame.home_team_filling_rule;
       this.game.home_team_filling_parameter =
@@ -94,6 +96,8 @@ export class GameEditComponent implements OnInit {
 
       this.hasGameDependencies = !(
         this.game.title === null &&
+        this.game.series_title === null &&
+        this.game.series_number === null &&
         this.game.group_identifier === null &&
         this.game.home_team_filling_rule === null &&
         this.game.home_team_filling_parameter === null &&
@@ -119,6 +123,8 @@ export class GameEditComponent implements OnInit {
       notice_string: '',
       group_identifier: null,
       title: null,
+      series_title: null,
+      series_number: null,
       home_team_filling_rule: null,
       home_team_filling_parameter: null,
       guest_team_filling_rule: null,
@@ -145,6 +151,8 @@ export class GameEditComponent implements OnInit {
         this.existingGame.nominated_referees ||
       this.game.group_identifier !== this.existingGame.group_identifier ||
       this.game.title !== this.existingGame.title ||
+      this.game.series_title !== this.existingGame.series_title ||
+      this.game.series_number !== this.existingGame.series_number ||
       this.game.home_team_filling_rule !==
         this.existingGame.home_team_filling_rule ||
       this.game.home_team_filling_parameter !==
