@@ -30,7 +30,7 @@ export interface GameScheduleEntry {
   started: boolean;
 
   group_identifier?: string | null;
-  title?: string | null;
+  title?: string | null; // TODO: remove this
 
   home_team_filling_rule?: string | null;
   home_team_filling_title?: string | null;
