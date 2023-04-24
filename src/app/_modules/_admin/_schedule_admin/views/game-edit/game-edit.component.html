@@ -41,6 +41,7 @@
         name="homeTeamId"
         type="text"
       >
+        <option [ngValue]="0">Nicht ausgewählt...</option>
         <option *ngFor="let team of teams" [value]="team.id">
           {{ team.name }}
         </option>
@@ -54,6 +55,7 @@
         name="guestTeamId"
         type="text"
       >
+        <option [ngValue]="0">Nicht ausgewählt...</option>
         <option *ngFor="let team of teams" [value]="team.id">
           {{ team.name }}
         </option>
