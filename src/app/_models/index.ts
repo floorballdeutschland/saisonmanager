@@ -2,6 +2,8 @@ export { InitData } from './init-data.interface';
 export { Season } from './season.interface';
 export { GameOperation } from './game-operation.interface';
 export { TableEntry } from './table-entry.interface';
+export { GroupedTableEntry } from './table-entry.interface';
+export { GroupedTable } from './table-entry.interface';
 export { TablePointCorrections } from './table-entry.interface';
 export { ScorerEntry } from './scorer-entry.interface';
 export { GameScheduleEntry } from './game-schedule-entry.interface';

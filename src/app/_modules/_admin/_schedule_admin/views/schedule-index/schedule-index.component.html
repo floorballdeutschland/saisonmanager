@@ -68,7 +68,7 @@
           </div>
         </div>
       </ng-container>
-      <ng-container *ngIf="!loading && arenas.length">
+      <ng-container *ngIf="!loading && gameDays.length">
         <div *ngFor="let gameDay of gameDays">
           <div class="bg-white md:h-[80px]">
             <div class="flex my-2.5 lg:my-5 px-[30px] py-[20px]">
@@ -138,6 +138,7 @@
                   [teams]="teams"
                   [clubs]="clubs"
                   [arenas]="arenas"
+                  [allGameDays]="gameDays"
                   (refreshSchedule)="getSchdule(leagueId)"
                 ></fb-game-edit>
               </ng-container>

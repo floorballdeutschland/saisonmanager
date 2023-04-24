@@ -6,7 +6,14 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { Arena, Club, Game, GameInput, Team } from '@floorball/types';
+import {
+  Arena,
+  Club,
+  Game,
+  GamedayWithGames,
+  GameInput,
+  Team,
+} from '@floorball/types';
 import { GameService, NotificationService } from '@floorball/core';
 
 @Component({
@@ -20,6 +27,9 @@ export class GameEditComponent implements OnInit {
 
   @Input()
   existingGame?: Game;
+
+  @Input()
+  allGameDays?: GamedayWithGames[];
 
   @Input()
   teams!: Team[];
@@ -38,6 +48,7 @@ export class GameEditComponent implements OnInit {
 
   game!: GameInput;
   hasNotice = false;
+  hasGameDependencies = false;
   processing = false;
 
   constructor(
@@ -69,6 +80,30 @@ export class GameEditComponent implements OnInit {
       this.hasNotice = !(
         this.game.notice_type === '' || this.game.notice_type === null
       );
+
+      this.game.group_identifier = this.existingGame.group_identifier;
+      this.game.title = this.existingGame.title;
+      this.game.series_title = this.existingGame.series_title;
+      this.game.series_number = this.existingGame.series_number;
+      this.game.home_team_filling_rule =
+        this.existingGame.home_team_filling_rule;
+      this.game.home_team_filling_parameter =
+        this.existingGame.home_team_filling_parameter;
+      this.game.guest_team_filling_rule =
+        this.existingGame.guest_team_filling_rule;
+      this.game.guest_team_filling_parameter =
+        this.existingGame.guest_team_filling_parameter;
+
+      this.hasGameDependencies = !(
+        this.game.title === null &&
+        this.game.series_title === null &&
+        this.game.series_number === null &&
+        this.game.group_identifier === null &&
+        this.game.home_team_filling_rule === null &&
+        this.game.home_team_filling_parameter === null &&
+        this.game.guest_team_filling_rule === null &&
+        this.game.guest_team_filling_parameter === null
+      );
     }
 
     this.processing = false;
@@ -86,6 +121,14 @@ export class GameEditComponent implements OnInit {
       nominated_referee_string: '',
       notice_type: '',
       notice_string: '',
+      group_identifier: null,
+      title: null,
+      series_title: null,
+      series_number: null,
+      home_team_filling_rule: null,
+      home_team_filling_parameter: null,
+      guest_team_filling_rule: null,
+      guest_team_filling_parameter: null,
     };
 
     this._cdr.markForCheck();
@@ -105,7 +148,19 @@ export class GameEditComponent implements OnInit {
       this.game.notice_type !== this.existingGame.notice_type ||
       this.game.notice_string !== this.existingGame.notice_string ||
       this.game.nominated_referee_string !==
-        this.existingGame.nominated_referees
+        this.existingGame.nominated_referees ||
+      this.game.group_identifier !== this.existingGame.group_identifier ||
+      this.game.title !== this.existingGame.title ||
+      this.game.series_title !== this.existingGame.series_title ||
+      this.game.series_number !== this.existingGame.series_number ||
+      this.game.home_team_filling_rule !==
+        this.existingGame.home_team_filling_rule ||
+      this.game.home_team_filling_parameter !==
+        this.existingGame.home_team_filling_parameter ||
+      this.game.guest_team_filling_rule !==
+        this.existingGame.guest_team_filling_rule ||
+      this.game.guest_team_filling_parameter !==
+        this.existingGame.guest_team_filling_parameter
     );
   }
 
@@ -228,5 +283,20 @@ export class GameEditComponent implements OnInit {
     }
 
     this.hasNotice = !this.hasNotice;
+  }
+
+  public toggleGameDependencies() {
+    if (this.hasGameDependencies) {
+      this.game.group_identifier = null;
+      this.game.title = null;
+      this.game.home_team_filling_rule = null;
+      this.game.home_team_filling_parameter = null;
+      this.game.guest_team_filling_rule = null;
+      this.game.guest_team_filling_parameter = null;
+    }
+
+    this.hasGameDependencies = !this.hasGameDependencies;
+
+    this._cdr.markForCheck();
   }
 }

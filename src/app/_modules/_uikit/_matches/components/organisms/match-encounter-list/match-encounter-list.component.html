@@ -1,8 +1,11 @@
-<ng-container *ngFor="let match of matches">
+<ng-container *ngFor="let match of matches; let currentIndex = index">
   <fb-match-encounter
-    class="block even:bg-fb-gray-300 odd:bg-fb-gray-800 md:odd:bg-white"
+    class="even:bg-fb-gray-300 odd:bg-fb-gray-800 md:odd:bg-white md:col-span-3"
+    [currentIndex]="currentIndex + 1"
     [baseRoute]="baseRoute"
     [match]="match"
     [withMatchDay]="withMatchDay"
+    [widthMatchTitle]="widthMatchTitle"
+    [widthTreeView]="widthTreeView"
   ></fb-match-encounter>
 </ng-container>

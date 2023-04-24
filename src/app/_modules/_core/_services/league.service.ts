@@ -30,6 +30,7 @@ import {
   switchMap,
 } from 'rxjs';
 import { AssociationService } from '.';
+import { GroupedTable } from '../../../_models/table-entry.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -125,6 +126,12 @@ export class LeagueService {
     return this.http.get<TableEntry[]>(path);
   }
 
+  public getGroupedTable(league: number) {
+    const path =
+      environment.apiURL + 'leagues/' + league + '/grouped_table.json';
+    return this.http.get<GroupedTable>(path);
+  }
+
   public getScorer(league: number) {
     const path = environment.apiURL + 'leagues/' + league + '/scorer.json';
     return this.http.get<ScorerEntry[]>(path);
@@ -200,7 +207,7 @@ export class LeagueService {
 
   public adminCreateTeam(team: Team) {
     const path = environment.apiURL + 'admin/teams.json';
-    return this.http.post<League>(path, team);
+    return this.http.post<Team>(path, team);
   }
 
   public adminGetTeam(teamId: number) {

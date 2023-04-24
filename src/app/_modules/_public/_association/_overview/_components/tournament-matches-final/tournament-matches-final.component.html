@@ -1,0 +1,26 @@
+<div class="grid grid-cols-1 mt-4 lg:mt-8 gap-8">
+  <ng-container *ngIf="groupedMatches; else loadingMatches">
+    <div *ngFor="let round of groupedMatches">
+      <h3 class="mt-4 mb-2 font-bold text-lg lg:text-xl">
+        {{ round.round_title }}
+      </h3>
+
+      <ng-container *ngIf="round.matches">
+        <fb-match-encounter-list
+          [matches]="round.matches"
+          [baseRoute]="['./']"
+        ></fb-match-encounter-list>
+
+        <ng-template #noMatchesMessage>
+          <div class="text-center text-fb-gray-400 my-12">
+            Noch keine Spiele für diesen Spieltag
+          </div>
+        </ng-template>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <ng-template #loadingMatches>
+    <fb-skeleton-match-encounter-list></fb-skeleton-match-encounter-list>
+  </ng-template>
+</div>

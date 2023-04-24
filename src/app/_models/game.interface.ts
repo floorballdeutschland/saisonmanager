@@ -107,6 +107,18 @@ export interface Game {
   forfait?: number;
   notice_type?: string;
   notice_string?: string;
+
+  group_identifier?: string | null;
+  title?: string | null; // TODO: remove this
+  series_title?: string | null;
+  series_number?: string | null;
+
+  home_team_filling_rule?: string | null;
+  home_team_filling_title?: string | null;
+  home_team_filling_parameter?: number | null;
+  guest_team_filling_rule?: string | null;
+  guest_team_filling_title?: string | null;
+  guest_team_filling_parameter?: number | null;
 }
 
 export interface PeriodTitles {
@@ -130,6 +142,16 @@ export interface GameInput {
   notice_string?: string | null;
   home_team_id: number;
   guest_team_id: number;
+
+  group_identifier?: string | null;
+  title?: string | null; // TODO: remove this
+  series_title?: string | null;
+  series_number?: string | null;
+
+  home_team_filling_rule?: string | null;
+  home_team_filling_parameter?: number | null;
+  guest_team_filling_rule?: string | null;
+  guest_team_filling_parameter?: number | null;
 }
 
 export interface GameStatusOption {

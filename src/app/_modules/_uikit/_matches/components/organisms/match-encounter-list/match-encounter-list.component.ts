@@ -21,4 +21,10 @@ export class MatchEncounterListComponent {
 
   @Input()
   withMatchDay = false;
+
+  @Input()
+  widthMatchTitle = false;
+
+  @Input()
+  widthTreeView = false;
 }

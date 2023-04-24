@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { GroupIdentifierFilterPipe } from '../../../../_helpers';
 import { PublicAssociationOverviewRoutingModule } from './public-association-overview-routing.module';
 
 import * as Views from './_views';
@@ -9,6 +10,9 @@ import { UikitTeamModule } from '@floorball/uikit/team';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
+import { TournamentMatchesComponent } from './_components/tournament-matches/tournament-matches.component';
+import { TournamentMatchesGroupComponent } from './_components/tournament-matches-group/tournament-matches-group.component';
+import { TournamentMatchesFinalComponent } from './_components/tournament-matches-final/tournament-matches-final.component';
 
 @NgModule({
   imports: [
@@ -23,6 +27,10 @@ import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
   declarations: [
     Views.OverviewComponent,
     Components.MatchesWithRoundsComponent,
+    TournamentMatchesComponent,
+    TournamentMatchesGroupComponent,
+    TournamentMatchesFinalComponent,
+    GroupIdentifierFilterPipe,
   ],
 })
 export class PublicAssociationOverviewModule {}

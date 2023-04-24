@@ -28,4 +28,19 @@ export interface GameScheduleEntry {
   result: GameResult;
   ended: boolean;
   started: boolean;
+
+  group_identifier?: string | null;
+  title?: string | null; // TODO: remove this
+
+  home_team_filling_rule?: string | null;
+  home_team_filling_title?: string | null;
+  home_team_filling_parameter?: number | null;
+  guest_team_filling_rule?: string | null;
+  guest_team_filling_title?: string | null;
+  guest_team_filling_parameter?: number | null;
+}
+
+export interface FinalRound {
+  round_title: string;
+  matches: GameScheduleEntry[];
 }
