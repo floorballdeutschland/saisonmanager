@@ -83,22 +83,22 @@ export class GameEditComponent implements OnInit {
 
       this.game.group_identifier = this.existingGame.group_identifier;
       this.game.title = this.existingGame.title;
-      this.game.home_team_fulling_rule =
-        this.existingGame.home_team_fulling_rule;
-      this.game.home_team_fulling_parameter =
-        this.existingGame.home_team_fulling_parameter;
-      this.game.guest_team_fulling_rule =
-        this.existingGame.guest_team_fulling_rule;
-      this.game.guest_team_fulling_parameter =
-        this.existingGame.guest_team_fulling_parameter;
+      this.game.home_team_filling_rule =
+        this.existingGame.home_team_filling_rule;
+      this.game.home_team_filling_parameter =
+        this.existingGame.home_team_filling_parameter;
+      this.game.guest_team_filling_rule =
+        this.existingGame.guest_team_filling_rule;
+      this.game.guest_team_filling_parameter =
+        this.existingGame.guest_team_filling_parameter;
 
       this.hasGameDependencies = !(
         this.game.title === null &&
         this.game.group_identifier === null &&
-        this.game.home_team_fulling_rule === null &&
-        this.game.home_team_fulling_parameter === null &&
-        this.game.guest_team_fulling_rule === null &&
-        this.game.guest_team_fulling_parameter === null
+        this.game.home_team_filling_rule === null &&
+        this.game.home_team_filling_parameter === null &&
+        this.game.guest_team_filling_rule === null &&
+        this.game.guest_team_filling_parameter === null
       );
     }
 
@@ -119,10 +119,10 @@ export class GameEditComponent implements OnInit {
       notice_string: '',
       group_identifier: null,
       title: null,
-      home_team_fulling_rule: null,
-      home_team_fulling_parameter: null,
-      guest_team_fulling_rule: null,
-      guest_team_fulling_parameter: null,
+      home_team_filling_rule: null,
+      home_team_filling_parameter: null,
+      guest_team_filling_rule: null,
+      guest_team_filling_parameter: null,
     };
 
     this._cdr.markForCheck();
@@ -145,14 +145,14 @@ export class GameEditComponent implements OnInit {
         this.existingGame.nominated_referees ||
       this.game.group_identifier !== this.existingGame.group_identifier ||
       this.game.title !== this.existingGame.title ||
-      this.game.home_team_fulling_rule !==
-        this.existingGame.home_team_fulling_rule ||
-      this.game.home_team_fulling_parameter !==
-        this.existingGame.home_team_fulling_parameter ||
-      this.game.guest_team_fulling_rule !==
-        this.existingGame.guest_team_fulling_rule ||
-      this.game.guest_team_fulling_parameter !==
-        this.existingGame.guest_team_fulling_parameter
+      this.game.home_team_filling_rule !==
+        this.existingGame.home_team_filling_rule ||
+      this.game.home_team_filling_parameter !==
+        this.existingGame.home_team_filling_parameter ||
+      this.game.guest_team_filling_rule !==
+        this.existingGame.guest_team_filling_rule ||
+      this.game.guest_team_filling_parameter !==
+        this.existingGame.guest_team_filling_parameter
     );
   }
 
@@ -281,10 +281,10 @@ export class GameEditComponent implements OnInit {
     if (this.hasGameDependencies) {
       this.game.group_identifier = null;
       this.game.title = null;
-      this.game.home_team_fulling_rule = null;
-      this.game.home_team_fulling_parameter = null;
-      this.game.guest_team_fulling_rule = null;
-      this.game.guest_team_fulling_parameter = null;
+      this.game.home_team_filling_rule = null;
+      this.game.home_team_filling_parameter = null;
+      this.game.guest_team_filling_rule = null;
+      this.game.guest_team_filling_parameter = null;
     }
 
     this.hasGameDependencies = !this.hasGameDependencies;

@@ -402,7 +402,7 @@
       <div>
         <select
           class="w-full bg-transparent border-gray-300"
-          [(ngModel)]="game.home_team_fulling_rule"
+          [(ngModel)]="game.home_team_filling_rule"
           [ngModelOptions]="{ standalone: true }"
         >
           <option [ngValue]="null">deaktiviert</option>
@@ -418,12 +418,12 @@
       <div>
         <select
           class="w-full bg-transparent border-gray-300"
-          [disabled]="!game.home_team_fulling_rule"
-          [(ngModel)]="game.home_team_fulling_parameter"
+          [disabled]="!game.home_team_filling_rule"
+          [(ngModel)]="game.home_team_filling_parameter"
           [ngModelOptions]="{ standalone: true }"
         >
           <ng-container
-            *ngIf="game.home_team_fulling_rule?.startsWith('place')"
+            *ngIf="game.home_team_filling_rule?.startsWith('place')"
           >
             <option [ngValue]="null">Platz wählen...</option>
             <option [ngValue]="1">1. Platz</option>
@@ -437,7 +437,7 @@
             <option [ngValue]="9">9. Platz</option>
             <option [ngValue]="10">10. Platz</option>
           </ng-container>
-          <ng-container *ngIf="game.home_team_fulling_rule?.startsWith('game')">
+          <ng-container *ngIf="game.home_team_filling_rule?.startsWith('game')">
             <option [ngValue]="null">Spiel wählen...</option>
             <ng-container *ngFor="let gameDay of allGameDays">
               <ng-container *ngFor="let g of gameDay.games">
@@ -465,7 +465,7 @@
       <div>
         <select
           class="w-full bg-transparent border-gray-300"
-          [(ngModel)]="game.guest_team_fulling_rule"
+          [(ngModel)]="game.guest_team_filling_rule"
           [ngModelOptions]="{ standalone: true }"
         >
           <option [ngValue]="null">deaktiviert</option>
@@ -481,12 +481,12 @@
       <div>
         <select
           class="w-full bg-transparent border-gray-300"
-          [disabled]="!game.guest_team_fulling_rule"
-          [(ngModel)]="game.guest_team_fulling_parameter"
+          [disabled]="!game.guest_team_filling_rule"
+          [(ngModel)]="game.guest_team_filling_parameter"
           [ngModelOptions]="{ standalone: true }"
         >
           <ng-container
-            *ngIf="game.guest_team_fulling_rule?.startsWith('place')"
+            *ngIf="game.guest_team_filling_rule?.startsWith('place')"
           >
             <option [ngValue]="null">Platz wählen...</option>
             <option [ngValue]="1">1. Platz</option>
@@ -501,7 +501,7 @@
             <option [ngValue]="10">10. Platz</option>
           </ng-container>
           <ng-container
-            *ngIf="game.guest_team_fulling_rule?.startsWith('game')"
+            *ngIf="game.guest_team_filling_rule?.startsWith('game')"
           >
             <option [ngValue]="null">Spiel wählen...</option>
             <ng-container *ngFor="let gameDay of allGameDays">

@@ -111,12 +111,12 @@ export interface Game {
   group_identifier?: string | null;
   title?: string | null;
 
-  home_team_fulling_rule?: string | null;
-  home_team_fulling_title?: string | null;
-  home_team_fulling_parameter?: number | null;
-  guest_team_fulling_rule?: string | null;
-  guest_team_fulling_title?: string | null;
-  guest_team_fulling_parameter?: number | null;
+  home_team_filling_rule?: string | null;
+  home_team_filling_title?: string | null;
+  home_team_filling_parameter?: number | null;
+  guest_team_filling_rule?: string | null;
+  guest_team_filling_title?: string | null;
+  guest_team_filling_parameter?: number | null;
 }
 
 export interface PeriodTitles {
@@ -144,10 +144,10 @@ export interface GameInput {
   group_identifier?: string | null;
   title?: string | null;
 
-  home_team_fulling_rule?: string | null;
-  home_team_fulling_parameter?: number | null;
-  guest_team_fulling_rule?: string | null;
-  guest_team_fulling_parameter?: number | null;
+  home_team_filling_rule?: string | null;
+  home_team_filling_parameter?: number | null;
+  guest_team_filling_rule?: string | null;
+  guest_team_filling_parameter?: number | null;
 }
 
 export interface GameStatusOption {

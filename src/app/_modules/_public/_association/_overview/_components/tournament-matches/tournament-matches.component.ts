@@ -10,7 +10,7 @@ import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
 export class TournamentMatchesComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<boolean>();
 
-  round = 1;
+  round = 0;
 
   constructor(private _leagueService: LeagueService) {}
 

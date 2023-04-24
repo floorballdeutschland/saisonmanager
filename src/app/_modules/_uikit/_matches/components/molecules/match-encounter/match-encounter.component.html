@@ -159,15 +159,15 @@
 
 <ng-container
   *ngIf="
-    match.home_team_fulling_parameter === null &&
-    match.guest_team_fulling_rule === null
+    match.home_team_filling_parameter === null &&
+    match.guest_team_filling_rule === null
   "
 >
   <ng-container *ngTemplateOutlet="gamelink"></ng-container>
 </ng-container>
 
 <ng-container
-  *ngIf="match.home_team_fulling_parameter && match.guest_team_fulling_rule"
+  *ngIf="match.home_team_filling_parameter && match.guest_team_filling_rule"
 >
   <ng-container *ngTemplateOutlet="gamelink"></ng-container>
 
@@ -191,15 +191,15 @@
     <div class="md:text-right md:col-span-2">
       <a
         [routerLink]="
-          ['spiel', match.home_team_fulling_parameter.toString()]
+          ['spiel', match.home_team_filling_parameter.toString()]
             | routeMerge: baseRoute
         "
-        *ngIf="match.home_team_fulling_rule?.startsWith('game')"
+        *ngIf="match.home_team_filling_rule?.startsWith('game')"
       >
-        {{ match.home_team_fulling_title }}
+        {{ match.home_team_filling_title }}
       </a>
-      <span *ngIf="!match.guest_team_fulling_rule?.startsWith('game')">{{
-        match.home_team_fulling_title
+      <span *ngIf="!match.guest_team_filling_rule?.startsWith('game')">{{
+        match.home_team_filling_title
       }}</span>
     </div>
 
@@ -208,15 +208,15 @@
     <div class="md:text-left md:col-span-2">
       <a
         [routerLink]="
-          ['spiel', (match.guest_team_fulling_parameter || 0).toString()]
+          ['spiel', (match.guest_team_filling_parameter || 0).toString()]
             | routeMerge: baseRoute
         "
-        *ngIf="match.guest_team_fulling_rule?.startsWith('game')"
+        *ngIf="match.guest_team_filling_rule?.startsWith('game')"
       >
-        {{ match.guest_team_fulling_title }}
+        {{ match.guest_team_filling_title }}
       </a>
-      <span *ngIf="!match.guest_team_fulling_rule?.startsWith('game')">{{
-        match.guest_team_fulling_title
+      <span *ngIf="!match.guest_team_filling_rule?.startsWith('game')">{{
+        match.guest_team_filling_title
       }}</span>
     </div>
 
