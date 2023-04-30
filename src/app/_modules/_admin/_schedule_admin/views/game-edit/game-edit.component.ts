@@ -82,7 +82,6 @@ export class GameEditComponent implements OnInit {
       );
 
       this.game.group_identifier = this.existingGame.group_identifier;
-      this.game.title = this.existingGame.title;
       this.game.series_title = this.existingGame.series_title;
       this.game.series_number = this.existingGame.series_number;
       this.game.home_team_filling_rule =
@@ -95,7 +94,6 @@ export class GameEditComponent implements OnInit {
         this.existingGame.guest_team_filling_parameter;
 
       this.hasGameDependencies = !(
-        this.game.title === null &&
         this.game.series_title === null &&
         this.game.series_number === null &&
         this.game.group_identifier === null &&
@@ -122,7 +120,6 @@ export class GameEditComponent implements OnInit {
       notice_type: '',
       notice_string: '',
       group_identifier: null,
-      title: null,
       series_title: null,
       series_number: null,
       home_team_filling_rule: null,
@@ -150,7 +147,6 @@ export class GameEditComponent implements OnInit {
       this.game.nominated_referee_string !==
         this.existingGame.nominated_referees ||
       this.game.group_identifier !== this.existingGame.group_identifier ||
-      this.game.title !== this.existingGame.title ||
       this.game.series_title !== this.existingGame.series_title ||
       this.game.series_number !== this.existingGame.series_number ||
       this.game.home_team_filling_rule !==
@@ -288,7 +284,6 @@ export class GameEditComponent implements OnInit {
   public toggleGameDependencies() {
     if (this.hasGameDependencies) {
       this.game.group_identifier = null;
-      this.game.title = null;
       this.game.home_team_filling_rule = null;
       this.game.home_team_filling_parameter = null;
       this.game.guest_team_filling_rule = null;

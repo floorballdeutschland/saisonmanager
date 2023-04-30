@@ -109,7 +109,6 @@ export interface Game {
   notice_string?: string;
 
   group_identifier?: string | null;
-  title?: string | null; // TODO: remove this
   series_title?: string | null;
   series_number?: string | null;
 
@@ -144,7 +143,6 @@ export interface GameInput {
   guest_team_id: number;
 
   group_identifier?: string | null;
-  title?: string | null; // TODO: remove this
   series_title?: string | null;
   series_number?: string | null;
 

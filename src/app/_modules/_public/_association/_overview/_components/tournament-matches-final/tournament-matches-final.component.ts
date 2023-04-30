@@ -30,11 +30,13 @@ export class TournamentMatchesFinalComponent implements OnInit {
 
   groupFinalMatches(matches: GameScheduleEntry[]) {
     const finalMatches = matches.filter((match) => !match.group_identifier);
-    finalMatches.forEach((match) => {
+    finalMatches.forEach((match: GameScheduleEntry) => {
       const identifier = Math.floor(match.game_number / 10);
       this.groupedMatches[identifier] = {
         round_title:
-          this.groupedMatches[identifier]?.round_title || match.title || '',
+          this.groupedMatches[identifier]?.round_title ||
+          match.series_title ||
+          '',
         matches: [...(this.groupedMatches[identifier]?.matches || []), match],
       };
     });
