@@ -127,4 +127,23 @@ export class GameDayEditComponent implements OnInit {
       });
     }
   }
+
+  public destroy() {
+    this._leagueService.adminDestroyGameDay(this.gameday.id || 0).subscribe({
+      next: () => {
+        this._notificationService.success('Spieltag gelöscht', {
+          autoClose: true,
+          keepAfterRouteChange: true,
+        });
+
+        this._router.navigate([
+          '/',
+          'verwaltung',
+          'ligen',
+          this.leagueId,
+          'spielplan',
+        ]);
+      },
+    });
+  }
 }

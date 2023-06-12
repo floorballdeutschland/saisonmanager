@@ -8,6 +8,7 @@ export interface Gameday {
   arena_id: number;
   club_id: number;
   league_id: number;
+  deletable: boolean;
 }
 
 export interface GamedayInput {
@@ -17,6 +18,7 @@ export interface GamedayInput {
   arena_id: number;
   club_id: number;
   league_id: number;
+  deletable?: boolean;
 }
 
 export interface GamedayWithGames {

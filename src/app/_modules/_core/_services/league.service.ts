@@ -168,6 +168,11 @@ export class LeagueService {
     return this.http.put<{ success: boolean }>(path, gameday);
   }
 
+  public adminDestroyGameDay(gamedayId: number) {
+    const path = environment.apiURL + 'game_days/' + gamedayId + '.json';
+    return this.http.delete<{ success: boolean }>(path, {});
+  }
+
   public adminCreateLeagues(league: League) {
     const path = environment.apiURL + 'admin/leagues.json';
     return this.http.post<League>(path, league);
