@@ -2,10 +2,11 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { CdkTableModule } from '@angular/cdk/table';
 import { RouterModule } from '@angular/router';
+import { UikitCommonModule } from '@floorball/uikit/common';
 
 import * as Organisms from './components/organisms';
 import { TeamSquadPlayerComponent } from './components/organisms/team-squad-player/team-squad-player.component';
-import { TeamLineupPlayerPipe } from '../../../_helpers/_pipes/team-lineup-player.pipe';
+import { TeamLineupPlayerPipe } from '../../../_helpers';
 import { FormsModule } from '@angular/forms';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 
@@ -16,9 +17,11 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
     RouterModule,
     FormsModule,
     UikitMatchesModule,
+    UikitCommonModule,
   ],
   declarations: [
     Organisms.TeamRankingTableComponent,
+    Organisms.TeamRankingTableOverlayComponent,
     Organisms.TeamLineupComponent,
     Organisms.TeamInfoComponent,
     Organisms.TeamHistoryComponent,
