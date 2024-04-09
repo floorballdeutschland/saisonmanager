@@ -111,6 +111,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   comment?: string;
   visitors?: number;
   livestream?: string;
+  vodstream?: string;
   recordkeeper?: string;
   recordkeeperFirstname?: string;
   recordkeeperLastname?: string;
@@ -236,6 +237,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
           break;
         case 'livestream':
           this.livestream = this.fieldValue;
+          break;
+        case 'vodstream':
+          this.vodstream = this.fieldValue;
           break;
         case 'recordkeeper':
           const recordKeeperName = this.fieldValue.split(', ');
@@ -630,6 +634,10 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
       case 'livestream':
         fields = { live_stream_link: this.livestream || '' };
         saveMessage = 'Livestream Link gespeichert';
+        break;
+      case 'vodstream':
+        fields = { vod_stream_link: this.vodstream || '' };
+        saveMessage = 'VOD Link gespeichert';
         break;
       case 'recordkeeper':
         fields = {

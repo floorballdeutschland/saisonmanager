@@ -103,6 +103,7 @@ export interface Game {
   period_titles: PeriodTitles[];
   current_period_title: PeriodTitles;
   live_stream_link?: string | null;
+  vod_stream_link?: string | null;
   permission?: string[];
   forfait?: number;
   notice_type?: string;
