@@ -5,6 +5,20 @@ body {
   @apply font-helvetica;
 }
 
+.ranking-table {
+  @apply relative;
+
+  &.scrolled {
+    .ranking-table-team {
+      @apply after:absolute after:right-0;
+      @apply after:w-2 after:h-full;
+      @apply after:translate-x-full;
+      @apply after:content-[''];
+      @apply after:bg-gradient-to-r after:from-gray-300;
+    }
+  }
+}
+
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
