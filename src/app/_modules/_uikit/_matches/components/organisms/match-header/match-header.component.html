@@ -153,11 +153,11 @@
           </div>
           <div class="mt-1">
             <a
-              *ngIf="game.live_stream_link || game.vod_stream_link"
+              *ngIf="game.live_stream_link || game.vod_link"
               [href]="
-                !game.ended || !game.vod_stream_link
+                !game.ended || !game.vod_link
                   ? game.live_stream_link
-                  : game.vod_stream_link
+                  : game.vod_link
               "
               target="_blank"
               class="flex gap-2 justify-center items-center hover:text-gray-800 transition"
@@ -188,7 +188,7 @@
                 />
               </svg>
 
-              <span *ngIf="!game.ended || !game.vod_stream_link">
+              <span *ngIf="!game.ended || !game.vod_link">
                 Live-Stream anzeigen
                 <span
                   *ngIf="
@@ -202,9 +202,7 @@
                 </span>
               </span>
 
-              <span *ngIf="game.ended && game.vod_stream_link">
-                Video anzeigen
-              </span>
+              <span *ngIf="game.ended && game.vod_link"> Video anzeigen </span>
             </a>
             <p *ngIf="!game.live_stream_link">Kein Live-Stream vorhanden</p>
           </div>

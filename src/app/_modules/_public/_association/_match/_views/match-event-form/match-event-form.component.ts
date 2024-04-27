@@ -636,7 +636,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         saveMessage = 'Livestream Link gespeichert';
         break;
       case 'vodstream':
-        fields = { vod_stream_link: this.vodstream || '' };
+        fields = { vod_link: this.vodstream || '' };
         saveMessage = 'VOD Link gespeichert';
         break;
       case 'recordkeeper':
