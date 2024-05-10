@@ -145,6 +145,17 @@
         ></fb-match-event-form>
       </div>
 
+      <div class="md:col-span-2">
+        <fb-match-event-form
+          type="vodstream"
+          team="both"
+          [fieldValue]="game.vod_link || ''"
+          (updateGame)="reloadGame()"
+          (updatePeriod)="(null)"
+          [match]="game"
+        ></fb-match-event-form>
+      </div>
+
       <div>
         <fb-match-event-form
           type="recordkeeper"

@@ -134,11 +134,39 @@
     <label class="font-medium text-base text-fb-gray-500"
       >Livestream Link</label
     >
+    <p class="text-fb-gray-400 text-xs mt-0.5 mb-1.5">
+      Bitte verlinke sofern möglich direkt zum Livestream und nicht auf den
+      Account der entsprechenden Plattform.
+    </p>
     <input
       type="text"
       class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
       (change)="submitField()"
       [(ngModel)]="livestream"
+    />
+    <p class="text-fb-gray-400 text-xs">
+      Dieses Feld wird automatisch gespeichert.
+    </p>
+  </div>
+
+  <div *ngIf="type === 'vodstream'">
+    <label class="font-medium text-base text-fb-gray-500"
+      >VOD Stream Link</label
+    >
+    <p class="text-fb-gray-400 text-xs mt-0.5 mb-1.5">
+      Trage an dieser Stelle einen Link zum Video des Spiels ein, über es
+      dauerhaft als Video on Demand abrufbar ist.<br />
+      <strong>Wichtig:</strong> Wenn das Spiel beispielsweise bei Twitch
+      gestreamt wird, ist es dort nur zwei Wochen lang einsehbar.<br />
+      In diesem Fall sollte hier der Link zu einer Alternativplattform
+      eingetragen werden, auf die das Video im Nachhinein hochgeladen wird, oder
+      dieser Abschnitt bleibt leer
+    </p>
+    <input
+      type="text"
+      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+      (change)="submitField()"
+      [(ngModel)]="vodstream"
     />
     <p class="text-fb-gray-400 text-xs">
       Dieses Feld wird automatisch gespeichert.
