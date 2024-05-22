@@ -12,6 +12,14 @@ export interface GameEventLegacy {
   guest_assist?: number;
 }
 
+export type StartingPlayerPosition =
+  | 'forward1'
+  | 'goal'
+  | 'forward2'
+  | 'center'
+  | 'defender1'
+  | 'defender2';
+
 export interface GameEvent {
   event_id: number;
   event_type: string;
@@ -43,6 +51,15 @@ export interface GamePlayerEntry {
 export interface GamePlayers {
   home?: GamePlayerEntry[];
   guest?: GamePlayerEntry[];
+}
+
+export interface StartingPlayers {
+  forward1: number | '';
+  goal: number | '';
+  forward2: number | '';
+  center: number | '';
+  defender1: number | '';
+  defender2: number | '';
 }
 
 export interface GameResult {
@@ -83,6 +100,10 @@ export interface Game {
   events_legacy: GameEventLegacy[];
   events: GameEvent[];
   players: GamePlayers;
+  starting_players: {
+    home: StartingPlayers;
+    guest: StartingPlayers;
+  };
   started: boolean;
   ended: boolean;
   result_string: string;

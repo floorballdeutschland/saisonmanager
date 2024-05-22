@@ -3,16 +3,20 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnInit,
   Output,
 } from '@angular/core';
-import { Game, GameAdditionalFields } from '@floorball/types';
+import { Game, GameAdditionalFields, League } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
+import { interval, Observable, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'fb-match-report-step-one',
   templateUrl: './match-report-step-one.component.html',
 })
-export class MatchReportStepOneComponent {
+export class MatchReportStepOneComponent implements OnInit {
+  fieldSize!: string;
+
   @Input()
   game!: Game;
 
@@ -36,6 +40,20 @@ export class MatchReportStepOneComponent {
     private _leagueService: LeagueService,
     private _cdr: ChangeDetectorRef
   ) {}
+
+  ngOnInit(): void {
+    this._leagueService.selectedLeague$
+      .pipe(
+        tap((league) => {
+          if (league?.id) {
+            this.fieldSize = league.field_size;
+
+            this._cdr.markForCheck();
+          }
+        })
+      )
+      .subscribe();
+  }
 
   reloadGame() {
     this.handleReload.emit();

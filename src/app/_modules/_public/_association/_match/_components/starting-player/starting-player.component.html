@@ -1,0 +1,35 @@
+<div>
+  <p class="mb-2 font-medium text-lg text-fb-gray-500">
+    {{ team === "home" ? match.home_team_name : match.guest_team_name }}
+  </p>
+  <div class="grid gap-1">
+    <ng-container *ngFor="let positionKey of positionKeys()">
+      <div
+        *ngIf="
+          (positionKey !== 'defender1' && positionKey !== 'defender2') ||
+          fieldSize === 'GF'
+        "
+      >
+        <label class="font-medium text-base text-fb-gray-500">{{
+          getPositionTitle(positionKey)
+        }}</label>
+        <select
+          class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+          *ngIf="positionKey !== 'defender1' || fieldSize === 'GF'"
+          [(ngModel)]="
+            (team === 'home' ? startingHome : startingGuest)[positionKey]
+          "
+          (ngModelChange)="setStartingPlayer(positionKey, $event)"
+        >
+          <option value=""></option>
+          <option
+            [value]="p.player_id"
+            *ngFor="let p of match.players[team === 'home' ? 'home' : 'guest']"
+          >
+            {{ p.trikot_number }} - {{ p.player_firstname }} {{ p.player_name }}
+          </option>
+        </select>
+      </div>
+    </ng-container>
+  </div>
+</div>

@@ -10,6 +10,11 @@ import {
   ViewChild,
 } from '@angular/core';
 import {
+  GameService,
+  NotificationService,
+  RefereeService,
+} from '@floorball/core';
+import {
   Game,
   GameAdditionalFields,
   GameFields,
@@ -18,15 +23,6 @@ import {
   PenaltyCode,
   PeriodTitles,
 } from '@floorball/types';
-import {
-  AssociationService,
-  ClubService,
-  GameService,
-  NotificationService,
-  RefereeService,
-} from '@floorball/core';
-import { ActivatedRoute } from '@angular/router';
-import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'fb-match-event-form',
@@ -136,14 +132,10 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   captainsignedvisitor?: boolean;
 
   constructor(
-    private _associationService: AssociationService,
     private _gameService: GameService,
-    private _clubService: ClubService,
     private _refereeService: RefereeService,
-    private _route: ActivatedRoute,
     private _notificationService: NotificationService,
-    private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _cdr: ChangeDetectorRef
   ) {}
 
   public ngOnInit(): void {
