@@ -6,9 +6,9 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { Game, GameAdditionalFields, League } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
-import { interval, Observable, takeUntil, tap } from 'rxjs';
+import { Game, GameAdditionalFields } from '@floorball/types';
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'fb-match-report-step-one',

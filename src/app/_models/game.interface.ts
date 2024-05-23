@@ -53,13 +53,13 @@ export interface GamePlayers {
   guest?: GamePlayerEntry[];
 }
 
-export interface StartingPlayers {
-  forward1: number | '';
-  goal: number | '';
-  forward2: number | '';
-  center: number | '';
-  defender1: number | '';
-  defender2: number | '';
+export interface StartingPlayer {
+  position: string;
+  team: string;
+  player_id: number;
+  player_firstname: string;
+  player_name: string;
+  trikot_number: number;
 }
 
 export interface GameResult {
@@ -101,8 +101,8 @@ export interface Game {
   events: GameEvent[];
   players: GamePlayers;
   starting_players: {
-    home: StartingPlayers;
-    guest: StartingPlayers;
+    home: StartingPlayer[];
+    guest: StartingPlayer[];
   };
   started: boolean;
   ended: boolean;

@@ -11,7 +11,7 @@ import {
   GameInput,
   GamePlayerEntry,
   StartingPlayerPosition,
-  StartingPlayers,
+  StartingPlayer,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -104,8 +104,8 @@ export class GameService {
       position +
       '/set_player.json';
     return this.http.post<{
-      home: StartingPlayers;
-      guest: StartingPlayers;
+      home: StartingPlayer[];
+      guest: StartingPlayer[];
     }>(path, { player_id });
   }
 

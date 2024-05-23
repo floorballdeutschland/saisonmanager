@@ -4,44 +4,27 @@ import {
   LeagueService,
   NotificationService,
 } from '@floorball/core';
-import {
-  Game,
-  StartingPlayerPosition,
-  StartingPlayers,
-} from '@floorball/types';
-import { tap } from 'rxjs';
+import { Game, StartingPlayerPosition, StartingPlayer } from '@floorball/types';
+import { Observable, tap, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'fb-starting-player',
   templateUrl: './starting-player.component.html',
 })
 export class StartingPlayerComponent implements OnInit {
-  startingHome: StartingPlayers = {
-    goal: '',
-    defender1: '',
-    defender2: '',
-    center: '',
-    forward1: '',
-    forward2: '',
-  };
-  startingGuest: StartingPlayers = {
-    goal: '',
-    defender1: '',
-    defender2: '',
-    center: '',
-    forward1: '',
-    forward2: '',
-  };
+  startingHome: StartingPlayer[] = [];
+  startingGuest: StartingPlayer[] = [];
 
   fieldSize!: string;
 
   positions: {
-    forward1: string;
     goal: string;
-    forward2: string;
-    center: string;
     defender1: string;
     defender2: string;
+    center: string;
+    forward1: string;
+    forward2: string;
   } = {
     goal: 'Torwart',
     defender1: 'Verteidigung 1',
@@ -77,71 +60,64 @@ export class StartingPlayerComponent implements OnInit {
       )
       .subscribe();
 
+    this.presetFromExistingMatch();
+  }
+
+  public presetFromExistingMatch() {
     if (this.match.starting_players.home) {
-      this.startingHome = Object.keys(
-        this.match.starting_players.home || {}
-      ).reduce((acc, item) => {
-        return {
-          ...acc,
-          [item]:
-            this.match.starting_players.home[item as keyof StartingPlayers] ||
-            '',
-        };
-      }, this.startingHome);
+      this.startingHome = [...this.match.starting_players.home] || [];
     }
     if (this.match.starting_players.guest) {
-      this.startingGuest = Object.keys(
-        this.match.starting_players.guest || {}
-      ).reduce((acc, item) => {
-        return {
-          ...acc,
-          [item]:
-            this.match.starting_players.guest[item as keyof StartingPlayers] ||
-            '',
-        };
-      }, this.startingGuest);
+      this.startingGuest = [...this.match.starting_players.guest] || [];
     }
 
-    console.log(
-      this.match.starting_players.home,
-      this.match.starting_players.guest
-    );
     this._cdr.markForCheck();
   }
 
-  public setStartingPlayer(
-    position: StartingPlayerPosition,
-    player_id: string
-  ) {
-    if (player_id) {
-      this._gameService
-        .setStartingPlayer(
-          this.match.id,
-          this.team,
-          parseInt(player_id, 10),
-          position
-        )
-        .pipe(
-          tap((starting) => {
-            this.startingHome = starting.home || {};
-            this.startingGuest = starting.guest || {};
-            this._cdr.markForCheck();
+  public setStartingPlayer(position: string, player_id: string) {
+    this._gameService
+      .setStartingPlayer(
+        this.match.id,
+        this.team,
+        parseInt(player_id, 10),
+        position as StartingPlayerPosition
+      )
+      .pipe(
+        tap((starting) => {
+          console.log(starting);
+          this.startingHome = starting.home || [];
+          this.startingGuest = starting.guest || [];
+          this._cdr.markForCheck();
 
-            this._notificationService.success('Speichern erfolgreich', {
-              autoClose: true,
-              keepAfterRouteChange: true,
+          console.log(this.startingHome, this.startingGuest);
+
+          this._notificationService.success('Speichern erfolgreich', {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          });
+        }),
+        catchError((error) => {
+          if (error) {
+            this._notificationService.error(error, {
+              autoClose: false,
+              keepAfterRouteChange: false,
             });
-          })
-        )
-        .subscribe();
-    }
+          }
+
+          this.presetFromExistingMatch();
+          this._cdr.markForCheck();
+
+          return throwError(() => error);
+        })
+      )
+      .subscribe();
   }
 
   public positionKeys(): StartingPlayerPosition[] {
     return Object.keys(this.positions) as StartingPlayerPosition[];
   }
 
-  public getPositionTitle(key: StartingPlayerPosition): string {
-    return this.positions[key] || '';
+  public getPositionTitle(key: string): string {
+    return this.positions[key as StartingPlayerPosition] || '';
   }
 }
