@@ -4,6 +4,7 @@ import { CdkTableModule } from '@angular/cdk/table';
 import { RouterModule } from '@angular/router';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitPlayerModule } from '@floorball/uikit/player';
+import { IconsModule } from '../_icons/icons.module';
 import { TeamStartingPlayersComponent } from './components/organisms';
 
 import * as Organisms from './components/organisms';
@@ -19,6 +20,7 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
     UikitMatchesModule,
     UikitCommonModule,
     UikitPlayerModule,
+    IconsModule,
   ],
   declarations: [
     Organisms.TeamRankingTableComponent,
