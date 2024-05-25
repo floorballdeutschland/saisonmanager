@@ -27,7 +27,6 @@ import {
 @Component({
   selector: 'fb-match-event-form',
   templateUrl: './match-event-form.component.html',
-  styleUrls: ['./match-event-form.component.scss'],
 })
 export class MatchEventFormComponent implements OnInit, AfterViewInit {
   @ViewChild('minutefield')

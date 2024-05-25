@@ -1,18 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
-import { AdminLicenseRoutingModule } from './admin-license-routing.module';
+import { FormsModule } from '@angular/forms';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitTeamModule } from '@floorball/uikit/team';
-import { UikitMatchesModule } from '@floorball/uikit/matches';
+import { AdminLicenseRoutingModule } from './admin-license-routing.module';
 
 import * as Views from './views';
-import {
-  AdditionalClubFilterPipe,
-  ClubPlayerLicensePipe,
-  SortPlayersPipe,
-} from 'src/app/_helpers';
 import { LicenseUserLeagueDetailComponent } from './views/license-user-league-detail/license-user-league-detail.component';
 import { LicenseUserLeagueIndexComponent } from './views/license-user-league-index/license-user-league-index.component';
 
@@ -33,9 +28,6 @@ import { LicenseUserLeagueIndexComponent } from './views/license-user-league-ind
     Views.LicenseAdminIndexComponent,
     Views.LicenseAdminLeagueDetailComponent,
     Views.LicenseAdminDetailComponent,
-    SortPlayersPipe,
-    AdditionalClubFilterPipe,
-    ClubPlayerLicensePipe,
     LicenseUserLeagueDetailComponent,
     LicenseUserLeagueIndexComponent,
   ],

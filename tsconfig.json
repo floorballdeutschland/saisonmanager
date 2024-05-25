@@ -48,6 +48,9 @@
       "@floorball/public/association/scorer": [
         "src/app/_modules/_public/_association/_scorer"
       ],
+      "@floorball/public/association/match-report": [
+        "src/app/_modules/_public/_association/_match-report"
+      ],
       "@floorball/public/association/match": [
         "src/app/_modules/_public/_association/_match"
       ],

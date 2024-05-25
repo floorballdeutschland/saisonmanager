@@ -6,7 +6,6 @@ import { UikitCommonModule } from '@floorball/uikit/common';
 
 import * as Organisms from './components/organisms';
 import { TeamSquadPlayerComponent } from './components/organisms/team-squad-player/team-squad-player.component';
-import { TeamLineupPlayerPipe } from '../../../_helpers';
 import { FormsModule } from '@angular/forms';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 
@@ -28,7 +27,6 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
     Organisms.TeamSquadComponent,
     Organisms.TeamSquadHistoryComponent,
     TeamSquadPlayerComponent,
-    TeamLineupPlayerPipe,
   ],
   exports: [
     Organisms.TeamRankingTableComponent,

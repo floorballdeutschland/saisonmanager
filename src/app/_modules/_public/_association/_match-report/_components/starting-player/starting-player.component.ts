@@ -99,7 +99,7 @@ export class StartingPlayerComponent implements OnInit {
         catchError((error) => {
           if (error) {
             this._notificationService.error(error, {
-              autoClose: false,
+              autoClose: true,
               keepAfterRouteChange: false,
             });
           }

@@ -2,11 +2,11 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { PeriodFilterPipe } from 'src/app/_helpers/_pipes/period-filter.pipe';
 import * as Atoms from './components/atoms';
 import * as Molecules from './components/molecules';
 import * as Organisms from './components/organisms';
 import * as Pipes from './pipes';
+import * as HelperPipes from 'src/app/_helpers/_pipes';
 
 @NgModule({
   imports: [CommonModule, RouterModule, OverlayModule],
@@ -37,7 +37,19 @@ import * as Pipes from './pipes';
     Pipes.FilterPeriodEventsPipe,
     Pipes.ReverseEventsPipe,
     Organisms.MobileHeaderComponent,
-    PeriodFilterPipe,
+    HelperPipes.AdditionalClubFilterPipe,
+    HelperPipes.ClubPlayerLicensePipe,
+    HelperPipes.CurrentPeriodPipe,
+    HelperPipes.GameNoticeHeadlinePipe,
+    HelperPipes.GameNoticeVisibilityPipe,
+    HelperPipes.GameTimelineFilterPipe,
+    HelperPipes.GroupIdentifierFilterPipe,
+    HelperPipes.LeagueClassPipe,
+    HelperPipes.PeriodFilterPipe,
+    HelperPipes.ReversePeriodsPipe,
+    HelperPipes.SortPlayersPipe,
+    HelperPipes.SortTrikotnumbersPipe,
+    HelperPipes.TeamLineupPlayerPipe,
   ],
   exports: [
     Atoms.LogoComponent,
@@ -66,7 +78,19 @@ import * as Pipes from './pipes';
     Pipes.FilterPeriodEventsPipe,
     Pipes.ReverseEventsPipe,
     Organisms.MobileHeaderComponent,
-    PeriodFilterPipe,
+    HelperPipes.AdditionalClubFilterPipe,
+    HelperPipes.ClubPlayerLicensePipe,
+    HelperPipes.CurrentPeriodPipe,
+    HelperPipes.GameNoticeHeadlinePipe,
+    HelperPipes.GameNoticeVisibilityPipe,
+    HelperPipes.GameTimelineFilterPipe,
+    HelperPipes.GroupIdentifierFilterPipe,
+    HelperPipes.LeagueClassPipe,
+    HelperPipes.PeriodFilterPipe,
+    HelperPipes.ReversePeriodsPipe,
+    HelperPipes.SortPlayersPipe,
+    HelperPipes.SortTrikotnumbersPipe,
+    HelperPipes.TeamLineupPlayerPipe,
   ],
 })
 export class UikitCommonModule {}

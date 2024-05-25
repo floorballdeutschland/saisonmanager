@@ -8,7 +8,6 @@ import { UikitTeamModule } from '@floorball/uikit/team';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 
 import * as Views from './views';
-import { LeagueClassPipe } from 'src/app/_helpers/_pipes';
 
 @NgModule({
   imports: [
@@ -20,10 +19,6 @@ import { LeagueClassPipe } from 'src/app/_helpers/_pipes';
     UikitMatchesModule,
     UikitCommonModule,
   ],
-  declarations: [
-    Views.LeagueIndexComponent,
-    Views.LeagueEditComponent,
-    LeagueClassPipe,
-  ],
+  declarations: [Views.LeagueIndexComponent, Views.LeagueEditComponent],
 })
 export class AdminLeagueModule {}
