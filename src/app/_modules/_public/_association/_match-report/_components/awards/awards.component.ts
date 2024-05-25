@@ -8,7 +8,6 @@ import {
   AwardDefinitions,
   AwardPlayer,
   Game,
-  Team,
   TeamType,
 } from '@floorball/types';
 import { tap, throwError } from 'rxjs';

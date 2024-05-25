@@ -19,6 +19,56 @@
           </h3>
           <fb-team-lineup [lineup]="game.players.guest || []"></fb-team-lineup>
         </div>
+
+        <div>
+          <h4 class="font-bold mb-2 lg:mb-4">
+            {{ fieldSize === "GF" ? "Starting six" : "Starting four" }}
+          </h4>
+          <fb-team-starting-players
+            [players]="game.starting_players.home"
+            [fieldSize]="fieldSize"
+          ></fb-team-starting-players>
+        </div>
+
+        <div>
+          <h4 class="font-bold mb-2 lg:mb-4">
+            {{ fieldSize === "GF" ? "Starting six" : "Starting four" }}
+          </h4>
+          <fb-team-starting-players
+            [players]="game.starting_players.guest"
+            [fieldSize]="fieldSize"
+          ></fb-team-starting-players>
+        </div>
+
+        <ng-container>
+          <div>
+            <ng-container
+              *ngFor="let award of game.awards.home | completedAwards"
+            >
+              <h4 class="font-bold mb-2 lg:mb-4">
+                {{ award.award | awardTitle }}
+              </h4>
+              <fb-player-lineup-item
+                [trikot_number]="award.trikot_number"
+                [player_name]="award | fullName"
+              ></fb-player-lineup-item>
+            </ng-container>
+          </div>
+
+          <div>
+            <ng-container
+              *ngFor="let award of game.awards.guest | completedAwards"
+            >
+              <h4 class="font-bold mb-2 lg:mb-4">
+                {{ award.award | awardTitle }}
+              </h4>
+              <fb-player-lineup-item
+                [trikot_number]="award.trikot_number"
+                [player_name]="award | fullName"
+              ></fb-player-lineup-item>
+            </ng-container>
+          </div>
+        </ng-container>
       </div>
     </div>
   </ng-container>

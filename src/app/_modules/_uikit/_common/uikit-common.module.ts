@@ -2,6 +2,11 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import {
+  AwardTitlePipe,
+  CompletedAwardsFilterPipe,
+  StartingPlayerPositionTitlePipe,
+} from 'src/app/_helpers/_pipes';
 import * as Atoms from './components/atoms';
 import * as Molecules from './components/molecules';
 import * as Organisms from './components/organisms';
@@ -38,7 +43,9 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
     Pipes.ReverseEventsPipe,
     Organisms.MobileHeaderComponent,
     HelperPipes.AdditionalClubFilterPipe,
+    HelperPipes.AwardTitlePipe,
     HelperPipes.ClubPlayerLicensePipe,
+    HelperPipes.CompletedAwardsFilterPipe,
     HelperPipes.CurrentPeriodPipe,
     HelperPipes.GameNoticeHeadlinePipe,
     HelperPipes.GameNoticeVisibilityPipe,
@@ -49,6 +56,7 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
     HelperPipes.ReversePeriodsPipe,
     HelperPipes.SortPlayersPipe,
     HelperPipes.SortTrikotnumbersPipe,
+    HelperPipes.StartingPlayerPositionTitlePipe,
     HelperPipes.TeamLineupPlayerPipe,
   ],
   exports: [
@@ -91,6 +99,9 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
     HelperPipes.SortPlayersPipe,
     HelperPipes.SortTrikotnumbersPipe,
     HelperPipes.TeamLineupPlayerPipe,
+    StartingPlayerPositionTitlePipe,
+    CompletedAwardsFilterPipe,
+    AwardTitlePipe,
   ],
 })
 export class UikitCommonModule {}

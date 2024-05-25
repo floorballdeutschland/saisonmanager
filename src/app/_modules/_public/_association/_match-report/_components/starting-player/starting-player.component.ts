@@ -4,8 +4,8 @@ import {
   LeagueService,
   NotificationService,
 } from '@floorball/core';
-import { Game, StartingPlayerPosition, StartingPlayer } from '@floorball/types';
-import { Observable, tap, throwError } from 'rxjs';
+import { Game, StartingPlayer, StartingPlayerPosition } from '@floorball/types';
+import { tap, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 @Component({
@@ -17,22 +17,6 @@ export class StartingPlayerComponent implements OnInit {
   startingGuest: StartingPlayer[] = [];
 
   fieldSize!: string;
-
-  positions: {
-    goal: string;
-    defender1: string;
-    defender2: string;
-    center: string;
-    forward1: string;
-    forward2: string;
-  } = {
-    goal: 'Torwart',
-    defender1: 'Verteidigung 1',
-    defender2: 'Verteidigung 2',
-    center: 'Center',
-    forward1: 'Angriff 1',
-    forward2: 'Angriff 2',
-  };
 
   @Input()
   team!: string;
@@ -111,13 +95,5 @@ export class StartingPlayerComponent implements OnInit {
         })
       )
       .subscribe();
-  }
-
-  public positionKeys(): StartingPlayerPosition[] {
-    return Object.keys(this.positions) as StartingPlayerPosition[];
-  }
-
-  public getPositionTitle(key: string): string {
-    return this.positions[key as StartingPlayerPosition] || '';
   }
 }

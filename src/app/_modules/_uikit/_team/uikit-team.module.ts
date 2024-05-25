@@ -3,9 +3,10 @@ import { NgModule } from '@angular/core';
 import { CdkTableModule } from '@angular/cdk/table';
 import { RouterModule } from '@angular/router';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { UikitPlayerModule } from '@floorball/uikit/player';
+import { TeamStartingPlayersComponent } from './components/organisms';
 
 import * as Organisms from './components/organisms';
-import { TeamSquadPlayerComponent } from './components/organisms/team-squad-player/team-squad-player.component';
 import { FormsModule } from '@angular/forms';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 
@@ -17,6 +18,7 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
     FormsModule,
     UikitMatchesModule,
     UikitCommonModule,
+    UikitPlayerModule,
   ],
   declarations: [
     Organisms.TeamRankingTableComponent,
@@ -26,7 +28,8 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
     Organisms.TeamHistoryComponent,
     Organisms.TeamSquadComponent,
     Organisms.TeamSquadHistoryComponent,
-    TeamSquadPlayerComponent,
+    Organisms.TeamSquadPlayerComponent,
+    Organisms.TeamStartingPlayersComponent,
   ],
   exports: [
     Organisms.TeamRankingTableComponent,
@@ -35,6 +38,7 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
     Organisms.TeamHistoryComponent,
     Organisms.TeamSquadComponent,
     Organisms.TeamSquadHistoryComponent,
+    TeamStartingPlayersComponent,
   ],
 })
 export class UikitTeamModule {}

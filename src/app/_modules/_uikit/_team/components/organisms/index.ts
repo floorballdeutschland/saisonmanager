@@ -5,3 +5,5 @@ export * from './team-info/team-info.component';
 export * from './team-history/team-history.component';
 export * from './team-squad/team-squad.component';
 export * from './team-squad-history/team-squad-history.component';
+export * from './team-squad-player/team-squad-player.component';
+export * from './team-starting-players/team-starting-players.component';

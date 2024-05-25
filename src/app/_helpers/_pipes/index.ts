@@ -1,5 +1,7 @@
 export * from './additional-club-filter.pipe';
+export * from './award-title.pipe';
 export * from './club-player-license.pipe';
+export * from './completed-awards-filter.pipe';
 export * from './current-period.pipe';
 export * from './game-notice-headline.pipe';
 export * from './game-notice-visibility.pipe';
@@ -10,4 +12,5 @@ export * from './period-filter.pipe';
 export * from './reverse-periods.pipe';
 export * from './sort-players.pipe';
 export * from './sort-trikotnumbers.pipe';
+export * from './starting-player-position-title.pipe';
 export * from './team-lineup-player.pipe';
