@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AssociationService, StorageService } from '@floorball/core';
 import { GameOperation, League } from '@floorball/types';
+import { init } from '@sentry/angular';
 import { BehaviorSubject, take, tap } from 'rxjs';
 
 interface LeagueWithOperation {
@@ -60,9 +61,21 @@ export class FavoriteService {
   getFavorites(): void {
     const storageLeagues = this._storageService.getItem('fav');
 
-    if (storageLeagues) {
-      this.favoriteLeagues$.next(JSON.parse(storageLeagues));
-    }
+    this._associationService.currentSeasonId$
+      .pipe(
+        tap((currentSeasonId) => {
+          if (storageLeagues) {
+            const filteredStorageLeagues = JSON.parse(storageLeagues).filter(
+              (league: { league: League; operation: GameOperation }) => {
+                return league.league.season_id === currentSeasonId.toString();
+              }
+            );
+
+            this.favoriteLeagues$.next(filteredStorageLeagues);
+          }
+        })
+      )
+      .subscribe();
   }
 
   removeFavorite(leagueId: number): void {
