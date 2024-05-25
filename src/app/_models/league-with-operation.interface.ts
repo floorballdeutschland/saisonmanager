@@ -5,3 +5,8 @@ export interface LeagueWithOperation {
   league: League;
   operation: GameOperation;
 }
+
+export interface LeaguesWithOperation {
+  leagues: League[];
+  operation: GameOperation;
+}

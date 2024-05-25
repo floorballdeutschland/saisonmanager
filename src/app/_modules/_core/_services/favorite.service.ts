@@ -1,20 +1,21 @@
 import { Injectable } from '@angular/core';
 import { AssociationService, StorageService } from '@floorball/core';
-import { GameOperation, League } from '@floorball/types';
-import { init } from '@sentry/angular';
+import {
+  GameOperation,
+  League,
+  LeaguesWithOperation,
+  LeagueWithOperation,
+} from '@floorball/types';
 import { BehaviorSubject, take, tap } from 'rxjs';
-
-interface LeagueWithOperation {
-  league: League;
-  operation: GameOperation;
-}
 
 @Injectable({
   providedIn: 'root',
 })
 export class FavoriteService {
-  favoriteLeagues$: BehaviorSubject<LeagueWithOperation[]> =
-    new BehaviorSubject<LeagueWithOperation[]>([]);
+  // favoriteLeagues$: BehaviorSubject<{operation: GameOperation, leagues: LeagueWithOperation[]}[]> =
+  //   new BehaviorSubject<{operation: GameOperation, leagues: LeagueWithOperation[]}[]>([]);
+  favoriteLeagues$: BehaviorSubject<LeaguesWithOperation[]> =
+    new BehaviorSubject<LeaguesWithOperation[]>([]);
 
   constructor(
     private _storageService: StorageService,
@@ -48,10 +49,7 @@ export class FavoriteService {
                 ...items,
               ])
             );
-            this.favoriteLeagues$.next([
-              { league: league, operation: association },
-              ...items,
-            ]);
+            this.getFavorites();
           }
         })
       )
@@ -71,7 +69,27 @@ export class FavoriteService {
               }
             );
 
-            this.favoriteLeagues$.next(filteredStorageLeagues);
+            const groupedLeagues = filteredStorageLeagues.reduce(
+              (
+                acc: { [operationId: number]: LeaguesWithOperation },
+                item: { league: League; operation: GameOperation }
+              ) => {
+                return {
+                  ...acc,
+                  [item.operation.id]: {
+                    ...(acc?.[item.operation.id] || {}),
+                    operation: item.operation,
+                    leagues: [
+                      ...(acc?.[item.operation.id]?.leagues || []),
+                      item.league,
+                    ],
+                  },
+                };
+              },
+              {}
+            );
+
+            this.favoriteLeagues$.next(Object.values(groupedLeagues));
           }
         })
       )
@@ -89,7 +107,7 @@ export class FavoriteService {
       );
 
       this._storageService.setItem('fav', JSON.stringify(filteredItems));
-      this.favoriteLeagues$.next(filteredItems);
+      this.getFavorites();
     }
   }
 

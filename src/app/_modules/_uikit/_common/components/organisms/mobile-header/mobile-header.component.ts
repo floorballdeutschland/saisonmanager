@@ -13,7 +13,7 @@ import {
   FavoriteService,
   LeagueService,
 } from '@floorball/core';
-import { GameOperation, League, LeagueWithOperation } from '@floorball/types';
+import { GameOperation, League, LeaguesWithOperation } from '@floorball/types';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 @Component({
@@ -26,7 +26,7 @@ export class MobileHeaderComponent implements OnInit {
   isLoading$!: Observable<boolean>;
   leagues$!: Observable<League[] | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
-  favoriteLeagues$?: BehaviorSubject<LeagueWithOperation[]>;
+  favoriteLeagues$?: BehaviorSubject<LeaguesWithOperation[]>;
 
   @Output()
   closeNavigationOverlay: EventEmitter<boolean> = new EventEmitter<boolean>();

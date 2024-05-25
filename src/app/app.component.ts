@@ -1,3 +1,5 @@
+import { registerLocaleData } from '@angular/common';
+import localeDe from '@angular/common/locales/de';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -10,11 +12,8 @@ import {
   LeagueService,
   StorageService,
 } from '@floorball/core';
+import { GameOperation, League, LeaguesWithOperation } from '@floorball/types';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { GameOperation, League, LeagueWithOperation } from '@floorball/types';
-
-import { registerLocaleData } from '@angular/common';
-import localeDe from '@angular/common/locales/de';
 
 registerLocaleData(localeDe);
 
@@ -29,7 +28,7 @@ export class AppComponent implements OnInit {
   leagues$!: Observable<League[] | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
 
-  favoriteLeagues$?: BehaviorSubject<LeagueWithOperation[]>;
+  favoriteLeagues$?: BehaviorSubject<LeaguesWithOperation[]>;
 
   constructor(
     private _associationService: AssociationService,

@@ -4,7 +4,7 @@ import {
   Input,
   ViewEncapsulation,
 } from '@angular/core';
-import { LeagueWithOperation } from '@floorball/types';
+import { LeaguesWithOperation } from '@floorball/types';
 
 @Component({
   selector: 'fb-favorites-navigation',
@@ -14,5 +14,5 @@ import { LeagueWithOperation } from '@floorball/types';
 })
 export class FavoritesNavigationComponent {
   @Input()
-  favorites!: LeagueWithOperation[];
+  favorites!: LeaguesWithOperation[];
 }
