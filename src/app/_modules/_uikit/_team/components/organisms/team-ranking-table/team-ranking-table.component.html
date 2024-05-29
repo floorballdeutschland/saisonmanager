@@ -1,201 +1,297 @@
-<cdk-table [dataSource]="dataSource">
-  <ng-container cdkColumnDef="table.position">
-    <cdk-header-cell *cdkHeaderCellDef>#</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.position }}</cdk-cell>
-  </ng-container>
-
-  <ng-container cdkColumnDef="table.team">
-    <cdk-header-cell class="text-left" *cdkHeaderCellDef
-      >Mannschaft</cdk-header-cell
-    >
-    <cdk-cell class="text-left" *cdkCellDef="let element">
-      <div class="flex items-center">
-        <div class="h-8 w-8 mr-2.5">
-          <img
-            *ngIf="element.team_logo_small; else fallback"
-            [src]="element.team_logo_small"
-            class="w-full h-full object-contain"
-          />
-
-          <ng-template #fallback>
-            <svg
-              aria-hidden="true"
-              focusable="false"
-              data-prefix="fas"
-              data-icon="shield-alt"
-              class="text-fb-gray-400 p-0.5 w-full h-full object-contain"
-              role="img"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 512 512"
-            >
-              <path
-                fill="currentColor"
-                d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
-              ></path>
-            </svg>
-          </ng-template>
-        </div>
-
-        <div>
-          {{ element.team_name }}
-        </div>
-      </div>
-
-      <a
-        class="absolute left-0 top-0 w-full h-full"
-        [title]="element.team_name"
-        [routerLink]="routerPrefix.concat([element.team_id])"
-      ></a>
-    </cdk-cell>
-  </ng-container>
-
-  <ng-container cdkColumnDef="table.games">
-    <cdk-header-cell *cdkHeaderCellDef>Sp</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.games }}</cdk-cell>
-  </ng-container>
-
-  <ng-container cdkColumnDef="table.wins">
-    <cdk-header-cell class="hidden md:flex" *cdkHeaderCellDef
-      >S</cdk-header-cell
-    >
-    <cdk-cell class="hidden md:flex" *cdkCellDef="let element">{{
-      element.won
-    }}</cdk-cell>
-  </ng-container>
-
-  <ng-container cdkColumnDef="table.draws">
-    <cdk-header-cell class="hidden md:flex" *cdkHeaderCellDef
-      >U</cdk-header-cell
-    >
-    <cdk-cell class="hidden md:flex" *cdkCellDef="let element">{{
-      element.draw
-    }}</cdk-cell>
-  </ng-container>
-
-  <ng-container cdkColumnDef="table.defeats">
-    <cdk-header-cell class="hidden md:flex" *cdkHeaderCellDef
-      >N</cdk-header-cell
-    >
-    <cdk-cell class="hidden md:flex" *cdkCellDef="let element">{{
-      element.lost
-    }}</cdk-cell>
-  </ng-container>
-
-  <ng-container cdkColumnDef="table.suddenDeathWins">
-    <cdk-header-cell class="hidden md:hidden xl:flex" *cdkHeaderCellDef
-      >SDS</cdk-header-cell
-    >
-    <cdk-cell class="hidden md:hidden xl:flex" *cdkCellDef="let element">{{
-      element.won_ot
-    }}</cdk-cell>
-  </ng-container>
-
-  <ng-container cdkColumnDef="table.suddenDeathDefeats">
-    <cdk-header-cell class="hidden md:hidden xl:flex" *cdkHeaderCellDef
-      >SDN</cdk-header-cell
-    >
-    <cdk-cell class="hidden md:hidden xl:flex" *cdkCellDef="let element">{{
-      element.lost_ot
-    }}</cdk-cell>
-  </ng-container>
-
-  <ng-container cdkColumnDef="table.goals">
-    <cdk-header-cell class="hidden md:flex" *cdkHeaderCellDef
-      >Tore</cdk-header-cell
-    >
-    <cdk-cell class="hidden md:flex" *cdkCellDef="let element"
-      >{{ element.goals_scored }}:{{ element.goals_received }}</cdk-cell
-    >
-  </ng-container>
-
-  <ng-container cdkColumnDef="table.goalsDiff">
-    <cdk-header-cell class="hidden md:flex" *cdkHeaderCellDef
-      >Tdiff.</cdk-header-cell
-    >
-    <cdk-cell class="hidden md:flex" *cdkCellDef="let element">{{
-      element.goals_diff
-    }}</cdk-cell>
-  </ng-container>
-
-  <ng-container cdkColumnDef="table.points">
-    <cdk-header-cell *cdkHeaderCellDef>Pkt.</cdk-header-cell>
-    <cdk-cell *cdkCellDef="let element">{{ element.points }}</cdk-cell>
-  </ng-container>
-
-  <cdk-header-row
-    class="grid grid-cols-[35px,1fr,repeat(2,35px)] items-center text-center border-b border-fb-gray-200 font-bold text-sm px-[10px] h-12"
-    [ngClass]="{
-      'md:grid-cols-[25px,1fr,repeat(7,60px)] lg:grid-cols-[25px,1fr,repeat(7,60px)] xl:grid-cols-[25px,1fr,repeat(9,60px)]':
-        type === 'default',
-      'md:grid-cols-[25px,1fr,repeat(4,60px)] lg:grid-cols-[25px,1fr,repeat(4,60px)] xl:grid-cols-[25px,1fr,repeat(4,60px)]':
-        type === 'medium',
-      'md:grid-cols-[25px,1fr,repeat(2,60px)]': type === 'small'
-    }"
-    *cdkHeaderRowDef="
-      type === 'small'
-        ? ['table.position', 'table.team', 'table.games', 'table.points']
-        : type === 'medium'
-        ? [
-            'table.position',
-            'table.team',
-            'table.games',
-            'table.goals',
-            'table.goalsDiff',
-            'table.points'
-          ]
-        : [
-            'table.position',
-            'table.team',
-            'table.games',
-            'table.wins',
-            'table.draws',
-            'table.defeats',
-            'table.suddenDeathWins',
-            'table.suddenDeathDefeats',
-            'table.goals',
-            'table.goalsDiff',
-            'table.points'
-          ]
-    "
-  ></cdk-header-row>
-  <cdk-row
-    class="relative grid grid-cols-[35px,1fr,repeat(2,35px)] items-center text-center text-sm px-[10px] h-12 odd:bg-fb-gray-300 hover:bg-fb-gray-200 transition"
-    [ngClass]="{
-      'md:grid-cols-[25px,1fr,repeat(7,60px)] lg:grid-cols-[25px,1fr,repeat(7,60px)] xl:grid-cols-[25px,1fr,repeat(9,60px)]':
-        type === 'default',
-      'md:grid-cols-[25px,1fr,repeat(4,60px)] lg:grid-cols-[25px,1fr,repeat(4,60px)] xl:grid-cols-[25px,1fr,repeat(4,60px)]':
-        type === 'medium',
-      'md:grid-cols-[25px,1fr,repeat(2,60px)]': type === 'small'
-    }"
-    [id]="row.uuid"
-    *cdkRowDef="
-      let row;
-      let i = index;
-      columns: type === 'small'
-        ? ['table.position', 'table.team', 'table.games', 'table.points']
-        : type === 'medium'
-        ? [
-            'table.position',
-            'table.team',
-            'table.games',
-            'table.goals',
-            'table.goalsDiff',
-            'table.points'
-          ]
-        : [
-            'table.position',
-            'table.team',
-            'table.games',
-            'table.wins',
-            'table.draws',
-            'table.defeats',
-            'table.suddenDeathWins',
-            'table.suddenDeathDefeats',
-            'table.goals',
-            'table.goalsDiff',
-            'table.points'
-          ]
-    "
+<div class="relative">
+  <div
+    class="overflow-x-scroll ranking-table"
+    [ngClass]="{ scrolled: isScrolled, scrollable: isScrollable }"
+    (scroll)="onScroll()"
   >
-  </cdk-row>
-</cdk-table>
+    <cdk-table [dataSource]="dataSource">
+      <ng-container cdkColumnDef="table.team">
+        <cdk-header-cell
+          class="flex sticky left-0 h-full items-center px-[10px] bg-white text-left min-w-[230px] border-b border-fb-gray-200 order-first"
+          [ngClass]="{
+            'after:absolute after:right-0 after:w-2 after:h-full after:translate-x-full after:bg-gradient-to-r after:from-gray-300':
+              isScrolled
+          }"
+          *cdkHeaderCellDef
+        >
+          <div class="w-[25px]">#</div>
+          <div>Mannschaft</div>
+        </cdk-header-cell>
+        <cdk-cell
+          class="flex sticky left-0 h-full px-[10px] bg-white group-odd:bg-fb-gray-300 group-hover:bg-fb-gray-200 transition text-left min-w-[230px] order-first"
+          [ngClass]="{
+            'after:absolute after:right-0 after:w-2 after:h-full after:translate-x-full after:bg-gradient-to-r after:from-gray-300':
+              isScrolled
+          }"
+          *cdkCellDef="let element"
+        >
+          <div class="grid grid-cols-[25px,32px,1fr] items-center">
+            <div class="w-[25px]">
+              {{ element.position }}
+            </div>
+            <div class="h-8 w-8">
+              <img
+                *ngIf="element.team_logo_small; else fallback"
+                [src]="element.team_logo_small"
+                class="w-full h-full object-contain"
+              />
+
+              <ng-template #fallback>
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  data-prefix="fas"
+                  data-icon="shield-alt"
+                  class="text-fb-gray-400 p-0.5 w-full h-full object-contain"
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 512 512"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
+                  ></path>
+                </svg>
+              </ng-template>
+            </div>
+
+            <div class="pl-2.5">
+              {{ element.team_name }}
+              <span *ngIf="element.point_corrections">*</span>
+            </div>
+          </div>
+
+          <a
+            class="absolute left-0 top-0 w-full h-full"
+            [title]="element.team_name"
+            [routerLink]="routerPrefix.concat([element.team_id])"
+          ></a>
+        </cdk-cell>
+      </ng-container>
+
+      <ng-container cdkColumnDef="table.games">
+        <cdk-header-cell
+          class="flex items-center justify-center h-full border-b border-fb-gray-200 order-first"
+          *cdkHeaderCellDef
+          >Sp</cdk-header-cell
+        >
+        <cdk-cell
+          class="order-first flex items-center justify-center h-full bg-white group-odd:bg-fb-gray-300 group-hover:bg-fb-gray-200 transition"
+          *cdkCellDef="let element"
+          >{{ element.games }}</cdk-cell
+        >
+      </ng-container>
+
+      <ng-container cdkColumnDef="table.wins">
+        <cdk-header-cell
+          class="flex items-center justify-center h-full border-b border-fb-gray-200"
+          *cdkHeaderCellDef
+          >S</cdk-header-cell
+        >
+        <cdk-cell
+          class="flex items-center justify-center h-full bg-white group-odd:bg-fb-gray-300 group-hover:bg-fb-gray-200 transition"
+          *cdkCellDef="let element"
+          >{{ element.won }}</cdk-cell
+        >
+      </ng-container>
+
+      <ng-container cdkColumnDef="table.draws">
+        <cdk-header-cell
+          class="flex items-center justify-center h-full border-b border-fb-gray-200"
+          *cdkHeaderCellDef
+          >U</cdk-header-cell
+        >
+        <cdk-cell
+          class="flex items-center justify-center h-full bg-white group-odd:bg-fb-gray-300 group-hover:bg-fb-gray-200 transition"
+          *cdkCellDef="let element"
+          >{{ element.draw }}</cdk-cell
+        >
+      </ng-container>
+
+      <ng-container cdkColumnDef="table.defeats">
+        <cdk-header-cell
+          class="flex items-center justify-center h-full border-b border-fb-gray-200"
+          *cdkHeaderCellDef
+          >N</cdk-header-cell
+        >
+        <cdk-cell
+          class="flex items-center justify-center h-full bg-white group-odd:bg-fb-gray-300 group-hover:bg-fb-gray-200 transition"
+          *cdkCellDef="let element"
+          >{{ element.lost }}</cdk-cell
+        >
+      </ng-container>
+
+      <ng-container cdkColumnDef="table.suddenDeathWins">
+        <cdk-header-cell
+          class="flex items-center justify-center h-full border-b border-fb-gray-200"
+          *cdkHeaderCellDef
+          >SDS</cdk-header-cell
+        >
+        <cdk-cell
+          class="flex items-center justify-center h-full bg-white group-odd:bg-fb-gray-300 group-hover:bg-fb-gray-200 transition"
+          *cdkCellDef="let element"
+          >{{ element.won_ot }}</cdk-cell
+        >
+      </ng-container>
+
+      <ng-container cdkColumnDef="table.suddenDeathDefeats">
+        <cdk-header-cell
+          class="flex items-center justify-center h-full border-b border-fb-gray-200"
+          *cdkHeaderCellDef
+          >SDN</cdk-header-cell
+        >
+        <cdk-cell
+          class="flex items-center justify-center h-full bg-white group-odd:bg-fb-gray-300 group-hover:bg-fb-gray-200 transition"
+          *cdkCellDef="let element"
+          >{{ element.lost_ot }}</cdk-cell
+        >
+      </ng-container>
+
+      <ng-container cdkColumnDef="table.goals">
+        <cdk-header-cell
+          class="flex items-center justify-center h-full border-b border-fb-gray-200"
+          *cdkHeaderCellDef
+          >Tore</cdk-header-cell
+        >
+        <cdk-cell
+          class="flex items-center justify-center h-full bg-white group-odd:bg-fb-gray-300 group-hover:bg-fb-gray-200 transition"
+          *cdkCellDef="let element"
+          >{{ element.goals_scored }}:{{ element.goals_received }}</cdk-cell
+        >
+      </ng-container>
+
+      <ng-container cdkColumnDef="table.goalsDiff">
+        <cdk-header-cell
+          class="flex items-center justify-center h-full border-b border-fb-gray-200"
+          *cdkHeaderCellDef
+          >Tdiff.</cdk-header-cell
+        >
+        <cdk-cell
+          class="flex items-center justify-center h-full bg-white group-odd:bg-fb-gray-300 group-hover:bg-fb-gray-200 transition"
+          *cdkCellDef="let element"
+          >{{ element.goals_diff }}</cdk-cell
+        >
+      </ng-container>
+
+      <ng-container cdkColumnDef="table.points">
+        <cdk-header-cell
+          class="flex items-center justify-center h-full border-b border-fb-gray-200 order-first"
+          *cdkHeaderCellDef
+          >Pkt.</cdk-header-cell
+        >
+        <cdk-cell
+          class="order-first font-bold md:font-regular flex items-center justify-center h-full bg-white group-odd:bg-fb-gray-300 group-hover:bg-fb-gray-200 transition"
+          *cdkCellDef="let element"
+          >{{ element.points }}</cdk-cell
+        >
+      </ng-container>
+
+      <cdk-header-row
+        class="grid grid-cols-[1fr,repeat(3,30px),repeat(6,35px)] items-center text-center font-bold text-sm h-12"
+        [ngClass]="{
+          'md:grid-cols-[1fr,repeat(9,40px)] xl:grid-cols-[1fr,repeat(9,60px)]':
+            type === 'default',
+          'md:grid-cols-[1fr,repeat(4,60px)]': type === 'medium',
+          'md:grid-cols-[1fr,repeat(2,60px)]': type === 'small'
+        }"
+        *cdkHeaderRowDef="
+          type === 'small'
+            ? ['table.team', 'table.games', 'table.points']
+            : type === 'medium'
+            ? [
+                'table.team',
+                'table.games',
+                'table.goals',
+                'table.goalsDiff',
+                'table.points'
+              ]
+            : [
+                'table.team',
+                'table.games',
+                'table.wins',
+                'table.draws',
+                'table.defeats',
+                'table.suddenDeathWins',
+                'table.suddenDeathDefeats',
+                'table.goals',
+                'table.goalsDiff',
+                'table.points'
+              ]
+        "
+      ></cdk-header-row>
+      <cdk-row
+        class="grid grid-cols-[1fr,repeat(3,30px),repeat(6,35px)] items-center text-center text-sm h-12 odd:bg-fb-gray-300 group hover:bg-fb-gray-200 transition"
+        [ngClass]="{
+          'md:grid-cols-[1fr,repeat(9,40px)] xl:grid-cols-[1fr,repeat(9,60px)]':
+            type === 'default',
+          'md:grid-cols-[1fr,repeat(4,60px)]': type === 'medium',
+          'md:grid-cols-[1fr,repeat(2,60px)]': type === 'small'
+        }"
+        [id]="row.uuid"
+        *cdkRowDef="
+          let row;
+          let i = index;
+          columns: type === 'small'
+            ? ['table.team', 'table.games', 'table.points']
+            : type === 'medium'
+            ? [
+                'table.team',
+                'table.games',
+                'table.goals',
+                'table.goalsDiff',
+                'table.points'
+              ]
+            : [
+                'table.team',
+                'table.games',
+                'table.wins',
+                'table.draws',
+                'table.defeats',
+                'table.suddenDeathWins',
+                'table.suddenDeathDefeats',
+                'table.goals',
+                'table.goalsDiff',
+                'table.points'
+              ]
+        "
+      >
+      </cdk-row>
+    </cdk-table>
+  </div>
+  <div
+    class="scrollable absolute top-0 right-0 bg-gradient-to-l from-white w-8 h-full"
+    [ngClass]="{ hidden: !isScrollable }"
+  ></div>
+</div>
+<div
+  class="flex items-center justify-end mt-5"
+  *ngIf="!hideExpandButton && type !== 'default'"
+>
+  <fb-button (handleClick)="handleOpen()">
+    <div class="flex items-center gap-2">
+      <!-- Heroicon name: arrows-pointing-out -->
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="2"
+        stroke="currentColor"
+        class="w-5 h-5"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
+        />
+      </svg>
+      <span class="leading-none pr-1"> Gesamte Tabelle </span>
+    </div>
+  </fb-button>
+</div>
+<div *ngIf="point_corrections && point_corrections.length > 0">
+  <b>Punktabzüge:</b>
+
+  <p *ngFor="let c of point_corrections">
+    {{ c.team_name }}: {{ c.points }} Punkte ({{ c.reason }})
+  </p>
+</div>

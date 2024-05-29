@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { LeagueService } from '@floorball/core';
 import { GroupedTableEntry, League } from '@floorball/types';
-import { Observable, shareReplay, Subject, takeUntil, tap } from 'rxjs';
+import { Observable, Subject, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'fb-tournament-matches-group',
@@ -31,7 +31,6 @@ export class TournamentMatchesGroupComponent implements OnInit, OnDestroy {
   matches$?: Observable<any>;
 
   getTeamRanking(leagueNumber: number) {
-    console.log('test');
     this._leagueService
       .getGroupedTable(leagueNumber)
       .pipe(

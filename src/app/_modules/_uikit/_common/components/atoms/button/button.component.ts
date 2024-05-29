@@ -6,7 +6,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 })
 export class ButtonComponent {
   @Input()
-  icon?: 'add' | 'remove' | 'edit' | 'save' | 'cancel';
+  icon?: 'add' | 'remove' | 'edit' | 'save' | 'cancel' | 'expand';
 
   @Input()
   variant?: 'default' | 'success' | 'warning' | 'error';
@@ -19,6 +19,9 @@ export class ButtonComponent {
 
   @Input()
   disabled = false;
+
+  @Input()
+  iconAfter = false;
 
   @Output()
   handleClick = new EventEmitter<void>();
