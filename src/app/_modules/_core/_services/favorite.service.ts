@@ -63,12 +63,16 @@ export class FavoriteService {
       .pipe(
         tap((currentSeasonId) => {
           if (storageLeagues) {
+            // filter favorites by current season id; leagues of previous seasons are not accessible anymore
             const filteredStorageLeagues = JSON.parse(storageLeagues).filter(
               (league: { league: League; operation: GameOperation }) => {
                 return league.league.season_id === currentSeasonId.toString();
               }
             );
 
+            // group leagues by association to display them separately in the frontend
+            // this can be useful due to the fact that there can be the same league
+            // titles across multiple associations
             const groupedLeagues = filteredStorageLeagues.reduce(
               (
                 acc: { [operationId: number]: LeaguesWithOperation },
