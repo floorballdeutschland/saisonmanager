@@ -465,7 +465,7 @@
             <ng-container *ngFor="let gameDay of allGameDays">
               <ng-container *ngFor="let g of gameDay.games">
                 <option *ngIf="g.id !== game.id" [ngValue]="g.id">
-                  {{ g.series_title || 'Spiel }}
+                  {{ g.series_title || "Spiel" }}
                   {{
                     g.series_title && g.series_number
                       ? " " + g.series_number
@@ -534,7 +534,7 @@
             <ng-container *ngFor="let gameDay of allGameDays">
               <ng-container *ngFor="let g of gameDay.games">
                 <option *ngIf="g.id !== game.id" [ngValue]="g.id">
-                  {{ g.series_title || 'Spiel }}
+                  {{ g.series_title || "Spiel" }}
                   {{
                     g.series_title && g.series_number
                       ? " " + g.series_number
