@@ -40,7 +40,7 @@
           ></fb-team-starting-players>
         </div>
 
-        <ng-container>
+        <ng-container *ngIf="game.ended">
           <div>
             <ng-container
               *ngFor="let award of game.awards.home | completedAwards"
