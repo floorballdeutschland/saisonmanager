@@ -19,9 +19,9 @@
       Füge den Spieler hinzu, um die Änderung zu übernehmen
     </p>
   </div>
-  <div class="flex items-center min-w-0 text-sm">
+  <div class="flex items-center gap-2 min-w-0 text-sm">
     <button
-      class="w-6 h-6 border border-fb-gray-500 rounded-full mx-1.5"
+      class="w-6 h-6 border border-fb-gray-500 rounded-full"
       tabindex="-1"
       [ngClass]="
         captainPlayerId === player.id
@@ -34,7 +34,7 @@
       K
     </button>
     <button
-      class="w-6 h-6 border border-fb-gray-500 rounded-full mx-1.5"
+      class="w-6 h-6 border border-fb-gray-500 rounded-full"
       tabindex="-1"
       [ngClass]="goalkeeper ? 'text-white bg-fb-gray-500 font-extrabold' : ''"
       (click)="toggleGoalkeeper()"
@@ -42,6 +42,7 @@
     >
       T
     </button>
+
     <input
       #trikotNumberInput
       type="number"
@@ -52,9 +53,12 @@
       (focusin)="handleFocusChange()"
       [(ngModel)]="trikotNumber"
       (change)="handleTrikotNumberChange()"
-      class="ml-1 py-2 w-16 block shadow-sm text-center focus:ring-gray-500 focus:border-gray-500 sm:max-w-xs sm:text-sm border border-gray-200 rounded-md"
+      class="py-2 w-16 block shadow-sm text-center focus:ring-gray-500 focus:border-gray-500 sm:max-w-xs sm:text-sm border border-gray-200 rounded-md"
       [ngClass]="hasError ? 'border-red-600' : ''"
     />
+    <div class="w-4">
+      <fb-glasses-icon *ngIf="(player | currentAge) < 18"></fb-glasses-icon>
+    </div>
   </div>
   <!-- TODO: Direktzugriff auf Spielereigenschaften -->
   <!-- <div class="min-w-0 text-sm text-gray-400 hover:cursor-pointer">-->

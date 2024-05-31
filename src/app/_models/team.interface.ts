@@ -1,5 +1,7 @@
 import { PlayerWithLicense } from './player.interface';
 
+export type TeamType = 'home' | 'guest';
+
 export interface Team {
   id: number;
   name: string;

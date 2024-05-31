@@ -1,0 +1,11 @@
+<ng-container *ngFor="let player of players">
+  <fb-player-lineup-item
+    *ngIf="
+      (player.position !== 'defender1' && player.position !== 'defender2') ||
+      fieldSize === 'GF'
+    "
+    [trikot_number]="player.trikot_number"
+    [player_name]="player | fullName"
+    [position]="player.position | startingPlayerPositionTitle"
+  ></fb-player-lineup-item>
+</ng-container>

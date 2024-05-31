@@ -12,6 +12,16 @@ export interface GameEventLegacy {
   guest_assist?: number;
 }
 
+export type AwardDefinitions = 'mvp';
+
+export type StartingPlayerPosition =
+  | 'forward1'
+  | 'goal'
+  | 'forward2'
+  | 'center'
+  | 'defender1'
+  | 'defender2';
+
 export interface GameEvent {
   event_id: number;
   event_type: string;
@@ -43,6 +53,25 @@ export interface GamePlayerEntry {
 export interface GamePlayers {
   home?: GamePlayerEntry[];
   guest?: GamePlayerEntry[];
+}
+
+export interface StartingPlayer {
+  position: string;
+  team: string;
+  player_id: number;
+  player_firstname: string;
+  player_name: string;
+  trikot_number: number;
+}
+
+export interface AwardPlayer {
+  award: AwardDefinitions;
+  position: string;
+  team: string;
+  player_id: number;
+  player_firstname: string;
+  player_name: string;
+  trikot_number: number;
 }
 
 export interface GameResult {
@@ -83,6 +112,14 @@ export interface Game {
   events_legacy: GameEventLegacy[];
   events: GameEvent[];
   players: GamePlayers;
+  starting_players: {
+    home: StartingPlayer[];
+    guest: StartingPlayer[];
+  };
+  awards: {
+    home: AwardPlayer[];
+    guest: AwardPlayer[];
+  };
   started: boolean;
   ended: boolean;
   result_string: string;

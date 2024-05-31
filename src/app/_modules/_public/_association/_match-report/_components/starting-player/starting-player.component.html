@@ -1,0 +1,59 @@
+<div>
+  <p class="mb-2 font-medium text-lg text-fb-gray-500">
+    {{ team === "home" ? match.home_team_name : match.guest_team_name }}
+  </p>
+  <div class="grid gap-2">
+    <ng-template #nolineup>
+      Bitte füge mindestens {{ fieldSize === "GF" ? "6" : "4" }} Spieler zum
+      Kader hinzu, um die
+      {{ fieldSize === "GF" ? "Starting six" : "Starting four" }} zu bestimmen.
+    </ng-template>
+    <ng-container
+      *ngIf="
+        ((team === 'home' ? match.players.home : match.players.guest)?.length ||
+          0) >= (fieldSize === 'GF' ? 6 : 4);
+        else nolineup
+      "
+    >
+      <ng-container
+        *ngFor="
+          let startingPlayer of team === 'home' ? startingHome : startingGuest;
+          let i = index
+        "
+      >
+        <div
+          *ngIf="
+            (startingPlayer.position !== 'defender1' &&
+              startingPlayer.position !== 'defender2') ||
+            fieldSize === 'GF'
+          "
+        >
+          <label class="font-medium text-base text-fb-gray-500">
+            {{ startingPlayer.position | startingPlayerPositionTitle }}
+          </label>
+          <select
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            [(ngModel)]="
+              (team === 'home' ? startingHome : startingGuest)[i]['player_id']
+            "
+            (ngModelChange)="setStartingPlayer(startingPlayer.position, $event)"
+          >
+            <option value=""></option>
+            <option
+              [value]="player.player_id"
+              *ngFor="
+                let player of (team === 'home'
+                  ? match.players.home || []
+                  : match.players.guest || []
+                ) | sortTrikotNumber
+              "
+            >
+              {{ player.trikot_number }} - {{ player.player_firstname }}
+              {{ player.player_name }}
+            </option>
+          </select>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

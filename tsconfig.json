@@ -25,6 +25,7 @@
       "@floorball/types": ["src/app/_models"],
       "@floorball/core": ["src/app/_modules/_core"],
       "@floorball/uikit/common": ["src/app/_modules/_uikit/_common"],
+      "@floorball/uikit/icons": ["src/app/_modules/_uikit/_icons"],
       "@floorball/uikit/matches": ["src/app/_modules/_uikit/_matches"],
       "@floorball/uikit/player": ["src/app/_modules/_uikit/_player"],
       "@floorball/uikit/team": ["src/app/_modules/_uikit/_team"],
@@ -47,6 +48,9 @@
       ],
       "@floorball/public/association/scorer": [
         "src/app/_modules/_public/_association/_scorer"
+      ],
+      "@floorball/public/association/match-report": [
+        "src/app/_modules/_public/_association/_match-report"
       ],
       "@floorball/public/association/match": [
         "src/app/_modules/_public/_association/_match"

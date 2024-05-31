@@ -10,6 +10,10 @@ import {
   GameFlags,
   GameInput,
   GamePlayerEntry,
+  StartingPlayerPosition,
+  StartingPlayer,
+  AwardDefinitions,
+  AwardPlayer,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -84,6 +88,48 @@ export class GameService {
     return this.http.post<GamePlayerEntry[]>(path, {
       trikot_number: parseInt(trikot_number, 10),
     });
+  }
+
+  public setStartingPlayer(
+    gameId: number,
+    team: string,
+    player_id: number,
+    position: StartingPlayerPosition
+  ) {
+    const path =
+      environment.apiURL +
+      'user/games/' +
+      gameId +
+      '/starting/' +
+      team +
+      '/' +
+      position +
+      '/set_player.json';
+    return this.http.post<{
+      home: StartingPlayer[];
+      guest: StartingPlayer[];
+    }>(path, { player_id });
+  }
+
+  public setPlayerAward(
+    gameId: number,
+    team: string,
+    player_id: number,
+    award: AwardDefinitions
+  ) {
+    const path =
+      environment.apiURL +
+      'user/games/' +
+      gameId +
+      '/award/' +
+      team +
+      '/' +
+      award +
+      '/set_player.json';
+    return this.http.post<{
+      home: AwardPlayer[];
+      guest: AwardPlayer[];
+    }>(path, { player_id });
   }
 
   public setLineupCaptain(gameId: number, team: string, trikot_number: string) {
