@@ -4,19 +4,19 @@
   >
     <div class="lg:block h-full w-full print:lg:hidden">
       <fb-sidebar [association]="selectedAssociation$ | async">
-        <fb-league-navigation
-          *ngIf="leagues$ | async as leagues"
-          [leagues]="leagues"
-          [selectedAssociation]="selectedAssociation$ | async"
-          class="hidden lg:block"
-        ></fb-league-navigation>
-
         <ng-container *ngIf="favoriteLeagues$ | async as favoriteLeagues">
           <fb-favorites-navigation
             [favorites]="favoriteLeagues"
             class="hidden lg:block"
           ></fb-favorites-navigation>
         </ng-container>
+
+        <fb-league-navigation
+          *ngIf="leagues$ | async as leagues"
+          [leagues]="leagues"
+          [selectedAssociation]="selectedAssociation$ | async"
+          class="hidden lg:block"
+        ></fb-league-navigation>
       </fb-sidebar>
     </div>
     <div

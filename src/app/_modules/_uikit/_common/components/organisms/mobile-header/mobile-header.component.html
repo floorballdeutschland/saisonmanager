@@ -31,30 +31,10 @@
   </ng-container>
 
   <ng-container *ngIf="favoriteLeagues$ | async as favoriteLeagues">
-    <ng-container *ngIf="favoriteLeagues?.length">
-      <h2 class="uppercase text-fb-gray-100 font-bold mt-4">Favoriten</h2>
-      <nav>
-        <ul>
-          <li
-            *ngFor="let leagueWithOperation of favoriteLeagues"
-            class="mt-4 mb-4"
-          >
-            <a
-              [routerLinkActive]="'!text-black'"
-              [routerLink]="[
-                '/',
-                leagueWithOperation.operation.path,
-                leagueWithOperation.league.id
-              ]"
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              title="{{ leagueWithOperation.league.name }}"
-              (click)="close()"
-              >{{ leagueWithOperation.league.name }}</a
-            >
-          </li>
-        </ul>
-      </nav>
-    </ng-container>
+    <fb-favorites-navigation
+      [favorites]="favoriteLeagues"
+      class="lg:hidden"
+    ></fb-favorites-navigation>
   </ng-container>
 
   <fb-metanavigation (closeHandler)="close()"></fb-metanavigation>
