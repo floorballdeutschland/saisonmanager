@@ -1,4 +1,11 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import {
   GameService,
   LeagueService,
@@ -12,7 +19,7 @@ import { catchError } from 'rxjs/operators';
   selector: 'fb-starting-player',
   templateUrl: './starting-player.component.html',
 })
-export class StartingPlayerComponent implements OnInit {
+export class StartingPlayerComponent implements OnInit, OnChanges {
   startingHome: StartingPlayer[] = [];
   startingGuest: StartingPlayer[] = [];
 
@@ -45,6 +52,12 @@ export class StartingPlayerComponent implements OnInit {
       .subscribe();
 
     this.presetFromExistingMatch();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['match']) {
+      this.presetFromExistingMatch();
+    }
   }
 
   public presetFromExistingMatch() {
