@@ -30,28 +30,57 @@ export class TournamentMatchesFinalComponent implements OnInit {
 
   groupFinalMatches(matches: GameScheduleEntry[]) {
     const finalMatches = matches.filter((match) => !match.group_identifier);
-    finalMatches.forEach((match) => {
-      const identifier = Math.floor(match.game_number / 10);
-      this.groupedMatches[identifier] = {
+
+    const groupedFinalMatches = finalMatches.reduce<{
+      result: { round_title: string; matches: GameScheduleEntry[] }[];
+      currentGroup: {
+        round_title: string;
+        matches: GameScheduleEntry[];
+      } | null;
+    }>(
+      (acc, game, index, array) => {
+        const { series_title } = game;
+        const trimmedSeriesTitle = (series_title || '').trim();
+
+        // If it's the first element or the series_title matches the previous one
+        if (
+          index === 0 ||
+          trimmedSeriesTitle === array[index - 1].series_title
+        ) {
+          if (!acc.currentGroup) {
+            acc.currentGroup = { round_title: trimmedSeriesTitle, matches: [] };
+          }
+          acc.currentGroup.matches.push(game);
+        } else {
+          // Push the current group to the result and start a new group
+          if (acc.currentGroup) {
+            acc.result.push(acc.currentGroup);
+          }
+          acc.currentGroup = {
+            round_title: trimmedSeriesTitle,
+            matches: [game],
+          };
+        }
+
+        // If it's the last element, push the current group to the result
+        if (index === array.length - 1 && acc.currentGroup) {
+          acc.result.push(acc.currentGroup);
+        }
+
+        return acc;
+      },
+      { result: [], currentGroup: null }
+    ).result;
+
+    // remove
+    this.groupedMatches = groupedFinalMatches.map((group) => {
+      return {
+        ...group,
         round_title:
-          this.groupedMatches[identifier]?.round_title || match.title || '',
-        matches: [...(this.groupedMatches[identifier]?.matches || []), match],
+          group.matches.length > 1
+            ? group.round_title.replace(/\d/g, '').trim()
+            : group.round_title,
       };
-    });
-
-    this.groupedMatches = Object.keys(this.groupedMatches).map((identifier) => {
-      if (this.groupedMatches[parseInt(identifier, 10)]?.matches.length > 1) {
-        return {
-          ...this.groupedMatches[parseInt(identifier, 10)],
-          round_title: this.groupedMatches[
-            parseInt(identifier, 10)
-          ]?.round_title
-            .replace(/\d/g, '')
-            .trim(),
-        };
-      }
-
-      return this.groupedMatches[parseInt(identifier, 10)];
     });
   }
 }

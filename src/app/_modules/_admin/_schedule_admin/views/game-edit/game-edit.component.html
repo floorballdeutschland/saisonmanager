@@ -465,10 +465,14 @@
             <ng-container *ngFor="let gameDay of allGameDays">
               <ng-container *ngFor="let g of gameDay.games">
                 <option *ngIf="g.id !== game.id" [ngValue]="g.id">
-                  {{ g.title || "Spiel" }} Nr.{{ g.game_number }}, ({{
-                    g.home_team_name
+                  {{ g.series_title || "Spiel" }}
+                  {{
+                    g.series_title && g.series_number
+                      ? " " + g.series_number
+                      : ""
                   }}
-                  - {{ g.guest_team_name }}), #{{ g.id }}
+                  Nr.{{ g.game_number }}, ({{ g.home_team_name }} -
+                  {{ g.guest_team_name }}), #{{ g.id }}
                 </option>
               </ng-container>
             </ng-container>
@@ -530,10 +534,14 @@
             <ng-container *ngFor="let gameDay of allGameDays">
               <ng-container *ngFor="let g of gameDay.games">
                 <option *ngIf="g.id !== game.id" [ngValue]="g.id">
-                  {{ g.title || "Spiel" }} Nr.{{ g.game_number }}, ({{
-                    g.home_team_name
+                  {{ g.series_title || "Spiel" }}
+                  {{
+                    g.series_title && g.series_number
+                      ? " " + g.series_number
+                      : ""
                   }}
-                  - {{ g.guest_team_name }}), #{{ g.id }}
+                  Nr.{{ g.game_number }}, ({{ g.home_team_name }} -
+                  {{ g.guest_team_name }}), #{{ g.id }}
                 </option>
               </ng-container>
             </ng-container>
