@@ -7,6 +7,7 @@ export * from './game-notice-headline.pipe';
 export * from './game-notice-visibility.pipe';
 export * from './game-timeline-filter.pipe';
 export * from './group-identifier-filter.pipe';
+export * from './has-starting-player.pipe';
 export * from './league-class.pipe';
 export * from './period-filter.pipe';
 export * from './reverse-periods.pipe';

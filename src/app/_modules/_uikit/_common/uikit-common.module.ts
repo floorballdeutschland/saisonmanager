@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import {
   AwardTitlePipe,
   CompletedAwardsFilterPipe,
+  HasStartingPlayerPipe,
   StartingPlayerPositionTitlePipe,
 } from 'src/app/_helpers/_pipes';
 import * as Atoms from './components/atoms';
@@ -51,6 +52,7 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
     HelperPipes.GameNoticeVisibilityPipe,
     HelperPipes.GameTimelineFilterPipe,
     HelperPipes.GroupIdentifierFilterPipe,
+    HelperPipes.HasStartingPlayerPipe,
     HelperPipes.LeagueClassPipe,
     HelperPipes.PeriodFilterPipe,
     HelperPipes.ReversePeriodsPipe,
@@ -102,6 +104,7 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
     StartingPlayerPositionTitlePipe,
     CompletedAwardsFilterPipe,
     AwardTitlePipe,
+    HasStartingPlayerPipe,
   ],
 })
 export class UikitCommonModule {}
