@@ -105,12 +105,15 @@
                   class="w-full xl:w-1/3"
                   required
                 >
-                  <option value="M">männlich</option>
-                  <option value="W">weiblich</option>
-                  <option value="D">divers</option>
+                  <option
+                    *ngFor="let genderKey of genderKeys"
+                    [value]="genderKey"
+                  >
+                    {{ genderKey | gender }}
+                  </option>
                 </select>
                 <ng-container *ngIf="!can('player_create_update')">
-                  {{ getPlayersGenderString() }}
+                  {{ player.gender | gender }}
                 </ng-container>
               </div>
 
