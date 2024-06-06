@@ -7,7 +7,7 @@ export interface Player {
   last_name: string;
   first_name: string;
   birthdate: string;
-  male: boolean;
+  gender: 'M' | 'W' | 'D' | null;
   nation_id: number;
   club_id?: number;
   clubs?: ClubMembership[];

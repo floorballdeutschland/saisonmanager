@@ -154,7 +154,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       last_name: '',
       first_name: '',
       birthdate: '',
-      male: true,
+      gender: 'M',
       nation_id: 0,
       club_id: this.club_id,
     };
@@ -173,6 +173,27 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     }
 
     return '';
+  }
+
+  public getPlayersGenderString(): string {
+    const player = this.player;
+
+    if (player) {
+      if (!player.gender) {
+        return 'keine Angabe';
+      }
+
+      switch (player.gender) {
+        case 'M':
+          return 'männlich';
+        case 'W':
+          return 'weiblich';
+        case 'D':
+          return 'divers';
+      }
+    }
+
+    return '??';
   }
 
   public can(permissionString: string): boolean {
