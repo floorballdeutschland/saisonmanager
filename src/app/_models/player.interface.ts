@@ -2,12 +2,16 @@ import { ClubMembership } from './club-membership.interface';
 import { League } from './league.interface';
 import { Team } from './team.interface';
 
+export const PLAYER_GENDERS = { M: 'männlich', W: 'weiblich', D: 'divers' };
+
+export type GenderKey = 'M' | 'W' | 'D' | null;
+
 export interface Player {
   id: number;
   last_name: string;
   first_name: string;
   birthdate: string;
-  male: boolean;
+  gender: GenderKey;
   nation_id: number;
   club_id?: number;
   clubs?: ClubMembership[];

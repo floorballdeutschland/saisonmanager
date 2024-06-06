@@ -11,10 +11,17 @@ import {
   PlayerService,
   SessionService,
 } from '@floorball/core';
-import { Club, Nation, Player, PlayerLicense } from '@floorball/models';
+import {
+  Club,
+  GenderKey,
+  Nation,
+  Player,
+  PlayerLicense,
+} from '@floorball/models';
 import { Subject } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { PLAYER_GENDERS } from '@floorball/types';
 
 @Component({
   templateUrl: './player-edit.component.html',
@@ -154,7 +161,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       last_name: '',
       first_name: '',
       birthdate: '',
-      male: true,
+      gender: 'M',
       nation_id: 0,
       club_id: this.club_id,
     };
@@ -173,6 +180,11 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     }
 
     return '';
+  }
+
+  public get genderKeys(): GenderKey[] {
+    // we need to cast the keys to GenderKey[] because Object.keys returns string[]
+    return Object.keys(PLAYER_GENDERS) as GenderKey[];
   }
 
   public can(permissionString: string): boolean {

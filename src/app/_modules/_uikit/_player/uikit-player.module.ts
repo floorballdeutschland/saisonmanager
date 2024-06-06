@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { PlayerLineupItemComponent } from './components/organisms';
 import * as Organisms from './components/organisms';
-import { CurrentAgePipe, FullNamePipe } from './pipes';
+import { CurrentAgePipe, FullNamePipe, GenderPipe } from './pipes';
 import * as Pipes from './pipes';
 import { CdkTableModule } from '@angular/cdk/table';
 
@@ -14,6 +14,7 @@ import { CdkTableModule } from '@angular/cdk/table';
     Organisms.PlayerLineupDialogComponent,
     Pipes.CurrentAgePipe,
     Pipes.FullNamePipe,
+    Pipes.GenderPipe,
   ],
   exports: [
     Organisms.PlayerRankingTableComponent,
@@ -21,6 +22,7 @@ import { CdkTableModule } from '@angular/cdk/table';
     PlayerLineupItemComponent,
     FullNamePipe,
     CurrentAgePipe,
+    GenderPipe,
   ],
 })
 export class UikitPlayerModule {}
