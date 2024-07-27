@@ -27,6 +27,7 @@ import {
   tap,
   timer,
 } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Component({
   templateUrl: './league-host.component.html',
@@ -96,7 +97,8 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
   }
 
   getMatches(leagueNumber: number) {
-    this.matches$ = timer(1, 30000).pipe(
+    const timeout = environment.archiveMode ? 86400000 : 30000;
+    this.matches$ = timer(1, timeout).pipe(
       switchMap(() =>
         this._leagueService
           .getGameScheduleForCurrentGameDay(leagueNumber)

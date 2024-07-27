@@ -26,6 +26,7 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Component({
   templateUrl: './overview.component.html',
@@ -89,7 +90,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
             // league type cup has its own refetch method in matches-with-rounds component
             if (league.league_type === 'league') {
-              this.intervalSub = interval(30000)
+              const timeout = environment.archiveMode ? 86400000 : 30000;
+              this.intervalSub = interval(timeout)
                 .pipe(
                   tap(() => this.getMatches(league)),
                   takeUntil(this._destroy$)

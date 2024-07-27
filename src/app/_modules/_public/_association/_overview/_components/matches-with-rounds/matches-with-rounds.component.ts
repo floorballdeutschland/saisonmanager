@@ -17,6 +17,7 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'fb-matches-with-rounds',
@@ -52,7 +53,8 @@ export class MatchesWithRoundsComponent implements OnInit, OnDestroy {
 
             this.getMatches(league.id);
 
-            this.intervalSub = interval(30000)
+            const timeout = environment.archiveMode ? 86400000 : 30000;
+            this.intervalSub = interval(timeout)
               .pipe(
                 tap(() => this.getMatches(league.id)),
                 takeUntil(this._destroy$)

@@ -24,6 +24,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
+import { environment } from 'src/environments/environment';
 
 @Component({
   templateUrl: './match.component.html',
@@ -79,7 +80,8 @@ export class MatchComponent implements OnInit, OnDestroy {
             this.intervalSub.unsubscribe();
           }
 
-          this.intervalSub = interval(30000)
+          const timeout = environment.archiveMode ? 86400000 : 30000;
+          this.intervalSub = interval(timeout)
             .pipe(
               tap(() => this.getMatch(params['matchId'])),
               takeUntil(this._destroy$)
