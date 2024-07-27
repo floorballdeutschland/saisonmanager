@@ -3,6 +3,7 @@ import { AssociationService } from '@floorball/core';
 import { GameOperation } from 'src/app/_models';
 import { Observable } from 'rxjs';
 import { Title } from '@angular/platform-browser';
+import { environment } from 'src/environments/environment';
 
 @Component({
   templateUrl: './home.component.html',
@@ -10,6 +11,9 @@ import { Title } from '@angular/platform-browser';
 })
 export class HomeComponent {
   associations$: Observable<GameOperation[]>;
+
+  archiveMode = environment.archiveMode;
+  archiveTitle = environment.archiveTitle;
 
   constructor(
     private _associationService: AssociationService,

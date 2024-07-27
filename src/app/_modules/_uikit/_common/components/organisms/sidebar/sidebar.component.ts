@@ -10,6 +10,7 @@ import { OverlayService } from '@floorball/core';
 import { GameOperation } from '@floorball/types';
 import { take, tap } from 'rxjs';
 import { MobileHeaderComponent } from '..';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'fb-sidebar',
@@ -23,6 +24,9 @@ export class SidebarComponent {
 
   overlayComponentRef?: ComponentRef<MobileHeaderComponent>;
   menuIsOpen = false;
+
+  archiveMode = environment.archiveMode;
+  archiveTitle = environment.archiveTitle;
 
   constructor(
     private _overlayService: OverlayService,

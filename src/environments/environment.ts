@@ -6,6 +6,7 @@ export const environment = {
   production: false,
   apiURL: '/api/v2/',
   archiveMode: false,
+  archiveTitle: '',
 };
 
 /*

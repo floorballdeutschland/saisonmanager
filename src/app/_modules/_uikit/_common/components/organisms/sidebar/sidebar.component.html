@@ -11,6 +11,9 @@
     <ng-template #fbLogo>
       <fb-logo></fb-logo>
     </ng-template>
+    <p *ngIf="archiveMode">
+      <b>{{ archiveTitle }}</b>
+    </p>
   </a>
 
   <!-- open menu -->
