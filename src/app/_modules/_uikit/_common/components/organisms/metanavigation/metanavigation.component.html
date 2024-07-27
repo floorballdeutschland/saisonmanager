@@ -66,12 +66,13 @@
   </nav>
 </ng-container>
 
-<h2 class="uppercase text-fb-gray-100 font-bold mt-12">
-  Weitere<a href="/login">s</a>
-</h2>
+<h2 class="uppercase text-fb-gray-100 font-bold mt-12">Weiteres</h2>
 <nav>
   <ul>
-    <li class="mt-4 mb-4" *ngIf="(isLoggedIn$ | async) === false">
+    <li
+      class="mt-4 mb-4"
+      *ngIf="(isLoggedIn$ | async) === false && !archiveMode"
+    >
       <a
         href="/login"
         class="font-bold text-fb-gray-500 hover:text-black text-base"
@@ -88,7 +89,7 @@
     </li>
     <li class="mt-4 mb-4">
       <a
-        href="https://fvd.saisonmanager.de/index.php?seite=impressum"
+        href="https://floorball.de/impressum/"
         target="_blank"
         class="font-bold text-fb-gray-500 hover:text-black text-base"
         >Impressum</a

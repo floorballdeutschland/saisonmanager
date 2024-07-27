@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { SessionService } from '@floorball/core';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'fb-metanavigation',
@@ -24,6 +25,8 @@ export class MetanavigationComponent implements OnInit {
 
   permissions: { [key: string]: boolean } = {};
   username = '';
+
+  archiveMode = environment.archiveMode;
 
   constructor(
     private _sessionService: SessionService,
