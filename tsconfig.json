@@ -16,7 +16,7 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2020",
+    "target": "ES2022",
     "module": "es2020",
     "lib": ["es2020", "dom"],
     "resolveJsonModule": true,
@@ -65,7 +65,8 @@
       "@floorball/admin/schedule": ["src/app/_modules/_admin/_schedule_admin"],
       "@floorball/admin/licenses": ["src/app/_modules/_admin/_license_admin"],
       "@floorball/models": ["src/app/_models"]
-    }
+    },
+    "useDefineForClassFields": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
