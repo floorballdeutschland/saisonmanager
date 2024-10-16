@@ -9,7 +9,7 @@ import {
 import { LeagueService, NotificationService } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 
 @Component({
   templateUrl: './import-game-days.component.html',
@@ -18,7 +18,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 export class ImportGameDaysComponent implements OnInit {
   @ViewChild('fileInput') fileInput!: ElementRef;
 
-  form!: FormGroup;
+  form!: UntypedFormGroup;
   running = false;
 
   errors: string[] = [];
@@ -29,7 +29,7 @@ export class ImportGameDaysComponent implements OnInit {
     private _router: Router,
     private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private _metaTitle: Title
   ) {
     this._metaTitle.setTitle('Floorball Saisonmanager');
