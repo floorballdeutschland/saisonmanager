@@ -1,4 +1,8 @@
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import {
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import {
   APP_INITIALIZER,
   ErrorHandler,
@@ -18,12 +22,8 @@ import { ErrorInterceptor } from './_helpers/_interceptors/error.interceptor';
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    HttpClientModule,
-    UikitCommonModule,
-  ],
+  bootstrap: [AppComponent],
+  imports: [BrowserModule, AppRoutingModule, UikitCommonModule],
   providers: [
     {
       provide: ErrorHandler,
@@ -45,7 +45,7 @@ import { ErrorInterceptor } from './_helpers/_interceptors/error.interceptor';
     },
     SessionService,
     { provide: LOCALE_ID, useValue: 'de' },
+    provideHttpClient(withInterceptorsFromDi()),
   ],
-  bootstrap: [AppComponent],
 })
 export class AppModule {}
