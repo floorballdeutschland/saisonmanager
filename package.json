@@ -22,7 +22,7 @@
     "@angular/platform-browser": "^15.2.10",
     "@angular/platform-browser-dynamic": "^15.2.10",
     "@angular/router": "^15.2.10",
-    "@ngneat/reactive-forms": "^4.0.3",
+    "@ngneat/reactive-forms": "^5.0.2",
     "@sentry/angular": "^8.34.0",
     "@sentry/tracing": "^6.18.1",
     "@tailwindcss/forms": "^0.5.2",
