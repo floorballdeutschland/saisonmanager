@@ -27,8 +27,10 @@ export class TournamentMatchesGroupComponent implements OnInit, OnDestroy {
   @Input()
   selectedLeague?: League;
 
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   @Input()
-  matches$?: Observable<any>;
+  matches$?: Observable<any>; // TODO: please provide a type
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   getTeamRanking(leagueNumber: number) {
     this._leagueService
