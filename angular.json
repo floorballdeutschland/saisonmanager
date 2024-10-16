@@ -71,10 +71,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "saisonmanager:build:production"
+              "buildTarget": "saisonmanager:build:production"
             },
             "development": {
-              "browserTarget": "saisonmanager:build:development"
+              "buildTarget": "saisonmanager:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -82,7 +82,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "saisonmanager:build"
+            "buildTarget": "saisonmanager:build"
           }
         },
         "test": {
