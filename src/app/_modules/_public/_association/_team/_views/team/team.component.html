@@ -1,1 +1,28 @@
-<p>team works!</p>
+<ng-container>
+  <div class="container mx-auto px-4 lg:px-8 my-4 lg:my-8">
+    <div class="flex justify-end items-center">
+      <div class="flex-1">
+        <h2
+          class="font-bold text-black text-2xl md:text-3xl xl:text-4.5xl leading-[26px] xl:leading-[52px]"
+        >
+          Teamdetails
+        </h2>
+      </div>
+      <div>
+        <fb-button (handleClick)="navigateBack()"> Zurück </fb-button>
+      </div>
+    </div>
+  </div>
+  <div class="container mx-auto px-4 lg:px-8 my-2">
+    <ng-container *ngIf="teamId">
+      <a
+        class="text-blue-600 underline hover:text-blue-800"
+        [href]="'/calendar/teams/' + teamId + '.ics'"
+        target="_blank"
+        rel="noopener"
+      >
+        Team-Kalender (ICS) herunterladen
+      </a>
+    </ng-container>
+  </div>
+</ng-container>

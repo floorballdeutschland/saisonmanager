@@ -1,5 +1,13 @@
 <div class="container mx-auto px-4 lg:px-8 mb-5">
-  <h2 class="font-bold text-xl lg:text-2xl mt-8">Alle Spielbegegnungen</h2>
+  <h2 class="font-bold text-xl lg:text-2xl mt-8">
+    Alle Spielbegegnungen @if (leagueId) {
+    <a
+      class="mt-4 sm:mt-0 text-fb-gray-400"
+      href="/calendar/leagues/{{ leagueId }}.ics"
+      >(als ics)</a
+    >
+    }
+  </h2>
 
   <div class="mt-4 lg:mt-8 pb-16">
     <ng-container *ngIf="matches$ | async as matches; else loadingMatches">

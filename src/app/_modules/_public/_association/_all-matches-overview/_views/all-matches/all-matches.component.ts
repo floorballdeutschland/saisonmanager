@@ -17,6 +17,7 @@ import { LeagueService } from '@floorball/core';
 })
 export class AllMatchesComponent implements OnInit, OnDestroy {
   matches$?: Observable<GameScheduleEntry[] | null>;
+  public leagueId?: number;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -27,6 +28,7 @@ export class AllMatchesComponent implements OnInit, OnDestroy {
       .pipe(
         tap((league) => {
           if (league?.id) {
+            this.leagueId = league.id;
             this.getMatches(league.id);
           }
         }),
