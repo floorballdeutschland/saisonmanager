@@ -9,7 +9,7 @@
     <span class="block text-[22px] lg:text-[24px]">{{ league?.name }}</span>
     <span class="block text-[14px] pt-2"
       >Diese Lizenzliste wurde am
-      {{ currentTime() | date: "dd.MM.yyyy HH:mm" }} Uhr erstellt.</span
+      {{ currentTime() | date : "dd.MM.yyyy HH:mm" }} Uhr erstellt.</span
     >
   </h2>
 </div>
@@ -93,7 +93,7 @@
               <span class="block text-[20px]">{{ league?.name }}</span>
               <span class="block text-[10px] pb-2"
                 >Diese Lizenzliste wurde am
-                {{ currentTime() | date: "dd.MM.YYYY HH:mm" }} Uhr
+                {{ currentTime() | date : "dd.MM.yyyy HH:mm" }} Uhr
                 erstellt.</span
               >
             </p>
@@ -144,7 +144,7 @@
                       >
                         <div class="w-5 h-5 print:w-3 print:h-3">
                           <fb-glasses-icon
-                            *ngIf="(p | currentAge: gamedayDate) < 18"
+                            *ngIf="(p | currentAge : gamedayDate) < 18"
                           ></fb-glasses-icon>
                         </div>
                       </div>
