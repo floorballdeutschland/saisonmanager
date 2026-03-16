@@ -56,7 +56,12 @@ export class ScheduleIndexComponent implements OnInit {
   public getSchdule(leagueId: number) {
     this._leagueService.getAdminGameSchedule(leagueId).subscribe({
       next: (result) => {
-        this.gameDays = result;
+        this.gameDays = result.map((gameDay) => ({
+          ...gameDay,
+          games: gameDay.games.sort(
+            (a, b) => parseInt(a.game_number) - parseInt(b.game_number)
+          ),
+        }));
         this.loading = false;
 
         this._cdr.markForCheck();
