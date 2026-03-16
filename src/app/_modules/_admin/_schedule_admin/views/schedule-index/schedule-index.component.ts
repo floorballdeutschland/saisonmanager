@@ -58,8 +58,10 @@ export class ScheduleIndexComponent implements OnInit {
       next: (result) => {
         this.gameDays = result.map((gameDay) => ({
           ...gameDay,
-          games: gameDay.games.sort(
-            (a, b) => parseInt(a.game_number) - parseInt(b.game_number)
+          games: [...gameDay.games].sort(
+            (a, b) =>
+              (parseInt(a.game_number, 10) || 0) -
+              (parseInt(b.game_number, 10) || 0)
           ),
         }));
         this.loading = false;
