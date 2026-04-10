@@ -143,3 +143,47 @@ No CI/CD. Manual deploy:
 - Deploy script: `/opt/saisonmanager/deploy.sh`
 
 **Archive server:** `archiv.saisonmanager.de` → Hetzner `116.203.113.70` (SSH via YubiKey)
+
+## Versioning & Changelog
+
+Semantic Versioning (MAJOR.MINOR.PATCH) — defined in `~/saisonmanager-api/config/initializers/version.rb`.
+
+**Rules:**
+
+- **Patch** (1.0.x): bugfixes, performance improvements, no new functionality
+- **Minor** (1.x.0): new user-facing features
+- **Major** (x.0.0): breaking API changes
+
+**Workflow (mandatory for every PR):**
+
+1. Add an entry under `## [Unreleased]` in `~/saisonmanager-api/CHANGELOG.md`
+   - Use sections: `### Behoben` (fixes), `### Neu` (features), `### Verbessert` (improvements)
+2. On merge to `main`: move the `[Unreleased]` block to a new versioned entry and bump `version.rb`
+   ```
+   ## [1.1.0] - YYYY-MM-DD
+   ```
+3. The version and changelog are exposed publicly at `GET /api/v2/version` and can be shown in the admin UI.
+
+**Version endpoint response:**
+
+```json
+{
+  "version": "1.0.0",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-10",
+      "changes": { "Behoben": ["..."], "Verbessert": ["..."] }
+    }
+  ]
+}
+```
+
+## Pull Request Workflow
+
+Every fix or feature must go through a PR — no direct pushes to `main`.
+
+1. Branch from `main`: `git checkout -b fix/description` or `feat/description`
+2. Add `## [Unreleased]` entry to `CHANGELOG.md`
+3. Open PR with `gh pr create`
+4. On merge: bump version in `version.rb`, move Unreleased → versioned block in CHANGELOG
