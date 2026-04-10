@@ -1,0 +1,127 @@
+<div class="p-4 lg:p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Schiedsrichterverwaltung</h1>
+    <a
+      [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'neu']"
+      class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+    >
+      + Neu anlegen
+    </a>
+  </div>
+
+  <!-- Filter -->
+  <div class="flex flex-wrap gap-3 mb-6">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="onSearch()"
+      placeholder="Name oder Lizenznummer"
+      class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-64"
+    />
+    <input
+      type="text"
+      [(ngModel)]="filterLandesverband"
+      (keyup.enter)="onSearch()"
+      placeholder="Landesverband / Region"
+      class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-48"
+    />
+    <input
+      type="text"
+      [(ngModel)]="filterLizenzstufe"
+      (keyup.enter)="onSearch()"
+      placeholder="Lizenzstufe (z.B. A, B, N1)"
+      class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-48"
+    />
+    <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+      <input type="checkbox" [(ngModel)]="filterActive" (change)="onSearch()" />
+      Nur aktive Lizenzen
+    </label>
+    <button
+      (click)="onSearch()"
+      class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+    >
+      Suchen
+    </button>
+    <button
+      (click)="clearFilters()"
+      class="px-4 py-2 text-sm text-fb-gray-500 hover:text-black"
+    >
+      Filter zurücksetzen
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8 text-center">
+    Lade Schiedsrichter…
+  </div>
+
+  <!-- Tabelle -->
+  <div *ngIf="!loading" class="overflow-x-auto">
+    <p class="text-sm text-fb-gray-500 mb-3">{{ referees.length }} Einträge</p>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-fb-gray-700 text-left">
+          <th class="py-2 pr-4 font-bold">Lizenznummer</th>
+          <th class="py-2 pr-4 font-bold">Name</th>
+          <th class="py-2 pr-4 font-bold">Stufe</th>
+          <th class="py-2 pr-4 font-bold">Region / LV</th>
+          <th class="py-2 pr-4 font-bold">Gültigkeit</th>
+          <th class="py-2 pr-4 font-bold">Verband</th>
+          <th class="py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let r of referees"
+          class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
+        >
+          <td class="py-2 pr-4 font-mono">{{ r.lizenznummer }}</td>
+          <td class="py-2 pr-4 font-medium">
+            <a
+              [routerLink]="[
+                '/',
+                'verwaltung',
+                'schiedsrichter',
+                r.lizenznummer
+              ]"
+              class="hover:underline"
+            >
+              {{ r.nachname }}, {{ r.vorname }}
+            </a>
+          </td>
+          <td class="py-2 pr-4">{{ r.lizenzstufe || "–" }}</td>
+          <td class="py-2 pr-4">{{ r.landesverband || "–" }}</td>
+          <td class="py-2 pr-4">
+            <span
+              *ngIf="r.gueltigkeit"
+              [class]="r.active ? 'text-green-600 font-medium' : 'text-red-500'"
+            >
+              {{ r.gueltigkeit }}
+            </span>
+            <span *ngIf="!r.gueltigkeit" class="text-fb-gray-500">–</span>
+          </td>
+          <td class="py-2 pr-4 text-fb-gray-500">{{ r.verein || "–" }}</td>
+          <td class="py-2 text-right">
+            <a
+              [routerLink]="[
+                '/',
+                'verwaltung',
+                'schiedsrichter',
+                r.lizenznummer,
+                'bearbeiten'
+              ]"
+              class="text-sm text-fb-gray-500 hover:text-black"
+            >
+              Bearbeiten
+            </a>
+          </td>
+        </tr>
+        <tr *ngIf="referees.length === 0">
+          <td colspan="7" class="py-8 text-center text-fb-gray-500">
+            Keine Einträge gefunden.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,131 @@
+<div class="p-4 lg:p-8">
+  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
+
+  <ng-container *ngIf="!loading && referee">
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <a
+          [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
+          class="text-fb-gray-500 hover:text-black text-sm"
+          >← Übersicht</a
+        >
+        <h1 class="text-2xl font-bold mt-1">
+          {{ referee.nachname }}, {{ referee.vorname }}
+        </h1>
+        <p class="text-fb-gray-500 font-mono text-sm mt-0.5">
+          Lizenz #{{ referee.lizenznummer }}
+        </p>
+      </div>
+      <a
+        [routerLink]="[
+          '/',
+          'verwaltung',
+          'schiedsrichter',
+          referee.lizenznummer,
+          'bearbeiten'
+        ]"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+      >
+        Bearbeiten
+      </a>
+    </div>
+
+    <!-- Stammdaten -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div>
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+          Lizenzstufe
+        </p>
+        <p class="font-medium">{{ referee.lizenzstufe || "–" }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+          Gültigkeit
+        </p>
+        <p
+          [class]="
+            isActive ? 'font-medium text-green-600' : 'font-medium text-red-500'
+          "
+        >
+          {{ referee.gueltigkeit || "–" }}
+          <span *ngIf="referee.gueltigkeit" class="text-xs ml-1">
+            ({{ isActive ? "aktiv" : "abgelaufen" }})
+          </span>
+        </p>
+      </div>
+      <div>
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+          Region / LV
+        </p>
+        <p class="font-medium">{{ referee.landesverband || "–" }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+          Verband / Verein
+        </p>
+        <p class="font-medium">{{ referee.verein || "–" }}</p>
+      </div>
+      <div *ngIf="referee.zusatzqualifikation">
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+          Zusatzqualifikation
+        </p>
+        <p class="font-medium">
+          {{ referee.zusatzqualifikation }}
+          <span *ngIf="referee.gueltigkeit_z" class="text-fb-gray-500 text-sm"
+            >(bis {{ referee.gueltigkeit_z }})</span
+          >
+        </p>
+      </div>
+      <div *ngIf="referee.email">
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">E-Mail</p>
+        <p class="font-medium">{{ referee.email }}</p>
+      </div>
+    </div>
+
+    <!-- Spielhistorie -->
+    <h2 class="text-lg font-bold mb-4">Spielhistorie</h2>
+
+    <div *ngIf="gamesLoading" class="text-fb-gray-500 text-sm py-4">
+      Lade Spiele…
+    </div>
+
+    <div *ngIf="!gamesLoading">
+      <p class="text-sm text-fb-gray-500 mb-3">{{ games.length }} Spiele</p>
+      <table class="w-full text-sm" *ngIf="games.length > 0">
+        <thead>
+          <tr class="border-b border-fb-gray-700 text-left">
+            <th class="py-2 pr-4 font-bold">Nr.</th>
+            <th class="py-2 pr-4 font-bold">Datum</th>
+            <th class="py-2 pr-4 font-bold">Heimteam</th>
+            <th class="py-2 pr-4 font-bold">Gastteam</th>
+            <th class="py-2 pr-4 font-bold">Liga</th>
+            <th class="py-2 font-bold">Ergebnis</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let g of games"
+            class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
+          >
+            <td class="py-2 pr-4 font-mono text-fb-gray-500">
+              {{ g.game_number }}
+            </td>
+            <td class="py-2 pr-4">{{ g.date | date : "dd.MM.yyyy" }}</td>
+            <td class="py-2 pr-4">{{ g.home_team }}</td>
+            <td class="py-2 pr-4">{{ g.guest_team }}</td>
+            <td class="py-2 pr-4 text-fb-gray-500">{{ g.league }}</td>
+            <td class="py-2 font-mono">{{ g.result || "–" }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="games.length === 0" class="text-fb-gray-500 text-sm">
+        Keine Spiele gefunden.
+      </p>
+    </div>
+  </ng-container>
+
+  <div *ngIf="!loading && !referee" class="text-fb-gray-500 py-8">
+    Schiedsrichter nicht gefunden.
+  </div>
+</div>

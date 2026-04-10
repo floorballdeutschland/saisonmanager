@@ -48,6 +48,11 @@ const routes: Routes = [
         loadChildren: () =>
           import('@floorball/admin/licenses').then((m) => m.AdminLicenseModule),
       },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/admin/referees').then((m) => m.AdminRefereeModule),
+      },
     ],
   },
   {
