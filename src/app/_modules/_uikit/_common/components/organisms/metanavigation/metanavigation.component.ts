@@ -7,7 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { SessionService } from '@floorball/core';
+import { SessionService, VersionService } from '@floorball/core';
 
 @Component({
   selector: 'fb-metanavigation',
@@ -21,12 +21,14 @@ export class MetanavigationComponent implements OnInit {
 
   isLoggedIn$ = this._sessionService.isLoggedIn$;
   currentUser$ = this._sessionService.currentUser$;
+  version$ = this._versionService.version$;
 
   permissions: { [key: string]: boolean } = {};
   username = '';
 
   constructor(
     private _sessionService: SessionService,
+    private _versionService: VersionService,
     private router: Router
   ) {}
 

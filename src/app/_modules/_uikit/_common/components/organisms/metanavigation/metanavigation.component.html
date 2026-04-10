@@ -96,3 +96,7 @@
     </li>
   </ul>
 </nav>
+
+<p *ngIf="version$ | async as version" class="text-xs text-fb-gray-100 mt-8">
+  v{{ version }}
+</p>

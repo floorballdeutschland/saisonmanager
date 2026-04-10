@@ -14,3 +14,4 @@ export * from './notification.service';
 export * from './game-operation.service';
 export * from './referee.service';
 export * from './arena.service';
+export * from './version.service';
