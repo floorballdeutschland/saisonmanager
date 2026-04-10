@@ -1,0 +1,160 @@
+<div class="p-4 lg:p-8 max-w-2xl">
+  <div class="flex items-center gap-3 mb-6">
+    <a
+      [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
+      class="text-fb-gray-500 hover:text-black text-sm"
+      >← Zurück</a
+    >
+    <h1 class="text-2xl font-bold">
+      {{ editMode ? "Schiedsrichter bearbeiten" : "Neuer Schiedsrichter" }}
+    </h1>
+  </div>
+
+  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
+
+  <form *ngIf="!loading" (ngSubmit)="submit()" class="flex flex-col gap-4">
+    <!-- Stammdaten -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Lizenznummer *</label>
+        <input
+          type="number"
+          [(ngModel)]="referee.lizenznummer"
+          name="lizenznummer"
+          [disabled]="editMode"
+          required
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:text-fb-gray-500"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Lizenzstufe</label>
+        <select
+          [(ngModel)]="referee.lizenzstufe"
+          name="lizenzstufe"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
+        >
+          <option value="">– keine –</option>
+          <option *ngFor="let s of lizenzstufen" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Vorname *</label>
+        <input
+          type="text"
+          [(ngModel)]="referee.vorname"
+          name="vorname"
+          required
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Nachname *</label>
+        <input
+          type="text"
+          [(ngModel)]="referee.nachname"
+          name="nachname"
+          required
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+    </div>
+
+    <!-- Lizenz -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Lizenz gültig bis</label>
+        <input
+          type="date"
+          [(ngModel)]="referee.gueltigkeit"
+          name="gueltigkeit"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Zusatzqualifikation</label>
+        <input
+          type="text"
+          [(ngModel)]="referee.zusatzqualifikation"
+          name="zusatzqualifikation"
+          placeholder="z.B. Penalty Shot"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Zusatzqualifikation gültig bis</label>
+        <input
+          type="date"
+          [(ngModel)]="referee.gueltigkeit_z"
+          name="gueltigkeit_z"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+    </div>
+
+    <!-- Kontakt & Zuordnung -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Region / Landesverband</label>
+        <input
+          type="text"
+          [(ngModel)]="referee.landesverband"
+          name="landesverband"
+          placeholder="z.B. Ost, West, Berlin"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Verband / Verein</label>
+        <input
+          type="text"
+          [(ngModel)]="referee.verein"
+          name="verein"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">E-Mail</label>
+        <input
+          type="email"
+          [(ngModel)]="referee.email"
+          name="email"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Geburtsdatum</label>
+        <input
+          type="date"
+          [(ngModel)]="referee.geburtsdatum"
+          name="geburtsdatum"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3 mt-2">
+      <button
+        type="submit"
+        [disabled]="saving"
+        class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+      >
+        {{ saving ? "Speichern…" : "Speichern" }}
+      </button>
+      <a
+        [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
+        class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+      >
+        Abbrechen
+      </a>
+      <button
+        *ngIf="editMode"
+        type="button"
+        (click)="delete()"
+        class="ml-auto px-5 py-2 text-sm font-bold text-red-500 border border-red-300 rounded-[5px] hover:border-red-500"
+      >
+        Löschen
+      </button>
+    </div>
+  </form>
+</div>
