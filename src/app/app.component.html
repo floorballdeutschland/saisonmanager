@@ -15,6 +15,9 @@
           *ngIf="leagues$ | async as leagues"
           [leagues]="leagues"
           [selectedAssociation]="selectedAssociation$ | async"
+          [seasons]="(seasons$ | async) ?? []"
+          [selectedSeasonId]="(selectedSeasonId$ | async) ?? null"
+          (seasonChange)="onSeasonChange($event)"
           class="hidden lg:block"
         ></fb-league-navigation>
       </fb-sidebar>

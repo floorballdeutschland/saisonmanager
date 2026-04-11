@@ -11,7 +11,7 @@ import { environment } from './environments/environment';
 //   dsn: 'https://68070f7ec5fe4ea0920b43c46893c759@o1082542.ingest.sentry.io/6092803',
 //   integrations: [
 //     new BrowserTracing({
-//       tracingOrigins: ['localhost', 'https://api.saisonmanager.de'],
+//       tracingOrigins: ['localhost', 'https://saisonmanager.org'],
 //       routingInstrumentation: Sentry.routingInstrumentation,
 //     }),
 //   ],

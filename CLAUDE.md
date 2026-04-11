@@ -130,7 +130,7 @@ allowed = ph[:admin].present? ||
 
 No CI/CD. Manual deploy:
 
-- **Frontend:** `./build-deploy.sh` (builds then `scp` to `saisonmanager.de`)
+- **Frontend:** `./build-deploy.sh` (builds then `scp` to `saisonmanager.org`)
 - **Docker/nginx configs:** git-managed on the production server. After pushing to GitHub:
   ```bash
   ssh saisonmanager /opt/saisonmanager/deploy.sh
@@ -142,7 +142,7 @@ No CI/CD. Manual deploy:
 - Docker setup lives at `/opt/saisonmanager/saisonmanager-docker/`
 - Deploy script: `/opt/saisonmanager/deploy.sh`
 
-**Archive server:** `archiv.saisonmanager.de` → Hetzner `116.203.113.70` (SSH via YubiKey)
+**Archive server:** `archiv.saisonmanager.org` → Hetzner `116.203.113.70` (SSH via YubiKey)
 
 ## Versioning & Changelog
 

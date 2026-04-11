@@ -1,6 +1,6 @@
 # Öffentliche API-Endpunkte – Saisonmanager
 
-**Base URL:** `https://saisonmanager.de`
+**Base URL:** `https://saisonmanager.org`
 (nginx leitet `/api/v2/` an den Rails-Backend weiter; Frontend und API teilen sich die Domain)
 
 ## Initialisierung
