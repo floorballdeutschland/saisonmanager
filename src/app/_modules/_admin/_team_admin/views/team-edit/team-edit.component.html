@@ -158,18 +158,40 @@
 
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Team-Logos
+              Team-Logo
             </div>
 
             <div class="grid grid-cols-1 gap-4" *ngIf="team.id === 0">
               Teamlogos können erst nach dem Speichern hochgeladen werden
             </div>
-            <div class="grid grid-cols-2 gap-4" *ngIf="team.id > 0">
-              <div class="font-bold">Teambild groß</div>
-              <div>Upload wird hier aktiviert.</div>
-
-              <div class="font-bold">Teambild klein</div>
-              <div>Upload wird hier aktiviert.</div>
+            <div
+              class="grid grid-cols-2 gap-4 items-center"
+              *ngIf="team.id > 0"
+            >
+              <div class="font-bold">Aktuelles Logo</div>
+              <div>
+                <img
+                  *ngIf="team.logo_url"
+                  [src]="team.logo_url"
+                  alt="Teamlogo"
+                  class="h-16 object-contain"
+                />
+                <span *ngIf="!team.logo_url" class="text-gray-400"
+                  >kein Logo hinterlegt (Vereinslogo wird verwendet)</span
+                >
+              </div>
+              <div class="font-bold">Logo hochladen</div>
+              <div>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml"
+                  #logoInput
+                  (change)="onLogoSelected(team, logoInput)"
+                />
+                <small class="block text-gray-500 mt-1"
+                  >PNG, JPG oder SVG · wird auf 100×100 Pixel verkleinert</small
+                >
+              </div>
             </div>
           </div>
 

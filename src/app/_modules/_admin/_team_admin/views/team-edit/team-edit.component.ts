@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import {
   AssociationService,
+  ClubService,
   LeagueService,
   NotificationService,
 } from '@floorball/core';
@@ -36,6 +37,7 @@ export class TeamEditComponent implements OnInit, OnDestroy {
 
   constructor(
     private _associationService: AssociationService,
+    private _clubService: ClubService,
     private _leagueService: LeagueService,
     private _router: Router,
     private _notificationService: NotificationService,
@@ -183,6 +185,54 @@ export class TeamEditComponent implements OnInit, OnDestroy {
     }
 
     return msg;
+  }
+
+  private readonly _allowedLogoTypes = [
+    'image/png',
+    'image/jpeg',
+    'image/svg+xml',
+  ];
+  private readonly _maxLogoSize = 5 * 1024 * 1024;
+
+  public onLogoSelected(team: Team, input: HTMLInputElement) {
+    if (!input.files?.length || !team.id) return;
+    const file = input.files[0];
+
+    if (!this._allowedLogoTypes.includes(file.type)) {
+      this._notificationService.error('Nur PNG, JPG oder SVG erlaubt.', {
+        autoClose: false,
+      });
+      input.value = '';
+      return;
+    }
+    if (file.size > this._maxLogoSize) {
+      this._notificationService.error('Datei zu groß (max. 5 MB).', {
+        autoClose: false,
+      });
+      input.value = '';
+      return;
+    }
+
+    this._clubService
+      .uploadTeamLogo(team.id, file)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          input.value = '';
+          team.logo_url = result.logo_url;
+          team.logo_small = result.logo_small_url;
+          this._notificationService.success('Logo erfolgreich hochgeladen.', {
+            autoClose: true,
+          });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          input.value = '';
+          this._notificationService.error('Logo-Upload fehlgeschlagen.', {
+            autoClose: false,
+          });
+        },
+      });
   }
 
   public submit(team: Team) {
