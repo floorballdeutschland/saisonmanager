@@ -144,6 +144,27 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     return msg;
   }
 
+  public onLogoSelected(event: Event, club: Club) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length || !club.id) return;
+    const file = input.files[0];
+    this._clubService.uploadClubLogo(club.id, file).subscribe({
+      next: (result) => {
+        club.logo_url = result.logo_url;
+        club.logo_small_url = result.logo_small_url;
+        this._notificationService.success('Logo erfolgreich hochgeladen.', {
+          autoClose: true,
+        });
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this._notificationService.error('Logo-Upload fehlgeschlagen.', {
+          autoClose: false,
+        });
+      },
+    });
+  }
+
   public submit(club: Club) {
     this._clubService.adminCreateClub(club).subscribe({
       next: (result) => {

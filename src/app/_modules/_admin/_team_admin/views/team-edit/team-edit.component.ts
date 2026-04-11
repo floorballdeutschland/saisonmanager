@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import {
   AssociationService,
+  ClubService,
   LeagueService,
   NotificationService,
 } from '@floorball/core';
@@ -36,6 +37,7 @@ export class TeamEditComponent implements OnInit, OnDestroy {
 
   constructor(
     private _associationService: AssociationService,
+    private _clubService: ClubService,
     private _leagueService: LeagueService,
     private _router: Router,
     private _notificationService: NotificationService,
@@ -183,6 +185,27 @@ export class TeamEditComponent implements OnInit, OnDestroy {
     }
 
     return msg;
+  }
+
+  public onLogoSelected(event: Event, team: Team) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length || !team.id) return;
+    const file = input.files[0];
+    this._clubService.uploadTeamLogo(team.id, file).subscribe({
+      next: (result) => {
+        team.logo_url = result.logo_url;
+        team.logo_small = result.logo_small_url;
+        this._notificationService.success('Logo erfolgreich hochgeladen.', {
+          autoClose: true,
+        });
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this._notificationService.error('Logo-Upload fehlgeschlagen.', {
+          autoClose: false,
+        });
+      },
+    });
   }
 
   public submit(team: Team) {

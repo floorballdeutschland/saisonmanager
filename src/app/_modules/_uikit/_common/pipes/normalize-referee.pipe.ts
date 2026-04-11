@@ -13,8 +13,10 @@ export class NormalizeRefereePipe implements PipeTransform {
   }
 
   formatReferee(referees: Referee[] | null | undefined): string | null {
-    return referees && referees.length > 0
-      ? referees.map((ref) => `${ref.first_name} ${ref.last_name}`).join(' / ')
-      : null;
+    if (!referees || referees.length === 0) return null;
+    const names = referees
+      .map((ref) => [ref.first_name, ref.last_name].filter(Boolean).join(' '))
+      .filter(Boolean);
+    return names.length > 0 ? names.join(' / ') : null;
   }
 }

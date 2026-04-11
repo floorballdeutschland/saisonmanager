@@ -38,6 +38,28 @@ export class ClubService {
     return this.http.post<Club>(path, club);
   }
 
+  public uploadClubLogo(clubId: number, file: File) {
+    const path =
+      environment.apiURL + 'admin/clubs/' + clubId + '/upload_logo.json';
+    const formData = new FormData();
+    formData.append('logo', file);
+    return this.http.post<{ logo_url: string; logo_small_url: string }>(
+      path,
+      formData
+    );
+  }
+
+  public uploadTeamLogo(teamId: number, file: File) {
+    const path =
+      environment.apiURL + 'admin/teams/' + teamId + '/upload_logo.json';
+    const formData = new FormData();
+    formData.append('logo', file);
+    return this.http.post<{ logo_url: string; logo_small_url: string }>(
+      path,
+      formData
+    );
+  }
+
   public adminGetClubAndTeams() {
     const path = environment.apiURL + 'user/clubs_and_teams.json';
     return this.http.get<ClubWithTeams[]>(path);

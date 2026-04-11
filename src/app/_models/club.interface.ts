@@ -11,6 +11,8 @@ export interface Club {
   additional_game_operation_ids: number[];
   players?: Player[];
   logo?: string;
+  logo_url?: string;
+  logo_small_url?: string;
 }
 
 export interface ClubWithTeams extends Club {
