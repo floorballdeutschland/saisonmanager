@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { GameOperation, InitData, Season } from '@floorball/types';
 import {
   BehaviorSubject,
+  combineLatest,
   map,
   Observable,
   of,
@@ -28,6 +29,7 @@ export class AssociationService {
   displayAssociationHeader$ = new BehaviorSubject(true);
 
   private _route$ = new BehaviorSubject<ActivatedRoute | null>(null);
+  private _selectedSeasonId$ = new BehaviorSubject<number | null>(null);
 
   constructor(private http: HttpClient) {
     this.associationsIsLoading$.next(true);
@@ -40,17 +42,22 @@ export class AssociationService {
 
     this.seasons$ = initData$.pipe(map((_result) => _result.seasons));
 
-    this.currentSeasonId$ = initData$.pipe(
-      map((_result) => _result.current_season_id)
+    // Seed the BehaviorSubject with the current season from init
+    initData$
+      .pipe(tap((d) => this._selectedSeasonId$.next(d.current_season_id)))
+      .subscribe();
+
+    this.currentSeasonId$ = this._selectedSeasonId$.pipe(
+      switchMap((id) => (id !== null ? of(id) : of(0)))
     );
 
-    this.selectedSeason$ = this.seasons$.pipe(
-      switchMap((seasons) => {
-        if (!seasons) {
-          return of(null);
-        }
-
-        return of(seasons.find((_s) => _s.current) ?? null);
+    this.selectedSeason$ = combineLatest([
+      this.seasons$,
+      this._selectedSeasonId$,
+    ]).pipe(
+      map(([seasons, selectedId]) => {
+        if (!seasons) return null;
+        return seasons.find((_s) => _s.id === selectedId) ?? null;
       })
     );
 
@@ -83,6 +90,10 @@ export class AssociationService {
 
   clearAssociation() {
     this._route$.next(null);
+  }
+
+  selectSeason(seasonId: number) {
+    this._selectedSeasonId$.next(seasonId);
   }
 
   public getInit() {
