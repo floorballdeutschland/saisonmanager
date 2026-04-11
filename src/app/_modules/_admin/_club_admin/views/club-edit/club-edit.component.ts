@@ -144,25 +144,52 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     return msg;
   }
 
-  public onLogoSelected(event: Event, club: Club) {
-    const input = event.target as HTMLInputElement;
+  private readonly _allowedLogoTypes = [
+    'image/png',
+    'image/jpeg',
+    'image/svg+xml',
+  ];
+  private readonly _maxLogoSize = 5 * 1024 * 1024;
+
+  public onLogoSelected(club: Club, input: HTMLInputElement) {
     if (!input.files?.length || !club.id) return;
     const file = input.files[0];
-    this._clubService.uploadClubLogo(club.id, file).subscribe({
-      next: (result) => {
-        club.logo_url = result.logo_url;
-        club.logo_small_url = result.logo_small_url;
-        this._notificationService.success('Logo erfolgreich hochgeladen.', {
-          autoClose: true,
-        });
-        this._cdr.markForCheck();
-      },
-      error: () => {
-        this._notificationService.error('Logo-Upload fehlgeschlagen.', {
-          autoClose: false,
-        });
-      },
-    });
+
+    if (!this._allowedLogoTypes.includes(file.type)) {
+      this._notificationService.error('Nur PNG, JPG oder SVG erlaubt.', {
+        autoClose: false,
+      });
+      input.value = '';
+      return;
+    }
+    if (file.size > this._maxLogoSize) {
+      this._notificationService.error('Datei zu groß (max. 5 MB).', {
+        autoClose: false,
+      });
+      input.value = '';
+      return;
+    }
+
+    this._clubService
+      .uploadClubLogo(club.id, file)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          input.value = '';
+          club.logo_url = result.logo_url;
+          club.logo_small_url = result.logo_small_url;
+          this._notificationService.success('Logo erfolgreich hochgeladen.', {
+            autoClose: true,
+          });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          input.value = '';
+          this._notificationService.error('Logo-Upload fehlgeschlagen.', {
+            autoClose: false,
+          });
+        },
+      });
   }
 
   public submit(club: Club) {

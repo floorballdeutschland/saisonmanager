@@ -184,8 +184,9 @@
               <div>
                 <input
                   type="file"
-                  accept="image/*"
-                  (change)="onLogoSelected($event, team)"
+                  accept="image/png,image/jpeg,image/svg+xml"
+                  #logoInput
+                  (change)="onLogoSelected(team, logoInput)"
                 />
                 <small class="block text-gray-500 mt-1"
                   >PNG, JPG oder SVG · wird auf 100×100 Pixel verkleinert</small
