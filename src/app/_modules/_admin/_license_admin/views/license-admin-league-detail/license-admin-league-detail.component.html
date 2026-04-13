@@ -46,7 +46,7 @@
             <ul role="list" class="divide-y divide-gray-400">
               <ng-container
                 *ngFor="
-                  let team of teams | clubPlayerLicense: 2:false;
+                  let team of teams | clubPlayerLicense : 2 : false;
                   let teamIndex = index
                 "
               >
@@ -127,7 +127,7 @@
                           Geb.
                           {{
                             p.birthdate
-                              ? (p.birthdate | date: "dd.MM.yyyy")
+                              ? (p.birthdate | date : "dd.MM.yyyy" : "UTC")
                               : "-"
                           }}
                         </p>

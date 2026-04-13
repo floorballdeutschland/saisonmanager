@@ -92,7 +92,7 @@
                   required
                 />
                 <ng-container *ngIf="!can('player_create_update')">
-                  {{ player.birthdate | date: "dd.MM.yyyy" }}
+                  {{ player.birthdate | date : "dd.MM.yyyy" : "UTC" }}
                 </ng-container>
               </div>
 
@@ -185,7 +185,7 @@
                 <br />
                 Verlauf:<br />
                 <div *ngFor="let hist of license.history">
-                  {{ hist.created_at | date: "dd.MM.yyyy HH:mm:ss" }},
+                  {{ hist.created_at | date : "dd.MM.yyyy HH:mm:ss" }},
                   <b>{{ hist.license_status }}</b
                   >, durch: {{ hist.created_by_name }}
                   <span *ngIf="hist.reason"
@@ -225,10 +225,10 @@
                       <ng-container *ngIf="additionalClub.created_at"
                         >vom
                         {{
-                          additionalClub.created_at | date: "dd.MM.yyyy"
+                          additionalClub.created_at | date : "dd.MM.yyyy"
                         }}</ng-container
                       >
-                      bis {{ additionalClub.valid_until | date: "dd.MM.yyyy" }}
+                      bis {{ additionalClub.valid_until | date : "dd.MM.yyyy" }}
                     </p>
                   </div>
                   <div class="flex flex-row items-center">
@@ -317,11 +317,11 @@
                   </p>
                   <p>
                     <ng-container *ngIf="club.created_at"
-                      >vom {{ club.created_at | date: "dd.MM.yyyy" }}
+                      >vom {{ club.created_at | date : "dd.MM.yyyy" }}
                     </ng-container>
                     <ng-container *ngIf="club.valid_until"
                       >bis
-                      {{ club.valid_until | date: "dd.MM.yyyy" }}</ng-container
+                      {{ club.valid_until | date : "dd.MM.yyyy" }}</ng-container
                     >
                     <ng-container *ngIf="!club.valid_until"
                       >bis heute</ng-container

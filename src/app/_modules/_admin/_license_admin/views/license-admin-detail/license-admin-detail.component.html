@@ -49,7 +49,7 @@
               <span class="font-bold">Beantragt:</span>
               {{
                 (player.team_license.requested_at
-                  | date: "EEEE, dd.MM.yyyy HH:mm") || ""
+                  | date : "EEEE, dd.MM.yyyy HH:mm") || ""
               }}
               Uhr
             </p>
@@ -126,7 +126,7 @@
               {{ calculateAge(player.birthdate) }} Jahre
             </p>
             <p class="text-[12px]">
-              Geb. {{ player.birthdate | date: "dd.MM.yyyy" }}
+              Geb. {{ player.birthdate | date : "dd.MM.yyyy" : "UTC" }}
             </p>
           </div>
         </div>
@@ -151,7 +151,7 @@
             <li
               class="text-[14px]"
               *ngFor="
-                let clubs of player.clubs || [] | additionalClubFilter: true
+                let clubs of player.clubs || [] | additionalClubFilter : true
               "
             >
               {{ getClubNameById(clubs.club_id) }}
