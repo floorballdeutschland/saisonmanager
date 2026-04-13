@@ -4,7 +4,7 @@
       <h2
         class="font-bold text-black text-2xl md:text-3xl xl:text-4xl leading-tight"
       >
-        {{ stats?.team.name ?? "Teamdetails" }}
+        {{ stats?.team?.name ?? "Teamdetails" }}
       </h2>
       <p *ngIf="stats" class="text-fb-gray-400 text-sm mt-1">
         {{ stats.team.league_name }}
