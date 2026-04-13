@@ -343,76 +343,34 @@
 
   <div *ngIf="type === 'referee1'">
     <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 1</p>
-    <div class="grid md:grid-cols-5 gap-1">
-      <input
-        type="number"
-        inputmode="numeric"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Nr."
-        (change)="getRefereeInfos()"
-        [(ngModel)]="refereeNumber1"
-      />
-
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
-        placeholder="Vorname"
-        [(ngModel)]="refereeFirstname1"
-      />
-
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
-        placeholder="Nachname"
-        [(ngModel)]="refereeLastname1"
-      />
-
-      <fb-button
-        class="flex md:col-span-5"
-        [fullWidth]="true"
-        [variant]="'success'"
-        (handleClick)="submitField()"
-      >
-        Speichern
-      </fb-button>
-    </div>
+    <fb-referee-autocomplete
+      [selectedReferee]="selectedReferee1"
+      (refereeSelected)="onRefereeSelected(1, $event)"
+    ></fb-referee-autocomplete>
+    <fb-button
+      class="flex mt-1"
+      [fullWidth]="true"
+      [variant]="'success'"
+      (handleClick)="submitField()"
+    >
+      Speichern
+    </fb-button>
   </div>
 
   <div *ngIf="type === 'referee2'">
     <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 2</p>
-    <div class="grid md:grid-cols-5 gap-1">
-      <input
-        type="number"
-        inputmode="numeric"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Nr."
-        (change)="getRefereeInfos()"
-        [(ngModel)]="refereeNumber2"
-      />
-
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
-        placeholder="Vorname"
-        [(ngModel)]="refereeFirstname2"
-      />
-
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:col-span-2"
-        placeholder="Nachname"
-        [(ngModel)]="refereeLastname2"
-      />
-
-      <fb-button
-        class="flex md:col-span-5"
-        [fullWidth]="true"
-        [variant]="'success'"
-        (handleClick)="submitField()"
-      >
-        Speichern
-      </fb-button>
-    </div>
+    <fb-referee-autocomplete
+      [selectedReferee]="selectedReferee2"
+      (refereeSelected)="onRefereeSelected(2, $event)"
+    ></fb-referee-autocomplete>
+    <fb-button
+      class="flex mt-1"
+      [fullWidth]="true"
+      [variant]="'success'"
+      (handleClick)="submitField()"
+    >
+      Speichern
+    </fb-button>
   </div>
 </div>
 <div

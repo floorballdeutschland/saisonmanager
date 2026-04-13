@@ -1,5 +1,6 @@
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {
@@ -15,7 +16,7 @@ import * as Pipes from './pipes';
 import * as HelperPipes from 'src/app/_helpers/_pipes';
 
 @NgModule({
-  imports: [CommonModule, RouterModule, OverlayModule],
+  imports: [CommonModule, RouterModule, OverlayModule, FormsModule],
   declarations: [
     Atoms.LogoComponent,
     Atoms.TabItemComponent,
@@ -24,6 +25,7 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
     Molecules.MatchDayComponent,
     Molecules.OperationComponent,
     Molecules.PaginationComponent,
+    Molecules.RefereeAutocompleteComponent,
     Organisms.ConfirmationDialogComponent,
     Organisms.ConfirmationComponent,
     Organisms.LeagueNavigationComponent,
@@ -70,6 +72,7 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
     Molecules.MatchDayComponent,
     Molecules.OperationComponent,
     Molecules.PaginationComponent,
+    Molecules.RefereeAutocompleteComponent,
     Organisms.ConfirmationDialogComponent,
     Organisms.ConfirmationComponent,
     Organisms.LeagueNavigationComponent,

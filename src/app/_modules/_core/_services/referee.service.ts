@@ -15,6 +15,12 @@ export class RefereeService {
     return this.http.get<RefereeEntry | null>(path);
   }
 
+  public search(q: string) {
+    const path =
+      environment.apiURL + 'referees/search.json?q=' + encodeURIComponent(q);
+    return this.http.get<RefereeEntry[]>(path);
+  }
+
   // Admin endpoints
 
   public adminGetAll(params?: {
