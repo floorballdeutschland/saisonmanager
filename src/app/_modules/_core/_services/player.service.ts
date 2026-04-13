@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Club, Nation, Player } from '@floorball/types';
+import { Club, Nation, Player, PlayerStats } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -18,6 +18,11 @@ export class PlayerService {
   public getPlayer(playerId: number) {
     const path = environment.apiURL + 'admin/players/' + playerId + '.json';
     return this.http.get<Player>(path);
+  }
+
+  public getPlayerStats(playerId: number) {
+    const path = environment.apiURL + 'players/' + playerId + '/stats.json';
+    return this.http.get<PlayerStats>(path);
   }
 
   public getNations() {

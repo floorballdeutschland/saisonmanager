@@ -6,6 +6,12 @@ export { GroupedTableEntry } from './table-entry.interface';
 export { GroupedTable } from './table-entry.interface';
 export { TablePointCorrections } from './table-entry.interface';
 export { ScorerEntry } from './scorer-entry.interface';
+export {
+  PlayerStats,
+  PlayerStatsSeason,
+  PlayerStatsLeague,
+  PlayerStatsTotals,
+} from './player-stats.interface';
 export { GameScheduleEntry } from './game-schedule-entry.interface';
 export { Game } from './game.interface';
 export { GameInput } from './game.interface';

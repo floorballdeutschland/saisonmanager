@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { PlayerLineupItemComponent } from './components/organisms';
 import * as Organisms from './components/organisms';
 import { CurrentAgePipe, FullNamePipe, GenderPipe } from './pipes';
@@ -7,7 +8,7 @@ import * as Pipes from './pipes';
 import { CdkTableModule } from '@angular/cdk/table';
 
 @NgModule({
-  imports: [CommonModule, CdkTableModule],
+  imports: [CommonModule, RouterModule, CdkTableModule],
   declarations: [
     Organisms.PlayerRankingTableComponent,
     Organisms.PlayerLineupItemComponent,

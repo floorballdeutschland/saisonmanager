@@ -41,7 +41,11 @@
           </ng-template>
         </div>
         <div class="text-left">
-          {{ element.first_name }} {{ element.last_name }}
+          <a
+            [routerLink]="['/spieler', element.player_id]"
+            class="hover:underline"
+            >{{ element.first_name }} {{ element.last_name }}</a
+          >
           <span
             class="block truncate w-[140px] sm:w-full lg:w-full md:inline xl:ml-2.5 text-fb-gray-400"
             >{{ element.team_name }}</span

@@ -58,6 +58,11 @@ const routes: Routes = [
   {
     path: '',
     loadChildren: () =>
+      import('@floorball/public/player').then((m) => m.PublicPlayerModule),
+  },
+  {
+    path: '',
+    loadChildren: () =>
       import('@floorball/public/association/host').then(
         (m) => m.PublicAssociationHostModule
       ),

@@ -7,3 +7,4 @@ export * from './route-merge.pipe';
 export * from './to-number.pipe';
 export * from './match-events.pipe';
 export * from './reverse-events.pipe';
+export * from './sum-field.pipe';
