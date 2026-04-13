@@ -13,10 +13,13 @@ export interface TeamRecentGame {
   game_id: number;
   game_number: string;
   home_team_name: string;
+  home_team_logo: string | null;
   guest_team_name: string;
+  guest_team_logo: string | null;
   home_goals: number | null;
   guest_goals: number | null;
   date: string;
+  start_time?: string;
 }
 
 export interface TeamStatsTotals {
@@ -41,5 +44,6 @@ export interface TeamStats {
   team: TeamInfo;
   scorer: TeamScorerEntry[];
   recent_games: TeamRecentGame[];
+  upcoming_games: TeamRecentGame[];
   totals: TeamStatsTotals;
 }
