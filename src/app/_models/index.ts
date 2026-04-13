@@ -12,6 +12,13 @@ export {
   PlayerStatsLeague,
   PlayerStatsTotals,
 } from './player-stats.interface';
+export {
+  TeamStats,
+  TeamScorerEntry,
+  TeamRecentGame,
+  TeamStatsTotals,
+  TeamInfo,
+} from './team-stats.interface';
 export { GameScheduleEntry } from './game-schedule-entry.interface';
 export { Game } from './game.interface';
 export { GameInput } from './game.interface';

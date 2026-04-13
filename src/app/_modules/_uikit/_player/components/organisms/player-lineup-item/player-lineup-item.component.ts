@@ -12,5 +12,8 @@ export class PlayerLineupItemComponent {
   player_name!: string;
 
   @Input()
+  player_id?: number;
+
+  @Input()
   position?: string = '';
 }

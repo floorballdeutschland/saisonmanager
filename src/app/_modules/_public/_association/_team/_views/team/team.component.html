@@ -1,28 +1,143 @@
-<ng-container>
-  <div class="container mx-auto px-4 lg:px-8 my-4 lg:my-8">
-    <div class="flex justify-end items-center">
-      <div class="flex-1">
-        <h2
-          class="font-bold text-black text-2xl md:text-3xl xl:text-4.5xl leading-[26px] xl:leading-[52px]"
-        >
-          Teamdetails
-        </h2>
-      </div>
-      <div>
-        <fb-button (handleClick)="navigateBack()"> Zurück </fb-button>
-      </div>
+<div class="container mx-auto px-4 lg:px-8 my-4 lg:my-8">
+  <div class="flex justify-end items-center mb-6">
+    <div class="flex-1">
+      <h2
+        class="font-bold text-black text-2xl md:text-3xl xl:text-4xl leading-tight"
+      >
+        {{ stats?.team.name ?? "Teamdetails" }}
+      </h2>
+      <p *ngIf="stats" class="text-fb-gray-400 text-sm mt-1">
+        {{ stats.team.league_name }}
+      </p>
+    </div>
+    <div>
+      <fb-button (handleClick)="navigateBack()">Zurück</fb-button>
     </div>
   </div>
-  <div class="container mx-auto px-4 lg:px-8 my-2">
-    <ng-container *ngIf="teamId">
-      <a
-        class="text-blue-600 underline hover:text-blue-800"
-        [href]="'/calendar/teams/' + teamId + '.ics'"
-        target="_blank"
-        rel="noopener"
-      >
-        Team-Kalender (ICS) herunterladen
-      </a>
-    </ng-container>
+
+  <ng-container *ngIf="teamId">
+    <a
+      class="text-blue-600 underline hover:text-blue-800 text-sm"
+      [href]="'/calendar/teams/' + teamId + '.ics'"
+      target="_blank"
+      rel="noopener"
+    >
+      Team-Kalender (ICS) herunterladen
+    </a>
+  </ng-container>
+
+  <div *ngIf="loading" class="text-fb-gray-400 text-sm py-12 text-center">
+    Lade Teamdaten…
   </div>
-</ng-container>
+  <div *ngIf="error" class="text-red-500 text-sm py-12 text-center">
+    Team nicht gefunden.
+  </div>
+
+  <ng-container *ngIf="stats && !loading">
+    <!-- Kennzahlen -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 mb-8">
+      <div class="bg-fb-gray-800 p-4 text-center">
+        <div class="text-2xl font-bold">{{ stats.totals.goals }}</div>
+        <div class="text-xs text-fb-gray-400 uppercase mt-1">Tore gesamt</div>
+      </div>
+      <div class="bg-fb-gray-800 p-4 text-center">
+        <div class="text-2xl font-bold">{{ stats.totals.assists }}</div>
+        <div class="text-xs text-fb-gray-400 uppercase mt-1">Vorlagen</div>
+      </div>
+      <div class="bg-fb-gray-800 p-4 text-center">
+        <div class="text-2xl font-bold">
+          {{ stats.totals.goals + stats.totals.assists }}
+        </div>
+        <div class="text-xs text-fb-gray-400 uppercase mt-1">Scorerpunkte</div>
+      </div>
+      <div class="bg-fb-gray-800 p-4 text-center">
+        <div class="text-2xl font-bold">
+          {{ stats.totals.penalty_minutes }}'
+        </div>
+        <div class="text-xs text-fb-gray-400 uppercase mt-1">Strafminuten</div>
+      </div>
+    </div>
+
+    <!-- Letzte Spiele -->
+    <div *ngIf="stats.recent_games.length > 0" class="mb-10">
+      <h3 class="font-bold text-lg mb-3">Letzte Spiele</h3>
+      <div class="space-y-2">
+        <div
+          *ngFor="let game of stats.recent_games"
+          class="grid grid-cols-[auto,1fr,auto,1fr,auto] gap-2 items-center text-sm border-b border-fb-gray-200 py-2"
+        >
+          <span class="text-fb-gray-400 text-xs w-24">{{
+            game.date | date : "dd.MM.yyyy"
+          }}</span>
+          <span class="text-right font-medium truncate">{{
+            game.home_team_name
+          }}</span>
+          <span class="font-bold text-center px-3">
+            {{ game.home_goals }}:{{ game.guest_goals }}
+          </span>
+          <span class="font-medium truncate">{{ game.guest_team_name }}</span>
+          <span
+            class="text-xs font-bold px-2 py-0.5 rounded ml-2"
+            [ngClass]="resultClass(game)"
+            >{{ resultLabel(game) }}</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Scorerliste -->
+    <div *ngIf="stats.scorer.length > 0">
+      <h3 class="font-bold text-lg mb-3">
+        Scorer {{ stats.team.league_name }}
+      </h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr
+              class="text-left text-xs text-fb-gray-400 uppercase border-b border-fb-gray-200"
+            >
+              <th class="py-2 pr-4 font-medium">#</th>
+              <th class="py-2 pr-4 font-medium">Spieler</th>
+              <th class="py-2 pr-4 text-center font-medium">Sp</th>
+              <th class="py-2 pr-4 text-center font-medium">T</th>
+              <th class="py-2 pr-4 text-center font-medium">V</th>
+              <th class="py-2 pr-4 text-center font-medium">P</th>
+              <th class="py-2 text-center font-medium">Strafmin</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let player of stats.scorer; let i = index"
+              class="border-b border-fb-gray-200 hover:bg-fb-gray-300"
+            >
+              <td class="py-2 pr-4 text-fb-gray-400">{{ i + 1 }}</td>
+              <td class="py-2 pr-4">
+                <a
+                  [routerLink]="['/spieler', player.player_id]"
+                  class="hover:underline font-medium"
+                  >{{ player.first_name }} {{ player.last_name }}</a
+                >
+              </td>
+              <td class="py-2 pr-4 text-center">{{ player.games }}</td>
+              <td class="py-2 pr-4 text-center font-bold">
+                {{ player.goals }}
+              </td>
+              <td class="py-2 pr-4 text-center">{{ player.assists }}</td>
+              <td class="py-2 pr-4 text-center font-bold">
+                {{ player.scorer_points }}
+              </td>
+              <td class="py-2 text-center">{{ player.penalty_minutes }}'</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div
+      *ngIf="stats.scorer.length === 0"
+      class="text-fb-gray-400 text-sm py-8"
+    >
+      Noch keine Spielstatistiken für diese Saison vorhanden.
+    </div>
+  </ng-container>
+</div>

@@ -1,4 +1,4 @@
-<ng-container *ngIf="event | normalizeEvent: match as gameEvent">
+<ng-container *ngIf="event | normalizeEvent : match as gameEvent">
   <div
     class="grid grid-cols-[36px,1fr,30px,80px,60px] md:grid-cols-[36px,1fr,30px,80px,30px,20px,60px,20px,30px,80px,30px,1fr,36px] items-center text-sm h-[78px]"
     [ngClass]="!allowCancel ? 'grid-rows-2' : 'grid-rows-3 h-[119px]'"
@@ -25,8 +25,17 @@
           </ng-container>
 
           <ng-template #homePlayerName>
-            {{ gameEvent.home.scorer?.player_firstname }}
-            {{ gameEvent.home.scorer?.player_name }}
+            <a
+              *ngIf="gameEvent.home.scorer?.player_id; else homeScorerText"
+              [routerLink]="['/spieler', gameEvent.home.scorer?.player_id]"
+              class="hover:underline"
+              >{{ gameEvent.home.scorer?.player_firstname }}
+              {{ gameEvent.home.scorer?.player_name }}</a
+            >
+            <ng-template #homeScorerText
+              >{{ gameEvent.home.scorer?.player_firstname }}
+              {{ gameEvent.home.scorer?.player_name }}</ng-template
+            >
           </ng-template>
           <ng-template #alternativeHomeName>
             {{ gameEvent.goal_type_string }}
@@ -152,8 +161,17 @@
           </ng-container>
 
           <ng-template #guestPlayerName>
-            {{ gameEvent.guest.scorer?.player_firstname }}
-            {{ gameEvent.guest.scorer?.player_name }}
+            <a
+              *ngIf="gameEvent.guest.scorer?.player_id; else guestScorerText"
+              [routerLink]="['/spieler', gameEvent.guest.scorer?.player_id]"
+              class="hover:underline"
+              >{{ gameEvent.guest.scorer?.player_firstname }}
+              {{ gameEvent.guest.scorer?.player_name }}</a
+            >
+            <ng-template #guestScorerText
+              >{{ gameEvent.guest.scorer?.player_firstname }}
+              {{ gameEvent.guest.scorer?.player_name }}</ng-template
+            >
           </ng-template>
           <ng-template #alternativeGuestName>
             {{ gameEvent.goal_type_string }}
@@ -174,8 +192,17 @@
       *ngIf="gameEvent.home.assist"
     >
       <span class="text-xs font-bold">Vorl.</span>
-      {{ gameEvent.home.assist?.player_firstname }}
-      {{ gameEvent.home.assist?.player_name }}
+      <a
+        *ngIf="gameEvent.home.assist?.player_id; else homeAssistText"
+        [routerLink]="['/spieler', gameEvent.home.assist?.player_id]"
+        class="hover:underline"
+        >{{ gameEvent.home.assist?.player_firstname }}
+        {{ gameEvent.home.assist?.player_name }}</a
+      >
+      <ng-template #homeAssistText
+        >{{ gameEvent.home.assist?.player_firstname }}
+        {{ gameEvent.home.assist?.player_name }}</ng-template
+      >
     </div>
 
     <div
@@ -238,8 +265,17 @@
       *ngIf="gameEvent.guest.assist"
     >
       <span class="text-xs font-bold">Vorl.</span>
-      {{ gameEvent.guest.assist?.player_firstname }}
-      {{ gameEvent.guest.assist?.player_name }}
+      <a
+        *ngIf="gameEvent.guest.assist?.player_id; else guestAssistText"
+        [routerLink]="['/spieler', gameEvent.guest.assist?.player_id]"
+        class="hover:underline"
+        >{{ gameEvent.guest.assist?.player_firstname }}
+        {{ gameEvent.guest.assist?.player_name }}</a
+      >
+      <ng-template #guestAssistText
+        >{{ gameEvent.guest.assist?.player_firstname }}
+        {{ gameEvent.guest.assist?.player_name }}</ng-template
+      >
     </div>
   </div>
 </ng-container>

@@ -3,6 +3,7 @@ export { ClubService } from './club.service';
 export { MetaService } from './meta.service';
 export { GameService } from './game.service';
 export { PlayerService } from './player.service';
+export { TeamService } from './team.service';
 export { OverlayService } from './overlay.service';
 export { RefereeService } from './referee.service';
 export { ArenaService } from './arena.service';

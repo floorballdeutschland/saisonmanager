@@ -16,6 +16,14 @@
     </svg>
   </div>
   <div class="font-bold">{{ trikot_number }}</div>
-  <div>{{ player_name }}</div>
+  <div>
+    <a
+      *ngIf="player_id; else nameText"
+      [routerLink]="['/spieler', player_id]"
+      class="hover:underline"
+      >{{ player_name }}</a
+    >
+    <ng-template #nameText>{{ player_name }}</ng-template>
+  </div>
   <div>{{ position }}</div>
 </div>
