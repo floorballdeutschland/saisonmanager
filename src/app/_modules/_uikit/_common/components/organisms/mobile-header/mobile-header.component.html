@@ -30,12 +30,11 @@
     </nav>
   </ng-container>
 
-  <ng-container *ngIf="favoriteLeagues$ | async as favoriteLeagues">
-    <fb-favorites-navigation
-      [favorites]="favoriteLeagues"
-      class="lg:hidden"
-    ></fb-favorites-navigation>
-  </ng-container>
+  <fb-favorites-navigation
+    [favorites]="(favoriteLeagues$ | async) ?? []"
+    [favoriteTeams]="(favoriteTeams$ | async) ?? []"
+    class="lg:hidden"
+  ></fb-favorites-navigation>
 
   <fb-metanavigation (closeHandler)="close()"></fb-metanavigation>
 </div>

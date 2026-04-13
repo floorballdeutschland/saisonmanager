@@ -13,7 +13,12 @@ import {
   FavoriteService,
   LeagueService,
 } from '@floorball/core';
-import { GameOperation, League, LeaguesWithOperation } from '@floorball/types';
+import {
+  FavoriteTeam,
+  GameOperation,
+  League,
+  LeaguesWithOperation,
+} from '@floorball/types';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 @Component({
@@ -27,6 +32,7 @@ export class MobileHeaderComponent implements OnInit {
   leagues$!: Observable<League[] | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
   favoriteLeagues$?: BehaviorSubject<LeaguesWithOperation[]>;
+  favoriteTeams$?: BehaviorSubject<FavoriteTeam[]>;
 
   @Output()
   closeNavigationOverlay: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -47,6 +53,7 @@ export class MobileHeaderComponent implements OnInit {
     this.leagues$ = this._leagueService.leagues$;
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.favoriteLeagues$ = this._favoriteService.favoriteLeagues$;
+    this.favoriteTeams$ = this._favoriteService.favoriteTeams$;
   }
 
   close() {

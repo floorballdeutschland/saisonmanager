@@ -7,8 +7,12 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Location } from '@angular/common';
-import { AssociationService, TeamService } from '@floorball/core';
-import { TeamStats } from '@floorball/types';
+import {
+  AssociationService,
+  FavoriteService,
+  TeamService,
+} from '@floorball/core';
+import { FavoriteTeam, TeamStats } from '@floorball/types';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -22,12 +26,16 @@ export class TeamComponent implements OnInit, OnDestroy {
   public stats?: TeamStats;
   public loading = true;
   public error = false;
+  public isFavorite = false;
 
+  private _operationPath = '';
+  private _leaguePath = '';
   private _destroy$ = new Subject<boolean>();
 
   constructor(
     private _associationService: AssociationService,
     private _teamService: TeamService,
+    private _favoriteService: FavoriteService,
     private _location: Location,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef
@@ -35,9 +43,19 @@ export class TeamComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._associationService.displayAssociationHeader$.next(false);
+
+    // Read parent route params to build the team URL for favorites
+    const snapshot = this._route.snapshot;
+    this._leaguePath = snapshot.parent?.paramMap.get('leagueId') ?? '';
+    this._operationPath =
+      snapshot.parent?.parent?.paramMap.get('association') ?? '';
+
     this._route.paramMap.pipe(takeUntil(this._destroy$)).subscribe((params) => {
       this.teamId = params.get('teamSlug');
       if (this.teamId) {
+        this.isFavorite = this._favoriteService.isTeamFavorite(
+          Number(this.teamId)
+        );
         this._teamService
           .getTeamStats(Number(this.teamId))
           .pipe(takeUntil(this._destroy$))
@@ -67,8 +85,27 @@ export class TeamComponent implements OnInit, OnDestroy {
     this._location.back();
   }
 
+  toggleFavorite(): void {
+    const teamId = Number(this.teamId);
+    if (this.isFavorite) {
+      this._favoriteService.removeTeamFavorite(teamId);
+      this.isFavorite = false;
+    } else {
+      const team: FavoriteTeam = {
+        id: teamId,
+        name: this.stats?.team?.name ?? '',
+        operation_path: this._operationPath,
+        league_path: this._leaguePath,
+        league_name: this.stats?.team?.league_name ?? null,
+      };
+      this._favoriteService.addTeamToFavorites(team);
+      this.isFavorite = true;
+    }
+    this._cdr.markForCheck();
+  }
+
   isHomeGame(game: TeamStats['recent_games'][0]): boolean {
-    return game.home_team_name === this.stats?.team.name;
+    return game.home_team_name === this.stats?.team?.name;
   }
 
   resultLabel(game: TeamStats['recent_games'][0]): string {

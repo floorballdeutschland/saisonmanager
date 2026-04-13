@@ -13,6 +13,7 @@ import {
   StorageService,
 } from '@floorball/core';
 import {
+  FavoriteTeam,
   GameOperation,
   League,
   LeaguesWithOperation,
@@ -36,6 +37,7 @@ export class AppComponent implements OnInit {
   selectedSeasonId$!: Observable<number>;
 
   favoriteLeagues$?: BehaviorSubject<LeaguesWithOperation[]>;
+  favoriteTeams$?: BehaviorSubject<FavoriteTeam[]>;
 
   constructor(
     private _associationService: AssociationService,
@@ -51,6 +53,7 @@ export class AppComponent implements OnInit {
     this.seasons$ = this._associationService.seasons$;
     this.selectedSeasonId$ = this._associationService.currentSeasonId$;
     this.favoriteLeagues$ = this._favoriteService.favoriteLeagues$;
+    this.favoriteTeams$ = this._favoriteService.favoriteTeams$;
   }
 
   onSeasonChange(seasonId: number): void {

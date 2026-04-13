@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AssociationService, StorageService } from '@floorball/core';
 import {
+  FavoriteTeam,
   GameOperation,
   League,
   LeaguesWithOperation,
@@ -17,11 +18,16 @@ export class FavoriteService {
   favoriteLeagues$: BehaviorSubject<LeaguesWithOperation[]> =
     new BehaviorSubject<LeaguesWithOperation[]>([]);
 
+  favoriteTeams$: BehaviorSubject<FavoriteTeam[]> = new BehaviorSubject<
+    FavoriteTeam[]
+  >([]);
+
   constructor(
     private _storageService: StorageService,
     private _associationService: AssociationService
   ) {
     this.getFavorites();
+    this.getTeamFavorites();
   }
 
   addToFavorites(league: League): void {
@@ -124,5 +130,44 @@ export class FavoriteService {
     }
 
     return false;
+  }
+
+  // --- Team favorites ---
+
+  getTeamFavorites(): void {
+    const stored = this._storageService.getItem('fav_teams');
+    if (stored) {
+      this.favoriteTeams$.next(JSON.parse(stored) as FavoriteTeam[]);
+    }
+  }
+
+  addTeamToFavorites(team: FavoriteTeam): void {
+    const stored = this._storageService.getItem('fav_teams');
+    let items: FavoriteTeam[] = stored ? JSON.parse(stored) : [];
+
+    if (items.some((t) => t.id === team.id)) {
+      return;
+    }
+
+    items = [team, ...items];
+    this._storageService.setItem('fav_teams', JSON.stringify(items));
+    this.favoriteTeams$.next(items);
+  }
+
+  removeTeamFavorite(teamId: number): void {
+    const stored = this._storageService.getItem('fav_teams');
+    if (!stored) return;
+
+    const items = (JSON.parse(stored) as FavoriteTeam[]).filter(
+      (t) => t.id !== teamId
+    );
+    this._storageService.setItem('fav_teams', JSON.stringify(items));
+    this.favoriteTeams$.next(items);
+  }
+
+  isTeamFavorite(teamId: number): boolean {
+    const stored = this._storageService.getItem('fav_teams');
+    if (!stored) return false;
+    return (JSON.parse(stored) as FavoriteTeam[]).some((t) => t.id === teamId);
   }
 }

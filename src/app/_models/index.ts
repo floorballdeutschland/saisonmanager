@@ -1,4 +1,5 @@
 export { InitData } from './init-data.interface';
+export { FavoriteTeam } from './favorite-team.interface';
 export { Season } from './season.interface';
 export { GameOperation } from './game-operation.interface';
 export { TableEntry } from './table-entry.interface';
