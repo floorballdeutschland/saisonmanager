@@ -19,7 +19,7 @@ npm run start-local          # ng serve --host 0.0.0.0 (for network access)
 
 # Build
 npm run build                # production build → dist/saisonmanager/browser/
-./build-deploy.sh            # build + scp to saisonmanager.de
+./build-deploy.sh            # build + scp to saisonmanager.org
 
 # Tests
 ng test                      # Karma unit tests
@@ -27,6 +27,10 @@ ng test                      # Karma unit tests
 # Lint (runs automatically as pre-commit hook via Husky)
 npm run lint                 # Prettier on staged files only
 ```
+
+**`build-deploy.sh` caveat:** The script calls `ng` directly, which requires nvm to be in PATH. Running `./build-deploy.sh` in a fresh shell will fail with `ng: command not found`. Run it from a shell where `nvm use` has been called, or invoke `npm run build` first then `scp -r dist/saisonmanager/browser/* saisonmanager:/opt/saisonmanager/saisonmanager-frontend/` manually.
+
+**Never deploy a development build.** Using `ng build --configuration development` produces a broken blank page in production. Always use `ng build` (production is the default).
 
 **Pre-commit hook caveat:** The Husky hook runs `git-format-staged` which requires Python. If the hook fails with `python: not found`, ensure `~/.local/bin` is in PATH and `python` symlinks to `python3`. The hook also runs `ng lint_association` — the full PATH must include `~/.nvm/versions/node/.../bin` and `saisonmanager/node_modules/.bin`.
 
@@ -81,7 +85,7 @@ The API runs at **http://localhost:3001** (port 3000 is taken by another service
 
 **TypeScript path aliases** (defined in `tsconfig.json`):
 
-- `@floorball/types` → `_models`
+- `@floorball/models` and `@floorball/types` → both map to `_models` (use either)
 - `@floorball/core` → `_modules/_core`
 - `@floorball/uikit/*` → `_modules/_uikit/_*`
 - `@floorball/admin/*` and `@floorball/public/*` for lazy-loaded feature modules
@@ -105,13 +109,19 @@ allowed = ph[:admin].present? ||
           (ph[:sbk].present? && (ph[:sbk].include?(0) || ph[:sbk].include?(go_id)))
 ```
 
+**`User#club_ids` returns `permission_hash[:vm]`** — an array of club IDs the user manages as Vereinsmanager. This is **empty for admin and SBK users**, even though they have broad access. Frontend code that loops over `user.club_ids` to load clubs will silently do nothing for admin/SBK users; use `GET admin/clubs.json` (`Club.admin_user_clubs`) to get their accessible clubs instead.
+
+When building `go_ids` arrays in `admin_user_clubs`-style methods, always use `go_ids.flatten!` (mutating) — `go_ids.flatten` (non-mutating) silently leaves nested arrays.
+
 **Data model overview:**
 
 - `GameOperation` (Verband: FD, SBK Ost, SBK West…) → has many `League`s
 - `League` → has many `GameDay`s and `Team`s
 - `GameDay` → has many `Game`s (each belongs to an arena and hosting club)
-- `Game` – stores game events and player lineups as JSONB columns
+- `Game` – stores game events and player lineups as JSONB columns; `nominated_referee_ids` JSONB
 - `Player` – stores club memberships (`clubs` JSONB) and license history (`licenses` JSONB)
+- `Referee` – separate model with name, license level, game history
+- `StateAssociation` (Landesverband) – referenced by `Club#state_association_id`
 - `User` – `permissions` JSONB, `teams` integer array
 
 **Key JSONB columns:**
@@ -130,12 +140,12 @@ allowed = ph[:admin].present? ||
 
 No CI/CD. Manual deploy:
 
-- **Frontend:** `./build-deploy.sh` (builds then `scp` to `saisonmanager.org`)
-- **Docker/nginx configs:** git-managed on the production server. After pushing to GitHub:
+- **Frontend:** `./build-deploy.sh` (production build + `scp` to `/opt/saisonmanager/saisonmanager-frontend/` on the server)
+- **API + Docker/nginx configs:** After pushing to GitHub:
   ```bash
   ssh saisonmanager /opt/saisonmanager/deploy.sh
   ```
-  The script runs `git pull` + `docker compose restart nginx` in `/opt/saisonmanager/saisonmanager-docker`.
+  The script: `git pull` on `saisonmanager-docker`, then `git reset --hard origin/main` on `saisonmanager-api`, then restarts both `nginx` and `rails-api` containers via docker compose.
 
 **Production server:** `ssh saisonmanager` → `root@178.104.133.109` (YubiKey FIDO2, `~/.ssh/yubikey`)
 

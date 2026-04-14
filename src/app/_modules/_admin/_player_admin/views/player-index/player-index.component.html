@@ -13,7 +13,7 @@
       <div
         class="grid grid-cols-1 md:grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9"
       >
-        <ng-template #loading>
+        <ng-template #loadingTpl>
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               <svg
@@ -36,7 +36,7 @@
           </div>
         </ng-template>
 
-        <ng-container *ngIf="clubs.length > 0; else loading">
+        <ng-container *ngIf="!loading; else loadingTpl">
           <div *ngFor="let club of clubs">
             <div class="bg-white flex items-center justify-center">
               <div
