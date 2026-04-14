@@ -1,7 +1,7 @@
 <ng-template #gamelink>
   <a
     class="relative w-full grid grid-cols-[42px,1fr,80px] gap-2 items-center px-2.5 mt-4 cursor-pointer transition md:grid-cols-[1fr,42px,80px,42px,1fr,1fr] md:grid-rows-[36px,80px] md:gap-y-2 md:gap-5 md:mt-0 md:px-0 md:pb-2 xl:grid-cols-[1fr,1fr,42px,80px,42px,1fr,1fr] xl:grid-rows-1 xl:h-20 xl:pt-2 xl:px-5 hover:bg-fb-gray-200"
-    [routerLink]="['spiel', match.game_id.toString()] | routeMerge: baseRoute"
+    [routerLink]="['spiel', match.game_id.toString()] | routeMerge : baseRoute"
     [ngClass]="{
       'grid-rows-[30px,40px,40px]': !widthMatchTitle,
       'grid-rows-[50px,40px,40px]': widthMatchTitle
@@ -20,11 +20,11 @@
       <div class="flex flex-row xl:flex-col gap-[10px]">
         <p class="xl:flex-1">
           <ng-container
-            *ngIf="match.notice_type | gameNoticeVisibility: 'date'"
+            *ngIf="match.notice_type | gameNoticeVisibility : 'date'"
             >{{ match.date | date }}</ng-container
           >
           <ng-container
-            *ngIf="match.notice_type | gameNoticeVisibility: 'time'"
+            *ngIf="match.notice_type | gameNoticeVisibility : 'time'"
             >{{ match.time && " - " + match.time + " Uhr" }}</ng-container
           >
         </p>
@@ -71,7 +71,7 @@
 
       <ng-container
         *ngIf="
-          !match.started && (match.notice_type | gameNoticeVisibility: 'time')
+          !match.started && (match.notice_type | gameNoticeVisibility : 'time')
         "
       >
         <p
@@ -145,9 +145,15 @@
       >
         Viertelfinale {{ currentIndex }}
       </div>
+      <div
+        *ngIf="match.game_number"
+        class="hidden md:block text-right text-xs text-fb-gray-400"
+      >
+        Spiel #{{ match.game_number }}
+      </div>
       <div>
         Schiedsrichter:
-        {{ match.referees | normalizeReferee: match.nominated_referee_string }}
+        {{ match.referees | normalizeReferee : match.nominated_referee_string }}
       </div>
     </div>
   </a>
@@ -206,7 +212,7 @@
       <a
         [routerLink]="
           ['spiel', match.home_team_filling_parameter.toString()]
-            | routeMerge: baseRoute
+            | routeMerge : baseRoute
         "
         *ngIf="match.home_team_filling_rule?.startsWith('game')"
       >
@@ -223,7 +229,7 @@
       <a
         [routerLink]="
           ['spiel', (match.guest_team_filling_parameter || 0).toString()]
-            | routeMerge: baseRoute
+            | routeMerge : baseRoute
         "
         *ngIf="match.guest_team_filling_rule?.startsWith('game')"
       >
