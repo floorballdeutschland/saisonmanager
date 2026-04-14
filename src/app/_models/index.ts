@@ -63,3 +63,4 @@ export * from './referee-entry.interface';
 export * from './referee.interface';
 export * from './gameday.interface';
 export * from './arena.interface';
+export * from './state-association.interface';

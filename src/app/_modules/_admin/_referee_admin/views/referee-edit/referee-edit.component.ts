@@ -8,8 +8,12 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { NotificationService, RefereeService } from '@floorball/core';
-import { RefereeAdmin } from '@floorball/types';
+import {
+  AssociationService,
+  NotificationService,
+  RefereeService,
+} from '@floorball/core';
+import { RefereeAdmin, StateAssociation } from '@floorball/types';
 
 @Component({
   templateUrl: './referee-edit.component.html',
@@ -21,6 +25,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   editMode = false;
   loading = false;
   saving = false;
+  stateAssociations: StateAssociation[] = [];
 
   readonly lizenzstufen = [
     'A',
@@ -39,6 +44,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
 
   constructor(
     private _refereeService: RefereeService,
+    private _associationService: AssociationService,
     private _route: ActivatedRoute,
     private _router: Router,
     private _notificationService: NotificationService,
@@ -46,6 +52,15 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this._associationService.stateAssociations$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.stateAssociations = result;
+          this._cdr.markForCheck();
+        },
+      });
+
     const lizenznummer = this._route.snapshot.params['lizenznummer'];
     if (lizenznummer) {
       this.editMode = true;

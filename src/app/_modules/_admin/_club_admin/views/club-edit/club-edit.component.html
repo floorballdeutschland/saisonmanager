@@ -92,7 +92,7 @@
                 </select>
               </div>
 
-              <div class="font-bold">Heimatverband</div>
+              <div class="font-bold">Heimatverband (Verband)</div>
               <div>
                 <select
                   name="game_operation_id"
@@ -101,6 +101,23 @@
                 >
                   <option *ngFor="let go of gameOperations" [ngValue]="go.id">
                     {{ go.name }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="font-bold">Landesverband</div>
+              <div>
+                <select
+                  name="state_association_id"
+                  class="w-full"
+                  [(ngModel)]="club.state_association_id"
+                >
+                  <option [ngValue]="undefined">– kein –</option>
+                  <option
+                    *ngFor="let sa of stateAssociations"
+                    [ngValue]="sa.id"
+                  >
+                    {{ sa.name }}
                   </option>
                 </select>
               </div>

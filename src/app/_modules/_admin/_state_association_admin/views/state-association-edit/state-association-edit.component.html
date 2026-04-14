@@ -1,0 +1,53 @@
+<div class="p-4 lg:p-8 max-w-lg">
+  <div class="flex items-center gap-3 mb-6">
+    <a
+      [routerLink]="['/', 'verwaltung', 'landesverbaende']"
+      class="text-fb-gray-500 hover:text-black text-sm"
+      >← Zurück</a
+    >
+    <h1 class="text-2xl font-bold">
+      {{ editMode ? "Landesverband bearbeiten" : "Neuer Landesverband" }}
+    </h1>
+  </div>
+
+  <form (ngSubmit)="submit()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-bold">Name *</label>
+      <input
+        type="text"
+        [(ngModel)]="stateAssociation.name"
+        name="name"
+        required
+        placeholder="z.B. Floorball Bayern e.V."
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-bold">Kürzel</label>
+      <input
+        type="text"
+        [(ngModel)]="stateAssociation.short_name"
+        name="short_name"
+        placeholder="z.B. FBB"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      />
+    </div>
+
+    <div class="flex items-center gap-3 mt-2">
+      <button
+        type="submit"
+        [disabled]="saving || !stateAssociation.name?.trim()"
+        class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+      >
+        {{ saving ? "Speichern…" : "Speichern" }}
+      </button>
+      <a
+        [routerLink]="['/', 'verwaltung', 'landesverbaende']"
+        class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+      >
+        Abbrechen
+      </a>
+    </div>
+  </form>
+</div>

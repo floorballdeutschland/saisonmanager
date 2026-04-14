@@ -11,7 +11,7 @@ import {
   GameOperationService,
   NotificationService,
 } from '@floorball/core';
-import { Club, GameOperation } from '@floorball/types';
+import { Club, GameOperation, StateAssociation } from '@floorball/types';
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -47,7 +47,10 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     { name: 'Sachsen-Anhalt', isocode: 'de-st' },
     { name: 'Schleswig-Holstein', isocode: 'de-sh' },
     { name: 'Thüringen', isocode: 'de-th' },
+    { name: 'Sonstige', isocode: 'de-sonstige' },
   ];
+
+  stateAssociations: StateAssociation[] = [];
 
   private _destroy$ = new Subject<boolean>();
 
@@ -69,10 +72,18 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     this._gameOperationService.getAdminGameOperations().subscribe({
       next: (result) => {
         this.gameOperations = result;
-
         this._cdr.markForCheck();
       },
     });
+
+    this._associationService.stateAssociations$
+      .pipe(take(1), takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.stateAssociations = result;
+          this._cdr.markForCheck();
+        },
+      });
 
     this._route.params.subscribe((params) => {
       if (params['clubId']) {

@@ -94,14 +94,17 @@
     <!-- Kontakt & Zuordnung -->
     <div class="grid grid-cols-2 gap-4">
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Region / Landesverband</label>
-        <input
-          type="text"
+        <label class="text-sm font-bold">Landesverband</label>
+        <select
           [(ngModel)]="referee.landesverband"
           name="landesverband"
-          placeholder="z.B. Ost, West, Berlin"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-        />
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
+        >
+          <option value="">– kein –</option>
+          <option *ngFor="let sa of stateAssociations" [value]="sa.name">
+            {{ sa.name }}
+          </option>
+        </select>
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-sm font-bold">Verband / Verein</label>

@@ -65,6 +65,9 @@
       "@floorball/admin/schedule": ["src/app/_modules/_admin/_schedule_admin"],
       "@floorball/admin/licenses": ["src/app/_modules/_admin/_license_admin"],
       "@floorball/admin/referees": ["src/app/_modules/_admin/_referee_admin"],
+      "@floorball/admin/state-associations": [
+        "src/app/_modules/_admin/_state_association_admin"
+      ],
       "@floorball/models": ["src/app/_models"]
     },
     "useDefineForClassFields": false

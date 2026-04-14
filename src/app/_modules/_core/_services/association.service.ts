@@ -1,7 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { GameOperation, InitData, Season } from '@floorball/types';
+import {
+  GameOperation,
+  InitData,
+  Season,
+  StateAssociation,
+} from '@floorball/types';
 import {
   BehaviorSubject,
   combineLatest,
@@ -21,6 +26,7 @@ export class AssociationService {
   associationsIsLoading$ = new BehaviorSubject(false);
   associations$: Observable<GameOperation[]>;
   selectedAssociation$: Observable<GameOperation | null>;
+  stateAssociations$: Observable<StateAssociation[]>;
 
   currentSeasonId$: Observable<number>;
   selectedSeason$: Observable<Season | null>;
@@ -41,6 +47,10 @@ export class AssociationService {
     );
 
     this.seasons$ = initData$.pipe(map((_result) => _result.seasons));
+
+    this.stateAssociations$ = initData$.pipe(
+      map((_result) => _result.state_associations ?? [])
+    );
 
     // Seed the BehaviorSubject with the current season from init
     initData$

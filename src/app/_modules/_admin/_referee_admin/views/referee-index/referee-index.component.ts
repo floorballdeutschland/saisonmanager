@@ -7,8 +7,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
-import { RefereeService } from '@floorball/core';
-import { RefereeAdmin } from '@floorball/types';
+import { AssociationService, RefereeService } from '@floorball/core';
+import { RefereeAdmin, StateAssociation } from '@floorball/types';
 
 @Component({
   templateUrl: './referee-index.component.html',
@@ -17,6 +17,7 @@ import { RefereeAdmin } from '@floorball/types';
 })
 export class RefereeIndexComponent implements OnInit, OnDestroy {
   referees: RefereeAdmin[] = [];
+  stateAssociations: StateAssociation[] = [];
   loading = false;
 
   searchQuery = '';
@@ -28,10 +29,19 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
 
   constructor(
     private _refereeService: RefereeService,
+    private _associationService: AssociationService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this._associationService.stateAssociations$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.stateAssociations = result;
+          this._cdr.markForCheck();
+        },
+      });
     this.load();
   }
 
