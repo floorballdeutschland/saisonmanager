@@ -20,6 +20,8 @@ export interface TeamRecentGame {
   guest_goals: number | null;
   date: string;
   start_time?: string;
+  league_name?: string;
+  league_short_name?: string;
 }
 
 export interface TeamStatsTotals {
@@ -28,12 +30,20 @@ export interface TeamStatsTotals {
   penalty_minutes: number;
 }
 
+export interface TeamLeague {
+  id: number;
+  name: string;
+  short_name?: string;
+  game_operation_slug: string;
+}
+
 export interface TeamInfo {
   id: number;
   name: string;
   short_name: string;
   league_id: number;
   league_name: string;
+  leagues: TeamLeague[];
   game_operation_slug: string;
   game_operation_short_name: string;
   logo_url: string | null;

@@ -6,9 +6,18 @@
       >
         {{ stats?.team?.name ?? "Teamdetails" }}
       </h2>
-      <p *ngIf="stats" class="text-fb-gray-400 text-sm mt-1">
-        {{ stats.team.league_name }}
-      </p>
+      <div *ngIf="stats" class="flex flex-wrap gap-2 mt-1">
+        <span
+          *ngFor="let league of stats.team.leagues"
+          class="text-xs text-fb-gray-400 bg-fb-gray-800 px-2 py-0.5 rounded"
+          >{{ league.short_name || league.name }}</span
+        >
+        <span
+          *ngIf="!stats.team.leagues || stats.team.leagues.length === 0"
+          class="text-fb-gray-400 text-sm"
+          >{{ stats.team.league_name }}</span
+        >
+      </div>
     </div>
     <div class="flex gap-2 items-center">
       <button
@@ -116,6 +125,12 @@
             <div *ngIf="game.start_time" class="font-medium text-fb-gray-900">
               {{ game.start_time }}
             </div>
+            <div
+              *ngIf="game.league_short_name"
+              class="mt-0.5 text-[10px] bg-fb-gray-800 text-fb-gray-400 px-1 rounded leading-tight"
+            >
+              {{ game.league_short_name }}
+            </div>
           </div>
           <div class="text-center font-bold tracking-widest text-fb-gray-400">
             – : –
@@ -177,6 +192,12 @@
           </div>
           <div class="text-center text-xs text-fb-gray-400">
             {{ game.date | date : "dd.MM." }}
+            <div
+              *ngIf="game.league_short_name"
+              class="mt-0.5 text-[10px] bg-fb-gray-800 text-fb-gray-400 px-1 rounded leading-tight"
+            >
+              {{ game.league_short_name }}
+            </div>
           </div>
           <div class="text-center font-bold tracking-widest">
             <ng-container
@@ -221,9 +242,7 @@
 
     <!-- Scorerliste -->
     <div *ngIf="stats.scorer.length > 0">
-      <h3 class="font-bold text-lg mb-3">
-        Scorer {{ stats.team.league_name }}
-      </h3>
+      <h3 class="font-bold text-lg mb-3">Scorer (Saison gesamt)</h3>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
