@@ -97,8 +97,12 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
       return 0;
     }
 
-    const today = new Date(this.gamedayDate);
-    const birthDate = new Date(dateString);
+    const parseLocalDate = (s: string) => {
+      const [y, m, d] = s.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    };
+    const today = parseLocalDate(this.gamedayDate);
+    const birthDate = parseLocalDate(dateString);
     let age = today.getFullYear() - birthDate.getFullYear();
     const m = today.getMonth() - birthDate.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
