@@ -7,7 +7,15 @@ import {
 } from '@angular/core';
 import { ClubService, PlayerService, SessionService } from '@floorball/core';
 import { Club } from '@floorball/models';
-import { Subject } from 'rxjs';
+import {
+  filter,
+  forkJoin,
+  of,
+  Subject,
+  switchMap,
+  take,
+  takeUntil,
+} from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 
@@ -22,7 +30,6 @@ export class PlayerIndexComponent implements OnInit, OnDestroy {
   loading = true;
 
   private _destroy$ = new Subject<boolean>();
-  private _pendingRequests = 0;
 
   constructor(
     private _playerService: PlayerService,
@@ -36,65 +43,67 @@ export class PlayerIndexComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this._route.params.subscribe((params) => {
-      this._sessionService.currentUser$.subscribe({
-        next: (user) => {
-          if (user) {
-            this.permissions = user.permissions;
-            this.club_ids = user.club_ids;
+    this._route.params
+      .pipe(
+        switchMap((params) => {
+          this.clubs = [];
+          this.loading = true;
+          this._cdr.markForCheck();
 
-            if (params['clubId']) {
-              this.getClub(parseInt(params['clubId']));
-            } else if (this.club_ids?.length > 0) {
-              this.club_ids.forEach((cid) => this.getClub(cid));
-            } else {
+          return this._sessionService.currentUser$.pipe(
+            filter((user) => !!user),
+            take(1),
+            switchMap((user) => {
+              this.permissions = user!.permissions;
+              this.club_ids = user!.club_ids;
+
+              if (params['clubId']) {
+                return forkJoin([
+                  this._playerService.getClubPlayers(
+                    parseInt(params['clubId'], 10)
+                  ),
+                ]);
+              }
+
+              if (this.club_ids?.length > 0) {
+                return forkJoin(
+                  this.club_ids.map((cid) =>
+                    this._playerService.getClubPlayers(cid)
+                  )
+                );
+              }
+
               // Admin/SBK: keine VM-Club-IDs → alle zugänglichen Clubs laden
-              this._clubService.getAdminClubs().subscribe({
-                next: (gos) => {
+              return this._clubService.getAdminClubs().pipe(
+                switchMap((gos) => {
                   const ids = gos.flatMap((go) => go.clubs.map((c) => c.id));
-                  if (ids.length === 0) {
-                    this.loading = false;
-                    this._cdr.markForCheck();
-                    return;
-                  }
-                  ids.forEach((id) => this.getClub(id));
-                },
-                error: () => {
-                  this.loading = false;
-                  this._cdr.markForCheck();
-                },
-              });
-            }
-          }
+                  if (ids.length === 0) return of([] as Club[]);
+                  return forkJoin(
+                    ids.map((id) => this._playerService.getClubPlayers(id))
+                  );
+                })
+              );
+            })
+          );
+        }),
+        takeUntil(this._destroy$)
+      )
+      .subscribe({
+        next: (clubs) => {
+          this.clubs = clubs;
+          this.loading = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this._cdr.markForCheck();
         },
       });
-    });
   }
 
   ngOnDestroy(): void {
     this._destroy$.next(true);
     this._destroy$.complete();
-  }
-
-  public getClub(id: number): void {
-    this._pendingRequests++;
-    this._playerService.getClubPlayers(id).subscribe({
-      next: (result) => {
-        this.clubs.push(result);
-        this._pendingRequests--;
-        if (this._pendingRequests === 0) {
-          this.loading = false;
-        }
-        this._cdr.markForCheck();
-      },
-      error: () => {
-        this._pendingRequests--;
-        if (this._pendingRequests === 0) {
-          this.loading = false;
-        }
-        this._cdr.markForCheck();
-      },
-    });
   }
 
   public canEdit(): boolean {
