@@ -59,4 +59,12 @@ export class MobileHeaderComponent implements OnInit {
   close() {
     this.onClose$.next(true);
   }
+
+  removeFavoriteLeague(id: number): void {
+    this._favoriteService.removeFavorite(id);
+  }
+
+  removeFavoriteTeam(id: number): void {
+    this._favoriteService.removeTeamFavorite(id);
+  }
 }

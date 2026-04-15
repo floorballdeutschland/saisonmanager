@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 import { FavoriteTeam, LeaguesWithOperation } from '@floorball/types';
@@ -18,4 +20,10 @@ export class FavoritesNavigationComponent {
 
   @Input()
   favoriteTeams: FavoriteTeam[] = [];
+
+  @Output()
+  removeFavorite = new EventEmitter<number>();
+
+  @Output()
+  removeTeamFavorite = new EventEmitter<number>();
 }
