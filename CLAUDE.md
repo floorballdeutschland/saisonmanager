@@ -191,9 +191,10 @@ Semantic Versioning (MAJOR.MINOR.PATCH) — defined in `~/saisonmanager-api/conf
 
 ## Pull Request Workflow
 
-Every fix or feature must go through a PR — no direct pushes to `main`.
+Every fix or feature must go through a PR — no direct pushes to `main`. **Never merge or deploy without explicit user instruction.**
 
 1. Branch from `main`: `git checkout -b fix/description` or `feat/description`
 2. Add `## [Unreleased]` entry to `CHANGELOG.md`
 3. Open PR with `gh pr create`
-4. On merge: bump version in `version.rb`, move Unreleased → versioned block in CHANGELOG
+4. **Stop here.** Do NOT merge to `main` or deploy unless the user explicitly asks.
+5. On merge (when instructed): bump version in `version.rb`, move Unreleased → versioned block in CHANGELOG

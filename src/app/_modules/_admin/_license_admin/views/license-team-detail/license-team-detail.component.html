@@ -153,7 +153,7 @@
                               Geb.
                               {{
                                 p.birthdate
-                                  ? (p.birthdate | date : "dd.MM.yyyy" : "UTC")
+                                  ? (p.birthdate | date : "dd.MM.yyyy")
                                   : "-"
                               }}
                             </p>
@@ -197,9 +197,7 @@
                       [ngValue]="p.id"
                     >
                       {{ p.last_name }}, {{ p.first_name }} ({{
-                        p.birthdate
-                          ? (p.birthdate | date : "dd.MM.yyyy" : "UTC")
-                          : "-"
+                        p.birthdate ? (p.birthdate | date : "dd.MM.yyyy") : "-"
                       }})
                     </option>
                   </select>

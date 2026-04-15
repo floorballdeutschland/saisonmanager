@@ -54,10 +54,14 @@ export class LicenseAdminDetailComponent implements OnInit {
 
   public calculateAge(dateString: string): number {
     const today = new Date();
-    const birthDate = new Date(dateString);
+    const [y, m, d] = dateString.split('-').map(Number);
+    const birthDate = new Date(y, m - 1, d);
     let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
     return age;

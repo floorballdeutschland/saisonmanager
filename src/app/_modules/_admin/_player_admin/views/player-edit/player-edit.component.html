@@ -92,7 +92,7 @@
                   required
                 />
                 <ng-container *ngIf="!can('player_create_update')">
-                  {{ player.birthdate | date : "dd.MM.yyyy" : "UTC" }}
+                  {{ player.birthdate | date : "dd.MM.yyyy" }}
                 </ng-container>
               </div>
 
