@@ -228,4 +228,9 @@ export class GameService {
       environment.apiURL + 'user/games/' + gameId + '/game_status.json';
     return this.http.post<Game>(path, { ingame_status });
   }
+
+  public reopenGame(gameId: number) {
+    const path = environment.apiURL + 'user/games/' + gameId + '/reopen.json';
+    return this.http.post<{ success: boolean }>(path, {});
+  }
 }
