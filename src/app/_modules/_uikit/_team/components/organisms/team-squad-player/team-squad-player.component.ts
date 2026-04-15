@@ -213,10 +213,11 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
 
   hasGameEvents(): boolean {
     if (!this.gamePlayerEntry) return false;
+    const trikot = this.gamePlayerEntry.trikot_number;
     return this.events.some(
       (e) =>
         e.event_team === this.side &&
-        e.number === this.gamePlayerEntry!.trikot_number
+        (e.number === trikot || e.assist === trikot)
     );
   }
 }
