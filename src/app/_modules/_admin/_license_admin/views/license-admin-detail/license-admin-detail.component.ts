@@ -16,7 +16,7 @@ export class LicenseAdminDetailComponent implements OnInit {
   initiallyOpen = false;
 
   @Input() set forceOpen(val: boolean) {
-    if (val) this.open = true;
+    this.open = val;
   }
 
   @Input()
