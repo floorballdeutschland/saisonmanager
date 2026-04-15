@@ -9,7 +9,11 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { GamePlayerEntry, PlayerWithLicense } from '@floorball/types';
+import {
+  GameEvent,
+  GamePlayerEntry,
+  PlayerWithLicense,
+} from '@floorball/types';
 import { GameService, NotificationService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 
@@ -28,6 +32,7 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
   @Input() player!: PlayerWithLicense;
   @Input() gamePlayerEntry!: GamePlayerEntry | null;
   @Input() captainPlayerId!: number | null;
+  @Input() events: GameEvent[] = [];
   @Output() updateLineup: EventEmitter<GamePlayerEntry[]> = new EventEmitter<
     GamePlayerEntry[]
   >();
@@ -204,5 +209,15 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
     const value =
       this.captainPlayerId === this.player.id ? null : this.player.id;
     this.setCaptainPlayerId.emit(value);
+  }
+
+  hasGameEvents(): boolean {
+    if (!this.gamePlayerEntry) return false;
+    const trikot = this.gamePlayerEntry.trikot_number;
+    return this.events.some(
+      (e) =>
+        e.event_team === this.side &&
+        (e.number === trikot || e.assist === trikot)
+    );
   }
 }

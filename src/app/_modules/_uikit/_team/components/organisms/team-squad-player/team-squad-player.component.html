@@ -1,4 +1,11 @@
-<div class="relative flex items-center">
+<div
+  class="relative flex items-center"
+  [title]="
+    hasGameEvents()
+      ? 'Spieler hat Ereignisse – Kader kann nicht mehr geändert werden'
+      : ''
+  "
+>
   <div class="ml-3 pr-4 flex items-center w-10 h-5">
     <input
       type="checkbox"
@@ -6,7 +13,7 @@
       tabindex="-1"
       [ngClass]="changed ? 'ring ring-red-300' : ''"
       [ngModel]="checked"
-      [disabled]="!trikotNumber"
+      [disabled]="!trikotNumber || hasGameEvents()"
       (click)="handleButtonClick()"
       *ngIf="gamePlayerEntry"
     />
@@ -17,6 +24,9 @@
     </label>
     <p *ngIf="changed" class="block mr-2 text-[11px] text-red-700">
       Füge den Spieler hinzu, um die Änderung zu übernehmen
+    </p>
+    <p *ngIf="hasGameEvents()" class="block mr-2 text-[11px] text-orange-600">
+      Hat Ereignisse – gesperrt
     </p>
   </div>
   <div class="flex items-center gap-2 min-w-0 text-sm">
@@ -29,7 +39,7 @@
           : ''
       "
       (click)="toggleCaptain()"
-      *ngIf="gamePlayerEntry && !changed"
+      *ngIf="gamePlayerEntry && !changed && !hasGameEvents()"
     >
       K
     </button>
@@ -38,7 +48,7 @@
       tabindex="-1"
       [ngClass]="goalkeeper ? 'text-white bg-fb-gray-500 font-extrabold' : ''"
       (click)="toggleGoalkeeper()"
-      *ngIf="gamePlayerEntry && !changed"
+      *ngIf="gamePlayerEntry && !changed && !hasGameEvents()"
     >
       T
     </button>
@@ -53,6 +63,7 @@
       (focusin)="handleFocusChange()"
       [(ngModel)]="trikotNumber"
       (change)="handleTrikotNumberChange()"
+      [disabled]="hasGameEvents()"
       class="py-2 w-16 block shadow-sm text-center focus:ring-gray-500 focus:border-gray-500 sm:max-w-xs sm:text-sm border border-gray-200 rounded-md"
       [ngClass]="hasError ? 'border-red-600' : ''"
     />

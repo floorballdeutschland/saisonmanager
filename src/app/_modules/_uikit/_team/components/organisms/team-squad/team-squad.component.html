@@ -99,7 +99,7 @@
                   class="py-2"
                   *ngFor="
                     let player of licenseHash.current_requests
-                      | teamLineupPlayer: players:filter
+                      | teamLineupPlayer : players : filter
                   "
                 >
                   <fb-team-squad-player
@@ -112,6 +112,7 @@
                     [lineup]="players"
                     [gamePlayerEntry]="player.gamePlayerEntry"
                     [captainPlayerId]="captainPlayerId"
+                    [events]="events"
                   ></fb-team-squad-player>
                 </li>
               </ul>

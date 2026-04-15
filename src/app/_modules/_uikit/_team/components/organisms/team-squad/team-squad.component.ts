@@ -9,6 +9,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {
+  GameEvent,
   GamePlayerEntry,
   LicenseHash,
   SquatFilterType,
@@ -28,6 +29,7 @@ export class TeamSquadComponent implements OnInit {
   @Input() side!: string;
   @Input() team!: string;
   @Input() teamId!: number;
+  @Input() events: GameEvent[] = [];
   @Output() handleClose: EventEmitter<void> = new EventEmitter<void>();
 
   licenseHash!: LicenseHash;
