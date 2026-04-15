@@ -112,8 +112,6 @@ export class TeamRankingTableComponent implements OnChanges, AfterViewInit {
     const scrollWidth = scrollableDiv.scrollWidth;
     const clientWidth = scrollableDiv.clientWidth;
 
-    console.log(scrollWidth, clientWidth);
-
     if (clientWidth < scrollWidth) {
       this.isScrolled = scrollableDiv.scrollLeft > 0;
       this.isScrollable = scrollWidth - scrollableDiv.scrollLeft > clientWidth;
