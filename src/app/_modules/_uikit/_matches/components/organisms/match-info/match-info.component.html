@@ -11,7 +11,7 @@
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Datum</span>
       <span class="text-sm font-bold text-right">{{
-        game.date | date: "dd.MM.yyyy"
+        game.date | date : "dd.MM.yyyy"
       }}</span>
     </li>
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
@@ -25,6 +25,13 @@
       <span class="text-sm font-bold text-right">{{
         game.arena_address ? game.arena_address : "-"
       }}</span>
+    </li>
+    <li
+      class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5"
+      *ngIf="game.hosting_club"
+    >
+      <span class="text-sm">Ausrichter</span>
+      <span class="text-sm font-bold text-right">{{ game.hosting_club }}</span>
     </li>
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Spielbeginn</span>
@@ -41,7 +48,7 @@
     <li class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5">
       <span class="text-sm">Schiedsrichter</span>
       <span class="text-sm font-bold text-right">
-        {{ game.referees | normalizeReferee: game.nominated_referees }}
+        {{ game.referees | normalizeReferee : game.nominated_referees }}
       </span>
     </li>
   </ul>

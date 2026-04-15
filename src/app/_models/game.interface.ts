@@ -135,6 +135,7 @@ export interface Game {
   arena_name: string;
   arena_address: string;
   arena_short: string;
+  hosting_club?: string;
   referees: Referee[];
   nominated_referees: string;
   period_titles: PeriodTitles[];
