@@ -146,7 +146,7 @@
                 >
                   <optgroup label="nur bei FD">
                     <option
-                      *ngFor="let lc of leagueClasses | leagueClass: 'fd'"
+                      *ngFor="let lc of leagueClasses | leagueClass : 'fd'"
                       [value]="lc.id"
                       [disabled]="!isBuliPermitted"
                     >
@@ -155,7 +155,7 @@
                   </optgroup>
                   <optgroup label="zulässige Klassen">
                     <option
-                      *ngFor="let lc of leagueClasses | leagueClass: 'ok'"
+                      *ngFor="let lc of leagueClasses | leagueClass : 'ok'"
                       [value]="lc.id"
                     >
                       {{ lc.name }}
@@ -163,7 +163,7 @@
                   </optgroup>
                   <optgroup label="nicht zulässige Klassen">
                     <option
-                      *ngFor="let lc of leagueClasses | leagueClass: 'not_ok'"
+                      *ngFor="let lc of leagueClasses | leagueClass : 'not_ok'"
                       [value]="lc.id"
                     >
                       {{ lc.name }}
@@ -204,6 +204,22 @@
                 >
                   <option value="true">aktiviert</option>
                   <option value="false">deaktiviert</option>
+                </select>
+              </div>
+
+              <div class="font-bold">Direkter Vergleich</div>
+              <div>
+                <select
+                  class="w-full"
+                  name="direct_comparison"
+                  [(ngModel)]="league.direct_comparison"
+                >
+                  <option [ngValue]="false">
+                    deaktiviert (Gesamttordifferenz)
+                  </option>
+                  <option [ngValue]="true">
+                    aktiviert (direkter Vergleich)
+                  </option>
                 </select>
               </div>
             </div>

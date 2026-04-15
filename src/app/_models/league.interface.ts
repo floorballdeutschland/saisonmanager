@@ -30,6 +30,7 @@ export interface League {
   before_deadline?: boolean;
 
   table_modus: string;
+  direct_comparison: boolean;
   periods: number;
   period_length: number;
   overtime_length: number;
