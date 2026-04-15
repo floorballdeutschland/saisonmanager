@@ -88,6 +88,11 @@
                     <div class="flex items-start justify-between">
                       <p class="truncate text-sm font-medium">
                         {{ p.last_name }}, {{ p.first_name }}
+                        <span
+                          *ngIf="p.gender"
+                          class="ml-1 inline-block rounded px-1 text-xs font-normal text-fb-gray-400"
+                          >{{ p.gender | gender }}</span
+                        >
                       </p>
                       <div class="ml-2 flex flex-shrink-0 items-end">
                         <div>
