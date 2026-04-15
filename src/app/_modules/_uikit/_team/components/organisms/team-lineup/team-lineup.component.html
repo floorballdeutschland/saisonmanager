@@ -4,7 +4,11 @@
     [player_name]="player | fullName"
     [player_id]="player.player_id"
     [position]="
-      player.captain ? 'Kapitän, ' + player.position : player.position
+      player.captain
+        ? (player.gender === 'W' ? 'Kapitänin' : 'Kapitän') +
+          ', ' +
+          player.position
+        : player.position
     "
   ></fb-player-lineup-item>
 </ng-container>

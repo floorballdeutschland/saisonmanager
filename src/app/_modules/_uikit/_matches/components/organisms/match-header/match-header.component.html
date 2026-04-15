@@ -57,14 +57,14 @@
           <ng-template #gameDate>
             <span class="tracking-widest">
               <ng-container
-                *ngIf="game.notice_type | gameNoticeVisibility: 'date'"
+                *ngIf="game.notice_type | gameNoticeVisibility : 'date'"
               >
-                {{ game.date | date: "dd.MM.yyyy" }}
+                {{ game.date | date : "dd.MM.yyyy" }}
               </ng-container>
               <ng-container
                 *ngIf="
                   game.start_time && game.notice_type
-                    | gameNoticeVisibility: 'time'
+                    | gameNoticeVisibility : 'time'
                 "
               >
                 – {{ game.start_time }} Uhr
@@ -122,8 +122,10 @@
           </ng-container>
         </ul>
         <div class="text-fb-gray-400">
-          <div *ngIf="game.started && !game.ended">{{ game.arena_name }}</div>
-          <div *ngIf="game.started && !game.ended">
+          <div *ngIf="game.arena_name && !game.ended">
+            {{ game.arena_name }}
+          </div>
+          <div *ngIf="game.arena_address && !game.ended">
             {{ game.arena_address }}
           </div>
           <div class="mt-3" *ngIf="game.arena_address && !game.ended">

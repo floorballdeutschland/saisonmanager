@@ -48,6 +48,7 @@ export interface GamePlayerEntry {
   trikot_number: number;
   player_firstname: string;
   captain?: boolean;
+  gender?: string;
 }
 
 export interface GamePlayers {
