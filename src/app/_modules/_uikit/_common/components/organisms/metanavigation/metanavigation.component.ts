@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { map } from 'rxjs';
 import { SessionService, VersionService } from '@floorball/core';
 
 @Component({
@@ -22,7 +23,13 @@ export class MetanavigationComponent implements OnInit {
   isLoggedIn$ = this._sessionService.isLoggedIn$;
   currentUser$ = this._sessionService.currentUser$;
   version$ = this._versionService.version$;
-  changelog$ = this._versionService.changelog$;
+  currentRelease$ = this._versionService.changelog$.pipe(
+    map((entries) => {
+      const entry = entries?.[0];
+      if (!entry) return null;
+      return { ...entry, sections: Object.keys(entry.changes) };
+    })
+  );
 
   permissions: { [key: string]: boolean } = {};
   username = '';
@@ -61,9 +68,5 @@ export class MetanavigationComponent implements OnInit {
 
   public closeMenu() {
     this.closeHandler.emit();
-  }
-
-  public changelogKeys(changes: Record<string, string[]>): string[] {
-    return Object.keys(changes);
   }
 }
