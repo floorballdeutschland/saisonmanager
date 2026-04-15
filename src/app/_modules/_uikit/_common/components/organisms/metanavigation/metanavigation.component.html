@@ -113,6 +113,53 @@
   </ul>
 </nav>
 
-<p *ngIf="version$ | async as version" class="text-xs text-fb-gray-100 mt-8">
-  v{{ version }}
-</p>
+<div
+  class="relative group mt-8 inline-block"
+  *ngIf="version$ | async as version"
+>
+  <a
+    href="https://github.com/floorballverband-deutschland/saisonmanager-api/releases"
+    target="_blank"
+    rel="noopener"
+    class="text-xs text-fb-gray-100 hover:text-white"
+  >
+    v{{ version }} ↗
+  </a>
+
+  <!-- Changelog tooltip -->
+  <div
+    class="absolute bottom-full left-0 mb-2 hidden w-80 rounded-md border border-gray-200 bg-white p-4 text-black shadow-xl group-hover:block z-50"
+  >
+    <ng-container *ngIf="changelog$ | async as entries">
+      <ng-container *ngIf="entries[0] as entry">
+        <p class="mb-2 text-sm font-bold">
+          v{{ entry.version }}
+          <span class="ml-1 font-normal text-gray-400">{{ entry.date }}</span>
+        </p>
+        <ng-container *ngFor="let section of changelogKeys(entry.changes)">
+          <p class="mb-1 mt-2 text-xs font-semibold text-gray-600">
+            {{ section }}
+          </p>
+          <ul class="space-y-1">
+            <li
+              *ngFor="let item of entry.changes[section]"
+              class="border-l-2 border-gray-200 pl-2 text-xs leading-snug text-gray-700"
+            >
+              {{ item }}
+            </li>
+          </ul>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+    <div class="mt-3 border-t border-gray-200 pt-2">
+      <a
+        href="https://github.com/floorballverband-deutschland/saisonmanager-api/releases"
+        target="_blank"
+        rel="noopener"
+        class="text-xs text-blue-600 hover:underline"
+      >
+        Alle Releases auf GitHub ↗
+      </a>
+    </div>
+  </div>
+</div>

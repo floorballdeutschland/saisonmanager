@@ -22,6 +22,7 @@ export class MetanavigationComponent implements OnInit {
   isLoggedIn$ = this._sessionService.isLoggedIn$;
   currentUser$ = this._sessionService.currentUser$;
   version$ = this._versionService.version$;
+  changelog$ = this._versionService.changelog$;
 
   permissions: { [key: string]: boolean } = {};
   username = '';
@@ -60,5 +61,9 @@ export class MetanavigationComponent implements OnInit {
 
   public closeMenu() {
     this.closeHandler.emit();
+  }
+
+  public changelogKeys(changes: Record<string, string[]>): string[] {
+    return Object.keys(changes);
   }
 }
