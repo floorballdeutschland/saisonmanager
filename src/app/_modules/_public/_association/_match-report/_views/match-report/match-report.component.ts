@@ -208,4 +208,27 @@ export class MatchReportComponent implements OnInit, OnChanges {
   public finalizeGame() {
     this.handleGameStatusChange(this.FINALIZED);
   }
+
+  public canReopenGame() {
+    return (
+      [this.MATCH_RECORD_CLOSED, this.FINALIZED].includes(
+        this.game.game_status
+      ) && this.game?.permission?.includes('check_game')
+    );
+  }
+
+  public reopenGame() {
+    this._gameService.reopenGame(this.game.id).subscribe({
+      next: () => {
+        this.game.game_status = this.AFTERGAME;
+        this.appGameStatus = this.AFTERGAME;
+        this.reloadGame();
+      },
+      error: () => {
+        alert(
+          'Spielbericht konnte nicht geöffnet werden. Bitte Seite neu laden.'
+        );
+      },
+    });
+  }
 }
