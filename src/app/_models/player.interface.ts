@@ -13,6 +13,7 @@ export interface Player {
   birthdate: string;
   gender: GenderKey;
   nation_id: number;
+  email?: string;
   club_id?: number;
   clubs?: ClubMembership[];
   licenses?: PlayerLicense[];
