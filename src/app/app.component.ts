@@ -59,4 +59,12 @@ export class AppComponent implements OnInit {
   onSeasonChange(seasonId: number): void {
     this._associationService.selectSeason(seasonId);
   }
+
+  removeFavoriteLeague(id: number): void {
+    this._favoriteService.removeFavorite(id);
+  }
+
+  removeFavoriteTeam(id: number): void {
+    this._favoriteService.removeTeamFavorite(id);
+  }
 }

@@ -27,6 +27,13 @@
               title="{{ league.name }}"
               >{{ league.name }}</a
             >
+            <button
+              (click)="removeFavorite.emit(league.id)"
+              class="ml-1 text-fb-gray-400 hover:text-black text-xs leading-none"
+              title="Aus Favoriten entfernen"
+            >
+              ✕
+            </button>
           </li>
         </ul>
       </li>
@@ -50,6 +57,13 @@
           [title]="team.name"
           >{{ team.name }}</a
         >
+        <button
+          (click)="removeTeamFavorite.emit(team.id)"
+          class="ml-1 text-fb-gray-400 hover:text-black text-xs leading-none"
+          title="Aus Favoriten entfernen"
+        >
+          ✕
+        </button>
         <p *ngIf="team.league_name" class="text-xs text-fb-gray-400">
           {{ team.league_name }}
         </p>

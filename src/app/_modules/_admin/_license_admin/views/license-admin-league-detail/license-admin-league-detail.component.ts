@@ -14,6 +14,11 @@ export class LicenseAdminLeagueDetailComponent implements OnInit {
 
   handledPlayerIds: number[] = [];
 
+  allOpen = false;
+  toggleAll(): void {
+    this.allOpen = !this.allOpen;
+  }
+
   constructor(
     private _leagueService: LeagueService,
     private _clubService: ClubService,

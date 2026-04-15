@@ -33,6 +33,8 @@
   <fb-favorites-navigation
     [favorites]="(favoriteLeagues$ | async) ?? []"
     [favoriteTeams]="(favoriteTeams$ | async) ?? []"
+    (removeFavorite)="removeFavoriteLeague($event)"
+    (removeTeamFavorite)="removeFavoriteTeam($event)"
     class="lg:hidden"
   ></fb-favorites-navigation>
 
