@@ -224,6 +224,11 @@ export class MatchReportComponent implements OnInit, OnChanges {
         this.appGameStatus = this.AFTERGAME;
         this.reloadGame();
       },
+      error: () => {
+        alert(
+          'Spielbericht konnte nicht geöffnet werden. Bitte Seite neu laden.'
+        );
+      },
     });
   }
 }
