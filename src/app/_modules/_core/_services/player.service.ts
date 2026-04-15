@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Club, Nation, Player, PlayerStats } from '@floorball/types';
+import {
+  Club,
+  Nation,
+  Player,
+  PlayerSearchResult,
+  PlayerStats,
+} from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -90,6 +96,14 @@ export class PlayerService {
       license_status_id: licenseStatusId,
       reason: reason,
     });
+  }
+
+  public globalSearch(query: string) {
+    const path =
+      environment.apiURL +
+      'admin/players/search.json?q=' +
+      encodeURIComponent(query);
+    return this.http.get<PlayerSearchResult[]>(path);
   }
 
   public reenableLicenseRequest(playerId: number, licenseId: string) {
