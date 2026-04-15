@@ -54,6 +54,15 @@ export interface PlayerLicenseHistory {
   license_status?: string;
 }
 
+export interface PlayerSearchResult {
+  id: number;
+  last_name: string;
+  first_name: string;
+  birthdate: string;
+  gender: GenderKey;
+  club_id: number | null;
+}
+
 export interface PlayerLicense {
   id: string;
   male: boolean;

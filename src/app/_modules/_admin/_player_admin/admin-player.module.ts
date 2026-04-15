@@ -19,6 +19,10 @@ import * as Views from './views';
     UikitMatchesModule,
     UikitCommonModule,
   ],
-  declarations: [Views.PlayerIndexComponent, Views.PlayerEditComponent],
+  declarations: [
+    Views.PlayerIndexComponent,
+    Views.PlayerEditComponent,
+    Views.PlayerSearchComponent,
+  ],
 })
 export class AdminPlayerModule {}

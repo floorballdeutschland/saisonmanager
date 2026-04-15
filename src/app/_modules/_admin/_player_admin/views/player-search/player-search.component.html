@@ -1,0 +1,101 @@
+<div class="container mx-auto px-4 lg:px-8">
+  <h1
+    class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
+  >
+    Spielerverwaltung
+  </h1>
+  <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
+    Globale Spielersuche
+  </h2>
+</div>
+
+<ng-container>
+  <div class="bg-fb-gray-800 pt-4 lg:pt-8 pb-16">
+    <div class="container mx-auto px-4 lg:px-8">
+      <div
+        class="grid grid-cols-1 md:grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9"
+      >
+        <div>
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Suche
+            </div>
+            <input
+              type="text"
+              class="w-full"
+              placeholder="Vor- oder Nachname (mind. 2 Zeichen)"
+              [ngModel]="query"
+              (ngModelChange)="onQueryChange($event)"
+            />
+          </div>
+        </div>
+
+        <div class="col-span-2">
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Ergebnisse
+              <span
+                *ngIf="loading"
+                class="ml-2 text-gray-400 normal-case font-normal"
+              >
+                wird gesucht...
+              </span>
+            </div>
+
+            <ng-container *ngIf="!loading && searched && results.length === 0">
+              <p class="text-sm text-gray-500">Keine Spieler gefunden.</p>
+            </ng-container>
+
+            <ul
+              role="list"
+              class="divide-y divide-gray-200"
+              *ngIf="results.length > 0"
+            >
+              <li *ngFor="let player of results">
+                <a
+                  [routerLink]="[
+                    '/',
+                    'verwaltung',
+                    'vereine',
+                    player.club_id ?? 'alle',
+                    'spieler',
+                    player.id,
+                    'bearbeiten'
+                  ]"
+                  class="block hover:bg-gray-50"
+                >
+                  <div class="px-4 py-4 sm:px-6">
+                    <div class="flex items-center justify-between">
+                      <p class="truncate text-sm font-medium">
+                        {{ player.last_name }}, {{ player.first_name }}
+                        <span
+                          *ngIf="player.gender"
+                          class="ml-1 inline-block rounded px-1 text-xs font-normal text-fb-gray-400"
+                          >{{ player.gender | gender }}</span
+                        >
+                      </p>
+                      <div class="ml-2 flex-shrink-0 text-sm text-gray-500">
+                        {{
+                          player.birthdate
+                            ? (player.birthdate | date : "dd.MM.yyyy" : "UTC")
+                            : "-"
+                        }}
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </li>
+            </ul>
+
+            <p
+              *ngIf="!searched && query.length < 2"
+              class="text-sm text-gray-500"
+            >
+              Mindestens 2 Zeichen eingeben, um die Suche zu starten.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
