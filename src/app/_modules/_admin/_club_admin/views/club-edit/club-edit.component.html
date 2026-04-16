@@ -86,6 +86,7 @@
               <div class="font-bold">Bundesland (Vereinssitz)</div>
               <div>
                 <select name="state" [(ngModel)]="club.state" class="w-full">
+                  <option [ngValue]="null">– Bitte auswählen –</option>
                   <option *ngFor="let s of states" [ngValue]="s.isocode">
                     {{ s.name }}
                   </option>
@@ -99,6 +100,7 @@
                   class="w-full"
                   [(ngModel)]="club.game_operation_id"
                 >
+                  <option [ngValue]="null">– Bitte auswählen –</option>
                   <option *ngFor="let go of gameOperations" [ngValue]="go.id">
                     {{ go.name }}
                   </option>
