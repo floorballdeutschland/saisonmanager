@@ -1,27 +1,146 @@
-# Saisonmanager
+# Saisonmanager – Frontend
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 13.0.1.
+Angular 18 frontend for the Floorball Saisonmanager — a league management system for Floorball Deutschland covering schedules, player licensing, referee management, and club administration.
 
-## Development server
+## Related Repositories
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+| Repo                                                                                         | Description                                |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| [saisonmanager](https://github.com/floorballverband-deutschland/saisonmanager)               | This repo – Angular frontend               |
+| [saisonmanager-api](https://github.com/floorballverband-deutschland/saisonmanager-api)       | Rails 7 API backend                        |
+| [saisonmanager-docker](https://github.com/floorballverband-deutschland/saisonmanager-docker) | Docker Compose setup for local development |
 
-## Code scaffolding
+## Tech Stack
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+- **Angular 18** with standalone-compatible lazy-loaded feature modules
+- **TypeScript** with strict path aliases
+- **Tailwind CSS** for styling
+- **Karma** for unit tests
+- **Husky + Prettier** for pre-commit linting
 
-## Build
+## Quick Start
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+### Prerequisites
 
-## Running unit tests
+- Node.js 20+ and npm (managed via [nvm](https://github.com/nvm-sh/nvm))
+- The API running locally (see [saisonmanager-docker](https://github.com/floorballverband-deutschland/saisonmanager-docker)) or accessible at `https://sm.jholocal.de`
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+### Setup
 
-## Running end-to-end tests
+```bash
+nvm use          # switch to the correct Node version
+npm install
+npm start        # → http://localhost:4200
+```
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+By default the app points to `https://sm.jholocal.de/api/v2/`. For fully local development, change `apiURL` in `src/environments/environment.ts` to `http://localhost:3001/api/v2/`.
 
-## Further help
+### Demo Credentials
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+| Username     | Password      | Role                              |
+| ------------ | ------------- | --------------------------------- |
+| `admin`      | `password123` | Admin – full access               |
+| `sbk_ost`    | `password123` | SBK Ost – game operations         |
+| `sbk_west`   | `password123` | SBK West                          |
+| `vm_berlin`  | `password123` | Vereinsmanager – Floorball Berlin |
+| `tm_berlin1` | `password123` | Teammanager – Berlin Team 1       |
+
+## Commands
+
+| Command               | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| `npm start`           | Dev server at `http://localhost:4200`            |
+| `npm run start-local` | Dev server bound to `0.0.0.0` (network access)   |
+| `npm run build`       | Production build → `dist/saisonmanager/browser/` |
+| `ng test`             | Karma unit tests                                 |
+| `npm run lint`        | Prettier on staged files                         |
+| `./build-deploy.sh`   | Build + deploy to production server              |
+
+> **Note:** `ng` requires nvm to be in PATH. If `ng: command not found`, run:
+>
+> ```bash
+> export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
+> ```
+
+> **Never deploy a development build.** `ng build --configuration development` produces a blank page in production. Always use `npm run build` (defaults to production).
+
+## Project Structure
+
+```
+src/app/
+├── _helpers/
+│   └── _interceptors/          # HTTP interceptors
+│       ├── api-key.interceptor.ts   # adds X-Api-Key header
+│       └── error.interceptor.ts     # handles 401/403/404
+├── _models/                    # TypeScript interfaces
+├── _modules/
+│   ├── _admin/                 # Protected admin views
+│   │   ├── _league_admin/
+│   │   ├── _schedule_admin/
+│   │   ├── _license_admin/
+│   │   ├── _player_admin/
+│   │   ├── _club_admin/
+│   │   ├── _team_admin/
+│   │   ├── _referee_admin/
+│   │   ├── _state_association_admin/
+│   │   └── _api_key_admin/
+│   ├── _core/
+│   │   └── _services/          # Shared services (session, API)
+│   ├── _public/                # Public-facing views
+│   └── _uikit/                 # Shared UI components
+└── environments/
+    ├── environment.ts           # Development config
+    └── environment.prod.ts      # Production config
+```
+
+### TypeScript Path Aliases
+
+Defined in `tsconfig.json`:
+
+| Alias                                    | Maps to                        |
+| ---------------------------------------- | ------------------------------ |
+| `@floorball/models` / `@floorball/types` | `src/app/_models/`             |
+| `@floorball/core`                        | `src/app/_modules/_core/`      |
+| `@floorball/uikit/*`                     | `src/app/_modules/_uikit/_*/`  |
+| `@floorball/admin/*`                     | `src/app/_modules/_admin/_*/`  |
+| `@floorball/public/*`                    | `src/app/_modules/_public/_*/` |
+
+## Authentication & Permissions
+
+`SessionService` handles login/logout. On login, the user object (including a flat permissions map) is stored in `localStorage`.
+
+Permission keys are booleans like `menu_item_league_admin`, `update_player`, etc. — set server-side in `User#permissions_items`. Gate UI elements with:
+
+```html
+<div *ngIf="showItem('menu_item_league_admin')">...</div>
+```
+
+> **After backend permission changes**, users must log out and back in to pick up updated permissions from localStorage.
+
+**API key auth:** Public endpoints require an `X-Api-Key` header. The `ApiKeyInterceptor` automatically adds `environment.frontendApiKey` to all outgoing requests. After rotating the key in the admin UI, update `environment.prod.ts` and redeploy.
+
+## Adding a New Admin Module
+
+Use `_state_association_admin` as a reference implementation.
+
+1. Create `src/app/_modules/_admin/_foo_admin/` with `admin-foo.module.ts`, `admin-foo-routing.module.ts`, `index.ts`, and `views/`
+2. Add a service to `src/app/_modules/_core/_services/` and export from its `index.ts`
+3. Add an interface to `src/app/_models/` and export from its `index.ts`
+4. Add a path alias to `tsconfig.json`: `"@floorball/admin/foo": ["src/app/_modules/_admin/_foo_admin"]`
+5. Add a lazy-loaded route to `app-routing.module.ts`
+6. Add a menu item to `metanavigation.component.html` gated by `showItem('menu_item_foo_admin')`
+7. Add `menu_item_foo_admin` to `User#permissions_items` in the API (`app/models/user.rb`)
+
+## Deployment
+
+```bash
+./build-deploy.sh   # production build + scp to saisonmanager.org
+```
+
+Requires nvm in PATH and SSH access to the production server (`ssh saisonmanager`).
+
+## Contributing
+
+- Branch from `main`: `git checkout -b fix/description` or `feat/description`
+- Open a PR — no direct pushes to `main`
+- The pre-commit hook runs Prettier on staged files (requires nvm in PATH; see the nvm export workaround above if it fails)
