@@ -32,7 +32,11 @@ npm run lint                 # Prettier on staged files only
 
 **Never deploy a development build.** Using `ng build --configuration development` produces a broken blank page in production. Always use `ng build` (production is the default).
 
-**Pre-commit hook caveat:** The Husky hook runs `git-format-staged` which requires Python. If the hook fails with `python: not found`, ensure `~/.local/bin` is in PATH and `python` symlinks to `python3`. The hook also runs `ng lint_association` — the full PATH must include `~/.nvm/versions/node/.../bin` and `saisonmanager/node_modules/.bin`.
+**Pre-commit hook caveat:** The Husky hook runs `git-format-staged` (requires Python) and `ng lint`. Both need nvm and local node_modules in PATH. If the hook fails with `ng: not found`, commit with:
+
+```bash
+export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && export PATH="$PATH:$(pwd)/node_modules/.bin" && git commit -m "..."
+```
 
 ## API Commands (in `~/saisonmanager-api`)
 
@@ -76,12 +80,22 @@ The API runs at **http://localhost:3001** (port 3000 is taken by another service
 
 **Module structure** under `src/app/`:
 
-- `_modules/_admin/` – Protected admin views: `_league_admin`, `_schedule_admin`, `_license_admin`, `_player_admin`, `_club_admin`, `_team_admin`
+- `_modules/_admin/` – Protected admin views: `_league_admin`, `_schedule_admin`, `_license_admin`, `_player_admin`, `_club_admin`, `_team_admin`, `_referee_admin`, `_state_association_admin`, `_api_key_admin`
 - `_modules/_public/` – Public-facing views (schedule, scores, login)
 - `_modules/_core/_services/` – Shared services (session, API calls)
 - `_modules/_uikit/` – Shared UI components
-- `_helpers/_interceptors/` – HTTP interceptors
+- `_helpers/_interceptors/` – HTTP interceptors: `ApiKeyInterceptor` (adds `X-Api-Key` header) and `ErrorInterceptor` (handles 401/403/404)
 - `_models/` – TypeScript types
+
+**Adding a new admin module** follows a fixed pattern (use `_state_association_admin` as reference):
+
+1. Create `_modules/_admin/_foo_admin/` with `admin-foo.module.ts`, `admin-foo-routing.module.ts`, `index.ts`, and `views/`
+2. Add service to `_modules/_core/_services/` and export from its `index.ts`
+3. Add interface to `_models/` and export from its `index.ts`
+4. Add path alias to `tsconfig.json`: `"@floorball/admin/foo": ["src/app/_modules/_admin/_foo_admin"]`
+5. Add lazy-loaded route to `app-routing.module.ts`
+6. Add menu item to `metanavigation.component.html` gated by `showItem('menu_item_foo_admin')`
+7. Add `menu_item_foo_admin` to `User#permissions_items` in the API (`app/models/user.rb`)
 
 **TypeScript path aliases** (defined in `tsconfig.json`):
 
@@ -90,9 +104,11 @@ The API runs at **http://localhost:3001** (port 3000 is taken by another service
 - `@floorball/uikit/*` → `_modules/_uikit/_*`
 - `@floorball/admin/*` and `@floorball/public/*` for lazy-loaded feature modules
 
-**Auth flow:** `SessionService` handles login/logout. On login, the user object (including permissions hash) is stored in `localStorage`. An `ErrorInterceptor` auto-logs out on 401 and redirects on 403.
+**Auth flow:** `SessionService` handles login/logout. On login, the user object (including permissions hash) is stored in `localStorage`. An `ErrorInterceptor` auto-logs out on 401 and redirects on 403. After backend permission changes, users must log out and back in to pick up new `permissions` from localStorage.
 
 **Permission gating in templates:** Components subscribe to `SessionService.currentUser$` and expose a `showItem(key: string)` helper that reads from `user.permissions` (a flat boolean map returned by the API). Example: `*ngIf="showItem('menu_item_league_admin')"`.
+
+**API key auth:** Public API endpoints require an `X-Api-Key` header. The `ApiKeyInterceptor` automatically adds `environment.frontendApiKey` to all requests to `environment.apiURL`. After creating a new "Frontend" key in the admin UI (`/verwaltung/api-keys`), set it in `src/environments/environment.prod.ts` and redeploy. Cookie-authenticated requests bypass the key check entirely.
 
 ### API (Rails 7)
 
@@ -134,7 +150,16 @@ When building `go_ids` arrays in `admin_user_clubs`-style methods, always use `g
 
 **game_number is stored as text.** Sort numerically with `NULLIF(game_number, '')::integer NULLS LAST`.
 
-**Route structure:** Two API versions coexist. Public endpoints under `/leagues/:id/schedule` etc. Admin endpoints under `/api/v2/admin/...`. The `api_controller.rb` handles the older v1 ticker API.
+**Route structure:** Two API versions coexist. Public endpoints under `/api/v2/leagues/:id/schedule` etc. require `X-Api-Key` or cookie session. Admin endpoints under `/api/v2/admin/...` require cookie session + role check. The `api_controller.rb` handles the older v1 ticker API (also key-protected). `version_controller.rb` and `sessions_controller.rb` (login/logout) are fully open.
+
+**Public endpoint protection pattern:**
+
+```ruby
+skip_before_action :authenticate_user, only: %i[show index]
+before_action :authenticate_public_request, only: %i[show index]
+```
+
+`authenticate_public_request` is defined in `ApplicationController` — passes if cookie session exists, else checks `X-Api-Key` header against `ApiKey` table.
 
 ## Deployment
 
