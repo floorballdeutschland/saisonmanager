@@ -68,6 +68,7 @@
       "@floorball/admin/state-associations": [
         "src/app/_modules/_admin/_state_association_admin"
       ],
+      "@floorball/admin/api-keys": ["src/app/_modules/_admin/_api_key_admin"],
       "@floorball/models": ["src/app/_models"]
     },
     "useDefineForClassFields": false
