@@ -5,6 +5,7 @@
 export const environment = {
   production: false,
   apiURL: 'https://sm.jholocal.de/api/v2/',
+  frontendApiKey: '',
 };
 
 /*

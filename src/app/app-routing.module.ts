@@ -60,6 +60,11 @@ const routes: Routes = [
             (m) => m.AdminStateAssociationModule
           ),
       },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/admin/api-keys').then((m) => m.AdminApiKeyModule),
+      },
     ],
   },
   {
