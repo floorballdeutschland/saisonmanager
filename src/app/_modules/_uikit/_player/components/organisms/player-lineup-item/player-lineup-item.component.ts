@@ -16,4 +16,17 @@ export class PlayerLineupItemComponent {
 
   @Input()
   position?: string = '';
+
+  @Input()
+  birthdate?: string;
+
+  get isYouth(): boolean {
+    if (!this.birthdate) return false;
+    const today = new Date();
+    const birth = new Date(this.birthdate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age < 18;
+  }
 }

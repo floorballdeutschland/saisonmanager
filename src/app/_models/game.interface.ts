@@ -49,6 +49,7 @@ export interface GamePlayerEntry {
   player_firstname: string;
   captain?: boolean;
   gender?: string;
+  birthdate?: string;
 }
 
 export interface GamePlayers {
