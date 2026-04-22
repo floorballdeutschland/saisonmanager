@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ApiKey } from '@floorball/types';
+import { ApiKey, CreatedApiKey } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -14,15 +14,18 @@ export class ApiKeyService {
   }
 
   public create(name: string) {
-    return this.http.post<ApiKey>(environment.apiURL + 'admin/api_keys', {
-      name,
-    });
+    return this.http.post<CreatedApiKey>(
+      environment.apiURL + 'admin/api_keys',
+      {
+        api_key: { name },
+      }
+    );
   }
 
   public update(id: number, active: boolean) {
     return this.http.patch<ApiKey>(
       environment.apiURL + 'admin/api_keys/' + id,
-      { active }
+      { api_key: { active } }
     );
   }
 

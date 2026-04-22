@@ -6,6 +6,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { ApiKeyService, NotificationService } from '@floorball/core';
 import { ApiKey } from '@floorball/types';
@@ -21,6 +22,7 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
   newKeyName = '';
   createdKey: string | null = null;
   creating = false;
+  togglingIds = new Set<number>();
 
   private _destroy$ = new Subject<void>();
 
@@ -52,6 +54,10 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.loading = false;
+          this._notificationService.error(
+            'API-Keys konnten nicht geladen werden.',
+            { autoClose: false }
+          );
           this._cdr.markForCheck();
         },
       });
@@ -65,13 +71,15 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
-          this.createdKey = result.raw_key ?? null;
+          this.createdKey = result.raw_key;
           this.newKeyName = '';
           this.creating = false;
+          this._cdr.markForCheck();
           this.load();
         },
-        error: () => {
-          this._notificationService.error('Fehler beim Erstellen.', {
+        error: (err: HttpErrorResponse) => {
+          const detail = err.error?.errors?.join(', ') ?? err.message;
+          this._notificationService.error(`Fehler beim Erstellen: ${detail}`, {
             autoClose: false,
           });
           this.creating = false;
@@ -81,15 +89,24 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
   }
 
   toggleActive(key: ApiKey): void {
+    if (this.togglingIds.has(key.id)) return;
+    this.togglingIds.add(key.id);
     this._apiKeyService
       .update(key.id, !key.active)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: () => this.load(),
-        error: () => {
-          this._notificationService.error('Fehler beim Aktualisieren.', {
-            autoClose: false,
-          });
+        next: () => {
+          this.togglingIds.delete(key.id);
+          this.load();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.togglingIds.delete(key.id);
+          const detail = err.error?.errors?.join(', ') ?? err.message;
+          this._notificationService.error(
+            `Fehler beim Aktualisieren: ${detail}`,
+            { autoClose: false }
+          );
+          this._cdr.markForCheck();
         },
       });
   }
@@ -106,8 +123,9 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
           });
           this.load();
         },
-        error: () => {
-          this._notificationService.error('Fehler beim Löschen.', {
+        error: (err: HttpErrorResponse) => {
+          const detail = err.error?.errors?.join(', ') ?? err.message;
+          this._notificationService.error(`Fehler beim Löschen: ${detail}`, {
             autoClose: false,
           });
         },

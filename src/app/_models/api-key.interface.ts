@@ -3,5 +3,9 @@ export interface ApiKey {
   name: string;
   active: boolean;
   created_at: string;
-  raw_key?: string;
+  last_used_at: string | null;
+}
+
+export interface CreatedApiKey extends ApiKey {
+  raw_key: string;
 }

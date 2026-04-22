@@ -80,7 +80,8 @@
           <td class="py-2 text-right flex gap-3 justify-end">
             <button
               (click)="toggleActive(key)"
-              class="text-sm text-fb-gray-500 hover:text-black"
+              [disabled]="togglingIds.has(key.id)"
+              class="text-sm text-fb-gray-500 hover:text-black disabled:opacity-40"
             >
               {{ key.active ? "Deaktivieren" : "Aktivieren" }}
             </button>
