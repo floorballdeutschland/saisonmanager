@@ -5,6 +5,12 @@
     Spielerverwaltung
   </h1>
 
+  <a
+    [routerLink]="['/', 'verwaltung', 'vereine', club_id, 'spieler']"
+    class="text-sm text-fb-gray-500 hover:text-black"
+    >← Zurück zur Spielerliste</a
+  >
+
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
     {{ editMode ? "Spieler bearbeiten" : "Neuen Spieler anlegen" }}
   </h2>

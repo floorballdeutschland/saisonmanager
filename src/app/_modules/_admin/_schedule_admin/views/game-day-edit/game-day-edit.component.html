@@ -5,6 +5,12 @@
     Spielplanverwaltung
   </h1>
 
+  <a
+    [routerLink]="['/', 'verwaltung', 'ligen', leagueId, 'spielplan']"
+    class="text-sm text-fb-gray-500 hover:text-black"
+    >← Zurück zum Spielplan</a
+  >
+
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
     {{ editMode ? "Bearbeiten eines Spieltags" : "Neuen Spieltag anlegen" }}
   </h2>
