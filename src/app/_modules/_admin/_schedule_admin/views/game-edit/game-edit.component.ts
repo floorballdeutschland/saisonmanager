@@ -192,7 +192,25 @@ export class GameEditComponent implements OnInit {
 
     this._gameService.updateGame(this.game).subscribe({
       next: () => {
-        this.refreshSchedule.emit();
+        // Update existingGame in place so other rows keep their pending changes
+        Object.assign(this.existingGame!, {
+          game_number: this.game.game_number,
+          forfait: this.game.forfait,
+          start_time: this.game.start_time,
+          home_team_id: this.game.home_team_id,
+          guest_team_id: this.game.guest_team_id,
+          nominated_referees: this.game.nominated_referee_string,
+          notice_type: this.game.notice_type,
+          notice_string: this.game.notice_string,
+          group_identifier: this.game.group_identifier,
+          series_title: this.game.series_title,
+          series_number: this.game.series_number,
+          home_team_filling_rule: this.game.home_team_filling_rule,
+          home_team_filling_parameter: this.game.home_team_filling_parameter,
+          guest_team_filling_rule: this.game.guest_team_filling_rule,
+          guest_team_filling_parameter: this.game.guest_team_filling_parameter,
+        });
+        this.resetGame();
         this._notificationService.success('Spiel erfolgreich gespeichert', {
           autoClose: true,
           keepAfterRouteChange: true,
