@@ -128,7 +128,7 @@
                       </div>
                     </div>
                     <div class="mt-2 sm:flex sm:justify-between">
-                      <div class="sm:flex">
+                      <div class="sm:flex sm:flex-wrap sm:gap-x-4">
                         <p class="flex items-start text-sm text-gray-500">
                           <!-- Heroicon name: mini/calendar -->
                           <svg
@@ -150,6 +150,22 @@
                               ? (p.birthdate | date : "dd.MM.yyyy")
                               : "-"
                           }}
+                        </p>
+                        <p
+                          *ngIf="p.team_license.requested_at"
+                          class="flex items-start text-sm text-gray-500"
+                        >
+                          <span class="font-medium mr-1">Beantragt:</span>
+                          {{
+                            p.team_license.requested_at | date : "dd.MM.yyyy"
+                          }}
+                        </p>
+                        <p
+                          *ngIf="p.team_license.approved_at"
+                          class="flex items-start text-sm text-gray-500"
+                        >
+                          <span class="font-medium mr-1">Erteilt:</span>
+                          {{ p.team_license.approved_at | date : "dd.MM.yyyy" }}
                         </p>
                       </div>
                     </div>

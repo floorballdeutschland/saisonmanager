@@ -33,7 +33,7 @@ export interface PlayerWithLicense extends Player {
     last_status_id: number;
     last_status_code: string;
 
-    approved_at?: number;
+    approved_at?: string;
     requested_at: string;
   };
   current_status: {
