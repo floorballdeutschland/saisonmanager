@@ -25,8 +25,9 @@ export class ErrorInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((err) => {
         if (err.status === 401 && !request.url.includes('login.json')) {
-          // auto logout if 401 response returned from api
-          this.sessionService.logout(false, true, 'Bitte einloggen.', true);
+          const returnUrl = this._router.url;
+          this.sessionService.logout(false, true, 'Bitte einloggen.', false);
+          this._router.navigate(['/login'], { queryParams: { returnUrl } });
         }
 
         if (err.status === 403) {
