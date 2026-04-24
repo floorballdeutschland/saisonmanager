@@ -16,4 +16,7 @@ export class PlayerLineupItemComponent {
 
   @Input()
   position?: string = '';
+
+  @Input()
+  youth?: boolean;
 }
