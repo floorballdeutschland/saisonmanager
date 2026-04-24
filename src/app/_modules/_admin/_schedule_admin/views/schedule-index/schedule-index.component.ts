@@ -20,6 +20,7 @@ export class ScheduleIndexComponent implements OnInit {
   arenas: Arena[] = [];
 
   newGameOpen: number[] = [];
+  openGameDays: number[] = [];
   leagueId = 0;
 
   loading = true;
@@ -64,6 +65,7 @@ export class ScheduleIndexComponent implements OnInit {
               (parseInt(b.game_number, 10) || 0)
           ),
         }));
+        this._syncOpenGameDays();
         this.loading = false;
 
         this._cdr.markForCheck();
@@ -80,5 +82,46 @@ export class ScheduleIndexComponent implements OnInit {
     } else {
       this.newGameOpen = [...this.newGameOpen, gameday];
     }
+  }
+
+  public toggleGameDay(gameDayId: number) {
+    if (this.openGameDays.includes(gameDayId)) {
+      this.openGameDays = this.openGameDays.filter((id) => id !== gameDayId);
+    } else {
+      this.openGameDays = [...this.openGameDays, gameDayId];
+    }
+  }
+
+  public get allExpanded(): boolean {
+    return (
+      this.gameDays.length > 0 &&
+      this.openGameDays.length === this.gameDays.length
+    );
+  }
+
+  public toggleAllGameDays() {
+    this.openGameDays = this.allExpanded
+      ? []
+      : this.gameDays.map((gd) => gd.id);
+  }
+
+  /**
+   * Beim ersten Load alle Spieltage öffnen; bei späteren Refreshes neu
+   * angelegte Spieltage mit aufnehmen (sonst erscheinen sie zugeklappt)
+   * und IDs gelöschter Spieltage verwerfen.
+   */
+  private _syncOpenGameDays() {
+    const currentIds = this.gameDays.map((gd) => gd.id);
+    if (this.openGameDays.length === 0) {
+      this.openGameDays = currentIds;
+      return;
+    }
+    const known = new Set(this.openGameDays);
+    const currentSet = new Set(currentIds);
+    const newIds = currentIds.filter((id) => !known.has(id));
+    this.openGameDays = [
+      ...this.openGameDays.filter((id) => currentSet.has(id)),
+      ...newIds,
+    ];
   }
 }
