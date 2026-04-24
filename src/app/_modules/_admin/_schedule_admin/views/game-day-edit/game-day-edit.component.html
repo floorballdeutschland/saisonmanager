@@ -87,11 +87,58 @@
 
               <div class="font-bold">Ausrichter</div>
               <div>
-                <select class="w-full" required [(ngModel)]="gameday.club_id">
-                  <option *ngFor="let club of clubs" [value]="club.id">
-                    {{ club.name }}
-                  </option>
-                </select>
+                <ng-container *ngIf="!useAllClubs">
+                  <select class="w-full" required [(ngModel)]="gameday.club_id">
+                    <option *ngFor="let club of clubs" [value]="club.id">
+                      {{ club.name }}
+                    </option>
+                  </select>
+                  <a
+                    class="text-xs text-fb-gray-600 hover:underline cursor-pointer mt-1 inline-block"
+                    (click)="enableAllClubs()"
+                  >
+                    Anderen Verein als Ausrichter wählen…
+                  </a>
+                </ng-container>
+
+                <ng-container *ngIf="useAllClubs">
+                  <div class="relative">
+                    <input
+                      class="w-full"
+                      type="text"
+                      [value]="clubQuery"
+                      placeholder="Verein suchen…"
+                      (input)="onClubInput($any($event.target).value)"
+                      (focus)="onClubFocus()"
+                      (blur)="onClubBlur()"
+                      autocomplete="off"
+                    />
+                    <ul
+                      *ngIf="showClubDropdown && filteredClubs.length > 0"
+                      class="absolute z-50 w-full bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-48 overflow-y-auto"
+                    >
+                      <li
+                        *ngFor="let c of filteredClubs"
+                        (mousedown)="$event.preventDefault(); selectClub(c)"
+                        class="px-3 py-2 hover:bg-fb-gray-200 cursor-pointer text-sm"
+                      >
+                        {{ c.name }}
+                      </li>
+                    </ul>
+                    <div
+                      *ngIf="allClubsLoading"
+                      class="text-xs text-fb-gray-400 mt-1"
+                    >
+                      Lade Vereinsliste…
+                    </div>
+                  </div>
+                  <a
+                    class="text-xs text-fb-gray-600 hover:underline cursor-pointer mt-1 inline-block"
+                    (click)="disableAllClubs()"
+                  >
+                    ← zurück zu Liga-Vereinen
+                  </a>
+                </ng-container>
               </div>
             </div>
           </div>
