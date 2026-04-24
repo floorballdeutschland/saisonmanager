@@ -27,6 +27,13 @@ export class GameDayEditComponent implements OnInit {
   public areans: Arena[] = [];
   public clubs: Club[] = [];
 
+  public useAllClubs = false;
+  public allClubs: Club[] = [];
+  public allClubsLoading = false;
+  public clubQuery = '';
+  public filteredClubs: Club[] = [];
+  public showClubDropdown = false;
+
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
@@ -51,6 +58,7 @@ export class GameDayEditComponent implements OnInit {
             next: (result) => {
               this.clubs = result.clubs;
               this.areans = result.arenas;
+              this._maybeAutoEnableAllClubs();
               this._cdr.markForCheck();
             },
           });
@@ -60,6 +68,7 @@ export class GameDayEditComponent implements OnInit {
         this._leagueService.getAdminGameDay(params['gameDayId']).subscribe({
           next: (gameDay) => {
             this.gameday = gameDay;
+            this._maybeAutoEnableAllClubs();
             this._cdr.markForCheck();
           },
         });
@@ -80,6 +89,53 @@ export class GameDayEditComponent implements OnInit {
       league_id: 0,
     };
 
+    this._cdr.markForCheck();
+  }
+
+  public enableAllClubs(): void {
+    this.useAllClubs = true;
+    this._loadAllClubs(() => {
+      this.clubQuery = this._clubNameForCurrentSelection();
+      this._cdr.markForCheck();
+    });
+  }
+
+  public disableAllClubs(): void {
+    this.useAllClubs = false;
+    this.showClubDropdown = false;
+    this.clubQuery = '';
+    this.filteredClubs = [];
+    if (!this.clubs.find((c) => c.id === this.gameday.club_id)) {
+      this.gameday.club_id = 0;
+    }
+    this._cdr.markForCheck();
+  }
+
+  public onClubInput(value: string): void {
+    this.clubQuery = value;
+    this._filterClubs();
+    this.showClubDropdown = true;
+    this._cdr.markForCheck();
+  }
+
+  public onClubFocus(): void {
+    this._filterClubs();
+    this.showClubDropdown = true;
+    this._cdr.markForCheck();
+  }
+
+  public onClubBlur(): void {
+    setTimeout(() => {
+      this.showClubDropdown = false;
+      this.clubQuery = this._clubNameForCurrentSelection();
+      this._cdr.markForCheck();
+    }, 200);
+  }
+
+  public selectClub(club: Club): void {
+    this.gameday.club_id = club.id;
+    this.clubQuery = club.name;
+    this.showClubDropdown = false;
     this._cdr.markForCheck();
   }
 
@@ -145,5 +201,54 @@ export class GameDayEditComponent implements OnInit {
         ]);
       },
     });
+  }
+
+  private _maybeAutoEnableAllClubs(): void {
+    if (
+      this.gameday &&
+      this.gameday.club_id > 0 &&
+      this.clubs.length > 0 &&
+      !this.clubs.find((c) => c.id === this.gameday.club_id)
+    ) {
+      this.enableAllClubs();
+    }
+  }
+
+  private _loadAllClubs(onDone?: () => void): void {
+    if (this.allClubs.length > 0 || this.allClubsLoading) {
+      onDone?.();
+      return;
+    }
+    this.allClubsLoading = true;
+    this._clubService.getAdminClubAll().subscribe({
+      next: (clubs) => {
+        this.allClubs = [...clubs].sort((a, b) => a.name.localeCompare(b.name));
+        this.allClubsLoading = false;
+        onDone?.();
+      },
+      error: () => {
+        this.allClubsLoading = false;
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  private _filterClubs(): void {
+    const q = this.clubQuery.trim().toLowerCase();
+    const source = this.allClubs;
+    this.filteredClubs =
+      q.length === 0
+        ? source.slice(0, 50)
+        : source.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 50);
+  }
+
+  private _clubNameForCurrentSelection(): string {
+    const id = this.gameday?.club_id;
+    if (!id) return '';
+    return (
+      this.allClubs.find((c) => c.id === id)?.name ||
+      this.clubs.find((c) => c.id === id)?.name ||
+      ''
+    );
   }
 }
