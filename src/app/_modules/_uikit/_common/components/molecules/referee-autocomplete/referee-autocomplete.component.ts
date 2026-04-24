@@ -13,7 +13,15 @@ import {
 } from '@angular/core';
 import { RefereeService } from '@floorball/core';
 import { RefereeEntry } from '@floorball/types';
-import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import {
+  Subject,
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  of,
+  switchMap,
+  takeUntil,
+} from 'rxjs';
 
 @Component({
   selector: 'fb-referee-autocomplete',
@@ -47,9 +55,17 @@ export class RefereeAutocompleteComponent implements OnInit, OnDestroy {
       .pipe(
         debounceTime(250),
         distinctUntilChanged(),
+        switchMap((q) =>
+          this._refereeService.search(q).pipe(catchError(() => of([])))
+        ),
         takeUntil(this._destroy$)
       )
-      .subscribe((q) => this._doSearch(q));
+      .subscribe((results) => {
+        this.suggestions = results;
+        this.showDropdown = results.length > 0;
+        this.loading = false;
+        this._cdr.markForCheck();
+      });
 
     if (this.selectedReferee) {
       this.query = `${this.selectedReferee.nachname}, ${this.selectedReferee.vorname}`;
@@ -63,32 +79,13 @@ export class RefereeAutocompleteComponent implements OnInit, OnDestroy {
 
   onInput(value: string): void {
     this.query = value;
-    if (value.length >= 2) {
+    if (value.trim().length >= 1) {
       this.loading = true;
-      this._search$.next(value);
+      this._search$.next(value.trim());
     } else {
       this.suggestions = [];
       this.showDropdown = false;
     }
-  }
-
-  private _doSearch(q: string): void {
-    this._refereeService
-      .search(q)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (results) => {
-          this.suggestions = results;
-          this.showDropdown = results.length > 0;
-          this.loading = false;
-          this._cdr.markForCheck();
-        },
-        error: () => {
-          this.suggestions = [];
-          this.loading = false;
-          this._cdr.markForCheck();
-        },
-      });
   }
 
   select(referee: RefereeEntry): void {
