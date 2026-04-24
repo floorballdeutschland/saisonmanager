@@ -37,6 +37,9 @@ export class MatchHistoryItemComponent {
   @Input()
   allowCancel = false;
 
+  @Input()
+  showTrikotNumber = false;
+
   @Output()
   reloadGame: EventEmitter<void> = new EventEmitter<void>();
 

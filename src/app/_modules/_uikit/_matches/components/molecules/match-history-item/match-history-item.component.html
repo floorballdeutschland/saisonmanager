@@ -25,6 +25,11 @@
           </ng-container>
 
           <ng-template #homePlayerName>
+            <span
+              *ngIf="showTrikotNumber && gameEvent.home.scorer"
+              class="text-fb-gray-400 mr-1"
+              >#{{ gameEvent.home.scorer?.trikot_number }}</span
+            >
             <a
               *ngIf="gameEvent.home.scorer?.player_id; else homeScorerText"
               [routerLink]="['/spieler', gameEvent.home.scorer?.player_id]"
@@ -161,6 +166,11 @@
           </ng-container>
 
           <ng-template #guestPlayerName>
+            <span
+              *ngIf="showTrikotNumber && gameEvent.guest.scorer"
+              class="text-fb-gray-400 mr-1"
+              >#{{ gameEvent.guest.scorer?.trikot_number }}</span
+            >
             <a
               *ngIf="gameEvent.guest.scorer?.player_id; else guestScorerText"
               [routerLink]="['/spieler', gameEvent.guest.scorer?.player_id]"
@@ -192,6 +202,9 @@
       *ngIf="gameEvent.home.assist"
     >
       <span class="text-xs font-bold">Vorl.</span>
+      <span *ngIf="showTrikotNumber" class="mr-1"
+        >#{{ gameEvent.home.assist?.trikot_number }}</span
+      >
       <a
         *ngIf="gameEvent.home.assist?.player_id; else homeAssistText"
         [routerLink]="['/spieler', gameEvent.home.assist?.player_id]"
@@ -265,6 +278,9 @@
       *ngIf="gameEvent.guest.assist"
     >
       <span class="text-xs font-bold">Vorl.</span>
+      <span *ngIf="showTrikotNumber" class="mr-1"
+        >#{{ gameEvent.guest.assist?.trikot_number }}</span
+      >
       <a
         *ngIf="gameEvent.guest.assist?.player_id; else guestAssistText"
         [routerLink]="['/spieler', gameEvent.guest.assist?.player_id]"
