@@ -5,6 +5,7 @@ export interface User {
   name: string;
   permissions: { [key: string]: boolean };
   club_ids: number[];
+  login_blocked_message?: string;
 }
 
 export interface LoginAnswer {

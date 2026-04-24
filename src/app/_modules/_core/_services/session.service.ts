@@ -51,7 +51,8 @@ export class SessionService {
         if (loginAnswer.success) {
           if (loginAnswer.user.permissions['login_blocked']) {
             this._notificationService.error(
-              'Der Login ist für dich nicht freigeschaltet. Sorry.',
+              loginAnswer.user.login_blocked_message ??
+                'Der Login ist für dich nicht freigeschaltet. Sorry.',
               {
                 autoClose: false,
                 keepAfterRouteChange: true,
