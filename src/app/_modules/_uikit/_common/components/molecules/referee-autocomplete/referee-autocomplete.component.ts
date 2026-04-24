@@ -63,9 +63,9 @@ export class RefereeAutocompleteComponent implements OnInit, OnDestroy {
 
   onInput(value: string): void {
     this.query = value;
-    if (value.length >= 2) {
+    if (value.trim().length >= 1) {
       this.loading = true;
-      this._search$.next(value);
+      this._search$.next(value.trim());
     } else {
       this.suggestions = [];
       this.showDropdown = false;
