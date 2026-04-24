@@ -46,6 +46,15 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
+  private _isSafeReturnUrl(url: string | null): url is string {
+    return (
+      !!url &&
+      url.startsWith('/') &&
+      !url.startsWith('//') &&
+      !url.startsWith('/login')
+    );
+  }
+
   public loginSubmit(data: LoginFormValue) {
     if (!this.loginForm.valid) {
       return;
@@ -55,7 +64,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       this._sessionService.login(data.username, data.password).subscribe({
         next: (data) => {
           if (data.success) {
-            if (this.returnUrl) {
+            if (this._isSafeReturnUrl(this.returnUrl)) {
               this._router.navigateByUrl(this.returnUrl);
             } else if (data.user.permissions['show_league_index_admin']) {
               this._router.navigate(['verwaltung', 'ligen']);
