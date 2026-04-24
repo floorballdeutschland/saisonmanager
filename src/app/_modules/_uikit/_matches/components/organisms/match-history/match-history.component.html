@@ -10,15 +10,15 @@
     *ngFor="
       let periodObject of match.period_titles
         | onlyRunning
-        | reversePeriods: newestFirst;
+        | reversePeriods : newestFirst;
       let index = index
     "
   >
     <ng-container
       *ngIf="
         match.events
-          | filterPeriodEvents: periodObject.period
-          | reverseEvents: newestFirst as events
+          | filterPeriodEvents : periodObject.period
+          | reverseEvents : newestFirst as events
       "
     >
       <ng-container *ngIf="events.length">
@@ -30,6 +30,7 @@
           class="block even:bg-fb-gray-300"
           *ngFor="let event of events; let isLast = last"
           [allowCancel]="allowCancel"
+          [showTrikotNumber]="showTrikotNumber"
           [isLast]="isLast"
           [match]="match"
           [event]="event"

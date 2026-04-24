@@ -24,6 +24,9 @@ export class MatchHistoryComponent {
   @Input()
   newestFirst = false;
 
+  @Input()
+  showTrikotNumber = false;
+
   @Output()
   reloadGame: EventEmitter<void> = new EventEmitter<void>();
 
