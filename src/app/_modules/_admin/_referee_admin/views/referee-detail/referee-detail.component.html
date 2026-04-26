@@ -17,18 +17,33 @@
           Lizenz #{{ referee.lizenznummer }}
         </p>
       </div>
-      <a
-        [routerLink]="[
-          '/',
-          'verwaltung',
-          'schiedsrichter',
-          referee.lizenznummer,
-          'bearbeiten'
-        ]"
-        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
-      >
-        Bearbeiten
-      </a>
+      <div class="flex gap-2">
+        <button
+          (click)="createWalletPass()"
+          [disabled]="walletLoading"
+          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
+        >
+          {{
+            walletLoading
+              ? "Erstelle…"
+              : referee.wallet_pass_issued_at
+              ? "Wallet neu ausstellen"
+              : "Wallet-Ausweis"
+          }}
+        </button>
+        <a
+          [routerLink]="[
+            '/',
+            'verwaltung',
+            'schiedsrichter',
+            referee.lizenznummer,
+            'bearbeiten'
+          ]"
+          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        >
+          Bearbeiten
+        </a>
+      </div>
     </div>
 
     <!-- Stammdaten -->
@@ -80,6 +95,22 @@
       <div *ngIf="referee.email">
         <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">E-Mail</p>
         <p class="font-medium">{{ referee.email }}</p>
+      </div>
+      <div *ngIf="referee.wallet_pass_issued_at">
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+          Wallet-Ausweis
+        </p>
+        <p class="font-medium text-sm">
+          ausgestellt am
+          {{ referee.wallet_pass_issued_at | date : "dd.MM.yyyy" }}
+          <a
+            *ngIf="referee.wallet_pass_url"
+            [href]="referee.wallet_pass_url"
+            target="_blank"
+            class="ml-2 text-blue-600 hover:underline"
+            >Download</a
+          >
+        </p>
       </div>
     </div>
 

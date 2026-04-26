@@ -21,6 +21,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   games: RefereeAdminGame[] = [];
   loading = false;
   gamesLoading = false;
+  walletLoading = false;
   selectedSeasonId?: number;
 
   private _destroy$ = new Subject<void>();
@@ -99,6 +100,38 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.gamesLoading = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  createWalletPass(): void {
+    if (!this.referee) return;
+    this.walletLoading = true;
+    this._refereeService
+      .adminCreateWalletPass(this.referee.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.walletLoading = false;
+          if (this.referee) {
+            this.referee = {
+              ...this.referee,
+              wallet_pass_issued_at: new Date().toISOString(),
+              wallet_pass_url: result.url,
+            };
+          }
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.walletLoading = false;
+          this._notificationService.error(
+            'Wallet-Pass konnte nicht erstellt werden.',
+            {
+              autoClose: false,
+              keepAfterRouteChange: false,
+            }
+          );
           this._cdr.markForCheck();
         },
       });

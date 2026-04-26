@@ -41,7 +41,7 @@ export class ErrorInterceptor implements HttpInterceptor {
           this._router.navigate(['/']);
         }
 
-        if (err.status === 404) {
+        if (err.status === 404 && !request.url.includes('/user/referees/')) {
           console.error(err);
           this._notificationService.error(
             'Nicht gefunden:' + err.error.message,

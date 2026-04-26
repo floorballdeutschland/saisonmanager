@@ -75,6 +75,13 @@ const routes: Routes = [
   {
     path: '',
     loadChildren: () =>
+      import('@floorball/public/referee-license').then(
+        (m) => m.PublicRefereeLicenseModule
+      ),
+  },
+  {
+    path: '',
+    loadChildren: () =>
       import('@floorball/public/association/host').then(
         (m) => m.PublicAssociationHostModule
       ),

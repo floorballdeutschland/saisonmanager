@@ -1,3 +1,12 @@
+export interface RefereePublicLicense {
+  lizenznummer: number;
+  lizenzstufe?: string;
+  gueltigkeit?: string;
+  zusatzqualifikation?: string;
+  gueltigkeit_z?: string;
+  verein?: string;
+}
+
 export interface RefereeAdmin {
   id: number;
   lizenznummer: number;
@@ -13,6 +22,8 @@ export interface RefereeAdmin {
   active?: boolean;
   zusatzqualifikation?: string;
   gueltigkeit_z?: string;
+  wallet_pass_issued_at?: string;
+  wallet_pass_url?: string;
 }
 
 export interface RefereeAdminGame {

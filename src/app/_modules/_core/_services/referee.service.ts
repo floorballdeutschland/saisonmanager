@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { RefereeAdmin, RefereeAdminGame, RefereeEntry } from '@floorball/types';
+import {
+  RefereeAdmin,
+  RefereeAdminGame,
+  RefereeEntry,
+  RefereePublicLicense,
+} from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -9,10 +14,10 @@ import { environment } from 'src/environments/environment';
 export class RefereeService {
   constructor(private http: HttpClient) {}
 
-  public getRefereeByLicenseNumber(licenseNumber: number) {
-    const path =
-      environment.apiURL + 'user/referees/' + licenseNumber + '.json';
-    return this.http.get<RefereeEntry | null>(path);
+  public getLicense(lizenznummer: number) {
+    return this.http.get<RefereePublicLicense>(
+      environment.apiURL + 'user/referees/' + lizenznummer
+    );
   }
 
   public search(q: string) {
@@ -72,6 +77,13 @@ export class RefereeService {
     const query = seasonId ? `?season_id=${seasonId}` : '';
     return this.http.get<RefereeAdminGame[]>(
       environment.apiURL + 'admin/referees/' + id + '/games' + query
+    );
+  }
+
+  public adminCreateWalletPass(id: number) {
+    return this.http.post<{ url: string }>(
+      environment.apiURL + 'admin/referees/' + id + '/wallet_pass',
+      {}
     );
   }
 
