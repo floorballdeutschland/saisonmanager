@@ -1,0 +1,97 @@
+<div class="container mx-auto px-4 lg:px-8 py-8 max-w-lg">
+  <h1 class="text-2xl font-bold mb-2">Lizenzcheck</h1>
+  <p class="text-sm text-fb-gray-400 mb-6">
+    Lizenznummer eingeben, um den Gültigkeitsstatus einer Schiedsrichterlizenz
+    zu prüfen.
+  </p>
+
+  <form (ngSubmit)="search()" class="flex gap-2 mb-8">
+    <input
+      type="number"
+      [(ngModel)]="lizenznummer"
+      name="lizenznummer"
+      placeholder="Lizenznummer"
+      required
+      class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+    />
+    <button
+      type="submit"
+      [disabled]="loading || !lizenznummer"
+      class="bg-black text-white text-sm px-4 py-2 rounded-[5px] disabled:opacity-40"
+    >
+      {{ loading ? "Suche…" : "Prüfen" }}
+    </button>
+  </form>
+
+  <div
+    *ngIf="notFound"
+    class="bg-red-50 border border-red-200 rounded-[5px] p-4 text-sm text-red-700"
+  >
+    Keine Lizenz mit dieser Nummer gefunden.
+  </div>
+
+  <div
+    *ngIf="result"
+    class="border border-fb-gray-600 rounded-[5px] overflow-hidden"
+  >
+    <div
+      class="px-4 py-3 text-sm font-bold"
+      [ngClass]="
+        isExpired(result.gueltigkeit)
+          ? 'bg-red-100 text-red-700'
+          : 'bg-green-100 text-green-700'
+      "
+    >
+      {{
+        isExpired(result.gueltigkeit) ? "Lizenz abgelaufen" : "Lizenz gültig"
+      }}
+    </div>
+
+    <div class="divide-y divide-fb-gray-200 text-sm">
+      <div class="flex justify-between px-4 py-3">
+        <span class="text-fb-gray-400">Lizenznummer</span>
+        <span class="font-bold">{{ result.lizenznummer }}</span>
+      </div>
+      <div class="flex justify-between px-4 py-3">
+        <span class="text-fb-gray-400">Lizenzstufe</span>
+        <span class="font-bold">{{ result.lizenzstufe || "–" }}</span>
+      </div>
+      <div class="flex justify-between px-4 py-3">
+        <span class="text-fb-gray-400">Gültig bis</span>
+        <span
+          class="font-bold"
+          [ngClass]="
+            isExpired(result.gueltigkeit) ? 'text-red-600' : 'text-green-600'
+          "
+          >{{ result.gueltigkeit || "–" }}</span
+        >
+      </div>
+      <div class="flex justify-between px-4 py-3">
+        <span class="text-fb-gray-400">Verein / Verband</span>
+        <span class="font-bold">{{ result.verein || "–" }}</span>
+      </div>
+
+      <ng-container *ngIf="result.zusatzqualifikation">
+        <div class="flex justify-between px-4 py-3">
+          <span class="text-fb-gray-400">Zusatzqualifikation</span>
+          <span class="font-bold">{{ result.zusatzqualifikation }}</span>
+        </div>
+        <div
+          *ngIf="result.gueltigkeit_z"
+          class="flex justify-between px-4 py-3"
+        >
+          <span class="text-fb-gray-400">Zusatzqual. gültig bis</span>
+          <span
+            class="font-bold"
+            [ngClass]="
+              isExpired(result.gueltigkeit_z)
+                ? 'text-red-600'
+                : 'text-green-600'
+            "
+            >{{ result.gueltigkeit_z }}</span
+          >
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

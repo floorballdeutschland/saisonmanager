@@ -78,7 +78,15 @@
           *ngFor="let r of referees"
           class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
         >
-          <td class="py-2 pr-4 font-mono">{{ r.lizenznummer }}</td>
+          <td class="py-2 pr-4 font-mono">
+            {{ r.lizenznummer }}
+            <span
+              *ngIf="r.wallet_pass_issued_at"
+              title="Wallet-Ausweis ausgestellt"
+              class="ml-1 inline-block bg-black text-white text-[10px] font-bold px-1 rounded"
+              >W</span
+            >
+          </td>
           <td class="py-2 pr-4 font-medium">
             <a
               [routerLink]="[
