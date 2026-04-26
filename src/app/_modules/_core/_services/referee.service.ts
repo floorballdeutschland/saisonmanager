@@ -14,12 +14,6 @@ import { environment } from 'src/environments/environment';
 export class RefereeService {
   constructor(private http: HttpClient) {}
 
-  public getRefereeByLicenseNumber(licenseNumber: number) {
-    const path =
-      environment.apiURL + 'user/referees/' + licenseNumber + '.json';
-    return this.http.get<RefereeEntry | null>(path);
-  }
-
   public getLicense(lizenznummer: number) {
     return this.http.get<RefereePublicLicense>(
       environment.apiURL + 'user/referees/' + lizenznummer

@@ -121,7 +121,6 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
               wallet_pass_url: result.url,
             };
           }
-          if (result.url) window.open(result.url, '_blank');
           this._cdr.markForCheck();
         },
         error: () => {
