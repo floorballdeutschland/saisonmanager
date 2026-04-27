@@ -58,7 +58,11 @@ export class GameDayEditComponent implements OnInit {
             next: (result) => {
               this.clubs = result.clubs;
               this.areans = result.arenas;
-              this._maybeAutoEnableAllClubs();
+              if (this.clubs.length === 0) {
+                this.enableAllClubs();
+              } else {
+                this._maybeAutoEnableAllClubs();
+              }
               this._cdr.markForCheck();
             },
           });
