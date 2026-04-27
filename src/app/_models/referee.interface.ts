@@ -2,8 +2,8 @@ export interface RefereePublicLicense {
   lizenznummer: number;
   lizenzstufe?: string;
   gueltigkeit?: string;
-  club_name?: string;
   landesverband?: string;
+  qualifications?: { qualification_type_name?: string; valid_until?: string }[];
 }
 
 export interface RefereeQualificationType {

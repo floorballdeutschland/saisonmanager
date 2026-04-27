@@ -161,9 +161,13 @@
         <select
           [(ngModel)]="q.qualification_type_id"
           [name]="'qual_type_' + i"
+          (ngModelChange)="onQualificationTypeChange()"
           class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white flex-1"
         >
-          <option *ngFor="let t of availableTypesFor(i)" [ngValue]="t.id">
+          <option
+            *ngFor="let t of availableTypesList[i]; trackBy: trackById"
+            [ngValue]="t.id"
+          >
             {{ t.name }}
           </option>
         </select>

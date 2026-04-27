@@ -67,29 +67,27 @@
         >
       </div>
       <div class="flex justify-between px-4 py-3">
-        <span class="text-fb-gray-400">Verein / Verband</span>
-        <span class="font-bold">{{ result.verein || "–" }}</span>
+        <span class="text-fb-gray-400">Verband</span>
+        <span class="font-bold">{{ result.landesverband || "–" }}</span>
       </div>
 
-      <ng-container *ngIf="result.zusatzqualifikation">
-        <div class="flex justify-between px-4 py-3">
-          <span class="text-fb-gray-400">Zusatzqualifikation</span>
-          <span class="font-bold">{{ result.zusatzqualifikation }}</span>
-        </div>
+      <ng-container *ngIf="result.qualifications?.length">
         <div
-          *ngIf="result.gueltigkeit_z"
+          *ngFor="let q of result.qualifications"
           class="flex justify-between px-4 py-3"
         >
-          <span class="text-fb-gray-400">Zusatzqual. gültig bis</span>
+          <span class="text-fb-gray-400">{{
+            q.qualification_type_name || "Zusatzqualifikation"
+          }}</span>
           <span
+            *ngIf="q.valid_until"
             class="font-bold"
             [ngClass]="
-              isExpired(result.gueltigkeit_z)
-                ? 'text-red-600'
-                : 'text-green-600'
+              isExpired(q.valid_until) ? 'text-red-600' : 'text-green-600'
             "
-            >{{ result.gueltigkeit_z }}</span
+            >{{ q.valid_until }}</span
           >
+          <span *ngIf="!q.valid_until" class="font-bold">–</span>
         </div>
       </ng-container>
     </div>

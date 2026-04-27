@@ -36,6 +36,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   clubs: Club[] = [];
   qualificationTypes: RefereeQualificationType[] = [];
   qualifications: RefereeQualificationEntry[] = [];
+  availableTypesList: RefereeQualificationType[][] = [];
 
   readonly lizenzstufen = [
     'A',
@@ -81,6 +82,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
         next: ([clubs, types]) => {
           this.clubs = clubs.sort((a, b) => a.name.localeCompare(b.name));
           this.qualificationTypes = types.filter((t) => t.active);
+          this._recomputeAvailableTypes();
           this._cdr.markForCheck();
         },
       });
@@ -155,19 +157,20 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
       ...this.qualifications,
       { qualification_type_id: nextType.id },
     ];
+    this._recomputeAvailableTypes();
   }
 
   removeQualification(index: number): void {
     this.qualifications = this.qualifications.filter((_, i) => i !== index);
+    this._recomputeAvailableTypes();
   }
 
-  availableTypesFor(index: number): RefereeQualificationType[] {
-    const usedIds = new Set(
-      this.qualifications
-        .filter((_, i) => i !== index)
-        .map((q) => q.qualification_type_id)
-    );
-    return this.qualificationTypes.filter((t) => !usedIds.has(t.id));
+  onQualificationTypeChange(): void {
+    this._recomputeAvailableTypes();
+  }
+
+  trackById(_index: number, item: { id: number }): number {
+    return item.id;
   }
 
   submit(): void {
@@ -247,17 +250,30 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   }
 
   private _applyReferee(r: RefereeAdmin): void {
+    const { qualifications: _q, ...rest } = r;
     this.referee = {
-      ...r,
+      ...rest,
       gueltigkeit: this._toInputDate(r.gueltigkeit),
       geburtsdatum: this._toInputDate(r.geburtsdatum),
     };
-    this.qualifications = (r.qualifications ?? []).map((q) => ({
+    this.qualifications = (_q ?? []).map((q) => ({
       ...q,
       valid_until: this._toInputDate(q.valid_until),
     }));
+    this._recomputeAvailableTypes();
     this.loading = false;
     this._cdr.markForCheck();
+  }
+
+  private _recomputeAvailableTypes(): void {
+    this.availableTypesList = this.qualifications.map((_, i) => {
+      const usedIds = new Set(
+        this.qualifications
+          .filter((_, j) => j !== i)
+          .map((q) => q.qualification_type_id)
+      );
+      return this.qualificationTypes.filter((t) => !usedIds.has(t.id));
+    });
   }
 
   private _handleLoadError(): void {
