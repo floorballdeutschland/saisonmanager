@@ -16,6 +16,12 @@ const routes: Routes = [
     data: { scrollTop: true },
   },
   {
+    path: 'verwaltung/schiedsrichter/zusatzqualifikationen',
+    pathMatch: 'full',
+    component: Views.RefereeQualificationTypesComponent,
+    data: { scrollTop: true },
+  },
+  {
     path: 'verwaltung/schiedsrichter/:lizenznummer',
     pathMatch: 'full',
     component: Views.RefereeDetailComponent,

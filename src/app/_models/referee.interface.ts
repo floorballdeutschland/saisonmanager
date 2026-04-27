@@ -2,9 +2,23 @@ export interface RefereePublicLicense {
   lizenznummer: number;
   lizenzstufe?: string;
   gueltigkeit?: string;
-  zusatzqualifikation?: string;
-  gueltigkeit_z?: string;
-  verein?: string;
+  club_name?: string;
+  landesverband?: string;
+}
+
+export interface RefereeQualificationType {
+  id: number;
+  name: string;
+  short_name?: string;
+  active: boolean;
+  usage_count?: number;
+}
+
+export interface RefereeQualificationEntry {
+  id?: number;
+  qualification_type_id: number;
+  qualification_type_name?: string;
+  valid_until?: string;
 }
 
 export interface RefereeAdmin {
@@ -16,14 +30,14 @@ export interface RefereeAdmin {
   nachname: string;
   geburtsdatum?: string;
   email?: string;
-  verein?: string;
+  club_id?: number | null;
+  club_name?: string;
   landesverband?: string;
   game_operation_id?: number;
   lizenzstufe?: string;
   gueltigkeit?: string;
   active?: boolean;
-  zusatzqualifikation?: string;
-  gueltigkeit_z?: string;
+  qualifications?: RefereeQualificationEntry[];
   wallet_pass_issued_at?: string;
   wallet_pass_url?: string;
   strasse?: string;
@@ -31,6 +45,20 @@ export interface RefereeAdmin {
   plz?: string;
   ort?: string;
   partner_lizenznummer?: number | null;
+}
+
+export interface RefereeVm {
+  id: number;
+  lizenznummer: number | null;
+  lizenznummer_display: string;
+  vorname: string;
+  nachname: string;
+  lizenzstufe?: string;
+  gueltigkeit?: string;
+  active: boolean;
+  club_name?: string;
+  landesverband?: string;
+  qualifications: { qualification_type_name: string; valid_until?: string }[];
 }
 
 export interface RefereeProfile {

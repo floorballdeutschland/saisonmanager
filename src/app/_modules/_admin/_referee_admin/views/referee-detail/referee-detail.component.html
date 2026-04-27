@@ -88,22 +88,22 @@
         <p class="font-medium">{{ referee.landesverband || "–" }}</p>
       </div>
       <div *ngIf="!referee.guest">
-        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-          Verband / Verein
-        </p>
-        <p class="font-medium">{{ referee.verein || "–" }}</p>
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">Verein</p>
+        <p class="font-medium">{{ referee.club_name || "–" }}</p>
       </div>
-      <div *ngIf="referee.zusatzqualifikation">
-        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-          Zusatzqualifikation
-        </p>
-        <p class="font-medium">
-          {{ referee.zusatzqualifikation }}
-          <span *ngIf="referee.gueltigkeit_z" class="text-fb-gray-500 text-sm"
-            >(bis {{ referee.gueltigkeit_z }})</span
-          >
-        </p>
-      </div>
+      <ng-container *ngIf="!referee.guest && referee.qualifications?.length">
+        <div *ngFor="let q of referee.qualifications">
+          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+            Zusatzqualifikation {{ q.qualification_type_name }}
+          </p>
+          <p class="font-medium">
+            {{ q.qualification_type_name }}
+            <span *ngIf="q.valid_until" class="text-fb-gray-500 text-sm"
+              >(bis {{ q.valid_until }})</span
+            >
+          </p>
+        </div>
+      </ng-container>
       <div *ngIf="referee.email">
         <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">E-Mail</p>
         <p class="font-medium">{{ referee.email }}</p>

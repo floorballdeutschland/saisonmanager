@@ -7,13 +7,20 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, forkJoin, takeUntil } from 'rxjs';
 import {
   AssociationService,
+  ClubService,
   NotificationService,
   RefereeService,
 } from '@floorball/core';
-import { RefereeAdmin, StateAssociation } from '@floorball/types';
+import {
+  Club,
+  RefereeAdmin,
+  RefereeQualificationEntry,
+  RefereeQualificationType,
+  StateAssociation,
+} from '@floorball/types';
 
 @Component({
   templateUrl: './referee-edit.component.html',
@@ -26,6 +33,9 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   loading = false;
   saving = false;
   stateAssociations: StateAssociation[] = [];
+  clubs: Club[] = [];
+  qualificationTypes: RefereeQualificationType[] = [];
+  qualifications: RefereeQualificationEntry[] = [];
 
   readonly lizenzstufen = [
     'A',
@@ -45,6 +55,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   constructor(
     private _refereeService: RefereeService,
     private _associationService: AssociationService,
+    private _clubService: ClubService,
     private _route: ActivatedRoute,
     private _router: Router,
     private _notificationService: NotificationService,
@@ -61,6 +72,19 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
         },
       });
 
+    forkJoin([
+      this._clubService.getAdminClubAll(),
+      this._refereeService.adminGetQualificationTypes(),
+    ])
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: ([clubs, types]) => {
+          this.clubs = clubs.sort((a, b) => a.name.localeCompare(b.name));
+          this.qualificationTypes = types.filter((t) => t.active);
+          this._cdr.markForCheck();
+        },
+      });
+
     const param: string = this._route.snapshot.params['lizenznummer'];
     if (param) {
       this.editMode = true;
@@ -72,16 +96,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           .adminGetById(id)
           .pipe(takeUntil(this._destroy$))
           .subscribe({
-            next: (r) => {
-              this.referee = {
-                ...r,
-                gueltigkeit: this._toInputDate(r.gueltigkeit),
-                gueltigkeit_z: this._toInputDate(r.gueltigkeit_z),
-                geburtsdatum: this._toInputDate(r.geburtsdatum),
-              };
-              this.loading = false;
-              this._cdr.markForCheck();
-            },
+            next: (r) => this._applyReferee(r),
             error: () => this._handleLoadError(),
           });
       } else {
@@ -99,16 +114,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
                   .adminGetById(match.id)
                   .pipe(takeUntil(this._destroy$))
                   .subscribe({
-                    next: (r) => {
-                      this.referee = {
-                        ...r,
-                        gueltigkeit: this._toInputDate(r.gueltigkeit),
-                        gueltigkeit_z: this._toInputDate(r.gueltigkeit_z),
-                        geburtsdatum: this._toInputDate(r.geburtsdatum),
-                      };
-                      this.loading = false;
-                      this._cdr.markForCheck();
-                    },
+                    next: (r) => this._applyReferee(r),
                     error: () => this._handleLoadError(),
                   });
               } else {
@@ -127,18 +133,59 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  get derivedLandesverband(): string {
+    if (!this.referee.club_id) return '';
+    const club = this.clubs.find((c) => c.id === this.referee.club_id);
+    if (!club?.state_association_id) return '';
+    const sa = this.stateAssociations.find(
+      (s) => s.id === club.state_association_id
+    );
+    return sa?.name ?? '';
+  }
+
+  addQualification(): void {
+    const usedTypeIds = new Set(
+      this.qualifications.map((q) => q.qualification_type_id)
+    );
+    const nextType = this.qualificationTypes.find(
+      (t) => !usedTypeIds.has(t.id)
+    );
+    if (!nextType) return;
+    this.qualifications = [
+      ...this.qualifications,
+      { qualification_type_id: nextType.id },
+    ];
+  }
+
+  removeQualification(index: number): void {
+    this.qualifications = this.qualifications.filter((_, i) => i !== index);
+  }
+
+  availableTypesFor(index: number): RefereeQualificationType[] {
+    const usedIds = new Set(
+      this.qualifications
+        .filter((_, i) => i !== index)
+        .map((q) => q.qualification_type_id)
+    );
+    return this.qualificationTypes.filter((t) => !usedIds.has(t.id));
+  }
+
   submit(): void {
     if (!this.referee.vorname || !this.referee.nachname) return;
     if (!this.referee.guest && !this.referee.lizenznummer) return;
 
     this.saving = true;
 
-    // Convert YYYY-MM-DD (input) back to DD.MM.YYYY (API) for date fields
-    const payload: Partial<RefereeAdmin> = {
+    const payload: Partial<RefereeAdmin> & {
+      qualifications?: RefereeQualificationEntry[];
+    } = {
       ...this.referee,
       gueltigkeit: this._fromInputDate(this.referee.gueltigkeit),
-      gueltigkeit_z: this._fromInputDate(this.referee.gueltigkeit_z),
       geburtsdatum: this._fromInputDate(this.referee.geburtsdatum),
+      qualifications: this.qualifications.map((q) => ({
+        ...q,
+        valid_until: this._fromInputDate(q.valid_until),
+      })),
     };
 
     const call =
@@ -197,6 +244,20 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  private _applyReferee(r: RefereeAdmin): void {
+    this.referee = {
+      ...r,
+      gueltigkeit: this._toInputDate(r.gueltigkeit),
+      geburtsdatum: this._toInputDate(r.geburtsdatum),
+    };
+    this.qualifications = (r.qualifications ?? []).map((q) => ({
+      ...q,
+      valid_until: this._toInputDate(q.valid_until),
+    }));
+    this.loading = false;
+    this._cdr.markForCheck();
   }
 
   private _handleLoadError(): void {
