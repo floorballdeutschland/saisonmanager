@@ -10,15 +10,27 @@
           class="text-fb-gray-500 hover:text-black text-sm"
           >← Übersicht</a
         >
-        <h1 class="text-2xl font-bold mt-1">
-          {{ referee.nachname }}, {{ referee.vorname }}
-        </h1>
+        <div class="flex items-center gap-2 mt-1">
+          <h1 class="text-2xl font-bold">
+            {{ referee.nachname }}, {{ referee.vorname }}
+          </h1>
+          <span
+            *ngIf="referee.guest"
+            class="text-xs font-bold px-2 py-0.5 bg-fb-gray-800 text-fb-gray-500 rounded"
+            >Gast</span
+          >
+        </div>
         <p class="text-fb-gray-500 font-mono text-sm mt-0.5">
-          Lizenz #{{ referee.lizenznummer }}
+          {{
+            referee.guest
+              ? referee.lizenznummer_display
+              : "Lizenz #" + referee.lizenznummer
+          }}
         </p>
       </div>
       <div class="flex gap-2">
         <button
+          *ngIf="!referee.guest"
           (click)="createWalletPass()"
           [disabled]="walletLoading"
           class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
@@ -36,7 +48,7 @@
             '/',
             'verwaltung',
             'schiedsrichter',
-            referee.lizenznummer,
+            detailRouteId,
             'bearbeiten'
           ]"
           class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
@@ -48,13 +60,13 @@
 
     <!-- Stammdaten -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <div>
+      <div *ngIf="!referee.guest">
         <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
           Lizenzstufe
         </p>
         <p class="font-medium">{{ referee.lizenzstufe || "–" }}</p>
       </div>
-      <div>
+      <div *ngIf="!referee.guest">
         <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
           Gültigkeit
         </p>
@@ -69,13 +81,13 @@
           </span>
         </p>
       </div>
-      <div>
+      <div *ngIf="!referee.guest">
         <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
           Region / LV
         </p>
         <p class="font-medium">{{ referee.landesverband || "–" }}</p>
       </div>
-      <div>
+      <div *ngIf="!referee.guest">
         <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
           Verband / Verein
         </p>
@@ -113,6 +125,33 @@
         </p>
       </div>
     </div>
+
+    <!-- Adresse & Partner (nur reguläre Schiedsrichter) -->
+    <ng-container
+      *ngIf="
+        !referee.guest && (referee.strasse || referee.partner_lizenznummer)
+      "
+    >
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div *ngIf="referee.strasse">
+          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+            Heimadresse
+          </p>
+          <p class="font-medium">
+            {{ referee.strasse }} {{ referee.hausnummer }}, {{ referee.plz }}
+            {{ referee.ort }}
+          </p>
+        </div>
+        <div *ngIf="referee.partner_lizenznummer">
+          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+            Bevorzugter Partner
+          </p>
+          <p class="font-medium font-mono">
+            {{ referee.partner_lizenznummer }}
+          </p>
+        </div>
+      </div>
+    </ng-container>
 
     <!-- Spielhistorie -->
     <h2 class="text-lg font-bold mb-4">Spielhistorie</h2>

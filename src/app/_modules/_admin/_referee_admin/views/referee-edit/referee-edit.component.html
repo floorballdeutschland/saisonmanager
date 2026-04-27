@@ -12,127 +12,209 @@
 
   <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
 
-  <form *ngIf="!loading" (ngSubmit)="submit()" class="flex flex-col gap-4">
+  <form *ngIf="!loading" (ngSubmit)="submit()" class="flex flex-col gap-6">
+    <!-- Gastschiedsrichter-Toggle -->
+    <label class="flex items-center gap-3 cursor-pointer select-none">
+      <input
+        type="checkbox"
+        [(ngModel)]="referee.guest"
+        name="guest"
+        class="w-4 h-4"
+      />
+      <span class="text-sm font-bold">Gastschiedsrichter</span>
+      <span class="text-xs text-fb-gray-500"
+        >(aus dem Ausland, nicht im FD-System)</span
+      >
+    </label>
+
     <!-- Stammdaten -->
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Lizenznummer *</label>
-        <input
-          type="number"
-          [(ngModel)]="referee.lizenznummer"
-          name="lizenznummer"
-          [disabled]="editMode"
-          required
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-200 disabled:text-gray-700"
-        />
+    <div class="flex flex-col gap-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1" *ngIf="!referee.guest">
+          <label class="text-sm font-bold">Lizenznummer *</label>
+          <input
+            type="number"
+            [(ngModel)]="referee.lizenznummer"
+            name="lizenznummer"
+            [disabled]="editMode"
+            [required]="!referee.guest"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-200 disabled:text-gray-700"
+          />
+        </div>
+        <div class="flex flex-col gap-1" *ngIf="!referee.guest">
+          <label class="text-sm font-bold">Lizenzstufe</label>
+          <select
+            [(ngModel)]="referee.lizenzstufe"
+            name="lizenzstufe"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
+          >
+            <option value="">– keine –</option>
+            <option *ngFor="let s of lizenzstufen" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">Vorname *</label>
+          <input
+            type="text"
+            [(ngModel)]="referee.vorname"
+            name="vorname"
+            required
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">Nachname *</label>
+          <input
+            type="text"
+            [(ngModel)]="referee.nachname"
+            name="nachname"
+            required
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
       </div>
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Lizenzstufe</label>
-        <select
-          [(ngModel)]="referee.lizenzstufe"
-          name="lizenzstufe"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
-        >
-          <option value="">– keine –</option>
-          <option *ngFor="let s of lizenzstufen" [value]="s">{{ s }}</option>
-        </select>
+
+      <!-- Lizenz (nur für reguläre Schiedsrichter) -->
+      <div class="grid grid-cols-2 gap-4" *ngIf="!referee.guest">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">Lizenz gültig bis</label>
+          <input
+            type="date"
+            [(ngModel)]="referee.gueltigkeit"
+            name="gueltigkeit"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">Zusatzqualifikation</label>
+          <input
+            type="text"
+            [(ngModel)]="referee.zusatzqualifikation"
+            name="zusatzqualifikation"
+            placeholder="z.B. Penalty Shot"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold"
+            >Zusatzqualifikation gültig bis</label
+          >
+          <input
+            type="date"
+            [(ngModel)]="referee.gueltigkeit_z"
+            name="gueltigkeit_z"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
       </div>
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Vorname *</label>
-        <input
-          type="text"
-          [(ngModel)]="referee.vorname"
-          name="vorname"
-          required
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-        />
-      </div>
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Nachname *</label>
-        <input
-          type="text"
-          [(ngModel)]="referee.nachname"
-          name="nachname"
-          required
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-        />
+
+      <!-- Kontakt & Zuordnung -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1" *ngIf="!referee.guest">
+          <label class="text-sm font-bold">Landesverband</label>
+          <select
+            [(ngModel)]="referee.landesverband"
+            name="landesverband"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
+          >
+            <option value="">– kein –</option>
+            <option *ngFor="let sa of stateAssociations" [value]="sa.name">
+              {{ sa.name }}
+            </option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1" *ngIf="!referee.guest">
+          <label class="text-sm font-bold">Verband / Verein</label>
+          <input
+            type="text"
+            [(ngModel)]="referee.verein"
+            name="verein"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">E-Mail</label>
+          <input
+            type="email"
+            [(ngModel)]="referee.email"
+            name="email"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
+        <div class="flex flex-col gap-1" *ngIf="!referee.guest">
+          <label class="text-sm font-bold">Geburtsdatum</label>
+          <input
+            type="date"
+            [(ngModel)]="referee.geburtsdatum"
+            name="geburtsdatum"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
       </div>
     </div>
 
-    <!-- Lizenz -->
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Lizenz gültig bis</label>
-        <input
-          type="date"
-          [(ngModel)]="referee.gueltigkeit"
-          name="gueltigkeit"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-        />
+    <!-- Heimadresse (nur reguläre Schiedsrichter) -->
+    <div *ngIf="!referee.guest" class="flex flex-col gap-2">
+      <h2 class="text-sm font-bold">Heimadresse</h2>
+      <p class="text-xs text-fb-gray-500">
+        Wird nur bei Ansetzungen für die Berechnung der Kilometer genutzt.
+      </p>
+      <div class="grid grid-cols-[2fr_1fr] gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Straße</label>
+          <input
+            type="text"
+            [(ngModel)]="referee.strasse"
+            name="strasse"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Hausnummer</label>
+          <input
+            type="text"
+            [(ngModel)]="referee.hausnummer"
+            name="hausnummer"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
       </div>
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Zusatzqualifikation</label>
-        <input
-          type="text"
-          [(ngModel)]="referee.zusatzqualifikation"
-          name="zusatzqualifikation"
-          placeholder="z.B. Penalty Shot"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-        />
-      </div>
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Zusatzqualifikation gültig bis</label>
-        <input
-          type="date"
-          [(ngModel)]="referee.gueltigkeit_z"
-          name="gueltigkeit_z"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-        />
+      <div class="grid grid-cols-[1fr_2fr] gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">PLZ</label>
+          <input
+            type="text"
+            [(ngModel)]="referee.plz"
+            name="plz"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Ort</label>
+          <input
+            type="text"
+            [(ngModel)]="referee.ort"
+            name="ort"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
       </div>
     </div>
 
-    <!-- Kontakt & Zuordnung -->
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Landesverband</label>
-        <select
-          [(ngModel)]="referee.landesverband"
-          name="landesverband"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
-        >
-          <option value="">– kein –</option>
-          <option *ngFor="let sa of stateAssociations" [value]="sa.name">
-            {{ sa.name }}
-          </option>
-        </select>
-      </div>
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Verband / Verein</label>
-        <input
-          type="text"
-          [(ngModel)]="referee.verein"
-          name="verein"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-        />
-      </div>
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">E-Mail</label>
-        <input
-          type="email"
-          [(ngModel)]="referee.email"
-          name="email"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-        />
-      </div>
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Geburtsdatum</label>
-        <input
-          type="date"
-          [(ngModel)]="referee.geburtsdatum"
-          name="geburtsdatum"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-        />
-      </div>
+    <!-- Schiedsrichterpartner (nur reguläre Schiedsrichter) -->
+    <div *ngIf="!referee.guest" class="flex flex-col gap-2">
+      <h2 class="text-sm font-bold">Häufigste/r Schiedsrichterpartner/in</h2>
+      <p class="text-xs text-fb-gray-500">
+        Gib hier die Lizenznummer des primären Partners bzw. der primären
+        Partnerin ein, damit uns Ansetzungen vereinfacht werden.
+      </p>
+      <input
+        type="number"
+        [(ngModel)]="referee.partner_lizenznummer"
+        name="partner_lizenznummer"
+        placeholder="Lizenznummer"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
+      />
     </div>
 
     <!-- Actions -->

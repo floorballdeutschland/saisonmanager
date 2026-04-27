@@ -65,6 +65,11 @@ const routes: Routes = [
         loadChildren: () =>
           import('@floorball/admin/api-keys').then((m) => m.AdminApiKeyModule),
       },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/referee').then((m) => m.RefereeModule),
+      },
     ],
   },
   {

@@ -61,56 +61,64 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
         },
       });
 
-    const lizenznummer = this._route.snapshot.params['lizenznummer'];
-    if (lizenznummer) {
+    const param: string = this._route.snapshot.params['lizenznummer'];
+    if (param) {
       this.editMode = true;
       this.loading = true;
-      this._refereeService
-        .adminGetAll({ q: lizenznummer })
-        .pipe(takeUntil(this._destroy$))
-        .subscribe({
-          next: (results) => {
-            const match = results.find(
-              (r) => r.lizenznummer === parseInt(lizenznummer, 10)
-            );
-            if (match) {
-              this._refereeService
-                .adminGetById(match.id)
-                .pipe(takeUntil(this._destroy$))
-                .subscribe({
-                  next: (r) => {
-                    this.referee = {
-                      ...r,
-                      gueltigkeit: this._toInputDate(r.gueltigkeit),
-                      gueltigkeit_z: this._toInputDate(r.gueltigkeit_z),
-                      geburtsdatum: this._toInputDate(r.geburtsdatum),
-                    };
-                    this.loading = false;
-                    this._cdr.markForCheck();
-                  },
-                  error: () => {
-                    this.loading = false;
-                    this._cdr.markForCheck();
-                    this._notificationService.error(
-                      'Fehler beim Laden des Schiedsrichters.',
-                      { autoClose: false, keepAfterRouteChange: false }
-                    );
-                  },
-                });
-            } else {
+
+      if (param.startsWith('G-')) {
+        const id = parseInt(param.slice(2), 10);
+        this._refereeService
+          .adminGetById(id)
+          .pipe(takeUntil(this._destroy$))
+          .subscribe({
+            next: (r) => {
+              this.referee = {
+                ...r,
+                gueltigkeit: this._toInputDate(r.gueltigkeit),
+                gueltigkeit_z: this._toInputDate(r.gueltigkeit_z),
+                geburtsdatum: this._toInputDate(r.geburtsdatum),
+              };
               this.loading = false;
               this._cdr.markForCheck();
-            }
-          },
-          error: () => {
-            this.loading = false;
-            this._cdr.markForCheck();
-            this._notificationService.error('Fehler beim Laden.', {
-              autoClose: false,
-              keepAfterRouteChange: false,
-            });
-          },
-        });
+            },
+            error: () => this._handleLoadError(),
+          });
+      } else {
+        const lizenznummer = parseInt(param, 10);
+        this._refereeService
+          .adminGetAll({ q: param })
+          .pipe(takeUntil(this._destroy$))
+          .subscribe({
+            next: (results) => {
+              const match = results.find(
+                (r) => r.lizenznummer === lizenznummer
+              );
+              if (match) {
+                this._refereeService
+                  .adminGetById(match.id)
+                  .pipe(takeUntil(this._destroy$))
+                  .subscribe({
+                    next: (r) => {
+                      this.referee = {
+                        ...r,
+                        gueltigkeit: this._toInputDate(r.gueltigkeit),
+                        gueltigkeit_z: this._toInputDate(r.gueltigkeit_z),
+                        geburtsdatum: this._toInputDate(r.geburtsdatum),
+                      };
+                      this.loading = false;
+                      this._cdr.markForCheck();
+                    },
+                    error: () => this._handleLoadError(),
+                  });
+              } else {
+                this.loading = false;
+                this._cdr.markForCheck();
+              }
+            },
+            error: () => this._handleLoadError(),
+          });
+      }
     }
   }
 
@@ -120,13 +128,8 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   }
 
   submit(): void {
-    if (
-      !this.referee.vorname ||
-      !this.referee.nachname ||
-      !this.referee.lizenznummer
-    ) {
-      return;
-    }
+    if (!this.referee.vorname || !this.referee.nachname) return;
+    if (!this.referee.guest && !this.referee.lizenznummer) return;
 
     this.saving = true;
 
@@ -151,12 +154,10 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
             : 'Schiedsrichter angelegt.',
           { autoClose: true, keepAfterRouteChange: true }
         );
-        this._router.navigate([
-          '/',
-          'verwaltung',
-          'schiedsrichter',
-          saved.lizenznummer,
-        ]);
+        const detailId = saved.guest
+          ? saved.lizenznummer_display
+          : saved.lizenznummer;
+        this._router.navigate(['/', 'verwaltung', 'schiedsrichter', detailId]);
       },
       error: () => {
         this.saving = false;
@@ -196,6 +197,15 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  private _handleLoadError(): void {
+    this.loading = false;
+    this._cdr.markForCheck();
+    this._notificationService.error('Fehler beim Laden des Schiedsrichters.', {
+      autoClose: false,
+      keepAfterRouteChange: false,
+    });
   }
 
   /** Convert DD.MM.YYYY (API) to YYYY-MM-DD (HTML date input) */

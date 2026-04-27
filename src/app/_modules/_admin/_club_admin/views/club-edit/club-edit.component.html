@@ -106,6 +106,20 @@
                   </option>
                 </select>
               </div>
+
+              <div class="font-bold">Kontakt-E-Mail</div>
+              <div>
+                <input
+                  [(ngModel)]="club.contact_email"
+                  type="email"
+                  id="contact_email"
+                  class="w-full"
+                  placeholder="z.B. info@verein.de"
+                />
+                <small class="block text-gray-500 mt-1"
+                  >Für Schiedsrichter-Ansetzungs-E-Mails</small
+                >
+              </div>
             </div>
           </div>
 

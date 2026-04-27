@@ -72,6 +72,7 @@
         "src/app/_modules/_admin/_state_association_admin"
       ],
       "@floorball/admin/api-keys": ["src/app/_modules/_admin/_api_key_admin"],
+      "@floorball/referee": ["src/app/_modules/_referee"],
       "@floorball/models": ["src/app/_models"]
     },
     "useDefineForClassFields": false
