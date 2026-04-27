@@ -4,6 +4,7 @@ import {
   RefereeAdmin,
   RefereeAdminGame,
   RefereeEntry,
+  RefereeProfile,
   RefereePublicLicense,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
@@ -24,6 +25,23 @@ export class RefereeService {
     const path =
       environment.apiURL + 'referees/search.json?q=' + encodeURIComponent(q);
     return this.http.get<RefereeEntry[]>(path);
+  }
+
+  // Self-service endpoints (logged-in referee)
+
+  public getProfile() {
+    return this.http.get<RefereeProfile>(
+      environment.apiURL + 'referee/profile'
+    );
+  }
+
+  public updateProfile(data: Partial<RefereeProfile>) {
+    return this.http.put<RefereeProfile>(
+      environment.apiURL + 'referee/profile',
+      {
+        referee: data,
+      }
+    );
   }
 
   // Admin endpoints

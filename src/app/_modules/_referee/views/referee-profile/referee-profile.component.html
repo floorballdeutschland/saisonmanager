@@ -1,0 +1,140 @@
+<div class="p-4 lg:p-8 max-w-2xl">
+  <h1 class="text-2xl font-bold mb-2">Mein Schiedsrichter-Profil</h1>
+
+  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
+
+  <ng-container *ngIf="!loading && profile">
+    <p class="text-sm text-fb-gray-500 mb-6 font-mono">
+      {{ profile.lizenznummer_display }}
+      <span *ngIf="profile.lizenzstufe" class="ml-2"
+        >· {{ profile.lizenzstufe }}</span
+      >
+      <span *ngIf="profile.gueltigkeit" class="ml-2"
+        >· gültig bis {{ profile.gueltigkeit }}</span
+      >
+    </p>
+
+    <form (ngSubmit)="submit()" class="flex flex-col gap-6">
+      <!-- Name & Kontakt -->
+      <div class="flex flex-col gap-4">
+        <h2 class="text-sm font-bold uppercase text-fb-gray-500">
+          Name & Kontakt
+        </h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-bold">Vorname *</label>
+            <input
+              type="text"
+              [(ngModel)]="draft.vorname"
+              name="vorname"
+              required
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-bold">Nachname *</label>
+            <input
+              type="text"
+              [(ngModel)]="draft.nachname"
+              name="nachname"
+              required
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+          </div>
+          <div class="flex flex-col gap-1 col-span-2">
+            <label class="text-sm font-bold">E-Mail</label>
+            <input
+              type="email"
+              [(ngModel)]="draft.email"
+              name="email"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Heimadresse -->
+      <div class="flex flex-col gap-2">
+        <h2 class="text-sm font-bold uppercase text-fb-gray-500">
+          Heimadresse
+        </h2>
+        <p class="text-xs text-fb-gray-500">
+          Wird nur bei Ansetzungen für die Berechnung der Kilometer genutzt.
+        </p>
+        <div class="grid grid-cols-[2fr_1fr] gap-4">
+          <div class="flex flex-col gap-1">
+            <label class="text-sm">Straße</label>
+            <input
+              type="text"
+              [(ngModel)]="draft.strasse"
+              name="strasse"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-sm">Hausnummer</label>
+            <input
+              type="text"
+              [(ngModel)]="draft.hausnummer"
+              name="hausnummer"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-[1fr_2fr] gap-4">
+          <div class="flex flex-col gap-1">
+            <label class="text-sm">PLZ</label>
+            <input
+              type="text"
+              [(ngModel)]="draft.plz"
+              name="plz"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-sm">Ort</label>
+            <input
+              type="text"
+              [(ngModel)]="draft.ort"
+              name="ort"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Schiedsrichterpartner -->
+      <div class="flex flex-col gap-2">
+        <h2 class="text-sm font-bold uppercase text-fb-gray-500">
+          Häufigste/r Schiedsrichterpartner/in
+        </h2>
+        <p class="text-xs text-fb-gray-500">
+          Gib hier die Lizenznummer deines primären Partners bzw. deiner
+          primären Partnerin ein, damit uns Ansetzungen vereinfacht werden.
+        </p>
+        <input
+          type="number"
+          [(ngModel)]="draft.partner_lizenznummer"
+          name="partner_lizenznummer"
+          placeholder="Lizenznummer"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
+        />
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3 mt-2">
+        <button
+          type="submit"
+          [disabled]="saving"
+          class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+        >
+          {{ saving ? "Speichern…" : "Speichern" }}
+        </button>
+      </div>
+    </form>
+  </ng-container>
+
+  <div *ngIf="!loading && !profile" class="text-fb-gray-500 py-8">
+    Kein Schiedsrichter-Profil gefunden.
+  </div>
+</div>

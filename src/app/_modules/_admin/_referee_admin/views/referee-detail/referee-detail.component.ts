@@ -34,52 +34,53 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const lizenznummer = parseInt(
-      this._route.snapshot.params['lizenznummer'],
-      10
-    );
+    const param = this._route.snapshot.params['lizenznummer'] as string;
     this.loading = true;
 
-    this._refereeService
-      .adminGetAll({ q: String(lizenznummer) })
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (results) => {
-          const match = results.find((r) => r.lizenznummer === lizenznummer);
-          if (match) {
-            this._refereeService
-              .adminGetById(match.id)
-              .pipe(takeUntil(this._destroy$))
-              .subscribe({
-                next: (r) => {
-                  this.referee = r;
-                  this.loading = false;
-                  this._cdr.markForCheck();
-                  this.loadGames(r.id);
-                },
-                error: () => {
-                  this.loading = false;
-                  this._cdr.markForCheck();
-                  this._notificationService.error(
-                    'Fehler beim Laden des Schiedsrichters.',
-                    { autoClose: false, keepAfterRouteChange: false }
-                  );
-                },
-              });
-          } else {
+    if (param.startsWith('G-')) {
+      // Guest referee: look up directly by DB id
+      const id = parseInt(param.slice(2), 10);
+      this._refereeService
+        .adminGetById(id)
+        .pipe(takeUntil(this._destroy$))
+        .subscribe({
+          next: (r) => {
+            this.referee = r;
             this.loading = false;
             this._cdr.markForCheck();
-          }
-        },
-        error: () => {
-          this.loading = false;
-          this._cdr.markForCheck();
-          this._notificationService.error('Fehler beim Laden.', {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
-        },
-      });
+            this.loadGames(r.id);
+          },
+          error: () => this._handleLoadError(),
+        });
+    } else {
+      const lizenznummer = parseInt(param, 10);
+      this._refereeService
+        .adminGetAll({ q: String(lizenznummer) })
+        .pipe(takeUntil(this._destroy$))
+        .subscribe({
+          next: (results) => {
+            const match = results.find((r) => r.lizenznummer === lizenznummer);
+            if (match) {
+              this._refereeService
+                .adminGetById(match.id)
+                .pipe(takeUntil(this._destroy$))
+                .subscribe({
+                  next: (r) => {
+                    this.referee = r;
+                    this.loading = false;
+                    this._cdr.markForCheck();
+                    this.loadGames(r.id);
+                  },
+                  error: () => this._handleLoadError(),
+                });
+            } else {
+              this.loading = false;
+              this._cdr.markForCheck();
+            }
+          },
+          error: () => this._handleLoadError(),
+        });
+    }
   }
 
   ngOnDestroy(): void {
@@ -127,14 +128,17 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
           this.walletLoading = false;
           this._notificationService.error(
             'Wallet-Pass konnte nicht erstellt werden.',
-            {
-              autoClose: false,
-              keepAfterRouteChange: false,
-            }
+            { autoClose: false, keepAfterRouteChange: false }
           );
           this._cdr.markForCheck();
         },
       });
+  }
+
+  get detailRouteId(): string | number {
+    return this.referee?.guest
+      ? this.referee.lizenznummer_display ?? this.referee.id
+      : this.referee?.lizenznummer ?? '';
   }
 
   get isActive(): boolean {
@@ -144,5 +148,14 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     // End of the expiry day so license is valid the entire last day
     const date = new Date(+parts[2], +parts[1] - 1, +parts[0], 23, 59, 59);
     return date >= new Date();
+  }
+
+  private _handleLoadError(): void {
+    this.loading = false;
+    this._cdr.markForCheck();
+    this._notificationService.error('Fehler beim Laden des Schiedsrichters.', {
+      autoClose: false,
+      keepAfterRouteChange: false,
+    });
   }
 }

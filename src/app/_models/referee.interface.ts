@@ -9,7 +9,9 @@ export interface RefereePublicLicense {
 
 export interface RefereeAdmin {
   id: number;
-  lizenznummer: number;
+  lizenznummer: number | null;
+  lizenznummer_display: string;
+  guest: boolean;
   vorname: string;
   nachname: string;
   geburtsdatum?: string;
@@ -24,6 +26,27 @@ export interface RefereeAdmin {
   gueltigkeit_z?: string;
   wallet_pass_issued_at?: string;
   wallet_pass_url?: string;
+  strasse?: string;
+  hausnummer?: string;
+  plz?: string;
+  ort?: string;
+  partner_lizenznummer?: number | null;
+}
+
+export interface RefereeProfile {
+  id: number;
+  lizenznummer: number | null;
+  lizenznummer_display: string;
+  vorname: string;
+  nachname: string;
+  email?: string;
+  lizenzstufe?: string;
+  gueltigkeit?: string;
+  strasse?: string;
+  hausnummer?: string;
+  plz?: string;
+  ort?: string;
+  partner_lizenznummer?: number | null;
 }
 
 export interface RefereeAdminGame {
