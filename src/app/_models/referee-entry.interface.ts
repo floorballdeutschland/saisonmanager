@@ -3,5 +3,5 @@ export interface RefereeEntry {
   vorname: string;
   nachname: string;
   lizenzstufe?: string;
-  verein?: string;
+  landesverband?: string;
 }

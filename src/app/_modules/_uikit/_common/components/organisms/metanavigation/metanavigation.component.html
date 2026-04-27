@@ -59,6 +59,14 @@
           >Schiedsrichterverwaltung</a
         >
       </li>
+      <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_vm')">
+        <a
+          class="font-bold text-fb-gray-500 hover:text-black text-base"
+          [routerLink]="['/', 'verwaltung', 'schiedsrichter-verein']"
+          (click)="closeMenu()"
+          >Schiedsrichter*innen</a
+        >
+      </li>
       <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_assignments')">
         <a
           class="font-bold text-fb-gray-500 hover:text-black text-base"

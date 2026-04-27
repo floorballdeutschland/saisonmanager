@@ -6,6 +6,8 @@ import {
   RefereeEntry,
   RefereeProfile,
   RefereePublicLicense,
+  RefereeQualificationType,
+  RefereeVm,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -38,9 +40,7 @@ export class RefereeService {
   public updateProfile(data: Partial<RefereeProfile>) {
     return this.http.put<RefereeProfile>(
       environment.apiURL + 'referee/profile',
-      {
-        referee: data,
-      }
+      { referee: data }
     );
   }
 
@@ -110,5 +110,42 @@ export class RefereeService {
     return this.http.get<RefereeAdminGame[]>(
       environment.apiURL + 'admin/referees/incorrect_assignments' + query
     );
+  }
+
+  // Qualification types (admin/RSK)
+
+  public adminGetQualificationTypes() {
+    return this.http.get<RefereeQualificationType[]>(
+      environment.apiURL + 'admin/referee_qualification_types'
+    );
+  }
+
+  public adminCreateQualificationType(data: Partial<RefereeQualificationType>) {
+    return this.http.post<RefereeQualificationType>(
+      environment.apiURL + 'admin/referee_qualification_types',
+      { referee_qualification_type: data }
+    );
+  }
+
+  public adminUpdateQualificationType(
+    id: number,
+    data: Partial<RefereeQualificationType>
+  ) {
+    return this.http.put<RefereeQualificationType>(
+      environment.apiURL + 'admin/referee_qualification_types/' + id,
+      { referee_qualification_type: data }
+    );
+  }
+
+  public adminDeleteQualificationType(id: number) {
+    return this.http.delete(
+      environment.apiURL + 'admin/referee_qualification_types/' + id
+    );
+  }
+
+  // VM endpoint
+
+  public vmGetReferees() {
+    return this.http.get<RefereeVm[]>(environment.apiURL + 'vm/referees');
   }
 }

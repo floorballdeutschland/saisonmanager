@@ -75,62 +75,42 @@
       </div>
 
       <!-- Lizenz (nur für reguläre Schiedsrichter) -->
-      <div class="grid grid-cols-2 gap-4" *ngIf="!referee.guest">
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-bold">Lizenz gültig bis</label>
-          <input
-            type="date"
-            [(ngModel)]="referee.gueltigkeit"
-            name="gueltigkeit"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-bold">Zusatzqualifikation</label>
-          <input
-            type="text"
-            [(ngModel)]="referee.zusatzqualifikation"
-            name="zusatzqualifikation"
-            placeholder="z.B. Penalty Shot"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-bold"
-            >Zusatzqualifikation gültig bis</label
-          >
-          <input
-            type="date"
-            [(ngModel)]="referee.gueltigkeit_z"
-            name="gueltigkeit_z"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
+      <div class="flex flex-col gap-1" *ngIf="!referee.guest">
+        <label class="text-sm font-bold">Lizenz gültig bis</label>
+        <input
+          type="date"
+          [(ngModel)]="referee.gueltigkeit"
+          name="gueltigkeit"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
       </div>
 
       <!-- Kontakt & Zuordnung -->
       <div class="grid grid-cols-2 gap-4">
         <div class="flex flex-col gap-1" *ngIf="!referee.guest">
-          <label class="text-sm font-bold">Landesverband</label>
+          <label class="text-sm font-bold">Verein</label>
           <select
-            [(ngModel)]="referee.landesverband"
-            name="landesverband"
+            [(ngModel)]="referee.club_id"
+            name="club_id"
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
           >
-            <option value="">– kein –</option>
-            <option *ngFor="let sa of stateAssociations" [value]="sa.name">
-              {{ sa.name }}
+            <option [ngValue]="null">– kein Verein –</option>
+            <option *ngFor="let c of clubs" [ngValue]="c.id">
+              {{ c.name }}
             </option>
           </select>
         </div>
         <div class="flex flex-col gap-1" *ngIf="!referee.guest">
-          <label class="text-sm font-bold">Verband / Verein</label>
+          <label class="text-sm font-bold">Landesverband</label>
           <input
             type="text"
-            [(ngModel)]="referee.verein"
-            name="verein"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            [value]="derivedLandesverband || '–'"
+            disabled
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm bg-fb-gray-200 text-gray-700"
           />
+          <p class="text-xs text-fb-gray-500">
+            Wird automatisch aus dem Verein abgeleitet.
+          </p>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm font-bold">E-Mail</label>
@@ -151,6 +131,65 @@
           />
         </div>
       </div>
+    </div>
+
+    <!-- Zusatzqualifikationen (nur reguläre Schiedsrichter) -->
+    <div *ngIf="!referee.guest" class="flex flex-col gap-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-bold">Zusatzqualifikationen</h2>
+        <button
+          type="button"
+          (click)="addQualification()"
+          [disabled]="qualifications.length >= qualificationTypes.length"
+          class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
+        >
+          + Hinzufügen
+        </button>
+      </div>
+
+      <p
+        *ngIf="qualificationTypes.length === 0"
+        class="text-xs text-fb-gray-500"
+      >
+        Keine Qualifikationstypen konfiguriert.
+      </p>
+
+      <div
+        *ngFor="let q of qualifications; let i = index"
+        class="flex items-center gap-3"
+      >
+        <select
+          [(ngModel)]="q.qualification_type_id"
+          [name]="'qual_type_' + i"
+          (ngModelChange)="onQualificationTypeChange()"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white flex-1"
+        >
+          <option
+            *ngFor="let t of availableTypesList[i]; trackBy: trackById"
+            [ngValue]="t.id"
+          >
+            {{ t.name }}
+          </option>
+        </select>
+        <input
+          type="date"
+          [(ngModel)]="q.valid_until"
+          [name]="'qual_valid_' + i"
+          placeholder="Gültig bis"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-40"
+        />
+        <button
+          type="button"
+          (click)="removeQualification(i)"
+          class="text-red-400 hover:text-red-600 text-sm font-bold px-2"
+        >
+          ✕
+        </button>
+      </div>
+
+      <p *ngIf="qualifications.length === 0" class="text-xs text-fb-gray-500">
+        Keine Zusatzqualifikationen hinterlegt.
+      </p>
     </div>
 
     <!-- Heimadresse (nur reguläre Schiedsrichter) -->
