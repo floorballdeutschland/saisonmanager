@@ -52,7 +52,21 @@ export class ErrorInterceptor implements HttpInterceptor {
           );
         }
 
-        const error = err.error.message || err.statusText;
+        if (err.status >= 500) {
+          this._notificationService.error(
+            'Server-Fehler. Bitte versuche es später erneut.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
+        }
+
+        if (err.status === 0) {
+          this._notificationService.error(
+            'Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
+        }
+
+        const error = err.error?.message || err.statusText;
         return throwError(() => error);
       })
     );
