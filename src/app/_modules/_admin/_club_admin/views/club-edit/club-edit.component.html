@@ -107,6 +107,23 @@
                 </select>
               </div>
 
+              <div class="font-bold">Landesverband</div>
+              <div>
+                <select
+                  name="state_association_id"
+                  [(ngModel)]="club.state_association_id"
+                  class="w-full"
+                >
+                  <option [ngValue]="null">– Bitte auswählen –</option>
+                  <option
+                    *ngFor="let sa of stateAssociations"
+                    [ngValue]="sa.id"
+                  >
+                    {{ sa.name }}
+                  </option>
+                </select>
+              </div>
+
               <div class="font-bold">Kontakt-E-Mail</div>
               <div>
                 <input
