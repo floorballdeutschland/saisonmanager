@@ -15,6 +15,7 @@ import {
   Team,
 } from '@floorball/types';
 import { GameService, NotificationService } from '@floorball/core';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'fb-game-edit',
@@ -269,23 +270,26 @@ export class GameEditComponent implements OnInit {
         started: this.game.forfait > 0,
         ended: this.game.forfait > 0,
       })
+      .pipe(
+        switchMap(() =>
+          this._gameService.updateGameRating(
+            this.game.id || 0,
+            this.game.forfait || 0
+          )
+        )
+      )
       .subscribe({
         next: () => {
-          this._gameService
-            .updateGameRating(this.game.id || 0, this.game.forfait || 0)
-            .subscribe({
-              next: () => {
-                this.refreshSchedule.emit();
-                this._notificationService.success(message, {
-                  autoClose: true,
-                  keepAfterRouteChange: true,
-                });
-              },
-              error: () => {
-                this.processing = false;
-                this._cdr.markForCheck();
-              },
-            });
+          this.processing = false;
+          this.refreshSchedule.emit();
+          this._notificationService.success(message, {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          });
+        },
+        error: () => {
+          this.processing = false;
+          this._cdr.markForCheck();
         },
       });
   }
