@@ -137,18 +137,17 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   }
 
   public errorMsg(club: Club): string[] {
-    // eslint-disable-next-line prefer-const
-    let msg = [];
+    const msg = [];
 
-    if (club.name.length < 1) {
+    if (!club.name?.length) {
       msg.push('Es muss ein Vereinsname gesetzt werden');
     }
 
-    if (club.long_name.length < 1) {
+    if (!club.long_name?.length) {
       msg.push('Es muss ein Vereinsname (aus dem Register) gesetzt werden');
     }
 
-    if (club.short_name.length < 1) {
+    if (!club.short_name?.length) {
       msg.push('Es muss ein kurzer Vereinsname gesetzt werden');
     }
 
