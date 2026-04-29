@@ -8,6 +8,9 @@ import * as Views from './views';
 
 @NgModule({
   imports: [CommonModule, FormsModule, RefereeRoutingModule, UikitCommonModule],
-  declarations: [Views.RefereeProfileComponent],
+  declarations: [
+    Views.RefereeProfileComponent,
+    Views.RefereeBlockedDatesComponent,
+  ],
 })
 export class RefereeModule {}

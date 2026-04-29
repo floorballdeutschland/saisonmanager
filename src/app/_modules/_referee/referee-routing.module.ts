@@ -9,6 +9,12 @@ const routes: Routes = [
     component: Views.RefereeProfileComponent,
     data: { scrollTop: true },
   },
+  {
+    path: 'schiedsrichter/sperrtermine',
+    pathMatch: 'full',
+    component: Views.RefereeBlockedDatesComponent,
+    data: { scrollTop: true },
+  },
 ];
 
 @NgModule({

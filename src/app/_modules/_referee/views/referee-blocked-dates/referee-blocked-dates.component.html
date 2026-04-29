@@ -1,0 +1,57 @@
+<div class="p-4 lg:p-8 max-w-2xl">
+  <h1 class="text-2xl font-bold mb-6">Meine Sperrtermine</h1>
+
+  <p class="text-sm text-fb-gray-500 mb-6">
+    Hinterlege Samstage oder Sonntage, an denen du nicht eingesetzt werden
+    kannst. Termine mit einer aktiven Ansetzung können nicht entfernt werden.
+  </p>
+
+  <!-- Add new date -->
+  <div class="flex items-end gap-3 mb-8">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-bold">Datum hinzufügen</label>
+      <input
+        type="date"
+        [(ngModel)]="newDate"
+        name="newDate"
+        [min]="today"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      />
+    </div>
+    <button
+      type="button"
+      (click)="addDate()"
+      [disabled]="saving || !newDate"
+      class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+    >
+      {{ saving ? "Speichern…" : "Hinzufügen" }}
+    </button>
+  </div>
+
+  <!-- List -->
+  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-4">Lade…</div>
+
+  <div
+    *ngIf="!loading && dates.length === 0"
+    class="text-fb-gray-500 text-sm py-4"
+  >
+    Keine Sperrtermine eingetragen.
+  </div>
+
+  <ul *ngIf="!loading && dates.length > 0" class="flex flex-col gap-2">
+    <li
+      *ngFor="let d of dates"
+      class="flex items-center justify-between border border-fb-gray-600 rounded-[5px] px-4 py-2"
+    >
+      <span class="text-sm">{{ formatDate(d.date) }}</span>
+      <button
+        type="button"
+        (click)="deleteDate(d.id)"
+        [disabled]="deletingId === d.id"
+        class="text-xs text-red-600 hover:underline disabled:opacity-50"
+      >
+        {{ deletingId === d.id ? "Lösche…" : "Entfernen" }}
+      </button>
+    </li>
+  </ul>
+</div>
