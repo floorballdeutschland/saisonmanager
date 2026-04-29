@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 
 import { LoginAnswer, User } from '@floorball/types';
 import { environment } from 'src/environments/environment';
-import { Observable, of, ReplaySubject, Subscription } from 'rxjs';
-import { catchError, map, startWith } from 'rxjs/operators';
+import { Observable, of, ReplaySubject } from 'rxjs';
+import { catchError, map, startWith, take } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
 import { Router } from '@angular/router';
 
@@ -22,8 +22,6 @@ export class SessionService {
     startWith(false),
     map((user) => !!user)
   );
-
-  private logoutSubscription!: Subscription;
 
   //   private flightsSubject = new BehaviorSubject<Flight[]>([]);
   // public flights$ = flightsSubject.asObservable();
@@ -89,8 +87,9 @@ export class SessionService {
 
     const path = environment.apiURL + 'logout.json';
     const data = {};
-    this.logoutSubscription = this.http
+    this.http
       .post<LoginAnswer>(path, data)
+      .pipe(take(1))
       .subscribe(() => {
         if (showotification) {
           this._notificationService.success('Logout erfolgreich.');
@@ -107,10 +106,6 @@ export class SessionService {
           this._router.navigate(['/']);
         }
       });
-
-    setTimeout(() => {
-      this.logoutSubscription.unsubscribe();
-    }, 5000);
   }
 
   public lostPassword(username: string) {
