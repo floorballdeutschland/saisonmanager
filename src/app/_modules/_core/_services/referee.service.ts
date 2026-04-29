@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import {
   RefereeAdmin,
   RefereeAdminGame,
+  RefereeAssignment,
+  RefereeAssignmentAvailable,
+  RefereeBlockedDate,
   RefereeEntry,
   RefereeProfile,
   RefereePublicLicense,
@@ -141,6 +144,97 @@ export class RefereeService {
     return this.http.delete(
       environment.apiURL + 'admin/referee_qualification_types/' + id
     );
+  }
+
+  // Assignment endpoints (admin/RSK)
+
+  public adminGetAssignments(params?: {
+    season_id?: string;
+    date_from?: string;
+    date_to?: string;
+    game_operation_id?: string;
+  }) {
+    const parts: string[] = [];
+    if (params?.season_id)
+      parts.push(`season_id=${encodeURIComponent(params.season_id)}`);
+    if (params?.date_from)
+      parts.push(`date_from=${encodeURIComponent(params.date_from)}`);
+    if (params?.date_to)
+      parts.push(`date_to=${encodeURIComponent(params.date_to)}`);
+    if (params?.game_operation_id)
+      parts.push(
+        `game_operation_id=${encodeURIComponent(params.game_operation_id)}`
+      );
+    const query = parts.length ? '?' + parts.join('&') : '';
+    return this.http.get<RefereeAssignment[]>(
+      environment.apiURL + 'admin/referee_assignments' + query
+    );
+  }
+
+  public adminCreateAssignment(data: {
+    game_id: number;
+    referee1_id?: number | null;
+    referee2_id?: number | null;
+  }) {
+    return this.http.post<RefereeAssignment>(
+      environment.apiURL + 'admin/referee_assignments',
+      { assignment: data }
+    );
+  }
+
+  public adminUpdateAssignment(
+    id: number,
+    data: {
+      game_id?: number;
+      referee1_id?: number | null;
+      referee2_id?: number | null;
+    }
+  ) {
+    return this.http.put<RefereeAssignment>(
+      environment.apiURL + 'admin/referee_assignments/' + id,
+      { assignment: data }
+    );
+  }
+
+  public adminPublishAssignment(id: number) {
+    return this.http.post<RefereeAssignment>(
+      environment.apiURL + 'admin/referee_assignments/' + id + '/publish',
+      {}
+    );
+  }
+
+  public adminNotifyAssignment(id: number) {
+    return this.http.post<RefereeAssignment>(
+      environment.apiURL + 'admin/referee_assignments/' + id + '/notify',
+      {}
+    );
+  }
+
+  public adminGetAvailableReferees(date: string, gameId?: number) {
+    let query = `?date=${encodeURIComponent(date)}`;
+    if (gameId) query += `&game_id=${gameId}`;
+    return this.http.get<RefereeAssignmentAvailable[]>(
+      environment.apiURL + 'admin/referee_assignments/available' + query
+    );
+  }
+
+  // Blocked dates (self-service for logged-in referee)
+
+  public getBlockedDates() {
+    return this.http.get<RefereeBlockedDate[]>(
+      environment.apiURL + 'referee/blocked_dates'
+    );
+  }
+
+  public createBlockedDate(date: string) {
+    return this.http.post<RefereeBlockedDate>(
+      environment.apiURL + 'referee/blocked_dates',
+      { blocked_date: { date } }
+    );
+  }
+
+  public deleteBlockedDate(id: number) {
+    return this.http.delete(environment.apiURL + 'referee/blocked_dates/' + id);
   }
 
   // VM endpoint

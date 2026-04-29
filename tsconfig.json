@@ -69,6 +69,9 @@
       "@floorball/admin/licenses": ["src/app/_modules/_admin/_license_admin"],
       "@floorball/admin/referees": ["src/app/_modules/_admin/_referee_admin"],
       "@floorball/admin/referee-vm": ["src/app/_modules/_admin/_referee_vm"],
+      "@floorball/admin/assignment": [
+        "src/app/_modules/_admin/_assignment_admin"
+      ],
       "@floorball/admin/state-associations": [
         "src/app/_modules/_admin/_state_association_admin"
       ],

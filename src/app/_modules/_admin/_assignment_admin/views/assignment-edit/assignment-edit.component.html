@@ -1,0 +1,110 @@
+<div class="p-4 lg:p-8 max-w-2xl">
+  <div class="flex items-center gap-2 mb-6">
+    <a
+      routerLink="/verwaltung/schiedsrichter-ansetzungen"
+      class="text-sm text-fb-gray-500 hover:text-black"
+      >← Zurück</a
+    >
+    <h1 class="text-2xl font-bold">Ansetzung</h1>
+    <span
+      *ngIf="assignment"
+      class="px-2 py-0.5 rounded text-xs font-bold ml-2"
+      [ngClass]="
+        assignment.status === 'published'
+          ? 'bg-green-100 text-green-800'
+          : 'bg-yellow-100 text-yellow-800'
+      "
+    >
+      {{ assignment.status === "published" ? "Veröffentlicht" : "Vorläufig" }}
+    </span>
+  </div>
+
+  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
+
+  <ng-container *ngIf="!loading">
+    <!-- Game info -->
+    <div
+      *ngIf="assignment?.game"
+      class="mb-6 p-4 border border-fb-gray-600 rounded-[5px] flex flex-col gap-1 text-sm"
+    >
+      <div class="font-bold">
+        {{ assignment!.game!.home_team }} vs. {{ assignment!.game!.guest_team }}
+      </div>
+      <div class="text-fb-gray-500">
+        {{ assignment!.game!.date }}
+        <span *ngIf="assignment!.game!.arena" class="ml-2"
+          >· {{ assignment!.game!.arena }}</span
+        >
+        <span *ngIf="assignment!.game!.league" class="ml-2"
+          >· {{ assignment!.game!.league }}</span
+        >
+        <span *ngIf="assignment!.game!.game_number" class="ml-2"
+          >· #{{ assignment!.game!.game_number }}</span
+        >
+      </div>
+    </div>
+
+    <!-- Referee selection -->
+    <div class="flex flex-col gap-4 mb-6">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Schiedsrichter 1</label>
+        <select
+          [(ngModel)]="selectedReferee1Id"
+          (ngModelChange)="onReferee1Change()"
+          name="referee1"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        >
+          <option [ngValue]="null">– kein –</option>
+          <option *ngFor="let r of availableReferees" [ngValue]="r.id">
+            {{ refereeName(r) }}
+          </option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">Schiedsrichter 2</label>
+        <select
+          [(ngModel)]="selectedReferee2Id"
+          name="referee2"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        >
+          <option [ngValue]="null">– kein –</option>
+          <option *ngFor="let r of availableReferees" [ngValue]="r.id">
+            {{ refereeName(r) }}
+          </option>
+        </select>
+        <p class="text-xs text-fb-gray-500">
+          Wird automatisch vorbelegt, wenn Schiri 1 einen Partner hinterlegt
+          hat.
+        </p>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3">
+      <button
+        type="button"
+        (click)="save()"
+        [disabled]="saving"
+        class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+      >
+        {{ saving ? "Speichern…" : "Vorläufig speichern" }}
+      </button>
+      <button
+        *ngIf="assignment && assignment.status !== 'published'"
+        type="button"
+        (click)="publish()"
+        [disabled]="publishing"
+        class="px-5 py-2 bg-green-700 text-white text-sm font-bold rounded-[5px] hover:bg-green-800 disabled:opacity-50"
+      >
+        {{ publishing ? "Veröffentliche…" : "Veröffentlichen" }}
+      </button>
+    </div>
+
+    <p
+      *ngIf="availableReferees.length === 0 && !loading"
+      class="mt-4 text-xs text-fb-gray-500"
+    >
+      Keine verfügbaren Schiedsrichter für dieses Datum gefunden.
+    </p>
+  </ng-container>
+</div>

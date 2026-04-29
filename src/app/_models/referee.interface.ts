@@ -89,3 +89,52 @@ export interface RefereeAdminGame {
   referee1?: string;
   referee2?: string;
 }
+
+export interface RefereeAssignmentStub {
+  id: number;
+  lizenznummer_display: string;
+  vorname: string;
+  nachname: string;
+  lizenzstufe?: string;
+  partner_lizenznummer?: number | null;
+}
+
+export interface RefereeAssignmentGame {
+  id: number;
+  game_number: string;
+  date: string;
+  home_team?: string;
+  guest_team?: string;
+  league?: string;
+  league_category_id?: number;
+  season_id?: number;
+  arena?: string;
+  club?: string;
+  result?: string;
+}
+
+export interface RefereeAssignment {
+  id: number;
+  game_id: number;
+  status: string;
+  notified_tentative_at?: string;
+  published_at?: string;
+  referee1?: RefereeAssignmentStub | null;
+  referee2?: RefereeAssignmentStub | null;
+  game?: RefereeAssignmentGame | null;
+}
+
+export interface RefereeAssignmentAvailable {
+  id: number;
+  lizenznummer?: number | null;
+  lizenznummer_display: string;
+  vorname: string;
+  nachname: string;
+  lizenzstufe?: string;
+  partner_lizenznummer?: number | null;
+}
+
+export interface RefereeBlockedDate {
+  id: number;
+  date: string;
+}
