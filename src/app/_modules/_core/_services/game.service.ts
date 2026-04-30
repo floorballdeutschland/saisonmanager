@@ -217,6 +217,12 @@ export class GameService {
     return this.http.post<GameEvent>(path, { event_id: eventId });
   }
 
+  public updateEvent(gameId: number, eventId: number, event: GameEventInput) {
+    const path =
+      environment.apiURL + 'user/games/' + gameId + '/events/update.json';
+    return this.http.post<GameEvent[]>(path, { event_id: eventId, ...event });
+  }
+
   public setGameStatus(gameId: number, game_status: string) {
     const path =
       environment.apiURL + 'user/games/' + gameId + '/game_status.json';

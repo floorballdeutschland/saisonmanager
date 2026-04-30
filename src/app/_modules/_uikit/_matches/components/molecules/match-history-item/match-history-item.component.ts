@@ -7,7 +7,13 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import { Game, GameAdditionalFields, GameEvent } from '@floorball/types';
+import {
+  Game,
+  GameAdditionalFields,
+  GameEvent,
+  Penalty,
+  PenaltyCode,
+} from '@floorball/types';
 import { GameService } from '@floorball/core';
 
 @Component({
@@ -43,8 +49,17 @@ export class MatchHistoryItemComponent {
   @Input()
   showTrikotNumber = false;
 
+  @Input()
+  penalties: Penalty[] = [];
+
+  @Input()
+  penaltyCodes: PenaltyCode[] = [];
+
   @Output()
   reloadGame: EventEmitter<void> = new EventEmitter<void>();
+
+  editingEvent: GameEvent | null = null;
+  editingEventPeriod = '';
 
   constructor(
     private _gameService: GameService,
@@ -57,5 +72,28 @@ export class MatchHistoryItemComponent {
         this.reloadGame.emit();
       },
     });
+  }
+
+  public handleEdit(event: GameEvent): void {
+    this.editingEvent =
+      this.editingEvent?.event_id === event.event_id ? null : event;
+    this.editingEventPeriod = '';
+    this._cdr.markForCheck();
+  }
+
+  public handleEditPeriodUpdate(period: string): void {
+    this.editingEventPeriod = period;
+    this._cdr.markForCheck();
+  }
+
+  public cancelEdit(): void {
+    this.editingEvent = null;
+    this.editingEventPeriod = '';
+    this._cdr.markForCheck();
+  }
+
+  public handleUpdated(): void {
+    this.editingEvent = null;
+    this.reloadGame.emit();
   }
 }

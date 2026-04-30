@@ -38,6 +38,9 @@ export interface GameEvent {
   penalty_type_string?: string;
   penalty_reason?: number;
   penalty_reason_string?: string;
+  // raw IDs for edit pre-fill
+  penalty_id?: number;
+  penalty_code_id?: number;
 }
 
 export interface GamePlayerEntry {

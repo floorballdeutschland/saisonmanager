@@ -234,24 +234,40 @@
         >{{ gameEvent.goal_type_string }}</ng-container
       >
     </div>
-    <div
-      (click)="handleDelete(gameEvent.event_id)"
-      *ngIf="allowCancel"
-      class="md:hidden mb-2 col-span-5 text-center px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
-    >
-      Löschen
+    <div *ngIf="allowCancel" class="md:hidden mb-2 col-span-5 flex gap-2">
+      <div
+        (click)="handleDelete(gameEvent.event_id)"
+        class="flex-1 text-center px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
+      >
+        Löschen
+      </div>
+      <div
+        *ngIf="['goal', 'penalty'].includes(gameEvent.event_type)"
+        (click)="handleEdit(event)"
+        class="flex-1 text-center px-2 py-1 text-[11px] bg-blue-100 text-blue-700 cursor-pointer rounded-[30px] border border-blue-500"
+      >
+        Bearbeiten
+      </div>
     </div>
 
     <div
       *ngIf="!isLast || allowCancel"
       class="hidden md:block row-start-2 col-start-7 h-full w-full self-center justify-self-center"
     >
-      <div
-        (click)="handleDelete(gameEvent.event_id)"
-        *ngIf="allowCancel"
-        class="px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
-      >
-        Löschen
+      <div *ngIf="allowCancel" class="flex flex-col gap-1">
+        <div
+          (click)="handleDelete(gameEvent.event_id)"
+          class="px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500 text-center"
+        >
+          Löschen
+        </div>
+        <div
+          *ngIf="['goal', 'penalty'].includes(gameEvent.event_type)"
+          (click)="handleEdit(event)"
+          class="px-2 py-1 text-[11px] bg-blue-100 text-blue-700 cursor-pointer rounded-[30px] border border-blue-500 text-center"
+        >
+          Bearbeiten
+        </div>
       </div>
       <div
         class="bg-fb-gray-200 h-[49px] mt-[-5px] w-px mx-auto hidden md:block"
@@ -295,6 +311,28 @@
         {{ gameEvent.guest.assist?.player_name }}</ng-template
       >
     </div>
+  </div>
+
+  <div *ngIf="allowCancel && editingEvent" class="mt-2 mb-4">
+    <fb-match-event-form
+      [type]="editingEvent.event_type"
+      [team]="editingEvent.event_team"
+      [match]="match"
+      [additionalFields]="additionalFields"
+      [penalties]="penalties"
+      [penaltyCodes]="penaltyCodes"
+      [existingEvent]="editingEvent"
+      [currentPeriod]="editingEventPeriod || editingEvent.period?.toString()"
+      [noBackground]="false"
+      (updateGame)="handleUpdated()"
+      (updatePeriod)="handleEditPeriodUpdate($event)"
+    ></fb-match-event-form>
+    <button
+      (click)="cancelEdit()"
+      class="mt-2 text-sm text-gray-500 hover:text-gray-700 underline"
+    >
+      Abbrechen
+    </button>
   </div>
 </ng-container>
 
