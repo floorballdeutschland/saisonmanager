@@ -3,8 +3,10 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnInit,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 import { LeagueService } from '@floorball/core';
 import { Game, GameAdditionalFields } from '@floorball/types';
@@ -14,8 +16,11 @@ import { tap } from 'rxjs';
   selector: 'fb-match-report-step-one',
   templateUrl: './match-report-step-one.component.html',
 })
-export class MatchReportStepOneComponent implements OnInit {
+export class MatchReportStepOneComponent implements OnInit, OnChanges {
   fieldSize!: string;
+
+  homeCoachNums: number[] = [1];
+  guestCoachNums: number[] = [1];
 
   @Input()
   game!: Game;
@@ -40,6 +45,54 @@ export class MatchReportStepOneComponent implements OnInit {
     private _leagueService: LeagueService,
     private _cdr: ChangeDetectorRef
   ) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['additionalFields']) {
+      const homeCount = this.initCoachCount(
+        this.additionalFields?.home_team_coaches
+      );
+      const guestCount = this.initCoachCount(
+        this.additionalFields?.guest_team_coaches
+      );
+      if (homeCount > this.homeCoachNums.length) {
+        this.homeCoachNums = Array.from({ length: homeCount }, (_, i) => i + 1);
+      }
+      if (guestCount > this.guestCoachNums.length) {
+        this.guestCoachNums = Array.from(
+          { length: guestCount },
+          (_, i) => i + 1
+        );
+      }
+    }
+  }
+
+  private initCoachCount(
+    coaches: GameAdditionalFields['home_team_coaches'] | undefined
+  ): number {
+    if (!coaches) return 1;
+    type CoachKey = keyof GameAdditionalFields['home_team_coaches'];
+    for (let i = 5; i >= 2; i--) {
+      const fn = coaches[`coach${i}_first_name` as CoachKey];
+      const ln = coaches[`coach${i}_last_name` as CoachKey];
+      const str = coaches[`coach${i}_string` as CoachKey];
+      if (fn || ln || str) return i;
+    }
+    return 1;
+  }
+
+  addCoach(team: 'home' | 'guest'): void {
+    if (team === 'home' && this.homeCoachNums.length < 5) {
+      this.homeCoachNums = [
+        ...this.homeCoachNums,
+        this.homeCoachNums.length + 1,
+      ];
+    } else if (team === 'guest' && this.guestCoachNums.length < 5) {
+      this.guestCoachNums = [
+        ...this.guestCoachNums,
+        this.guestCoachNums.length + 1,
+      ];
+    }
+  }
 
   ngOnInit(): void {
     this._leagueService.selectedLeague$

@@ -102,7 +102,7 @@
       <div class="grid gap-4">
         <p class="font-bold">{{ game.home_team_name }}</p>
         <fb-match-event-form
-          *ngFor="let num of [1, 2, 3, 4, 5]"
+          *ngFor="let num of homeCoachNums"
           [type]="'coach' + num"
           team="home"
           (updateGame)="reloadGame()"
@@ -110,11 +110,19 @@
           [match]="game"
           [additionalFields]="additionalFields"
         ></fb-match-event-form>
+        <button
+          *ngIf="homeCoachNums.length < 5"
+          type="button"
+          (click)="addCoach('home')"
+          class="text-sm text-fb-gray-500 hover:text-black text-left"
+        >
+          + Betreuer hinzufügen
+        </button>
       </div>
       <div class="grid gap-4">
         <p class="font-bold">{{ game.guest_team_name }}</p>
         <fb-match-event-form
-          *ngFor="let num of [1, 2, 3, 4, 5]"
+          *ngFor="let num of guestCoachNums"
           [type]="'coach' + num"
           team="guest"
           (updateGame)="reloadGame()"
@@ -122,6 +130,14 @@
           [match]="game"
           [additionalFields]="additionalFields"
         ></fb-match-event-form>
+        <button
+          *ngIf="guestCoachNums.length < 5"
+          type="button"
+          (click)="addCoach('guest')"
+          class="text-sm text-fb-gray-500 hover:text-black text-left"
+        >
+          + Betreuer hinzufügen
+        </button>
       </div>
     </div>
   </div>
