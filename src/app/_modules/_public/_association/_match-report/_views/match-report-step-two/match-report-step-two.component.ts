@@ -108,6 +108,13 @@ export class MatchReportStepTwoComponent implements OnInit {
     this.event = '';
   }
 
+  public bothLineupsPresent(): boolean {
+    return (
+      (this.game?.players?.home?.length ?? 0) > 0 &&
+      (this.game?.players?.guest?.length ?? 0) > 0
+    );
+  }
+
   public isGamePeriodActive(index: number) {
     const currentlyOptional = this.game.current_period_title?.optional;
     const statusIndex = this.game.period_titles
