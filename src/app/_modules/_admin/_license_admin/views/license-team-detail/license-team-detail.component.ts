@@ -8,6 +8,7 @@ import {
   GameOperation,
   GameOperationWithClubs,
   LicenseHash,
+  PlayerWithLicense,
 } from '@floorball/types';
 import {
   AssociationService,
@@ -91,9 +92,24 @@ export class LicenseTeamDetailComponent implements OnInit {
       .userWithdrawLicenseRequest(playerId, licenseId)
       .subscribe({
         next: () => {
-          // reload user licenses
           this.loadUserLicenses();
         },
       });
+  }
+
+  public isInGracePeriod(p: PlayerWithLicense): boolean {
+    if (!p.grace_period_ends_at) return false;
+    return new Date(p.grace_period_ends_at) > new Date();
+  }
+
+  public gracePeriodLabel(p: PlayerWithLicense): string {
+    if (!p.grace_period_ends_at) return '';
+    return (
+      new Intl.DateTimeFormat('de-DE', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Europe/Berlin',
+      }).format(new Date(p.grace_period_ends_at)) + ' Uhr'
+    );
   }
 }

@@ -155,11 +155,25 @@
                         </div>
                       </div>
 
-                      <p
-                        class="truncate text-sm print:text-xs font-medium print:leading-[22px]"
-                      >
-                        {{ p.last_name }}, {{ p.first_name }}
-                      </p>
+                      <div>
+                        <p
+                          class="truncate text-sm print:text-xs font-medium print:leading-[22px]"
+                        >
+                          {{ p.last_name }}, {{ p.first_name }}
+                        </p>
+                        <span
+                          *ngIf="p.other_licenses?.length"
+                          class="inline-block rounded-full bg-yellow-100 px-2 text-[10px] font-semibold text-yellow-800 print:hidden"
+                        >
+                          ⚠
+                          {{
+                            p.other_licenses?.length === 1
+                              ? "1 weitere Lizenz"
+                              : p.other_licenses?.length + " weitere Lizenzen"
+                          }}:
+                          {{ otherLicenseNames(p) }}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

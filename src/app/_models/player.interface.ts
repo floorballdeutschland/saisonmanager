@@ -44,6 +44,8 @@ export interface PlayerWithLicense extends Player {
     license_status: string;
   };
   can_withdraw: boolean;
+  grace_period_ends_at?: string;
+  other_licenses?: { team_name: string; league_name?: string }[];
 }
 
 export interface PlayerLicenseHistory {

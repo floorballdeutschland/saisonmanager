@@ -72,29 +72,45 @@
                             {{ p.last_name }}, {{ p.first_name }}
                           </p>
                           <div class="ml-2 flex flex-shrink-0 items-end">
-                            <a
-                              class="hidden shrink-0 mr-2 px-2 border border-fb-gray-600 rounded-xl sm:flex sm:items-center hover:cursor-pointer hover:bg-fb-gray-200"
+                            <div
+                              class="flex flex-col items-end gap-0.5"
                               *ngIf="p.can_withdraw"
-                              (click)="withdrawRequest(p.id, p.team_license.id)"
                             >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                class="w-4 h-4"
+                              <a
+                                class="hidden shrink-0 px-2 border border-fb-gray-600 rounded-xl sm:flex sm:items-center hover:cursor-pointer hover:bg-fb-gray-200"
+                                (click)="
+                                  withdrawRequest(p.id, p.team_license.id)
+                                "
                               >
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"
-                                />
-                              </svg>
-                              <span class="pl-1 text-[13px]">
-                                zurückziehen
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke-width="1.5"
+                                  stroke="currentColor"
+                                  class="w-4 h-4"
+                                >
+                                  <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"
+                                  />
+                                </svg>
+                                <span class="pl-1 text-[13px]">
+                                  {{
+                                    isInGracePeriod(p)
+                                      ? "kostenfrei löschen"
+                                      : "zurückziehen"
+                                  }}
+                                </span>
+                              </a>
+                              <span
+                                *ngIf="isInGracePeriod(p)"
+                                class="text-[10px] text-green-700"
+                              >
+                                kostenfrei bis {{ gracePeriodLabel(p) }}
                               </span>
-                            </a>
+                            </div>
 
                             <a
                               class="hidden shrink-0 mr-2 px-2 border border-fb-gray-600 rounded-xl sm:flex sm:items-center hover:cursor-pointer hover:bg-fb-gray-200"
