@@ -59,6 +59,7 @@ export class MatchHistoryItemComponent {
   reloadGame: EventEmitter<void> = new EventEmitter<void>();
 
   editingEvent: GameEvent | null = null;
+  editingEventPeriod = '';
 
   constructor(
     private _gameService: GameService,
@@ -76,11 +77,18 @@ export class MatchHistoryItemComponent {
   public handleEdit(event: GameEvent): void {
     this.editingEvent =
       this.editingEvent?.event_id === event.event_id ? null : event;
+    this.editingEventPeriod = '';
+    this._cdr.markForCheck();
+  }
+
+  public handleEditPeriodUpdate(period: string): void {
+    this.editingEventPeriod = period;
     this._cdr.markForCheck();
   }
 
   public cancelEdit(): void {
     this.editingEvent = null;
+    this.editingEventPeriod = '';
     this._cdr.markForCheck();
   }
 

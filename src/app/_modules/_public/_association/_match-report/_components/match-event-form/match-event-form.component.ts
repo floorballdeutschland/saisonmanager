@@ -300,6 +300,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         this.penaltyCode = e.penalty_code_id ?? 0;
       } else if (e.event_type === 'goal') {
         this.penaltyCode = e.penalty_code_id ?? 0;
+        this.with_ps = e.goal_type === 'penalty_shot';
       }
     }
   }

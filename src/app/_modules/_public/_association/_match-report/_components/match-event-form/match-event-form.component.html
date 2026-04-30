@@ -661,7 +661,8 @@
     <ng-container *ngIf="['goal', 'penalty', 'timeout'].includes(type)">
       <ng-template #missingInfo>Angaben unvollständig</ng-template>
       <ng-container *ngIf="!submitDisabled(); else missingInfo">
-        {{ getEventString() }} eintragen
+        {{ getEventString() }}
+        {{ existingEvent ? "aktualisieren" : "eintragen" }}
       </ng-container>
     </ng-container>
   </fb-button>

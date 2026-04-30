@@ -322,8 +322,10 @@
       [penalties]="penalties"
       [penaltyCodes]="penaltyCodes"
       [existingEvent]="editingEvent"
+      [currentPeriod]="editingEventPeriod || editingEvent.period?.toString()"
       [noBackground]="false"
       (updateGame)="handleUpdated()"
+      (updatePeriod)="handleEditPeriodUpdate($event)"
     ></fb-match-event-form>
     <button
       (click)="cancelEdit()"
