@@ -2,7 +2,10 @@
   <ng-container *ngIf="game.started">
     <div>
       <h2 class="font-bold text-xl lg:text-2xl mb-4 lg:mb-8">Spielverlauf</h2>
-      <fb-match-history [match]="game"></fb-match-history>
+      <fb-match-history
+        [match]="game"
+        [additionalFields]="additionalFields"
+      ></fb-match-history>
     </div>
 
     <div class="mt-8">

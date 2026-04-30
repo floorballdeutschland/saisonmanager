@@ -93,7 +93,7 @@ export class MatchComponent implements OnInit, OnDestroy {
   getMatch(id: string) {
     this._gameService.getGame(parseInt(id, 10)).subscribe({
       next: (game) => {
-        if (this.tab !== 'public') {
+        if (this.tab !== 'public' || this._sessionService.currentUser) {
           this._gameService.getAdditionalFields(parseInt(id, 10)).subscribe({
             next: (additionalFields) => {
               this.additionalFields = additionalFields;

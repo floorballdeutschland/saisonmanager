@@ -495,6 +495,15 @@
             <option *ngIf="type === 'goal'" value="2000">
               Nicht angegeben
             </option>
+            <ng-container *ngIf="type === 'penalty'">
+              <option
+                *ngFor="let num of [1, 2, 3, 4, 5]"
+                [value]="2000 + num"
+                [hidden]="!hasCoach(num)"
+              >
+                Betreuer {{ num }} – {{ coachName(num) }}
+              </option>
+            </ng-container>
           </select>
         </div>
       </div>

@@ -57,7 +57,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   match!: Game;
 
   @Input()
-  additionalFields!: GameAdditionalFields;
+  additionalFields?: GameAdditionalFields;
 
   @Input()
   penalties!: Penalty[];
@@ -306,7 +306,38 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     return s;
   }
 
+  public hasCoach(index: number): boolean {
+    const coaches =
+      this.team === 'home'
+        ? this.additionalFields?.home_team_coaches
+        : this.additionalFields?.guest_team_coaches;
+    type CoachKey = keyof GameAdditionalFields['home_team_coaches'];
+    return !!(
+      coaches?.[`coach${index}_first_name` as CoachKey] ||
+      coaches?.[`coach${index}_last_name` as CoachKey]
+    );
+  }
+
+  public coachName(index: number): string {
+    const coaches =
+      this.team === 'home'
+        ? this.additionalFields?.home_team_coaches
+        : this.additionalFields?.guest_team_coaches;
+    type CoachKey = keyof GameAdditionalFields['home_team_coaches'];
+    const fn = (coaches?.[`coach${index}_first_name` as CoachKey] ??
+      '') as string;
+    const ln = (coaches?.[`coach${index}_last_name` as CoachKey] ??
+      '') as string;
+    return [fn, ln].filter(Boolean).join(' ');
+  }
+
   public searchPlayerByNumber(side: string, number: number, isAssist: boolean) {
+    if (number >= 2001 && number <= 2005 && !isAssist) {
+      this.playerNumber = number;
+      this.playerError = false;
+      return;
+    }
+
     const tmpSide = side === 'home' ? 'home' : 'guest';
     const player = this.match.players[tmpSide]?.find(
       (p) => p.trikot_number === number

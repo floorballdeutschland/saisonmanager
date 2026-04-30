@@ -7,7 +7,7 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import { Game, GameEvent } from '@floorball/types';
+import { Game, GameAdditionalFields, GameEvent } from '@floorball/types';
 import { GameService } from '@floorball/core';
 
 @Component({
@@ -30,6 +30,9 @@ export class MatchHistoryItemComponent {
 
   @Input()
   event!: GameEvent;
+
+  @Input()
+  additionalFields?: GameAdditionalFields;
 
   @Input()
   isLast = false;

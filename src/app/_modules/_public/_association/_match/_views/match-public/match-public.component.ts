@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { LeagueService } from '@floorball/core';
-import { Game } from '@floorball/types';
+import { Game, GameAdditionalFields } from '@floorball/types';
 import { tap } from 'rxjs';
 
 @Component({
@@ -12,6 +12,9 @@ export class MatchPublicComponent implements OnInit {
 
   @Input()
   game!: Game;
+
+  @Input()
+  additionalFields?: GameAdditionalFields;
 
   constructor(
     private _leagueService: LeagueService,

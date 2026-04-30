@@ -1,4 +1,6 @@
-<ng-container *ngIf="event | normalizeEvent : match as gameEvent">
+<ng-container
+  *ngIf="event | normalizeEvent : match : additionalFields as gameEvent"
+>
   <div
     class="grid grid-cols-[36px,1fr,30px,80px,60px] md:grid-cols-[36px,1fr,30px,80px,30px,20px,60px,20px,30px,80px,30px,1fr,36px] items-center text-sm h-[78px]"
     [ngClass]="!allowCancel ? 'grid-rows-2' : 'grid-rows-3 h-[119px]'"

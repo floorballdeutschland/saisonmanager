@@ -6,7 +6,7 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import { Game } from '@floorball/types';
+import { Game, GameAdditionalFields } from '@floorball/types';
 
 @Component({
   selector: 'fb-match-history',
@@ -17,6 +17,9 @@ import { Game } from '@floorball/types';
 export class MatchHistoryComponent {
   @Input()
   match!: Game;
+
+  @Input()
+  additionalFields?: GameAdditionalFields;
 
   @Input()
   allowCancel = false;
