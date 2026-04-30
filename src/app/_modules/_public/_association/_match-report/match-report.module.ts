@@ -7,11 +7,11 @@ import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitTeamModule } from '@floorball/uikit/team';
 import * as Views from './_views';
 import * as Components from './_components';
+import { MatchEventFormModule } from './_components/match-event-form/match-event-form.module';
 
 @NgModule({
   declarations: [
     Components.AwardsComponent,
-    Components.MatchEventFormComponent,
     Components.StartingPlayerComponent,
     Views.MatchReportComponent,
     Views.MatchReportIntroComponent,
@@ -27,6 +27,7 @@ import * as Components from './_components';
     UikitTeamModule,
     UikitPlayerModule,
     FormsModule,
+    MatchEventFormModule,
   ],
 })
 export class MatchReportModule {}

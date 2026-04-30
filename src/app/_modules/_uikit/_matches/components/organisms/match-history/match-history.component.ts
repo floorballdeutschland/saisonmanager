@@ -6,7 +6,12 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import { Game, GameAdditionalFields } from '@floorball/types';
+import {
+  Game,
+  GameAdditionalFields,
+  Penalty,
+  PenaltyCode,
+} from '@floorball/types';
 
 @Component({
   selector: 'fb-match-history',
@@ -29,6 +34,12 @@ export class MatchHistoryComponent {
 
   @Input()
   showTrikotNumber = false;
+
+  @Input()
+  penalties: Penalty[] = [];
+
+  @Input()
+  penaltyCodes: PenaltyCode[] = [];
 
   @Output()
   reloadGame: EventEmitter<void> = new EventEmitter<void>();

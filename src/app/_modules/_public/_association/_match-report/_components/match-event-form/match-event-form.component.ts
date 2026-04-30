@@ -13,6 +13,7 @@ import { GameService, NotificationService } from '@floorball/core';
 import {
   Game,
   GameAdditionalFields,
+  GameEvent,
   GameFields,
   GameFlags,
   Penalty,
@@ -67,6 +68,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
 
   @Input()
   noBackground = false;
+
+  @Input()
+  existingEvent?: GameEvent;
 
   @Output()
   updatePeriod: EventEmitter<string> = new EventEmitter<string>();
@@ -279,6 +283,25 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
           break;
       }
     }
+
+    if (this.existingEvent) {
+      const e = this.existingEvent;
+      const timeParts = e.time?.split(':');
+      this.minutes = timeParts?.[0] ? parseInt(timeParts[0], 10) : undefined;
+      this.seconds = timeParts?.[1] ? parseInt(timeParts[1], 10) : undefined;
+      this.minutesValid = this.minutes !== undefined;
+      this.secondsValid = this.seconds !== undefined;
+
+      this.playerNumber = e.number ?? 0;
+      this.assistPlayerNumber = e.assist ?? 0;
+
+      if (e.event_type === 'penalty') {
+        this.penalty = e.penalty_id ?? 0;
+        this.penaltyCode = e.penalty_code_id ?? 0;
+      } else if (e.event_type === 'goal') {
+        this.penaltyCode = e.penalty_code_id ?? 0;
+      }
+    }
   }
 
   public ngAfterViewInit() {
@@ -471,7 +494,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
           });
         break;
       case 'goal':
-        if (this.currentPeriod) {
+        if (this.currentPeriod || this.existingEvent) {
           // fix typeerror with tostring and parseint
           // eslint-disable-next-line prefer-const
           let goal: {
@@ -498,49 +521,95 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
             goal.penalty_code_id = 23;
           }
 
-          this._gameService
-            .addEvent(this.match.id, {
-              time,
-              event_type: 'goal',
-              event_team: this.team,
-              period: parseInt(this.currentPeriod, 10),
-              home_goals,
-              guest_goals,
-              ...goal,
-            })
-            .subscribe(() => {
-              this.updateGame.emit();
-              this._notificationService.success('Tor hinzugefügt', {
-                autoClose: true,
-                keepAfterRouteChange: true,
+          const goalPayload = {
+            time,
+            event_type: 'goal',
+            event_team: this.team,
+            period: parseInt(
+              this.currentPeriod ||
+                this.existingEvent?.period?.toString() ||
+                '1',
+              10
+            ),
+            home_goals,
+            guest_goals,
+            ...goal,
+          };
+
+          if (this.existingEvent) {
+            this._gameService
+              .updateEvent(
+                this.match.id,
+                this.existingEvent.event_id,
+                goalPayload
+              )
+              .subscribe(() => {
+                this.updateGame.emit();
+                this._notificationService.success('Tor aktualisiert', {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                });
               });
-            });
+          } else {
+            this._gameService
+              .addEvent(this.match.id, goalPayload)
+              .subscribe(() => {
+                this.updateGame.emit();
+                this._notificationService.success('Tor hinzugefügt', {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                });
+              });
+          }
         }
         break;
       case 'penalty':
-        if (this.currentPeriod) {
-          this._gameService
-            .addEvent(this.match.id, {
-              time,
-              event_type: 'penalty',
-              event_team: this.team,
-              period: parseInt(this.currentPeriod, 10),
-              home_goals,
-              guest_goals,
-              [this.team === 'home' ? 'home_number' : 'guest_number']: parseInt(
-                this.playerNumber.toString(),
-                10
-              ),
-              penalty_id: this.penalty,
-              penalty_code_id: this.penaltyCode,
-            })
-            .subscribe(() => {
-              this._notificationService.success('Tor hinzugefügt', {
-                autoClose: true,
-                keepAfterRouteChange: true,
+        if (this.currentPeriod || this.existingEvent) {
+          const penaltyPayload = {
+            time,
+            event_type: 'penalty',
+            event_team: this.team,
+            period: parseInt(
+              this.currentPeriod ||
+                this.existingEvent?.period?.toString() ||
+                '1',
+              10
+            ),
+            home_goals,
+            guest_goals,
+            [this.team === 'home' ? 'home_number' : 'guest_number']: parseInt(
+              this.playerNumber.toString(),
+              10
+            ),
+            penalty_id: this.penalty,
+            penalty_code_id: this.penaltyCode,
+          };
+
+          if (this.existingEvent) {
+            this._gameService
+              .updateEvent(
+                this.match.id,
+                this.existingEvent.event_id,
+                penaltyPayload
+              )
+              .subscribe(() => {
+                this._notificationService.success('Strafe aktualisiert', {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                });
+                this.updateGame.emit();
               });
-              this.updateGame.emit();
-            });
+          } else {
+            this._gameService
+              .addEvent(this.match.id, penaltyPayload)
+              .subscribe(() => {
+                this._notificationService.success('Strafe hinzugefügt', {
+                  autoClose: true,
+                  keepAfterRouteChange: true,
+                });
+                this.updateGame.emit();
+              });
+          }
         }
         break;
       case 'timeout':

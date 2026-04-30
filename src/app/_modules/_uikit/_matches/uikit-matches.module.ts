@@ -7,9 +7,16 @@ import { RouterModule } from '@angular/router';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { FormsModule } from '@angular/forms';
 import { MatchTimelineItemComponent } from './components/molecules';
+import { MatchEventFormModule } from 'src/app/_modules/_public/_association/_match-report/_components/match-event-form/match-event-form.module';
 
 @NgModule({
-  imports: [CommonModule, RouterModule, UikitCommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    UikitCommonModule,
+    FormsModule,
+    MatchEventFormModule,
+  ],
   declarations: [
     Molecules.MatchPairingComponent,
     Molecules.MatchEncounterComponent,
