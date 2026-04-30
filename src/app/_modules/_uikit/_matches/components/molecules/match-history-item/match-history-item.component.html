@@ -322,7 +322,9 @@
       [penalties]="penalties"
       [penaltyCodes]="penaltyCodes"
       [existingEvent]="editingEvent"
-      [currentPeriod]="editingEventPeriod || editingEvent.period?.toString()"
+      [currentPeriod]="
+        editingEventPeriod || editingEvent.period?.toString() || '1'
+      "
       [noBackground]="false"
       (updateGame)="handleUpdated()"
       (updatePeriod)="handleEditPeriodUpdate($event)"
