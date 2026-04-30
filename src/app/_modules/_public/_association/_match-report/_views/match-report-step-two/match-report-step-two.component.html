@@ -46,19 +46,33 @@
         <span class="font-bold underline">nach Abpfiff</span> ein, deaktiviere
         bitte die Checkbox "Live eintragen".
       </p>
-      <fb-match-event-form
-        class="col-span-2"
-        type="start"
-        team="both"
-        (updateGame)="reloadGame()"
-        (updatePeriod)="setCurrentPeriod($event)"
-        (scrollToSbbNavigation)="scrollToSbbNavigation()"
-        [currentPeriod]="currentPeriod"
-        [penalties]="penalties"
-        [penaltyCodes]="penaltyCodes"
-        [match]="game"
-        [noBackground]="true"
-      ></fb-match-event-form>
+      <ng-container *ngIf="bothLineupsPresent(); else missingLineup">
+        <fb-match-event-form
+          class="col-span-2"
+          type="start"
+          team="both"
+          (updateGame)="reloadGame()"
+          (updatePeriod)="setCurrentPeriod($event)"
+          (scrollToSbbNavigation)="scrollToSbbNavigation()"
+          [currentPeriod]="currentPeriod"
+          [penalties]="penalties"
+          [penaltyCodes]="penaltyCodes"
+          [match]="game"
+          [noBackground]="true"
+        ></fb-match-event-form>
+      </ng-container>
+      <ng-template #missingLineup>
+        <div
+          class="rounded-md border border-yellow-300 bg-yellow-50 p-4 text-yellow-800"
+        >
+          <p class="font-bold">Kader unvollständig</p>
+          <p class="mt-1 text-sm">
+            Das Spiel kann erst gestartet werden, wenn beide Teams mindestens
+            einen Spieler im Kader eingetragen haben. Bitte zuerst die Kader in
+            Schritt 1 befüllen.
+          </p>
+        </div>
+      </ng-template>
     </div>
   </div>
 </div>
@@ -84,7 +98,7 @@
           <ng-container
             *ngFor="
               let gamePeriodOption of this.game.period_titles
-                | timelineFilter: game;
+                | timelineFilter : game;
               let index = index;
               let last = last
             "
