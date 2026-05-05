@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
+  PublicLicenseList,
   RefereeAdmin,
   RefereeAdminGame,
   RefereeAssignment,
@@ -235,6 +236,16 @@ export class RefereeService {
 
   public deleteBlockedDate(id: number) {
     return this.http.delete(environment.apiURL + 'referee/blocked_dates/' + id);
+  }
+
+  // Public license list (token-based, no auth)
+
+  public getPublicLicenseList(token: string) {
+    return this.http.get<PublicLicenseList>(
+      environment.apiURL +
+        'public/license_list?token=' +
+        encodeURIComponent(token)
+    );
   }
 
   // VM endpoint
