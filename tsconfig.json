@@ -64,6 +64,7 @@
       "@floorball/public/license-list": [
         "src/app/_modules/_public/_license-list"
       ],
+      "@floorball/public/secretary": ["src/app/_modules/_public/_secretary"],
       "@floorball/admin/league": ["src/app/_modules/_admin/_league_admin"],
       "@floorball/admin/club": ["src/app/_modules/_admin/_club_admin"],
       "@floorball/admin/player": ["src/app/_modules/_admin/_player_admin"],
