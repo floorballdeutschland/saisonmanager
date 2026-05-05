@@ -136,6 +136,7 @@ export interface Game {
   game_operation_name: string;
   game_operation_short_name: string;
   game_operation_slug?: string;
+  scan_required: boolean;
   arena: number;
   arena_name: string;
   arena_address: string;
@@ -204,4 +205,12 @@ export interface GameStatusOption {
   confirmationTitle?: string;
   confirmationContent?: string;
   confirmationButton?: string;
+}
+
+export interface GameScan {
+  filename: string;
+  content_type: string;
+  byte_size: number;
+  expires_at: string;
+  url: string;
 }

@@ -14,6 +14,7 @@ import {
 import {
   Game,
   GameAdditionalFields,
+  GameScan,
   Penalty,
   PenaltyCode,
 } from '@floorball/types';
@@ -94,6 +95,12 @@ export class MatchReportComponent implements OnInit, OnChanges {
   public squadHistoryDialogOpen = '';
   public addDialogOpen = '';
 
+  // scan upload
+  public existingScan: GameScan | null = null;
+  public selectedScanFile: File | null = null;
+  public scanUploading = false;
+  public scanUploadError = '';
+
   constructor(
     private _leagueService: LeagueService,
     private _sessionService: SessionService,
@@ -103,6 +110,9 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.appGameStatus = this.game.game_status;
+    if (this.game.scan_required) {
+      this._loadScan();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -228,6 +238,51 @@ export class MatchReportComponent implements OnInit, OnChanges {
         alert(
           'Spielbericht konnte nicht geöffnet werden. Bitte Seite neu laden.'
         );
+      },
+    });
+  }
+
+  public onScanFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.selectedScanFile = input.files?.[0] ?? null;
+    this.scanUploadError = '';
+  }
+
+  public uploadScan() {
+    if (!this.selectedScanFile) return;
+
+    const maxSize = 5 * 1024 * 1024;
+    if (this.selectedScanFile.size > maxSize) {
+      this.scanUploadError = 'Die Datei ist zu groß (max. 5 MB).';
+      return;
+    }
+
+    this.scanUploading = true;
+    this.scanUploadError = '';
+
+    this._gameService
+      .uploadGameScan(this.game.id, this.selectedScanFile)
+      .subscribe({
+        next: (scan) => {
+          this.existingScan = scan;
+          this.selectedScanFile = null;
+          this.scanUploading = false;
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this.scanUploadError =
+            err?.error?.errors?.join(', ') ?? 'Upload fehlgeschlagen.';
+          this.scanUploading = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  private _loadScan() {
+    this._gameService.getGameScan(this.game.id).subscribe({
+      next: (scan) => {
+        this.existingScan = scan;
+        this._cdr.markForCheck();
       },
     });
   }

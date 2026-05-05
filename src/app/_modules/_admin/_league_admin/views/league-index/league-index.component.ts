@@ -1,5 +1,9 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { AssociationService, LeagueService } from '@floorball/core';
+import {
+  AssociationService,
+  GameOperationService,
+  LeagueService,
+} from '@floorball/core';
 import { GameOperation, GameOperationWithLeagues } from '@floorball/types';
 import { Observable } from 'rxjs';
 import { Title } from '@angular/platform-browser';
@@ -16,6 +20,7 @@ export class LeagueIndexComponent implements OnInit {
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
+    private _gameOperationService: GameOperationService,
     private _metaTitle: Title
   ) {
     this.associations$ = this._associationService.associations$;
@@ -24,5 +29,16 @@ export class LeagueIndexComponent implements OnInit {
 
   public ngOnInit(): void {
     this.goLeagueItems$ = this._leagueService.getAdminLeagues();
+  }
+
+  public toggleScanRequired(gameOperation: GameOperationWithLeagues) {
+    const newValue = !gameOperation.scan_required;
+    this._gameOperationService
+      .updateAdminGameOperation(gameOperation.id, { scan_required: newValue })
+      .subscribe({
+        next: (updated) => {
+          gameOperation.scan_required = updated.scan_required;
+        },
+      });
   }
 }

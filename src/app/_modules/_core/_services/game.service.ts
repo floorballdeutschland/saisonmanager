@@ -10,6 +10,7 @@ import {
   GameFlags,
   GameInput,
   GamePlayerEntry,
+  GameScan,
   StartingPlayerPosition,
   StartingPlayer,
   AwardDefinitions,
@@ -238,5 +239,22 @@ export class GameService {
   public reopenGame(gameId: number) {
     const path = environment.apiURL + 'user/games/' + gameId + '/reopen.json';
     return this.http.post<{ success: boolean }>(path, {});
+  }
+
+  public getGameScan(gameId: number) {
+    const path = environment.apiURL + 'user/games/' + gameId + '/scan.json';
+    return this.http.get<GameScan | null>(path);
+  }
+
+  public uploadGameScan(gameId: number, file: File) {
+    const path = environment.apiURL + 'user/games/' + gameId + '/scan.json';
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<GameScan>(path, formData);
+  }
+
+  public deleteGameScan(gameId: number) {
+    const path = environment.apiURL + 'user/games/' + gameId + '/scan.json';
+    return this.http.delete<{ success: boolean }>(path);
   }
 }
