@@ -39,6 +39,10 @@ export class MatchComponent implements OnInit, OnDestroy {
   public isLoggedIn$ = this._sessionService.isLoggedIn$;
   public tab = 'public';
 
+  refereeReportUploading = false;
+  refereeReportUploaded = false;
+  refereeReportFilename = '';
+
   private _destroy$ = new Subject<boolean>();
 
   constructor(
@@ -142,6 +146,48 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   navigateBack() {
     this._location.back();
+  }
+
+  get hasIncidentReport(): boolean {
+    if (!this.game) return false;
+    const events =
+      (this.game as Game & { events?: { penalty_id?: string | number }[] })
+        .events ?? [];
+    const hasSpielausschluss = events.some(
+      (e) => e.penalty_id?.toString() === '5'
+    );
+    return !!(
+      (this.game as Game & { special_event?: boolean }).special_event ||
+      hasSpielausschluss
+    );
+  }
+
+  onRefereeReportFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.game) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Die Datei darf maximal 5 MB groß sein.');
+      return;
+    }
+
+    this.refereeReportUploading = true;
+    this._cdr.markForCheck();
+
+    this._gameService.uploadRefereeReport(this.game.id, file).subscribe({
+      next: (res) => {
+        this.refereeReportUploaded = true;
+        this.refereeReportFilename = res.filename;
+        this.refereeReportUploading = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this.refereeReportUploading = false;
+        this._cdr.markForCheck();
+        alert('Upload fehlgeschlagen. Bitte erneut versuchen.');
+      },
+    });
   }
 
   public isTabActive(tabName: string): boolean {

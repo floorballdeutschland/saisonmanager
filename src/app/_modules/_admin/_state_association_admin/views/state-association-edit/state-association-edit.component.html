@@ -1,4 +1,4 @@
-<div class="p-4 lg:p-8 max-w-lg">
+<div class="p-4 lg:p-8 max-w-xl">
   <div class="flex items-center gap-3 mb-6">
     <a
       [routerLink]="['/', 'verwaltung', 'landesverbaende']"
@@ -10,7 +10,7 @@
     </h1>
   </div>
 
-  <form (ngSubmit)="submit()" class="flex flex-col gap-4">
+  <form (ngSubmit)="submit()" class="flex flex-col gap-4 mb-8">
     <div class="flex flex-col gap-1">
       <label class="text-sm font-bold">Name *</label>
       <input
@@ -34,6 +34,42 @@
       />
     </div>
 
+    <div class="border-t border-fb-gray-200 pt-4">
+      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+        E-Mail-Adressen
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">VSK-E-Mail</label>
+          <input
+            type="email"
+            [(ngModel)]="stateAssociation.vsk_email"
+            name="vsk_email"
+            placeholder="vsk@beispiel.de"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+          <span class="text-xs text-fb-gray-400"
+            >Empfänger für hochgeladene Schiedsrichter-Berichtsformulare</span
+          >
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">SBK-E-Mail</label>
+          <input
+            type="email"
+            [(ngModel)]="stateAssociation.sbk_email"
+            name="sbk_email"
+            placeholder="sbk@beispiel.de"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+          <span class="text-xs text-fb-gray-400"
+            >BCC-Empfänger bei Spieltagscheckliste mit verneinten Punkten</span
+          >
+        </div>
+      </div>
+    </div>
+
     <div class="flex items-center gap-3 mt-2">
       <button
         type="submit"
@@ -50,4 +86,86 @@
       </a>
     </div>
   </form>
+
+  <!-- Spieltagscheckliste (nur im Bearbeitungsmodus) -->
+  <div *ngIf="editMode" class="border-t border-fb-gray-200 pt-6">
+    <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
+      Spieltagscheckliste
+    </div>
+    <p class="text-xs text-fb-gray-400 mb-4">
+      Ja/Nein-Fragen, die vor dem Abschließen eines Spielberichts beantwortet
+      werden müssen. Wird nur aktiv, wenn mind. eine Frage definiert ist.
+    </p>
+
+    <div
+      *ngIf="checklistItems.length === 0"
+      class="text-sm text-fb-gray-400 mb-4"
+    >
+      Noch keine Fragen definiert.
+    </div>
+
+    <div class="flex flex-col gap-2 mb-4">
+      <div
+        *ngFor="let item of checklistItems"
+        class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
+      >
+        <ng-container *ngIf="editingItemId !== item.id">
+          <span class="flex-1 text-sm">{{ item.question }}</span>
+          <button
+            type="button"
+            (click)="startEdit(item)"
+            class="text-xs text-fb-gray-400 hover:text-black px-2"
+          >
+            Bearbeiten
+          </button>
+          <button
+            type="button"
+            (click)="deleteChecklistItem(item.id)"
+            class="text-xs text-red-500 hover:text-red-700 px-2"
+          >
+            Löschen
+          </button>
+        </ng-container>
+        <ng-container *ngIf="editingItemId === item.id">
+          <input
+            type="text"
+            [(ngModel)]="editingQuestion"
+            class="flex-1 border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
+          />
+          <button
+            type="button"
+            (click)="saveEdit(item)"
+            class="text-xs font-bold px-2 py-1 bg-black text-white rounded-[5px]"
+          >
+            OK
+          </button>
+          <button
+            type="button"
+            (click)="cancelEdit()"
+            class="text-xs px-2 py-1 border border-fb-gray-600 rounded-[5px]"
+          >
+            Abbrechen
+          </button>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+      <input
+        type="text"
+        [(ngModel)]="newQuestion"
+        placeholder="Neue Frage eingeben…"
+        class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        (keydown.enter)="$event.preventDefault(); addChecklistItem()"
+      />
+      <button
+        type="button"
+        (click)="addChecklistItem()"
+        [disabled]="addingItem || !newQuestion.trim()"
+        class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+      >
+        {{ addingItem ? "…" : "Hinzufügen" }}
+      </button>
+    </div>
+  </div>
 </div>

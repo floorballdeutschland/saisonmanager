@@ -328,3 +328,69 @@
     </div>
   </div>
 </ng-container>
+
+<!-- Spieltagscheckliste Modal -->
+<div
+  *ngIf="checklistVisible"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4"
+>
+  <div class="bg-white rounded-[5px] max-w-lg w-full p-6 shadow-xl">
+    <h2 class="text-xl font-bold mb-2">Spieltagscheckliste</h2>
+    <p class="text-sm text-fb-gray-400 mb-5">
+      Bitte beantworte alle Fragen, bevor der Spielbericht abgeschlossen wird.
+    </p>
+
+    <div class="flex flex-col gap-4 mb-6">
+      <div
+        *ngFor="let item of game.checklist_items"
+        class="border border-fb-gray-600 rounded-[5px] p-3"
+      >
+        <p class="text-sm font-medium mb-2">{{ item.question }}</p>
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="checklistAnswers[item.id] = true"
+            class="px-4 py-1.5 text-sm font-bold rounded-[5px] border"
+            [ngClass]="
+              checklistAnswers[item.id] === true
+                ? 'bg-green-600 text-white border-green-600'
+                : 'bg-white text-black border-fb-gray-600 hover:border-black'
+            "
+          >
+            Ja
+          </button>
+          <button
+            type="button"
+            (click)="checklistAnswers[item.id] = false"
+            class="px-4 py-1.5 text-sm font-bold rounded-[5px] border"
+            [ngClass]="
+              checklistAnswers[item.id] === false
+                ? 'bg-red-500 text-white border-red-500'
+                : 'bg-white text-black border-fb-gray-600 hover:border-black'
+            "
+          >
+            Nein
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap-3">
+      <button
+        type="button"
+        (click)="submitChecklist()"
+        [disabled]="!allChecklistAnswered() || checklistSaving"
+        class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+      >
+        {{ checklistSaving ? "Speichern…" : "Spielbericht abschließen" }}
+      </button>
+      <button
+        type="button"
+        (click)="cancelChecklist()"
+        class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+      >
+        Abbrechen
+      </button>
+    </div>
+  </div>
+</div>
