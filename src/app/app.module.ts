@@ -20,6 +20,7 @@ import { UikitCommonModule } from '@floorball/uikit/common';
 import { SessionService } from './_modules/_core/_services';
 import { ErrorInterceptor } from './_helpers/_interceptors/error.interceptor';
 import { ApiKeyInterceptor } from './_helpers/_interceptors/api-key.interceptor';
+import { SecretaryTokenInterceptor } from './_helpers/_interceptors/secretary-token.interceptor';
 
 @NgModule({
   declarations: [AppComponent],
@@ -37,6 +38,11 @@ import { ApiKeyInterceptor } from './_helpers/_interceptors/api-key.interceptor'
       deps: [Router],
     },
     { provide: HTTP_INTERCEPTORS, useClass: ApiKeyInterceptor, multi: true },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: SecretaryTokenInterceptor,
+      multi: true,
+    },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     {
       provide: APP_INITIALIZER,

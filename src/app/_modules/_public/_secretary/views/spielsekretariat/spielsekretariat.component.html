@@ -1,0 +1,149 @@
+<div class="container mx-auto px-4 lg:px-8 py-8 max-w-4xl">
+  <h1 class="text-2xl font-bold mb-2">Spielsekretariat</h1>
+
+  <div *ngIf="loading" class="text-sm text-fb-gray-400 py-8 text-center">
+    Lade Daten…
+  </div>
+
+  <div
+    *ngIf="!loading && error"
+    class="bg-red-50 border border-red-200 rounded-[5px] p-4 text-sm text-red-700"
+  >
+    {{ error }}
+  </div>
+
+  <ng-container *ngIf="!loading && data">
+    <!-- Header -->
+    <div class="border border-fb-gray-600 rounded-[5px] p-4 mb-4 text-sm">
+      <div class="font-bold text-base mb-1">
+        {{ data.game_day.league }} –
+        {{ data.game_day.date | date : "dd.MM.yyyy" }}
+      </div>
+      <div class="text-fb-gray-400" *ngIf="data.game_day.arena">
+        {{ data.game_day.arena }}
+      </div>
+    </div>
+
+    <!-- Expiry notice -->
+    <div
+      class="bg-yellow-50 border border-yellow-200 rounded-[5px] p-3 mb-6 text-sm text-yellow-800"
+    >
+      Dieser Link ist gültig bis
+      <strong>{{ expiresAt() | date : "dd.MM.yyyy HH:mm" }} Uhr</strong>.
+      <span *ngIf="data.created_by"> Erstellt von {{ data.created_by }}.</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-4 border-b border-fb-gray-300 mb-6">
+      <button
+        type="button"
+        (click)="activeTab = 'games'"
+        class="pb-2 text-sm font-bold border-b-2 -mb-px"
+        [ngClass]="
+          activeTab === 'games'
+            ? 'border-black text-black'
+            : 'border-transparent text-fb-gray-400 hover:text-black'
+        "
+      >
+        Spiele ({{ data.games.length }})
+      </button>
+      <button
+        type="button"
+        (click)="activeTab = 'licenses'"
+        class="pb-2 text-sm font-bold border-b-2 -mb-px"
+        [ngClass]="
+          activeTab === 'licenses'
+            ? 'border-black text-black'
+            : 'border-transparent text-fb-gray-400 hover:text-black'
+        "
+      >
+        Lizenzlisten
+      </button>
+    </div>
+
+    <!-- Games tab -->
+    <div *ngIf="activeTab === 'games'">
+      <div *ngIf="data.games.length === 0" class="text-sm text-fb-gray-400">
+        Keine Spiele an diesem Spieltag.
+      </div>
+      <div class="flex flex-col gap-3">
+        <a
+          *ngFor="let game of data.games"
+          [href]="matchReportUrl(game.id)"
+          class="block border border-fb-gray-600 rounded-[5px] p-4 hover:bg-fb-gray-100 text-sm"
+        >
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <div class="font-bold">
+                {{ game.home_team }} vs. {{ game.guest_team }}
+              </div>
+              <div class="text-fb-gray-400 mt-0.5">
+                <span *ngIf="game.game_number">Nr. {{ game.game_number }}</span>
+                <span *ngIf="game.start_time"> · {{ game.start_time }}</span>
+              </div>
+            </div>
+            <span
+              class="text-xs px-2 py-1 rounded-full border"
+              [ngClass]="{
+                'border-green-300 text-green-700 bg-green-50':
+                  game.game_status === 'finalized',
+                'border-yellow-300 text-yellow-700 bg-yellow-50':
+                  game.game_status === 'match_record_closed',
+                'border-fb-gray-300 text-fb-gray-400 bg-white': ![
+                  'finalized',
+                  'match_record_closed'
+                ].includes(game.game_status ?? '')
+              }"
+            >
+              {{ game.game_status ?? "offen" }}
+            </span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Licenses tab -->
+    <div *ngIf="activeTab === 'licenses'">
+      <div *ngFor="let entry of licenseEntries()" class="mb-8">
+        <h2 class="text-lg font-bold mb-3">{{ entry.team_name }}</h2>
+        <div
+          *ngIf="entry.players.length === 0"
+          class="text-sm text-fb-gray-400"
+        >
+          Keine lizenzierten Spieler gefunden.
+        </div>
+        <div
+          *ngIf="entry.players.length > 0"
+          class="border border-fb-gray-600 rounded-[5px] overflow-hidden"
+        >
+          <table class="w-full text-sm">
+            <thead class="bg-fb-gray-100 text-fb-gray-400 text-xs uppercase">
+              <tr>
+                <th class="px-4 py-2 text-left font-normal">Name</th>
+                <th class="px-4 py-2 text-left font-normal">Geburtsdatum</th>
+                <th class="px-4 py-2 text-left font-normal">Status</th>
+                <th class="px-4 py-2 text-left font-normal">Genehmigt am</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-fb-gray-200">
+              <tr *ngFor="let p of entry.players">
+                <td class="px-4 py-2 font-medium">{{ p.name }}</td>
+                <td class="px-4 py-2 text-fb-gray-400">
+                  {{ p.birthdate ?? "–" }}
+                </td>
+                <td class="px-4 py-2" [ngClass]="statusClass(p.license_status)">
+                  {{ p.license_status }}
+                </td>
+                <td class="px-4 py-2 text-fb-gray-400">
+                  {{
+                    p.approved_at ? (p.approved_at | date : "dd.MM.yyyy") : "–"
+                  }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
