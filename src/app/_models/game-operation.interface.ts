@@ -9,6 +9,7 @@ export interface GameOperation {
   logo_url?: string;
   logo_quad_url?: string;
   top_leagues: League[];
+  scan_required: boolean;
 }
 
 export interface GameOperationWithLeagues extends GameOperation {
