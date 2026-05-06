@@ -52,6 +52,25 @@
 
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Einstellungen
+            </div>
+            <div class="flex items-center gap-3 mb-2">
+              <label class="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  [checked]="gameOperation.scan_required"
+                  (change)="toggleScanRequired(gameOperation)"
+                  class="w-4 h-4 accent-indigo-600"
+                />
+                <span class="text-sm font-medium text-gray-700"
+                  >Spielbericht-Scan erforderlich</span
+                >
+              </label>
+            </div>
+          </div>
+
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               Ligen
             </div>
             <div class="flex flex-col gap-2">

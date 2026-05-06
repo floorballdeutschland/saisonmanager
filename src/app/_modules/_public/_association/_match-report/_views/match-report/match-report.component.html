@@ -326,5 +326,60 @@
         </div>
       </div>
     </div>
+
+    <div
+      class="border-b-4 border-fb-gray-200"
+      *ngIf="game.scan_required && canUploadScan()"
+    >
+      <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+        <h2 class="font-bold text-xl lg:text-2xl mb-4 lg:mb-8">
+          Spielbericht-Scan
+        </h2>
+
+        <ng-container *ngIf="existingScan; else uploadForm">
+          <div class="bg-green-50 border border-green-200 rounded p-4 mb-4">
+            <p class="font-semibold text-green-800">Scan vorhanden</p>
+            <p class="text-sm text-green-700 mt-1">
+              Datei:
+              <a [href]="existingScan.url" target="_blank" class="underline">{{
+                existingScan.filename
+              }}</a>
+            </p>
+            <p class="text-sm text-gray-600 mt-1">
+              Einsehbar bis: {{ existingScan.expires_at | date : "dd.MM.yyyy" }}
+            </p>
+          </div>
+          <p class="text-sm text-gray-500 mb-4">
+            Du kannst den Scan durch einen neuen Upload ersetzen.
+          </p>
+        </ng-container>
+
+        <ng-template #uploadForm>
+          <p class="text-sm text-gray-600 mb-4">
+            Bitte lade einen Scan oder ein Foto des physischen
+            Spielberichtsbogens hoch (PDF, PNG oder JPEG, max. 5 MB).
+          </p>
+        </ng-template>
+
+        <div class="flex flex-col gap-3 max-w-md">
+          <input
+            type="file"
+            accept="application/pdf,image/png,image/jpeg"
+            (change)="onScanFileSelected($event)"
+            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+          />
+          <p *ngIf="scanUploadError" class="text-sm text-red-600">
+            {{ scanUploadError }}
+          </p>
+          <fb-button
+            variant="primary"
+            [disabled]="!selectedScanFile || scanUploading"
+            (click)="uploadScan()"
+          >
+            {{ scanUploading ? "Wird hochgeladen..." : "Scan hochladen" }}
+          </fb-button>
+        </div>
+      </div>
+    </div>
   </div>
 </ng-container>
