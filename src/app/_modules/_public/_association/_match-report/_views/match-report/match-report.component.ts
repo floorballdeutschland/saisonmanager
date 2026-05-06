@@ -185,6 +185,12 @@ export class MatchReportComponent implements OnInit, OnChanges {
     return sbkPermission;
   }
 
+  public canUploadScan(): boolean {
+    return !!(
+      this.canCheckGame() || this.game?.permission?.includes('edit_game_report')
+    );
+  }
+
   public isGameStatusActive(index: number, type: 'app' | 'game' = 'app') {
     const statusIndex = this.gameStatusOptions.findIndex(
       (item) =>
