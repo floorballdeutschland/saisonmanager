@@ -70,6 +70,13 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._associationService.displayAssociationHeader$.next(false);
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
 
+    const secretaryToken =
+      this._route.snapshot.queryParamMap.get('secretary_token');
+    if (secretaryToken) {
+      sessionStorage.setItem('secretary_token', secretaryToken);
+      this.tab = 'sbb';
+    }
+
     this._route.params.subscribe({
       next: (params) => {
         if (params['matchId']) {
@@ -90,10 +97,18 @@ export class MatchComponent implements OnInit, OnDestroy {
     });
   }
 
+  get hasSecretaryToken(): boolean {
+    return !!sessionStorage.getItem('secretary_token');
+  }
+
   getMatch(id: string) {
     this._gameService.getGame(parseInt(id, 10)).subscribe({
       next: (game) => {
-        if (this.tab !== 'public' || this._sessionService.currentUser) {
+        if (
+          this.tab !== 'public' ||
+          this._sessionService.currentUser ||
+          this.hasSecretaryToken
+        ) {
           this._gameService.getAdditionalFields(parseInt(id, 10)).subscribe({
             next: (additionalFields) => {
               this.additionalFields = additionalFields;

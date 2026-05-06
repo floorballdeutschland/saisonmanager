@@ -257,4 +257,60 @@ export class GameService {
     const path = environment.apiURL + 'user/games/' + gameId + '/scan.json';
     return this.http.delete<{ success: boolean }>(path);
   }
+
+  public createSecretaryLink(gameDayId: number) {
+    return this.http.post<{
+      url: string;
+      token: string;
+      expires_at: string;
+      created_by: string;
+    }>(
+      environment.apiURL + 'user/game_days/' + gameDayId + '/secretary_link',
+      {}
+    );
+  }
+
+  public getSecretaryLink(gameDayId: number) {
+    return this.http.get<{
+      expires_at?: string;
+      created_by?: string;
+      active?: boolean;
+    }>(environment.apiURL + 'user/game_days/' + gameDayId + '/secretary_link');
+  }
+
+  public getSecretaryGameDay(token: string) {
+    return this.http.get<{
+      game_day: {
+        id: number;
+        date: string;
+        league: string;
+        arena?: string;
+        game_operation_slug?: string;
+      };
+      games: {
+        id: number;
+        game_number?: string;
+        start_time?: string;
+        home_team?: string;
+        guest_team?: string;
+        game_status?: string;
+      }[];
+      license_lists: Record<
+        string,
+        {
+          team_name: string;
+          players: {
+            name: string;
+            birthdate?: string;
+            license_status: string;
+            approved_at?: string;
+          }[];
+        }
+      >;
+      expires_at: string;
+      created_by?: string;
+    }>(
+      environment.apiURL + 'public/secretary?token=' + encodeURIComponent(token)
+    );
+  }
 }

@@ -138,3 +138,23 @@ export interface RefereeBlockedDate {
   id: number;
   date: string;
 }
+
+export interface PublicLicenseEntry {
+  name: string;
+  birthdate?: string;
+  license_status: string;
+  approved_at?: string;
+}
+
+export interface PublicLicenseList {
+  game: {
+    game_number?: string;
+    date: string;
+    home_team?: string;
+    guest_team?: string;
+    league_name: string;
+  };
+  home_team_licenses: PublicLicenseEntry[];
+  guest_team_licenses: PublicLicenseEntry[];
+  expires_at: string;
+}

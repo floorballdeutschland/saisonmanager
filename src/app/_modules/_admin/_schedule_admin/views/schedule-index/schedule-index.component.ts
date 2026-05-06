@@ -4,7 +4,11 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { AssociationService, LeagueService } from '@floorball/core';
+import {
+  AssociationService,
+  GameService,
+  LeagueService,
+} from '@floorball/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Arena, Club, GamedayWithGames, Team } from '@floorball/types';
@@ -25,9 +29,16 @@ export class ScheduleIndexComponent implements OnInit {
 
   loading = true;
 
+  secretaryLinkByGameDay: Record<
+    number,
+    { url: string; expires_at: string } | null
+  > = {};
+  secretaryLinkGenerating: Record<number, boolean> = {};
+
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
+    private _gameService: GameService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title
@@ -110,6 +121,28 @@ export class ScheduleIndexComponent implements OnInit {
    * angelegte Spieltage mit aufnehmen (sonst erscheinen sie zugeklappt)
    * und IDs gelöschter Spieltage verwerfen.
    */
+  public generateSecretaryLink(gameDayId: number): void {
+    this.secretaryLinkGenerating[gameDayId] = true;
+    this._gameService.createSecretaryLink(gameDayId).subscribe({
+      next: (result) => {
+        this.secretaryLinkByGameDay[gameDayId] = {
+          url: result.url,
+          expires_at: result.expires_at,
+        };
+        this.secretaryLinkGenerating[gameDayId] = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this.secretaryLinkGenerating[gameDayId] = false;
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  public copyToClipboard(text: string): void {
+    navigator.clipboard?.writeText(text);
+  }
+
   private _syncOpenGameDays() {
     const currentIds = this.gameDays.map((gd) => gd.id);
     if (this.openGameDays.length === 0) {

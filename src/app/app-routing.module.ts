@@ -101,6 +101,20 @@ const routes: Routes = [
   {
     path: '',
     loadChildren: () =>
+      import('@floorball/public/license-list').then(
+        (m) => m.PublicLicenseListModule
+      ),
+  },
+  {
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/secretary').then(
+        (m) => m.PublicSecretaryModule
+      ),
+  },
+  {
+    path: '',
+    loadChildren: () =>
       import('@floorball/public/association/host').then(
         (m) => m.PublicAssociationHostModule
       ),
