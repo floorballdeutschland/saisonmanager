@@ -240,6 +240,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
         this.game.checklist_answers = answers;
         this.checklistVisible = false;
         this.checklistSaving = false;
+        this._cdr.markForCheck();
         this.handleGameStatusChange(this.MATCH_RECORD_CLOSED);
       },
       error: () => {
@@ -251,6 +252,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   public cancelChecklist(): void {
     this.checklistVisible = false;
+    this._cdr.markForCheck();
   }
 
   private _initChecklistAnswers(): void {

@@ -117,6 +117,18 @@ export class MatchComponent implements OnInit, OnDestroy {
             next: (additionalFields) => {
               this.additionalFields = additionalFields;
               this.updateGame(game);
+
+              if (this._sessionService.currentUser) {
+                this._gameService.getRefereeReport(parseInt(id, 10)).subscribe({
+                  next: (report) => {
+                    if (report.uploaded) {
+                      this.refereeReportUploaded = true;
+                      this.refereeReportFilename = report.filename ?? '';
+                    }
+                    this._cdr.markForCheck();
+                  },
+                });
+              }
             },
           });
         } else {
@@ -156,10 +168,7 @@ export class MatchComponent implements OnInit, OnDestroy {
     const hasSpielausschluss = events.some(
       (e) => e.penalty_id?.toString() === '5'
     );
-    return !!(
-      (this.game as Game & { special_event?: boolean }).special_event ||
-      hasSpielausschluss
-    );
+    return !!(this.additionalFields?.special_event || hasSpielausschluss);
   }
 
   onRefereeReportFile(event: Event): void {
