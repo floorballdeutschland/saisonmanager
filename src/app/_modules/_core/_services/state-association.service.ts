@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { StateAssociation } from '@floorball/types';
+import { ChecklistItem, StateAssociation } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -21,6 +21,12 @@ export class StateAssociationService {
     );
   }
 
+  public adminGet(id: number) {
+    return this.http.get<StateAssociation>(
+      environment.apiURL + 'admin/state_associations/' + id
+    );
+  }
+
   public adminCreate(sa: Partial<StateAssociation>) {
     return this.http.post<StateAssociation>(
       environment.apiURL + 'admin/state_associations',
@@ -38,6 +44,33 @@ export class StateAssociationService {
   public adminDelete(id: number) {
     return this.http.delete(
       environment.apiURL + 'admin/state_associations/' + id
+    );
+  }
+
+  public adminCreateChecklistItem(
+    stateAssociationId: number,
+    item: Partial<ChecklistItem>
+  ) {
+    return this.http.post<ChecklistItem>(
+      `${environment.apiURL}admin/state_associations/${stateAssociationId}/checklist_items`,
+      { checklist_item: item }
+    );
+  }
+
+  public adminUpdateChecklistItem(
+    stateAssociationId: number,
+    itemId: number,
+    item: Partial<ChecklistItem>
+  ) {
+    return this.http.put<ChecklistItem>(
+      `${environment.apiURL}admin/state_associations/${stateAssociationId}/checklist_items/${itemId}`,
+      { checklist_item: item }
+    );
+  }
+
+  public adminDeleteChecklistItem(stateAssociationId: number, itemId: number) {
+    return this.http.delete(
+      `${environment.apiURL}admin/state_associations/${stateAssociationId}/checklist_items/${itemId}`
     );
   }
 }

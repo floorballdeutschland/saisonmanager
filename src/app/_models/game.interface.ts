@@ -163,6 +163,10 @@ export interface Game {
   guest_team_filling_rule?: string | null;
   guest_team_filling_title?: string | null;
   guest_team_filling_parameter?: number | null;
+
+  checklist_active?: boolean;
+  checklist_items?: { id: number; question: string; position: number }[];
+  checklist_answers?: { item_id: number; question: string; answer: boolean }[];
 }
 
 export interface PeriodTitles {

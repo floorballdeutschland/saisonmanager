@@ -95,6 +95,11 @@ export class MatchReportComponent implements OnInit, OnChanges {
   public squadHistoryDialogOpen = '';
   public addDialogOpen = '';
 
+  // checklist
+  public checklistVisible = false;
+  public checklistAnswers: Record<number, boolean | null> = {};
+  public checklistSaving = false;
+
   // scan upload
   public existingScan: GameScan | null = null;
   public selectedScanFile: File | null = null;
@@ -218,7 +223,61 @@ export class MatchReportComponent implements OnInit, OnChanges {
   }
 
   public closeMatchRecord() {
+    if (
+      this.game.checklist_active &&
+      (this.game.checklist_items?.length ?? 0) > 0
+    ) {
+      this._initChecklistAnswers();
+      this.checklistVisible = true;
+      this._cdr.markForCheck();
+      return;
+    }
     this.handleGameStatusChange(this.MATCH_RECORD_CLOSED);
+  }
+
+  public allChecklistAnswered(): boolean {
+    return (this.game.checklist_items ?? []).every(
+      (item) =>
+        this.checklistAnswers[item.id] !== null &&
+        this.checklistAnswers[item.id] !== undefined
+    );
+  }
+
+  public submitChecklist(): void {
+    if (!this.allChecklistAnswered() || this.checklistSaving) return;
+    this.checklistSaving = true;
+    const answers = (this.game.checklist_items ?? []).map((item) => ({
+      item_id: item.id,
+      question: item.question,
+      answer: this.checklistAnswers[item.id] as boolean,
+    }));
+    this._gameService.setChecklistAnswers(this.game.id, answers).subscribe({
+      next: () => {
+        this.game.checklist_answers = answers;
+        this.checklistVisible = false;
+        this.checklistSaving = false;
+        this._cdr.markForCheck();
+        this.handleGameStatusChange(this.MATCH_RECORD_CLOSED);
+      },
+      error: () => {
+        this.checklistSaving = false;
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  public cancelChecklist(): void {
+    this.checklistVisible = false;
+    this._cdr.markForCheck();
+  }
+
+  private _initChecklistAnswers(): void {
+    const existing = this.game.checklist_answers ?? [];
+    this.checklistAnswers = {};
+    for (const item of this.game.checklist_items ?? []) {
+      const saved = existing.find((a) => a.item_id === item.id);
+      this.checklistAnswers[item.id] = saved ? saved.answer : null;
+    }
   }
 
   public finalizeGame() {

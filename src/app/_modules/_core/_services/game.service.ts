@@ -313,4 +313,33 @@ export class GameService {
       environment.apiURL + 'public/secretary?token=' + encodeURIComponent(token)
     );
   }
+
+  public setChecklistAnswers(
+    gameId: number,
+    answers: { item_id: number; question: string; answer: boolean }[]
+  ) {
+    return this.http.post<{ success: boolean }>(
+      environment.apiURL + 'user/games/' + gameId + '/checklist_answers.json',
+      { answers }
+    );
+  }
+
+  public getRefereeReport(gameId: number) {
+    return this.http.get<{
+      uploaded: boolean;
+      filename?: string;
+      content_type?: string;
+      uploaded_at?: string;
+      url?: string;
+    }>(environment.apiURL + 'games/' + gameId + '/referee_report');
+  }
+
+  public uploadRefereeReport(gameId: number, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ success: boolean; filename: string }>(
+      environment.apiURL + 'games/' + gameId + '/referee_report',
+      formData
+    );
+  }
 }

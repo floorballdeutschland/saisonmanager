@@ -9,7 +9,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { StateAssociationService, NotificationService } from '@floorball/core';
-import { StateAssociation } from '@floorball/types';
+import { ChecklistItem, StateAssociation } from '@floorball/types';
 
 @Component({
   templateUrl: './state-association-edit.component.html',
@@ -20,6 +20,12 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
   stateAssociation: Partial<StateAssociation> = { name: '', short_name: '' };
   editMode = false;
   saving = false;
+
+  checklistItems: ChecklistItem[] = [];
+  newQuestion = '';
+  addingItem = false;
+  editingItemId: number | null = null;
+  editingQuestion = '';
 
   private _destroy$ = new Subject<void>();
 
@@ -36,14 +42,12 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     if (id) {
       this.editMode = true;
       this._stateAssociationService
-        .adminGetAll()
+        .adminGet(parseInt(id, 10))
         .pipe(takeUntil(this._destroy$))
         .subscribe({
-          next: (all) => {
-            const found = all.find((sa) => sa.id === parseInt(id, 10));
-            if (found) {
-              this.stateAssociation = { ...found };
-            }
+          next: (sa) => {
+            this.stateAssociation = { ...sa };
+            this.checklistItems = sa.checklist_items ?? [];
             this._cdr.markForCheck();
           },
         });
@@ -60,13 +64,20 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
 
     this.saving = true;
 
+    const payload: Partial<StateAssociation> = {
+      name: this.stateAssociation.name,
+      short_name: this.stateAssociation.short_name,
+      vsk_email: this.stateAssociation.vsk_email,
+      sbk_email: this.stateAssociation.sbk_email,
+    };
+
     const call =
       this.editMode && this.stateAssociation.id
         ? this._stateAssociationService.adminUpdate(
             this.stateAssociation.id,
-            this.stateAssociation
+            payload
           )
-        : this._stateAssociationService.adminCreate(this.stateAssociation);
+        : this._stateAssociationService.adminCreate(payload);
 
     call.pipe(takeUntil(this._destroy$)).subscribe({
       next: () => {
@@ -86,5 +97,71 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
         });
       },
     });
+  }
+
+  addChecklistItem(): void {
+    if (!this.newQuestion.trim() || !this.stateAssociation.id) return;
+    this.addingItem = true;
+    const position = this.checklistItems.length;
+    this._stateAssociationService
+      .adminCreateChecklistItem(this.stateAssociation.id, {
+        question: this.newQuestion.trim(),
+        position,
+      })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (item) => {
+          this.checklistItems = [...this.checklistItems, item];
+          this.newQuestion = '';
+          this.addingItem = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.addingItem = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  startEdit(item: ChecklistItem): void {
+    this.editingItemId = item.id;
+    this.editingQuestion = item.question;
+  }
+
+  saveEdit(item: ChecklistItem): void {
+    if (!this.editingQuestion.trim() || !this.stateAssociation.id) return;
+    this._stateAssociationService
+      .adminUpdateChecklistItem(this.stateAssociation.id, item.id, {
+        question: this.editingQuestion.trim(),
+      })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.checklistItems = this.checklistItems.map((i) =>
+            i.id === updated.id ? updated : i
+          );
+          this.editingItemId = null;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  cancelEdit(): void {
+    this.editingItemId = null;
+  }
+
+  deleteChecklistItem(itemId: number): void {
+    if (!this.stateAssociation.id) return;
+    this._stateAssociationService
+      .adminDeleteChecklistItem(this.stateAssociation.id, itemId)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.checklistItems = this.checklistItems.filter(
+            (i) => i.id !== itemId
+          );
+          this._cdr.markForCheck();
+        },
+      });
   }
 }

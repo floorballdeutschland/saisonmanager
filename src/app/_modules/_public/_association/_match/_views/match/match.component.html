@@ -79,4 +79,50 @@
     [additionalFields]="additionalFields"
     (handleReload)="reloadGame()"
   ></fb-match-report>
+
+  <!-- Schiri: Berichtsformular-Upload (nur bei besonderem Ereignis, nur für eingeloggte User) -->
+  <ng-container *ngIf="(isLoggedIn$ | async) && hasIncidentReport">
+    <div class="container mx-auto px-4 lg:px-8 py-6 max-w-2xl">
+      <div class="border border-fb-gray-600 rounded-[5px] p-4">
+        <h3 class="font-bold text-sm mb-1">Berichtsformular hochladen</h3>
+        <p class="text-xs text-fb-gray-400 mb-3">
+          Für dieses Spiel ist ein besonderes Ereignis oder ein Spielausschluss
+          vermerkt. Schiedsrichter können hier das ausgefüllte Berichtsformular
+          hochladen (PDF, PNG oder JPEG, max. 5 MB). Es wird automatisch an die
+          zuständige VSK weitergeleitet.
+        </p>
+
+        <div *ngIf="!refereeReportUploaded">
+          <label
+            class="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 cursor-pointer"
+            [class.opacity-50]="refereeReportUploading"
+          >
+            <span>{{
+              refereeReportUploading
+                ? "Hochladen…"
+                : "Datei wählen und hochladen"
+            }}</span>
+            <input
+              type="file"
+              accept="application/pdf,image/png,image/jpeg"
+              class="hidden"
+              [disabled]="refereeReportUploading"
+              (change)="onRefereeReportFile($event)"
+            />
+          </label>
+        </div>
+
+        <div
+          *ngIf="refereeReportUploaded"
+          class="flex items-center gap-2 text-sm text-green-700"
+        >
+          <span>&#10003;</span>
+          <span
+            >{{ refereeReportFilename }} wurde hochgeladen und an die VSK
+            weitergeleitet.</span
+          >
+        </div>
+      </div>
+    </div>
+  </ng-container>
 </ng-container>
