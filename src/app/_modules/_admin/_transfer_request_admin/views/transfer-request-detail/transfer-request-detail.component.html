@@ -1,0 +1,121 @@
+<div class="p-4 lg:p-8 max-w-xl">
+  <div class="flex items-center gap-3 mb-6">
+    <button (click)="back()" class="text-fb-gray-400 hover:text-white text-sm">
+      ← Zurück
+    </button>
+    <h1 class="text-2xl font-bold">Transferantrag</h1>
+  </div>
+
+  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
+
+  <ng-container *ngIf="!loading && request">
+    <div class="bg-fb-gray-900 border border-fb-gray-700 rounded p-4 mb-4">
+      <div class="flex items-start justify-between mb-3">
+        <h2 class="font-semibold">
+          {{ request.player.last_name }}, {{ request.player.first_name }}
+        </h2>
+        <span [class]="statusClass(request.status) + ' text-sm'">
+          {{ statusLabel(request.status) }}
+        </span>
+      </div>
+
+      <div class="text-sm text-fb-gray-400 space-y-1">
+        <p>
+          <span class="text-fb-gray-500">Geburtsdatum:</span>
+          {{ request.player.birthdate }}
+        </p>
+        <p>
+          <span class="text-fb-gray-500">Von:</span>
+          {{ request.former_club.name }}
+        </p>
+        <p>
+          <span class="text-fb-gray-500">Nach:</span>
+          {{ request.requesting_club.name }}
+        </p>
+        <p>
+          <span class="text-fb-gray-500">Gestellt am:</span>
+          {{ request.created_at | date : "dd.MM.yyyy" }}
+        </p>
+      </div>
+
+      <div
+        *ngIf="request.rejection_reason"
+        class="mt-3 pt-3 border-t border-fb-gray-700"
+      >
+        <p class="text-xs text-fb-gray-500 mb-1">Ablehnungsgrund</p>
+        <p class="text-sm text-red-400">{{ request.rejection_reason }}</p>
+      </div>
+    </div>
+
+    <!-- Club approval actions -->
+    <div *ngIf="canApproveClub && !showRejectForm" class="flex gap-3 mb-4">
+      <button
+        (click)="approveClub()"
+        [disabled]="actionPending"
+        class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50"
+      >
+        {{ actionPending ? "Wird verarbeitet…" : "Bestätigen" }}
+      </button>
+      <button
+        (click)="startReject('club')"
+        [disabled]="actionPending"
+        class="border border-red-500 text-red-400 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
+      >
+        Ablehnen
+      </button>
+    </div>
+
+    <!-- LV approval actions -->
+    <div *ngIf="canApproveLv && !showRejectForm" class="flex gap-3 mb-4">
+      <button
+        (click)="approveLv()"
+        [disabled]="actionPending"
+        class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50"
+      >
+        {{ actionPending ? "Wird verarbeitet…" : "Genehmigen (LV)" }}
+      </button>
+      <button
+        (click)="startReject('lv')"
+        [disabled]="actionPending"
+        class="border border-red-500 text-red-400 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
+      >
+        Ablehnen
+      </button>
+    </div>
+
+    <!-- Rejection form -->
+    <div
+      *ngIf="showRejectForm"
+      class="bg-fb-gray-900 border border-red-800 rounded p-4 mb-4"
+    >
+      <p class="text-sm font-medium mb-3">
+        Bitte gib einen Ablehnungsgrund an:
+      </p>
+      <textarea
+        [(ngModel)]="rejectionReason"
+        rows="3"
+        class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500 resize-none"
+        placeholder="Begründung (Pflichtfeld)"
+      ></textarea>
+      <div class="flex gap-3 mt-3">
+        <button
+          (click)="submitReject()"
+          [disabled]="actionPending || !rejectionReason.trim()"
+          class="bg-red-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-red-500 transition-colors disabled:opacity-50"
+        >
+          {{ actionPending ? "Wird gesendet…" : "Ablehnen bestätigen" }}
+        </button>
+        <button
+          (click)="cancelReject()"
+          class="text-fb-gray-400 px-4 py-2 text-sm hover:text-white"
+        >
+          Abbrechen
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <div *ngIf="!loading && !request" class="text-fb-gray-500 text-sm py-8">
+    Transferantrag nicht gefunden.
+  </div>
+</div>
