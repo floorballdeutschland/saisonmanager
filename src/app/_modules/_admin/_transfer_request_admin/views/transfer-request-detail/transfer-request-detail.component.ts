@@ -50,9 +50,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         next: (user) => {
           this.currentUserClubIds = user?.club_ids || [];
           this.isAdmin = !!user?.permissions?.['menu_item_league_admin'];
-          this.isSbk = !!(
-            user?.permissions?.['menu_item_licence_admin'] && !this.isAdmin
-          );
+          this.isSbk = !!user?.permissions?.['menu_item_transfer_requests_sbk'];
           this._cdr.markForCheck();
         },
       });
@@ -74,7 +72,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
-          this.request = result.find((r) => r.id === parseInt(id));
+          this.request = result.find((r) => r.id === parseInt(id, 10));
           this.loading = false;
           this._cdr.markForCheck();
         },

@@ -9,6 +9,7 @@ import {
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import {
+  ClubService,
   NotificationService,
   SessionService,
   TransferRequestService,
@@ -31,13 +32,15 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
   submitting = false;
 
   currentUserClubIds: number[] = [];
-  selectedClubId: number = 0;
+  selectedClubId = 0;
+  managedClubs: { id: number; name: string }[] = [];
 
   private _destroy$ = new Subject<void>();
 
   constructor(
     private _transferService: TransferRequestService,
     private _sessionService: SessionService,
+    private _clubService: ClubService,
     private _notificationService: NotificationService,
     private _router: Router,
     private _cdr: ChangeDetectorRef
@@ -51,6 +54,18 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
           this.currentUserClubIds = user?.club_ids || [];
           if (this.currentUserClubIds.length === 1) {
             this.selectedClubId = this.currentUserClubIds[0];
+          } else if (this.currentUserClubIds.length > 1) {
+            this._clubService
+              .adminGetClubAndTeams()
+              .pipe(takeUntil(this._destroy$))
+              .subscribe({
+                next: (clubs) => {
+                  this.managedClubs = clubs
+                    .filter((c) => this.currentUserClubIds.includes(c.id))
+                    .map((c) => ({ id: c.id, name: c.name }));
+                  this._cdr.markForCheck();
+                },
+              });
           }
           this._cdr.markForCheck();
         },

@@ -38,6 +38,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
         next: (user) => {
           this.permissions = user?.permissions || {};
           this.currentUserClubIds = user?.club_ids || [];
+          this._cdr.markForCheck();
         },
       });
 
