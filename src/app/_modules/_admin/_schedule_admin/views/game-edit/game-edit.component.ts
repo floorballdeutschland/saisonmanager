@@ -50,6 +50,7 @@ export class GameEditComponent implements OnInit {
   game!: GameInput;
   hasNotice = false;
   hasGameDependencies = false;
+  hasMoveGameDay = false;
   processing = false;
 
   constructor(
@@ -69,6 +70,7 @@ export class GameEditComponent implements OnInit {
   public resetGame() {
     if (this.existingGame) {
       this.game.id = this.existingGame.id;
+      this.game.game_day_id = this.gameDayId;
       this.game.game_number = this.existingGame.game_number;
       this.game.forfait = this.existingGame.forfait;
       this.game.start_time = this.existingGame.start_time;
@@ -105,6 +107,7 @@ export class GameEditComponent implements OnInit {
       );
     }
 
+    this.hasMoveGameDay = false;
     this.processing = false;
     this._cdr.markForCheck();
   }
@@ -138,6 +141,7 @@ export class GameEditComponent implements OnInit {
     }
 
     return (
+      this.game.game_day_id !== this.gameDayId ||
       this.game.forfait !== this.existingGame.forfait ||
       this.game.game_number !== this.existingGame.game_number ||
       this.game.start_time !== this.existingGame.start_time ||
@@ -191,34 +195,47 @@ export class GameEditComponent implements OnInit {
     this.processing = true;
     this._cdr.markForCheck();
 
+    const gameDayChanged = this.game.game_day_id !== this.gameDayId;
+
     this._gameService.updateGame(this.game).subscribe({
       next: () => {
-        // Update existingGame in place so other rows keep their pending changes
-        Object.assign(this.existingGame!, {
-          game_number: this.game.game_number,
-          forfait: this.game.forfait,
-          start_time: this.game.start_time,
-          home_team_id: this.game.home_team_id,
-          guest_team_id: this.game.guest_team_id,
-          nominated_referees: this.game.nominated_referee_string,
-          notice_type: this.game.notice_type,
-          notice_string: this.game.notice_string,
-          group_identifier: this.game.group_identifier,
-          series_title: this.game.series_title,
-          series_number: this.game.series_number,
-          home_team_filling_rule: this.game.home_team_filling_rule,
-          home_team_filling_parameter: this.game.home_team_filling_parameter,
-          guest_team_filling_rule: this.game.guest_team_filling_rule,
-          guest_team_filling_parameter: this.game.guest_team_filling_parameter,
-        });
-        this.resetGame();
         this._notificationService.success('Spiel erfolgreich gespeichert', {
           autoClose: true,
           keepAfterRouteChange: true,
         });
+        if (gameDayChanged) {
+          this.refreshSchedule.emit();
+        } else {
+          // Update existingGame in place so other rows keep their pending changes
+          Object.assign(this.existingGame!, {
+            game_number: this.game.game_number,
+            forfait: this.game.forfait,
+            start_time: this.game.start_time,
+            home_team_id: this.game.home_team_id,
+            guest_team_id: this.game.guest_team_id,
+            nominated_referees: this.game.nominated_referee_string,
+            notice_type: this.game.notice_type,
+            notice_string: this.game.notice_string,
+            group_identifier: this.game.group_identifier,
+            series_title: this.game.series_title,
+            series_number: this.game.series_number,
+            home_team_filling_rule: this.game.home_team_filling_rule,
+            home_team_filling_parameter: this.game.home_team_filling_parameter,
+            guest_team_filling_rule: this.game.guest_team_filling_rule,
+            guest_team_filling_parameter:
+              this.game.guest_team_filling_parameter,
+          });
+          this.resetGame();
+        }
       },
       error: () => {
         this.processing = false;
+        this.hasMoveGameDay = false;
+        this.game.game_day_id = this.gameDayId;
+        this._notificationService.error(
+          'Spiel konnte nicht gespeichert werden',
+          { autoClose: false }
+        );
         this._cdr.markForCheck();
       },
     });
@@ -301,6 +318,14 @@ export class GameEditComponent implements OnInit {
     }
 
     this.hasNotice = !this.hasNotice;
+  }
+
+  public toggleMoveGameDay() {
+    this.hasMoveGameDay = !this.hasMoveGameDay;
+    if (!this.hasMoveGameDay) {
+      this.game.game_day_id = this.gameDayId;
+    }
+    this._cdr.markForCheck();
   }
 
   public toggleGameDependencies() {
