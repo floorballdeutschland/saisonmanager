@@ -1,6 +1,7 @@
 export type TransferRequestStatus =
   | 'pending_club'
   | 'pending_lv'
+  | 'scheduled'
   | 'approved'
   | 'rejected_by_club'
   | 'rejected_by_lv';
@@ -22,6 +23,7 @@ export interface TransferRequest {
   status: TransferRequestStatus;
   season_id: number;
   rejection_reason?: string;
+  effective_date?: string | null;
   created_at: string;
   player: TransferRequestPlayer;
   requesting_club: TransferRequestClub;

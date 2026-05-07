@@ -32,11 +32,23 @@ export class TransferRequestService {
     );
   }
 
-  create(playerId: number, requestingClubId: number) {
+  create(
+    playerId: number,
+    requestingClubId: number,
+    effectiveDate?: string | null
+  ) {
     return this.http.post<TransferRequest>(`${this.base}.json`, {
       player_id: playerId,
       requesting_club_id: requestingClubId,
+      ...(effectiveDate ? { effective_date: effectiveDate } : {}),
     });
+  }
+
+  execute(id: number) {
+    return this.http.patch<TransferRequest>(
+      `${this.base}/${id}/execute.json`,
+      {}
+    );
   }
 
   approveClub(id: number) {

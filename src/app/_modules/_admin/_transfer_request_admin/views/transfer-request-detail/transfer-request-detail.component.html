@@ -36,6 +36,13 @@
           <span class="text-fb-gray-500">Gestellt am:</span>
           {{ request.created_at | date : "dd.MM.yyyy" }}
         </p>
+        <p *ngIf="request.effective_date">
+          <span class="text-fb-gray-500">Wunschdatum:</span>
+          {{ request.effective_date | date : "dd.MM.yyyy" }}
+        </p>
+        <p *ngIf="!request.effective_date">
+          <span class="text-fb-gray-500">Wunschdatum:</span> Nächstmöglich
+        </p>
       </div>
 
       <div
@@ -62,6 +69,30 @@
         class="border border-red-500 text-red-400 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
       >
         Ablehnen
+      </button>
+    </div>
+
+    <!-- Execute scheduled transfer -->
+    <div *ngIf="request.status === 'scheduled'" class="mb-4">
+      <div
+        class="bg-fb-gray-900 border border-fb-gray-700 rounded p-3 mb-3 text-sm text-fb-gray-400"
+      >
+        Transfer genehmigt, wird am
+        <strong class="text-white">{{
+          request.effective_date | date : "dd.MM.yyyy"
+        }}</strong>
+        wirksam.
+        <span *ngIf="canExecuteScheduled" class="block mt-1 text-yellow-400"
+          >Datum erreicht – Transfer kann jetzt vollzogen werden.</span
+        >
+      </div>
+      <button
+        *ngIf="canExecuteScheduled"
+        (click)="executeScheduled()"
+        [disabled]="actionPending"
+        class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50"
+      >
+        {{ actionPending ? "Wird verarbeitet…" : "Transfer jetzt vollziehen" }}
       </button>
     </div>
 

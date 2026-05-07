@@ -35,6 +35,15 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
   selectedClubId = 0;
   managedClubs: { id: number; name: string }[] = [];
 
+  effectiveDateMode: 'immediate' | 'scheduled' = 'immediate';
+  effectiveDate = '';
+
+  get minEffectiveDate(): string {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().split('T')[0];
+  }
+
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -111,10 +120,14 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
 
   submit(): void {
     if (!this.foundPlayer || !this.selectedClubId) return;
+    if (this.effectiveDateMode === 'scheduled' && !this.effectiveDate) return;
+
+    const effectiveDate =
+      this.effectiveDateMode === 'scheduled' ? this.effectiveDate : null;
 
     this.submitting = true;
     this._transferService
-      .create(this.foundPlayer.id, this.selectedClubId)
+      .create(this.foundPlayer.id, this.selectedClubId, effectiveDate)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {

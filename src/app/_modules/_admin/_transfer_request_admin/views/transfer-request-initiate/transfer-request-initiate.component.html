@@ -89,6 +89,35 @@
     </p>
 
     <div class="mt-4 pt-4 border-t border-fb-gray-700">
+      <p class="text-sm font-medium text-fb-gray-300 mb-3">Transferdatum</p>
+      <div class="flex flex-col gap-2 mb-4">
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            [(ngModel)]="effectiveDateMode"
+            value="immediate"
+            class="accent-primary"
+          />
+          Nächstmöglich
+        </label>
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            [(ngModel)]="effectiveDateMode"
+            value="scheduled"
+            class="accent-primary"
+          />
+          Wunschdatum (mind. 7 Tage in der Zukunft)
+        </label>
+        <input
+          *ngIf="effectiveDateMode === 'scheduled'"
+          type="date"
+          [(ngModel)]="effectiveDate"
+          [min]="minEffectiveDate"
+          class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+        />
+      </div>
+
       <p class="text-sm text-fb-gray-400 mb-3">
         Der Transferantrag wird für deinen Verein gestellt. Der abgebende Verein
         muss anschließend zustimmen, danach genehmigt der Landesverband.
@@ -96,7 +125,9 @@
 
       <button
         (click)="submit()"
-        [disabled]="submitting"
+        [disabled]="
+          submitting || (effectiveDateMode === 'scheduled' && !effectiveDate)
+        "
         class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {{ submitting ? "Wird gesendet…" : "Transferantrag stellen" }}

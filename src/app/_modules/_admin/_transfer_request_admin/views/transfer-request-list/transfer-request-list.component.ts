@@ -80,6 +80,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     const labels: { [key: string]: string } = {
       pending_club: 'Warten auf abgebenden Verein',
       pending_lv: 'Warten auf Landesverband',
+      scheduled: 'Transfer geplant',
       approved: 'Genehmigt',
       rejected_by_club: 'Abgelehnt (Verein)',
       rejected_by_lv: 'Abgelehnt (LV)',
@@ -89,6 +90,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
 
   statusClass(status: string): string {
     if (status === 'approved') return 'text-green-600 font-medium';
+    if (status === 'scheduled') return 'text-yellow-400 font-medium';
     if (status.startsWith('rejected')) return 'text-red-500';
     return 'text-primary font-medium';
   }
@@ -99,7 +101,10 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
 
   get pendingRequests(): TransferRequest[] {
     return this.requests.filter(
-      (r) => r.status === 'pending_club' || r.status === 'pending_lv'
+      (r) =>
+        r.status === 'pending_club' ||
+        r.status === 'pending_lv' ||
+        r.status === 'scheduled'
     );
   }
 

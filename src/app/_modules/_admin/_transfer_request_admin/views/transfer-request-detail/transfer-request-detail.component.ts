@@ -96,6 +96,13 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
     return this.isAdmin || this.isSbk;
   }
 
+  get canExecuteScheduled(): boolean {
+    if (!this.request || this.request.status !== 'scheduled') return false;
+    if (!this.isAdmin && !this.isSbk) return false;
+    if (!this.request.effective_date) return true;
+    return new Date(this.request.effective_date) <= new Date();
+  }
+
   approveClub(): void {
     if (!this.request) return;
     this.actionPending = true;
@@ -168,8 +175,33 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
           this.request = updated;
           this.actionPending = false;
           this._notificationService.success(
-            'Transfer genehmigt und vollzogen.'
+            updated.status === 'scheduled'
+              ? `Transfer genehmigt – Vollzug am ${new Date(
+                  updated.effective_date!
+                ).toLocaleDateString('de-DE')}.`
+              : 'Transfer genehmigt und vollzogen.'
           );
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this._notificationService.error(err?.error?.error || 'Fehler.');
+          this.actionPending = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  executeScheduled(): void {
+    if (!this.request) return;
+    this.actionPending = true;
+    this._transferService
+      .execute(this.request.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.request = updated;
+          this.actionPending = false;
+          this._notificationService.success('Transfer vollzogen.');
           this._cdr.markForCheck();
         },
         error: (err) => {
@@ -188,6 +220,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
     const labels: { [key: string]: string } = {
       pending_club: 'Warten auf abgebenden Verein',
       pending_lv: 'Warten auf Landesverband',
+      scheduled: 'Genehmigt – Transfer geplant',
       approved: 'Genehmigt – Transfer vollzogen',
       rejected_by_club: 'Abgelehnt durch abgebenden Verein',
       rejected_by_lv: 'Abgelehnt durch Landesverband',
@@ -197,6 +230,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
 
   statusClass(status: string): string {
     if (status === 'approved') return 'text-green-600 font-medium';
+    if (status === 'scheduled') return 'text-yellow-400 font-medium';
     if (status.startsWith('rejected')) return 'text-red-500 font-medium';
     return 'text-primary font-medium';
   }
