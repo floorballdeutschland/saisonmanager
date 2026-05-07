@@ -68,15 +68,18 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
   load(id: string): void {
     this.loading = true;
     this._transferService
-      .getAll()
+      .get(parseInt(id, 10))
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
-          this.request = result.find((r) => r.id === parseInt(id, 10));
+          this.request = result;
           this.loading = false;
           this._cdr.markForCheck();
         },
         error: () => {
+          this._notificationService.error(
+            'Transferantrag konnte nicht geladen werden.'
+          );
           this.loading = false;
           this._cdr.markForCheck();
         },
@@ -100,7 +103,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
     if (!this.request || this.request.status !== 'scheduled') return false;
     if (!this.isAdmin && !this.isSbk) return false;
     if (!this.request.effective_date) return true;
-    return new Date(this.request.effective_date) <= new Date();
+    return this.request.effective_date <= new Date().toISOString().slice(0, 10);
   }
 
   approveClub(): void {
@@ -117,7 +120,10 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: (err) => {
-          this._notificationService.error(err?.error?.error || 'Fehler.');
+          this._notificationService.error(
+            err?.error?.error ||
+              'Vereinsfreigabe konnte nicht gespeichert werden.'
+          );
           this.actionPending = false;
           this._cdr.markForCheck();
         },
@@ -157,7 +163,9 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         this._cdr.markForCheck();
       },
       error: (err) => {
-        this._notificationService.error(err?.error?.error || 'Fehler.');
+        this._notificationService.error(
+          err?.error?.error || 'Ablehnung konnte nicht gespeichert werden.'
+        );
         this.actionPending = false;
         this._cdr.markForCheck();
       },
@@ -175,16 +183,19 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
           this.request = updated;
           this.actionPending = false;
           this._notificationService.success(
-            updated.status === 'scheduled'
-              ? `Transfer genehmigt – Vollzug am ${new Date(
-                  updated.effective_date!
-                ).toLocaleDateString('de-DE')}.`
+            updated.status === 'scheduled' && updated.effective_date
+              ? `Transfer genehmigt – Vollzug am ${updated.effective_date
+                  .split('-')
+                  .reverse()
+                  .join('.')}.`
               : 'Transfer genehmigt und vollzogen.'
           );
           this._cdr.markForCheck();
         },
         error: (err) => {
-          this._notificationService.error(err?.error?.error || 'Fehler.');
+          this._notificationService.error(
+            err?.error?.error || 'LV-Freigabe konnte nicht gespeichert werden.'
+          );
           this.actionPending = false;
           this._cdr.markForCheck();
         },
@@ -205,7 +216,9 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: (err) => {
-          this._notificationService.error(err?.error?.error || 'Fehler.');
+          this._notificationService.error(
+            err?.error?.error || 'Transfer konnte nicht vollzogen werden.'
+          );
           this.actionPending = false;
           this._cdr.markForCheck();
         },

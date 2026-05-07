@@ -22,7 +22,7 @@
       <div class="text-sm text-fb-gray-400 space-y-1">
         <p>
           <span class="text-fb-gray-500">Geburtsdatum:</span>
-          {{ request.player.birthdate }}
+          {{ request.player.birthdate | date : "dd.MM.yyyy" }}
         </p>
         <p>
           <span class="text-fb-gray-500">Von:</span>

@@ -85,7 +85,7 @@
       {{ foundPlayer.last_name }}, {{ foundPlayer.first_name }}
     </p>
     <p class="text-sm text-fb-gray-500">
-      Geburtsdatum: {{ foundPlayer.birthdate }}
+      Geburtsdatum: {{ foundPlayer.birthdate | date : "dd.MM.yyyy" }}
     </p>
 
     <div class="mt-4 pt-4 border-t border-fb-gray-700">

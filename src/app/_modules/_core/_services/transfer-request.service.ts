@@ -13,6 +13,10 @@ export class TransferRequestService {
     return this.http.get<TransferRequest[]>(`${this.base}.json`);
   }
 
+  get(id: number) {
+    return this.http.get<TransferRequest>(`${this.base}/${id}.json`);
+  }
+
   searchPlayer(
     firstName: string,
     lastName: string,

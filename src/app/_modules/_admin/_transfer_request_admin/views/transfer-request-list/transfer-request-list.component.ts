@@ -8,7 +8,11 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { SessionService, TransferRequestService } from '@floorball/core';
+import {
+  NotificationService,
+  SessionService,
+  TransferRequestService,
+} from '@floorball/core';
 import { TransferRequest } from '@floorball/types';
 
 @Component({
@@ -27,6 +31,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   constructor(
     private _transferService: TransferRequestService,
     private _sessionService: SessionService,
+    private _notificationService: NotificationService,
     private _router: Router,
     private _cdr: ChangeDetectorRef
   ) {}
@@ -62,6 +67,9 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: () => {
+          this._notificationService.error(
+            'Transferanträge konnten nicht geladen werden.'
+          );
           this.loading = false;
           this._cdr.markForCheck();
         },

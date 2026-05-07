@@ -74,6 +74,12 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
                     .map((c) => ({ id: c.id, name: c.name }));
                   this._cdr.markForCheck();
                 },
+                error: () => {
+                  this._notificationService.error(
+                    'Vereinsdaten konnten nicht geladen werden.'
+                  );
+                  this._cdr.markForCheck();
+                },
               });
           }
           this._cdr.markForCheck();
@@ -131,6 +137,7 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {
+          this.submitting = false;
           this._notificationService.success(
             'Transferantrag erfolgreich gestellt.'
           );
