@@ -53,6 +53,13 @@
               }}
               Uhr
             </p>
+            <p *ngIf="player.team_license.express" class="mt-1">
+              <span
+                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"
+              >
+                Expresslizenz
+              </span>
+            </p>
             <p
               class="mt-2 flex items-center text-sm text-gray-500"
               *ngIf="false"

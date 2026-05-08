@@ -109,7 +109,13 @@
                           >{{ p.gender | gender }}</span
                         >
                       </p>
-                      <div class="ml-2 flex flex-shrink-0 items-end">
+                      <div class="ml-2 flex flex-shrink-0 items-end gap-1">
+                        <span
+                          *ngIf="p.team_license.express"
+                          class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"
+                        >
+                          Express
+                        </span>
                         <div>
                           <p
                             class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-green-800 text-[13px]"

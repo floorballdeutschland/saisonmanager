@@ -5,4 +5,5 @@ export interface LicenseHash {
   team: Team;
   current_requests: PlayerWithLicense[];
   other_players: Player[];
+  express_license_enabled?: boolean;
 }

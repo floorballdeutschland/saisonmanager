@@ -252,6 +252,21 @@
                   <option value="true">Geburtstag vor Stichtag</option>
                 </select>
               </div>
+
+              <div class="font-bold">Expresslizenzen</div>
+              <div>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="express_license_enabled"
+                    [(ngModel)]="league.express_license_enabled"
+                    class="h-4 w-4 rounded border-gray-300 accent-black"
+                  />
+                  <span class="text-sm"
+                    >Expresslizenzen in dieser Liga erlaubt</span
+                  >
+                </label>
+              </div>
             </div>
           </div>
 

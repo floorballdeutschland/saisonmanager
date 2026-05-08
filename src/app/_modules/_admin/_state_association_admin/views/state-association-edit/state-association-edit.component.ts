@@ -69,6 +69,9 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       short_name: this.stateAssociation.short_name,
       vsk_email: this.stateAssociation.vsk_email,
       sbk_email: this.stateAssociation.sbk_email,
+      express_license_enabled: this.stateAssociation.express_license_enabled,
+      require_paper_game_report:
+        this.stateAssociation.require_paper_game_report,
     };
 
     const call =
