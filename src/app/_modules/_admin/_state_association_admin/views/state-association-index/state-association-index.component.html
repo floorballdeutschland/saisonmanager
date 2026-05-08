@@ -27,18 +27,25 @@
       </thead>
       <tbody>
         <tr
-          *ngFor="let sa of stateAssociations"
+          *ngFor="let row of sortedRows"
           class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
         >
-          <td class="py-2 pr-4 font-medium">{{ sa.name }}</td>
-          <td class="py-2 pr-4 text-fb-gray-500">{{ sa.short_name || "–" }}</td>
+          <td class="py-2 pr-4 font-medium">
+            <span *ngIf="row.isChild" class="inline-block w-5 text-fb-gray-500"
+              >↳</span
+            >
+            <span [class.font-bold]="!row.isChild">{{ row.sa.name }}</span>
+          </td>
+          <td class="py-2 pr-4 text-fb-gray-500">
+            {{ row.sa.short_name || "–" }}
+          </td>
           <td class="py-2 text-right flex gap-3 justify-end">
             <a
               [routerLink]="[
                 '/',
                 'verwaltung',
                 'landesverbaende',
-                sa.id,
+                row.sa.id,
                 'bearbeiten'
               ]"
               class="text-sm text-fb-gray-500 hover:text-black"
@@ -46,14 +53,14 @@
               Bearbeiten
             </a>
             <button
-              (click)="delete(sa)"
+              (click)="delete(row.sa)"
               class="text-sm text-red-400 hover:text-red-600"
             >
               Löschen
             </button>
           </td>
         </tr>
-        <tr *ngIf="stateAssociations.length === 0">
+        <tr *ngIf="sortedRows.length === 0">
           <td colspan="3" class="py-8 text-center text-fb-gray-500">
             Noch keine Landesverbände angelegt.
           </td>

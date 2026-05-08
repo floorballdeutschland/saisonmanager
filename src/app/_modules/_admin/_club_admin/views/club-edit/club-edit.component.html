@@ -116,7 +116,7 @@
                 >
                   <option [ngValue]="null">– Bitte auswählen –</option>
                   <option
-                    *ngFor="let sa of stateAssociations"
+                    *ngFor="let sa of leafStateAssociations"
                     [ngValue]="sa.id"
                   >
                     {{ sa.name }}

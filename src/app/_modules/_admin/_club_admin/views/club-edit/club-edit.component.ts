@@ -52,6 +52,15 @@ export class ClubEditComponent implements OnInit, OnDestroy {
 
   stateAssociations: StateAssociation[] = [];
 
+  get leafStateAssociations(): StateAssociation[] {
+    const parentIds = new Set(
+      this.stateAssociations
+        .filter((sa) => sa.parent_id)
+        .map((sa) => sa.parent_id as number)
+    );
+    return this.stateAssociations.filter((sa) => !parentIds.has(sa.id));
+  }
+
   private _destroy$ = new Subject<boolean>();
 
   constructor(

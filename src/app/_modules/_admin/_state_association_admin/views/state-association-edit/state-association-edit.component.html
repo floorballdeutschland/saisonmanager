@@ -34,16 +34,39 @@
       />
     </div>
 
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-bold">Übergeordneter Verbund</label>
+      <select
+        [(ngModel)]="stateAssociation.parent_id"
+        name="parent_id"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      >
+        <option [ngValue]="null">– kein übergeordneter Verbund –</option>
+        <option *ngFor="let sa of rootStateAssociations" [ngValue]="sa.id">
+          {{ sa.name }}
+        </option>
+      </select>
+      <span *ngIf="hasParent" class="text-xs text-fb-gray-400">
+        Einstellungen und E-Mail-Adressen werden von
+        <strong>{{ parent?.name }}</strong> geerbt.
+      </span>
+    </div>
+
     <div class="border-t border-fb-gray-200 pt-4">
       <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
         Einstellungen
       </div>
-      <div class="flex flex-col gap-3">
-        <label class="flex items-start gap-3 cursor-pointer">
+      <div class="flex flex-col gap-3" [class.opacity-40]="hasParent">
+        <label
+          class="flex items-start gap-3"
+          [class.cursor-not-allowed]="hasParent"
+          [class.cursor-pointer]="!hasParent"
+        >
           <input
             type="checkbox"
             [(ngModel)]="stateAssociation.express_license_enabled"
             name="express_license_enabled"
+            [disabled]="hasParent"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
           <span class="flex flex-col gap-0.5">
@@ -53,13 +76,22 @@
               aktivieren. Die Beantragung löst eine automatische
               Benachrichtigung an die SBK aus.</span
             >
+            <span *ngIf="hasParent" class="text-xs text-fb-gray-400 italic">
+              Wert: {{ parent?.express_license_enabled ? "Ja" : "Nein" }}
+              (geerbt)
+            </span>
           </span>
         </label>
-        <label class="flex items-start gap-3 cursor-pointer">
+        <label
+          class="flex items-start gap-3"
+          [class.cursor-not-allowed]="hasParent"
+          [class.cursor-pointer]="!hasParent"
+        >
           <input
             type="checkbox"
             [(ngModel)]="stateAssociation.require_paper_game_report"
             name="require_paper_game_report"
+            [disabled]="hasParent"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
           <span class="flex flex-col gap-0.5">
@@ -71,12 +103,19 @@
               mit der Aufforderung, die Scans der Spielberichte (PDF)
               hochzuladen.</span
             >
+            <span *ngIf="hasParent" class="text-xs text-fb-gray-400 italic">
+              Wert: {{ parent?.require_paper_game_report ? "Ja" : "Nein" }}
+              (geerbt)
+            </span>
           </span>
         </label>
       </div>
     </div>
 
-    <div class="border-t border-fb-gray-200 pt-4">
+    <div
+      class="border-t border-fb-gray-200 pt-4"
+      [class.opacity-40]="hasParent"
+    >
       <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
         E-Mail-Adressen
       </div>
@@ -88,12 +127,20 @@
             type="email"
             [(ngModel)]="stateAssociation.vsk_email"
             name="vsk_email"
-            placeholder="vsk@beispiel.de"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            [disabled]="hasParent"
+            [placeholder]="
+              hasParent
+                ? parent?.vsk_email || 'Geerbt – nicht gesetzt'
+                : 'vsk@beispiel.de'
+            "
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
           />
-          <span class="text-xs text-fb-gray-400"
+          <span *ngIf="!hasParent" class="text-xs text-fb-gray-400"
             >Empfänger für hochgeladene Schiedsrichter-Berichtsformulare</span
           >
+          <span *ngIf="hasParent" class="text-xs text-fb-gray-400 italic">
+            Geerbt von {{ parent?.name }}: {{ parent?.vsk_email || "–" }}
+          </span>
         </div>
 
         <div class="flex flex-col gap-1">
@@ -102,12 +149,20 @@
             type="email"
             [(ngModel)]="stateAssociation.sbk_email"
             name="sbk_email"
-            placeholder="sbk@beispiel.de"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            [disabled]="hasParent"
+            [placeholder]="
+              hasParent
+                ? parent?.sbk_email || 'Geerbt – nicht gesetzt'
+                : 'sbk@beispiel.de'
+            "
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
           />
-          <span class="text-xs text-fb-gray-400"
+          <span *ngIf="!hasParent" class="text-xs text-fb-gray-400"
             >BCC-Empfänger bei Spieltagscheckliste mit verneinten Punkten</span
           >
+          <span *ngIf="hasParent" class="text-xs text-fb-gray-400 italic">
+            Geerbt von {{ parent?.name }}: {{ parent?.sbk_email || "–" }}
+          </span>
         </div>
       </div>
     </div>
@@ -129,8 +184,8 @@
     </div>
   </form>
 
-  <!-- Spieltagscheckliste (nur im Bearbeitungsmodus) -->
-  <div *ngIf="editMode" class="border-t border-fb-gray-200 pt-6">
+  <!-- Spieltagscheckliste (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
+  <div *ngIf="editMode && !hasParent" class="border-t border-fb-gray-200 pt-6">
     <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
       Spieltagscheckliste
     </div>

@@ -19,6 +19,26 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
   stateAssociations: StateAssociation[] = [];
   loading = false;
 
+  get sortedRows(): Array<{ sa: StateAssociation; isChild: boolean }> {
+    const roots = this.stateAssociations.filter((sa) => !sa.parent_id);
+    const rows: Array<{ sa: StateAssociation; isChild: boolean }> = [];
+    for (const root of roots) {
+      rows.push({ sa: root, isChild: false });
+      const children = this.stateAssociations.filter(
+        (sa) => sa.parent_id === root.id
+      );
+      for (const child of children) {
+        rows.push({ sa: child, isChild: true });
+      }
+    }
+    // Append orphans (shouldn't exist, but safety net)
+    const listed = new Set(rows.map((r) => r.sa.id));
+    for (const sa of this.stateAssociations) {
+      if (!listed.has(sa.id)) rows.push({ sa, isChild: false });
+    }
+    return rows;
+  }
+
   private _destroy$ = new Subject<void>();
 
   constructor(

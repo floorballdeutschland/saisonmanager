@@ -10,6 +10,7 @@ export interface GameOperation {
   logo_quad_url?: string;
   top_leagues: League[];
   scan_required: boolean;
+  state_association_id?: number | null;
 }
 
 export interface GameOperationWithLeagues extends GameOperation {
