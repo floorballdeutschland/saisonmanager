@@ -14,7 +14,7 @@ import {
   SessionService,
   TransferRequestService,
 } from '@floorball/core';
-import { PlayerSearchResult } from '@floorball/types';
+import { PlayerSearchResult, TransferRequestType } from '@floorball/types';
 
 @Component({
   templateUrl: './transfer-request-initiate.component.html',
@@ -35,6 +35,7 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
   selectedClubId = 0;
   managedClubs: { id: number; name: string }[] = [];
 
+  requestType: TransferRequestType = 'transfer';
   effectiveDateMode: 'immediate' | 'scheduled' = 'immediate';
   effectiveDate = '';
 
@@ -129,20 +130,34 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
 
   submit(): void {
     if (!this.foundPlayer || !this.selectedClubId) return;
-    if (this.effectiveDateMode === 'scheduled' && !this.effectiveDate) return;
+    if (
+      this.requestType === 'transfer' &&
+      this.effectiveDateMode === 'scheduled' &&
+      !this.effectiveDate
+    )
+      return;
 
     const effectiveDate =
-      this.effectiveDateMode === 'scheduled' ? this.effectiveDate : null;
+      this.requestType === 'transfer' && this.effectiveDateMode === 'scheduled'
+        ? this.effectiveDate
+        : null;
 
     this.submitting = true;
     this._transferService
-      .create(this.foundPlayer.id, this.selectedClubId, effectiveDate)
+      .create(
+        this.foundPlayer.id,
+        this.selectedClubId,
+        this.requestType,
+        effectiveDate
+      )
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {
           this.submitting = false;
           this._notificationService.success(
-            'Transferantrag erfolgreich gestellt.'
+            this.requestType === 'release'
+              ? 'Freigabeantrag erfolgreich gestellt.'
+              : 'Transferantrag erfolgreich gestellt.'
           );
           this._router.navigate(['/verwaltung/transfer-anfragen']);
         },

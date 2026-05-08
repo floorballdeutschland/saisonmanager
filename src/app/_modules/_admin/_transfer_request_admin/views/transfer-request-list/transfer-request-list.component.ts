@@ -101,6 +101,16 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     return 'text-primary font-medium';
   }
 
+  typeLabel(r: TransferRequest): string {
+    return r.request_type === 'release' ? 'Freigabe' : 'Transfer';
+  }
+
+  typeClass(r: TransferRequest): string {
+    return r.request_type === 'release'
+      ? 'text-xs font-semibold px-1.5 py-0.5 rounded bg-purple-900 text-purple-300'
+      : 'text-xs font-semibold px-1.5 py-0.5 rounded bg-fb-gray-800 text-fb-gray-400';
+  }
+
   get canInitiate(): boolean {
     return this.currentUserClubIds.length > 0;
   }

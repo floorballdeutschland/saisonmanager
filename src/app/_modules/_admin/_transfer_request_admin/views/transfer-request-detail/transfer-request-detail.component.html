@@ -14,9 +14,24 @@
         <h2 class="font-semibold">
           {{ request.player.last_name }}, {{ request.player.first_name }}
         </h2>
-        <span [class]="statusClass(request.status) + ' text-sm'">
-          {{ statusLabel(request.status) }}
-        </span>
+        <div class="flex items-center gap-2">
+          <span
+            [class]="
+              request.request_type === 'release'
+                ? 'text-xs font-semibold px-1.5 py-0.5 rounded bg-purple-900 text-purple-300'
+                : 'text-xs font-semibold px-1.5 py-0.5 rounded bg-fb-gray-800 text-fb-gray-400'
+            "
+          >
+            {{
+              request.request_type === "release"
+                ? "Spielerfreigabe"
+                : "Transfer"
+            }}
+          </span>
+          <span [class]="statusClass(request.status) + ' text-sm'">
+            {{ statusLabel(request.status, request.request_type) }}
+          </span>
+        </div>
       </div>
 
       <div class="text-sm text-fb-gray-400 space-y-1">
@@ -25,23 +40,33 @@
           {{ request.player.birthdate | date : "dd.MM.yyyy" }}
         </p>
         <p>
-          <span class="text-fb-gray-500">Von:</span>
+          <span class="text-fb-gray-500">{{
+            request.request_type === "release" ? "Freigabe von:" : "Von:"
+          }}</span>
           {{ request.former_club.name }}
         </p>
         <p>
-          <span class="text-fb-gray-500">Nach:</span>
+          <span class="text-fb-gray-500">{{
+            request.request_type === "release" ? "Freigabe für:" : "Nach:"
+          }}</span>
           {{ request.requesting_club.name }}
         </p>
         <p>
           <span class="text-fb-gray-500">Gestellt am:</span>
           {{ request.created_at | date : "dd.MM.yyyy" }}
         </p>
-        <p *ngIf="request.effective_date">
-          <span class="text-fb-gray-500">Wunschdatum:</span>
-          {{ request.effective_date | date : "dd.MM.yyyy" }}
-        </p>
-        <p *ngIf="!request.effective_date">
-          <span class="text-fb-gray-500">Wunschdatum:</span> Nächstmöglich
+        <ng-container *ngIf="request.request_type !== 'release'">
+          <p *ngIf="request.effective_date">
+            <span class="text-fb-gray-500">Wunschdatum:</span>
+            {{ request.effective_date | date : "dd.MM.yyyy" }}
+          </p>
+          <p *ngIf="!request.effective_date">
+            <span class="text-fb-gray-500">Wunschdatum:</span> Nächstmöglich
+          </p>
+        </ng-container>
+        <p *ngIf="request.request_type === 'release'">
+          <span class="text-fb-gray-500">Gültig bis:</span> 15.07. des laufenden
+          Jahres
         </p>
       </div>
 
