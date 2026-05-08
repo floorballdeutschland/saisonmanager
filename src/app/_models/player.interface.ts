@@ -35,6 +35,7 @@ export interface PlayerWithLicense extends Player {
 
     approved_at?: string;
     requested_at: string;
+    express?: boolean;
   };
   current_status: {
     created_at: Date;

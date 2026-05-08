@@ -10,5 +10,7 @@ export interface StateAssociation {
   short_name?: string;
   vsk_email?: string;
   sbk_email?: string;
+  express_license_enabled?: boolean;
+  require_paper_game_report?: boolean;
   checklist_items?: ChecklistItem[];
 }

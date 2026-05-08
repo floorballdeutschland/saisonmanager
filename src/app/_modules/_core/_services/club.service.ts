@@ -70,10 +70,17 @@ export class ClubService {
     return this.http.get<LicenseHash>(path);
   }
 
-  public userCreateLicenseRequest(playerId: number, teamId: number) {
+  public userCreateLicenseRequest(
+    playerId: number,
+    teamId: number,
+    express = false
+  ) {
     const path =
       environment.apiURL + 'user/players/' + playerId + '/request_license.json';
-    return this.http.post<{ success: boolean }>(path, { team_id: teamId });
+    return this.http.post<{ success: boolean }>(path, {
+      team_id: teamId,
+      express,
+    });
   }
 
   public userWithdrawLicenseRequest(playerId: number, licenseId: string) {

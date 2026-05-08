@@ -31,6 +31,7 @@ export class LicenseTeamDetailComponent implements OnInit {
   licenseHash!: LicenseHash;
   teamId = 0;
   playerId = 0;
+  expressLicense = false;
 
   constructor(
     private _associationService: AssociationService,
@@ -66,12 +67,11 @@ export class LicenseTeamDetailComponent implements OnInit {
   }
 
   public createLicenseRequest() {
-    // check if set!
     this._clubService
-      .userCreateLicenseRequest(this.playerId, this.teamId)
+      .userCreateLicenseRequest(this.playerId, this.teamId, this.expressLicense)
       .subscribe({
         next: () => {
-          // reload user licenses
+          this.expressLicense = false;
           this.loadUserLicenses();
         },
       });
