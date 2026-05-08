@@ -169,7 +169,11 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         this.request = updated;
         this.showRejectForm = false;
         this.actionPending = false;
-        this._notificationService.success('Transferantrag abgelehnt.');
+        this._notificationService.success(
+          updated.request_type === 'release'
+            ? 'Freigabeantrag abgelehnt.'
+            : 'Transferantrag abgelehnt.'
+        );
         this._cdr.markForCheck();
       },
       error: (err) => {

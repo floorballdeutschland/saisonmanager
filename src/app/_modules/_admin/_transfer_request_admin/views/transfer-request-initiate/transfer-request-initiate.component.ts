@@ -130,7 +130,12 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
 
   submit(): void {
     if (!this.foundPlayer || !this.selectedClubId) return;
-    if (this.effectiveDateMode === 'scheduled' && !this.effectiveDate) return;
+    if (
+      this.requestType === 'transfer' &&
+      this.effectiveDateMode === 'scheduled' &&
+      !this.effectiveDate
+    )
+      return;
 
     const effectiveDate =
       this.requestType === 'transfer' && this.effectiveDateMode === 'scheduled'
@@ -150,7 +155,9 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
         next: () => {
           this.submitting = false;
           this._notificationService.success(
-            'Transferantrag erfolgreich gestellt.'
+            this.requestType === 'release'
+              ? 'Freigabeantrag erfolgreich gestellt.'
+              : 'Transferantrag erfolgreich gestellt.'
           );
           this._router.navigate(['/verwaltung/transfer-anfragen']);
         },
