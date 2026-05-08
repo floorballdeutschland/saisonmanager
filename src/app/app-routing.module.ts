@@ -82,6 +82,13 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/transfer-requests').then(
+            (m) => m.AdminTransferRequestModule
+          ),
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/referee').then((m) => m.RefereeModule),
       },
     ],

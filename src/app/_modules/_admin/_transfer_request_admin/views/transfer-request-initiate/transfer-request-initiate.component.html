@@ -1,0 +1,137 @@
+<div class="p-4 lg:p-8 max-w-xl">
+  <div class="flex items-center gap-3 mb-6">
+    <button
+      (click)="cancel()"
+      class="text-fb-gray-400 hover:text-white text-sm"
+    >
+      ← Zurück
+    </button>
+    <h1 class="text-2xl font-bold">Transferantrag stellen</h1>
+  </div>
+
+  <div class="bg-fb-gray-900 border border-fb-gray-700 rounded p-4 mb-6">
+    <p class="text-sm text-fb-gray-400 mb-4">
+      Suche den Spieler anhand von Vor- und Nachname sowie Geburtsdatum. Es wird
+      nur ein exakter Treffer akzeptiert.
+    </p>
+
+    <div class="flex flex-col gap-3">
+      <div *ngIf="currentUserClubIds.length > 1">
+        <label class="block text-xs text-fb-gray-400 mb-1"
+          >Antragstellender Verein</label
+        >
+        <select
+          [(ngModel)]="selectedClubId"
+          class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+        >
+          <option [ngValue]="0">Verein wählen…</option>
+          <option *ngFor="let club of managedClubs" [ngValue]="club.id">
+            {{ club.name }}
+          </option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs text-fb-gray-400 mb-1">Vorname</label>
+        <input
+          type="text"
+          [(ngModel)]="firstName"
+          class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+          placeholder="Vorname"
+        />
+      </div>
+      <div>
+        <label class="block text-xs text-fb-gray-400 mb-1">Nachname</label>
+        <input
+          type="text"
+          [(ngModel)]="lastName"
+          class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+          placeholder="Nachname"
+        />
+      </div>
+      <div>
+        <label class="block text-xs text-fb-gray-400 mb-1">Geburtsdatum</label>
+        <input
+          type="date"
+          [(ngModel)]="birthdate"
+          class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+        />
+      </div>
+
+      <button
+        (click)="search()"
+        [disabled]="
+          searching || !firstName || !lastName || !birthdate || !selectedClubId
+        "
+        class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {{ searching ? "Suche…" : "Spieler suchen" }}
+      </button>
+    </div>
+
+    <p *ngIf="searchError" class="text-red-400 text-sm mt-3">
+      {{ searchError }}
+    </p>
+  </div>
+
+  <div
+    *ngIf="foundPlayer"
+    class="bg-fb-gray-900 border border-fb-gray-700 rounded p-4 mb-6"
+  >
+    <h2 class="text-sm font-semibold text-fb-gray-300 mb-3">
+      Spieler gefunden
+    </h2>
+    <p class="text-base font-medium mb-1">
+      {{ foundPlayer.last_name }}, {{ foundPlayer.first_name }}
+    </p>
+    <p class="text-sm text-fb-gray-500">
+      Geburtsdatum: {{ foundPlayer.birthdate | date : "dd.MM.yyyy" }}
+    </p>
+
+    <div class="mt-4 pt-4 border-t border-fb-gray-700">
+      <p class="text-sm font-medium text-fb-gray-300 mb-3">Transferdatum</p>
+      <div class="flex flex-col gap-2 mb-4">
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            [(ngModel)]="effectiveDateMode"
+            value="immediate"
+            class="accent-primary"
+          />
+          Nächstmöglich
+        </label>
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            [(ngModel)]="effectiveDateMode"
+            value="scheduled"
+            class="accent-primary"
+          />
+          Wunschdatum (mind. 7 Tage in der Zukunft)
+        </label>
+        <input
+          *ngIf="effectiveDateMode === 'scheduled'"
+          type="date"
+          [(ngModel)]="effectiveDate"
+          [min]="minEffectiveDate"
+          class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+        />
+      </div>
+
+      <p class="text-sm text-fb-gray-400 mb-3">
+        Der Transferantrag wird für deinen Verein gestellt. Der abgebende Verein
+        muss anschließend zustimmen, danach genehmigt der Landesverband.
+      </p>
+
+      <button
+        (click)="submit()"
+        [disabled]="
+          submitting || (effectiveDateMode === 'scheduled' && !effectiveDate)
+        "
+        class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {{ submitting ? "Wird gesendet…" : "Transferantrag stellen" }}
+      </button>
+    </div>
+  </div>
+</div>
