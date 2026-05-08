@@ -1,3 +1,5 @@
+export type TransferRequestType = 'transfer' | 'release';
+
 export type TransferRequestStatus =
   | 'pending_club'
   | 'pending_lv'
@@ -21,6 +23,7 @@ export interface TransferRequestClub {
 export interface TransferRequest {
   id: number;
   status: TransferRequestStatus;
+  request_type: TransferRequestType;
   season_id: number;
   rejection_reason?: string;
   effective_date?: string | null;

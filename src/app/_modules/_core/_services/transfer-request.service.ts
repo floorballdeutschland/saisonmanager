@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { TransferRequest, PlayerSearchResult } from '@floorball/types';
+import {
+  TransferRequest,
+  TransferRequestType,
+  PlayerSearchResult,
+} from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -39,12 +43,16 @@ export class TransferRequestService {
   create(
     playerId: number,
     requestingClubId: number,
+    requestType: TransferRequestType = 'transfer',
     effectiveDate?: string | null
   ) {
     return this.http.post<TransferRequest>(`${this.base}.json`, {
       player_id: playerId,
       requesting_club_id: requestingClubId,
-      ...(effectiveDate ? { effective_date: effectiveDate } : {}),
+      request_type: requestType,
+      ...(requestType === 'transfer' && effectiveDate
+        ? { effective_date: effectiveDate }
+        : {}),
     });
   }
 

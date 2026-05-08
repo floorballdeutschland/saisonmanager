@@ -14,7 +14,7 @@ import {
   SessionService,
   TransferRequestService,
 } from '@floorball/core';
-import { PlayerSearchResult } from '@floorball/types';
+import { PlayerSearchResult, TransferRequestType } from '@floorball/types';
 
 @Component({
   templateUrl: './transfer-request-initiate.component.html',
@@ -35,6 +35,7 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
   selectedClubId = 0;
   managedClubs: { id: number; name: string }[] = [];
 
+  requestType: TransferRequestType = 'transfer';
   effectiveDateMode: 'immediate' | 'scheduled' = 'immediate';
   effectiveDate = '';
 
@@ -132,11 +133,18 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
     if (this.effectiveDateMode === 'scheduled' && !this.effectiveDate) return;
 
     const effectiveDate =
-      this.effectiveDateMode === 'scheduled' ? this.effectiveDate : null;
+      this.requestType === 'transfer' && this.effectiveDateMode === 'scheduled'
+        ? this.effectiveDate
+        : null;
 
     this.submitting = true;
     this._transferService
-      .create(this.foundPlayer.id, this.selectedClubId, effectiveDate)
+      .create(
+        this.foundPlayer.id,
+        this.selectedClubId,
+        this.requestType,
+        effectiveDate
+      )
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {

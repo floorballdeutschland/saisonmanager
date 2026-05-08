@@ -122,7 +122,11 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         next: (updated) => {
           this.request = updated;
           this.actionPending = false;
-          this._notificationService.success('Transferantrag bestätigt.');
+          this._notificationService.success(
+            updated.request_type === 'release'
+              ? 'Freigabeantrag bestätigt.'
+              : 'Transferantrag bestätigt.'
+          );
           this._cdr.markForCheck();
         },
         error: (err) => {
@@ -189,7 +193,9 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
           this.request = updated;
           this.actionPending = false;
           this._notificationService.success(
-            updated.status === 'scheduled' && updated.effective_date
+            updated.request_type === 'release'
+              ? 'Spielerfreigabe erteilt.'
+              : updated.status === 'scheduled' && updated.effective_date
               ? `Transfer genehmigt – Vollzug am ${updated.effective_date
                   .split('-')
                   .reverse()
@@ -235,7 +241,17 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
     this._router.navigate(['/verwaltung/transfer-anfragen']);
   }
 
-  statusLabel(status: string): string {
+  statusLabel(status: string, requestType?: string): string {
+    if (requestType === 'release') {
+      const labels: { [key: string]: string } = {
+        pending_club: 'Warten auf abgebenden Verein',
+        pending_lv: 'Warten auf LV-Genehmigung',
+        approved: 'Freigabe erteilt',
+        rejected_by_club: 'Abgelehnt durch abgebenden Verein',
+        rejected_by_lv: 'Abgelehnt durch Landesverband',
+      };
+      return labels[status] || status;
+    }
     const labels: { [key: string]: string } = {
       pending_club: 'Warten auf abgebenden Verein',
       pending_lv: 'Warten auf Landesverband',
