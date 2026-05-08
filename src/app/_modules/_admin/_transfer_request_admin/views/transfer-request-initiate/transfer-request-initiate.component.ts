@@ -7,7 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, take, takeUntil } from 'rxjs';
 import {
   ClubService,
   NotificationService,
@@ -41,7 +41,10 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
   get minEffectiveDate(): string {
     const d = new Date();
     d.setDate(d.getDate() + 7);
-    return d.toISOString().split('T')[0];
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+      2,
+      '0'
+    )}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
   private _destroy$ = new Subject<void>();
@@ -57,7 +60,7 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._sessionService.currentUser$
-      .pipe(takeUntil(this._destroy$))
+      .pipe(take(1), takeUntil(this._destroy$))
       .subscribe({
         next: (user) => {
           this.currentUserClubIds = user?.club_ids || [];

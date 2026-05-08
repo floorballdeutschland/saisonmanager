@@ -21,6 +21,8 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
   editMode = false;
   saving = false;
 
+  allStateAssociations: StateAssociation[] = [];
+
   checklistItems: ChecklistItem[] = [];
   newQuestion = '';
   addingItem = false;
@@ -38,6 +40,16 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this._stateAssociationService
+      .adminGetAll()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (all) => {
+          this.allStateAssociations = all;
+          this._cdr.markForCheck();
+        },
+      });
+
     const id = this._route.snapshot.params['id'];
     if (id) {
       this.editMode = true;
@@ -59,6 +71,26 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  get hasParent(): boolean {
+    return !!this.stateAssociation.parent_id;
+  }
+
+  get hasChildren(): boolean {
+    return !!this.stateAssociation.children?.length;
+  }
+
+  get parent(): StateAssociation | undefined {
+    return this.allStateAssociations.find(
+      (sa) => sa.id === this.stateAssociation.parent_id
+    );
+  }
+
+  get rootStateAssociations(): StateAssociation[] {
+    return this.allStateAssociations.filter(
+      (sa) => !sa.parent_id && sa.id !== this.stateAssociation.id
+    );
+  }
+
   submit(): void {
     if (!this.stateAssociation.name?.trim()) return;
 
@@ -67,11 +99,15 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     const payload: Partial<StateAssociation> = {
       name: this.stateAssociation.name,
       short_name: this.stateAssociation.short_name,
-      vsk_email: this.stateAssociation.vsk_email,
-      sbk_email: this.stateAssociation.sbk_email,
-      express_license_enabled: this.stateAssociation.express_license_enabled,
-      require_paper_game_report:
-        this.stateAssociation.require_paper_game_report,
+      parent_id: this.stateAssociation.parent_id ?? null,
+      vsk_email: this.hasParent ? null : this.stateAssociation.vsk_email,
+      sbk_email: this.hasParent ? null : this.stateAssociation.sbk_email,
+      express_license_enabled: this.hasParent
+        ? false
+        : this.stateAssociation.express_license_enabled,
+      require_paper_game_report: this.hasParent
+        ? false
+        : this.stateAssociation.require_paper_game_report,
     };
 
     const call =

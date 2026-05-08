@@ -17,7 +17,26 @@ import { StateAssociation } from '@floorball/types';
 })
 export class StateAssociationIndexComponent implements OnInit, OnDestroy {
   stateAssociations: StateAssociation[] = [];
+  sortedRows: Array<{ sa: StateAssociation; isChild: boolean }> = [];
   loading = false;
+
+  private _buildSortedRows(): void {
+    const roots = this.stateAssociations.filter((sa) => !sa.parent_id);
+    const rows: Array<{ sa: StateAssociation; isChild: boolean }> = [];
+    for (const root of roots) {
+      rows.push({ sa: root, isChild: false });
+      for (const child of this.stateAssociations.filter(
+        (sa) => sa.parent_id === root.id
+      )) {
+        rows.push({ sa: child, isChild: true });
+      }
+    }
+    const listed = new Set(rows.map((r) => r.sa.id));
+    for (const sa of this.stateAssociations) {
+      if (!listed.has(sa.id)) rows.push({ sa, isChild: false });
+    }
+    this.sortedRows = rows;
+  }
 
   private _destroy$ = new Subject<void>();
 
@@ -44,6 +63,7 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           this.stateAssociations = result;
+          this._buildSortedRows();
           this.loading = false;
           this._cdr.markForCheck();
         },

@@ -23,7 +23,6 @@ import { TransferRequest } from '@floorball/types';
 export class TransferRequestListComponent implements OnInit, OnDestroy {
   requests: TransferRequest[] = [];
   loading = false;
-  permissions: { [key: string]: boolean } = {};
   currentUserClubIds: number[] = [];
 
   private _destroy$ = new Subject<void>();
@@ -41,7 +40,6 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (user) => {
-          this.permissions = user?.permissions || {};
           this.currentUserClubIds = user?.club_ids || [];
           this._cdr.markForCheck();
         },
