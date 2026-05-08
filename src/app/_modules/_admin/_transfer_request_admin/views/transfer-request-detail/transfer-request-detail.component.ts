@@ -7,7 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, switchMap, takeUntil } from 'rxjs';
 import {
   NotificationService,
   SessionService,
@@ -49,27 +49,24 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (user) => {
           this.currentUserClubIds = user?.club_ids || [];
-          this.isAdmin = !!user?.permissions?.['menu_item_league_admin'];
+          this.isAdmin = !!(
+            user?.permissions?.['menu_item_transfer_requests_admin'] ||
+            user?.permissions?.['menu_item_league_admin']
+          );
           this.isSbk = !!user?.permissions?.['menu_item_transfer_requests_sbk'];
           this._cdr.markForCheck();
         },
       });
 
-    this._route.params.pipe(takeUntil(this._destroy$)).subscribe((params) => {
-      this.load(params['id']);
-    });
-  }
-
-  ngOnDestroy(): void {
-    this._destroy$.next();
-    this._destroy$.complete();
-  }
-
-  load(id: string): void {
-    this.loading = true;
-    this._transferService
-      .get(parseInt(id, 10))
-      .pipe(takeUntil(this._destroy$))
+    this._route.params
+      .pipe(
+        switchMap((params) => {
+          this.loading = true;
+          this._cdr.markForCheck();
+          return this._transferService.get(parseInt(params['id'], 10));
+        }),
+        takeUntil(this._destroy$)
+      )
       .subscribe({
         next: (result) => {
           this.request = result;
@@ -84,6 +81,11 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
       });
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
   }
 
   get canApproveClub(): boolean {
@@ -103,7 +105,11 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
     if (!this.request || this.request.status !== 'scheduled') return false;
     if (!this.isAdmin && !this.isSbk) return false;
     if (!this.request.effective_date) return true;
-    return this.request.effective_date <= new Date().toISOString().slice(0, 10);
+    const today = new Date();
+    const localDate = `${today.getFullYear()}-${String(
+      today.getMonth() + 1
+    ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return this.request.effective_date <= localDate;
   }
 
   approveClub(): void {

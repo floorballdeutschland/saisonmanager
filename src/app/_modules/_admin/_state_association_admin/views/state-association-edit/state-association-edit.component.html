@@ -39,13 +39,18 @@
       <select
         [(ngModel)]="stateAssociation.parent_id"
         name="parent_id"
-        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        [disabled]="hasChildren"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
       >
         <option [ngValue]="null">– kein übergeordneter Verbund –</option>
         <option *ngFor="let sa of rootStateAssociations" [ngValue]="sa.id">
           {{ sa.name }}
         </option>
       </select>
+      <span *ngIf="hasChildren" class="text-xs text-fb-gray-400">
+        Dieser Verbund hat untergeordnete Landesverbände und kann daher keinem
+        übergeordneten Verbund zugewiesen werden.
+      </span>
       <span *ngIf="hasParent" class="text-xs text-fb-gray-400">
         Einstellungen und E-Mail-Adressen werden von
         <strong>{{ parent?.name }}</strong> geerbt.

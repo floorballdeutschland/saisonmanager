@@ -75,6 +75,10 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     return !!this.stateAssociation.parent_id;
   }
 
+  get hasChildren(): boolean {
+    return !!this.stateAssociation.children?.length;
+  }
+
   get parent(): StateAssociation | undefined {
     return this.allStateAssociations.find(
       (sa) => sa.id === this.stateAssociation.parent_id
@@ -96,14 +100,13 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       name: this.stateAssociation.name,
       short_name: this.stateAssociation.short_name,
       parent_id: this.stateAssociation.parent_id ?? null,
-      // Only send own values when not a child
-      vsk_email: this.hasParent ? undefined : this.stateAssociation.vsk_email,
-      sbk_email: this.hasParent ? undefined : this.stateAssociation.sbk_email,
+      vsk_email: this.hasParent ? null : this.stateAssociation.vsk_email,
+      sbk_email: this.hasParent ? null : this.stateAssociation.sbk_email,
       express_license_enabled: this.hasParent
-        ? undefined
+        ? false
         : this.stateAssociation.express_license_enabled,
       require_paper_game_report: this.hasParent
-        ? undefined
+        ? false
         : this.stateAssociation.require_paper_game_report,
     };
 
