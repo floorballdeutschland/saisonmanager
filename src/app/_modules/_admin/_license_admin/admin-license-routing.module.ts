@@ -23,7 +23,7 @@ const routes: Routes = [
   {
     path: 'verwaltung/lizenzwesen/verband',
     pathMatch: 'full',
-    component: Views.LicenseAdminIndexComponent,
+    component: Views.LicenseAdminGlobalListComponent,
     data: {
       scrollTop: true,
     },

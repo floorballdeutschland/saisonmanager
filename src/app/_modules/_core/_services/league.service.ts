@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import {
+  AdminLicenseEntry,
   Arena,
   Club,
   Gameday,
@@ -230,6 +231,19 @@ export class LeagueService {
     const path =
       environment.apiURL + '/admin/leagues/' + leagueId + '/licenses.json';
     return this.http.get<TeamWithPlayers[]>(path);
+  }
+
+  public getAdminLicenses(
+    seasonId?: string,
+    gameOperationId?: number
+  ): Observable<AdminLicenseEntry[]> {
+    const params: Record<string, string> = {};
+    if (seasonId) params['season_id'] = seasonId;
+    if (gameOperationId) params['game_operation_id'] = String(gameOperationId);
+    return this.http.get<AdminLicenseEntry[]>(
+      environment.apiURL + 'admin/licenses.json',
+      { params }
+    );
   }
 
   public getUserLeagueLicenses(leagueId: number) {

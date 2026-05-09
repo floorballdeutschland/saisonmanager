@@ -25,7 +25,7 @@ import * as Views from './views';
     Views.LicenseClubIndexComponent,
     Views.LicenseTeamDetailComponent,
     Views.LicenseAdminTeamEntryComponent,
-    Views.LicenseAdminIndexComponent,
+    Views.LicenseAdminGlobalListComponent,
     Views.LicenseAdminLeagueDetailComponent,
     Views.LicenseAdminDetailComponent,
     Views.LicenseUserLeagueDetailComponent,
