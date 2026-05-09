@@ -181,6 +181,14 @@
           Antrag ablehnen
         </button>
 
+        <button
+          *ngIf="player.team_license.last_status.license_status_id !== 2"
+          class="w-full h-10 font-bold text-center text-yellow-700 leading-[17px] text-sm px-5 py-2.5 mr-4 mt-2 border bg-yellow-50 hover:bg-yellow-100 border-yellow-700 rounded-[5px] cursor-pointer"
+          (click)="resetLicenseToPending(player)"
+        >
+          Zurück auf „beantragt"
+        </button>
+
         <div class="mt-2">
           <label class="font-bold text-[14px] leading-[12px]">Begründung</label>
           <input

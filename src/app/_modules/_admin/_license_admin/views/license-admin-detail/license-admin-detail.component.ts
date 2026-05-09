@@ -122,4 +122,30 @@ export class LicenseAdminDetailComponent implements OnInit {
         },
       });
   }
+
+  public resetLicenseToPending(player: PlayerWithLicense) {
+    const licenseId = player.team_license.license.id;
+
+    this._playerService
+      .updateLicenseStatus(player.id, licenseId, 2, this.reasons[licenseId])
+      .subscribe({
+        next: () => {
+          this.handledPlayer.emit(player.id);
+          this.hidePlayer[player.id] = true;
+          this._notificationService.success(
+            'Lizenz für Spieler ' +
+              player.first_name +
+              ' ' +
+              player.last_name +
+              ' (' +
+              player.id +
+              ') auf "beantragt" zurückgesetzt',
+            {
+              autoClose: true,
+              keepAfterRouteChange: false,
+            }
+          );
+        },
+      });
+  }
 }
