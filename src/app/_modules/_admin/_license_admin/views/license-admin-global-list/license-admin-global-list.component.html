@@ -159,8 +159,16 @@
       Lizenzdaten werden geladen...
     </div>
 
+    <!-- Fehler -->
+    <div *ngIf="loadError" class="bg-white p-8 text-center text-red-600">
+      <p class="mb-4">Lizenzdaten konnten nicht geladen werden.</p>
+      <button class="text-sm underline hover:text-red-800" (click)="load()">
+        Erneut versuchen
+      </button>
+    </div>
+
     <!-- Tabelle -->
-    <div *ngIf="!loading" class="bg-white overflow-x-auto">
+    <div *ngIf="!loading && !loadError" class="bg-white overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b border-gray-200 text-left">

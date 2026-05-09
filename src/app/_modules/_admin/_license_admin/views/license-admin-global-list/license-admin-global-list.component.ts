@@ -1,4 +1,9 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { AdminLicenseEntry } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
@@ -11,11 +16,13 @@ interface FilterOption {
 @Component({
   selector: 'fb-license-admin-global-list',
   templateUrl: './license-admin-global-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LicenseAdminGlobalListComponent implements OnInit {
   allEntries: AdminLicenseEntry[] = [];
   filteredEntries: AdminLicenseEntry[] = [];
   loading = true;
+  loadError = false;
 
   gameOperationOptions: FilterOption[] = [];
   leagueOptions: FilterOption[] = [];
@@ -59,12 +66,18 @@ export class LicenseAdminGlobalListComponent implements OnInit {
 
   public load(): void {
     this.loading = true;
+    this.loadError = false;
     this._leagueService.getAdminLicenses().subscribe({
       next: (entries) => {
         this.allEntries = entries;
         this.buildFilterOptions();
         this.applyFilters();
         this.loading = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.loadError = true;
         this._cdr.markForCheck();
       },
     });
