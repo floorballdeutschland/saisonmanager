@@ -80,11 +80,13 @@ The API runs at **http://localhost:3001** (port 3000 is taken by another service
 
 **Module structure** under `src/app/`:
 
-- `_modules/_admin/` – Protected admin views: `_league_admin`, `_schedule_admin`, `_license_admin`, `_player_admin`, `_club_admin`, `_team_admin`, `_referee_admin`, `_state_association_admin`, `_api_key_admin`
+- `_modules/_admin/` – Protected admin views: `_league_admin`, `_schedule_admin`, `_license_admin`, `_player_admin`, `_club_admin`, `_team_admin`, `_referee_admin`, `_referee_vm`, `_assignment_admin`, `_transfer_request_admin`, `_state_association_admin`, `_api_key_admin`
+- `_modules/_referee/` – Referee self-service portal (`/schiedsrichter/profil`, `/schiedsrichter/sperrtermine`)
 - `_modules/_public/` – Public-facing views (schedule, scores, login)
 - `_modules/_core/_services/` – Shared services (session, API calls)
 - `_modules/_uikit/` – Shared UI components
 - `_helpers/_interceptors/` – HTTP interceptors: `ApiKeyInterceptor` (adds `X-Api-Key` header) and `ErrorInterceptor` (handles 401/403/404)
+- `_helpers/_pipes/` – Domain-specific pipes (sorting, filtering, license display, game timeline) re-exported by `UikitCommonModule`
 - `_models/` – TypeScript types
 
 **Adding a new admin module** follows a fixed pattern (use `_state_association_admin` as reference):
@@ -97,12 +99,26 @@ The API runs at **http://localhost:3001** (port 3000 is taken by another service
 6. Add menu item to `metanavigation.component.html` gated by `showItem('menu_item_foo_admin')`
 7. Add `menu_item_foo_admin` to `User#permissions_items` in the API (`app/models/user.rb`)
 
+**UIKit components** (`UikitCommonModule` re-exports everything; import the module, not individual components):
+
+- `<fb-button>` – `variant`: `'default' | 'success' | 'warning' | 'error'` (no `primary`); `icon`: `'add' | 'remove' | 'edit' | 'save' | 'cancel' | 'expand'`; `size`: `'default' | 'small' | 'large'`
+- `<fb-confirmation-dialog>` / `<fb-confirmation>` – modal confirmation pattern
+- `<fb-notification>` / `<fb-sidebar>` / `<fb-header>` – layout shell components
+- `<fb-pagination>` / `<fb-match-day>` / `<fb-operation>` – listing utilities
+
 **TypeScript path aliases** (defined in `tsconfig.json`):
 
-- `@floorball/models` and `@floorball/types` → both map to `_models` (use either)
+- `@floorball/models` and `@floorball/types` → both map to `_models`; services use `@floorball/types`
 - `@floorball/core` → `_modules/_core`
-- `@floorball/uikit/*` → `_modules/_uikit/_*`
-- `@floorball/admin/*` and `@floorball/public/*` for lazy-loaded feature modules
+- `@floorball/uikit/common`, `/icons`, `/matches`, `/player`, `/team`, `/skeletons` → specific uikit sub-modules (no wildcard)
+- `@floorball/admin/<name>` and `@floorball/public/<name>` → specific paths per module, each declared in `tsconfig.json`
+- `@floorball/referee` → `_modules/_referee`
+
+**Newer admin modules:**
+
+- `_referee_vm` – Vereinsmanager view of their club's referees (`/verwaltung/schiedsrichter-verein`)
+- `_assignment_admin` – SBK assigns referees to games (`/verwaltung/schiedsrichter-ansetzungen`)
+- `_transfer_request_admin` – Player transfer request workflow (`/verwaltung/transfer-anfragen`). Status machine: `pending_club` → `pending_lv` → `approved` / `rejected_by_club` / `rejected_by_lv` / `scheduled`. VM initiates or approves; LV (Landesverband) gives final approval.
 
 **Auth flow:** `SessionService` handles login/logout. On login, the user object (including permissions hash) is stored in `localStorage`. An `ErrorInterceptor` auto-logs out on 401 and redirects on 403. After backend permission changes, users must log out and back in to pick up new `permissions` from localStorage.
 

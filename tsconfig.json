@@ -83,6 +83,7 @@
       "@floorball/admin/transfer-requests": [
         "src/app/_modules/_admin/_transfer_request_admin"
       ],
+      "@floorball/admin/users": ["src/app/_modules/_admin/_user_admin"],
       "@floorball/referee": ["src/app/_modules/_referee"],
       "@floorball/models": ["src/app/_models"]
     },
