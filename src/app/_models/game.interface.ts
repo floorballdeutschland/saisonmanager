@@ -168,6 +168,10 @@ export interface Game {
   checklist_active?: boolean;
   checklist_items?: { id: number; question: string; position: number }[];
   checklist_answers?: { item_id: number; question: string; answer: boolean }[];
+
+  post_submission_edited?: boolean;
+  record_updated_at?: string;
+  record_updated_by_name?: string;
 }
 
 export interface PeriodTitles {

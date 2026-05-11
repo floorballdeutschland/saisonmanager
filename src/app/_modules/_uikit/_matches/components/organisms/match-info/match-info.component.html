@@ -60,5 +60,20 @@
         game.special_event_string
       }}</span>
     </li>
+    <li class="grid gap-4 grid-cols-2 py-2.5" *ngIf="game.record_updated_at">
+      <span class="text-sm">Letzte Bearbeitung</span>
+      <span class="text-sm font-bold text-right">
+        <span
+          *ngIf="game.post_submission_edited"
+          class="inline-block mb-1 px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-800 rounded"
+          >Nachbearbeitung</span
+        >
+        <br *ngIf="game.post_submission_edited" />
+        {{ game.record_updated_at | date : "dd.MM.yyyy, HH:mm" }} Uhr<br />
+        <span *ngIf="game.record_updated_by_name">{{
+          game.record_updated_by_name
+        }}</span>
+      </span>
+    </li>
   </ul>
 </ng-container>
