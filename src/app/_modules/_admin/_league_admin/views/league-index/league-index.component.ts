@@ -44,17 +44,6 @@ export class LeagueIndexComponent implements OnInit {
     });
   }
 
-  public toggleScanRequired(gameOperation: GameOperationWithLeagues) {
-    const newValue = !gameOperation.scan_required;
-    this._gameOperationService
-      .updateAdminGameOperation(gameOperation.id, { scan_required: newValue })
-      .subscribe({
-        next: (updated) => {
-          gameOperation.scan_required = updated.scan_required;
-        },
-      });
-  }
-
   public updateStateAssociation(
     gameOperation: GameOperationWithLeagues,
     stateAssociationId: number | null

@@ -97,6 +97,7 @@
           (click)="createGame()"
           *ngIf="!existingGame"
           class="px-3 md:px-1"
+          title="Spiel anlegen"
           type="submit"
         >
           <!-- Heroicon name: add -->
@@ -119,6 +120,7 @@
         <button
           *ngIf="existingGame && !existingGame.started && hasChanges()"
           class="px-3 md:px-1"
+          title="Änderungen speichern"
           type="submit"
         >
           <!-- Heroicon name: check -->
@@ -142,6 +144,7 @@
           (click)="resetGame()"
           *ngIf="existingGame && !existingGame.started && hasChanges()"
           class="px-3 md:px-1"
+          title="Änderungen verwerfen"
         >
           <!-- Heroicon name: check -->
           <svg
@@ -164,6 +167,7 @@
           (click)="deleteGame()"
           *ngIf="existingGame && !existingGame.started && !hasChanges()"
           class="px-3 md:px-1"
+          title="Spiel löschen"
         >
           <!-- Heroicon name: check -->
           <svg
@@ -187,6 +191,7 @@
           class="relative px-3 md:px-1"
           [ngClass]="{ 'megaphone-stroke': hasNotice }"
           *ngIf="!existingGame?.started || false"
+          title="Spiel-Notiz bearbeiten"
         >
           <!-- Heroicon name: megaphone -->
           <svg
@@ -210,6 +215,7 @@
           class="relative px-3 md:px-1"
           [ngClass]="{ 'calculator-stroke': hasGameDependencies }"
           *ngIf="!existingGame?.started || false"
+          title="Playoff-Abhängigkeiten / Gruppe bearbeiten"
         >
           <!-- Heroicon name: calculator -->
           <svg

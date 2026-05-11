@@ -35,7 +35,7 @@ export class GameService {
   }
 
   public updateGame(game: GameInput) {
-    const path = environment.apiURL + 'games/' + game.id || '0' + '.json';
+    const path = environment.apiURL + 'games/' + (game.id ?? 0) + '.json';
     return this.http.put<{ success: boolean }>(path, {
       ...game,
       notice_type: game.notice_type !== 'null' ? game.notice_type : null,
@@ -49,7 +49,7 @@ export class GameService {
   }
 
   public deleteGame(game: GameInput) {
-    const path = environment.apiURL + 'games/' + game.id || '0' + '.json';
+    const path = environment.apiURL + 'games/' + (game.id ?? 0) + '.json';
     return this.http.delete<{ success: boolean }>(path);
   }
 

@@ -108,6 +108,9 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       require_paper_game_report: this.hasParent
         ? false
         : this.stateAssociation.require_paper_game_report,
+      scan_required: this.hasParent
+        ? false
+        : this.stateAssociation.scan_required,
     };
 
     const call =
