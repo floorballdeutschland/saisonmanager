@@ -90,6 +90,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
       approved: 'Genehmigt',
       rejected_by_club: 'Abgelehnt (Verein)',
       rejected_by_lv: 'Abgelehnt (LV)',
+      revoked: 'Freigabe zurückgezogen',
     };
     return labels[status] || status;
   }
@@ -97,7 +98,8 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   statusClass(status: string): string {
     if (status === 'approved') return 'text-green-600 font-medium';
     if (status === 'scheduled') return 'text-yellow-400 font-medium';
-    if (status.startsWith('rejected')) return 'text-red-500';
+    if (status.startsWith('rejected') || status === 'revoked')
+      return 'text-red-500';
     return 'text-primary font-medium';
   }
 
@@ -126,7 +128,10 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
 
   get completedRequests(): TransferRequest[] {
     return this.requests.filter(
-      (r) => r.status === 'approved' || r.status.startsWith('rejected')
+      (r) =>
+        r.status === 'approved' ||
+        r.status === 'revoked' ||
+        r.status.startsWith('rejected')
     );
   }
 }

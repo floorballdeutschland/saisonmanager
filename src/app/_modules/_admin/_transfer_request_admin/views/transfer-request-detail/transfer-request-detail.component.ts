@@ -27,6 +27,8 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
   rejectionReason = '';
   showRejectForm = false;
   rejectTarget: 'club' | 'lv' | null = null;
+  showRevokeForm = false;
+  revocationReason = '';
 
   currentUserClubIds: number[] = [];
   isAdmin = false;
@@ -112,6 +114,13 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
     return this.request.effective_date <= localDate;
   }
 
+  get canRevokeRelease(): boolean {
+    if (!this.request) return false;
+    if (this.request.request_type !== 'release') return false;
+    if (this.request.status !== 'approved') return false;
+    return this.isAdmin || this.isSbk;
+  }
+
   approveClub(): void {
     if (!this.request) return;
     this.actionPending = true;
@@ -149,6 +158,40 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
   cancelReject(): void {
     this.showRejectForm = false;
     this.rejectTarget = null;
+  }
+
+  startRevoke(): void {
+    this.revocationReason = '';
+    this.showRevokeForm = true;
+  }
+
+  cancelRevoke(): void {
+    this.showRevokeForm = false;
+  }
+
+  submitRevoke(): void {
+    if (!this.request || !this.revocationReason.trim()) return;
+
+    this.actionPending = true;
+    this._transferService
+      .revokeRelease(this.request.id, this.revocationReason)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.request = updated;
+          this.showRevokeForm = false;
+          this.actionPending = false;
+          this._notificationService.success('Spielerfreigabe zurückgezogen.');
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this._notificationService.error(
+            err?.error?.error || 'Freigabe konnte nicht zurückgezogen werden.'
+          );
+          this.actionPending = false;
+          this._cdr.markForCheck();
+        },
+      });
   }
 
   submitReject(): void {
@@ -253,6 +296,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         approved: 'Freigabe erteilt',
         rejected_by_club: 'Abgelehnt durch abgebenden Verein',
         rejected_by_lv: 'Abgelehnt durch Landesverband',
+        revoked: 'Freigabe zurückgezogen',
       };
       return labels[status] || status;
     }
@@ -270,7 +314,8 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
   statusClass(status: string): string {
     if (status === 'approved') return 'text-green-600 font-medium';
     if (status === 'scheduled') return 'text-yellow-400 font-medium';
-    if (status.startsWith('rejected')) return 'text-red-500 font-medium';
+    if (status.startsWith('rejected') || status === 'revoked')
+      return 'text-red-500 font-medium';
     return 'text-primary font-medium';
   }
 }

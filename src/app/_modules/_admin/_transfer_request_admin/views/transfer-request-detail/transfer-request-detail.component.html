@@ -169,6 +169,98 @@
         </button>
       </div>
     </div>
+
+    <!-- Revoke release button -->
+    <div
+      *ngIf="canRevokeRelease && !showRevokeForm && !showRejectForm"
+      class="mb-4"
+    >
+      <button
+        (click)="startRevoke()"
+        [disabled]="actionPending"
+        class="border border-red-500 text-red-400 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
+      >
+        Freigabe zurückziehen
+      </button>
+    </div>
+
+    <!-- Revoke form -->
+    <div
+      *ngIf="showRevokeForm"
+      class="bg-fb-gray-900 border border-red-800 rounded p-4 mb-4"
+    >
+      <p class="text-sm font-medium mb-1">Freigabe zurückziehen</p>
+      <p class="text-xs text-fb-gray-400 mb-3">
+        Alle beantragten und erteilten Lizenzen des Spielers für Teams von
+        <strong class="text-white">{{ request?.requesting_club?.name }}</strong>
+        werden auf ungültig gesetzt.
+      </p>
+      <textarea
+        [(ngModel)]="revocationReason"
+        rows="3"
+        class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500 resize-none"
+        placeholder="Begründung (Pflichtfeld)"
+      ></textarea>
+      <div class="flex gap-3 mt-3">
+        <button
+          (click)="submitRevoke()"
+          [disabled]="actionPending || !revocationReason.trim()"
+          class="bg-red-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-red-500 transition-colors disabled:opacity-50"
+        >
+          {{ actionPending ? "Wird verarbeitet…" : "Freigabe zurückziehen" }}
+        </button>
+        <button
+          (click)="cancelRevoke()"
+          class="text-fb-gray-400 px-4 py-2 text-sm hover:text-white"
+        >
+          Abbrechen
+        </button>
+      </div>
+    </div>
+
+    <!-- Release log (only for approved/revoked releases) -->
+    <div
+      *ngIf="
+        request?.request_type === 'release' &&
+        (request?.status === 'approved' || request?.status === 'revoked')
+      "
+      class="bg-fb-gray-900 border border-fb-gray-700 rounded p-4 mt-2"
+    >
+      <p
+        class="text-xs font-semibold text-fb-gray-400 uppercase tracking-wide mb-3"
+      >
+        Protokoll
+      </p>
+      <div class="space-y-2 text-sm">
+        <div class="flex items-start gap-2">
+          <span class="text-green-500 mt-0.5">✓</span>
+          <span class="text-fb-gray-300">
+            Freigabe erteilt am
+            <strong class="text-white">{{
+              request?.lv_approved_at | date : "dd.MM.yyyy"
+            }}</strong>
+          </span>
+        </div>
+        <div
+          *ngIf="request?.status === 'revoked'"
+          class="flex items-start gap-2"
+        >
+          <span class="text-red-400 mt-0.5">✕</span>
+          <span class="text-fb-gray-300">
+            Freigabe zurückgezogen am
+            <strong class="text-white">{{
+              request?.revoked_at | date : "dd.MM.yyyy"
+            }}</strong>
+            <span
+              *ngIf="request?.revocation_reason"
+              class="block text-xs text-red-400 mt-0.5"
+            >
+              {{ request?.revocation_reason }}
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
   </ng-container>
 
   <div *ngIf="!loading && !request" class="text-fb-gray-500 text-sm py-8">
