@@ -1,0 +1,119 @@
+<div class="container mx-auto px-4 lg:px-8">
+  <h1 class="font-bold text-[32px] lg:text-[42px] pt-4 lg:pt-0 my-4 lg:my-8">
+    Benutzerverwaltung
+  </h1>
+  <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
+    Neuen Benutzer anlegen
+  </h2>
+</div>
+
+<ng-container>
+  <div class="bg-fb-gray-800 pt-4 lg:pt-8 pb-16">
+    <div class="container mx-auto px-4 lg:px-8">
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9">
+        <div>
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Benutzerdaten
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="font-bold">Benutzername</div>
+              <div>
+                <input
+                  [(ngModel)]="userName"
+                  type="text"
+                  class="w-full"
+                  placeholder="z.B. max_mustermann"
+                />
+              </div>
+
+              <div class="font-bold">Vorname</div>
+              <div>
+                <input [(ngModel)]="firstName" type="text" class="w-full" />
+              </div>
+
+              <div class="font-bold">Nachname</div>
+              <div>
+                <input [(ngModel)]="lastName" type="text" class="w-full" />
+              </div>
+
+              <div class="font-bold">E-Mail</div>
+              <div>
+                <input
+                  [(ngModel)]="email"
+                  type="email"
+                  class="w-full"
+                  placeholder="z.B. max@verein.de"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Rolle &amp; Zuordnung
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="font-bold">Rolle</div>
+              <div>
+                <select [(ngModel)]="selectedRoleId" class="w-full">
+                  <option *ngFor="let r of availableRoles" [ngValue]="r.id">
+                    {{ r.label }}
+                  </option>
+                </select>
+              </div>
+
+              <ng-container *ngIf="selectedRole?.needsClub">
+                <div class="font-bold">Verein</div>
+                <div>
+                  <select [(ngModel)]="selectedClubId" class="w-full">
+                    <option [ngValue]="null">– Verein auswählen –</option>
+                    <option *ngFor="let c of clubs" [ngValue]="c.id">
+                      {{ c.name }}
+                    </option>
+                  </select>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="selectedRole?.needsGo">
+                <div class="font-bold">Verbund</div>
+                <div>
+                  <select [(ngModel)]="selectedGoId" class="w-full">
+                    <option [ngValue]="null">– Verbund auswählen –</option>
+                    <option *ngFor="let go of gameOperations" [ngValue]="go.id">
+                      {{ go.name }}
+                    </option>
+                  </select>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <p class="text-sm text-fb-gray-500 mb-4">
+              Der Benutzer erhält automatisch eine E-Mail mit einem Link zum
+              Passwort setzen.
+            </p>
+            <div class="flex items-center gap-4">
+              <a
+                [class.opacity-50]="!isValid || saving"
+                [class.cursor-not-allowed]="!isValid || saving"
+                [class.cursor-pointer]="isValid && !saving"
+                class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
+                (click)="submit()"
+              >
+                {{ saving ? "Wird angelegt…" : "Benutzer anlegen" }}
+              </a>
+              <a
+                class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                [routerLink]="['/', 'verwaltung', 'benutzer']"
+              >
+                Abbrechen
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

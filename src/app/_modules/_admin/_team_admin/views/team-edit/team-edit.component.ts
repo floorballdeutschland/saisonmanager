@@ -235,6 +235,24 @@ export class TeamEditComponent implements OnInit, OnDestroy {
       });
   }
 
+  public toggleCupLeague(team: Team, leagueId: number, event: Event): void {
+    if (!team.cup_leagues) team.cup_leagues = [];
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked) {
+      if (!team.cup_leagues.includes(leagueId)) team.cup_leagues.push(leagueId);
+    } else {
+      team.cup_leagues = team.cup_leagues.filter((id) => id !== leagueId);
+    }
+  }
+
+  public hasCupLeagueOptions(team: Team): boolean {
+    const go = this.permittedGameOperations.find(
+      (g) => g.id === team.game_operation_id
+    );
+    if (!go) return false;
+    return go.leagues.some((l) => l.id !== team.league_id);
+  }
+
   public submit(team: Team) {
     this._leagueService.adminCreateTeam(team).subscribe({
       next: (result) => {

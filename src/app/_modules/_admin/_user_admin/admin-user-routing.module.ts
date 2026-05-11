@@ -10,6 +10,12 @@ const routes: Routes = [
     data: { scrollTop: true },
   },
   {
+    path: 'verwaltung/benutzer/neu',
+    pathMatch: 'full',
+    component: Views.UserCreateComponent,
+    data: { scrollTop: true },
+  },
+  {
     path: 'verwaltung/benutzer/:id/bearbeiten',
     pathMatch: 'full',
     component: Views.UserEditComponent,

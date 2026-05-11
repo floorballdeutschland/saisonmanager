@@ -71,13 +71,37 @@
                 {{ team.league_id }}
               </div>
 
-              <div class="font-bold">weitere Liga IDs</div>
+              <div class="font-bold">
+                Weitere Ligen<br /><small class="font-normal text-gray-400"
+                  >Cup / Endrunde</small
+                >
+              </div>
               <div>
-                {{
-                  team.cup_leagues && team.cup_leagues.length > 0
-                    ? team.cup_leagues
-                    : "keine hinterlegt"
-                }}
+                <ng-container *ngFor="let go of permittedGameOperations">
+                  <ng-container *ngIf="go.id === team.game_operation_id">
+                    <ng-container *ngFor="let league of go.leagues">
+                      <ng-container *ngIf="league.id !== team.league_id">
+                        <label
+                          class="flex items-center gap-2 mb-1 text-sm cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            [checked]="
+                              (team.cup_leagues || []).includes(league.id)
+                            "
+                            (change)="toggleCupLeague(team, league.id, $event)"
+                          />
+                          {{ league.name }}
+                        </label>
+                      </ng-container>
+                    </ng-container>
+                  </ng-container>
+                </ng-container>
+                <span
+                  *ngIf="!hasCupLeagueOptions(team)"
+                  class="text-gray-400 text-sm"
+                  >keine weiteren Ligen im selben Verbund</span
+                >
               </div>
 
               <div class="font-bold">Verein</div>

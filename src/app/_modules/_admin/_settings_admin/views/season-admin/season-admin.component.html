@@ -1,0 +1,99 @@
+<div class="container mx-auto px-4 lg:px-8">
+  <h1 class="font-bold text-[32px] lg:text-[42px] pt-4 lg:pt-0 my-4 lg:my-8">
+    Saison-Verwaltung
+  </h1>
+</div>
+
+<ng-container>
+  <div class="bg-fb-gray-800 pt-4 lg:pt-8 pb-16">
+    <div class="container mx-auto px-4 lg:px-8">
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9">
+        <div
+          *ngIf="loading"
+          class="bg-white my-[5px] py-[15px] px-[30px] text-gray-400 text-sm"
+        >
+          Lade Saison-Daten…
+        </div>
+
+        <div *ngIf="!loading">
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Aktuelle Saison
+            </div>
+            <p class="text-lg font-bold">{{ currentSeasonName }}</p>
+            <p *ngIf="success" class="mt-2 text-sm text-green-600 font-bold">
+              Saison erfolgreich auf „{{ currentSeasonName }}" umgestellt.
+            </p>
+          </div>
+
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Saison wechseln
+            </div>
+
+            <div class="flex flex-col gap-3">
+              <div>
+                <label class="block text-sm font-bold mb-1"
+                  >Neue aktive Saison</label
+                >
+                <select
+                  [(ngModel)]="selectedSeasonId"
+                  (ngModelChange)="onSeasonChange()"
+                  class="w-full border border-fb-gray-600 rounded-[5px] px-2 py-1.5 text-sm"
+                >
+                  <option *ngFor="let s of seasons" [ngValue]="s.id">
+                    {{ s.name
+                    }}{{ s.id === currentSeasonId ? " (aktuell)" : "" }}
+                  </option>
+                </select>
+              </div>
+
+              <ng-container *ngIf="isChanging">
+                <div
+                  class="bg-amber-50 border border-amber-300 rounded p-4 text-sm"
+                >
+                  <p class="font-bold text-amber-800 mb-2">
+                    ⚠ ACHTUNG: Diese Aktion hat weitreichende Folgen
+                  </p>
+                  <ul class="list-disc ml-4 text-amber-700 space-y-1">
+                    <li>
+                      Alle TM-Nutzer werden beim nächsten Login ausgesperrt, da
+                      ihre Teams nicht mehr zur aktiven Saison gehören.
+                    </li>
+                    <li>
+                      Spieler-Lizenzen der alten Saison verlieren die Gültigkeit
+                      für neue Spielberichte.
+                    </li>
+                    <li>
+                      SBK-Nutzer müssen neue Ligen anlegen; Vereine müssen ihre
+                      Teams neu anmelden.
+                    </li>
+                  </ul>
+                </div>
+
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" [(ngModel)]="confirmed" />
+                  <span
+                    >Ich verstehe die Konsequenzen und möchte von
+                    <strong>{{ currentSeasonName }}</strong> auf
+                    <strong>{{ selectedSeasonName }}</strong> wechseln.</span
+                  >
+                </label>
+
+                <a
+                  [class.opacity-50]="!confirmed || saving"
+                  [class.cursor-not-allowed]="!confirmed || saving"
+                  [class.cursor-pointer]="confirmed && !saving"
+                  class="inline-block font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-500 hover:bg-red-600 border-red-600 rounded-[5px]"
+                  (click)="submit()"
+                >
+                  {{ saving ? "Wird umgestellt…" : "Saison jetzt umstellen" }}
+                </a>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

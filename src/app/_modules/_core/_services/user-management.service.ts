@@ -27,6 +27,22 @@ export class UserManagementService {
     return this.http.patch<UserAdminEntry>(`${this.base}/${id}.json`, data);
   }
 
+  createUser(data: {
+    user: {
+      user_name: string;
+      first_name: string;
+      last_name: string;
+      email: string;
+    };
+    role: {
+      user_group_id: number;
+      game_operation_id?: number | null;
+      club_id?: number | null;
+    };
+  }): Observable<UserAdminEntry> {
+    return this.http.post<UserAdminEntry>(`${this.base}.json`, data);
+  }
+
   triggerPasswordReset(id: number): Observable<{ success: boolean }> {
     return this.http.post<{ success: boolean }>(
       `${this.base}/${id}/trigger_password_reset.json`,

@@ -70,6 +70,10 @@ export class UserIndexComponent implements OnInit, OnDestroy {
     return !!this.currentUser?.permissions['menu_item_user_admin'];
   }
 
+  get canCreate(): boolean {
+    return !!this.currentUser?.permissions['menu_item_user_create'];
+  }
+
   roleLabel(user: UserAdminEntry): string {
     if (!user.roles.length) return '–';
     return user.roles.map((r) => r.role_name).join(', ');

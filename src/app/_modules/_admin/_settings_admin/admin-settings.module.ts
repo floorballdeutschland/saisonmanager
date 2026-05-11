@@ -2,21 +2,16 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UikitCommonModule } from '@floorball/uikit/common';
-import { AdminUserRoutingModule } from './admin-user-routing.module';
-
+import { AdminSettingsRoutingModule } from './admin-settings-routing.module';
 import * as Views from './views';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
-    AdminUserRoutingModule,
+    AdminSettingsRoutingModule,
     UikitCommonModule,
   ],
-  declarations: [
-    Views.UserIndexComponent,
-    Views.UserEditComponent,
-    Views.UserCreateComponent,
-  ],
+  declarations: [Views.SeasonAdminComponent],
 })
-export class AdminUserModule {}
+export class AdminSettingsModule {}

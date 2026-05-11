@@ -85,6 +85,7 @@
       ],
       "@floorball/admin/users": ["src/app/_modules/_admin/_user_admin"],
       "@floorball/admin/arena": ["src/app/_modules/_admin/_arena_admin"],
+      "@floorball/admin/settings": ["src/app/_modules/_admin/_settings_admin"],
       "@floorball/referee": ["src/app/_modules/_referee"],
       "@floorball/models": ["src/app/_models"]
     },

@@ -1,6 +1,13 @@
 <div class="p-4 lg:p-8">
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold">Benutzerverwaltung</h1>
+    <a
+      *ngIf="canCreate"
+      [routerLink]="['/', 'verwaltung', 'benutzer', 'neu']"
+      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+    >
+      Neuen Benutzer anlegen
+    </a>
   </div>
 
   <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8 text-center">
@@ -24,9 +31,17 @@
       <tbody>
         <tr
           *ngFor="let user of users"
+          [class.bg-amber-50]="user.inactive"
           class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
         >
-          <td class="py-2 pr-4 font-medium">{{ user.name || "–" }}</td>
+          <td class="py-2 pr-4 font-medium">
+            {{ user.name || "–" }}
+            <span
+              *ngIf="user.inactive"
+              class="ml-2 text-xs font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded"
+              >Inaktiv (&gt;3 Jahre)</span
+            >
+          </td>
           <td class="py-2 pr-4 text-fb-gray-500">{{ user.username }}</td>
           <td class="py-2 pr-4 text-fb-gray-500">{{ user.email || "–" }}</td>
           <td class="py-2 pr-4">{{ roleLabel(user) }}</td>
