@@ -105,9 +105,6 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       express_license_enabled: this.hasParent
         ? false
         : this.stateAssociation.express_license_enabled,
-      require_paper_game_report: this.hasParent
-        ? false
-        : this.stateAssociation.require_paper_game_report,
       scan_required: this.hasParent
         ? false
         : this.stateAssociation.scan_required,

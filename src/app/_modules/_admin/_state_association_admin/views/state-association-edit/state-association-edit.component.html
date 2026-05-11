@@ -87,32 +87,6 @@
             </span>
           </span>
         </label>
-        <label
-          class="flex items-start gap-3"
-          [class.cursor-not-allowed]="hasParent"
-          [class.cursor-pointer]="!hasParent"
-        >
-          <input
-            type="checkbox"
-            [(ngModel)]="stateAssociation.require_paper_game_report"
-            name="require_paper_game_report"
-            [disabled]="hasParent"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span class="flex flex-col gap-0.5">
-            <span class="text-sm font-bold"
-              >E-Mail-Aufforderung an Ausrichter</span
-            >
-            <span class="text-xs text-fb-gray-400"
-              >Nach Abschluss eines Spieltags erhält der Ausrichter eine E-Mail
-              mit der Aufforderung, den Spielberichtsbogen hochzuladen.</span
-            >
-            <span *ngIf="hasParent" class="text-xs text-fb-gray-400 italic">
-              Wert: {{ parent?.require_paper_game_report ? "Ja" : "Nein" }}
-              (geerbt)
-            </span>
-          </span>
-        </label>
         <label class="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
@@ -126,7 +100,8 @@
             >
             <span class="text-xs text-fb-gray-400"
               >Teilnehmer müssen nach dem Spiel den physischen
-              Spielberichtsbogen als Scan oder Foto hochladen.</span
+              Spielberichtsbogen hochladen. Der Ausrichter erhält nach
+              Spieltagsabschluss eine E-Mail-Erinnerung.</span
             >
           </span>
         </label>
