@@ -7,10 +7,24 @@ import { Arena } from '@floorball/types';
   providedIn: 'root',
 })
 export class ArenaService {
+  private adminBase = environment.apiURL + 'admin/arenas';
+
   constructor(private http: HttpClient) {}
 
   public getArenas() {
-    const path = environment.apiURL + 'arenas.json';
-    return this.http.get<Arena[]>(path);
+    return this.http.get<Arena[]>(environment.apiURL + 'arenas.json');
+  }
+
+  public getAdminArenas() {
+    return this.http.get<Arena[]>(`${this.adminBase}.json`);
+  }
+
+  public createArena(data: Partial<Arena>, force = false) {
+    const body = force ? { ...data, force: true } : data;
+    return this.http.post<Arena>(`${this.adminBase}.json`, body);
+  }
+
+  public updateArena(id: number, data: Partial<Arena>) {
+    return this.http.patch<Arena>(`${this.adminBase}/${id}.json`, data);
   }
 }

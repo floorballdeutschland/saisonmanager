@@ -27,6 +27,14 @@
           >Vereinsverwaltung</a
         >
       </li>
+      <li class="mt-4 mb-4" *ngIf="showItem('menu_item_arena_admin')">
+        <a
+          class="font-bold text-fb-gray-500 hover:text-black text-base"
+          [routerLink]="['/', 'verwaltung', 'spielorte']"
+          (click)="closeMenu()"
+          >Spielorte</a
+        >
+      </li>
       <li class="mt-4 mb-4" *ngIf="showItem('menu_item_licence_list')">
         <a
           class="font-bold text-fb-gray-500 hover:text-black text-base"
