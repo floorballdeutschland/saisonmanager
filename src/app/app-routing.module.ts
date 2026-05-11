@@ -96,6 +96,11 @@ const routes: Routes = [
         loadChildren: () =>
           import('@floorball/admin/users').then((m) => m.AdminUserModule),
       },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/admin/arena').then((m) => m.AdminArenaModule),
+      },
     ],
   },
   {

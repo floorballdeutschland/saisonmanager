@@ -1,0 +1,76 @@
+<div class="p-4 lg:p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Spielorte</h1>
+    <a
+      [routerLink]="['/', 'verwaltung', 'spielorte', 'neu']"
+      class="text-sm bg-fb-gray-800 hover:bg-fb-gray-700 px-3 py-1.5 rounded"
+    >
+      Neuen Spielort anlegen
+    </a>
+  </div>
+
+  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8 text-center">
+    Lade Spielorte…
+  </div>
+
+  <div *ngIf="!loading" class="overflow-x-auto">
+    <p class="text-sm text-fb-gray-500 mb-3">{{ arenas.length }} Einträge</p>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-fb-gray-700 text-left">
+          <th class="py-2 pr-4 font-bold">Name</th>
+          <th class="py-2 pr-4 font-bold">Stadt</th>
+          <th class="py-2 pr-4 font-bold">Adresse</th>
+          <th class="py-2 pr-4 font-bold">Status</th>
+          <th class="py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let arena of arenas"
+          class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
+        >
+          <td class="py-2 pr-4 font-medium">{{ arena.name }}</td>
+          <td class="py-2 pr-4 text-fb-gray-500">{{ arena.city }}</td>
+          <td class="py-2 pr-4 text-fb-gray-500">
+            <span *ngIf="arena.street">
+              {{ arena.street }} {{ arena.housenumber }},
+              {{ arena.postcode }}
+            </span>
+            <span *ngIf="!arena.street">–</span>
+          </td>
+          <td class="py-2 pr-4">
+            <span *ngIf="arena.disabled" class="text-xs font-bold text-red-500">
+              Deaktiviert
+            </span>
+            <span
+              *ngIf="!arena.disabled"
+              class="text-xs font-bold text-green-600"
+            >
+              Aktiv
+            </span>
+          </td>
+          <td class="py-2 text-right">
+            <a
+              [routerLink]="[
+                '/',
+                'verwaltung',
+                'spielorte',
+                arena.id,
+                'bearbeiten'
+              ]"
+              class="text-sm text-fb-gray-500 hover:text-black"
+            >
+              Bearbeiten
+            </a>
+          </td>
+        </tr>
+        <tr *ngIf="arenas.length === 0">
+          <td colspan="5" class="py-8 text-center text-fb-gray-500">
+            Keine Spielorte gefunden.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
