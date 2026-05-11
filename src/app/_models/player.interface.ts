@@ -18,6 +18,7 @@ export interface Player {
   clubs?: ClubMembership[];
   licenses?: PlayerLicense[];
   security_id?: string;
+  deactivated_at?: string;
 }
 
 export interface PlayerWithLicense extends Player {

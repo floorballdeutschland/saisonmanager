@@ -116,4 +116,10 @@ export class PlayerService {
       license_id: licenseId,
     });
   }
+
+  public deactivatePlayer(playerId: number) {
+    const path =
+      environment.apiURL + 'admin/players/' + playerId + '/deactivate.json';
+    return this.http.post<Player>(path, {});
+  }
 }
