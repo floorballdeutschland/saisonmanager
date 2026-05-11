@@ -38,6 +38,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   transferClubId?: string = '0';
 
   editMode = true;
+  confirmDeactivate = false;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -339,6 +340,38 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  get isDeactivated(): boolean {
+    return !!this.player?.deactivated_at;
+  }
+
+  get canDeactivate(): boolean {
+    return (
+      !this.isDeactivated && this.editMode && this.can('player_deactivate')
+    );
+  }
+
+  public deactivatePlayer(): void {
+    if (!this.player) return;
+    this._playerService.deactivatePlayer(this.player.id).subscribe({
+      next: (updated) => {
+        this.player = updated;
+        this.confirmDeactivate = false;
+        this._notificationService.success('Spieler wurde deaktiviert.', {
+          autoClose: true,
+          keepAfterRouteChange: false,
+        });
+        this._cdr.markForCheck();
+      },
+      error: (error) => {
+        this._notificationService.error(error, {
+          autoClose: false,
+          keepAfterRouteChange: false,
+        });
+        this.confirmDeactivate = false;
+      },
+    });
   }
 
   public setLicenseToTransfer(license: PlayerLicense) {

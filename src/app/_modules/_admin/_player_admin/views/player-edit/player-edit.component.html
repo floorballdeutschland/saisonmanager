@@ -53,8 +53,14 @@
 
             <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
               <label for="first_name" class="font-bold">Spieler ID</label>
-              <div class="md:col-span-2 xl:col-span-3">
+              <div class="md:col-span-2 xl:col-span-3 flex items-center gap-2">
                 {{ editMode ? player.id : "Wird nach dem Anlegen festgelegt" }}
+                <span
+                  *ngIf="isDeactivated"
+                  class="text-xs font-semibold px-1.5 py-0.5 rounded bg-red-100 text-red-700"
+                >
+                  Deaktiviert
+                </span>
               </div>
 
               <label for="first_name" class="font-bold">Vorname</label>
@@ -384,6 +390,65 @@
                     Spieler transferieren
                   </a>
                 </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Deactivation section -->
+        <ng-container *ngIf="editMode && player">
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div
+              class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
+            >
+              Vereinsaustritt
+              <span
+                *ngIf="isDeactivated"
+                class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 normal-case"
+              >
+                Deaktiviert am {{ player.deactivated_at | date : "dd.MM.yyyy" }}
+              </span>
+            </div>
+
+            <p *ngIf="isDeactivated" class="text-sm text-gray-500">
+              Dieser Spieler ist deaktiviert und erscheint nicht mehr in der
+              aktiven Spielerliste.
+            </p>
+
+            <div *ngIf="canDeactivate && !confirmDeactivate">
+              <button
+                (click)="confirmDeactivate = true"
+                class="font-bold text-red-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-red-50 border-red-400 rounded-[5px] cursor-pointer"
+              >
+                Spieler deaktivieren
+              </button>
+            </div>
+
+            <div
+              *ngIf="confirmDeactivate"
+              class="border border-red-300 rounded p-4 bg-red-50"
+            >
+              <p class="text-sm font-semibold text-red-800 mb-1">
+                Spieler wirklich deaktivieren?
+              </p>
+              <p class="text-sm text-red-700 mb-4">
+                Der Spieler wird aus der aktiven Spielerliste entfernt. Alle
+                Vereinsmitgliedschaften und Lizenzen werden auf ungültig
+                gesetzt. Der Datensatz bleibt erhalten.
+              </p>
+              <div class="flex gap-3">
+                <button
+                  (click)="deactivatePlayer()"
+                  class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-[5px] cursor-pointer"
+                >
+                  Ja, deaktivieren
+                </button>
+                <button
+                  (click)="confirmDeactivate = false"
+                  class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                >
+                  Abbrechen
+                </button>
               </div>
             </div>
           </div>
