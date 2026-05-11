@@ -27,6 +27,9 @@ export class SeasonAdminComponent implements OnInit, OnDestroy {
   confirmed = false;
   success = false;
 
+  newSeasonName = '';
+  creatingSeason = false;
+
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -80,6 +83,34 @@ export class SeasonAdminComponent implements OnInit, OnDestroy {
     this.confirmed = false;
     this.success = false;
     this._cdr.markForCheck();
+  }
+
+  createSeason(): void {
+    const name = this.newSeasonName.trim();
+    if (!name || this.creatingSeason) return;
+
+    this.creatingSeason = true;
+    this._settingsService
+      .createSeason(name)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (season) => {
+          this.seasons = [season, ...this.seasons];
+          this.newSeasonName = '';
+          this.creatingSeason = false;
+          this._notificationService.success(
+            `Saison „${season.name}" angelegt.`,
+            { autoClose: true }
+          );
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this.creatingSeason = false;
+          const msg = err?.error?.error ?? 'Fehler beim Anlegen der Saison';
+          this._notificationService.error(msg, { autoClose: false });
+          this._cdr.markForCheck();
+        },
+      });
   }
 
   submit(): void {

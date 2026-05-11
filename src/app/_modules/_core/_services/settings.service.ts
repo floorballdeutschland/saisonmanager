@@ -26,6 +26,10 @@ export class SettingsService {
     return this.http.get<SeasonsResponse>(`${this.base}/seasons.json`);
   }
 
+  createSeason(name: string): Observable<SeasonInfo> {
+    return this.http.post<SeasonInfo>(`${this.base}/seasons.json`, { name });
+  }
+
   updateCurrentSeason(
     seasonId: number
   ): Observable<{ current_season_id: number }> {

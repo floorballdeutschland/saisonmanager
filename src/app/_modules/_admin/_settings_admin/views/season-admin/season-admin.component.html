@@ -28,6 +28,30 @@
 
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Neue Saison anlegen
+            </div>
+            <div class="flex gap-2 items-end">
+              <div class="flex-1">
+                <label class="block text-sm font-bold mb-1">Saison-Name</label>
+                <input
+                  type="text"
+                  [(ngModel)]="newSeasonName"
+                  placeholder="z.B. 2026/27"
+                  class="w-full border border-fb-gray-600 rounded-[5px] px-2 py-1.5 text-sm bg-white"
+                />
+              </div>
+              <button
+                (click)="createSeason()"
+                [disabled]="!newSeasonName.trim() || creatingSeason"
+                class="text-sm font-bold text-white px-4 py-1.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 rounded-[5px] border border-sky-600"
+              >
+                {{ creatingSeason ? "Wird angelegt…" : "Anlegen" }}
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               Saison wechseln
             </div>
 

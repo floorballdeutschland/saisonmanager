@@ -12,7 +12,6 @@ export interface StateAssociation {
   vsk_email?: string | null;
   sbk_email?: string | null;
   express_license_enabled?: boolean;
-  require_paper_game_report?: boolean;
   scan_required?: boolean;
   children?: Array<Pick<StateAssociation, 'id' | 'name' | 'short_name'>>;
   checklist_items?: ChecklistItem[];
