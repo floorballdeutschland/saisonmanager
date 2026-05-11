@@ -18,7 +18,7 @@
       </label>
       <input
         type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-fb-gray-900"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-white"
         [(ngModel)]="name"
         name="name"
         required
@@ -32,7 +32,7 @@
       </label>
       <input
         type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-fb-gray-900"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-white"
         [(ngModel)]="city"
         name="city"
         required
@@ -45,7 +45,7 @@
         <label class="block text-sm font-medium mb-1">Straße</label>
         <input
           type="text"
-          class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-fb-gray-900"
+          class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-white"
           [(ngModel)]="street"
           name="street"
           placeholder="Musterstraße"
@@ -55,7 +55,7 @@
         <label class="block text-sm font-medium mb-1">Hausnummer</label>
         <input
           type="text"
-          class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-fb-gray-900"
+          class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-white"
           [(ngModel)]="housenumber"
           name="housenumber"
           placeholder="12a"
@@ -67,7 +67,7 @@
       <label class="block text-sm font-medium mb-1">PLZ</label>
       <input
         type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-fb-gray-900"
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-white"
         [(ngModel)]="postcode"
         name="postcode"
         placeholder="10115"
@@ -87,7 +87,7 @@
 
     <div
       *ngIf="duplicateWarning"
-      class="bg-fb-gray-900 border border-yellow-700 rounded p-4 mb-4"
+      class="bg-white border border-yellow-700 rounded p-4 mb-4"
     >
       <p class="text-sm font-medium mb-2">
         Möglicherweise existiert bereits ein Spielort an dieser Adresse:
