@@ -143,10 +143,14 @@ export class UserCreateComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (created) => {
-          this._notificationService.success(
-            `Benutzer ${created.name} angelegt. Eine E-Mail zum Passwort setzen wurde versandt.`,
-            { autoClose: true, keepAfterRouteChange: true }
-          );
+          const isTm = this.selectedRoleId === 5;
+          const msg = isTm
+            ? `Benutzer ${created.name} angelegt. Eine E-Mail zum Passwort setzen wurde versandt. Hinweis: TM-Nutzer benötigen noch eine Team-Zuweisung, sonst ist der Login gesperrt.`
+            : `Benutzer ${created.name} angelegt. Eine E-Mail zum Passwort setzen wurde versandt.`;
+          this._notificationService.success(msg, {
+            autoClose: !isTm,
+            keepAfterRouteChange: true,
+          });
           this._router.navigate([
             '/',
             'verwaltung',
