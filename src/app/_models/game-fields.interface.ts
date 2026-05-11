@@ -11,4 +11,5 @@ export interface GameFields {
   referee_ids?: string;
   referee1_string?: string;
   referee2_string?: string;
+  special_event_string?: string;
 }

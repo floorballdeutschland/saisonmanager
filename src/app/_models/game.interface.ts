@@ -152,6 +152,7 @@ export interface Game {
   forfait?: number;
   notice_type?: string;
   notice_string?: string;
+  special_event_string?: string;
 
   group_identifier?: string | null;
   series_title?: string | null;

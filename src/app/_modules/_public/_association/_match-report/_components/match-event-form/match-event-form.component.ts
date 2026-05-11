@@ -118,6 +118,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
 
   protest?: boolean;
   specialevent?: boolean;
+  specialEventString?: string;
   overtime?: boolean;
 
   timekeepersigned?: boolean;
@@ -220,6 +221,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
 
     if (this.fieldValue) {
       switch (this.type) {
+        case 'specialevent':
+          this.specialEventString = this.fieldValue || '';
+          break;
         case 'comment':
           this.comment = this.fieldValue || '';
           break;
@@ -670,6 +674,10 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
               this.updateGame.emit();
             },
           });
+        break;
+      case 'specialevent':
+        fields = { special_event_string: this.specialEventString || '' };
+        saveMessage = 'Besonderes Ereignis gespeichert';
         break;
       case 'comment':
         fields = { record_comment: this.comment?.toString() || '' };
