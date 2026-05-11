@@ -51,5 +51,14 @@
         {{ game.referees | normalizeReferee : game.nominated_referees }}
       </span>
     </li>
+    <li
+      class="grid gap-4 grid-cols-2 border-b border-fb-gray-700 py-2.5"
+      *ngIf="game.special_event_string"
+    >
+      <span class="text-sm">Besonderes Ereignis</span>
+      <span class="text-sm font-bold text-right">{{
+        game.special_event_string
+      }}</span>
+    </li>
   </ul>
 </ng-container>

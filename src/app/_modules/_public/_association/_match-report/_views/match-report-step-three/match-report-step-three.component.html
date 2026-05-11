@@ -127,11 +127,12 @@
           ></fb-match-event-form>
         </div>
 
-        <div>
+        <div class="col-span-2">
           <fb-match-event-form
             type="specialevent"
             team="both"
             [fieldChecked]="additionalFields?.special_event || false"
+            [fieldValue]="additionalFields?.special_event_string || ''"
             (updateGame)="reloadGame()"
             (updatePeriod)="(null)"
             [match]="game"

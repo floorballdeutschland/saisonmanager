@@ -36,6 +36,18 @@
     <label for="specialevent" class="font-medium text-base text-fb-gray-500"
       >Besonderes Ereignis</label
     >
+    <div *ngIf="specialevent" class="mt-2">
+      <textarea
+        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+        placeholder="Beschreibung des Ereignisses (z.B. Spielverzögerung wegen defektem Hallenlicht)"
+        rows="3"
+        (change)="submitField()"
+        [(ngModel)]="specialEventString"
+      ></textarea>
+      <p class="text-fb-gray-400 text-xs">
+        Dieses Feld wird automatisch gespeichert.
+      </p>
+    </div>
   </div>
 
   <div *ngIf="type === 'timekeepersigned'">
