@@ -94,4 +94,10 @@ export class TransferRequestService {
       }
     );
   }
+
+  revokeRelease(id: number, revocationReason: string) {
+    return this.http.patch<TransferRequest>(`${this.base}/${id}/revoke.json`, {
+      revocation_reason: revocationReason,
+    });
+  }
 }
