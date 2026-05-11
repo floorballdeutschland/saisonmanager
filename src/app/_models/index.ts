@@ -67,3 +67,4 @@ export * from './state-association.interface';
 export * from './api-key.interface';
 export * from './transfer-request.interface';
 export * from './admin-license.interface';
+export * from './user-admin.interface';

@@ -19,3 +19,4 @@ export * from './version.service';
 export * from './state-association.service';
 export * from './api-key.service';
 export * from './transfer-request.service';
+export * from './user-management.service';

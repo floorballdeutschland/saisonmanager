@@ -91,6 +91,11 @@ const routes: Routes = [
         loadChildren: () =>
           import('@floorball/referee').then((m) => m.RefereeModule),
       },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/admin/users').then((m) => m.AdminUserModule),
+      },
     ],
   },
   {
