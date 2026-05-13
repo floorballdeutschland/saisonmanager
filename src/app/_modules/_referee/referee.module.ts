@@ -11,6 +11,9 @@ import * as Views from './views';
   declarations: [
     Views.RefereeProfileComponent,
     Views.RefereeBlockedDatesComponent,
+    Views.RefereeOnlineTestIndexComponent,
+    Views.RefereeOnlineTestDetailComponent,
+    Views.RefereeOnlineTestExamComponent,
   ],
 })
 export class RefereeModule {}

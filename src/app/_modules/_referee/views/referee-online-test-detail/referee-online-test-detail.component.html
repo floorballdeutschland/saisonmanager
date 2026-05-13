@@ -1,0 +1,92 @@
+<div class="container mx-auto px-4 lg:px-8 my-6 max-w-2xl">
+  <a
+    [routerLink]="['/schiedsrichter', 'onlinepruefungen']"
+    class="text-sm text-gray-500 hover:text-black mb-4 inline-block"
+    >← Zurück</a
+  >
+
+  <div *ngIf="detail">
+    <h1 class="font-bold text-[32px] mb-2">{{ detail.test.name }}</h1>
+    <p class="text-gray-500 text-sm mb-6">
+      <span *ngIf="detail.test.lizenzstufe"
+        >Stufe: {{ detail.test.lizenzstufe }} ·
+      </span>
+      <span *ngIf="detail.test.time_limit_minutes"
+        >Zeitlimit: {{ detail.test.time_limit_minutes }} Minuten ·
+      </span>
+      Max. {{ detail.test.max_attempts }} Versuche
+      <span *ngIf="detail.test.deadline">
+        · Deadline: {{ detail.test.deadline | date : "dd.MM.yyyy HH:mm" }}</span
+      >
+    </p>
+
+    <!-- Previous attempts -->
+    <div *ngIf="detail.attempts.length > 0" class="mb-6">
+      <h2 class="font-bold text-lg mb-2">Bisherige Versuche</h2>
+      <div
+        *ngFor="let a of detail.attempts"
+        class="text-sm py-2 border-b border-fb-gray-200 flex justify-between"
+      >
+        <span
+          >Versuch {{ a.attempt_number }} ·
+          {{ a.started_at | date : "dd.MM.yyyy HH:mm" }}</span
+        >
+        <span *ngIf="a.status === 'in_progress'" class="text-blue-600"
+          >Läuft</span
+        >
+        <span
+          *ngIf="
+            a.status === 'completed' &&
+            a.error_points !== null &&
+            a.error_points !== undefined
+          "
+          >{{ a.error_points }} Fehlerpunkt(e)</span
+        >
+        <span
+          *ngIf="
+            a.status === 'completed' &&
+            (a.error_points === null || a.error_points === undefined)
+          "
+          class="text-gray-400"
+          >Abgegeben</span
+        >
+      </div>
+    </div>
+
+    <!-- Results (visible after deadline) -->
+    <div
+      *ngIf="detail.results_visible && detail.attempts.length > 0"
+      class="bg-fb-gray-100 p-4 mb-6"
+    >
+      <p class="font-bold text-sm">
+        Prüfungsphase beendet – dein bestes Ergebnis ist sichtbar.
+      </p>
+    </div>
+
+    <!-- Actions -->
+    <div *ngIf="error" class="text-red-600 text-sm mb-3">{{ error }}</div>
+
+    <div class="flex gap-3">
+      <fb-button
+        *ngIf="detail.in_progress_attempt_id"
+        variant="success"
+        (click)="resume()"
+        >Prüfung fortsetzen</fb-button
+      >
+
+      <fb-button
+        *ngIf="!detail.in_progress_attempt_id && detail.can_start"
+        (click)="start()"
+        [disabled]="starting"
+        >Prüfung starten</fb-button
+      >
+
+      <p
+        *ngIf="!detail.in_progress_attempt_id && !detail.can_start"
+        class="text-gray-500 text-sm"
+      >
+        Keine weiteren Versuche möglich.
+      </p>
+    </div>
+  </div>
+</div>

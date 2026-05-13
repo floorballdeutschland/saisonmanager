@@ -21,3 +21,4 @@ export * from './api-key.service';
 export * from './transfer-request.service';
 export * from './user-management.service';
 export * from './settings.service';
+export * from './online-test.service';

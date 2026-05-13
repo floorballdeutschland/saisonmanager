@@ -1,0 +1,181 @@
+<div class="container mx-auto px-4 lg:px-8 my-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="font-bold text-[32px]">Fragenkatalog</h1>
+      <p *ngIf="test" class="text-gray-500 text-sm">{{ test.name }}</p>
+    </div>
+    <div class="flex gap-2">
+      <a
+        *ngIf="test"
+        [routerLink]="[
+          '/verwaltung',
+          'onlinepruefungen',
+          test.id,
+          'bearbeiten'
+        ]"
+        class="text-sm px-4 py-2 border border-fb-gray-600 rounded hover:bg-fb-gray-200"
+        >Einstellungen</a
+      >
+      <a
+        *ngIf="test"
+        [routerLink]="['/verwaltung', 'onlinepruefungen', test.id, 'zuweisung']"
+        class="text-sm px-4 py-2 border border-fb-gray-600 rounded hover:bg-fb-gray-200"
+        >SR zuweisen</a
+      >
+      <fb-button (click)="startNew()" icon="add">Neue Frage</fb-button>
+    </div>
+  </div>
+
+  <!-- Question list -->
+  <div *ngIf="test" class="flex flex-col gap-4">
+    <div
+      *ngFor="let q of test.questions; let i = index"
+      class="bg-white p-4 border border-fb-gray-200"
+    >
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex-1">
+          <p class="text-xs text-gray-400 mb-1">Frage {{ i + 1 }}</p>
+          <p class="font-medium text-sm mb-3">{{ q.scenario }}</p>
+          <table class="text-xs border border-fb-gray-200 w-full">
+            <thead>
+              <tr class="bg-fb-gray-100">
+                <th
+                  class="px-2 py-1 text-left font-medium border-b border-fb-gray-200"
+                >
+                  Zeile
+                </th>
+                <th
+                  class="px-2 py-1 text-left font-medium border-b border-fb-gray-200"
+                >
+                  Musterlösung
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let row of q.rows"
+                class="border-b border-fb-gray-100"
+              >
+                <td class="px-2 py-1">{{ row.label }}</td>
+                <td class="px-2 py-1 font-bold text-green-700">
+                  {{ getSolutionValue(q.solution, row.id) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <fb-button size="small" icon="edit" (click)="startEdit(q)"
+            >Bearbeiten</fb-button
+          >
+          <fb-button
+            size="small"
+            variant="error"
+            icon="remove"
+            (click)="deleteQuestion(q)"
+            >Löschen</fb-button
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit/Create form -->
+  <div
+    *ngIf="editingQuestion"
+    class="mt-6 bg-white p-6 border border-fb-gray-400 max-w-2xl"
+  >
+    <h2 class="font-bold text-lg mb-4">
+      {{ editingId ? "Frage bearbeiten" : "Neue Frage" }}
+    </h2>
+
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">Szenario *</label>
+        <textarea
+          class="border border-fb-gray-600 rounded px-3 py-2 text-sm h-28 resize-y"
+          [(ngModel)]="editingQuestion.scenario"
+          name="scenario"
+          placeholder="Beschreibe die Szene…"
+        ></textarea>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium"
+          >Zeilen (Spieler / Entscheidungen)</label
+        >
+        <div class="flex gap-2 mb-2">
+          <input
+            class="border border-fb-gray-600 rounded px-3 py-2 text-sm flex-1"
+            [(ngModel)]="newRowLabel"
+            name="newRowLabel"
+            placeholder="z.B. Spieler 10 Heim"
+            (keyup.enter)="addRow()"
+          />
+          <fb-button size="small" icon="add" (click)="addRow()"
+            >Hinzufügen</fb-button
+          >
+        </div>
+
+        <table
+          *ngIf="editingQuestion.rows.length > 0"
+          class="text-sm border border-fb-gray-200 w-full"
+        >
+          <thead>
+            <tr class="bg-fb-gray-100">
+              <th
+                class="px-3 py-2 text-left font-medium border-b border-fb-gray-200"
+              >
+                Zeile
+              </th>
+              <th
+                class="px-3 py-2 text-left font-medium border-b border-fb-gray-200"
+              >
+                Musterlösung
+              </th>
+              <th class="px-3 py-2 border-b border-fb-gray-200"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let row of editingQuestion.rows"
+              class="border-b border-fb-gray-100"
+            >
+              <td class="px-3 py-2">{{ row.label }}</td>
+              <td class="px-3 py-2">
+                <select
+                  class="border border-fb-gray-600 rounded px-2 py-1 text-sm"
+                  [ngModel]="solutionFor(row.id)"
+                  (ngModelChange)="setSolution(row.id, $event)"
+                  [name]="'sol_' + row.id"
+                >
+                  <option value="">– auswählen –</option>
+                  <option *ngFor="let opt of penaltyOptions" [value]="opt">
+                    {{ opt }}
+                  </option>
+                </select>
+              </td>
+              <td class="px-3 py-2">
+                <fb-button
+                  size="small"
+                  variant="error"
+                  icon="remove"
+                  (click)="removeRow(row.id)"
+                ></fb-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex gap-3">
+        <fb-button (click)="saveQuestion()" [disabled]="saving" icon="save"
+          >Speichern</fb-button
+        >
+        <fb-button variant="warning" icon="cancel" (click)="cancelEdit()"
+          >Abbrechen</fb-button
+        >
+      </div>
+    </div>
+  </div>
+</div>

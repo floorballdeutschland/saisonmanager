@@ -77,6 +77,13 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/online-tests').then(
+            (m) => m.AdminOnlineTestModule
+          ),
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/api-keys').then((m) => m.AdminApiKeyModule),
       },
       {

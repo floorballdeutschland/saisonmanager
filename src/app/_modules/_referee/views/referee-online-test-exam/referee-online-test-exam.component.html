@@ -1,0 +1,95 @@
+<!-- Submitted screen -->
+<div
+  *ngIf="submitted"
+  class="container mx-auto px-4 lg:px-8 my-12 max-w-xl text-center"
+>
+  <h1 class="font-bold text-[32px] mb-4">Prüfung abgegeben</h1>
+  <p class="text-gray-600 mb-6">
+    Deine Antworten wurden gespeichert. Das Ergebnis ist nach Ablauf der
+    Prüfungsphase sichtbar.
+  </p>
+  <fb-button (click)="goBack()">Zurück zur Übersicht</fb-button>
+</div>
+
+<!-- Exam -->
+<ng-container *ngIf="!submitted && attemptData">
+  <!-- Timer bar -->
+  <div
+    *ngIf="remainingSeconds !== null && remainingSeconds !== undefined"
+    class="sticky top-0 z-10 flex items-center justify-end px-4 py-2 text-sm font-bold"
+    [class.bg-red-600]="timerWarning"
+    [class.bg-fb-gray-800]="!timerWarning"
+    class="text-white"
+  >
+    Restzeit: {{ formattedTime }}
+  </div>
+
+  <div class="container mx-auto px-4 lg:px-8 my-6 max-w-3xl">
+    <h1 class="font-bold text-[28px] mb-6">Prüfung</h1>
+
+    <div
+      *ngFor="let q of questions; let i = index"
+      class="mb-8 bg-white border border-fb-gray-200 p-4"
+    >
+      <p class="text-xs text-gray-400 mb-1 font-medium">
+        Frage {{ i + 1 }} von {{ questions.length }}
+      </p>
+      <p class="mb-4">{{ q.scenario }}</p>
+
+      <div class="overflow-x-auto">
+        <table class="text-sm border-collapse w-full min-w-[600px]">
+          <thead>
+            <tr>
+              <th
+                class="text-left px-3 py-2 font-medium border-b border-r border-fb-gray-200 bg-fb-gray-50 min-w-[140px]"
+              >
+                Entscheidung
+              </th>
+              <th
+                *ngFor="let opt of penaltyOptions"
+                class="px-2 py-2 text-center font-medium border-b border-r border-fb-gray-200 bg-fb-gray-50 text-xs"
+              >
+                {{ opt }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of q.rows" class="border-b border-fb-gray-100">
+              <td
+                class="px-3 py-2 border-r border-fb-gray-200 font-medium text-sm"
+              >
+                {{ row.label }}
+              </td>
+              <td
+                *ngFor="let opt of penaltyOptions"
+                class="px-2 py-2 text-center border-r border-fb-gray-100"
+              >
+                <input
+                  type="radio"
+                  [name]="'q' + q.id + '_r' + row.id"
+                  [value]="opt"
+                  [ngModel]="getSelection(q.id, row.id)"
+                  (ngModelChange)="setSelection(q.id, row.id, $event)"
+                  class="cursor-pointer"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="mt-6 flex gap-4 items-center">
+      <fb-button variant="success" (click)="submit()" [disabled]="submitting"
+        >Prüfung abgeben</fb-button
+      >
+      <span class="text-sm text-gray-400">
+        Nicht alle Felder müssen ausgefüllt sein — fehlende Auswahl zählt als
+        Fehlerpunkt.
+      </span>
+    </div>
+    <p *ngIf="submitError" class="mt-3 text-sm text-red-600">
+      {{ submitError }}
+    </p>
+  </div>
+</ng-container>
