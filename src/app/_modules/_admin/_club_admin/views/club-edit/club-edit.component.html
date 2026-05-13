@@ -93,19 +93,8 @@
                 </select>
               </div>
 
-              <div class="font-bold">Heimatverband (Verband)</div>
-              <div>
-                <select
-                  name="game_operation_id"
-                  class="w-full"
-                  [(ngModel)]="club.game_operation_id"
-                >
-                  <option [ngValue]="null">– Bitte auswählen –</option>
-                  <option *ngFor="let go of gameOperations" [ngValue]="go.id">
-                    {{ go.name }}
-                  </option>
-                </select>
-              </div>
+              <div class="font-bold">Sportverbund</div>
+              <div class="text-gray-700">{{ getSportverbund(club) }}</div>
 
               <div class="font-bold">Landesverband</div>
               <div>
