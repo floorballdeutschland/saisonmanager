@@ -180,6 +180,63 @@
     </div>
   </form>
 
+  <!-- Freigaben (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
+  <div
+    *ngIf="editMode && !hasParent"
+    class="border-t border-fb-gray-200 pt-6 mb-6"
+  >
+    <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
+      Freigaben für Sportverbünde
+    </div>
+    <p class="text-xs text-fb-gray-400 mb-4">
+      Sportverbünde mit Freigabe können die Vereine dieses Landesverbands in der
+      Vereinsverwaltung sehen und bearbeiten.
+    </p>
+
+    <div *ngIf="releases.length === 0" class="text-sm text-fb-gray-400 mb-4">
+      Noch keine Freigaben erteilt.
+    </div>
+
+    <div class="flex flex-col gap-2 mb-4">
+      <div
+        *ngFor="let release of releases"
+        class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
+      >
+        <span class="flex-1 text-sm">{{
+          release.recipient_game_operation_name
+        }}</span>
+        <button
+          type="button"
+          (click)="deleteRelease(release.id)"
+          class="text-xs text-red-500 hover:text-red-700 px-2"
+        >
+          Zurückziehen
+        </button>
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+      <select
+        [(ngModel)]="selectedGameOperationId"
+        name="new_release_go"
+        class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      >
+        <option [ngValue]="null">– Sportverbund auswählen –</option>
+        <option *ngFor="let go of availableGameOperations" [ngValue]="go.id">
+          {{ go.name }}
+        </option>
+      </select>
+      <button
+        type="button"
+        (click)="addRelease()"
+        [disabled]="addingRelease || !selectedGameOperationId"
+        class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+      >
+        {{ addingRelease ? "…" : "Freigabe erteilen" }}
+      </button>
+    </div>
+  </div>
+
   <!-- Spieltagscheckliste (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
   <div *ngIf="editMode && !hasParent" class="border-t border-fb-gray-200 pt-6">
     <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">

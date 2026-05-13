@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ChecklistItem, StateAssociation } from '@floorball/types';
+import {
+  ChecklistItem,
+  StateAssociation,
+  StateAssociationRelease,
+} from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -71,6 +75,22 @@ export class StateAssociationService {
   public adminDeleteChecklistItem(stateAssociationId: number, itemId: number) {
     return this.http.delete(
       `${environment.apiURL}admin/state_associations/${stateAssociationId}/checklist_items/${itemId}`
+    );
+  }
+
+  public adminCreateRelease(
+    stateAssociationId: number,
+    recipientGameOperationId: number
+  ) {
+    return this.http.post<StateAssociationRelease>(
+      `${environment.apiURL}admin/state_associations/${stateAssociationId}/releases`,
+      { recipient_game_operation_id: recipientGameOperationId }
+    );
+  }
+
+  public adminDeleteRelease(stateAssociationId: number, releaseId: number) {
+    return this.http.delete(
+      `${environment.apiURL}admin/state_associations/${stateAssociationId}/releases/${releaseId}`
     );
   }
 }

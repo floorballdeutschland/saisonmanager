@@ -8,8 +8,17 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { StateAssociationService, NotificationService } from '@floorball/core';
-import { ChecklistItem, StateAssociation } from '@floorball/types';
+import {
+  StateAssociationService,
+  NotificationService,
+  GameOperationService,
+} from '@floorball/core';
+import {
+  ChecklistItem,
+  GameOperation,
+  StateAssociation,
+  StateAssociationRelease,
+} from '@floorball/types';
 
 @Component({
   templateUrl: './state-association-edit.component.html',
@@ -29,10 +38,16 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
   editingItemId: number | null = null;
   editingQuestion = '';
 
+  releases: StateAssociationRelease[] = [];
+  allGameOperations: GameOperation[] = [];
+  selectedGameOperationId: number | null = null;
+  addingRelease = false;
+
   private _destroy$ = new Subject<void>();
 
   constructor(
     private _stateAssociationService: StateAssociationService,
+    private _gameOperationService: GameOperationService,
     private _notificationService: NotificationService,
     private _route: ActivatedRoute,
     private _router: Router,
@@ -50,6 +65,16 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
         },
       });
 
+    this._gameOperationService
+      .getAdminGameOperations()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (gos) => {
+          this.allGameOperations = gos;
+          this._cdr.markForCheck();
+        },
+      });
+
     const id = this._route.snapshot.params['id'];
     if (id) {
       this.editMode = true;
@@ -60,6 +85,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
           next: (sa) => {
             this.stateAssociation = { ...sa };
             this.checklistItems = sa.checklist_items ?? [];
+            this.releases = sa.releases ?? [];
             this._cdr.markForCheck();
           },
         });
@@ -199,6 +225,53 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
           this.checklistItems = this.checklistItems.filter(
             (i) => i.id !== itemId
           );
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  get availableGameOperations(): GameOperation[] {
+    const usedIds = new Set(
+      this.releases.map((r) => r.recipient_game_operation_id)
+    );
+    return this.allGameOperations.filter((go) => !usedIds.has(go.id));
+  }
+
+  addRelease(): void {
+    if (!this.selectedGameOperationId || !this.stateAssociation.id) return;
+    this.addingRelease = true;
+    this._stateAssociationService
+      .adminCreateRelease(
+        this.stateAssociation.id,
+        this.selectedGameOperationId
+      )
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (release) => {
+          this.releases = [...this.releases, release];
+          this.selectedGameOperationId = null;
+          this.addingRelease = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.addingRelease = false;
+          this._cdr.markForCheck();
+          this._notificationService.error(
+            'Freigabe konnte nicht erteilt werden.',
+            { autoClose: false }
+          );
+        },
+      });
+  }
+
+  deleteRelease(releaseId: number): void {
+    if (!this.stateAssociation.id) return;
+    this._stateAssociationService
+      .adminDeleteRelease(this.stateAssociation.id, releaseId)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.releases = this.releases.filter((r) => r.id !== releaseId);
           this._cdr.markForCheck();
         },
       });

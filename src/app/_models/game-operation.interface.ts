@@ -19,4 +19,5 @@ export interface GameOperationWithLeagues extends GameOperation {
 
 export interface GameOperationWithClubs extends GameOperation {
   clubs: Club[];
+  released?: boolean;
 }
