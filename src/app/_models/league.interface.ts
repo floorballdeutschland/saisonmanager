@@ -28,7 +28,6 @@ export interface League {
 
   deadline?: string;
   before_deadline?: boolean;
-  express_license_enabled?: boolean;
 
   table_modus: string;
   direct_comparison: boolean;
