@@ -16,9 +16,4 @@ export class GameOperationService {
     const path = environment.apiURL + 'admin/game_operations.json';
     return this.http.get<GameOperation[]>(path);
   }
-
-  public updateAdminGameOperation(id: number, data: Partial<GameOperation>) {
-    const path = environment.apiURL + `admin/game_operations/${id}.json`;
-    return this.http.patch<GameOperation>(path, { game_operation: data });
-  }
 }
