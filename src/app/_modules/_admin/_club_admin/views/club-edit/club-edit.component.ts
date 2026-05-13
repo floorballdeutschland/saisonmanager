@@ -8,7 +8,6 @@ import {
 import {
   AssociationService,
   ClubService,
-  GameOperationService,
   NotificationService,
 } from '@floorball/core';
 import { Club, GameOperation, StateAssociation } from '@floorball/types';
@@ -28,7 +27,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   editMode = true;
 
   loading$?: Observable<boolean>;
-  gameOperations: GameOperation[] = [];
 
   states = [
     { name: 'Baden-Württemberg', isocode: 'de-bw' },
@@ -66,7 +64,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   constructor(
     private _associationService: AssociationService,
     private _clubService: ClubService,
-    private _gameOperationService: GameOperationService,
     private _router: Router,
     private _notificationService: NotificationService,
     private _route: ActivatedRoute,
@@ -78,13 +75,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this._gameOperationService.getAdminGameOperations().subscribe({
-      next: (result) => {
-        this.gameOperations = result;
-        this._cdr.markForCheck();
-      },
-    });
-
     this._associationService.stateAssociations$
       .pipe(take(1), takeUntil(this._destroy$))
       .subscribe({
@@ -139,6 +129,18 @@ export class ClubEditComponent implements OnInit, OnDestroy {
 
     this.club$ = of(club);
     this._cdr.markForCheck();
+  }
+
+  public getSportverbund(club: Club): string {
+    const sa = this.stateAssociations.find(
+      (s) => s.id === club.state_association_id
+    );
+    if (!sa) return '–';
+    if (sa.parent_id) {
+      const parent = this.stateAssociations.find((s) => s.id === sa.parent_id);
+      return parent?.name ?? sa.name;
+    }
+    return sa.name;
   }
 
   public error(club: Club): boolean {
