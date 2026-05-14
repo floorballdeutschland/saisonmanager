@@ -70,7 +70,6 @@ export interface PlayerSearchResult {
 
 export interface PlayerLicense {
   id: string;
-  male: boolean;
   history: PlayerLicenseHistory[];
   team_id: number;
   team?: Team;
