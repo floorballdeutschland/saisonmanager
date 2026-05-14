@@ -13,6 +13,7 @@ import {
   ClubService,
   NotificationService,
   RefereeService,
+  SessionService,
 } from '@floorball/core';
 import {
   Club,
@@ -32,6 +33,8 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   editMode = false;
   loading = false;
   saving = false;
+  isRestricted = false;
+  canDelete = false;
   stateAssociations: StateAssociation[] = [];
   clubs: Club[] = [];
   qualificationTypes: RefereeQualificationType[] = [];
@@ -57,6 +60,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
     private _refereeService: RefereeService,
     private _associationService: AssociationService,
     private _clubService: ClubService,
+    private _sessionService: SessionService,
     private _route: ActivatedRoute,
     private _router: Router,
     private _notificationService: NotificationService,
@@ -64,6 +68,16 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (user) => {
+          this.isRestricted = !!user?.permissions['referee_edit_restricted'];
+          this.canDelete = !this.isRestricted;
+          this._cdr.markForCheck();
+        },
+      });
+
     this._associationService.stateAssociations$
       .pipe(takeUntil(this._destroy$))
       .subscribe({
