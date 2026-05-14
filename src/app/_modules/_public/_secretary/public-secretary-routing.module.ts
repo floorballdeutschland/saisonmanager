@@ -4,7 +4,7 @@ import * as Views from './views';
 
 const routes: Routes = [
   {
-    path: 'spielsekretariat/:gameId',
+    path: 'spielsekretariat',
     component: Views.SpielSekretariatComponent,
   },
 ];
