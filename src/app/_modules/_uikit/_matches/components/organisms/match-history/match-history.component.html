@@ -1,7 +1,10 @@
 <div>
   <div
     class="text-center text-fb-gray-400 my-12"
-    *ngIf="!match.events || match.events.length === 0"
+    *ngIf="
+      (!match.events || match.events.length === 0) &&
+      !(match.period_titles | onlyRunning).length
+    "
   >
     Noch keine Ereignisse vorhanden
   </div>
@@ -21,7 +24,7 @@
           | reverseEvents : newestFirst as events
       "
     >
-      <ng-container *ngIf="events.length">
+      <ng-container *ngIf="events.length; else noEvents">
         <div class="font-bold w-full border-b border-fb-gray-200 pb-5 mt-8">
           {{ periodObject.title }}
         </div>
@@ -40,6 +43,14 @@
           (reloadGame)="handleReload()"
         ></fb-match-history-item>
       </ng-container>
+      <ng-template #noEvents>
+        <ng-container *ngIf="!periodObject.optional">
+          <div class="font-bold w-full border-b border-fb-gray-200 pb-5 mt-8">
+            {{ periodObject.title }}
+          </div>
+          <div class="text-fb-gray-400 py-4">Keine Ereignisse</div>
+        </ng-container>
+      </ng-template>
     </ng-container>
   </ng-container>
 </div>
