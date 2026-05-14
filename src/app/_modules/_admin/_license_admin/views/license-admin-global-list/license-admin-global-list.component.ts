@@ -161,6 +161,20 @@ export class LicenseAdminGlobalListComponent implements OnInit {
     return fieldSize;
   }
 
+  public isMinor(birthdate: string): boolean {
+    if (!birthdate) return false;
+    const dob = new Date(birthdate);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    if (
+      today.getMonth() < dob.getMonth() ||
+      (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())
+    ) {
+      age--;
+    }
+    return age < 18;
+  }
+
   private buildFilterOptions(): void {
     const goMap = new Map<number, string>();
     const catMap = new Map<string, string>();

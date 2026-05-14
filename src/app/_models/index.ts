@@ -69,3 +69,4 @@ export * from './transfer-request.interface';
 export * from './admin-license.interface';
 export * from './user-admin.interface';
 export * from './online-test.interface';
+export * from './license-document.interface';

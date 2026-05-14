@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 import {
   Club,
+  LicenseDocument,
   Nation,
   Player,
   PlayerSearchResult,
@@ -121,5 +122,44 @@ export class PlayerService {
     const path =
       environment.apiURL + 'admin/players/' + playerId + '/deactivate.json';
     return this.http.post<Player>(path, {});
+  }
+
+  public getLicenseDocuments(playerId: number, licenseId: string) {
+    const path =
+      environment.apiURL +
+      'admin/players/' +
+      playerId +
+      '/license_documents.json?license_id=' +
+      encodeURIComponent(licenseId);
+    return this.http.get<LicenseDocument[]>(path);
+  }
+
+  public uploadLicenseDocument(
+    playerId: number,
+    licenseId: string,
+    documentType: 'id_copy' | 'parental_consent',
+    file: File
+  ) {
+    const path =
+      environment.apiURL +
+      'admin/players/' +
+      playerId +
+      '/license_documents.json';
+    const formData = new FormData();
+    formData.append('license_id', licenseId);
+    formData.append('document_type', documentType);
+    formData.append('file', file);
+    return this.http.post<LicenseDocument>(path, formData);
+  }
+
+  public deleteLicenseDocument(playerId: number, documentId: number) {
+    const path =
+      environment.apiURL +
+      'admin/players/' +
+      playerId +
+      '/license_documents/' +
+      documentId +
+      '.json';
+    return this.http.delete<{ success: boolean }>(path);
   }
 }

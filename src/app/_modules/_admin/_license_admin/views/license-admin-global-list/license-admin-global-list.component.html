@@ -333,18 +333,14 @@
             <td class="px-4 py-3 whitespace-nowrap">
               <div class="flex gap-1.5 items-center">
                 <!-- Ausweis/ID -->
-                <span
-                  class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
-                  [ngClass]="
-                    e.documents?.id_copy === true
-                      ? 'bg-green-100 text-green-700'
-                      : e.documents?.id_copy === false
-                      ? 'bg-red-100 text-red-600'
-                      : 'bg-gray-100 text-gray-400'
-                  "
-                  title="Ausweiskopie"
+                <a
+                  *ngIf="e.documents?.id_copy_url; else idCopyStatic"
+                  [href]="e.documents!.id_copy_url"
+                  target="_blank"
+                  rel="noopener"
+                  class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
+                  title="Ausweiskopie ansehen"
                 >
-                  <!-- ID icon -->
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="w-3 h-3"
@@ -359,35 +355,88 @@
                       d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"
                     />
                   </svg>
-                </span>
-                <!-- Elternzustimmung (nur für Minderjährige) -->
-                <span
-                  *ngIf="(e.player_birthdate | date : 'yyyy')! >= '2007'"
-                  class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
-                  [ngClass]="
-                    e.documents?.parental_consent === true
-                      ? 'bg-green-100 text-green-700'
-                      : e.documents?.parental_consent === false
-                      ? 'bg-red-100 text-red-600'
-                      : 'bg-gray-100 text-gray-400'
-                  "
-                  title="Elternzustimmung"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-3 h-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
+                </a>
+                <ng-template #idCopyStatic>
+                  <span
+                    class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
+                    [ngClass]="
+                      e.documents?.id_copy === false
+                        ? 'bg-red-100 text-red-600'
+                        : 'bg-gray-100 text-gray-400'
+                    "
+                    title="Ausweiskopie fehlt"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                </span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="w-3 h-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"
+                      />
+                    </svg>
+                  </span>
+                </ng-template>
+                <!-- Elternzustimmung (nur für Minderjährige) -->
+                <ng-container *ngIf="isMinor(e.player_birthdate)">
+                  <a
+                    *ngIf="
+                      e.documents?.parental_consent_url;
+                      else parentalStatic
+                    "
+                    [href]="e.documents!.parental_consent_url"
+                    target="_blank"
+                    rel="noopener"
+                    class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
+                    title="Elternzustimmung ansehen"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="w-3 h-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                  </a>
+                  <ng-template #parentalStatic>
+                    <span
+                      class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
+                      [ngClass]="
+                        e.documents?.parental_consent === false
+                          ? 'bg-red-100 text-red-600'
+                          : 'bg-gray-100 text-gray-400'
+                      "
+                      title="Elternzustimmung fehlt"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-3 h-3"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </span>
+                  </ng-template>
+                </ng-container>
               </div>
             </td>
 
