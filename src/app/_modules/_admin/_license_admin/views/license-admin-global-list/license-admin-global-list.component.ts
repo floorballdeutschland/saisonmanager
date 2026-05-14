@@ -166,9 +166,7 @@ export class LicenseAdminGlobalListComponent implements OnInit {
     const rows = this.filteredEntries.map((e) => [
       e.player_last_name,
       e.player_first_name,
-      e.player_birthdate
-        ? new Date(e.player_birthdate).getFullYear().toString()
-        : '',
+      this._safeYear(e.player_birthdate),
       e.club_name ?? '',
       e.team_name,
       e.game_operation_name ?? '',
@@ -184,16 +182,24 @@ export class LicenseAdminGlobalListComponent implements OnInit {
       .map((row) =>
         row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';')
       )
-      .join('\n');
+      .join('\r\n');
 
-    const bom = '﻿';
-    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `lizenzen-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `lizenzen-${yyyy}-${mm}-${dd}.csv`;
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      a.remove();
+    }, 0);
   }
 
   public statusBadgeClass(statusId: number): string {
@@ -225,9 +231,16 @@ export class LicenseAdminGlobalListComponent implements OnInit {
 
   private _formatDate(dateStr: string): string {
     const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
     return `${String(d.getDate()).padStart(2, '0')}.${String(
       d.getMonth() + 1
     ).padStart(2, '0')}.${d.getFullYear()}`;
+  }
+
+  private _safeYear(dateStr: string | null | undefined): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? '' : d.getFullYear().toString();
   }
 
   private buildFilterOptions(): void {
