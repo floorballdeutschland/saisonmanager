@@ -123,7 +123,7 @@
                     class="text-gray-400 text-sm"
                     *ngIf="gameDay.arena as arena"
                   >
-                    {{ arena.city }}, {{ arena.name }} ({{ arena.id }})
+                    {{ arena.name }}{{ arena.city ? ", " + arena.city : "" }}
                   </div>
                 </div>
               </button>
