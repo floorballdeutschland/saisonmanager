@@ -93,4 +93,13 @@ export class StateAssociationService {
       `${environment.apiURL}admin/state_associations/${stateAssociationId}/releases/${releaseId}`
     );
   }
+
+  public adminUploadLogo(stateAssociationId: number, file: File) {
+    const formData = new FormData();
+    formData.append('logo', file);
+    return this.http.post<{ logo_url: string }>(
+      `${environment.apiURL}admin/state_associations/${stateAssociationId}/upload_logo.json`,
+      formData
+    );
+  }
 }

@@ -264,6 +264,53 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       });
   }
 
+  private readonly _allowedLogoTypes = [
+    'image/png',
+    'image/jpeg',
+    'image/svg+xml',
+  ];
+  private readonly _maxLogoSize = 5 * 1024 * 1024;
+
+  onLogoSelected(input: HTMLInputElement): void {
+    if (!input.files?.length || !this.stateAssociation.id) return;
+    const file = input.files[0];
+
+    if (!this._allowedLogoTypes.includes(file.type)) {
+      this._notificationService.error('Nur PNG, JPG oder SVG erlaubt.', {
+        autoClose: false,
+      });
+      input.value = '';
+      return;
+    }
+    if (file.size > this._maxLogoSize) {
+      this._notificationService.error('Datei zu groß (max. 5 MB).', {
+        autoClose: false,
+      });
+      input.value = '';
+      return;
+    }
+
+    this._stateAssociationService
+      .adminUploadLogo(this.stateAssociation.id, file)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          input.value = '';
+          this.stateAssociation.logo_url = result.logo_url;
+          this._notificationService.success('Logo erfolgreich hochgeladen.', {
+            autoClose: true,
+          });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          input.value = '';
+          this._notificationService.error('Logo-Upload fehlgeschlagen.', {
+            autoClose: false,
+          });
+        },
+      });
+  }
+
   deleteRelease(releaseId: number): void {
     if (!this.stateAssociation.id) return;
     this._stateAssociationService
