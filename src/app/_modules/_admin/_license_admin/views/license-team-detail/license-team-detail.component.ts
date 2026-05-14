@@ -9,6 +9,7 @@ import {
   GameOperationWithClubs,
   LicenseDocument,
   LicenseHash,
+  Player,
   PlayerWithLicense,
 } from '@floorball/types';
 import {
@@ -33,6 +34,8 @@ export class LicenseTeamDetailComponent implements OnInit {
   teamId = 0;
   playerId = 0;
   expressLicense = false;
+  minorConsent = false;
+  guardianEmail = '';
 
   documents: Record<string, LicenseDocument[]> = {};
   uploadError: string | null = null;
@@ -147,12 +150,41 @@ export class LicenseTeamDetailComponent implements OnInit {
     return age < 18;
   }
 
+  get selectedPlayer(): Player | undefined {
+    return this.licenseHash?.other_players?.find(
+      (p) => p.id === +this.playerId
+    );
+  }
+
+  get needsMinorConsent(): boolean {
+    const sp = this.selectedPlayer;
+    return !!(this.licenseHash?.is_buli && sp && this.isMinor(sp.birthdate));
+  }
+
+  get submitDisabled(): boolean {
+    if (!this.needsMinorConsent) return false;
+    return !this.minorConsent || !this.guardianEmail.trim();
+  }
+
+  public onPlayerChange() {
+    this.minorConsent = false;
+    this.guardianEmail = '';
+  }
+
   public createLicenseRequest() {
     this._clubService
-      .userCreateLicenseRequest(this.playerId, this.teamId, this.expressLicense)
+      .userCreateLicenseRequest(
+        this.playerId,
+        this.teamId,
+        this.expressLicense,
+        this.needsMinorConsent ? this.guardianEmail : undefined,
+        this.needsMinorConsent ? new Date().toISOString() : undefined
+      )
       .subscribe({
         next: () => {
           this.expressLicense = false;
+          this.minorConsent = false;
+          this.guardianEmail = '';
           this.loadUserLicenses();
         },
       });

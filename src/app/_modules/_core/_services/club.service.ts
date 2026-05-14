@@ -73,14 +73,16 @@ export class ClubService {
   public userCreateLicenseRequest(
     playerId: number,
     teamId: number,
-    express = false
+    express = false,
+    guardianEmail?: string,
+    minorConsentAt?: string
   ) {
     const path =
       environment.apiURL + 'user/players/' + playerId + '/request_license.json';
-    return this.http.post<{ success: boolean }>(path, {
-      team_id: teamId,
-      express,
-    });
+    const body: Record<string, unknown> = { team_id: teamId, express };
+    if (guardianEmail) body['guardian_email'] = guardianEmail;
+    if (minorConsentAt) body['minor_consent_at'] = minorConsentAt;
+    return this.http.post<{ success: boolean }>(path, body);
   }
 
   public userWithdrawLicenseRequest(playerId: number, licenseId: string) {
