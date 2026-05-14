@@ -130,12 +130,21 @@
           >
           <span *ngIf="loading">Daten werden geladen...</span>
         </span>
-        <button
-          class="text-sm text-fb-gray-500 hover:text-black underline"
-          (click)="resetFilters()"
-        >
-          Filter zurücksetzen
-        </button>
+        <div class="flex items-center gap-4">
+          <button
+            *ngIf="!loading && filteredEntries.length > 0"
+            class="text-sm text-fb-gray-500 hover:text-black underline"
+            (click)="exportCsv()"
+          >
+            CSV exportieren
+          </button>
+          <button
+            class="text-sm text-fb-gray-500 hover:text-black underline"
+            (click)="resetFilters()"
+          >
+            Filter zurücksetzen
+          </button>
+        </div>
       </div>
     </div>
 

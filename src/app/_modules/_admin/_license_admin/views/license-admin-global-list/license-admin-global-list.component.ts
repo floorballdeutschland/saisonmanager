@@ -148,6 +148,54 @@ export class LicenseAdminGlobalListComponent implements OnInit {
     this.applyFilters();
   }
 
+  public exportCsv(): void {
+    const headers = [
+      'Nachname',
+      'Vorname',
+      'Geburtsjahr',
+      'Verein',
+      'Team',
+      'Spielbetrieb',
+      'Liga',
+      'Status',
+      'Lizenztyp',
+      'Express',
+      'Beantragt',
+      'Erteilt',
+    ];
+    const rows = this.filteredEntries.map((e) => [
+      e.player_last_name,
+      e.player_first_name,
+      e.player_birthdate
+        ? new Date(e.player_birthdate).getFullYear().toString()
+        : '',
+      e.club_name ?? '',
+      e.team_name,
+      e.game_operation_name ?? '',
+      e.league_name,
+      e.license_status,
+      e.license_type === 'primary' ? 'Erstlizenz' : 'Zweitlizenz',
+      e.express ? 'Ja' : 'Nein',
+      e.requested_at ? this._formatDate(e.requested_at) : '',
+      e.approved_at ? this._formatDate(e.approved_at) : '',
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';')
+      )
+      .join('\n');
+
+    const bom = '﻿';
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lizenzen-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   public statusBadgeClass(statusId: number): string {
     if (statusId === 1) return 'bg-green-100 text-green-800';
     if (statusId === 2) return 'bg-yellow-100 text-yellow-800';
@@ -173,6 +221,13 @@ export class LicenseAdminGlobalListComponent implements OnInit {
       age--;
     }
     return age < 18;
+  }
+
+  private _formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return `${String(d.getDate()).padStart(2, '0')}.${String(
+      d.getMonth() + 1
+    ).padStart(2, '0')}.${d.getFullYear()}`;
   }
 
   private buildFilterOptions(): void {

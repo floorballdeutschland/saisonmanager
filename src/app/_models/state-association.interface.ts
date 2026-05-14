@@ -20,7 +20,9 @@ export interface StateAssociation {
   express_license_enabled?: boolean;
   scan_required?: boolean;
   logo_url?: string | null;
-  children?: Array<Pick<StateAssociation, 'id' | 'name' | 'short_name'>>;
+  children?: Array<
+    Pick<StateAssociation, 'id' | 'name' | 'short_name' | 'logo_url'>
+  >;
   checklist_items?: ChecklistItem[];
   releases?: StateAssociationRelease[];
 }
