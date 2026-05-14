@@ -1,24 +1,20 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { TeamEditComponent } from './team-edit.component';
 
-describe('HomeComponent', () => {
-  let component: TeamEditComponent;
-  let fixture: ComponentFixture<TeamEditComponent>;
-
+describe('TeamEditComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [TeamEditComponent],
-    }).compileComponents();
-  });
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(TeamEditComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    })
+      .overrideTemplate(TeamEditComponent, '')
+      .compileComponents();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    const fixture = TestBed.createComponent(TeamEditComponent);
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });

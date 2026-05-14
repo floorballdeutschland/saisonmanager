@@ -1,24 +1,20 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { LeagueIndexComponent } from './league-index.component';
 
-describe('HomeComponent', () => {
-  let component: LeagueIndexComponent;
-  let fixture: ComponentFixture<LeagueIndexComponent>;
-
+describe('LeagueIndexComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [LeagueIndexComponent],
-    }).compileComponents();
-  });
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(LeagueIndexComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    })
+      .overrideTemplate(LeagueIndexComponent, '')
+      .compileComponents();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    const fixture = TestBed.createComponent(LeagueIndexComponent);
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });

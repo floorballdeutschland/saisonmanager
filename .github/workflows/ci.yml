@@ -29,3 +29,4 @@ jobs:
 
       - name: Build
         run: npm run build
+        # production build validates the entire app
