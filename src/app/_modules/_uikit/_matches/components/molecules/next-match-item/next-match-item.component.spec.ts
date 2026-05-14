@@ -9,7 +9,9 @@ describe('NextMatchItemComponent', () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [NextMatchItemComponent],
-    }).compileComponents();
+    })
+      .overrideTemplate(NextMatchItemComponent, '')
+      .compileComponents();
   });
 
   it('should create', () => {

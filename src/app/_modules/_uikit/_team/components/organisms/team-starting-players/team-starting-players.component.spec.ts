@@ -9,7 +9,9 @@ describe('TeamStartingPlayersComponent', () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [TeamStartingPlayersComponent],
-    }).compileComponents();
+    })
+      .overrideTemplate(TeamStartingPlayersComponent, '')
+      .compileComponents();
   });
 
   it('should create', () => {

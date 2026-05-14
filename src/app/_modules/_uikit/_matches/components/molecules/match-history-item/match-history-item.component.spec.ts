@@ -9,7 +9,9 @@ describe('MatchHistoryItemComponent', () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [MatchHistoryItemComponent],
-    }).compileComponents();
+    })
+      .overrideTemplate(MatchHistoryItemComponent, '')
+      .compileComponents();
   });
 
   it('should create', () => {

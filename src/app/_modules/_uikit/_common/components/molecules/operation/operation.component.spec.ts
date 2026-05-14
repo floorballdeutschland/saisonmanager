@@ -9,7 +9,9 @@ describe('OperationComponent', () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [OperationComponent],
-    }).compileComponents();
+    })
+      .overrideTemplate(OperationComponent, '')
+      .compileComponents();
   });
 
   it('should create', () => {

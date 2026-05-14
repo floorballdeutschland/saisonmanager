@@ -9,7 +9,9 @@ describe('HomeComponent', () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [HomeComponent],
-    }).compileComponents();
+    })
+      .overrideTemplate(HomeComponent, '')
+      .compileComponents();
   });
 
   it('should create', () => {

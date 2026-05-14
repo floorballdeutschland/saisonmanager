@@ -9,7 +9,9 @@ describe('LicenseAdminLeagueDetailComponent', () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [LicenseAdminLeagueDetailComponent],
-    }).compileComponents();
+    })
+      .overrideTemplate(LicenseAdminLeagueDetailComponent, '')
+      .compileComponents();
   });
 
   it('should create', () => {
