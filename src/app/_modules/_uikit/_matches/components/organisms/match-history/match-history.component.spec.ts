@@ -1,26 +1,19 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { MatchHistoryComponent } from './match-history.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('MatchHistoryComponent', () => {
-  let component: MatchHistoryComponent;
-  let fixture: ComponentFixture<MatchHistoryComponent>;
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [MatchHistoryComponent],
     }).compileComponents();
   });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(MatchHistoryComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
   it('should create', () => {
-    expect(component).toBeTruthy();
+    const fixture = TestBed.createComponent(MatchHistoryComponent);
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });

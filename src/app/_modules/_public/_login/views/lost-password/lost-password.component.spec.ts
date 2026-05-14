@@ -1,26 +1,19 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { LostPasswordComponent } from './lost-password.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('LostPasswordComponent', () => {
-  let component: LostPasswordComponent;
-  let fixture: ComponentFixture<LostPasswordComponent>;
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [LostPasswordComponent],
     }).compileComponents();
   });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(LostPasswordComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
   it('should create', () => {
-    expect(component).toBeTruthy();
+    const fixture = TestBed.createComponent(LostPasswordComponent);
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });

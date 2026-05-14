@@ -1,26 +1,19 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { LicenseTeamDetailComponent } from './license-team-detail.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('LicenseTeamDetailComponent', () => {
-  let component: LicenseTeamDetailComponent;
-  let fixture: ComponentFixture<LicenseTeamDetailComponent>;
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [LicenseTeamDetailComponent],
     }).compileComponents();
   });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(LicenseTeamDetailComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
   it('should create', () => {
-    expect(component).toBeTruthy();
+    const fixture = TestBed.createComponent(LicenseTeamDetailComponent);
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });
