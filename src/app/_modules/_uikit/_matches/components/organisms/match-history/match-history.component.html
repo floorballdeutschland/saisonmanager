@@ -21,11 +21,11 @@
           | reverseEvents : newestFirst as events
       "
     >
-      <ng-container *ngIf="events.length">
-        <div class="font-bold w-full border-b border-fb-gray-200 pb-5 mt-8">
-          {{ periodObject.title }}
-        </div>
+      <div class="font-bold w-full border-b border-fb-gray-200 pb-5 mt-8">
+        {{ periodObject.title }}
+      </div>
 
+      <ng-container *ngIf="events.length; else noEvents">
         <fb-match-history-item
           class="block even:bg-fb-gray-300"
           *ngFor="let event of events; let isLast = last"
@@ -40,6 +40,9 @@
           (reloadGame)="handleReload()"
         ></fb-match-history-item>
       </ng-container>
+      <ng-template #noEvents>
+        <div class="text-fb-gray-400 py-4">Keine Ereignisse</div>
+      </ng-template>
     </ng-container>
   </ng-container>
 </div>
