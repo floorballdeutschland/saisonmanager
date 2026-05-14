@@ -39,6 +39,7 @@ export class UserManagementService {
       game_operation_id?: number | null;
       club_id?: number | null;
     };
+    teams?: number[];
   }): Observable<UserAdminEntry> {
     return this.http.post<UserAdminEntry>(`${this.base}.json`, data);
   }

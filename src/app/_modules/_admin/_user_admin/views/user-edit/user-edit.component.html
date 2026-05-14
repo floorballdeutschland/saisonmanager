@@ -118,6 +118,44 @@
       </div>
     </div>
 
+    <!-- Team-Zuweisung (für TM-Nutzer) -->
+    <div
+      *ngIf="showTeamAssignment"
+      class="border-t border-fb-gray-200 pt-6 mb-6"
+    >
+      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+        Team-Zuweisung
+      </div>
+      <p class="text-sm text-fb-gray-500 mb-3">
+        Wähle die Teams, für die dieser TM zuständig ist.
+      </p>
+      <div class="flex flex-col gap-1 mb-4">
+        <label
+          *ngFor="let team of availableTeams"
+          class="flex items-center gap-2 text-sm cursor-pointer"
+        >
+          <input
+            type="checkbox"
+            [checked]="isTeamSelected(team.id)"
+            (change)="toggleTeam(team.id)"
+            class="h-4 w-4 rounded border-fb-gray-600 accent-black"
+          />
+          {{ team.name }}
+          <span *ngIf="team.league_name" class="text-xs text-fb-gray-500"
+            >({{ team.league_name }})</span
+          >
+        </label>
+      </div>
+      <button
+        type="button"
+        (click)="saveTeams()"
+        [disabled]="savingTeams"
+        class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+      >
+        {{ savingTeams ? "Speichern…" : "Teams speichern" }}
+      </button>
+    </div>
+
     <!-- Passwort-Reset -->
     <div class="border-t border-fb-gray-200 pt-6">
       <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">

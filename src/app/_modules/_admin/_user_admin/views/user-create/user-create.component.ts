@@ -15,7 +15,13 @@ import {
   NotificationService,
   SessionService,
 } from '@floorball/core';
-import { Club, GameOperation, User } from '@floorball/types';
+import {
+  Club,
+  ClubWithTeams,
+  GameOperation,
+  Team,
+  User,
+} from '@floorball/types';
 
 interface RoleOption {
   id: number;
@@ -40,8 +46,10 @@ export class UserCreateComponent implements OnInit, OnDestroy {
   selectedRoleId: number = 4;
   selectedClubId: number | null = null;
   selectedGoId: number | null = null;
+  selectedTeamIds: number[] = [];
 
   clubs: Club[] = [];
+  clubsWithTeams: ClubWithTeams[] = [];
   gameOperations: GameOperation[] = [];
 
   readonly allRoles: RoleOption[] = [
@@ -68,6 +76,9 @@ export class UserCreateComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe((user) => {
         this.currentUser = user;
+        if (this.isVm) {
+          this.selectedRoleId = 5;
+        }
         this._cdr.markForCheck();
       });
 
@@ -77,6 +88,19 @@ export class UserCreateComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (clubs) => {
           this.clubs = clubs;
+          this._cdr.markForCheck();
+        },
+      });
+
+    this._clubService
+      .adminGetClubAndTeams()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (data) => {
+          this.clubsWithTeams = data;
+          if (this.isVm && data.length === 1) {
+            this.selectedClubId = data[0].id;
+          }
           this._cdr.markForCheck();
         },
       });
@@ -98,9 +122,26 @@ export class UserCreateComponent implements OnInit, OnDestroy {
     return !!this.currentUser?.permissions['menu_item_state_association_admin'];
   }
 
+  get isVm(): boolean {
+    return (
+      !!this.currentUser?.permissions['menu_item_user_vm'] && !this.isAdmin
+    );
+  }
+
   get availableRoles(): RoleOption[] {
     if (this.isAdmin) return this.allRoles;
+    if (this.isVm) return this.allRoles.filter((r) => r.id === 5);
     return this.allRoles.filter((r) => r.id === 4 || r.id === 5);
+  }
+
+  get vmClubs(): Club[] {
+    return this.clubsWithTeams;
+  }
+
+  get availableTeams(): Team[] {
+    if (!this.selectedClubId) return [];
+    const club = this.clubsWithTeams.find((c) => c.id === this.selectedClubId);
+    return club?.teams ?? [];
   }
 
   get selectedRole(): RoleOption | undefined {
@@ -120,10 +161,32 @@ export class UserCreateComponent implements OnInit, OnDestroy {
     return true;
   }
 
+  onClubChange(): void {
+    this.selectedTeamIds = [];
+  }
+
+  toggleTeam(teamId: number): void {
+    const idx = this.selectedTeamIds.indexOf(teamId);
+    if (idx >= 0) {
+      this.selectedTeamIds = this.selectedTeamIds.filter((t) => t !== teamId);
+    } else {
+      this.selectedTeamIds = [...this.selectedTeamIds, teamId];
+    }
+  }
+
+  isTeamSelected(teamId: number): boolean {
+    return this.selectedTeamIds.includes(teamId);
+  }
+
   submit(): void {
     if (!this.isValid || this.saving) return;
 
     this.saving = true;
+    const teams =
+      this.selectedRoleId === 5 && this.selectedTeamIds.length > 0
+        ? this.selectedTeamIds
+        : undefined;
+
     this._userService
       .createUser({
         user: {
@@ -139,16 +202,17 @@ export class UserCreateComponent implements OnInit, OnDestroy {
             ? this.selectedGoId
             : null,
         },
+        teams,
       })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (created) => {
           const isTm = this.selectedRoleId === 5;
           const msg = isTm
-            ? `Benutzer ${created.name} angelegt. Eine E-Mail zum Passwort setzen wurde versandt. Hinweis: TM-Nutzer benötigen noch eine Team-Zuweisung, sonst ist der Login gesperrt.`
+            ? `Benutzer ${created.name} angelegt. Eine E-Mail zum Passwort setzen wurde versandt.`
             : `Benutzer ${created.name} angelegt. Eine E-Mail zum Passwort setzen wurde versandt.`;
           this._notificationService.success(msg, {
-            autoClose: !isTm,
+            autoClose: true,
             keepAfterRouteChange: true,
           });
           this._router.navigate([

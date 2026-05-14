@@ -9,11 +9,12 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import {
+  ClubService,
   UserManagementService,
   NotificationService,
   SessionService,
 } from '@floorball/core';
-import { UserAdminEntry, User } from '@floorball/types';
+import { ClubWithTeams, Team, UserAdminEntry, User } from '@floorball/types';
 
 @Component({
   templateUrl: './user-edit.component.html',
@@ -28,10 +29,15 @@ export class UserEditComponent implements OnInit, OnDestroy {
   saving = false;
   sendingReset = false;
 
+  clubsWithTeams: ClubWithTeams[] = [];
+  editableTeamIds: number[] = [];
+  savingTeams = false;
+
   private _destroy$ = new Subject<void>();
 
   constructor(
     private _userService: UserManagementService,
+    private _clubService: ClubService,
     private _notificationService: NotificationService,
     private _sessionService: SessionService,
     private _route: ActivatedRoute,
@@ -56,6 +62,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
           this.user = user;
           this.email = user.email ?? '';
           this.active = user.active;
+          this.editableTeamIds = user.teams ? [...user.teams] : [];
           this._cdr.markForCheck();
         },
         error: () => {
@@ -63,6 +70,16 @@ export class UserEditComponent implements OnInit, OnDestroy {
             autoClose: false,
           });
           this._router.navigate(['/', 'verwaltung', 'benutzer']);
+        },
+      });
+
+    this._clubService
+      .adminGetClubAndTeams()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (data) => {
+          this.clubsWithTeams = data;
+          this._cdr.markForCheck();
         },
       });
   }
@@ -77,7 +94,9 @@ export class UserEditComponent implements OnInit, OnDestroy {
   }
 
   get isVm(): boolean {
-    return !!this.currentUser?.permissions['menu_item_user_vm'];
+    return (
+      !!this.currentUser?.permissions['menu_item_user_vm'] && !this.isAdminOrSbk
+    );
   }
 
   get isSelf(): boolean {
@@ -98,6 +117,27 @@ export class UserEditComponent implements OnInit, OnDestroy {
       this.currentRoleId !== null &&
       (this.isAdminOrSbk || this.isVm)
     );
+  }
+
+  get availableTeams(): Team[] {
+    return this.clubsWithTeams.flatMap((c) => c.teams ?? []);
+  }
+
+  get showTeamAssignment(): boolean {
+    return this.currentRoleId === 5 && this.availableTeams.length > 0;
+  }
+
+  isTeamSelected(teamId: number): boolean {
+    return this.editableTeamIds.includes(teamId);
+  }
+
+  toggleTeam(teamId: number): void {
+    const idx = this.editableTeamIds.indexOf(teamId);
+    if (idx >= 0) {
+      this.editableTeamIds = this.editableTeamIds.filter((t) => t !== teamId);
+    } else {
+      this.editableTeamIds = [...this.editableTeamIds, teamId];
+    }
   }
 
   submit(): void {
@@ -124,6 +164,33 @@ export class UserEditComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.saving = false;
+          this._cdr.markForCheck();
+          this._notificationService.error('Fehler beim Speichern.', {
+            autoClose: false,
+          });
+        },
+      });
+  }
+
+  saveTeams(): void {
+    if (!this.user) return;
+    this.savingTeams = true;
+
+    this._userService
+      .updateUser(this.user.id, { teams: this.editableTeamIds })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.user = updated;
+          this.editableTeamIds = updated.teams ? [...updated.teams] : [];
+          this.savingTeams = false;
+          this._notificationService.success('Teams gespeichert.', {
+            autoClose: true,
+          });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.savingTeams = false;
           this._cdr.markForCheck();
           this._notificationService.error('Fehler beim Speichern.', {
             autoClose: false,

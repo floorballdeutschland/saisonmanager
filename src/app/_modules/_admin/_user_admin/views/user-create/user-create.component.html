@@ -66,9 +66,16 @@
               <ng-container *ngIf="selectedRole?.needsClub">
                 <div class="font-bold">Verein</div>
                 <div>
-                  <select [(ngModel)]="selectedClubId" class="w-full">
+                  <select
+                    [(ngModel)]="selectedClubId"
+                    (ngModelChange)="onClubChange()"
+                    class="w-full"
+                  >
                     <option [ngValue]="null">– Verein auswählen –</option>
-                    <option *ngFor="let c of clubs" [ngValue]="c.id">
+                    <option
+                      *ngFor="let c of isVm ? vmClubs : clubs"
+                      [ngValue]="c.id"
+                    >
                       {{ c.name }}
                     </option>
                   </select>
@@ -84,6 +91,40 @@
                       {{ go.name }}
                     </option>
                   </select>
+                </div>
+              </ng-container>
+
+              <ng-container
+                *ngIf="
+                  selectedRoleId === 5 &&
+                  selectedClubId &&
+                  availableTeams.length > 0
+                "
+              >
+                <div class="font-bold col-span-2 mt-2">
+                  Teams zuweisen
+                  <span class="text-xs font-normal text-fb-gray-500 ml-1"
+                    >(optional)</span
+                  >
+                </div>
+                <div class="col-span-2 flex flex-col gap-1">
+                  <label
+                    *ngFor="let team of availableTeams"
+                    class="flex items-center gap-2 text-sm cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      [checked]="isTeamSelected(team.id)"
+                      (change)="toggleTeam(team.id)"
+                      class="h-4 w-4 rounded border-fb-gray-600 accent-black"
+                    />
+                    {{ team.name }}
+                    <span
+                      *ngIf="team.league_name"
+                      class="text-xs text-fb-gray-500"
+                      >({{ team.league_name }})</span
+                    >
+                  </label>
                 </div>
               </ng-container>
             </div>
