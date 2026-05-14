@@ -23,6 +23,9 @@ export class ButtonComponent {
   @Input()
   iconAfter = false;
 
+  @Input()
+  title?: string;
+
   @Output()
   handleClick = new EventEmitter<void>();
 }
