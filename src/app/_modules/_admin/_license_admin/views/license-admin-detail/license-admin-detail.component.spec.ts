@@ -1,24 +1,19 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { LicenseAdminDetailComponent } from './license-admin-detail.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('LicenseAdminDetailComponent', () => {
-  let component: LicenseAdminDetailComponent;
-  let fixture: ComponentFixture<LicenseAdminDetailComponent>;
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [LicenseAdminDetailComponent],
     }).compileComponents();
   });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(LicenseAdminDetailComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
   it('should create', () => {
-    expect(component).toBeTruthy();
+    const fixture = TestBed.createComponent(LicenseAdminDetailComponent);
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });

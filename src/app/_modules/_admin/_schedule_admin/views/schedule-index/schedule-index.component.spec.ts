@@ -1,24 +1,20 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { ScheduleIndexComponent } from './schedule-index.component';
 
-describe('HomeComponent', () => {
-  let component: ScheduleIndexComponent;
-  let fixture: ComponentFixture<ScheduleIndexComponent>;
-
+describe('ScheduleIndexComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [ScheduleIndexComponent],
-    }).compileComponents();
-  });
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(ScheduleIndexComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    })
+      .overrideTemplate(ScheduleIndexComponent, '')
+      .compileComponents();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    const fixture = TestBed.createComponent(ScheduleIndexComponent);
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });

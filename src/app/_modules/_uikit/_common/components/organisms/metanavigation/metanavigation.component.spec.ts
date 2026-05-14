@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MetanavigationComponent } from './metanavigation.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('MetanavigationComponent', () => {
   let component: MetanavigationComponent;
@@ -8,6 +9,7 @@ describe('MetanavigationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [MetanavigationComponent],
     }).compileComponents();
   });
