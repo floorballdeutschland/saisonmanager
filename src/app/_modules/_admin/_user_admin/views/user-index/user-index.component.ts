@@ -23,6 +23,16 @@ export class UserIndexComponent implements OnInit, OnDestroy {
   users: UserAdminEntry[] = [];
   loading = false;
   currentUser: User | null = null;
+  selectedRole: number | null = null;
+
+  readonly roleOptions = [
+    { label: 'Admin', value: 1 },
+    { label: 'SBK', value: 2 },
+    { label: 'RSK', value: 3 },
+    { label: 'VM', value: 4 },
+    { label: 'TM', value: 5 },
+    { label: 'Schiedsrichter', value: 6 },
+  ];
 
   private _destroy$ = new Subject<void>();
 
@@ -72,6 +82,13 @@ export class UserIndexComponent implements OnInit, OnDestroy {
 
   get canCreate(): boolean {
     return !!this.currentUser?.permissions['menu_item_user_create'];
+  }
+
+  get filteredUsers(): UserAdminEntry[] {
+    if (this.selectedRole === null) return this.users;
+    return this.users.filter((u) =>
+      u.roles.some((r) => r.user_group_id === this.selectedRole)
+    );
   }
 
   roleLabel(user: UserAdminEntry): string {
