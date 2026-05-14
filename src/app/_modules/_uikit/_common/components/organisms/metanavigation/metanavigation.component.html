@@ -77,7 +77,6 @@
   <ng-container
     *ngIf="
       showItem('menu_item_referee_admin') ||
-      showItem('menu_item_referee_vm') ||
       showItem('menu_item_referee_assignments') ||
       showItem('menu_item_online_test_admin') ||
       showItem('menu_item_referee_profile')
@@ -134,14 +133,6 @@
             [routerLink]="['/', 'verwaltung', 'onlinepruefungen']"
             (click)="closeMenu()"
             >Prüfungen</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_vm')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'schiedsrichter-verein']"
-            (click)="closeMenu()"
-            >Schiedsrichter*innen</a
           >
         </li>
       </ul>
