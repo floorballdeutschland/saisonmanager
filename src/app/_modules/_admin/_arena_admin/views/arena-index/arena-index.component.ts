@@ -18,6 +18,7 @@ import { Arena } from '@floorball/types';
 export class ArenaIndexComponent implements OnInit, OnDestroy {
   arenas: Arena[] = [];
   loading = false;
+  deleteError: string | null = null;
 
   private _destroy$ = new Subject<void>();
 
@@ -27,6 +28,15 @@ export class ArenaIndexComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.load();
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+  }
+
+  public load(): void {
     this.loading = true;
     this._arenaService
       .getAdminArenas()
@@ -44,8 +54,22 @@ export class ArenaIndexComponent implements OnInit, OnDestroy {
       });
   }
 
-  ngOnDestroy(): void {
-    this._destroy$.next();
-    this._destroy$.complete();
+  public deleteArena(arena: Arena): void {
+    if (!confirm(`Spielort "${arena.name}" wirklich löschen?`)) return;
+    this.deleteError = null;
+    this._arenaService
+      .deleteArena(arena.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.arenas = this.arenas.filter((a) => a.id !== arena.id);
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this.deleteError =
+            err.error?.error || 'Spielort konnte nicht gelöscht werden.';
+          this._cdr.markForCheck();
+        },
+      });
   }
 }

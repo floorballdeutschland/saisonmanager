@@ -27,4 +27,8 @@ export class ArenaService {
   public updateArena(id: number, data: Partial<Arena>) {
     return this.http.patch<Arena>(`${this.adminBase}/${id}.json`, data);
   }
+
+  public deleteArena(id: number) {
+    return this.http.delete(`${this.adminBase}/${id}.json`);
+  }
 }

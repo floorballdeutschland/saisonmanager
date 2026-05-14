@@ -9,6 +9,13 @@
     </a>
   </div>
 
+  <div
+    *ngIf="deleteError"
+    class="mb-4 p-3 bg-red-900 border border-red-700 rounded text-sm text-red-200"
+  >
+    {{ deleteError }}
+  </div>
+
   <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8 text-center">
     Lade Spielorte…
   </div>
@@ -21,7 +28,6 @@
           <th class="py-2 pr-4 font-bold">Name</th>
           <th class="py-2 pr-4 font-bold">Stadt</th>
           <th class="py-2 pr-4 font-bold">Adresse</th>
-          <th class="py-2 pr-4 font-bold">Status</th>
           <th class="py-2"></th>
         </tr>
       </thead>
@@ -39,18 +45,7 @@
             </span>
             <span *ngIf="!arena.street">–</span>
           </td>
-          <td class="py-2 pr-4">
-            <span *ngIf="arena.disabled" class="text-xs font-bold text-red-500">
-              Deaktiviert
-            </span>
-            <span
-              *ngIf="!arena.disabled"
-              class="text-xs font-bold text-green-600"
-            >
-              Aktiv
-            </span>
-          </td>
-          <td class="py-2 text-right">
+          <td class="py-2 text-right whitespace-nowrap">
             <a
               [routerLink]="[
                 '/',
@@ -59,14 +54,21 @@
                 arena.id,
                 'bearbeiten'
               ]"
-              class="text-sm text-fb-gray-500 hover:text-black"
+              class="text-sm text-fb-gray-500 hover:text-black mr-4"
             >
               Bearbeiten
             </a>
+            <button
+              type="button"
+              (click)="deleteArena(arena)"
+              class="text-sm text-red-500 hover:text-red-300"
+            >
+              Löschen
+            </button>
           </td>
         </tr>
         <tr *ngIf="arenas.length === 0">
-          <td colspan="5" class="py-8 text-center text-fb-gray-500">
+          <td colspan="4" class="py-8 text-center text-fb-gray-500">
             Keine Spielorte gefunden.
           </td>
         </tr>

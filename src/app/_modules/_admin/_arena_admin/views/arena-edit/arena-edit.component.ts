@@ -28,7 +28,6 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
   street = '';
   housenumber = '';
   postcode = '';
-  disabled = false;
 
   private _destroy$ = new Subject<void>();
 
@@ -63,7 +62,6 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
             this.street = found.street ?? '';
             this.housenumber = found.housenumber ?? '';
             this.postcode = found.postcode ?? '';
-            this.disabled = found.disabled ?? false;
             this._cdr.markForCheck();
           },
           error: () => {
@@ -88,7 +86,6 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
       street: this.street.trim() || undefined,
       housenumber: this.housenumber.trim() || undefined,
       postcode: this.postcode.trim() || undefined,
-      disabled: this.disabled,
     };
   }
 

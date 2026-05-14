@@ -6,5 +6,4 @@ export interface Arena {
   housenumber?: string;
   postcode?: string;
   schedule_item?: string;
-  disabled?: boolean;
 }
