@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ConfirmationDialogComponent } from './team-ranking-table-overlay.component';
+import { TeamRankingTableOverlayComponent } from './team-ranking-table-overlay.component';
 
-describe('ConfirmationDialogComponent', () => {
-  let component: ConfirmationDialogComponent;
-  let fixture: ComponentFixture<ConfirmationDialogComponent>;
+describe('TeamRankingTableOverlayComponent', () => {
+  let component: TeamRankingTableOverlayComponent;
+  let fixture: ComponentFixture<TeamRankingTableOverlayComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ConfirmationDialogComponent],
+      declarations: [TeamRankingTableOverlayComponent],
     }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ConfirmationDialogComponent);
+    fixture = TestBed.createComponent(TeamRankingTableOverlayComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
