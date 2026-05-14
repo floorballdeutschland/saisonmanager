@@ -7,7 +7,8 @@ export type TransferRequestStatus =
   | 'approved'
   | 'rejected_by_club'
   | 'rejected_by_lv'
-  | 'revoked';
+  | 'revoked'
+  | 'withdrawn';
 
 export interface TransferRequestPlayer {
   id: number;

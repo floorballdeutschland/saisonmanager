@@ -24,6 +24,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   requests: TransferRequest[] = [];
   loading = false;
   currentUserClubIds: number[] = [];
+  withdrawingId: number | null = null;
 
   private _destroy$ = new Subject<void>();
 
@@ -82,6 +83,42 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     this._router.navigate(['/verwaltung/transfer-anfragen/neu']);
   }
 
+  canWithdraw(r: TransferRequest): boolean {
+    return (
+      (r.status === 'pending_club' || r.status === 'pending_lv') &&
+      this.currentUserClubIds.includes(r.requesting_club.id)
+    );
+  }
+
+  withdraw(r: TransferRequest, event: Event): void {
+    event.stopPropagation();
+    if (!confirm('Antrag wirklich zurückziehen?')) return;
+
+    this.withdrawingId = r.id;
+    this._transferService
+      .withdraw(r.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.requests = this.requests.map((req) =>
+            req.id === updated.id ? updated : req
+          );
+          this.withdrawingId = null;
+          this._notificationService.success('Antrag zurückgezogen.', {
+            autoClose: true,
+          });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.withdrawingId = null;
+          this._notificationService.error('Fehler beim Zurückziehen.', {
+            autoClose: false,
+          });
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
   statusLabel(status: string): string {
     const labels: { [key: string]: string } = {
       pending_club: 'Warten auf abgebenden Verein',
@@ -91,6 +128,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
       rejected_by_club: 'Abgelehnt (Verein)',
       rejected_by_lv: 'Abgelehnt (LV)',
       revoked: 'Freigabe zurückgezogen',
+      withdrawn: 'Zurückgezogen',
     };
     return labels[status] || status;
   }
@@ -98,7 +136,11 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   statusClass(status: string): string {
     if (status === 'approved') return 'text-green-600 font-medium';
     if (status === 'scheduled') return 'text-yellow-400 font-medium';
-    if (status.startsWith('rejected') || status === 'revoked')
+    if (
+      status.startsWith('rejected') ||
+      status === 'revoked' ||
+      status === 'withdrawn'
+    )
       return 'text-red-500';
     return 'text-primary font-medium';
   }
@@ -131,6 +173,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
       (r) =>
         r.status === 'approved' ||
         r.status === 'revoked' ||
+        r.status === 'withdrawn' ||
         r.status.startsWith('rejected')
     );
   }

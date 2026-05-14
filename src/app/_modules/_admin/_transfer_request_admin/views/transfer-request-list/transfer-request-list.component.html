@@ -29,6 +29,7 @@
               <th class="py-2 pr-4 font-bold">Typ</th>
               <th class="py-2 pr-4 font-bold">Status</th>
               <th class="py-2 pr-4 font-bold">Datum</th>
+              <th class="py-2"></th>
             </tr>
           </thead>
           <tbody>
@@ -56,6 +57,16 @@
               </td>
               <td class="py-2 pr-4 text-fb-gray-500">
                 {{ r.created_at | date : "dd.MM.yyyy" }}
+              </td>
+              <td class="py-2 text-right">
+                <button
+                  *ngIf="canWithdraw(r)"
+                  (click)="withdraw(r, $event)"
+                  [disabled]="withdrawingId === r.id"
+                  class="text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
+                >
+                  {{ withdrawingId === r.id ? "…" : "Zurückziehen" }}
+                </button>
               </td>
             </tr>
           </tbody>

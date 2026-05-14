@@ -100,4 +100,11 @@ export class TransferRequestService {
       revocation_reason: revocationReason,
     });
   }
+
+  withdraw(id: number) {
+    return this.http.patch<TransferRequest>(
+      `${this.base}/${id}/withdraw.json`,
+      {}
+    );
+  }
 }
