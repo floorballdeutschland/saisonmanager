@@ -47,11 +47,26 @@ export class GameEditComponent implements OnInit {
   @Output()
   refreshSchedule = new EventEmitter<void>();
 
+  static readonly RSK_ASSIGNMENT = 'Ansetzung durch RSK';
+
   game!: GameInput;
   hasNotice = false;
   hasGameDependencies = false;
   hasMoveGameDay = false;
   processing = false;
+
+  get isRskAssignment(): boolean {
+    return (
+      this.game?.nominated_referee_string === GameEditComponent.RSK_ASSIGNMENT
+    );
+  }
+
+  toggleRskAssignment(): void {
+    this.game.nominated_referee_string = this.isRskAssignment
+      ? ''
+      : GameEditComponent.RSK_ASSIGNMENT;
+    this._cdr.markForCheck();
+  }
 
   constructor(
     private _gameService: GameService,
