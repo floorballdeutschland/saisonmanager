@@ -32,7 +32,7 @@ export class OnlineTestIndexComponent implements OnInit {
 
   deleteTest(event: MouseEvent, test: OnlineTest): void {
     event.stopPropagation();
-    if (!confirm(`Prüfung „${test.name}" wirklich löschen?`)) return;
+    if (!confirm(`Prüfung „${test.name}“ wirklich löschen?`)) return;
     this._onlineTestService.adminDelete(test.id).subscribe({
       next: () => {
         this.tests = this.tests.filter((t) => t.id !== test.id);
