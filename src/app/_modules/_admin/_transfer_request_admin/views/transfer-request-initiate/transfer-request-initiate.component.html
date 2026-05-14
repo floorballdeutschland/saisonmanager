@@ -2,27 +2,27 @@
   <div class="flex items-center gap-3 mb-6">
     <button
       (click)="cancel()"
-      class="text-fb-gray-400 hover:text-white text-sm"
+      class="text-fb-gray-500 hover:text-black text-sm"
     >
       ← Zurück
     </button>
     <h1 class="text-2xl font-bold">Transferantrag stellen</h1>
   </div>
 
-  <div class="bg-fb-gray-900 border border-fb-gray-700 rounded p-4 mb-6">
-    <p class="text-sm text-fb-gray-400 mb-4">
+  <div class="bg-white border border-fb-gray-600 rounded p-4 mb-6">
+    <p class="text-sm text-fb-gray-500 mb-4">
       Suche den Spieler anhand von Vor- und Nachname sowie Geburtsdatum. Es wird
       nur ein exakter Treffer akzeptiert.
     </p>
 
     <div class="flex flex-col gap-3">
       <div *ngIf="currentUserClubIds.length > 1">
-        <label class="block text-xs text-fb-gray-400 mb-1"
+        <label class="block text-xs font-bold text-fb-gray-500 mb-1"
           >Antragstellender Verein</label
         >
         <select
           [(ngModel)]="selectedClubId"
-          class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+          class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-black"
         >
           <option [ngValue]="0">Verein wählen…</option>
           <option *ngFor="let club of managedClubs" [ngValue]="club.id">
@@ -32,29 +32,35 @@
       </div>
 
       <div>
-        <label class="block text-xs text-fb-gray-400 mb-1">Vorname</label>
+        <label class="block text-xs font-bold text-fb-gray-500 mb-1"
+          >Vorname</label
+        >
         <input
           type="text"
           [(ngModel)]="firstName"
-          class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+          class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-black"
           placeholder="Vorname"
         />
       </div>
       <div>
-        <label class="block text-xs text-fb-gray-400 mb-1">Nachname</label>
+        <label class="block text-xs font-bold text-fb-gray-500 mb-1"
+          >Nachname</label
+        >
         <input
           type="text"
           [(ngModel)]="lastName"
-          class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+          class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-black"
           placeholder="Nachname"
         />
       </div>
       <div>
-        <label class="block text-xs text-fb-gray-400 mb-1">Geburtsdatum</label>
+        <label class="block text-xs font-bold text-fb-gray-500 mb-1"
+          >Geburtsdatum</label
+        >
         <input
           type="date"
           [(ngModel)]="birthdate"
-          class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+          class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-black"
         />
       </div>
 
@@ -63,22 +69,22 @@
         [disabled]="
           searching || !firstName || !lastName || !birthdate || !selectedClubId
         "
-        class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {{ searching ? "Suche…" : "Spieler suchen" }}
       </button>
     </div>
 
-    <p *ngIf="searchError" class="text-red-400 text-sm mt-3">
+    <p *ngIf="searchError" class="text-red-600 text-sm mt-3">
       {{ searchError }}
     </p>
   </div>
 
   <div
     *ngIf="foundPlayer"
-    class="bg-fb-gray-900 border border-fb-gray-700 rounded p-4 mb-6"
+    class="bg-white border border-fb-gray-600 rounded p-4 mb-6"
   >
-    <h2 class="text-sm font-semibold text-fb-gray-300 mb-3">
+    <h2 class="text-sm font-semibold text-fb-gray-500 mb-3">
       Spieler gefunden
     </h2>
     <p class="text-base font-medium mb-1">
@@ -88,15 +94,15 @@
       Geburtsdatum: {{ foundPlayer.birthdate | date : "dd.MM.yyyy" }}
     </p>
 
-    <div class="mt-4 pt-4 border-t border-fb-gray-700">
-      <p class="text-sm font-medium text-fb-gray-300 mb-3">Art des Antrags</p>
+    <div class="mt-4 pt-4 border-t border-fb-gray-600">
+      <p class="text-sm font-semibold text-black mb-3">Art des Antrags</p>
       <div class="flex flex-col gap-2 mb-4">
         <label class="flex items-start gap-2 text-sm cursor-pointer">
           <input
             type="radio"
             [(ngModel)]="requestType"
             value="transfer"
-            class="accent-primary mt-0.5"
+            class="mt-0.5"
           />
           <span class="flex flex-col gap-0.5">
             <span class="font-medium">Transfer</span>
@@ -111,7 +117,7 @@
             type="radio"
             [(ngModel)]="requestType"
             value="release"
-            class="accent-primary mt-0.5"
+            class="mt-0.5"
           />
           <span class="flex flex-col gap-0.5">
             <span class="font-medium">Spielerfreigabe</span>
@@ -127,16 +133,15 @@
 
     <div
       *ngIf="requestType === 'transfer'"
-      class="pt-4 border-t border-fb-gray-700"
+      class="pt-4 border-t border-fb-gray-600"
     >
-      <p class="text-sm font-medium text-fb-gray-300 mb-3">Transferdatum</p>
+      <p class="text-sm font-semibold text-black mb-3">Transferdatum</p>
       <div class="flex flex-col gap-2 mb-4">
         <label class="flex items-center gap-2 text-sm cursor-pointer">
           <input
             type="radio"
             [(ngModel)]="effectiveDateMode"
             value="immediate"
-            class="accent-primary"
           />
           Nächstmöglich
         </label>
@@ -145,7 +150,6 @@
             type="radio"
             [(ngModel)]="effectiveDateMode"
             value="scheduled"
-            class="accent-primary"
           />
           Wunschdatum (mind. 7 Tage in der Zukunft)
         </label>
@@ -154,13 +158,13 @@
           type="date"
           [(ngModel)]="effectiveDate"
           [min]="minEffectiveDate"
-          class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+          class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-black"
         />
       </div>
     </div>
 
-    <div class="pt-4 border-t border-fb-gray-700">
-      <p class="text-sm text-fb-gray-400 mb-3">
+    <div class="pt-4 border-t border-fb-gray-600">
+      <p class="text-sm text-fb-gray-500 mb-3">
         <ng-container *ngIf="requestType === 'transfer'"
           >Der Transferantrag wird für deinen Verein gestellt. Der abgebende
           Verein muss anschließend zustimmen, danach genehmigt der
@@ -181,7 +185,7 @@
             effectiveDateMode === 'scheduled' &&
             !effectiveDate)
         "
-        class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {{
           submitting
