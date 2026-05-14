@@ -4,6 +4,12 @@ export interface ChecklistItem {
   position: number;
 }
 
+export interface StateAssociationRelease {
+  id: number;
+  recipient_game_operation_id: number;
+  recipient_game_operation_name: string;
+}
+
 export interface StateAssociation {
   id: number;
   name: string;
@@ -15,4 +21,5 @@ export interface StateAssociation {
   scan_required?: boolean;
   children?: Array<Pick<StateAssociation, 'id' | 'name' | 'short_name'>>;
   checklist_items?: ChecklistItem[];
+  releases?: StateAssociationRelease[];
 }
