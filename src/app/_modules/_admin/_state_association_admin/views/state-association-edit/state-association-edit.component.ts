@@ -274,6 +274,13 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
           this.releases = this.releases.filter((r) => r.id !== releaseId);
           this._cdr.markForCheck();
         },
+        error: () => {
+          this._cdr.markForCheck();
+          this._notificationService.error(
+            'Freigabe konnte nicht entfernt werden.',
+            { autoClose: false }
+          );
+        },
       });
   }
 }
