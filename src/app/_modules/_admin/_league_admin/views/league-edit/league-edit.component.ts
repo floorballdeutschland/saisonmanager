@@ -191,6 +191,19 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     return msg;
   }
 
+  public hasRequiredDocument(league: League, docType: string): boolean {
+    return league.required_documents?.includes(docType) ?? false;
+  }
+
+  public toggleRequiredDocument(league: League, docType: string): void {
+    const docs = league.required_documents ?? [];
+    if (docs.includes(docType)) {
+      league.required_documents = docs.filter((d) => d !== docType);
+    } else {
+      league.required_documents = [...docs, docType];
+    }
+  }
+
   public submit(league: League) {
     this._leagueService.adminCreateLeagues(league).subscribe({
       next: () => {

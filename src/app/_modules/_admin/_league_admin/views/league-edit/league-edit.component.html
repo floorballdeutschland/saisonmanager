@@ -305,6 +305,31 @@
             </div>
           </div>
 
+          <!-- Dokumente für Lizenzantrag -->
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Dokumente für Lizenzantrag
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="req_doc_id_copy"
+                  [checked]="hasRequiredDocument(league, 'id_copy')"
+                  (change)="toggleRequiredDocument(league, 'id_copy')"
+                  class="h-4 w-4"
+                />
+                <span class="text-sm font-medium"
+                  >Ausweiskopie erforderlich</span
+                >
+              </label>
+              <p class="text-xs text-gray-500 ml-6">
+                Wenn aktiviert, müssen Vereinsmanager beim Lizenzantrag eine
+                Ausweiskopie des Spielers hochladen.
+              </p>
+            </div>
+          </div>
+
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="flex flex-col gap-2">
               <div class="mb-4" *ngIf="error(league)">

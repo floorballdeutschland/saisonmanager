@@ -7,4 +7,5 @@ export interface LicenseHash {
   other_players: Player[];
   express_license_enabled?: boolean;
   is_buli?: boolean;
+  required_documents?: string[];
 }

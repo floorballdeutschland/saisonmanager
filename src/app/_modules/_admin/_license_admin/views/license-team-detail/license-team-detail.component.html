@@ -209,7 +209,14 @@
                           </p>
                           <div class="flex flex-wrap gap-3">
                             <!-- Ausweiskopie -->
-                            <div class="flex items-center gap-2">
+                            <div
+                              class="flex items-center gap-2"
+                              *ngIf="
+                                licenseHash.required_documents?.includes(
+                                  'id_copy'
+                                )
+                              "
+                            >
                               <ng-container
                                 *ngIf="
                                   getDoc(p.team_license.id, 'id_copy') as doc;

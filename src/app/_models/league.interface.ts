@@ -38,6 +38,7 @@ export interface League {
   game_day_numbers: number[];
   game_day_titles: Array<{ game_day_number: number; title: string }>;
   similar_leagues?: League[];
+  required_documents?: string[];
 }
 
 export interface LeagueWithTeams extends League {
