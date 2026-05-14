@@ -146,6 +146,19 @@ export interface PublicLicenseEntry {
   approved_at?: string;
 }
 
+export interface RefereeAssignableGame {
+  id: number;
+  game_number?: string;
+  date: string;
+  start_time?: string;
+  home_team?: string;
+  guest_team?: string;
+  league?: string;
+  arena?: string;
+  assignment_id?: number | null;
+  assignment_status?: string | null;
+}
+
 export interface PublicLicenseList {
   game: {
     game_number?: string;

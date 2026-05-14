@@ -9,7 +9,7 @@ import {
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { NotificationService, RefereeService } from '@floorball/core';
-import { RefereeAssignment } from '@floorball/types';
+import { RefereeAssignableGame, RefereeAssignment } from '@floorball/types';
 
 @Component({
   templateUrl: './assignment-index.component.html',
@@ -18,8 +18,11 @@ import { RefereeAssignment } from '@floorball/types';
 })
 export class AssignmentIndexComponent implements OnInit, OnDestroy {
   assignments: RefereeAssignment[] = [];
+  games: RefereeAssignableGame[] = [];
   loading = false;
+  loadingGames = false;
   notifyingId: number | null = null;
+  activeTab: 'assignments' | 'games' = 'games';
 
   filterSeasonId = '';
   filterDateFrom = '';
@@ -36,6 +39,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._load();
+    this._loadGames();
   }
 
   ngOnDestroy(): void {
@@ -45,15 +49,14 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
 
   applyFilter(): void {
     this._load();
+    this._loadGames();
   }
 
-  editAssignment(gameId: number): void {
-    this._router.navigate([
-      '/',
-      'verwaltung',
-      'schiedsrichter-ansetzungen',
-      gameId,
-    ]);
+  editAssignment(gameId: number, game?: RefereeAssignableGame): void {
+    this._router.navigate(
+      ['/', 'verwaltung', 'schiedsrichter-ansetzungen', gameId],
+      { state: { game } }
+    );
   }
 
   notify(assignment: RefereeAssignment): void {
@@ -94,6 +97,18 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       : 'bg-yellow-100 text-yellow-800';
   }
 
+  assignmentStatusLabel(status?: string | null): string {
+    if (!status) return 'Offen';
+    return status === 'published' ? 'Veröffentlicht' : 'Vorläufig';
+  }
+
+  assignmentStatusClass(status?: string | null): string {
+    if (!status) return 'bg-gray-100 text-gray-500';
+    return status === 'published'
+      ? 'bg-green-100 text-green-800'
+      : 'bg-yellow-100 text-yellow-800';
+  }
+
   private _load(): void {
     this.loading = true;
     this._refereeService
@@ -116,6 +131,28 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
             'Ansetzungen konnten nicht geladen werden.',
             { autoClose: false, keepAfterRouteChange: false }
           );
+        },
+      });
+  }
+
+  private _loadGames(): void {
+    this.loadingGames = true;
+    this._refereeService
+      .adminGetAssignableGames({
+        season_id: this.filterSeasonId || undefined,
+        date_from: this.filterDateFrom || undefined,
+        date_to: this.filterDateTo || undefined,
+      })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (list) => {
+          this.games = list;
+          this.loadingGames = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.loadingGames = false;
+          this._cdr.markForCheck();
         },
       });
   }

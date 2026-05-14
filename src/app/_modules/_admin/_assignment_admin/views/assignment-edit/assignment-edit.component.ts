@@ -6,10 +6,11 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { NotificationService, RefereeService } from '@floorball/core';
 import {
+  RefereeAssignableGame,
   RefereeAssignment,
   RefereeAssignmentAvailable,
 } from '@floorball/types';
@@ -21,6 +22,7 @@ import {
 })
 export class AssignmentEditComponent implements OnInit, OnDestroy {
   assignment: RefereeAssignment | null = null;
+  gameInfo: RefereeAssignableGame | null = null;
   availableReferees: RefereeAssignmentAvailable[] = [];
   loading = false;
   saving = false;
@@ -36,6 +38,7 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
     private _refereeService: RefereeService,
     private _notificationService: NotificationService,
     private _route: ActivatedRoute,
+    private _router: Router,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -44,6 +47,15 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
     if (param && param !== 'neu') {
       this.gameId = parseInt(param, 10);
       this.loading = true;
+
+      // Game info may be passed via router state when navigating from the games list
+      const navState = this._router.lastSuccessfulNavigation?.extras?.state as {
+        game?: RefereeAssignableGame;
+      } | null;
+      if (navState?.game) {
+        this.gameInfo = navState.game;
+      }
+
       this._refereeService
         .adminGetAssignments()
         .pipe(takeUntil(this._destroy$))
@@ -55,8 +67,10 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
             this.selectedReferee2Id = this.assignment?.referee2?.id ?? null;
             this.loading = false;
             this._cdr.markForCheck();
-            if (this.assignment?.game?.date) {
-              this._loadAvailable(this.assignment.game.date);
+            const date =
+              this.assignment?.game?.date ?? this.gameInfo?.date ?? null;
+            if (date) {
+              this._loadAvailable(date);
             }
           },
           error: () => {
@@ -76,6 +90,10 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  get displayGame(): RefereeAssignment['game'] | RefereeAssignableGame | null {
+    return this.assignment?.game ?? this.gameInfo ?? null;
+  }
+
   onReferee1Change(): void {
     const r1 = this.availableReferees.find(
       (r) => r.id === this.selectedReferee1Id
@@ -92,7 +110,7 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
   }
 
   save(): void {
-    if (!this.gameId || !this.assignment) return;
+    if (!this.gameId) return;
 
     this.saving = true;
     const data = {
@@ -101,10 +119,9 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
       referee2_id: this.selectedReferee2Id,
     };
 
-    const call = this._refereeService.adminUpdateAssignment(
-      this.assignment.id,
-      data
-    );
+    const call = this.assignment
+      ? this._refereeService.adminUpdateAssignment(this.assignment.id, data)
+      : this._refereeService.adminCreateAssignment(data);
 
     call.pipe(takeUntil(this._destroy$)).subscribe({
       next: (saved) => {

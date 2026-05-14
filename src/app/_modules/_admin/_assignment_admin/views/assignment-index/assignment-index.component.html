@@ -39,78 +39,167 @@
     </button>
   </div>
 
-  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
-
-  <div
-    *ngIf="!loading && assignments.length === 0"
-    class="text-fb-gray-500 py-8"
-  >
-    Keine Ansetzungen gefunden.
+  <!-- Tabs -->
+  <div class="flex gap-4 border-b border-fb-gray-600 mb-6">
+    <button
+      type="button"
+      (click)="activeTab = 'games'"
+      class="pb-2 text-sm font-bold border-b-2 transition-colors"
+      [ngClass]="
+        activeTab === 'games'
+          ? 'border-black text-black'
+          : 'border-transparent text-fb-gray-500 hover:text-black'
+      "
+    >
+      Spiele
+    </button>
+    <button
+      type="button"
+      (click)="activeTab = 'assignments'"
+      class="pb-2 text-sm font-bold border-b-2 transition-colors"
+      [ngClass]="
+        activeTab === 'assignments'
+          ? 'border-black text-black'
+          : 'border-transparent text-fb-gray-500 hover:text-black'
+      "
+    >
+      Bestehende Ansetzungen
+    </button>
   </div>
 
-  <table
-    *ngIf="!loading && assignments.length > 0"
-    class="w-full text-sm border-collapse"
-  >
-    <thead>
-      <tr
-        class="text-left text-xs uppercase text-fb-gray-500 border-b border-fb-gray-600"
-      >
-        <th class="py-2 pr-4">Datum</th>
-        <th class="py-2 pr-4">Spiel</th>
-        <th class="py-2 pr-4">Schiri 1</th>
-        <th class="py-2 pr-4">Schiri 2</th>
-        <th class="py-2 pr-4">Status</th>
-        <th class="py-2"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        *ngFor="let a of assignments"
-        class="border-b border-fb-gray-600 hover:bg-fb-gray-100 cursor-pointer"
-        (click)="editAssignment(a.game_id)"
-      >
-        <td class="py-2 pr-4 whitespace-nowrap">{{ a.game?.date }}</td>
-        <td class="py-2 pr-4">
-          {{ a.game?.home_team }} vs. {{ a.game?.guest_team }}
-          <span
-            *ngIf="a.game?.game_number"
-            class="text-fb-gray-500 text-xs ml-1"
-            >#{{ a.game?.game_number }}</span
-          >
-        </td>
-        <td class="py-2 pr-4">
-          <span *ngIf="a.referee1"
-            >{{ a.referee1.vorname }} {{ a.referee1.nachname }}</span
-          >
-          <span *ngIf="!a.referee1" class="text-fb-gray-400">–</span>
-        </td>
-        <td class="py-2 pr-4">
-          <span *ngIf="a.referee2"
-            >{{ a.referee2.vorname }} {{ a.referee2.nachname }}</span
-          >
-          <span *ngIf="!a.referee2" class="text-fb-gray-400">–</span>
-        </td>
-        <td class="py-2 pr-4">
-          <span
-            class="px-2 py-0.5 rounded text-xs font-bold"
-            [ngClass]="statusClass(a.status)"
-          >
-            {{ statusLabel(a.status) }}
-          </span>
-        </td>
-        <td class="py-2 text-right" (click)="$event.stopPropagation()">
-          <button
-            *ngIf="a.status === 'tentative'"
-            type="button"
-            (click)="notify(a)"
-            [disabled]="notifyingId === a.id"
-            class="text-xs text-blue-600 hover:underline disabled:opacity-50"
-          >
-            {{ notifyingId === a.id ? "Sende…" : "Benachrichtigen" }}
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Spiele-Tab -->
+  <ng-container *ngIf="activeTab === 'games'">
+    <div *ngIf="loadingGames" class="text-fb-gray-500 text-sm py-8">Lade…</div>
+
+    <div
+      *ngIf="!loadingGames && games.length === 0"
+      class="text-fb-gray-500 py-8"
+    >
+      Keine Spiele gefunden.
+    </div>
+
+    <table
+      *ngIf="!loadingGames && games.length > 0"
+      class="w-full text-sm border-collapse"
+    >
+      <thead>
+        <tr
+          class="text-left text-xs uppercase text-fb-gray-500 border-b border-fb-gray-600"
+        >
+          <th class="py-2 pr-4">Datum</th>
+          <th class="py-2 pr-4">Spiel</th>
+          <th class="py-2 pr-4 hidden md:table-cell">Liga</th>
+          <th class="py-2 pr-4">Ansetzung</th>
+          <th class="py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let g of games"
+          class="border-b border-fb-gray-600 hover:bg-fb-gray-100 cursor-pointer"
+          (click)="editAssignment(g.id, g)"
+        >
+          <td class="py-2 pr-4 whitespace-nowrap">{{ g.date }}</td>
+          <td class="py-2 pr-4">
+            {{ g.home_team }} vs. {{ g.guest_team }}
+            <span *ngIf="g.game_number" class="text-fb-gray-500 text-xs ml-1"
+              >#{{ g.game_number }}</span
+            >
+          </td>
+          <td class="py-2 pr-4 hidden md:table-cell text-fb-gray-500 text-xs">
+            {{ g.league }}
+          </td>
+          <td class="py-2 pr-4">
+            <span
+              class="px-2 py-0.5 rounded text-xs font-bold"
+              [ngClass]="assignmentStatusClass(g.assignment_status)"
+            >
+              {{ assignmentStatusLabel(g.assignment_status) }}
+            </span>
+          </td>
+          <td class="py-2 text-right text-xs text-fb-gray-400">
+            {{ g.start_time || "" }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+
+  <!-- Ansetzungen-Tab -->
+  <ng-container *ngIf="activeTab === 'assignments'">
+    <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
+
+    <div
+      *ngIf="!loading && assignments.length === 0"
+      class="text-fb-gray-500 py-8"
+    >
+      Keine Ansetzungen gefunden.
+    </div>
+
+    <table
+      *ngIf="!loading && assignments.length > 0"
+      class="w-full text-sm border-collapse"
+    >
+      <thead>
+        <tr
+          class="text-left text-xs uppercase text-fb-gray-500 border-b border-fb-gray-600"
+        >
+          <th class="py-2 pr-4">Datum</th>
+          <th class="py-2 pr-4">Spiel</th>
+          <th class="py-2 pr-4">Schiri 1</th>
+          <th class="py-2 pr-4">Schiri 2</th>
+          <th class="py-2 pr-4">Status</th>
+          <th class="py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let a of assignments"
+          class="border-b border-fb-gray-600 hover:bg-fb-gray-100 cursor-pointer"
+          (click)="editAssignment(a.game_id)"
+        >
+          <td class="py-2 pr-4 whitespace-nowrap">{{ a.game?.date }}</td>
+          <td class="py-2 pr-4">
+            {{ a.game?.home_team }} vs. {{ a.game?.guest_team }}
+            <span
+              *ngIf="a.game?.game_number"
+              class="text-fb-gray-500 text-xs ml-1"
+              >#{{ a.game?.game_number }}</span
+            >
+          </td>
+          <td class="py-2 pr-4">
+            <span *ngIf="a.referee1"
+              >{{ a.referee1.vorname }} {{ a.referee1.nachname }}</span
+            >
+            <span *ngIf="!a.referee1" class="text-fb-gray-400">–</span>
+          </td>
+          <td class="py-2 pr-4">
+            <span *ngIf="a.referee2"
+              >{{ a.referee2.vorname }} {{ a.referee2.nachname }}</span
+            >
+            <span *ngIf="!a.referee2" class="text-fb-gray-400">–</span>
+          </td>
+          <td class="py-2 pr-4">
+            <span
+              class="px-2 py-0.5 rounded text-xs font-bold"
+              [ngClass]="statusClass(a.status)"
+            >
+              {{ statusLabel(a.status) }}
+            </span>
+          </td>
+          <td class="py-2 text-right" (click)="$event.stopPropagation()">
+            <button
+              *ngIf="a.status === 'tentative'"
+              type="button"
+              (click)="notify(a)"
+              [disabled]="notifyingId === a.id"
+              class="text-xs text-blue-600 hover:underline disabled:opacity-50"
+            >
+              {{ notifyingId === a.id ? "Sende…" : "Benachrichtigen" }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
 </div>

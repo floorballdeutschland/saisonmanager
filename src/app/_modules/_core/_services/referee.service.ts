@@ -4,6 +4,7 @@ import {
   PublicLicenseList,
   RefereeAdmin,
   RefereeAdminGame,
+  RefereeAssignableGame,
   RefereeAssignment,
   RefereeAssignmentAvailable,
   RefereeBlockedDate,
@@ -169,6 +170,24 @@ export class RefereeService {
     const query = parts.length ? '?' + parts.join('&') : '';
     return this.http.get<RefereeAssignment[]>(
       environment.apiURL + 'admin/referee_assignments' + query
+    );
+  }
+
+  public adminGetAssignableGames(params?: {
+    season_id?: string;
+    date_from?: string;
+    date_to?: string;
+  }) {
+    const parts: string[] = [];
+    if (params?.season_id)
+      parts.push(`season_id=${encodeURIComponent(params.season_id)}`);
+    if (params?.date_from)
+      parts.push(`date_from=${encodeURIComponent(params.date_from)}`);
+    if (params?.date_to)
+      parts.push(`date_to=${encodeURIComponent(params.date_to)}`);
+    const query = parts.length ? '?' + parts.join('&') : '';
+    return this.http.get<RefereeAssignableGame[]>(
+      environment.apiURL + 'admin/referee_assignments/games' + query
     );
   }
 

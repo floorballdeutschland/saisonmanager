@@ -24,22 +24,22 @@
   <ng-container *ngIf="!loading">
     <!-- Game info -->
     <div
-      *ngIf="assignment?.game"
+      *ngIf="displayGame"
       class="mb-6 p-4 border border-fb-gray-600 rounded-[5px] flex flex-col gap-1 text-sm"
     >
       <div class="font-bold">
-        {{ assignment!.game!.home_team }} vs. {{ assignment!.game!.guest_team }}
+        {{ displayGame!.home_team }} vs. {{ displayGame!.guest_team }}
       </div>
       <div class="text-fb-gray-500">
-        {{ assignment!.game!.date }}
-        <span *ngIf="assignment!.game!.arena" class="ml-2"
-          >· {{ assignment!.game!.arena }}</span
+        {{ displayGame!.date }}
+        <span *ngIf="displayGame!.arena" class="ml-2"
+          >· {{ displayGame!.arena }}</span
         >
-        <span *ngIf="assignment!.game!.league" class="ml-2"
-          >· {{ assignment!.game!.league }}</span
+        <span *ngIf="displayGame!.league" class="ml-2"
+          >· {{ displayGame!.league }}</span
         >
-        <span *ngIf="assignment!.game!.game_number" class="ml-2"
-          >· #{{ assignment!.game!.game_number }}</span
+        <span *ngIf="displayGame!.game_number" class="ml-2"
+          >· #{{ displayGame!.game_number }}</span
         >
       </div>
     </div>
