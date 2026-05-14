@@ -15,7 +15,20 @@
   </div>
 
   <div *ngIf="!loading" class="overflow-x-auto">
-    <p class="text-sm text-fb-gray-500 mb-3">{{ users.length }} Einträge</p>
+    <div class="flex items-center gap-4 mb-3">
+      <p class="text-sm text-fb-gray-500">
+        {{ filteredUsers.length }} Einträge
+      </p>
+      <select
+        [(ngModel)]="selectedRole"
+        class="text-sm border border-fb-gray-600 rounded px-2 py-1 bg-white"
+      >
+        <option [ngValue]="null">Alle Rollen</option>
+        <option *ngFor="let r of roleOptions" [ngValue]="r.value">
+          {{ r.label }}
+        </option>
+      </select>
+    </div>
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b border-fb-gray-700 text-left">
@@ -30,7 +43,7 @@
       </thead>
       <tbody>
         <tr
-          *ngFor="let user of users"
+          *ngFor="let user of filteredUsers"
           [class.bg-amber-50]="user.inactive"
           class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
         >
@@ -76,7 +89,7 @@
             </a>
           </td>
         </tr>
-        <tr *ngIf="users.length === 0">
+        <tr *ngIf="filteredUsers.length === 0">
           <td colspan="7" class="py-8 text-center text-fb-gray-500">
             Keine Benutzer gefunden.
           </td>
