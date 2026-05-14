@@ -77,6 +77,12 @@
               (click)="$event.stopPropagation()"
               >Ergebnisse</a
             >
+            <fb-button
+              size="small"
+              variant="error"
+              icon="remove"
+              (click)="deleteTest($event, test)"
+            ></fb-button>
           </td>
         </tr>
       </tbody>
