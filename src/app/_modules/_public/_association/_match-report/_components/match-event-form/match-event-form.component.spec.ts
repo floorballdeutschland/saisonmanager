@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MatchEventFormComponent } from './match-event-form.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('MatchEventFormComponent', () => {
   let component: MatchEventFormComponent;
@@ -8,6 +9,7 @@ describe('MatchEventFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [MatchEventFormComponent],
     }).compileComponents();
   });

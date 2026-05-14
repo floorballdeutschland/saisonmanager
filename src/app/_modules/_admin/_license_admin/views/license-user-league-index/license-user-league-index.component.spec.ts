@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LicenseUserLeagueIndexComponent } from './license-user-league-index.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('LicenseUserLeagueIndexComponent', () => {
   let component: LicenseUserLeagueIndexComponent;
@@ -8,6 +9,7 @@ describe('LicenseUserLeagueIndexComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [LicenseUserLeagueIndexComponent],
     }).compileComponents();
   });

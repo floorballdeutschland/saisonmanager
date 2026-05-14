@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LicenseAdminDetailComponent } from './license-admin-detail.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('LicenseAdminDetailComponent', () => {
   let component: LicenseAdminDetailComponent;
@@ -8,6 +9,7 @@ describe('LicenseAdminDetailComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [LicenseAdminDetailComponent],
     }).compileComponents();
   });

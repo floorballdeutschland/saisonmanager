@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MatchPairingComponent } from './match-pairing.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('MatchPairingComponent', () => {
   let component: MatchPairingComponent;
@@ -8,6 +9,7 @@ describe('MatchPairingComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [MatchPairingComponent],
     }).compileComponents();
   });

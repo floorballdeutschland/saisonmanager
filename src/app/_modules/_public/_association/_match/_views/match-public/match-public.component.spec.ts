@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MatchPublicComponent } from './match-public.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('MatchPublicComponent', () => {
   let component: MatchPublicComponent;
@@ -8,6 +9,7 @@ describe('MatchPublicComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [MatchPublicComponent],
     }).compileComponents();
   });

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AssociationHostComponent } from './association-host.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('AssociationHostComponent', () => {
   let component: AssociationHostComponent;
@@ -8,6 +9,7 @@ describe('AssociationHostComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [AssociationHostComponent],
     }).compileComponents();
   });

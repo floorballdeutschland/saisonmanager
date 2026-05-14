@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ClubEditComponent } from './club-edit.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ClubEditComponent', () => {
   let component: ClubEditComponent;
@@ -8,6 +9,7 @@ describe('ClubEditComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [ClubEditComponent],
     }).compileComponents();
   });

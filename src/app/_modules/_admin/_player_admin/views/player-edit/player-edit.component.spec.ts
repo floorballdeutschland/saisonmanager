@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PlayerEditComponent } from './player-edit.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('PlayerEditComponent', () => {
   let component: PlayerEditComponent;
@@ -8,6 +9,7 @@ describe('PlayerEditComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [PlayerEditComponent],
     }).compileComponents();
   });

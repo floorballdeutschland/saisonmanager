@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MatchReportStepOneComponent } from './match-report-step-one.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('MatchReportStepOneComponent', () => {
   let component: MatchReportStepOneComponent;
@@ -8,6 +9,7 @@ describe('MatchReportStepOneComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [MatchReportStepOneComponent],
     }).compileComponents();
   });

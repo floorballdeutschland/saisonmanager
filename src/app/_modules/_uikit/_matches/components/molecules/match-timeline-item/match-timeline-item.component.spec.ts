@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MatchTimelineItemComponent } from './match-timeline-item.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('MatchTimelineItemComponent', () => {
   let component: MatchTimelineItemComponent;
@@ -8,6 +9,7 @@ describe('MatchTimelineItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [MatchTimelineItemComponent],
     }).compileComponents();
   });
