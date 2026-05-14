@@ -180,6 +180,41 @@
     </div>
   </form>
 
+  <!-- Logo (nur im Bearbeitungsmodus) -->
+  <div *ngIf="editMode" class="border-t border-fb-gray-200 pt-6 mb-6">
+    <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+      Verbandslogo
+    </div>
+    <div class="grid grid-cols-2 gap-4 items-center">
+      <div class="font-bold text-sm">Aktuelles Logo</div>
+      <div>
+        <img
+          *ngIf="stateAssociation.logo_url"
+          [src]="stateAssociation.logo_url"
+          alt="Verbandslogo"
+          class="h-16 object-contain"
+        />
+        <span
+          *ngIf="!stateAssociation.logo_url"
+          class="text-sm text-fb-gray-400"
+          >kein Logo hinterlegt</span
+        >
+      </div>
+      <div class="font-bold text-sm">Logo hochladen</div>
+      <div>
+        <input
+          type="file"
+          accept="image/png,image/jpeg,image/svg+xml"
+          #logoInput
+          (change)="onLogoSelected(logoInput)"
+        />
+        <small class="block text-fb-gray-400 mt-1"
+          >PNG, JPG oder SVG · max. 5 MB</small
+        >
+      </div>
+    </div>
+  </div>
+
   <!-- Freigaben (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
   <div
     *ngIf="editMode && !hasParent"

@@ -46,11 +46,15 @@
           <select
             [(ngModel)]="referee.lizenzstufe"
             name="lizenzstufe"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
+            [disabled]="isRestricted"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white disabled:bg-fb-gray-200 disabled:text-gray-700"
           >
             <option value="">– keine –</option>
             <option *ngFor="let s of lizenzstufen" [value]="s">{{ s }}</option>
           </select>
+          <p *ngIf="isRestricted" class="text-xs text-fb-gray-500">
+            Nur durch FD-RSK änderbar.
+          </p>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm font-bold">Vorname *</label>
@@ -81,8 +85,12 @@
           type="date"
           [(ngModel)]="referee.gueltigkeit"
           name="gueltigkeit"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          [disabled]="isRestricted"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-200 disabled:text-gray-700"
         />
+        <p *ngIf="isRestricted" class="text-xs text-fb-gray-500">
+          Nur durch FD-RSK änderbar.
+        </p>
       </div>
 
       <!-- Kontakt & Zuordnung -->
@@ -138,6 +146,7 @@
       <div class="flex items-center justify-between">
         <h2 class="text-sm font-bold">Zusatzqualifikationen</h2>
         <button
+          *ngIf="!isRestricted"
           type="button"
           (click)="addQualification()"
           [disabled]="qualifications.length >= qualificationTypes.length"
@@ -147,49 +156,69 @@
         </button>
       </div>
 
-      <p
-        *ngIf="qualificationTypes.length === 0"
-        class="text-xs text-fb-gray-500"
-      >
-        Keine Qualifikationstypen konfiguriert.
-      </p>
-
-      <div
-        *ngFor="let q of qualifications; let i = index"
-        class="flex items-center gap-3"
-      >
-        <select
-          [(ngModel)]="q.qualification_type_id"
-          [name]="'qual_type_' + i"
-          (ngModelChange)="onQualificationTypeChange()"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white flex-1"
+      <!-- Read-only view for restricted users -->
+      <ng-container *ngIf="isRestricted">
+        <p *ngIf="qualifications.length === 0" class="text-xs text-fb-gray-500">
+          Keine Zusatzqualifikationen hinterlegt.
+        </p>
+        <div
+          *ngFor="let q of qualifications"
+          class="flex items-center gap-3 text-sm py-1"
         >
-          <option
-            *ngFor="let t of availableTypesList[i]; trackBy: trackById"
-            [ngValue]="t.id"
+          <span class="flex-1 font-medium">{{
+            q.qualification_type_name
+          }}</span>
+          <span class="text-fb-gray-500">{{ q.valid_until || "–" }}</span>
+        </div>
+        <p class="text-xs text-fb-gray-500">Nur durch FD-RSK änderbar.</p>
+      </ng-container>
+
+      <!-- Editable view for full-access users -->
+      <ng-container *ngIf="!isRestricted">
+        <p
+          *ngIf="qualificationTypes.length === 0"
+          class="text-xs text-fb-gray-500"
+        >
+          Keine Qualifikationstypen konfiguriert.
+        </p>
+
+        <div
+          *ngFor="let q of qualifications; let i = index"
+          class="flex items-center gap-3"
+        >
+          <select
+            [(ngModel)]="q.qualification_type_id"
+            [name]="'qual_type_' + i"
+            (ngModelChange)="onQualificationTypeChange()"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white flex-1"
           >
-            {{ t.name }}
-          </option>
-        </select>
-        <input
-          type="date"
-          [(ngModel)]="q.valid_until"
-          [name]="'qual_valid_' + i"
-          placeholder="Gültig bis"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-40"
-        />
-        <button
-          type="button"
-          (click)="removeQualification(i)"
-          class="text-red-400 hover:text-red-600 text-sm font-bold px-2"
-        >
-          ✕
-        </button>
-      </div>
+            <option
+              *ngFor="let t of availableTypesList[i]; trackBy: trackById"
+              [ngValue]="t.id"
+            >
+              {{ t.name }}
+            </option>
+          </select>
+          <input
+            type="date"
+            [(ngModel)]="q.valid_until"
+            [name]="'qual_valid_' + i"
+            placeholder="Gültig bis"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-40"
+          />
+          <button
+            type="button"
+            (click)="removeQualification(i)"
+            class="text-red-400 hover:text-red-600 text-sm font-bold px-2"
+          >
+            ✕
+          </button>
+        </div>
 
-      <p *ngIf="qualifications.length === 0" class="text-xs text-fb-gray-500">
-        Keine Zusatzqualifikationen hinterlegt.
-      </p>
+        <p *ngIf="qualifications.length === 0" class="text-xs text-fb-gray-500">
+          Keine Zusatzqualifikationen hinterlegt.
+        </p>
+      </ng-container>
     </div>
 
     <!-- Heimadresse (nur reguläre Schiedsrichter) -->
@@ -272,7 +301,7 @@
         Abbrechen
       </a>
       <button
-        *ngIf="editMode"
+        *ngIf="editMode && canDelete"
         type="button"
         (click)="delete()"
         class="ml-auto px-5 py-2 text-sm font-bold text-red-500 border border-red-300 rounded-[5px] hover:border-red-500"

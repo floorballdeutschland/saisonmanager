@@ -7,7 +7,11 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
-import { AssociationService, RefereeService } from '@floorball/core';
+import {
+  AssociationService,
+  RefereeService,
+  SessionService,
+} from '@floorball/core';
 import { RefereeAdmin, StateAssociation } from '@floorball/types';
 
 @Component({
@@ -19,6 +23,8 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
   referees: RefereeAdmin[] = [];
   stateAssociations: StateAssociation[] = [];
   loading = false;
+  canCreate = false;
+  isRestricted = false;
 
   searchQuery = '';
   filterLandesverband = '';
@@ -30,10 +36,21 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
   constructor(
     private _refereeService: RefereeService,
     private _associationService: AssociationService,
+    private _sessionService: SessionService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (user) => {
+          this.isRestricted = !!user?.permissions['referee_edit_restricted'];
+          this.canCreate = !!user?.permissions['referee_can_create'];
+          this._cdr.markForCheck();
+        },
+      });
+
     this._associationService.stateAssociations$
       .pipe(takeUntil(this._destroy$))
       .subscribe({

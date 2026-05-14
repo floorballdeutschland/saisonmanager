@@ -19,6 +19,7 @@ export interface StateAssociation {
   sbk_email?: string | null;
   express_license_enabled?: boolean;
   scan_required?: boolean;
+  logo_url?: string | null;
   children?: Array<Pick<StateAssociation, 'id' | 'name' | 'short_name'>>;
   checklist_items?: ChecklistItem[];
   releases?: StateAssociationRelease[];
