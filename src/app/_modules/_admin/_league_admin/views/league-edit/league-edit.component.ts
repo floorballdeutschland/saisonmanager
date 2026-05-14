@@ -141,7 +141,6 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
       period_length: 20,
       overtime_length: 10,
       direct_comparison: false,
-      express_license_enabled: true,
     };
 
     this.league$ = of(league);
