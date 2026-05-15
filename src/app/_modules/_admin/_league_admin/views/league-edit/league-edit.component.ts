@@ -191,17 +191,19 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     return msg;
   }
 
-  public hasRequiredDocument(league: League, docType: string): boolean {
-    return league.required_documents?.includes(docType) ?? false;
+  newDocumentName = '';
+
+  public addRequiredDocument(league: League): void {
+    const name = this.newDocumentName.trim();
+    if (!name) return;
+    league.required_documents = [...(league.required_documents ?? []), name];
+    this.newDocumentName = '';
   }
 
-  public toggleRequiredDocument(league: League, docType: string): void {
-    const docs = league.required_documents ?? [];
-    if (docs.includes(docType)) {
-      league.required_documents = docs.filter((d) => d !== docType);
-    } else {
-      league.required_documents = [...docs, docType];
-    }
+  public removeRequiredDocument(league: League, index: number): void {
+    league.required_documents = (league.required_documents ?? []).filter(
+      (_, i) => i !== index
+    );
   }
 
   public submit(league: League) {

@@ -89,10 +89,7 @@ export class LicenseTeamDetailComponent implements OnInit {
     });
   }
 
-  public getDoc(
-    licenseId: string,
-    type: 'id_copy' | 'parental_consent'
-  ): LicenseDocument | undefined {
+  public getDoc(licenseId: string, type: string): LicenseDocument | undefined {
     return this.documents[licenseId]?.find((d) => d.document_type === type);
   }
 
@@ -100,7 +97,7 @@ export class LicenseTeamDetailComponent implements OnInit {
     event: Event,
     playerId: number,
     licenseId: string,
-    documentType: 'id_copy' | 'parental_consent'
+    documentType: string
   ) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
