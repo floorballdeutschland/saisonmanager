@@ -313,7 +313,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
 
   statusClass(status: string): string {
     if (status === 'approved') return 'text-green-600 font-medium';
-    if (status === 'scheduled') return 'text-yellow-400 font-medium';
+    if (status === 'scheduled') return 'text-yellow-600 font-medium';
     if (status.startsWith('rejected') || status === 'revoked')
       return 'text-red-500 font-medium';
     return 'text-primary font-medium';

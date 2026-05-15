@@ -16,9 +16,7 @@
 
   <ng-container *ngIf="!loading">
     <div *ngIf="pendingRequests.length > 0" class="mb-8">
-      <h2 class="text-base font-semibold mb-3 text-fb-gray-300">
-        Offene Anträge
-      </h2>
+      <h2 class="text-base font-semibold mb-3">Offene Anträge</h2>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
@@ -36,15 +34,15 @@
             <tr
               *ngFor="let r of pendingRequests"
               (click)="openDetail(r.id)"
-              class="border-b border-fb-gray-800 hover:bg-fb-gray-900 cursor-pointer"
+              class="border-b border-fb-gray-700 hover:bg-fb-gray-700 cursor-pointer"
             >
               <td class="py-2 pr-4 font-medium">
                 {{ r.player.last_name }}, {{ r.player.first_name }}
               </td>
-              <td class="py-2 pr-4 text-fb-gray-400">
+              <td class="py-2 pr-4 text-fb-gray-500">
                 {{ r.former_club.name }}
               </td>
-              <td class="py-2 pr-4 text-fb-gray-400">
+              <td class="py-2 pr-4 text-fb-gray-500">
                 {{ r.requesting_club.name }}
               </td>
               <td class="py-2 pr-4">
@@ -75,9 +73,7 @@
     </div>
 
     <div *ngIf="completedRequests.length > 0">
-      <h2 class="text-base font-semibold mb-3 text-fb-gray-300">
-        Abgeschlossene Anträge
-      </h2>
+      <h2 class="text-base font-semibold mb-3">Abgeschlossene Anträge</h2>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
@@ -94,15 +90,15 @@
             <tr
               *ngFor="let r of completedRequests"
               (click)="openDetail(r.id)"
-              class="border-b border-fb-gray-800 hover:bg-fb-gray-900 cursor-pointer"
+              class="border-b border-fb-gray-700 hover:bg-fb-gray-700 cursor-pointer"
             >
               <td class="py-2 pr-4 font-medium">
                 {{ r.player.last_name }}, {{ r.player.first_name }}
               </td>
-              <td class="py-2 pr-4 text-fb-gray-400">
+              <td class="py-2 pr-4 text-fb-gray-500">
                 {{ r.former_club.name }}
               </td>
-              <td class="py-2 pr-4 text-fb-gray-400">
+              <td class="py-2 pr-4 text-fb-gray-500">
                 {{ r.requesting_club.name }}
               </td>
               <td class="py-2 pr-4">
