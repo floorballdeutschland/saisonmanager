@@ -15,6 +15,8 @@ export interface Club {
   logo?: string;
   logo_url?: string;
   logo_small_url?: string;
+  deactivated_at?: string;
+  deactivated_by?: number;
 }
 
 export interface ClubWithTeams extends Club {

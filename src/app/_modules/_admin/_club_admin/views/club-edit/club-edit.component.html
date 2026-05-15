@@ -164,6 +164,72 @@
             </div>
           </div>
 
+          <!-- Deaktivierung -->
+          <div
+            class="bg-white my-[5px] py-[15px] px-[30px]"
+            *ngIf="
+              canDeactivate(club) || canReactivate(club) || club.deactivated_at
+            "
+          >
+            <div
+              class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
+            >
+              Vereinsstatus
+              <span
+                *ngIf="club.deactivated_at"
+                class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 normal-case"
+              >
+                Deaktiviert am
+                {{ club.deactivated_at | date : "dd.MM.yyyy" }}
+              </span>
+            </div>
+
+            <div *ngIf="canDeactivate(club) && !confirmDeactivate">
+              <button
+                (click)="confirmDeactivate = true"
+                class="font-bold text-red-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-red-50 border-red-400 rounded-[5px] cursor-pointer"
+              >
+                Verein deaktivieren
+              </button>
+            </div>
+
+            <div
+              *ngIf="confirmDeactivate"
+              class="border border-red-300 rounded p-4 bg-red-50"
+            >
+              <p class="text-sm font-semibold text-red-800 mb-1">
+                Verein wirklich deaktivieren?
+              </p>
+              <p class="text-sm text-red-700 mb-4">
+                Der Verein wird aus der aktiven Vereinsliste entfernt. Der
+                Datensatz bleibt erhalten und kann reaktiviert werden.
+              </p>
+              <div class="flex gap-3">
+                <button
+                  (click)="deactivateClub(club)"
+                  class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-[5px] cursor-pointer"
+                >
+                  Ja, deaktivieren
+                </button>
+                <button
+                  (click)="confirmDeactivate = false"
+                  class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="canReactivate(club)">
+              <button
+                (click)="reactivateClub(club)"
+                class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+              >
+                Verein reaktivieren
+              </button>
+            </div>
+          </div>
+
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="flex flex-col gap-2">
               <div class="mb-4" *ngIf="error(club)">
