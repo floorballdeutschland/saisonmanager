@@ -1,10 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import {
-  Club,
-  League,
-  PlayerWithLicense,
-  TeamWithPlayers,
-} from '@floorball/types';
+import { Club, League, TeamWithPlayers } from '@floorball/types';
 import { ClubService, LeagueService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
@@ -67,10 +62,6 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
   public handledPlayer(playerId: number) {
     this.handledPlayerIds.push(playerId);
     this.getGameOperations();
-  }
-
-  public otherLicenseNames(p: PlayerWithLicense): string {
-    return (p.other_licenses ?? []).map((l) => l.team_name).join(', ');
   }
 
   public currentTime() {
