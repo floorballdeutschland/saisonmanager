@@ -12,6 +12,7 @@ export class ClubIndexComponent implements OnInit {
   associations$: Observable<GameOperation[]>;
 
   goClubItems$?: Observable<GameOperationWithClubs[]>;
+  includeDeactivated = false;
 
   constructor(
     private _associationService: AssociationService,
@@ -23,6 +24,12 @@ export class ClubIndexComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.goClubItems$ = this._clubService.getAdminClubs();
+    this.loadClubs();
+  }
+
+  public loadClubs(): void {
+    this.goClubItems$ = this._clubService.getAdminClubs(
+      this.includeDeactivated
+    );
   }
 }

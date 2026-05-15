@@ -13,9 +13,24 @@ export class ClubService {
   //
   // admin routes
   //
-  public getAdminClubs() {
-    const path = environment.apiURL + 'admin/clubs.json';
+  public getAdminClubs(includeDeactivated = false) {
+    const path =
+      environment.apiURL +
+      'admin/clubs.json' +
+      (includeDeactivated ? '?include_deactivated=true' : '');
     return this.http.get<GameOperationWithClubs[]>(path);
+  }
+
+  public deactivateClub(clubId: number) {
+    const path =
+      environment.apiURL + 'admin/clubs/' + clubId + '/deactivate.json';
+    return this.http.post<Club>(path, {});
+  }
+
+  public reactivateClub(clubId: number) {
+    const path =
+      environment.apiURL + 'admin/clubs/' + clubId + '/reactivate.json';
+    return this.http.post<Club>(path, {});
   }
 
   public getAdminClub(clubId: number) {

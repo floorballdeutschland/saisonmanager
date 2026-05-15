@@ -9,6 +9,7 @@ import {
   AssociationService,
   ClubService,
   NotificationService,
+  SessionService,
 } from '@floorball/core';
 import { Club, GameOperation, StateAssociation } from '@floorball/types';
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
@@ -49,6 +50,8 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   ];
 
   stateAssociations: StateAssociation[] = [];
+  permissions: { [key: string]: boolean } = {};
+  confirmDeactivate = false;
 
   get leafStateAssociations(): StateAssociation[] {
     const parentIds = new Set(
@@ -64,6 +67,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   constructor(
     private _associationService: AssociationService,
     private _clubService: ClubService,
+    private _sessionService: SessionService,
     private _router: Router,
     private _notificationService: NotificationService,
     private _route: ActivatedRoute,
@@ -75,6 +79,15 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (user) => {
+          this.permissions = user?.permissions ?? {};
+          this._cdr.markForCheck();
+        },
+      });
+
     this._associationService.stateAssociations$
       .pipe(take(1), takeUntil(this._destroy$))
       .subscribe({
@@ -211,6 +224,57 @@ export class ClubEditComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  public canDeactivate(club: Club): boolean {
+    return (
+      this.editMode &&
+      !club.deactivated_at &&
+      !!(this.permissions['club_deactivate'] || this.permissions['admin'])
+    );
+  }
+
+  public canReactivate(club: Club): boolean {
+    return (
+      this.editMode &&
+      !!club.deactivated_at &&
+      !!(this.permissions['club_deactivate'] || this.permissions['admin'])
+    );
+  }
+
+  public deactivateClub(club: Club): void {
+    this.confirmDeactivate = false;
+    this._clubService.deactivateClub(club.id).subscribe({
+      next: (result) => {
+        club.deactivated_at = result.deactivated_at;
+        this._notificationService.success('Verein wurde deaktiviert.', {
+          autoClose: true,
+        });
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this._notificationService.error('Deaktivierung fehlgeschlagen.', {
+          autoClose: false,
+        });
+      },
+    });
+  }
+
+  public reactivateClub(club: Club): void {
+    this._clubService.reactivateClub(club.id).subscribe({
+      next: (result) => {
+        club.deactivated_at = result.deactivated_at;
+        this._notificationService.success('Verein wurde reaktiviert.', {
+          autoClose: true,
+        });
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this._notificationService.error('Reaktivierung fehlgeschlagen.', {
+          autoClose: false,
+        });
+      },
+    });
   }
 
   public submit(club: Club) {
