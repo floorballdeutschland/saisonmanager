@@ -21,8 +21,9 @@
       <ng-container *ngIf="deactivatedCount(list) > 0">
         &nbsp;·&nbsp;
         <button
+          type="button"
           class="underline hover:text-black"
-          (click)="list.showDeactivated = !list.showDeactivated"
+          (click)="toggleDeactivated(list)"
         >
           {{ deactivatedCount(list) }} deaktiviert
           {{ list.showDeactivated ? "ausblenden" : "einblenden" }}
@@ -71,14 +72,33 @@
             </span>
           </td>
           <td class="py-2 text-right">
-            <fb-button
-              *ngIf="!player.deactivated_at"
-              size="small"
-              variant="error"
-              (click)="deactivate(list, player)"
-            >
-              Deaktivieren
-            </fb-button>
+            <ng-container *ngIf="!player.deactivated_at">
+              <fb-button
+                *ngIf="confirmDeactivateId !== player.id"
+                size="small"
+                variant="error"
+                (click)="startDeactivate(player)"
+              >
+                Deaktivieren
+              </fb-button>
+              <div
+                *ngIf="confirmDeactivateId === player.id"
+                class="inline-flex items-center gap-2"
+              >
+                <span class="text-xs text-red-700 font-medium"
+                  >Wirklich deaktivieren?</span
+                >
+                <fb-button
+                  size="small"
+                  variant="error"
+                  (click)="deactivate(list, player)"
+                  >Ja</fb-button
+                >
+                <fb-button size="small" (click)="cancelDeactivate()"
+                  >Abbrechen</fb-button
+                >
+              </div>
+            </ng-container>
             <fb-button
               *ngIf="player.deactivated_at"
               size="small"

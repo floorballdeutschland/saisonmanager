@@ -26,6 +26,7 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   clubLists: ClubPlayerList[] = [];
   loading = false;
   actionError: string | null = null;
+  confirmDeactivateId: number | null = null;
 
   private _destroy$ = new Subject<void>();
 
@@ -92,15 +93,33 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
     return list.players.filter((p) => p.deactivated_at).length;
   }
 
+  toggleDeactivated(list: ClubPlayerList): void {
+    list.showDeactivated = !list.showDeactivated;
+    this._cdr.markForCheck();
+  }
+
+  startDeactivate(player: Player): void {
+    this.confirmDeactivateId = player.id;
+    this.actionError = null;
+    this._cdr.markForCheck();
+  }
+
+  cancelDeactivate(): void {
+    this.confirmDeactivateId = null;
+    this._cdr.markForCheck();
+  }
+
   deactivate(list: ClubPlayerList, player: Player): void {
+    this.confirmDeactivateId = null;
     this.actionError = null;
     this._playerService
       .deactivatePlayer(player.id)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (updated) => {
-          const idx = list.players.findIndex((p) => p.id === player.id);
-          if (idx !== -1) list.players[idx] = updated;
+          list.players = list.players.map((p) =>
+            p.id === player.id ? updated : p
+          );
           this._cdr.markForCheck();
         },
         error: (err) => {
@@ -118,8 +137,9 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (updated) => {
-          const idx = list.players.findIndex((p) => p.id === player.id);
-          if (idx !== -1) list.players[idx] = updated;
+          list.players = list.players.map((p) =>
+            p.id === player.id ? updated : p
+          );
           this._cdr.markForCheck();
         },
         error: (err) => {
