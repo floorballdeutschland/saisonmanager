@@ -135,7 +135,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
 
   statusClass(status: string): string {
     if (status === 'approved') return 'text-green-600 font-medium';
-    if (status === 'scheduled') return 'text-yellow-400 font-medium';
+    if (status === 'scheduled') return 'text-yellow-600 font-medium';
     if (
       status.startsWith('rejected') ||
       status === 'revoked' ||
@@ -151,8 +151,8 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
 
   typeClass(r: TransferRequest): string {
     return r.request_type === 'release'
-      ? 'text-xs font-semibold px-1.5 py-0.5 rounded bg-purple-900 text-purple-300'
-      : 'text-xs font-semibold px-1.5 py-0.5 rounded bg-fb-gray-800 text-fb-gray-400';
+      ? 'text-xs font-semibold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800'
+      : 'text-xs font-semibold px-1.5 py-0.5 rounded bg-fb-gray-200 text-fb-gray-500';
   }
 
   get canInitiate(): boolean {
