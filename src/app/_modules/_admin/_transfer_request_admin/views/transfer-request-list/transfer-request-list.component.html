@@ -16,9 +16,7 @@
 
   <ng-container *ngIf="!loading">
     <div *ngIf="pendingRequests.length > 0" class="mb-8">
-      <h2 class="text-base font-semibold mb-3 text-fb-gray-300">
-        Offene Anträge
-      </h2>
+      <h2 class="text-base font-semibold mb-3">Offene Anträge</h2>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
@@ -75,9 +73,7 @@
     </div>
 
     <div *ngIf="completedRequests.length > 0">
-      <h2 class="text-base font-semibold mb-3 text-fb-gray-300">
-        Abgeschlossene Anträge
-      </h2>
+      <h2 class="text-base font-semibold mb-3">Abgeschlossene Anträge</h2>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>

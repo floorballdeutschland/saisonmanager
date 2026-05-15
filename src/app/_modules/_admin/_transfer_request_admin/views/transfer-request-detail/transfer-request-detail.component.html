@@ -1,6 +1,6 @@
 <div class="p-4 lg:p-8 max-w-xl">
   <div class="flex items-center gap-3 mb-6">
-    <button (click)="back()" class="text-fb-gray-400 hover:text-white text-sm">
+    <button (click)="back()" class="text-fb-gray-500 hover:text-black text-sm">
       ← Zurück
     </button>
     <h1 class="text-2xl font-bold">Transferantrag</h1>
@@ -9,7 +9,7 @@
   <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
 
   <ng-container *ngIf="!loading && request">
-    <div class="bg-fb-gray-900 border border-fb-gray-700 rounded p-4 mb-4">
+    <div class="bg-white border border-fb-gray-600 rounded p-4 mb-4">
       <div class="flex items-start justify-between mb-3">
         <h2 class="font-semibold">
           {{ request.player.last_name }}, {{ request.player.first_name }}
@@ -18,8 +18,8 @@
           <span
             [class]="
               request.request_type === 'release'
-                ? 'text-xs font-semibold px-1.5 py-0.5 rounded bg-purple-900 text-purple-300'
-                : 'text-xs font-semibold px-1.5 py-0.5 rounded bg-fb-gray-800 text-fb-gray-400'
+                ? 'text-xs font-semibold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800'
+                : 'text-xs font-semibold px-1.5 py-0.5 rounded bg-fb-gray-200 text-fb-gray-500'
             "
           >
             {{
@@ -34,48 +34,48 @@
         </div>
       </div>
 
-      <div class="text-sm text-fb-gray-400 space-y-1">
+      <div class="text-sm text-fb-gray-500 space-y-1">
         <p>
-          <span class="text-fb-gray-500">Geburtsdatum:</span>
+          <span class="text-fb-gray-400">Geburtsdatum:</span>
           {{ request.player.birthdate | date : "dd.MM.yyyy" }}
         </p>
         <p>
-          <span class="text-fb-gray-500">{{
+          <span class="text-fb-gray-400">{{
             request.request_type === "release" ? "Freigabe von:" : "Von:"
           }}</span>
           {{ request.former_club.name }}
         </p>
         <p>
-          <span class="text-fb-gray-500">{{
+          <span class="text-fb-gray-400">{{
             request.request_type === "release" ? "Freigabe für:" : "Nach:"
           }}</span>
           {{ request.requesting_club.name }}
         </p>
         <p>
-          <span class="text-fb-gray-500">Gestellt am:</span>
+          <span class="text-fb-gray-400">Gestellt am:</span>
           {{ request.created_at | date : "dd.MM.yyyy" }}
         </p>
         <ng-container *ngIf="request.request_type !== 'release'">
           <p *ngIf="request.effective_date">
-            <span class="text-fb-gray-500">Wunschdatum:</span>
+            <span class="text-fb-gray-400">Wunschdatum:</span>
             {{ request.effective_date | date : "dd.MM.yyyy" }}
           </p>
           <p *ngIf="!request.effective_date">
-            <span class="text-fb-gray-500">Wunschdatum:</span> Nächstmöglich
+            <span class="text-fb-gray-400">Wunschdatum:</span> Nächstmöglich
           </p>
         </ng-container>
         <p *ngIf="request.request_type === 'release'">
-          <span class="text-fb-gray-500">Gültig bis:</span> 15.07. des laufenden
+          <span class="text-fb-gray-400">Gültig bis:</span> 15.07. des laufenden
           Jahres
         </p>
       </div>
 
       <div
         *ngIf="request.rejection_reason"
-        class="mt-3 pt-3 border-t border-fb-gray-700"
+        class="mt-3 pt-3 border-t border-fb-gray-600"
       >
-        <p class="text-xs text-fb-gray-500 mb-1">Ablehnungsgrund</p>
-        <p class="text-sm text-red-400">{{ request.rejection_reason }}</p>
+        <p class="text-xs text-fb-gray-400 mb-1">Ablehnungsgrund</p>
+        <p class="text-sm text-red-600">{{ request.rejection_reason }}</p>
       </div>
     </div>
 
@@ -91,7 +91,7 @@
       <button
         (click)="startReject('club')"
         [disabled]="actionPending"
-        class="border border-red-500 text-red-400 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
+        class="border border-red-500 text-red-600 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
       >
         Ablehnen
       </button>
@@ -100,14 +100,12 @@
     <!-- Execute scheduled transfer -->
     <div *ngIf="request.status === 'scheduled'" class="mb-4">
       <div
-        class="bg-fb-gray-900 border border-fb-gray-700 rounded p-3 mb-3 text-sm text-fb-gray-400"
+        class="bg-white border border-fb-gray-600 rounded p-3 mb-3 text-sm text-fb-gray-500"
       >
         Transfer genehmigt, wird am
-        <strong class="text-white">{{
-          request.effective_date | date : "dd.MM.yyyy"
-        }}</strong>
+        <strong>{{ request.effective_date | date : "dd.MM.yyyy" }}</strong>
         wirksam.
-        <span *ngIf="canExecuteScheduled" class="block mt-1 text-yellow-400"
+        <span *ngIf="canExecuteScheduled" class="block mt-1 text-yellow-600"
           >Datum erreicht – Transfer kann jetzt vollzogen werden.</span
         >
       </div>
@@ -133,7 +131,7 @@
       <button
         (click)="startReject('lv')"
         [disabled]="actionPending"
-        class="border border-red-500 text-red-400 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
+        class="border border-red-500 text-red-600 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
       >
         Ablehnen
       </button>
@@ -142,7 +140,7 @@
     <!-- Rejection form -->
     <div
       *ngIf="showRejectForm"
-      class="bg-fb-gray-900 border border-red-800 rounded p-4 mb-4"
+      class="bg-white border border-red-400 rounded p-4 mb-4"
     >
       <p class="text-sm font-medium mb-3">
         Bitte gib einen Ablehnungsgrund an:
@@ -150,7 +148,7 @@
       <textarea
         [(ngModel)]="rejectionReason"
         rows="3"
-        class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500 resize-none"
+        class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500 resize-none"
         placeholder="Begründung (Pflichtfeld)"
       ></textarea>
       <div class="flex gap-3 mt-3">
@@ -163,7 +161,7 @@
         </button>
         <button
           (click)="cancelReject()"
-          class="text-fb-gray-400 px-4 py-2 text-sm hover:text-white"
+          class="text-fb-gray-500 hover:text-black px-4 py-2 text-sm"
         >
           Abbrechen
         </button>
@@ -178,7 +176,7 @@
       <button
         (click)="startRevoke()"
         [disabled]="actionPending"
-        class="border border-red-500 text-red-400 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
+        class="border border-red-500 text-red-600 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
       >
         Freigabe zurückziehen
       </button>
@@ -187,18 +185,18 @@
     <!-- Revoke form -->
     <div
       *ngIf="showRevokeForm"
-      class="bg-fb-gray-900 border border-red-800 rounded p-4 mb-4"
+      class="bg-white border border-red-400 rounded p-4 mb-4"
     >
       <p class="text-sm font-medium mb-1">Freigabe zurückziehen</p>
-      <p class="text-xs text-fb-gray-400 mb-3">
+      <p class="text-xs text-fb-gray-500 mb-3">
         Alle beantragten und erteilten Lizenzen des Spielers für Teams von
-        <strong class="text-white">{{ request?.requesting_club?.name }}</strong>
+        <strong>{{ request?.requesting_club?.name }}</strong>
         werden auf ungültig gesetzt.
       </p>
       <textarea
         [(ngModel)]="revocationReason"
         rows="3"
-        class="w-full bg-fb-gray-800 border border-fb-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500 resize-none"
+        class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500 resize-none"
         placeholder="Begründung (Pflichtfeld)"
       ></textarea>
       <div class="flex gap-3 mt-3">
@@ -211,7 +209,7 @@
         </button>
         <button
           (click)="cancelRevoke()"
-          class="text-fb-gray-400 px-4 py-2 text-sm hover:text-white"
+          class="text-fb-gray-500 hover:text-black px-4 py-2 text-sm"
         >
           Abbrechen
         </button>
@@ -224,36 +222,32 @@
         request?.request_type === 'release' &&
         (request?.status === 'approved' || request?.status === 'revoked')
       "
-      class="bg-fb-gray-900 border border-fb-gray-700 rounded p-4 mt-2"
+      class="bg-white border border-fb-gray-600 rounded p-4 mt-2"
     >
       <p
-        class="text-xs font-semibold text-fb-gray-400 uppercase tracking-wide mb-3"
+        class="text-xs font-semibold text-fb-gray-500 uppercase tracking-wide mb-3"
       >
         Protokoll
       </p>
       <div class="space-y-2 text-sm">
         <div class="flex items-start gap-2">
-          <span class="text-green-500 mt-0.5">✓</span>
-          <span class="text-fb-gray-300">
+          <span class="text-green-600 mt-0.5">✓</span>
+          <span class="text-fb-gray-500">
             Freigabe erteilt am
-            <strong class="text-white">{{
-              request?.lv_approved_at | date : "dd.MM.yyyy"
-            }}</strong>
+            <strong>{{ request?.lv_approved_at | date : "dd.MM.yyyy" }}</strong>
           </span>
         </div>
         <div
           *ngIf="request?.status === 'revoked'"
           class="flex items-start gap-2"
         >
-          <span class="text-red-400 mt-0.5">✕</span>
-          <span class="text-fb-gray-300">
+          <span class="text-red-600 mt-0.5">✕</span>
+          <span class="text-fb-gray-500">
             Freigabe zurückgezogen am
-            <strong class="text-white">{{
-              request?.revoked_at | date : "dd.MM.yyyy"
-            }}</strong>
+            <strong>{{ request?.revoked_at | date : "dd.MM.yyyy" }}</strong>
             <span
               *ngIf="request?.revocation_reason"
-              class="block text-xs text-red-400 mt-0.5"
+              class="block text-xs text-red-600 mt-0.5"
             >
               {{ request?.revocation_reason }}
             </span>
