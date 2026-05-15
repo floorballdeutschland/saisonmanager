@@ -63,6 +63,13 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/player-vm').then(
+            (m) => m.AdminPlayerVmModule
+          ),
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/assignment').then(
             (m) => m.AdminAssignmentModule
           ),
