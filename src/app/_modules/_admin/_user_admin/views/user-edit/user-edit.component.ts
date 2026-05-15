@@ -13,8 +13,15 @@ import {
   UserManagementService,
   NotificationService,
   SessionService,
+  GameOperationService,
 } from '@floorball/core';
-import { ClubWithTeams, Team, UserAdminEntry, User } from '@floorball/types';
+import {
+  ClubWithTeams,
+  Team,
+  UserAdminEntry,
+  User,
+  GameOperation,
+} from '@floorball/types';
 
 @Component({
   templateUrl: './user-edit.component.html',
@@ -33,11 +40,17 @@ export class UserEditComponent implements OnInit, OnDestroy {
   editableTeamIds: number[] = [];
   savingTeams = false;
 
+  gameOperations: GameOperation[] = [];
+  selectedGoId: number | null = null;
+  selectedClubId: number | null = null;
+  savingAssignment = false;
+
   private _destroy$ = new Subject<void>();
 
   constructor(
     private _userService: UserManagementService,
     private _clubService: ClubService,
+    private _gameOperationService: GameOperationService,
     private _notificationService: NotificationService,
     private _sessionService: SessionService,
     private _route: ActivatedRoute,
@@ -63,6 +76,14 @@ export class UserEditComponent implements OnInit, OnDestroy {
           this.email = user.email ?? '';
           this.active = user.active;
           this.editableTeamIds = user.teams ? [...user.teams] : [];
+
+          const sbkRskRole = user.roles?.find((r) =>
+            [2, 3].includes(r.user_group_id)
+          );
+          this.selectedGoId = sbkRskRole?.game_operation_id ?? null;
+
+          this.selectedClubId = user.club_id ?? null;
+
           this._cdr.markForCheck();
         },
         error: () => {
@@ -79,6 +100,16 @@ export class UserEditComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.clubsWithTeams = data;
+          this._cdr.markForCheck();
+        },
+      });
+
+    this._gameOperationService
+      .getAdminGameOperations()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (data) => {
+          this.gameOperations = data;
           this._cdr.markForCheck();
         },
       });
@@ -111,6 +142,14 @@ export class UserEditComponent implements OnInit, OnDestroy {
     return vmOrTm?.user_group_id ?? null;
   }
 
+  get userPrimaryRoleId(): number | null {
+    if (!this.user) return null;
+    const role = this.user.roles?.find((r) =>
+      [2, 3, 4, 5].includes(r.user_group_id)
+    );
+    return role?.user_group_id ?? null;
+  }
+
   get canChangeRole(): boolean {
     return (
       !this.isSelf &&
@@ -119,8 +158,25 @@ export class UserEditComponent implements OnInit, OnDestroy {
     );
   }
 
+  get showGoAssignment(): boolean {
+    const roleId = this.userPrimaryRoleId;
+    return this.isAdminOrSbk && roleId !== null && [2, 3].includes(roleId);
+  }
+
+  get showClubAssignment(): boolean {
+    const roleId = this.userPrimaryRoleId;
+    return (
+      (this.isAdminOrSbk || this.isVm) &&
+      !this.isSelf &&
+      roleId !== null &&
+      [4, 5].includes(roleId)
+    );
+  }
+
   get availableTeams(): Team[] {
-    return this.clubsWithTeams.flatMap((c) => c.teams ?? []);
+    if (this.selectedClubId == null) return [];
+    const club = this.clubsWithTeams.find((c) => c.id === this.selectedClubId);
+    return club?.teams ?? [];
   }
 
   get showTeamAssignment(): boolean {
@@ -191,6 +247,59 @@ export class UserEditComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.savingTeams = false;
+          this._cdr.markForCheck();
+          this._notificationService.error('Fehler beim Speichern.', {
+            autoClose: false,
+          });
+        },
+      });
+  }
+
+  saveGoAssignment(): void {
+    if (!this.user || this.selectedGoId == null) return;
+    this.savingAssignment = true;
+
+    this._userService
+      .updateUser(this.user.id, { game_operation_id: this.selectedGoId })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.user = updated;
+          this.savingAssignment = false;
+          this._notificationService.success('Verbund gespeichert.', {
+            autoClose: true,
+          });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.savingAssignment = false;
+          this._cdr.markForCheck();
+          this._notificationService.error('Fehler beim Speichern.', {
+            autoClose: false,
+          });
+        },
+      });
+  }
+
+  saveClubAssignment(): void {
+    if (!this.user || this.selectedClubId == null) return;
+    this.savingAssignment = true;
+
+    this._userService
+      .updateUser(this.user.id, { club_id: this.selectedClubId })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.user = updated;
+          this.editableTeamIds = [];
+          this.savingAssignment = false;
+          this._notificationService.success('Verein gespeichert.', {
+            autoClose: true,
+          });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.savingAssignment = false;
           this._cdr.markForCheck();
           this._notificationService.error('Fehler beim Speichern.', {
             autoClose: false,

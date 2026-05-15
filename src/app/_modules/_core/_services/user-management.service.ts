@@ -22,7 +22,11 @@ export class UserManagementService {
 
   updateUser(
     id: number,
-    data: Partial<UserAdminEntry> & { role?: number }
+    data: Partial<UserAdminEntry> & {
+      role?: number;
+      game_operation_id?: number;
+      club_id?: number | null;
+    }
   ): Observable<UserAdminEntry> {
     return this.http.patch<UserAdminEntry>(`${this.base}/${id}.json`, data);
   }
