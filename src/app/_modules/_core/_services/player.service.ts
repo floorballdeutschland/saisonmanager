@@ -124,6 +124,17 @@ export class PlayerService {
     return this.http.post<Player>(path, {});
   }
 
+  public reactivatePlayer(playerId: number) {
+    const path =
+      environment.apiURL + 'admin/players/' + playerId + '/reactivate.json';
+    return this.http.post<Player>(path, {});
+  }
+
+  public vmGetPlayers(clubId: number) {
+    const path = environment.apiURL + 'admin/vm/players.json?club_id=' + clubId;
+    return this.http.get<Player[]>(path);
+  }
+
   public getLicenseDocuments(playerId: number, licenseId: string) {
     const path =
       environment.apiURL +

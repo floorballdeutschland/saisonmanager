@@ -13,6 +13,13 @@
       <h1 class="font-bold text-[28px] lg:text-[36px]">
         {{ stats.player.first_name }} {{ stats.player.last_name }}
       </h1>
+      <p
+        *ngIf="stats.player.deactivated_at"
+        class="mt-2 text-sm text-fb-gray-400"
+      >
+        Spieler*in nicht mehr aktiv (seit
+        {{ stats.player.deactivated_at | date : "dd.MM.yyyy" }})
+      </p>
     </div>
 
     <!-- Gesamtstatistik -->

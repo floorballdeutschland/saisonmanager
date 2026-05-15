@@ -33,6 +33,7 @@ export interface PlayerStats {
     last_name: string;
     birthdate: string;
     gender: string;
+    deactivated_at?: string;
   };
   seasons: PlayerStatsSeason[];
   totals: PlayerStatsTotals;
