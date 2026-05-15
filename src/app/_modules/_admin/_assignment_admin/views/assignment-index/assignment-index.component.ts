@@ -25,7 +25,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   activeTab: 'assignments' | 'games' = 'games';
 
   filterSeasonId = '';
-  filterDateFrom = '';
+  filterDateFrom = new Date().toISOString().split('T')[0];
   filterDateTo = '';
 
   private _destroy$ = new Subject<void>();
