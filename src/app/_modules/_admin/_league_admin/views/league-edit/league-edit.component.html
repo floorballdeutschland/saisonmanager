@@ -310,23 +310,41 @@
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               Dokumente für Lizenzantrag
             </div>
-            <div class="flex flex-col gap-2">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="req_doc_id_copy"
-                  [checked]="hasRequiredDocument(league, 'id_copy')"
-                  (change)="toggleRequiredDocument(league, 'id_copy')"
-                  class="h-4 w-4"
-                />
-                <span class="text-sm font-medium"
-                  >Ausweiskopie erforderlich</span
+            <div class="flex flex-col gap-3">
+              <div
+                *ngFor="let doc of league.required_documents; let i = index"
+                class="flex items-center gap-2"
+              >
+                <span class="text-sm font-medium flex-1">{{ doc }}</span>
+                <button
+                  type="button"
+                  (click)="removeRequiredDocument(league, i)"
+                  class="text-red-400 hover:text-red-600 text-xs px-2 py-1 border border-red-300 rounded"
                 >
-              </label>
-              <p class="text-xs text-gray-500 ml-6">
-                Wenn aktiviert, müssen Vereinsmanager beim Lizenzantrag eine
-                Ausweiskopie des Spielers hochladen.
+                  Entfernen
+                </button>
+              </div>
+              <p
+                *ngIf="!league.required_documents?.length"
+                class="text-xs text-gray-400"
+              >
+                Keine Pflichtdokumente hinterlegt.
               </p>
+              <div class="flex gap-2 mt-1">
+                <input
+                  type="text"
+                  [(ngModel)]="newDocumentName"
+                  placeholder="Dokumentname (z.B. Ausweiskopie)"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-1.5 text-sm flex-1"
+                />
+                <button
+                  type="button"
+                  (click)="addRequiredDocument(league)"
+                  class="font-bold text-black text-sm px-4 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
+                >
+                  Hinzufügen
+                </button>
+              </div>
             </div>
           </div>
 

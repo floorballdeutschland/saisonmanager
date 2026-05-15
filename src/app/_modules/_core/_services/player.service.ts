@@ -148,7 +148,7 @@ export class PlayerService {
   public uploadLicenseDocument(
     playerId: number,
     licenseId: string,
-    documentType: 'id_copy' | 'parental_consent',
+    documentType: string,
     file: File
   ) {
     const path =
