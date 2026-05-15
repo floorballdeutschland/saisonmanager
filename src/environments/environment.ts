@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiURL: 'https://sm.jholocal.de/api/v2/',
+  apiURL: 'http://localhost:3001/api/v2/',
   frontendApiKey: '',
 };
 

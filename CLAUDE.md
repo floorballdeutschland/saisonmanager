@@ -13,7 +13,7 @@ This is a monorepo-adjacent setup across three separate repos:
 ## Frontend Commands
 
 ```bash
-# Dev server (requires API at sm.jholocal.de or local)
+# Dev server (requires local API at localhost:3001)
 npm start                    # ng serve → http://localhost:4200
 npm run start-local          # ng serve --host 0.0.0.0 (for network access)
 
@@ -62,7 +62,7 @@ bundle exec rubocop
 
 ## Local Dev Environment
 
-The API runs at **http://localhost:3001** (port 3000 is taken by another service). The frontend's `environment.ts` points to `https://sm.jholocal.de/api/v2/` by default — point it to `http://localhost:3001/api/v2/` for fully local development.
+The API runs at **http://localhost:3001** (port 3000 is taken by another service). The frontend's `environment.ts` points to `http://localhost:3001/api/v2/`.
 
 **Demo credentials** (all password: `password123`):
 

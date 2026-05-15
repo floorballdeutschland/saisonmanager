@@ -23,7 +23,7 @@ Angular 18 frontend for the Floorball Saisonmanager — a league management syst
 ### Prerequisites
 
 - Node.js 20+ and npm (managed via [nvm](https://github.com/nvm-sh/nvm))
-- The API running locally (see [saisonmanager-docker](https://github.com/floorballverband-deutschland/saisonmanager-docker)) or accessible at `https://sm.jholocal.de`
+- The API running locally (see [saisonmanager-docker](https://github.com/floorballverband-deutschland/saisonmanager-docker))
 
 ### Setup
 
@@ -33,7 +33,7 @@ npm install
 npm start        # → http://localhost:4200
 ```
 
-By default the app points to `https://sm.jholocal.de/api/v2/`. For fully local development, change `apiURL` in `src/environments/environment.ts` to `http://localhost:3001/api/v2/`.
+The app points to `http://localhost:3001/api/v2/` by default in dev mode.
 
 ### Demo Credentials
 
