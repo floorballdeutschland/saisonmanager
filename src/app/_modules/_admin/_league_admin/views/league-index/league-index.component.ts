@@ -1,4 +1,9 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  ChangeDetectorRef,
+  OnInit,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   AssociationService,
   LeagueService,
@@ -19,14 +24,15 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 })
 export class LeagueIndexComponent implements OnInit {
   associations$: Observable<GameOperation[]>;
-
   goLeagueItems: GameOperationWithLeagues[] = [];
+  loading = true;
   savingOrder = false;
 
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
     private _notificationService: NotificationService,
+    private _cdr: ChangeDetectorRef,
     private _metaTitle: Title
   ) {
     this.associations$ = this._associationService.associations$;
@@ -34,8 +40,16 @@ export class LeagueIndexComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this._leagueService.getAdminLeagues().subscribe((items) => {
-      this.goLeagueItems = items;
+    this._leagueService.getAdminLeagues().subscribe({
+      next: (items) => {
+        this.goLeagueItems = items;
+        this.loading = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this._cdr.markForCheck();
+      },
     });
   }
 
@@ -43,8 +57,8 @@ export class LeagueIndexComponent implements OnInit {
     const go = this.goLeagueItems.find((g) => g.id === goId);
     if (!go) return;
 
+    const snapshot = [...go.leagues];
     moveItemInArray(go.leagues, event.previousIndex, event.currentIndex);
-
     this.savingOrder = true;
 
     const updates = go.leagues.map((league, index) =>
@@ -56,12 +70,15 @@ export class LeagueIndexComponent implements OnInit {
     forkJoin(updates).subscribe({
       next: () => {
         this.savingOrder = false;
-        this._notificationService.success('Reihenfolge gespeichert');
+        this._cdr.markForCheck();
+        this._notificationService.success('Reihenfolge gespeichert.');
       },
       error: () => {
+        go.leagues = snapshot;
         this.savingOrder = false;
+        this._cdr.markForCheck();
         this._notificationService.error(
-          'Reihenfolge konnte nicht gespeichert werden'
+          'Reihenfolge konnte nicht gespeichert werden.'
         );
       },
     });

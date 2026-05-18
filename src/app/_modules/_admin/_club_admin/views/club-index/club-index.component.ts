@@ -16,7 +16,6 @@ import { Title } from '@angular/platform-browser';
 })
 export class ClubIndexComponent implements OnInit {
   associations$: Observable<GameOperation[]>;
-
   goClubItems$?: Observable<GameOperationWithClubs[]>;
   includeDeactivated = false;
   canDeleteClubs = false;
@@ -34,7 +33,9 @@ export class ClubIndexComponent implements OnInit {
 
   public ngOnInit(): void {
     this._sessionService.currentUser$.pipe(take(1)).subscribe((user) => {
-      this.canDeleteClubs = !!user?.permissions['menu_item_club_admin'];
+      this.canDeleteClubs = !!(
+        user?.permissions['club_deactivate'] || user?.permissions['admin']
+      );
     });
     this.loadClubs();
   }

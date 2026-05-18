@@ -34,8 +34,9 @@ export class ClubService {
   }
 
   public adminDeleteClub(clubId: number) {
-    const path = environment.apiURL + 'admin/clubs/' + clubId + '.json';
-    return this.http.delete(path);
+    return this.http.delete(
+      environment.apiURL + 'admin/clubs/' + clubId + '.json'
+    );
   }
 
   public getAdminClub(clubId: number) {
