@@ -32,6 +32,11 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
   selectedReferee1Id: number | null = null;
   selectedReferee2Id: number | null = null;
 
+  referee1Query = '';
+  referee2Query = '';
+  showReferee1Dropdown = false;
+  showReferee2Dropdown = false;
+
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -65,6 +70,12 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
               list.find((a) => a.game_id === this.gameId) ?? null;
             this.selectedReferee1Id = this.assignment?.referee1?.id ?? null;
             this.selectedReferee2Id = this.assignment?.referee2?.id ?? null;
+            if (this.assignment?.referee1) {
+              this.referee1Query = this._stubName(this.assignment.referee1);
+            }
+            if (this.assignment?.referee2) {
+              this.referee2Query = this._stubName(this.assignment.referee2);
+            }
             this.loading = false;
             this._cdr.markForCheck();
             const date =
@@ -94,19 +105,110 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
     return this.assignment?.game ?? this.gameInfo ?? null;
   }
 
-  onReferee1Change(): void {
-    const r1 = this.availableReferees.find(
-      (r) => r.id === this.selectedReferee1Id
+  filteredReferees(query: string): RefereeAssignmentAvailable[] {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return this.availableReferees.filter(
+      (r) =>
+        r.vorname.toLowerCase().includes(q) ||
+        r.nachname.toLowerCase().includes(q)
     );
-    if (r1?.partner_lizenznummer && !this.selectedReferee2Id) {
+  }
+
+  selectReferee1(r: RefereeAssignmentAvailable): void {
+    this.selectedReferee1Id = r.id;
+    this.referee1Query = this.refereeName(r);
+    this.showReferee1Dropdown = false;
+    this._cdr.markForCheck();
+    this._autoFillPartner(r);
+  }
+
+  selectReferee2(r: RefereeAssignmentAvailable): void {
+    this.selectedReferee2Id = r.id;
+    this.referee2Query = this.refereeName(r);
+    this.showReferee2Dropdown = false;
+    this._cdr.markForCheck();
+  }
+
+  clearReferee1(): void {
+    this.selectedReferee1Id = null;
+    this.referee1Query = '';
+    this.showReferee1Dropdown = false;
+    this._cdr.markForCheck();
+  }
+
+  clearReferee2(): void {
+    this.selectedReferee2Id = null;
+    this.referee2Query = '';
+    this.showReferee2Dropdown = false;
+    this._cdr.markForCheck();
+  }
+
+  onReferee1Blur(): void {
+    setTimeout(() => {
+      this.showReferee1Dropdown = false;
+      if (!this.selectedReferee1Id) {
+        this.referee1Query = '';
+      } else {
+        const r = this.availableReferees.find(
+          (x) => x.id === this.selectedReferee1Id
+        );
+        if (r) this.referee1Query = this.refereeName(r);
+      }
+      this._cdr.markForCheck();
+    }, 200);
+  }
+
+  onReferee2Blur(): void {
+    setTimeout(() => {
+      this.showReferee2Dropdown = false;
+      if (!this.selectedReferee2Id) {
+        this.referee2Query = '';
+      } else {
+        const r = this.availableReferees.find(
+          (x) => x.id === this.selectedReferee2Id
+        );
+        if (r) this.referee2Query = this.refereeName(r);
+      }
+      this._cdr.markForCheck();
+    }, 200);
+  }
+
+  onReferee1Input(value: string): void {
+    this.referee1Query = value;
+    this.selectedReferee1Id = null;
+    this.showReferee1Dropdown = value.trim().length > 0;
+    this._cdr.markForCheck();
+  }
+
+  onReferee2Input(value: string): void {
+    this.referee2Query = value;
+    this.selectedReferee2Id = null;
+    this.showReferee2Dropdown = value.trim().length > 0;
+    this._cdr.markForCheck();
+  }
+
+  private _autoFillPartner(r1: RefereeAssignmentAvailable): void {
+    if (r1.partner_lizenznummer && !this.selectedReferee2Id) {
       const partner = this.availableReferees.find(
         (r) => r.lizenznummer === r1.partner_lizenznummer
       );
       if (partner) {
         this.selectedReferee2Id = partner.id;
+        this.referee2Query = this.refereeName(partner);
         this._cdr.markForCheck();
       }
     }
+  }
+
+  private _stubName(stub: {
+    vorname: string;
+    nachname: string;
+    lizenzstufe?: string;
+  }): string {
+    return `${stub.nachname}, ${stub.vorname}${
+      stub.lizenzstufe ? ' (' + stub.lizenzstufe + ')' : ''
+    }`;
   }
 
   save(): void {

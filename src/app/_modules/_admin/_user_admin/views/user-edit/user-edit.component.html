@@ -156,23 +156,28 @@
       <p class="text-sm text-fb-gray-500 mb-3">
         Welchem Verein dieser Benutzer zugeordnet ist.
       </p>
-      <select
-        [(ngModel)]="selectedClubId"
-        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm w-full mb-3"
-      >
-        <option [ngValue]="null">– Verein auswählen –</option>
-        <option *ngFor="let c of clubsWithTeams" [ngValue]="c.id">
-          {{ c.name }}
-        </option>
-      </select>
-      <button
-        type="button"
-        (click)="saveClubAssignment()"
-        [disabled]="savingAssignment || selectedClubId === null"
-        class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
-      >
-        {{ savingAssignment ? "Speichern…" : "Verein speichern" }}
-      </button>
+      <ng-container *ngIf="isVm; else clubDropdown">
+        <span class="text-sm">{{ selectedClubName }}</span>
+      </ng-container>
+      <ng-template #clubDropdown>
+        <select
+          [(ngModel)]="selectedClubId"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm w-full mb-3"
+        >
+          <option [ngValue]="null">– Verein auswählen –</option>
+          <option *ngFor="let c of clubsWithTeams" [ngValue]="c.id">
+            {{ c.name }}
+          </option>
+        </select>
+        <button
+          type="button"
+          (click)="saveClubAssignment()"
+          [disabled]="savingAssignment || selectedClubId === null"
+          class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+        >
+          {{ savingAssignment ? "Speichern…" : "Verein speichern" }}
+        </button>
+      </ng-template>
     </div>
 
     <!-- Team-Zuweisung (für TM-Nutzer) -->
