@@ -130,7 +130,7 @@ export class UserCreateComponent implements OnInit, OnDestroy {
 
   get availableRoles(): RoleOption[] {
     if (this.isAdmin) return this.allRoles;
-    if (this.isVm) return this.allRoles.filter((r) => r.id === 5);
+    if (this.isVm) return this.allRoles.filter((r) => r.id === 4 || r.id === 5);
     return this.allRoles.filter((r) => r.id === 4 || r.id === 5);
   }
 
