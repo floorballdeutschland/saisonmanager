@@ -8,7 +8,12 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { NotificationService, RefereeService } from '@floorball/core';
+import {
+  NotificationService,
+  RefereeService,
+  SeasonInfo,
+  SettingsService,
+} from '@floorball/core';
 import { RefereeAssignableGame, RefereeAssignment } from '@floorball/types';
 
 @Component({
@@ -19,8 +24,10 @@ import { RefereeAssignableGame, RefereeAssignment } from '@floorball/types';
 export class AssignmentIndexComponent implements OnInit, OnDestroy {
   assignments: RefereeAssignment[] = [];
   games: RefereeAssignableGame[] = [];
+  seasons: SeasonInfo[] = [];
   loading = false;
   loadingGames = false;
+  seasonsLoading = true;
   notifyingId: number | null = null;
   activeTab: 'assignments' | 'games' = 'games';
 
@@ -33,13 +40,31 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   constructor(
     private _refereeService: RefereeService,
     private _notificationService: NotificationService,
+    private _settingsService: SettingsService,
     private _router: Router,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this._load();
-    this._loadGames();
+    this._settingsService
+      .getSeasons()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (data) => {
+          this.seasons = data.seasons;
+          this.filterSeasonId = data.current_season_id.toString();
+          this.seasonsLoading = false;
+          this._cdr.markForCheck();
+          this._load();
+          this._loadGames();
+        },
+        error: () => {
+          this.seasonsLoading = false;
+          this._cdr.markForCheck();
+          this._load();
+          this._loadGames();
+        },
+      });
   }
 
   ngOnDestroy(): void {
