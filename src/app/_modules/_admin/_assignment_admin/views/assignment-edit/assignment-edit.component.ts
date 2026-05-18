@@ -153,7 +153,7 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
         const r = this.availableReferees.find(
           (x) => x.id === this.selectedReferee1Id
         );
-        this.referee1Query = r ? this.refereeName(r) : '';
+        if (r) this.referee1Query = this.refereeName(r);
       }
       this._cdr.markForCheck();
     }, 200);
@@ -168,7 +168,7 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
         const r = this.availableReferees.find(
           (x) => x.id === this.selectedReferee2Id
         );
-        this.referee2Query = r ? this.refereeName(r) : '';
+        if (r) this.referee2Query = this.refereeName(r);
       }
       this._cdr.markForCheck();
     }, 200);
