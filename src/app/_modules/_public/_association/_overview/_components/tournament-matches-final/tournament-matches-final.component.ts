@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { GameScheduleEntry } from '@floorball/types';
+import { FinalRound } from '../../../../../../_models/game-schedule-entry.interface';
 import { Observable, tap } from 'rxjs';
 
 export interface BracketRound {
@@ -14,8 +15,10 @@ export interface BracketRound {
 export class TournamentMatchesFinalComponent implements OnInit {
   @Input() matches$?: Observable<GameScheduleEntry[]>;
 
+  viewMode: 'bracket' | 'list' = 'bracket';
   bracketRounds: BracketRound[] = [];
   consolationGames: GameScheduleEntry[] = [];
+  groupedMatches: FinalRound[] = [];
   loaded = false;
 
   constructor(private _cdr: ChangeDetectorRef) {}
@@ -26,6 +29,7 @@ export class TournamentMatchesFinalComponent implements OnInit {
         .pipe(
           tap((matches) => {
             this._buildBracket(matches);
+            this._buildGroupedList(matches);
             this.loaded = true;
             this._cdr.markForCheck();
           })
@@ -94,7 +98,6 @@ export class TournamentMatchesFinalComponent implements OnInit {
     const rounds: GameScheduleEntry[][] = [];
     for (let i = 0; i <= maxDepth; i++) rounds.push(byDepth.get(i)!);
 
-    // Sort earlier rounds so source games align with their target
     for (let i = maxDepth; i > 0; i--) {
       const ordered: GameScheduleEntry[] = [];
       const remaining = new Set(rounds[i - 1]);
@@ -123,6 +126,38 @@ export class TournamentMatchesFinalComponent implements OnInit {
     this.bracketRounds = rounds.map((games, idx) => ({
       title: this._roundTitle(idx, maxDepth, games),
       games,
+    }));
+  }
+
+  private _buildGroupedList(matches: GameScheduleEntry[]): void {
+    const finalMatches = matches.filter((m) => !m.group_identifier);
+    const grouped = finalMatches.reduce<{
+      result: FinalRound[];
+      current: FinalRound | null;
+    }>(
+      (acc, game, index, array) => {
+        const title = (game.series_title || '').trim();
+        if (index === 0 || title === array[index - 1].series_title) {
+          if (!acc.current) acc.current = { round_title: title, matches: [] };
+          acc.current.matches.push(game);
+        } else {
+          if (acc.current) acc.result.push(acc.current);
+          acc.current = { round_title: title, matches: [game] };
+        }
+        if (index === array.length - 1 && acc.current) {
+          acc.result.push(acc.current);
+        }
+        return acc;
+      },
+      { result: [], current: null }
+    ).result;
+
+    this.groupedMatches = grouped.map((group) => ({
+      ...group,
+      round_title:
+        group.matches.length > 1
+          ? group.round_title.replace(/\d/g, '').trim()
+          : group.round_title,
     }));
   }
 

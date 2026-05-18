@@ -10,45 +10,87 @@
 
 <ng-container *ngIf="loaded; else loadingBracket">
   <ng-container
-    *ngIf="bracketRounds.length || consolationGames.length; else noGames"
+    *ngIf="groupedMatches.length || consolationGames.length; else noGames"
   >
-    <!-- Winners bracket -->
-    <ng-container *ngIf="bracketRounds.length">
-      <div class="mt-4 lg:mt-8 overflow-x-auto pb-4">
+    <!-- View mode toggle -->
+    <div *ngIf="bracketRounds.length" class="flex gap-1 mt-4 lg:mt-8">
+      <button
+        class="flex items-center gap-1.5 rounded px-3 py-1 text-sm font-bold transition hover:bg-fb-gray-200"
+        [ngClass]="{ 'bg-fb-gray-200': viewMode === 'bracket' }"
+        (click)="viewMode = 'bracket'"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3 4h5v5H3V4zm13 0h5v5h-5V4zm-6 7h5v5h-5v-5zM3 15h5v5H3v-5zm13 0h5v5h-5v-5zM8 6.5h3m0 0v5m0-2.5h5"
+          />
+        </svg>
+        Baum
+      </button>
+      <button
+        class="flex items-center gap-1.5 rounded px-3 py-1 text-sm font-bold transition hover:bg-fb-gray-200"
+        [ngClass]="{ 'bg-fb-gray-200': viewMode === 'list' }"
+        (click)="viewMode = 'list'"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M4 6h16M4 10h16M4 14h16M4 18h16"
+          />
+        </svg>
+        Liste
+      </button>
+    </div>
+
+    <!-- BRACKET VIEW -->
+    <ng-container *ngIf="viewMode === 'bracket' && bracketRounds.length">
+      <div class="mt-3 overflow-x-auto pb-4">
         <!-- Round titles row -->
         <div class="flex mb-2">
           <ng-container *ngFor="let round of bracketRounds; let last = last">
             <div
               class="flex-none text-center text-xs font-bold uppercase tracking-wide text-fb-gray-400"
-              style="min-width: 200px; max-width: 240px"
+              style="width: 180px"
             >
               {{ round.title }}
             </div>
-            <div *ngIf="!last" class="flex-none" style="width: 24px"></div>
+            <div *ngIf="!last" class="flex-none" style="width: 20px"></div>
           </ng-container>
         </div>
 
         <!-- Bracket body -->
-        <div class="flex items-stretch" style="min-height: 200px">
+        <div class="flex items-stretch" style="min-height: 160px">
           <ng-container
             *ngFor="let round of bracketRounds; let i = index; let last = last"
           >
             <!-- Game column -->
-            <div
-              class="flex flex-col flex-none"
-              style="min-width: 200px; max-width: 240px"
-            >
+            <div class="flex flex-col flex-none" style="width: 180px">
               <div
                 *ngFor="let game of round.games"
-                class="flex-1 flex flex-col justify-center px-2 py-1"
+                class="flex-1 flex flex-col justify-center px-1 py-1"
               >
                 <a
                   [routerLink]="['./spiel', game.game_id.toString()]"
-                  class="block border border-fb-gray-400 rounded overflow-hidden hover:border-fb-gray-200 transition-colors"
+                  class="block overflow-hidden rounded border border-fb-gray-400 transition-colors hover:border-fb-gray-200"
                 >
-                  <!-- Home row -->
                   <div
-                    class="flex items-center gap-2 px-2 py-1.5 border-b border-fb-gray-600"
+                    class="flex items-center gap-1.5 border-b border-fb-gray-600 px-2 py-1.5"
                     [ngClass]="{
                       'bg-fb-gray-800 opacity-60':
                         game.ended && !isWinner(game, 'home'),
@@ -58,24 +100,24 @@
                     <img
                       *ngIf="game.home_team_small_logo"
                       [src]="game.home_team_small_logo"
-                      class="h-5 w-5 object-contain flex-none"
+                      class="h-4 w-4 flex-none object-contain"
                       alt=""
                     />
                     <div
                       *ngIf="!game.home_team_small_logo"
-                      class="h-5 w-5 flex-none"
+                      class="h-4 w-4 flex-none"
                     ></div>
                     <span
-                      class="flex-1 text-sm truncate"
+                      class="flex-1 truncate text-xs"
                       [ngClass]="{
                         'text-fb-gray-200': hasTeam(game, 'home'),
-                        'text-fb-gray-400 italic': !hasTeam(game, 'home')
+                        'italic text-fb-gray-400': !hasTeam(game, 'home')
                       }"
                       >{{ teamName(game, "home") }}</span
                     >
                     <span
                       *ngIf="score(game, 'home') !== null"
-                      class="text-sm font-bold tabular-nums ml-1 flex-none"
+                      class="ml-1 flex-none text-xs font-bold tabular-nums"
                       [ngClass]="{
                         'text-white': isWinner(game, 'home'),
                         'text-fb-gray-400': !isWinner(game, 'home')
@@ -83,10 +125,8 @@
                       >{{ score(game, "home") }}</span
                     >
                   </div>
-
-                  <!-- Guest row -->
                   <div
-                    class="flex items-center gap-2 px-2 py-1.5"
+                    class="flex items-center gap-1.5 px-2 py-1.5"
                     [ngClass]="{
                       'bg-fb-gray-800 opacity-60':
                         game.ended && !isWinner(game, 'guest'),
@@ -96,24 +136,24 @@
                     <img
                       *ngIf="game.guest_team_small_logo"
                       [src]="game.guest_team_small_logo"
-                      class="h-5 w-5 object-contain flex-none"
+                      class="h-4 w-4 flex-none object-contain"
                       alt=""
                     />
                     <div
                       *ngIf="!game.guest_team_small_logo"
-                      class="h-5 w-5 flex-none"
+                      class="h-4 w-4 flex-none"
                     ></div>
                     <span
-                      class="flex-1 text-sm truncate"
+                      class="flex-1 truncate text-xs"
                       [ngClass]="{
                         'text-fb-gray-200': hasTeam(game, 'guest'),
-                        'text-fb-gray-400 italic': !hasTeam(game, 'guest')
+                        'italic text-fb-gray-400': !hasTeam(game, 'guest')
                       }"
                       >{{ teamName(game, "guest") }}</span
                     >
                     <span
                       *ngIf="score(game, 'guest') !== null"
-                      class="text-sm font-bold tabular-nums ml-1 flex-none"
+                      class="ml-1 flex-none text-xs font-bold tabular-nums"
                       [ngClass]="{
                         'text-white': isWinner(game, 'guest'),
                         'text-fb-gray-400': !isWinner(game, 'guest')
@@ -129,29 +169,46 @@
             <div
               *ngIf="!last"
               class="flex flex-col flex-none"
-              style="width: 24px"
+              style="width: 20px"
             >
               <ng-container *ngFor="let nextRoundGame of connectorPairs(i)">
                 <div
-                  class="flex-1 border-r-2 border-b-2 border-fb-gray-600 rounded-br"
+                  class="flex-1 rounded-br border-b-2 border-r-2 border-fb-gray-600"
                 ></div>
                 <div
-                  class="flex-1 border-r-2 border-t-2 border-fb-gray-600 rounded-tr"
+                  class="flex-1 rounded-tr border-r-2 border-t-2 border-fb-gray-600"
                 ></div>
               </ng-container>
             </div>
           </ng-container>
         </div>
+
+        <!-- Consolation games in bracket view -->
+        <ng-container *ngIf="consolationGames.length">
+          <h3 class="mb-2 mt-8 font-bold text-lg lg:text-xl">
+            Platzierungsspiele
+          </h3>
+          <fb-match-encounter-list
+            [matches]="consolationGames"
+            [baseRoute]="['./']"
+          ></fb-match-encounter-list>
+        </ng-container>
       </div>
     </ng-container>
 
-    <!-- Consolation / placement games -->
-    <ng-container *ngIf="consolationGames.length">
-      <h3 class="mt-8 mb-2 font-bold text-lg lg:text-xl">Platzierungsspiele</h3>
-      <fb-match-encounter-list
-        [matches]="consolationGames"
-        [baseRoute]="['./']"
-      ></fb-match-encounter-list>
+    <!-- LIST VIEW -->
+    <ng-container *ngIf="viewMode === 'list' || !bracketRounds.length">
+      <div class="mt-4 grid grid-cols-1 gap-8 lg:mt-8">
+        <div *ngFor="let round of groupedMatches">
+          <h3 class="mb-2 mt-4 font-bold text-lg lg:text-xl">
+            {{ round.round_title }}
+          </h3>
+          <fb-match-encounter-list
+            [matches]="round.matches"
+            [baseRoute]="['./']"
+          ></fb-match-encounter-list>
+        </div>
+      </div>
     </ng-container>
   </ng-container>
 </ng-container>
