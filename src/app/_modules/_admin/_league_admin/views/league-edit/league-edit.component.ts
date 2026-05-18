@@ -33,6 +33,7 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
 
   loading$?: Observable<boolean>;
   permittedGameOperations: GameOperationWithLeagues[] = [];
+  allLeagues: League[] = [];
   isBuliPermitted = false;
   leagueClasses: LeagueClass[] = [];
 
@@ -70,6 +71,10 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           .map((go) => go.id)
           .reduce((acc, goId) => acc || goId === 1, false);
         this.isBuliPermitted = iBP; // hack to trick the compiler ;-)
+
+        this.allLeagues = this.permittedGameOperations.flatMap(
+          (go) => go.leagues ?? []
+        );
 
         this._route.params.subscribe((params) => {
           if (params['leagueId']) {

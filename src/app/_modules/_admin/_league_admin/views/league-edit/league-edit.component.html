@@ -305,6 +305,56 @@
             </div>
           </div>
 
+          <!-- Vorrundeneinstellungen -->
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Vorrundeneinstellungen
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="font-bold">Vorrunden-Liga</div>
+              <div>
+                <select
+                  class="w-full"
+                  name="league_id_preround"
+                  [(ngModel)]="league.league_id_preround"
+                >
+                  <option [ngValue]="null">— keine Vorrunde —</option>
+                  <option
+                    *ngFor="let l of allLeagues"
+                    [ngValue]="l.id"
+                    [disabled]="l.id === league.id"
+                  >
+                    {{ l.name }}
+                  </option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                  Liga, aus der die Tabellenpunkte und Lizenzen übernommen
+                  werden sollen.
+                </p>
+              </div>
+
+              <ng-container *ngIf="league.league_id_preround">
+                <div class="font-bold">Tabellenübernahme</div>
+                <div>
+                  <select
+                    class="w-full"
+                    name="preround_point_modus"
+                    [(ngModel)]="league.preround_point_modus"
+                  >
+                    <option [ngValue]="null">keine Punktübernahme</option>
+                    <option value="full">
+                      alle Vorrundenpunkte übernehmen
+                    </option>
+                    <option value="half">
+                      halbe Vorrundenpunkte übernehmen
+                    </option>
+                  </select>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+
           <!-- Dokumente für Lizenzantrag -->
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
