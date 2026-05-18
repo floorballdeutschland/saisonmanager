@@ -175,19 +175,19 @@
       <button
         type="button"
         (click)="save()"
-        [disabled]="saving"
+        [disabled]="saving || savingAndPublishing"
         class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
       >
         {{ saving ? "Speichern…" : "Vorläufig speichern" }}
       </button>
       <button
-        *ngIf="assignment && assignment.status !== 'published'"
+        *ngIf="!assignment || assignment.status !== 'published'"
         type="button"
-        (click)="publish()"
-        [disabled]="publishing"
+        (click)="saveAndPublish()"
+        [disabled]="saving || savingAndPublishing"
         class="px-5 py-2 bg-green-700 text-white text-sm font-bold rounded-[5px] hover:bg-green-800 disabled:opacity-50"
       >
-        {{ publishing ? "Veröffentliche…" : "Veröffentlichen" }}
+        {{ savingAndPublishing ? "Speichern…" : "Speichern & veröffentlichen" }}
       </button>
     </div>
 
