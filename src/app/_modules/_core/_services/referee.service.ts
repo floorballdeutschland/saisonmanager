@@ -110,6 +110,12 @@ export class RefereeService {
     );
   }
 
+  public adminGetNextLizenznummer() {
+    return this.http.get<{ next_lizenznummer: number }>(
+      environment.apiURL + 'admin/referees/next_lizenznummer'
+    );
+  }
+
   public adminGetIncorrectAssignments(seasonId?: number) {
     const query = seasonId ? `?season_id=${seasonId}` : '';
     return this.http.get<RefereeAdminGame[]>(
