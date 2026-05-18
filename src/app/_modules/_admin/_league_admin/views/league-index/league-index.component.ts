@@ -1,8 +1,17 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { AssociationService, LeagueService } from '@floorball/core';
-import { GameOperation, GameOperationWithLeagues } from '@floorball/types';
-import { Observable } from 'rxjs';
+import {
+  AssociationService,
+  LeagueService,
+  NotificationService,
+} from '@floorball/core';
+import {
+  GameOperation,
+  GameOperationWithLeagues,
+  League,
+} from '@floorball/types';
+import { Observable, forkJoin } from 'rxjs';
 import { Title } from '@angular/platform-browser';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   templateUrl: './league-index.component.html',
@@ -11,11 +20,13 @@ import { Title } from '@angular/platform-browser';
 export class LeagueIndexComponent implements OnInit {
   associations$: Observable<GameOperation[]>;
 
-  goLeagueItems$?: Observable<GameOperationWithLeagues[]>;
+  goLeagueItems: GameOperationWithLeagues[] = [];
+  savingOrder = false;
 
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
+    private _notificationService: NotificationService,
     private _metaTitle: Title
   ) {
     this.associations$ = this._associationService.associations$;
@@ -23,6 +34,36 @@ export class LeagueIndexComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.goLeagueItems$ = this._leagueService.getAdminLeagues();
+    this._leagueService.getAdminLeagues().subscribe((items) => {
+      this.goLeagueItems = items;
+    });
+  }
+
+  onLeagueDrop(event: CdkDragDrop<League[]>, goId: number): void {
+    const go = this.goLeagueItems.find((g) => g.id === goId);
+    if (!go) return;
+
+    moveItemInArray(go.leagues, event.previousIndex, event.currentIndex);
+
+    this.savingOrder = true;
+
+    const updates = go.leagues.map((league, index) =>
+      this._leagueService.adminUpdateLeague(league.id, {
+        order_key: String((index + 1) * 10),
+      })
+    );
+
+    forkJoin(updates).subscribe({
+      next: () => {
+        this.savingOrder = false;
+        this._notificationService.success('Reihenfolge gespeichert');
+      },
+      error: () => {
+        this.savingOrder = false;
+        this._notificationService.error(
+          'Reihenfolge konnte nicht gespeichert werden'
+        );
+      },
+    });
   }
 }

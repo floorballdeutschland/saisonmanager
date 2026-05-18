@@ -179,6 +179,11 @@ export class LeagueService {
     return this.http.post<League>(path, league);
   }
 
+  public adminUpdateLeague(id: number, data: Partial<League>) {
+    const path = environment.apiURL + 'admin/leagues/' + id + '.json';
+    return this.http.patch<League>(path, { league: data });
+  }
+
   public getAdminLeagueClasses() {
     const path = environment.apiURL + 'admin/league_classes.json';
     return this.http.get<LeagueClass[]>(path);
