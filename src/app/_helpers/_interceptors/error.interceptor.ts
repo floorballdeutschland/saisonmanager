@@ -32,7 +32,8 @@ export class ErrorInterceptor implements HttpInterceptor {
 
         if (err.status === 403) {
           this._notificationService.error(
-            'Berechtigungsfehler:' + err.error.message,
+            'Berechtigungsfehler: ' +
+              (err.error?.message || err.error?.error || 'Kein Zugriff'),
             {
               autoClose: false,
               keepAfterRouteChange: true,
