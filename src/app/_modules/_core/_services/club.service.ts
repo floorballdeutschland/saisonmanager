@@ -33,6 +33,11 @@ export class ClubService {
     return this.http.post<Club>(path, {});
   }
 
+  public adminDeleteClub(clubId: number) {
+    const path = environment.apiURL + 'admin/clubs/' + clubId + '.json';
+    return this.http.delete(path);
+  }
+
   public getAdminClub(clubId: number) {
     const path = environment.apiURL + 'admin/clubs/' + clubId + '.json';
     return this.http.get<Club>(path);

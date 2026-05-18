@@ -105,6 +105,20 @@
                   >
                     Spieler bearbeiten
                   </a>
+                  <fb-confirmation
+                    *ngIf="club.deactivated_at && canDeleteClubs"
+                    title="Verein dauerhaft löschen"
+                    content="Soll dieser Verein wirklich dauerhaft gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden."
+                    submitButtonTitle="Endgültig löschen"
+                    buttonVariant="error"
+                    (handleSubmit)="deleteClub(club.id)"
+                  >
+                    <button
+                      class="font-bold text-red-700 leading-[17px] text-sm px-2 py-1.5 mr-4 border bg-white hover:bg-red-50 border-red-300 rounded-[5px] cursor-pointer"
+                    >
+                      löschen
+                    </button>
+                  </fb-confirmation>
                 </div>
               </ng-container>
 
