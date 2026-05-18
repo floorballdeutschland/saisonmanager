@@ -48,7 +48,7 @@
         <div *ngFor="let gameOperation of goClubItems$ | async; else: loading">
           <div class="bg-white flex items-center justify-center">
             <div
-              class="h-[65px] my-2.5 lg:my-5 flex-1 px-[20px] flex justify-center"
+              class="h-[65px] my-2.5 lg:my-5 flex-1 px-[20px] flex justify-center items-center gap-2"
             >
               <img
                 *ngIf="gameOperation.logo_url"
@@ -60,6 +60,11 @@
                 *ngIf="!gameOperation.logo_url"
                 class="self-center text-sm font-bold text-fb-gray-400"
                 >{{ gameOperation.name }}</span
+              >
+              <span
+                *ngIf="gameOperation.released"
+                class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-700 whitespace-nowrap"
+                >Freigabe</span
               >
             </div>
           </div>
