@@ -1,0 +1,200 @@
+<div class="container mx-auto px-4 lg:px-8">
+  <h1 class="font-bold text-[32px] lg:text-[42px] pt-4 lg:pt-0 my-4 lg:my-8">
+    Schiedsrichterverwaltung
+  </h1>
+  <a
+    [routerLink]="
+      master
+        ? [
+            '/',
+            'verwaltung',
+            'schiedsrichter',
+            master.lizenznummer_display,
+            'bearbeiten'
+          ]
+        : ['/', 'verwaltung', 'schiedsrichter']
+    "
+    class="text-sm text-fb-gray-500 hover:text-black"
+    >← Zurück</a
+  >
+  <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
+    Duplikat zusammenführen
+  </h2>
+</div>
+
+<ng-container *ngIf="master">
+  <div class="bg-fb-gray-800 pt-4 lg:pt-8 pb-16">
+    <div class="container mx-auto px-4 lg:px-8">
+      <!-- Step 1: Duplikat suchen -->
+      <ng-container *ngIf="step === 1">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9">
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Master-Datensatz
+            </div>
+            <p class="text-sm font-semibold">
+              {{ master.nachname }}, {{ master.vorname }}
+            </p>
+            <p class="text-sm text-gray-500">
+              Lizenznummer: {{ master.lizenznummer_display }} &middot; ID:
+              {{ master.id }}
+            </p>
+          </div>
+
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Duplikat suchen
+            </div>
+            <div class="flex gap-3 mb-4">
+              <input
+                type="text"
+                class="flex-1"
+                placeholder="Name oder Lizenznummer des Duplikats"
+                [(ngModel)]="searchQuery"
+                (keyup.enter)="search()"
+              />
+              <button
+                (click)="search()"
+                class="font-bold text-white text-sm px-5 py-2 bg-fb-gray-900 hover:bg-black rounded-[5px] cursor-pointer"
+              >
+                Suchen
+              </button>
+            </div>
+
+            <ul
+              *ngIf="searchResults.length > 0"
+              role="list"
+              class="divide-y divide-gray-200"
+            >
+              <li *ngFor="let r of searchResults">
+                <button
+                  (click)="selectSecondary(r)"
+                  class="w-full text-left px-4 py-3 hover:bg-orange-50 cursor-pointer"
+                >
+                  <span class="text-sm font-medium"
+                    >{{ r.nachname }}, {{ r.vorname }}</span
+                  >
+                  <span class="text-sm text-gray-500 ml-2">
+                    Lizenz: {{ r.lizenznummer_display }} &middot; ID: {{ r.id }}
+                  </span>
+                </button>
+              </li>
+            </ul>
+
+            <p
+              *ngIf="searchResults.length === 0 && searchQuery"
+              class="text-sm text-gray-500"
+            >
+              Keine weiteren Schiedsrichter gefunden.
+            </p>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Step 2: Vorschau -->
+      <ng-container *ngIf="step === 2 && secondary">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9">
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Master (wird behalten)
+            </div>
+            <p class="text-sm font-semibold">
+              {{ master.nachname }}, {{ master.vorname }}
+            </p>
+            <p class="text-sm text-gray-500">
+              Lizenz: {{ master.lizenznummer_display }} &middot; ID:
+              {{ master.id }}
+            </p>
+            <p class="text-sm text-gray-500">
+              Stufe: {{ master.lizenzstufe || "–" }}
+            </p>
+            <p class="text-sm text-gray-500">
+              Gültig bis: {{ master.gueltigkeit || "–" }}
+            </p>
+            <p class="text-sm text-gray-500">
+              E-Mail: {{ master.email || "–" }}
+            </p>
+          </div>
+
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Duplikat (wird deaktiviert)
+            </div>
+            <p class="text-sm font-semibold">
+              {{ secondary.nachname }}, {{ secondary.vorname }}
+            </p>
+            <p class="text-sm text-gray-500">
+              Lizenz: {{ secondary.lizenznummer_display }} &middot; ID:
+              {{ secondary.id }}
+            </p>
+            <p class="text-sm text-gray-500">
+              Stufe: {{ secondary.lizenzstufe || "–" }}
+            </p>
+            <p class="text-sm text-gray-500">
+              Gültig bis: {{ secondary.gueltigkeit || "–" }}
+            </p>
+            <p class="text-sm text-gray-500">
+              E-Mail: {{ secondary.email || "–" }}
+            </p>
+          </div>
+
+          <div class="col-span-full flex gap-3">
+            <button
+              (click)="confirm()"
+              class="font-bold text-white text-sm px-5 py-2.5 bg-orange-600 hover:bg-orange-700 rounded-[5px] cursor-pointer"
+            >
+              Zusammenführen
+            </button>
+            <button
+              (click)="back()"
+              class="font-bold text-gray-600 text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+            >
+              Zurück
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Step 3: Bestätigung -->
+      <ng-container *ngIf="step === 3 && secondary">
+        <div class="mt-4 lg:mt-9 max-w-xl">
+          <div
+            class="bg-white my-[5px] py-[15px] px-[30px] border border-red-300 rounded"
+          >
+            <div class="uppercase font-bold text-red-600 text-sm mb-5">
+              Achtung – nicht rückgängig zu machen
+            </div>
+            <p class="text-sm text-gray-700 mb-3">
+              Schiedsrichter
+              <strong>{{ secondary.nachname }}, {{ secondary.vorname }}</strong>
+              (Lizenz: {{ secondary.lizenznummer_display }}) wird mit
+              <strong>{{ master.nachname }}, {{ master.vorname }}</strong>
+              (Lizenz: {{ master.lizenznummer_display }}) zusammengeführt und
+              danach deaktiviert.
+            </p>
+            <p class="text-sm text-gray-700 mb-5">
+              Alle Spielreferenzen und Qualifikationen des Duplikats werden auf
+              den Master übertragen.
+            </p>
+            <div class="flex gap-3">
+              <button
+                (click)="merge()"
+                [disabled]="loading"
+                class="font-bold text-white text-sm px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-[5px] cursor-pointer disabled:opacity-50"
+              >
+                {{ loading ? "Wird zusammengeführt…" : "Ja, zusammenführen" }}
+              </button>
+              <button
+                (click)="cancelConfirm()"
+                [disabled]="loading"
+                class="font-bold text-gray-600 text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+              >
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</ng-container>

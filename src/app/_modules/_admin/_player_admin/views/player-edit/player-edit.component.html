@@ -453,6 +453,30 @@
             </div>
           </div>
         </ng-container>
+
+        <ng-container *ngIf="editMode && can('player_merge') && player">
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Duplikat zusammenführen
+            </div>
+            <p class="text-sm text-gray-500 mb-4">
+              Diesen Spieler als Master-Datensatz verwenden und einen
+              Duplikat-Datensatz damit zusammenführen.
+            </p>
+            <a
+              [routerLink]="[
+                '/',
+                'verwaltung',
+                'spieler',
+                player.id,
+                'duplikat'
+              ]"
+              class="font-bold text-orange-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-orange-50 border-orange-400 rounded-[5px]"
+            >
+              Duplikat zusammenführen
+            </a>
+          </div>
+        </ng-container>
       </div>
     </div>
   </div>

@@ -23,6 +23,7 @@ import * as Views from './views';
     Views.PlayerIndexComponent,
     Views.PlayerEditComponent,
     Views.PlayerSearchComponent,
+    Views.PlayerMergeComponent,
   ],
 })
 export class AdminPlayerModule {}

@@ -309,6 +309,19 @@
       >
         Löschen
       </button>
+      <a
+        *ngIf="editMode && canMerge && referee.lizenznummer_display"
+        [routerLink]="[
+          '/',
+          'verwaltung',
+          'schiedsrichter',
+          referee.lizenznummer_display,
+          'duplikat'
+        ]"
+        class="px-5 py-2 text-sm font-bold text-orange-600 border border-orange-300 rounded-[5px] hover:border-orange-500"
+      >
+        Duplikat zusammenführen
+      </a>
     </div>
   </form>
 </div>

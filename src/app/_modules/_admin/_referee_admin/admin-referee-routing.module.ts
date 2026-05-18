@@ -33,6 +33,12 @@ const routes: Routes = [
     component: Views.RefereeEditComponent,
     data: { scrollTop: true },
   },
+  {
+    path: 'verwaltung/schiedsrichter/:lizenznummer/duplikat',
+    pathMatch: 'full',
+    component: Views.RefereeMergeComponent,
+    data: { scrollTop: true },
+  },
 ];
 
 @NgModule({
