@@ -173,6 +173,13 @@ export class UserEditComponent implements OnInit, OnDestroy {
     );
   }
 
+  get selectedClubName(): string {
+    if (this.selectedClubId == null) return '–';
+    return (
+      this.clubsWithTeams.find((c) => c.id === this.selectedClubId)?.name ?? '–'
+    );
+  }
+
   get availableTeams(): Team[] {
     if (this.selectedClubId == null) return [];
     const club = this.clubsWithTeams.find((c) => c.id === this.selectedClubId);
