@@ -7,8 +7,12 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
-import { StateAssociationService, NotificationService } from '@floorball/core';
-import { StateAssociation } from '@floorball/types';
+import {
+  StateAssociationService,
+  NotificationService,
+  SessionService,
+} from '@floorball/core';
+import { StateAssociation, User } from '@floorball/types';
 
 @Component({
   templateUrl: './state-association-index.component.html',
@@ -19,6 +23,7 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
   stateAssociations: StateAssociation[] = [];
   sortedRows: Array<{ sa: StateAssociation; isChild: boolean }> = [];
   loading = false;
+  currentUser: User | null = null;
 
   private _buildSortedRows(): void {
     const roots = this.stateAssociations.filter((sa) => !sa.parent_id);
@@ -43,10 +48,22 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
   constructor(
     private _stateAssociationService: StateAssociationService,
     private _notificationService: NotificationService,
+    private _sessionService: SessionService,
     private _cdr: ChangeDetectorRef
   ) {}
 
+  get isAdmin(): boolean {
+    return !!this.currentUser?.permissions['menu_item_state_association_admin'];
+  }
+
   ngOnInit(): void {
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((user) => {
+        this.currentUser = user;
+        this._cdr.markForCheck();
+      });
+
     this.load();
   }
 

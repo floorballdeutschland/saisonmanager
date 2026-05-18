@@ -184,6 +184,7 @@
   <ng-container
     *ngIf="
       showItem('menu_item_state_association_admin') ||
+      showItem('menu_item_state_association_sbk') ||
       showItem('menu_item_api_key_admin') ||
       showItem('menu_item_user_admin') ||
       showItem('menu_item_season_admin') ||
@@ -211,7 +212,10 @@
         </li>
         <li
           class="mt-4 mb-4"
-          *ngIf="showItem('menu_item_state_association_admin')"
+          *ngIf="
+            showItem('menu_item_state_association_admin') ||
+            showItem('menu_item_state_association_sbk')
+          "
         >
           <a
             class="font-bold text-fb-gray-500 hover:text-black text-base"
