@@ -6,6 +6,7 @@ import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitTeamModule } from '@floorball/uikit/team';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import * as Views from './views';
 
@@ -18,6 +19,7 @@ import * as Views from './views';
     UikitTeamModule,
     UikitMatchesModule,
     UikitCommonModule,
+    DragDropModule,
   ],
   declarations: [Views.LeagueIndexComponent, Views.LeagueEditComponent],
 })

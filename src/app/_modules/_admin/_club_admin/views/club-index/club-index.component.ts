@@ -1,7 +1,13 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { AssociationService, ClubService } from '@floorball/core';
+import {
+  AssociationService,
+  ClubService,
+  NotificationService,
+  SessionService,
+} from '@floorball/core';
 import { GameOperation, GameOperationWithClubs } from '@floorball/types';
 import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 
 @Component({
@@ -13,10 +19,13 @@ export class ClubIndexComponent implements OnInit {
 
   goClubItems$?: Observable<GameOperationWithClubs[]>;
   includeDeactivated = false;
+  canDeleteClubs = false;
 
   constructor(
     private _associationService: AssociationService,
     private _clubService: ClubService,
+    private _sessionService: SessionService,
+    private _notificationService: NotificationService,
     private _metaTitle: Title
   ) {
     this.associations$ = this._associationService.associations$;
@@ -24,6 +33,9 @@ export class ClubIndexComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this._sessionService.currentUser$.pipe(take(1)).subscribe((user) => {
+      this.canDeleteClubs = !!user?.permissions['menu_item_club_admin'];
+    });
     this.loadClubs();
   }
 
@@ -31,5 +43,22 @@ export class ClubIndexComponent implements OnInit {
     this.goClubItems$ = this._clubService.getAdminClubs(
       this.includeDeactivated
     );
+  }
+
+  public deleteClub(clubId: number): void {
+    this._clubService
+      .adminDeleteClub(clubId)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this._notificationService.success('Verein wurde dauerhaft gelöscht.');
+          this.loadClubs();
+        },
+        error: () => {
+          this._notificationService.error(
+            'Verein konnte nicht gelöscht werden.'
+          );
+        },
+      });
   }
 }
