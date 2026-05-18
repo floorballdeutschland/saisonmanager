@@ -33,4 +33,5 @@ export interface TableEntry {
   point_corrections: TablePointCorrections;
   sort: number;
   position: number;
+  has_direct_encounter_games?: boolean;
 }
