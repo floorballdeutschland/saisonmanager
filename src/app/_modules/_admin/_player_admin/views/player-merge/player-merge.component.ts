@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import {
   NotificationService,
   PlayerService,
@@ -10,13 +11,15 @@ import { Player, PlayerSearchResult } from '@floorball/models';
 @Component({
   templateUrl: './player-merge.component.html',
 })
-export class PlayerMergeComponent implements OnInit {
+export class PlayerMergeComponent implements OnInit, OnDestroy {
   master?: Player;
   secondary?: PlayerSearchResult;
   searchQuery = '';
   searchResults: PlayerSearchResult[] = [];
   step: 1 | 2 | 3 = 1;
   loading = false;
+
+  private _destroy$ = new Subject<void>();
 
   constructor(
     private _route: ActivatedRoute,
@@ -29,23 +32,40 @@ export class PlayerMergeComponent implements OnInit {
   ngOnInit(): void {
     const permissions = this._sessionService.currentUser?.permissions ?? {};
     if (!permissions['player_merge']) {
-      this._router.navigate(['/', 'verwaltung', 'spieler']);
+      this._router.navigate(['/', 'verwaltung', 'spieler', 'suche']);
       return;
     }
     const id = Number(this._route.snapshot.paramMap.get('id'));
-    this._playerService.getPlayer(id).subscribe({
-      next: (p) => (this.master = p),
-      error: () => this._router.navigate(['/', 'verwaltung', 'spieler']),
-    });
+    if (!Number.isFinite(id) || id <= 0) {
+      this._router.navigate(['/', 'verwaltung', 'spieler', 'suche']);
+      return;
+    }
+    this._playerService
+      .getPlayer(id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (p) => (this.master = p),
+        error: () =>
+          this._router.navigate(['/', 'verwaltung', 'spieler', 'suche']),
+      });
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
   }
 
   search(): void {
-    if (!this.searchQuery.trim()) return;
-    this._playerService.globalSearch(this.searchQuery).subscribe({
-      next: (results) => {
-        this.searchResults = results.filter((r) => r.id !== this.master?.id);
-      },
-    });
+    if (!this.searchQuery.trim() || !this.master) return;
+    const masterId = this.master.id;
+    this._playerService
+      .globalSearch(this.searchQuery)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (results) => {
+          this.searchResults = results.filter((r) => r.id !== masterId);
+        },
+      });
   }
 
   selectSecondary(player: PlayerSearchResult): void {
@@ -64,8 +84,10 @@ export class PlayerMergeComponent implements OnInit {
   merge(): void {
     if (!this.master || !this.secondary) return;
     this.loading = true;
+    const master = this.master;
     this._playerService
-      .mergePlayer(this.master.id, this.secondary.id)
+      .mergePlayer(master.id, this.secondary.id)
+      .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {
           this._notificationService.success(
@@ -75,8 +97,11 @@ export class PlayerMergeComponent implements OnInit {
           this._router.navigate([
             '/',
             'verwaltung',
+            'vereine',
+            master.club_id ?? 'alle',
             'spieler',
-            this.master!.id,
+            master.id,
+            'bearbeiten',
           ]);
         },
         error: (err) => {

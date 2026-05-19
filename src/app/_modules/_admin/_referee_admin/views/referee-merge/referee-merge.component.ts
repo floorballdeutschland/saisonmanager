@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import {
   NotificationService,
   RefereeService,
@@ -10,13 +11,15 @@ import { RefereeAdmin } from '@floorball/types';
 @Component({
   templateUrl: './referee-merge.component.html',
 })
-export class RefereeMergeComponent implements OnInit {
+export class RefereeMergeComponent implements OnInit, OnDestroy {
   master?: RefereeAdmin;
   secondary?: RefereeAdmin;
   searchQuery = '';
   searchResults: RefereeAdmin[] = [];
   step: 1 | 2 | 3 = 1;
   loading = false;
+
+  private _destroy$ = new Subject<void>();
 
   constructor(
     private _route: ActivatedRoute,
@@ -33,45 +36,75 @@ export class RefereeMergeComponent implements OnInit {
       return;
     }
     const param: string = this._route.snapshot.params['lizenznummer'] ?? '';
+    if (!param) {
+      this._router.navigate(['/', 'verwaltung', 'schiedsrichter']);
+      return;
+    }
     this._loadMaster(param);
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
   }
 
   private _loadMaster(param: string): void {
     if (param.startsWith('G-')) {
       const id = parseInt(param.slice(2), 10);
-      this._refereeService.adminGetById(id).subscribe({
-        next: (r) => (this.master = r),
-        error: () =>
-          this._router.navigate(['/', 'verwaltung', 'schiedsrichter']),
-      });
+      if (!Number.isFinite(id) || id <= 0) {
+        this._router.navigate(['/', 'verwaltung', 'schiedsrichter']);
+        return;
+      }
+      this._refereeService
+        .adminGetById(id)
+        .pipe(takeUntil(this._destroy$))
+        .subscribe({
+          next: (r) => (this.master = r),
+          error: () =>
+            this._router.navigate(['/', 'verwaltung', 'schiedsrichter']),
+        });
     } else {
       const lizenznummer = parseInt(param, 10);
-      this._refereeService.adminGetAll({ q: param }).subscribe({
-        next: (results) => {
-          const match = results.find((r) => r.lizenznummer === lizenznummer);
-          if (!match) {
-            this._router.navigate(['/', 'verwaltung', 'schiedsrichter']);
-            return;
-          }
-          this._refereeService.adminGetById(match.id).subscribe({
-            next: (r) => (this.master = r),
-            error: () =>
-              this._router.navigate(['/', 'verwaltung', 'schiedsrichter']),
-          });
-        },
-        error: () =>
-          this._router.navigate(['/', 'verwaltung', 'schiedsrichter']),
-      });
+      if (!Number.isFinite(lizenznummer)) {
+        this._router.navigate(['/', 'verwaltung', 'schiedsrichter']);
+        return;
+      }
+      this._refereeService
+        .adminGetAll({ q: param })
+        .pipe(takeUntil(this._destroy$))
+        .subscribe({
+          next: (results) => {
+            const match = results.find((r) => r.lizenznummer === lizenznummer);
+            if (!match) {
+              this._router.navigate(['/', 'verwaltung', 'schiedsrichter']);
+              return;
+            }
+            this._refereeService
+              .adminGetById(match.id)
+              .pipe(takeUntil(this._destroy$))
+              .subscribe({
+                next: (r) => (this.master = r),
+                error: () =>
+                  this._router.navigate(['/', 'verwaltung', 'schiedsrichter']),
+              });
+          },
+          error: () =>
+            this._router.navigate(['/', 'verwaltung', 'schiedsrichter']),
+        });
     }
   }
 
   search(): void {
-    if (!this.searchQuery.trim()) return;
-    this._refereeService.adminGetAll({ q: this.searchQuery }).subscribe({
-      next: (results) => {
-        this.searchResults = results.filter((r) => r.id !== this.master?.id);
-      },
-    });
+    if (!this.searchQuery.trim() || !this.master) return;
+    const masterId = this.master.id;
+    this._refereeService
+      .adminGetAll({ q: this.searchQuery })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (results) => {
+          this.searchResults = results.filter((r) => r.id !== masterId);
+        },
+      });
   }
 
   selectSecondary(referee: RefereeAdmin): void {
@@ -90,8 +123,10 @@ export class RefereeMergeComponent implements OnInit {
   merge(): void {
     if (!this.master || !this.secondary) return;
     this.loading = true;
+    const master = this.master;
     this._refereeService
-      .adminMerge(this.master.id, this.secondary.id)
+      .adminMerge(master.id, this.secondary.id)
+      .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {
           this._notificationService.success(
@@ -102,7 +137,7 @@ export class RefereeMergeComponent implements OnInit {
             '/',
             'verwaltung',
             'schiedsrichter',
-            this.master!.lizenznummer_display,
+            master.lizenznummer_display,
           ]);
         },
         error: (err) => {
