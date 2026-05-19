@@ -162,18 +162,34 @@
   </ng-container>
 
   <!-- Transfers und Freigaben -->
-  <ng-container *ngIf="showItem('menu_item_transfer_requests')">
+  <ng-container
+    *ngIf="
+      showItem('menu_item_transfer_requests') ||
+      showItem('menu_item_player_change_requests')
+    "
+  >
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
       Transfers und Freigaben
     </h2>
     <nav>
       <ul>
-        <li class="mt-4 mb-4">
+        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_transfer_requests')">
           <a
             class="font-bold text-fb-gray-500 hover:text-black text-base"
             [routerLink]="['/', 'verwaltung', 'transfer-anfragen']"
             (click)="closeMenu()"
             >Transferanträge</a
+          >
+        </li>
+        <li
+          class="mt-4 mb-4"
+          *ngIf="showItem('menu_item_player_change_requests')"
+        >
+          <a
+            class="font-bold text-fb-gray-500 hover:text-black text-base"
+            [routerLink]="['/', 'verwaltung', 'spieler-korrekturen']"
+            (click)="closeMenu()"
+            >Spielerdaten-Korrekturen</a
           >
         </li>
       </ul>

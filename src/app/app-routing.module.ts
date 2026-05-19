@@ -96,6 +96,13 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/player-change-requests').then(
+            (m) => m.AdminPlayerChangeRequestModule
+          ),
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/transfer-requests').then(
             (m) => m.AdminTransferRequestModule
           ),
