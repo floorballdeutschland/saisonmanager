@@ -5,6 +5,14 @@ import * as Views from './views';
 
 const routes: Routes = [
   {
+    path: 'verwaltung/spieler/:id/duplikat',
+    pathMatch: 'full',
+    component: Views.PlayerMergeComponent,
+    data: {
+      scrollTop: true,
+    },
+  },
+  {
     path: 'verwaltung/spieler/suche',
     pathMatch: 'full',
     component: Views.PlayerSearchComponent,

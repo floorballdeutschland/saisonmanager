@@ -18,6 +18,7 @@ import * as Views from './views';
     Views.RefereeEditComponent,
     Views.RefereeDetailComponent,
     Views.RefereeQualificationTypesComponent,
+    Views.RefereeMergeComponent,
   ],
 })
 export class AdminRefereeModule {}

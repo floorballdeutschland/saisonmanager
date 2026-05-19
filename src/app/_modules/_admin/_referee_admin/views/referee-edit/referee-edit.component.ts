@@ -35,6 +35,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   saving = false;
   isRestricted = false;
   canDelete = false;
+  canMerge = false;
   stateAssociations: StateAssociation[] = [];
   clubs: Club[] = [];
   qualificationTypes: RefereeQualificationType[] = [];
@@ -74,6 +75,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
         next: (user) => {
           this.isRestricted = !!user?.permissions['referee_edit_restricted'];
           this.canDelete = !this.isRestricted;
+          this.canMerge = !!user?.permissions['referee_merge'];
           this._cdr.markForCheck();
         },
       });
