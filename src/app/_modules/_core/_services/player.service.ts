@@ -130,6 +130,14 @@ export class PlayerService {
     return this.http.post<Player>(path, {});
   }
 
+  public mergePlayer(masterId: number, secondaryId: number) {
+    const path =
+      environment.apiURL + 'admin/players/' + masterId + '/merge.json';
+    return this.http.post<{ message: string; master_id: number }>(path, {
+      secondary_id: secondaryId,
+    });
+  }
+
   public vmGetPlayers(clubId: number) {
     const path = environment.apiURL + 'admin/vm/players.json?club_id=' + clubId;
     return this.http.get<Player[]>(path);

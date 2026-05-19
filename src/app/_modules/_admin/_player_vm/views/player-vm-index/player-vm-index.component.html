@@ -10,6 +10,14 @@
     {{ actionError }}
   </div>
 
+  <p class="text-sm text-fb-gray-500 mb-6 max-w-2xl">
+    Spieler*innen, die aktuell nicht mehr aktiv am Spielbetrieb teilnehmen
+    können deaktiviert werden. Deaktivierte Spieler*innen tauchen im Dropdown
+    für die Lizenzbeantragung nicht mehr auf und sorgen für mehr
+    Übersichtlichkeit in der Vereinsübersicht. Spieler*innen können zu späteren
+    Zeitpunkten wieder aktiviert werden.
+  </p>
+
   <ng-container *ngFor="let list of clubLists">
     <h2 class="text-lg font-bold mb-3" *ngIf="clubLists.length > 1">
       {{ list.club.name }}

@@ -184,6 +184,15 @@ export class LeagueService {
     return this.http.patch<League>(path, { league: data });
   }
 
+  public copyPreroundLicenses(leagueId: number) {
+    const path =
+      environment.apiURL +
+      'admin/leagues/' +
+      leagueId +
+      '/copy_preround_licenses.json';
+    return this.http.post<{ copied: number }>(path, {});
+  }
+
   public getAdminLeagueClasses() {
     const path = environment.apiURL + 'admin/league_classes.json';
     return this.http.get<LeagueClass[]>(path);

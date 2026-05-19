@@ -32,7 +32,8 @@ export class ErrorInterceptor implements HttpInterceptor {
 
         if (err.status === 403) {
           this._notificationService.error(
-            'Berechtigungsfehler:' + err.error.message,
+            'Berechtigungsfehler: ' +
+              (err.error?.message || err.error?.error || 'Kein Zugriff'),
             {
               autoClose: false,
               keepAfterRouteChange: true,
@@ -44,7 +45,10 @@ export class ErrorInterceptor implements HttpInterceptor {
         if (err.status === 404 && !request.url.includes('/user/referees/')) {
           console.error(err);
           this._notificationService.error(
-            'Nicht gefunden:' + err.error.message,
+            'Nicht gefunden: ' +
+              (err.error?.message ||
+                err.error?.error ||
+                'Ressource nicht gefunden'),
             {
               autoClose: false,
               keepAfterRouteChange: true,
@@ -66,7 +70,7 @@ export class ErrorInterceptor implements HttpInterceptor {
           );
         }
 
-        const error = err.error?.message || err.statusText;
+        const error = err.error?.message || err.error?.error || err.statusText;
         return throwError(() => error);
       })
     );

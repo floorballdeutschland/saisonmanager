@@ -27,6 +27,7 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
   loading = false;
   saving = false;
   publishing = false;
+  savingAndPublishing = false;
 
   gameId: number | null = null;
   selectedReferee1Id: number | null = null;
@@ -237,6 +238,66 @@ export class AssignmentEditComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.saving = false;
+        this._cdr.markForCheck();
+        const msg = err?.error?.errors?.[0] || 'Fehler beim Speichern.';
+        this._notificationService.error(msg, {
+          autoClose: false,
+          keepAfterRouteChange: false,
+        });
+      },
+    });
+  }
+
+  saveAndPublish(): void {
+    if (!this.gameId) return;
+    this.savingAndPublishing = true;
+    const data = {
+      game_id: this.gameId,
+      referee1_id: this.selectedReferee1Id,
+      referee2_id: this.selectedReferee2Id,
+    };
+
+    const call = this.assignment
+      ? this._refereeService.adminUpdateAssignment(this.assignment.id, data)
+      : this._refereeService.adminCreateAssignment(data);
+
+    call.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (saved) => {
+        this.assignment = saved;
+        if (saved.status !== 'published') {
+          this._refereeService
+            .adminPublishAssignment(saved.id)
+            .pipe(takeUntil(this._destroy$))
+            .subscribe({
+              next: (published) => {
+                this.assignment = published;
+                this.savingAndPublishing = false;
+                this._cdr.markForCheck();
+                this._notificationService.success(
+                  'Ansetzung gespeichert und veröffentlicht.',
+                  { autoClose: true, keepAfterRouteChange: false }
+                );
+              },
+              error: () => {
+                this.savingAndPublishing = false;
+                this._cdr.markForCheck();
+                this._notificationService.error(
+                  'Gespeichert, aber Fehler beim Veröffentlichen.',
+                  { autoClose: false, keepAfterRouteChange: false }
+                );
+              },
+            });
+        } else {
+          this.savingAndPublishing = false;
+          this._cdr.markForCheck();
+          this._notificationService.success('Ansetzung gespeichert.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+        }
+      },
+      error: (err) => {
+        this.savingAndPublishing = false;
         this._cdr.markForCheck();
         const msg = err?.error?.errors?.[0] || 'Fehler beim Speichern.';
         this._notificationService.error(msg, {

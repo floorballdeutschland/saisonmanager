@@ -73,6 +73,10 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           .reduce((acc, goId) => acc || goId === 1, false);
         this.isBuliPermitted = iBP; // hack to trick the compiler ;-)
 
+        this.allLeagues = this.permittedGameOperations.flatMap(
+          (go) => go.leagues ?? []
+        );
+
         this._route.params.subscribe((params) => {
           if (params['leagueId']) {
             this.getLeague(params['leagueId']);

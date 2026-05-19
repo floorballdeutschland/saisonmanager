@@ -96,6 +96,13 @@ export class RefereeService {
     return this.http.delete(environment.apiURL + 'admin/referees/' + id);
   }
 
+  public adminMerge(masterId: number, secondaryId: number) {
+    return this.http.post<{ message: string; master_id: number }>(
+      environment.apiURL + 'admin/referees/' + masterId + '/merge',
+      { secondary_id: secondaryId }
+    );
+  }
+
   public adminGetGames(id: number, seasonId?: number) {
     const query = seasonId ? `?season_id=${seasonId}` : '';
     return this.http.get<RefereeAdminGame[]>(
@@ -107,6 +114,12 @@ export class RefereeService {
     return this.http.post<{ url: string }>(
       environment.apiURL + 'admin/referees/' + id + '/wallet_pass',
       {}
+    );
+  }
+
+  public adminGetNextLizenznummer() {
+    return this.http.get<{ next_lizenznummer: number }>(
+      environment.apiURL + 'admin/referees/next_lizenznummer'
     );
   }
 

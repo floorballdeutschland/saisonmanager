@@ -198,11 +198,11 @@
           'md:grid-cols-[1fr,repeat(9,40px)] xl:grid-cols-[1fr,repeat(9,60px)]':
             type === 'default',
           'md:grid-cols-[1fr,repeat(4,60px)]': type === 'medium',
-          'md:grid-cols-[1fr,repeat(2,60px)]': type === 'small'
+          'md:grid-cols-[1fr,repeat(3,60px)]': type === 'small'
         }"
         *cdkHeaderRowDef="
           type === 'small'
-            ? ['table.team', 'table.games', 'table.points']
+            ? ['table.team', 'table.games', 'table.goalsDiff', 'table.points']
             : type === 'medium'
             ? [
                 'table.team',
@@ -231,14 +231,14 @@
           'md:grid-cols-[1fr,repeat(9,40px)] xl:grid-cols-[1fr,repeat(9,60px)]':
             type === 'default',
           'md:grid-cols-[1fr,repeat(4,60px)]': type === 'medium',
-          'md:grid-cols-[1fr,repeat(2,60px)]': type === 'small'
+          'md:grid-cols-[1fr,repeat(3,60px)]': type === 'small'
         }"
         [id]="row.uuid"
         *cdkRowDef="
           let row;
           let i = index;
           columns: type === 'small'
-            ? ['table.team', 'table.games', 'table.points']
+            ? ['table.team', 'table.games', 'table.goalsDiff', 'table.points']
             : type === 'medium'
             ? [
                 'table.team',
