@@ -161,6 +161,10 @@
                 <ng-container *ngIf="!can('player_create_update')">
                   {{ player.email || "–" }}
                 </ng-container>
+                <p class="text-sm text-gray-500 mt-1">
+                  Optional. Wird für Benachrichtigungen zu Lizenzerteilung,
+                  Transferstatus und mehr verwendet.
+                </p>
               </div>
             </div>
           </div>
