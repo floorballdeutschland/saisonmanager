@@ -355,6 +355,37 @@
             </div>
           </div>
 
+          <!-- Direktbegegnungen -->
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              Direktbegegnungen
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="font-bold">Direktbegegnungen übernehmen</div>
+              <div>
+                <select
+                  class="w-full"
+                  name="league_id_direct_encounters"
+                  [(ngModel)]="league.league_id_direct_encounters"
+                >
+                  <option [ngValue]="null">— keine —</option>
+                  <option
+                    *ngFor="let l of allLeagues"
+                    [ngValue]="l.id"
+                    [disabled]="l.id === league.id"
+                  >
+                    {{ l.name }}
+                  </option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                  Liga, aus der Ergebnisse direkter Begegnungen in diese Tabelle
+                  übernommen werden.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <!-- Dokumente für Lizenzantrag -->
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">

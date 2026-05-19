@@ -65,6 +65,7 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
       next: (result) => {
         // this is the case, when we have enough permissions
         this.permittedGameOperations = result;
+        this.allLeagues = result.flatMap((go) => go.leagues ?? []);
 
         // only if we have FD permission we should be able to create/change a Buli
         const iBP = this.permittedGameOperations

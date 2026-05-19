@@ -42,6 +42,7 @@ export class TeamRankingTableComponent implements OnChanges, AfterViewInit {
   dataSource = new TeamRankingTableDatasoure();
 
   point_corrections: TablePointCorrections[] = [];
+  has_direct_encounter_games = false;
 
   overlayComponentRef?: ComponentRef<TeamRankingTableOverlayComponent>;
 
@@ -86,6 +87,9 @@ export class TeamRankingTableComponent implements OnChanges, AfterViewInit {
       this.dataSource.data.next(changes['data'].currentValue);
 
       this.setCorrections(changes['data']?.currentValue);
+      this.has_direct_encounter_games = changes['data'].currentValue.some(
+        (e: TableEntry) => e.has_direct_encounter_games
+      );
     }
   }
 

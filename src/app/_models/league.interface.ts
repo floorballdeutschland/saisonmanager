@@ -25,6 +25,7 @@ export interface League {
   has_preround: boolean;
   preround_point_modus?: string;
   preround_scorer_modus?: string;
+  league_id_direct_encounters?: number;
 
   deadline?: string;
   before_deadline?: boolean;

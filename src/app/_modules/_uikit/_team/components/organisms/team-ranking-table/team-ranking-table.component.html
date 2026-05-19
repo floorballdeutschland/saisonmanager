@@ -57,7 +57,13 @@
 
             <div class="pl-2.5">
               {{ element.team_name }}
-              <span *ngIf="element.point_corrections">*</span>
+              <span
+                *ngIf="
+                  element.point_corrections ||
+                  element.has_direct_encounter_games
+                "
+                >*</span
+              >
             </div>
           </div>
 
@@ -294,4 +300,7 @@
   <p *ngFor="let c of point_corrections">
     {{ c.team_name }}: {{ c.points }} Punkte ({{ c.reason }})
   </p>
+</div>
+<div *ngIf="has_direct_encounter_games" class="text-xs text-gray-500 mt-2">
+  * Direktbegegnungen aus der Hinrunde eingerechnet.
 </div>
