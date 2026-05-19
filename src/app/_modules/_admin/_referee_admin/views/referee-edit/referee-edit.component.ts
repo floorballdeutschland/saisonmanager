@@ -108,6 +108,9 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this._destroy$))
         .subscribe({
           next: (res) => {
+            // Nur vorbefüllen, wenn der Nutzer noch nichts eingegeben hat
+            // (Antwort kann nach manueller Eingabe eintreffen).
+            if (this.referee.lizenznummer) return;
             this.referee = {
               ...this.referee,
               lizenznummer: res.next_lizenznummer,
