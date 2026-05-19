@@ -102,6 +102,23 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
       });
 
     const param: string = this._route.snapshot.params['lizenznummer'];
+    if (!param) {
+      this._refereeService
+        .adminGetNextLizenznummer()
+        .pipe(takeUntil(this._destroy$))
+        .subscribe({
+          next: (res) => {
+            // Nur vorbefüllen, wenn der Nutzer noch nichts eingegeben hat
+            // (Antwort kann nach manueller Eingabe eintreffen).
+            if (this.referee.lizenznummer) return;
+            this.referee = {
+              ...this.referee,
+              lizenznummer: res.next_lizenznummer,
+            };
+            this._cdr.markForCheck();
+          },
+        });
+    }
     if (param) {
       this.editMode = true;
       this.loading = true;
