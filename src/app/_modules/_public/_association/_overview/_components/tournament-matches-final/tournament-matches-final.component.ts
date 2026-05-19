@@ -137,7 +137,8 @@ export class TournamentMatchesFinalComponent implements OnInit {
     }>(
       (acc, game, index, array) => {
         const title = (game.series_title || '').trim();
-        if (index === 0 || title === array[index - 1].series_title) {
+        const prevTitle = (array[index - 1]?.series_title || '').trim();
+        if (index === 0 || title === prevTitle) {
           if (!acc.current) acc.current = { round_title: title, matches: [] };
           acc.current.matches.push(game);
         } else {
@@ -196,8 +197,11 @@ export class TournamentMatchesFinalComponent implements OnInit {
 
   isWinner(game: GameScheduleEntry, side: 'home' | 'guest'): boolean {
     if (!game.result || !game.ended) return false;
-    const homeWins = game.result.home_goals > game.result.guest_goals;
-    return side === 'home' ? homeWins : !homeWins;
+    const { home_goals, guest_goals } = game.result;
+    if (home_goals === guest_goals) return false;
+    return side === 'home'
+      ? home_goals > guest_goals
+      : guest_goals > home_goals;
   }
 
   connectorPairs(roundIdx: number): GameScheduleEntry[] {
