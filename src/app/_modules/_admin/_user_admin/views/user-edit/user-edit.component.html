@@ -156,7 +156,7 @@
       <p class="text-sm text-fb-gray-500 mb-3">
         Welchem Verein dieser Benutzer zugeordnet ist.
       </p>
-      <ng-container *ngIf="isVm; else clubDropdown">
+      <ng-container *ngIf="isVm || currentRoleId === 4; else clubDropdown">
         <span class="text-sm">{{ selectedClubName }}</span>
       </ng-container>
       <ng-template #clubDropdown>
