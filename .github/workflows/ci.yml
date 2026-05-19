@@ -25,7 +25,14 @@ jobs:
         run: npx ng lint
 
       - name: Test
-        run: npx ng test --no-watch --no-progress --browsers=ChromeHeadlessCI
+        run: npx ng test --no-watch --no-progress --browsers=ChromeHeadlessCI --code-coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 14
 
       - name: Build
         run: npm run build
