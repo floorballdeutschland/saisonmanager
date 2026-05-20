@@ -8,11 +8,13 @@ import {
 import {
   ClubService,
   NotificationService,
+  PlayerChangeRequestService,
   PlayerService,
   SessionService,
 } from '@floorball/core';
 import {
   Club,
+  CorrectionType,
   GenderKey,
   Nation,
   Player,
@@ -40,6 +42,10 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   editMode = true;
   confirmDeactivate = false;
 
+  changeRequestType: CorrectionType | '' = '';
+  changeRequestValue = '';
+  changeRequestSent = false;
+
   private _destroy$ = new Subject<boolean>();
 
   constructor(
@@ -50,6 +56,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     private _clubService: ClubService,
     private _router: Router,
     private _notificationService: NotificationService,
+    private _changeRequestService: PlayerChangeRequestService,
     private _metaTitle: Title
   ) {
     this._metaTitle.setTitle('Floorball Saisonmanager Spielerverwaltung');
@@ -404,5 +411,38 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           },
         });
     }
+  }
+
+  public onChangeRequestTypeChange(): void {
+    this.changeRequestValue = '';
+  }
+
+  public submitChangeRequest(player: Player): void {
+    if (!this.changeRequestType || !this.club_id || !player.id) return;
+
+    const value =
+      this.changeRequestType === 'names_swapped'
+        ? undefined
+        : this.changeRequestValue;
+
+    this._changeRequestService
+      .create(player.id, +this.club_id, this.changeRequestType, value)
+      .subscribe({
+        next: () => {
+          this.changeRequestSent = true;
+          this.changeRequestType = '';
+          this.changeRequestValue = '';
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this._notificationService.error(
+            'Antrag konnte nicht eingereicht werden.',
+            {
+              autoClose: true,
+              keepAfterRouteChange: false,
+            }
+          );
+        },
+      });
   }
 }

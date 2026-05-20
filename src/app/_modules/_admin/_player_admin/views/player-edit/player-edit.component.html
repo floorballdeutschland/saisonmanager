@@ -161,6 +161,10 @@
                 <ng-container *ngIf="!can('player_create_update')">
                   {{ player.email || "–" }}
                 </ng-container>
+                <p class="text-sm text-gray-500 mt-1">
+                  Optional. Wird für Benachrichtigungen zu Lizenzerteilung,
+                  Transferstatus und mehr verwendet.
+                </p>
               </div>
             </div>
           </div>
@@ -183,6 +187,97 @@
                 >
                   Änderungen speichern
                 </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Korrekturantrag für VM -->
+          <div
+            class="bg-white my-[5px] py-[15px] px-[30px]"
+            *ngIf="editMode && can('create_player_change_request')"
+          >
+            <h2 class="text-lg font-bold mb-4">Korrektur beantragen</h2>
+            <p class="text-sm text-gray-500 mb-4">
+              Wenn ein Stammdatum des Spielers falsch erfasst wurde, können Sie
+              hier eine Korrektur beantragen. Die zuständige SBK prüft und
+              genehmigt die Änderung.
+            </p>
+
+            <div *ngIf="changeRequestSent" class="text-green-600 text-sm mb-4">
+              Ihr Korrekturantrag wurde eingereicht.
+            </div>
+
+            <div
+              *ngIf="!changeRequestSent"
+              class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end"
+            >
+              <div>
+                <label class="block text-sm font-bold mb-1"
+                  >Zu korrigierendes Feld</label
+                >
+                <select
+                  [(ngModel)]="changeRequestType"
+                  class="w-full"
+                  (change)="onChangeRequestTypeChange()"
+                >
+                  <option value="">Bitte auswählen…</option>
+                  <option value="first_name">Vorname</option>
+                  <option value="last_name">Nachname</option>
+                  <option value="names_swapped">
+                    Vor-/Nachname vertauscht
+                  </option>
+                  <option value="birthdate">Geburtsdatum</option>
+                  <option value="nationality">Nationalität</option>
+                </select>
+              </div>
+
+              <div
+                *ngIf="
+                  changeRequestType && changeRequestType !== 'names_swapped'
+                "
+              >
+                <label class="block text-sm font-bold mb-1"
+                  >Korrekter Wert</label
+                >
+                <input
+                  *ngIf="changeRequestType === 'birthdate'"
+                  [(ngModel)]="changeRequestValue"
+                  type="date"
+                  class="w-full"
+                />
+                <select
+                  *ngIf="changeRequestType === 'nationality'"
+                  [(ngModel)]="changeRequestValue"
+                  class="w-full"
+                >
+                  <option value="">Bitte auswählen…</option>
+                  <option *ngFor="let nation of nations" [value]="nation.id">
+                    {{ nation.name }}
+                  </option>
+                </select>
+                <input
+                  *ngIf="
+                    changeRequestType === 'first_name' ||
+                    changeRequestType === 'last_name'
+                  "
+                  [(ngModel)]="changeRequestValue"
+                  type="text"
+                  class="w-full"
+                  placeholder="Korrekter Name"
+                />
+              </div>
+
+              <div>
+                <fb-button
+                  [disabled]="
+                    !changeRequestType ||
+                    (changeRequestType !== 'names_swapped' &&
+                      !changeRequestValue)
+                  "
+                  (click)="submitChangeRequest(player)"
+                >
+                  Antrag einreichen
+                </fb-button>
               </div>
             </div>
           </div>

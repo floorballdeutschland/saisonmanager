@@ -18,6 +18,7 @@ export * from './arena.service';
 export * from './version.service';
 export * from './state-association.service';
 export * from './api-key.service';
+export * from './player-change-request.service';
 export * from './transfer-request.service';
 export * from './user-management.service';
 export * from './settings.service';
