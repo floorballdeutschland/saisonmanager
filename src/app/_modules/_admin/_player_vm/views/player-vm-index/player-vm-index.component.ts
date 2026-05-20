@@ -27,6 +27,8 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   loading = false;
   actionError: string | null = null;
   confirmDeactivateId: number | null = null;
+  deactivateReason = '';
+  deactivateReasonOther = '';
 
   private _destroy$ = new Subject<void>();
 
@@ -100,20 +102,28 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
 
   startDeactivate(player: Player): void {
     this.confirmDeactivateId = player.id;
+    this.deactivateReason = '';
+    this.deactivateReasonOther = '';
     this.actionError = null;
     this._cdr.markForCheck();
   }
 
   cancelDeactivate(): void {
     this.confirmDeactivateId = null;
+    this.deactivateReason = '';
+    this.deactivateReasonOther = '';
     this._cdr.markForCheck();
   }
 
   deactivate(list: ClubPlayerList, player: Player): void {
     this.confirmDeactivateId = null;
     this.actionError = null;
+    const reason =
+      this.deactivateReason === 'Sonstiges'
+        ? `Sonstiges: ${this.deactivateReasonOther}`
+        : this.deactivateReason;
     this._playerService
-      .deactivatePlayer(player.id)
+      .deactivatePlayer(player.id, reason)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (updated) => {

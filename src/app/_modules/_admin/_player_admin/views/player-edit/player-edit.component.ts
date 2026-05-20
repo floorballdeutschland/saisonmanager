@@ -41,6 +41,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   editMode = true;
   confirmDeactivate = false;
+  deactivateReason = '';
+  deactivateReasonOther = '';
 
   changeRequestType: CorrectionType | '' = '';
   changeRequestValue = '';
@@ -361,10 +363,16 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   public deactivatePlayer(): void {
     if (!this.player) return;
-    this._playerService.deactivatePlayer(this.player.id).subscribe({
+    const reason =
+      this.deactivateReason === 'Sonstiges'
+        ? `Sonstiges: ${this.deactivateReasonOther}`
+        : this.deactivateReason;
+    this._playerService.deactivatePlayer(this.player.id, reason).subscribe({
       next: (updated) => {
         this.player = updated;
         this.confirmDeactivate = false;
+        this.deactivateReason = '';
+        this.deactivateReasonOther = '';
         this._notificationService.success('Spieler wurde deaktiviert.', {
           autoClose: true,
           keepAfterRouteChange: false,
@@ -379,6 +387,26 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         this.confirmDeactivate = false;
       },
     });
+  }
+
+  public saveEmail(): void {
+    if (!this.player?.id) return;
+    this._playerService
+      .updatePlayerEmail(this.player.id, this.player.email ?? null)
+      .subscribe({
+        next: () => {
+          this._notificationService.success('E-Mail gespeichert.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+        },
+        error: () => {
+          this._notificationService.error('Fehler beim Speichern der E-Mail.', {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          });
+        },
+      });
   }
 
   public setLicenseToTransfer(license: PlayerLicense) {

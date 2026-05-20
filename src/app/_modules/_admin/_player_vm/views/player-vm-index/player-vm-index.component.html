@@ -103,20 +103,44 @@
               </fb-button>
               <div
                 *ngIf="confirmDeactivateId === player.id"
-                class="inline-flex items-center gap-2"
+                class="flex flex-col gap-2 items-start"
               >
                 <span class="text-xs text-red-700 font-medium"
-                  >Wirklich deaktivieren?</span
+                  >Wirklich deaktivieren? Bitte Grund angeben:</span
                 >
-                <fb-button
-                  size="small"
-                  variant="error"
-                  (click)="deactivate(list, player)"
-                  >Ja</fb-button
+                <select
+                  [(ngModel)]="deactivateReason"
+                  class="border border-red-300 rounded-[5px] px-2 py-1 text-xs bg-white"
                 >
-                <fb-button size="small" (click)="cancelDeactivate()"
-                  >Abbrechen</fb-button
-                >
+                  <option value="">Grund wählen…</option>
+                  <option value="Vereinsaustritt">Vereinsaustritt</option>
+                  <option value="Karriereende">Karriereende</option>
+                  <option value="Temporäre Pause">Temporäre Pause</option>
+                  <option value="Sonstiges">Sonstiges</option>
+                </select>
+                <input
+                  *ngIf="deactivateReason === 'Sonstiges'"
+                  [(ngModel)]="deactivateReasonOther"
+                  type="text"
+                  placeholder="Kurze Begründung…"
+                  class="border border-red-300 rounded-[5px] px-2 py-1 text-xs w-48"
+                />
+                <div class="flex gap-2">
+                  <fb-button
+                    size="small"
+                    variant="error"
+                    [disabled]="
+                      !deactivateReason ||
+                      (deactivateReason === 'Sonstiges' &&
+                        !deactivateReasonOther)
+                    "
+                    (click)="deactivate(list, player)"
+                    >Ja, deaktivieren</fb-button
+                  >
+                  <fb-button size="small" (click)="cancelDeactivate()"
+                    >Abbrechen</fb-button
+                  >
+                </div>
               </div>
             </ng-container>
             <fb-button
