@@ -71,10 +71,7 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
   }
 
   canApproveReject(): boolean {
-    return (
-      this.permissions['menu_item_player_change_requests'] === true &&
-      !this.permissions['create_player_change_request']
-    );
+    return this.permissions['approve_player_change_request'] === true;
   }
 
   approve(request: PlayerChangeRequest): void {
@@ -82,6 +79,13 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
       next: (updated) => {
         this.replaceRequest(updated);
         this._notificationService.success('Korrektur übernommen', {
+          autoClose: true,
+          keepAfterRouteChange: false,
+        });
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this._notificationService.error('Genehmigung fehlgeschlagen.', {
           autoClose: true,
           keepAfterRouteChange: false,
         });
@@ -110,6 +114,13 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
         this.rejectingId = null;
         this.rejectionReason = '';
         this._notificationService.success('Antrag abgelehnt', {
+          autoClose: true,
+          keepAfterRouteChange: false,
+        });
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this._notificationService.error('Ablehnung fehlgeschlagen.', {
           autoClose: true,
           keepAfterRouteChange: false,
         });
