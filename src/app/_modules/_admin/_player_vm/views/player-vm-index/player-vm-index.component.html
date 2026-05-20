@@ -56,7 +56,19 @@
           [class.opacity-50]="!!player.deactivated_at"
         >
           <td class="py-2 pr-4 font-medium">
-            {{ player.last_name }}, {{ player.first_name }}
+            <a
+              class="hover:underline"
+              [routerLink]="[
+                '/',
+                'verwaltung',
+                'vereine',
+                list.club.id,
+                'spieler',
+                player.id,
+                'bearbeiten'
+              ]"
+              >{{ player.last_name }}, {{ player.first_name }}</a
+            >
           </td>
           <td class="py-2 pr-4 text-fb-gray-500">
             {{ player.birthdate | date : "dd.MM.yyyy" }}
