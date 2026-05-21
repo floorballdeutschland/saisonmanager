@@ -21,6 +21,7 @@ import {
   PlayerLicense,
 } from '@floorball/models';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PLAYER_GENDERS } from '@floorball/types';
@@ -361,38 +362,47 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     );
   }
 
+  public cancelDeactivate(): void {
+    this.confirmDeactivate = false;
+    this.deactivateReason = '';
+    this.deactivateReasonOther = '';
+  }
+
   public deactivatePlayer(): void {
     if (!this.player) return;
     const reason =
       this.deactivateReason === 'Sonstiges'
         ? `Sonstiges: ${this.deactivateReasonOther}`
         : this.deactivateReason;
-    this._playerService.deactivatePlayer(this.player.id, reason).subscribe({
-      next: (updated) => {
-        this.player = updated;
-        this.confirmDeactivate = false;
-        this.deactivateReason = '';
-        this.deactivateReasonOther = '';
-        this._notificationService.success('Spieler wurde deaktiviert.', {
-          autoClose: true,
-          keepAfterRouteChange: false,
-        });
-        this._cdr.markForCheck();
-      },
-      error: (error) => {
-        this._notificationService.error(error, {
-          autoClose: false,
-          keepAfterRouteChange: false,
-        });
-        this.confirmDeactivate = false;
-      },
-    });
+    this._playerService
+      .deactivatePlayer(this.player.id, reason)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.player = updated;
+          this.cancelDeactivate();
+          this._notificationService.success('Spieler wurde deaktiviert.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this._notificationService.error(
+            err?.error?.message ?? 'Deaktivierung fehlgeschlagen.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
+          this.cancelDeactivate();
+          this._cdr.markForCheck();
+        },
+      });
   }
 
   public saveEmail(): void {
     if (!this.player?.id) return;
     this._playerService
       .updatePlayerEmail(this.player.id, this.player.email ?? null)
+      .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {
           this._notificationService.success('E-Mail gespeichert.', {
@@ -400,11 +410,11 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             keepAfterRouteChange: false,
           });
         },
-        error: () => {
-          this._notificationService.error('Fehler beim Speichern der E-Mail.', {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
+        error: (err) => {
+          this._notificationService.error(
+            err?.error?.message ?? 'Fehler beim Speichern der E-Mail.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
         },
       });
   }

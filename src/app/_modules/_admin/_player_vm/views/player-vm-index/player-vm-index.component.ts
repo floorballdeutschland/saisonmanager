@@ -135,6 +135,8 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.actionError =
             err?.error?.message ?? 'Deaktivierung fehlgeschlagen.';
+          this.deactivateReason = '';
+          this.deactivateReasonOther = '';
           this._cdr.markForCheck();
         },
       });
