@@ -399,7 +399,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   public saveEmail(): void {
-    if (!this.player?.id) return;
+    if (!this.player?.id || !this.player?.email) return;
     this._playerService
       .updatePlayerEmail(this.player.id, this.player.email ?? null)
       .pipe(takeUntil(this._destroy$))
