@@ -118,10 +118,17 @@ export class PlayerService {
     });
   }
 
-  public deactivatePlayer(playerId: number) {
+  public deactivatePlayer(playerId: number, reason?: string) {
     const path =
       environment.apiURL + 'admin/players/' + playerId + '/deactivate.json';
-    return this.http.post<Player>(path, {});
+    return this.http.post<Player>(path, { reason: reason ?? null });
+  }
+
+  public updatePlayerEmail(playerId: number, email: string | null) {
+    const path = environment.apiURL + 'admin/vm/players/' + playerId + '/email';
+    return this.http.patch<{ id: number; email: string | null }>(path, {
+      email,
+    });
   }
 
   public reactivatePlayer(playerId: number) {

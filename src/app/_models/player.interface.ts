@@ -19,6 +19,7 @@ export interface Player {
   licenses?: PlayerLicense[];
   security_id?: string;
   deactivated_at?: string;
+  deactivation_reason?: string;
 }
 
 export interface PlayerWithLicense extends Player {
