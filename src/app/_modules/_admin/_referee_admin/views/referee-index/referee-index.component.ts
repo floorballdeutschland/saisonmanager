@@ -30,6 +30,8 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
   filterLandesverband = '';
   filterLizenzstufe = '';
   filterActive = false;
+  sortBy: 'name' | 'lizenznummer' = 'name';
+  sortDir: 'asc' | 'desc' = 'asc';
 
   private _destroy$ = new Subject<void>();
 
@@ -67,6 +69,16 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  toggleSort(col: 'name' | 'lizenznummer'): void {
+    if (this.sortBy === col) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = col;
+      this.sortDir = 'asc';
+    }
+    this.load();
+  }
+
   load(): void {
     this.loading = true;
     this._refereeService
@@ -75,6 +87,8 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
         landesverband: this.filterLandesverband || undefined,
         lizenzstufe: this.filterLizenzstufe || undefined,
         active: this.filterActive ? true : undefined,
+        sort: this.sortBy,
+        sort_dir: this.sortDir,
       })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
@@ -99,6 +113,8 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     this.filterLandesverband = '';
     this.filterLizenzstufe = '';
     this.filterActive = false;
+    this.sortBy = 'name';
+    this.sortDir = 'asc';
     this.load();
   }
 }

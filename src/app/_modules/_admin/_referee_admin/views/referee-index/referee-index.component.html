@@ -80,12 +80,38 @@
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b border-fb-gray-700 text-left">
-          <th class="py-2 pr-4 font-bold">Lizenznummer</th>
-          <th class="py-2 pr-4 font-bold">Name</th>
+          <th class="py-2 pr-4 font-bold">
+            <button
+              (click)="toggleSort('lizenznummer')"
+              class="flex items-center gap-1 hover:text-fb-gray-400"
+            >
+              Lizenznummer
+              <span class="text-xs">
+                <ng-container *ngIf="sortBy === 'lizenznummer'">{{
+                  sortDir === "asc" ? "↑" : "↓"
+                }}</ng-container>
+                <ng-container *ngIf="sortBy !== 'lizenznummer'">↕</ng-container>
+              </span>
+            </button>
+          </th>
+          <th class="py-2 pr-4 font-bold">
+            <button
+              (click)="toggleSort('name')"
+              class="flex items-center gap-1 hover:text-fb-gray-400"
+            >
+              Name
+              <span class="text-xs">
+                <ng-container *ngIf="sortBy === 'name'">{{
+                  sortDir === "asc" ? "↑" : "↓"
+                }}</ng-container>
+                <ng-container *ngIf="sortBy !== 'name'">↕</ng-container>
+              </span>
+            </button>
+          </th>
           <th class="py-2 pr-4 font-bold">Stufe</th>
           <th class="py-2 pr-4 font-bold">Region / LV</th>
           <th class="py-2 pr-4 font-bold">Gültigkeit</th>
-          <th class="py-2 pr-4 font-bold">Verband</th>
+          <th class="py-2 pr-4 font-bold">Verein</th>
           <th class="py-2"></th>
         </tr>
       </thead>

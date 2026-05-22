@@ -57,6 +57,8 @@ export class RefereeService {
     landesverband?: string;
     lizenzstufe?: string;
     active?: boolean;
+    sort?: 'name' | 'lizenznummer';
+    sort_dir?: 'asc' | 'desc';
   }) {
     let query = '';
     if (params) {
@@ -67,6 +69,8 @@ export class RefereeService {
       if (params.lizenzstufe)
         parts.push(`lizenzstufe=${encodeURIComponent(params.lizenzstufe)}`);
       if (params.active) parts.push('active=true');
+      if (params.sort) parts.push(`sort=${params.sort}`);
+      if (params.sort_dir) parts.push(`sort_dir=${params.sort_dir}`);
       if (parts.length) query = '?' + parts.join('&');
     }
     return this.http.get<RefereeAdmin[]>(
