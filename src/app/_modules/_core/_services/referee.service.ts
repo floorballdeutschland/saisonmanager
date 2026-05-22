@@ -9,6 +9,7 @@ import {
   RefereeAssignmentAvailable,
   RefereeBlockedDate,
   RefereeEntry,
+  RefereeGameDay,
   RefereeProfile,
   RefereePublicLicense,
   RefereeQualificationType,
@@ -268,6 +269,21 @@ export class RefereeService {
 
   public deleteBlockedDate(id: number) {
     return this.http.delete(environment.apiURL + 'referee/blocked_dates/' + id);
+  }
+
+  // Game day confirmations (self-service for logged-in referee)
+
+  public getGameDays() {
+    return this.http.get<RefereeGameDay[]>(
+      environment.apiURL + 'referee/game_days'
+    );
+  }
+
+  public confirmGameDay(gameDayId: number) {
+    return this.http.post<{ confirmed_at: string }>(
+      environment.apiURL + 'referee/game_days/' + gameDayId + '/confirm',
+      {}
+    );
   }
 
   // Public license list (token-based, no auth)

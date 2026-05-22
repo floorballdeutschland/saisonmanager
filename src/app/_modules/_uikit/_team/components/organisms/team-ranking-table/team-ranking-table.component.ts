@@ -75,6 +75,51 @@ export class TeamRankingTableComponent implements OnChanges, AfterViewInit {
     this.overlayComponentRef?.instance.onClose$.next(true);
   }
 
+  readonly qualificationColors: Record<string, string> = {
+    promotion: '#22c55e',
+    playoff: '#60a5fa',
+    playdown: '#f97316',
+    relegation: '#ef4444',
+    championship: '#8b5cf6',
+    cup: '#a855f7',
+  };
+
+  readonly qualificationDefaultLabels: Record<string, string> = {
+    promotion: 'Aufstieg',
+    playoff: 'Playoffs',
+    playdown: 'Playdowns',
+    relegation: 'Abstieg',
+    championship: 'Deutsche Meisterschaft',
+    cup: 'Pokal',
+  };
+
+  get qualificationLegend(): { type: string; label: string; color: string }[] {
+    if (!this.data) return [];
+    const seen = new Set<string>();
+    const legend: { type: string; label: string; color: string }[] = [];
+    for (const row of this.data) {
+      if (row.qualification_type && !seen.has(row.qualification_type)) {
+        seen.add(row.qualification_type);
+        legend.push({
+          type: row.qualification_type,
+          label:
+            row.qualification_label ||
+            this.qualificationDefaultLabels[row.qualification_type] ||
+            row.qualification_type,
+          color: this.qualificationColors[row.qualification_type] || '#6b7280',
+        });
+      }
+    }
+    return legend;
+  }
+
+  getQualificationStyle(row: TableEntry): Record<string, string> {
+    const color = row.qualification_type
+      ? this.qualificationColors[row.qualification_type]
+      : null;
+    return color ? { 'border-left': `4px solid ${color}` } : {};
+  }
+
   public setCorrections(table: TableEntry[]) {
     const corrections = table
       .map((entry) => entry.point_corrections)

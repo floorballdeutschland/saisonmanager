@@ -34,4 +34,6 @@ export interface TableEntry {
   sort: number;
   position: number;
   has_direct_encounter_games?: boolean;
+  qualification_type?: string | null;
+  qualification_label?: string | null;
 }

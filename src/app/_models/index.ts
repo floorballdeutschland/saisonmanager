@@ -71,3 +71,4 @@ export * from './admin-license.interface';
 export * from './user-admin.interface';
 export * from './online-test.interface';
 export * from './license-document.interface';
+export * from './league-qualification.interface';
