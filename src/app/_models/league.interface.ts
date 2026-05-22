@@ -1,4 +1,5 @@
 import { Team } from './team.interface';
+import { LeagueQualification } from './league-qualification.interface';
 
 export interface League {
   id: number;
@@ -40,6 +41,7 @@ export interface League {
   game_day_titles: Array<{ game_day_number: number; title: string }>;
   similar_leagues?: League[];
   required_documents?: string[];
+  qualifications?: LeagueQualification[];
 }
 
 export interface LeagueWithTeams extends League {
