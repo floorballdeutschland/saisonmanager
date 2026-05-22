@@ -123,6 +123,15 @@ export class LicenseAdminDetailComponent implements OnInit {
       });
   }
 
+  public isDocumentsComplete(player: PlayerWithLicense): boolean {
+    const docs = player.team_license?.documents;
+    if (!docs?.id_copy) return false;
+    const isMinor = player.birthdate
+      ? this.calculateAge(player.birthdate) < 18
+      : false;
+    return !isMinor || !!docs.parental_consent;
+  }
+
   public resetLicenseToPending(player: PlayerWithLicense) {
     const licenseId = player.team_license.license.id;
 

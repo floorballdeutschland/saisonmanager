@@ -90,6 +90,33 @@
             >
               deaktiviert {{ player.deactivated_at | date : "dd.MM.yyyy" }}
             </span>
+            <ng-container *ngIf="!player.deactivated_at">
+              <br />
+              <span
+                *ngIf="player.current_license_status_id === 1"
+                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-green-100 text-green-800"
+                >Lizenziert</span
+              >
+              <span
+                *ngIf="player.current_license_status_id === 2"
+                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-yellow-100 text-yellow-800"
+                >Beantragt</span
+              >
+              <span
+                *ngIf="
+                  player.current_license_status_id &&
+                  player.current_license_status_id !== 1 &&
+                  player.current_license_status_id !== 2
+                "
+                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-red-100 text-red-800"
+                >{{ player.current_license_status }}</span
+              >
+              <span
+                *ngIf="!player.current_license_status_id"
+                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
+                >Keine Lizenz</span
+              >
+            </ng-container>
           </td>
           <td class="py-2 text-right">
             <ng-container *ngIf="!player.deactivated_at">
