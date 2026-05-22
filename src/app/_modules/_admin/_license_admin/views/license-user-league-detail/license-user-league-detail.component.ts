@@ -68,30 +68,6 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
     return new Date();
   }
 
-  public getAgeCategory(dateString: string): string {
-    const age = this.calculateAge(dateString);
-
-    if (age < 9) {
-      return 'U9';
-    } else if (age < 11) {
-      return 'U11';
-    } else if (age < 13) {
-      return 'U13';
-    } else if (age < 15) {
-      return 'U15';
-    } else if (age < 17) {
-      return 'U17';
-    } else if (age < 18) {
-      return 'U18';
-    } else if (age > 40) {
-      return 'Ü40';
-    } else if (age > 30) {
-      return 'Ü30';
-    } else {
-      return '';
-    }
-  }
-
   public calculateAge(dateString: string): number {
     if (!this.gamedayDate) {
       return 0;
