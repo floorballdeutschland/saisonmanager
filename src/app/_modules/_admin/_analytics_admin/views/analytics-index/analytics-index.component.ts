@@ -23,6 +23,7 @@ import {
 export class AnalyticsIndexComponent implements OnInit, OnDestroy {
   loading = false;
   data: AnalyticsData | null = null;
+  loadError: string | null = null;
 
   private _destroy$ = new Subject<void>();
 
@@ -42,6 +43,7 @@ export class AnalyticsIndexComponent implements OnInit, OnDestroy {
 
   load(): void {
     this.loading = true;
+    this.loadError = null;
     this._analyticsService
       .getAnalytics()
       .pipe(takeUntil(this._destroy$))
@@ -51,7 +53,9 @@ export class AnalyticsIndexComponent implements OnInit, OnDestroy {
           this.loading = false;
           this._cdr.markForCheck();
         },
-        error: () => {
+        error: (err) => {
+          console.error('[AnalyticsIndexComponent] Laden fehlgeschlagen', err);
+          this.loadError = 'Zugriffszahlen konnten nicht geladen werden.';
           this.loading = false;
           this._cdr.markForCheck();
         },
@@ -59,14 +63,15 @@ export class AnalyticsIndexComponent implements OnInit, OnDestroy {
   }
 
   get total30Days(): number {
-    return this.data?.last_30_days.reduce((s, d) => s + d.count, 0) ?? 0;
+    return (this.data?.last_30_days ?? []).reduce((s, d) => s + d.count, 0);
   }
 
   get currentMonthTotal(): number {
     if (!this.data) return 0;
+    // Use UTC month to match the API's DATE_TRUNC output
     const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${String(
-      now.getMonth() + 1
+    const currentMonth = `${now.getUTCFullYear()}-${String(
+      now.getUTCMonth() + 1
     ).padStart(2, '0')}`;
     return (
       this.data.last_year.find((m) => m.month === currentMonth)?.count ?? 0
@@ -74,7 +79,7 @@ export class AnalyticsIndexComponent implements OnInit, OnDestroy {
   }
 
   get totalYear(): number {
-    return this.data?.last_year.reduce((s, m) => s + m.count, 0) ?? 0;
+    return (this.data?.last_year ?? []).reduce((s, m) => s + m.count, 0);
   }
 
   get maxDaily(): number {
@@ -96,8 +101,9 @@ export class AnalyticsIndexComponent implements OnInit, OnDestroy {
   }
 
   formatDay(dateStr: string): string {
-    const d = new Date(dateStr);
-    return `${d.getDate()}.${d.getMonth() + 1}.`;
+    // Append T00:00:00Z to force UTC parsing and avoid off-by-one in CET/CEST evenings
+    const d = new Date(dateStr + 'T00:00:00Z');
+    return `${d.getUTCDate()}.${d.getUTCMonth() + 1}.`;
   }
 
   formatMonth(monthStr: string): string {

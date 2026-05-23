@@ -87,7 +87,14 @@
   </ng-container>
 
   <div
-    *ngIf="!loading && !data"
+    *ngIf="!loading && loadError"
+    class="text-red-600 text-sm py-8 text-center"
+  >
+    {{ loadError }} Bitte Seite neu laden.
+  </div>
+
+  <div
+    *ngIf="!loading && !loadError && !data"
     class="text-fb-gray-500 text-sm py-8 text-center"
   >
     Keine Daten verfügbar.
