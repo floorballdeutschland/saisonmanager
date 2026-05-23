@@ -134,8 +134,8 @@
                             <a
                               class="hidden shrink-0 mr-2 px-2 border border-fb-gray-600 rounded-xl sm:flex sm:items-center hover:cursor-pointer hover:bg-fb-gray-200"
                               *ngIf="
-                                p.current_status.license_status_id === 3 ||
-                                p.current_status.license_status_id === 8
+                                p.current_status?.license_status_id === 3 ||
+                                p.current_status?.license_status_id === 8
                               "
                               (click)="
                                 recreateLicenseRequest(p.id, p.team_license.id)
@@ -165,14 +165,14 @@
                               <p
                                 class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-green-800 text-[13px]"
                                 [ngClass]="
-                                  p.current_status.license_status_id === 3
+                                  p.current_status?.license_status_id === 3
                                     ? 'bg-red-100 text-red-800'
-                                    : p.current_status.license_status_id === 1
+                                    : p.current_status?.license_status_id === 1
                                     ? 'bg-green-100 text-green-800'
                                     : 'bg-gray-100 text-gray-800'
                                 "
                               >
-                                {{ p.current_status.license_status }}
+                                {{ p.current_status?.license_status }}
                               </p>
                               <span
                                 *ngIf="p.team_license.express"
@@ -212,10 +212,10 @@
                             class="mt-2 flex items-start text-sm text-gray-500 sm:mt-0"
                           >
                             <p class="md:text-right">
-                              {{ p.current_status.created_by_name }}
+                              {{ p.current_status?.created_by_name }}
                               <br />
                               {{
-                                p.current_status.created_at
+                                p.current_status?.created_at
                                   | date : "dd.MM.yyyy HH:mm"
                               }}
                             </p>
