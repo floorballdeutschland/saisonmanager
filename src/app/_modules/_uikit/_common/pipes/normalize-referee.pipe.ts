@@ -29,8 +29,8 @@ export class NormalizeRefereePipe implements PipeTransform {
     const names = raw
       .split(' / ')
       .map((seg) => {
-        const match = seg.trim().match(/^\d+\s+(.+),\s+(.+)$/);
-        return match ? `${match[2]} ${match[1]}` : seg.trim();
+        const match = seg.trim().match(/^\d+\s+([^,]+),\s*(.+)$/);
+        return match ? `${match[2].trim()} ${match[1].trim()}` : seg.trim();
       })
       .filter(Boolean);
     return names.length > 0 ? names.join(' / ') : null;
