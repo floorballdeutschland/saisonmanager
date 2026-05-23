@@ -1,0 +1,48 @@
+.analytics-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 160px;
+  padding-bottom: 28px;
+  position: relative;
+
+  &--monthly {
+    gap: 8px;
+  }
+}
+
+.analytics-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+}
+
+.analytics-bar {
+  width: 100%;
+  background: #1a1a1a;
+  min-height: 2px;
+  transition: height 0.3s ease;
+  border-radius: 2px 2px 0 0;
+}
+
+.analytics-bar-label {
+  position: absolute;
+  bottom: -24px;
+  font-size: 9px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+
+.analytics-bar-value {
+  position: absolute;
+  top: -18px;
+  font-size: 9px;
+  white-space: nowrap;
+}

@@ -129,6 +129,13 @@ const routes: Routes = [
             (m) => m.AdminSettingsModule
           ),
       },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/admin/analytics').then(
+            (m) => m.AdminAnalyticsModule
+          ),
+      },
     ],
   },
   {
