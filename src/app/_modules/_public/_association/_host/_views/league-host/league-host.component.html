@@ -64,6 +64,7 @@
           <fb-tab-item
             [link]="['./', 'scorer']"
             [activeColor]="selectedAssociation | gradient"
+            *ngIf="selectedLeague.enable_scorer"
             >Scorer</fb-tab-item
           >
         </div>

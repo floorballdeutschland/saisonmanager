@@ -14,7 +14,6 @@ import {
   GameOperation,
   GameOperationWithLeagues,
   League,
-  LeagueClass,
   LeagueQualification,
   LeagueQualificationType,
 } from '@floorball/types';
@@ -37,7 +36,6 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   permittedGameOperations: GameOperationWithLeagues[] = [];
   allLeagues: League[] = [];
   isBuliPermitted = false;
-  leagueClasses: LeagueClass[] = [];
 
   private _destroy$ = new Subject<boolean>();
 
@@ -122,15 +120,27 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     this._metaTitle.setTitle('Floorball Saisonmanager');
   }
 
+  private static readonly _femaleAgeGroups = new Set([
+    'Damen',
+    'U19 Juniorinnen',
+    'U17 Juniorinnen',
+    'U15 Juniorinnen',
+    'U13 Juniorinnen',
+    'U11 Juniorinnen',
+    'U9 Juniorinnen',
+    'U7 Juniorinnen',
+    'U5 Juniorinnen',
+  ]);
+
+  public femaleFromAgeGroup(ageGroup: string): boolean {
+    return LeagueEditComponent._femaleAgeGroups.has(ageGroup);
+  }
+
+  public onLeagueModusChange(league: League, modus: string): void {
+    league.league_class_id = modus === 'league' ? 'll' : '';
+  }
+
   public ngOnInit(): void {
-    this._leagueService.getAdminLeagueClasses().subscribe({
-      next: (result) => {
-        this.leagueClasses = result;
-
-        this._cdr.markForCheck();
-      },
-    });
-
     this._leagueService.getAdminLeagues().subscribe({
       next: (result) => {
         // this is the case, when we have enough permissions
@@ -192,13 +202,17 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   public newLeague() {
     const league: League = {
       id: 0,
-      game_operation_id: 1,
+      game_operation_id:
+        this.permittedGameOperations.length === 1
+          ? this.permittedGameOperations[0].id
+          : 0,
       game_operation_name: '',
       league_category_id: '',
-      league_class_id: '40',
+      league_class_id: 'll',
       league_system_id: '',
       name: '',
       female: false,
+      age_group: '',
       enable_scorer: true,
       short_name: '',
       season_id: '0',
@@ -258,6 +272,14 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
 
     if (!league.overtime_length || !(league.overtime_length > 0)) {
       msg.push('Die Verlängerungsdauer muss eine Zahl >= 0 sein');
+    }
+
+    if (!league.age_group) {
+      msg.push('Es muss eine Altersklasse gesetzt werden');
+    }
+
+    if (league.league_modus === 'league' && !league.league_class_id) {
+      msg.push('Es muss eine Ligaklasse gesetzt werden');
     }
 
     if (league.legacy_league) {

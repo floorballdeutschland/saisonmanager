@@ -12,6 +12,7 @@ export interface League {
   league_system_id: string;
   name: string;
   female: boolean;
+  age_group?: string;
   enable_scorer: boolean;
   short_name: string;
   season_id: string;

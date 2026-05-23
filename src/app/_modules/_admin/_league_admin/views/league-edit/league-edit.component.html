@@ -79,13 +79,12 @@
                   required
                 />
                 <p class="text-xs text-gray-500 mt-1">
-                  Empfohlenes Schema:
-                  <span class="font-medium"
-                    >[Ligahöhe] [Altersklasse/Geschlecht] [Spielmodus] [ggf.
-                    Regionaleinschränkung]</span
-                  ><br />
-                  Beispiel:
-                  <span class="italic">Regionalliga Herren Großfeld Nord</span>
+                  <span class="font-medium">Großfeld:</span> kein Zusatz —
+                  z.&#x202F;B. „Regionalliga Nord U17 Juniorinnen"<br />
+                  <span class="font-medium">Kleinfeld:</span> Zusatz „KF" —
+                  z.&#x202F;B. „Regionalliga Süd U17 Junioren KF"<br />
+                  <span class="font-medium">Kleintorliga:</span> Zusatz „KT" —
+                  z.&#x202F;B. „Regionalliga Nord U17 KT"
                 </p>
               </div>
 
@@ -117,12 +116,66 @@
                   class="w-full"
                   name="league_modus"
                   [(ngModel)]="league.league_modus"
+                  (ngModelChange)="onLeagueModusChange(league, $event)"
                 >
                   <option value="league">Liga</option>
                   <option value="cup">Pokal</option>
                   <option value="champ">
                     DM/Endrunde (1-4 Gruppen + Platzierungsspiele)
                   </option>
+                </select>
+              </div>
+
+              <ng-container *ngIf="league.league_modus === 'league'">
+                <div class="font-bold">Ligaklasse</div>
+                <div>
+                  <select
+                    class="w-full"
+                    name="league_class_id"
+                    [(ngModel)]="league.league_class_id"
+                  >
+                    <option *ngIf="isBuliPermitted" value="1fbl">
+                      1. Floorball Bundesliga (1. FBL)
+                    </option>
+                    <option *ngIf="isBuliPermitted" value="2fbl">
+                      2. Floorball Bundesliga (2. FBL)
+                    </option>
+                    <option value="rl">Regionalliga (RL)</option>
+                    <option value="vl">Verbandsliga (VL)</option>
+                    <option value="ll">Landesliga (LL)</option>
+                  </select>
+                </div>
+              </ng-container>
+
+              <div class="font-bold">Altersklasse</div>
+              <div>
+                <select
+                  class="w-full"
+                  name="age_group"
+                  [(ngModel)]="league.age_group"
+                  (ngModelChange)="league.female = femaleFromAgeGroup($event)"
+                  required
+                >
+                  <option value="">— bitte wählen —</option>
+                  <option value="U19 Junioren">U19 Junioren</option>
+                  <option value="U17 Junioren">U17 Junioren</option>
+                  <option value="U15 Junioren">U15 Junioren</option>
+                  <option value="U13 Junioren">U13 Junioren</option>
+                  <option value="U11 Junioren">U11 Junioren</option>
+                  <option value="U9 Junioren">U9 Junioren</option>
+                  <option value="U7 Junioren">U7 Junioren</option>
+                  <option value="U5 Junioren">U5 Junioren</option>
+                  <option value="U19 Juniorinnen">U19 Juniorinnen</option>
+                  <option value="U17 Juniorinnen">U17 Juniorinnen</option>
+                  <option value="U15 Juniorinnen">U15 Juniorinnen</option>
+                  <option value="U13 Juniorinnen">U13 Juniorinnen</option>
+                  <option value="U11 Juniorinnen">U11 Juniorinnen</option>
+                  <option value="U9 Juniorinnen">U9 Juniorinnen</option>
+                  <option value="U7 Juniorinnen">U7 Juniorinnen</option>
+                  <option value="U5 Juniorinnen">U5 Juniorinnen</option>
+                  <option value="Ü30">Ü30</option>
+                  <option value="Herren">Herren</option>
+                  <option value="Damen">Damen</option>
                 </select>
               </div>
             </div>
@@ -146,53 +199,6 @@
                 </select>
               </div>
 
-              <div class="font-bold">Ligaklasse</div>
-              <div>
-                <select
-                  class="w-full"
-                  name="league_class_id"
-                  [(ngModel)]="league.league_class_id"
-                >
-                  <optgroup label="nur bei FD">
-                    <option
-                      *ngFor="let lc of leagueClasses | leagueClass : 'fd'"
-                      [value]="lc.id"
-                      [disabled]="!isBuliPermitted"
-                    >
-                      {{ lc.name }}
-                    </option>
-                  </optgroup>
-                  <optgroup label="zulässige Klassen">
-                    <option
-                      *ngFor="let lc of leagueClasses | leagueClass : 'ok'"
-                      [value]="lc.id"
-                    >
-                      {{ lc.name }}
-                    </option>
-                  </optgroup>
-                  <optgroup label="nicht zulässige Klassen">
-                    <option
-                      *ngFor="let lc of leagueClasses | leagueClass : 'not_ok'"
-                      [value]="lc.id"
-                    >
-                      {{ lc.name }}
-                    </option>
-                  </optgroup>
-                </select>
-              </div>
-
-              <div class="font-bold">Damen/Herren</div>
-              <div>
-                <select
-                  class="w-full"
-                  name="female"
-                  [(ngModel)]="league.female"
-                >
-                  <option value="false">Herrenliga</option>
-                  <option value="true">Damenliga</option>
-                </select>
-              </div>
-
               <div class="font-bold">Punktsystem</div>
               <div>
                 <select
@@ -204,15 +210,15 @@
                 </select>
               </div>
 
-              <div class="font-bold">Scorer aktiv?</div>
+              <div class="font-bold">Scorerliste sichtbar</div>
               <div>
                 <select
                   class="w-full"
                   name="enable_scorer"
                   [(ngModel)]="league.enable_scorer"
                 >
-                  <option value="true">aktiviert</option>
-                  <option value="false">deaktiviert</option>
+                  <option [ngValue]="true">Ja</option>
+                  <option [ngValue]="false">Nein</option>
                 </select>
               </div>
 
