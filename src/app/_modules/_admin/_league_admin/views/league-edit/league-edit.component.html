@@ -561,6 +561,68 @@
             </div>
           </div>
 
+          <!-- Werbebanner (nur im Bearbeitungsmodus bestehender Liga) -->
+          <div
+            class="bg-white my-[5px] py-[15px] px-[30px]"
+            *ngIf="editMode && league.id"
+          >
+            <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+              Werbebanner
+            </div>
+            <div class="grid grid-cols-2 gap-4 items-center">
+              <div class="font-bold text-sm">Aktueller Banner</div>
+              <div>
+                <img
+                  *ngIf="league.banner_url"
+                  [src]="league.banner_url"
+                  alt="Werbebanner"
+                  class="w-full max-w-xs object-contain"
+                  style="aspect-ratio: 6/1"
+                />
+                <span
+                  *ngIf="!league.banner_url"
+                  class="text-sm text-fb-gray-400"
+                  >kein Banner hinterlegt</span
+                >
+              </div>
+              <div class="font-bold text-sm">Banner hochladen</div>
+              <div>
+                <input
+                  type="file"
+                  accept="image/webp"
+                  #bannerInput
+                  (change)="onBannerSelected(league, bannerInput)"
+                />
+                <small class="block text-fb-gray-400 mt-1"
+                  >WebP · max. 500 KB · empfohlenes Format 1200 × 200 px
+                  (6:1)</small
+                >
+              </div>
+              <div class="font-bold text-sm">Link-URL</div>
+              <div>
+                <input
+                  type="url"
+                  [(ngModel)]="league.banner_link_url"
+                  placeholder="https://..."
+                  class="border border-fb-gray-300 rounded px-3 py-1.5 text-sm w-full"
+                />
+                <small class="block text-fb-gray-400 mt-1"
+                  >Optional – Banner wird dann klickbar</small
+                >
+              </div>
+              <div></div>
+              <div>
+                <button
+                  *ngIf="league.banner_url"
+                  (click)="deleteBanner(league)"
+                  class="text-sm text-red-500 underline"
+                >
+                  Banner entfernen
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="flex flex-col gap-2">
               <div class="mb-4" *ngIf="error(league)">

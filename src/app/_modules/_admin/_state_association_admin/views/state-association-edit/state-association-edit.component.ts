@@ -134,6 +134,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       scan_required: this.hasParent
         ? false
         : this.stateAssociation.scan_required,
+      banner_link_url: this.stateAssociation.banner_link_url ?? null,
     };
 
     const call =
@@ -258,6 +259,68 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
           this._notificationService.error(
             'Freigabe konnte nicht erteilt werden.',
+            { autoClose: false }
+          );
+        },
+      });
+  }
+
+  private readonly _allowedBannerType = 'image/webp';
+  private readonly _maxBannerSize = 500 * 1024;
+
+  onBannerSelected(input: HTMLInputElement): void {
+    if (!input.files?.length || !this.stateAssociation.id) return;
+    const file = input.files[0];
+
+    if (file.type !== this._allowedBannerType) {
+      this._notificationService.error('Nur WebP-Dateien erlaubt.', {
+        autoClose: false,
+      });
+      input.value = '';
+      return;
+    }
+    if (file.size > this._maxBannerSize) {
+      this._notificationService.error('Datei zu groß (max. 500 KB).', {
+        autoClose: false,
+      });
+      input.value = '';
+      return;
+    }
+
+    this._stateAssociationService
+      .adminUploadBanner(this.stateAssociation.id, file)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          input.value = '';
+          this.stateAssociation.banner_url = result.banner_url;
+          this._notificationService.success('Banner erfolgreich hochgeladen.', {
+            autoClose: true,
+          });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          input.value = '';
+          this._notificationService.error('Banner-Upload fehlgeschlagen.', {
+            autoClose: false,
+          });
+        },
+      });
+  }
+
+  deleteBanner(): void {
+    if (!this.stateAssociation.id) return;
+    this._stateAssociationService
+      .adminDeleteBanner(this.stateAssociation.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.stateAssociation.banner_url = null;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this._notificationService.error(
+            'Banner konnte nicht gelöscht werden.',
             { autoClose: false }
           );
         },

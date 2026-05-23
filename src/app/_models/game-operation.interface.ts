@@ -8,6 +8,8 @@ export interface GameOperation {
   path: string;
   logo_url?: string;
   logo_quad_url?: string;
+  banner_url?: string | null;
+  banner_link_url?: string | null;
   top_leagues: League[];
   scan_required?: boolean;
   state_association_id?: number | null;

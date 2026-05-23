@@ -41,6 +41,67 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
 
   private _destroy$ = new Subject<boolean>();
 
+  private readonly _maxBannerSize = 500 * 1024;
+
+  onBannerSelected(league: League, input: HTMLInputElement): void {
+    if (!input.files?.length || !league.id) return;
+    const file = input.files[0];
+
+    if (file.type !== 'image/webp') {
+      this._notificationService.error('Nur WebP-Dateien erlaubt.', {
+        autoClose: false,
+      });
+      input.value = '';
+      return;
+    }
+    if (file.size > this._maxBannerSize) {
+      this._notificationService.error('Datei zu groß (max. 500 KB).', {
+        autoClose: false,
+      });
+      input.value = '';
+      return;
+    }
+
+    this._leagueService
+      .adminUploadBanner(league.id, file)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          input.value = '';
+          league.banner_url = result.banner_url;
+          this._notificationService.success('Banner erfolgreich hochgeladen.', {
+            autoClose: true,
+          });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          input.value = '';
+          this._notificationService.error('Banner-Upload fehlgeschlagen.', {
+            autoClose: false,
+          });
+        },
+      });
+  }
+
+  deleteBanner(league: League): void {
+    if (!league.id) return;
+    this._leagueService
+      .adminDeleteBanner(league.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          league.banner_url = null;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this._notificationService.error(
+            'Banner konnte nicht gelöscht werden.',
+            { autoClose: false }
+          );
+        },
+      });
+  }
+
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,

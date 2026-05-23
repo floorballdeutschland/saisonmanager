@@ -215,6 +215,64 @@
     </div>
   </div>
 
+  <!-- Werbebanner (nur im Bearbeitungsmodus) -->
+  <div *ngIf="editMode" class="border-t border-fb-gray-200 pt-6 mb-6">
+    <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+      Werbebanner
+    </div>
+    <div class="grid grid-cols-2 gap-4 items-center">
+      <div class="font-bold text-sm">Aktueller Banner</div>
+      <div>
+        <img
+          *ngIf="stateAssociation.banner_url"
+          [src]="stateAssociation.banner_url"
+          alt="Werbebanner"
+          class="w-full max-w-xs object-contain"
+          style="aspect-ratio: 6/1"
+        />
+        <span
+          *ngIf="!stateAssociation.banner_url"
+          class="text-sm text-fb-gray-400"
+          >kein Banner hinterlegt</span
+        >
+      </div>
+      <div class="font-bold text-sm">Banner hochladen</div>
+      <div>
+        <input
+          type="file"
+          accept="image/webp"
+          #bannerInput
+          (change)="onBannerSelected(bannerInput)"
+        />
+        <small class="block text-fb-gray-400 mt-1"
+          >WebP · max. 500 KB · empfohlenes Format 1200 × 200 px (6:1)</small
+        >
+      </div>
+      <div class="font-bold text-sm">Link-URL</div>
+      <div>
+        <input
+          type="url"
+          [(ngModel)]="stateAssociation.banner_link_url"
+          placeholder="https://..."
+          class="border border-fb-gray-300 rounded px-3 py-1.5 text-sm w-full"
+        />
+        <small class="block text-fb-gray-400 mt-1"
+          >Optional – Banner wird dann klickbar</small
+        >
+      </div>
+      <div></div>
+      <div>
+        <button
+          *ngIf="stateAssociation.banner_url"
+          (click)="deleteBanner()"
+          class="text-sm text-red-500 underline"
+        >
+          Banner entfernen
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Freigaben (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
   <div
     *ngIf="editMode && !hasParent"

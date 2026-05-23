@@ -102,4 +102,19 @@ export class StateAssociationService {
       formData
     );
   }
+
+  public adminUploadBanner(stateAssociationId: number, file: File) {
+    const formData = new FormData();
+    formData.append('banner', file);
+    return this.http.post<{ banner_url: string }>(
+      `${environment.apiURL}admin/state_associations/${stateAssociationId}/upload_banner.json`,
+      formData
+    );
+  }
+
+  public adminDeleteBanner(stateAssociationId: number) {
+    return this.http.delete(
+      `${environment.apiURL}admin/state_associations/${stateAssociationId}/banner.json`
+    );
+  }
 }
