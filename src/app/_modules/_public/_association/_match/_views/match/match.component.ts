@@ -79,6 +79,12 @@ export class MatchComponent implements OnInit, OnDestroy {
     if (secretaryToken) {
       sessionStorage.setItem('secretary_token', secretaryToken);
       this.tab = 'sbb';
+      this._router.navigate([], {
+        relativeTo: this._route,
+        queryParams: { secretary_token: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
     }
 
     this._route.params.subscribe({
