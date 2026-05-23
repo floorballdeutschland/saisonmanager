@@ -31,4 +31,14 @@ export class GameOperationService {
       `${environment.apiURL}admin/game_operations/${gameOperationId}/banner.json`
     );
   }
+
+  public adminUpdateBannerLink(
+    gameOperationId: number,
+    bannerLinkUrl: string | null
+  ) {
+    return this.http.patch<{ banner_link_url: string | null }>(
+      `${environment.apiURL}admin/game_operations/${gameOperationId}/banner_link.json`,
+      { banner_link_url: bannerLinkUrl }
+    );
+  }
 }

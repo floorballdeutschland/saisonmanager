@@ -41,13 +41,16 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
 
   private _destroy$ = new Subject<boolean>();
 
+  deletingBanner = false;
+
+  private readonly _allowedBannerType = 'image/webp';
   private readonly _maxBannerSize = 500 * 1024;
 
   onBannerSelected(league: League, input: HTMLInputElement): void {
     if (!input.files?.length || !league.id) return;
     const file = input.files[0];
 
-    if (file.type !== 'image/webp') {
+    if (file.type !== this._allowedBannerType) {
       this._notificationService.error('Nur WebP-Dateien erlaubt.', {
         autoClose: false,
       });
@@ -74,30 +77,34 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           });
           this._cdr.markForCheck();
         },
-        error: () => {
+        error: (err) => {
           input.value = '';
-          this._notificationService.error('Banner-Upload fehlgeschlagen.', {
-            autoClose: false,
-          });
+          const msg: string =
+            err?.error?.message ?? 'Banner-Upload fehlgeschlagen.';
+          this._notificationService.error(msg, { autoClose: false });
         },
       });
   }
 
   deleteBanner(league: League): void {
-    if (!league.id) return;
+    if (!league.id || this.deletingBanner) return;
+    if (!confirm('Banner wirklich entfernen?')) return;
+    this.deletingBanner = true;
     this._leagueService
       .adminDeleteBanner(league.id)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {
           league.banner_url = null;
+          this.deletingBanner = false;
           this._cdr.markForCheck();
         },
-        error: () => {
-          this._notificationService.error(
-            'Banner konnte nicht gelöscht werden.',
-            { autoClose: false }
-          );
+        error: (err) => {
+          this.deletingBanner = false;
+          const msg: string =
+            err?.error?.message ?? 'Banner konnte nicht gelöscht werden.';
+          this._notificationService.error(msg, { autoClose: false });
+          this._cdr.markForCheck();
         },
       });
   }

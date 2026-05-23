@@ -265,6 +265,8 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       });
   }
 
+  deletingBanner = false;
+
   private readonly _allowedBannerType = 'image/webp';
   private readonly _maxBannerSize = 500 * 1024;
 
@@ -299,30 +301,34 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
           });
           this._cdr.markForCheck();
         },
-        error: () => {
+        error: (err) => {
           input.value = '';
-          this._notificationService.error('Banner-Upload fehlgeschlagen.', {
-            autoClose: false,
-          });
+          const msg: string =
+            err?.error?.message ?? 'Banner-Upload fehlgeschlagen.';
+          this._notificationService.error(msg, { autoClose: false });
         },
       });
   }
 
   deleteBanner(): void {
-    if (!this.stateAssociation.id) return;
+    if (!this.stateAssociation.id || this.deletingBanner) return;
+    if (!confirm('Banner wirklich entfernen?')) return;
+    this.deletingBanner = true;
     this._stateAssociationService
       .adminDeleteBanner(this.stateAssociation.id)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {
           this.stateAssociation.banner_url = null;
+          this.deletingBanner = false;
           this._cdr.markForCheck();
         },
-        error: () => {
-          this._notificationService.error(
-            'Banner konnte nicht gelöscht werden.',
-            { autoClose: false }
-          );
+        error: (err) => {
+          this.deletingBanner = false;
+          const msg: string =
+            err?.error?.message ?? 'Banner konnte nicht gelöscht werden.';
+          this._notificationService.error(msg, { autoClose: false });
+          this._cdr.markForCheck();
         },
       });
   }
