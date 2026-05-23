@@ -11,9 +11,15 @@ describe('TeamLineupPlayerPipe', () => {
   function player(
     id: number,
     last_name = 'Z',
-    first_name = 'A'
+    first_name = 'A',
+    licenseStatusId = 1 // APPROVED – Spieler ist aufstellbar
   ): PlayerWithLicense {
-    return { id, last_name, first_name } as PlayerWithLicense;
+    return {
+      id,
+      last_name,
+      first_name,
+      current_status: { license_status_id: licenseStatusId },
+    } as PlayerWithLicense;
   }
 
   function entry(player_id: number): GamePlayerEntry {
@@ -73,6 +79,42 @@ describe('TeamLineupPlayerPipe', () => {
       const lineup = [entry(1)];
       const result = pipe.transform(players, lineup, 'not-selected');
       expect(result.length).toBe(0);
+    });
+  });
+
+  describe('License-Filter', () => {
+    it('filtert Spieler ohne erteilte Lizenz heraus (REQUESTED)', () => {
+      const players = [player(1), player(2, 'Z', 'A', 2)];
+      const result = pipe.transform(players, [], 'all');
+      expect(result.length).toBe(1);
+      expect(result[0].player.id).toBe(1);
+    });
+
+    it('filtert DENIED (3) und WITHDRAWN (8) heraus', () => {
+      const players = [
+        player(1),
+        player(2, 'Z', 'A', 3),
+        player(3, 'Z', 'A', 8),
+      ];
+      const result = pipe.transform(players, [], 'all');
+      expect(result.map((r) => r.player.id)).toEqual([1]);
+    });
+
+    it('zeigt aufgestellte Spieler auch ohne erteilte Lizenz an (Entfernen muss möglich bleiben)', () => {
+      const players = [player(1, 'Z', 'A', 8)]; // WITHDRAWN, aber im Lineup
+      const lineup = [entry(1)];
+      const result = pipe.transform(players, lineup, 'all');
+      expect(result.length).toBe(1);
+      expect(result[0].gamePlayerEntry).toBeTruthy();
+    });
+
+    it('blendet Spieler ohne current_status aus', () => {
+      const players = [
+        { id: 1, last_name: 'Z', first_name: 'A' } as PlayerWithLicense,
+        player(2),
+      ];
+      const result = pipe.transform(players, [], 'all');
+      expect(result.map((r) => r.player.id)).toEqual([2]);
     });
   });
 
