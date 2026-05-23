@@ -42,6 +42,8 @@ export interface League {
   similar_leagues?: League[];
   required_documents?: string[];
   qualifications?: LeagueQualification[];
+  banner_url?: string | null;
+  banner_link_url?: string | null;
 }
 
 export interface LeagueWithTeams extends League {

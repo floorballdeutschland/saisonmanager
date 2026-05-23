@@ -307,4 +307,19 @@ export class LeagueService {
     const path = environment.apiURL + 'user/leagues/penalty_codes.json';
     return this.http.get<PenaltyCode[]>(path);
   }
+
+  public adminUploadBanner(leagueId: number, file: File) {
+    const formData = new FormData();
+    formData.append('banner', file);
+    return this.http.post<{ banner_url: string }>(
+      `${environment.apiURL}admin/leagues/${leagueId}/upload_banner.json`,
+      formData
+    );
+  }
+
+  public adminDeleteBanner(leagueId: number) {
+    return this.http.delete(
+      `${environment.apiURL}admin/leagues/${leagueId}/banner.json`
+    );
+  }
 }
