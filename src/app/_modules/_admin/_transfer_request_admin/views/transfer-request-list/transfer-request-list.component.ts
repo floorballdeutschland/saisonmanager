@@ -24,6 +24,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   requests: TransferRequest[] = [];
   loading = false;
   currentUserClubIds: number[] = [];
+  isSbk = false;
   withdrawingId: number | null = null;
 
   private _destroy$ = new Subject<void>();
@@ -42,6 +43,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (user) => {
           this.currentUserClubIds = user?.club_ids || [];
+          this.isSbk = !!user?.permissions?.['menu_item_transfer_requests_sbk'];
           this._cdr.markForCheck();
         },
       });
@@ -157,6 +159,61 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
 
   get canInitiate(): boolean {
     return this.currentUserClubIds.length > 0;
+  }
+
+  get approvedRequests(): TransferRequest[] {
+    return this.requests.filter((r) => r.status === 'approved');
+  }
+
+  exportCsv(): void {
+    const headers = [
+      'Nachname',
+      'Vorname',
+      'Geburtsdatum',
+      'Typ',
+      'Abgebender Verein',
+      'Aufnehmender Verein',
+      'Genehmigt am',
+    ];
+    const rows = this.approvedRequests.map((r) => [
+      r.player.last_name,
+      r.player.first_name,
+      r.player.birthdate ? this._formatDate(r.player.birthdate) : '',
+      this.typeLabel(r),
+      r.former_club.name,
+      r.requesting_club.name,
+      r.lv_approved_at ? this._formatDate(r.lv_approved_at) : '',
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';')
+      )
+      .join('\r\n');
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transfers-${yyyy}-${mm}-${dd}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      a.remove();
+    }, 0);
+  }
+
+  private _formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${dd}.${mm}.${d.getFullYear()}`;
   }
 
   get pendingRequests(): TransferRequest[] {
