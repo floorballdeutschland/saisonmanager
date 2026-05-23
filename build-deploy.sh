@@ -9,13 +9,23 @@ if [ ! -f "src/environments/.api-key" ]; then
   exit 1
 fi
 API_KEY=$(tr -d '[:space:]' < src/environments/.api-key)
+if [ -z "$API_KEY" ]; then
+  echo "Fehler: src/environments/.api-key ist leer." >&2
+  exit 1
+fi
 
 # Backup anlegen; trap stellt die Datei nach dem Build immer wieder her
 cp src/environments/environment.prod.ts src/environments/environment.prod.ts.bak
 trap 'mv src/environments/environment.prod.ts.bak src/environments/environment.prod.ts' EXIT
 
-# Platzhalter durch echten Key ersetzen
-sed -i "s/FRONTEND_API_KEY_PLACEHOLDER/$API_KEY/" src/environments/environment.prod.ts
+# Sicherstellen dass der Platzhalter noch vorhanden ist
+if ! grep -q "FRONTEND_API_KEY_PLACEHOLDER" src/environments/environment.prod.ts; then
+  echo "Fehler: FRONTEND_API_KEY_PLACEHOLDER nicht in environment.prod.ts gefunden." >&2
+  exit 1
+fi
+
+# Platzhalter durch echten Key ersetzen (| als Delimiter, sicher für Hex-Keys)
+sed -i "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment.prod.ts
 
 # Build + Deploy
 export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"

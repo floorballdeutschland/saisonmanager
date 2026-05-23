@@ -21,6 +21,7 @@ import { SessionService } from './_modules/_core/_services';
 import { ErrorInterceptor } from './_helpers/_interceptors/error.interceptor';
 import { ApiKeyInterceptor } from './_helpers/_interceptors/api-key.interceptor';
 import { SecretaryTokenInterceptor } from './_helpers/_interceptors/secretary-token.interceptor';
+import { CsrfInterceptor } from './_helpers/_interceptors/csrf.interceptor';
 
 @NgModule({
   declarations: [AppComponent],
@@ -38,6 +39,7 @@ import { SecretaryTokenInterceptor } from './_helpers/_interceptors/secretary-to
       deps: [Router],
     },
     { provide: HTTP_INTERCEPTORS, useClass: ApiKeyInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: CsrfInterceptor, multi: true },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: SecretaryTokenInterceptor,
