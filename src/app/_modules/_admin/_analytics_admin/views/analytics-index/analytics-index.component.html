@@ -1,0 +1,95 @@
+<div class="p-4 lg:p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Analyse</h1>
+    <button
+      class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+      (click)="load()"
+    >
+      Aktualisieren
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8 text-center">
+    Lade Zugriffszahlen…
+  </div>
+
+  <ng-container *ngIf="!loading && data">
+    <!-- Summary boxes -->
+    <div class="grid grid-cols-3 gap-4 mb-10">
+      <div class="border border-fb-gray-800 rounded-[5px] p-5">
+        <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+          Letzte 30 Tage
+        </div>
+        <div class="text-3xl font-bold">{{ total30Days | number }}</div>
+        <div class="text-xs text-fb-gray-500 mt-1">Seitenaufrufe gesamt</div>
+      </div>
+      <div class="border border-fb-gray-800 rounded-[5px] p-5">
+        <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+          Aktueller Monat
+        </div>
+        <div class="text-3xl font-bold">{{ currentMonthTotal | number }}</div>
+        <div class="text-xs text-fb-gray-500 mt-1">Seitenaufrufe gesamt</div>
+      </div>
+      <div class="border border-fb-gray-800 rounded-[5px] p-5">
+        <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+          Letztes Jahr
+        </div>
+        <div class="text-3xl font-bold">{{ totalYear | number }}</div>
+        <div class="text-xs text-fb-gray-500 mt-1">Seitenaufrufe gesamt</div>
+      </div>
+    </div>
+
+    <!-- Daily bar chart -->
+    <h2 class="text-base font-bold mb-4">Letzte 30 Tage – täglich</h2>
+    <div class="analytics-chart mb-10" aria-hidden="true">
+      <div
+        class="analytics-bar-col"
+        *ngFor="let day of last30Days"
+        [title]="formatDay(day.date) + ': ' + day.count"
+      >
+        <span class="analytics-bar-value text-xs text-fb-gray-500">{{
+          day.count || ""
+        }}</span>
+        <div
+          class="analytics-bar"
+          [style.height.%]="dailyHeight(day.count)"
+        ></div>
+        <span class="analytics-bar-label">{{ formatDay(day.date) }}</span>
+      </div>
+    </div>
+
+    <!-- Monthly bar chart -->
+    <h2 class="text-base font-bold mb-4">Letztes Jahr – monatlich</h2>
+    <div
+      class="analytics-chart analytics-chart--monthly mb-10"
+      aria-hidden="true"
+    >
+      <div
+        class="analytics-bar-col"
+        *ngFor="let month of lastYear"
+        [title]="formatMonth(month.month) + ': ' + month.count"
+      >
+        <span class="analytics-bar-value text-xs text-fb-gray-500">{{
+          month.count || ""
+        }}</span>
+        <div
+          class="analytics-bar"
+          [style.height.%]="monthlyHeight(month.count)"
+        ></div>
+        <span class="analytics-bar-label">{{ formatMonth(month.month) }}</span>
+      </div>
+    </div>
+
+    <p class="text-xs text-fb-gray-500">
+      Erfasst werden Zugriffe auf die öffentlichen Seiten (Spielplan, Tabelle,
+      Torschützen).
+    </p>
+  </ng-container>
+
+  <div
+    *ngIf="!loading && !data"
+    class="text-fb-gray-500 text-sm py-8 text-center"
+  >
+    Keine Daten verfügbar.
+  </div>
+</div>
