@@ -2,23 +2,56 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
-import { AdminLicenseEntry } from '@floorball/types';
-import { LeagueService } from '@floorball/core';
+import { AdminLicenseEntry, Season } from '@floorball/types';
+import { AssociationService, LeagueService } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
+import { Subject, takeUntil } from 'rxjs';
 
 interface FilterOption {
   value: string | number | boolean | null;
   label: string;
 }
 
+// Statisches Altersklassen-Set entspricht dem Dropdown im Liga-Editor.
+const AGE_GROUPS: string[] = [
+  'U19 Junioren',
+  'U17 Junioren',
+  'U15 Junioren',
+  'U13 Junioren',
+  'U11 Junioren',
+  'U9 Junioren',
+  'U7 Junioren',
+  'U5 Junioren',
+  'U19 Juniorinnen',
+  'U17 Juniorinnen',
+  'U15 Juniorinnen',
+  'U13 Juniorinnen',
+  'U11 Juniorinnen',
+  'U9 Juniorinnen',
+  'U7 Juniorinnen',
+  'U5 Juniorinnen',
+  'Ü30',
+  'Herren',
+  'Damen',
+];
+
+const LEAGUE_CLASSES: { value: string; label: string }[] = [
+  { value: '1fbl', label: '1. Floorball Bundesliga' },
+  { value: '2fbl', label: '2. Floorball Bundesliga' },
+  { value: 'rl', label: 'Regionalliga' },
+  { value: 'vl', label: 'Verbandsliga' },
+  { value: 'll', label: 'Landesliga' },
+];
+
 @Component({
   selector: 'fb-license-admin-global-list',
   templateUrl: './license-admin-global-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LicenseAdminGlobalListComponent implements OnInit {
+export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   allEntries: AdminLicenseEntry[] = [];
   filteredEntries: AdminLicenseEntry[] = [];
   loading = true;
@@ -26,7 +59,15 @@ export class LicenseAdminGlobalListComponent implements OnInit {
 
   gameOperationOptions: FilterOption[] = [];
   leagueOptions: FilterOption[] = [];
-  categoryOptions: FilterOption[] = [];
+  ageGroupOptions: FilterOption[] = [
+    { value: null, label: 'Alle Altersklassen' },
+    ...AGE_GROUPS.map((g) => ({ value: g, label: g })),
+  ];
+  leagueClassOptions: FilterOption[] = [
+    { value: null, label: 'Alle Ligaklassen' },
+    ...LEAGUE_CLASSES.map((c) => ({ value: c.value, label: c.label })),
+  ];
+  seasonOptions: FilterOption[] = [];
   statusOptions: FilterOption[] = [
     { value: null, label: 'Alle Status' },
     { value: 1, label: 'Erteilt' },
@@ -46,14 +87,20 @@ export class LicenseAdminGlobalListComponent implements OnInit {
   filterLeagueId: number | null = null;
   filterFieldSize: string | null = null;
   filterFemale: boolean | null = null;
-  filterCategoryId: string | null = null;
+  filterAgeGroup: string | null = null;
+  filterLeagueClassId: string | null = null;
   filterLeagueType: string | null = null;
   filterStatusId: number | null = null;
   filterLicenseType: string | null = null;
   filterExpressOnly = false;
 
+  filterSeasonId: number | null = null;
+  private _currentSeasonId: number | null = null;
+  private _destroy$ = new Subject<void>();
+
   constructor(
     private _leagueService: LeagueService,
+    private _associationService: AssociationService,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title
   ) {
@@ -61,13 +108,31 @@ export class LicenseAdminGlobalListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.load();
+    this._associationService.seasons$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((seasons) => {
+        this.buildSeasonOptions(seasons ?? []);
+        const current = (seasons ?? []).find((s) => s.current);
+        this._currentSeasonId = current?.id ?? null;
+        if (this.filterSeasonId === null) {
+          this.filterSeasonId = this._currentSeasonId;
+          this.load();
+        }
+        this._cdr.markForCheck();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
   }
 
   public load(): void {
     this.loading = true;
     this.loadError = false;
-    this._leagueService.getAdminLicenses().subscribe({
+    const seasonId =
+      this.filterSeasonId !== null ? String(this.filterSeasonId) : undefined;
+    this._leagueService.getAdminLicenses(seasonId).subscribe({
       next: (entries) => {
         this.allEntries = entries;
         this.buildFilterOptions();
@@ -81,6 +146,12 @@ export class LicenseAdminGlobalListComponent implements OnInit {
         this._cdr.markForCheck();
       },
     });
+  }
+
+  public onSeasonChange(): void {
+    this.filterGameOperationId = null;
+    this.filterLeagueId = null;
+    this.load();
   }
 
   public onGameOperationChange(): void {
@@ -113,9 +184,11 @@ export class LicenseAdminGlobalListComponent implements OnInit {
         return false;
       if (this.filterFemale !== null && e.female !== this.filterFemale)
         return false;
+      if (this.filterAgeGroup && e.age_group !== this.filterAgeGroup)
+        return false;
       if (
-        this.filterCategoryId &&
-        e.league_category_id !== this.filterCategoryId
+        this.filterLeagueClassId &&
+        e.league_class_id !== this.filterLeagueClassId
       )
         return false;
       if (this.filterLeagueType && e.league_type !== this.filterLeagueType)
@@ -139,13 +212,20 @@ export class LicenseAdminGlobalListComponent implements OnInit {
     this.filterLeagueId = null;
     this.filterFieldSize = null;
     this.filterFemale = null;
-    this.filterCategoryId = null;
+    this.filterAgeGroup = null;
+    this.filterLeagueClassId = null;
     this.filterLeagueType = null;
     this.filterStatusId = null;
     this.filterLicenseType = null;
     this.filterExpressOnly = false;
-    this.buildLeagueOptions();
-    this.applyFilters();
+    const reloadNeeded = this.filterSeasonId !== this._currentSeasonId;
+    this.filterSeasonId = this._currentSeasonId;
+    if (reloadNeeded) {
+      this.load();
+    } else {
+      this.buildLeagueOptions();
+      this.applyFilters();
+    }
   }
 
   public exportCsv(): void {
@@ -245,18 +325,12 @@ export class LicenseAdminGlobalListComponent implements OnInit {
 
   private buildFilterOptions(): void {
     const goMap = new Map<number, string>();
-    const catMap = new Map<string, string>();
 
     for (const e of this.allEntries) {
       if (e.game_operation_id)
         goMap.set(
           e.game_operation_id,
           e.game_operation_name ?? String(e.game_operation_id)
-        );
-      if (e.league_category_id)
-        catMap.set(
-          e.league_category_id,
-          e.league_category_name ?? e.league_category_id
         );
     }
 
@@ -267,14 +341,26 @@ export class LicenseAdminGlobalListComponent implements OnInit {
         label: name,
       })),
     ];
-    this.categoryOptions = [
-      { value: null, label: 'Alle Altersklassen' },
-      ...Array.from(catMap.entries()).map(([id, name]) => ({
-        value: id,
-        label: name,
-      })),
-    ];
     this.buildLeagueOptions();
+  }
+
+  // Saison-Auswahl bewusst auf aktuelle Saison + direkte Vorsaison begrenzt.
+  private buildSeasonOptions(seasons: Season[]): void {
+    if (!seasons.length) {
+      this.seasonOptions = [];
+      return;
+    }
+    const sorted = [...seasons].sort((a, b) => b.id - a.id);
+    const currentIdx = sorted.findIndex((s) => s.current);
+    const current = currentIdx >= 0 ? sorted[currentIdx] : sorted[0];
+    const previous = currentIdx >= 0 ? sorted[currentIdx + 1] : sorted[1];
+    const options: FilterOption[] = [
+      { value: current.id, label: `${current.name} (aktuell)` },
+    ];
+    if (previous) {
+      options.push({ value: previous.id, label: previous.name });
+    }
+    this.seasonOptions = options;
   }
 
   private buildLeagueOptions(): void {

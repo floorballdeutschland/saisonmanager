@@ -27,6 +27,17 @@
         />
 
         <select
+          *ngIf="seasonOptions.length"
+          class="rounded border-gray-300 text-sm"
+          [(ngModel)]="filterSeasonId"
+          (ngModelChange)="onSeasonChange()"
+        >
+          <option *ngFor="let opt of seasonOptions" [ngValue]="opt.value">
+            {{ opt.label }}
+          </option>
+        </select>
+
+        <select
           class="rounded border-gray-300 text-sm"
           [(ngModel)]="filterGameOperationId"
           (ngModelChange)="onGameOperationChange()"
@@ -64,17 +75,27 @@
           [(ngModel)]="filterFemale"
           (ngModelChange)="applyFilters()"
         >
-          <option [ngValue]="null">Alle Kategorien</option>
+          <option [ngValue]="null">männlich &amp; weiblich</option>
           <option [ngValue]="false">männlich</option>
           <option [ngValue]="true">weiblich</option>
         </select>
 
         <select
           class="rounded border-gray-300 text-sm"
-          [(ngModel)]="filterCategoryId"
+          [(ngModel)]="filterAgeGroup"
           (ngModelChange)="applyFilters()"
         >
-          <option *ngFor="let opt of categoryOptions" [ngValue]="opt.value">
+          <option *ngFor="let opt of ageGroupOptions" [ngValue]="opt.value">
+            {{ opt.label }}
+          </option>
+        </select>
+
+        <select
+          class="rounded border-gray-300 text-sm"
+          [(ngModel)]="filterLeagueClassId"
+          (ngModelChange)="applyFilters()"
+        >
+          <option *ngFor="let opt of leagueClassOptions" [ngValue]="opt.value">
             {{ opt.label }}
           </option>
         </select>

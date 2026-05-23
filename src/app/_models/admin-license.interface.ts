@@ -12,6 +12,7 @@ export interface AdminLicenseEntry {
   league_name: string;
   field_size: string;
   female: boolean;
+  age_group: string | null;
   league_category_id: string | null;
   league_category_name: string | null;
   league_class_id: string | null;
@@ -20,6 +21,7 @@ export interface AdminLicenseEntry {
   league_modus: string | null;
   game_operation_id: number | null;
   game_operation_name: string | null;
+  season_id: number | string | null;
   license_id: string;
   license_type: 'primary' | 'secondary';
   license_status_id: number;
