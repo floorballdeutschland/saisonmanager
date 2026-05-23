@@ -333,11 +333,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       });
   }
 
-  private readonly _allowedLogoTypes = [
-    'image/png',
-    'image/jpeg',
-    'image/svg+xml',
-  ];
+  private readonly _allowedLogoTypes = ['image/png', 'image/jpeg'];
   private readonly _maxLogoSize = 5 * 1024 * 1024;
 
   onLogoSelected(input: HTMLInputElement): void {
@@ -345,7 +341,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     const file = input.files[0];
 
     if (!this._allowedLogoTypes.includes(file.type)) {
-      this._notificationService.error('Nur PNG, JPG oder SVG erlaubt.', {
+      this._notificationService.error('Nur PNG oder JPG erlaubt.', {
         autoClose: false,
       });
       input.value = '';
