@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { GamePlayerEntry, PlayerWithLicense } from '@floorball/types';
 
+// License::APPROVED in der API – nur erteilte Lizenzen dürfen aufgestellt werden
+const LICENSE_STATUS_APPROVED = 1;
+
 @Pipe({ name: 'teamLineupPlayer' })
 export class TeamLineupPlayerPipe implements PipeTransform {
   transform(
@@ -16,7 +19,16 @@ export class TeamLineupPlayerPipe implements PipeTransform {
       gamePlayerEntry: GamePlayerEntry | null;
     }[] = [];
 
-    allPlayers.map((player) => {
+    const isInLineup = (playerId: number) =>
+      !!lineupPlayers?.find((lp) => lp.player_id === playerId);
+
+    const eligiblePlayers = allPlayers.filter(
+      (p) =>
+        p.current_status?.license_status_id === LICENSE_STATUS_APPROVED ||
+        isInLineup(p.id)
+    );
+
+    eligiblePlayers.map((player) => {
       let lineupPlayer = null;
       switch (status) {
         case 'not-selected':
