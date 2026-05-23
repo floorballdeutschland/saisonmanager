@@ -45,7 +45,7 @@ export interface PlayerWithLicense extends Player {
       parental_consent: boolean;
     };
   };
-  current_status: {
+  current_status?: {
     created_at: Date;
     created_by: number;
     license_status_id: number;
