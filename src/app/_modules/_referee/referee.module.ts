@@ -11,6 +11,7 @@ import * as Views from './views';
   declarations: [
     Views.RefereeProfileComponent,
     Views.RefereeBlockedDatesComponent,
+    Views.RefereeGameDaysComponent,
     Views.RefereeOnlineTestIndexComponent,
     Views.RefereeOnlineTestDetailComponent,
     Views.RefereeOnlineTestExamComponent,

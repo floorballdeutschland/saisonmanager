@@ -9,6 +9,7 @@ import {
   RefereeAssignmentAvailable,
   RefereeBlockedDate,
   RefereeEntry,
+  RefereeGameDay,
   RefereeProfile,
   RefereePublicLicense,
   RefereeQualificationType,
@@ -56,6 +57,8 @@ export class RefereeService {
     landesverband?: string;
     lizenzstufe?: string;
     active?: boolean;
+    sort?: 'name' | 'lizenznummer';
+    sort_dir?: 'asc' | 'desc';
   }) {
     let query = '';
     if (params) {
@@ -66,6 +69,8 @@ export class RefereeService {
       if (params.lizenzstufe)
         parts.push(`lizenzstufe=${encodeURIComponent(params.lizenzstufe)}`);
       if (params.active) parts.push('active=true');
+      if (params.sort) parts.push(`sort=${params.sort}`);
+      if (params.sort_dir) parts.push(`sort_dir=${params.sort_dir}`);
       if (parts.length) query = '?' + parts.join('&');
     }
     return this.http.get<RefereeAdmin[]>(
@@ -268,6 +273,21 @@ export class RefereeService {
 
   public deleteBlockedDate(id: number) {
     return this.http.delete(environment.apiURL + 'referee/blocked_dates/' + id);
+  }
+
+  // Game day confirmations (self-service for logged-in referee)
+
+  public getGameDays() {
+    return this.http.get<RefereeGameDay[]>(
+      environment.apiURL + 'referee/game_days'
+    );
+  }
+
+  public confirmGameDay(gameDayId: number) {
+    return this.http.post<{ confirmed_at: string }>(
+      environment.apiURL + 'referee/game_days/' + gameDayId + '/confirm',
+      {}
+    );
   }
 
   // Public license list (token-based, no auth)

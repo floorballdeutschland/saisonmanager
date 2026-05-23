@@ -19,6 +19,8 @@ export interface Player {
   licenses?: PlayerLicense[];
   security_id?: string;
   deactivated_at?: string;
+  current_license_status_id?: number;
+  current_license_status?: string;
   deactivation_reason?: string;
 }
 
@@ -38,6 +40,10 @@ export interface PlayerWithLicense extends Player {
     approved_at?: string;
     requested_at: string;
     express?: boolean;
+    documents?: {
+      id_copy: boolean;
+      parental_consent: boolean;
+    };
   };
   current_status: {
     created_at: Date;

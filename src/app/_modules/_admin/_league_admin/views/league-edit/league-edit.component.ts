@@ -15,6 +15,8 @@ import {
   GameOperationWithLeagues,
   League,
   LeagueClass,
+  LeagueQualification,
+  LeagueQualificationType,
 } from '@floorball/types';
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
@@ -198,6 +200,96 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   }
 
   newDocumentName = '';
+
+  newQual: {
+    rank_from: number | null;
+    rank_to: number | null;
+    qualification_type: LeagueQualificationType;
+    target_league_id: number | null;
+    label: string;
+  } = {
+    rank_from: null,
+    rank_to: null,
+    qualification_type: 'promotion',
+    target_league_id: null,
+    label: '',
+  };
+
+  public addQualification(league: League): void {
+    if (!league.id || !this.newQual.rank_from || !this.newQual.rank_to) return;
+    this._leagueService
+      .createQualification(league.id, {
+        rank_from: this.newQual.rank_from,
+        rank_to: this.newQual.rank_to,
+        qualification_type: this.newQual.qualification_type,
+        target_league_id: this.newQual.target_league_id,
+        label: this.newQual.label || null,
+      })
+      .pipe(take(1), takeUntil(this._destroy$))
+      .subscribe({
+        next: (qual) => {
+          league.qualifications = [...(league.qualifications ?? []), qual];
+          this.newQual = {
+            rank_from: null,
+            rank_to: null,
+            qualification_type: 'promotion',
+            target_league_id: null,
+            label: '',
+          };
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          const msg = err?.error?.errors?.join(', ') ?? 'Fehler beim Speichern';
+          this._notificationService.error(msg, { autoClose: false });
+        },
+      });
+  }
+
+  public deleteQualification(league: League, qual: LeagueQualification): void {
+    if (!league.id) return;
+    this._leagueService
+      .deleteQualification(league.id, qual.id)
+      .pipe(take(1), takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          league.qualifications = (league.qualifications ?? []).filter(
+            (q) => q.id !== qual.id
+          );
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this._notificationService.error('Fehler beim Löschen', {
+            autoClose: false,
+          });
+        },
+      });
+  }
+
+  readonly qualificationColors: Record<string, string> = {
+    promotion: '#22c55e',
+    playoff: '#60a5fa',
+    playdown: '#f97316',
+    relegation: '#ef4444',
+    championship: '#8b5cf6',
+    cup: '#a855f7',
+  };
+
+  readonly qualificationTypeLabels: Record<string, string> = {
+    promotion: 'Aufstieg',
+    playoff: 'Playoffs',
+    playdown: 'Playdowns',
+    relegation: 'Abstieg',
+    championship: 'Deutsche Meisterschaft',
+    cup: 'Pokal',
+  };
+
+  qualificationColor(type: string): string {
+    return this.qualificationColors[type] ?? '#6b7280';
+  }
+
+  qualificationTypeLabel(type: string): string {
+    return this.qualificationTypeLabels[type] ?? type;
+  }
 
   public addRequiredDocument(league: League): void {
     const name = this.newDocumentName.trim();

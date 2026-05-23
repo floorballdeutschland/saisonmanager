@@ -159,6 +159,27 @@ export interface RefereeAssignableGame {
   assignment_status?: string | null;
 }
 
+export interface RefereeGameDayGame {
+  id: number;
+  game_number?: string;
+  start_time?: string;
+  home_team?: string;
+  guest_team?: string;
+  result?: string;
+}
+
+export interface RefereeGameDay {
+  id: number;
+  date: string;
+  league?: string;
+  arena?: string;
+  club?: string;
+  my_confirmed_at?: string | null;
+  partner_confirmed_at?: string | null;
+  auto_confirmed: boolean;
+  games: RefereeGameDayGame[];
+}
+
 export interface PublicLicenseList {
   game: {
     game_number?: string;

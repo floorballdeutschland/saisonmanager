@@ -12,6 +12,7 @@ import {
   GameScheduleEntry,
   League,
   LeagueClass,
+  LeagueQualification,
   LeagueWithTeams,
   Penalty,
   PenaltyCode,
@@ -191,6 +192,32 @@ export class LeagueService {
       leagueId +
       '/copy_preround_licenses.json';
     return this.http.post<{ copied: number }>(path, {});
+  }
+
+  public createQualification(
+    leagueId: number,
+    data: Omit<LeagueQualification, 'id' | 'target_league_name'>
+  ) {
+    const path = `${environment.apiURL}admin/leagues/${leagueId}/qualifications.json`;
+    return this.http.post<LeagueQualification>(path, {
+      league_qualification: data,
+    });
+  }
+
+  public updateQualification(
+    leagueId: number,
+    qualId: number,
+    data: Partial<Omit<LeagueQualification, 'id' | 'target_league_name'>>
+  ) {
+    const path = `${environment.apiURL}admin/leagues/${leagueId}/qualifications/${qualId}.json`;
+    return this.http.patch<LeagueQualification>(path, {
+      league_qualification: data,
+    });
+  }
+
+  public deleteQualification(leagueId: number, qualId: number) {
+    const path = `${environment.apiURL}admin/leagues/${leagueId}/qualifications/${qualId}.json`;
+    return this.http.delete<void>(path);
   }
 
   public getAdminLeagueClasses() {

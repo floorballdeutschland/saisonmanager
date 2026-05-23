@@ -10,6 +10,12 @@ const routes: Routes = [
     data: { scrollTop: true },
   },
   {
+    path: 'schiedsrichter/spieltage',
+    pathMatch: 'full',
+    component: Views.RefereeGameDaysComponent,
+    data: { scrollTop: true },
+  },
+  {
     path: 'schiedsrichter/sperrtermine',
     pathMatch: 'full',
     component: Views.RefereeBlockedDatesComponent,
