@@ -14,6 +14,14 @@ export interface RefereeQualificationType {
   usage_count?: number;
 }
 
+export interface RefereeLicenseLevel {
+  id: number;
+  name: string;
+  active: boolean;
+  position?: number;
+  usage_count?: number;
+}
+
 export interface RefereeQualificationEntry {
   id?: number;
   qualification_type_id: number;
@@ -109,6 +117,8 @@ export interface RefereeAssignmentGame {
   league_category_id?: number;
   season_id?: number;
   arena?: string;
+  arena_postcode?: string;
+  arena_city?: string;
   club?: string;
   result?: string;
 }
@@ -155,6 +165,8 @@ export interface RefereeAssignableGame {
   guest_team?: string;
   league?: string;
   arena?: string;
+  arena_postcode?: string;
+  arena_city?: string;
   assignment_id?: number | null;
   assignment_status?: string | null;
 }
