@@ -13,6 +13,6 @@ import * as Views from './views';
     AdminAssignmentRoutingModule,
     UikitCommonModule,
   ],
-  declarations: [Views.AssignmentIndexComponent, Views.AssignmentEditComponent],
+  declarations: [Views.AssignmentIndexComponent],
 })
 export class AdminAssignmentModule {}

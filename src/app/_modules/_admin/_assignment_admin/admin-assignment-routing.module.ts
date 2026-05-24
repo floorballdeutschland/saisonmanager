@@ -9,12 +9,6 @@ const routes: Routes = [
     component: Views.AssignmentIndexComponent,
     data: { scrollTop: true },
   },
-  {
-    path: 'verwaltung/schiedsrichter-ansetzungen/:gameId',
-    pathMatch: 'full',
-    component: Views.AssignmentEditComponent,
-    data: { scrollTop: true },
-  },
 ];
 
 @NgModule({
