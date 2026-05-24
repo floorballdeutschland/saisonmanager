@@ -1,0 +1,71 @@
+<div class="p-4 lg:p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">E-Mail-Log</h1>
+  </div>
+
+  <!-- Testmail -->
+  <div class="mb-8 p-4 border border-fb-gray-700 rounded-[5px]">
+    <h2 class="text-base font-bold mb-3">Testmail versenden</h2>
+    <div class="flex gap-3 items-end">
+      <div class="flex-1">
+        <label class="block text-sm font-bold mb-1">Empfänger</label>
+        <input
+          type="email"
+          [(ngModel)]="testRecipient"
+          placeholder="empfaenger@beispiel.de"
+          class="w-full border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <button
+        (click)="sendTest()"
+        [disabled]="!testRecipient.trim() || sendingTest"
+        class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+      >
+        {{ sendingTest ? "Wird gesendet…" : "Senden" }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <h2 class="text-base font-bold mb-3">Versendete E-Mails (letzte 30 Tage)</h2>
+
+  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8 text-center">
+    Lade E-Mail-Log…
+  </div>
+
+  <div *ngIf="!loading" class="overflow-x-auto">
+    <p class="text-sm text-fb-gray-500 mb-3">{{ logs.length }} Einträge</p>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-fb-gray-700 text-left">
+          <th class="py-2 pr-4 font-bold whitespace-nowrap">Datum/Uhrzeit</th>
+          <th class="py-2 pr-4 font-bold">Empfänger</th>
+          <th class="py-2 pr-4 font-bold">CC</th>
+          <th class="py-2 pr-4 font-bold">Betreff</th>
+          <th class="py-2 font-bold">Typ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let log of logs"
+          class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
+        >
+          <td class="py-2 pr-4 text-fb-gray-500 whitespace-nowrap">
+            {{ log.sent_at | date : "dd.MM.yyyy HH:mm" }}
+          </td>
+          <td class="py-2 pr-4">{{ log.recipient }}</td>
+          <td class="py-2 pr-4 text-fb-gray-500">{{ log.cc || "–" }}</td>
+          <td class="py-2 pr-4">{{ log.subject }}</td>
+          <td class="py-2 text-fb-gray-500 font-mono text-xs">
+            {{ log.mailer_action || "–" }}
+          </td>
+        </tr>
+        <tr *ngIf="logs.length === 0">
+          <td colspan="5" class="py-8 text-center text-fb-gray-500">
+            Keine E-Mails in den letzten 30 Tagen versendet.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

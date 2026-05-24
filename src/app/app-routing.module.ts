@@ -136,6 +136,13 @@ const routes: Routes = [
             (m) => m.AdminAnalyticsModule
           ),
       },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/admin/email-log').then(
+            (m) => m.AdminEmailLogModule
+          ),
+      },
     ],
   },
   {

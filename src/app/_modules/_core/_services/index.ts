@@ -24,3 +24,4 @@ export * from './user-management.service';
 export * from './settings.service';
 export * from './online-test.service';
 export * from './analytics.service';
+export * from './email-log.service';
