@@ -17,6 +17,7 @@ import {
 } from '@floorball/core';
 import {
   Club,
+  RefereeLicenseLevel,
   RefereeAdmin,
   RefereeQualificationEntry,
   RefereeQualificationType,
@@ -41,19 +42,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   qualificationTypes: RefereeQualificationType[] = [];
   qualifications: RefereeQualificationEntry[] = [];
   availableTypesList: RefereeQualificationType[][] = [];
-
-  readonly lizenzstufen = [
-    'A',
-    'B',
-    'L1',
-    'L2',
-    'L3',
-    'N1',
-    'N2',
-    'N3',
-    'F',
-    'sonstige',
-  ];
+  licenseLevels: RefereeLicenseLevel[] = [];
 
   private _destroy$ = new Subject<void>();
 
@@ -92,12 +81,14 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
     forkJoin([
       this._clubService.getAdminClubAll(),
       this._refereeService.adminGetQualificationTypes(),
+      this._refereeService.adminGetLicenseLevels(),
     ])
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: ([clubs, types]) => {
+        next: ([clubs, types, levels]) => {
           this.clubs = clubs.sort((a, b) => a.name.localeCompare(b.name));
           this.qualificationTypes = types.filter((t) => t.active);
+          this.licenseLevels = levels.filter((l) => l.active);
           this._recomputeAvailableTypes();
           this._cdr.markForCheck();
         },
@@ -168,6 +159,10 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  hasLicenseLevel(name: string): boolean {
+    return this.licenseLevels.some((l) => l.name === name);
+  }
+
   get derivedLandesverband(): string {
     if (!this.referee.club_id) return '';
     const club = this.clubs.find((c) => c.id === this.referee.club_id);
@@ -208,7 +203,13 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
 
   submit(): void {
     if (!this.referee.vorname || !this.referee.nachname) return;
-    if (!this.referee.guest && !this.referee.lizenznummer) return;
+    if (!this.referee.guest && !this.referee.lizenznummer) {
+      this._notificationService.error('Lizenznummer ist ein Pflichtfeld.', {
+        autoClose: false,
+        keepAfterRouteChange: false,
+      });
+      return;
+    }
 
     this.saving = true;
 

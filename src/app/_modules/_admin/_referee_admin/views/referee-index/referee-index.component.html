@@ -4,6 +4,13 @@
     <div class="flex gap-2">
       <a
         *ngIf="!isRestricted"
+        [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'lizenzstufen']"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+      >
+        Lizenzstufen
+      </a>
+      <a
+        *ngIf="!isRestricted"
         [routerLink]="[
           '/',
           'verwaltung',

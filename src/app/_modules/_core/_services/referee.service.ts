@@ -10,6 +10,7 @@ import {
   RefereeBlockedDate,
   RefereeEntry,
   RefereeGameDay,
+  RefereeLicenseLevel,
   RefereeProfile,
   RefereePublicLicense,
   RefereeQualificationType,
@@ -163,6 +164,37 @@ export class RefereeService {
   public adminDeleteQualificationType(id: number) {
     return this.http.delete(
       environment.apiURL + 'admin/referee_qualification_types/' + id
+    );
+  }
+
+  // License levels (admin/RSK)
+
+  public adminGetLicenseLevels() {
+    return this.http.get<RefereeLicenseLevel[]>(
+      environment.apiURL + 'admin/referee_license_levels'
+    );
+  }
+
+  public adminCreateLicenseLevel(data: Partial<RefereeLicenseLevel>) {
+    return this.http.post<RefereeLicenseLevel>(
+      environment.apiURL + 'admin/referee_license_levels',
+      { referee_license_level: data }
+    );
+  }
+
+  public adminUpdateLicenseLevel(
+    id: number,
+    data: Partial<RefereeLicenseLevel>
+  ) {
+    return this.http.put<RefereeLicenseLevel>(
+      environment.apiURL + 'admin/referee_license_levels/' + id,
+      { referee_license_level: data }
+    );
+  }
+
+  public adminDeleteLicenseLevel(id: number) {
+    return this.http.delete(
+      environment.apiURL + 'admin/referee_license_levels/' + id
     );
   }
 

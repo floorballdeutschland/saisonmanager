@@ -50,7 +50,17 @@
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white disabled:bg-fb-gray-200 disabled:text-gray-700"
           >
             <option value="">– keine –</option>
-            <option *ngFor="let s of lizenzstufen" [value]="s">{{ s }}</option>
+            <option *ngFor="let l of licenseLevels" [value]="l.name">
+              {{ l.name }}
+            </option>
+            <option
+              *ngIf="
+                referee.lizenzstufe && !hasLicenseLevel(referee.lizenzstufe)
+              "
+              [value]="referee.lizenzstufe"
+            >
+              {{ referee.lizenzstufe }} (veraltet)
+            </option>
           </select>
           <p *ngIf="isRestricted" class="text-xs text-fb-gray-500">
             Nur durch FD-RSK änderbar.
