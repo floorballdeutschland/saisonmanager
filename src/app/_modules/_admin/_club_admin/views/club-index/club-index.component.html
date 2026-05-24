@@ -73,6 +73,13 @@
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               Vereine
             </div>
+            <p
+              *ngIf="gameOperation.released"
+              class="text-xs text-fb-gray-400 mb-4"
+            >
+              Diese Vereine sind über eine Vereinsfreigabe sichtbar – nur
+              Lesezugriff, keine Bearbeitung möglich.
+            </p>
             <div class="flex flex-col gap-2">
               <ng-container *ngFor="let club of gameOperation.clubs">
                 <div [class.opacity-50]="club.deactivated_at">
@@ -87,6 +94,7 @@
                     >
                   </a>
                   <a
+                    *ngIf="!gameOperation.released"
                     class="font-bold text-black leading-[17px] text-sm px-2 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                     [routerLink]="[
                       '/',
@@ -99,6 +107,7 @@
                     bearbeiten
                   </a>
                   <a
+                    *ngIf="!gameOperation.released"
                     class="font-bold text-black leading-[17px] text-sm px-2 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                     [routerLink]="[
                       '/',
@@ -111,7 +120,11 @@
                     Spieler bearbeiten
                   </a>
                   <fb-confirmation
-                    *ngIf="club.deactivated_at && canDeleteClubs"
+                    *ngIf="
+                      !gameOperation.released &&
+                      club.deactivated_at &&
+                      canDeleteClubs
+                    "
                     title="Verein dauerhaft löschen"
                     content="Soll dieser Verein wirklich dauerhaft gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden."
                     submitButtonTitle="Endgültig löschen"
@@ -136,7 +149,10 @@
             </div>
           </div>
 
-          <div class="bg-white h-[57px] flex items-center justify-center">
+          <div
+            *ngIf="!gameOperation.released"
+            class="bg-white h-[57px] flex items-center justify-center"
+          >
             <a
               class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
               [routerLink]="['/', 'verwaltung', 'vereine', 'neu']"
