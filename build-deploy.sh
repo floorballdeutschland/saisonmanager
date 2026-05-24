@@ -29,5 +29,5 @@ sed -i "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment
 
 # Build + Deploy
 export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
-ng build
+./node_modules/.bin/ng build
 scp -r dist/saisonmanager/browser/* saisonmanager:/opt/saisonmanager/saisonmanager-frontend/
