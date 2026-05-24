@@ -6,6 +6,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { EmailLogService, NotificationService } from '@floorball/core';
 import { EmailLog } from '@floorball/types';
@@ -49,7 +50,8 @@ export class EmailLogIndexComponent implements OnInit, OnDestroy {
           this.loading = false;
           this._cdr.markForCheck();
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
+          console.error('EmailLog load failed', err);
           this.loading = false;
           this._notificationService.error(
             'E-Mail-Log konnte nicht geladen werden.',
@@ -77,9 +79,16 @@ export class EmailLogIndexComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
           this.load();
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
+          console.error('sendTest failed', err);
+          const detail =
+            err.status === 422 || err.status === 503
+              ? err.error?.error
+              : undefined;
           this._notificationService.error(
-            'Testmail konnte nicht versendet werden.',
+            detail
+              ? `Testmail konnte nicht versendet werden: ${detail}`
+              : 'Testmail konnte nicht versendet werden.',
             { autoClose: false }
           );
           this.sendingTest = false;
