@@ -22,6 +22,12 @@ const routes: Routes = [
     data: { scrollTop: true },
   },
   {
+    path: 'verwaltung/schiedsrichter/lizenzstufen',
+    pathMatch: 'full',
+    component: Views.RefereeLicenseLevelsComponent,
+    data: { scrollTop: true },
+  },
+  {
     path: 'verwaltung/schiedsrichter/:lizenznummer',
     pathMatch: 'full',
     component: Views.RefereeDetailComponent,

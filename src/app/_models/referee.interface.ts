@@ -14,6 +14,14 @@ export interface RefereeQualificationType {
   usage_count?: number;
 }
 
+export interface RefereeLicenseLevel {
+  id: number;
+  name: string;
+  active: boolean;
+  position?: number;
+  usage_count?: number;
+}
+
 export interface RefereeQualificationEntry {
   id?: number;
   qualification_type_id: number;
