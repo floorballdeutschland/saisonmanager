@@ -96,6 +96,9 @@
       "@floorball/admin/analytics": [
         "src/app/_modules/_admin/_analytics_admin"
       ],
+      "@floorball/admin/email-log": [
+        "src/app/_modules/_admin/_email_log_admin"
+      ],
       "@floorball/referee": ["src/app/_modules/_referee"],
       "@floorball/models": ["src/app/_models"]
     },
