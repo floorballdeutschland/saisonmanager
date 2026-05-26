@@ -8,6 +8,7 @@
       [ngClass]="{ 'justify-center': !full }"
     >
       <img
+        *ngIf="gameOperation.logo_url"
         class="h-full max-w-full object-contain px-2"
         [src]="gameOperation.logo_url"
         [alt]="gameOperation.name"
