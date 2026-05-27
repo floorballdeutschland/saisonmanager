@@ -8,6 +8,7 @@ import {
   Player,
   PlayerSearchResult,
   PlayerStats,
+  PlayerSuspension,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -97,6 +98,37 @@ export class PlayerService {
       license_status_id: licenseStatusId,
       reason: reason,
     });
+  }
+
+  public getSuspensions(playerId: number) {
+    const path =
+      environment.apiURL + 'admin/players/' + playerId + '/suspensions.json';
+    return this.http.get<PlayerSuspension[]>(path);
+  }
+
+  public createSuspension(
+    playerId: number,
+    payload: {
+      team_id?: number | null;
+      valid_from?: string | null;
+      valid_until: string;
+      reason?: string | null;
+    }
+  ) {
+    const path =
+      environment.apiURL + 'admin/players/' + playerId + '/suspensions.json';
+    return this.http.post<PlayerSuspension>(path, payload);
+  }
+
+  public liftSuspension(playerId: number, suspensionId: number) {
+    const path =
+      environment.apiURL +
+      'admin/players/' +
+      playerId +
+      '/suspensions/' +
+      suspensionId +
+      '.json';
+    return this.http.delete<PlayerSuspension>(path);
   }
 
   public globalSearch(query: string) {

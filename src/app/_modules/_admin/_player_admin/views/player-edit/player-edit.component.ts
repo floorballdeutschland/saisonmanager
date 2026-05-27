@@ -19,6 +19,7 @@ import {
   Nation,
   Player,
   PlayerLicense,
+  PlayerSuspension,
 } from '@floorball/models';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -48,6 +49,17 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   changeRequestType: CorrectionType | '' = '';
   changeRequestValue = '';
   changeRequestSent = false;
+
+  suspensions: PlayerSuspension[] = [];
+  // Ebene 1: id der Lizenz, für die gerade das Sperr-Formular offen ist
+  suspendLicenseId: string | null = null;
+  licenseSuspendUntil = '';
+  licenseSuspendReason = '';
+  // Ebene 2: Beantragungssperre
+  showApplicationBlockForm = false;
+  blockFrom = '';
+  blockUntil = '';
+  blockReason = '';
 
   private _destroy$ = new Subject<boolean>();
 
@@ -95,7 +107,19 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     this._playerService.getPlayer(parseInt(id)).subscribe({
       next: (result) => {
         this.player = result;
+        this.loadSuspensions();
 
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  public loadSuspensions(): void {
+    if (!this.player?.id || !this.can('player_suspend')) return;
+
+    this._playerService.getSuspensions(this.player.id).subscribe({
+      next: (result) => {
+        this.suspensions = result;
         this._cdr.markForCheck();
       },
     });
@@ -479,6 +503,127 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
               autoClose: true,
               keepAfterRouteChange: false,
             }
+          );
+        },
+      });
+  }
+
+  // --- Spielersperren (Issue #508) ---------------------------------------
+
+  public today(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  public get activeSuspensions(): PlayerSuspension[] {
+    return this.suspensions.filter((s) => s.active);
+  }
+
+  public get hasApplicationBlock(): boolean {
+    return this.activeSuspensions.some((s) => s.kind === 'application_block');
+  }
+
+  public isLicenseSuspended(license: PlayerLicense): boolean {
+    return this.activeSuspensions.some((s) => s.team_id === license.team_id);
+  }
+
+  public openLicenseSuspend(license: PlayerLicense): void {
+    this.suspendLicenseId = license.id;
+    this.licenseSuspendUntil = '';
+    this.licenseSuspendReason = '';
+  }
+
+  public cancelLicenseSuspend(): void {
+    this.suspendLicenseId = null;
+    this.licenseSuspendUntil = '';
+    this.licenseSuspendReason = '';
+  }
+
+  public submitLicenseSuspend(license: PlayerLicense): void {
+    if (!this.player?.id || !this.licenseSuspendUntil) return;
+
+    this._playerService
+      .createSuspension(this.player.id, {
+        team_id: license.team_id,
+        valid_until: this.licenseSuspendUntil,
+        reason: this.licenseSuspendReason || null,
+      })
+      .subscribe({
+        next: () => {
+          this._notificationService.success('Lizenz wurde gesperrt.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+          this.cancelLicenseSuspend();
+          this.getPlayer('' + this.player?.id);
+        },
+        error: (err) => {
+          this._notificationService.error(
+            err?.error?.message ?? 'Sperre konnte nicht gesetzt werden.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
+        },
+      });
+  }
+
+  public openApplicationBlock(): void {
+    this.showApplicationBlockForm = true;
+    this.blockFrom = this.today();
+    this.blockUntil = '';
+    this.blockReason = '';
+  }
+
+  public cancelApplicationBlock(): void {
+    this.showApplicationBlockForm = false;
+    this.blockFrom = '';
+    this.blockUntil = '';
+    this.blockReason = '';
+  }
+
+  public submitApplicationBlock(): void {
+    if (!this.player?.id || !this.blockUntil) return;
+
+    this._playerService
+      .createSuspension(this.player.id, {
+        team_id: null,
+        valid_from: this.blockFrom || null,
+        valid_until: this.blockUntil,
+        reason: this.blockReason || null,
+      })
+      .subscribe({
+        next: () => {
+          this._notificationService.success(
+            'Beantragungssperre wurde eingerichtet. Alle aktiven Lizenzen wurden gesperrt.',
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this.cancelApplicationBlock();
+          this.getPlayer('' + this.player?.id);
+        },
+        error: (err) => {
+          this._notificationService.error(
+            err?.error?.message ?? 'Sperre konnte nicht gesetzt werden.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
+        },
+      });
+  }
+
+  public liftSuspension(suspension: PlayerSuspension): void {
+    if (!this.player?.id) return;
+
+    this._playerService
+      .liftSuspension(this.player.id, suspension.id)
+      .subscribe({
+        next: () => {
+          this._notificationService.success('Sperre wurde aufgehoben.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+          this.getPlayer('' + this.player?.id);
+        },
+        error: (err) => {
+          this._notificationService.error(
+            err?.error?.message ?? 'Sperre konnte nicht aufgehoben werden.',
+            { autoClose: false, keepAfterRouteChange: false }
           );
         },
       });

@@ -85,3 +85,18 @@ export interface PlayerLicense {
   requested_at: string;
   set_transfer_allowed?: boolean;
 }
+
+export interface PlayerSuspension {
+  id: number;
+  player_id: number;
+  team_id: number | null;
+  team_name?: string | null;
+  kind: 'application_block' | 'license_suspension';
+  valid_from: string;
+  valid_until: string;
+  reason?: string | null;
+  active: boolean;
+  lifted_at?: string | null;
+  affected_licenses_count: number;
+  created_at: string;
+}
