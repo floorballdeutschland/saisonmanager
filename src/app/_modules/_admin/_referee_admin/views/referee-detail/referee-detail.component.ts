@@ -6,6 +6,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { NotificationService, RefereeService } from '@floorball/core';
@@ -124,10 +125,12 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
           }
           this._cdr.markForCheck();
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.walletLoading = false;
+          const apiMessage =
+            typeof err?.error?.error === 'string' ? err.error.error : undefined;
           this._notificationService.error(
-            'Wallet-Pass konnte nicht erstellt werden.',
+            apiMessage || 'Wallet-Pass konnte nicht erstellt werden.',
             { autoClose: false, keepAfterRouteChange: false }
           );
           this._cdr.markForCheck();
