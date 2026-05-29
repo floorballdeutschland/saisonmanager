@@ -87,6 +87,8 @@
     *ngIf="
       showItem('menu_item_referee_admin') ||
       showItem('menu_item_referee_assignments') ||
+      showItem('menu_item_referee_course_import') ||
+      showItem('menu_item_referee_course_review') ||
       showItem('menu_item_online_test_admin') ||
       showItem('menu_item_referee_profile') ||
       showItem('menu_item_referee_vm')
@@ -111,6 +113,28 @@
             [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
             (click)="closeMenu()"
             >Lizenzverwaltung</a
+          >
+        </li>
+        <li
+          class="mt-4 mb-4"
+          *ngIf="showItem('menu_item_referee_course_import')"
+        >
+          <a
+            class="font-bold text-fb-gray-500 hover:text-black text-base"
+            [routerLink]="['/', 'verwaltung', 'schiri-kurse']"
+            (click)="closeMenu()"
+            >Kursergebnisse</a
+          >
+        </li>
+        <li
+          class="mt-4 mb-4"
+          *ngIf="showItem('menu_item_referee_course_review')"
+        >
+          <a
+            class="font-bold text-fb-gray-500 hover:text-black text-base"
+            [routerLink]="['/', 'verwaltung', 'schiri-kurse-freigabe']"
+            (click)="closeMenu()"
+            >Kursergebnisse-Freigabe</a
           >
         </li>
         <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_vm')">

@@ -19,6 +19,8 @@ export interface StateAssociation {
   sbk_email?: string | null;
   express_license_enabled?: boolean;
   scan_required?: boolean;
+  referee_license_review_enabled?: boolean;
+  effective_referee_license_review_enabled?: boolean;
   logo_url?: string | null;
   banner_url?: string | null;
   banner_link_url?: string | null;

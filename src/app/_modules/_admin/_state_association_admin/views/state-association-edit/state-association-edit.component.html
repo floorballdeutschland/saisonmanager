@@ -87,6 +87,35 @@
             </span>
           </span>
         </label>
+        <label
+          class="flex items-start gap-3"
+          [class.cursor-not-allowed]="hasParent"
+          [class.cursor-pointer]="!hasParent"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="stateAssociation.referee_license_review_enabled"
+            name="referee_license_review_enabled"
+            [disabled]="hasParent"
+            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+          />
+          <span class="flex flex-col gap-0.5">
+            <span class="text-sm font-bold"
+              >Kontrollprozess für Schiedsrichterlizenzen</span
+            >
+            <span class="text-xs text-fb-gray-400"
+              >Beim CSV-Import von Kursergebnissen werden Datensätze mit
+              Stammdaten-Korrekturen oder Neuanlagen dem RSK dieses
+              Landesverbands zur Kontrolle und Freigabe vorgelegt, bevor sie in
+              den Stammdatensatz übernommen werden.</span
+            >
+            <span *ngIf="hasParent" class="text-xs text-fb-gray-400 italic">
+              Wert:
+              {{ parent?.referee_license_review_enabled ? "Ja" : "Nein" }}
+              (geerbt)
+            </span>
+          </span>
+        </label>
         <label class="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"

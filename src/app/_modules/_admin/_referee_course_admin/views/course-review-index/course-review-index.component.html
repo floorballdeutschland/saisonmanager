@@ -1,0 +1,145 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-2">
+    Schiedsrichter-Kursergebnisse: Freigabe
+  </h1>
+  <p class="text-fb-gray-600 mb-6">
+    Datensätze mit korrigierten oder neu angelegten Stammdaten, die der
+    Kontrollprozess deines Landesverbands zur Freigabe vorgelegt hat. Du kannst
+    die Stammdaten direkt anpassen — die Korrektur wird mit „Freigeben" in den
+    Schiedsrichter-Datensatz übernommen. Lizenzstufe und Gültigkeit sind
+    festgelegt und werden bereits sofort gesetzt.
+  </p>
+
+  <div *ngIf="loading" class="text-fb-gray-500">Lade...</div>
+
+  <div
+    *ngIf="!loading && !results.length"
+    class="text-fb-gray-500 py-12 text-center"
+  >
+    Aktuell keine offenen Vorgänge.
+  </div>
+
+  <div
+    *ngFor="let r of results; trackBy: trackResult"
+    class="border border-fb-gray-200 rounded p-4 mb-4"
+  >
+    <div class="flex flex-wrap justify-between items-baseline gap-x-4 mb-3">
+      <div>
+        <strong>{{ r.master.vorname }} {{ r.master.nachname }}</strong>
+        <span class="ml-2 text-fb-gray-600 text-sm">
+          Lizenz-Nr.: {{ r.master.lizenznummer ?? "—" }} • Lizenzstufe:
+          {{ r.lizenzstufe }} • gültig bis {{ r.gueltigkeit }}
+        </span>
+      </div>
+      <div *ngIf="r.state_association" class="text-sm text-fb-gray-600">
+        {{ r.state_association.name }}
+      </div>
+    </div>
+
+    <div *ngIf="r.new_referee_created" class="text-xs text-blue-700 mb-2">
+      Neu angelegter Schiedsrichter.
+    </div>
+
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-fb-gray-600 border-b border-fb-gray-100">
+          <th class="py-1">Feld</th>
+          <th class="py-1">In Datenbank</th>
+          <th class="py-1">Aus CSV / vom Importeur</th>
+          <th class="py-1">Final (editierbar)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b border-fb-gray-50">
+          <td class="py-1">Lizenz-Nr.</td>
+          <td>{{ r.referee_snapshot?.lizenznummer ?? "—" }}</td>
+          <td>{{ r.csv.lizenznummer ?? "—" }}</td>
+          <td>
+            <input
+              type="number"
+              aria-label="Lizenznummer (final)"
+              class="border rounded px-2 py-1 w-32"
+              [value]="r.master.lizenznummer ?? ''"
+              (input)="
+                setField(
+                  r,
+                  'lizenznummer',
+                  $any($event.target).valueAsNumber || null
+                )
+              "
+            />
+          </td>
+        </tr>
+        <tr class="border-b border-fb-gray-50">
+          <td class="py-1">Vorname</td>
+          <td>{{ r.referee_snapshot?.vorname ?? "—" }}</td>
+          <td>{{ r.csv.vorname ?? "—" }}</td>
+          <td>
+            <input
+              type="text"
+              aria-label="Vorname (final)"
+              class="border rounded px-2 py-1 w-full"
+              [value]="r.master.vorname ?? ''"
+              (input)="setField(r, 'vorname', $any($event.target).value)"
+            />
+          </td>
+        </tr>
+        <tr class="border-b border-fb-gray-50">
+          <td class="py-1">Nachname</td>
+          <td>{{ r.referee_snapshot?.nachname ?? "—" }}</td>
+          <td>{{ r.csv.nachname ?? "—" }}</td>
+          <td>
+            <input
+              type="text"
+              aria-label="Nachname (final)"
+              class="border rounded px-2 py-1 w-full"
+              [value]="r.master.nachname ?? ''"
+              (input)="setField(r, 'nachname', $any($event.target).value)"
+            />
+          </td>
+        </tr>
+        <tr class="border-b border-fb-gray-50">
+          <td class="py-1">Geburtsdatum</td>
+          <td>{{ r.referee_snapshot?.geburtsdatum ?? "—" }}</td>
+          <td>{{ r.csv.geburtsdatum ?? "—" }}</td>
+          <td>
+            <input
+              type="date"
+              aria-label="Geburtsdatum (final)"
+              class="border rounded px-2 py-1"
+              [value]="r.master.geburtsdatum ?? ''"
+              (input)="
+                setField(r, 'geburtsdatum', $any($event.target).value || null)
+              "
+            />
+          </td>
+        </tr>
+        <tr class="border-b border-fb-gray-50">
+          <td class="py-1">E-Mail</td>
+          <td>{{ r.referee_snapshot?.email ?? "—" }}</td>
+          <td>{{ r.csv.email ?? "—" }}</td>
+          <td>
+            <input
+              type="email"
+              aria-label="E-Mail (final)"
+              class="border rounded px-2 py-1 w-full"
+              [value]="r.master.email ?? ''"
+              (input)="setField(r, 'email', $any($event.target).value || null)"
+            />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="flex justify-end gap-2 mt-3">
+      <button
+        type="button"
+        class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+        [disabled]="approving.has(r.id)"
+        (click)="approve(r)"
+      >
+        {{ approving.has(r.id) ? "Speichere..." : "Freigeben" }}
+      </button>
+    </div>
+  </div>
+</div>

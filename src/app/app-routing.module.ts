@@ -56,6 +56,13 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/referee-courses').then(
+            (m) => m.AdminRefereeCourseModule
+          ),
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/referee-vm').then(
             (m) => m.AdminRefereeVmModule
           ),

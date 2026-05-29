@@ -134,6 +134,9 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       scan_required: this.hasParent
         ? false
         : this.stateAssociation.scan_required,
+      referee_license_review_enabled: this.hasParent
+        ? false
+        : this.stateAssociation.referee_license_review_enabled ?? false,
       banner_link_url: this.stateAssociation.banner_link_url ?? null,
     };
 

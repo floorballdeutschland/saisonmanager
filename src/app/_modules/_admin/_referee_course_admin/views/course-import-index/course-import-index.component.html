@@ -1,0 +1,72 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold">Schiedsrichter-Kursergebnisse</h1>
+
+    <label
+      class="inline-flex items-center px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] cursor-pointer hover:bg-fb-gray-500 disabled:opacity-50"
+    >
+      <input
+        type="file"
+        aria-label="CSV-Datei mit Schiedsrichter-Kursergebnissen auswählen"
+        accept=".csv,text/csv"
+        class="hidden"
+        (change)="onFileSelected($event)"
+        [disabled]="uploading"
+      />
+      {{ uploading ? "Lade hoch..." : "CSV hochladen" }}
+    </label>
+  </div>
+
+  <p class="text-fb-gray-600 mb-6">
+    Lade eine CSV-Datei mit Schiedsrichter-Kursergebnissen hoch. Jeder Import
+    durchläuft anschließend einen Review-Schritt — pro Zeile wird die
+    Lizenzstufe festgelegt und ggf. abweichende Stammdaten korrigiert.
+  </p>
+
+  <div *ngIf="loading" class="text-fb-gray-500">Lade...</div>
+
+  <table
+    *ngIf="!loading && imports.length"
+    class="w-full border-collapse"
+    aria-label="Imports"
+  >
+    <thead>
+      <tr class="border-b border-fb-gray-200">
+        <th class="text-left py-2 px-3">Datei</th>
+        <th class="text-left py-2 px-3">Hochgeladen am</th>
+        <th class="text-left py-2 px-3">Datensätze</th>
+        <th class="text-left py-2 px-3">Offene Reviews</th>
+        <th class="text-left py-2 px-3">Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="let imp of imports"
+        class="border-b border-fb-gray-100 hover:bg-fb-gray-50"
+      >
+        <td class="py-2 px-3 font-mono text-sm">{{ imp.filename }}</td>
+        <td class="py-2 px-3">
+          {{ imp.created_at | date : "dd.MM.yyyy HH:mm" }}
+        </td>
+        <td class="py-2 px-3">{{ imp.total_rows }}</td>
+        <td class="py-2 px-3">{{ imp.progress?.pending_review || 0 }}</td>
+        <td class="py-2 px-3">{{ statusLabel(imp.status) }}</td>
+        <td class="py-2 px-3 text-right">
+          <a
+            [routerLink]="['/', 'verwaltung', 'schiri-kurse', imp.id]"
+            class="text-black underline hover:no-underline"
+            >Öffnen</a
+          >
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div
+    *ngIf="!loading && !imports.length"
+    class="text-fb-gray-500 py-12 text-center"
+  >
+    Noch keine Imports vorhanden.
+  </div>
+</div>

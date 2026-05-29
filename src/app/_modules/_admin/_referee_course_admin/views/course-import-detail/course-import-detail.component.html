@@ -1,0 +1,244 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <a
+    [routerLink]="['/', 'verwaltung', 'schiri-kurse']"
+    class="text-black underline hover:no-underline"
+    >← zurück zur Übersicht</a
+  >
+
+  <div *ngIf="loading" class="text-fb-gray-500 mt-6">Lade...</div>
+
+  <ng-container *ngIf="!loading && importData">
+    <div class="flex flex-wrap items-baseline gap-x-4 mt-2 mb-2">
+      <h1 class="text-3xl font-bold">{{ importData.filename }}</h1>
+      <span class="text-fb-gray-600 text-sm">
+        Hochgeladen am
+        {{ importData.created_at | date : "dd.MM.yyyy HH:mm" }}
+      </span>
+    </div>
+
+    <div class="text-sm text-fb-gray-600 mb-6" *ngIf="importData.progress">
+      {{ importData.total_rows }} Datensätze •
+      {{ importData.progress.pending_review }} offen •
+      {{ importData.progress.applied }} angewendet
+    </div>
+
+    <ng-container *ngIf="importData.status === 'in_review'">
+      <div class="bg-fb-gray-50 rounded p-4 mb-6">
+        <p class="text-sm">
+          Wähle pro Datensatz die Lizenzstufe und ggf. die korrekten Stammdaten.
+          Erst nach „Einreichen" werden die Datensätze – bei aktiviertem
+          Landesverband-Kontrollprozess – zur Freigabe vorgelegt.
+        </p>
+      </div>
+    </ng-container>
+
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr class="border-b border-fb-gray-300 bg-fb-gray-50">
+          <th class="text-left py-2 px-2">Match</th>
+          <th class="text-left py-2 px-2">Stammdaten</th>
+          <th class="text-left py-2 px-2">Kurs / Stichtag</th>
+          <th class="text-left py-2 px-2">Bisherige Lizenz</th>
+          <th class="text-left py-2 px-2">Vorsaison</th>
+          <th class="text-left py-2 px-2">Lizenzstufe</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let r of importData.results; trackBy: trackResult"
+          class="border-b border-fb-gray-100 align-top"
+        >
+          <td class="py-3 px-2">
+            <span
+              class="inline-block px-2 py-1 rounded text-xs whitespace-nowrap"
+              [ngClass]="matchBadgeClass(r)"
+              >{{ matchBadgeLabel(r) }}</span
+            >
+            <div
+              *ngIf="r.status === 'applied'"
+              class="text-xs text-green-700 mt-1"
+            >
+              ✓ Angewendet
+            </div>
+            <div
+              *ngIf="
+                r.status === 'pending_review' &&
+                importData.status !== 'in_review'
+              "
+              class="text-xs text-yellow-700 mt-1"
+            >
+              ⏳ Bei LV
+            </div>
+          </td>
+
+          <td class="py-3 px-2">
+            <div class="space-y-1">
+              <div>
+                <strong>Lizenz-Nr.:</strong>
+                {{ r.master_by_importer.lizenznummer ?? "—" }}
+              </div>
+              <div>
+                <strong>Name:</strong>
+                {{ r.master_by_importer.vorname }}
+                {{ r.master_by_importer.nachname }}
+              </div>
+              <div>
+                <strong>Geburt:</strong>
+                {{ r.master_by_importer.geburtsdatum }}
+              </div>
+              <div>
+                <strong>Verein:</strong>
+                <span *ngIf="r.matched_club">{{ r.matched_club.name }}</span>
+                <span
+                  *ngIf="!r.matched_club && r.csv.verein"
+                  class="text-red-600"
+                  >„{{ r.csv.verein }}" (nicht zugeordnet)</span
+                >
+                <span *ngIf="!r.matched_club && !r.csv.verein">—</span>
+              </div>
+              <div>
+                <strong>E-Mail:</strong>
+                {{ r.master_by_importer.email ?? "—" }}
+              </div>
+            </div>
+
+            <!-- Konflikte: Master-Wahl pro abweichendem Feld -->
+            <ng-container *ngIf="r.match_type === 'partial_match'">
+              <ng-container *ngFor="let field of conflictFields">
+                <div
+                  *ngIf="fieldsDiffer(r, field)"
+                  class="mt-2 p-2 bg-yellow-50 rounded text-xs"
+                >
+                  <strong>Abweichung „{{ field }}":</strong>
+                  <div class="flex flex-wrap gap-2 mt-1">
+                    <button
+                      type="button"
+                      class="px-2 py-1 border rounded"
+                      [class.bg-black]="
+                        currentMaster(r, field) === csvValue(r, field)
+                      "
+                      [class.text-white]="
+                        currentMaster(r, field) === csvValue(r, field)
+                      "
+                      (click)="pickMaster(r, field, 'csv')"
+                    >
+                      CSV: {{ csvValue(r, field) }}
+                    </button>
+                    <button
+                      type="button"
+                      class="px-2 py-1 border rounded"
+                      [class.bg-black]="
+                        currentMaster(r, field) === dbValue(r, field)
+                      "
+                      [class.text-white]="
+                        currentMaster(r, field) === dbValue(r, field)
+                      "
+                      (click)="pickMaster(r, field, 'db')"
+                    >
+                      DB: {{ dbValue(r, field) }}
+                    </button>
+                  </div>
+                </div>
+              </ng-container>
+            </ng-container>
+          </td>
+
+          <td class="py-3 px-2">
+            <div *ngIf="r.course_data.kurs_1?.stufe">
+              Kurs 1: {{ r.course_data.kurs_1?.stufe }} —
+              {{ r.course_data.kurs_1?.datum }}
+            </div>
+            <div *ngIf="r.course_data.kurs_2?.stufe">
+              Kurs 2: {{ r.course_data.kurs_2?.stufe }} —
+              {{ r.course_data.kurs_2?.datum }}
+            </div>
+            <div class="mt-2 text-xs text-fb-gray-600">
+              Stichtag: {{ r.kursstichtag }} • Alter:
+              {{ r.age_at_kursstichtag ?? "—" }}
+            </div>
+            <div class="text-xs text-fb-gray-600">
+              Gültig bis: {{ r.gueltigkeit }}
+            </div>
+          </td>
+
+          <td class="py-3 px-2 text-xs">
+            <ng-container *ngIf="r.referee_snapshot; else noRef">
+              <div>{{ r.referee_snapshot.lizenzstufe ?? "—" }}</div>
+              <div *ngIf="r.referee_snapshot.gueltigkeit">
+                bis
+                {{ r.referee_snapshot.gueltigkeit | date : "dd.MM.yyyy" }}
+              </div>
+            </ng-container>
+            <ng-template #noRef>
+              <span class="text-fb-gray-500">Neu</span>
+            </ng-template>
+          </td>
+
+          <td class="py-3 px-2 text-xs">
+            {{ r.previous_season_game_count ?? 0 }} Spiele
+          </td>
+
+          <td class="py-3 px-2">
+            <select
+              aria-label="Lizenzstufe für Schiedsrichter:in"
+              class="border rounded px-2 py-1 w-full"
+              [value]="r.lizenzstufe ?? ''"
+              [disabled]="importData.status !== 'in_review' || saving.has(r.id)"
+              (change)="updateLizenzstufe(r, $any($event.target).value)"
+            >
+              <option value="">— wählen —</option>
+              <option *ngFor="let level of licenseLevels" [value]="level.name">
+                {{ level.name }}
+              </option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div
+      *ngIf="importData.status === 'in_review'"
+      class="flex justify-between items-center mt-6"
+    >
+      <fb-confirmation
+        title="Import abbrechen"
+        content="Diesen Import wirklich abbrechen? Alle hochgeladenen Zeilen und Vor-Anlagen werden verworfen."
+        submitButtonTitle="Import abbrechen"
+        buttonVariant="error"
+        (handleSubmit)="cancel()"
+      >
+        <button type="button" class="px-4 py-2 border rounded text-red-600">
+          Import abbrechen
+        </button>
+      </fb-confirmation>
+
+      <div class="text-right">
+        <div
+          *ngIf="missingLicenseLevelCount() > 0"
+          class="text-red-600 text-sm mb-2"
+        >
+          Für {{ missingLicenseLevelCount() }} Datensätze fehlt noch die
+          Lizenzstufe.
+        </div>
+        <button
+          type="button"
+          class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+          [disabled]="!canSubmit() || submitting"
+          (click)="submit()"
+        >
+          {{ submitting ? "Reiche ein..." : "Einreichen" }}
+        </button>
+      </div>
+    </div>
+
+    <div
+      *ngIf="importData.status === 'submitted'"
+      class="mt-6 p-4 bg-green-50 text-green-800 rounded"
+    >
+      Import eingereicht. Datensätze ohne Korrektur sind direkt angewendet.
+      Datensätze mit Korrektur warten – sofern der Landesverband den
+      Kontrollprozess aktiviert hat – auf eine Freigabe durch den RSK des
+      Landesverbands.
+    </div>
+  </ng-container>
+</div>
