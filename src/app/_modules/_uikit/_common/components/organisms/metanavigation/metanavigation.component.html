@@ -247,7 +247,11 @@
             class="font-bold text-fb-gray-500 hover:text-black text-base"
             [routerLink]="['/', 'verwaltung', 'landesverbaende']"
             (click)="closeMenu()"
-            >Landesverbände</a
+            >{{
+              showItem("menu_item_state_association_admin")
+                ? "Landesverbände"
+                : "Verbandseinstellungen"
+            }}</a
           >
         </li>
         <li

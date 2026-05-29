@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import { Router } from '@angular/router';
 import {
   StateAssociationService,
   NotificationService,
@@ -49,11 +50,19 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
     private _stateAssociationService: StateAssociationService,
     private _notificationService: NotificationService,
     private _sessionService: SessionService,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private _router: Router
   ) {}
 
   get isAdmin(): boolean {
     return !!this.currentUser?.permissions['menu_item_state_association_admin'];
+  }
+
+  get isSbkOnly(): boolean {
+    return (
+      !!this.currentUser?.permissions['menu_item_state_association_sbk'] &&
+      !this.isAdmin
+    );
   }
 
   ngOnInit(): void {
@@ -80,6 +89,16 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           this.stateAssociations = result;
+          if (this.isSbkOnly && result.length === 1) {
+            this._router.navigate([
+              '/',
+              'verwaltung',
+              'landesverbaende',
+              result[0].id,
+              'bearbeiten',
+            ]);
+            return;
+          }
           this._buildSortedRows();
           this.loading = false;
           this._cdr.markForCheck();

@@ -12,12 +12,14 @@ import {
   StateAssociationService,
   NotificationService,
   GameOperationService,
+  SessionService,
 } from '@floorball/core';
 import {
   ChecklistItem,
   GameOperation,
   StateAssociation,
   StateAssociationRelease,
+  User,
 } from '@floorball/types';
 
 @Component({
@@ -29,6 +31,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
   stateAssociation: Partial<StateAssociation> = { name: '', short_name: '' };
   editMode = false;
   saving = false;
+  currentUser: User | null = null;
 
   allStateAssociations: StateAssociation[] = [];
 
@@ -51,10 +54,22 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     private _notificationService: NotificationService,
     private _route: ActivatedRoute,
     private _router: Router,
+    private _sessionService: SessionService,
     private _cdr: ChangeDetectorRef
   ) {}
 
+  get isAdmin(): boolean {
+    return !!this.currentUser?.permissions['menu_item_state_association_admin'];
+  }
+
   ngOnInit(): void {
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((user) => {
+        this.currentUser = user;
+        this._cdr.markForCheck();
+      });
+
     this._stateAssociationService
       .adminGetAll()
       .pipe(takeUntil(this._destroy$))
