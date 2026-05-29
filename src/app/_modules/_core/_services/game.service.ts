@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import {
+  AddLineupPlayerResponse,
   Game,
   GameAdditionalFields,
   GameEvent,
@@ -67,7 +68,7 @@ export class GameService {
       '/lineup/' +
       team +
       '/add_player.json';
-    return this.http.post<GamePlayerEntry[]>(path, {
+    return this.http.post<AddLineupPlayerResponse>(path, {
       player_id,
       trikot_number,
       goalkeeper,

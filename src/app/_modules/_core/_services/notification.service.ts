@@ -42,6 +42,15 @@ export class NotificationService {
     });
   }
 
+  public warning(message: string, options?: UserNotificationOptions) {
+    this.notify({
+      id: this.defaultId,
+      ...options,
+      type: NotificationType.Warning,
+      message,
+    });
+  }
+
   public notify(notification: UserNotification) {
     this.notificationSubject.next(notification);
   }

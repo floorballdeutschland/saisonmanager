@@ -129,7 +129,13 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
                 keepAfterRouteChange: false,
               }
             );
-            this.updateLineup.emit(result);
+            if (result.warning) {
+              this._notificationService.warning(result.warning, {
+                autoClose: false,
+                keepAfterRouteChange: false,
+              });
+            }
+            this.updateLineup.emit(result.players);
           },
         });
     } else {

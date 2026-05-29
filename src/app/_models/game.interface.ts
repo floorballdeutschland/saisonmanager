@@ -60,6 +60,11 @@ export interface GamePlayers {
   guest?: GamePlayerEntry[];
 }
 
+export interface AddLineupPlayerResponse {
+  players: GamePlayerEntry[];
+  warning: string | null;
+}
+
 export interface StartingPlayer {
   position: string;
   team: string;
