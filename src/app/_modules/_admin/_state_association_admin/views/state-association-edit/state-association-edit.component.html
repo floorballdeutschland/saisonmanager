@@ -49,7 +49,7 @@
         </option>
       </select>
       <span *ngIf="!isAdmin" class="text-sm py-2">
-        {{ parent?.name || "– kein übergeordneter Verbund –" }}
+        {{ stateAssociation.parent_name || "– kein übergeordneter Verbund –" }}
       </span>
       <span *ngIf="isAdmin && hasChildren" class="text-xs text-fb-gray-400">
         Dieser Verbund hat untergeordnete Landesverbände und kann daher keinem
