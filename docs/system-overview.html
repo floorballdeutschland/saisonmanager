@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saisonmanager – Systemübersicht</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --admin: #dc2626;
+        --sbk: #2563eb;
+        --rsk: #7c3aed;
+        --vm: #16a34a;
+        --tm: #ea580c;
+        --sek: #475569;
+        --schiri: #0891b2;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --text: #0f172a;
+        --muted: #64748b;
+        --primary: #0ea5e9;
+        --radius: 12px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06);
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+        min-height: 100vh;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      /* ─── SIDEBAR ─── */
+      aside {
+        width: 220px;
+        min-height: 100vh;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+      }
+
+      .sidebar-logo {
+        padding: 24px 20px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .sidebar-logo .wordmark {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--primary);
+      }
+      .sidebar-logo .sub {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      nav {
+        padding: 12px 0;
+        flex: 1;
+      }
+
+      nav a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 20px;
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--muted);
+        text-decoration: none;
+        border-left: 3px solid transparent;
+        transition: all 0.15s;
+      }
+      nav a:hover {
+        color: var(--text);
+        background: var(--bg);
+      }
+      nav a.active {
+        color: var(--primary);
+        border-left-color: var(--primary);
+        background: #f0f9ff;
+      }
+
+      nav .section-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 16px 20px 4px;
+      }
+
+      /* ─── MAIN ─── */
+      main {
+        flex: 1;
+        padding: 40px 48px;
+        max-width: 1100px;
+      }
+
+      .page-header {
+        margin-bottom: 48px;
+      }
+      .page-header h1 {
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .page-header p {
+        color: var(--muted);
+        margin-top: 6px;
+        font-size: 16px;
+      }
+
+      section {
+        margin-bottom: 64px;
+      }
+
+      section h2 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      section h2 .icon {
+        font-size: 22px;
+      }
+
+      /* ─── ROLE CARDS ─── */
+      .role-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+      }
+
+      .role-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow);
+        border-top: 4px solid var(--c);
+        transition: transform 0.15s, box-shadow 0.15s;
+      }
+      .role-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+      }
+
+      .role-card .role-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .role-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        font-weight: 800;
+        font-size: 13px;
+        color: white;
+        background: var(--c);
+        flex-shrink: 0;
+      }
+      .role-card h3 {
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .role-card .role-scope {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .role-card ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .role-card ul li {
+        font-size: 13px;
+        color: var(--muted);
+        display: flex;
+        align-items: flex-start;
+        gap: 7px;
+      }
+      .role-card ul li::before {
+        content: "✓";
+        color: var(--c);
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      /* ─── WORKFLOWS ─── */
+      .workflow {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+      }
+
+      .workflow-title {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .wf-badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 99px;
+        color: white;
+        background: var(--c);
+      }
+
+      .flow {
+        display: flex;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 0;
+      }
+
+      .flow-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 0 0 auto;
+      }
+
+      .step-box {
+        background: var(--bg);
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 12.5px;
+        font-weight: 500;
+        text-align: center;
+        min-width: 110px;
+        max-width: 140px;
+        line-height: 1.4;
+        position: relative;
+      }
+      .step-box.highlight {
+        border-color: var(--c);
+        background: color-mix(in srgb, var(--c) 8%, white);
+        font-weight: 600;
+      }
+      .step-box .step-role {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--c);
+        margin-bottom: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .step-note {
+        font-size: 10.5px;
+        color: var(--muted);
+        margin-top: 6px;
+        text-align: center;
+        max-width: 130px;
+        line-height: 1.3;
+      }
+
+      .flow-arrow {
+        display: flex;
+        align-items: flex-start;
+        padding-top: 20px;
+        color: var(--muted);
+        font-size: 18px;
+        flex-shrink: 0;
+        padding-left: 6px;
+        padding-right: 6px;
+      }
+
+      .flow-branch {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+        padding-left: 24px;
+        border-left: 2px dashed var(--border);
+      }
+      .branch-item {
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .branch-item::before {
+        content: "↳";
+        color: var(--c);
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      .flow-section-break {
+        width: 100%;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin: 4px 0;
+      }
+      .flow-section-break::before {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+        margin-right: 8px;
+      }
+      .flow-section-label {
+        font-size: 10px;
+        color: var(--muted);
+        font-style: italic;
+        white-space: nowrap;
+      }
+
+      /* ─── FEATURE MATRIX ─── */
+      .matrix-wrap {
+        overflow-x: auto;
+      }
+
+      table.matrix {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 13px;
+        background: var(--surface);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      table.matrix th,
+      table.matrix td {
+        padding: 10px 14px;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+      }
+      table.matrix th:first-child,
+      table.matrix td:first-child {
+        text-align: left;
+        font-weight: 500;
+        min-width: 240px;
+        padding-left: 20px;
+      }
+      table.matrix thead th {
+        background: var(--bg);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      table.matrix thead th .dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--c);
+        margin-right: 5px;
+        vertical-align: middle;
+      }
+      table.matrix tbody tr:hover {
+        background: #f8fafc;
+      }
+      table.matrix tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .matrix-group th {
+        background: #f1f5f9 !important;
+        color: #334155 !important;
+        font-weight: 700 !important;
+        font-size: 12px !important;
+        text-align: left !important;
+        letter-spacing: 0.04em !important;
+        text-transform: none !important;
+        padding-left: 20px !important;
+      }
+
+      .check {
+        font-size: 16px;
+      }
+      .check.yes {
+        color: #16a34a;
+      }
+      .check.partial {
+        color: #ea580c;
+      }
+      .check.no {
+        color: #cbd5e1;
+      }
+
+      /* ─── DATA MODEL ─── */
+      .datamodel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 28px;
+        box-shadow: var(--shadow);
+      }
+
+      .dm-tree {
+        font-family: "SF Mono", "Fira Code", "Fira Mono", monospace;
+        font-size: 13px;
+        line-height: 2;
+      }
+      .dm-tree .dm-entity {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        cursor: default;
+        transition: background 0.15s;
+      }
+      .dm-tree .dm-entity:hover {
+        background: #e0f2fe;
+        border-color: var(--primary);
+      }
+      .dm-entity .dm-icon {
+        font-size: 14px;
+      }
+
+      .dm-row {
+        display: flex;
+        align-items: center;
+        gap: 0;
+      }
+      .dm-indent {
+        display: inline-block;
+        color: var(--border);
+      }
+      .dm-arrow {
+        color: var(--muted);
+        margin: 0 6px;
+        font-size: 12px;
+      }
+      .dm-note {
+        font-size: 11.5px;
+        color: var(--muted);
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        margin-left: 10px;
+        font-style: italic;
+      }
+
+      .dm-columns {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .dm-col-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px 16px;
+        font-size: 12.5px;
+      }
+      .dm-col-card h4 {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 8px;
+      }
+      .dm-col-card li {
+        margin-left: 14px;
+        margin-bottom: 3px;
+        color: var(--muted);
+        list-style: disc;
+      }
+      .dm-col-card code {
+        font-family: "SF Mono", monospace;
+        font-size: 11.5px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+        color: var(--primary);
+      }
+
+      /* ─── FOOTER ─── */
+      footer {
+        margin-top: 80px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+      }
+
+      /* ─── SCROLLSPY ─── */
+      @media (max-width: 768px) {
+        aside {
+          display: none;
+        }
+        main {
+          padding: 24px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══════════════ SIDEBAR ═══════════════ -->
+    <aside>
+      <div class="sidebar-logo">
+        <div class="wordmark">Saisonmanager</div>
+        <div class="sub">Systemübersicht · Stand Mai 2026</div>
+      </div>
+      <nav id="sidenav">
+        <div class="section-label">Navigation</div>
+        <a href="#rollen">👥 Benutzerrollen</a>
+        <a href="#workflows">⚙️ Workflows</a>
+        <a href="#matrix">📋 Funktionsmatrix</a>
+        <a href="#datenmodell">🗄️ Datenmodell</a>
+      </nav>
+    </aside>
+
+    <!-- ═══════════════ MAIN ═══════════════ -->
+    <main>
+      <div class="page-header">
+        <h1>Saisonmanager</h1>
+        <p>
+          Vollständige Systemübersicht — Rollen, Workflows und Funktionen im
+          Überblick
+        </p>
+      </div>
+
+      <!-- ═══════════════ ROLLEN ═══════════════ -->
+      <section id="rollen">
+        <h2><span class="icon">👥</span> Benutzerrollen</h2>
+
+        <div class="role-grid">
+          <div class="role-card" style="--c: var(--admin)">
+            <div class="role-header">
+              <div class="role-badge">ADM</div>
+              <div>
+                <h3>Admin</h3>
+                <div class="role-scope">
+                  Global oder pro Verband (GameOperation)
+                </div>
+              </div>
+            </div>
+            <ul>
+              <li>Vollzugriff auf alle Bereiche</li>
+              <li>Benutzer- und Rechteverwaltung</li>
+              <li>Spielplanung und -verwaltung</li>
+              <li>Spieler- und Lizenzverwaltung</li>
+              <li>Vereine, Teams, Ligen konfigurieren</li>
+              <li>API-Keys und Systemeinstellungen</li>
+            </ul>
+          </div>
+
+          <div class="role-card" style="--c: var(--sbk)">
+            <div class="role-header">
+              <div class="role-badge">SBK</div>
+              <div>
+                <h3>Spielberichts-Kommission</h3>
+                <div class="role-scope">
+                  Scoped auf Verband (Ost / West / FD)
+                </div>
+              </div>
+            </div>
+            <ul>
+              <li>Spieltage und Spiele anlegen / bearbeiten</li>
+              <li>Schiedsrichter (Freitext) in Spielplanung eintragen</li>
+              <li>Alle Spielberichte ihres Verbands verwalten</li>
+              <li>Spielstatus setzen und überwachen</li>
+              <li>Vereins- und Teamdaten lesen</li>
+            </ul>
+          </div>
+
+          <div class="role-card" style="--c: var(--rsk)">
+            <div class="role-header">
+              <div class="role-badge">RSK</div>
+              <div>
+                <h3>Referees-Schiedsrichter-Kommission</h3>
+                <div class="role-scope">Scoped auf Verband</div>
+              </div>
+            </div>
+            <ul>
+              <li>Verfügbare Schiedsrichter prüfen (Blockierungen)</li>
+              <li>Tentative Ansetzung erstellen</li>
+              <li>Schiedsrichter per Mail benachrichtigen</li>
+              <li>Ansetzung veröffentlichen (E-Mail + Lizenzliste)</li>
+              <li>Sperrtage und Profile der Schiris einsehen</li>
+            </ul>
+          </div>
+
+          <div class="role-card" style="--c: var(--vm)">
+            <div class="role-header">
+              <div class="role-badge">VM</div>
+              <div>
+                <h3>Vereinsmanager</h3>
+                <div class="role-scope">
+                  Scoped auf einen oder mehrere Vereine
+                </div>
+              </div>
+            </div>
+            <ul>
+              <li>Vereinsdaten und Teams verwalten</li>
+              <li>Spielbericht-Eingabe für Heimspiele</li>
+              <li>Spielbericht für Gastspiele einsehen</li>
+              <li>Spielsekretariats-Links generieren (72h)</li>
+              <li>Schiedsrichter-Lesezugriff (Lizenzstufen)</li>
+            </ul>
+          </div>
+
+          <div class="role-card" style="--c: var(--tm)">
+            <div class="role-header">
+              <div class="role-badge">TM</div>
+              <div>
+                <h3>Teammanager</h3>
+                <div class="role-scope">Scoped auf ein Team</div>
+              </div>
+            </div>
+            <ul>
+              <li>Aufstellung und Ereignisse für eigenes Team eintragen</li>
+              <li>Spielbericht für eigene Spiele einsehen</li>
+              <li>Spielsekretariats-Links generieren (72h)</li>
+            </ul>
+          </div>
+
+          <div class="role-card" style="--c: var(--sek)">
+            <div class="role-header">
+              <div class="role-badge">SEK</div>
+              <div>
+                <h3>Spielsekretär</h3>
+                <div class="role-scope">
+                  Token-basiert, kein Login erforderlich
+                </div>
+              </div>
+            </div>
+            <ul>
+              <li>Spielbericht vollständig ausfüllen via Link</li>
+              <li>Aufstellung, Ereignisse, Schiedsrichter, Checkliste</li>
+              <li>Lizenzlisten beider Teams einsehen</li>
+              <li>Link gültig 72 Stunden</li>
+            </ul>
+          </div>
+
+          <div class="role-card" style="--c: var(--schiri)">
+            <div class="role-header">
+              <div class="role-badge">SCH</div>
+              <div>
+                <h3>Schiedsrichter</h3>
+                <div class="role-scope">
+                  Eigener Account, Referee-Profil verknüpft
+                </div>
+              </div>
+            </div>
+            <ul>
+              <li>Eigenes Profil und Lizenzdaten einsehen</li>
+              <li>Sperrtage selbst pflegen</li>
+              <li>Incident-Reports hochladen (PDF)</li>
+              <li>Lizenzlisten via Ansetzungs-Link abrufen</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════ WORKFLOWS ═══════════════ -->
+      <section id="workflows">
+        <h2><span class="icon">⚙️</span> Workflows</h2>
+
+        <!-- WF1: Spielplanung -->
+        <div class="workflow" style="--c: var(--sbk)">
+          <div class="workflow-title">
+            <span class="wf-badge">SBK / Admin</span>
+            Spielplanung
+          </div>
+          <div class="flow">
+            <div class="flow-step">
+              <div class="step-box highlight">
+                <div class="step-role">SBK / Admin</div>
+                Spieltag anlegen
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">
+                Spiele eintragen<br />
+                <small style="color: var(--muted)">Heim / Gast / Arena</small>
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">
+                Schiedsrichter<br />eintragen
+                <div class="step-note">
+                  Freitext, z. B. „Verein X" oder konkrete Namen
+                </div>
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box highlight">Spiele öffentlich sichtbar</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WF2: Schiedsrichter-Ansetzung -->
+        <div class="workflow" style="--c: var(--rsk)">
+          <div class="workflow-title">
+            <span class="wf-badge">RSK</span>
+            Schiedsrichter-Ansetzung
+          </div>
+          <div class="flow">
+            <div class="flow-step">
+              <div class="step-box highlight">
+                <div class="step-role">RSK</div>
+                Verfügbarkeit prüfen
+              </div>
+              <div class="step-note">
+                Blockierte Termine &amp; bestehende Ansetzungen werden gefiltert
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">Tentative Ansetzung erstellen</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">
+                Schiris benachrichtigen
+                <div class="step-note">
+                  E-Mail an Schiri 1 &amp; 2 (optional)
+                </div>
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box highlight">Ansetzung veröffentlichen</div>
+            </div>
+          </div>
+          <div class="flow-branch" style="margin-top: 16px">
+            <div class="branch-item">
+              E-Mail an beide Schiris mit Spieldetails + 72h-Lizenzlisten-Link
+            </div>
+            <div class="branch-item">
+              <code
+                style="
+                  font-family: monospace;
+                  font-size: 11px;
+                  background: #f1f5f9;
+                  padding: 1px 5px;
+                  border-radius: 3px;
+                "
+                >nominated_referee_string</code
+              >
+              des Spiels wird automatisch mit den Schirinamen überschrieben
+            </div>
+            <div class="branch-item">
+              Hinweis auf mögliche Expresslizenzen in der E-Mail enthalten
+            </div>
+          </div>
+        </div>
+
+        <!-- WF3: Spielsekretariats-Link -->
+        <div class="workflow" style="--c: var(--sek)">
+          <div class="workflow-title">
+            <span class="wf-badge">VM / TM</span>
+            Spielsekretariats-Link
+          </div>
+          <div class="flow">
+            <div class="flow-step">
+              <div class="step-box highlight">
+                <div class="step-role">VM / TM</div>
+                Link generieren
+              </div>
+              <div class="step-note">72h gültig, pro Spieltag</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">Link an Sekretär schicken</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box highlight">
+                <div class="step-role">Sekretär</div>
+                Spielbericht ausfüllen
+              </div>
+              <div class="step-note">
+                Kein Login nötig — vollen Zugriff auf alle Spielberichte des
+                Spieltags
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WF4: Spielbericht -->
+        <div class="workflow" style="--c: var(--vm)">
+          <div class="workflow-title">
+            <span class="wf-badge">VM / TM / Sekretär</span>
+            Spielbericht-Eingabe
+          </div>
+          <div class="flow" style="flex-wrap: wrap; gap: 4px">
+            <div class="flow-step">
+              <div class="step-box highlight">
+                <div class="step-role">VM / TM / Sek.</div>
+                Aufstellung Heim
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">Aufstellung Gast</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">
+                Ereignisse<br />
+                <small style="color: var(--muted)">Tore, Strafen, OT</small>
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">
+                Schiedsrichter
+                <div class="step-note">
+                  Autocomplete aus Schiri-Datenbank (Lizenznummer + Name)
+                </div>
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">
+                Checkliste<br />
+                <small style="color: var(--muted)">Ja/Nein-Fragen des LV</small>
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">Unterschriften</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box highlight">Spielbericht abschließen</div>
+            </div>
+          </div>
+          <div class="flow-branch" style="margin-top: 16px">
+            <div class="branch-item">
+              Wenn alle Spiele des Spieltags abgeschlossen: Scan-Erinnerung per
+              E-Mail an Ausrichterverein
+            </div>
+            <div class="branch-item">
+              Checklisten-Bestätigungsmail an Ausrichterverein + angesetzte
+              Schiedsrichter
+            </div>
+            <div class="branch-item">
+              Bei Sondervorfall / Spielausschluss: Incident-Report-Mail an
+              Schiris (24h Frist für PDF-Upload)
+            </div>
+          </div>
+        </div>
+
+        <!-- WF5: Spielbericht-Scan -->
+        <div class="workflow" style="--c: var(--tm)">
+          <div class="workflow-title">
+            <span class="wf-badge">Ausrichterverein</span>
+            Spielbericht-Scan
+          </div>
+          <div class="flow">
+            <div class="flow-step">
+              <div class="step-box">
+                E-Mail mit Upload-Link
+                <div class="step-note">
+                  Geht automatisch nach Spieltagsabschluss raus
+                </div>
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box highlight">
+                <div class="step-role">Ausrichter</div>
+                Scan hochladen
+              </div>
+              <div class="step-note">PDF / PNG / JPEG, max. 5 MB</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">12 Monate gespeichert</div>
+              <div class="step-note">
+                Danach automatisch gelöscht (Rake Task)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WF6: Incident Report -->
+        <div class="workflow" style="--c: var(--schiri)">
+          <div class="workflow-title">
+            <span class="wf-badge">Schiedsrichter</span>
+            Incident Report (Sondervorfall)
+          </div>
+          <div class="flow">
+            <div class="flow-step">
+              <div class="step-box">
+                Spielausschluss im Bericht
+                <div class="step-note">
+                  Wird beim Abschließen des Spielberichts erkannt
+                </div>
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box highlight">
+                <div class="step-role">System</div>
+                E-Mail an Schiris
+              </div>
+              <div class="step-note">Mit Link zum PDF-Upload, Frist: 24h</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box highlight">
+                <div class="step-role">Schiri</div>
+                PDF hochladen
+              </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-box">Weiterleitung an VSK</div>
+              <div class="step-note">Landesverband des Ausrichtervereins</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════ MATRIX ═══════════════ -->
+      <section id="matrix">
+        <h2><span class="icon">📋</span> Funktionsmatrix</h2>
+        <div class="matrix-wrap">
+          <table class="matrix">
+            <thead>
+              <tr>
+                <th>Funktion</th>
+                <th>
+                  <span class="dot" style="--c: var(--admin)"></span>Admin
+                </th>
+                <th><span class="dot" style="--c: var(--sbk)"></span>SBK</th>
+                <th><span class="dot" style="--c: var(--rsk)"></span>RSK</th>
+                <th><span class="dot" style="--c: var(--vm)"></span>VM</th>
+                <th><span class="dot" style="--c: var(--tm)"></span>TM</th>
+                <th>
+                  <span class="dot" style="--c: var(--sek)"></span>Sekretär
+                </th>
+                <th>
+                  <span class="dot" style="--c: var(--schiri)"></span>Schiri
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="matrix-group">
+                <th colspan="8">Spielplanung</th>
+              </tr>
+              <tr>
+                <td>Spieltage &amp; Spiele anlegen / bearbeiten</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Schiedsrichter-Freitext eintragen (Planung)</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Spielplan öffentlich einsehen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+              </tr>
+
+              <tr class="matrix-group">
+                <th colspan="8">Schiedsrichter-Ansetzung</th>
+              </tr>
+              <tr>
+                <td>Verfügbare Schiris abfragen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Tentative Ansetzung erstellen / bearbeiten</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Schiedsrichter benachrichtigen (E-Mail)</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Ansetzung veröffentlichen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Sperrtage pflegen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+              </tr>
+
+              <tr class="matrix-group">
+                <th colspan="8">Spielbericht</th>
+              </tr>
+              <tr>
+                <td>Aufstellung Heimteam eintragen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check partial">◑</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Aufstellung Gastteam eintragen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check partial">◑</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Tore &amp; Strafen erfassen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Schiedsrichter im Spielbericht eintragen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Checkliste ausfüllen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Spielbericht abschließen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Spielsekretariats-Link generieren</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+
+              <tr class="matrix-group">
+                <th colspan="8">Scan &amp; Dokumente</th>
+              </tr>
+              <tr>
+                <td>Spielbericht-Scan hochladen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Incident Report (PDF) hochladen</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+              </tr>
+              <tr>
+                <td>Lizenzliste einsehen (via Token-Link)</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+              </tr>
+
+              <tr class="matrix-group">
+                <th colspan="8">Stammdaten</th>
+              </tr>
+              <tr>
+                <td>Spieler &amp; Lizenzen verwalten</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Schiedsrichter verwalten</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Schiedsrichter einsehen (Lizenzstufen)</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Vereine &amp; Teams verwalten</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check partial">◑</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Ligen &amp; Spielbetrieb konfigurieren</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+              <tr>
+                <td>Landesverbände &amp; Checklisten konfigurieren</td>
+                <td><span class="check yes">✓</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+                <td><span class="check no">—</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size: 12px; color: var(--muted); margin-top: 10px">
+          ◑ = eingeschränkt (nur eigener Verein/Team)
+        </p>
+      </section>
+
+      <!-- ═══════════════ DATENMODELL ═══════════════ -->
+      <section id="datenmodell">
+        <h2><span class="icon">🗄️</span> Datenmodell</h2>
+        <div class="datamodel">
+          <div class="dm-tree">
+            <div class="dm-row">
+              <span class="dm-entity"
+                ><span class="dm-icon">🏢</span> GameOperation</span
+              >
+              <span class="dm-arrow">──▶</span>
+              <span style="color: var(--muted); font-size: 13px"
+                >Verband (FD, SBK Ost, SBK West …)</span
+              >
+            </div>
+            <div class="dm-row" style="padding-left: 20px">
+              <span style="color: var(--border)">└──</span>
+              <span class="dm-entity"
+                ><span class="dm-icon">🏆</span> League</span
+              >
+              <span class="dm-arrow">──▶</span>
+              <span style="color: var(--muted); font-size: 13px"
+                >Liga (Saison, Klasse, Kategorie)</span
+              >
+            </div>
+            <div class="dm-row" style="padding-left: 40px">
+              <span style="color: var(--border)">└──</span>
+              <span class="dm-entity"
+                ><span class="dm-icon">📅</span> GameDay</span
+              >
+              <span class="dm-arrow">──▶</span>
+              <span style="color: var(--muted); font-size: 13px"
+                >Datum, Arena, Ausrichterverein</span
+              >
+            </div>
+            <div class="dm-row" style="padding-left: 60px">
+              <span style="color: var(--border)">└──</span>
+              <span class="dm-entity"
+                ><span class="dm-icon">🏒</span> Game</span
+              >
+              <span class="dm-arrow">──▶</span>
+              <span style="color: var(--muted); font-size: 13px"
+                >Spiel (Heim/Gast, Status, JSONB-Spalten)</span
+              >
+            </div>
+            <div class="dm-row" style="padding-left: 80px">
+              <span style="color: var(--border)">└──</span>
+              <span class="dm-entity" style="opacity: 0.8"
+                ><span class="dm-icon">📋</span> RefereeAssignment</span
+              >
+              <span class="dm-arrow">──▶</span>
+              <span style="color: var(--muted); font-size: 13px"
+                >RSK-Ansetzung (tentative / published)</span
+              >
+            </div>
+          </div>
+
+          <div
+            style="height: 1px; background: var(--border); margin: 24px 0"
+          ></div>
+
+          <div class="dm-tree">
+            <div class="dm-row">
+              <span class="dm-entity"
+                ><span class="dm-icon">👤</span> Player</span
+              >
+              <span class="dm-arrow">──▶</span>
+              <span style="color: var(--muted); font-size: 13px"
+                >clubs[] (JSONB), licenses[] (JSONB)</span
+              >
+            </div>
+            <div class="dm-row" style="margin-top: 8px">
+              <span class="dm-entity"
+                ><span class="dm-icon">🦺</span> Referee</span
+              >
+              <span class="dm-arrow">──▶</span>
+              <span style="color: var(--muted); font-size: 13px"
+                >Lizenznummer, Lizenzstufe, Club, LV</span
+              >
+            </div>
+            <div class="dm-row" style="margin-top: 8px">
+              <span class="dm-entity"
+                ><span class="dm-icon">🏛️</span> Club</span
+              >
+              <span class="dm-arrow">──▶</span>
+              <span style="color: var(--muted); font-size: 13px"
+                >belongs_to StateAssociation (Landesverband)</span
+              >
+            </div>
+            <div class="dm-row" style="margin-top: 8px">
+              <span class="dm-entity"
+                ><span class="dm-icon">⚙️</span> Setting</span
+              >
+              <span class="dm-arrow">──▶</span>
+              <span style="color: var(--muted); font-size: 13px"
+                >Single-row Systemkonfig (JSONB): Saisons, Lizenzkategorien,
+                Strafen …</span
+              >
+            </div>
+          </div>
+
+          <div class="dm-columns">
+            <div class="dm-col-card">
+              <h4>Game — wichtige Felder</h4>
+              <ul>
+                <li><code>players</code> — Aufstellung Heim/Gast (JSONB)</li>
+                <li><code>events</code> — Tore &amp; Strafen (JSONB)</li>
+                <li>
+                  <code>nominated_referee_string</code> — SBK-Planung (Freitext)
+                </li>
+                <li>
+                  <code>nominated_referee_ids</code> — RSK-IDs (Integer[])
+                </li>
+                <li>
+                  <code>referee1_string / referee2_string</code> —
+                  Spielbericht-Eintrag
+                </li>
+                <li><code>referee_ids</code> — Lizenznummern (Integer[])</li>
+                <li>
+                  <code>game_status</code> — open / started /
+                  match_record_closed / finalized
+                </li>
+                <li>
+                  <code>checklist_answers</code> — Ja/Nein-Antworten (JSONB)
+                </li>
+              </ul>
+            </div>
+            <div class="dm-col-card">
+              <h4>RefereeAssignment — Felder</h4>
+              <ul>
+                <li><code>referee1_id / referee2_id</code> — FK auf Referee</li>
+                <li><code>status</code> — tentative / published</li>
+                <li>
+                  <code>published_at</code> — Zeitstempel Veröffentlichung
+                </li>
+                <li>
+                  <code>notified_tentative_at</code> — Zeitstempel
+                  Benachrichtigung
+                </li>
+              </ul>
+              <div style="height: 12px"></div>
+              <h4>Token-basierte Zugriffe (72h)</h4>
+              <ul>
+                <li>Spielsekretariats-Link (secretary_link)</li>
+                <li>Lizenzlisten-Link (license_list)</li>
+                <li>Incident-Report-Link (referee_report)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <span>Saisonmanager · Floorball Verband Deutschland</span>
+        <span>Stand: Mai 2026</span>
+      </footer>
+    </main>
+
+    <script>
+      // Scrollspy
+      const links = document.querySelectorAll("#sidenav a");
+      const sections = [...links].map((l) =>
+        document.querySelector(l.getAttribute("href"))
+      );
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              links.forEach((l) => l.classList.remove("active"));
+              const active = [...links].find(
+                (l) => l.getAttribute("href") === "#" + e.target.id
+              );
+              if (active) active.classList.add("active");
+            }
+          });
+        },
+        { rootMargin: "-30% 0px -60% 0px" }
+      );
+
+      sections.forEach((s) => s && observer.observe(s));
+
+      // Default active
+      links[0]?.classList.add("active");
+    </script>
+  </body>
+</html>

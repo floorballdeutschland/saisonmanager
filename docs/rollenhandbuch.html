@@ -1,0 +1,2382 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saisonmanager – Rollenhandbuch</title>
+    <style>
+      :root {
+        --bg: #f4f6fa;
+        --card-bg: #fff;
+        --text: #1a1e2e;
+        --muted: #6b7280;
+        --border: #e2e8f0;
+        --radius: 10px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      .app-header {
+        background: #1a1e2e;
+        color: #fff;
+        padding: 18px 32px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .app-header .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+      .app-header .logo span {
+        color: #60a5fa;
+      }
+      .app-header .subtitle {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin-left: auto;
+      }
+
+      .role-nav {
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        overflow-x: auto;
+        padding: 0 24px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      }
+      .role-tab {
+        padding: 14px 22px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--muted);
+        border-bottom: 3px solid transparent;
+        transition: all 0.18s;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .role-tab:hover {
+        color: var(--text);
+      }
+      .role-radio {
+        display: none;
+      }
+      #tab-admin:checked ~ .role-nav label[for="tab-admin"],
+      #tab-sbk-fd:checked ~ .role-nav label[for="tab-sbk-fd"],
+      #tab-sbk-lv:checked ~ .role-nav label[for="tab-sbk-lv"],
+      #tab-rsk-fd:checked ~ .role-nav label[for="tab-rsk-fd"],
+      #tab-rsk-lv:checked ~ .role-nav label[for="tab-rsk-lv"],
+      #tab-vm:checked ~ .role-nav label[for="tab-vm"],
+      #tab-tm:checked ~ .role-nav label[for="tab-tm"],
+      #tab-schiri:checked ~ .role-nav label[for="tab-schiri"] {
+        color: var(--active-color, #1a1e2e);
+        border-bottom-color: var(--active-color, #1a1e2e);
+      }
+      .role-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.8;
+      }
+
+      .main {
+        padding: 32px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .role-panel {
+        display: none;
+      }
+      #tab-admin:checked ~ .main #panel-admin,
+      #tab-sbk-fd:checked ~ .main #panel-sbk-fd,
+      #tab-sbk-lv:checked ~ .main #panel-sbk-lv,
+      #tab-rsk-fd:checked ~ .main #panel-rsk-fd,
+      #tab-rsk-lv:checked ~ .main #panel-rsk-lv,
+      #tab-vm:checked ~ .main #panel-vm,
+      #tab-tm:checked ~ .main #panel-tm,
+      #tab-schiri:checked ~ .main #panel-schiri {
+        display: block;
+      }
+
+      .role-hero {
+        border-radius: var(--radius);
+        padding: 28px 32px;
+        color: #fff;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+      }
+      .role-hero::after {
+        content: "";
+        position: absolute;
+        right: -40px;
+        top: -40px;
+        width: 180px;
+        height: 180px;
+        background: rgba(255, 255, 255, 0.07);
+        border-radius: 50%;
+      }
+      .role-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 3px 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+      .role-hero h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .role-hero p {
+        font-size: 0.95rem;
+        opacity: 0.85;
+        max-width: 600px;
+      }
+      .role-scope {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.18);
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 0.82rem;
+        margin-top: 14px;
+      }
+
+      .section-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 14px;
+        margin-top: 28px;
+        padding-left: 2px;
+      }
+
+      /* ── Capability Cards ── */
+      .cap-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+        gap: 14px;
+      }
+      .cap-card {
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 18px 20px;
+      }
+      .cap-card .ch {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .cap-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+      }
+      .cap-card h3 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .cap-card .cd {
+        font-size: 0.83rem;
+        color: var(--muted);
+        margin-top: 2px;
+        line-height: 1.5;
+      }
+      .cap-card ul {
+        list-style: none;
+        margin-top: 10px;
+        border-top: 1px solid var(--border);
+        padding-top: 10px;
+      }
+      .cap-card li {
+        font-size: 0.82rem;
+        color: #374151;
+        padding: 3px 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 7px;
+        line-height: 1.4;
+      }
+      .cap-card li::before {
+        content: "›";
+        color: var(--role-color, var(--muted));
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      /* ══════════════════════════════════════
+     FLOW DIAGRAMS
+  ══════════════════════════════════════ */
+      .flow-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 22px;
+        margin-bottom: 12px;
+      }
+      .flow-card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .flow-card-icon {
+        font-size: 1.15rem;
+      }
+      .flow-card-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
+      .flow-card-sub {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-top: 1px;
+      }
+
+      /* Linear path */
+      .flow-path {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      /* State box */
+      .fs {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 2px solid;
+        min-width: 96px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+      .fs-name {
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+
+      .fs-start {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #64748b;
+        border-style: dashed;
+      }
+      .fs-pending {
+        background: #fef9c3;
+        border-color: #fde047;
+        color: #713f12;
+      }
+      .fs-info {
+        background: #dbeafe;
+        border-color: #93c5fd;
+        color: #1e40af;
+      }
+      .fs-success {
+        background: #d1fae5;
+        border-color: #6ee7b7;
+        color: #065f46;
+      }
+      .fs-error {
+        background: #fee2e2;
+        border-color: #fca5a5;
+        color: #7f1d1d;
+      }
+      .fs-neutral {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #475569;
+      }
+      .fs-warning {
+        background: #ffedd5;
+        border-color: #fdba74;
+        color: #7c2d12;
+      }
+
+      /* Connector */
+      .fc {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 6px;
+        min-width: 72px;
+        flex-shrink: 0;
+      }
+      .fc-label {
+        font-size: 0.69rem;
+        color: #64748b;
+        white-space: nowrap;
+        margin-bottom: 2px;
+        text-align: center;
+      }
+      .fc-role {
+        font-size: 0.64rem;
+        font-weight: 700;
+        padding: 1px 7px;
+        border-radius: 10px;
+        white-space: nowrap;
+        margin-bottom: 4px;
+      }
+      .fc-arrow {
+        font-size: 1.25rem;
+        color: #94a3b8;
+        line-height: 1;
+      }
+      .fc-active .fc-label {
+        color: var(--role-color);
+        font-weight: 700;
+      }
+      .fc-active .fc-arrow {
+        color: var(--role-color);
+      }
+
+      .rb-vm {
+        background: #dbeafe;
+        color: #1a5fa8;
+      }
+      .rb-sbk {
+        background: #d1fae5;
+        color: #1a6e3c;
+      }
+      .rb-rsk {
+        background: #ffedd5;
+        color: #b84f00;
+      }
+      .rb-admin {
+        background: #ede9fe;
+        color: #5c35a8;
+      }
+      .rb-tm {
+        background: #cffafe;
+        color: #0d8fa0;
+      }
+      .rb-auto {
+        background: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+      }
+      .rb-player {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .rb-schiri {
+        background: #fce7f3;
+        color: #9d174d;
+      }
+
+      /* Sub-path (e.g. Sonderfall) */
+      .flow-subpath {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin-top: 10px;
+        padding: 8px 12px;
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        flex-wrap: nowrap;
+        overflow-x: auto;
+      }
+      .flow-subpath-label {
+        font-size: 0.68rem;
+        color: var(--muted);
+        margin-right: 10px;
+        white-space: nowrap;
+      }
+
+      /* Branch outcomes */
+      .flow-branches {
+        border-top: 1px dashed var(--border);
+        padding-top: 14px;
+        margin-top: 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .fb {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        font-size: 0.76rem;
+      }
+      .fb-from {
+        color: var(--muted);
+        font-style: italic;
+      }
+      .fb-action {
+        font-weight: 600;
+        color: #374151;
+      }
+      .fb-arrow {
+        color: #94a3b8;
+      }
+      .fb-state {
+        padding: 2px 9px;
+        border-radius: 5px;
+        font-size: 0.72rem;
+        font-weight: 700;
+      }
+
+      /* Variant block */
+      .flow-variant {
+        border-top: 1px solid var(--border);
+        padding-top: 14px;
+        margin-top: 14px;
+      }
+      .flow-variant-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      /* Note */
+      .flow-note {
+        background: #f8fafc;
+        border-left: 3px solid var(--role-color, #94a3b8);
+        border-radius: 0 6px 6px 0;
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        color: #475569;
+        margin-top: 14px;
+        line-height: 1.6;
+      }
+
+      /* Inline role badge (reusable in branches) */
+      .rbi {
+        display: inline-block;
+        font-size: 0.64rem;
+        font-weight: 700;
+        padding: 1px 7px;
+        border-radius: 10px;
+        white-space: nowrap;
+      }
+
+      @media (max-width: 600px) {
+        .main {
+          padding: 16px;
+        }
+        .role-hero {
+          padding: 20px;
+        }
+        .cap-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <input class="role-radio" type="radio" name="role" id="tab-admin" checked />
+    <input class="role-radio" type="radio" name="role" id="tab-sbk-fd" />
+    <input class="role-radio" type="radio" name="role" id="tab-sbk-lv" />
+    <input class="role-radio" type="radio" name="role" id="tab-rsk-fd" />
+    <input class="role-radio" type="radio" name="role" id="tab-rsk-lv" />
+    <input class="role-radio" type="radio" name="role" id="tab-vm" />
+    <input class="role-radio" type="radio" name="role" id="tab-tm" />
+    <input class="role-radio" type="radio" name="role" id="tab-schiri" />
+    <header class="app-header">
+      <div class="logo">Saison<span>manager</span></div>
+      <div class="subtitle">Rollenhandbuch · Stand Juni 2026</div>
+    </header>
+
+    <nav class="role-nav">
+      <label class="role-tab" for="tab-admin" style="--active-color: #5c35a8">
+        <span class="role-dot" style="color: #5c35a8"></span> Admin
+      </label>
+      <label class="role-tab" for="tab-sbk-fd" style="--active-color: #1a6e3c">
+        <span class="role-dot" style="color: #1a6e3c"></span> SBK FD
+      </label>
+      <label class="role-tab" for="tab-sbk-lv" style="--active-color: #2c9e5a">
+        <span class="role-dot" style="color: #2c9e5a"></span> SBK LV
+      </label>
+      <label class="role-tab" for="tab-rsk-fd" style="--active-color: #b84f00">
+        <span class="role-dot" style="color: #b84f00"></span> RSK FD
+      </label>
+      <label class="role-tab" for="tab-rsk-lv" style="--active-color: #d96e1a">
+        <span class="role-dot" style="color: #d96e1a"></span> RSK LV
+      </label>
+      <label class="role-tab" for="tab-vm" style="--active-color: #1a5fa8">
+        <span class="role-dot" style="color: #1a5fa8"></span> VM
+      </label>
+      <label class="role-tab" for="tab-tm" style="--active-color: #0d8fa0">
+        <span class="role-dot" style="color: #0d8fa0"></span> TM
+      </label>
+      <label class="role-tab" for="tab-schiri" style="--active-color: #be185d">
+        <span class="role-dot" style="color: #be185d"></span> Schiri
+      </label>
+    </nav>
+
+    <main class="main">
+      <!-- ═══════════════════ ADMIN ═══════════════════ -->
+      <section
+        class="role-panel"
+        id="panel-admin"
+        style="--role-color: #5c35a8"
+      >
+        <div
+          class="role-hero"
+          style="background: linear-gradient(135deg, #5c35a8, #3d2070)"
+        >
+          <div class="role-badge">Admin</div>
+          <h1>Administrator</h1>
+          <p>
+            Vollzugriff auf alle Funktionen, Daten und Abläufe der Plattform.
+          </p>
+          <div class="role-scope">
+            🌐 Globaler Zugriff – alle Verbände und Clubs
+          </div>
+        </div>
+
+        <div class="section-title">Bereiche</div>
+        <div class="cap-grid">
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #ede9fe; color: #5c35a8">
+                🏆
+              </div>
+              <div>
+                <h3>Ligen &amp; Saisons</h3>
+                <div class="cd">Vollständige Spielbetriebsverwaltung</div>
+              </div>
+            </div>
+            <ul>
+              <li>Saisons anlegen und konfigurieren</li>
+              <li>Ligen erstellen, bearbeiten, löschen</li>
+              <li>Spieltage und Spielpläne verwalten</li>
+              <li>Liga-Kategorien und -Klassen pflegen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #ede9fe; color: #5c35a8">
+                🏟️
+              </div>
+              <div>
+                <h3>Vereine, Teams &amp; Hallen</h3>
+                <div class="cd">Vollständige Stammdatenverwaltung</div>
+              </div>
+            </div>
+            <ul>
+              <li>Vereine erstellen, bearbeiten, deaktivieren</li>
+              <li>Teams anlegen und Ligen zuordnen</li>
+              <li>Hallen anlegen und verwalten</li>
+              <li>Landesverbände verwalten</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #ede9fe; color: #5c35a8">
+                👤
+              </div>
+              <div>
+                <h3>Spieler</h3>
+                <div class="cd">Alle Spieler systemweit</div>
+              </div>
+            </div>
+            <ul>
+              <li>
+                Spieler anlegen, bearbeiten, deaktivieren und reaktivieren
+              </li>
+              <li>Zusätzliche Vereinsmitgliedschaften verwalten</li>
+              <li>Doppeleinträge zusammenführen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #ede9fe; color: #5c35a8">
+                👥
+              </div>
+              <div>
+                <h3>Benutzerverwaltung</h3>
+                <div class="cd">Alle Rollen und Zugriffsrechte</div>
+              </div>
+            </div>
+            <ul>
+              <li>Benutzer aller Rollen anlegen</li>
+              <li>Verbands- oder Club-Scope zuweisen</li>
+              <li>Benutzer bearbeiten und deaktivieren</li>
+              <li>API-Schlüssel erstellen und widerrufen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #ede9fe; color: #5c35a8">
+                🦺
+              </div>
+              <div>
+                <h3>Schiedsrichter</h3>
+                <div class="cd">Vollzugriff auf alle Schiedsrichter</div>
+              </div>
+            </div>
+            <ul>
+              <li>Schiedsrichter anlegen, bearbeiten, zusammenführen</li>
+              <li>Lizenzstufen und Qualifikationen setzen</li>
+              <li>Kursergebnisse importieren und freigeben</li>
+              <li>Ansetzungen erstellen und veröffentlichen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #ede9fe; color: #5c35a8">
+                📊
+              </div>
+              <div>
+                <h3>Auswertung &amp; System</h3>
+                <div class="cd">Analyse, Protokolle und Konfiguration</div>
+              </div>
+            </div>
+            <ul>
+              <li>Saison-Verwaltung</li>
+              <li>Analyse- und Statistik-Auswertungen</li>
+              <li>E-Mail-Protokoll einsehen</li>
+              <li>Globale Einstellungen und Stammlisten pflegen</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-title">Prozesse im Detail</div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">🔄</span>
+            <div>
+              <div class="flow-card-title">Transferprozess &amp; Freigabe</div>
+              <div class="flow-card-sub">
+                Vereinswechsel oder vorübergehende Freigabe eines Spielers
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Antrag erstellt</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">erstellt</span
+              ><span class="fc-role rb-vm">VM</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Vereins&shy;prüfung</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Verein genehmigt</span
+              ><span class="fc-role rb-vm">VM (abgebend)</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Spieler&shy;bestätigung</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">bestätigt (E-Mail-Link)</span
+              ><span class="fc-role rb-player">Spieler</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">LV-Prüfung</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">genehmigt</span
+              ><span class="fc-role rb-admin">Admin</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Genehmigt</span>
+            </div>
+          </div>
+          <div class="flow-subpath">
+            <span class="flow-subpath-label"
+              >Sonderfall – zukünftiges Datum:</span
+            >
+            <div class="fc">
+              <span class="fc-label">genehmigt mit Datum</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info" style="min-width: 80px">
+              <span class="fs-name">Termin geplant</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Datum erreicht, ausführen</span
+              ><span class="fc-role rb-admin">Admin</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success" style="min-width: 80px">
+              <span class="fs-name">Genehmigt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="fb-from">aus Vereinsprüfung:</span>
+              <span class="rbi rb-vm">VM (abgebend)</span>
+              <span class="fb-action">lehnt ab</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt (Verein)</span>
+            </div>
+            <div class="fb">
+              <span class="fb-from">aus Spielerbestätigung:</span>
+              <span class="rbi rb-player">Spieler</span>
+              <span class="fb-action">lehnt ab</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt (Spieler)</span>
+            </div>
+            <div class="fb">
+              <span class="fb-from">aus LV-Prüfung:</span>
+              <span class="rbi rb-admin">Admin</span>
+              <span class="fb-action">lehnt ab</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt (LV)</span>
+            </div>
+            <div class="fb">
+              <span class="fb-from"
+                >aus Vereinsprüfung, Spielerbestätigung od. LV-Prüfung:</span
+              >
+              <span class="rbi rb-vm">VM (anfragend)</span>
+              <span class="fb-action">zieht zurück</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-neutral">Zurückgezogen</span>
+            </div>
+            <div class="fb">
+              <span class="fb-from">nach Genehmigung (nur Freigabe):</span>
+              <span class="rbi rb-admin">Admin</span>
+              <span class="fb-action">widerruft</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-warning">Widerrufen</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            <strong>Spielerbestätigung:</strong> Nach Freigabe durch den
+            abgebenden Verein bestätigt der Spieler den Wechsel selbst über
+            einen E-Mail-Link, bevor die LV-Prüfung beginnt. ·
+            <strong>Wirkungsdatum:</strong> Ein zukünftiges Datum (mind. 7 Tage)
+            führt zu <em>Termin geplant</em>; der Transfer wird ab dem
+            Wirkungsdatum manuell vollzogen (kein automatischer Job). ·
+            <strong>Lizenzen:</strong> Bei Genehmigung werden alle laufenden
+            Spielerlizenzen automatisch auf
+            <strong>Ungültig (Transfer)</strong> gesetzt; bei Widerruf einer
+            Freigabe die Lizenzen der Zweitmitgliedschaft auf
+            <strong>Zurückgezogen</strong>.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📅</span>
+            <div>
+              <div class="flow-card-title">Schiedsrichter-Ansetzung</div>
+              <div class="flow-card-sub">
+                Schiedsrichter zu Spielen ansetzten und benachrichtigen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Spiel offen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Ansetzung erstellen</span
+              ><span class="fc-role rb-rsk">RSK / Admin</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Vorläufig</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">vorläufig benachrichtigen</span
+              ><span class="fc-role rb-rsk">RSK / Admin</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info">
+              <span class="fs-name">Vorläufig &amp; benachrichtigt</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">veröffentlichen</span
+              ><span class="fc-role rb-rsk">RSK / Admin</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Veröffentlicht</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            <strong>Vorläufige Benachrichtigung:</strong> Die angesetzten
+            Schiedsrichter erhalten eine E-Mail; der Status bleibt Vorläufig. ·
+            <strong>Veröffentlichen:</strong> Status wechselt zu Veröffentlicht;
+            Schiedsrichter erhalten eine E-Mail mit einem Lizenzkarten-Link (72
+            Stunden gültig); die Schiedsrichterbezeichnung am Spiel wird
+            gesetzt. · <strong>Verfügbarkeitsprüfung:</strong> Schiedsrichter
+            mit eingetragenen Sperrterminen oder bereits angesetzten Spielen am
+            selben Tag werden in der Auswahl ausgeblendet.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📄</span>
+            <div>
+              <div class="flow-card-title">Spielerberechtigung (Lizenz)</div>
+              <div class="flow-card-sub">
+                Beantragen, genehmigen und automatische Statuswechsel
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-pending">
+              <span class="fs-name">Beantragt</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">genehmigen</span
+              ><span class="fc-role rb-admin">Admin</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Erteilt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="fb-from">aus Beantragt:</span>
+              <span class="rbi rb-admin">Admin</span>
+              <span class="fb-action">ablehnen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt</span>
+            </div>
+            <div class="fb">
+              <span class="fb-from">aus Beantragt oder Erteilt:</span>
+              <span class="rbi rb-auto">automatisch</span>
+              <span class="fb-action">Transfer genehmigt</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-warning">Ungültig (Transfer)</span>
+            </div>
+            <div class="fb">
+              <span class="fb-from">aus Beantragt oder Erteilt:</span>
+              <span class="rbi rb-auto">automatisch</span>
+              <span class="fb-action">Freigabe widerrufen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-neutral">Zurückgezogen</span>
+            </div>
+            <div class="fb">
+              <span class="fb-from">aus Beantragt oder Erteilt:</span>
+              <span class="rbi rb-admin">Admin / VM</span>
+              <span class="fb-action">Spieler deaktiviert</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-neutral">Gelöscht</span>
+            </div>
+            <div class="fb">
+              <span class="fb-from">aus Beantragt oder Erteilt:</span>
+              <span class="rbi rb-admin">Admin / SBK</span>
+              <span class="fb-action">Spieler gesperrt</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Gesperrt</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Eine Spielersperre setzt aktive Lizenzen auf
+            <strong>Gesperrt</strong>; beim Aufheben der Sperre wird der
+            vorherige Status wiederhergestellt. Die Status
+            <em>ungültig: Löschung beantragt</em> und
+            <em>ungültig: ignoriert</em> sind im System definiert, werden im
+            laufenden Betrieb aber nicht mehr gesetzt.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📋</span>
+            <div>
+              <div class="flow-card-title">Spielerdaten-Korrektursanfrage</div>
+              <div class="flow-card-sub">
+                Name, Geburtsdatum oder Nationalität korrigieren
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Spielername anklicken</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">Antrag absenden</span
+              ><span class="fc-role rb-vm">VM</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending"><span class="fs-name">Offen</span></div>
+            <div class="fc fc-active">
+              <span class="fc-label">genehmigen</span
+              ><span class="fc-role rb-admin">Admin</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Genehmigt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-admin">Admin</span>
+              <span class="fb-action">ablehnen (mit Begründung)</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Mögliche Korrekturen: Vorname · Nachname · Vor- und Nachname
+            vertauscht · Geburtsdatum · Nationalität. Bei Genehmigung wird der
+            Spielerdatensatz sofort aktualisiert.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📝</span>
+            <div>
+              <div class="flow-card-title">Spielberichtsprozess</div>
+              <div class="flow-card-sub">
+                Erfassung und Abschluss des Spielberichts
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Spiel geplant</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">Aufstellung eintragen</span
+              ><span class="fc-role rb-tm">TM / VM</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info">
+              <span class="fs-name">Spielbericht offen</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">Checkliste ausfüllen &amp; einreichen</span
+              ><span class="fc-role rb-tm">TM / VM</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Bericht abgeschlossen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">finalisieren</span
+              ><span class="fc-role rb-admin">Admin</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Finalisiert</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="fb-from">aus Bericht abgeschlossen:</span>
+              <span class="rbi rb-admin">Admin</span>
+              <span class="fb-action">wieder öffnen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-info">Spielbericht offen</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Vor dem Einreichen muss – sofern der Landesverband eine Checkliste
+            hinterlegt hat – diese vollständig beantwortet werden. Beim
+            Einreichen werden ggf. Checklisten-Bestätigungen an den
+            ausrichtenden Verein sowie Berichtsformular-Erinnerungen an die
+            Schiedsrichter versendet; bei Playoff-Ligen rücken
+            Sieger-/Verlierer- Teams automatisch in die Folgespiele nach (keine
+            Übernahme der Aufstellung). TM/VM können einen eingereichten Bericht
+            nicht selbst wieder öffnen – das ist Admin und SBK vorbehalten.
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════ SBK FD ═══════════════════ -->
+      <section
+        class="role-panel"
+        id="panel-sbk-fd"
+        style="--role-color: #1a6e3c"
+      >
+        <div
+          class="role-hero"
+          style="background: linear-gradient(135deg, #1a6e3c, #0d4a27)"
+        >
+          <div class="role-badge">SBK FD</div>
+          <h1>Spielbetriebskommission – Floorball Deutschland</h1>
+          <p>Nationalweite Spielbetriebsverwaltung für alle Verbände.</p>
+          <div class="role-scope">
+            🌐 Nationaler Scope – alle Verbände und Clubs
+          </div>
+        </div>
+
+        <div class="section-title">Bereiche</div>
+        <div class="cap-grid">
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #d1fae5; color: #1a6e3c">
+                🏆
+              </div>
+              <div>
+                <h3>Ligen &amp; Spielbetrieb</h3>
+                <div class="cd">Alle Verbände</div>
+              </div>
+            </div>
+            <ul>
+              <li>Ligen erstellen und verwalten</li>
+              <li>Spieltage und Spielpläne verwalten</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #d1fae5; color: #1a6e3c">
+                🏟️
+              </div>
+              <div>
+                <h3>Vereine &amp; Teams</h3>
+                <div class="cd">Alle Verbände</div>
+              </div>
+            </div>
+            <ul>
+              <li>Vereine anlegen, bearbeiten, deaktivieren</li>
+              <li>Teams verwalten, Hallen anlegen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #d1fae5; color: #1a6e3c">
+                👤
+              </div>
+              <div>
+                <h3>Spieler</h3>
+                <div class="cd">Alle Verbände</div>
+              </div>
+            </div>
+            <ul>
+              <li>
+                Spieler anlegen, bearbeiten, deaktivieren und reaktivieren
+              </li>
+              <li>Doppeleinträge zusammenführen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #d1fae5; color: #1a6e3c">
+                👥
+              </div>
+              <div>
+                <h3>Benutzerverwaltung</h3>
+                <div class="cd">VM und TM für alle Vereine</div>
+              </div>
+            </div>
+            <ul>
+              <li>Vereinsmanager und Teammanager anlegen und bearbeiten</li>
+              <li>Teams zuordnen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #d1fae5; color: #1a6e3c">
+                🦺
+              </div>
+              <div>
+                <h3>Schiedsrichter</h3>
+                <div class="cd">Lesezugriff</div>
+              </div>
+            </div>
+            <ul>
+              <li>Schiedsrichterliste einsehen</li>
+              <li>Qualifikationen und Lizenzstufen ansehen</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-title">Prozesse im Detail</div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">🔄</span>
+            <div>
+              <div class="flow-card-title">
+                Transferprozess &amp; Freigabe – LV-Genehmigung
+              </div>
+              <div class="flow-card-sub">
+                SBK entscheidet in der zweiten Prüfstufe
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-neutral">
+              <span class="fs-name">Vereins&shy;prüfung</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">Verein genehmigt</span
+              ><span class="fc-role rb-vm">VM (abgebend)</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-neutral">
+              <span class="fs-name">Spieler&shy;bestätigung</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">Spieler bestätigt</span
+              ><span class="fc-role rb-player">Spieler</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">LV-Prüfung</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">genehmigen</span
+              ><span class="fc-role rb-sbk">SBK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Genehmigt</span>
+            </div>
+          </div>
+          <div class="flow-subpath">
+            <span class="flow-subpath-label"
+              >Mit zukünftigem Wirkungsdatum:</span
+            >
+            <div class="fc">
+              <span class="fc-label">genehmigt mit Datum</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info" style="min-width: 80px">
+              <span class="fs-name">Termin geplant</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Datum erreicht, ausführen</span
+              ><span class="fc-role rb-sbk">SBK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success" style="min-width: 80px">
+              <span class="fs-name">Genehmigt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK FD</span>
+              <span class="fb-action">ablehnen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt (LV)</span>
+            </div>
+            <div class="fb">
+              <span class="fb-from">nach Genehmigung (nur Freigabe):</span>
+              <span class="rbi rb-sbk">SBK FD</span>
+              <span class="fb-action">widerrufen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-warning">Widerrufen</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Bei Transfer-Genehmigung werden aktive Lizenzen automatisch auf
+            <strong>Ungültig (Transfer)</strong> gesetzt. Bei Widerruf einer
+            Freigabe werden Lizenzen der Zweitmitgliedschaft auf
+            <strong>Zurückgezogen</strong> gesetzt.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📄</span>
+            <div>
+              <div class="flow-card-title">Spielerberechtigung (Lizenz)</div>
+              <div class="flow-card-sub">
+                Lizenzanträge prüfen und entscheiden
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-pending">
+              <span class="fs-name">Beantragt</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">genehmigen</span
+              ><span class="fc-role rb-sbk">SBK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Erteilt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK FD</span>
+              <span class="fb-action">ablehnen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📋</span>
+            <div>
+              <div class="flow-card-title">Korrektursanfragen</div>
+              <div class="flow-card-sub">
+                Spielerdaten-Korrekturen von Vereinsmanagern prüfen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-pending"><span class="fs-name">Offen</span></div>
+            <div class="fc fc-active">
+              <span class="fc-label">genehmigen → Daten übernommen</span
+              ><span class="fc-role rb-sbk">SBK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Genehmigt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK FD</span>
+              <span class="fb-action">ablehnen (mit Begründung)</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📝</span>
+            <div>
+              <div class="flow-card-title">Spielberichtsprozess</div>
+              <div class="flow-card-sub">
+                Eingereichte Spielberichte finalisieren
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-pending">
+              <span class="fs-name">Bericht abgeschlossen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">finalisieren</span
+              ><span class="fc-role rb-sbk">SBK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Finalisiert</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK FD</span>
+              <span class="fb-action">wieder öffnen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-info">Spielbericht offen</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════ SBK LV ═══════════════════ -->
+      <section
+        class="role-panel"
+        id="panel-sbk-lv"
+        style="--role-color: #2c9e5a"
+      >
+        <div
+          class="role-hero"
+          style="background: linear-gradient(135deg, #2c9e5a, #1a6e3c)"
+        >
+          <div class="role-badge">SBK LV</div>
+          <h1>Spielbetriebskommission – Landesverband</h1>
+          <p>Spielbetriebsverwaltung für den eigenen Landesverband.</p>
+          <div class="role-scope">📍 Zuständig für einen Landesverband</div>
+        </div>
+
+        <div class="section-title">Bereiche</div>
+        <div class="cap-grid">
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #d1fae5; color: #2c9e5a">
+                🏆
+              </div>
+              <div>
+                <h3>Ligen &amp; Spielbetrieb</h3>
+                <div class="cd">Eigener Landesverband</div>
+              </div>
+            </div>
+            <ul>
+              <li>Ligen des eigenen Landesverbands erstellen und verwalten</li>
+              <li>Spieltage und Spielpläne verwalten</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #d1fae5; color: #2c9e5a">
+                🏟️
+              </div>
+              <div>
+                <h3>Vereine &amp; Teams</h3>
+                <div class="cd">Eigener Landesverband</div>
+              </div>
+            </div>
+            <ul>
+              <li>Vereine anlegen, bearbeiten, deaktivieren</li>
+              <li>Teams verwalten, Hallen pflegen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #d1fae5; color: #2c9e5a">
+                👤
+              </div>
+              <div>
+                <h3>Spieler</h3>
+                <div class="cd">Vereine des eigenen Landesverbands</div>
+              </div>
+            </div>
+            <ul>
+              <li>
+                Spieler anlegen, bearbeiten, deaktivieren und reaktivieren
+              </li>
+              <li>Doppeleinträge zusammenführen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #d1fae5; color: #2c9e5a">
+                👥
+              </div>
+              <div>
+                <h3>Benutzerverwaltung</h3>
+                <div class="cd">
+                  VM und TM für Vereine des eigenen Landesverbands
+                </div>
+              </div>
+            </div>
+            <ul>
+              <li>Vereinsmanager und Teammanager anlegen und bearbeiten</li>
+              <li>Teams zuordnen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #d1fae5; color: #2c9e5a">
+                🗺️
+              </div>
+              <div>
+                <h3>Landesverband</h3>
+                <div class="cd">Eigenen Landesverband einsehen</div>
+              </div>
+            </div>
+            <ul>
+              <li>Daten des eigenen Landesverbands einsehen</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-title">Prozesse im Detail</div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">🔄</span>
+            <div>
+              <div class="flow-card-title">
+                Transferprozess &amp; Freigabe – LV-Genehmigung
+              </div>
+              <div class="flow-card-sub">
+                Entscheidung für Transfers mit Bezug zum eigenen Landesverband
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-neutral">
+              <span class="fs-name">Vereins&shy;prüfung</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">Verein genehmigt</span
+              ><span class="fc-role rb-vm">VM (abgebend)</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-neutral">
+              <span class="fs-name">Spieler&shy;bestätigung</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">Spieler bestätigt</span
+              ><span class="fc-role rb-player">Spieler</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">LV-Prüfung</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">genehmigen</span
+              ><span class="fc-role rb-sbk">SBK LV</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Genehmigt</span>
+            </div>
+          </div>
+          <div class="flow-subpath">
+            <span class="flow-subpath-label"
+              >Mit zukünftigem Wirkungsdatum:</span
+            >
+            <div class="fs fs-info" style="min-width: 80px">
+              <span class="fs-name">Termin geplant</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">ausführen</span
+              ><span class="fc-role rb-sbk">SBK LV</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success" style="min-width: 80px">
+              <span class="fs-name">Genehmigt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK LV</span>
+              <span class="fb-action">ablehnen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt (LV)</span>
+            </div>
+            <div class="fb">
+              <span class="fb-from">nach Genehmigung (nur Freigabe):</span>
+              <span class="rbi rb-sbk">SBK LV</span>
+              <span class="fb-action">widerrufen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-warning">Widerrufen</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📄</span>
+            <div>
+              <div class="flow-card-title">Spielerberechtigung (Lizenz)</div>
+              <div class="flow-card-sub">
+                Lizenzanträge der eigenen Landesverbandsvereine prüfen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-pending">
+              <span class="fs-name">Beantragt</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">genehmigen</span
+              ><span class="fc-role rb-sbk">SBK LV</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Erteilt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK LV</span>
+              <span class="fb-action">ablehnen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📋</span>
+            <div>
+              <div class="flow-card-title">Korrektursanfragen</div>
+              <div class="flow-card-sub">
+                Anfragen aus dem eigenen Landesverband prüfen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-pending"><span class="fs-name">Offen</span></div>
+            <div class="fc fc-active">
+              <span class="fc-label">genehmigen → Daten übernommen</span
+              ><span class="fc-role rb-sbk">SBK LV</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Genehmigt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK LV</span>
+              <span class="fb-action">ablehnen (mit Begründung)</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📝</span>
+            <div>
+              <div class="flow-card-title">Spielberichtsprozess</div>
+              <div class="flow-card-sub">
+                Spielberichte des eigenen Landesverbands finalisieren
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-pending">
+              <span class="fs-name">Bericht abgeschlossen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">finalisieren</span
+              ><span class="fc-role rb-sbk">SBK LV</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Finalisiert</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK LV</span>
+              <span class="fb-action">wieder öffnen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-info">Spielbericht offen</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════ RSK FD ═══════════════════ -->
+      <section
+        class="role-panel"
+        id="panel-rsk-fd"
+        style="--role-color: #b84f00"
+      >
+        <div
+          class="role-hero"
+          style="background: linear-gradient(135deg, #b84f00, #7c3500)"
+        >
+          <div class="role-badge">RSK FD</div>
+          <h1>Schiedsrichterkommission – Floorball Deutschland</h1>
+          <p>
+            Bundesweite Schiedsrichterverwaltung, Spielansetzungen und
+            Qualifikationswesen.
+          </p>
+          <div class="role-scope">
+            🌐 Nationaler Scope – alle Schiedsrichter und Ansetzungen
+          </div>
+        </div>
+
+        <div class="section-title">Bereiche</div>
+        <div class="cap-grid">
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #ffedd5; color: #b84f00">
+                🦺
+              </div>
+              <div>
+                <h3>Schiedsrichterverwaltung</h3>
+                <div class="cd">Alle Schiedsrichter bundesweit</div>
+              </div>
+            </div>
+            <ul>
+              <li>
+                Schiedsrichter anlegen (Lizenznummer wird automatisch befüllt)
+              </li>
+              <li>Stammdaten bearbeiten</li>
+              <li>Lizenzstufen und Qualifikationen setzen</li>
+              <li>Kursergebnisse importieren und freigeben</li>
+              <li>Doppeleinträge zusammenführen</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-title">Prozesse im Detail</div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📅</span>
+            <div>
+              <div class="flow-card-title">Schiedsrichter-Ansetzung</div>
+              <div class="flow-card-sub">
+                Von vorläufig bis zur finalen Veröffentlichung
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Spiel offen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Ansetzung erstellen</span
+              ><span class="fc-role rb-rsk">RSK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Vorläufig</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">vorläufig benachrichtigen</span
+              ><span class="fc-role rb-rsk">RSK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info">
+              <span class="fs-name">Vorläufig &amp; benachrichtigt</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">veröffentlichen</span
+              ><span class="fc-role rb-rsk">RSK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Veröffentlicht</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            <strong>Vorläufige Benachrichtigung:</strong> Die angesetzten
+            Schiedsrichter erhalten eine E-Mail; der Status bleibt Vorläufig. ·
+            <strong>Veröffentlichen:</strong> Schiedsrichter erhalten eine
+            E-Mail mit einem Lizenzkarten-Link (72 Stunden gültig); die
+            Schiedsrichterbezeichnung am Spiel wird gesetzt. ·
+            <strong>Verfügbarkeitsprüfung:</strong> Schiedsrichter mit
+            Sperrterminen oder bestehenden Ansetzungen am selben Tag werden in
+            der Auswahl ausgeblendet.
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════ RSK LV ═══════════════════ -->
+      <section
+        class="role-panel"
+        id="panel-rsk-lv"
+        style="--role-color: #d96e1a"
+      >
+        <div
+          class="role-hero"
+          style="background: linear-gradient(135deg, #d96e1a, #b84f00)"
+        >
+          <div class="role-badge">RSK LV</div>
+          <h1>Schiedsrichterkommission – Landesverband</h1>
+          <p>Schiedsrichterverwaltung für den eigenen Landesverband.</p>
+          <div class="role-scope">📍 Zuständig für einen Landesverband</div>
+        </div>
+
+        <div class="section-title">Bereiche</div>
+        <div class="cap-grid">
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #fff7ed; color: #d96e1a">
+                🦺
+              </div>
+              <div>
+                <h3>Schiedsrichterverwaltung</h3>
+                <div class="cd">Schiedsrichter des eigenen Landesverbands</div>
+              </div>
+            </div>
+            <ul>
+              <li>Schiedsrichter anlegen und Stammdaten bearbeiten</li>
+              <li>
+                Lizenzstufen und Qualifikationen einsehen (Bearbeitung nur RSK
+                FD)
+              </li>
+              <li>Kursergebnisse des eigenen Landesverbands freigeben</li>
+              <li>Schiedsrichterstatistiken einsehen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #fff7ed; color: #d96e1a">
+                🗺️
+              </div>
+              <div>
+                <h3>Landesverband</h3>
+                <div class="cd">Eigenen Landesverband einsehen</div>
+              </div>
+            </div>
+            <ul>
+              <li>
+                Daten und Schiedsrichterstatistiken des eigenen Landesverbands
+                einsehen
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-title">Prozesse im Detail</div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📅</span>
+            <div>
+              <div class="flow-card-title">Schiedsrichter-Ansetzung</div>
+              <div class="flow-card-sub">
+                Spiele des eigenen Landesverbands besetzen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Spiel offen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Ansetzung erstellen</span
+              ><span class="fc-role rb-rsk">RSK LV</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Vorläufig</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">vorläufig benachrichtigen</span
+              ><span class="fc-role rb-rsk">RSK LV</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info">
+              <span class="fs-name">Vorläufig &amp; benachrichtigt</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">veröffentlichen</span
+              ><span class="fc-role rb-rsk">RSK LV</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Veröffentlicht</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Ansetzungen, Benachrichtigungen und Veröffentlichungen erfolgen nur
+            für Spiele des eigenen Landesverbands. Die Verfügbarkeit der
+            Schiedsrichter wird vor der Ansetzung geprüft.
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════ VM ═══════════════════ -->
+      <section class="role-panel" id="panel-vm" style="--role-color: #1a5fa8">
+        <div
+          class="role-hero"
+          style="background: linear-gradient(135deg, #1a5fa8, #0d3d70)"
+        >
+          <div class="role-badge">VM</div>
+          <h1>Vereinsmanager</h1>
+          <p>
+            Selbstverwaltung des eigenen Vereins: Spieler, Lizenzen, Transfers
+            und Teambelegung.
+          </p>
+          <div class="role-scope">
+            🏠 Zuständig für einen oder mehrere eigene Vereine
+          </div>
+        </div>
+
+        <div class="section-title">Bereiche</div>
+        <div class="cap-grid">
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #dbeafe; color: #1a5fa8">
+                👤
+              </div>
+              <div>
+                <h3>Spielerverwaltung</h3>
+                <div class="cd">Spieler des eigenen Vereins</div>
+              </div>
+            </div>
+            <ul>
+              <li>Spielerliste einsehen, Spieler anlegen</li>
+              <li>Spieler deaktivieren und reaktivieren</li>
+              <li>Spielerprofil-Detailseite aufrufen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #dbeafe; color: #1a5fa8">
+                📄
+              </div>
+              <div>
+                <h3>Lizenzverwaltung</h3>
+                <div class="cd">Lizenzen des eigenen Vereins</div>
+              </div>
+            </div>
+            <ul>
+              <li>Lizenzliste einsehen</li>
+              <li>Lizenzen für eigene Spieler beantragen</li>
+              <li>Lizenzstatus prüfen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #dbeafe; color: #1a5fa8">
+                👥
+              </div>
+              <div>
+                <h3>Benutzerverwaltung</h3>
+                <div class="cd">
+                  Vereinsmanager und Teammanager für den eigenen Verein
+                </div>
+              </div>
+            </div>
+            <ul>
+              <li>Weitere Vereinsmanager für denselben Verein anlegen</li>
+              <li>Teammanager anlegen und Teams zuordnen</li>
+              <li>Bestehende Benutzer bearbeiten</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #dbeafe; color: #1a5fa8">
+                🦺
+              </div>
+              <div>
+                <h3>Schiedsrichter</h3>
+                <div class="cd">Vereinsschiedsrichter einsehen</div>
+              </div>
+            </div>
+            <ul>
+              <li>Schiedsrichter des eigenen Vereins einsehen</li>
+              <li>Qualifikationen und Lizenzstufen ansehen</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-title">Prozesse im Detail</div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">🔄</span>
+            <div>
+              <div class="flow-card-title">Transferprozess &amp; Freigabe</div>
+              <div class="flow-card-sub">
+                Vereinswechsel beantragen oder als abgebender Verein genehmigen
+              </div>
+            </div>
+          </div>
+
+          <div class="flow-variant-label">Als anfragender Verein</div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Spieler auswählen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Transfer beantragen</span
+              ><span class="fc-role rb-vm">VM (anfragend)</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Vereins&shy;prüfung</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">Verein genehmigt</span
+              ><span class="fc-role rb-vm">VM (abgebend)</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Spieler&shy;bestätigung</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">Spieler bestätigt</span
+              ><span class="fc-role rb-player">Spieler</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">LV-Prüfung</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">SBK genehmigt</span
+              ><span class="fc-role rb-sbk">SBK</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Genehmigt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-vm">VM (anfragend)</span>
+              <span class="fb-action">zurückziehen</span>
+              <span class="fb-from"
+                >(aus Vereinsprüfung, Spielerbestätigung oder LV-Prüfung)</span
+              >
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-neutral">Zurückgezogen</span>
+            </div>
+            <div class="fb">
+              <span class="fb-from">aus Spielerbestätigung:</span>
+              <span class="rbi rb-player">Spieler</span>
+              <span class="fb-action">lehnt ab (E-Mail-Link)</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt (Spieler)</span>
+            </div>
+          </div>
+
+          <div class="flow-variant">
+            <div class="flow-variant-label">Als abgebender Verein</div>
+            <div class="flow-path" style="margin-top: 8px">
+              <div class="fs fs-pending">
+                <span class="fs-name">Vereins&shy;prüfung</span>
+              </div>
+              <div class="fc fc-active">
+                <span class="fc-label">genehmigen</span
+                ><span class="fc-role rb-vm">VM (abgebend)</span
+                ><span class="fc-arrow">→</span>
+              </div>
+              <div class="fs fs-pending">
+                <span class="fs-name">Spieler&shy;bestätigung</span>
+              </div>
+              <div class="fc">
+                <span class="fc-label">Spieler bestätigt</span
+                ><span class="fc-role rb-player">Spieler</span
+                ><span class="fc-arrow">→</span>
+              </div>
+              <div class="fs fs-neutral">
+                <span class="fs-name">LV-Prüfung</span>
+              </div>
+            </div>
+            <div class="flow-branches" style="margin-top: 10px">
+              <div class="fb">
+                <span class="rbi rb-vm">VM (abgebend)</span>
+                <span class="fb-action">ablehnen (mit Begründung)</span>
+                <span class="fb-arrow">→</span>
+                <span class="fb-state fs-error">Abgelehnt (Verein)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📋</span>
+            <div>
+              <div class="flow-card-title">Spielerdaten-Korrektursanfrage</div>
+              <div class="flow-card-sub">
+                Falsche Stammdaten zur Korrektur einreichen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Spielernamen anklicken</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Antrag ausfüllen &amp; senden</span
+              ><span class="fc-role rb-vm">VM</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending"><span class="fs-name">Offen</span></div>
+            <div class="fc">
+              <span class="fc-label">prüfen</span
+              ><span class="fc-role rb-sbk">SBK / Admin</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Genehmigt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK / Admin</span>
+              <span class="fb-action">ablehnen (mit Begründung)</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Mögliche Korrekturen: Vorname · Nachname · Vor- und Nachname
+            vertauscht · Geburtsdatum · Nationalität.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📝</span>
+            <div>
+              <div class="flow-card-title">Spielberichtsprozess</div>
+              <div class="flow-card-sub">
+                Spielbericht für eigene Vereinsspiele einreichen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-neutral">
+              <span class="fs-name">Spiel geplant</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Aufstellung &amp; Daten eintragen</span
+              ><span class="fc-role rb-vm">VM</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info">
+              <span class="fs-name">Spielbericht offen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Checkliste ausfüllen &amp; einreichen</span
+              ><span class="fc-role rb-vm">VM</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Bericht abgeschlossen</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">finalisieren</span
+              ><span class="fc-role rb-sbk">SBK</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Finalisiert</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Nach dem Einreichen ist der Bericht gesperrt. Nur SBK/Admin kann ihn
+            wieder öffnen.
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════ TM ═══════════════════ -->
+      <section class="role-panel" id="panel-tm" style="--role-color: #0d8fa0">
+        <div
+          class="role-hero"
+          style="background: linear-gradient(135deg, #0d8fa0, #085f6b)"
+        >
+          <div class="role-badge">TM</div>
+          <h1>Teammanager</h1>
+          <p>
+            Lizenzverwaltung und Spielberichte für die zugeordneten Teams der
+            aktuellen Saison.
+          </p>
+          <div class="role-scope">
+            ⚽ Zuständig für ein oder mehrere Teams der aktuellen Saison
+          </div>
+        </div>
+
+        <div class="section-title">Bereiche</div>
+        <div class="cap-grid">
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #cffafe; color: #0d8fa0">
+                📄
+              </div>
+              <div>
+                <h3>Lizenzverwaltung</h3>
+                <div class="cd">Lizenzen der eigenen Teamspieler</div>
+              </div>
+            </div>
+            <ul>
+              <li>Lizenzliste der eigenen Teams einsehen</li>
+              <li>Lizenzen beantragen und Status prüfen</li>
+              <li>Spieler ohne Lizenz identifizieren</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #cffafe; color: #0d8fa0">
+                👤
+              </div>
+              <div>
+                <h3>Spieler anlegen</h3>
+                <div class="cd">Neue Spieler für eigene Teams</div>
+              </div>
+            </div>
+            <ul>
+              <li>Spieler für die zugeordneten Teams anlegen</li>
+              <li>Stammdaten erfassen</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-title">Prozesse im Detail</div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📄</span>
+            <div>
+              <div class="flow-card-title">
+                Spielerberechtigung (Lizenz) beantragen
+              </div>
+              <div class="flow-card-sub">
+                Lizenzen für eigene Teamspieler einreichen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Spieler ohne Lizenz</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Lizenz beantragen</span
+              ><span class="fc-role rb-tm">TM</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Beantragt</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">genehmigen</span
+              ><span class="fc-role rb-sbk">SBK / Admin</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Erteilt</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK / Admin</span>
+              <span class="fb-action">ablehnen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-error">Abgelehnt</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📝</span>
+            <div>
+              <div class="flow-card-title">Spielberichtsprozess</div>
+              <div class="flow-card-sub">
+                Spielbericht für eigene Team-Spiele einreichen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-neutral">
+              <span class="fs-name">Spiel geplant</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label"
+                >Aufstellung &amp; Spielereignisse eintragen</span
+              ><span class="fc-role rb-tm">TM</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info">
+              <span class="fs-name">Spielbericht offen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Checkliste ausfüllen &amp; einreichen</span
+              ><span class="fc-role rb-tm">TM</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Bericht abgeschlossen</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">finalisieren</span
+              ><span class="fc-role rb-sbk">SBK</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Finalisiert</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Heim- und Gast-Teammanager tragen jeweils ihre eigene Mannschaft
+            ein. Nach dem Einreichen ist der Bericht für den Teammanager
+            gesperrt – nur SBK/Admin kann ihn wieder öffnen.
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════ SCHIEDSRICHTER ═══════════════════ -->
+      <section
+        class="role-panel"
+        id="panel-schiri"
+        style="--role-color: #be185d"
+      >
+        <div
+          class="role-hero"
+          style="background: linear-gradient(135deg, #be185d, #831843)"
+        >
+          <div class="role-badge">Schiri</div>
+          <h1>Schiedsrichter (Self-Service)</h1>
+          <p>
+            Eigenes Profil pflegen, angesetzte Spieltage einsehen und bestätigen
+            sowie Sperrtermine selbst verwalten.
+          </p>
+          <div class="role-scope">👤 Eigener Schiedsrichter-Account</div>
+        </div>
+
+        <div class="section-title">Bereiche</div>
+        <div class="cap-grid">
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #fce7f3; color: #be185d">
+                👤
+              </div>
+              <div>
+                <h3>Mein Profil</h3>
+                <div class="cd">Eigene Stamm- und Kontaktdaten</div>
+              </div>
+            </div>
+            <ul>
+              <li>Name, E-Mail und Adresse pflegen</li>
+              <li>Partner-Lizenznummer hinterlegen</li>
+              <li>
+                Lizenznummer, Lizenzstufe und Gültigkeit einsehen (nur lesbar)
+              </li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #fce7f3; color: #be185d">
+                📅
+              </div>
+              <div>
+                <h3>Meine Spieltage</h3>
+                <div class="cd">Veröffentlichte Ansetzungen</div>
+              </div>
+            </div>
+            <ul>
+              <li>Eigene angesetzte Spieltage einsehen</li>
+              <li>Spieltage bestätigen (Zusage)</li>
+              <li>Lizenzliste/Lizenzkarte über den E-Mail-Link abrufen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #fce7f3; color: #be185d">
+                🚫
+              </div>
+              <div>
+                <h3>Meine Sperrtermine</h3>
+                <div class="cd">Eigene Verfügbarkeit</div>
+              </div>
+            </div>
+            <ul>
+              <li>Sperr- und Abwesenheitstermine selbst eintragen</li>
+              <li>Eigene Sperrtermine wieder löschen</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-title">Prozesse im Detail</div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">🚫</span>
+            <div>
+              <div class="flow-card-title">Sperrtermine verwalten</div>
+              <div class="flow-card-sub">
+                Eigene Abwesenheiten für die Ansetzung hinterlegen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Datum auswählen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Sperrtermin anlegen</span
+              ><span class="fc-role rb-schiri">Schiri</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info">
+              <span class="fs-name">Sperrtermin eingetragen</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">bei Ansetzung berücksichtigt</span
+              ><span class="fc-role rb-auto">automatisch</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">An dem Tag nicht ansetzbar</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Schiedsrichter mit einem Sperrtermin am Spieltag werden bei der
+            Ansetzung ausgeblendet (Ausnahme: Pokalspiele, dort gilt nur der
+            Sperrtermin-Konflikt). Sperrtermine können nur vom Schiedsrichter
+            selbst eingetragen und wieder gelöscht werden – nicht durch Admin
+            oder RSK.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📅</span>
+            <div>
+              <div class="flow-card-title">
+                Ansetzung erhalten &amp; bestätigen
+              </div>
+              <div class="flow-card-sub">
+                Vom Benachrichtigungs-E-Mail bis zur Zusage
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-neutral">
+              <span class="fs-name">Vorläufig angesetzt</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">vorläufig benachrichtigt</span
+              ><span class="fc-role rb-rsk">RSK</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info">
+              <span class="fs-name">E-Mail erhalten</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">veröffentlicht</span
+              ><span class="fc-role rb-rsk">RSK</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending">
+              <span class="fs-name">Veröffentlicht (Lizenzkarten-Link)</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Spieltag bestätigen</span
+              ><span class="fc-role rb-schiri">Schiri</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Zugesagt</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Mit der Veröffentlichung erhält der Schiedsrichter eine E-Mail mit
+            einem Lizenzlisten-Link, der <strong>72 Stunden</strong> gültig ist.
+            Über „Meine Spieltage" wird der Spieltag bestätigt; bleibt die
+            Bestätigung aus, kann der Spieltag automatisch als bestätigt gelten.
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

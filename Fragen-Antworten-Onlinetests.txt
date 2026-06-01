@@ -1,0 +1,49 @@
+Fragen:
+
+Zugang & Nutzer
+1. Müssen sich Schiedsrichter für den Test identifizieren, oder reicht ein anonymer Zugang per Link?
+2. Gibt es verschiedene Lizenzstufen, für die unterschiedliche Tests relevant sind?
+ 
+Teststruktur
+3. Wie viele Fragen soll ein Test ungefähr enthalten?
+4. Soll ein fester Fragenkatalog genutzt werden oder zufällig aus einem größeren Pool gezogen werden?
+5. Gibt es eine Zeitbegrenzung pro Test?
+6. Können Schiedsrichter einen Test unterbrechen und später fortsetzen?
+7. Wie viele Versuche darf ein Schiedsrichter pro Test haben?
+8. Können Fragen Bilder oder Videos enthalten (z.B. Fotos von Spielsituationen)?
+ 
+Offene Fragen & Bewertung
+9. Wer bewertet die Antworten auf offene Fragen – du, mehrere Lehrwarte, oder soll das automatisch passieren?
+10. Gibt es eine Musterlösung oder Bewertungskriterien, die hinterlegt werden sollen?
+11. Sollen Schiedsrichter nach Abgabe Feedback oder Erklärungen zu ihren Antworten erhalten?
+Ergebnisse & Konsequenzen
+12. Gibt es eine Bestanden/Nicht-bestanden-Schwelle?
+13. Was passiert bei Nicht-Bestehen – gibt es eine Frist für einen Wiederholungsversuch?
+14. Sollen Schiedsrichter ihr eigenes Ergebnis einsehen können?
+15. Wer außer dir soll Ergebnisse einsehen können (z.B. andere RSK Mitglieder)?
+16. Soll es eine Bestätigung oder ein Zertifikat bei Bestehen geben?
+ 
+Prozess
+17. Gibt es bereits Fragen in digitaler Form, oder müssen diese erst erfasst werden?
+18. Wer pflegt den Fragenkatalog langfristig – nur du oder mehrere Personen?
+
+Antworten:
+
+1. Ja, namentlich und mit Lizenznummer
+2. N3, N2, N1, die Auswertung kann aber auch Volker übernehmen - da reichen also Fehlerpunkte oder erreichte Punkte
+3. ca. 30 aktuell keine Zeitmessung geplant
+4. Ja, ein fester Fragenkatalog
+5. Ja, 30 Minuten, kann aber auch pro Test festgelegt werden.
+6. Nein
+7. Zwei
+8. War bisher nie geplant.
+9. Sollen keine offene Fragen sein sondern eine Szene wird beschrieben und die Geprüften müssen in einer Matrix festlegen, welche Strafe gegeben wird mit Auswahlmöglichkeiten (2, 2+2, TMS, MS, Freischlag A, Freischlag B, Weiterspielen, Bully und welche Spieler es betrifft)
+10. Eine Musterlösung kann hinterlegt werden, ja
+11. Nein, aber auf Anfrage soll die Auswertung von uns zugesendet werden können
+12. Ja, müssten wir noch festlegen
+13. Ja, bisher wurde dies von Volker per Mail mitgeteilt, feste Fristen wären aber besser
+14. Nach Beendigung der Prüfungsphase ist das denkbar.
+15. RSK FD Benutzerkonten
+16. Es reicht ein einfacher Bericht an die RSK und den Geprüften, wie viele Fehlerpunkte er hat.
+17. Wir warten noch aufs Regelwerk, ein paar Fragen gibt es schon aber nicht viele
+18. RSK FD Benuterkonten
