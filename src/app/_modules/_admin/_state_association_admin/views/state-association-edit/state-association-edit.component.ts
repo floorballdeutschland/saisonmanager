@@ -62,6 +62,15 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     return !!this.currentUser?.permissions['menu_item_state_association_admin'];
   }
 
+  // Das Umhängen des übergeordneten Verbands bleibt echten Admins vorbehalten
+  // (Backend strippt parent_id für Nicht-Admins). Der globale SBK verwaltet zwar
+  // alle LVs, aber nicht deren Lebenszyklus.
+  get canManageLifecycle(): boolean {
+    return !!this.currentUser?.permissions[
+      'state_association_manage_lifecycle'
+    ];
+  }
+
   ngOnInit(): void {
     this._sessionService.currentUser$
       .pipe(takeUntil(this._destroy$))

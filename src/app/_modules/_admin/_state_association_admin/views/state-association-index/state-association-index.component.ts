@@ -58,6 +58,14 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
     return !!this.currentUser?.permissions['menu_item_state_association_admin'];
   }
 
+  // Anlegen/Löschen ganzer Landesverbände bleibt echten Admins vorbehalten;
+  // der globale SBK sieht zwar alle LVs, darf sie aber nicht anlegen/löschen.
+  get canManageLifecycle(): boolean {
+    return !!this.currentUser?.permissions[
+      'state_association_manage_lifecycle'
+    ];
+  }
+
   get isSbkOnly(): boolean {
     return (
       !!this.currentUser?.permissions['menu_item_state_association_sbk'] &&
