@@ -58,10 +58,6 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     private _cdr: ChangeDetectorRef
   ) {}
 
-  get isAdmin(): boolean {
-    return !!this.currentUser?.permissions['menu_item_state_association_admin'];
-  }
-
   // Das Umhängen des übergeordneten Verbands bleibt echten Admins vorbehalten
   // (Backend strippt parent_id für Nicht-Admins). Der globale SBK verwaltet zwar
   // alle LVs, aber nicht deren Lebenszyklus.
