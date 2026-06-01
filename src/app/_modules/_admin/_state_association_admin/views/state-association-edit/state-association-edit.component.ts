@@ -11,7 +11,6 @@ import { Subject, takeUntil } from 'rxjs';
 import {
   StateAssociationService,
   NotificationService,
-  GameOperationService,
   SessionService,
 } from '@floorball/core';
 import {
@@ -42,7 +41,9 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
   editingQuestion = '';
 
   releases: StateAssociationRelease[] = [];
-  allGameOperations: GameOperation[] = [];
+  // Mögliche Empfänger-Sportverbünde (alle außer den eigenen des LV) – vom
+  // dedizierten releases#candidates-Endpoint, erst im Bearbeitungsmodus geladen.
+  releaseCandidates: GameOperation[] = [];
   selectedGameOperationId: number | null = null;
   addingRelease = false;
 
@@ -50,7 +51,6 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
 
   constructor(
     private _stateAssociationService: StateAssociationService,
-    private _gameOperationService: GameOperationService,
     private _notificationService: NotificationService,
     private _route: ActivatedRoute,
     private _router: Router,
@@ -80,27 +80,29 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
         },
       });
 
-    this._gameOperationService
-      .getAdminGameOperations()
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (gos) => {
-          this.allGameOperations = gos;
-          this._cdr.markForCheck();
-        },
-      });
-
     const id = this._route.snapshot.params['id'];
     if (id) {
       this.editMode = true;
+      const numericId = parseInt(id, 10);
       this._stateAssociationService
-        .adminGet(parseInt(id, 10))
+        .adminGet(numericId)
         .pipe(takeUntil(this._destroy$))
         .subscribe({
           next: (sa) => {
             this.stateAssociation = { ...sa };
             this.checklistItems = sa.checklist_items ?? [];
             this.releases = sa.releases ?? [];
+            this._cdr.markForCheck();
+          },
+        });
+
+      // Freigabe-Empfänger: alle Sportverbünde außer den eigenen dieses LV.
+      this._stateAssociationService
+        .adminGetReleaseCandidates(numericId)
+        .pipe(takeUntil(this._destroy$))
+        .subscribe({
+          next: (gos) => {
+            this.releaseCandidates = gos;
             this._cdr.markForCheck();
           },
         });
@@ -253,7 +255,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     const usedIds = new Set(
       this.releases.map((r) => r.recipient_game_operation_id)
     );
-    return this.allGameOperations.filter((go) => !usedIds.has(go.id));
+    return this.releaseCandidates.filter((go) => !usedIds.has(go.id));
   }
 
   addRelease(): void {

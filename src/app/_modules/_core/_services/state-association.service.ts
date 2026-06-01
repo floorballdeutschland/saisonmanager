@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
   ChecklistItem,
+  GameOperation,
   StateAssociation,
   StateAssociationRelease,
 } from '@floorball/types';
@@ -75,6 +76,14 @@ export class StateAssociationService {
   public adminDeleteChecklistItem(stateAssociationId: number, itemId: number) {
     return this.http.delete(
       `${environment.apiURL}admin/state_associations/${stateAssociationId}/checklist_items/${itemId}`
+    );
+  }
+
+  // Mögliche Empfänger-Sportverbünde für eine Freigabe (alle außer den eigenen
+  // des Landesverbands). Siehe releases#candidates im API.
+  public adminGetReleaseCandidates(stateAssociationId: number) {
+    return this.http.get<GameOperation[]>(
+      `${environment.apiURL}admin/state_associations/${stateAssociationId}/releases/candidates`
     );
   }
 
