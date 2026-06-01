@@ -95,4 +95,20 @@ export class UserIndexComponent implements OnInit, OnDestroy {
     if (!user.roles.length) return '–';
     return user.roles.map((r) => r.role_name).join(', ');
   }
+
+  // Zuordnung je nach Rolle: VM→Verein, TM→Team(s), SBK/RSK→Sportverbund.
+  assignmentLabel(user: UserAdminEntry): string {
+    const parts: string[] = [];
+    for (const r of user.roles) {
+      if (r.user_group_id === 5) {
+        if (user.team_names?.length) parts.push(...user.team_names);
+      } else if (r.user_group_id === 4) {
+        if (r.club_name) parts.push(r.club_name);
+      } else if (r.user_group_id === 2 || r.user_group_id === 3) {
+        if (r.game_operation_name) parts.push(r.game_operation_name);
+      }
+    }
+    const unique = Array.from(new Set(parts));
+    return unique.length ? unique.join(' · ') : '–';
+  }
 }
