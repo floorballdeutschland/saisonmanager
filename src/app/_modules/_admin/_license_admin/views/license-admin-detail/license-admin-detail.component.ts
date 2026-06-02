@@ -34,6 +34,7 @@ export class LicenseAdminDetailComponent implements OnInit {
   @Output() handledPlayer = new EventEmitter<number>();
 
   reasons: { [key: string]: string } = {};
+  validUntilDates: { [key: string]: string } = {};
 
   hidePlayer: { [key: number]: boolean } = {};
 
@@ -71,11 +72,26 @@ export class LicenseAdminDetailComponent implements OnInit {
     return age;
   }
 
+  public defaultValidUntil(): string {
+    const now = new Date();
+    const year =
+      now.getMonth() >= 7 ? now.getFullYear() + 1 : now.getFullYear();
+    return `${year}-07-31`;
+  }
+
   public approveLicense(player: PlayerWithLicense) {
     const licenseId = player.team_license.license.id;
+    const validUntil =
+      this.validUntilDates[licenseId] || this.defaultValidUntil();
 
     this._playerService
-      .updateLicenseStatus(player.id, licenseId, 1, this.reasons[licenseId])
+      .updateLicenseStatus(
+        player.id,
+        licenseId,
+        1,
+        this.reasons[licenseId],
+        validUntil
+      )
       .subscribe({
         next: () => {
           this.handledPlayer.emit(player.id);

@@ -257,6 +257,11 @@
             >
               Erteilt
             </th>
+            <th
+              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+            >
+              Gültig bis
+            </th>
             <th class="px-4 py-3"></th>
           </tr>
         </thead>
@@ -478,6 +483,18 @@
             <!-- Erteilt -->
             <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
               {{ e.approved_at ? (e.approved_at | date : "dd.MM.yy") : "–" }}
+            </td>
+
+            <!-- Gültig bis -->
+            <td
+              class="px-4 py-3 whitespace-nowrap text-sm"
+              [ngClass]="
+                e.valid_until && e.valid_until < today
+                  ? 'text-red-600 font-medium'
+                  : 'text-gray-500'
+              "
+            >
+              {{ e.valid_until ? (e.valid_until | date : "dd.MM.yy") : "–" }}
             </td>
 
             <!-- Detail-Link -->

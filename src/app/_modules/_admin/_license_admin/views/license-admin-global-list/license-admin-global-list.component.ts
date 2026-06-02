@@ -52,6 +52,8 @@ const LEAGUE_CLASSES: { value: string; label: string }[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
+  readonly today = new Date().toISOString().slice(0, 10);
+
   allEntries: AdminLicenseEntry[] = [];
   filteredEntries: AdminLicenseEntry[] = [];
   loading = true;
