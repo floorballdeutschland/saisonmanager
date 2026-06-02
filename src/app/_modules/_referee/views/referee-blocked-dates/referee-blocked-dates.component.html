@@ -1,57 +1,103 @@
-<div class="p-4 lg:p-8 max-w-2xl">
-  <h1 class="text-2xl font-bold mb-6">Meine Sperrtermine</h1>
-
+<div class="p-4 lg:p-8 max-w-5xl">
+  <h1 class="text-2xl font-bold mb-2">Meine Sperrtermine</h1>
   <p class="text-sm text-fb-gray-500 mb-6">
-    Hinterlege Samstage oder Sonntage, an denen du nicht eingesetzt werden
-    kannst. Termine mit einer aktiven Ansetzung können nicht entfernt werden.
+    Klicke einen Tag an, um ihn zu sperren oder die Sperrung aufzuheben. Für
+    einen Zeitraum: ersten Tag anklicken, dann letzten Tag anklicken.
   </p>
 
-  <!-- Add new date -->
-  <div class="flex items-end gap-3 mb-8">
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-bold">Datum hinzufügen</label>
-      <input
-        type="date"
-        [(ngModel)]="newDate"
-        name="newDate"
-        [min]="today"
-        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-      />
-    </div>
-    <button
-      type="button"
-      (click)="addDate()"
-      [disabled]="saving || !newDate"
-      class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
-    >
-      {{ saving ? "Speichern…" : "Hinzufügen" }}
-    </button>
-  </div>
-
-  <!-- List -->
   <div *ngIf="loading" class="text-fb-gray-500 text-sm py-4">Lade…</div>
 
   <div
-    *ngIf="!loading && dates.length === 0"
-    class="text-fb-gray-500 text-sm py-4"
+    *ngIf="rangeStart"
+    class="mb-4 flex items-center gap-3 text-sm bg-blue-50 border border-blue-200 rounded-[5px] px-4 py-2"
   >
-    Keine Sperrtermine eingetragen.
+    <span
+      >Startdatum gewählt: <strong>{{ rangeStart }}</strong
+      >. Klicke nun auf das Enddatum.</span
+    >
+    <button
+      type="button"
+      (click)="cancelRange()"
+      class="text-xs text-fb-gray-500 hover:underline"
+    >
+      Abbrechen
+    </button>
   </div>
 
-  <ul *ngIf="!loading && dates.length > 0" class="flex flex-col gap-2">
-    <li
-      *ngFor="let d of dates"
-      class="flex items-center justify-between border border-fb-gray-600 rounded-[5px] px-4 py-2"
-    >
-      <span class="text-sm">{{ formatDate(d.date) }}</span>
-      <button
-        type="button"
-        (click)="deleteDate(d.id)"
-        [disabled]="deletingId === d.id"
-        class="text-xs text-red-600 hover:underline disabled:opacity-50"
-      >
-        {{ deletingId === d.id ? "Lösche…" : "Entfernen" }}
-      </button>
-    </li>
-  </ul>
+  <div *ngIf="saving" class="mb-4 text-sm text-fb-gray-500">Speichern…</div>
+
+  <div
+    *ngIf="!loading"
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+  >
+    <div *ngFor="let month of months" class="select-none">
+      <p class="text-sm font-bold mb-2">{{ month.label }}</p>
+
+      <!-- Weekday header -->
+      <div class="grid grid-cols-7 mb-1">
+        <span
+          *ngFor="let wd of ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']"
+          class="text-center text-[10px] text-fb-gray-400 font-bold"
+          >{{ wd }}</span
+        >
+      </div>
+
+      <!-- Day grid -->
+      <div class="grid grid-cols-7 gap-[2px]">
+        <!-- Leading empty cells -->
+        <span
+          *ngFor="let _ of [].constructor(month.leadingEmpty)"
+          class="aspect-square"
+        ></span>
+
+        <!-- Day cells -->
+        <button
+          *ngFor="let day of month.days"
+          type="button"
+          [disabled]="day.past || saving"
+          (click)="onDayClick(day)"
+          (mouseenter)="onDayHover(day)"
+          class="aspect-square rounded-[3px] text-xs font-medium flex items-center justify-center transition-colors"
+          [class.text-fb-gray-300]="day.past"
+          [class.cursor-default]="day.past"
+          [class.bg-red-500]="!day.past && day.blocked && !day.inRange"
+          [class.text-white]="!day.past && day.blocked && !day.inRange"
+          [class.hover:bg-red-400]="!day.past && day.blocked && !day.inRange"
+          [class.bg-blue-100]="!day.past && !day.blocked && day.inRange"
+          [class.bg-blue-200]="!day.past && day.blocked && day.inRange"
+          [class.rounded-l-[3px]]="day.rangeStart"
+          [class.rounded-r-[3px]]="day.rangeEnd"
+          [class.hover:bg-fb-gray-100]="
+            !day.past && !day.blocked && !day.inRange
+          "
+          [title]="day.blocked ? 'Sperrtermin entfernen' : 'Tag sperren'"
+        >
+          {{ day.day }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div
+    *ngIf="!loading"
+    class="mt-8 flex items-center gap-6 text-xs text-fb-gray-500"
+  >
+    <span class="flex items-center gap-1">
+      <span class="inline-block w-4 h-4 rounded-[3px] bg-red-500"></span>
+      Gesperrt
+    </span>
+    <span class="flex items-center gap-1">
+      <span
+        class="inline-block w-4 h-4 rounded-[3px] bg-blue-100 border border-blue-200"
+      ></span>
+      Auswahl
+    </span>
+    <span class="flex items-center gap-1">
+      <span
+        class="inline-block w-4 h-4 rounded-[3px] bg-fb-gray-100 border border-fb-gray-300"
+      ></span>
+      Frei
+    </span>
+  </div>
 </div>

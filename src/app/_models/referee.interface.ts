@@ -149,6 +149,11 @@ export interface RefereeBlockedDate {
   date: string;
 }
 
+export interface RefereeBlockedDatesBulkResult {
+  created: RefereeBlockedDate[];
+  skipped: { date: string; reason: string }[];
+}
+
 export interface PublicLicenseEntry {
   name: string;
   birthdate?: string;
