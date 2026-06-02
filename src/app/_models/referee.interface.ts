@@ -48,6 +48,8 @@ export interface RefereeAdmin {
   qualifications?: RefereeQualificationEntry[];
   wallet_pass_issued_at?: string;
   wallet_pass_url?: string;
+  user_id?: number | null;
+  user_name?: string | null;
   strasse?: string;
   hausnummer?: string;
   plz?: string;

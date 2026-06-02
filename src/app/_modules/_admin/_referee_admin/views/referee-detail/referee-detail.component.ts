@@ -9,7 +9,11 @@ import {
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { NotificationService, RefereeService } from '@floorball/core';
+import {
+  NotificationService,
+  RefereeService,
+  SessionService,
+} from '@floorball/core';
 import { RefereeAdmin, RefereeAdminGame } from '@floorball/types';
 
 @Component({
@@ -23,6 +27,8 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   loading = false;
   gamesLoading = false;
   walletLoading = false;
+  userAccountLoading = false;
+  canCreateUserAccount = false;
   selectedSeasonId?: number;
 
   private _destroy$ = new Subject<void>();
@@ -31,10 +37,14 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     private _refereeService: RefereeService,
     private _route: ActivatedRoute,
     private _notificationService: NotificationService,
+    private _sessionService: SessionService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    const user = this._sessionService.currentUser;
+    this.canCreateUserAccount = !!user?.permissions['referee_can_create'];
+
     const param = this._route.snapshot.params['lizenznummer'] as string;
     this.loading = true;
 
@@ -134,6 +144,37 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
             { autoClose: false, keepAfterRouteChange: false }
           );
           this._cdr.markForCheck();
+        },
+      });
+  }
+
+  createUserAccount(): void {
+    if (!this.referee) return;
+    this.userAccountLoading = true;
+    this._refereeService
+      .adminCreateUserAccount(this.referee.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.referee = updated;
+          this.userAccountLoading = false;
+          this._cdr.markForCheck();
+          this._notificationService.success('Benutzerkonto wurde angelegt.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+        },
+        error: (err: HttpErrorResponse) => {
+          this.userAccountLoading = false;
+          this._cdr.markForCheck();
+          const msg =
+            err?.error?.errors?.[0] ??
+            err?.error?.error ??
+            'Fehler beim Anlegen des Benutzerkontos.';
+          this._notificationService.error(msg, {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          });
         },
       });
   }
