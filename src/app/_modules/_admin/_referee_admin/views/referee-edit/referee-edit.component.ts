@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, forkJoin, takeUntil } from 'rxjs';
 import {
   AssociationService,
@@ -34,9 +35,12 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   editMode = false;
   loading = false;
   saving = false;
+  walletLoading = false;
+  userAccountLoading = false;
   isRestricted = false;
   canDelete = false;
   canMerge = false;
+  canCreateUserAccount = false;
   stateAssociations: StateAssociation[] = [];
   clubs: Club[] = [];
   qualificationTypes: RefereeQualificationType[] = [];
@@ -65,6 +69,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           this.isRestricted = !!user?.permissions['referee_edit_restricted'];
           this.canDelete = !this.isRestricted;
           this.canMerge = !!user?.permissions['referee_merge'];
+          this.canCreateUserAccount = !!user?.permissions['referee_can_create'];
           this._cdr.markForCheck();
         },
       });
@@ -276,6 +281,76 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this._notificationService.error('Fehler beim Löschen.', {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          });
+        },
+      });
+  }
+
+  createWalletPass(): void {
+    if (!this.referee.id || this.referee.guest) return;
+    this.walletLoading = true;
+    this._refereeService
+      .adminCreateWalletPass(this.referee.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.referee = {
+            ...this.referee,
+            wallet_pass_issued_at: new Date().toISOString(),
+            wallet_pass_url: result.url,
+          };
+          this.walletLoading = false;
+          this._cdr.markForCheck();
+          this._notificationService.success('Wallet-Ausweis ausgestellt.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+        },
+        error: (err: HttpErrorResponse) => {
+          this.walletLoading = false;
+          this._cdr.markForCheck();
+          const msg =
+            typeof err?.error?.error === 'string'
+              ? err.error.error
+              : 'Wallet-Pass konnte nicht erstellt werden.';
+          this._notificationService.error(msg, {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          });
+        },
+      });
+  }
+
+  createUserAccount(): void {
+    if (!this.referee.id) return;
+    this.userAccountLoading = true;
+    this._refereeService
+      .adminCreateUserAccount(this.referee.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.referee = {
+            ...this.referee,
+            user_id: updated.user_id,
+            user_name: updated.user_name,
+          };
+          this.userAccountLoading = false;
+          this._cdr.markForCheck();
+          this._notificationService.success(
+            `Konto „${updated.user_name}" angelegt. Eine E-Mail mit dem Link zum Passwort-Setzen wurde verschickt.`,
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+        },
+        error: (err: HttpErrorResponse) => {
+          this.userAccountLoading = false;
+          this._cdr.markForCheck();
+          const msg =
+            err?.error?.errors?.[0] ??
+            err?.error?.error ??
+            'Fehler beim Anlegen des Benutzerkontos.';
+          this._notificationService.error(msg, {
             autoClose: false,
             keepAfterRouteChange: false,
           });

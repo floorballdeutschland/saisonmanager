@@ -332,6 +332,41 @@
       >
         Duplikat zusammenführen
       </a>
+      <button
+        *ngIf="editMode && !referee.guest"
+        type="button"
+        (click)="createWalletPass()"
+        [disabled]="walletLoading"
+        class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
+      >
+        {{
+          walletLoading
+            ? "Erstelle…"
+            : referee.wallet_pass_issued_at
+            ? "Wallet neu ausstellen"
+            : "Wallet-Ausweis"
+        }}
+      </button>
+      <ng-container
+        *ngIf="editMode && canCreateUserAccount && !referee.user_id"
+      >
+        <button
+          *ngIf="referee.email"
+          type="button"
+          (click)="createUserAccount()"
+          [disabled]="userAccountLoading"
+          class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
+        >
+          {{ userAccountLoading ? "Erstelle…" : "Benutzerkonto anlegen" }}
+        </button>
+        <span
+          *ngIf="!referee.email"
+          class="px-3 py-2 text-xs text-fb-gray-400 border border-fb-gray-300 rounded-[5px] cursor-not-allowed"
+          title="E-Mail-Adresse erforderlich um ein Benutzerkonto anzulegen"
+        >
+          Benutzerkonto anlegen (keine E-Mail)
+        </span>
+      </ng-container>
     </div>
   </form>
 </div>
