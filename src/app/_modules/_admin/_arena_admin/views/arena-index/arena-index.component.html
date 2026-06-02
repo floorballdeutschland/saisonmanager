@@ -9,6 +9,13 @@
     </a>
   </div>
 
+  <input
+    type="text"
+    [(ngModel)]="searchTerm"
+    placeholder="Nach Name oder Stadt suchen…"
+    class="mb-6 w-full max-w-sm bg-fb-gray-900 border border-fb-gray-700 rounded px-3 py-1.5 text-sm placeholder-fb-gray-500 focus:outline-none focus:border-fb-gray-500"
+  />
+
   <div
     *ngIf="deleteError"
     class="mb-4 p-3 bg-red-900 border border-red-700 rounded text-sm text-red-200"
@@ -21,7 +28,9 @@
   </div>
 
   <div *ngIf="!loading" class="overflow-x-auto">
-    <p class="text-sm text-fb-gray-500 mb-3">{{ arenas.length }} Einträge</p>
+    <p class="text-sm text-fb-gray-500 mb-3">
+      {{ filteredArenas.length }} von {{ arenas.length }} Einträgen
+    </p>
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b border-fb-gray-700 text-left">
@@ -33,7 +42,7 @@
       </thead>
       <tbody>
         <tr
-          *ngFor="let arena of arenas"
+          *ngFor="let arena of filteredArenas"
           class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
         >
           <td class="py-2 pr-4 font-medium">{{ arena.name }}</td>
@@ -67,7 +76,7 @@
             </button>
           </td>
         </tr>
-        <tr *ngIf="arenas.length === 0">
+        <tr *ngIf="filteredArenas.length === 0">
           <td colspan="4" class="py-8 text-center text-fb-gray-500">
             Keine Spielorte gefunden.
           </td>
