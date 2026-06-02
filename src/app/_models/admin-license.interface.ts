@@ -29,6 +29,7 @@ export interface AdminLicenseEntry {
   express: boolean;
   requested_at: string | null;
   approved_at: string | null;
+  valid_until: string | null;
   required_documents: string[];
   documents: {
     id_copy: boolean;

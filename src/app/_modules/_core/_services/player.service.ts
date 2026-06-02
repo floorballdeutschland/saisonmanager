@@ -85,7 +85,8 @@ export class PlayerService {
     playerId: number,
     licenseId: string,
     licenseStatusId: number,
-    reason: string
+    reason: string,
+    validUntil?: string
   ) {
     const path =
       environment.apiURL +
@@ -97,6 +98,7 @@ export class PlayerService {
       license_id: licenseId,
       license_status_id: licenseStatusId,
       reason: reason,
+      ...(validUntil ? { valid_until: validUntil } : {}),
     });
   }
 
