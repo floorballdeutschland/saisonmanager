@@ -121,7 +121,10 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: (err) => {
-          this.searchError = err?.error?.error || 'Fehler bei der Suche.';
+          this.searchError =
+            typeof err === 'string'
+              ? err
+              : err?.message || 'Fehler bei der Suche.';
           this.searching = false;
           this._cdr.markForCheck();
         },
