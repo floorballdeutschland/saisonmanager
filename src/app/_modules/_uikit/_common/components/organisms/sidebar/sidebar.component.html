@@ -2,11 +2,22 @@
   class="flex flex-row lg:block justify-between items-center lg:h-full fixed z-40 top-0 bg-fb-gray-200 lg:max-w-[300px] p-5 w-full lg:relative gap-[20px] print:hidden"
 >
   <a [routerLink]="['/']" title="Startseite" class="flex-1">
-    <img
-      *ngIf="association?.logo_url; else fbLogo"
-      [src]="association!.logo_url"
-      class="h-full max-w-full object-contain max-h-14"
-    />
+    <ng-container *ngIf="stateAssociation?.logo_url; else goLogo">
+      <img
+        [src]="stateAssociation!.logo_url"
+        class="h-full max-w-full object-contain max-h-14"
+        alt="{{ stateAssociation!.name }}"
+      />
+    </ng-container>
+
+    <ng-template #goLogo>
+      <ng-container *ngIf="association?.logo_url; else fbLogo">
+        <img
+          [src]="association!.logo_url"
+          class="h-full max-w-full object-contain max-h-14"
+        />
+      </ng-container>
+    </ng-template>
 
     <ng-template #fbLogo>
       <fb-logo></fb-logo>
@@ -58,4 +69,29 @@
     (closeHandler)="closeMenu()"
     class="hidden lg:block"
   ></fb-metanavigation>
+
+  <div *ngIf="activeBanner" class="hidden lg:block mt-4 px-0">
+    <a
+      *ngIf="safeBannerLink(activeBanner.linkUrl); else bannerImg"
+      [href]="safeBannerLink(activeBanner.linkUrl)"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Werbung – externer Link öffnet in neuem Tab"
+    >
+      <img
+        [src]="activeBanner.url"
+        alt="Anzeige"
+        class="w-full"
+        style="aspect-ratio: 6/1; object-fit: contain"
+      />
+    </a>
+    <ng-template #bannerImg>
+      <img
+        [src]="activeBanner.url"
+        alt="Anzeige"
+        class="w-full"
+        style="aspect-ratio: 6/1; object-fit: contain"
+      />
+    </ng-template>
+  </div>
 </div>

@@ -7,7 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { OverlayService } from '@floorball/core';
-import { GameOperation } from '@floorball/types';
+import { GameOperation, StateAssociation } from '@floorball/types';
 import { take, tap } from 'rxjs';
 import { MobileHeaderComponent } from '..';
 
@@ -18,8 +18,9 @@ import { MobileHeaderComponent } from '..';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidebarComponent {
-  @Input()
-  association?: GameOperation | null;
+  @Input() association?: GameOperation | null;
+  @Input() stateAssociation?: StateAssociation | null;
+  @Input() activeBanner?: { url: string; linkUrl?: string | null } | null;
 
   overlayComponentRef?: ComponentRef<MobileHeaderComponent>;
   menuIsOpen = false;
@@ -49,5 +50,17 @@ export class SidebarComponent {
 
   closeMenu() {
     this.overlayComponentRef?.instance.onClose$.next(true);
+  }
+
+  safeBannerLink(url: string | null | undefined): string | null {
+    if (!url) return null;
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+        ? url
+        : null;
+    } catch {
+      return null;
+    }
   }
 }

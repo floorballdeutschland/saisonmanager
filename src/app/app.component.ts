@@ -18,8 +18,9 @@ import {
   League,
   LeaguesWithOperation,
   Season,
+  StateAssociation,
 } from '@floorball/types';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 
 registerLocaleData(localeDe);
 
@@ -33,6 +34,8 @@ export class AppComponent implements OnInit {
   isLoading$!: Observable<boolean>;
   leagues$!: Observable<League[] | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
+  selectedStateAssociation$!: Observable<StateAssociation | null>;
+  activeBanner$!: Observable<{ url: string; linkUrl?: string | null } | null>;
   seasons$!: Observable<Season[]>;
   selectedSeasonId$!: Observable<number>;
 
@@ -50,10 +53,27 @@ export class AppComponent implements OnInit {
     this.isLoading$ = this._associationService.associationsIsLoading$;
     this.leagues$ = this._leagueService.leagues$;
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
+    this.selectedStateAssociation$ =
+      this._associationService.selectedStateAssociation$;
     this.seasons$ = this._associationService.seasons$;
     this.selectedSeasonId$ = this._associationService.currentSeasonId$;
     this.favoriteLeagues$ = this._favoriteService.favoriteLeagues$;
     this.favoriteTeams$ = this._favoriteService.favoriteTeams$;
+
+    this.activeBanner$ = combineLatest([
+      this._leagueService.selectedLeague$,
+      this.selectedStateAssociation$,
+    ]).pipe(
+      map(([league, sa]) => {
+        if (league?.banner_url) {
+          return { url: league.banner_url, linkUrl: league.banner_link_url };
+        }
+        if (sa?.banner_url) {
+          return { url: sa.banner_url, linkUrl: sa.banner_link_url };
+        }
+        return null;
+      })
+    );
   }
 
   onSeasonChange(seasonId: number): void {

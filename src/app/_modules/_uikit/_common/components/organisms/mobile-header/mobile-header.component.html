@@ -39,4 +39,29 @@
   ></fb-favorites-navigation>
 
   <fb-metanavigation (closeHandler)="close()"></fb-metanavigation>
+
+  <div *ngIf="activeBanner$ | async as banner" class="mt-4">
+    <a
+      *ngIf="safeBannerLink(banner.linkUrl); else bannerImg"
+      [href]="safeBannerLink(banner.linkUrl)"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Werbung – externer Link öffnet in neuem Tab"
+    >
+      <img
+        [src]="banner.url"
+        alt="Anzeige"
+        class="w-full"
+        style="aspect-ratio: 6/1; object-fit: contain"
+      />
+    </a>
+    <ng-template #bannerImg>
+      <img
+        [src]="banner.url"
+        alt="Anzeige"
+        class="w-full"
+        style="aspect-ratio: 6/1; object-fit: contain"
+      />
+    </ng-template>
+  </div>
 </div>

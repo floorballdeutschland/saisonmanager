@@ -26,6 +26,7 @@ export class AssociationService {
   associationsIsLoading$ = new BehaviorSubject(false);
   associations$: Observable<GameOperation[]>;
   selectedAssociation$: Observable<GameOperation | null>;
+  selectedStateAssociation$: Observable<StateAssociation | null>;
   stateAssociations$: Observable<StateAssociation[]>;
 
   currentSeasonId$: Observable<number>;
@@ -90,6 +91,16 @@ export class AssociationService {
               ) ?? null
           )
         );
+      })
+    );
+
+    this.selectedStateAssociation$ = combineLatest([
+      this.selectedAssociation$,
+      this.stateAssociations$,
+    ]).pipe(
+      map(([go, sas]) => {
+        if (!go?.state_association_id) return null;
+        return sas.find((sa) => sa.id === go.state_association_id) ?? null;
       })
     );
   }
