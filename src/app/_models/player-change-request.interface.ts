@@ -3,7 +3,8 @@ export type CorrectionType =
   | 'first_name'
   | 'last_name'
   | 'names_swapped'
-  | 'nationality';
+  | 'nationality'
+  | 'gender';
 
 export type ChangeRequestStatus = 'pending' | 'approved' | 'rejected';
 

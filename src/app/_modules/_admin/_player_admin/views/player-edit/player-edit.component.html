@@ -251,6 +251,7 @@
                   </option>
                   <option value="birthdate">Geburtsdatum</option>
                   <option value="nationality">Nationalität</option>
+                  <option value="gender">Geschlecht</option>
                 </select>
               </div>
 
@@ -288,6 +289,16 @@
                   class="w-full"
                   placeholder="Korrekter Name"
                 />
+                <select
+                  *ngIf="changeRequestType === 'gender'"
+                  [(ngModel)]="changeRequestValue"
+                  class="w-full"
+                >
+                  <option value="">Bitte auswählen…</option>
+                  <option value="M">Männlich</option>
+                  <option value="W">Weiblich</option>
+                  <option value="D">Divers</option>
+                </select>
               </div>
 
               <div>
