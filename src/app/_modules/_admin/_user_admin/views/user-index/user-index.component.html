@@ -36,6 +36,7 @@
           <th class="py-2 pr-4 font-bold">Benutzername</th>
           <th class="py-2 pr-4 font-bold">E-Mail</th>
           <th class="py-2 pr-4 font-bold">Rolle</th>
+          <th class="py-2 pr-4 font-bold">Zuordnung</th>
           <th class="py-2 pr-4 font-bold">Letzter Login</th>
           <th class="py-2 pr-4 font-bold">Status</th>
           <th class="py-2"></th>
@@ -58,6 +59,9 @@
           <td class="py-2 pr-4 text-fb-gray-500">{{ user.username }}</td>
           <td class="py-2 pr-4 text-fb-gray-500">{{ user.email || "–" }}</td>
           <td class="py-2 pr-4">{{ roleLabel(user) }}</td>
+          <td class="py-2 pr-4 text-fb-gray-500">
+            {{ assignmentLabel(user) }}
+          </td>
           <td class="py-2 pr-4 text-fb-gray-500">
             {{
               user.last_login_at
@@ -90,7 +94,7 @@
           </td>
         </tr>
         <tr *ngIf="filteredUsers.length === 0">
-          <td colspan="7" class="py-8 text-center text-fb-gray-500">
+          <td colspan="8" class="py-8 text-center text-fb-gray-500">
             Keine Benutzer gefunden.
           </td>
         </tr>

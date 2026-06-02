@@ -2,7 +2,9 @@ export interface UserAdminRole {
   user_group_id: number;
   role_name: string;
   club_id: number | null;
+  club_name?: string | null;
   game_operation_id: number | null;
+  game_operation_name?: string | null;
 }
 
 export interface UserAdminEntry {
@@ -20,4 +22,5 @@ export interface UserAdminEntry {
   updated_at: string;
   roles: UserAdminRole[];
   teams?: number[];
+  team_names?: string[];
 }
