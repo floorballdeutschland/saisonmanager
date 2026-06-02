@@ -47,6 +47,10 @@ export class LicenseAdminDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.open = this.initiallyOpen;
+    const licenseId = this.player?.team_license?.license?.id;
+    if (licenseId) {
+      this.validUntilDates[licenseId] = this.defaultValidUntil();
+    }
   }
 
   public toggleDetails(): void {
