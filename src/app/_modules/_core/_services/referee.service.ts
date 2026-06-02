@@ -8,6 +8,7 @@ import {
   RefereeAssignment,
   RefereeAssignmentAvailable,
   RefereeBlockedDate,
+  RefereeBlockedDatesBulkResult,
   RefereeEntry,
   RefereeGameDay,
   RefereeLicenseLevel,
@@ -290,9 +291,16 @@ export class RefereeService {
 
   // Blocked dates (self-service for logged-in referee)
 
-  public getBlockedDates() {
+  public getBlockedDates(params?: { date_from?: string; date_to?: string }) {
+    let query = '';
+    if (params) {
+      const parts: string[] = [];
+      if (params.date_from) parts.push(`date_from=${params.date_from}`);
+      if (params.date_to) parts.push(`date_to=${params.date_to}`);
+      if (parts.length) query = '?' + parts.join('&');
+    }
     return this.http.get<RefereeBlockedDate[]>(
-      environment.apiURL + 'referee/blocked_dates'
+      environment.apiURL + 'referee/blocked_dates' + query
     );
   }
 
@@ -300,6 +308,13 @@ export class RefereeService {
     return this.http.post<RefereeBlockedDate>(
       environment.apiURL + 'referee/blocked_dates',
       { blocked_date: { date } }
+    );
+  }
+
+  public createBlockedDatesBulk(dates: string[]) {
+    return this.http.post<RefereeBlockedDatesBulkResult>(
+      environment.apiURL + 'referee/blocked_dates/bulk',
+      { dates }
     );
   }
 
