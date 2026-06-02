@@ -42,8 +42,12 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const user = this._sessionService.currentUser;
-    this.canCreateUserAccount = !!user?.permissions['referee_can_create'];
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((user) => {
+        this.canCreateUserAccount = !!user?.permissions['referee_can_create'];
+        this._cdr.markForCheck();
+      });
 
     const param = this._route.snapshot.params['lizenznummer'] as string;
     this.loading = true;
