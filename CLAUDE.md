@@ -166,6 +166,8 @@ When building `go_ids` arrays in `admin_user_clubs`-style methods, always use `g
 
 **game_number is stored as text.** Sort numerically with `NULLIF(game_number, '')::integer NULLS LAST`.
 
+**`season_id` is a sequential integer ID, not the year.** The year/name lives in `Setting.current.seasons` (keyed by season_id), e.g. season_id `15` = `2023/2024`, `17` = `2025/2026`, `18` = `2026/2027`. Use `Setting.current_season_id` for the active season; don't infer a year from the id.
+
 **Route structure:** Two API versions coexist. Public endpoints under `/api/v2/leagues/:id/schedule` etc. require `X-Api-Key` or cookie session. Admin endpoints under `/api/v2/admin/...` require cookie session + role check. The `api_controller.rb` handles the older v1 ticker API (also key-protected). `version_controller.rb` and `sessions_controller.rb` (login/logout) are fully open.
 
 **Public endpoint protection pattern:**
