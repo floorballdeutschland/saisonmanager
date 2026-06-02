@@ -37,7 +37,7 @@
     <div class="flex flex-col gap-1">
       <label class="text-sm font-bold">Übergeordneter Verbund</label>
       <select
-        *ngIf="isAdmin"
+        *ngIf="canManageLifecycle"
         [(ngModel)]="stateAssociation.parent_id"
         name="parent_id"
         [disabled]="hasChildren"
@@ -48,10 +48,13 @@
           {{ sa.name }}
         </option>
       </select>
-      <span *ngIf="!isAdmin" class="text-sm py-2">
+      <span *ngIf="!canManageLifecycle" class="text-sm py-2">
         {{ stateAssociation.parent_name || "– kein übergeordneter Verbund –" }}
       </span>
-      <span *ngIf="isAdmin && hasChildren" class="text-xs text-fb-gray-400">
+      <span
+        *ngIf="canManageLifecycle && hasChildren"
+        class="text-xs text-fb-gray-400"
+      >
         Dieser Verbund hat untergeordnete Landesverbände und kann daher keinem
         übergeordneten Verbund zugewiesen werden.
       </span>
