@@ -100,6 +100,76 @@
               Neues Team anlegen
             </a>
           </div>
+
+          <!-- Teams importieren -->
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <button
+              class="uppercase font-bold text-gray-400 text-sm flex items-center gap-2"
+              (click)="showImport = !showImport"
+            >
+              Teams importieren
+              <span>{{ showImport ? "▲" : "▼" }}</span>
+            </button>
+
+            <div *ngIf="showImport" class="mt-4 flex flex-col gap-4">
+              <p class="text-sm text-gray-500">
+                Importiert die Top-N-Teams aus einer anderen Liga in diese Liga.
+                Teams deren Verein bereits eingetragen ist, werden übersprungen.
+              </p>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-bold mb-1">Quell-Liga</label>
+                  <select
+                    [(ngModel)]="importSourceLeagueId"
+                    class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm"
+                  >
+                    <option [ngValue]="null">Bitte auswählen…</option>
+                    <option *ngFor="let l of allLeagues" [ngValue]="l.id">
+                      [{{ l.goName }}] {{ l.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-bold mb-1"
+                    >Top-N-Teams</label
+                  >
+                  <input
+                    type="number"
+                    [(ngModel)]="importTopN"
+                    min="1"
+                    max="32"
+                    class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm"
+                  />
+                  <p class="text-xs text-gray-400 mt-1">0 = alle Teams</p>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer disabled:opacity-50"
+                  [disabled]="!importSourceLeagueId || importing"
+                  (click)="importTeams()"
+                >
+                  {{ importing ? "Importiere…" : "Teams importieren" }}
+                </button>
+              </div>
+
+              <div
+                *ngIf="importResult"
+                class="text-sm p-3 rounded"
+                [ngClass]="
+                  importResult.imported > 0
+                    ? 'bg-green-50 text-green-800'
+                    : 'bg-gray-100 text-gray-600'
+                "
+              >
+                {{ importResult.imported }} Team(s) importiert,
+                {{ importResult.skipped }} übersprungen (bereits vorhanden).
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
