@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { AssociationService, LeagueService } from '@floorball/core';
 import { LeagueWithTeams } from 'src/app/_models';
-import { Observable, share, Subject, take, takeUntil, tap } from 'rxjs';
+import { Observable, share, Subject, take, takeUntil } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -28,7 +28,8 @@ export class TeamIndexComponent implements OnInit, OnDestroy {
   allLeagues: FlatLeague[] = [];
   importSourceLeagueId: number | null = null;
   importTopN = 2;
-  importResult: { imported: number; skipped: number } | null = null;
+  importResult: { imported: number; skipped: number; failed: number } | null =
+    null;
   importing = false;
 
   private _leagueId = 0;
@@ -52,16 +53,6 @@ export class TeamIndexComponent implements OnInit, OnDestroy {
         this.league$ = this._leagueService
           .getLeagueWithTeams(params['leagueId'])
           .pipe(share());
-
-        this.league$
-          .pipe(
-            tap((league) => {
-              if (!league) return;
-            }),
-            take(1),
-            takeUntil(this._destroy$)
-          )
-          .subscribe();
 
         this._leagueService
           .getAdminLeagues()

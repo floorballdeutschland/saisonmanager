@@ -259,10 +259,11 @@ export class LeagueService {
   ) {
     const path =
       environment.apiURL + 'admin/leagues/' + leagueId + '/import_teams.json';
-    return this.http.post<{ imported: number; skipped: number }>(path, {
-      source_league_id: sourceLeagueId,
-      top_n: topN,
-    });
+    return this.http.post<{
+      imported: number;
+      skipped: number;
+      failed: number;
+    }>(path, { source_league_id: sourceLeagueId, top_n: topN });
   }
 
   public adminCreateTeam(team: Team) {

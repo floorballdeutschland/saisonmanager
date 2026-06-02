@@ -138,7 +138,7 @@
                   <input
                     type="number"
                     [(ngModel)]="importTopN"
-                    min="1"
+                    min="0"
                     max="32"
                     class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm"
                   />
@@ -166,7 +166,10 @@
                 "
               >
                 {{ importResult.imported }} Team(s) importiert,
-                {{ importResult.skipped }} übersprungen (bereits vorhanden).
+                {{ importResult.skipped }} übersprungen (bereits vorhanden)<span
+                  *ngIf="importResult.failed > 0"
+                  >, {{ importResult.failed }} fehlgeschlagen</span
+                >.
               </div>
             </div>
           </div>
