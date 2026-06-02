@@ -22,6 +22,12 @@ const routes: Routes = [
     data: { scrollTop: true },
   },
   {
+    path: 'schiedsrichter/historie',
+    pathMatch: 'full',
+    component: Views.RefereeHistoryComponent,
+    data: { scrollTop: true },
+  },
+  {
     path: 'schiedsrichter/onlinepruefungen',
     pathMatch: 'full',
     component: Views.RefereeOnlineTestIndexComponent,

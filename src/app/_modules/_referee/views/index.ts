@@ -1,4 +1,5 @@
 export { RefereeProfileComponent } from './referee-profile/referee-profile.component';
+export { RefereeHistoryComponent } from './referee-history/referee-history.component';
 export { RefereeBlockedDatesComponent } from './referee-blocked-dates/referee-blocked-dates.component';
 export { RefereeGameDaysComponent } from './referee-game-days/referee-game-days.component';
 export { RefereeOnlineTestIndexComponent } from './referee-online-test-index/referee-online-test-index.component';

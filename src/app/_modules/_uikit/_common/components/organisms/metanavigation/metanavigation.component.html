@@ -179,6 +179,14 @@
             >Meine Sperrtermine</a
           >
         </li>
+        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_profile')">
+          <a
+            class="font-bold text-fb-gray-500 hover:text-black text-base"
+            [routerLink]="['/', 'schiedsrichter', 'historie']"
+            (click)="closeMenu()"
+            >Meine Historie</a
+          >
+        </li>
         <!-- online tests hidden until feature is ready
         <li class="mt-4 mb-4" *ngIf="showItem('menu_item_online_test_admin')">
           <a
