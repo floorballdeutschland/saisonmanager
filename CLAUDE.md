@@ -28,7 +28,19 @@ ng test                      # Karma unit tests
 npm run lint                 # Prettier on staged files only
 ```
 
-**`build-deploy.sh` caveat:** The script calls `ng` directly, which requires nvm to be in PATH. Running `./build-deploy.sh` in a fresh shell will fail with `ng: command not found`. Run it from a shell where `nvm use` has been called, or invoke `npm run build` first then `scp -r dist/saisonmanager/browser/* saisonmanager:/opt/saisonmanager/saisonmanager-frontend/` manually.
+**`build-deploy.sh` caveat:** The script calls `ng` directly, which requires nvm to be in PATH. Running `./build-deploy.sh` in a fresh shell will fail with `ng: command not found`. Always invoke it as:
+
+```bash
+export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && export PATH="$PATH:$(pwd)/node_modules/.bin" && ./build-deploy.sh
+```
+
+**NEVER deploy using `npm run build` + manual `scp`.** `build-deploy.sh` reads the real API key from the gitignored file `src/environments/.api-key` and substitutes it for the `FRONTEND_API_KEY_PLACEHOLDER` in `environment.prod.ts` before building. Skipping the script deploys a broken frontend where all public API calls fail (wrong key). If `.api-key` is missing, create it:
+
+```bash
+echo "<key>" > src/environments/.api-key
+```
+
+The key can be found in the admin UI at `/verwaltung/api-keys`.
 
 **Never deploy a development build.** Using `ng build --configuration development` produces a broken blank page in production. Always use `ng build` (production is the default).
 
