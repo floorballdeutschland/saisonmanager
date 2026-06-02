@@ -386,6 +386,10 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     );
   }
 
+  get canReactivate(): boolean {
+    return this.isDeactivated && this.editMode && this.can('player_deactivate');
+  }
+
   public cancelDeactivate(): void {
     this.confirmDeactivate = false;
     this.deactivateReason = '';
@@ -417,6 +421,30 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             { autoClose: false, keepAfterRouteChange: false }
           );
           this.cancelDeactivate();
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  public reactivatePlayer(): void {
+    if (!this.player) return;
+    this._playerService
+      .reactivatePlayer(this.player.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.player = updated;
+          this._notificationService.success('Spieler wurde reaktiviert.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this._notificationService.error(
+            err?.error?.message ?? 'Reaktivierung fehlgeschlagen.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
           this._cdr.markForCheck();
         },
       });
