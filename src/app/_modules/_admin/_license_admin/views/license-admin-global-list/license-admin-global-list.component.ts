@@ -297,6 +297,12 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     return fieldSize;
   }
 
+  public extraRequiredDocs(requiredDocuments: string[]): string[] {
+    return (requiredDocuments || []).filter(
+      (d) => d !== 'id_copy' && d !== 'parental_consent'
+    );
+  }
+
   public isMinor(birthdate: string): boolean {
     if (!birthdate) return false;
     const dob = new Date(birthdate);

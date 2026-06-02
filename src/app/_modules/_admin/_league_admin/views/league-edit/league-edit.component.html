@@ -246,26 +246,21 @@
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-              <div class="font-bold">Stichtag</div>
-              <div>
+              <div class="font-bold">Spielberechtigt</div>
+              <div class="flex items-center gap-2">
+                <select
+                  name="before_deadline"
+                  [(ngModel)]="league.before_deadline"
+                >
+                  <option value="false">geboren ab</option>
+                  <option value="true">geboren bis</option>
+                </select>
                 <input
                   [(ngModel)]="league.deadline"
                   type="date"
                   id="deadline"
-                  class="w-full"
+                  class="flex-1"
                 />
-              </div>
-
-              <div class="font-bold">vor Stichtag?</div>
-              <div>
-                <select
-                  class="w-full"
-                  name="before_deadline"
-                  [(ngModel)]="league.before_deadline"
-                >
-                  <option value="false">Geburtstag nach Stichtag</option>
-                  <option value="true">Geburtstag vor Stichtag</option>
-                </select>
               </div>
             </div>
           </div>

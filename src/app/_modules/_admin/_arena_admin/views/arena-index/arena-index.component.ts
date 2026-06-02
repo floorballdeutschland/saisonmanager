@@ -17,8 +17,19 @@ import { Arena } from '@floorball/types';
 })
 export class ArenaIndexComponent implements OnInit, OnDestroy {
   arenas: Arena[] = [];
+  searchTerm = '';
   loading = false;
   deleteError: string | null = null;
+
+  get filteredArenas(): Arena[] {
+    const term = this.searchTerm.toLowerCase().trim();
+    if (!term) return this.arenas;
+    return this.arenas.filter(
+      (a) =>
+        a.name.toLowerCase().includes(term) ||
+        (a.city ?? '').toLowerCase().includes(term)
+    );
+  }
 
   private _destroy$ = new Subject<void>();
 

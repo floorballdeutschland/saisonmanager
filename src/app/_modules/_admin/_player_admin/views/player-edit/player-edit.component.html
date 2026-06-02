@@ -593,10 +593,20 @@
               </span>
             </div>
 
-            <p *ngIf="isDeactivated" class="text-sm text-gray-500">
+            <p *ngIf="isDeactivated" class="text-sm text-gray-500 mb-4">
               Dieser Spieler ist deaktiviert und erscheint nicht mehr in der
               aktiven Spielerliste.
             </p>
+
+            <div *ngIf="canReactivate" class="mb-2">
+              <fb-button
+                size="small"
+                variant="success"
+                (click)="reactivatePlayer()"
+              >
+                Reaktivieren
+              </fb-button>
+            </div>
 
             <div *ngIf="canDeactivate && !confirmDeactivate">
               <button
