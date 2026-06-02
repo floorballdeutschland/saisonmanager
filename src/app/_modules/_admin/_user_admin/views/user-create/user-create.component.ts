@@ -87,7 +87,9 @@ export class UserCreateComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (clubs) => {
-          this.clubs = clubs;
+          this.clubs = [...clubs].sort((a, b) =>
+            a.name.localeCompare(b.name, 'de')
+          );
           this._cdr.markForCheck();
         },
       });
@@ -97,9 +99,11 @@ export class UserCreateComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (data) => {
-          this.clubsWithTeams = data;
-          if (this.isVm && data.length === 1) {
-            this.selectedClubId = data[0].id;
+          this.clubsWithTeams = [...data].sort((a, b) =>
+            a.name.localeCompare(b.name, 'de')
+          );
+          if (this.isVm && this.clubsWithTeams.length === 1) {
+            this.selectedClubId = this.clubsWithTeams[0].id;
           }
           this._cdr.markForCheck();
         },
