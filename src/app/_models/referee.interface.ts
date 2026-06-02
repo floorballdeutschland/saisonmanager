@@ -98,6 +98,35 @@ export interface RefereeAdminGame {
   referee2?: string;
 }
 
+export interface RefereeHistoryGame {
+  id: number;
+  game_number: string;
+  date: string;
+  home_team: string;
+  guest_team: string;
+  league: string;
+  season_id: number;
+  result?: string;
+}
+
+export interface RefereeHistorySeason {
+  season_id: number;
+  season_name: string;
+  games: RefereeHistoryGame[];
+}
+
+export interface RefereeHistoryTestAttempt {
+  id: number;
+  online_test_id: number;
+  test_name: string;
+  lizenzstufe: string | null;
+  attempt_number: number;
+  completed_at: string;
+  error_points: number | null;
+  passed: boolean | null;
+  pass_threshold_points: number | null;
+}
+
 export interface RefereeAssignmentStub {
   id: number;
   lizenznummer_display: string;

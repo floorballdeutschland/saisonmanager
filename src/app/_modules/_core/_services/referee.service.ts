@@ -11,6 +11,8 @@ import {
   RefereeBlockedDatesBulkResult,
   RefereeEntry,
   RefereeGameDay,
+  RefereeHistorySeason,
+  RefereeHistoryTestAttempt,
   RefereeLicenseLevel,
   RefereeProfile,
   RefereePublicLicense,
@@ -344,6 +346,20 @@ export class RefereeService {
       environment.apiURL +
         'public/license_list?token=' +
         encodeURIComponent(token)
+    );
+  }
+
+  // History (self-service)
+
+  public getHistoryGames() {
+    return this.http.get<RefereeHistorySeason[]>(
+      environment.apiURL + 'referee/history/games'
+    );
+  }
+
+  public getHistoryTests() {
+    return this.http.get<RefereeHistoryTestAttempt[]>(
+      environment.apiURL + 'referee/history/tests'
     );
   }
 
