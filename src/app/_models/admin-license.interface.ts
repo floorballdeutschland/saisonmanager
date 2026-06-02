@@ -29,10 +29,12 @@ export interface AdminLicenseEntry {
   express: boolean;
   requested_at: string | null;
   approved_at: string | null;
+  required_documents: string[];
   documents: {
     id_copy: boolean;
     parental_consent: boolean;
     id_copy_url?: string | null;
     parental_consent_url?: string | null;
+    [key: string]: boolean | string | null | undefined;
   } | null;
 }

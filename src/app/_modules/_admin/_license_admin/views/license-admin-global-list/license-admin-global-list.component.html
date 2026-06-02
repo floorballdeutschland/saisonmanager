@@ -467,6 +467,62 @@
                     </span>
                   </ng-template>
                 </ng-container>
+
+                <!-- Weitere Pflichtdokumente aus required_documents -->
+                <ng-container
+                  *ngFor="
+                    let docType of extraRequiredDocs(e.required_documents)
+                  "
+                >
+                  <a
+                    *ngIf="e.documents?.[docType + '_url']"
+                    [href]="e.documents![docType + '_url']"
+                    target="_blank"
+                    rel="noopener"
+                    class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
+                    [title]="docType + ' ansehen'"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="w-3 h-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </a>
+                  <span
+                    *ngIf="!e.documents?.[docType + '_url']"
+                    class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
+                    [ngClass]="
+                      e.documents?.[docType] === false
+                        ? 'bg-red-100 text-red-600'
+                        : 'bg-gray-100 text-gray-400'
+                    "
+                    [title]="docType + ' fehlt'"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="w-3 h-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </span>
+                </ng-container>
               </div>
             </td>
 
