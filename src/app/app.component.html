@@ -3,7 +3,11 @@
     class="lg:grid lg:grid-cols-[300px,1fr] min-h-screen print:lg:grid-cols-1"
   >
     <div class="lg:block h-full w-full print:lg:hidden">
-      <fb-sidebar [association]="selectedAssociation$ | async">
+      <fb-sidebar
+        [association]="selectedAssociation$ | async"
+        [stateAssociation]="selectedStateAssociation$ | async"
+        [activeBanner]="activeBanner$ | async"
+      >
         <fb-favorites-navigation
           [favorites]="(favoriteLeagues$ | async) ?? []"
           [favoriteTeams]="(favoriteTeams$ | async) ?? []"

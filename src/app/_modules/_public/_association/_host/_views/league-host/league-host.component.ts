@@ -106,16 +106,4 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
       takeUntil(this._destroy$)
     );
   }
-
-  safeBannerLink(url: string | null | undefined): string | null {
-    if (!url) return null;
-    try {
-      const parsed = new URL(url);
-      return parsed.protocol === 'https:' || parsed.protocol === 'http:'
-        ? url
-        : null;
-    } catch {
-      return null;
-    }
-  }
 }
