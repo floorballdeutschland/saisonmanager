@@ -119,6 +119,13 @@ export class RefereeService {
     );
   }
 
+  public adminCreateUserAccount(id: number) {
+    return this.http.post<RefereeAdmin>(
+      environment.apiURL + 'admin/referees/' + id + '/create_user',
+      {}
+    );
+  }
+
   public adminCreateWalletPass(id: number) {
     return this.http.post<{ url: string }>(
       environment.apiURL + 'admin/referees/' + id + '/wallet_pass',
