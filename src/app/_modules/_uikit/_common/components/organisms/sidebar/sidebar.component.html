@@ -24,6 +24,31 @@
     </ng-template>
   </a>
 
+  <div *ngIf="activeBanner" class="hidden lg:block mt-4 px-0">
+    <a
+      *ngIf="safeBannerLink(activeBanner.linkUrl); else bannerImg"
+      [href]="safeBannerLink(activeBanner.linkUrl)"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Werbung – externer Link öffnet in neuem Tab"
+    >
+      <img
+        [src]="activeBanner.url"
+        alt="Anzeige"
+        class="w-full"
+        style="aspect-ratio: 6/1; object-fit: contain"
+      />
+    </a>
+    <ng-template #bannerImg>
+      <img
+        [src]="activeBanner.url"
+        alt="Anzeige"
+        class="w-full"
+        style="aspect-ratio: 6/1; object-fit: contain"
+      />
+    </ng-template>
+  </div>
+
   <!-- open menu -->
   <a
     *ngIf="!menuIsOpen"
@@ -69,29 +94,4 @@
     (closeHandler)="closeMenu()"
     class="hidden lg:block"
   ></fb-metanavigation>
-
-  <div *ngIf="activeBanner" class="hidden lg:block mt-4 px-0">
-    <a
-      *ngIf="safeBannerLink(activeBanner.linkUrl); else bannerImg"
-      [href]="safeBannerLink(activeBanner.linkUrl)"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Werbung – externer Link öffnet in neuem Tab"
-    >
-      <img
-        [src]="activeBanner.url"
-        alt="Anzeige"
-        class="w-full"
-        style="aspect-ratio: 6/1; object-fit: contain"
-      />
-    </a>
-    <ng-template #bannerImg>
-      <img
-        [src]="activeBanner.url"
-        alt="Anzeige"
-        class="w-full"
-        style="aspect-ratio: 6/1; object-fit: contain"
-      />
-    </ng-template>
-  </div>
 </div>
