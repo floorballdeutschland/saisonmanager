@@ -339,7 +339,9 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           this.userAccountLoading = false;
           this._cdr.markForCheck();
           this._notificationService.success(
-            `Konto „${updated.user_name}" angelegt. Eine E-Mail mit dem Link zum Passwort-Setzen wurde verschickt.`,
+            `Konto „${
+              updated.user_name ?? ''
+            }" angelegt. Eine E-Mail mit dem Link zum Passwort-Setzen wurde verschickt.`,
             { autoClose: true, keepAfterRouteChange: false }
           );
         },
