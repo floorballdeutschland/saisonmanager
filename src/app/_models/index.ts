@@ -20,6 +20,14 @@ export {
   TeamStatsTotals,
   TeamInfo,
 } from './team-stats.interface';
+export {
+  TeamGameDay,
+  TeamGameDayTeam,
+  TeamGameDayGame,
+  TeamGameDayChecklistItem,
+  TeamGameDayChecklistAnswer,
+  TeamGameDayConfirmResponse,
+} from './team-game-day.interface';
 export { GameScheduleEntry } from './game-schedule-entry.interface';
 export { Game } from './game.interface';
 export { GameInput } from './game.interface';

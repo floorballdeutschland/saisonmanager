@@ -122,6 +122,11 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/team-game-days').then((m) => m.TeamGameDaysModule),
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/users').then((m) => m.AdminUserModule),
       },
       {
