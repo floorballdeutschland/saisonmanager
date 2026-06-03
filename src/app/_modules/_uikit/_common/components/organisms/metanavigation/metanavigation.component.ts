@@ -61,7 +61,7 @@ export class MetanavigationComponent implements OnInit {
 
   public logout() {
     this._sessionService.logout();
-    this.router.navigate(['/']);
+    this.router.navigate(['/login']);
 
     return false;
   }
