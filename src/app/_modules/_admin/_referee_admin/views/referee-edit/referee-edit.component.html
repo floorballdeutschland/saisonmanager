@@ -333,7 +333,7 @@
         Duplikat zusammenführen
       </a>
       <button
-        *ngIf="editMode && !referee.guest"
+        *ngIf="editMode && canIssueWallet && !referee.guest"
         type="button"
         (click)="createWalletPass()"
         [disabled]="walletLoading"
