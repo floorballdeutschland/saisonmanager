@@ -218,6 +218,17 @@ export interface RefereeGameDayGame {
   result?: string;
 }
 
+export interface RefereeChecklistItem {
+  id: number;
+  question: string;
+}
+
+export interface RefereeChecklistAnswer {
+  item_id: number;
+  question: string;
+  answer: boolean;
+}
+
 export interface RefereeGameDay {
   id: number;
   date: string;
@@ -227,6 +238,12 @@ export interface RefereeGameDay {
   my_confirmed_at?: string | null;
   partner_confirmed_at?: string | null;
   auto_confirmed: boolean;
+  confirmable_from?: string | null;
+  checklist_required: boolean;
+  checklist_items: RefereeChecklistItem[];
+  properly_conducted?: boolean | null;
+  my_checklist_answers: RefereeChecklistAnswer[];
+  partner_properly_conducted?: boolean | null;
   games: RefereeGameDayGame[];
 }
 

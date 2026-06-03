@@ -606,6 +606,7 @@
             <ul>
               <li>Vereine erstellen, bearbeiten, deaktivieren</li>
               <li>Teams anlegen und Ligen zuordnen</li>
+              <li>Teams aus Quell-Liga importieren (Top-N aus Tabelle)</li>
               <li>Hallen anlegen und verwalten</li>
               <li>Landesverbände verwalten</li>
             </ul>
@@ -660,6 +661,41 @@
               <li>Lizenzstufen und Qualifikationen setzen</li>
               <li>Kursergebnisse importieren und freigeben</li>
               <li>Ansetzungen erstellen und veröffentlichen</li>
+              <li>Schiedsrichter-Benutzerkonto anlegen (erfordert E-Mail)</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #ede9fe; color: #5c35a8">
+                🗺️
+              </div>
+              <div>
+                <h3>Landesverbände</h3>
+                <div class="cd">
+                  Alle Landesverbände – vollständige Verwaltung
+                </div>
+              </div>
+            </div>
+            <ul>
+              <li>
+                Landesverbände anlegen, löschen, Eltern-Kind-Hierarchie setzen
+              </li>
+              <li>
+                Stammdaten, Logo (WebP, max 5 MB) und Werbebanner (WebP, max 500
+                KB) pflegen
+              </li>
+              <li>
+                E-Mail-Konfiguration: Schiri-Berichtsformular-Empfänger und
+                Checklisten-BCC
+              </li>
+              <li>
+                Konfigurationsflags: Express-Lizenz, Schiri-Kursüberprüfung,
+                Pflicht-Scan
+              </li>
+              <li>
+                Vereinsfreigaben verwalten (andere Verbände freigeben/entziehen)
+              </li>
+              <li>Spieltagscheckliste: Fragen anlegen, bearbeiten, löschen</li>
             </ul>
           </div>
           <div class="cap-card">
@@ -695,11 +731,13 @@
           </div>
           <div class="flow-path">
             <div class="fs fs-start">
-              <span class="fs-name">Antrag erstellt</span>
+              <span class="fs-name"
+                >Spieler im aufnehmenden Verein auswählen</span
+              >
             </div>
             <div class="fc fc-active">
-              <span class="fc-label">erstellt</span
-              ><span class="fc-role rb-vm">VM</span
+              <span class="fc-label">Antrag erstellen</span
+              ><span class="fc-role rb-vm">VM (aufnehmend)</span
               ><span class="fc-arrow">→</span>
             </div>
             <div class="fs fs-pending">
@@ -776,7 +814,7 @@
               <span class="fb-from"
                 >aus Vereinsprüfung, Spielerbestätigung od. LV-Prüfung:</span
               >
-              <span class="rbi rb-vm">VM (anfragend)</span>
+              <span class="rbi rb-vm">VM (aufnehmend)</span>
               <span class="fb-action">zieht zurück</span>
               <span class="fb-arrow">→</span>
               <span class="fb-state fs-neutral">Zurückgezogen</span>
@@ -921,7 +959,11 @@
             vorherige Status wiederhergestellt. Die Status
             <em>ungültig: Löschung beantragt</em> und
             <em>ungültig: ignoriert</em> sind im System definiert, werden im
-            laufenden Betrieb aber nicht mehr gesetzt.
+            laufenden Betrieb aber nicht mehr gesetzt. ·
+            <strong>Gültig bis:</strong> Bei der Lizenzerteilung kann ein
+            „Gültig bis"-Datum gesetzt werden (Standard: 31. Juli des laufenden
+            Saisonendes). Die Globalübersicht zeigt das Datum; abgelaufene
+            Lizenzen sind rot markiert.
           </div>
         </div>
 
@@ -964,8 +1006,43 @@
           </div>
           <div class="flow-note">
             Mögliche Korrekturen: Vorname · Nachname · Vor- und Nachname
-            vertauscht · Geburtsdatum · Nationalität. Bei Genehmigung wird der
-            Spielerdatensatz sofort aktualisiert.
+            vertauscht · Geburtsdatum · Nationalität · Geschlecht (M/W/D). Bei
+            Genehmigung wird der Spielerdatensatz sofort aktualisiert.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">👤</span>
+            <div>
+              <div class="flow-card-title">
+                Schiedsrichter-Benutzerkonto anlegen
+              </div>
+              <div class="flow-card-sub">
+                Schiris Systemzugang aus der Bearbeiten-Ansicht erstellen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Schiri-Bearbeiten öffnen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">„Benutzerkonto anlegen" klicken</span
+              ><span class="fc-role rb-admin">Admin / RSK</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Konto erstellt</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Der Button ist nur aktiv wenn eine E-Mail-Adresse hinterlegt ist;
+            ohne E-Mail erscheint ein deaktiviertes Element mit Erklärung. Nach
+            erfolgreicher Anlage erscheint eine Erfolgsmeldung mit dem
+            Benutzernamen und dem Hinweis, dass eine Passwort-Mail verschickt
+            wurde. Hat der Schiri bereits ein Konto, wird kein Button angezeigt.
+            Nur für Admin und RSK sichtbar (<code>referee_can_create</code>).
           </div>
         </div>
 
@@ -1026,6 +1103,89 @@
             Sieger-/Verlierer- Teams automatisch in die Folgespiele nach (keine
             Übernahme der Aufstellung). TM/VM können einen eingereichten Bericht
             nicht selbst wieder öffnen – das ist Admin und SBK vorbehalten.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">☑️</span>
+            <div>
+              <div class="flow-card-title">Spieltagscheckliste verwalten</div>
+              <div class="flow-card-sub">
+                Pflichtfragen für den Spielbericht definieren und
+                E-Mail-Benachrichtigung konfigurieren
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">LV-Einstellungen öffnen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Frage anlegen / bearbeiten</span
+              ><span class="fc-role rb-admin">Admin / SBK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Checkliste aktiv</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">TM/VM antwortet Nein</span
+              ><span class="fc-role rb-auto">automatisch</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-warning">
+              <span class="fs-name">BCC-E-Mail versandt</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Die Checkliste ist automatisch aktiv sobald ≥ 1 Frage angelegt ist.
+            Jede Frage ist eine Ja/Nein-Aussage; die Reihenfolge ist per
+            Position steuerbar. Beantwortet ein TM/VM eine Frage mit
+            <strong>Nein</strong>, wird automatisch eine BCC-E-Mail an die
+            konfigurierte <code>sbk_email</code> des Landesverbands versandt.
+            Nur Fragen von Root-Verbänden (ohne übergeordneten LV) sind aktiv;
+            Kind-Verbände erben die Konfiguration, können aber keine eigene
+            Checkliste definieren.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">🔓</span>
+            <div>
+              <div class="flow-card-title">Vereinsfreigabe verwalten</div>
+              <div class="flow-card-sub">
+                Anderen Spielverbänden Lesezugriff auf die Vereine dieses LV
+                gewähren
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Keine Freigabe</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Empfänger auswählen &amp; freigeben</span
+              ><span class="fc-role rb-admin">Admin / SBK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Freigabe aktiv</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-admin">Admin / SBK FD</span>
+              <span class="fb-action">Freigabe entziehen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-neutral">Freigabe aufgehoben</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Die Freigabe-Auswahl zeigt nur Verbände, die nicht bereits Zugriff
+            haben und nicht zum eigenen LV gehören. Nur bei Root-Verbänden (ohne
+            übergeordneten LV) verfügbar.
           </div>
         </div>
       </section>
@@ -1125,6 +1285,30 @@
             <ul>
               <li>Schiedsrichterliste einsehen</li>
               <li>Qualifikationen und Lizenzstufen ansehen</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #d1fae5; color: #1a6e3c">
+                🗺️
+              </div>
+              <div>
+                <h3>Landesverbände</h3>
+                <div class="cd">
+                  Alle Landesverbände bearbeiten (kein Lifecycle)
+                </div>
+              </div>
+            </div>
+            <ul>
+              <li>Stammdaten, Logo und Werbebanner aller LVs pflegen</li>
+              <li>
+                E-Mail-Konfiguration: Schiri-Berichtsformular und
+                Checklisten-BCC
+              </li>
+              <li>
+                Vereinsfreigaben verwalten (andere Verbände freigeben/entziehen)
+              </li>
+              <li>Spieltagscheckliste: Fragen anlegen, bearbeiten, löschen</li>
             </ul>
           </div>
         </div>
@@ -1311,6 +1495,77 @@
             </div>
           </div>
         </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">☑️</span>
+            <div>
+              <div class="flow-card-title">Spieltagscheckliste verwalten</div>
+              <div class="flow-card-sub">
+                Pflichtfragen für Spielberichte eines LV konfigurieren
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">LV-Einstellungen öffnen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Frage anlegen / bearbeiten</span
+              ><span class="fc-role rb-sbk">SBK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Checkliste aktiv</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">TM/VM antwortet Nein</span
+              ><span class="fc-role rb-auto">automatisch</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-warning">
+              <span class="fs-name">BCC-E-Mail versandt</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Checkliste aktiv ab ≥ 1 Frage. Bei <strong>Nein</strong>-Antwort
+            automatische BCC-E-Mail an <code>sbk_email</code> des LV. Nur für
+            Root-Verbände (keine Kind-Verbände).
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">🔓</span>
+            <div>
+              <div class="flow-card-title">Vereinsfreigabe verwalten</div>
+              <div class="flow-card-sub">
+                Anderen Spielverbänden Zugriff auf LV-Vereine gewähren
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Keine Freigabe</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Empfänger auswählen &amp; freigeben</span
+              ><span class="fc-role rb-sbk">SBK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Freigabe aktiv</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK FD</span>
+              <span class="fb-action">Freigabe entziehen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-neutral">Freigabe aufgehoben</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ═══════════════════ SBK LV ═══════════════════ -->
@@ -1401,12 +1656,27 @@
                 🗺️
               </div>
               <div>
-                <h3>Landesverband</h3>
-                <div class="cd">Eigenen Landesverband einsehen</div>
+                <h3>Verbandseinstellungen</h3>
+                <div class="cd">
+                  Eigenen Landesverband vollständig verwalten
+                </div>
               </div>
             </div>
             <ul>
-              <li>Daten des eigenen Landesverbands einsehen</li>
+              <li>Stammdaten (Name, Kürzel) bearbeiten</li>
+              <li>Verbandslogo (WebP, max 5 MB) hinterlegen</li>
+              <li>
+                Werbebanner (WebP, max 500 KB, 1200 × 200 px) mit optionalem
+                Link hinterlegen
+              </li>
+              <li>
+                E-Mail-Konfiguration: Schiri-Berichtsformular-Empfänger und
+                Checklisten-BCC
+              </li>
+              <li>Spieltagscheckliste: Fragen anlegen, bearbeiten, löschen</li>
+              <li>
+                Vereinsfreigaben: andere Spielverbände freigeben oder entziehen
+              </li>
             </ul>
           </div>
         </div>
@@ -1583,6 +1853,86 @@
             </div>
           </div>
         </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">☑️</span>
+            <div>
+              <div class="flow-card-title">Spieltagscheckliste verwalten</div>
+              <div class="flow-card-sub">
+                Ja/Nein-Pflichtfragen für den Spielbericht des eigenen LV
+                definieren
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Verbandseinstellungen öffnen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Frage anlegen / bearbeiten / löschen</span
+              ><span class="fc-role rb-sbk">SBK LV</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Checkliste aktiv</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">TM/VM antwortet Nein</span
+              ><span class="fc-role rb-auto">automatisch</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-warning">
+              <span class="fs-name">BCC-E-Mail versandt</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Checkliste aktiv ab ≥ 1 Frage. TM/VM müssen die Checkliste vor dem
+            Spielbericht-Einreichen vollständig beantworten. Bei
+            <strong>Nein</strong>-Antwort wird automatisch eine BCC-E-Mail an
+            die konfigurierte <code>sbk_email</code> des LV versandt. Die
+            Reihenfolge der Fragen ist über die Position steuerbar.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">🔓</span>
+            <div>
+              <div class="flow-card-title">Vereinsfreigabe verwalten</div>
+              <div class="flow-card-sub">
+                Anderen Spielverbänden Zugriff auf die Vereine dieses LV
+                gewähren
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Keine Freigabe</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Empfänger auswählen &amp; freigeben</span
+              ><span class="fc-role rb-sbk">SBK LV</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Freigabe aktiv</span>
+            </div>
+          </div>
+          <div class="flow-branches">
+            <div class="fb">
+              <span class="rbi rb-sbk">SBK LV</span>
+              <span class="fb-action">Freigabe entziehen</span>
+              <span class="fb-arrow">→</span>
+              <span class="fb-state fs-neutral">Freigabe aufgehoben</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            In der Auswahl erscheinen nur Verbände, die noch keinen Zugriff
+            haben und nicht Teil des eigenen LV sind. Die Freigabe-Verwaltung
+            ist nur für Root-Verbände verfügbar.
+          </div>
+        </div>
       </section>
 
       <!-- ═══════════════════ RSK FD ═══════════════════ -->
@@ -1626,6 +1976,7 @@
               <li>Lizenzstufen und Qualifikationen setzen</li>
               <li>Kursergebnisse importieren und freigeben</li>
               <li>Doppeleinträge zusammenführen</li>
+              <li>Schiedsrichter-Benutzerkonto anlegen (erfordert E-Mail)</li>
             </ul>
           </div>
         </div>
@@ -1680,6 +2031,39 @@
             <strong>Verfügbarkeitsprüfung:</strong> Schiedsrichter mit
             Sperrterminen oder bestehenden Ansetzungen am selben Tag werden in
             der Auswahl ausgeblendet.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">👤</span>
+            <div>
+              <div class="flow-card-title">
+                Schiedsrichter-Benutzerkonto anlegen
+              </div>
+              <div class="flow-card-sub">
+                Schiris Systemzugang aus der Bearbeiten-Ansicht erstellen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Schiri-Bearbeiten öffnen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">„Benutzerkonto anlegen" klicken</span
+              ><span class="fc-role rb-rsk">RSK FD</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success">
+              <span class="fs-name">Konto erstellt</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            Der Button ist nur aktiv wenn eine E-Mail-Adresse hinterlegt ist.
+            Nach Anlage erscheint eine Erfolgsmeldung mit Benutzername; eine
+            Passwort-Mail wird an die hinterlegte E-Mail verschickt. Hat der
+            Schiri bereits ein Konto, wird kein Button angezeigt.
           </div>
         </div>
       </section>
@@ -1884,19 +2268,21 @@
             <div>
               <div class="flow-card-title">Transferprozess &amp; Freigabe</div>
               <div class="flow-card-sub">
-                Vereinswechsel beantragen oder als abgebender Verein genehmigen
+                Aufnehmender Verein beantragt – abgebender Verein genehmigt
               </div>
             </div>
           </div>
 
-          <div class="flow-variant-label">Als anfragender Verein</div>
+          <div class="flow-variant-label">
+            Als aufnehmender Verein (initiiert den Transfer)
+          </div>
           <div class="flow-path">
             <div class="fs fs-start">
-              <span class="fs-name">Spieler auswählen</span>
+              <span class="fs-name">Spieler im eigenen Verein auswählen</span>
             </div>
             <div class="fc fc-active">
               <span class="fc-label">Transfer beantragen</span
-              ><span class="fc-role rb-vm">VM (anfragend)</span
+              ><span class="fc-role rb-vm">VM (aufnehmend)</span
               ><span class="fc-arrow">→</span>
             </div>
             <div class="fs fs-pending">
@@ -1929,7 +2315,7 @@
           </div>
           <div class="flow-branches">
             <div class="fb">
-              <span class="rbi rb-vm">VM (anfragend)</span>
+              <span class="rbi rb-vm">VM (aufnehmend)</span>
               <span class="fb-action">zurückziehen</span>
               <span class="fb-from"
                 >(aus Vereinsprüfung, Spielerbestätigung oder LV-Prüfung)</span
@@ -2019,7 +2405,7 @@
           </div>
           <div class="flow-note">
             Mögliche Korrekturen: Vorname · Nachname · Vor- und Nachname
-            vertauscht · Geburtsdatum · Nationalität.
+            vertauscht · Geburtsdatum · Nationalität · Geschlecht (M/W/D).
           </div>
         </div>
 
@@ -2276,12 +2662,38 @@
               </div>
               <div>
                 <h3>Meine Sperrtermine</h3>
-                <div class="cd">Eigene Verfügbarkeit</div>
+                <div class="cd">Eigene Verfügbarkeit (Kalenderansicht)</div>
               </div>
             </div>
             <ul>
-              <li>Sperr- und Abwesenheitstermine selbst eintragen</li>
-              <li>Eigene Sperrtermine wieder löschen</li>
+              <li>2-Jahres-Kalender (aktuelles + nächstes Jahr)</li>
+              <li>Einzelklick: Tag sperren oder Sperrung aufheben</li>
+              <li>
+                Bereichsauswahl: Startdatum → Enddatum → alle Tage dazwischen
+                sperren
+              </li>
+              <li>Vergangene Tage nicht anklickbar</li>
+            </ul>
+          </div>
+          <div class="cap-card">
+            <div class="ch">
+              <div class="cap-icon" style="background: #fce7f3; color: #be185d">
+                📖
+              </div>
+              <div>
+                <h3>Meine Historie</h3>
+                <div class="cd">Spielhistorie und Prüfungsergebnisse</div>
+              </div>
+            </div>
+            <ul>
+              <li>
+                Alle gepfiffenen Spiele über alle Saisons (nach Saison
+                gruppiert)
+              </li>
+              <li>
+                Abgeschlossene Onlineprüfungs-Versuche mit
+                Bestanden/Nicht-bestanden und Fehlerpunkten
+              </li>
             </ul>
           </div>
         </div>
@@ -2294,21 +2706,21 @@
             <div>
               <div class="flow-card-title">Sperrtermine verwalten</div>
               <div class="flow-card-sub">
-                Eigene Abwesenheiten für die Ansetzung hinterlegen
+                Eigene Abwesenheiten per Kalender hinterlegen
               </div>
             </div>
           </div>
           <div class="flow-path">
             <div class="fs fs-start">
-              <span class="fs-name">Datum auswählen</span>
+              <span class="fs-name">Kalender öffnen</span>
             </div>
             <div class="fc fc-active">
-              <span class="fc-label">Sperrtermin anlegen</span
+              <span class="fc-label">Tag anklicken</span
               ><span class="fc-role rb-schiri">Schiri</span
               ><span class="fc-arrow">→</span>
             </div>
             <div class="fs fs-info">
-              <span class="fs-name">Sperrtermin eingetragen</span>
+              <span class="fs-name">Tag gesperrt</span>
             </div>
             <div class="fc">
               <span class="fc-label">bei Ansetzung berücksichtigt</span
@@ -2319,12 +2731,32 @@
               <span class="fs-name">An dem Tag nicht ansetzbar</span>
             </div>
           </div>
+          <div class="flow-subpath">
+            <span class="flow-subpath-label">Bereichsauswahl:</span>
+            <div class="fc fc-active">
+              <span class="fc-label">Startdatum klicken</span
+              ><span class="fc-role rb-schiri">Schiri</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-pending" style="min-width: 80px">
+              <span class="fs-name">Bereich wählen</span>
+            </div>
+            <div class="fc fc-active">
+              <span class="fc-label">Enddatum klicken</span
+              ><span class="fc-role rb-schiri">Schiri</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-success" style="min-width: 100px">
+              <span class="fs-name">Alle Tage gesperrt</span>
+            </div>
+          </div>
           <div class="flow-note">
-            Schiedsrichter mit einem Sperrtermin am Spieltag werden bei der
-            Ansetzung ausgeblendet (Ausnahme: Pokalspiele, dort gilt nur der
-            Sperrtermin-Konflikt). Sperrtermine können nur vom Schiedsrichter
-            selbst eingetragen und wieder gelöscht werden – nicht durch Admin
-            oder RSK.
+            Gesperrte Tage sind rot markiert; ein erneuter Klick auf einen roten
+            Tag hebt die Sperrung auf. Während der Bereichsauswahl gibt es eine
+            blaue Hover-Vorschau; „Abbrechen" bricht den Vorgang ab. Bereits
+            gesperrte Tage im Bereich werden übersprungen. Vergangene Tage sind
+            nicht anklickbar. Sperrtermine können nur vom Schiedsrichter selbst
+            eingetragen und gelöscht werden – nicht durch Admin oder RSK.
           </div>
         </div>
 
@@ -2374,6 +2806,48 @@
             einem Lizenzlisten-Link, der <strong>72 Stunden</strong> gültig ist.
             Über „Meine Spieltage" wird der Spieltag bestätigt; bleibt die
             Bestätigung aus, kann der Spieltag automatisch als bestätigt gelten.
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-header">
+            <span class="flow-card-icon">📖</span>
+            <div>
+              <div class="flow-card-title">Meine Historie</div>
+              <div class="flow-card-sub">
+                Spielhistorie und Prüfungsergebnisse einsehen
+              </div>
+            </div>
+          </div>
+          <div class="flow-path">
+            <div class="fs fs-start">
+              <span class="fs-name">Meine Historie öffnen</span>
+            </div>
+            <div class="fc">
+              <span class="fc-label">Tab wählen</span
+              ><span class="fc-role rb-schiri">Schiri</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info">
+              <span class="fs-name">Gepfiffene Spiele</span>
+            </div>
+          </div>
+          <div class="flow-subpath">
+            <span class="flow-subpath-label">Tab „Prüfungsergebnisse":</span>
+            <div class="fc">
+              <span class="fc-label">Tab wechseln</span
+              ><span class="fc-arrow">→</span>
+            </div>
+            <div class="fs fs-info" style="min-width: 110px">
+              <span class="fs-name">Onlineprüfungs-Ergebnisse</span>
+            </div>
+          </div>
+          <div class="flow-note">
+            <strong>Gepfiffene Spiele:</strong> Alle Spiele über alle Saisons,
+            nach Saison gruppiert und aufklappbar (neueste Saison initial
+            offen). · <strong>Prüfungsergebnisse:</strong> Alle abgeschlossenen
+            Onlineprüfungs-Versuche mit Bestanden/Nicht-bestanden-Badge,
+            Fehlerpunkten und Datum. Nur Lese-Zugriff – keine Eingaben möglich.
           </div>
         </div>
       </section>
