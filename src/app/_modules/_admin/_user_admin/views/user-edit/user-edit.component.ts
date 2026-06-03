@@ -356,6 +356,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {
+          this.deleting = false;
           this._notificationService.success(
             `Benutzer „${this.user!.username}" wurde gelöscht.`,
             { autoClose: true, keepAfterRouteChange: true }
