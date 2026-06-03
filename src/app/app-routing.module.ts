@@ -185,6 +185,13 @@ const routes: Routes = [
         (m) => m.PublicAssociationHostModule
       ),
   },
+  {
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/transfer-confirmation').then(
+        (m) => m.PublicTransferConfirmationModule
+      ),
+  },
 ];
 
 @NgModule({
