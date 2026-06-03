@@ -107,4 +107,20 @@ export class TransferRequestService {
       {}
     );
   }
+
+  // SBK/Admin: laufenden Transfer annullieren.
+  cancel(id: number) {
+    return this.http.patch<TransferRequest>(
+      `${this.base}/${id}/cancel.json`,
+      {}
+    );
+  }
+
+  // SBK/Admin: Spieler direkt einem anderen Verein zuweisen (ohne Genehmigungsflow).
+  directAssign(playerId: number, requestingClubId: number) {
+    return this.http.post<TransferRequest>(`${this.base}/direct_assign.json`, {
+      player_id: playerId,
+      requesting_club_id: requestingClubId,
+    });
+  }
 }

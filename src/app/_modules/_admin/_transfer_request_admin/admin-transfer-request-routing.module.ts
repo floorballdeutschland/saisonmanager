@@ -16,6 +16,12 @@ const routes: Routes = [
     data: { scrollTop: true },
   },
   {
+    path: 'verwaltung/transfer-anfragen/direktzuweisung',
+    pathMatch: 'full',
+    component: Views.TransferRequestDirectComponent,
+    data: { scrollTop: true },
+  },
+  {
     path: 'verwaltung/transfer-anfragen/:id',
     pathMatch: 'full',
     component: Views.TransferRequestDetailComponent,
