@@ -29,20 +29,6 @@
         </p>
       </div>
       <div class="flex gap-2">
-        <button
-          *ngIf="!referee.guest"
-          (click)="createWalletPass()"
-          [disabled]="walletLoading"
-          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
-        >
-          {{
-            walletLoading
-              ? "Erstelle…"
-              : referee.wallet_pass_issued_at
-              ? "Wallet neu ausstellen"
-              : "Wallet-Ausweis"
-          }}
-        </button>
         <a
           [routerLink]="[
             '/',
@@ -124,25 +110,11 @@
           >
         </p>
       </div>
-      <div>
+      <div *ngIf="referee.user_name">
         <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
           Benutzerkonto
         </p>
-        <p *ngIf="referee.user_name" class="font-medium font-mono text-sm">
-          {{ referee.user_name }}
-        </p>
-        <ng-container *ngIf="!referee.user_name">
-          <p class="text-fb-gray-500 text-sm mb-1">Kein Konto vorhanden</p>
-          <button
-            *ngIf="canCreateUserAccount"
-            type="button"
-            (click)="createUserAccount()"
-            [disabled]="userAccountLoading"
-            class="text-xs font-bold border border-fb-gray-600 rounded-[5px] px-3 py-1.5 hover:border-black disabled:opacity-40"
-          >
-            {{ userAccountLoading ? "Erstelle…" : "Konto anlegen" }}
-          </button>
-        </ng-container>
+        <p class="font-medium font-mono text-sm">{{ referee.user_name }}</p>
       </div>
     </div>
 
