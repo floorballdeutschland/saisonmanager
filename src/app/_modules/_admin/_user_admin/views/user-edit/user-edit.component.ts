@@ -35,6 +35,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
   active = true;
   saving = false;
   sendingReset = false;
+  deleting = false;
 
   clubsWithTeams: ClubWithTeams[] = [];
   editableTeamIds: number[] = [];
@@ -122,6 +123,13 @@ export class UserEditComponent implements OnInit, OnDestroy {
 
   get isAdminOrSbk(): boolean {
     return !!this.currentUser?.permissions['menu_item_user_admin'];
+  }
+
+  get canDelete(): boolean {
+    return (
+      !!this.currentUser?.permissions['user_delete'] &&
+      this.user?.id !== this.currentUser?.id
+    );
   }
 
   get isVm(): boolean {
@@ -334,6 +342,30 @@ export class UserEditComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this._notificationService.error('Fehler beim Ändern der Rolle.', {
+            autoClose: false,
+          });
+        },
+      });
+  }
+
+  deleteUser(): void {
+    if (!this.user || !this.canDelete) return;
+    this.deleting = true;
+    this._userService
+      .deleteUser(this.user.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this._notificationService.success(
+            `Benutzer „${this.user!.username}" wurde gelöscht.`,
+            { autoClose: true, keepAfterRouteChange: true }
+          );
+          this._router.navigate(['/', 'verwaltung', 'benutzer']);
+        },
+        error: () => {
+          this.deleting = false;
+          this._cdr.markForCheck();
+          this._notificationService.error('Fehler beim Löschen.', {
             autoClose: false,
           });
         },
