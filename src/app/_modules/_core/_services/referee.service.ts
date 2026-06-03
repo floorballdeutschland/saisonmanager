@@ -126,6 +126,12 @@ export class RefereeService {
     );
   }
 
+  public adminDeleteUserAccount(id: number) {
+    return this.http.delete<RefereeAdmin>(
+      environment.apiURL + 'admin/referees/' + id + '/destroy_user'
+    );
+  }
+
   public adminCreateWalletPass(id: number) {
     return this.http.post<{ url: string }>(
       environment.apiURL + 'admin/referees/' + id + '/wallet_pass',

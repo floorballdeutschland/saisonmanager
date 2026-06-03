@@ -367,6 +367,16 @@
           Benutzerkonto anlegen (keine E-Mail)
         </span>
       </ng-container>
+      <button
+        *ngIf="editMode && canDeleteUserAccount && referee.user_id"
+        type="button"
+        (click)="deleteUserAccount()"
+        [disabled]="userDeleteLoading"
+        title="Verknüpftes Benutzerkonto löschen"
+        class="px-5 py-2 text-sm font-bold text-red-500 border border-red-300 rounded-[5px] hover:border-red-500 disabled:opacity-40"
+      >
+        {{ userDeleteLoading ? "Lösche…" : "Benutzerkonto löschen" }}
+      </button>
     </div>
   </form>
 </div>

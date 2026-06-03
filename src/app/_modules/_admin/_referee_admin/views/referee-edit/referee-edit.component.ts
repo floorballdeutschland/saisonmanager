@@ -37,10 +37,12 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   saving = false;
   walletLoading = false;
   userAccountLoading = false;
+  userDeleteLoading = false;
   isRestricted = false;
   canDelete = false;
   canMerge = false;
   canCreateUserAccount = false;
+  canDeleteUserAccount = false;
   canIssueWallet = false;
   stateAssociations: StateAssociation[] = [];
   clubs: Club[] = [];
@@ -71,6 +73,8 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           this.canDelete = !this.isRestricted;
           this.canMerge = !!user?.permissions['referee_merge'];
           this.canCreateUserAccount = !!user?.permissions['referee_can_create'];
+          this.canDeleteUserAccount =
+            !!user?.permissions['referee_can_delete_user'];
           this.canIssueWallet = !!user?.permissions['referee_wallet'];
           this._cdr.markForCheck();
         },
@@ -370,6 +374,50 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
             err?.error?.errors?.[0] ??
             err?.error?.error ??
             'Fehler beim Anlegen des Benutzerkontos.';
+          this._notificationService.error(msg, {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          });
+        },
+      });
+  }
+
+  deleteUserAccount(): void {
+    if (!this.referee.id || !this.referee.user_id) return;
+    if (
+      !confirm(
+        `Benutzerkonto „${
+          this.referee.user_name ?? ''
+        }" wirklich löschen? Der Schiedsrichter kann sich danach nicht mehr anmelden.`
+      )
+    )
+      return;
+
+    this.userDeleteLoading = true;
+    this._refereeService
+      .adminDeleteUserAccount(this.referee.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.referee = {
+            ...this.referee,
+            user_id: updated.user_id,
+            user_name: updated.user_name,
+          };
+          this.userDeleteLoading = false;
+          this._cdr.markForCheck();
+          this._notificationService.success('Benutzerkonto gelöscht.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+        },
+        error: (err: HttpErrorResponse) => {
+          this.userDeleteLoading = false;
+          this._cdr.markForCheck();
+          const msg =
+            err?.error?.errors?.[0] ??
+            err?.error?.error ??
+            'Fehler beim Löschen des Benutzerkontos.';
           this._notificationService.error(msg, {
             autoClose: false,
             keepAfterRouteChange: false,
