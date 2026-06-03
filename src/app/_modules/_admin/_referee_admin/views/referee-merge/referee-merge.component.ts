@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, take, takeUntil } from 'rxjs';
 import {
   NotificationService,
   RefereeService,
@@ -30,17 +30,20 @@ export class RefereeMergeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const permissions = this._sessionService.currentUser?.permissions ?? {};
-    if (!permissions['referee_merge']) {
-      this._router.navigate(['/', 'verwaltung', 'schiedsrichter']);
-      return;
-    }
     const param: string = this._route.snapshot.params['lizenznummer'] ?? '';
     if (!param) {
       this._router.navigate(['/', 'verwaltung', 'schiedsrichter']);
       return;
     }
-    this._loadMaster(param);
+    this._sessionService.currentUser$
+      .pipe(take(1), takeUntil(this._destroy$))
+      .subscribe((user) => {
+        if (!user?.permissions['referee_merge']) {
+          this._router.navigate(['/', 'verwaltung', 'schiedsrichter']);
+          return;
+        }
+        this._loadMaster(param);
+      });
   }
 
   ngOnDestroy(): void {

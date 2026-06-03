@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, take, takeUntil } from 'rxjs';
 import {
   NotificationService,
   PlayerService,
@@ -30,23 +30,26 @@ export class PlayerMergeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const permissions = this._sessionService.currentUser?.permissions ?? {};
-    if (!permissions['player_merge']) {
-      this._router.navigate(['/', 'verwaltung', 'spieler', 'suche']);
-      return;
-    }
     const id = Number(this._route.snapshot.paramMap.get('id'));
     if (!Number.isFinite(id) || id <= 0) {
       this._router.navigate(['/', 'verwaltung', 'spieler', 'suche']);
       return;
     }
-    this._playerService
-      .getPlayer(id)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (p) => (this.master = p),
-        error: () =>
-          this._router.navigate(['/', 'verwaltung', 'spieler', 'suche']),
+    this._sessionService.currentUser$
+      .pipe(take(1), takeUntil(this._destroy$))
+      .subscribe((user) => {
+        if (!user?.permissions['player_merge']) {
+          this._router.navigate(['/', 'verwaltung', 'spieler', 'suche']);
+          return;
+        }
+        this._playerService
+          .getPlayer(id)
+          .pipe(takeUntil(this._destroy$))
+          .subscribe({
+            next: (p) => (this.master = p),
+            error: () =>
+              this._router.navigate(['/', 'verwaltung', 'spieler', 'suche']),
+          });
       });
   }
 
