@@ -111,4 +111,18 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
         },
       });
   }
+
+  public isMinor(birthdate?: string): boolean {
+    if (!birthdate) return false;
+    const dob = new Date(birthdate);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    if (
+      today.getMonth() < dob.getMonth() ||
+      (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())
+    ) {
+      age--;
+    }
+    return age < 18;
+  }
 }

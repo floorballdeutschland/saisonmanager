@@ -205,6 +205,56 @@
                               | date : "dd.MM.yyyy" : "Europe/Berlin"
                           }}
                         </p>
+                        <div
+                          *ngIf="p.team_license.documents"
+                          class="flex items-center gap-1.5 text-sm text-gray-500"
+                        >
+                          <span class="font-medium mr-1">Dokumente:</span>
+                          <!-- Ausweiskopie -->
+                          <a
+                            *ngIf="
+                              p.team_license.documents.id_copy_url;
+                              else idCopyMissing
+                            "
+                            [href]="p.team_license.documents.id_copy_url"
+                            target="_blank"
+                            rel="noopener"
+                            class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
+                            title="Ausweiskopie ansehen"
+                            >Ausweis</a
+                          >
+                          <ng-template #idCopyMissing>
+                            <span
+                              class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
+                              title="Ausweiskopie fehlt"
+                              >Ausweis</span
+                            >
+                          </ng-template>
+                          <!-- Einverständnis (nur für Minderjährige) -->
+                          <ng-container *ngIf="isMinor(p.birthdate)">
+                            <a
+                              *ngIf="
+                                p.team_license.documents.parental_consent_url;
+                                else consentMissing
+                              "
+                              [href]="
+                                p.team_license.documents.parental_consent_url
+                              "
+                              target="_blank"
+                              rel="noopener"
+                              class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
+                              title="Einverständniserklärung ansehen"
+                              >Einverständnis</a
+                            >
+                            <ng-template #consentMissing>
+                              <span
+                                class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
+                                title="Einverständniserklärung fehlt"
+                                >Einverständnis</span
+                              >
+                            </ng-template>
+                          </ng-container>
+                        </div>
                       </div>
                     </div>
                   </div>
