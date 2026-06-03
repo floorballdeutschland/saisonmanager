@@ -297,6 +297,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         rejected_by_club: 'Abgelehnt durch abgebenden Verein',
         rejected_by_lv: 'Abgelehnt durch Landesverband',
         revoked: 'Freigabe zurückgezogen',
+        expired: 'Automatisch annulliert',
       };
       return labels[status] || status;
     }
@@ -307,6 +308,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
       approved: 'Genehmigt – Transfer vollzogen',
       rejected_by_club: 'Abgelehnt durch abgebenden Verein',
       rejected_by_lv: 'Abgelehnt durch Landesverband',
+      expired: 'Automatisch annulliert',
     };
     return labels[status] || status;
   }
@@ -314,7 +316,11 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
   statusClass(status: string): string {
     if (status === 'approved') return 'text-green-600 font-medium';
     if (status === 'scheduled') return 'text-yellow-600 font-medium';
-    if (status.startsWith('rejected') || status === 'revoked')
+    if (
+      status.startsWith('rejected') ||
+      status === 'revoked' ||
+      status === 'expired'
+    )
       return 'text-red-500 font-medium';
     return 'text-primary font-medium';
   }

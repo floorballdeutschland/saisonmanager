@@ -131,6 +131,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
       rejected_by_lv: 'Abgelehnt (LV)',
       revoked: 'Freigabe zurückgezogen',
       withdrawn: 'Zurückgezogen',
+      expired: 'Automatisch annulliert',
     };
     return labels[status] || status;
   }
@@ -141,7 +142,8 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     if (
       status.startsWith('rejected') ||
       status === 'revoked' ||
-      status === 'withdrawn'
+      status === 'withdrawn' ||
+      status === 'expired'
     )
       return 'text-red-500';
     return 'text-primary font-medium';
@@ -231,6 +233,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
         r.status === 'approved' ||
         r.status === 'revoked' ||
         r.status === 'withdrawn' ||
+        r.status === 'expired' ||
         r.status.startsWith('rejected')
     );
   }
