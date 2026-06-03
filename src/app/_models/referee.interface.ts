@@ -50,6 +50,8 @@ export interface RefereeAdmin {
   wallet_pass_url?: string;
   user_id?: number | null;
   user_name?: string | null;
+  email_sent?: boolean;
+  duplicate_email?: boolean;
   strasse?: string;
   hausnummer?: string;
   plz?: string;

@@ -340,12 +340,28 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           };
           this.userAccountLoading = false;
           this._cdr.markForCheck();
-          this._notificationService.success(
-            `Konto „${
-              updated.user_name ?? ''
-            }" angelegt. Eine E-Mail mit dem Link zum Passwort-Setzen wurde verschickt.`,
-            { autoClose: true, keepAfterRouteChange: false }
-          );
+          if (updated.duplicate_email) {
+            this._notificationService.error(
+              `Konto „${
+                updated.user_name ?? ''
+              }" angelegt, aber die E-Mail-Adresse ist bereits einem anderen Konto zugeordnet. Bitte E-Mail-Adresse prüfen.`,
+              { autoClose: false, keepAfterRouteChange: false }
+            );
+          } else if (updated.email_sent === false) {
+            this._notificationService.error(
+              `Konto „${
+                updated.user_name ?? ''
+              }" angelegt, aber die E-Mail konnte nicht versendet werden. Bitte Passwort manuell zurücksetzen.`,
+              { autoClose: false, keepAfterRouteChange: false }
+            );
+          } else {
+            this._notificationService.success(
+              `Konto „${
+                updated.user_name ?? ''
+              }" angelegt. Eine E-Mail mit dem Link zum Passwort-Setzen wurde verschickt.`,
+              { autoClose: true, keepAfterRouteChange: false }
+            );
+          }
         },
         error: (err: HttpErrorResponse) => {
           this.userAccountLoading = false;
