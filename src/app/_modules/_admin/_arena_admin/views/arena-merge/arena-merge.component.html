@@ -1,0 +1,101 @@
+<div class="p-4 lg:p-8 max-w-2xl">
+  <div class="flex items-center gap-3 mb-6">
+    <a
+      [routerLink]="['/', 'verwaltung', 'spielorte']"
+      class="text-fb-gray-500 hover:text-black text-sm"
+      >← Zurück</a
+    >
+    <h1 class="text-2xl font-bold">Spielorte zusammenlegen</h1>
+  </div>
+
+  <div *ngIf="master" class="border border-fb-gray-600 rounded-[5px] p-4 mb-6">
+    <div class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+      Verbleibender Spielort
+    </div>
+    <div class="font-bold">{{ master.name }}</div>
+    <div class="text-sm text-fb-gray-500">{{ master.city }}</div>
+  </div>
+
+  <!-- Step 1: Quell-Spielort auswählen -->
+  <ng-container *ngIf="step === 1">
+    <p class="text-sm text-fb-gray-500 mb-3">
+      Wähle den doppelten Spielort, der mit „{{ master?.name }}" zusammengelegt
+      werden soll. Alle Spieltage des gewählten Spielorts werden auf den
+      verbleibenden Spielort umgehängt; der doppelte Eintrag wird anschließend
+      gelöscht.
+    </p>
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      placeholder="Spielort suchen (Name oder Stadt)…"
+      class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm mb-3 focus:outline-none focus:border-black"
+    />
+    <ul
+      class="flex flex-col divide-y divide-fb-gray-600 border border-fb-gray-600 rounded-[5px]"
+    >
+      <li
+        *ngFor="let a of candidates"
+        class="flex items-center justify-between gap-3 px-3 py-2"
+      >
+        <span>
+          <span class="font-medium">{{ a.name }}</span>
+          <span class="text-fb-gray-500 text-sm"> · {{ a.city }}</span>
+        </span>
+        <button
+          type="button"
+          (click)="selectSecondary(a)"
+          class="px-3 py-1 text-xs font-bold border border-fb-gray-600 rounded-[5px] hover:border-black shrink-0"
+        >
+          Auswählen
+        </button>
+      </li>
+      <li
+        *ngIf="candidates.length === 0"
+        class="px-3 py-2 text-sm text-fb-gray-500"
+      >
+        Kein passender Spielort gefunden.
+      </li>
+    </ul>
+  </ng-container>
+
+  <!-- Step 2: Bestätigen -->
+  <ng-container *ngIf="step === 2 && secondary">
+    <div class="border border-red-200 bg-red-50 rounded-[5px] p-4 mb-4">
+      <p class="text-sm">
+        <span class="font-bold">{{ secondary.name }}</span>
+        <span class="text-fb-gray-500"> ({{ secondary.city }})</span>
+        wird mit
+        <span class="font-bold">{{ master?.name }}</span>
+        zusammengelegt.
+      </p>
+      <p class="text-sm mt-2">
+        Alle Spieltage von „{{ secondary.name }}" werden auf „{{
+          master?.name
+        }}" umgehängt, danach wird „{{ secondary.name }}"
+        <span class="font-bold">gelöscht</span>. Das lässt sich nicht rückgängig
+        machen.
+      </p>
+    </div>
+
+    <div *ngIf="error" class="text-sm text-red-600 mb-3">{{ error }}</div>
+
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        [disabled]="loading"
+        (click)="merge()"
+        class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+      >
+        {{ loading ? "Wird zusammengeführt…" : "Zusammenführen" }}
+      </button>
+      <button
+        type="button"
+        [disabled]="loading"
+        (click)="back()"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
+      >
+        Zurück
+      </button>
+    </div>
+  </ng-container>
+</div>
