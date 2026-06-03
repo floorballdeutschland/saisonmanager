@@ -1,9 +1,11 @@
 <div class="p-4 lg:p-8 max-w-3xl">
   <h1 class="text-2xl font-bold mb-2">Meine Spieltage</h1>
   <p class="text-sm text-fb-gray-500 mb-6">
-    Bestätige hier deine Spieltage als ordnungsgemäß durchgeführt. Wenn du einen
-    Spieltag nicht innerhalb von 48 Stunden nach dem Spieltag bestätigst, gilt
-    er automatisch als bestätigt.
+    Sofern dein Landesverband eine Spieltagscheckliste hinterlegt hat, bestätige
+    hier deine Spieltage als ordnungsgemäß durchgeführt – oder melde sie als
+    nicht ordnungsgemäß und beantworte die Checkliste. Bestätigung ist ab Beginn
+    des letzten Spiels möglich. Ohne Bestätigung innerhalb von 48 Stunden gilt
+    ein Spieltag automatisch als bestätigt.
   </p>
 
   <div *ngIf="loading" class="text-fb-gray-500 text-sm py-4">Lade…</div>
@@ -30,19 +32,40 @@
           </div>
         </div>
 
-        <!-- Confirm button -->
-        <fb-button
-          *ngIf="canConfirm(gd)"
-          variant="success"
-          icon="save"
-          size="small"
-          [disabled]="confirmingId === gd.id"
-          (click)="confirm(gd.id)"
+        <!-- Action buttons (only while not yet confirmed and a checklist exists) -->
+        <div
+          *ngIf="needsAction(gd) && rejectingId !== gd.id"
+          class="flex flex-col items-end gap-2 shrink-0"
         >
-          {{
-            confirmingId === gd.id ? "Speichere…" : "Ordnungsgemäß bestätigen"
-          }}
-        </fb-button>
+          <ng-container *ngIf="canConfirm(gd); else tooEarly">
+            <fb-button
+              variant="success"
+              icon="save"
+              size="small"
+              [disabled]="confirmingId === gd.id"
+              (click)="confirmOk(gd)"
+            >
+              {{
+                confirmingId === gd.id
+                  ? "Speichere…"
+                  : "Ordnungsgemäß bestätigen"
+              }}
+            </fb-button>
+            <button
+              type="button"
+              [disabled]="confirmingId === gd.id"
+              (click)="startReject(gd)"
+              class="px-3 py-1.5 text-xs font-bold text-red-600 border border-red-300 rounded-[5px] hover:border-red-500 disabled:opacity-50"
+            >
+              Nicht ordnungsgemäß
+            </button>
+          </ng-container>
+          <ng-template #tooEarly>
+            <span class="text-xs text-fb-gray-500 text-right">
+              Bestätigung ab<br />{{ formatDateTime(gd.confirmable_from!) }}
+            </span>
+          </ng-template>
+        </div>
       </div>
 
       <!-- Games list -->
@@ -61,16 +84,83 @@
         </tbody>
       </table>
 
-      <!-- Confirmation status -->
-      <div class="flex flex-col gap-1 text-xs mt-2">
-        <!-- My confirmation -->
+      <!-- "Nicht ordnungsgemäß": Checkliste beantworten -->
+      <div
+        *ngIf="rejectingId === gd.id"
+        class="border border-red-200 bg-red-50 rounded-[5px] p-3 mb-3"
+      >
+        <div class="text-sm font-bold mb-2">Spieltagscheckliste</div>
+        <p class="text-xs text-fb-gray-500 mb-3">
+          Bitte beantworte jede Frage. Bei „Nein" wird die zuständige SBK
+          informiert.
+        </p>
+        <div class="flex flex-col gap-2 mb-3">
+          <div
+            *ngFor="let item of gd.checklist_items"
+            class="flex items-center justify-between gap-3 text-sm"
+          >
+            <span>{{ item.question }}</span>
+            <span class="flex gap-1 shrink-0">
+              <button
+                type="button"
+                (click)="setAnswer(item.id, true)"
+                class="px-3 py-1 text-xs font-bold rounded-[5px] border"
+                [ngClass]="
+                  rejectAnswers[item.id] === true
+                    ? 'bg-green-100 text-green-700 border-green-500'
+                    : 'border-fb-gray-600 hover:border-black'
+                "
+              >
+                Ja
+              </button>
+              <button
+                type="button"
+                (click)="setAnswer(item.id, false)"
+                class="px-3 py-1 text-xs font-bold rounded-[5px] border"
+                [ngClass]="
+                  rejectAnswers[item.id] === false
+                    ? 'bg-red-100 text-red-700 border-red-500'
+                    : 'border-fb-gray-600 hover:border-black'
+                "
+              >
+                Nein
+              </button>
+            </span>
+          </div>
+        </div>
         <div class="flex items-center gap-2">
-          <span class="text-fb-gray-500 w-32">Meine Bestätigung:</span>
+          <button
+            type="button"
+            [disabled]="!allAnswered(gd) || confirmingId === gd.id"
+            (click)="submitNotOk(gd)"
+            class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+          >
+            {{ confirmingId === gd.id ? "Speichere…" : "Meldung absenden" }}
+          </button>
+          <button
+            type="button"
+            [disabled]="confirmingId === gd.id"
+            (click)="cancelReject()"
+            class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
+          >
+            Abbrechen
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirmation status (only when a checklist applies) -->
+      <div
+        *ngIf="gd.checklist_required"
+        class="flex flex-col gap-1 text-xs mt-2"
+      >
+        <!-- My status -->
+        <div class="flex items-start gap-2">
+          <span class="text-fb-gray-500 w-32 shrink-0">Meine Bestätigung:</span>
           <span
             *ngIf="confirmationStatus(gd) === 'confirmed'"
             class="text-green-600 font-medium"
           >
-            Bestätigt am {{ formatDateTime(gd.my_confirmed_at!) }}
+            Ordnungsgemäß bestätigt am {{ formatDateTime(gd.my_confirmed_at!) }}
           </span>
           <span
             *ngIf="confirmationStatus(gd) === 'auto'"
@@ -84,16 +174,51 @@
           >
             Ausstehend
           </span>
+          <span
+            *ngIf="confirmationStatus(gd) === 'not_ok'"
+            class="text-red-600 font-medium"
+          >
+            Als nicht ordnungsgemäß gemeldet am
+            {{ formatDateTime(gd.my_confirmed_at!) }}
+          </span>
         </div>
 
-        <!-- Partner confirmation -->
+        <!-- My checklist answers when reported as not ok -->
+        <ul
+          *ngIf="
+            confirmationStatus(gd) === 'not_ok' &&
+            gd.my_checklist_answers.length
+          "
+          class="ml-32 list-disc pl-4 text-fb-gray-500"
+        >
+          <li *ngFor="let a of gd.my_checklist_answers">
+            {{ a.question }}:
+            <span [class.text-red-600]="!a.answer">{{
+              a.answer ? "Ja" : "Nein"
+            }}</span>
+          </li>
+        </ul>
+
+        <!-- Partner status -->
         <div class="flex items-center gap-2">
-          <span class="text-fb-gray-500 w-32">Partner:</span>
+          <span class="text-fb-gray-500 w-32 shrink-0">Partner:</span>
           <span
-            *ngIf="gd.partner_confirmed_at"
+            *ngIf="
+              gd.partner_confirmed_at && gd.partner_properly_conducted !== false
+            "
             class="text-green-600 font-medium"
           >
-            Bestätigt am {{ formatDateTime(gd.partner_confirmed_at) }}
+            Ordnungsgemäß bestätigt am
+            {{ formatDateTime(gd.partner_confirmed_at) }}
+          </span>
+          <span
+            *ngIf="
+              gd.partner_confirmed_at && gd.partner_properly_conducted === false
+            "
+            class="text-red-600 font-medium"
+          >
+            Als nicht ordnungsgemäß gemeldet am
+            {{ formatDateTime(gd.partner_confirmed_at) }}
           </span>
           <span
             *ngIf="!gd.partner_confirmed_at && gd.auto_confirmed"

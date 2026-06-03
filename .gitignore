@@ -51,3 +51,4 @@ Thumbs.db
 # Secrets (never commit)
 src/environments/.api-key
 src/environments/environment.prod.ts.bak
+.claude/

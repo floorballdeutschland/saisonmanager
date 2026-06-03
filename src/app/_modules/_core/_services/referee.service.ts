@@ -339,10 +339,24 @@ export class RefereeService {
     );
   }
 
-  public confirmGameDay(gameDayId: number) {
-    return this.http.post<{ confirmed_at: string }>(
+  public confirmGameDay(
+    gameDayId: number,
+    body: {
+      properly_conducted: boolean;
+      answers?: { item_id: number; answer: boolean }[];
+    } = { properly_conducted: true }
+  ) {
+    return this.http.post<{
+      confirmed_at: string;
+      properly_conducted: boolean;
+      checklist_answers: {
+        item_id: number;
+        question: string;
+        answer: boolean;
+      }[];
+    }>(
       environment.apiURL + 'referee/game_days/' + gameDayId + '/confirm',
-      {}
+      body
     );
   }
 

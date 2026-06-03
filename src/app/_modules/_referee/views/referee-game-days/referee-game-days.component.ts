@@ -20,6 +20,10 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   loading = true;
   confirmingId: number | null = null;
 
+  // "Nicht ordnungsgemäß"-Flow: aktuell offener Spieltag + Antworten je Frage.
+  rejectingId: number | null = null;
+  rejectAnswers: Record<number, boolean | null> = {};
+
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -37,38 +41,59 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
-  confirm(gameDayId: number): void {
-    this.confirmingId = gameDayId;
-    this._refereeService
-      .confirmGameDay(gameDayId)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (res) => {
-          this.gameDays = this.gameDays.map((gd) =>
-            gd.id === gameDayId
-              ? { ...gd, my_confirmed_at: res.confirmed_at }
-              : gd
-          );
-          this.confirmingId = null;
-          this._cdr.markForCheck();
-          this._notificationService.success('Spieltag bestätigt.', {
-            autoClose: true,
-            keepAfterRouteChange: false,
-          });
-        },
-        error: () => {
-          this.confirmingId = null;
-          this._cdr.markForCheck();
-        },
-      });
+  /** Aktion überhaupt nötig: nur wenn eine Checkliste existiert und noch offen. */
+  needsAction(gd: RefereeGameDay): boolean {
+    return gd.checklist_required && !gd.my_confirmed_at && !gd.auto_confirmed;
   }
 
   canConfirm(gd: RefereeGameDay): boolean {
-    return !gd.my_confirmed_at && !gd.auto_confirmed;
+    return this.needsAction(gd) && !this.notYetConfirmable(gd);
+  }
+
+  notYetConfirmable(gd: RefereeGameDay): boolean {
+    if (!gd.confirmable_from) return false;
+    return new Date(gd.confirmable_from).getTime() > Date.now();
+  }
+
+  startReject(gd: RefereeGameDay): void {
+    this.rejectingId = gd.id;
+    this.rejectAnswers = {};
+    gd.checklist_items.forEach((i) => (this.rejectAnswers[i.id] = null));
+  }
+
+  cancelReject(): void {
+    this.rejectingId = null;
+    this.rejectAnswers = {};
+  }
+
+  setAnswer(itemId: number, value: boolean): void {
+    this.rejectAnswers[itemId] = value;
+  }
+
+  allAnswered(gd: RefereeGameDay): boolean {
+    return gd.checklist_items.every(
+      (i) =>
+        this.rejectAnswers[i.id] === true || this.rejectAnswers[i.id] === false
+    );
+  }
+
+  confirmOk(gd: RefereeGameDay): void {
+    this._submit(gd, true);
+  }
+
+  submitNotOk(gd: RefereeGameDay): void {
+    if (!this.allAnswered(gd)) return;
+    const answers = gd.checklist_items.map((i) => ({
+      item_id: i.id,
+      answer: this.rejectAnswers[i.id] as boolean,
+    }));
+    this._submit(gd, false, answers);
   }
 
   confirmationStatus(gd: RefereeGameDay): string {
-    if (gd.my_confirmed_at) return 'confirmed';
+    if (gd.my_confirmed_at) {
+      return gd.properly_conducted === false ? 'not_ok' : 'confirmed';
+    }
     if (gd.auto_confirmed) return 'auto';
     return 'pending';
   }
@@ -91,6 +116,46 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
       hour: '2-digit',
       minute: '2-digit',
     });
+  }
+
+  private _submit(
+    gd: RefereeGameDay,
+    properly: boolean,
+    answers?: { item_id: number; answer: boolean }[]
+  ): void {
+    this.confirmingId = gd.id;
+    this._refereeService
+      .confirmGameDay(gd.id, { properly_conducted: properly, answers })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (res) => {
+          this.gameDays = this.gameDays.map((g) =>
+            g.id === gd.id
+              ? {
+                  ...g,
+                  my_confirmed_at: res.confirmed_at,
+                  properly_conducted: res.properly_conducted,
+                  my_checklist_answers: res.checklist_answers,
+                }
+              : g
+          );
+          this.confirmingId = null;
+          this.rejectingId = null;
+          this.rejectAnswers = {};
+          this._cdr.markForCheck();
+          this._notificationService.success(
+            properly ? 'Spieltag bestätigt.' : 'Meldung gespeichert.',
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+        },
+        error: () => {
+          this.confirmingId = null;
+          this._cdr.markForCheck();
+          this._notificationService.error('Speichern fehlgeschlagen.', {
+            autoClose: false,
+          });
+        },
+      });
   }
 
   private _load(): void {
