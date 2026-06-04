@@ -252,8 +252,8 @@
                   name="before_deadline"
                   [(ngModel)]="league.before_deadline"
                 >
-                  <option value="false">geboren ab</option>
-                  <option value="true">geboren bis</option>
+                  <option [ngValue]="false">geboren ab</option>
+                  <option [ngValue]="true">geboren bis</option>
                 </select>
                 <input
                   [(ngModel)]="league.deadline"
