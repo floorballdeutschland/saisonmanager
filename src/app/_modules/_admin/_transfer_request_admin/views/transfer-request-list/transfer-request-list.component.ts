@@ -85,6 +85,10 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     this._router.navigate(['/verwaltung/transfer-anfragen/neu']);
   }
 
+  directAssign(): void {
+    this._router.navigate(['/verwaltung/transfer-anfragen/direktzuweisung']);
+  }
+
   canWithdraw(r: TransferRequest): boolean {
     return (
       (r.status === 'pending_club' || r.status === 'pending_lv') &&
@@ -173,6 +177,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
       'Vorname',
       'Geburtsdatum',
       'Typ',
+      'Direktzuweisung',
       'Abgebender Verein',
       'Aufnehmender Verein',
       'Genehmigt am',
@@ -182,6 +187,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
       r.player.first_name,
       r.player.birthdate ? this._formatDate(r.player.birthdate) : '',
       this.typeLabel(r),
+      r.direct ? 'Ja' : 'Nein',
       r.former_club.name,
       r.requesting_club.name,
       r.lv_approved_at ? this._formatDate(r.lv_approved_at) : '',

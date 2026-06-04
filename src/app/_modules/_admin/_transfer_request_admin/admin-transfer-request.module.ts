@@ -18,6 +18,7 @@ import * as Views from './views';
     Views.TransferRequestListComponent,
     Views.TransferRequestInitiateComponent,
     Views.TransferRequestDetailComponent,
+    Views.TransferRequestDirectComponent,
   ],
 })
 export class AdminTransferRequestModule {}

@@ -182,6 +182,17 @@
       </button>
     </div>
 
+    <!-- SBK/Admin: laufenden Transfer annullieren -->
+    <div *ngIf="canCancel && !showRejectForm" class="mb-4">
+      <button
+        (click)="cancelTransfer()"
+        [disabled]="actionPending"
+        class="border border-red-500 text-red-600 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
+      >
+        {{ actionPending ? "Wird verarbeitet…" : "Transfer annullieren" }}
+      </button>
+    </div>
+
     <!-- Revoke form -->
     <div
       *ngIf="showRevokeForm"

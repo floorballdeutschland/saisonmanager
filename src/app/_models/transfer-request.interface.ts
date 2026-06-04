@@ -27,6 +27,7 @@ export interface TransferRequest {
   id: number;
   status: TransferRequestStatus;
   request_type: TransferRequestType;
+  direct?: boolean;
   season_id: number;
   rejection_reason?: string;
   revocation_reason?: string;

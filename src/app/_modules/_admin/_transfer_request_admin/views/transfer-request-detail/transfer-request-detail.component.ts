@@ -121,6 +121,42 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
     return this.isAdmin || this.isSbk;
   }
 
+  get canCancel(): boolean {
+    if (!this.request) return false;
+    if (!this.isAdmin && !this.isSbk) return false;
+    return [
+      'pending_club',
+      'pending_player',
+      'pending_lv',
+      'scheduled',
+    ].includes(this.request.status);
+  }
+
+  cancelTransfer(): void {
+    if (!this.request) return;
+    if (!confirm('Diesen laufenden Transfer wirklich annullieren?')) return;
+
+    this.actionPending = true;
+    this._transferService
+      .cancel(this.request.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.request = updated;
+          this.actionPending = false;
+          this._notificationService.success('Transfer annulliert.');
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this._notificationService.error(
+            err?.error?.error || 'Annullierung fehlgeschlagen.'
+          );
+          this.actionPending = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
   approveClub(): void {
     if (!this.request) return;
     this.actionPending = true;

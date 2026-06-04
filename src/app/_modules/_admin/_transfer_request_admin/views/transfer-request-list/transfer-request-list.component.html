@@ -10,6 +10,13 @@
         CSV exportieren
       </button>
       <button
+        *ngIf="isSbk"
+        (click)="directAssign()"
+        class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
+      >
+        Direktzuweisung
+      </button>
+      <button
         *ngIf="canInitiate"
         (click)="initiateNew()"
         class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors"
