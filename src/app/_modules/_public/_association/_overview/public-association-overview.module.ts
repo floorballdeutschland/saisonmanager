@@ -11,8 +11,6 @@ import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitLoadingSkeletonsModule } from '@floorball/uikit/skeletons';
 import { TournamentMatchesComponent } from './_components/tournament-matches/tournament-matches.component';
 import { TournamentMatchesGroupComponent } from './_components/tournament-matches-group/tournament-matches-group.component';
-import { TournamentMatchesFinalComponent } from './_components/tournament-matches-final/tournament-matches-final.component';
-
 @NgModule({
   imports: [
     CommonModule,
@@ -28,7 +26,6 @@ import { TournamentMatchesFinalComponent } from './_components/tournament-matche
     Components.MatchesWithRoundsComponent,
     TournamentMatchesComponent,
     TournamentMatchesGroupComponent,
-    TournamentMatchesFinalComponent,
   ],
 })
 export class PublicAssociationOverviewModule {}

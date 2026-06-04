@@ -40,8 +40,3 @@ export interface GameScheduleEntry {
   guest_team_filling_title?: string | null;
   guest_team_filling_parameter?: number | null;
 }
-
-export interface FinalRound {
-  round_title: string;
-  matches: GameScheduleEntry[];
-}

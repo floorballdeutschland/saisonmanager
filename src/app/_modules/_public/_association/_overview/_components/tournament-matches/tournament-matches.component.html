@@ -1,34 +1,10 @@
 <ng-container *ngIf="selectedLeague">
-  <!--  <div class="border-b-[10px] border-fb-gray-200">-->
   <div class="">
     <div class="container mx-auto px-4 lg:px-8">
-      <div class="overflow-x-auto -mx-3">
-        <ul class="flex gap-1 items-center text-xl lg:text-2xl font-bold">
-          <li *ngFor="let r of [0, 1]">
-            <button
-              class="transition hover:bg-fb-gray-200 rounded px-3 whitespace-nowrap"
-              [ngClass]="{
-                'bg-fb-gray-200': round === r
-              }"
-              (click)="round = r"
-            >
-              <ng-container *ngIf="r === 0"> Gruppenphase </ng-container>
-              <ng-container *ngIf="r !== 0"> Platzierungsspiele </ng-container>
-            </button>
-          </li>
-        </ul>
-      </div>
-
       <fb-tournament-matches-group
-        *ngIf="round === 0"
         [selectedLeague]="selectedLeague"
         [matches$]="matches$"
       ></fb-tournament-matches-group>
-
-      <fb-tournament-matches-final
-        *ngIf="round === 1"
-        [matches$]="matches$"
-      ></fb-tournament-matches-final>
     </div>
   </div>
 </ng-container>
