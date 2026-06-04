@@ -48,9 +48,11 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
       .getAdminClubs()
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: (clubs) => {
-          this.clubs = clubs
+        next: (gos) => {
+          this.clubs = gos
+            .flatMap((go) => go.clubs)
             .map((c) => ({ id: c.id, name: c.name }))
+            .filter((c, i, arr) => arr.findIndex((x) => x.id === c.id) === i)
             .sort((a, b) => a.name.localeCompare(b.name));
           this._cdr.markForCheck();
         },
