@@ -103,7 +103,7 @@ export class SessionService {
         }
 
         if (redirect) {
-          this._router.navigate(['/']);
+          this._router.navigate(['/login']);
         }
       });
   }
