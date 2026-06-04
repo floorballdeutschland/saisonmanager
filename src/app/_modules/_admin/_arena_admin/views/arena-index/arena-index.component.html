@@ -67,6 +67,18 @@
             >
               Bearbeiten
             </a>
+            <a
+              [routerLink]="[
+                '/',
+                'verwaltung',
+                'spielorte',
+                arena.id,
+                'zusammenlegen'
+              ]"
+              class="text-sm text-fb-gray-500 hover:text-black mr-4"
+            >
+              Zusammenlegen
+            </a>
             <button
               type="button"
               (click)="deleteArena(arena)"

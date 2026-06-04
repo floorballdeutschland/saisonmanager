@@ -22,6 +22,12 @@ const routes: Routes = [
     component: Views.ArenaEditComponent,
     data: { scrollTop: true },
   },
+  {
+    path: 'verwaltung/spielorte/:arenaId/zusammenlegen',
+    pathMatch: 'full',
+    component: Views.ArenaMergeComponent,
+    data: { scrollTop: true },
+  },
 ];
 
 @NgModule({

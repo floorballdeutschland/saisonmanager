@@ -31,4 +31,16 @@ export class ArenaService {
   public deleteArena(id: number) {
     return this.http.delete(`${this.adminBase}/${id}.json`);
   }
+
+  // Legt den Spielort `secondaryId` mit dem verbleibenden Spielort `masterId`
+  // zusammen (alle Spieltage werden umgehängt, der doppelte Eintrag gelöscht).
+  public mergeArena(masterId: number, secondaryId: number) {
+    return this.http.post<{
+      message: string;
+      master: Arena;
+      moved_game_days: number;
+    }>(`${this.adminBase}/${masterId}/merge.json`, {
+      secondary_id: secondaryId,
+    });
+  }
 }

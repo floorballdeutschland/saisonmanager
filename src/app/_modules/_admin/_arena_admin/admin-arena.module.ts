@@ -13,6 +13,10 @@ import * as Views from './views';
     AdminArenaRoutingModule,
     UikitCommonModule,
   ],
-  declarations: [Views.ArenaIndexComponent, Views.ArenaEditComponent],
+  declarations: [
+    Views.ArenaIndexComponent,
+    Views.ArenaEditComponent,
+    Views.ArenaMergeComponent,
+  ],
 })
 export class AdminArenaModule {}
