@@ -112,6 +112,11 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  public docTypeLabel(docType: string): string {
+    const labels: Record<string, string> = { id_copy: 'Ausweis' };
+    return labels[docType] ?? docType;
+  }
+
   public isMinor(birthdate?: string): boolean {
     if (!birthdate) return false;
     const dob = new Date(birthdate);

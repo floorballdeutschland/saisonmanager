@@ -41,10 +41,9 @@ export interface PlayerWithLicense extends Player {
     requested_at: string;
     express?: boolean;
     documents?: {
-      id_copy: boolean;
       parental_consent: boolean;
-      id_copy_url?: string | null;
       parental_consent_url?: string | null;
+      [key: string]: boolean | string | null | undefined;
     };
   };
   current_status?: {

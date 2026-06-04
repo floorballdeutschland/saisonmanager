@@ -529,7 +529,9 @@
                 *ngFor="let doc of league.required_documents; let i = index"
                 class="flex items-center gap-2"
               >
-                <span class="text-sm font-medium flex-1">{{ doc }}</span>
+                <span class="text-sm font-medium flex-1">{{
+                  docTypeLabel(doc)
+                }}</span>
                 <button
                   type="button"
                   (click)="removeRequiredDocument(league, i)"
@@ -548,7 +550,7 @@
                 <input
                   type="text"
                   [(ngModel)]="newDocumentName"
-                  placeholder="Dokumentname (z.B. Ausweiskopie)"
+                  placeholder="Dokumenttyp (z.B. id_copy)"
                   class="border border-fb-gray-600 rounded-[5px] px-3 py-1.5 text-sm flex-1"
                 />
                 <button
@@ -557,6 +559,14 @@
                   class="font-bold text-black text-sm px-4 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
                 >
                   Hinzufügen
+                </button>
+                <button
+                  type="button"
+                  (click)="addDocumentIfMissing(league, 'id_copy')"
+                  [disabled]="league.required_documents?.includes('id_copy')"
+                  class="font-bold text-black text-sm px-4 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] disabled:opacity-40"
+                >
+                  + Ausweiskopie
                 </button>
               </div>
             </div>

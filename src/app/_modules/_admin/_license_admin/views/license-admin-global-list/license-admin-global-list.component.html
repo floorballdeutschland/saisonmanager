@@ -367,56 +367,6 @@
             <!-- Dokumentenstatus -->
             <td class="px-4 py-3 whitespace-nowrap">
               <div class="flex gap-1.5 items-center">
-                <!-- Ausweis/ID -->
-                <a
-                  *ngIf="e.documents?.id_copy_url; else idCopyStatic"
-                  [href]="e.documents!.id_copy_url"
-                  target="_blank"
-                  rel="noopener"
-                  class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
-                  title="Ausweiskopie ansehen"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-3 h-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"
-                    />
-                  </svg>
-                </a>
-                <ng-template #idCopyStatic>
-                  <span
-                    class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
-                    [ngClass]="
-                      e.documents?.id_copy === false
-                        ? 'bg-red-100 text-red-600'
-                        : 'bg-gray-100 text-gray-400'
-                    "
-                    title="Ausweiskopie fehlt"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="w-3 h-3"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"
-                      />
-                    </svg>
-                  </span>
-                </ng-template>
                 <!-- Elternzustimmung (nur für Minderjährige) -->
                 <ng-container *ngIf="isMinor(e.player_birthdate)">
                   <a
@@ -485,7 +435,7 @@
                     target="_blank"
                     rel="noopener"
                     class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
-                    [title]="docType + ' ansehen'"
+                    [title]="docTypeLabel(docType) + ' ansehen'"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -510,7 +460,7 @@
                         ? 'bg-red-100 text-red-600'
                         : 'bg-gray-100 text-gray-400'
                     "
-                    [title]="docType + ' fehlt'"
+                    [title]="docTypeLabel(docType) + ' fehlt'"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

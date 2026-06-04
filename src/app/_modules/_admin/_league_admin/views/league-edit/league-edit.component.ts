@@ -381,11 +381,21 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     return this.qualificationTypeLabels[type] ?? type;
   }
 
+  public docTypeLabel(docType: string): string {
+    const labels: Record<string, string> = { id_copy: 'Ausweiskopie' };
+    return labels[docType] ?? docType;
+  }
+
   public addRequiredDocument(league: League): void {
     const name = this.newDocumentName.trim();
     if (!name) return;
     league.required_documents = [...(league.required_documents ?? []), name];
     this.newDocumentName = '';
+  }
+
+  public addDocumentIfMissing(league: League, docType: string): void {
+    if (league.required_documents?.includes(docType)) return;
+    league.required_documents = [...(league.required_documents ?? []), docType];
   }
 
   public removeRequiredDocument(league: League, index: number): void {

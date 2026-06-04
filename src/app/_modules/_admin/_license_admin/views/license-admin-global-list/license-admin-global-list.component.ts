@@ -298,9 +298,12 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   }
 
   public extraRequiredDocs(requiredDocuments: string[]): string[] {
-    return (requiredDocuments || []).filter(
-      (d) => d !== 'id_copy' && d !== 'parental_consent'
-    );
+    return (requiredDocuments || []).filter((d) => d !== 'parental_consent');
+  }
+
+  public docTypeLabel(docType: string): string {
+    const labels: Record<string, string> = { id_copy: 'Ausweis' };
+    return labels[docType] ?? docType;
   }
 
   public isMinor(birthdate: string): boolean {

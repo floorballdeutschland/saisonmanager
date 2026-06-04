@@ -210,26 +210,36 @@
                           class="flex items-center gap-1.5 text-sm text-gray-500"
                         >
                           <span class="font-medium mr-1">Dokumente:</span>
-                          <!-- Ausweiskopie -->
-                          <a
-                            *ngIf="
-                              p.team_license.documents.id_copy_url;
-                              else idCopyMissing
-                            "
-                            [href]="p.team_license.documents.id_copy_url"
-                            target="_blank"
-                            rel="noopener"
-                            class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
-                            title="Ausweiskopie ansehen"
-                            >Ausweis</a
+                          <!-- Pflichtdokumente aus Liga-Konfiguration -->
+                          <ng-container
+                            *ngFor="let docType of league?.required_documents"
                           >
-                          <ng-template #idCopyMissing>
-                            <span
-                              class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
-                              title="Ausweiskopie fehlt"
-                              >Ausweis</span
+                            <ng-container
+                              *ngIf="docType !== 'parental_consent'"
                             >
-                          </ng-template>
+                              <a
+                                *ngIf="
+                                  p.team_license.documents[docType + '_url']
+                                "
+                                [href]="
+                                  p.team_license.documents[docType + '_url']
+                                "
+                                target="_blank"
+                                rel="noopener"
+                                class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
+                                [title]="docTypeLabel(docType) + ' ansehen'"
+                                >{{ docTypeLabel(docType) }}</a
+                              >
+                              <span
+                                *ngIf="
+                                  !p.team_license.documents[docType + '_url']
+                                "
+                                class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
+                                [title]="docTypeLabel(docType) + ' fehlt'"
+                                >{{ docTypeLabel(docType) }}</span
+                              >
+                            </ng-container>
+                          </ng-container>
                           <!-- Einverständnis (nur für Minderjährige) -->
                           <ng-container *ngIf="isMinor(p.birthdate)">
                             <a
