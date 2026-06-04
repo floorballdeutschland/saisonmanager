@@ -1,0 +1,27 @@
+<div class="min-h-screen flex items-center justify-center p-4 bg-fb-gray-800">
+  <div
+    class="max-w-md w-full bg-white rounded-[5px] border border-fb-gray-600 p-8 text-center"
+  >
+    <div
+      class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full text-2xl"
+      [ngClass]="{
+        'bg-green-100 text-green-700': view.variant === 'success',
+        'bg-blue-100 text-blue-700': view.variant === 'info',
+        'bg-red-100 text-red-700': view.variant === 'error'
+      }"
+    >
+      <span *ngIf="view.variant === 'success'">✓</span>
+      <span *ngIf="view.variant === 'info'">i</span>
+      <span *ngIf="view.variant === 'error'">!</span>
+    </div>
+
+    <h1 class="text-xl font-bold mb-2">{{ view.title }}</h1>
+    <p class="text-sm text-fb-gray-500">{{ view.message }}</p>
+
+    <a
+      [routerLink]="['/']"
+      class="inline-block mt-6 text-sm font-bold text-fb-gray-500 hover:text-black"
+      >Zur Startseite</a
+    >
+  </div>
+</div>
