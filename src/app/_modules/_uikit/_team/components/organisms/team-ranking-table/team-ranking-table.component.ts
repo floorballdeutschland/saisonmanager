@@ -22,6 +22,7 @@ import { TeamRankingTableDatasoure } from './team-ranking-table.datasource';
   templateUrl: './team-ranking-table.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TeamRankingTableComponent implements OnChanges, AfterViewInit {
   isScrolled = false;

@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'gameNoticeVisibility' })
+@Pipe({
+  name: 'gameNoticeVisibility',
+  standalone: false,
+})
 export class GameNoticeVisibilityPipe implements PipeTransform {
   transform(
     noticeType: string | undefined,

@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { TeamWithPlayers } from '@floorball/types';
 
-@Pipe({ name: 'clubPlayerLicense' })
+@Pipe({
+  name: 'clubPlayerLicense',
+  standalone: false,
+})
 export class ClubPlayerLicensePipe implements PipeTransform {
   transform(
     allTeams: TeamWithPlayers[],

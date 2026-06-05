@@ -3,6 +3,7 @@ import { GameEvent } from '@floorball/types';
 
 @Pipe({
   name: 'reverseEvents',
+  standalone: false,
 })
 export class ReverseEventsPipe implements PipeTransform {
   transform(

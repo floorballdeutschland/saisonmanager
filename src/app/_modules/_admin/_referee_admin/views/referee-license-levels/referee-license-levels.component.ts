@@ -14,6 +14,7 @@ import { RefereeLicenseLevel } from '@floorball/types';
   templateUrl: './referee-license-levels.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RefereeLicenseLevelsComponent implements OnInit, OnDestroy {
   levels: RefereeLicenseLevel[] = [];

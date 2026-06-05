@@ -29,6 +29,7 @@ registerLocaleData(localeDe);
   templateUrl: './app.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class AppComponent implements OnInit {
   isLoading$!: Observable<boolean>;

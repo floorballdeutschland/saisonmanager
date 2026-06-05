@@ -12,6 +12,7 @@ import { PublicLicenseList } from '@floorball/types';
 @Component({
   templateUrl: './lizenzliste.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class LizenzlisteComponent implements OnInit {
   data?: PublicLicenseList;

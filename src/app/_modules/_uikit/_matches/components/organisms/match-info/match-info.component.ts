@@ -11,6 +11,7 @@ import { Game } from '@floorball/models';
   templateUrl: './match-info.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MatchInfoComponent {
   @Input()

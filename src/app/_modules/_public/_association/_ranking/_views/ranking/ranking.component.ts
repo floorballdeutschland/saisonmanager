@@ -15,6 +15,7 @@ import { Title } from '@angular/platform-browser';
   templateUrl: './ranking.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RankingComponent implements OnInit, OnDestroy {
   teamRankings$?: Observable<TableEntry[] | null>;

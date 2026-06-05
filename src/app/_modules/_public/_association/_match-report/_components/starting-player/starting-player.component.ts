@@ -18,6 +18,7 @@ import { catchError } from 'rxjs/operators';
 @Component({
   selector: 'fb-starting-player',
   templateUrl: './starting-player.component.html',
+  standalone: false,
 })
 export class StartingPlayerComponent implements OnInit, OnChanges {
   startingHome: StartingPlayer[] = [];
@@ -62,10 +63,10 @@ export class StartingPlayerComponent implements OnInit, OnChanges {
 
   public presetFromExistingMatch() {
     if (this.match.starting_players.home) {
-      this.startingHome = [...this.match.starting_players.home] || [];
+      this.startingHome = [...this.match.starting_players.home];
     }
     if (this.match.starting_players.guest) {
-      this.startingGuest = [...this.match.starting_players.guest] || [];
+      this.startingGuest = [...this.match.starting_players.guest];
     }
 
     this._cdr.markForCheck();

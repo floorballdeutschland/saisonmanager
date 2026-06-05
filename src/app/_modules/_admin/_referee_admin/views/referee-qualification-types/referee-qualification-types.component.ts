@@ -14,6 +14,7 @@ import { RefereeQualificationType } from '@floorball/types';
   templateUrl: './referee-qualification-types.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RefereeQualificationTypesComponent implements OnInit, OnDestroy {
   types: RefereeQualificationType[] = [];

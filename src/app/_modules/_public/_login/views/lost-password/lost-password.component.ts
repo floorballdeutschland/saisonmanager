@@ -13,6 +13,7 @@ export interface LostPasswordFormValue {
 @Component({
   templateUrl: './lost-password.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class LostPasswordComponent implements OnInit, OnDestroy {
   public resetPasswordForm!: FormGroup<ControlsOf<LostPasswordFormValue>>;

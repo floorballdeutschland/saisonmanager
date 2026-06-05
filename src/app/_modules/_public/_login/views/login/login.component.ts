@@ -13,6 +13,7 @@ export interface LoginFormValue {
 @Component({
   templateUrl: './login.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class LoginComponent implements OnInit, OnDestroy {
   public loginForm!: FormGroup<ControlsOf<LoginFormValue>>;

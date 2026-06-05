@@ -3,7 +3,10 @@ import { ActivatedRoute } from '@angular/router';
 import { OnlineTestService } from '@floorball/core';
 import { OnlineTest, OnlineTestResult } from '@floorball/types';
 
-@Component({ templateUrl: './online-test-results.component.html' })
+@Component({
+  templateUrl: './online-test-results.component.html',
+  standalone: false,
+})
 export class OnlineTestResultsComponent implements OnInit {
   test: OnlineTest | null = null;
   results: OnlineTestResult[] = [];

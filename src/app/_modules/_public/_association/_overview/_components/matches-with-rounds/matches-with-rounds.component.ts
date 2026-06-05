@@ -23,6 +23,7 @@ import {
   templateUrl: './matches-with-rounds.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MatchesWithRoundsComponent implements OnInit, OnDestroy {
   selectedLeague$!: Observable<League | null>;

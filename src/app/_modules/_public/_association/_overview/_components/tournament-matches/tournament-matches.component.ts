@@ -6,6 +6,7 @@ import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
 @Component({
   selector: 'fb-tournament-matches',
   templateUrl: './tournament-matches.component.html',
+  standalone: false,
 })
 export class TournamentMatchesComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<boolean>();

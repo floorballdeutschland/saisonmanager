@@ -24,6 +24,7 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   templateUrl: './license-team-detail.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class LicenseTeamDetailComponent implements OnInit {
   associations$: Observable<GameOperation[]>;

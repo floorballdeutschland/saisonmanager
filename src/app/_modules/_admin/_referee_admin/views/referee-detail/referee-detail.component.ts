@@ -15,6 +15,7 @@ import { RefereeAdmin, RefereeAdminGame } from '@floorball/types';
   templateUrl: './referee-detail.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RefereeDetailComponent implements OnInit, OnDestroy {
   referee?: RefereeAdmin;

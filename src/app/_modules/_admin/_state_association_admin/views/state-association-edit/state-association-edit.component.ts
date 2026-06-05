@@ -25,6 +25,7 @@ import {
   templateUrl: './state-association-edit.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class StateAssociationEditComponent implements OnInit, OnDestroy {
   stateAssociation: Partial<StateAssociation> = { name: '', short_name: '' };

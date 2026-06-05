@@ -4,7 +4,10 @@ import { GamePlayerEntry, PlayerWithLicense } from '@floorball/types';
 // License::APPROVED in der API – nur erteilte Lizenzen dürfen aufgestellt werden
 const LICENSE_STATUS_APPROVED = 1;
 
-@Pipe({ name: 'teamLineupPlayer' })
+@Pipe({
+  name: 'teamLineupPlayer',
+  standalone: false,
+})
 export class TeamLineupPlayerPipe implements PipeTransform {
   transform(
     allPlayers: PlayerWithLicense[],

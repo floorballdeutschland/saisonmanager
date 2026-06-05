@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { Game, PeriodTitles } from '@floorball/types';
 
-@Pipe({ name: 'currentPeriod' })
+@Pipe({
+  name: 'currentPeriod',
+  standalone: false,
+})
 export class CurrentPeriodPipe implements PipeTransform {
   transform(game: Game): PeriodTitles | undefined {
     return game.period_titles.find(

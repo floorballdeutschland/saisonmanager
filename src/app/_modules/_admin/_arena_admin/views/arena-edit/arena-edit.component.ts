@@ -15,6 +15,7 @@ import { Arena } from '@floorball/types';
   templateUrl: './arena-edit.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ArenaEditComponent implements OnInit, OnDestroy {
   arena: Arena | null = null;

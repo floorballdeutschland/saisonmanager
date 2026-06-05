@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'startingPlayerPositionTitle' })
+@Pipe({
+  name: 'startingPlayerPositionTitle',
+  standalone: false,
+})
 export class StartingPlayerPositionTitlePipe implements PipeTransform {
   transform(position: string): string {
     switch (position) {

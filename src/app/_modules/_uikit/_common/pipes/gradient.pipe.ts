@@ -4,6 +4,7 @@ import associationJson from '../../../../associations.json';
 
 @Pipe({
   name: 'gradient',
+  standalone: false,
 })
 export class GradientPipe implements PipeTransform {
   associations = associationJson;

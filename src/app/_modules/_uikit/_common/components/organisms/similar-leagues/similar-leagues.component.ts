@@ -11,6 +11,7 @@ import { League } from '@floorball/types';
   templateUrl: './similar-leagues.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SimilarLeaguesComponent {
   @Input()

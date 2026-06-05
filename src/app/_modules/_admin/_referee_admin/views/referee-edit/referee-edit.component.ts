@@ -29,6 +29,7 @@ import {
   templateUrl: './referee-edit.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RefereeEditComponent implements OnInit, OnDestroy {
   referee: Partial<RefereeAdmin> = {};

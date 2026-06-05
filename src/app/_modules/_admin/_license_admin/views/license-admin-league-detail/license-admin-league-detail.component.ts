@@ -8,6 +8,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'fb-license-admin-league-detail',
   templateUrl: './license-admin-league-detail.component.html',
+  standalone: false,
 })
 export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
   teams: TeamWithPlayers[] = [];

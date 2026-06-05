@@ -15,6 +15,7 @@ import { Title } from '@angular/platform-browser';
   templateUrl: './scorer.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ScorerComponent implements OnInit, OnDestroy {
   playerRankings$?: Observable<ScorerEntry[] | null>;

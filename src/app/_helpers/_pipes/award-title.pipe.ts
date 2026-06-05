@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'awardTitle' })
+@Pipe({
+  name: 'awardTitle',
+  standalone: false,
+})
 export class AwardTitlePipe implements PipeTransform {
   transform(award: string): string {
     switch (award) {

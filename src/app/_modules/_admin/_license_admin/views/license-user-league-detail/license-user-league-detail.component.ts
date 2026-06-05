@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
   selector: 'fb-license-user-league-detail',
   templateUrl: './license-user-league-detail.component.html',
   styleUrls: ['./license-user-league-detail.component.scss'],
+  standalone: false,
 })
 export class LicenseUserLeagueDetailComponent implements OnInit {
   league?: League;

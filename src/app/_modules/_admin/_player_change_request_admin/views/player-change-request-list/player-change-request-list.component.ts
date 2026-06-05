@@ -18,6 +18,7 @@ import { PlayerChangeRequest } from '@floorball/types';
   templateUrl: './player-change-request-list.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
   requests: PlayerChangeRequest[] = [];

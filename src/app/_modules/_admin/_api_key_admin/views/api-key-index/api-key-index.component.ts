@@ -15,6 +15,7 @@ import { ApiKey } from '@floorball/types';
   templateUrl: './api-key-index.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ApiKeyIndexComponent implements OnInit, OnDestroy {
   apiKeys: ApiKey[] = [];

@@ -20,6 +20,7 @@ import {
   templateUrl: './course-review-index.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class CourseReviewIndexComponent implements OnInit, OnDestroy {
   results: RefereeCourseResult[] = [];

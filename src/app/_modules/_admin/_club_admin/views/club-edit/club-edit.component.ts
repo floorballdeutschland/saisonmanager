@@ -19,6 +19,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 @Component({
   templateUrl: './club-edit.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class ClubEditComponent implements OnInit, OnDestroy {
   associations$: Observable<GameOperation[]>;

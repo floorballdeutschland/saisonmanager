@@ -10,6 +10,7 @@ import {
 
 @Pipe({
   name: 'normalizeEvent',
+  standalone: false,
 })
 export class NormalizeEventPipe implements PipeTransform {
   transform(

@@ -10,6 +10,7 @@ import { RefereeAdmin } from '@floorball/types';
 
 @Component({
   templateUrl: './referee-merge.component.html',
+  standalone: false,
 })
 export class RefereeMergeComponent implements OnInit, OnDestroy {
   master?: RefereeAdmin;

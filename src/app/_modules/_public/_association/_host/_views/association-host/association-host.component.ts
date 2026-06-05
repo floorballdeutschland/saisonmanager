@@ -15,6 +15,7 @@ import { Observable, Subject, takeUntil, tap } from 'rxjs';
   templateUrl: './association-host.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class AssociationHostComponent implements OnInit, OnDestroy {
   selectedAssociation$!: Observable<GameOperation | null>;

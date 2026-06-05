@@ -18,6 +18,7 @@ import { LeagueService } from '@floorball/core';
 @Component({
   selector: 'fb-match-report-step-two',
   templateUrl: './match-report-step-two.component.html',
+  standalone: false,
 })
 export class MatchReportStepTwoComponent implements OnInit {
   @Input()

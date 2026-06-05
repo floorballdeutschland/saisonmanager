@@ -8,6 +8,7 @@ export interface NormalizedMatchResult {
 
 @Pipe({
   name: 'normalizeMatchResult',
+  standalone: false,
 })
 export class NormalizeMatchResultPipe implements PipeTransform {
   transform(

@@ -19,6 +19,7 @@ import { TransferRequest } from '@floorball/types';
   templateUrl: './transfer-request-list.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TransferRequestListComponent implements OnInit, OnDestroy {
   requests: TransferRequest[] = [];

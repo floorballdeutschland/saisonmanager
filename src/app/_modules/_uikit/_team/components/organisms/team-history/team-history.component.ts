@@ -9,5 +9,6 @@ import {
   templateUrl: './team-history.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TeamHistoryComponent {}

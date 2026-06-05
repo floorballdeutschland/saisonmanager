@@ -19,6 +19,7 @@ import { MobileHeaderComponent } from '..';
   templateUrl: './notification.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class NotificationComponent implements OnInit {
   @Input() id = 'default-notification';

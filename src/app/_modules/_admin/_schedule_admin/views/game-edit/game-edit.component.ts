@@ -21,6 +21,7 @@ import { switchMap } from 'rxjs/operators';
   selector: 'fb-game-edit',
   templateUrl: './game-edit.component.html',
   styleUrls: ['./game-edit.component.scss'],
+  standalone: false,
 })
 export class GameEditComponent implements OnInit {
   @Input()

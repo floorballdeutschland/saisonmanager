@@ -18,6 +18,7 @@ import { RefereeCourseImport } from '@floorball/types';
   templateUrl: './course-import-index.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class CourseImportIndexComponent implements OnInit, OnDestroy {
   imports: RefereeCourseImport[] = [];

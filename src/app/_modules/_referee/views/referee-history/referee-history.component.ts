@@ -13,6 +13,7 @@ import {
 @Component({
   templateUrl: './referee-history.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RefereeHistoryComponent implements OnInit {
   seasons: RefereeHistorySeason[] = [];

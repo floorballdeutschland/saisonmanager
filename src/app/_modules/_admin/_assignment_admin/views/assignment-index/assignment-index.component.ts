@@ -42,6 +42,7 @@ interface MergedGame {
   templateUrl: './assignment-index.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class AssignmentIndexComponent implements OnInit, OnDestroy {
   rows: MergedGame[] = [];

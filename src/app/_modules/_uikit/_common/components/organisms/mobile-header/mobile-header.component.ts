@@ -26,6 +26,7 @@ import { BehaviorSubject, combineLatest, map, Observable, Subject } from 'rxjs';
   templateUrl: './mobile-header.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MobileHeaderComponent implements OnInit {
   isLoading$!: Observable<boolean>;

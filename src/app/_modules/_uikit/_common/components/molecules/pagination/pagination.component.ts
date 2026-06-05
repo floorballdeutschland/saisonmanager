@@ -12,6 +12,7 @@ import {
   templateUrl: './pagination.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class PaginationComponent {
   @Input()

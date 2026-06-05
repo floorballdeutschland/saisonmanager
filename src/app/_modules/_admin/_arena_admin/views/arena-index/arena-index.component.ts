@@ -14,6 +14,7 @@ import { Arena } from '@floorball/types';
   templateUrl: './arena-index.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ArenaIndexComponent implements OnInit, OnDestroy {
   arenas: Arena[] = [];

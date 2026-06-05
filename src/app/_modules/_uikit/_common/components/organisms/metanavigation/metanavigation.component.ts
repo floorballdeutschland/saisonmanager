@@ -15,6 +15,7 @@ import { SessionService, VersionService } from '@floorball/core';
   templateUrl: './metanavigation.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MetanavigationComponent implements OnInit {
   @Output()

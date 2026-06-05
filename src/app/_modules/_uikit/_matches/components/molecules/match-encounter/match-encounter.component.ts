@@ -11,6 +11,7 @@ import { GameScheduleEntry } from '@floorball/types';
   templateUrl: './match-encounter.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MatchEncounterComponent {
   @Input()

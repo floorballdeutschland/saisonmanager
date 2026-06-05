@@ -21,6 +21,7 @@ interface ClubPlayerList {
   templateUrl: './player-vm-index.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   clubLists: ClubPlayerList[] = [];

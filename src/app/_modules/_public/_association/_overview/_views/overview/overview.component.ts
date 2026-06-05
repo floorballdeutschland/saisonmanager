@@ -31,6 +31,7 @@ import {
   templateUrl: './overview.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class OverviewComponent implements OnInit, OnDestroy {
   selectedAssociation$!: Observable<GameOperation | null>;

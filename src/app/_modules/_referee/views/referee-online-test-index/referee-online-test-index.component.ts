@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { OnlineTestService } from '@floorball/core';
 import { RefereeOnlineTestListItem } from '@floorball/types';
 
-@Component({ templateUrl: './referee-online-test-index.component.html' })
+@Component({
+  templateUrl: './referee-online-test-index.component.html',
+  standalone: false,
+})
 export class RefereeOnlineTestIndexComponent implements OnInit {
   tests: RefereeOnlineTestListItem[] = [];
   loading = true;

@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { ClubMembership } from '@floorball/types';
 
-@Pipe({ name: 'additionalClubFilter' })
+@Pipe({
+  name: 'additionalClubFilter',
+  standalone: false,
+})
 export class AdditionalClubFilterPipe implements PipeTransform {
   transform(allClasses: ClubMembership[], current: boolean): ClubMembership[] {
     return allClasses.filter((club) => {

@@ -14,6 +14,7 @@ import { RefereeProfile } from '@floorball/types';
   templateUrl: './referee-profile.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RefereeProfileComponent implements OnInit, OnDestroy {
   profile?: RefereeProfile;

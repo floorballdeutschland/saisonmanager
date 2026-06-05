@@ -4,6 +4,7 @@ import { AwardPlayer, GamePlayerEntry, StartingPlayer } from '@floorball/types';
 
 @Pipe({
   name: 'fullName',
+  standalone: false,
 })
 export class FullNamePipe implements PipeTransform {
   transform(player: GamePlayerEntry | StartingPlayer | AwardPlayer): string {

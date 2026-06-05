@@ -16,6 +16,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
   templateUrl: './license-club-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class LicenseClubIndexComponent implements OnInit {
   associations$: Observable<GameOperation[]>;

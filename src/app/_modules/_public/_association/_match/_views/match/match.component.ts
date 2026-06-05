@@ -29,6 +29,7 @@ import { Title } from '@angular/platform-browser';
   templateUrl: './match.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MatchComponent implements OnInit, OnDestroy {
   game?: Game;

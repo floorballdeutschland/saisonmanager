@@ -3,6 +3,7 @@ import { PlayerWithLicense } from '@floorball/types';
 
 @Pipe({
   name: 'currentAge',
+  standalone: false,
 })
 export class CurrentAgePipe implements PipeTransform {
   transform(player: PlayerWithLicense, gamedayDate = ''): number {

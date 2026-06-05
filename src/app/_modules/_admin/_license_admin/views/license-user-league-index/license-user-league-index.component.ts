@@ -7,6 +7,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
   selector: 'fb-license-user-index',
   templateUrl: './license-user-league-index.component.html',
+  standalone: false,
 })
 export class LicenseUserLeagueIndexComponent implements OnInit {
   gameOperations: GameOperationWithLeagues[] = [];

@@ -11,6 +11,7 @@ import { Subject } from 'rxjs';
 @Component({
   selector: 'fb-team-ranking-table-overlay',
   templateUrl: './team-ranking-table-overlay.component.html',
+  standalone: false,
 })
 export class TeamRankingTableOverlayComponent {
   @Output()

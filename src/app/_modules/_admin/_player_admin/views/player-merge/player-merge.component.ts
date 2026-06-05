@@ -10,6 +10,7 @@ import { Player, PlayerSearchResult } from '@floorball/models';
 
 @Component({
   templateUrl: './player-merge.component.html',
+  standalone: false,
 })
 export class PlayerMergeComponent implements OnInit, OnDestroy {
   master?: Player;

@@ -13,6 +13,7 @@ import { FavoriteTeam, LeaguesWithOperation } from '@floorball/types';
   templateUrl: './favorites-navigation.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class FavoritesNavigationComponent {
   @Input()

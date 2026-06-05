@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { PeriodTitles } from '@floorball/types';
 
-@Pipe({ name: 'reversePeriods' })
+@Pipe({
+  name: 'reversePeriods',
+  standalone: false,
+})
 export class ReversePeriodsPipe implements PipeTransform {
   transform(periods: PeriodTitles[], handleReverse: boolean): PeriodTitles[] {
     return handleReverse ? periods.reverse() : periods;

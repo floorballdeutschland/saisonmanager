@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'gameNoticeHeadline' })
+@Pipe({
+  name: 'gameNoticeHeadline',
+  standalone: false,
+})
 export class GameNoticeHeadlinePipe implements PipeTransform {
   transform(noticeType: string): string {
     switch (noticeType) {

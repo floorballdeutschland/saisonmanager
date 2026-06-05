@@ -5,6 +5,7 @@ import { ClubService } from '@floorball/core';
 @Component({
   selector: 'fb-license-admin-team-entry',
   templateUrl: './license-admin-team-entry.component.html',
+  standalone: false,
 })
 export class LicenseAdminTeamEntryComponent implements OnInit {
   @Input()
