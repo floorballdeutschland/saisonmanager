@@ -116,6 +116,7 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
       );
       return;
     }
+    if (this.togglingIds.has(key.id)) return;
     delete this.rateLimitEdits[key.id];
     this._patch(key.id, { rate_limit: parsed });
   }
