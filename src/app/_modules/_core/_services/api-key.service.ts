@@ -22,10 +22,13 @@ export class ApiKeyService {
     );
   }
 
-  public update(id: number, active: boolean) {
+  public update(
+    id: number,
+    patch: Partial<Pick<ApiKey, 'active' | 'rate_limit' | 'realtime'>>
+  ) {
     return this.http.patch<ApiKey>(
       environment.apiURL + 'admin/api_keys/' + id,
-      { api_key: { active } }
+      { api_key: patch }
     );
   }
 

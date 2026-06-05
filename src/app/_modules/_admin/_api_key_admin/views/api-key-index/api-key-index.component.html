@@ -54,6 +54,18 @@
           <th class="py-2 pr-4 font-bold">Name</th>
           <th class="py-2 pr-4 font-bold">Erstellt</th>
           <th class="py-2 pr-4 font-bold">Status</th>
+          <th
+            class="py-2 pr-4 font-bold"
+            title="Echtzeit-Zugriff: Livescores und Events werden ungefiltert geliefert"
+          >
+            Echtzeit
+          </th>
+          <th
+            class="py-2 pr-4 font-bold"
+            title="Max. Requests pro Minute (leer = unbegrenzt)"
+          >
+            Limit/Min
+          </th>
           <th class="py-2"></th>
         </tr>
       </thead>
@@ -77,6 +89,34 @@
               {{ key.active ? "Aktiv" : "Deaktiviert" }}
             </span>
           </td>
+          <td class="py-2 pr-4">
+            <button
+              (click)="toggleRealtime(key)"
+              [disabled]="togglingIds.has(key.id)"
+              [title]="
+                key.realtime
+                  ? 'Echtzeit aktiv – klicken zum Deaktivieren'
+                  : 'Verzögert – klicken für Echtzeit'
+              "
+              class="text-lg disabled:opacity-40"
+            >
+              {{ key.realtime ? "✓" : "–" }}
+            </button>
+          </td>
+          <td class="py-2 pr-4">
+            <div class="flex items-center gap-1">
+              <input
+                type="number"
+                min="1"
+                [value]="rateLimitInput(key)"
+                (input)="onRateLimitChange(key, $any($event.target).value)"
+                (keydown.enter)="saveRateLimit(key)"
+                (blur)="saveRateLimit(key)"
+                placeholder="∞"
+                class="w-20 border border-fb-gray-700 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
+              />
+            </div>
+          </td>
           <td class="py-2 text-right flex gap-3 justify-end">
             <button
               (click)="toggleActive(key)"
@@ -94,11 +134,16 @@
           </td>
         </tr>
         <tr *ngIf="apiKeys.length === 0">
-          <td colspan="4" class="py-8 text-center text-fb-gray-500">
+          <td colspan="6" class="py-8 text-center text-fb-gray-500">
             Noch keine API-Keys angelegt.
           </td>
         </tr>
       </tbody>
     </table>
+    <p class="text-xs text-fb-gray-500 mt-3">
+      <strong>Echtzeit</strong>: Livescores und Spielereignisse ungefiltert.
+      Ohne Echtzeit: Scores laufender Spiele ausgeblendet.
+      <strong>Limit/Min</strong>: Max. Requests pro Minute (leer = unbegrenzt).
+    </p>
   </div>
 </div>

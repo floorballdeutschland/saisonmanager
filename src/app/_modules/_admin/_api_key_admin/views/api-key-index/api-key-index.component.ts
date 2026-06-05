@@ -23,6 +23,7 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
   createdKey: string | null = null;
   creating = false;
   togglingIds = new Set<number>();
+  rateLimitEdits: Record<number, string> = {};
 
   private _destroy$ = new Subject<void>();
 
@@ -89,23 +90,56 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
   }
 
   toggleActive(key: ApiKey): void {
-    if (this.togglingIds.has(key.id)) return;
-    this.togglingIds.add(key.id);
+    this._patch(key.id, { active: !key.active });
+  }
+
+  toggleRealtime(key: ApiKey): void {
+    this._patch(key.id, { realtime: !key.realtime });
+  }
+
+  rateLimitInput(key: ApiKey): string {
+    return this.rateLimitEdits[key.id] ?? key.rate_limit?.toString() ?? '';
+  }
+
+  onRateLimitChange(key: ApiKey, value: string): void {
+    this.rateLimitEdits[key.id] = value;
+  }
+
+  saveRateLimit(key: ApiKey): void {
+    const raw = this.rateLimitEdits[key.id];
+    if (raw === undefined) return;
+    const parsed = raw.trim() === '' ? null : parseInt(raw, 10);
+    if (raw.trim() !== '' && (isNaN(parsed!) || parsed! <= 0)) {
+      this._notificationService.error(
+        'Rate Limit muss eine positive Zahl oder leer (= unbegrenzt) sein.',
+        { autoClose: true }
+      );
+      return;
+    }
+    delete this.rateLimitEdits[key.id];
+    this._patch(key.id, { rate_limit: parsed });
+  }
+
+  private _patch(
+    id: number,
+    patch: Parameters<ApiKeyService['update']>[1]
+  ): void {
+    if (this.togglingIds.has(id)) return;
+    this.togglingIds.add(id);
     this._apiKeyService
-      .update(key.id, !key.active)
+      .update(id, patch)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {
-          this.togglingIds.delete(key.id);
+          this.togglingIds.delete(id);
           this.load();
         },
         error: (err: HttpErrorResponse) => {
-          this.togglingIds.delete(key.id);
+          this.togglingIds.delete(id);
           const detail = err.error?.errors?.join(', ') ?? err.message;
-          this._notificationService.error(
-            `Fehler beim Aktualisieren: ${detail}`,
-            { autoClose: false }
-          );
+          this._notificationService.error(`Fehler: ${detail}`, {
+            autoClose: false,
+          });
           this._cdr.markForCheck();
         },
       });
