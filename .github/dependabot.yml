@@ -6,19 +6,26 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 10
+    commit-message:
+      prefix: chore
     groups:
       angular:
         patterns:
           - "@angular/*"
           - "@angular-devkit/*"
-          - "@angular-eslint/*"
           - "@schematics/angular"
+          - "zone.js"
+          - "rxjs"
+          - "tslib"
+      eslint:
+        patterns:
+          - "@angular-eslint/*"
+          - "@typescript-eslint/*"
+          - "eslint"
+          - "eslint-*"
       sentry:
         patterns:
           - "@sentry/*"
-      typescript-eslint:
-        patterns:
-          - "@typescript-eslint/*"
       tailwind:
         patterns:
           - "tailwindcss"
