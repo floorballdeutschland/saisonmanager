@@ -4,6 +4,7 @@ import { GenderKey, PLAYER_GENDERS } from '@floorball/types';
 
 @Pipe({
   name: 'gender',
+  standalone: false,
 })
 export class GenderPipe implements PipeTransform {
   transform(genderKey: GenderKey): string {

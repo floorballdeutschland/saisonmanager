@@ -3,6 +3,7 @@ import { League } from '@floorball/types';
 
 @Pipe({
   name: 'normalizeLeagueRoute',
+  standalone: false,
 })
 export class NormalizeLeagueRoutePipe implements PipeTransform {
   transform(league: League | undefined | null): string {

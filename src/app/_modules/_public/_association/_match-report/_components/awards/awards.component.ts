@@ -16,6 +16,7 @@ import { catchError } from 'rxjs/operators';
 @Component({
   selector: 'fb-awards',
   templateUrl: './awards.component.html',
+  standalone: false,
 })
 export class AwardsComponent implements OnInit {
   awardDefinitions: { [key in AwardDefinitions]: string } = {
@@ -43,10 +44,10 @@ export class AwardsComponent implements OnInit {
 
   public presetFromExistingMatch() {
     if (this.match.awards.home) {
-      this.awardsHome = [...this.match.awards.home] || [];
+      this.awardsHome = [...this.match.awards.home];
     }
     if (this.match.awards.guest) {
-      this.awardsGuest = [...this.match.awards.guest] || [];
+      this.awardsGuest = [...this.match.awards.guest];
     }
 
     this._cdr.markForCheck();

@@ -23,6 +23,7 @@ import { Title } from '@angular/platform-browser';
   templateUrl: './team-squad.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class TeamSquadComponent implements OnInit {
   @Input() players!: GamePlayerEntry[];

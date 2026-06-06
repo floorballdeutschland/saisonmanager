@@ -19,6 +19,7 @@ import {
   styleUrls: ['./analytics-index.component.scss'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class AnalyticsIndexComponent implements OnInit, OnDestroy {
   loading = false;

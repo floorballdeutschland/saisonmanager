@@ -6,6 +6,7 @@ import { tap } from 'rxjs';
 @Component({
   selector: 'fb-match-public',
   templateUrl: './match-public.component.html',
+  standalone: false,
 })
 export class MatchPublicComponent implements OnInit {
   fieldSize!: string;

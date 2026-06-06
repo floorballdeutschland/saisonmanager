@@ -34,6 +34,7 @@ interface RoleOption {
   templateUrl: './user-create.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class UserCreateComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;

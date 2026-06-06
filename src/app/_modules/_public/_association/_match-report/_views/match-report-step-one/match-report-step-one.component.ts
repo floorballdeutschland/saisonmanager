@@ -15,6 +15,7 @@ import { tap } from 'rxjs';
 @Component({
   selector: 'fb-match-report-step-one',
   templateUrl: './match-report-step-one.component.html',
+  standalone: false,
 })
 export class MatchReportStepOneComponent implements OnInit, OnChanges {
   fieldSize!: string;

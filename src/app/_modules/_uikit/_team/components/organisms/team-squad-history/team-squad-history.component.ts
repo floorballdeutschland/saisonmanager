@@ -12,6 +12,7 @@ import {
   templateUrl: './team-squad-history.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class TeamSquadHistoryComponent {
   @Input() team!: string;

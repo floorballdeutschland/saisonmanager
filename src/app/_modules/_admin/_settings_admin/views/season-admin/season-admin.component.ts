@@ -17,6 +17,7 @@ import {
   templateUrl: './season-admin.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SeasonAdminComponent implements OnInit, OnDestroy {
   loading = true;

@@ -16,6 +16,7 @@ import { Arena, Club, GamedayWithGames, Team } from '@floorball/types';
 @Component({
   templateUrl: './schedule-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class ScheduleIndexComponent implements OnInit {
   gameDays: GamedayWithGames[] = [];

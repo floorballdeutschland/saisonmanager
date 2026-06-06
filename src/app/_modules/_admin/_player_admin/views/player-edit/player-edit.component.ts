@@ -30,6 +30,7 @@ import { PLAYER_GENDERS } from '@floorball/types';
 @Component({
   templateUrl: './player-edit.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class PlayerEditComponent implements OnInit, OnDestroy {
   permissions: { [key: string]: boolean } = {};

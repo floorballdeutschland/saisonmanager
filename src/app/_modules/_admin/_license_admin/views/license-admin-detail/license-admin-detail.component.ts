@@ -10,6 +10,7 @@ import { NotificationService, PlayerService } from '@floorball/core';
 @Component({
   selector: 'fb-license-admin-detail',
   templateUrl: './license-admin-detail.component.html',
+  standalone: false,
 })
 export class LicenseAdminDetailComponent implements OnInit {
   @Input()

@@ -7,6 +7,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
   templateUrl: './home.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class HomeComponent {
   associations$: Observable<GameOperation[]>;

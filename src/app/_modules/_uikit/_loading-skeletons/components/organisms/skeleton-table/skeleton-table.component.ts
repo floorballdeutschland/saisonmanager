@@ -10,6 +10,7 @@ import {
   templateUrl: './skeleton-table.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SkeletonTableComponent {
   @Input()

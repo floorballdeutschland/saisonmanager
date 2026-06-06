@@ -15,6 +15,7 @@ import { EmailLog } from '@floorball/types';
   templateUrl: './email-log-index.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class EmailLogIndexComponent implements OnInit, OnDestroy {
   logs: EmailLog[] = [];

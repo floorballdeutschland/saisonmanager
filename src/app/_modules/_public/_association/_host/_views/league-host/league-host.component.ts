@@ -32,6 +32,7 @@ import {
   templateUrl: './league-host.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class LeagueHostComponent implements OnInit, OnDestroy {
   selectedLeague$!: Observable<League | null>;

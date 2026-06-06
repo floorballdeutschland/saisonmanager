@@ -27,6 +27,7 @@ import {
   templateUrl: './user-edit.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class UserEditComponent implements OnInit, OnDestroy {
   user: UserAdminEntry | null = null;

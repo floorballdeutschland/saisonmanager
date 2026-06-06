@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { GamePlayerEntry } from '@floorball/types';
 
-@Pipe({ name: 'sortTrikotNumber' })
+@Pipe({
+  name: 'sortTrikotNumber',
+  standalone: false,
+})
 export class SortTrikotnumbersPipe implements PipeTransform {
   transform(allPlayer: GamePlayerEntry[]): GamePlayerEntry[] {
     if (!allPlayer) {

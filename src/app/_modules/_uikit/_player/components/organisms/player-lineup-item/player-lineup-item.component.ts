@@ -3,6 +3,7 @@ import { Component, Input } from '@angular/core';
 @Component({
   selector: 'fb-player-lineup-item',
   templateUrl: './player-lineup-item.component.html',
+  standalone: false,
 })
 export class PlayerLineupItemComponent {
   @Input()

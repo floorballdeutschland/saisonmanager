@@ -12,6 +12,7 @@ import { Observable, Subject, takeUntil, tap } from 'rxjs';
 @Component({
   selector: 'fb-tournament-matches-group',
   templateUrl: './tournament-matches-group.component.html',
+  standalone: false,
 })
 export class TournamentMatchesGroupComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<boolean>();

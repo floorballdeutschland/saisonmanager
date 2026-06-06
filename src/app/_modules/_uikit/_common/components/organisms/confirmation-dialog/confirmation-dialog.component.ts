@@ -10,6 +10,7 @@ import { Subject } from 'rxjs';
 @Component({
   selector: 'fb-confirmation-dialog',
   templateUrl: './confirmation-dialog.component.html',
+  standalone: false,
 })
 export class ConfirmationDialogComponent {
   @Output()

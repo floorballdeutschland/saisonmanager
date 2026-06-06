@@ -10,6 +10,7 @@ import { RefereeService } from '@floorball/core';
 @Component({
   templateUrl: './lizenzcheck.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class LizenzcheckComponent {
   lizenznummer = '';

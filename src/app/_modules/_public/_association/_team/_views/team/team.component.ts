@@ -20,6 +20,7 @@ import { Subject, takeUntil } from 'rxjs';
   templateUrl: './team.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TeamComponent implements OnInit, OnDestroy {
   public teamId: string | null = null;

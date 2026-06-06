@@ -13,6 +13,7 @@ import {
   templateUrl: './match-event-button.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class MatchEventButtonComponent {
   @Input()

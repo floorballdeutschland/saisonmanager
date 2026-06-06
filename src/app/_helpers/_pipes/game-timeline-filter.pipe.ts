@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { Game, PeriodTitles } from '@floorball/types';
 
-@Pipe({ name: 'timelineFilter' })
+@Pipe({
+  name: 'timelineFilter',
+  standalone: false,
+})
 export class GameTimelineFilterPipe implements PipeTransform {
   transform(allPeriods: PeriodTitles[], game: Game): PeriodTitles[] {
     let active;

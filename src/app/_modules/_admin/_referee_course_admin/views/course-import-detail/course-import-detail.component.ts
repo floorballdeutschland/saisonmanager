@@ -26,6 +26,7 @@ type MasterField = keyof RefereeCourseMasterFields;
   templateUrl: './course-import-detail.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class CourseImportDetailComponent implements OnInit, OnDestroy {
   importData: RefereeCourseImportWithResults | null = null;

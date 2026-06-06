@@ -13,6 +13,7 @@ import { GameOperation, League, Season } from '@floorball/types';
   templateUrl: './league-navigation.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class LeagueNavigationComponent {
   @Input()

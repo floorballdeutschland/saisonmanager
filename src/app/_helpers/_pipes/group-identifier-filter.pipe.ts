@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { GameScheduleEntry } from '@floorball/types';
 
-@Pipe({ name: 'groupIdentifier' })
+@Pipe({
+  name: 'groupIdentifier',
+  standalone: false,
+})
 export class GroupIdentifierFilterPipe implements PipeTransform {
   transform(
     matches: GameScheduleEntry[],

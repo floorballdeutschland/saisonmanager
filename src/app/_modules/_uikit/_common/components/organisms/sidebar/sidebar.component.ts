@@ -16,6 +16,7 @@ import { MobileHeaderComponent } from '..';
   templateUrl: './sidebar.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SidebarComponent {
   @Input() association?: GameOperation | null;

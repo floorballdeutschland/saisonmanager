@@ -5,6 +5,7 @@ import { StartingPlayer } from '@floorball/types';
   selector: 'fb-team-starting-players',
   templateUrl: './team-starting-players.component.html',
   styleUrls: ['./team-starting-players.component.scss'],
+  standalone: false,
 })
 export class TeamStartingPlayersComponent {
   @Input()

@@ -3,6 +3,7 @@ import { Referee } from 'src/app/_models/game.interface';
 
 @Pipe({
   name: 'normalizeReferee',
+  standalone: false,
 })
 export class NormalizeRefereePipe implements PipeTransform {
   transform(

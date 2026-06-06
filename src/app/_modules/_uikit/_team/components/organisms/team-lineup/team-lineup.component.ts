@@ -12,6 +12,7 @@ import { filter } from 'rxjs';
   templateUrl: './team-lineup.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class TeamLineupComponent {
   @Input()

@@ -16,6 +16,7 @@ import { Subject, takeUntil } from 'rxjs';
   templateUrl: './player-stats.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PlayerStatsComponent implements OnInit, OnDestroy {
   stats?: PlayerStats;

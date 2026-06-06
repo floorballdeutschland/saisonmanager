@@ -11,6 +11,7 @@ import { Game } from '@floorball/types';
   templateUrl: './match-header.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MatchHeaderComponent {
   @Input()

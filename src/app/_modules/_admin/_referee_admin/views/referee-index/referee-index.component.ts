@@ -18,6 +18,7 @@ import { RefereeAdmin, StateAssociation } from '@floorball/types';
   templateUrl: './referee-index.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RefereeIndexComponent implements OnInit, OnDestroy {
   referees: RefereeAdmin[] = [];

@@ -32,6 +32,7 @@ interface CalendarMonth {
   templateUrl: './referee-blocked-dates.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
   months: CalendarMonth[] = [];

@@ -21,6 +21,7 @@ import { ActivatedRoute } from '@angular/router';
   selector: 'fb-team-squad-player',
   templateUrl: './team-squad-player.component.html',
   styleUrls: ['./team-squad-player.component.scss'],
+  standalone: false,
 })
 export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
   @ViewChild('trikotNumberInput')

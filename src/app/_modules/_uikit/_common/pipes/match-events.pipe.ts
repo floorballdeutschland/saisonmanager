@@ -3,6 +3,7 @@ import { GameEvent } from '@floorball/types';
 
 @Pipe({
   name: 'filterPeriodEvents',
+  standalone: false,
 })
 export class FilterPeriodEventsPipe implements PipeTransform {
   transform(

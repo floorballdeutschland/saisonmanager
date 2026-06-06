@@ -14,6 +14,7 @@ import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 @Component({
   templateUrl: './import-game-days.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class ImportGameDaysComponent implements OnInit {
   @ViewChild('fileInput') fileInput!: ElementRef;

@@ -13,6 +13,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
   templateUrl: './club-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class ClubIndexComponent implements OnInit {
   associations$: Observable<GameOperation[]>;

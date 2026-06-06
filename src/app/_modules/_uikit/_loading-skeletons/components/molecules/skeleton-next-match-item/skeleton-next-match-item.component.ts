@@ -9,5 +9,6 @@ import {
   templateUrl: './skeleton-next-match-item.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SkeletonNextMatchItemComponent {}

@@ -20,6 +20,7 @@ interface FlatLeague {
 @Component({
   templateUrl: './team-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class TeamIndexComponent implements OnInit, OnDestroy {
   league$?: Observable<LeagueWithTeams>;

@@ -3,7 +3,10 @@ import { Router } from '@angular/router';
 import { NotificationService, OnlineTestService } from '@floorball/core';
 import { OnlineTest } from '@floorball/types';
 
-@Component({ templateUrl: './online-test-index.component.html' })
+@Component({
+  templateUrl: './online-test-index.component.html',
+  standalone: false,
+})
 export class OnlineTestIndexComponent implements OnInit {
   tests: OnlineTest[] = [];
   loading = true;

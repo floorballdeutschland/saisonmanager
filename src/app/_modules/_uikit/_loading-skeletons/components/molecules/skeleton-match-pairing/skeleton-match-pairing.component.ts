@@ -9,5 +9,6 @@ import {
   templateUrl: './skeleton-match-pairing.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SkeletonMatchPairingComponent {}

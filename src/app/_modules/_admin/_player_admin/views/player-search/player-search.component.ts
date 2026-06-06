@@ -18,6 +18,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
   templateUrl: './player-search.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class PlayerSearchComponent implements OnDestroy {
   query = '';

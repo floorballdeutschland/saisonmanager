@@ -14,6 +14,7 @@ import { TeamGameDay, TeamGameDayTeam } from '@floorball/types';
   templateUrl: './team-game-days.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TeamGameDaysComponent implements OnInit, OnDestroy {
   gameDays: TeamGameDay[] = [];

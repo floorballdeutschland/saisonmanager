@@ -13,6 +13,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 @Component({
   selector: 'fb-confirmation',
   templateUrl: './confirmation.component.html',
+  standalone: false,
 })
 export class ConfirmationComponent {
   @Output()

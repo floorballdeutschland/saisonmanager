@@ -12,6 +12,7 @@ import { GameScheduleEntry } from '@floorball/types';
   templateUrl: './next-match-list.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class NextMatchListComponent {
   @Input()

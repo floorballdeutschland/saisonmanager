@@ -43,6 +43,7 @@ interface SecretaryGameDay {
 @Component({
   templateUrl: './spielsekretariat.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SpielSekretariatComponent implements OnInit {
   data?: SecretaryGameDay;

@@ -28,6 +28,7 @@ import {
   templateUrl: './referee-autocomplete.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RefereeAutocompleteComponent implements OnInit, OnDestroy {
   @Input() placeholder = 'Name oder Lizenznummer';

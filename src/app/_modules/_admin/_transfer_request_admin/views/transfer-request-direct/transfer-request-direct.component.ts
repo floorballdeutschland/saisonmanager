@@ -19,6 +19,7 @@ import { PlayerSearchResult } from '@floorball/types';
   templateUrl: './transfer-request-direct.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TransferRequestDirectComponent implements OnInit, OnDestroy {
   firstName = '';

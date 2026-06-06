@@ -19,7 +19,10 @@ const PENALTY_OPTIONS = [
   'Bully',
 ];
 
-@Component({ templateUrl: './referee-online-test-exam.component.html' })
+@Component({
+  templateUrl: './referee-online-test-exam.component.html',
+  standalone: false,
+})
 export class RefereeOnlineTestExamComponent implements OnInit, OnDestroy {
   testId = 0;
   attemptData: RefereeOnlineTestStartResponse | null = null;

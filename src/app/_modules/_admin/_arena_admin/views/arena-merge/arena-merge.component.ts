@@ -15,6 +15,7 @@ import { Arena } from '@floorball/types';
   templateUrl: './arena-merge.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ArenaMergeComponent implements OnInit, OnDestroy {
   master?: Arena;

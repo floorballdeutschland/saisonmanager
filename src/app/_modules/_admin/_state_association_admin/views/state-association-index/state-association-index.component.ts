@@ -19,6 +19,7 @@ import { StateAssociation, User } from '@floorball/types';
   templateUrl: './state-association-index.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class StateAssociationIndexComponent implements OnInit, OnDestroy {
   stateAssociations: StateAssociation[] = [];

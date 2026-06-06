@@ -3,7 +3,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { OnlineTestService } from '@floorball/core';
 import { RefereeOnlineTestDetail } from '@floorball/types';
 
-@Component({ templateUrl: './referee-online-test-detail.component.html' })
+@Component({
+  templateUrl: './referee-online-test-detail.component.html',
+  standalone: false,
+})
 export class RefereeOnlineTestDetailComponent implements OnInit {
   detail: RefereeOnlineTestDetail | null = null;
   starting = false;

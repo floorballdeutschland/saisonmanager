@@ -18,6 +18,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 @Component({
   templateUrl: './game-day-edit.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class GameDayEditComponent implements OnInit {
   public gameday!: GamedayInput;

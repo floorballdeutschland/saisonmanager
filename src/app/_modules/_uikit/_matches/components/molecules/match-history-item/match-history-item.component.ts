@@ -21,6 +21,7 @@ import { GameService } from '@floorball/core';
   templateUrl: './match-history-item.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class MatchHistoryItemComponent {
   /**

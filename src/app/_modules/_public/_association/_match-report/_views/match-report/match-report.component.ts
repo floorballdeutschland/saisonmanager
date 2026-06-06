@@ -23,6 +23,7 @@ import { GameService, LeagueService, SessionService } from '@floorball/core';
 @Component({
   selector: 'fb-match-report',
   templateUrl: './match-report.component.html',
+  standalone: false,
 })
 export class MatchReportComponent implements OnInit, OnChanges {
   @ViewChild('sbbNavigation')

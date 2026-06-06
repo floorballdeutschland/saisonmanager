@@ -20,6 +20,7 @@ import { PlayerSearchResult, TransferRequestType } from '@floorball/types';
   templateUrl: './transfer-request-initiate.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
   firstName = '';

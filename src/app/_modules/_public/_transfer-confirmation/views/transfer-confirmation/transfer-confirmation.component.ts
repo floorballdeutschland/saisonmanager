@@ -12,6 +12,7 @@ interface ResultView {
 @Component({
   templateUrl: './transfer-confirmation.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TransferConfirmationComponent implements OnInit {
   view: ResultView = TransferConfirmationComponent.VIEWS['error'];

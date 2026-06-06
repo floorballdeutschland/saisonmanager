@@ -14,6 +14,7 @@ import { RefereeGameDay } from '@floorball/types';
   templateUrl: './referee-game-days.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   gameDays: RefereeGameDay[] = [];

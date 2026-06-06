@@ -50,6 +50,7 @@ const LEAGUE_CLASSES: { value: string; label: string }[] = [
   selector: 'fb-license-admin-global-list',
   templateUrl: './license-admin-global-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   readonly today = new Date().toISOString().slice(0, 10);

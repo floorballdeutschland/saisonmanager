@@ -14,6 +14,7 @@ import { LeagueService } from '@floorball/core';
   templateUrl: './all-matches.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class AllMatchesComponent implements OnInit, OnDestroy {
   matches$?: Observable<GameScheduleEntry[] | null>;

@@ -22,6 +22,7 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   templateUrl: './player-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class PlayerIndexComponent implements OnInit, OnDestroy {
   permissions: { [key: string]: boolean } = {};

@@ -20,6 +20,7 @@ import { GameOperationWithLeagues } from 'src/app/_models/game-operation.interfa
 @Component({
   templateUrl: './team-edit.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class TeamEditComponent implements OnInit, OnDestroy {
   associations$: Observable<GameOperation[]>;

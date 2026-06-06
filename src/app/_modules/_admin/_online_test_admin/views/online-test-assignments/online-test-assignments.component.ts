@@ -11,7 +11,10 @@ import {
   RefereeAdmin,
 } from '@floorball/types';
 
-@Component({ templateUrl: './online-test-assignments.component.html' })
+@Component({
+  templateUrl: './online-test-assignments.component.html',
+  standalone: false,
+})
 export class OnlineTestAssignmentsComponent implements OnInit {
   test: OnlineTest | null = null;
   assignments: OnlineTestAssignment[] = [];

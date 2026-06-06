@@ -14,6 +14,7 @@ import { ScorerEntry } from '@floorball/models';
   templateUrl: './player-ranking-table.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PlayerRankingTableComponent implements OnChanges {
   @Input()

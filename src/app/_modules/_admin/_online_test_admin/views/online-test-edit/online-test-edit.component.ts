@@ -3,7 +3,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { OnlineTestService } from '@floorball/core';
 import { OnlineTest } from '@floorball/types';
 
-@Component({ templateUrl: './online-test-edit.component.html' })
+@Component({
+  templateUrl: './online-test-edit.component.html',
+  standalone: false,
+})
 export class OnlineTestEditComponent implements OnInit {
   test: Partial<OnlineTest> = { max_attempts: 2 };
   isNew = true;

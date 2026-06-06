@@ -19,7 +19,10 @@ const PENALTY_OPTIONS = [
   'Bully',
 ];
 
-@Component({ templateUrl: './online-test-questions.component.html' })
+@Component({
+  templateUrl: './online-test-questions.component.html',
+  standalone: false,
+})
 export class OnlineTestQuestionsComponent implements OnInit {
   test: OnlineTest | null = null;
   penaltyOptions = PENALTY_OPTIONS;

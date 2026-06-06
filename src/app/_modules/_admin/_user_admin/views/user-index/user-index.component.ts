@@ -18,6 +18,7 @@ import { UserAdminEntry, User } from '@floorball/types';
   templateUrl: './user-index.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class UserIndexComponent implements OnInit, OnDestroy {
   users: UserAdminEntry[] = [];

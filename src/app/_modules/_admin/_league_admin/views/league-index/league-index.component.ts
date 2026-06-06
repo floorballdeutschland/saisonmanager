@@ -21,6 +21,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 @Component({
   templateUrl: './league-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class LeagueIndexComponent implements OnInit {
   associations$: Observable<GameOperation[]>;
