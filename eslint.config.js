@@ -41,6 +41,12 @@ module.exports = tseslint.config(
       ],
       "@angular-eslint/prefer-standalone": "off",
       "@angular-eslint/prefer-inject": "off",
+      // In angular-eslint 22 neu im recommended-Set. Das Projekt nutzt (noch)
+      // nicht OnPush; ng update hat die Komponenten verhaltenserhaltend auf
+      // ChangeDetectionStrategy.Eager gesetzt. OnPush-Umstellung wäre ein
+      // separates, verhaltensänderndes Refactoring — hier bewusst aus,
+      // konsistent zu prefer-standalone/prefer-inject.
+      "@angular-eslint/prefer-on-push-component-change-detection": "off",
     },
   },
   {

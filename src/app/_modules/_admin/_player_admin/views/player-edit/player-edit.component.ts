@@ -4,6 +4,7 @@ import {
   OnDestroy,
   OnInit,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   ClubService,
@@ -30,6 +31,7 @@ import { PLAYER_GENDERS } from '@floorball/types';
 @Component({
   templateUrl: './player-edit.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class PlayerEditComponent implements OnInit, OnDestroy {

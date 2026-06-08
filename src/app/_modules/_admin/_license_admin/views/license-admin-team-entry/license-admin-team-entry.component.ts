@@ -1,10 +1,17 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { PlayerLicenseHistory, Team } from '@floorball/types';
 import { ClubService } from '@floorball/core';
 
 @Component({
   selector: 'fb-license-admin-team-entry',
   templateUrl: './license-admin-team-entry.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class LicenseAdminTeamEntryComponent implements OnInit {

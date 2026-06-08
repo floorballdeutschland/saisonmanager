@@ -4,6 +4,7 @@ import {
   Input,
   OnDestroy,
   OnInit,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { LeagueService } from '@floorball/core';
 import { GroupedTableEntry, League } from '@floorball/types';
@@ -12,6 +13,7 @@ import { Observable, Subject, takeUntil, tap } from 'rxjs';
 @Component({
   selector: 'fb-tournament-matches-group',
   templateUrl: './tournament-matches-group.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class TournamentMatchesGroupComponent implements OnInit, OnDestroy {

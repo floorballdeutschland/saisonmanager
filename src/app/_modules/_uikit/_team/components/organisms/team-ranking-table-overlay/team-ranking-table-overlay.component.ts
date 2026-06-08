@@ -4,6 +4,7 @@ import {
   EventEmitter,
   Output,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { TableEntry } from '@floorball/types';
 import { Subject } from 'rxjs';
@@ -11,6 +12,7 @@ import { Subject } from 'rxjs';
 @Component({
   selector: 'fb-team-ranking-table-overlay',
   templateUrl: './team-ranking-table-overlay.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class TeamRankingTableOverlayComponent {

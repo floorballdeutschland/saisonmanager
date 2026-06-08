@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NotificationService, OnlineTestService } from '@floorball/core';
 import {
@@ -21,6 +21,7 @@ const PENALTY_OPTIONS = [
 
 @Component({
   templateUrl: './online-test-questions.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class OnlineTestQuestionsComponent implements OnInit {

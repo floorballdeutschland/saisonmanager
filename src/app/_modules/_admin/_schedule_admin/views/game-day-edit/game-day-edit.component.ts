@@ -3,6 +3,7 @@ import {
   Component,
   OnInit,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   ArenaService,
@@ -18,6 +19,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 @Component({
   templateUrl: './game-day-edit.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class GameDayEditComponent implements OnInit {

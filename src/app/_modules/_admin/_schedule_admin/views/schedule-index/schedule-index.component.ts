@@ -3,6 +3,7 @@ import {
   Component,
   OnInit,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   AssociationService,
@@ -16,6 +17,7 @@ import { Arena, Club, GamedayWithGames, Team } from '@floorball/types';
 @Component({
   templateUrl: './schedule-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ScheduleIndexComponent implements OnInit {

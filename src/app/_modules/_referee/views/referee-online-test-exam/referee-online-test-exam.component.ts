@@ -1,4 +1,10 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { OnlineTestService } from '@floorball/core';
@@ -21,6 +27,7 @@ const PENALTY_OPTIONS = [
 
 @Component({
   templateUrl: './referee-online-test-exam.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class RefereeOnlineTestExamComponent implements OnInit, OnDestroy {

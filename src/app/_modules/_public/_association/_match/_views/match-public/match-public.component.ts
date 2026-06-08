@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { LeagueService } from '@floorball/core';
 import { Game, GameAdditionalFields } from '@floorball/types';
 import { tap } from 'rxjs';
@@ -6,6 +12,7 @@ import { tap } from 'rxjs';
 @Component({
   selector: 'fb-match-public',
   templateUrl: './match-public.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class MatchPublicComponent implements OnInit {

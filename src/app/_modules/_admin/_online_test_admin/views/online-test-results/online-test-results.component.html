@@ -22,8 +22,8 @@
   @if (!loading) {
     <div>
       @if (
-        test?.pass_threshold_points !== null &&
-        test?.pass_threshold_points !== undefined
+        $safeNavigationMigration(test?.pass_threshold_points) !== null &&
+        $safeNavigationMigration(test?.pass_threshold_points) !== undefined
       ) {
         <p class="text-sm text-gray-500 mb-4">
           Bestanden bei max. {{ test!.pass_threshold_points }} Fehlerpunkt(en).

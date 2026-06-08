@@ -4,12 +4,14 @@ import {
   EventEmitter,
   Output,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Subject } from 'rxjs';
 
 @Component({
   selector: 'fb-confirmation-dialog',
   templateUrl: './confirmation-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ConfirmationDialogComponent {

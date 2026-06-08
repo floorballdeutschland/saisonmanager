@@ -8,6 +8,7 @@ import {
   OnInit,
   Output,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   GameEvent,
@@ -21,6 +22,7 @@ import { ActivatedRoute } from '@angular/router';
   selector: 'fb-team-squad-player',
   templateUrl: './team-squad-player.component.html',
   styleUrls: ['./team-squad-player.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {

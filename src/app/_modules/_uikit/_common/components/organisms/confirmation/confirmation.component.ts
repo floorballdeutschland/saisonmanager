@@ -5,6 +5,7 @@ import {
   EventEmitter,
   Input,
   Output,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { OverlayService } from '@floorball/core';
 import { take, tap } from 'rxjs';
@@ -13,6 +14,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 @Component({
   selector: 'fb-confirmation',
   templateUrl: './confirmation.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ConfirmationComponent {

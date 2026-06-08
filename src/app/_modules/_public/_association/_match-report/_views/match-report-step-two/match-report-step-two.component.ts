@@ -5,6 +5,7 @@ import {
   Input,
   OnInit,
   Output,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   Game,
@@ -18,6 +19,7 @@ import { LeagueService } from '@floorball/core';
 @Component({
   selector: 'fb-match-report-step-two',
   templateUrl: './match-report-step-two.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class MatchReportStepTwoComponent implements OnInit {

@@ -1,4 +1,9 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewEncapsulation,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import {
   AssociationService,
   ClubService,
@@ -13,6 +18,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
   templateUrl: './club-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ClubIndexComponent implements OnInit {

@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { LeagueService } from '@floorball/core';
 import { Game, GameAdditionalFields } from '@floorball/types';
@@ -15,6 +16,7 @@ import { tap } from 'rxjs';
 @Component({
   selector: 'fb-match-report-step-one',
   templateUrl: './match-report-step-one.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class MatchReportStepOneComponent implements OnInit, OnChanges {

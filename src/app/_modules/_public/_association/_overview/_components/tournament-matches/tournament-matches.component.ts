@@ -1,4 +1,10 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { LeagueService } from '@floorball/core';
 import { GameScheduleEntry, League } from '@floorball/types';
 import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
@@ -6,6 +12,7 @@ import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
 @Component({
   selector: 'fb-tournament-matches',
   templateUrl: './tournament-matches.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class TournamentMatchesComponent implements OnInit, OnDestroy {

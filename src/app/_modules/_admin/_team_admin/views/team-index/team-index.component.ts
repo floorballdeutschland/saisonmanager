@@ -4,6 +4,7 @@ import {
   OnDestroy,
   OnInit,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { AssociationService, LeagueService } from '@floorball/core';
 import { LeagueWithTeams } from 'src/app/_models';
@@ -20,6 +21,7 @@ interface FlatLeague {
 @Component({
   templateUrl: './team-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class TeamIndexComponent implements OnInit, OnDestroy {

@@ -4,6 +4,7 @@ import {
   OnDestroy,
   OnInit,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { ClubService, PlayerService, SessionService } from '@floorball/core';
 import { Club } from '@floorball/models';
@@ -22,6 +23,7 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   templateUrl: './player-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class PlayerIndexComponent implements OnInit, OnDestroy {

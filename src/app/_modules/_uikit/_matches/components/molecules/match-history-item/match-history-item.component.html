@@ -43,7 +43,10 @@
             }
             @if (gameEvent.home.scorer?.player_id) {
               <a
-                [routerLink]="['/spieler', gameEvent.home.scorer?.player_id]"
+                [routerLink]="[
+                  '/spieler',
+                  $safeNavigationMigration(gameEvent.home.scorer?.player_id),
+                ]"
                 class="hover:underline"
                 >{{ gameEvent.home.scorer?.player_firstname }}
                 {{ gameEvent.home.scorer?.player_name }}</a
@@ -174,7 +177,10 @@
             }
             @if (gameEvent.guest.scorer?.player_id) {
               <a
-                [routerLink]="['/spieler', gameEvent.guest.scorer?.player_id]"
+                [routerLink]="[
+                  '/spieler',
+                  $safeNavigationMigration(gameEvent.guest.scorer?.player_id),
+                ]"
                 class="hover:underline"
                 >{{ gameEvent.guest.scorer?.player_firstname }}
                 {{ gameEvent.guest.scorer?.player_name }}</a
@@ -219,7 +225,10 @@
         }
         @if (gameEvent.home.assist?.player_id) {
           <a
-            [routerLink]="['/spieler', gameEvent.home.assist?.player_id]"
+            [routerLink]="[
+              '/spieler',
+              $safeNavigationMigration(gameEvent.home.assist?.player_id),
+            ]"
             class="hover:underline"
             >{{ gameEvent.home.assist?.player_firstname }}
             {{ gameEvent.home.assist?.player_name }}</a
@@ -308,7 +317,10 @@
         }
         @if (gameEvent.guest.assist?.player_id) {
           <a
-            [routerLink]="['/spieler', gameEvent.guest.assist?.player_id]"
+            [routerLink]="[
+              '/spieler',
+              $safeNavigationMigration(gameEvent.guest.assist?.player_id),
+            ]"
             class="hover:underline"
             >{{ gameEvent.guest.assist?.player_firstname }}
             {{ gameEvent.guest.assist?.player_name }}</a

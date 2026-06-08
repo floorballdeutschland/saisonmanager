@@ -3,6 +3,7 @@ import {
   Component,
   OnInit,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   GameOperation,
@@ -24,6 +25,7 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   templateUrl: './license-team-detail.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class LicenseTeamDetailComponent implements OnInit {
