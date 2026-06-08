@@ -33,6 +33,7 @@ interface SecretaryGameDay {
         birthdate?: string;
         license_status: string;
         approved_at?: string;
+        valid_until?: string;
       }[];
     }
   >;
@@ -51,6 +52,7 @@ export class SpielSekretariatComponent implements OnInit {
   loading = true;
   token = '';
   activeTab: 'games' | 'licenses' = 'games';
+  readonly today = new Date().toISOString().slice(0, 10);
 
   constructor(
     private _route: ActivatedRoute,
