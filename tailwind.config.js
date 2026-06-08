@@ -1,33 +1,11 @@
-function guessProductionMode() {
-  const argv = process.argv.join(" ").toLowerCase();
-  const isProdEnv = process.env.NODE_ENV === "production";
-  return (
-    isProdEnv ||
-    [" build", ":build", "ng b", "--prod"].some((command) =>
-      argv.includes(command)
-    )
-  );
-}
-
-process.env.TAILWIND_MODE = guessProductionMode() ? "build" : "watch";
-
-let fontBase = 16;
-
-let calculateRem = (size) => {
-  return size / fontBase + "rem";
-};
-
-const colors = require("tailwindcss/colors");
-
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-  mode: "jit",
-  prefix: "",
-  purge: ["./src/**/*.{html,ts}"],
+  content: ["./src/**/*.{html,ts}"],
   darkMode: "class",
   theme: {
     extend: {
       fontSize: {
-        "4.5xl": calculateRem(42),
+        "4.5xl": "2.625rem", // 42px / 16
       },
       fontFamily: {
         helvetica: ["Helvetica", "Arial", "sans-serif"],
@@ -43,17 +21,12 @@ module.exports = {
         "fb-gray-800": "#FAFAFA",
         "fb-gray-900": "#666666",
         primary: {
-          DEFAULT: colors.sky[500],
-          light: colors.sky[300],
+          // v3-Hex bewusst hartkodiert: tailwindcss/colors liefert in v4 OKLCH,
+          // was die Markenfarbe verschöbe. So bleibt primary identisch zu v3.
+          DEFAULT: "#0ea5e9", // sky-500 (v3)
+          light: "#7dd3fc", // sky-300 (v3)
         },
       },
-    },
-  },
-  variants: {
-    extend: {
-      height: ["group-hover"],
-      visibility: ["group-hover"],
-      display: ["group-hover"],
     },
   },
   plugins: [require("@tailwindcss/forms")],
