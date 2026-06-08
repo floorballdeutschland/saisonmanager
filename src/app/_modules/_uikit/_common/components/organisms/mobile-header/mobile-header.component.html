@@ -1,34 +1,36 @@
 <div class="top-0 fixed w-full left-0 bg-fb-gray-200 p-5 h-full overflow-auto">
   <div class="h-14 flex flex-row justify-end items-center"></div>
 
-  <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
+  @if (selectedAssociation$ | async; as selectedAssociation) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-6 lg:mt-12">Ligen</h2>
-
-    <nav *ngIf="leagues$ | async as leagues">
-      <ul>
-        <li *ngFor="let item of leagues" class="mt-4 mb-4">
-          <a
-            [routerLinkActive]="'!text-black'"
-            [routerLink]="['/', selectedAssociation.path, item.id]"
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            title="{{ item.name }}"
-            (click)="close()"
-            >{{ item.name }}</a
-          >
-        </li>
-
-        <li class="mt-5">
-          <a
-            [routerLink]="['/']"
-            class="block text-center font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-800 border-fb-gray-600 rounded-[5px] cursor-pointer w-full"
-            (click)="close()"
-          >
-            Spielbetrieb wechseln
-          </a>
-        </li>
-      </ul>
-    </nav>
-  </ng-container>
+    @if (leagues$ | async; as leagues) {
+      <nav>
+        <ul>
+          @for (item of leagues; track item) {
+            <li class="mt-4 mb-4">
+              <a
+                [routerLinkActive]="'!text-black'"
+                [routerLink]="['/', selectedAssociation.path, item.id]"
+                class="font-bold text-fb-gray-500 hover:text-black text-base"
+                title="{{ item.name }}"
+                (click)="close()"
+                >{{ item.name }}</a
+              >
+            </li>
+          }
+          <li class="mt-5">
+            <a
+              [routerLink]="['/']"
+              class="block text-center font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-800 border-fb-gray-600 rounded-[5px] cursor-pointer w-full"
+              (click)="close()"
+            >
+              Spielbetrieb wechseln
+            </a>
+          </li>
+        </ul>
+      </nav>
+    }
+  }
 
   <fb-favorites-navigation
     [favorites]="(favoriteLeagues$ | async) ?? []"
@@ -40,28 +42,30 @@
 
   <fb-metanavigation (closeHandler)="close()"></fb-metanavigation>
 
-  <div *ngIf="activeBanner$ | async as banner" class="mt-4">
-    <a
-      *ngIf="safeBannerLink(banner.linkUrl); else bannerImg"
-      [href]="safeBannerLink(banner.linkUrl)"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Werbung – externer Link öffnet in neuem Tab"
-    >
-      <img
-        [src]="banner.url"
-        alt="Anzeige"
-        class="w-full"
-        style="aspect-ratio: 6/1; object-fit: contain"
-      />
-    </a>
-    <ng-template #bannerImg>
-      <img
-        [src]="banner.url"
-        alt="Anzeige"
-        class="w-full"
-        style="aspect-ratio: 6/1; object-fit: contain"
-      />
-    </ng-template>
-  </div>
+  @if (activeBanner$ | async; as banner) {
+    <div class="mt-4">
+      @if (safeBannerLink(banner.linkUrl)) {
+        <a
+          [href]="safeBannerLink(banner.linkUrl)"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Werbung – externer Link öffnet in neuem Tab"
+        >
+          <img
+            [src]="banner.url"
+            alt="Anzeige"
+            class="w-full"
+            style="aspect-ratio: 6/1; object-fit: contain"
+          />
+        </a>
+      } @else {
+        <img
+          [src]="banner.url"
+          alt="Anzeige"
+          class="w-full"
+          style="aspect-ratio: 6/1; object-fit: contain"
+        />
+      }
+    </div>
+  }
 </div>

@@ -1,27 +1,29 @@
 <div class="container mx-auto px-4 lg:px-8 py-8">
-  <div *ngIf="loading" class="text-fb-gray-400 text-sm py-12 text-center">
-    Lade Spielerstatistiken…
-  </div>
+  @if (loading) {
+    <div class="text-fb-gray-400 text-sm py-12 text-center">
+      Lade Spielerstatistiken…
+    </div>
+  }
 
-  <div *ngIf="error" class="text-red-500 text-sm py-12 text-center">
-    Spieler nicht gefunden.
-  </div>
+  @if (error) {
+    <div class="text-red-500 text-sm py-12 text-center">
+      Spieler nicht gefunden.
+    </div>
+  }
 
-  <ng-container *ngIf="stats && !loading">
+  @if (stats && !loading) {
     <!-- Header -->
     <div class="mb-8">
       <h1 class="font-bold text-[28px] lg:text-[36px]">
         {{ stats.player.first_name }} {{ stats.player.last_name }}
       </h1>
-      <p
-        *ngIf="stats.player.deactivated_at"
-        class="mt-2 text-sm text-fb-gray-400"
-      >
-        Spieler*in nicht mehr aktiv (seit
-        {{ stats.player.deactivated_at | date : "dd.MM.yyyy" }})
-      </p>
+      @if (stats.player.deactivated_at) {
+        <p class="mt-2 text-sm text-fb-gray-400">
+          Spieler*in nicht mehr aktiv (seit
+          {{ stats.player.deactivated_at | date: "dd.MM.yyyy" }})
+        </p>
+      }
     </div>
-
     <!-- Gesamtstatistik -->
     <div class="bg-fb-gray-800 p-5 mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="text-center">
@@ -41,102 +43,106 @@
         <div class="text-xs text-fb-gray-400 uppercase mt-1">Pkt/Spiel</div>
       </div>
     </div>
-
-    <div *ngIf="stats.totals.last_season" class="text-sm text-fb-gray-400 mb-6">
-      Zuletzt aktiv:
-      <span class="font-bold text-black">{{ stats.totals.last_season }}</span>
-    </div>
-
-    <!-- Saisonübersicht -->
-    <div
-      *ngIf="stats.seasons.length === 0"
-      class="text-fb-gray-400 text-sm py-8 text-center"
-    >
-      Noch keine Spielstatistiken vorhanden.
-    </div>
-
-    <div *ngFor="let season of stats.seasons" class="mb-8">
-      <h2 class="font-bold text-lg mb-3 border-b border-fb-gray-200 pb-2">
-        {{ season.season_name }}
-      </h2>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr
-              class="text-left text-xs text-fb-gray-400 uppercase border-b border-fb-gray-200"
-            >
-              <th class="py-2 pr-4 font-medium">Liga</th>
-              <th class="py-2 pr-4 font-medium">Verein</th>
-              <th class="py-2 pr-4 text-center font-medium">Sp</th>
-              <th class="py-2 pr-4 text-center font-medium">T</th>
-              <th class="py-2 pr-4 text-center font-medium">V</th>
-              <th class="py-2 pr-4 text-center font-medium">P</th>
-              <th class="py-2 text-center font-medium">Strafmin</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              *ngFor="let league of season.leagues"
-              class="border-b border-fb-gray-200 hover:bg-fb-gray-300"
-            >
-              <td class="py-2 pr-4">
-                <a
-                  [routerLink]="[
-                    '/',
-                    league.game_operation.toLowerCase(),
-                    league.league_slug
-                  ]"
-                  class="hover:underline"
-                >
-                  {{ league.league_name }}
-                </a>
-                <span class="text-xs text-fb-gray-400 ml-1">{{
-                  league.game_operation
-                }}</span>
-              </td>
-              <td class="py-2 pr-4 text-fb-gray-400">{{ league.team_name }}</td>
-              <td class="py-2 pr-4 text-center">{{ league.games }}</td>
-              <td class="py-2 pr-4 text-center font-bold">
-                {{ league.goals }}
-              </td>
-              <td class="py-2 pr-4 text-center">{{ league.assists }}</td>
-              <td class="py-2 pr-4 text-center font-bold">
-                {{ league.goals + league.assists }}
-              </td>
-              <td class="py-2 text-center">{{ league.penalty_minutes }}'</td>
-            </tr>
-          </tbody>
-          <!-- Saisonsumme wenn mehrere Ligen -->
-          <tfoot *ngIf="season.leagues.length > 1">
-            <tr
-              class="font-bold text-xs border-t-2 border-fb-gray-200 bg-fb-gray-300"
-            >
-              <td class="py-2 pr-4" colspan="2">
-                Gesamt {{ season.season_name }}
-              </td>
-              <td class="py-2 pr-4 text-center">
-                {{ season.leagues | sumField : "games" }}
-              </td>
-              <td class="py-2 pr-4 text-center">
-                {{ season.leagues | sumField : "goals" }}
-              </td>
-              <td class="py-2 pr-4 text-center">
-                {{ season.leagues | sumField : "assists" }}
-              </td>
-              <td class="py-2 pr-4 text-center">
-                {{
-                  (season.leagues | sumField : "goals") +
-                    (season.leagues | sumField : "assists")
-                }}
-              </td>
-              <td class="py-2 text-center">
-                {{ season.leagues | sumField : "penalty_minutes" }}'
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+    @if (stats.totals.last_season) {
+      <div class="text-sm text-fb-gray-400 mb-6">
+        Zuletzt aktiv:
+        <span class="font-bold text-black">{{ stats.totals.last_season }}</span>
       </div>
-    </div>
-  </ng-container>
+    }
+    <!-- Saisonübersicht -->
+    @if (stats.seasons.length === 0) {
+      <div class="text-fb-gray-400 text-sm py-8 text-center">
+        Noch keine Spielstatistiken vorhanden.
+      </div>
+    }
+    @for (season of stats.seasons; track season) {
+      <div class="mb-8">
+        <h2 class="font-bold text-lg mb-3 border-b border-fb-gray-200 pb-2">
+          {{ season.season_name }}
+        </h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr
+                class="text-left text-xs text-fb-gray-400 uppercase border-b border-fb-gray-200"
+              >
+                <th class="py-2 pr-4 font-medium">Liga</th>
+                <th class="py-2 pr-4 font-medium">Verein</th>
+                <th class="py-2 pr-4 text-center font-medium">Sp</th>
+                <th class="py-2 pr-4 text-center font-medium">T</th>
+                <th class="py-2 pr-4 text-center font-medium">V</th>
+                <th class="py-2 pr-4 text-center font-medium">P</th>
+                <th class="py-2 text-center font-medium">Strafmin</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (league of season.leagues; track league) {
+                <tr class="border-b border-fb-gray-200 hover:bg-fb-gray-300">
+                  <td class="py-2 pr-4">
+                    <a
+                      [routerLink]="[
+                        '/',
+                        league.game_operation.toLowerCase(),
+                        league.league_slug,
+                      ]"
+                      class="hover:underline"
+                    >
+                      {{ league.league_name }}
+                    </a>
+                    <span class="text-xs text-fb-gray-400 ml-1">{{
+                      league.game_operation
+                    }}</span>
+                  </td>
+                  <td class="py-2 pr-4 text-fb-gray-400">
+                    {{ league.team_name }}
+                  </td>
+                  <td class="py-2 pr-4 text-center">{{ league.games }}</td>
+                  <td class="py-2 pr-4 text-center font-bold">
+                    {{ league.goals }}
+                  </td>
+                  <td class="py-2 pr-4 text-center">{{ league.assists }}</td>
+                  <td class="py-2 pr-4 text-center font-bold">
+                    {{ league.goals + league.assists }}
+                  </td>
+                  <td class="py-2 text-center">
+                    {{ league.penalty_minutes }}'
+                  </td>
+                </tr>
+              }
+            </tbody>
+            <!-- Saisonsumme wenn mehrere Ligen -->
+            @if (season.leagues.length > 1) {
+              <tfoot>
+                <tr
+                  class="font-bold text-xs border-t-2 border-fb-gray-200 bg-fb-gray-300"
+                >
+                  <td class="py-2 pr-4" colspan="2">
+                    Gesamt {{ season.season_name }}
+                  </td>
+                  <td class="py-2 pr-4 text-center">
+                    {{ season.leagues | sumField: "games" }}
+                  </td>
+                  <td class="py-2 pr-4 text-center">
+                    {{ season.leagues | sumField: "goals" }}
+                  </td>
+                  <td class="py-2 pr-4 text-center">
+                    {{ season.leagues | sumField: "assists" }}
+                  </td>
+                  <td class="py-2 pr-4 text-center">
+                    {{
+                      (season.leagues | sumField: "goals") +
+                        (season.leagues | sumField: "assists")
+                    }}
+                  </td>
+                  <td class="py-2 text-center">
+                    {{ season.leagues | sumField: "penalty_minutes" }}'
+                  </td>
+                </tr>
+              </tfoot>
+            }
+          </table>
+        </div>
+      </div>
+    }
+  }
 </div>

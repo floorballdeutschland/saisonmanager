@@ -10,7 +10,7 @@
             'verwaltung',
             'schiedsrichter',
             master.lizenznummer_display,
-            'bearbeiten'
+            'bearbeiten',
           ]
         : ['/', 'verwaltung', 'schiedsrichter']
     "
@@ -22,11 +22,11 @@
   </h2>
 </div>
 
-<ng-container *ngIf="master">
+@if (master) {
   <div class="bg-fb-gray-800 pt-4 lg:pt-8 pb-16">
     <div class="container mx-auto px-4 lg:px-8">
       <!-- Step 1: Duplikat suchen -->
-      <ng-container *ngIf="step === 1">
+      @if (step === 1) {
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9">
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
@@ -40,7 +40,6 @@
               {{ master.id }}
             </p>
           </div>
-
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               Duplikat suchen
@@ -60,39 +59,36 @@
                 Suchen
               </button>
             </div>
-
-            <ul
-              *ngIf="searchResults.length > 0"
-              role="list"
-              class="divide-y divide-gray-200"
-            >
-              <li *ngFor="let r of searchResults">
-                <button
-                  (click)="selectSecondary(r)"
-                  class="w-full text-left px-4 py-3 hover:bg-orange-50 cursor-pointer"
-                >
-                  <span class="text-sm font-medium"
-                    >{{ r.nachname }}, {{ r.vorname }}</span
-                  >
-                  <span class="text-sm text-gray-500 ml-2">
-                    Lizenz: {{ r.lizenznummer_display }} &middot; ID: {{ r.id }}
-                  </span>
-                </button>
-              </li>
-            </ul>
-
-            <p
-              *ngIf="searchResults.length === 0 && searchQuery"
-              class="text-sm text-gray-500"
-            >
-              Keine weiteren Schiedsrichter gefunden.
-            </p>
+            @if (searchResults.length > 0) {
+              <ul role="list" class="divide-y divide-gray-200">
+                @for (r of searchResults; track r) {
+                  <li>
+                    <button
+                      (click)="selectSecondary(r)"
+                      class="w-full text-left px-4 py-3 hover:bg-orange-50 cursor-pointer"
+                    >
+                      <span class="text-sm font-medium"
+                        >{{ r.nachname }}, {{ r.vorname }}</span
+                      >
+                      <span class="text-sm text-gray-500 ml-2">
+                        Lizenz: {{ r.lizenznummer_display }} &middot; ID:
+                        {{ r.id }}
+                      </span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+            @if (searchResults.length === 0 && searchQuery) {
+              <p class="text-sm text-gray-500">
+                Keine weiteren Schiedsrichter gefunden.
+              </p>
+            }
           </div>
         </div>
-      </ng-container>
-
+      }
       <!-- Step 2: Vorschau -->
-      <ng-container *ngIf="step === 2 && secondary">
+      @if (step === 2 && secondary) {
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9">
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
@@ -115,7 +111,6 @@
               E-Mail: {{ master.email || "–" }}
             </p>
           </div>
-
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               Duplikat (wird deaktiviert)
@@ -137,7 +132,6 @@
               E-Mail: {{ secondary.email || "–" }}
             </p>
           </div>
-
           <div class="col-span-full flex gap-3">
             <button
               (click)="confirm()"
@@ -153,10 +147,9 @@
             </button>
           </div>
         </div>
-      </ng-container>
-
+      }
       <!-- Step 3: Bestätigung -->
-      <ng-container *ngIf="step === 3 && secondary">
+      @if (step === 3 && secondary) {
         <div class="mt-4 lg:mt-9 max-w-xl">
           <div
             class="bg-white my-[5px] py-[15px] px-[30px] border border-red-300 rounded"
@@ -194,7 +187,7 @@
             </div>
           </div>
         </div>
-      </ng-container>
+      }
     </div>
   </div>
-</ng-container>
+}

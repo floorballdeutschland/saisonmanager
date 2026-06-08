@@ -1,3 +1,4 @@
+<!-- eslint-disable @angular-eslint/template/prefer-control-flow -- Control-Flow-Migration übersprang diese Datei wegen komplexer "*ngIf; else #template"-Referenzen; manuelle Umstellung als Follow-up -->
 <ng-template #loading>
   <div class="bg-white my-[5px] py-[15px] px-[30px]">
     <div class="uppercase font-bold text-gray-400 text-sm mb-5">
@@ -62,7 +63,7 @@
                       [ngClass]="{
                         'bg-indigo-600': isGameStatusActive(index, 'game') <= 0,
                         'bg-transparent':
-                          isGameStatusActive(index, 'game') === 1
+                          isGameStatusActive(index, 'game') === 1,
                       }"
                       aria-hidden="true"
                     ></span>
@@ -77,7 +78,7 @@
                               isGameStatusActive(index) === -1,
                             'border-indigo-600':
                               isGameStatusActive(index) === 0,
-                            'border-gray-300': isGameStatusActive(index) === 1
+                            'border-gray-300': isGameStatusActive(index) === 1,
                           }"
                         >
                           <!-- Heroicon name: solid/check -->
@@ -87,7 +88,8 @@
                               [ngClass]="{
                                 'text-indigo-600':
                                   isGameStatusActive(index) !== 1,
-                                'text-gray-500': isGameStatusActive(index) === 1
+                                'text-gray-500':
+                                  isGameStatusActive(index) === 1,
                               }"
                               >{{ index + 1 }}</span
                             >
@@ -346,7 +348,7 @@
               }}</a>
             </p>
             <p class="text-sm text-gray-600 mt-1">
-              Einsehbar bis: {{ existingScan.expires_at | date : "dd.MM.yyyy" }}
+              Einsehbar bis: {{ existingScan.expires_at | date: "dd.MM.yyyy" }}
             </p>
           </div>
           <p class="text-sm text-gray-500 mb-4">

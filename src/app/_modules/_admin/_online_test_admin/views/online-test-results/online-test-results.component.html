@@ -2,71 +2,82 @@
   <div class="flex items-center justify-between mb-6">
     <div>
       <h1 class="font-bold text-[32px]">Ergebnisse</h1>
-      <p *ngIf="test" class="text-gray-500 text-sm">{{ test.name }}</p>
+      @if (test) {
+        <p class="text-gray-500 text-sm">{{ test.name }}</p>
+      }
     </div>
-    <a
-      *ngIf="test"
-      [routerLink]="['/verwaltung', 'onlinepruefungen']"
-      class="text-sm px-4 py-2 border border-fb-gray-600 rounded hover:bg-fb-gray-200"
-      >← Übersicht</a
-    >
+    @if (test) {
+      <a
+        [routerLink]="['/verwaltung', 'onlinepruefungen']"
+        class="text-sm px-4 py-2 border border-fb-gray-600 rounded hover:bg-fb-gray-200"
+        >← Übersicht</a
+      >
+    }
   </div>
 
-  <div *ngIf="loading" class="text-gray-400">Wird geladen…</div>
+  @if (loading) {
+    <div class="text-gray-400">Wird geladen…</div>
+  }
 
-  <div *ngIf="!loading">
-    <p
-      *ngIf="
+  @if (!loading) {
+    <div>
+      @if (
         test?.pass_threshold_points !== null &&
         test?.pass_threshold_points !== undefined
-      "
-      class="text-sm text-gray-500 mb-4"
-    >
-      Bestanden bei max. {{ test!.pass_threshold_points }} Fehlerpunkt(en).
-    </p>
-
-    <div *ngIf="results.length === 0" class="text-gray-400">
-      Noch keine Ergebnisse.
+      ) {
+        <p class="text-sm text-gray-500 mb-4">
+          Bestanden bei max. {{ test!.pass_threshold_points }} Fehlerpunkt(en).
+        </p>
+      }
+      @if (results.length === 0) {
+        <div class="text-gray-400">Noch keine Ergebnisse.</div>
+      }
+      @if (results.length > 0) {
+        <table class="w-full bg-white text-sm">
+          <thead>
+            <tr class="border-b border-fb-gray-600 text-left">
+              <th class="px-4 py-3 font-bold">Name</th>
+              <th class="px-4 py-3 font-bold">Lizenznummer</th>
+              <th class="px-4 py-3 font-bold">Stufe</th>
+              <th class="px-4 py-3 font-bold">Versuche</th>
+              <th class="px-4 py-3 font-bold">Beste Fehlerpunkte</th>
+              <th class="px-4 py-3 font-bold">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of results; track r) {
+              <tr class="border-b border-fb-gray-200">
+                <td class="px-4 py-3">{{ r.nachname }}, {{ r.vorname }}</td>
+                <td class="px-4 py-3">{{ r.lizenznummer }}</td>
+                <td class="px-4 py-3">{{ r.lizenzstufe }}</td>
+                <td class="px-4 py-3">
+                  {{ r.attempt_count }}/{{ test?.max_attempts }}
+                </td>
+                <td class="px-4 py-3">{{ r.best_error_points ?? "–" }}</td>
+                <td class="px-4 py-3">
+                  @if (r.attempt_count > 0) {
+                    <span
+                      class="px-2 py-0.5 rounded text-xs font-bold"
+                      [class.bg-green-100]="r.passed === true"
+                      [class.text-green-800]="r.passed === true"
+                      [class.bg-red-100]="r.passed === false"
+                      [class.text-red-800]="r.passed === false"
+                      [class.bg-gray-100]="r.passed === null"
+                      [class.text-gray-600]="r.passed === null"
+                      >{{ passedLabel(r.passed) }}</span
+                    >
+                  }
+                  @if (r.attempt_count === 0) {
+                    <span class="text-gray-400 text-xs"
+                      >Noch nicht begonnen</span
+                    >
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     </div>
-
-    <table *ngIf="results.length > 0" class="w-full bg-white text-sm">
-      <thead>
-        <tr class="border-b border-fb-gray-600 text-left">
-          <th class="px-4 py-3 font-bold">Name</th>
-          <th class="px-4 py-3 font-bold">Lizenznummer</th>
-          <th class="px-4 py-3 font-bold">Stufe</th>
-          <th class="px-4 py-3 font-bold">Versuche</th>
-          <th class="px-4 py-3 font-bold">Beste Fehlerpunkte</th>
-          <th class="px-4 py-3 font-bold">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let r of results" class="border-b border-fb-gray-200">
-          <td class="px-4 py-3">{{ r.nachname }}, {{ r.vorname }}</td>
-          <td class="px-4 py-3">{{ r.lizenznummer }}</td>
-          <td class="px-4 py-3">{{ r.lizenzstufe }}</td>
-          <td class="px-4 py-3">
-            {{ r.attempt_count }}/{{ test?.max_attempts }}
-          </td>
-          <td class="px-4 py-3">{{ r.best_error_points ?? "–" }}</td>
-          <td class="px-4 py-3">
-            <span
-              *ngIf="r.attempt_count > 0"
-              class="px-2 py-0.5 rounded text-xs font-bold"
-              [class.bg-green-100]="r.passed === true"
-              [class.text-green-800]="r.passed === true"
-              [class.bg-red-100]="r.passed === false"
-              [class.text-red-800]="r.passed === false"
-              [class.bg-gray-100]="r.passed === null"
-              [class.text-gray-600]="r.passed === null"
-              >{{ passedLabel(r.passed) }}</span
-            >
-            <span *ngIf="r.attempt_count === 0" class="text-gray-400 text-xs"
-              >Noch nicht begonnen</span
-            >
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  }
 </div>

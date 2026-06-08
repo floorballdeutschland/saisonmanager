@@ -10,373 +10,399 @@
     </h1>
   </div>
 
-  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+  }
 
-  <form *ngIf="!loading" (ngSubmit)="submit()" class="flex flex-col gap-6">
-    <!-- Gastschiedsrichter-Toggle -->
-    <label class="flex items-center gap-3 cursor-pointer select-none">
-      <input
-        type="checkbox"
-        [(ngModel)]="referee.guest"
-        name="guest"
-        class="w-4 h-4"
-      />
-      <span class="text-sm font-bold">Gastschiedsrichter</span>
-      <span class="text-xs text-fb-gray-500"
-        >(aus dem Ausland, nicht im FD-System)</span
-      >
-    </label>
-
-    <!-- Stammdaten -->
-    <div class="flex flex-col gap-4">
-      <div class="grid grid-cols-2 gap-4">
-        <div class="flex flex-col gap-1" *ngIf="!referee.guest">
-          <label class="text-sm font-bold">Lizenznummer *</label>
+  @if (!loading) {
+    <form (ngSubmit)="submit()" class="flex flex-col gap-6">
+      <!-- Gastschiedsrichter-Toggle -->
+      <label class="flex items-center gap-3 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          [(ngModel)]="referee.guest"
+          name="guest"
+          class="w-4 h-4"
+        />
+        <span class="text-sm font-bold">Gastschiedsrichter</span>
+        <span class="text-xs text-fb-gray-500"
+          >(aus dem Ausland, nicht im FD-System)</span
+        >
+      </label>
+      <!-- Stammdaten -->
+      <div class="flex flex-col gap-4">
+        <div class="grid grid-cols-2 gap-4">
+          @if (!referee.guest) {
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-bold">Lizenznummer *</label>
+              <input
+                type="number"
+                [(ngModel)]="referee.lizenznummer"
+                name="lizenznummer"
+                [disabled]="editMode"
+                [required]="!referee.guest"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-200 disabled:text-gray-700"
+              />
+            </div>
+          }
+          @if (!referee.guest) {
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-bold">Lizenzstufe</label>
+              <select
+                [(ngModel)]="referee.lizenzstufe"
+                name="lizenzstufe"
+                [disabled]="isRestricted"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white disabled:bg-fb-gray-200 disabled:text-gray-700"
+              >
+                <option value="">– keine –</option>
+                @for (l of licenseLevels; track l) {
+                  <option [value]="l.name">
+                    {{ l.name }}
+                  </option>
+                }
+                @if (
+                  referee.lizenzstufe && !hasLicenseLevel(referee.lizenzstufe)
+                ) {
+                  <option [value]="referee.lizenzstufe">
+                    {{ referee.lizenzstufe }} (veraltet)
+                  </option>
+                }
+              </select>
+              @if (isRestricted) {
+                <p class="text-xs text-fb-gray-500">
+                  Nur durch FD-RSK änderbar.
+                </p>
+              }
+            </div>
+          }
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-bold">Vorname *</label>
+            <input
+              type="text"
+              [(ngModel)]="referee.vorname"
+              name="vorname"
+              required
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-bold">Nachname *</label>
+            <input
+              type="text"
+              [(ngModel)]="referee.nachname"
+              name="nachname"
+              required
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+          </div>
+        </div>
+        <!-- Lizenz (nur für reguläre Schiedsrichter) -->
+        @if (!referee.guest) {
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-bold">Lizenz gültig bis</label>
+            <input
+              type="date"
+              [(ngModel)]="referee.gueltigkeit"
+              name="gueltigkeit"
+              [disabled]="isRestricted"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-200 disabled:text-gray-700"
+            />
+            @if (isRestricted) {
+              <p class="text-xs text-fb-gray-500">Nur durch FD-RSK änderbar.</p>
+            }
+          </div>
+        }
+        <!-- Kontakt & Zuordnung -->
+        <div class="grid grid-cols-2 gap-4">
+          @if (!referee.guest) {
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-bold">Verein</label>
+              <select
+                [(ngModel)]="referee.club_id"
+                name="club_id"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
+              >
+                <option [ngValue]="null">– kein Verein –</option>
+                @for (c of clubs; track c) {
+                  <option [ngValue]="c.id">
+                    {{ c.name }}
+                  </option>
+                }
+              </select>
+            </div>
+          }
+          @if (!referee.guest) {
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-bold">Landesverband</label>
+              <input
+                type="text"
+                [value]="derivedLandesverband || '–'"
+                disabled
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm bg-fb-gray-200 text-gray-700"
+              />
+              <p class="text-xs text-fb-gray-500">
+                Wird automatisch aus dem Verein abgeleitet.
+              </p>
+            </div>
+          }
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-bold">E-Mail</label>
+            <input
+              type="email"
+              [(ngModel)]="referee.email"
+              name="email"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+          </div>
+          @if (!referee.guest) {
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-bold">Geburtsdatum</label>
+              <input
+                type="date"
+                [(ngModel)]="referee.geburtsdatum"
+                name="geburtsdatum"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              />
+            </div>
+          }
+        </div>
+      </div>
+      <!-- Zusatzqualifikationen (nur reguläre Schiedsrichter) -->
+      @if (!referee.guest) {
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold">Zusatzqualifikationen</h2>
+            @if (!isRestricted) {
+              <button
+                type="button"
+                (click)="addQualification()"
+                [disabled]="qualifications.length >= qualificationTypes.length"
+                class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
+              >
+                + Hinzufügen
+              </button>
+            }
+          </div>
+          <!-- Read-only view for restricted users -->
+          @if (isRestricted) {
+            @if (qualifications.length === 0) {
+              <p class="text-xs text-fb-gray-500">
+                Keine Zusatzqualifikationen hinterlegt.
+              </p>
+            }
+            @for (q of qualifications; track q) {
+              <div class="flex items-center gap-3 text-sm py-1">
+                <span class="flex-1 font-medium">{{
+                  q.qualification_type_name
+                }}</span>
+                <span class="text-fb-gray-500">{{ q.valid_until || "–" }}</span>
+              </div>
+            }
+            <p class="text-xs text-fb-gray-500">Nur durch FD-RSK änderbar.</p>
+          }
+          <!-- Editable view for full-access users -->
+          @if (!isRestricted) {
+            @if (qualificationTypes.length === 0) {
+              <p class="text-xs text-fb-gray-500">
+                Keine Qualifikationstypen konfiguriert.
+              </p>
+            }
+            @for (q of qualifications; track q; let i = $index) {
+              <div class="flex items-center gap-3">
+                <select
+                  [(ngModel)]="q.qualification_type_id"
+                  [name]="'qual_type_' + i"
+                  (ngModelChange)="onQualificationTypeChange()"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white flex-1"
+                >
+                  @for (
+                    t of availableTypesList[i];
+                    track trackById($index, t)
+                  ) {
+                    <option [ngValue]="t.id">
+                      {{ t.name }}
+                    </option>
+                  }
+                </select>
+                <input
+                  type="date"
+                  [(ngModel)]="q.valid_until"
+                  [name]="'qual_valid_' + i"
+                  placeholder="Gültig bis"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-40"
+                />
+                <button
+                  type="button"
+                  title="Qualifikation entfernen"
+                  (click)="removeQualification(i)"
+                  class="text-red-400 hover:text-red-600 text-sm font-bold px-2"
+                >
+                  ✕
+                </button>
+              </div>
+            }
+            @if (qualifications.length === 0) {
+              <p class="text-xs text-fb-gray-500">
+                Keine Zusatzqualifikationen hinterlegt.
+              </p>
+            }
+          }
+        </div>
+      }
+      <!-- Heimadresse (nur reguläre Schiedsrichter) -->
+      @if (!referee.guest) {
+        <div class="flex flex-col gap-2">
+          <h2 class="text-sm font-bold">Heimadresse</h2>
+          <p class="text-xs text-fb-gray-500">
+            Wird nur bei Ansetzungen für die Berechnung der Kilometer genutzt.
+          </p>
+          <div class="grid grid-cols-[2fr_1fr] gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-sm">Straße</label>
+              <input
+                type="text"
+                [(ngModel)]="referee.strasse"
+                name="strasse"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-sm">Hausnummer</label>
+              <input
+                type="text"
+                [(ngModel)]="referee.hausnummer"
+                name="hausnummer"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              />
+            </div>
+          </div>
+          <div class="grid grid-cols-[1fr_2fr] gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-sm">PLZ</label>
+              <input
+                type="text"
+                [(ngModel)]="referee.plz"
+                name="plz"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-sm">Ort</label>
+              <input
+                type="text"
+                [(ngModel)]="referee.ort"
+                name="ort"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              />
+            </div>
+          </div>
+        </div>
+      }
+      <!-- Schiedsrichterpartner (nur reguläre Schiedsrichter) -->
+      @if (!referee.guest) {
+        <div class="flex flex-col gap-2">
+          <h2 class="text-sm font-bold">
+            Häufigste/r Schiedsrichterpartner/in
+          </h2>
+          <p class="text-xs text-fb-gray-500">
+            Gib hier die Lizenznummer des primären Partners bzw. der primären
+            Partnerin ein, damit uns Ansetzungen vereinfacht werden.
+          </p>
           <input
             type="number"
-            [(ngModel)]="referee.lizenznummer"
-            name="lizenznummer"
-            [disabled]="editMode"
-            [required]="!referee.guest"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-200 disabled:text-gray-700"
+            [(ngModel)]="referee.partner_lizenznummer"
+            name="partner_lizenznummer"
+            placeholder="Lizenznummer"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
           />
         </div>
-        <div class="flex flex-col gap-1" *ngIf="!referee.guest">
-          <label class="text-sm font-bold">Lizenzstufe</label>
-          <select
-            [(ngModel)]="referee.lizenzstufe"
-            name="lizenzstufe"
-            [disabled]="isRestricted"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white disabled:bg-fb-gray-200 disabled:text-gray-700"
-          >
-            <option value="">– keine –</option>
-            <option *ngFor="let l of licenseLevels" [value]="l.name">
-              {{ l.name }}
-            </option>
-            <option
-              *ngIf="
-                referee.lizenzstufe && !hasLicenseLevel(referee.lizenzstufe)
-              "
-              [value]="referee.lizenzstufe"
-            >
-              {{ referee.lizenzstufe }} (veraltet)
-            </option>
-          </select>
-          <p *ngIf="isRestricted" class="text-xs text-fb-gray-500">
-            Nur durch FD-RSK änderbar.
-          </p>
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-bold">Vorname *</label>
-          <input
-            type="text"
-            [(ngModel)]="referee.vorname"
-            name="vorname"
-            required
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-bold">Nachname *</label>
-          <input
-            type="text"
-            [(ngModel)]="referee.nachname"
-            name="nachname"
-            required
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
-      </div>
-
-      <!-- Lizenz (nur für reguläre Schiedsrichter) -->
-      <div class="flex flex-col gap-1" *ngIf="!referee.guest">
-        <label class="text-sm font-bold">Lizenz gültig bis</label>
-        <input
-          type="date"
-          [(ngModel)]="referee.gueltigkeit"
-          name="gueltigkeit"
-          [disabled]="isRestricted"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-200 disabled:text-gray-700"
-        />
-        <p *ngIf="isRestricted" class="text-xs text-fb-gray-500">
-          Nur durch FD-RSK änderbar.
-        </p>
-      </div>
-
-      <!-- Kontakt & Zuordnung -->
-      <div class="grid grid-cols-2 gap-4">
-        <div class="flex flex-col gap-1" *ngIf="!referee.guest">
-          <label class="text-sm font-bold">Verein</label>
-          <select
-            [(ngModel)]="referee.club_id"
-            name="club_id"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
-          >
-            <option [ngValue]="null">– kein Verein –</option>
-            <option *ngFor="let c of clubs" [ngValue]="c.id">
-              {{ c.name }}
-            </option>
-          </select>
-        </div>
-        <div class="flex flex-col gap-1" *ngIf="!referee.guest">
-          <label class="text-sm font-bold">Landesverband</label>
-          <input
-            type="text"
-            [value]="derivedLandesverband || '–'"
-            disabled
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm bg-fb-gray-200 text-gray-700"
-          />
-          <p class="text-xs text-fb-gray-500">
-            Wird automatisch aus dem Verein abgeleitet.
-          </p>
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-bold">E-Mail</label>
-          <input
-            type="email"
-            [(ngModel)]="referee.email"
-            name="email"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
-        <div class="flex flex-col gap-1" *ngIf="!referee.guest">
-          <label class="text-sm font-bold">Geburtsdatum</label>
-          <input
-            type="date"
-            [(ngModel)]="referee.geburtsdatum"
-            name="geburtsdatum"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Zusatzqualifikationen (nur reguläre Schiedsrichter) -->
-    <div *ngIf="!referee.guest" class="flex flex-col gap-3">
-      <div class="flex items-center justify-between">
-        <h2 class="text-sm font-bold">Zusatzqualifikationen</h2>
+      }
+      <!-- Actions -->
+      <div class="flex items-center gap-3 mt-2">
         <button
-          *ngIf="!isRestricted"
-          type="button"
-          (click)="addQualification()"
-          [disabled]="qualifications.length >= qualificationTypes.length"
-          class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
+          type="submit"
+          [disabled]="saving"
+          class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
         >
-          + Hinzufügen
+          {{ saving ? "Speichern…" : "Speichern" }}
         </button>
-      </div>
-
-      <!-- Read-only view for restricted users -->
-      <ng-container *ngIf="isRestricted">
-        <p *ngIf="qualifications.length === 0" class="text-xs text-fb-gray-500">
-          Keine Zusatzqualifikationen hinterlegt.
-        </p>
-        <div
-          *ngFor="let q of qualifications"
-          class="flex items-center gap-3 text-sm py-1"
+        <a
+          [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
+          class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
         >
-          <span class="flex-1 font-medium">{{
-            q.qualification_type_name
-          }}</span>
-          <span class="text-fb-gray-500">{{ q.valid_until || "–" }}</span>
-        </div>
-        <p class="text-xs text-fb-gray-500">Nur durch FD-RSK änderbar.</p>
-      </ng-container>
-
-      <!-- Editable view for full-access users -->
-      <ng-container *ngIf="!isRestricted">
-        <p
-          *ngIf="qualificationTypes.length === 0"
-          class="text-xs text-fb-gray-500"
-        >
-          Keine Qualifikationstypen konfiguriert.
-        </p>
-
-        <div
-          *ngFor="let q of qualifications; let i = index"
-          class="flex items-center gap-3"
-        >
-          <select
-            [(ngModel)]="q.qualification_type_id"
-            [name]="'qual_type_' + i"
-            (ngModelChange)="onQualificationTypeChange()"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white flex-1"
-          >
-            <option
-              *ngFor="let t of availableTypesList[i]; trackBy: trackById"
-              [ngValue]="t.id"
-            >
-              {{ t.name }}
-            </option>
-          </select>
-          <input
-            type="date"
-            [(ngModel)]="q.valid_until"
-            [name]="'qual_valid_' + i"
-            placeholder="Gültig bis"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-40"
-          />
+          Abbrechen
+        </a>
+        @if (editMode && canDelete) {
           <button
             type="button"
-            title="Qualifikation entfernen"
-            (click)="removeQualification(i)"
-            class="text-red-400 hover:text-red-600 text-sm font-bold px-2"
+            (click)="delete()"
+            class="ml-auto px-5 py-2 text-sm font-bold text-red-500 border border-red-300 rounded-[5px] hover:border-red-500"
           >
-            ✕
+            Löschen
           </button>
-        </div>
-
-        <p *ngIf="qualifications.length === 0" class="text-xs text-fb-gray-500">
-          Keine Zusatzqualifikationen hinterlegt.
-        </p>
-      </ng-container>
-    </div>
-
-    <!-- Heimadresse (nur reguläre Schiedsrichter) -->
-    <div *ngIf="!referee.guest" class="flex flex-col gap-2">
-      <h2 class="text-sm font-bold">Heimadresse</h2>
-      <p class="text-xs text-fb-gray-500">
-        Wird nur bei Ansetzungen für die Berechnung der Kilometer genutzt.
-      </p>
-      <div class="grid grid-cols-[2fr_1fr] gap-4">
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Straße</label>
-          <input
-            type="text"
-            [(ngModel)]="referee.strasse"
-            name="strasse"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Hausnummer</label>
-          <input
-            type="text"
-            [(ngModel)]="referee.hausnummer"
-            name="hausnummer"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
+        }
+        @if (editMode && canMerge && referee.lizenznummer_display) {
+          <a
+            [routerLink]="[
+              '/',
+              'verwaltung',
+              'schiedsrichter',
+              referee.lizenznummer_display,
+              'duplikat',
+            ]"
+            class="px-5 py-2 text-sm font-bold text-orange-600 border border-orange-300 rounded-[5px] hover:border-orange-500"
+          >
+            Duplikat zusammenführen
+          </a>
+        }
+        @if (editMode && canIssueWallet && !referee.guest) {
+          <button
+            type="button"
+            (click)="createWalletPass()"
+            [disabled]="walletLoading"
+            class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
+          >
+            {{
+              walletLoading
+                ? "Erstelle…"
+                : referee.wallet_pass_issued_at
+                  ? "Wallet neu ausstellen"
+                  : "Wallet-Ausweis"
+            }}
+          </button>
+        }
+        @if (editMode && canCreateUserAccount && !referee.user_id) {
+          @if (referee.email) {
+            <button
+              type="button"
+              (click)="createUserAccount()"
+              [disabled]="userAccountLoading"
+              class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
+            >
+              {{ userAccountLoading ? "Erstelle…" : "Benutzerkonto anlegen" }}
+            </button>
+          }
+          @if (!referee.email) {
+            <span
+              class="px-3 py-2 text-xs text-fb-gray-400 border border-fb-gray-300 rounded-[5px] cursor-not-allowed"
+              title="E-Mail-Adresse erforderlich um ein Benutzerkonto anzulegen"
+            >
+              Benutzerkonto anlegen (keine E-Mail)
+            </span>
+          }
+        }
+        @if (editMode && canDeleteUserAccount && referee.user_id) {
+          <button
+            type="button"
+            (click)="deleteUserAccount()"
+            [disabled]="userDeleteLoading"
+            title="Verknüpftes Benutzerkonto löschen"
+            class="px-5 py-2 text-sm font-bold text-red-500 border border-red-300 rounded-[5px] hover:border-red-500 disabled:opacity-40"
+          >
+            {{ userDeleteLoading ? "Lösche…" : "Benutzerkonto löschen" }}
+          </button>
+        }
       </div>
-      <div class="grid grid-cols-[1fr_2fr] gap-4">
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">PLZ</label>
-          <input
-            type="text"
-            [(ngModel)]="referee.plz"
-            name="plz"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Ort</label>
-          <input
-            type="text"
-            [(ngModel)]="referee.ort"
-            name="ort"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Schiedsrichterpartner (nur reguläre Schiedsrichter) -->
-    <div *ngIf="!referee.guest" class="flex flex-col gap-2">
-      <h2 class="text-sm font-bold">Häufigste/r Schiedsrichterpartner/in</h2>
-      <p class="text-xs text-fb-gray-500">
-        Gib hier die Lizenznummer des primären Partners bzw. der primären
-        Partnerin ein, damit uns Ansetzungen vereinfacht werden.
-      </p>
-      <input
-        type="number"
-        [(ngModel)]="referee.partner_lizenznummer"
-        name="partner_lizenznummer"
-        placeholder="Lizenznummer"
-        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
-      />
-    </div>
-
-    <!-- Actions -->
-    <div class="flex items-center gap-3 mt-2">
-      <button
-        type="submit"
-        [disabled]="saving"
-        class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
-      >
-        {{ saving ? "Speichern…" : "Speichern" }}
-      </button>
-      <a
-        [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
-        class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
-      >
-        Abbrechen
-      </a>
-      <button
-        *ngIf="editMode && canDelete"
-        type="button"
-        (click)="delete()"
-        class="ml-auto px-5 py-2 text-sm font-bold text-red-500 border border-red-300 rounded-[5px] hover:border-red-500"
-      >
-        Löschen
-      </button>
-      <a
-        *ngIf="editMode && canMerge && referee.lizenznummer_display"
-        [routerLink]="[
-          '/',
-          'verwaltung',
-          'schiedsrichter',
-          referee.lizenznummer_display,
-          'duplikat'
-        ]"
-        class="px-5 py-2 text-sm font-bold text-orange-600 border border-orange-300 rounded-[5px] hover:border-orange-500"
-      >
-        Duplikat zusammenführen
-      </a>
-      <button
-        *ngIf="editMode && canIssueWallet && !referee.guest"
-        type="button"
-        (click)="createWalletPass()"
-        [disabled]="walletLoading"
-        class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
-      >
-        {{
-          walletLoading
-            ? "Erstelle…"
-            : referee.wallet_pass_issued_at
-            ? "Wallet neu ausstellen"
-            : "Wallet-Ausweis"
-        }}
-      </button>
-      <ng-container
-        *ngIf="editMode && canCreateUserAccount && !referee.user_id"
-      >
-        <button
-          *ngIf="referee.email"
-          type="button"
-          (click)="createUserAccount()"
-          [disabled]="userAccountLoading"
-          class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
-        >
-          {{ userAccountLoading ? "Erstelle…" : "Benutzerkonto anlegen" }}
-        </button>
-        <span
-          *ngIf="!referee.email"
-          class="px-3 py-2 text-xs text-fb-gray-400 border border-fb-gray-300 rounded-[5px] cursor-not-allowed"
-          title="E-Mail-Adresse erforderlich um ein Benutzerkonto anzulegen"
-        >
-          Benutzerkonto anlegen (keine E-Mail)
-        </span>
-      </ng-container>
-      <button
-        *ngIf="editMode && canDeleteUserAccount && referee.user_id"
-        type="button"
-        (click)="deleteUserAccount()"
-        [disabled]="userDeleteLoading"
-        title="Verknüpftes Benutzerkonto löschen"
-        class="px-5 py-2 text-sm font-bold text-red-500 border border-red-300 rounded-[5px] hover:border-red-500 disabled:opacity-40"
-      >
-        {{ userDeleteLoading ? "Lösche…" : "Benutzerkonto löschen" }}
-      </button>
-    </div>
-  </form>
+    </form>
+  }
 </div>

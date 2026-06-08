@@ -1,59 +1,49 @@
 <div
   class="grid grid-cols-1 grid-rows-[1fr,10px] gap-8 mt-4 lg:mt-8 2xl:grid-cols-[1fr,1fr,1fr,1px,1fr,1fr,1fr]"
 >
-  <ng-container *ngIf="teamRanking.length">
-    <ng-container *ngFor="let group of teamRanking; let i = index">
+  @if (teamRanking.length) {
+    @for (group of teamRanking; track group; let i = $index) {
       <div class="2xl:col-span-3">
         <h3 class="mb-2 font-bold text-lg lg:text-xl">{{ group.name }}</h3>
-
-        <div *ngIf="group.table; else loadingTeamRankings">
-          <ng-container *ngIf="group.table.length; else noTeamRankingsMessage">
-            <fb-team-ranking-table
-              type="medium"
-              [data]="group.table"
-              class="hidden 2xl:block"
-            ></fb-team-ranking-table>
-            <fb-team-ranking-table
-              [data]="group.table"
-              class="2xl:hidden"
-            ></fb-team-ranking-table>
-          </ng-container>
-
-          <ng-template #noTeamRankingsMessage>
-            <div class="text-center text-fb-gray-400 my-12">
-              Noch keine Tabelle vorhanden
-            </div>
-          </ng-template>
-        </div>
-
-        <ng-template #loadingTeamRankings>
+        @if (group.table) {
+          <div>
+            @if (group.table.length) {
+              <fb-team-ranking-table
+                type="medium"
+                [data]="group.table"
+                class="hidden 2xl:block"
+              ></fb-team-ranking-table>
+              <fb-team-ranking-table
+                [data]="group.table"
+                class="2xl:hidden"
+              ></fb-team-ranking-table>
+            } @else {
+              <div class="text-center text-fb-gray-400 my-12">
+                Noch keine Tabelle vorhanden
+              </div>
+            }
+          </div>
+        } @else {
           <fb-skeleton-table type="medium" [amount]="4"></fb-skeleton-table>
-        </ng-template>
-
+        }
         <h3 class="mt-8 mb-2 font-bold text-lg lg:text-xl">Spielplan</h3>
-
-        <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
-          <fb-match-pairing-list
-            *ngIf="matches.length; else noMatchesMessage"
-            [matches]="matches | groupIdentifier: group.group_identifier"
-          ></fb-match-pairing-list>
-
-          <ng-template #noMatchesMessage>
+        @if (matches$ | async; as matches) {
+          @if (matches.length) {
+            <fb-match-pairing-list
+              [matches]="matches | groupIdentifier: group.group_identifier"
+            ></fb-match-pairing-list>
+          } @else {
             <div class="text-center text-fb-gray-400 my-12">
               Noch keine Spiele für diesen Spieltag
             </div>
-          </ng-template>
-        </ng-container>
+          }
+        } @else {
+          <fb-skeleton-match-pairing-list></fb-skeleton-match-pairing-list>
+        }
       </div>
-
-      <div
-        class="flex xl:h-auto xl:block bg-fb-gray-200"
-        *ngIf="i % 2 === 0"
-      ></div>
-    </ng-container>
-  </ng-container>
-
-  <ng-template #loadingMatches>
-    <fb-skeleton-match-pairing-list></fb-skeleton-match-pairing-list>
-  </ng-template>
+      @if (i % 2 === 0) {
+        <div class="flex xl:h-auto xl:block bg-fb-gray-200"></div>
+      }
+    }
+  }
 </div>

@@ -34,65 +34,64 @@
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               Ergebnisse
-              <span
-                *ngIf="loading"
-                class="ml-2 text-gray-400 normal-case font-normal"
-              >
-                wird gesucht...
-              </span>
+              @if (loading) {
+                <span class="ml-2 text-gray-400 normal-case font-normal">
+                  wird gesucht...
+                </span>
+              }
             </div>
 
-            <ng-container *ngIf="!loading && searched && results.length === 0">
+            @if (!loading && searched && results.length === 0) {
               <p class="text-sm text-gray-500">Keine Spieler gefunden.</p>
-            </ng-container>
+            }
 
-            <ul
-              role="list"
-              class="divide-y divide-gray-200"
-              *ngIf="results.length > 0"
-            >
-              <li *ngFor="let player of results">
-                <a
-                  [routerLink]="[
-                    '/',
-                    'verwaltung',
-                    'vereine',
-                    player.club_id ?? 'alle',
-                    'spieler',
-                    player.id,
-                    'bearbeiten'
-                  ]"
-                  class="block hover:bg-gray-50"
-                >
-                  <div class="px-4 py-4 sm:px-6">
-                    <div class="flex items-center justify-between">
-                      <p class="truncate text-sm font-medium">
-                        {{ player.last_name }}, {{ player.first_name }}
-                        <span
-                          *ngIf="player.gender"
-                          class="ml-1 inline-block rounded px-1 text-xs font-normal text-fb-gray-400"
-                          >{{ player.gender | gender }}</span
-                        >
-                      </p>
-                      <div class="ml-2 flex-shrink-0 text-sm text-gray-500">
-                        {{
-                          player.birthdate
-                            ? (player.birthdate | date : "dd.MM.yyyy")
-                            : "-"
-                        }}
+            @if (results.length > 0) {
+              <ul role="list" class="divide-y divide-gray-200">
+                @for (player of results; track player) {
+                  <li>
+                    <a
+                      [routerLink]="[
+                        '/',
+                        'verwaltung',
+                        'vereine',
+                        player.club_id ?? 'alle',
+                        'spieler',
+                        player.id,
+                        'bearbeiten',
+                      ]"
+                      class="block hover:bg-gray-50"
+                    >
+                      <div class="px-4 py-4 sm:px-6">
+                        <div class="flex items-center justify-between">
+                          <p class="truncate text-sm font-medium">
+                            {{ player.last_name }}, {{ player.first_name }}
+                            @if (player.gender) {
+                              <span
+                                class="ml-1 inline-block rounded px-1 text-xs font-normal text-fb-gray-400"
+                                >{{ player.gender | gender }}</span
+                              >
+                            }
+                          </p>
+                          <div class="ml-2 flex-shrink-0 text-sm text-gray-500">
+                            {{
+                              player.birthdate
+                                ? (player.birthdate | date: "dd.MM.yyyy")
+                                : "-"
+                            }}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </a>
-              </li>
-            </ul>
+                    </a>
+                  </li>
+                }
+              </ul>
+            }
 
-            <p
-              *ngIf="!searched && query.length < 2"
-              class="text-sm text-gray-500"
-            >
-              Mindestens 2 Zeichen eingeben, um die Suche zu starten.
-            </p>
+            @if (!searched && query.length < 2) {
+              <p class="text-sm text-gray-500">
+                Mindestens 2 Zeichen eingeben, um die Suche zu starten.
+              </p>
+            }
           </div>
         </div>
       </div>

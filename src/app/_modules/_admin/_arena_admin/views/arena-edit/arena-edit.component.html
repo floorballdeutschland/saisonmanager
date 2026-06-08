@@ -74,52 +74,57 @@
       />
     </div>
 
-    <div
-      *ngIf="duplicateWarning"
-      class="bg-white border border-yellow-700 rounded p-4 mb-4"
-    >
-      <p class="text-sm font-medium mb-2">
-        Möglicherweise existiert bereits ein Spielort an dieser Adresse:
-      </p>
-      <ul class="text-xs text-fb-gray-400 mb-3 space-y-1">
-        <li *ngFor="let d of duplicates">
-          <span class="font-medium text-white">{{ d.name }}</span>
-          – {{ d.city
-          }}<span *ngIf="d.street">, {{ d.street }} {{ d.housenumber }}</span>
-        </li>
-      </ul>
+    @if (duplicateWarning) {
+      <div class="bg-white border border-yellow-700 rounded p-4 mb-4">
+        <p class="text-sm font-medium mb-2">
+          Möglicherweise existiert bereits ein Spielort an dieser Adresse:
+        </p>
+        <ul class="text-xs text-fb-gray-400 mb-3 space-y-1">
+          @for (d of duplicates; track d) {
+            <li>
+              <span class="font-medium text-white">{{ d.name }}</span>
+              – {{ d.city }}
+              @if (d.street) {
+                <span>, {{ d.street }} {{ d.housenumber }}</span>
+              }
+            </li>
+          }
+        </ul>
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="submit(true)"
+            class="text-sm bg-yellow-700 hover:bg-yellow-600 text-white px-3 py-1.5 rounded"
+          >
+            Trotzdem anlegen
+          </button>
+          <button
+            type="button"
+            (click)="duplicateWarning = false"
+            class="text-sm border border-fb-gray-600 hover:border-fb-gray-400 px-3 py-1.5 rounded"
+          >
+            Abbrechen
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (!duplicateWarning) {
       <div class="flex gap-3">
         <button
-          type="button"
-          (click)="submit(true)"
-          class="text-sm bg-yellow-700 hover:bg-yellow-600 text-white px-3 py-1.5 rounded"
+          type="submit"
+          [disabled]="saving || arenaForm.invalid"
+          class="text-sm bg-fb-gray-800 hover:bg-fb-gray-700 disabled:opacity-50 px-4 py-2 rounded"
         >
-          Trotzdem anlegen
+          {{ saving ? "Wird gespeichert…" : "Speichern" }}
         </button>
-        <button
-          type="button"
-          (click)="duplicateWarning = false"
-          class="text-sm border border-fb-gray-600 hover:border-fb-gray-400 px-3 py-1.5 rounded"
+        <a
+          [routerLink]="['/', 'verwaltung', 'spielorte']"
+          class="text-sm border border-fb-gray-600 hover:border-fb-gray-400 px-4 py-2 rounded"
         >
           Abbrechen
-        </button>
+        </a>
       </div>
-    </div>
-
-    <div *ngIf="!duplicateWarning" class="flex gap-3">
-      <button
-        type="submit"
-        [disabled]="saving || arenaForm.invalid"
-        class="text-sm bg-fb-gray-800 hover:bg-fb-gray-700 disabled:opacity-50 px-4 py-2 rounded"
-      >
-        {{ saving ? "Wird gespeichert…" : "Speichern" }}
-      </button>
-      <a
-        [routerLink]="['/', 'verwaltung', 'spielorte']"
-        class="text-sm border border-fb-gray-600 hover:border-fb-gray-400 px-4 py-2 rounded"
-      >
-        Abbrechen
-      </a>
-    </div>
+    }
   </form>
 </div>

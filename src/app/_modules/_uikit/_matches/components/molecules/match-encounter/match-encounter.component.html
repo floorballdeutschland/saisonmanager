@@ -1,131 +1,161 @@
 <ng-template #gamelink>
   <a
     class="relative w-full grid grid-cols-[42px,1fr,80px] gap-2 items-center px-2.5 mt-4 cursor-pointer transition md:grid-cols-[1fr,42px,80px,42px,1fr,1fr] md:grid-rows-[36px,80px] md:gap-y-2 md:gap-5 md:mt-0 md:px-0 md:pb-2 xl:grid-cols-[1fr,1fr,42px,80px,42px,1fr,1fr] xl:grid-rows-1 xl:h-20 xl:pt-2 xl:px-5 hover:bg-fb-gray-200"
-    [routerLink]="['spiel', match.game_id.toString()] | routeMerge : baseRoute"
+    [routerLink]="['spiel', match.game_id.toString()] | routeMerge: baseRoute"
     [ngClass]="{
       'grid-rows-[30px,40px,40px]': !widthMatchTitle,
-      'grid-rows-[50px,40px,40px]': widthMatchTitle
+      'grid-rows-[50px,40px,40px]': widthMatchTitle,
     }"
   >
     <div
       class="col-span-3 md:bg-fb-gray-700 text-fb-gray-400 text-sm md:flex md:col-span-6 md:h-full md:items-center md:px-2 xl:col-span-1 xl:bg-transparent order-1"
     >
-      <div
-        *ngIf="widthMatchTitle"
-        class="md:hidden pt-4 text-sm text-fb-gray-400 font-bold"
-      >
-        Viertelfinale {{ currentIndex }}
-      </div>
+      @if (widthMatchTitle) {
+        <div class="md:hidden pt-4 text-sm text-fb-gray-400 font-bold">
+          Viertelfinale {{ currentIndex }}
+        </div>
+      }
 
       <div class="flex flex-row xl:flex-col gap-[10px]">
         <p class="xl:flex-1">
-          <ng-container
-            *ngIf="match.notice_type | gameNoticeVisibility : 'date'"
-            >{{ match.date | date }}</ng-container
-          >
-          <ng-container
-            *ngIf="match.notice_type | gameNoticeVisibility : 'time'"
-            >{{ match.time && " - " + match.time + " Uhr" }}</ng-container
-          >
+          @if (match.notice_type | gameNoticeVisibility: "date") {
+            {{ match.date | date }}
+          }
+          @if (match.notice_type | gameNoticeVisibility: "time") {
+            {{ match.time && " - " + match.time + " Uhr" }}
+          }
         </p>
         <span class="hidden md:inline lg:hidden">-</span>
-        <p *ngIf="!match.started" class="hidden md:block">
-          {{ match.arena_short }}
-        </p>
+        @if (!match.started) {
+          <p class="hidden md:block">
+            {{ match.arena_short }}
+          </p>
+        }
       </div>
     </div>
     <div
       class="md:text-right text-sm order-3 md:order-2"
       [ngClass]="{
         'font-bold': match.guest_team_name,
-        'text-fb-gray-400 italic': !match.guest_team_name
+        'text-fb-gray-400 italic': !match.guest_team_name,
       }"
     >
       {{ match.home_team_name || "Noch nicht bekannt" }}
     </div>
     <div class="order-1 md:order-2">
-      <img
-        *ngIf="match.home_team_small_logo; else fallback"
-        [src]="match.home_team_small_logo"
-        class="h-8 md:h-full w-full object-contain"
-      />
+      @if (match.home_team_small_logo) {
+        <img
+          [src]="match.home_team_small_logo"
+          class="h-8 md:h-full w-full object-contain"
+        />
+      } @else {
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          data-prefix="fas"
+          data-icon="shield-alt"
+          class="text-fb-gray-400 p-0.5"
+          role="img"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 512 512"
+        >
+          <path
+            fill="currentColor"
+            d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
+          ></path>
+        </svg>
+      }
     </div>
 
     <div
       class="text-center font-bold tracking-widest order-4 row-span-2 md:row-span-1"
     >
-      <div
-        *ngIf="match.notice_type"
-        class="absolute drop-shadow-lg tracking-[0.5px] w-[150px] md:w-[170px] top-1/2 right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 -translate-y-1/2 px-2 py-1.5 rounded border border-red-500 bg-red-200"
-      >
-        <div class="uppercase text-[13px] leading-none whitespace-nowrap">
-          {{ match.notice_type | gameNoticeHeadline }}
-        </div>
+      @if (match.notice_type) {
         <div
-          class="text-[10px] font-medium leading-none mt-1"
-          *ngIf="match.notice_string"
+          class="absolute drop-shadow-lg tracking-[0.5px] w-[150px] md:w-[170px] top-1/2 right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 -translate-y-1/2 px-2 py-1.5 rounded border border-red-500 bg-red-200"
         >
-          {{ match.notice_string }}
+          <div class="uppercase text-[13px] leading-none whitespace-nowrap">
+            {{ match.notice_type | gameNoticeHeadline }}
+          </div>
+          @if (match.notice_string) {
+            <div class="text-[10px] font-medium leading-none mt-1">
+              {{ match.notice_string }}
+            </div>
+          }
         </div>
-      </div>
+      }
 
-      <ng-container
-        *ngIf="
-          !match.started && (match.notice_type | gameNoticeVisibility : 'time')
-        "
-      >
-        <p
-          class="text-base whitespace-nowrap"
-          *ngIf="match.time && !match.result"
-        >
-          {{ match.time }} Uhr
-        </p>
-        <p class="text-xs leading-3" *ngIf="!match.time && !match.result">
-          Keine Uhrzeit angegeben
-        </p>
-      </ng-container>
-      <ng-container *ngIf="match.started">
-        <ng-container *ngIf="match.result | normalizeMatchResult as resultData">
-          <p
-            *ngIf="resultData.result"
-            class="text-2xl"
-            [ngClass]="{
-              'text-pink-500 animate-pulse': match.started && !match.ended
-            }"
-          >
-            {{ resultData.result }}
-          </p>
-          <p
-            *ngIf="resultData.extraTime"
-            class="text-sm"
-            [ngClass]="{
-              'text-pink-500 animate-pulse': match.started && !match.ended
-            }"
-          >
-            {{ resultData.extraTime }}
-          </p>
-        </ng-container>
-      </ng-container>
+      @if (
+        !match.started && (match.notice_type | gameNoticeVisibility: "time")
+      ) {
+        @if (match.time && !match.result) {
+          <p class="text-base whitespace-nowrap">{{ match.time }} Uhr</p>
+        }
+        @if (!match.time && !match.result) {
+          <p class="text-xs leading-3">Keine Uhrzeit angegeben</p>
+        }
+      }
+      @if (match.started) {
+        @if (match.result | normalizeMatchResult; as resultData) {
+          @if (resultData.result) {
+            <p
+              class="text-2xl"
+              [ngClass]="{
+                'text-pink-500 animate-pulse': match.started && !match.ended,
+              }"
+            >
+              {{ resultData.result }}
+            </p>
+          }
+          @if (resultData.extraTime) {
+            <p
+              class="text-sm"
+              [ngClass]="{
+                'text-pink-500 animate-pulse': match.started && !match.ended,
+              }"
+            >
+              {{ resultData.extraTime }}
+            </p>
+          }
+        }
+      }
 
-      <ng-container *ngIf="match.started && !match.ended">
+      @if (match.started && !match.ended) {
         <p class="text-[10px] text-pink-500 tracking-[0.5px]">
           {{ match.current_period_title?.title }}
         </p>
-      </ng-container>
+      }
     </div>
 
     <div class="order-5">
-      <img
-        *ngIf="match.guest_team_small_logo; else fallback"
-        [src]="match.guest_team_small_logo"
-        class="h-8 md:h-full w-full object-contain"
-      />
+      @if (match.guest_team_small_logo) {
+        <img
+          [src]="match.guest_team_small_logo"
+          class="h-8 md:h-full w-full object-contain"
+        />
+      } @else {
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          data-prefix="fas"
+          data-icon="shield-alt"
+          class="text-fb-gray-400 p-0.5"
+          role="img"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 512 512"
+        >
+          <path
+            fill="currentColor"
+            d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
+          ></path>
+        </svg>
+      }
     </div>
     <div
       class="text-sm order-6"
       [ngClass]="{
         'font-bold': match.guest_team_name,
-        'text-fb-gray-400 italic': !match.guest_team_name
+        'text-fb-gray-400 italic': !match.guest_team_name,
       }"
     >
       {{ match.guest_team_name || "Noch nicht bekannt" }}
@@ -133,64 +163,42 @@
     <div
       class="text-center md:text-right text-fb-gray-400 text-sm col-span-3 md:col-span-1 order-7 pb-2 md:pb-0 flex flex-row md:flex-col md:pr-4 xl:pr-0"
     >
-      <div
-        *ngIf="withMatchDay"
-        class="hidden md:block text-right text-sm text-fb-gray-400 font-bold"
-      >
-        Spieltag {{ match.game_day }}
-      </div>
-      <div
-        *ngIf="widthMatchTitle"
-        class="hidden md:block text-right text-sm text-fb-gray-400 font-bold"
-      >
-        Viertelfinale {{ currentIndex }}
-      </div>
-      <div
-        *ngIf="match.game_number"
-        class="hidden md:block text-right text-xs text-fb-gray-400"
-      >
-        Spiel #{{ match.game_number }}
-      </div>
+      @if (withMatchDay) {
+        <div
+          class="hidden md:block text-right text-sm text-fb-gray-400 font-bold"
+        >
+          Spieltag {{ match.game_day }}
+        </div>
+      }
+      @if (widthMatchTitle) {
+        <div
+          class="hidden md:block text-right text-sm text-fb-gray-400 font-bold"
+        >
+          Viertelfinale {{ currentIndex }}
+        </div>
+      }
+      @if (match.game_number) {
+        <div class="hidden md:block text-right text-xs text-fb-gray-400">
+          Spiel #{{ match.game_number }}
+        </div>
+      }
       <div>
         Schiedsrichter:
-        {{ match.referees | normalizeReferee : match.nominated_referee_string }}
+        {{ match.referees | normalizeReferee: match.nominated_referee_string }}
       </div>
     </div>
   </a>
 </ng-template>
 
-<ng-template #fallback>
-  <svg
-    aria-hidden="true"
-    focusable="false"
-    data-prefix="fas"
-    data-icon="shield-alt"
-    class="text-fb-gray-400 p-0.5"
-    role="img"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 512 512"
-  >
-    <path
-      fill="currentColor"
-      d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
-    ></path>
-  </svg>
-</ng-template>
-
-<ng-container
-  *ngIf="
-    match.home_team_filling_parameter === null &&
-    match.guest_team_filling_rule === null
-  "
->
+@if (
+  match.home_team_filling_parameter === null &&
+  match.guest_team_filling_rule === null
+) {
   <ng-container *ngTemplateOutlet="gamelink"></ng-container>
-</ng-container>
+}
 
-<ng-container
-  *ngIf="match.home_team_filling_parameter && match.guest_team_filling_rule"
->
+@if (match.home_team_filling_parameter && match.guest_team_filling_rule) {
   <ng-container *ngTemplateOutlet="gamelink"></ng-container>
-
   <div
     class="grid grid-cols-[25px,1fr,30px,1fr,25px] gap-2 md:grid-cols-[1fr,1fr,42px,80px,42px,1fr,1fr] md:gap-5 items-center bg-fb-gray-800 border-b shadow border-b-fb-gray-400 text-fb-gray-400 text-[11px] sm:text-[14px] leading-tight text-center px-4 py-2"
   >
@@ -209,37 +217,36 @@
       />
     </svg>
     <div class="md:text-right md:col-span-2">
-      <a
-        [routerLink]="
-          ['spiel', match.home_team_filling_parameter.toString()]
-            | routeMerge : baseRoute
-        "
-        *ngIf="match.home_team_filling_rule?.startsWith('game')"
-      >
-        {{ match.home_team_filling_title }}
-      </a>
-      <span *ngIf="!match.guest_team_filling_rule?.startsWith('game')">{{
-        match.home_team_filling_title
-      }}</span>
+      @if (match.home_team_filling_rule?.startsWith("game")) {
+        <a
+          [routerLink]="
+            ['spiel', match.home_team_filling_parameter.toString()]
+              | routeMerge: baseRoute
+          "
+        >
+          {{ match.home_team_filling_title }}
+        </a>
+      }
+      @if (!match.guest_team_filling_rule?.startsWith("game")) {
+        <span>{{ match.home_team_filling_title }}</span>
+      }
     </div>
-
     <div>vs.</div>
-
     <div class="md:text-left md:col-span-2">
-      <a
-        [routerLink]="
-          ['spiel', (match.guest_team_filling_parameter || 0).toString()]
-            | routeMerge : baseRoute
-        "
-        *ngIf="match.guest_team_filling_rule?.startsWith('game')"
-      >
-        {{ match.guest_team_filling_title }}
-      </a>
-      <span *ngIf="!match.guest_team_filling_rule?.startsWith('game')">{{
-        match.guest_team_filling_title
-      }}</span>
+      @if (match.guest_team_filling_rule?.startsWith("game")) {
+        <a
+          [routerLink]="
+            ['spiel', (match.guest_team_filling_parameter || 0).toString()]
+              | routeMerge: baseRoute
+          "
+        >
+          {{ match.guest_team_filling_title }}
+        </a>
+      }
+      @if (!match.guest_team_filling_rule?.startsWith("game")) {
+        <span>{{ match.guest_team_filling_title }}</span>
+      }
     </div>
-
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
@@ -255,4 +262,4 @@
       />
     </svg>
   </div>
-</ng-container>
+}

@@ -1,362 +1,394 @@
-<ng-container *ngIf="isLoggedIn$ | async">
+@if (isLoggedIn$ | async) {
   <!-- Spielbetrieb -->
-  <ng-container
-    *ngIf="
-      showItem('menu_item_league_admin') ||
-      showItem('menu_item_player_admin') ||
-      showItem('menu_item_player_vm') ||
-      showItem('menu_item_arena_admin') ||
-      showItem('menu_item_licence_list') ||
-      showItem('menu_item_licence_club_admin') ||
-      showItem('menu_item_licence_admin') ||
-      showItem('menu_item_team_game_days')
-    "
-  >
+  @if (
+    showItem("menu_item_league_admin") ||
+    showItem("menu_item_player_admin") ||
+    showItem("menu_item_player_vm") ||
+    showItem("menu_item_arena_admin") ||
+    showItem("menu_item_licence_list") ||
+    showItem("menu_item_licence_club_admin") ||
+    showItem("menu_item_licence_admin") ||
+    showItem("menu_item_team_game_days")
+  ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">Spielbetrieb</h2>
     <nav>
       <ul>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_league_admin')">
-          <a
-            [routerLink]="['/', 'verwaltung', 'ligen']"
-            (click)="closeMenu()"
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            >Ligaverwaltung</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_licence_list')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'lizenzlisten']"
-            (click)="closeMenu()"
-            >Lizenzlisten</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_licence_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'verband']"
-            (click)="closeMenu()"
-            >Lizenzverwaltung</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_licence_club_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'verein']"
-            (click)="closeMenu()"
-            >Lizenzverwaltung</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_player_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'spieler', 'suche']"
-            (click)="closeMenu()"
-            >Spielersuche</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_player_vm')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'spieler-verein']"
-            (click)="closeMenu()"
-            >Meine Spieler*innen</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_team_game_days')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verein', 'spieltage']"
-            (click)="closeMenu()"
-            >Meine Spieltage</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_arena_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'spielorte']"
-            (click)="closeMenu()"
-            >Spielorte</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_league_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'vereine']"
-            (click)="closeMenu()"
-            >Vereinsverwaltung</a
-          >
-        </li>
+        @if (showItem("menu_item_league_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              [routerLink]="['/', 'verwaltung', 'ligen']"
+              (click)="closeMenu()"
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              >Ligaverwaltung</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_licence_list")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'lizenzlisten']"
+              (click)="closeMenu()"
+              >Lizenzlisten</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_licence_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'verband']"
+              (click)="closeMenu()"
+              >Lizenzverwaltung</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_licence_club_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'verein']"
+              (click)="closeMenu()"
+              >Lizenzverwaltung</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_player_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'spieler', 'suche']"
+              (click)="closeMenu()"
+              >Spielersuche</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_player_vm")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'spieler-verein']"
+              (click)="closeMenu()"
+              >Meine Spieler*innen</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_team_game_days")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verein', 'spieltage']"
+              (click)="closeMenu()"
+              >Meine Spieltage</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_arena_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'spielorte']"
+              (click)="closeMenu()"
+              >Spielorte</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_league_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'vereine']"
+              (click)="closeMenu()"
+              >Vereinsverwaltung</a
+            >
+          </li>
+        }
       </ul>
     </nav>
-  </ng-container>
-
+  }
   <!-- Schiedsrichterwesen -->
-  <ng-container
-    *ngIf="
-      showItem('menu_item_referee_admin') ||
-      showItem('menu_item_referee_assignments') ||
-      showItem('menu_item_referee_course_import') ||
-      showItem('menu_item_referee_course_review') ||
-      showItem('menu_item_online_test_admin') ||
-      showItem('menu_item_referee_profile') ||
-      showItem('menu_item_referee_vm')
-    "
-  >
+  @if (
+    showItem("menu_item_referee_admin") ||
+    showItem("menu_item_referee_assignments") ||
+    showItem("menu_item_referee_course_import") ||
+    showItem("menu_item_referee_course_review") ||
+    showItem("menu_item_online_test_admin") ||
+    showItem("menu_item_referee_profile") ||
+    showItem("menu_item_referee_vm")
+  ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
       Schiedsrichterwesen
     </h2>
     <nav>
       <ul>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_assignments')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'schiedsrichter-ansetzungen']"
-            (click)="closeMenu()"
-            >Ansetzungen</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
-            (click)="closeMenu()"
-            >Lizenzverwaltung</a
-          >
-        </li>
-        <li
-          class="mt-4 mb-4"
-          *ngIf="showItem('menu_item_referee_course_import')"
-        >
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'schiri-kurse']"
-            (click)="closeMenu()"
-            >Kursergebnisse</a
-          >
-        </li>
-        <li
-          class="mt-4 mb-4"
-          *ngIf="showItem('menu_item_referee_course_review')"
-        >
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'schiri-kurse-freigabe']"
-            (click)="closeMenu()"
-            >Kursergebnisse-Freigabe</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_vm')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'schiedsrichter-verein']"
-            (click)="closeMenu()"
-            >Schiedsrichter*innen</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_profile')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'schiedsrichter', 'profil']"
-            (click)="closeMenu()"
-            >Mein Profil</a
-          >
-        </li>
+        @if (showItem("menu_item_referee_assignments")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiedsrichter-ansetzungen']"
+              (click)="closeMenu()"
+              >Ansetzungen</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
+              (click)="closeMenu()"
+              >Lizenzverwaltung</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_course_import")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiri-kurse']"
+              (click)="closeMenu()"
+              >Kursergebnisse</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_course_review")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiri-kurse-freigabe']"
+              (click)="closeMenu()"
+              >Kursergebnisse-Freigabe</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_vm")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiedsrichter-verein']"
+              (click)="closeMenu()"
+              >Schiedsrichter*innen</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_profile")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'schiedsrichter', 'profil']"
+              (click)="closeMenu()"
+              >Mein Profil</a
+            >
+          </li>
+        }
         <!-- online tests hidden until feature is ready
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_profile')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'schiedsrichter', 'onlinepruefungen']"
-            (click)="closeMenu()"
-            >Meine Prüfungen</a
-          >
-        </li>
-        -->
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_profile')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'schiedsrichter', 'spieltage']"
-            (click)="closeMenu()"
-            >Meine Spieltage</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_profile')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'schiedsrichter', 'sperrtermine']"
-            (click)="closeMenu()"
-            >Meine Sperrtermine</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_profile')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'schiedsrichter', 'historie']"
-            (click)="closeMenu()"
-            >Meine Historie</a
-          >
-        </li>
+                                      <li class="mt-4 mb-4" *ngIf="showItem('menu_item_referee_profile')">
+                                        <a
+                                          class="font-bold text-fb-gray-500 hover:text-black text-base"
+                                          [routerLink]="['/', 'schiedsrichter', 'onlinepruefungen']"
+                                          (click)="closeMenu()"
+                                          >Meine Prüfungen</a
+                                          >
+                                        </li>
+                                        -->
+        @if (showItem("menu_item_referee_profile")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'schiedsrichter', 'spieltage']"
+              (click)="closeMenu()"
+              >Meine Spieltage</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_profile")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'schiedsrichter', 'sperrtermine']"
+              (click)="closeMenu()"
+              >Meine Sperrtermine</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_profile")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'schiedsrichter', 'historie']"
+              (click)="closeMenu()"
+              >Meine Historie</a
+            >
+          </li>
+        }
         <!-- online tests hidden until feature is ready
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_online_test_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'onlinepruefungen']"
-            (click)="closeMenu()"
-            >Prüfungen</a
-          >
-        </li>
-        -->
+                                              <li class="mt-4 mb-4" *ngIf="showItem('menu_item_online_test_admin')">
+                                                <a
+                                                  class="font-bold text-fb-gray-500 hover:text-black text-base"
+                                                  [routerLink]="['/', 'verwaltung', 'onlinepruefungen']"
+                                                  (click)="closeMenu()"
+                                                  >Prüfungen</a
+                                                  >
+                                                </li>
+                                                -->
       </ul>
     </nav>
-  </ng-container>
-
+  }
   <!-- Transfers und Freigaben -->
-  <ng-container
-    *ngIf="
-      showItem('menu_item_transfer_requests') ||
-      showItem('menu_item_player_change_requests')
-    "
-  >
+  @if (
+    showItem("menu_item_transfer_requests") ||
+    showItem("menu_item_player_change_requests")
+  ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
       Transfers und Freigaben
     </h2>
     <nav>
       <ul>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_transfer_requests')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'transfer-anfragen']"
-            (click)="closeMenu()"
-            >Transferanträge</a
-          >
-        </li>
-        <li
-          class="mt-4 mb-4"
-          *ngIf="showItem('menu_item_player_change_requests')"
-        >
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'spieler-korrekturen']"
-            (click)="closeMenu()"
-            >Spielerdaten-Korrekturen</a
-          >
-        </li>
+        @if (showItem("menu_item_transfer_requests")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'transfer-anfragen']"
+              (click)="closeMenu()"
+              >Transferanträge</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_player_change_requests")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'spieler-korrekturen']"
+              (click)="closeMenu()"
+              >Spielerdaten-Korrekturen</a
+            >
+          </li>
+        }
       </ul>
     </nav>
-  </ng-container>
-
+  }
   <!-- Verwaltung -->
-  <ng-container
-    *ngIf="
-      showItem('menu_item_state_association_admin') ||
-      showItem('menu_item_state_association_sbk') ||
-      showItem('menu_item_api_key_admin') ||
-      showItem('menu_item_user_admin') ||
-      showItem('menu_item_season_admin') ||
-      showItem('menu_item_analytics_admin') ||
-      showItem('menu_item_email_log_admin') ||
-      showItem('menu_item_user_vm')
-    "
-  >
+  @if (
+    showItem("menu_item_state_association_admin") ||
+    showItem("menu_item_state_association_sbk") ||
+    showItem("menu_item_api_key_admin") ||
+    showItem("menu_item_user_admin") ||
+    showItem("menu_item_season_admin") ||
+    showItem("menu_item_analytics_admin") ||
+    showItem("menu_item_email_log_admin") ||
+    showItem("menu_item_user_vm")
+  ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">Verwaltung</h2>
     <nav>
       <ul>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_api_key_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'api-keys']"
-            (click)="closeMenu()"
-            >API-Keys</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_user_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'benutzer']"
-            (click)="closeMenu()"
-            >Benutzerverwaltung</a
-          >
-        </li>
-        <li
-          class="mt-4 mb-4"
-          *ngIf="
-            showItem('menu_item_state_association_admin') ||
-            showItem('menu_item_state_association_sbk')
-          "
-        >
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'landesverbaende']"
-            (click)="closeMenu()"
-            >{{
-              showItem("menu_item_state_association_admin")
-                ? "Landesverbände"
-                : "Verbandseinstellungen"
-            }}</a
-          >
-        </li>
-        <li
-          class="mt-4 mb-4"
-          *ngIf="
-            showItem('menu_item_user_vm') && !showItem('menu_item_user_admin')
-          "
-        >
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'benutzer']"
-            (click)="closeMenu()"
-            >Meine Benutzer</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_season_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'saison']"
-            (click)="closeMenu()"
-            >Saison-Verwaltung</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_analytics_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'analyse']"
-            (click)="closeMenu()"
-            >Analyse</a
-          >
-        </li>
-        <li class="mt-4 mb-4" *ngIf="showItem('menu_item_email_log_admin')">
-          <a
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [routerLink]="['/', 'verwaltung', 'email-log']"
-            (click)="closeMenu()"
-            >E-Mail-Log</a
-          >
-        </li>
+        @if (showItem("menu_item_api_key_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'api-keys']"
+              (click)="closeMenu()"
+              >API-Keys</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_user_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'benutzer']"
+              (click)="closeMenu()"
+              >Benutzerverwaltung</a
+            >
+          </li>
+        }
+        @if (
+          showItem("menu_item_state_association_admin") ||
+          showItem("menu_item_state_association_sbk")
+        ) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'landesverbaende']"
+              (click)="closeMenu()"
+              >{{
+                showItem("menu_item_state_association_admin")
+                  ? "Landesverbände"
+                  : "Verbandseinstellungen"
+              }}</a
+            >
+          </li>
+        }
+        @if (
+          showItem("menu_item_user_vm") && !showItem("menu_item_user_admin")
+        ) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'benutzer']"
+              (click)="closeMenu()"
+              >Meine Benutzer</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_season_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'saison']"
+              (click)="closeMenu()"
+              >Saison-Verwaltung</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_analytics_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'analyse']"
+              (click)="closeMenu()"
+              >Analyse</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_email_log_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'email-log']"
+              (click)="closeMenu()"
+              >E-Mail-Log</a
+            >
+          </li>
+        }
       </ul>
     </nav>
-  </ng-container>
-</ng-container>
+  }
+}
 
 <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
   Weitere<a href="/login">s</a>
 </h2>
 <nav>
   <ul>
-    <li class="mt-4 mb-4" *ngIf="(isLoggedIn$ | async) === false">
-      <a
-        href="/login"
-        class="font-bold text-fb-gray-500 hover:text-black text-base"
-        >Login</a
-      >
-    </li>
-    <li class="mt-4 mb-4" *ngIf="isLoggedIn$ | async">
-      <a
-        href=""
-        (click)="logout()"
-        class="font-bold text-fb-gray-500 hover:text-black text-base"
-        >Logout ({{ username }})</a
-      >
-    </li>
+    @if ((isLoggedIn$ | async) === false) {
+      <li class="mt-4 mb-4">
+        <a
+          href="/login"
+          class="font-bold text-fb-gray-500 hover:text-black text-base"
+          >Login</a
+        >
+      </li>
+    }
+    @if (isLoggedIn$ | async) {
+      <li class="mt-4 mb-4">
+        <a
+          href=""
+          (click)="logout()"
+          class="font-bold text-fb-gray-500 hover:text-black text-base"
+          >Logout ({{ username }})</a
+        >
+      </li>
+    }
     <li class="mt-4 mb-4">
       <a
         href="https://floorball.de/impressum/"
@@ -368,51 +400,50 @@
   </ul>
 </nav>
 
-<div
-  class="relative group mt-8 inline-block"
-  *ngIf="version$ | async as version"
->
-  <a
-    href="https://github.com/floorballverband-deutschland/saisonmanager-api/releases"
-    target="_blank"
-    rel="noopener"
-    class="text-xs text-fb-gray-100 hover:text-white"
-  >
-    v{{ version }} ↗
-  </a>
-
-  <!-- Changelog tooltip -->
-  <div
-    class="absolute bottom-full left-0 z-50 mb-2 hidden w-80 rounded-md border border-gray-200 bg-white p-4 text-black shadow-xl group-hover:block"
-  >
-    <ng-container *ngIf="currentRelease$ | async as entry">
-      <p class="mb-2 text-sm font-bold">
-        v{{ entry.version }}
-        <span class="ml-1 font-normal text-gray-400">{{ entry.date }}</span>
-      </p>
-      <ng-container *ngFor="let section of entry.sections">
-        <p class="mb-1 mt-2 text-xs font-semibold text-gray-600">
-          {{ section }}
+@if (version$ | async; as version) {
+  <div class="relative group mt-8 inline-block">
+    <a
+      href="https://github.com/floorballverband-deutschland/saisonmanager-api/releases"
+      target="_blank"
+      rel="noopener"
+      class="text-xs text-fb-gray-100 hover:text-white"
+    >
+      v{{ version }} ↗
+    </a>
+    <!-- Changelog tooltip -->
+    <div
+      class="absolute bottom-full left-0 z-50 mb-2 hidden w-80 rounded-md border border-gray-200 bg-white p-4 text-black shadow-xl group-hover:block"
+    >
+      @if (currentRelease$ | async; as entry) {
+        <p class="mb-2 text-sm font-bold">
+          v{{ entry.version }}
+          <span class="ml-1 font-normal text-gray-400">{{ entry.date }}</span>
         </p>
-        <ul class="space-y-1">
-          <li
-            *ngFor="let item of entry.changes[section]"
-            class="border-l-2 border-gray-200 pl-2 text-xs leading-snug text-gray-700"
-          >
-            {{ item }}
-          </li>
-        </ul>
-      </ng-container>
-    </ng-container>
-    <div class="mt-3 border-t border-gray-200 pt-2">
-      <a
-        href="https://github.com/floorballverband-deutschland/saisonmanager-api/releases"
-        target="_blank"
-        rel="noopener"
-        class="text-xs text-blue-600 hover:underline"
-      >
-        Alle Releases auf GitHub ↗
-      </a>
+        @for (section of entry.sections; track section) {
+          <p class="mb-1 mt-2 text-xs font-semibold text-gray-600">
+            {{ section }}
+          </p>
+          <ul class="space-y-1">
+            @for (item of entry.changes[section]; track item) {
+              <li
+                class="border-l-2 border-gray-200 pl-2 text-xs leading-snug text-gray-700"
+              >
+                {{ item }}
+              </li>
+            }
+          </ul>
+        }
+      }
+      <div class="mt-3 border-t border-gray-200 pt-2">
+        <a
+          href="https://github.com/floorballverband-deutschland/saisonmanager-api/releases"
+          target="_blank"
+          rel="noopener"
+          class="text-xs text-blue-600 hover:underline"
+        >
+          Alle Releases auf GitHub ↗
+        </a>
+      </div>
     </div>
   </div>
-</div>
+}

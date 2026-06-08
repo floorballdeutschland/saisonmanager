@@ -6,13 +6,13 @@
   </div>
 
   <div class="hidden group-hover:block transition absolute w-full">
-    <ng-container *ngFor="let matchDay of matchDays">
+    @for (matchDay of matchDays; track matchDay) {
       <button
         class="bg-white w-full border border-t-0 border-fb-gray-600 last:rounded-b-[5px] px-5 py-2.5 hover:bg-fb-gray-200 leading-[17px] font-bold cursor-pointer text-sm"
         (click)="selectMatchDay.emit(matchDay.game_day_number)"
       >
         {{ matchDay.title }}
       </button>
-    </ng-container>
+    }
   </div>
 </div>

@@ -1,73 +1,80 @@
 <div class="p-4 lg:p-8">
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold">Landesverbände</h1>
-    <a
-      *ngIf="canManageLifecycle"
-      [routerLink]="['/', 'verwaltung', 'landesverbaende', 'neu']"
-      class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
-    >
-      + Neu anlegen
-    </a>
+    @if (canManageLifecycle) {
+      <a
+        [routerLink]="['/', 'verwaltung', 'landesverbaende', 'neu']"
+        class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+      >
+        + Neu anlegen
+      </a>
+    }
   </div>
 
-  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8 text-center">
-    Lade Landesverbände…
-  </div>
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      Lade Landesverbände…
+    </div>
+  }
 
-  <div *ngIf="!loading" class="overflow-x-auto">
-    <p class="text-sm text-fb-gray-500 mb-3">
-      {{ stateAssociations.length }} Einträge
-    </p>
-    <table class="w-full text-sm">
-      <thead>
-        <tr class="border-b border-fb-gray-700 text-left">
-          <th class="py-2 pr-4 font-bold">Name</th>
-          <th class="py-2 pr-4 font-bold">Kürzel</th>
-          <th class="py-2"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          *ngFor="let row of sortedRows"
-          class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
-        >
-          <td class="py-2 pr-4 font-medium">
-            <span *ngIf="row.isChild" class="inline-block w-5 text-fb-gray-500"
-              >↳</span
-            >
-            <span [class.font-bold]="!row.isChild">{{ row.sa.name }}</span>
-          </td>
-          <td class="py-2 pr-4 text-fb-gray-500">
-            {{ row.sa.short_name || "–" }}
-          </td>
-          <td class="py-2 text-right flex gap-3 justify-end">
-            <a
-              [routerLink]="[
-                '/',
-                'verwaltung',
-                'landesverbaende',
-                row.sa.id,
-                'bearbeiten'
-              ]"
-              class="text-sm text-fb-gray-500 hover:text-black"
-            >
-              {{ isAdmin || isSbkOnly ? "Bearbeiten" : "Details" }}
-            </a>
-            <button
-              *ngIf="canManageLifecycle"
-              (click)="delete(row.sa)"
-              class="text-sm text-red-400 hover:text-red-600"
-            >
-              Löschen
-            </button>
-          </td>
-        </tr>
-        <tr *ngIf="sortedRows.length === 0">
-          <td colspan="3" class="py-8 text-center text-fb-gray-500">
-            Noch keine Landesverbände angelegt.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  @if (!loading) {
+    <div class="overflow-x-auto">
+      <p class="text-sm text-fb-gray-500 mb-3">
+        {{ stateAssociations.length }} Einträge
+      </p>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-fb-gray-700 text-left">
+            <th class="py-2 pr-4 font-bold">Name</th>
+            <th class="py-2 pr-4 font-bold">Kürzel</th>
+            <th class="py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of sortedRows; track row) {
+            <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
+              <td class="py-2 pr-4 font-medium">
+                @if (row.isChild) {
+                  <span class="inline-block w-5 text-fb-gray-500">↳</span>
+                }
+                <span [class.font-bold]="!row.isChild">{{ row.sa.name }}</span>
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{ row.sa.short_name || "–" }}
+              </td>
+              <td class="py-2 text-right flex gap-3 justify-end">
+                <a
+                  [routerLink]="[
+                    '/',
+                    'verwaltung',
+                    'landesverbaende',
+                    row.sa.id,
+                    'bearbeiten',
+                  ]"
+                  class="text-sm text-fb-gray-500 hover:text-black"
+                >
+                  {{ isAdmin || isSbkOnly ? "Bearbeiten" : "Details" }}
+                </a>
+                @if (canManageLifecycle) {
+                  <button
+                    (click)="delete(row.sa)"
+                    class="text-sm text-red-400 hover:text-red-600"
+                  >
+                    Löschen
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+          @if (sortedRows.length === 0) {
+            <tr>
+              <td colspan="3" class="py-8 text-center text-fb-gray-500">
+                Noch keine Landesverbände angelegt.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

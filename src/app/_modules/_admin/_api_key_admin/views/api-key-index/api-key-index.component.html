@@ -4,23 +4,22 @@
   </div>
 
   <!-- Neu erstellter Key -->
-  <div
-    *ngIf="createdKey"
-    class="mb-6 p-4 bg-green-50 border border-green-300 rounded-[5px]"
-  >
-    <p class="text-sm font-bold text-green-800 mb-1">
-      Key einmalig anzeigen – jetzt kopieren!
-    </p>
-    <code class="block text-sm font-mono break-all text-green-900 mb-3">{{
-      createdKey
-    }}</code>
-    <button
-      (click)="dismissCreatedKey()"
-      class="text-sm text-green-700 underline hover:text-green-900"
-    >
-      Verstanden, schließen
-    </button>
-  </div>
+  @if (createdKey) {
+    <div class="mb-6 p-4 bg-green-50 border border-green-300 rounded-[5px]">
+      <p class="text-sm font-bold text-green-800 mb-1">
+        Key einmalig anzeigen – jetzt kopieren!
+      </p>
+      <code class="block text-sm font-mono break-all text-green-900 mb-3">{{
+        createdKey
+      }}</code>
+      <button
+        (click)="dismissCreatedKey()"
+        class="text-sm text-green-700 underline hover:text-green-900"
+      >
+        Verstanden, schließen
+      </button>
+    </div>
+  }
 
   <!-- Neuen Key anlegen -->
   <div class="mb-8 flex gap-3 items-end">
@@ -42,108 +41,112 @@
     </button>
   </div>
 
-  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8 text-center">
-    Lade API-Keys…
-  </div>
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8 text-center">Lade API-Keys…</div>
+  }
 
-  <div *ngIf="!loading" class="overflow-x-auto">
-    <p class="text-sm text-fb-gray-500 mb-3">{{ apiKeys.length }} Keys</p>
-    <table class="w-full text-sm">
-      <thead>
-        <tr class="border-b border-fb-gray-700 text-left">
-          <th class="py-2 pr-4 font-bold">Name</th>
-          <th class="py-2 pr-4 font-bold">Erstellt</th>
-          <th class="py-2 pr-4 font-bold">Status</th>
-          <th
-            class="py-2 pr-4 font-bold"
-            title="Echtzeit-Zugriff: Livescores und Events werden ungefiltert geliefert"
-          >
-            Echtzeit
-          </th>
-          <th
-            class="py-2 pr-4 font-bold"
-            title="Max. Requests pro Minute (leer = unbegrenzt)"
-          >
-            Limit/Min
-          </th>
-          <th class="py-2"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          *ngFor="let key of apiKeys"
-          class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
-        >
-          <td class="py-2 pr-4 font-medium">{{ key.name }}</td>
-          <td class="py-2 pr-4 text-fb-gray-500">
-            {{ key.created_at | date : "dd.MM.yyyy" }}
-          </td>
-          <td class="py-2 pr-4">
-            <span
-              [class]="
-                key.active
-                  ? 'text-green-600 font-medium'
-                  : 'text-fb-gray-500 line-through'
-              "
+  @if (!loading) {
+    <div class="overflow-x-auto">
+      <p class="text-sm text-fb-gray-500 mb-3">{{ apiKeys.length }} Keys</p>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-fb-gray-700 text-left">
+            <th class="py-2 pr-4 font-bold">Name</th>
+            <th class="py-2 pr-4 font-bold">Erstellt</th>
+            <th class="py-2 pr-4 font-bold">Status</th>
+            <th
+              class="py-2 pr-4 font-bold"
+              title="Echtzeit-Zugriff: Livescores und Events werden ungefiltert geliefert"
             >
-              {{ key.active ? "Aktiv" : "Deaktiviert" }}
-            </span>
-          </td>
-          <td class="py-2 pr-4">
-            <button
-              (click)="toggleRealtime(key)"
-              [disabled]="togglingIds.has(key.id)"
-              [title]="
-                key.realtime
-                  ? 'Echtzeit aktiv – klicken zum Deaktivieren'
-                  : 'Verzögert – klicken für Echtzeit'
-              "
-              class="text-lg disabled:opacity-40"
+              Echtzeit
+            </th>
+            <th
+              class="py-2 pr-4 font-bold"
+              title="Max. Requests pro Minute (leer = unbegrenzt)"
             >
-              {{ key.realtime ? "✓" : "–" }}
-            </button>
-          </td>
-          <td class="py-2 pr-4">
-            <div class="flex items-center gap-1">
-              <input
-                type="number"
-                min="1"
-                [value]="rateLimitInput(key)"
-                (input)="onRateLimitChange(key, $any($event.target).value)"
-                (keydown.enter)="saveRateLimit(key)"
-                (blur)="saveRateLimit(key)"
-                placeholder="∞"
-                class="w-20 border border-fb-gray-700 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
-              />
-            </div>
-          </td>
-          <td class="py-2 text-right flex gap-3 justify-end">
-            <button
-              (click)="toggleActive(key)"
-              [disabled]="togglingIds.has(key.id)"
-              class="text-sm text-fb-gray-500 hover:text-black disabled:opacity-40"
-            >
-              {{ key.active ? "Deaktivieren" : "Aktivieren" }}
-            </button>
-            <button
-              (click)="delete(key)"
-              class="text-sm text-red-400 hover:text-red-600"
-            >
-              Löschen
-            </button>
-          </td>
-        </tr>
-        <tr *ngIf="apiKeys.length === 0">
-          <td colspan="6" class="py-8 text-center text-fb-gray-500">
-            Noch keine API-Keys angelegt.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <p class="text-xs text-fb-gray-500 mt-3">
-      <strong>Echtzeit</strong>: Livescores und Spielereignisse ungefiltert.
-      Ohne Echtzeit: Scores laufender Spiele ausgeblendet.
-      <strong>Limit/Min</strong>: Max. Requests pro Minute (leer = unbegrenzt).
-    </p>
-  </div>
+              Limit/Min
+            </th>
+            <th class="py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (key of apiKeys; track key) {
+            <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
+              <td class="py-2 pr-4 font-medium">{{ key.name }}</td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{ key.created_at | date: "dd.MM.yyyy" }}
+              </td>
+              <td class="py-2 pr-4">
+                <span
+                  [class]="
+                    key.active
+                      ? 'text-green-600 font-medium'
+                      : 'text-fb-gray-500 line-through'
+                  "
+                >
+                  {{ key.active ? "Aktiv" : "Deaktiviert" }}
+                </span>
+              </td>
+              <td class="py-2 pr-4">
+                <button
+                  (click)="toggleRealtime(key)"
+                  [disabled]="togglingIds.has(key.id)"
+                  [title]="
+                    key.realtime
+                      ? 'Echtzeit aktiv – klicken zum Deaktivieren'
+                      : 'Verzögert – klicken für Echtzeit'
+                  "
+                  class="text-lg disabled:opacity-40"
+                >
+                  {{ key.realtime ? "✓" : "–" }}
+                </button>
+              </td>
+              <td class="py-2 pr-4">
+                <div class="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="1"
+                    [value]="rateLimitInput(key)"
+                    (input)="onRateLimitChange(key, $any($event.target).value)"
+                    (keydown.enter)="saveRateLimit(key)"
+                    (blur)="saveRateLimit(key)"
+                    placeholder="∞"
+                    class="w-20 border border-fb-gray-700 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
+                  />
+                </div>
+              </td>
+              <td class="py-2 text-right flex gap-3 justify-end">
+                <button
+                  (click)="toggleActive(key)"
+                  [disabled]="togglingIds.has(key.id)"
+                  class="text-sm text-fb-gray-500 hover:text-black disabled:opacity-40"
+                >
+                  {{ key.active ? "Deaktivieren" : "Aktivieren" }}
+                </button>
+                <button
+                  (click)="delete(key)"
+                  class="text-sm text-red-400 hover:text-red-600"
+                >
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          }
+          @if (apiKeys.length === 0) {
+            <tr>
+              <td colspan="6" class="py-8 text-center text-fb-gray-500">
+                Noch keine API-Keys angelegt.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <p class="text-xs text-fb-gray-500 mt-3">
+        <strong>Echtzeit</strong>: Livescores und Spielereignisse ungefiltert.
+        Ohne Echtzeit: Scores laufender Spiele ausgeblendet.
+        <strong>Limit/Min</strong>: Max. Requests pro Minute (leer =
+        unbegrenzt).
+      </p>
+    </div>
+  }
 </div>

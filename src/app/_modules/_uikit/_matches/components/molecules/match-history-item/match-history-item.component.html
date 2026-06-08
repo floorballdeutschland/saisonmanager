@@ -1,357 +1,348 @@
-<ng-container
-  *ngIf="event | normalizeEvent : match : additionalFields as gameEvent"
->
+@if (event | normalizeEvent: match : additionalFields; as gameEvent) {
   <div
     class="grid grid-cols-[36px,1fr,30px,80px,60px] md:grid-cols-[36px,1fr,30px,80px,30px,20px,60px,20px,30px,80px,30px,1fr,36px] items-center text-sm h-[78px]"
     [ngClass]="!allowCancel ? 'grid-rows-2' : 'grid-rows-3 h-[119px]'"
   >
-    <ng-container *ngIf="gameEvent.event_team === 'home'">
+    @if (gameEvent.event_team === "home") {
       <div>
-        <img
-          *ngIf="match.home_team_small_logo; else fallback"
-          [src]="match.home_team_small_logo"
-          [alt]="match.home_team_name"
-        />
+        @if (match.home_team_small_logo) {
+          <img
+            [src]="match.home_team_small_logo"
+            [alt]="match.home_team_name"
+          />
+        } @else {
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            data-prefix="fas"
+            data-icon="shield-alt"
+            class="text-fb-gray-400 p-0.5"
+            role="img"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+          >
+            <path
+              fill="currentColor"
+              d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
+            ></path>
+          </svg>
+        }
       </div>
-
       <div>
         <div class="ml-3.5">
-          <ng-container
-            *ngIf="
-              gameEvent.event_type === 'goal' &&
-                ['owngoal', 'not_assigned'].includes(gameEvent.goal_type || '');
-              then alternativeHomeName;
-              else homePlayerName
-            "
-          >
-          </ng-container>
-
-          <ng-template #homePlayerName>
-            <span
-              *ngIf="showTrikotNumber && gameEvent.home.scorer"
-              class="text-fb-gray-400 mr-1"
-              >#{{ gameEvent.home.scorer?.trikot_number }}</span
-            >
-            <a
-              *ngIf="gameEvent.home.scorer?.player_id; else homeScorerText"
-              [routerLink]="['/spieler', gameEvent.home.scorer?.player_id]"
-              class="hover:underline"
-              >{{ gameEvent.home.scorer?.player_firstname }}
-              {{ gameEvent.home.scorer?.player_name }}</a
-            >
-            <ng-template #homeScorerText
-              >{{ gameEvent.home.scorer?.player_firstname }}
-              {{ gameEvent.home.scorer?.player_name }}</ng-template
-            >
-          </ng-template>
-          <ng-template #alternativeHomeName>
+          @if (
+            gameEvent.event_type === "goal" &&
+            ["owngoal", "not_assigned"].includes(gameEvent.goal_type || "")
+          ) {
             {{ gameEvent.goal_type_string }}
-          </ng-template>
+          } @else {
+            @if (showTrikotNumber && gameEvent.home.scorer) {
+              <span class="text-fb-gray-400 mr-1"
+                >#{{ gameEvent.home.scorer?.trikot_number }}</span
+              >
+            }
+            @if (gameEvent.home.scorer?.player_id) {
+              <a
+                [routerLink]="['/spieler', gameEvent.home.scorer?.player_id]"
+                class="hover:underline"
+                >{{ gameEvent.home.scorer?.player_firstname }}
+                {{ gameEvent.home.scorer?.player_name }}</a
+              >
+            } @else {
+              {{ gameEvent.home.scorer?.player_firstname }}
+              {{ gameEvent.home.scorer?.player_name }}
+            }
+          }
         </div>
       </div>
-
       <div class="text-center">
-        <ng-container *ngIf="gameEvent.event_type === 'goal'">
+        @if (gameEvent.event_type === "goal") {
           {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
-        </ng-container>
+        }
       </div>
       <div class="font-bold md:text-right px-3">
-        <ng-container [ngSwitch]="gameEvent.event_type">
-          <ng-container *ngSwitchCase="'goal'"> Tor </ng-container>
-          <ng-container *ngSwitchCase="'penalty'">
+        @switch (gameEvent.event_type) {
+          @case ("goal") {
+            Tor
+          }
+          @case ("penalty") {
             {{ "Strafe " + gameEvent.penalty_type_string }}
-          </ng-container>
-          <ng-container *ngSwitchCase="'timeout'">
+          }
+          @case ("timeout") {
             {{ "Auszeit" }}
-          </ng-container>
-        </ng-container>
+          }
+        }
       </div>
-
       <div
         class="hidden md:block rounded-full border border-fb-gray-200 w-[30px] h-[30px] flex items-center justify-center"
       >
-        <ng-container [ngSwitch]="gameEvent.event_type">
-          <ng-container *ngSwitchCase="'goal'">
+        @switch (gameEvent.event_type) {
+          @case ("goal") {
             <img
               src="./assets/images/union.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />
-          </ng-container>
-          <ng-container *ngSwitchCase="'penalty'">
+          }
+          @case ("penalty") {
             <img
               src="./assets/images/ban.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />
-          </ng-container>
-          <ng-container *ngSwitchCase="'timeout'">
+          }
+          @case ("timeout") {
             <img
               src="./assets/images/clock.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />
-          </ng-container>
-        </ng-container>
+          }
+        }
       </div>
-
       <div class="hidden md:block h-px bg-fb-gray-200 w-full"></div>
-    </ng-container>
+    }
     <div
       class="rounded-[30px] w-full h-[30px] border border-fb-gray-200 font-bold flex items-center justify-center row-start-1 col-start-5 md:col-start-7"
     >
-      <ng-container *ngIf="gameEvent.time.split(':') as time">
+      @if (gameEvent.time.split(":"); as time) {
         {{ time[0]?.length === 1 ? "0" : "" }}{{ time[0] }}'&nbsp;
         <span class="text-fb-gray-400">{{ time[1] }}"</span>
-      </ng-container>
+      }
     </div>
-    <ng-container *ngIf="gameEvent.event_team === 'guest'">
+    @if (gameEvent.event_team === "guest") {
       <div
         class="h-px bg-fb-gray-200 w-full hidden md:block md:col-start-8"
       ></div>
       <div
         class="rounded-full border border-fb-gray-200 w-[30px] h-[30px] items-center justify-center md:col-start-9 md:flex hidden"
       >
-        <ng-container [ngSwitch]="gameEvent.event_type">
-          <ng-container *ngSwitchCase="'goal'">
+        @switch (gameEvent.event_type) {
+          @case ("goal") {
             <img
               src="./assets/images/union.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />
-          </ng-container>
-          <ng-container *ngSwitchCase="'penalty'">
+          }
+          @case ("penalty") {
             <img
               src="./assets/images/ban.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />
-          </ng-container>
-          <ng-container *ngSwitchCase="'timeout'">
+          }
+          @case ("timeout") {
             <img
               src="./assets/images/clock.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />
-          </ng-container>
-        </ng-container>
+          }
+        }
       </div>
-
       <div class="font-bold px-3 row-start-1 col-start-4 md:col-start-10">
-        <ng-container [ngSwitch]="gameEvent.event_type">
-          <ng-container *ngSwitchCase="'goal'"> Tor </ng-container>
-          <ng-container *ngSwitchCase="'penalty'">
+        @switch (gameEvent.event_type) {
+          @case ("goal") {
+            Tor
+          }
+          @case ("penalty") {
             {{ "Strafe " + gameEvent.penalty_type_string }}
-          </ng-container>
-          <ng-container *ngSwitchCase="'timeout'">
+          }
+          @case ("timeout") {
             {{ "Auszeit" }}
-          </ng-container>
-        </ng-container>
+          }
+        }
       </div>
-
       <div class="text-center row-start-1 col-start-3 md:col-start-11">
-        <ng-container *ngIf="gameEvent.event_type === 'goal'">
+        @if (gameEvent.event_type === "goal") {
           {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
-        </ng-container>
+        }
       </div>
-
       <div class="md:text-right row-start-1 col-start-2 md:col-start-12">
         <div class="ml-3.5 md:mr-3.5">
-          <ng-container
-            *ngIf="
-              gameEvent.event_type === 'goal' &&
-                ['owngoal', 'not_assigned'].includes(gameEvent.goal_type || '');
-              then alternativeGuestName;
-              else guestPlayerName
-            "
-          >
-          </ng-container>
-
-          <ng-template #guestPlayerName>
-            <span
-              *ngIf="showTrikotNumber && gameEvent.guest.scorer"
-              class="text-fb-gray-400 mr-1"
-              >#{{ gameEvent.guest.scorer?.trikot_number }}</span
-            >
-            <a
-              *ngIf="gameEvent.guest.scorer?.player_id; else guestScorerText"
-              [routerLink]="['/spieler', gameEvent.guest.scorer?.player_id]"
-              class="hover:underline"
-              >{{ gameEvent.guest.scorer?.player_firstname }}
-              {{ gameEvent.guest.scorer?.player_name }}</a
-            >
-            <ng-template #guestScorerText
-              >{{ gameEvent.guest.scorer?.player_firstname }}
-              {{ gameEvent.guest.scorer?.player_name }}</ng-template
-            >
-          </ng-template>
-          <ng-template #alternativeGuestName>
+          @if (
+            gameEvent.event_type === "goal" &&
+            ["owngoal", "not_assigned"].includes(gameEvent.goal_type || "")
+          ) {
             {{ gameEvent.goal_type_string }}
-          </ng-template>
+          } @else {
+            @if (showTrikotNumber && gameEvent.guest.scorer) {
+              <span class="text-fb-gray-400 mr-1"
+                >#{{ gameEvent.guest.scorer?.trikot_number }}</span
+              >
+            }
+            @if (gameEvent.guest.scorer?.player_id) {
+              <a
+                [routerLink]="['/spieler', gameEvent.guest.scorer?.player_id]"
+                class="hover:underline"
+                >{{ gameEvent.guest.scorer?.player_firstname }}
+                {{ gameEvent.guest.scorer?.player_name }}</a
+              >
+            } @else {
+              {{ gameEvent.guest.scorer?.player_firstname }}
+              {{ gameEvent.guest.scorer?.player_name }}
+            }
+          }
         </div>
       </div>
       <div class="row-start-1 col-start-1 md:col-start-13">
-        <img
-          *ngIf="match.guest_team_small_logo; else fallback"
-          [src]="match.guest_team_small_logo"
-          [alt]="match.guest_team_name"
-        />
+        @if (match.guest_team_small_logo) {
+          <img
+            [src]="match.guest_team_small_logo"
+            [alt]="match.guest_team_name"
+          />
+        } @else {
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            data-prefix="fas"
+            data-icon="shield-alt"
+            class="text-fb-gray-400 p-0.5"
+            role="img"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+          >
+            <path
+              fill="currentColor"
+              d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
+            ></path>
+          </svg>
+        }
       </div>
-    </ng-container>
-
-    <div
-      class="row-start-2 col-start-2 text-fb-gray-400 self-start ml-3.5"
-      *ngIf="gameEvent.home.assist"
-    >
-      <span class="text-xs font-bold">Vorl.</span>
-      <span *ngIf="showTrikotNumber" class="mr-1"
-        >#{{ gameEvent.home.assist?.trikot_number }}</span
-      >
-      <a
-        *ngIf="gameEvent.home.assist?.player_id; else homeAssistText"
-        [routerLink]="['/spieler', gameEvent.home.assist?.player_id]"
-        class="hover:underline"
-        >{{ gameEvent.home.assist?.player_firstname }}
-        {{ gameEvent.home.assist?.player_name }}</a
-      >
-      <ng-template #homeAssistText
-        >{{ gameEvent.home.assist?.player_firstname }}
-        {{ gameEvent.home.assist?.player_name }}</ng-template
-      >
-    </div>
-
+    }
+    @if (gameEvent.home.assist) {
+      <div class="row-start-2 col-start-2 text-fb-gray-400 self-start ml-3.5">
+        <span class="text-xs font-bold">Vorl.</span>
+        @if (showTrikotNumber) {
+          <span class="mr-1">#{{ gameEvent.home.assist?.trikot_number }}</span>
+        }
+        @if (gameEvent.home.assist?.player_id) {
+          <a
+            [routerLink]="['/spieler', gameEvent.home.assist?.player_id]"
+            class="hover:underline"
+            >{{ gameEvent.home.assist?.player_firstname }}
+            {{ gameEvent.home.assist?.player_name }}</a
+          >
+        } @else {
+          {{ gameEvent.home.assist?.player_firstname }}
+          {{ gameEvent.home.assist?.player_name }}
+        }
+      </div>
+    }
     <div
       class="row-start-2 col-start-4 text-fb-gray-400 text-right whitespace-nowrap px-3 self-start justify-self-end"
     >
-      <ng-container
-        *ngIf="gameEvent.penalty_reason_string && gameEvent.home.scorer"
-      >
+      @if (gameEvent.penalty_reason_string && gameEvent.home.scorer) {
         {{ gameEvent.penalty_reason_string }}
-      </ng-container>
-
-      <ng-container
-        *ngIf="gameEvent.home.scorer && gameEvent.goal_type_string !== 'Tor'"
-        >{{ gameEvent.goal_type_string }}</ng-container
-      >
+      }
+      @if (gameEvent.home.scorer && gameEvent.goal_type_string !== "Tor") {
+        {{ gameEvent.goal_type_string }}
+      }
     </div>
-    <div *ngIf="allowCancel" class="md:hidden mb-2 col-span-5 flex gap-2">
-      <div
-        (click)="handleDelete(gameEvent.event_id)"
-        class="flex-1 text-center px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
-      >
-        Löschen
-      </div>
-      <div
-        *ngIf="['goal', 'penalty'].includes(gameEvent.event_type)"
-        (click)="handleEdit(event)"
-        class="flex-1 text-center px-2 py-1 text-[11px] bg-blue-100 text-blue-700 cursor-pointer rounded-[30px] border border-blue-500"
-      >
-        Bearbeiten
-      </div>
-    </div>
-
-    <div
-      *ngIf="!isLast || allowCancel"
-      class="hidden md:block row-start-2 col-start-7 h-full w-full self-center justify-self-center"
-    >
-      <div *ngIf="allowCancel" class="flex flex-col gap-1">
+    @if (allowCancel) {
+      <div class="md:hidden mb-2 col-span-5 flex gap-2">
         <div
           (click)="handleDelete(gameEvent.event_id)"
-          class="px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500 text-center"
+          class="flex-1 text-center px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
         >
           Löschen
         </div>
-        <div
-          *ngIf="['goal', 'penalty'].includes(gameEvent.event_type)"
-          (click)="handleEdit(event)"
-          class="px-2 py-1 text-[11px] bg-blue-100 text-blue-700 cursor-pointer rounded-[30px] border border-blue-500 text-center"
-        >
-          Bearbeiten
-        </div>
+        @if (["goal", "penalty"].includes(gameEvent.event_type)) {
+          <div
+            (click)="handleEdit(event)"
+            class="flex-1 text-center px-2 py-1 text-[11px] bg-blue-100 text-blue-700 cursor-pointer rounded-[30px] border border-blue-500"
+          >
+            Bearbeiten
+          </div>
+        }
       </div>
+    }
+    @if (!isLast || allowCancel) {
       <div
-        class="bg-fb-gray-200 h-[49px] mt-[-5px] w-px mx-auto hidden md:block"
-        [ngClass]="allowCancel ? 'h-[29px]' : 'h-[49px]'"
-        *ngIf="!allowCancel"
-      ></div>
-    </div>
-
+        class="hidden md:block row-start-2 col-start-7 h-full w-full self-center justify-self-center"
+      >
+        @if (allowCancel) {
+          <div class="flex flex-col gap-1">
+            <div
+              (click)="handleDelete(gameEvent.event_id)"
+              class="px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500 text-center"
+            >
+              Löschen
+            </div>
+            @if (["goal", "penalty"].includes(gameEvent.event_type)) {
+              <div
+                (click)="handleEdit(event)"
+                class="px-2 py-1 text-[11px] bg-blue-100 text-blue-700 cursor-pointer rounded-[30px] border border-blue-500 text-center"
+              >
+                Bearbeiten
+              </div>
+            }
+          </div>
+        }
+        @if (!allowCancel) {
+          <div
+            class="bg-fb-gray-200 h-[49px] mt-[-5px] w-px mx-auto hidden md:block"
+            [ngClass]="allowCancel ? 'h-[29px]' : 'h-[49px]'"
+          ></div>
+        }
+      </div>
+    }
     <div
       class="row-start-2 col-start-4 md:col-start-10 text-fb-gray-400 whitespace-nowrap px-3 self-start justify-self-end md:justify-self-start"
     >
-      <ng-container
-        *ngIf="gameEvent.penalty_reason_string && gameEvent.guest.scorer"
-      >
+      @if (gameEvent.penalty_reason_string && gameEvent.guest.scorer) {
         {{ gameEvent.penalty_reason_string }}
-      </ng-container>
-
-      <ng-container
-        *ngIf="gameEvent.guest.scorer && gameEvent.goal_type_string !== 'Tor'"
-        >{{ gameEvent.goal_type_string }}</ng-container
-      >
+      }
+      @if (gameEvent.guest.scorer && gameEvent.goal_type_string !== "Tor") {
+        {{ gameEvent.goal_type_string }}
+      }
     </div>
-
-    <div
-      class="row-start-2 col-start-2 md:col-start-12 text-fb-gray-400 md:text-right self-start ml-3.5 md:mr-3.5"
-      *ngIf="gameEvent.guest.assist"
-    >
-      <span class="text-xs font-bold">Vorl.</span>
-      <span *ngIf="showTrikotNumber" class="mr-1"
-        >#{{ gameEvent.guest.assist?.trikot_number }}</span
+    @if (gameEvent.guest.assist) {
+      <div
+        class="row-start-2 col-start-2 md:col-start-12 text-fb-gray-400 md:text-right self-start ml-3.5 md:mr-3.5"
       >
-      <a
-        *ngIf="gameEvent.guest.assist?.player_id; else guestAssistText"
-        [routerLink]="['/spieler', gameEvent.guest.assist?.player_id]"
-        class="hover:underline"
-        >{{ gameEvent.guest.assist?.player_firstname }}
-        {{ gameEvent.guest.assist?.player_name }}</a
+        <span class="text-xs font-bold">Vorl.</span>
+        @if (showTrikotNumber) {
+          <span class="mr-1">#{{ gameEvent.guest.assist?.trikot_number }}</span>
+        }
+        @if (gameEvent.guest.assist?.player_id) {
+          <a
+            [routerLink]="['/spieler', gameEvent.guest.assist?.player_id]"
+            class="hover:underline"
+            >{{ gameEvent.guest.assist?.player_firstname }}
+            {{ gameEvent.guest.assist?.player_name }}</a
+          >
+        } @else {
+          {{ gameEvent.guest.assist?.player_firstname }}
+          {{ gameEvent.guest.assist?.player_name }}
+        }
+      </div>
+    }
+  </div>
+  @if (allowCancel && editingEvent) {
+    <div class="mt-2 mb-4">
+      <fb-match-event-form
+        [type]="editingEvent.event_type"
+        [team]="editingEvent.event_team"
+        [match]="match"
+        [additionalFields]="additionalFields"
+        [penalties]="penalties"
+        [penaltyCodes]="penaltyCodes"
+        [existingEvent]="editingEvent"
+        [currentPeriod]="
+          editingEventPeriod || editingEvent.period?.toString() || '1'
+        "
+        [noBackground]="false"
+        (updateGame)="handleUpdated()"
+        (updatePeriod)="handleEditPeriodUpdate($event)"
+      ></fb-match-event-form>
+      <button
+        (click)="cancelEdit()"
+        class="mt-2 text-sm text-gray-500 hover:text-gray-700 underline"
       >
-      <ng-template #guestAssistText
-        >{{ gameEvent.guest.assist?.player_firstname }}
-        {{ gameEvent.guest.assist?.player_name }}</ng-template
-      >
+        Abbrechen
+      </button>
     </div>
-  </div>
-
-  <div *ngIf="allowCancel && editingEvent" class="mt-2 mb-4">
-    <fb-match-event-form
-      [type]="editingEvent.event_type"
-      [team]="editingEvent.event_team"
-      [match]="match"
-      [additionalFields]="additionalFields"
-      [penalties]="penalties"
-      [penaltyCodes]="penaltyCodes"
-      [existingEvent]="editingEvent"
-      [currentPeriod]="
-        editingEventPeriod || editingEvent.period?.toString() || '1'
-      "
-      [noBackground]="false"
-      (updateGame)="handleUpdated()"
-      (updatePeriod)="handleEditPeriodUpdate($event)"
-    ></fb-match-event-form>
-    <button
-      (click)="cancelEdit()"
-      class="mt-2 text-sm text-gray-500 hover:text-gray-700 underline"
-    >
-      Abbrechen
-    </button>
-  </div>
-</ng-container>
-
-<ng-template #fallback>
-  <svg
-    aria-hidden="true"
-    focusable="false"
-    data-prefix="fas"
-    data-icon="shield-alt"
-    class="text-fb-gray-400 p-0.5"
-    role="img"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 512 512"
-  >
-    <path
-      fill="currentColor"
-      d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
-    ></path>
-  </svg>
-</ng-template>
+  }
+}

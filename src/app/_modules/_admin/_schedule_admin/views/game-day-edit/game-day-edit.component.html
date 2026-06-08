@@ -22,7 +22,163 @@
       <div
         class="grid grid-cols-1 md:grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9"
       >
-        <ng-template #loading>
+        @if (gameday) {
+          <div>
+            <div class="bg-white my-[5px] py-[15px] px-[30px]">
+              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                Spieltagseinstellungen
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="font-bold">Spieltags ID</div>
+                <div>
+                  {{
+                    gameday && gameday.id && gameday.id > 0
+                      ? gameday.id
+                      : "Wird nach dem Anlegen festgelegt"
+                  }}
+                </div>
+                <div class="font-bold">Spieltagsnummer</div>
+                <div>
+                  <input
+                    class="w-full"
+                    type="number"
+                    [(ngModel)]="gameday.number"
+                    required
+                  />
+                </div>
+                <div class="font-bold">Datum</div>
+                <div>
+                  <input
+                    class="w-full"
+                    type="date"
+                    [(ngModel)]="gameday.date"
+                    required
+                  />
+                </div>
+                <div class="font-bold">Austragungsort</div>
+                <div>
+                  <select
+                    class="w-full"
+                    required
+                    [(ngModel)]="gameday.arena_id"
+                  >
+                    @for (arena of areans; track arena) {
+                      <option [value]="arena.id">
+                        {{ arena.schedule_item || arena.name }}
+                      </option>
+                    }
+                  </select>
+                </div>
+                <div class="font-bold">Ausrichter</div>
+                <div>
+                  @if (!useAllClubs) {
+                    <select
+                      class="w-full"
+                      required
+                      [(ngModel)]="gameday.club_id"
+                    >
+                      @for (club of clubs; track club) {
+                        <option [value]="club.id">
+                          {{ club.name }}
+                        </option>
+                      }
+                    </select>
+                    <a
+                      class="text-xs text-fb-gray-600 hover:underline cursor-pointer mt-1 inline-block"
+                      (click)="enableAllClubs()"
+                    >
+                      Anderen Verein als Ausrichter wählen…
+                    </a>
+                  }
+                  @if (useAllClubs) {
+                    <div class="relative">
+                      <input
+                        class="w-full"
+                        type="text"
+                        [value]="clubQuery"
+                        placeholder="Verein suchen…"
+                        (input)="onClubInput($any($event.target).value)"
+                        (focus)="onClubFocus()"
+                        (blur)="onClubBlur()"
+                        autocomplete="off"
+                      />
+                      @if (showClubDropdown && filteredClubs.length > 0) {
+                        <ul
+                          class="absolute z-50 w-full bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-48 overflow-y-auto"
+                        >
+                          @for (c of filteredClubs; track c) {
+                            <li
+                              (mousedown)="
+                                $event.preventDefault(); selectClub(c)
+                              "
+                              class="px-3 py-2 hover:bg-fb-gray-200 cursor-pointer text-sm"
+                            >
+                              {{ c.name }}
+                            </li>
+                          }
+                        </ul>
+                      }
+                      @if (allClubsLoading) {
+                        <div class="text-xs text-fb-gray-400 mt-1">
+                          Lade Vereinsliste…
+                        </div>
+                      }
+                    </div>
+                    <a
+                      class="text-xs text-fb-gray-600 hover:underline cursor-pointer mt-1 inline-block"
+                      (click)="disableAllClubs()"
+                    >
+                      ← zurück zu Liga-Vereinen
+                    </a>
+                  }
+                </div>
+              </div>
+            </div>
+            <div class="bg-white my-[5px] py-[15px] px-[30px]">
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center mb-4">
+                  <a
+                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    (click)="submit()"
+                  >
+                    Änderungen speichern
+                  </a>
+                  <a
+                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-8 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    [routerLink]="[
+                      '/',
+                      'verwaltung',
+                      'ligen',
+                      leagueId,
+                      'spielplan',
+                    ]"
+                  >
+                    Zurück zur Liga
+                  </a>
+                  @if ((gameday.id || 0) > 0 && gameday.deletable) {
+                    <div class="">
+                      <a
+                        class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                        (click)="destroy()"
+                      >
+                        Spieltag löschen
+                      </a>
+                    </div>
+                  }
+                  @if ((gameday.id || 0) > 0 && !gameday.deletable) {
+                    <div>
+                      <a
+                        class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-100 hover:bg-fb-gray-100 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                      >
+                        löschen nicht möglich
+                      </a>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        } @else {
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               <svg
@@ -43,155 +199,7 @@
               Daten werden geladen...
             </div>
           </div>
-        </ng-template>
-
-        <div *ngIf="gameday; else loading">
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Spieltagseinstellungen
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div class="font-bold">Spieltags ID</div>
-              <div>
-                {{
-                  gameday && gameday.id && gameday.id > 0
-                    ? gameday.id
-                    : "Wird nach dem Anlegen festgelegt"
-                }}
-              </div>
-
-              <div class="font-bold">Spieltagsnummer</div>
-              <div>
-                <input
-                  class="w-full"
-                  type="number"
-                  [(ngModel)]="gameday.number"
-                  required
-                />
-              </div>
-
-              <div class="font-bold">Datum</div>
-              <div>
-                <input
-                  class="w-full"
-                  type="date"
-                  [(ngModel)]="gameday.date"
-                  required
-                />
-              </div>
-
-              <div class="font-bold">Austragungsort</div>
-              <div>
-                <select class="w-full" required [(ngModel)]="gameday.arena_id">
-                  <option [value]="arena.id" *ngFor="let arena of areans">
-                    {{ arena.schedule_item || arena.name }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="font-bold">Ausrichter</div>
-              <div>
-                <ng-container *ngIf="!useAllClubs">
-                  <select class="w-full" required [(ngModel)]="gameday.club_id">
-                    <option *ngFor="let club of clubs" [value]="club.id">
-                      {{ club.name }}
-                    </option>
-                  </select>
-                  <a
-                    class="text-xs text-fb-gray-600 hover:underline cursor-pointer mt-1 inline-block"
-                    (click)="enableAllClubs()"
-                  >
-                    Anderen Verein als Ausrichter wählen…
-                  </a>
-                </ng-container>
-
-                <ng-container *ngIf="useAllClubs">
-                  <div class="relative">
-                    <input
-                      class="w-full"
-                      type="text"
-                      [value]="clubQuery"
-                      placeholder="Verein suchen…"
-                      (input)="onClubInput($any($event.target).value)"
-                      (focus)="onClubFocus()"
-                      (blur)="onClubBlur()"
-                      autocomplete="off"
-                    />
-                    <ul
-                      *ngIf="showClubDropdown && filteredClubs.length > 0"
-                      class="absolute z-50 w-full bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-48 overflow-y-auto"
-                    >
-                      <li
-                        *ngFor="let c of filteredClubs"
-                        (mousedown)="$event.preventDefault(); selectClub(c)"
-                        class="px-3 py-2 hover:bg-fb-gray-200 cursor-pointer text-sm"
-                      >
-                        {{ c.name }}
-                      </li>
-                    </ul>
-                    <div
-                      *ngIf="allClubsLoading"
-                      class="text-xs text-fb-gray-400 mt-1"
-                    >
-                      Lade Vereinsliste…
-                    </div>
-                  </div>
-                  <a
-                    class="text-xs text-fb-gray-600 hover:underline cursor-pointer mt-1 inline-block"
-                    (click)="disableAllClubs()"
-                  >
-                    ← zurück zu Liga-Vereinen
-                  </a>
-                </ng-container>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div class="flex flex-col gap-2">
-              <div class="flex items-center mb-4">
-                <a
-                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                  (click)="submit()"
-                >
-                  Änderungen speichern
-                </a>
-                <a
-                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-8 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                  [routerLink]="[
-                    '/',
-                    'verwaltung',
-                    'ligen',
-                    leagueId,
-                    'spielplan'
-                  ]"
-                >
-                  Zurück zur Liga
-                </a>
-
-                <div
-                  *ngIf="(gameday.id || 0) > 0 && gameday.deletable"
-                  class=""
-                >
-                  <a
-                    class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                    (click)="destroy()"
-                  >
-                    Spieltag löschen
-                  </a>
-                </div>
-                <div *ngIf="(gameday.id || 0) > 0 && !gameday.deletable">
-                  <a
-                    class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-100 hover:bg-fb-gray-100 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                  >
-                    löschen nicht möglich
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        }
       </div>
     </div>
   </div>

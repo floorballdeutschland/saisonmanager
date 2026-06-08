@@ -1,4 +1,4 @@
-<ng-container *ngIf="(isLoading$ | async) === false">
+@if ((isLoading$ | async) === false) {
   <div
     class="lg:grid lg:grid-cols-[300px,1fr] min-h-screen print:lg:grid-cols-1"
   >
@@ -15,16 +15,16 @@
           (removeTeamFavorite)="removeFavoriteTeam($event)"
           class="hidden lg:block"
         ></fb-favorites-navigation>
-
-        <fb-league-navigation
-          *ngIf="leagues$ | async as leagues"
-          [leagues]="leagues"
-          [selectedAssociation]="selectedAssociation$ | async"
-          [seasons]="(seasons$ | async) ?? []"
-          [selectedSeasonId]="(selectedSeasonId$ | async) ?? null"
-          (seasonChange)="onSeasonChange($event)"
-          class="hidden lg:block"
-        ></fb-league-navigation>
+        @if (leagues$ | async; as leagues) {
+          <fb-league-navigation
+            [leagues]="leagues"
+            [selectedAssociation]="selectedAssociation$ | async"
+            [seasons]="(seasons$ | async) ?? []"
+            [selectedSeasonId]="(selectedSeasonId$ | async) ?? null"
+            (seasonChange)="onSeasonChange($event)"
+            class="hidden lg:block"
+          ></fb-league-navigation>
+        }
       </fb-sidebar>
     </div>
     <div
@@ -36,4 +36,4 @@
       <router-outlet></router-outlet>
     </div>
   </div>
-</ng-container>
+}

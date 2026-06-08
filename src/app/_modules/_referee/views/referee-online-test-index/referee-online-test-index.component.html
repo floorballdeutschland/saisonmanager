@@ -1,57 +1,66 @@
 <div class="container mx-auto px-4 lg:px-8 my-6">
   <h1 class="font-bold text-[32px] mb-6">Meine Onlineprüfungen</h1>
 
-  <div *ngIf="loading" class="text-gray-400">Wird geladen…</div>
+  @if (loading) {
+    <div class="text-gray-400">Wird geladen…</div>
+  }
 
-  <div *ngIf="!loading && tests.length === 0" class="text-gray-500">
-    Dir wurde noch keine Prüfung zugewiesen.
-  </div>
+  @if (!loading && tests.length === 0) {
+    <div class="text-gray-500">Dir wurde noch keine Prüfung zugewiesen.</div>
+  }
 
-  <div *ngIf="!loading && tests.length > 0" class="flex flex-col gap-3">
-    <a
-      *ngFor="let test of tests"
-      [routerLink]="['/schiedsrichter', 'onlinepruefungen', test.id]"
-      class="bg-white p-4 border border-fb-gray-200 hover:border-fb-gray-600 flex items-center justify-between"
-    >
-      <div>
-        <p class="font-bold">{{ test.name }}</p>
-        <p class="text-sm text-gray-500">
-          {{ test.lizenzstufe || "" }}
-          <span *ngIf="test.deadline">
-            · Deadline: {{ test.deadline | date : "dd.MM.yyyy HH:mm" }}</span
-          >
-          <span *ngIf="test.time_limit_minutes">
-            · {{ test.time_limit_minutes }} Min.</span
-          >
-        </p>
-      </div>
-      <div class="text-right">
-        <span
-          class="px-2 py-0.5 rounded text-xs font-bold"
-          [class.bg-blue-100]="test.has_in_progress"
-          [class.text-blue-800]="test.has_in_progress"
-          [class.bg-yellow-100]="
-            !test.has_in_progress && test.attempt_count === 0
-          "
-          [class.text-yellow-800]="
-            !test.has_in_progress && test.attempt_count === 0
-          "
-          [class.bg-gray-100]="!test.has_in_progress && test.attempt_count > 0"
-          [class.text-gray-700]="
-            !test.has_in_progress && test.attempt_count > 0
-          "
-          >{{ statusLabel(test) }}</span
+  @if (!loading && tests.length > 0) {
+    <div class="flex flex-col gap-3">
+      @for (test of tests; track test) {
+        <a
+          [routerLink]="['/schiedsrichter', 'onlinepruefungen', test.id]"
+          class="bg-white p-4 border border-fb-gray-200 hover:border-fb-gray-600 flex items-center justify-between"
         >
-        <p
-          *ngIf="
-            test.best_error_points !== null &&
-            test.best_error_points !== undefined
-          "
-          class="text-xs text-gray-500 mt-1"
-        >
-          Fehlerpunkte: {{ test.best_error_points }}
-        </p>
-      </div>
-    </a>
-  </div>
+          <div>
+            <p class="font-bold">{{ test.name }}</p>
+            <p class="text-sm text-gray-500">
+              {{ test.lizenzstufe || "" }}
+              @if (test.deadline) {
+                <span>
+                  · Deadline:
+                  {{ test.deadline | date: "dd.MM.yyyy HH:mm" }}</span
+                >
+              }
+              @if (test.time_limit_minutes) {
+                <span> · {{ test.time_limit_minutes }} Min.</span>
+              }
+            </p>
+          </div>
+          <div class="text-right">
+            <span
+              class="px-2 py-0.5 rounded text-xs font-bold"
+              [class.bg-blue-100]="test.has_in_progress"
+              [class.text-blue-800]="test.has_in_progress"
+              [class.bg-yellow-100]="
+                !test.has_in_progress && test.attempt_count === 0
+              "
+              [class.text-yellow-800]="
+                !test.has_in_progress && test.attempt_count === 0
+              "
+              [class.bg-gray-100]="
+                !test.has_in_progress && test.attempt_count > 0
+              "
+              [class.text-gray-700]="
+                !test.has_in_progress && test.attempt_count > 0
+              "
+              >{{ statusLabel(test) }}</span
+            >
+            @if (
+              test.best_error_points !== null &&
+              test.best_error_points !== undefined
+            ) {
+              <p class="text-xs text-gray-500 mt-1">
+                Fehlerpunkte: {{ test.best_error_points }}
+              </p>
+            }
+          </div>
+        </a>
+      }
+    </div>
+  }
 </div>

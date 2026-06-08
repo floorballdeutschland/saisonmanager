@@ -2,25 +2,20 @@
   <h2 class="font-bold text-xl lg:text-2xl mt-8">Tabelle</h2>
 
   <div class="mt-4 lg:mt-8">
-    <ng-container
-      *ngIf="teamRankings$ | async as teamRankings; else loadingTeamRankings"
-    >
-      <fb-team-ranking-table
-        *ngIf="teamRankings.length; else noTeamRankingsMessage"
-        [routerPrefix]="['../', 'team']"
-        [data]="teamRankings"
-      ></fb-team-ranking-table>
-
-      <ng-template #noTeamRankingsMessage>
+    @if (teamRankings$ | async; as teamRankings) {
+      @if (teamRankings.length) {
+        <fb-team-ranking-table
+          [routerPrefix]="['../', 'team']"
+          [data]="teamRankings"
+        ></fb-team-ranking-table>
+      } @else {
         <div class="text-center text-fb-gray-400 my-12">
           Noch keine Tabelle vorhanden
         </div>
-      </ng-template>
-    </ng-container>
-
-    <ng-template #loadingTeamRankings>
+      }
+    } @else {
       <fb-skeleton-table></fb-skeleton-table>
-    </ng-template>
+    }
   </div>
 </div>
 
@@ -29,28 +24,27 @@
     <div class="mt-6 lg:mt-12">
       <div class="flex items-center justify-between mb-4 lg:mb-8">
         <h2 class="font-bold text-xl lg:text-2xl">Spielbegegnungen</h2>
-        <ng-container *ngIf="selectedLeague$ | async as selectedLeague">
-          <fb-match-day
-            *ngIf="selectedMatchDay"
-            [matchDays]="selectedLeague.game_day_titles"
-            [selectedMatchDay]="selectedMatchDay"
-            (selectMatchDay)="selectMatchDay($event, selectedLeague)"
-          ></fb-match-day>
-        </ng-container>
+        @if (selectedLeague$ | async; as selectedLeague) {
+          @if (selectedMatchDay) {
+            <fb-match-day
+              [matchDays]="selectedLeague.game_day_titles"
+              [selectedMatchDay]="selectedMatchDay"
+              (selectMatchDay)="selectMatchDay($event, selectedLeague)"
+            ></fb-match-day>
+          }
+        }
       </div>
 
-      <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
-        <fb-match-encounter-list
-          *ngIf="matches.length; else noMatchesMessage"
-          [matches]="matches"
-        ></fb-match-encounter-list>
-
-        <ng-template #noMatchesMessage>
+      @if (matches$ | async; as matches) {
+        @if (matches.length) {
+          <fb-match-encounter-list
+            [matches]="matches"
+          ></fb-match-encounter-list>
+        } @else {
           <div class="text-center text-fb-gray-400 my-12">
             Noch keine Spiele vorhanden
           </div>
-        </ng-template>
-
+        }
         <div class="mt-5 flex items-center justify-end">
           <a
             [routerLink]="['../', 'all-matches']"
@@ -59,11 +53,9 @@
             Alle Anzeigen
           </a>
         </div>
-      </ng-container>
-
-      <ng-template #loadingMatches>
+      } @else {
         <fb-skeleton-match-encounter-list></fb-skeleton-match-encounter-list>
-      </ng-template>
+      }
     </div>
   </div>
 </div>

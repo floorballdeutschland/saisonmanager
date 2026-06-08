@@ -36,32 +36,40 @@
 
     <div class="flex flex-col gap-1">
       <label class="text-sm font-bold">Übergeordneter Verbund</label>
-      <select
-        *ngIf="canManageLifecycle"
-        [(ngModel)]="stateAssociation.parent_id"
-        name="parent_id"
-        [disabled]="hasChildren"
-        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
-      >
-        <option [ngValue]="null">– kein übergeordneter Verbund –</option>
-        <option *ngFor="let sa of rootStateAssociations" [ngValue]="sa.id">
-          {{ sa.name }}
-        </option>
-      </select>
-      <span *ngIf="!canManageLifecycle" class="text-sm py-2">
-        {{ stateAssociation.parent_name || "– kein übergeordneter Verbund –" }}
-      </span>
-      <span
-        *ngIf="canManageLifecycle && hasChildren"
-        class="text-xs text-fb-gray-400"
-      >
-        Dieser Verbund hat untergeordnete Landesverbände und kann daher keinem
-        übergeordneten Verbund zugewiesen werden.
-      </span>
-      <span *ngIf="hasParent" class="text-xs text-fb-gray-400">
-        Einstellungen und E-Mail-Adressen werden von
-        <strong>{{ parent?.name }}</strong> geerbt.
-      </span>
+      @if (canManageLifecycle) {
+        <select
+          [(ngModel)]="stateAssociation.parent_id"
+          name="parent_id"
+          [disabled]="hasChildren"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
+        >
+          <option [ngValue]="null">– kein übergeordneter Verbund –</option>
+          @for (sa of rootStateAssociations; track sa) {
+            <option [ngValue]="sa.id">
+              {{ sa.name }}
+            </option>
+          }
+        </select>
+      }
+      @if (!canManageLifecycle) {
+        <span class="text-sm py-2">
+          {{
+            stateAssociation.parent_name || "– kein übergeordneter Verbund –"
+          }}
+        </span>
+      }
+      @if (canManageLifecycle && hasChildren) {
+        <span class="text-xs text-fb-gray-400">
+          Dieser Verbund hat untergeordnete Landesverbände und kann daher keinem
+          übergeordneten Verbund zugewiesen werden.
+        </span>
+      }
+      @if (hasParent) {
+        <span class="text-xs text-fb-gray-400">
+          Einstellungen und E-Mail-Adressen werden von
+          <strong>{{ parent?.name }}</strong> geerbt.
+        </span>
+      }
     </div>
 
     <div class="border-t border-fb-gray-200 pt-4">
@@ -88,10 +96,12 @@
               aktivieren. Die Beantragung löst eine automatische
               Benachrichtigung an die SBK aus.</span
             >
-            <span *ngIf="hasParent" class="text-xs text-fb-gray-400 italic">
-              Wert: {{ parent?.express_license_enabled ? "Ja" : "Nein" }}
-              (geerbt)
-            </span>
+            @if (hasParent) {
+              <span class="text-xs text-fb-gray-400 italic">
+                Wert: {{ parent?.express_license_enabled ? "Ja" : "Nein" }}
+                (geerbt)
+              </span>
+            }
           </span>
         </label>
         <label
@@ -116,11 +126,13 @@
               Landesverbands zur Kontrolle und Freigabe vorgelegt, bevor sie in
               den Stammdatensatz übernommen werden.</span
             >
-            <span *ngIf="hasParent" class="text-xs text-fb-gray-400 italic">
-              Wert:
-              {{ parent?.referee_license_review_enabled ? "Ja" : "Nein" }}
-              (geerbt)
-            </span>
+            @if (hasParent) {
+              <span class="text-xs text-fb-gray-400 italic">
+                Wert:
+                {{ parent?.referee_license_review_enabled ? "Ja" : "Nein" }}
+                (geerbt)
+              </span>
+            }
           </span>
         </label>
         <label class="flex items-start gap-3 cursor-pointer">
@@ -167,12 +179,16 @@
             "
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
           />
-          <span *ngIf="!hasParent" class="text-xs text-fb-gray-400"
-            >Empfänger für hochgeladene Schiedsrichter-Berichtsformulare</span
-          >
-          <span *ngIf="hasParent" class="text-xs text-fb-gray-400 italic">
-            Geerbt von {{ parent?.name }}: {{ parent?.vsk_email || "–" }}
-          </span>
+          @if (!hasParent) {
+            <span class="text-xs text-fb-gray-400"
+              >Empfänger für hochgeladene Schiedsrichter-Berichtsformulare</span
+            >
+          }
+          @if (hasParent) {
+            <span class="text-xs text-fb-gray-400 italic">
+              Geerbt von {{ parent?.name }}: {{ parent?.vsk_email || "–" }}
+            </span>
+          }
         </div>
 
         <div class="flex flex-col gap-1">
@@ -189,12 +205,17 @@
             "
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
           />
-          <span *ngIf="!hasParent" class="text-xs text-fb-gray-400"
-            >BCC-Empfänger bei Spieltagscheckliste mit verneinten Punkten</span
-          >
-          <span *ngIf="hasParent" class="text-xs text-fb-gray-400 italic">
-            Geerbt von {{ parent?.name }}: {{ parent?.sbk_email || "–" }}
-          </span>
+          @if (!hasParent) {
+            <span class="text-xs text-fb-gray-400"
+              >BCC-Empfänger bei Spieltagscheckliste mit verneinten
+              Punkten</span
+            >
+          }
+          @if (hasParent) {
+            <span class="text-xs text-fb-gray-400 italic">
+              Geerbt von {{ parent?.name }}: {{ parent?.sbk_email || "–" }}
+            </span>
+          }
         </div>
       </div>
     </div>
@@ -217,235 +238,238 @@
   </form>
 
   <!-- Logo (nur im Bearbeitungsmodus) -->
-  <div *ngIf="editMode" class="border-t border-fb-gray-200 pt-6 mb-6">
-    <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-      Verbandslogo
-    </div>
-    <div class="grid grid-cols-2 gap-4 items-center">
-      <div class="font-bold text-sm">Aktuelles Logo</div>
-      <div>
-        <img
-          *ngIf="stateAssociation.logo_url"
-          [src]="stateAssociation.logo_url"
-          alt="Verbandslogo"
-          class="h-16 object-contain"
-        />
-        <span
-          *ngIf="!stateAssociation.logo_url"
-          class="text-sm text-fb-gray-400"
-          >kein Logo hinterlegt</span
-        >
+  @if (editMode) {
+    <div class="border-t border-fb-gray-200 pt-6 mb-6">
+      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+        Verbandslogo
       </div>
-      <div class="font-bold text-sm">Logo hochladen</div>
-      <div>
-        <input
-          type="file"
-          accept="image/webp"
-          #logoInput
-          (change)="onLogoSelected(logoInput)"
-        />
-        <small class="block text-fb-gray-400 mt-1">WebP · max. 5 MB</small>
+      <div class="grid grid-cols-2 gap-4 items-center">
+        <div class="font-bold text-sm">Aktuelles Logo</div>
+        <div>
+          @if (stateAssociation.logo_url) {
+            <img
+              [src]="stateAssociation.logo_url"
+              alt="Verbandslogo"
+              class="h-16 object-contain"
+            />
+          }
+          @if (!stateAssociation.logo_url) {
+            <span class="text-sm text-fb-gray-400">kein Logo hinterlegt</span>
+          }
+        </div>
+        <div class="font-bold text-sm">Logo hochladen</div>
+        <div>
+          <input
+            type="file"
+            accept="image/webp"
+            #logoInput
+            (change)="onLogoSelected(logoInput)"
+          />
+          <small class="block text-fb-gray-400 mt-1">WebP · max. 5 MB</small>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- Werbebanner (nur im Bearbeitungsmodus) -->
-  <div *ngIf="editMode" class="border-t border-fb-gray-200 pt-6 mb-6">
-    <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-      Werbebanner
+  @if (editMode) {
+    <div class="border-t border-fb-gray-200 pt-6 mb-6">
+      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+        Werbebanner
+      </div>
+      <div class="grid grid-cols-2 gap-4 items-center">
+        <div class="font-bold text-sm">Aktueller Banner</div>
+        <div>
+          @if (stateAssociation.banner_url) {
+            <img
+              [src]="stateAssociation.banner_url"
+              alt="Werbebanner"
+              class="w-full max-w-xs object-contain"
+              style="aspect-ratio: 6/1"
+            />
+          }
+          @if (!stateAssociation.banner_url) {
+            <span class="text-sm text-fb-gray-400">kein Banner hinterlegt</span>
+          }
+        </div>
+        <div class="font-bold text-sm">Banner hochladen</div>
+        <div>
+          <input
+            type="file"
+            accept="image/webp"
+            #bannerInput
+            (change)="onBannerSelected(bannerInput)"
+          />
+          <small class="block text-fb-gray-400 mt-1"
+            >WebP · max. 500 KB · empfohlenes Format 1200 × 200 px (6:1)</small
+          >
+        </div>
+        <div class="font-bold text-sm">Link-URL</div>
+        <div>
+          <input
+            type="url"
+            [(ngModel)]="stateAssociation.banner_link_url"
+            placeholder="https://..."
+            class="border border-fb-gray-300 rounded px-3 py-1.5 text-sm w-full"
+          />
+          <small class="block text-fb-gray-400 mt-1"
+            >Optional – Banner wird dann klickbar · wird erst beim Speichern
+            übernommen</small
+          >
+        </div>
+        <div></div>
+        <div>
+          @if (stateAssociation.banner_url) {
+            <button
+              type="button"
+              (click)="deleteBanner()"
+              [disabled]="deletingBanner"
+              class="text-sm text-red-500 underline disabled:opacity-50"
+            >
+              {{ deletingBanner ? "Wird entfernt…" : "Banner entfernen" }}
+            </button>
+          }
+        </div>
+      </div>
     </div>
-    <div class="grid grid-cols-2 gap-4 items-center">
-      <div class="font-bold text-sm">Aktueller Banner</div>
-      <div>
-        <img
-          *ngIf="stateAssociation.banner_url"
-          [src]="stateAssociation.banner_url"
-          alt="Werbebanner"
-          class="w-full max-w-xs object-contain"
-          style="aspect-ratio: 6/1"
-        />
-        <span
-          *ngIf="!stateAssociation.banner_url"
-          class="text-sm text-fb-gray-400"
-          >kein Banner hinterlegt</span
-        >
-      </div>
-      <div class="font-bold text-sm">Banner hochladen</div>
-      <div>
-        <input
-          type="file"
-          accept="image/webp"
-          #bannerInput
-          (change)="onBannerSelected(bannerInput)"
-        />
-        <small class="block text-fb-gray-400 mt-1"
-          >WebP · max. 500 KB · empfohlenes Format 1200 × 200 px (6:1)</small
-        >
-      </div>
-      <div class="font-bold text-sm">Link-URL</div>
-      <div>
-        <input
-          type="url"
-          [(ngModel)]="stateAssociation.banner_link_url"
-          placeholder="https://..."
-          class="border border-fb-gray-300 rounded px-3 py-1.5 text-sm w-full"
-        />
-        <small class="block text-fb-gray-400 mt-1"
-          >Optional – Banner wird dann klickbar · wird erst beim Speichern
-          übernommen</small
-        >
-      </div>
-      <div></div>
-      <div>
-        <button
-          type="button"
-          *ngIf="stateAssociation.banner_url"
-          (click)="deleteBanner()"
-          [disabled]="deletingBanner"
-          class="text-sm text-red-500 underline disabled:opacity-50"
-        >
-          {{ deletingBanner ? "Wird entfernt…" : "Banner entfernen" }}
-        </button>
-      </div>
-    </div>
-  </div>
+  }
 
   <!-- Freigaben (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
-  <div
-    *ngIf="editMode && !hasParent"
-    class="border-t border-fb-gray-200 pt-6 mb-6"
-  >
-    <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
-      Freigaben für Sportverbünde
-    </div>
-    <p class="text-xs text-fb-gray-400 mb-4">
-      Sportverbünde mit Freigabe können die Vereine dieses Landesverbands in der
-      Vereinsverwaltung sehen und bearbeiten.
-    </p>
-
-    <div *ngIf="releases.length === 0" class="text-sm text-fb-gray-400 mb-4">
-      Noch keine Freigaben erteilt.
-    </div>
-
-    <div class="flex flex-col gap-2 mb-4">
-      <div
-        *ngFor="let release of releases"
-        class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
-      >
-        <span class="flex-1 text-sm">{{
-          release.recipient_game_operation_name
-        }}</span>
+  @if (editMode && !hasParent) {
+    <div class="border-t border-fb-gray-200 pt-6 mb-6">
+      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
+        Freigaben für Sportverbünde
+      </div>
+      <p class="text-xs text-fb-gray-400 mb-4">
+        Sportverbünde mit Freigabe können die Vereine dieses Landesverbands in
+        der Vereinsverwaltung sehen und bearbeiten.
+      </p>
+      @if (releases.length === 0) {
+        <div class="text-sm text-fb-gray-400 mb-4">
+          Noch keine Freigaben erteilt.
+        </div>
+      }
+      <div class="flex flex-col gap-2 mb-4">
+        @for (release of releases; track release) {
+          <div
+            class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
+          >
+            <span class="flex-1 text-sm">{{
+              release.recipient_game_operation_name
+            }}</span>
+            <button
+              type="button"
+              (click)="deleteRelease(release.id)"
+              class="text-xs text-red-500 hover:text-red-700 px-2"
+            >
+              Zurückziehen
+            </button>
+          </div>
+        }
+      </div>
+      <div class="flex gap-2">
+        <select
+          [(ngModel)]="selectedGameOperationId"
+          name="new_release_go"
+          class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        >
+          <option [ngValue]="null">– Spielverbund auswählen –</option>
+          @for (go of availableGameOperations; track go) {
+            <option [ngValue]="go.id">
+              {{ go.name }}
+            </option>
+          }
+        </select>
         <button
           type="button"
-          (click)="deleteRelease(release.id)"
-          class="text-xs text-red-500 hover:text-red-700 px-2"
+          (click)="addRelease()"
+          [disabled]="addingRelease || !selectedGameOperationId"
+          class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
         >
-          Zurückziehen
+          {{ addingRelease ? "…" : "Freigabe erteilen" }}
         </button>
       </div>
     </div>
-
-    <div class="flex gap-2">
-      <select
-        [(ngModel)]="selectedGameOperationId"
-        name="new_release_go"
-        class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-      >
-        <option [ngValue]="null">– Spielverbund auswählen –</option>
-        <option *ngFor="let go of availableGameOperations" [ngValue]="go.id">
-          {{ go.name }}
-        </option>
-      </select>
-      <button
-        type="button"
-        (click)="addRelease()"
-        [disabled]="addingRelease || !selectedGameOperationId"
-        class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
-      >
-        {{ addingRelease ? "…" : "Freigabe erteilen" }}
-      </button>
-    </div>
-  </div>
+  }
 
   <!-- Spieltagscheckliste (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
-  <div *ngIf="editMode && !hasParent" class="border-t border-fb-gray-200 pt-6">
-    <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
-      Spieltagscheckliste
-    </div>
-    <p class="text-xs text-fb-gray-400 mb-4">
-      Ja/Nein-Fragen, die vor dem Abschließen eines Spielberichts beantwortet
-      werden müssen. Wird nur aktiv, wenn mind. eine Frage definiert ist.
-    </p>
-
-    <div
-      *ngIf="checklistItems.length === 0"
-      class="text-sm text-fb-gray-400 mb-4"
-    >
-      Noch keine Fragen definiert.
-    </div>
-
-    <div class="flex flex-col gap-2 mb-4">
-      <div
-        *ngFor="let item of checklistItems"
-        class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
-      >
-        <ng-container *ngIf="editingItemId !== item.id">
-          <span class="flex-1 text-sm">{{ item.question }}</span>
-          <button
-            type="button"
-            (click)="startEdit(item)"
-            class="text-xs text-fb-gray-400 hover:text-black px-2"
+  @if (editMode && !hasParent) {
+    <div class="border-t border-fb-gray-200 pt-6">
+      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
+        Spieltagscheckliste
+      </div>
+      <p class="text-xs text-fb-gray-400 mb-4">
+        Ja/Nein-Fragen, die vor dem Abschließen eines Spielberichts beantwortet
+        werden müssen. Wird nur aktiv, wenn mind. eine Frage definiert ist.
+      </p>
+      @if (checklistItems.length === 0) {
+        <div class="text-sm text-fb-gray-400 mb-4">
+          Noch keine Fragen definiert.
+        </div>
+      }
+      <div class="flex flex-col gap-2 mb-4">
+        @for (item of checklistItems; track item) {
+          <div
+            class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
           >
-            Bearbeiten
-          </button>
-          <button
-            type="button"
-            (click)="deleteChecklistItem(item.id)"
-            class="text-xs text-red-500 hover:text-red-700 px-2"
-          >
-            Löschen
-          </button>
-        </ng-container>
-        <ng-container *ngIf="editingItemId === item.id">
-          <input
-            type="text"
-            [(ngModel)]="editingQuestion"
-            class="flex-1 border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
-          />
-          <button
-            type="button"
-            (click)="saveEdit(item)"
-            class="text-xs font-bold px-2 py-1 bg-black text-white rounded-[5px]"
-          >
-            OK
-          </button>
-          <button
-            type="button"
-            (click)="cancelEdit()"
-            class="text-xs px-2 py-1 border border-fb-gray-600 rounded-[5px]"
-          >
-            Abbrechen
-          </button>
-        </ng-container>
+            @if (editingItemId !== item.id) {
+              <span class="flex-1 text-sm">{{ item.question }}</span>
+              <button
+                type="button"
+                (click)="startEdit(item)"
+                class="text-xs text-fb-gray-400 hover:text-black px-2"
+              >
+                Bearbeiten
+              </button>
+              <button
+                type="button"
+                (click)="deleteChecklistItem(item.id)"
+                class="text-xs text-red-500 hover:text-red-700 px-2"
+              >
+                Löschen
+              </button>
+            }
+            @if (editingItemId === item.id) {
+              <input
+                type="text"
+                [(ngModel)]="editingQuestion"
+                class="flex-1 border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
+              />
+              <button
+                type="button"
+                (click)="saveEdit(item)"
+                class="text-xs font-bold px-2 py-1 bg-black text-white rounded-[5px]"
+              >
+                OK
+              </button>
+              <button
+                type="button"
+                (click)="cancelEdit()"
+                class="text-xs px-2 py-1 border border-fb-gray-600 rounded-[5px]"
+              >
+                Abbrechen
+              </button>
+            }
+          </div>
+        }
+      </div>
+      <div class="flex gap-2">
+        <input
+          type="text"
+          [(ngModel)]="newQuestion"
+          placeholder="Neue Frage eingeben…"
+          class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          (keydown.enter)="$event.preventDefault(); addChecklistItem()"
+        />
+        <button
+          type="button"
+          (click)="addChecklistItem()"
+          [disabled]="addingItem || !newQuestion.trim()"
+          class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+        >
+          {{ addingItem ? "…" : "Hinzufügen" }}
+        </button>
       </div>
     </div>
-
-    <div class="flex gap-2">
-      <input
-        type="text"
-        [(ngModel)]="newQuestion"
-        placeholder="Neue Frage eingeben…"
-        class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-        (keydown.enter)="$event.preventDefault(); addChecklistItem()"
-      />
-      <button
-        type="button"
-        (click)="addChecklistItem()"
-        [disabled]="addingItem || !newQuestion.trim()"
-        class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
-      >
-        {{ addingItem ? "…" : "Hinzufügen" }}
-      </button>
-    </div>
-  </div>
+  }
 </div>

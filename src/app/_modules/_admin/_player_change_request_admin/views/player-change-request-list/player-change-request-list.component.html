@@ -1,109 +1,116 @@
 <div class="px-[30px] py-[15px]">
   <h1 class="text-2xl font-bold mb-6">Spielerdaten-Korrekturanträge</h1>
 
-  <div *ngIf="loading" class="text-gray-500">Lade Anträge…</div>
+  @if (loading) {
+    <div class="text-gray-500">Lade Anträge…</div>
+  }
 
-  <div *ngIf="!loading && requests.length === 0" class="text-gray-500">
-    Keine Anträge vorhanden.
-  </div>
+  @if (!loading && requests.length === 0) {
+    <div class="text-gray-500">Keine Anträge vorhanden.</div>
+  }
 
-  <div *ngIf="!loading && requests.length > 0" class="overflow-x-auto">
-    <table class="w-full text-sm border-collapse">
-      <thead>
-        <tr class="text-left border-b border-gray-300">
-          <th class="py-2 pr-4 font-bold">Spieler</th>
-          <th class="py-2 pr-4 font-bold">Verein</th>
-          <th class="py-2 pr-4 font-bold">Korrektur</th>
-          <th class="py-2 pr-4 font-bold">Neuer Wert</th>
-          <th class="py-2 pr-4 font-bold">Status</th>
-          <th class="py-2 pr-4 font-bold">Datum</th>
-          <th class="py-2 font-bold" *ngIf="canApproveReject()">Aktion</th>
-        </tr>
-      </thead>
-      <tbody>
-        <ng-container *ngFor="let request of requests">
-          <tr class="border-b border-gray-100 align-top">
-            <td class="py-2 pr-4">
-              {{ request.player.last_name }}, {{ request.player.first_name
-              }}<br />
-              <span class="text-gray-400 text-xs">{{
-                request.player.birthdate | date : "dd.MM.yyyy"
-              }}</span>
-            </td>
-            <td class="py-2 pr-4">{{ request.club.name }}</td>
-            <td class="py-2 pr-4">
-              {{ correctionTypeLabel(request.correction_type) }}
-            </td>
-            <td class="py-2 pr-4">{{ request.new_value || "–" }}</td>
-            <td class="py-2 pr-4">
-              <span
-                [class.text-yellow-600]="request.status === 'pending'"
-                [class.text-green-600]="request.status === 'approved'"
-                [class.text-red-600]="request.status === 'rejected'"
-              >
-                <ng-container [ngSwitch]="request.status">
-                  <ng-container *ngSwitchCase="'pending'"
-                    >Ausstehend</ng-container
-                  >
-                  <ng-container *ngSwitchCase="'approved'"
-                    >Genehmigt</ng-container
-                  >
-                  <ng-container *ngSwitchCase="'rejected'"
-                    >Abgelehnt</ng-container
-                  >
-                </ng-container>
-              </span>
-              <span
-                *ngIf="request.rejection_reason"
-                class="block text-gray-400 text-xs"
-              >
-                {{ request.rejection_reason }}
-              </span>
-            </td>
-            <td class="py-2 pr-4">
-              {{ request.created_at | date : "dd.MM.yyyy" }}
-            </td>
-            <td class="py-2" *ngIf="canApproveReject()">
-              <ng-container *ngIf="request.status === 'pending'">
-                <ng-container *ngIf="rejectingId !== request.id">
-                  <fb-button
-                    variant="success"
-                    size="small"
-                    (click)="approve(request)"
-                    class="mr-2"
-                    >Annehmen</fb-button
-                  >
-                  <fb-button
-                    variant="error"
-                    size="small"
-                    (click)="startReject(request.id)"
-                    >Ablehnen</fb-button
-                  >
-                </ng-container>
-                <ng-container *ngIf="rejectingId === request.id">
-                  <input
-                    [(ngModel)]="rejectionReason"
-                    type="text"
-                    placeholder="Begründung"
-                    class="border border-gray-300 rounded px-2 py-1 text-sm mr-2 w-48"
-                  />
-                  <fb-button
-                    variant="error"
-                    size="small"
-                    [disabled]="!rejectionReason.trim()"
-                    (click)="confirmReject(request)"
-                    class="mr-1"
-                    >Bestätigen</fb-button
-                  >
-                  <fb-button size="small" (click)="cancelReject()"
-                    >Abbrechen</fb-button
-                  >
-                </ng-container>
-              </ng-container>
-            </td>
+  @if (!loading && requests.length > 0) {
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="text-left border-b border-gray-300">
+            <th class="py-2 pr-4 font-bold">Spieler</th>
+            <th class="py-2 pr-4 font-bold">Verein</th>
+            <th class="py-2 pr-4 font-bold">Korrektur</th>
+            <th class="py-2 pr-4 font-bold">Neuer Wert</th>
+            <th class="py-2 pr-4 font-bold">Status</th>
+            <th class="py-2 pr-4 font-bold">Datum</th>
+            @if (canApproveReject()) {
+              <th class="py-2 font-bold">Aktion</th>
+            }
           </tr>
-        </ng-container>
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          @for (request of requests; track request) {
+            <tr class="border-b border-gray-100 align-top">
+              <td class="py-2 pr-4">
+                {{ request.player.last_name }}, {{ request.player.first_name
+                }}<br />
+                <span class="text-gray-400 text-xs">{{
+                  request.player.birthdate | date: "dd.MM.yyyy"
+                }}</span>
+              </td>
+              <td class="py-2 pr-4">{{ request.club.name }}</td>
+              <td class="py-2 pr-4">
+                {{ correctionTypeLabel(request.correction_type) }}
+              </td>
+              <td class="py-2 pr-4">{{ request.new_value || "–" }}</td>
+              <td class="py-2 pr-4">
+                <span
+                  [class.text-yellow-600]="request.status === 'pending'"
+                  [class.text-green-600]="request.status === 'approved'"
+                  [class.text-red-600]="request.status === 'rejected'"
+                >
+                  @switch (request.status) {
+                    @case ("pending") {
+                      Ausstehend
+                    }
+                    @case ("approved") {
+                      Genehmigt
+                    }
+                    @case ("rejected") {
+                      Abgelehnt
+                    }
+                  }
+                </span>
+                @if (request.rejection_reason) {
+                  <span class="block text-gray-400 text-xs">
+                    {{ request.rejection_reason }}
+                  </span>
+                }
+              </td>
+              <td class="py-2 pr-4">
+                {{ request.created_at | date: "dd.MM.yyyy" }}
+              </td>
+              @if (canApproveReject()) {
+                <td class="py-2">
+                  @if (request.status === "pending") {
+                    @if (rejectingId !== request.id) {
+                      <fb-button
+                        variant="success"
+                        size="small"
+                        (click)="approve(request)"
+                        class="mr-2"
+                        >Annehmen</fb-button
+                      >
+                      <fb-button
+                        variant="error"
+                        size="small"
+                        (click)="startReject(request.id)"
+                        >Ablehnen</fb-button
+                      >
+                    }
+                    @if (rejectingId === request.id) {
+                      <input
+                        [(ngModel)]="rejectionReason"
+                        type="text"
+                        placeholder="Begründung"
+                        class="border border-gray-300 rounded px-2 py-1 text-sm mr-2 w-48"
+                      />
+                      <fb-button
+                        variant="error"
+                        size="small"
+                        [disabled]="!rejectionReason.trim()"
+                        (click)="confirmReject(request)"
+                        class="mr-1"
+                        >Bestätigen</fb-button
+                      >
+                      <fb-button size="small" (click)="cancelReject()"
+                        >Abbrechen</fb-button
+                      >
+                    }
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

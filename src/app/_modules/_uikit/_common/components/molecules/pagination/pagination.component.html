@@ -1,5 +1,5 @@
 <div class="flex flex-row justify-center">
-  <ng-container *ngIf="numberOfPages > 1">
+  @if (numberOfPages > 1) {
     <button
       class="mr-7 flex items-center justify-end focus:outline-none"
       [disabled]="currentPage <= 1"
@@ -23,85 +23,45 @@
         </svg>
       </span>
     </button>
-
-    <ng-container *ngIf="currentPage > 3">
+    @if (currentPage > 3) {
       <button
-        class="
-          flex
-          items-center
-          justify-center
-          cursor-pointer
-          text-center text-sm text-fb-gray-500
-          hover:text-black
-          focus:outline-none
-          mr-4
-        "
+        class="flex items-center justify-center cursor-pointer text-center text-sm text-fb-gray-500 hover:text-black focus:outline-none mr-4"
         (click)="changePage.emit(1)"
         [ngClass]="{ 'text-fb-black': 1 === currentPage }"
       >
         {{ 1 }}
       </button>
-      <span *ngIf="currentPage > 4" class="text-fb-gray-500 inline-block mr-4"
-        >...</span
-      >
-    </ng-container>
-
+      @if (currentPage > 4) {
+        <span class="text-fb-gray-500 inline-block mr-4">...</span>
+      }
+    }
     <div
-      class="
-        flex flex-row
-        justify-between
-        self-center
-        h-full
-        overflow-hidden
-        space-x-4
-      "
+      class="flex flex-row justify-between self-center h-full overflow-hidden space-x-4"
     >
-      <ng-container
-        *ngFor="let page of [].constructor(numberOfPages); let i = index"
-      >
-        <button
-          class="
-            flex
-            items-center
-            justify-center
-            cursor-pointer
-            text-center text-sm text-fb-gray-500
-            hover:text-black
-            focus:outline-none
-          "
-          *ngIf="i + 1 <= currentPage + 2 && i + 1 >= currentPage - 2"
-          (click)="changePage.emit(i + 1)"
-          [ngClass]="{ '!text-black font-bold': i + 1 === currentPage }"
-        >
-          {{ i + 1 }}
-        </button>
-      </ng-container>
+      @for (page of [].constructor(numberOfPages); track page; let i = $index) {
+        @if (i + 1 <= currentPage + 2 && i + 1 >= currentPage - 2) {
+          <button
+            class="flex items-center justify-center cursor-pointer text-center text-sm text-fb-gray-500 hover:text-black focus:outline-none"
+            (click)="changePage.emit(i + 1)"
+            [ngClass]="{ '!text-black font-bold': i + 1 === currentPage }"
+          >
+            {{ i + 1 }}
+          </button>
+        }
+      }
     </div>
-
-    <ng-container *ngIf="currentPage < numberOfPages - 2">
-      <span
-        *ngIf="currentPage < numberOfPages - 3"
-        class="text-fb-gray-500 inline-block ml-4"
-        >...</span
-      >
+    @if (currentPage < numberOfPages - 2) {
+      @if (currentPage < numberOfPages - 3) {
+        <span class="text-fb-gray-500 inline-block ml-4">...</span>
+      }
       <button
-        class="
-          flex
-          items-center
-          justify-center
-          cursor-pointer
-          text-center text-sm text-fb-gray-500
-          hover:text-black
-          focus:outline-none
-          ml-4
-        "
+        class="flex items-center justify-center cursor-pointer text-center text-sm text-fb-gray-500 hover:text-black focus:outline-none ml-4"
         (click)="changePage.emit(numberOfPages)"
         [ngClass]="{ 'text-fb-black': numberOfPages === currentPage }"
       >
         {{ numberOfPages }}
       </button>
-    </ng-container>
-
+    }
     <button
       class="ml-7 focus:outline-none"
       [disabled]="currentPage >= numberOfPages"
@@ -124,5 +84,5 @@
           ></path></svg
       ></span>
     </button>
-  </ng-container>
+  }
 </div>

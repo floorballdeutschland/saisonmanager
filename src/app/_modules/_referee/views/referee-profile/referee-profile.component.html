@@ -1,19 +1,20 @@
 <div class="p-4 lg:p-8 max-w-2xl">
   <h1 class="text-2xl font-bold mb-2">Mein Schiedsrichter-Profil</h1>
 
-  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+  }
 
-  <ng-container *ngIf="!loading && profile">
+  @if (!loading && profile) {
     <p class="text-sm text-fb-gray-500 mb-6 font-mono">
       {{ profile.lizenznummer_display }}
-      <span *ngIf="profile.lizenzstufe" class="ml-2"
-        >· {{ profile.lizenzstufe }}</span
-      >
-      <span *ngIf="profile.gueltigkeit" class="ml-2"
-        >· gültig bis {{ profile.gueltigkeit }}</span
-      >
+      @if (profile.lizenzstufe) {
+        <span class="ml-2">· {{ profile.lizenzstufe }}</span>
+      }
+      @if (profile.gueltigkeit) {
+        <span class="ml-2">· gültig bis {{ profile.gueltigkeit }}</span>
+      }
     </p>
-
     <form (ngSubmit)="submit()" class="flex flex-col gap-6">
       <!-- Name & Kontakt -->
       <div class="flex flex-col gap-4">
@@ -52,7 +53,6 @@
           </div>
         </div>
       </div>
-
       <!-- Heimadresse -->
       <div class="flex flex-col gap-2">
         <h2 class="text-sm font-bold uppercase text-fb-gray-500">
@@ -102,7 +102,6 @@
           </div>
         </div>
       </div>
-
       <!-- Schiedsrichterpartner -->
       <div class="flex flex-col gap-2">
         <h2 class="text-sm font-bold uppercase text-fb-gray-500">
@@ -120,7 +119,6 @@
           class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
         />
       </div>
-
       <!-- Actions -->
       <div class="flex items-center gap-3 mt-2">
         <button
@@ -132,9 +130,11 @@
         </button>
       </div>
     </form>
-  </ng-container>
+  }
 
-  <div *ngIf="!loading && !profile" class="text-fb-gray-500 py-8">
-    Kein Schiedsrichter-Profil gefunden.
-  </div>
+  @if (!loading && !profile) {
+    <div class="text-fb-gray-500 py-8">
+      Kein Schiedsrichter-Profil gefunden.
+    </div>
+  }
 </div>

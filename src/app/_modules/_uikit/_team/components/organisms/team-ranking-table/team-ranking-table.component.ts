@@ -144,13 +144,13 @@ export class TeamRankingTableComponent implements OnChanges, AfterViewInit {
     this._cdr.detectChanges();
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize() {
     this.checkScrollPosition();
     this._cdr.detectChanges();
   }
 
-  @HostListener('scroll', ['$event'])
+  @HostListener('scroll')
   onScroll() {
     this.checkScrollPosition();
   }

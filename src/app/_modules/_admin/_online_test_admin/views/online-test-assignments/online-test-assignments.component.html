@@ -2,14 +2,17 @@
   <div class="flex items-center justify-between mb-6">
     <div>
       <h1 class="font-bold text-[32px]">SR-Zuweisung</h1>
-      <p *ngIf="test" class="text-gray-500 text-sm">{{ test.name }}</p>
+      @if (test) {
+        <p class="text-gray-500 text-sm">{{ test.name }}</p>
+      }
     </div>
-    <a
-      *ngIf="test"
-      [routerLink]="['/verwaltung', 'onlinepruefungen', test.id, 'fragen']"
-      class="text-sm px-4 py-2 border border-fb-gray-600 rounded hover:bg-fb-gray-200"
-      >← Fragenkatalog</a
-    >
+    @if (test) {
+      <a
+        [routerLink]="['/verwaltung', 'onlinepruefungen', test.id, 'fragen']"
+        class="text-sm px-4 py-2 border border-fb-gray-600 rounded hover:bg-fb-gray-200"
+        >← Fragenkatalog</a
+      >
+    }
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -27,50 +30,54 @@
         <fb-button size="small" (click)="search()">Suchen</fb-button>
       </div>
 
-      <div *ngIf="searching" class="text-sm text-gray-400">Suche…</div>
+      @if (searching) {
+        <div class="text-sm text-gray-400">Suche…</div>
+      }
 
-      <div
-        *ngFor="let r of searchResults"
-        class="flex items-center justify-between py-2 border-b border-fb-gray-100 text-sm"
-      >
-        <span
-          >{{ r.nachname }}, {{ r.vorname }} ({{ r.lizenznummer || "–" }},
-          {{ r.lizenzstufe }})</span
+      @for (r of searchResults; track r) {
+        <div
+          class="flex items-center justify-between py-2 border-b border-fb-gray-100 text-sm"
         >
-        <fb-button
-          size="small"
-          icon="add"
-          [disabled]="isAssigned(r.id)"
-          (click)="assign(r.id)"
-          >{{ isAssigned(r.id) ? "Zugewiesen" : "Zuweisen" }}</fb-button
-        >
-      </div>
+          <span
+            >{{ r.nachname }}, {{ r.vorname }} ({{ r.lizenznummer || "–" }},
+            {{ r.lizenzstufe }})</span
+          >
+          <fb-button
+            size="small"
+            icon="add"
+            [disabled]="isAssigned(r.id)"
+            (click)="assign(r.id)"
+            >{{ isAssigned(r.id) ? "Zugewiesen" : "Zuweisen" }}</fb-button
+          >
+        </div>
+      }
     </div>
 
     <!-- Assigned -->
     <div class="bg-white p-4">
       <h2 class="font-bold mb-3">Zugewiesene SR ({{ assignments.length }})</h2>
 
-      <div *ngIf="assignments.length === 0" class="text-sm text-gray-400">
-        Noch keine SR zugewiesen.
-      </div>
+      @if (assignments.length === 0) {
+        <div class="text-sm text-gray-400">Noch keine SR zugewiesen.</div>
+      }
 
-      <div
-        *ngFor="let a of assignments"
-        class="flex items-center justify-between py-2 border-b border-fb-gray-100 text-sm"
-      >
-        <span
-          >{{ a.referee_name }} ({{ a.lizenznummer || "–" }},
-          {{ a.lizenzstufe }})</span
+      @for (a of assignments; track a) {
+        <div
+          class="flex items-center justify-between py-2 border-b border-fb-gray-100 text-sm"
         >
-        <fb-button
-          size="small"
-          variant="error"
-          icon="remove"
-          title="Zuweisung entfernen"
-          (click)="remove(a.id)"
-        ></fb-button>
-      </div>
+          <span
+            >{{ a.referee_name }} ({{ a.lizenznummer || "–" }},
+            {{ a.lizenzstufe }})</span
+          >
+          <fb-button
+            size="small"
+            variant="error"
+            icon="remove"
+            title="Zuweisung entfernen"
+            (click)="remove(a.id)"
+          ></fb-button>
+        </div>
+      }
     </div>
   </div>
 </div>

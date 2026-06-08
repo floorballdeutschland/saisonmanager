@@ -5,88 +5,85 @@
     >← Zurück</a
   >
 
-  <div *ngIf="detail">
-    <h1 class="font-bold text-[32px] mb-2">{{ detail.test.name }}</h1>
-    <p class="text-gray-500 text-sm mb-6">
-      <span *ngIf="detail.test.lizenzstufe"
-        >Stufe: {{ detail.test.lizenzstufe }} ·
-      </span>
-      <span *ngIf="detail.test.time_limit_minutes"
-        >Zeitlimit: {{ detail.test.time_limit_minutes }} Minuten ·
-      </span>
-      Max. {{ detail.test.max_attempts }} Versuche
-      <span *ngIf="detail.test.deadline">
-        · Deadline: {{ detail.test.deadline | date : "dd.MM.yyyy HH:mm" }}</span
-      >
-    </p>
-
-    <!-- Previous attempts -->
-    <div *ngIf="detail.attempts.length > 0" class="mb-6">
-      <h2 class="font-bold text-lg mb-2">Bisherige Versuche</h2>
-      <div
-        *ngFor="let a of detail.attempts"
-        class="text-sm py-2 border-b border-fb-gray-200 flex justify-between"
-      >
-        <span
-          >Versuch {{ a.attempt_number }} ·
-          {{ a.started_at | date : "dd.MM.yyyy HH:mm" }}</span
-        >
-        <span *ngIf="a.status === 'in_progress'" class="text-blue-600"
-          >Läuft</span
-        >
-        <span
-          *ngIf="
-            a.status === 'completed' &&
-            a.error_points !== null &&
-            a.error_points !== undefined
-          "
-          >{{ a.error_points }} Fehlerpunkt(e)</span
-        >
-        <span
-          *ngIf="
-            a.status === 'completed' &&
-            (a.error_points === null || a.error_points === undefined)
-          "
-          class="text-gray-400"
-          >Abgegeben</span
-        >
+  @if (detail) {
+    <div>
+      <h1 class="font-bold text-[32px] mb-2">{{ detail.test.name }}</h1>
+      <p class="text-gray-500 text-sm mb-6">
+        @if (detail.test.lizenzstufe) {
+          <span>Stufe: {{ detail.test.lizenzstufe }} · </span>
+        }
+        @if (detail.test.time_limit_minutes) {
+          <span
+            >Zeitlimit: {{ detail.test.time_limit_minutes }} Minuten ·
+          </span>
+        }
+        Max. {{ detail.test.max_attempts }} Versuche
+        @if (detail.test.deadline) {
+          <span>
+            · Deadline:
+            {{ detail.test.deadline | date: "dd.MM.yyyy HH:mm" }}</span
+          >
+        }
+      </p>
+      <!-- Previous attempts -->
+      @if (detail.attempts.length > 0) {
+        <div class="mb-6">
+          <h2 class="font-bold text-lg mb-2">Bisherige Versuche</h2>
+          @for (a of detail.attempts; track a) {
+            <div
+              class="text-sm py-2 border-b border-fb-gray-200 flex justify-between"
+            >
+              <span
+                >Versuch {{ a.attempt_number }} ·
+                {{ a.started_at | date: "dd.MM.yyyy HH:mm" }}</span
+              >
+              @if (a.status === "in_progress") {
+                <span class="text-blue-600">Läuft</span>
+              }
+              @if (
+                a.status === "completed" &&
+                a.error_points !== null &&
+                a.error_points !== undefined
+              ) {
+                <span>{{ a.error_points }} Fehlerpunkt(e)</span>
+              }
+              @if (
+                a.status === "completed" &&
+                (a.error_points === null || a.error_points === undefined)
+              ) {
+                <span class="text-gray-400">Abgegeben</span>
+              }
+            </div>
+          }
+        </div>
+      }
+      <!-- Results (visible after deadline) -->
+      @if (detail.results_visible && detail.attempts.length > 0) {
+        <div class="bg-fb-gray-100 p-4 mb-6">
+          <p class="font-bold text-sm">
+            Prüfungsphase beendet – dein bestes Ergebnis ist sichtbar.
+          </p>
+        </div>
+      }
+      <!-- Actions -->
+      @if (error) {
+        <div class="text-red-600 text-sm mb-3">{{ error }}</div>
+      }
+      <div class="flex gap-3">
+        @if (detail.in_progress_attempt_id) {
+          <fb-button variant="success" (click)="resume()"
+            >Prüfung fortsetzen</fb-button
+          >
+        }
+        @if (!detail.in_progress_attempt_id && detail.can_start) {
+          <fb-button (click)="start()" [disabled]="starting"
+            >Prüfung starten</fb-button
+          >
+        }
+        @if (!detail.in_progress_attempt_id && !detail.can_start) {
+          <p class="text-gray-500 text-sm">Keine weiteren Versuche möglich.</p>
+        }
       </div>
     </div>
-
-    <!-- Results (visible after deadline) -->
-    <div
-      *ngIf="detail.results_visible && detail.attempts.length > 0"
-      class="bg-fb-gray-100 p-4 mb-6"
-    >
-      <p class="font-bold text-sm">
-        Prüfungsphase beendet – dein bestes Ergebnis ist sichtbar.
-      </p>
-    </div>
-
-    <!-- Actions -->
-    <div *ngIf="error" class="text-red-600 text-sm mb-3">{{ error }}</div>
-
-    <div class="flex gap-3">
-      <fb-button
-        *ngIf="detail.in_progress_attempt_id"
-        variant="success"
-        (click)="resume()"
-        >Prüfung fortsetzen</fb-button
-      >
-
-      <fb-button
-        *ngIf="!detail.in_progress_attempt_id && detail.can_start"
-        (click)="start()"
-        [disabled]="starting"
-        >Prüfung starten</fb-button
-      >
-
-      <p
-        *ngIf="!detail.in_progress_attempt_id && !detail.can_start"
-        class="text-gray-500 text-sm"
-      >
-        Keine weiteren Versuche möglich.
-      </p>
-    </div>
-  </div>
+  }
 </div>

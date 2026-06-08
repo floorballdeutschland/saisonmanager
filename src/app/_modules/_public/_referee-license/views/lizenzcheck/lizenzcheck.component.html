@@ -23,73 +23,73 @@
     </button>
   </form>
 
-  <div
-    *ngIf="notFound"
-    class="bg-red-50 border border-red-200 rounded-[5px] p-4 text-sm text-red-700"
-  >
-    Keine Lizenz mit dieser Nummer gefunden.
-  </div>
-
-  <div
-    *ngIf="result"
-    class="border border-fb-gray-600 rounded-[5px] overflow-hidden"
-  >
+  @if (notFound) {
     <div
-      class="px-4 py-3 text-sm font-bold"
-      [ngClass]="
-        isExpired(result.gueltigkeit)
-          ? 'bg-red-100 text-red-700'
-          : 'bg-green-100 text-green-700'
-      "
+      class="bg-red-50 border border-red-200 rounded-[5px] p-4 text-sm text-red-700"
     >
-      {{
-        isExpired(result.gueltigkeit) ? "Lizenz abgelaufen" : "Lizenz gültig"
-      }}
+      Keine Lizenz mit dieser Nummer gefunden.
     </div>
+  }
 
-    <div class="divide-y divide-fb-gray-200 text-sm">
-      <div class="flex justify-between px-4 py-3">
-        <span class="text-fb-gray-400">Lizenznummer</span>
-        <span class="font-bold">{{ result.lizenznummer }}</span>
+  @if (result) {
+    <div class="border border-fb-gray-600 rounded-[5px] overflow-hidden">
+      <div
+        class="px-4 py-3 text-sm font-bold"
+        [ngClass]="
+          isExpired(result.gueltigkeit)
+            ? 'bg-red-100 text-red-700'
+            : 'bg-green-100 text-green-700'
+        "
+      >
+        {{
+          isExpired(result.gueltigkeit) ? "Lizenz abgelaufen" : "Lizenz gültig"
+        }}
       </div>
-      <div class="flex justify-between px-4 py-3">
-        <span class="text-fb-gray-400">Lizenzstufe</span>
-        <span class="font-bold">{{ result.lizenzstufe || "–" }}</span>
-      </div>
-      <div class="flex justify-between px-4 py-3">
-        <span class="text-fb-gray-400">Gültig bis</span>
-        <span
-          class="font-bold"
-          [ngClass]="
-            isExpired(result.gueltigkeit) ? 'text-red-600' : 'text-green-600'
-          "
-          >{{ result.gueltigkeit || "–" }}</span
-        >
-      </div>
-      <div class="flex justify-between px-4 py-3">
-        <span class="text-fb-gray-400">Verband</span>
-        <span class="font-bold">{{ result.landesverband || "–" }}</span>
-      </div>
-
-      <ng-container *ngIf="result.qualifications?.length">
-        <div
-          *ngFor="let q of result.qualifications"
-          class="flex justify-between px-4 py-3"
-        >
-          <span class="text-fb-gray-400">{{
-            q.qualification_type_name || "Zusatzqualifikation"
-          }}</span>
+      <div class="divide-y divide-fb-gray-200 text-sm">
+        <div class="flex justify-between px-4 py-3">
+          <span class="text-fb-gray-400">Lizenznummer</span>
+          <span class="font-bold">{{ result.lizenznummer }}</span>
+        </div>
+        <div class="flex justify-between px-4 py-3">
+          <span class="text-fb-gray-400">Lizenzstufe</span>
+          <span class="font-bold">{{ result.lizenzstufe || "–" }}</span>
+        </div>
+        <div class="flex justify-between px-4 py-3">
+          <span class="text-fb-gray-400">Gültig bis</span>
           <span
-            *ngIf="q.valid_until"
             class="font-bold"
             [ngClass]="
-              isExpired(q.valid_until) ? 'text-red-600' : 'text-green-600'
+              isExpired(result.gueltigkeit) ? 'text-red-600' : 'text-green-600'
             "
-            >{{ q.valid_until }}</span
+            >{{ result.gueltigkeit || "–" }}</span
           >
-          <span *ngIf="!q.valid_until" class="font-bold">–</span>
         </div>
-      </ng-container>
+        <div class="flex justify-between px-4 py-3">
+          <span class="text-fb-gray-400">Verband</span>
+          <span class="font-bold">{{ result.landesverband || "–" }}</span>
+        </div>
+        @if (result.qualifications?.length) {
+          @for (q of result.qualifications; track q) {
+            <div class="flex justify-between px-4 py-3">
+              <span class="text-fb-gray-400">{{
+                q.qualification_type_name || "Zusatzqualifikation"
+              }}</span>
+              @if (q.valid_until) {
+                <span
+                  class="font-bold"
+                  [ngClass]="
+                    isExpired(q.valid_until) ? 'text-red-600' : 'text-green-600'
+                  "
+                  >{{ q.valid_until }}</span
+                >
+              }
+              @if (!q.valid_until) {
+                <span class="font-bold">–</span>
+              }
+            </div>
+          }
+        }
+      </div>
     </div>
-  </div>
+  }
 </div>

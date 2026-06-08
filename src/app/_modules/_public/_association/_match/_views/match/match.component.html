@@ -21,7 +21,7 @@
   </div>
 </ng-template>
 
-<ng-container *ngIf="game">
+@if (game) {
   <div class="container mx-auto px-4 lg:px-8 my-4 lg:my-8">
     <div class="flex justify-end items-center">
       <div class="flex-1">
@@ -36,11 +36,9 @@
       </div>
     </div>
   </div>
-
   <fb-match-header [game]="game"></fb-match-header>
-
-  <ng-container *ngIf="(isLoggedIn$ | async) && canEdit(game)">
-    <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
+  @if ((isLoggedIn$ | async) && canEdit(game)) {
+    @if (selectedAssociation$ | async; as selectedAssociation) {
       <div class="container mx-auto px-4 lg:px-8">
         <div class="h-[80px] flex items-center gap-[25px]">
           <fb-tab-item
@@ -51,37 +49,36 @@
             [activeColor]="selectedAssociation | gradient"
             >Öffentliche Ansicht</fb-tab-item
           >
-          <fb-tab-item
-            *ngIf="canEdit(game)"
-            [isActive]="isTabActive('secretary')"
-            [markedAsActive]="isTabActive('secretary')"
-            [link]="['./']"
-            (click)="$event.preventDefault(); setTab('secretary')"
-            [activeColor]="selectedAssociation | gradient"
-            >Benutzer: Eingabe Spielbericht</fb-tab-item
-          >
+          @if (canEdit(game)) {
+            <fb-tab-item
+              [isActive]="isTabActive('secretary')"
+              [markedAsActive]="isTabActive('secretary')"
+              [link]="['./']"
+              (click)="$event.preventDefault(); setTab('secretary')"
+              [activeColor]="selectedAssociation | gradient"
+              >Benutzer: Eingabe Spielbericht</fb-tab-item
+            >
+          }
         </div>
       </div>
-    </ng-container>
-  </ng-container>
-
+    }
+  }
   <div class="h-[10px] bg-fb-gray-200"></div>
-
-  <fb-match-public
-    [game]="game"
-    [additionalFields]="additionalFields"
-    *ngIf="isTabActive('public')"
-  ></fb-match-public>
-
-  <fb-match-report
-    *ngIf="isTabActive('secretary') && canEdit(game)"
-    [game]="game"
-    [additionalFields]="additionalFields"
-    (handleReload)="reloadGame()"
-  ></fb-match-report>
-
+  @if (isTabActive("public")) {
+    <fb-match-public
+      [game]="game"
+      [additionalFields]="additionalFields"
+    ></fb-match-public>
+  }
+  @if (isTabActive("secretary") && canEdit(game)) {
+    <fb-match-report
+      [game]="game"
+      [additionalFields]="additionalFields"
+      (handleReload)="reloadGame()"
+    ></fb-match-report>
+  }
   <!-- Schiri: Berichtsformular-Upload (nur bei besonderem Ereignis, nur für eingeloggte User) -->
-  <ng-container *ngIf="(isLoggedIn$ | async) && hasIncidentReport">
+  @if ((isLoggedIn$ | async) && hasIncidentReport) {
     <div class="container mx-auto px-4 lg:px-8 py-6 max-w-2xl">
       <div class="border border-fb-gray-600 rounded-[5px] p-4">
         <h3 class="font-bold text-sm mb-1">Berichtsformular hochladen</h3>
@@ -91,38 +88,37 @@
           hochladen (PDF, PNG oder JPEG, max. 5 MB). Es wird automatisch an die
           zuständige VSK weitergeleitet.
         </p>
-
-        <div *ngIf="!refereeReportUploaded">
-          <label
-            class="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 cursor-pointer"
-            [class.opacity-50]="refereeReportUploading"
-          >
-            <span>{{
-              refereeReportUploading
-                ? "Hochladen…"
-                : "Datei wählen und hochladen"
-            }}</span>
-            <input
-              type="file"
-              accept="application/pdf,image/png,image/jpeg"
-              class="hidden"
-              [disabled]="refereeReportUploading"
-              (change)="onRefereeReportFile($event)"
-            />
-          </label>
-        </div>
-
-        <div
-          *ngIf="refereeReportUploaded"
-          class="flex items-center gap-2 text-sm text-green-700"
-        >
-          <span>&#10003;</span>
-          <span
-            >{{ refereeReportFilename }} wurde hochgeladen und an die VSK
-            weitergeleitet.</span
-          >
-        </div>
+        @if (!refereeReportUploaded) {
+          <div>
+            <label
+              class="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 cursor-pointer"
+              [class.opacity-50]="refereeReportUploading"
+            >
+              <span>{{
+                refereeReportUploading
+                  ? "Hochladen…"
+                  : "Datei wählen und hochladen"
+              }}</span>
+              <input
+                type="file"
+                accept="application/pdf,image/png,image/jpeg"
+                class="hidden"
+                [disabled]="refereeReportUploading"
+                (change)="onRefereeReportFile($event)"
+              />
+            </label>
+          </div>
+        }
+        @if (refereeReportUploaded) {
+          <div class="flex items-center gap-2 text-sm text-green-700">
+            <span>&#10003;</span>
+            <span
+              >{{ refereeReportFilename }} wurde hochgeladen und an die VSK
+              weitergeleitet.</span
+            >
+          </div>
+        }
       </div>
     </div>
-  </ng-container>
-</ng-container>
+  }
+}

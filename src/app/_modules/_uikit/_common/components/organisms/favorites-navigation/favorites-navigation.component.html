@@ -1,76 +1,83 @@
-<ng-container *ngIf="favorites?.length || favoriteTeams?.length">
+@if (favorites?.length || favoriteTeams?.length) {
   <h2 class="uppercase text-fb-gray-100 font-bold mt-12">Favoriten</h2>
-
-  <nav *ngIf="favorites?.length">
-    <ul>
-      <ng-container *ngFor="let leagueWithOperation of favorites">
-        <li
-          *ngFor="let league of leagueWithOperation.leagues"
-          class="mt-4 mb-4"
-        >
-          <a
-            [routerLinkActive]="'!text-black'"
-            [routerLink]="[
-              '/',
-              leagueWithOperation.operation.path,
-              league | normalizeLeagueRoute
-            ]"
-            class="font-bold text-fb-gray-500 hover:text-black text-base"
-            [attr.aria-label]="
-              leagueWithOperation.operation.short_name
-                ? league.name +
-                  ' (' +
-                  leagueWithOperation.operation.short_name +
-                  ')'
-                : league.name
-            "
-            >{{ league.name }}</a
-          >
-          <span
-            *ngIf="leagueWithOperation.operation.short_name"
-            class="text-fb-gray-400 text-xs ml-1"
-            >{{ leagueWithOperation.operation.short_name }}</span
-          >
-          <button
-            (click)="removeFavorite.emit(league.id)"
-            class="ml-1 text-fb-gray-400 hover:text-black text-xs leading-none"
-            title="Aus Favoriten entfernen"
-          >
-            ✕
-          </button>
-        </li>
-      </ng-container>
-    </ul>
-  </nav>
-
-  <nav *ngIf="favoriteTeams?.length" class="mt-4">
-    <h3 class="text-xs uppercase text-fb-gray-400 font-semibold mb-2">Teams</h3>
-    <ul>
-      <li *ngFor="let team of favoriteTeams" class="mt-3 mb-3">
-        <a
-          [routerLinkActive]="'!text-black'"
-          [routerLink]="[
-            '/',
-            team.operation_path,
-            team.league_path,
-            'team',
-            team.id
-          ]"
-          class="font-bold text-fb-gray-500 hover:text-black text-base"
-          [title]="team.name"
-          >{{ team.name }}</a
-        >
-        <button
-          (click)="removeTeamFavorite.emit(team.id)"
-          class="ml-1 text-fb-gray-400 hover:text-black text-xs leading-none"
-          title="Aus Favoriten entfernen"
-        >
-          ✕
-        </button>
-        <p *ngIf="team.league_name" class="text-xs text-fb-gray-400">
-          {{ team.league_name }}
-        </p>
-      </li>
-    </ul>
-  </nav>
-</ng-container>
+  @if (favorites?.length) {
+    <nav>
+      <ul>
+        @for (leagueWithOperation of favorites; track leagueWithOperation) {
+          @for (league of leagueWithOperation.leagues; track league) {
+            <li class="mt-4 mb-4">
+              <a
+                [routerLinkActive]="'!text-black'"
+                [routerLink]="[
+                  '/',
+                  leagueWithOperation.operation.path,
+                  league | normalizeLeagueRoute,
+                ]"
+                class="font-bold text-fb-gray-500 hover:text-black text-base"
+                [attr.aria-label]="
+                  leagueWithOperation.operation.short_name
+                    ? league.name +
+                      ' (' +
+                      leagueWithOperation.operation.short_name +
+                      ')'
+                    : league.name
+                "
+                >{{ league.name }}</a
+              >
+              @if (leagueWithOperation.operation.short_name) {
+                <span class="text-fb-gray-400 text-xs ml-1">{{
+                  leagueWithOperation.operation.short_name
+                }}</span>
+              }
+              <button
+                (click)="removeFavorite.emit(league.id)"
+                class="ml-1 text-fb-gray-400 hover:text-black text-xs leading-none"
+                title="Aus Favoriten entfernen"
+              >
+                ✕
+              </button>
+            </li>
+          }
+        }
+      </ul>
+    </nav>
+  }
+  @if (favoriteTeams?.length) {
+    <nav class="mt-4">
+      <h3 class="text-xs uppercase text-fb-gray-400 font-semibold mb-2">
+        Teams
+      </h3>
+      <ul>
+        @for (team of favoriteTeams; track team) {
+          <li class="mt-3 mb-3">
+            <a
+              [routerLinkActive]="'!text-black'"
+              [routerLink]="[
+                '/',
+                team.operation_path,
+                team.league_path,
+                'team',
+                team.id,
+              ]"
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [title]="team.name"
+              >{{ team.name }}</a
+            >
+            <button
+              (click)="removeTeamFavorite.emit(team.id)"
+              class="ml-1 text-fb-gray-400 hover:text-black text-xs leading-none"
+              title="Aus Favoriten entfernen"
+            >
+              ✕
+            </button>
+            @if (team.league_name) {
+              <p class="text-xs text-fb-gray-400">
+                {{ team.league_name }}
+              </p>
+            }
+          </li>
+        }
+      </ul>
+    </nav>
+  }
+}

@@ -1,50 +1,49 @@
-<ng-container *ngIf="selectedLeague$ | async as selectedLeague">
-  <ng-container *ngIf="selectedAssociation$ | async as selectedAssociation">
-    <ng-container *ngIf="matches$ | async as matches; else loadingNextMatches">
+@if (selectedLeague$ | async; as selectedLeague) {
+  @if (selectedAssociation$ | async; as selectedAssociation) {
+    @if (matches$ | async; as matches) {
       <fb-next-match-list [matches]="matches"></fb-next-match-list>
-    </ng-container>
-
-    <ng-template #loadingNextMatches>
+    } @else {
       <fb-skeleton-next-match-list></fb-skeleton-next-match-list>
-    </ng-template>
-
-    <div *ngIf="displayAssociationHeader$ | async">
-      <ng-container *ngIf="selectedSeason$ | async as season">
-        <fb-header
-          [headline]="selectedLeague.name"
-          type="league"
-          [subline]="season.name"
-          [isMarkedAsFavorite]="isLeagueFavorite(selectedLeague.id)"
-          (markAsFavorite)="addToFavorites(selectedLeague)"
-          (removeFromFavorites)="removeFavorite(selectedLeague.id)"
-        ></fb-header>
-      </ng-container>
-
-      <div class="container mx-auto px-4 lg:px-8">
-        <div class="h-[80px] flex items-center gap-[25px]">
-          <fb-tab-item
-            [isActive]="true"
-            [link]="['./']"
-            [activeColor]="selectedAssociation | gradient"
-            >Übersicht</fb-tab-item
-          >
-          <fb-tab-item
-            [link]="['./', 'tabelle']"
-            [activeColor]="selectedAssociation | gradient"
-            *ngIf="selectedLeague.league_type === 'league'"
-            >Tabelle</fb-tab-item
-          >
-          <fb-tab-item
-            [link]="['./', 'scorer']"
-            [activeColor]="selectedAssociation | gradient"
-            *ngIf="selectedLeague.enable_scorer"
-            >Scorer</fb-tab-item
-          >
+    }
+    @if (displayAssociationHeader$ | async) {
+      <div>
+        @if (selectedSeason$ | async; as season) {
+          <fb-header
+            [headline]="selectedLeague.name"
+            type="league"
+            [subline]="season.name"
+            [isMarkedAsFavorite]="isLeagueFavorite(selectedLeague.id)"
+            (markAsFavorite)="addToFavorites(selectedLeague)"
+            (removeFromFavorites)="removeFavorite(selectedLeague.id)"
+          ></fb-header>
+        }
+        <div class="container mx-auto px-4 lg:px-8">
+          <div class="h-[80px] flex items-center gap-[25px]">
+            <fb-tab-item
+              [isActive]="true"
+              [link]="['./']"
+              [activeColor]="selectedAssociation | gradient"
+              >Übersicht</fb-tab-item
+            >
+            @if (selectedLeague.league_type === "league") {
+              <fb-tab-item
+                [link]="['./', 'tabelle']"
+                [activeColor]="selectedAssociation | gradient"
+                >Tabelle</fb-tab-item
+              >
+            }
+            @if (selectedLeague.enable_scorer) {
+              <fb-tab-item
+                [link]="['./', 'scorer']"
+                [activeColor]="selectedAssociation | gradient"
+                >Scorer</fb-tab-item
+              >
+            }
+          </div>
         </div>
+        <div class="h-[10px] bg-fb-gray-200"></div>
       </div>
-      <div class="h-[10px] bg-fb-gray-200"></div>
-    </div>
-
+    }
     <router-outlet></router-outlet>
-  </ng-container>
-</ng-container>
+  }
+}

@@ -1,14 +1,17 @@
 <div class="p-4 lg:p-8">
   <h1 class="text-2xl font-bold mb-6">Spieler*innen</h1>
 
-  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade Spieler…</div>
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">Lade Spieler…</div>
+  }
 
-  <div
-    *ngIf="actionError"
-    class="mb-4 rounded bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"
-  >
-    {{ actionError }}
-  </div>
+  @if (actionError) {
+    <div
+      class="mb-4 rounded bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"
+    >
+      {{ actionError }}
+    </div>
+  }
 
   <p class="text-sm text-fb-gray-500 mb-6 max-w-2xl">
     Spieler*innen, die aktuell nicht mehr aktiv am Spielbetrieb teilnehmen
@@ -18,15 +21,16 @@
     Zeitpunkten wieder aktiviert werden.
   </p>
 
-  <ng-container *ngFor="let list of clubLists">
-    <h2 class="text-lg font-bold mb-3" *ngIf="clubLists.length > 1">
-      {{ list.club.name }}
-    </h2>
-
+  @for (list of clubLists; track list) {
+    @if (clubLists.length > 1) {
+      <h2 class="text-lg font-bold mb-3">
+        {{ list.club.name }}
+      </h2>
+    }
     <p class="text-sm text-fb-gray-500 mb-4">
       {{ visiblePlayers(list).length }}
       {{ visiblePlayers(list).length === 1 ? "Spieler*in" : "Spieler*innen" }}
-      <ng-container *ngIf="deactivatedCount(list) > 0">
+      @if (deactivatedCount(list) > 0) {
         &nbsp;·&nbsp;
         <button
           type="button"
@@ -36,158 +40,165 @@
           {{ deactivatedCount(list) }} deaktiviert
           {{ list.showDeactivated ? "ausblenden" : "einblenden" }}
         </button>
-      </ng-container>
+      }
     </p>
-
-    <table class="w-full text-sm mb-10" *ngIf="list.players.length > 0">
-      <thead>
-        <tr class="border-b border-fb-gray-700 text-left">
-          <th class="py-2 pr-4 font-bold">Name</th>
-          <th class="py-2 pr-4 font-bold">Geburtsdatum</th>
-          <th class="py-2 pr-4 font-bold">Geschlecht</th>
-          <th class="py-2 pr-4 font-bold">Status</th>
-          <th class="py-2 font-bold"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          *ngFor="let player of visiblePlayers(list)"
-          class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
-          [class.opacity-50]="!!player.deactivated_at"
-        >
-          <td class="py-2 pr-4 font-medium">
-            <a
-              class="hover:underline"
-              [routerLink]="[
-                '/',
-                'verwaltung',
-                'vereine',
-                list.club.id,
-                'spieler',
-                player.id,
-                'bearbeiten'
-              ]"
-              >{{ player.last_name }}, {{ player.first_name }}</a
+    @if (list.players.length > 0) {
+      <table class="w-full text-sm mb-10">
+        <thead>
+          <tr class="border-b border-fb-gray-700 text-left">
+            <th class="py-2 pr-4 font-bold">Name</th>
+            <th class="py-2 pr-4 font-bold">Geburtsdatum</th>
+            <th class="py-2 pr-4 font-bold">Geschlecht</th>
+            <th class="py-2 pr-4 font-bold">Status</th>
+            <th class="py-2 font-bold"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (player of visiblePlayers(list); track player) {
+            <tr
+              class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
+              [class.opacity-50]="!!player.deactivated_at"
             >
-          </td>
-          <td class="py-2 pr-4 text-fb-gray-500">
-            {{ player.birthdate | date : "dd.MM.yyyy" }}
-          </td>
-          <td class="py-2 pr-4 text-fb-gray-500">
-            {{
-              player.gender === "M" ? "m" : player.gender === "W" ? "w" : "d"
-            }}
-          </td>
-          <td class="py-2 pr-4">
-            <span
-              *ngIf="!player.deactivated_at"
-              class="text-green-600 text-xs font-medium"
-              >aktiv</span
-            >
-            <span
-              *ngIf="player.deactivated_at"
-              class="text-red-500 text-xs font-medium"
-            >
-              deaktiviert {{ player.deactivated_at | date : "dd.MM.yyyy" }}
-            </span>
-            <ng-container *ngIf="!player.deactivated_at">
-              <br />
-              <span
-                *ngIf="player.current_license_status_id === 1"
-                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-green-100 text-green-800"
-                >Lizenziert</span
-              >
-              <span
-                *ngIf="player.current_license_status_id === 2"
-                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-yellow-100 text-yellow-800"
-                >Beantragt</span
-              >
-              <span
-                *ngIf="
-                  player.current_license_status_id &&
-                  player.current_license_status_id !== 1 &&
-                  player.current_license_status_id !== 2
-                "
-                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-red-100 text-red-800"
-                >{{ player.current_license_status }}</span
-              >
-              <span
-                *ngIf="!player.current_license_status_id"
-                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
-                >Keine Lizenz</span
-              >
-            </ng-container>
-          </td>
-          <td class="py-2 text-right">
-            <ng-container *ngIf="!player.deactivated_at">
-              <fb-button
-                *ngIf="confirmDeactivateId !== player.id"
-                size="small"
-                variant="error"
-                (click)="startDeactivate(player)"
-              >
-                Deaktivieren
-              </fb-button>
-              <div
-                *ngIf="confirmDeactivateId === player.id"
-                class="flex flex-col gap-2 items-start"
-              >
-                <span class="text-xs text-red-700 font-medium"
-                  >Wirklich deaktivieren? Bitte Grund angeben:</span
+              <td class="py-2 pr-4 font-medium">
+                <a
+                  class="hover:underline"
+                  [routerLink]="[
+                    '/',
+                    'verwaltung',
+                    'vereine',
+                    list.club.id,
+                    'spieler',
+                    player.id,
+                    'bearbeiten',
+                  ]"
+                  >{{ player.last_name }}, {{ player.first_name }}</a
                 >
-                <select
-                  [(ngModel)]="deactivateReason"
-                  class="border border-red-300 rounded-[5px] px-2 py-1 text-xs bg-white"
-                >
-                  <option value="">Grund wählen…</option>
-                  <option value="Vereinsaustritt">Vereinsaustritt</option>
-                  <option value="Karriereende">Karriereende</option>
-                  <option value="Temporäre Pause">Temporäre Pause</option>
-                  <option value="Sonstiges">Sonstiges</option>
-                </select>
-                <input
-                  *ngIf="deactivateReason === 'Sonstiges'"
-                  [(ngModel)]="deactivateReasonOther"
-                  type="text"
-                  placeholder="Kurze Begründung…"
-                  class="border border-red-300 rounded-[5px] px-2 py-1 text-xs w-48"
-                />
-                <div class="flex gap-2">
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{ player.birthdate | date: "dd.MM.yyyy" }}
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{
+                  player.gender === "M"
+                    ? "m"
+                    : player.gender === "W"
+                      ? "w"
+                      : "d"
+                }}
+              </td>
+              <td class="py-2 pr-4">
+                @if (!player.deactivated_at) {
+                  <span class="text-green-600 text-xs font-medium">aktiv</span>
+                }
+                @if (player.deactivated_at) {
+                  <span class="text-red-500 text-xs font-medium">
+                    deaktiviert {{ player.deactivated_at | date: "dd.MM.yyyy" }}
+                  </span>
+                }
+                @if (!player.deactivated_at) {
+                  <br />
+                  @if (player.current_license_status_id === 1) {
+                    <span
+                      class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-green-100 text-green-800"
+                      >Lizenziert</span
+                    >
+                  }
+                  @if (player.current_license_status_id === 2) {
+                    <span
+                      class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-yellow-100 text-yellow-800"
+                      >Beantragt</span
+                    >
+                  }
+                  @if (
+                    player.current_license_status_id &&
+                    player.current_license_status_id !== 1 &&
+                    player.current_license_status_id !== 2
+                  ) {
+                    <span
+                      class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-red-100 text-red-800"
+                      >{{ player.current_license_status }}</span
+                    >
+                  }
+                  @if (!player.current_license_status_id) {
+                    <span
+                      class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
+                      >Keine Lizenz</span
+                    >
+                  }
+                }
+              </td>
+              <td class="py-2 text-right">
+                @if (!player.deactivated_at) {
+                  @if (confirmDeactivateId !== player.id) {
+                    <fb-button
+                      size="small"
+                      variant="error"
+                      (click)="startDeactivate(player)"
+                    >
+                      Deaktivieren
+                    </fb-button>
+                  }
+                  @if (confirmDeactivateId === player.id) {
+                    <div class="flex flex-col gap-2 items-start">
+                      <span class="text-xs text-red-700 font-medium"
+                        >Wirklich deaktivieren? Bitte Grund angeben:</span
+                      >
+                      <select
+                        [(ngModel)]="deactivateReason"
+                        class="border border-red-300 rounded-[5px] px-2 py-1 text-xs bg-white"
+                      >
+                        <option value="">Grund wählen…</option>
+                        <option value="Vereinsaustritt">Vereinsaustritt</option>
+                        <option value="Karriereende">Karriereende</option>
+                        <option value="Temporäre Pause">Temporäre Pause</option>
+                        <option value="Sonstiges">Sonstiges</option>
+                      </select>
+                      @if (deactivateReason === "Sonstiges") {
+                        <input
+                          [(ngModel)]="deactivateReasonOther"
+                          type="text"
+                          placeholder="Kurze Begründung…"
+                          class="border border-red-300 rounded-[5px] px-2 py-1 text-xs w-48"
+                        />
+                      }
+                      <div class="flex gap-2">
+                        <fb-button
+                          size="small"
+                          variant="error"
+                          [disabled]="
+                            !deactivateReason ||
+                            (deactivateReason === 'Sonstiges' &&
+                              !deactivateReasonOther)
+                          "
+                          (click)="deactivate(list, player)"
+                          >Ja, deaktivieren</fb-button
+                        >
+                        <fb-button size="small" (click)="cancelDeactivate()"
+                          >Abbrechen</fb-button
+                        >
+                      </div>
+                    </div>
+                  }
+                }
+                @if (player.deactivated_at) {
                   <fb-button
                     size="small"
-                    variant="error"
-                    [disabled]="
-                      !deactivateReason ||
-                      (deactivateReason === 'Sonstiges' &&
-                        !deactivateReasonOther)
-                    "
-                    (click)="deactivate(list, player)"
-                    >Ja, deaktivieren</fb-button
+                    variant="success"
+                    (click)="reactivate(list, player)"
                   >
-                  <fb-button size="small" (click)="cancelDeactivate()"
-                    >Abbrechen</fb-button
-                  >
-                </div>
-              </div>
-            </ng-container>
-            <fb-button
-              *ngIf="player.deactivated_at"
-              size="small"
-              variant="success"
-              (click)="reactivate(list, player)"
-            >
-              Reaktivieren
-            </fb-button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p
-      *ngIf="list.players.length === 0"
-      class="text-fb-gray-500 text-sm py-8 text-center"
-    >
-      Keine Spieler*innen für deinen Verein gefunden.
-    </p>
-  </ng-container>
+                    Reaktivieren
+                  </fb-button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+    @if (list.players.length === 0) {
+      <p class="text-fb-gray-500 text-sm py-8 text-center">
+        Keine Spieler*innen für deinen Verein gefunden.
+      </p>
+    }
+  }
 </div>

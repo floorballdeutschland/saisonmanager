@@ -1,377 +1,434 @@
-<ng-template #loading>
-  <div class="bg-white my-[5px] py-[15px] px-[30px]">
-    <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-      <svg
-        class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
-        viewBox="0 0 100 101"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-          fill="currentColor"
-        />
-        <path
-          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-          fill="currentFill"
-        />
-      </svg>
-      Daten werden geladen...
-    </div>
-  </div>
-</ng-template>
-
-<div class="border-b-4 border-fb-gray-200" *ngIf="!game.ended">
-  <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
-    <h2 class="font-bold text-xl lg:text-2xl">Abpfiff</h2>
-
-    <div class="mt-4 mb-12">
-      <p class="pb-6">
-        Das Spiel ist aktuell noch nicht beendet. Klicke auf den untenstehenden
-        Button, um das Spiel und die Eingabe der Ereignisse zu beenden. Im
-        Anschluss kannst du die Unterschriften und besondere Ereignisse
-        dokumentieren.
-      </p>
-
-      <h3 class="text-lg font-bold pb-2">Wichtig</h3>
-      <p class="pb-3">Dieser Schritt kann nicht rückgängig gemacht werden!</p>
-
-      <fb-match-event-form
-        class="col-span-2"
-        type="end"
-        team="both"
-        (updateGame)="reloadGame()"
-        (updatePeriod)="(null)"
-        (scrollToSbbNavigation)="scrollToSbbNavigation()"
-        [match]="game"
-        [noBackground]="true"
-      ></fb-match-event-form>
-    </div>
-  </div>
-</div>
-
-<ng-container *ngIf="game.ended">
-  <fb-awards [match]="game"></fb-awards>
-
+@if (!game.ended) {
   <div class="border-b-4 border-fb-gray-200">
     <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
-      <h2 class="font-bold text-xl lg:text-2xl">Spielinformationen</h2>
-
-      <div
-        class="grid grid-cols-2 gap-4 mt-4 lg:mt-8"
-        *ngIf="additionalFields; else loading"
-      >
-        <div class="col-span-2">
-          <fb-match-event-form
-            type="vodstream"
-            team="both"
-            [fieldValue]="game.vod_link || ''"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="(null)"
-            [match]="game"
-          ></fb-match-event-form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="border-b-4 border-fb-gray-200">
-    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
-      <h2 class="font-bold text-xl lg:text-2xl">Weitere Infos</h2>
-
-      <div
-        class="grid grid-cols-2 gap-4 mt-4 lg:mt-8"
-        *ngIf="additionalFields; else loading"
-      >
-        <div class="col-span-2">
-          <fb-match-event-form
-            type="visitors"
-            team="both"
-            [fieldValue]="game.audience?.toString() || ''"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="(null)"
-            [match]="game"
-          ></fb-match-event-form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="border-b-4 border-fb-gray-200">
-    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
-      <h2 class="font-bold text-xl lg:text-2xl">Sonstige Ereignisse</h2>
-
-      <div
-        class="grid grid-cols-2 gap-4 mt-4 lg:mt-8"
-        *ngIf="additionalFields; else loading"
-      >
-        <div class="col-span-2">
-          <fb-match-event-form
-            type="overtime"
-            team="both"
-            [fieldChecked]="additionalFields?.overtime || false"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="(null)"
-            [match]="game"
-          ></fb-match-event-form>
-        </div>
-
-        <div>
-          <fb-match-event-form
-            type="protest"
-            team="both"
-            [fieldChecked]="additionalFields?.protest || false"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="(null)"
-            [match]="game"
-          ></fb-match-event-form>
-        </div>
-
-        <div class="col-span-2">
-          <fb-match-event-form
-            type="specialevent"
-            team="both"
-            [fieldChecked]="additionalFields?.special_event || false"
-            [fieldValue]="additionalFields?.special_event_string || ''"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="(null)"
-            [match]="game"
-          ></fb-match-event-form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="border-b-4 border-fb-gray-200">
-    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
-      <h2 class="font-bold text-xl lg:text-2xl">Unterschriften</h2>
-
-      <div
-        class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8"
-        *ngIf="additionalFields; else loading"
-      >
-        <div>
-          <fb-match-event-form
-            type="timekeepersigned"
-            team="both"
-            [fieldChecked]="additionalFields?.time_keeper_signed || false"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="(null)"
-            [match]="game"
-          ></fb-match-event-form>
-        </div>
-
-        <div>
-          <fb-match-event-form
-            type="recordkeepersigned"
-            team="both"
-            [fieldChecked]="additionalFields?.record_keeper_signed || false"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="(null)"
-            [match]="game"
-          ></fb-match-event-form>
-        </div>
-
-        <div>
-          <fb-match-event-form
-            type="captainsigned"
-            team="home"
-            [fieldChecked]="additionalFields?.home_captain_signed || false"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="(null)"
-            [match]="game"
-          ></fb-match-event-form>
-        </div>
-
-        <div>
-          <fb-match-event-form
-            type="captainsigned"
-            team="guest"
-            [fieldChecked]="additionalFields?.guest_captain_signed || false"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="(null)"
-            [match]="game"
-          ></fb-match-event-form>
-        </div>
-
-        <div>
-          <fb-match-event-form
-            type="referee1signed"
-            team="both"
-            [fieldChecked]="additionalFields?.referee1_signed || false"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="(null)"
-            [match]="game"
-          ></fb-match-event-form>
-        </div>
-
-        <div>
-          <fb-match-event-form
-            type="referee2signed"
-            team="both"
-            [fieldChecked]="additionalFields?.referee2_signed || false"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="(null)"
-            [match]="game"
-          ></fb-match-event-form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="border-b-4 border-fb-gray-200">
-    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
-      <h2 class="font-bold text-xl lg:text-2xl">Kommentar</h2>
-
-      <div class="grid mt-4 lg:mt-8" *ngIf="additionalFields; else loading">
+      <h2 class="font-bold text-xl lg:text-2xl">Abpfiff</h2>
+      <div class="mt-4 mb-12">
+        <p class="pb-6">
+          Das Spiel ist aktuell noch nicht beendet. Klicke auf den
+          untenstehenden Button, um das Spiel und die Eingabe der Ereignisse zu
+          beenden. Im Anschluss kannst du die Unterschriften und besondere
+          Ereignisse dokumentieren.
+        </p>
+        <h3 class="text-lg font-bold pb-2">Wichtig</h3>
+        <p class="pb-3">Dieser Schritt kann nicht rückgängig gemacht werden!</p>
         <fb-match-event-form
-          type="comment"
+          class="col-span-2"
+          type="end"
           team="both"
-          [fieldValue]="additionalFields?.record_comment || ''"
           (updateGame)="reloadGame()"
           (updatePeriod)="(null)"
+          (scrollToSbbNavigation)="scrollToSbbNavigation()"
           [match]="game"
+          [noBackground]="true"
         ></fb-match-event-form>
       </div>
     </div>
   </div>
+}
 
-  <!-- Spieltagsbericht (nur FVD) -->
-  <div *ngIf="isFvd" class="border-b-4 border-fb-gray-200">
+@if (game.ended) {
+  <fb-awards [match]="game"></fb-awards>
+  <div class="border-b-4 border-fb-gray-200">
     <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
-      <h2 class="font-bold text-xl lg:text-2xl mb-1">Spieltagsbericht</h2>
-      <p class="text-sm text-fb-gray-400 mb-6">
-        Gemäß Spielordnung (SPO) von Floorball Deutschland – alle Punkte müssen
-        beantwortet werden.
-      </p>
-
-      <!-- Schiedsrichter-Abschnitt -->
-      <h3
-        class="font-semibold text-base mb-3 text-fb-gray-500 uppercase text-xs tracking-wider"
-      >
-        Auszufüllen durch die Schiedsrichter
-      </h3>
-      <div
-        class="divide-y divide-fb-gray-200 border border-fb-gray-200 rounded mb-6"
-      >
-        <div
-          *ngFor="let item of stbSchiedsrichter; let i = index"
-          class="flex items-center justify-between gap-4 px-4 py-3"
-        >
-          <span class="text-sm flex-1">{{ item }}</span>
-          <div class="flex gap-2 flex-shrink-0">
-            <button
-              (click)="setStbAnswer('sr', i, true)"
-              class="px-3 py-1 text-sm font-medium rounded border transition-colors"
-              [class.bg-green-600]="stbAnswers['sr_' + i] === true"
-              [class.text-white]="stbAnswers['sr_' + i] === true"
-              [class.border-green-600]="stbAnswers['sr_' + i] === true"
-              [class.border-fb-gray-300]="stbAnswers['sr_' + i] !== true"
-              [class.text-fb-gray-500]="stbAnswers['sr_' + i] !== true"
-            >
-              Ja
-            </button>
-            <button
-              (click)="setStbAnswer('sr', i, false)"
-              class="px-3 py-1 text-sm font-medium rounded border transition-colors"
-              [class.bg-red-500]="stbAnswers['sr_' + i] === false"
-              [class.text-white]="stbAnswers['sr_' + i] === false"
-              [class.border-red-500]="stbAnswers['sr_' + i] === false"
-              [class.border-fb-gray-300]="stbAnswers['sr_' + i] !== false"
-              [class.text-fb-gray-500]="stbAnswers['sr_' + i] !== false"
-            >
-              Nein
-            </button>
+      <h2 class="font-bold text-xl lg:text-2xl">Spielinformationen</h2>
+      @if (additionalFields) {
+        <div class="grid grid-cols-2 gap-4 mt-4 lg:mt-8">
+          <div class="col-span-2">
+            <fb-match-event-form
+              type="vodstream"
+              team="both"
+              [fieldValue]="game.vod_link || ''"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              [match]="game"
+            ></fb-match-event-form>
           </div>
         </div>
-      </div>
-
-      <!-- Ausrichter-Abschnitt -->
-      <h3
-        class="font-semibold text-base mb-3 text-fb-gray-500 uppercase text-xs tracking-wider"
-      >
-        Auszufüllen durch den Ausrichter
-      </h3>
-      <div
-        class="divide-y divide-fb-gray-200 border border-fb-gray-200 rounded mb-6"
-      >
-        <div
-          *ngFor="let item of stbAusrichter; let i = index"
-          class="flex items-center justify-between gap-4 px-4 py-3"
-        >
-          <span class="text-sm flex-1">{{ item }}</span>
-          <div class="flex gap-2 flex-shrink-0">
-            <button
-              (click)="setStbAnswer('aus', i, true)"
-              class="px-3 py-1 text-sm font-medium rounded border transition-colors"
-              [class.bg-green-600]="stbAnswers['aus_' + i] === true"
-              [class.text-white]="stbAnswers['aus_' + i] === true"
-              [class.border-green-600]="stbAnswers['aus_' + i] === true"
-              [class.border-fb-gray-300]="stbAnswers['aus_' + i] !== true"
-              [class.text-fb-gray-500]="stbAnswers['aus_' + i] !== true"
+      } @else {
+        <div class="bg-white my-[5px] py-[15px] px-[30px]">
+          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+            <svg
+              class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              Ja
-            </button>
-            <button
-              (click)="setStbAnswer('aus', i, false)"
-              class="px-3 py-1 text-sm font-medium rounded border transition-colors"
-              [class.bg-red-500]="stbAnswers['aus_' + i] === false"
-              [class.text-white]="stbAnswers['aus_' + i] === false"
-              [class.border-red-500]="stbAnswers['aus_' + i] === false"
-              [class.border-fb-gray-300]="stbAnswers['aus_' + i] !== false"
-              [class.text-fb-gray-500]="stbAnswers['aus_' + i] !== false"
-            >
-              Nein
-            </button>
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            Daten werden geladen...
           </div>
         </div>
-      </div>
-
-      <!-- Erläuterungen -->
-      <label class="block text-sm font-medium mb-2"
-        >Ggf. nähere Erläuterungen</label
-      >
-      <textarea
-        [(ngModel)]="stbComment"
-        rows="3"
-        class="w-full border border-fb-gray-300 rounded p-2 text-sm resize-none focus:outline-none focus:border-fb-gray-500"
-        placeholder="Optionale Anmerkungen…"
-      ></textarea>
+      }
     </div>
   </div>
-
+  <div class="border-b-4 border-fb-gray-200">
+    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+      <h2 class="font-bold text-xl lg:text-2xl">Weitere Infos</h2>
+      @if (additionalFields) {
+        <div class="grid grid-cols-2 gap-4 mt-4 lg:mt-8">
+          <div class="col-span-2">
+            <fb-match-event-form
+              type="visitors"
+              team="both"
+              [fieldValue]="game.audience?.toString() || ''"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+        </div>
+      } @else {
+        <div class="bg-white my-[5px] py-[15px] px-[30px]">
+          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+            <svg
+              class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            Daten werden geladen...
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="border-b-4 border-fb-gray-200">
+    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+      <h2 class="font-bold text-xl lg:text-2xl">Sonstige Ereignisse</h2>
+      @if (additionalFields) {
+        <div class="grid grid-cols-2 gap-4 mt-4 lg:mt-8">
+          <div class="col-span-2">
+            <fb-match-event-form
+              type="overtime"
+              team="both"
+              [fieldChecked]="additionalFields?.overtime || false"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+          <div>
+            <fb-match-event-form
+              type="protest"
+              team="both"
+              [fieldChecked]="additionalFields?.protest || false"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+          <div class="col-span-2">
+            <fb-match-event-form
+              type="specialevent"
+              team="both"
+              [fieldChecked]="additionalFields?.special_event || false"
+              [fieldValue]="additionalFields?.special_event_string || ''"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+        </div>
+      } @else {
+        <div class="bg-white my-[5px] py-[15px] px-[30px]">
+          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+            <svg
+              class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            Daten werden geladen...
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="border-b-4 border-fb-gray-200">
+    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+      <h2 class="font-bold text-xl lg:text-2xl">Unterschriften</h2>
+      @if (additionalFields) {
+        <div class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8">
+          <div>
+            <fb-match-event-form
+              type="timekeepersigned"
+              team="both"
+              [fieldChecked]="additionalFields?.time_keeper_signed || false"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+          <div>
+            <fb-match-event-form
+              type="recordkeepersigned"
+              team="both"
+              [fieldChecked]="additionalFields?.record_keeper_signed || false"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+          <div>
+            <fb-match-event-form
+              type="captainsigned"
+              team="home"
+              [fieldChecked]="additionalFields?.home_captain_signed || false"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+          <div>
+            <fb-match-event-form
+              type="captainsigned"
+              team="guest"
+              [fieldChecked]="additionalFields?.guest_captain_signed || false"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+          <div>
+            <fb-match-event-form
+              type="referee1signed"
+              team="both"
+              [fieldChecked]="additionalFields?.referee1_signed || false"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+          <div>
+            <fb-match-event-form
+              type="referee2signed"
+              team="both"
+              [fieldChecked]="additionalFields?.referee2_signed || false"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="(null)"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
+        </div>
+      } @else {
+        <div class="bg-white my-[5px] py-[15px] px-[30px]">
+          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+            <svg
+              class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            Daten werden geladen...
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="border-b-4 border-fb-gray-200">
+    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+      <h2 class="font-bold text-xl lg:text-2xl">Kommentar</h2>
+      @if (additionalFields) {
+        <div class="grid mt-4 lg:mt-8">
+          <fb-match-event-form
+            type="comment"
+            team="both"
+            [fieldValue]="additionalFields?.record_comment || ''"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+      } @else {
+        <div class="bg-white my-[5px] py-[15px] px-[30px]">
+          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+            <svg
+              class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            Daten werden geladen...
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <!-- Spieltagsbericht (nur FVD) -->
+  @if (isFvd) {
+    <div class="border-b-4 border-fb-gray-200">
+      <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+        <h2 class="font-bold text-xl lg:text-2xl mb-1">Spieltagsbericht</h2>
+        <p class="text-sm text-fb-gray-400 mb-6">
+          Gemäß Spielordnung (SPO) von Floorball Deutschland – alle Punkte
+          müssen beantwortet werden.
+        </p>
+        <!-- Schiedsrichter-Abschnitt -->
+        <h3
+          class="font-semibold text-base mb-3 text-fb-gray-500 uppercase text-xs tracking-wider"
+        >
+          Auszufüllen durch die Schiedsrichter
+        </h3>
+        <div
+          class="divide-y divide-fb-gray-200 border border-fb-gray-200 rounded mb-6"
+        >
+          @for (item of stbSchiedsrichter; track item; let i = $index) {
+            <div class="flex items-center justify-between gap-4 px-4 py-3">
+              <span class="text-sm flex-1">{{ item }}</span>
+              <div class="flex gap-2 flex-shrink-0">
+                <button
+                  (click)="setStbAnswer('sr', i, true)"
+                  class="px-3 py-1 text-sm font-medium rounded border transition-colors"
+                  [class.bg-green-600]="stbAnswers['sr_' + i] === true"
+                  [class.text-white]="stbAnswers['sr_' + i] === true"
+                  [class.border-green-600]="stbAnswers['sr_' + i] === true"
+                  [class.border-fb-gray-300]="stbAnswers['sr_' + i] !== true"
+                  [class.text-fb-gray-500]="stbAnswers['sr_' + i] !== true"
+                >
+                  Ja
+                </button>
+                <button
+                  (click)="setStbAnswer('sr', i, false)"
+                  class="px-3 py-1 text-sm font-medium rounded border transition-colors"
+                  [class.bg-red-500]="stbAnswers['sr_' + i] === false"
+                  [class.text-white]="stbAnswers['sr_' + i] === false"
+                  [class.border-red-500]="stbAnswers['sr_' + i] === false"
+                  [class.border-fb-gray-300]="stbAnswers['sr_' + i] !== false"
+                  [class.text-fb-gray-500]="stbAnswers['sr_' + i] !== false"
+                >
+                  Nein
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+        <!-- Ausrichter-Abschnitt -->
+        <h3
+          class="font-semibold text-base mb-3 text-fb-gray-500 uppercase text-xs tracking-wider"
+        >
+          Auszufüllen durch den Ausrichter
+        </h3>
+        <div
+          class="divide-y divide-fb-gray-200 border border-fb-gray-200 rounded mb-6"
+        >
+          @for (item of stbAusrichter; track item; let i = $index) {
+            <div class="flex items-center justify-between gap-4 px-4 py-3">
+              <span class="text-sm flex-1">{{ item }}</span>
+              <div class="flex gap-2 flex-shrink-0">
+                <button
+                  (click)="setStbAnswer('aus', i, true)"
+                  class="px-3 py-1 text-sm font-medium rounded border transition-colors"
+                  [class.bg-green-600]="stbAnswers['aus_' + i] === true"
+                  [class.text-white]="stbAnswers['aus_' + i] === true"
+                  [class.border-green-600]="stbAnswers['aus_' + i] === true"
+                  [class.border-fb-gray-300]="stbAnswers['aus_' + i] !== true"
+                  [class.text-fb-gray-500]="stbAnswers['aus_' + i] !== true"
+                >
+                  Ja
+                </button>
+                <button
+                  (click)="setStbAnswer('aus', i, false)"
+                  class="px-3 py-1 text-sm font-medium rounded border transition-colors"
+                  [class.bg-red-500]="stbAnswers['aus_' + i] === false"
+                  [class.text-white]="stbAnswers['aus_' + i] === false"
+                  [class.border-red-500]="stbAnswers['aus_' + i] === false"
+                  [class.border-fb-gray-300]="stbAnswers['aus_' + i] !== false"
+                  [class.text-fb-gray-500]="stbAnswers['aus_' + i] !== false"
+                >
+                  Nein
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+        <!-- Erläuterungen -->
+        <label class="block text-sm font-medium mb-2"
+          >Ggf. nähere Erläuterungen</label
+        >
+        <textarea
+          [(ngModel)]="stbComment"
+          rows="3"
+          class="w-full border border-fb-gray-300 rounded p-2 text-sm resize-none focus:outline-none focus:border-fb-gray-500"
+          placeholder="Optionale Anmerkungen…"
+        ></textarea>
+      </div>
+    </div>
+  }
   <div class="border-b-4 border-fb-gray-200">
     <div class="container mx-auto px-4 pb-16 lg:px-8 mt-4 lg:mt-8">
       <h2 class="font-bold text-xl lg:text-2xl mb-6">Eingabe abschließen</h2>
-
-      <div
-        *ngIf="!stbComplete"
-        class="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded text-sm text-yellow-800"
-      >
-        Bitte den Spieltagsbericht vollständig ausfüllen (alle Ja/Nein-Fragen
-        beantworten), bevor der Spielbericht abgeschlossen werden kann.
-      </div>
-
-      <fb-confirmation
-        *ngIf="stbComplete"
-        (handleSubmit)="handleFinalize()"
-        [title]="nextStatusOption.confirmationTitle"
-        [content]="nextStatusOption.confirmationContent"
-        [submitButtonTitle]="nextStatusOption.confirmationButton"
-      >
-        <fb-button [fullWidth]="true" [variant]="'success'" [size]="'large'"
+      @if (!stbComplete) {
+        <div
+          class="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded text-sm text-yellow-800"
+        >
+          Bitte den Spieltagsbericht vollständig ausfüllen (alle Ja/Nein-Fragen
+          beantworten), bevor der Spielbericht abgeschlossen werden kann.
+        </div>
+      }
+      @if (stbComplete) {
+        <fb-confirmation
+          (handleSubmit)="handleFinalize()"
+          [title]="nextStatusOption.confirmationTitle"
+          [content]="nextStatusOption.confirmationContent"
+          [submitButtonTitle]="nextStatusOption.confirmationButton"
+        >
+          <fb-button [fullWidth]="true" [variant]="'success'" [size]="'large'"
+            >Spiel abschließen</fb-button
+          >
+        </fb-confirmation>
+      }
+      @if (!stbComplete) {
+        <fb-button
+          [fullWidth]="true"
+          [variant]="'success'"
+          [size]="'large'"
+          [disabled]="true"
           >Spiel abschließen</fb-button
         >
-      </fb-confirmation>
-
-      <fb-button
-        *ngIf="!stbComplete"
-        [fullWidth]="true"
-        [variant]="'success'"
-        [size]="'large'"
-        [disabled]="true"
-        >Spiel abschließen</fb-button
-      >
+      }
     </div>
   </div>
-</ng-container>
+}

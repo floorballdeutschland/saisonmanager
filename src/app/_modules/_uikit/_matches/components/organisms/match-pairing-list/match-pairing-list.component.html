@@ -1,6 +1,6 @@
-<ng-container *ngFor="let match of matches; trackBy: trackByFn">
+@for (match of matches; track trackByFn($index, match)) {
   <fb-match-pairing
     class="block even:bg-fb-gray-300"
     [match]="match"
   ></fb-match-pairing>
-</ng-container>
+}

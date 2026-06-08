@@ -26,28 +26,30 @@
           (ngModelChange)="applyFilters()"
         />
 
-        <select
-          *ngIf="seasonOptions.length"
-          class="rounded border-gray-300 text-sm"
-          [(ngModel)]="filterSeasonId"
-          (ngModelChange)="onSeasonChange()"
-        >
-          <option *ngFor="let opt of seasonOptions" [ngValue]="opt.value">
-            {{ opt.label }}
-          </option>
-        </select>
+        @if (seasonOptions.length) {
+          <select
+            class="rounded border-gray-300 text-sm"
+            [(ngModel)]="filterSeasonId"
+            (ngModelChange)="onSeasonChange()"
+          >
+            @for (opt of seasonOptions; track opt) {
+              <option [ngValue]="opt.value">
+                {{ opt.label }}
+              </option>
+            }
+          </select>
+        }
 
         <select
           class="rounded border-gray-300 text-sm"
           [(ngModel)]="filterGameOperationId"
           (ngModelChange)="onGameOperationChange()"
         >
-          <option
-            *ngFor="let opt of gameOperationOptions"
-            [ngValue]="opt.value"
-          >
-            {{ opt.label }}
-          </option>
+          @for (opt of gameOperationOptions; track opt) {
+            <option [ngValue]="opt.value">
+              {{ opt.label }}
+            </option>
+          }
         </select>
 
         <select
@@ -55,9 +57,11 @@
           [(ngModel)]="filterLeagueId"
           (ngModelChange)="applyFilters()"
         >
-          <option *ngFor="let opt of leagueOptions" [ngValue]="opt.value">
-            {{ opt.label }}
-          </option>
+          @for (opt of leagueOptions; track opt) {
+            <option [ngValue]="opt.value">
+              {{ opt.label }}
+            </option>
+          }
         </select>
 
         <select
@@ -65,9 +69,11 @@
           [(ngModel)]="filterFieldSize"
           (ngModelChange)="applyFilters()"
         >
-          <option *ngFor="let opt of fieldSizeOptions" [ngValue]="opt.value">
-            {{ opt.label }}
-          </option>
+          @for (opt of fieldSizeOptions; track opt) {
+            <option [ngValue]="opt.value">
+              {{ opt.label }}
+            </option>
+          }
         </select>
 
         <select
@@ -85,9 +91,11 @@
           [(ngModel)]="filterAgeGroup"
           (ngModelChange)="applyFilters()"
         >
-          <option *ngFor="let opt of ageGroupOptions" [ngValue]="opt.value">
-            {{ opt.label }}
-          </option>
+          @for (opt of ageGroupOptions; track opt) {
+            <option [ngValue]="opt.value">
+              {{ opt.label }}
+            </option>
+          }
         </select>
 
         <select
@@ -95,9 +103,11 @@
           [(ngModel)]="filterLeagueClassId"
           (ngModelChange)="applyFilters()"
         >
-          <option *ngFor="let opt of leagueClassOptions" [ngValue]="opt.value">
-            {{ opt.label }}
-          </option>
+          @for (opt of leagueClassOptions; track opt) {
+            <option [ngValue]="opt.value">
+              {{ opt.label }}
+            </option>
+          }
         </select>
 
         <select
@@ -116,9 +126,11 @@
           [(ngModel)]="filterStatusId"
           (ngModelChange)="applyFilters()"
         >
-          <option *ngFor="let opt of statusOptions" [ngValue]="opt.value">
-            {{ opt.label }}
-          </option>
+          @for (opt of statusOptions; track opt) {
+            <option [ngValue]="opt.value">
+              {{ opt.label }}
+            </option>
+          }
         </select>
 
         <select
@@ -146,19 +158,22 @@
 
       <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
         <span class="text-sm text-gray-500">
-          <span *ngIf="!loading"
-            >{{ filteredEntries.length }} Lizenzen gefunden</span
-          >
-          <span *ngIf="loading">Daten werden geladen...</span>
+          @if (!loading) {
+            <span>{{ filteredEntries.length }} Lizenzen gefunden</span>
+          }
+          @if (loading) {
+            <span>Daten werden geladen...</span>
+          }
         </span>
         <div class="flex items-center gap-4">
-          <button
-            *ngIf="!loading && filteredEntries.length > 0"
-            class="text-sm text-fb-gray-500 hover:text-black underline"
-            (click)="exportCsv()"
-          >
-            CSV exportieren
-          </button>
+          @if (!loading && filteredEntries.length > 0) {
+            <button
+              class="text-sm text-fb-gray-500 hover:text-black underline"
+              (click)="exportCsv()"
+            >
+              CSV exportieren
+            </button>
+          }
           <button
             class="text-sm text-fb-gray-500 hover:text-black underline"
             (click)="resetFilters()"
@@ -170,357 +185,355 @@
     </div>
 
     <!-- Loading -->
-    <div *ngIf="loading" class="bg-white p-8 text-center text-gray-400">
-      <svg
-        class="inline mr-2 w-8 h-8 animate-spin text-gray-300 fill-gray-600"
-        viewBox="0 0 100 101"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 50.5908Z"
-          fill="currentColor"
-        />
-        <path
-          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-          fill="currentFill"
-        />
-      </svg>
-      Lizenzdaten werden geladen...
-    </div>
+    @if (loading) {
+      <div class="bg-white p-8 text-center text-gray-400">
+        <svg
+          class="inline mr-2 w-8 h-8 animate-spin text-gray-300 fill-gray-600"
+          viewBox="0 0 100 101"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 50.5908Z"
+            fill="currentColor"
+          />
+          <path
+            d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+            fill="currentFill"
+          />
+        </svg>
+        Lizenzdaten werden geladen...
+      </div>
+    }
 
     <!-- Fehler -->
-    <div *ngIf="loadError" class="bg-white p-8 text-center text-red-600">
-      <p class="mb-4">Lizenzdaten konnten nicht geladen werden.</p>
-      <button class="text-sm underline hover:text-red-800" (click)="load()">
-        Erneut versuchen
-      </button>
-    </div>
+    @if (loadError) {
+      <div class="bg-white p-8 text-center text-red-600">
+        <p class="mb-4">Lizenzdaten konnten nicht geladen werden.</p>
+        <button class="text-sm underline hover:text-red-800" (click)="load()">
+          Erneut versuchen
+        </button>
+      </div>
+    }
 
     <!-- Tabelle -->
-    <div *ngIf="!loading && !loadError" class="bg-white overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="border-b border-gray-200 text-left">
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Spieler
-            </th>
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Verein
-            </th>
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Team
-            </th>
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Wettbewerb
-            </th>
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Liga
-            </th>
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Status
-            </th>
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Typ
-            </th>
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Express
-            </th>
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Dokumente
-            </th>
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Beantragt
-            </th>
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Erteilt
-            </th>
-            <th
-              class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-            >
-              Gültig bis
-            </th>
-            <th class="px-4 py-3"></th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          <ng-container *ngIf="filteredEntries.length === 0">
-            <tr>
-              <td colspan="12" class="px-4 py-8 text-center text-gray-400">
-                Keine Lizenzen gefunden.
-              </td>
+    @if (!loading && !loadError) {
+      <div class="bg-white overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 text-left">
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Spieler
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Verein
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Team
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Wettbewerb
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Liga
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Status
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Typ
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Express
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Dokumente
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Beantragt
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Erteilt
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+              >
+                Gültig bis
+              </th>
+              <th class="px-4 py-3"></th>
             </tr>
-          </ng-container>
-
-          <tr
-            *ngFor="let e of filteredEntries"
-            class="hover:bg-fb-gray-100 transition-colors"
-          >
-            <!-- Spieler -->
-            <td class="px-4 py-3 whitespace-nowrap">
-              <p class="font-medium text-gray-900">
-                {{ e.player_last_name }}, {{ e.player_first_name }}
-              </p>
-              <p class="text-xs text-gray-400">
-                Jg. {{ e.player_birthdate | date : "yyyy" }}
-              </p>
-            </td>
-
-            <!-- Verein -->
-            <td class="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {{ e.club_name ?? "–" }}
-            </td>
-
-            <!-- Team -->
-            <td class="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {{ e.team_name }}
-            </td>
-
-            <!-- Wettbewerb -->
-            <td class="px-4 py-3 whitespace-nowrap">
-              <div class="flex flex-wrap gap-1 items-center">
-                <span
-                  class="inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold bg-fb-gray-200 text-gray-700"
-                >
-                  {{ fieldSizeLabel(e.field_size) }}
-                </span>
-                <span class="text-[12px] text-gray-600">
-                  {{ e.female ? "w" : "m" }}
-                </span>
-                <span
-                  *ngIf="e.league_category_name"
-                  class="text-[12px] text-gray-600"
-                >
-                  {{ e.league_category_name }}
-                </span>
-                <span
-                  *ngIf="e.league_type === 'cup'"
-                  class="inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold bg-gray-100 text-gray-500"
-                  >Pokal</span
-                >
-              </div>
-            </td>
-
-            <!-- Liga -->
-            <td class="px-4 py-3 whitespace-nowrap">
-              <p class="text-gray-800">{{ e.league_name }}</p>
-              <p *ngIf="e.league_class_name" class="text-[11px] text-gray-400">
-                {{ e.league_class_name }}
-              </p>
-            </td>
-
-            <!-- Status -->
-            <td class="px-4 py-3 whitespace-nowrap">
-              <span
-                class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5"
-                [ngClass]="statusBadgeClass(e.license_status_id)"
-                >{{ e.license_status }}</span
-              >
-            </td>
-
-            <!-- Lizenztyp -->
-            <td class="px-4 py-3 whitespace-nowrap">
-              <span
-                *ngIf="e.license_type === 'secondary'"
-                class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-purple-100 text-purple-800"
-                >Zweitlizenz</span
-              >
-              <span
-                *ngIf="e.license_type === 'primary'"
-                class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-blue-100 text-blue-800"
-                >Erstlizenz</span
-              >
-            </td>
-
-            <!-- Express -->
-            <td class="px-4 py-3 whitespace-nowrap">
-              <span
-                *ngIf="e.express"
-                class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"
-                >Express</span
-              >
-              <span *ngIf="!e.express" class="text-gray-300">–</span>
-            </td>
-
-            <!-- Dokumentenstatus -->
-            <td class="px-4 py-3 whitespace-nowrap">
-              <div class="flex gap-1.5 items-center">
-                <!-- Elternzustimmung (nur für Minderjährige) -->
-                <ng-container *ngIf="isMinor(e.player_birthdate)">
-                  <a
-                    *ngIf="
-                      e.documents?.parental_consent_url;
-                      else parentalStatic
-                    "
-                    [href]="e.documents!.parental_consent_url"
-                    target="_blank"
-                    rel="noopener"
-                    class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
-                    title="Elternzustimmung ansehen"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="w-3 h-3"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                  </a>
-                  <ng-template #parentalStatic>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @if (filteredEntries.length === 0) {
+              <tr>
+                <td colspan="12" class="px-4 py-8 text-center text-gray-400">
+                  Keine Lizenzen gefunden.
+                </td>
+              </tr>
+            }
+            @for (e of filteredEntries; track e) {
+              <tr class="hover:bg-fb-gray-100 transition-colors">
+                <!-- Spieler -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <p class="font-medium text-gray-900">
+                    {{ e.player_last_name }}, {{ e.player_first_name }}
+                  </p>
+                  <p class="text-xs text-gray-400">
+                    Jg. {{ e.player_birthdate | date: "yyyy" }}
+                  </p>
+                </td>
+                <!-- Verein -->
+                <td class="px-4 py-3 text-gray-700 whitespace-nowrap">
+                  {{ e.club_name ?? "–" }}
+                </td>
+                <!-- Team -->
+                <td class="px-4 py-3 text-gray-700 whitespace-nowrap">
+                  {{ e.team_name }}
+                </td>
+                <!-- Wettbewerb -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <div class="flex flex-wrap gap-1 items-center">
                     <span
-                      class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
-                      [ngClass]="
-                        e.documents?.parental_consent === false
-                          ? 'bg-red-100 text-red-600'
-                          : 'bg-gray-100 text-gray-400'
-                      "
-                      title="Elternzustimmung fehlt"
+                      class="inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold bg-fb-gray-200 text-gray-700"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="w-3 h-3"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
+                      {{ fieldSizeLabel(e.field_size) }}
                     </span>
-                  </ng-template>
-                </ng-container>
-
-                <!-- Weitere Pflichtdokumente aus required_documents -->
-                <ng-container
-                  *ngFor="
-                    let docType of extraRequiredDocs(e.required_documents)
+                    <span class="text-[12px] text-gray-600">
+                      {{ e.female ? "w" : "m" }}
+                    </span>
+                    @if (e.league_category_name) {
+                      <span class="text-[12px] text-gray-600">
+                        {{ e.league_category_name }}
+                      </span>
+                    }
+                    @if (e.league_type === "cup") {
+                      <span
+                        class="inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold bg-gray-100 text-gray-500"
+                        >Pokal</span
+                      >
+                    }
+                  </div>
+                </td>
+                <!-- Liga -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <p class="text-gray-800">{{ e.league_name }}</p>
+                  @if (e.league_class_name) {
+                    <p class="text-[11px] text-gray-400">
+                      {{ e.league_class_name }}
+                    </p>
+                  }
+                </td>
+                <!-- Status -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <span
+                    class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5"
+                    [ngClass]="statusBadgeClass(e.license_status_id)"
+                    >{{ e.license_status }}</span
+                  >
+                </td>
+                <!-- Lizenztyp -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  @if (e.license_type === "secondary") {
+                    <span
+                      class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-purple-100 text-purple-800"
+                      >Zweitlizenz</span
+                    >
+                  }
+                  @if (e.license_type === "primary") {
+                    <span
+                      class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-blue-100 text-blue-800"
+                      >Erstlizenz</span
+                    >
+                  }
+                </td>
+                <!-- Express -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  @if (e.express) {
+                    <span
+                      class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"
+                      >Express</span
+                    >
+                  }
+                  @if (!e.express) {
+                    <span class="text-gray-300">–</span>
+                  }
+                </td>
+                <!-- Dokumentenstatus -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <div class="flex gap-1.5 items-center">
+                    <!-- Elternzustimmung (nur für Minderjährige) -->
+                    @if (isMinor(e.player_birthdate)) {
+                      @if (e.documents?.parental_consent_url) {
+                        <a
+                          [href]="e.documents!.parental_consent_url"
+                          target="_blank"
+                          rel="noopener"
+                          class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
+                          title="Elternzustimmung ansehen"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-3 h-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                          </svg>
+                        </a>
+                      } @else {
+                        <span
+                          class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
+                          [ngClass]="
+                            e.documents?.parental_consent === false
+                              ? 'bg-red-100 text-red-600'
+                              : 'bg-gray-100 text-gray-400'
+                          "
+                          title="Elternzustimmung fehlt"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-3 h-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                          </svg>
+                        </span>
+                      }
+                    }
+                    <!-- Weitere Pflichtdokumente aus required_documents -->
+                    @for (
+                      docType of extraRequiredDocs(e.required_documents);
+                      track docType
+                    ) {
+                      @if (e.documents?.[docType + "_url"]) {
+                        <a
+                          [href]="e.documents![docType + '_url']"
+                          target="_blank"
+                          rel="noopener"
+                          class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
+                          [title]="docTypeLabel(docType) + ' ansehen'"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-3 h-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                        </a>
+                      }
+                      @if (!e.documents?.[docType + "_url"]) {
+                        <span
+                          class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
+                          [ngClass]="
+                            e.documents?.[docType] === false
+                              ? 'bg-red-100 text-red-600'
+                              : 'bg-gray-100 text-gray-400'
+                          "
+                          [title]="docTypeLabel(docType) + ' fehlt'"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-3 h-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                        </span>
+                      }
+                    }
+                  </div>
+                </td>
+                <!-- Beantragt -->
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                  {{
+                    e.requested_at ? (e.requested_at | date: "dd.MM.yy") : "–"
+                  }}
+                </td>
+                <!-- Erteilt -->
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                  {{ e.approved_at ? (e.approved_at | date: "dd.MM.yy") : "–" }}
+                </td>
+                <!-- Gültig bis -->
+                <td
+                  class="px-4 py-3 whitespace-nowrap text-sm"
+                  [ngClass]="
+                    e.valid_until && e.valid_until < today
+                      ? 'text-red-600 font-medium'
+                      : 'text-gray-500'
                   "
                 >
+                  {{ e.valid_until ? (e.valid_until | date: "dd.MM.yy") : "–" }}
+                </td>
+                <!-- Detail-Link -->
+                <td class="px-4 py-3 whitespace-nowrap text-right">
                   <a
-                    *ngIf="e.documents?.[docType + '_url']"
-                    [href]="e.documents![docType + '_url']"
-                    target="_blank"
-                    rel="noopener"
-                    class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
-                    [title]="docTypeLabel(docType) + ' ansehen'"
+                    [routerLink]="[
+                      '/',
+                      'verwaltung',
+                      'lizenzwesen',
+                      'verband',
+                      'liga',
+                      e.league_id,
+                    ]"
+                    class="text-sm font-medium text-fb-gray-500 hover:text-black"
+                    >→</a
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="w-3 h-3"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </a>
-                  <span
-                    *ngIf="!e.documents?.[docType + '_url']"
-                    class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
-                    [ngClass]="
-                      e.documents?.[docType] === false
-                        ? 'bg-red-100 text-red-600'
-                        : 'bg-gray-100 text-gray-400'
-                    "
-                    [title]="docTypeLabel(docType) + ' fehlt'"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="w-3 h-3"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </span>
-                </ng-container>
-              </div>
-            </td>
-
-            <!-- Beantragt -->
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-              {{ e.requested_at ? (e.requested_at | date : "dd.MM.yy") : "–" }}
-            </td>
-
-            <!-- Erteilt -->
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-              {{ e.approved_at ? (e.approved_at | date : "dd.MM.yy") : "–" }}
-            </td>
-
-            <!-- Gültig bis -->
-            <td
-              class="px-4 py-3 whitespace-nowrap text-sm"
-              [ngClass]="
-                e.valid_until && e.valid_until < today
-                  ? 'text-red-600 font-medium'
-                  : 'text-gray-500'
-              "
-            >
-              {{ e.valid_until ? (e.valid_until | date : "dd.MM.yy") : "–" }}
-            </td>
-
-            <!-- Detail-Link -->
-            <td class="px-4 py-3 whitespace-nowrap text-right">
-              <a
-                [routerLink]="[
-                  '/',
-                  'verwaltung',
-                  'lizenzwesen',
-                  'verband',
-                  'liga',
-                  e.league_id
-                ]"
-                class="text-sm font-medium text-fb-gray-500 hover:text-black"
-                >→</a
-              >
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
 </div>

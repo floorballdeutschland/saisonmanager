@@ -18,7 +18,7 @@
             'ligen',
             leagueId,
             'spieltag',
-            'neu'
+            'neu',
           ]"
         >
           <svg
@@ -37,20 +37,21 @@
           </svg>
           <span> Neuen Spieltag anlegen </span>
         </a>
-        <button
-          *ngIf="!loading && gameDays.length"
-          (click)="toggleAllGameDays()"
-          class="text-sm text-fb-gray-500 hover:text-black underline"
-        >
-          {{
-            allExpanded
-              ? "Alle Spieltage zuklappen"
-              : "Alle Spieltage aufklappen"
-          }}
-        </button>
+        @if (!loading && gameDays.length) {
+          <button
+            (click)="toggleAllGameDays()"
+            class="text-sm text-fb-gray-500 hover:text-black underline"
+          >
+            {{
+              allExpanded
+                ? "Alle Spieltage zuklappen"
+                : "Alle Spieltage aufklappen"
+            }}
+          </button>
+        }
       </div>
 
-      <ng-container *ngIf="loading || !arenas.length">
+      @if (loading || !arenas.length) {
         <div class="bg-white my-[5px] py-[15px] px-[30px]">
           <div class="uppercase font-bold text-gray-400 text-sm mb-5">
             <svg
@@ -71,219 +72,35 @@
             Spielplan wird geladen...
           </div>
         </div>
-      </ng-container>
-      <ng-container *ngIf="!loading && gameDays.length === 0">
+      }
+      @if (!loading && gameDays.length === 0) {
         <div class="bg-white my-[5px] py-[15px] px-[30px]">
           <div class="uppercase font-bold text-gray-400 text-sm mb-5">
             Es sind noch keine Spieltage hinterlegt
           </div>
         </div>
-      </ng-container>
-      <ng-container *ngIf="!loading && gameDays.length">
-        <div *ngFor="let gameDay of gameDays">
-          <div class="bg-white md:h-[80px]">
-            <div class="flex my-2.5 lg:my-5 px-[30px] py-[20px]">
-              <button
-                type="button"
-                (click)="toggleGameDay(gameDay.id)"
-                class="flex items-center gap-3 text-left hover:opacity-75"
-                [attr.aria-expanded]="openGameDays.includes(gameDay.id)"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="2"
-                  stroke="currentColor"
-                  class="w-4 h-4 text-gray-400 transition-transform"
-                  [ngClass]="{
-                    'rotate-180': openGameDays.includes(gameDay.id)
-                  }"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                  />
-                </svg>
-                <div>
-                  <div class="uppercase font-bold text-gray-400 text-sm">
-                    Spieltag {{ gameDay.number }},
-                    {{ gameDay.date | date : "dd.MM.yyyy" }}
-                    <span
-                      *ngIf="gameDay.games.length"
-                      class="ml-1 font-normal normal-case"
-                      >({{ gameDay.games.length }}
-                      {{
-                        gameDay.games.length === 1 ? "Spiel" : "Spiele"
-                      }})</span
-                    >
-                  </div>
-                  <div
-                    class="text-gray-400 text-sm"
-                    *ngIf="gameDay.arena as arena"
-                  >
-                    {{ arena.name }}{{ arena.city ? ", " + arena.city : "" }}
-                  </div>
-                </div>
-              </button>
-              <div class="flex items-center gap-2 ml-auto">
-                <ng-container
-                  *ngIf="secretaryLinkByGameDay[gameDay.id] as link"
-                >
-                  <div class="flex items-center gap-2 text-xs text-fb-gray-400">
-                    <span class="hidden lg:inline"
-                      >Link aktiv bis
-                      {{ link.expires_at | date : "dd.MM. HH:mm" }}</span
-                    >
-                    <button
-                      type="button"
-                      (click)="copyToClipboard(link.url)"
-                      title="Link kopieren"
-                      class="flex items-center font-bold text-black leading-[17px] text-sm px-3 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="w-4 h-4 md:mr-2"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75"
-                        />
-                      </svg>
-                      <span class="hidden md:inline">Link kopieren</span>
-                    </button>
-                  </div>
-                </ng-container>
+      }
+      @if (!loading && gameDays.length) {
+        @for (gameDay of gameDays; track gameDay) {
+          <div>
+            <div class="bg-white md:h-[80px]">
+              <div class="flex my-2.5 lg:my-5 px-[30px] py-[20px]">
                 <button
                   type="button"
-                  (click)="generateSecretaryLink(gameDay.id)"
-                  [disabled]="secretaryLinkGenerating[gameDay.id]"
-                  class="flex items-center font-bold text-black leading-[17px] text-sm px-3 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] disabled:opacity-40"
-                  title="Spielsekretariats-Link generieren – Link für Schiedsrichter/Spielsekretariat zum Abrufen der Lizenzen und Spielberichte"
+                  (click)="toggleGameDay(gameDay.id)"
+                  class="flex items-center gap-3 text-left hover:opacity-75"
+                  [attr.aria-expanded]="openGameDays.includes(gameDay.id)"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke-width="1.5"
+                    stroke-width="2"
                     stroke="currentColor"
-                    class="w-4 h-4 md:mr-2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"
-                    />
-                  </svg>
-                  <span class="hidden md:inline">{{
-                    secretaryLinkGenerating[gameDay.id]
-                      ? "Wird generiert…"
-                      : "Spielsek-Link"
-                  }}</span>
-                </button>
-                <a
-                  class="flex items-center font-bold text-black leading-[17px] text-sm px-3 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                  [routerLink]="[
-                    '/',
-                    'verwaltung',
-                    'ligen',
-                    leagueId,
-                    'spieltag',
-                    gameDay.id,
-                    'bearbeiten'
-                  ]"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="w-4 h-4 md:mr-2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
-                    />
-                  </svg>
-                  <span class="hidden md:inline"> Spieltag bearbeiten </span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <ng-container *ngIf="openGameDays.includes(gameDay.id)">
-            <div
-              class="bg-white my-[5px] py-[15px]"
-              *ngIf="gameDay.games.length"
-            >
-              <div
-                class="uppercase font-bold text-gray-400 text-sm mb-5 px-[30px]"
-              >
-                Spiele
-              </div>
-              <div class="grid gap-2">
-                <ng-container
-                  *ngFor="
-                    let game of gameDay.games;
-                    let first = first;
-                    let index = index
-                  "
-                >
-                  <fb-game-edit
-                    class="px-[30px] py-1 odd:bg-fb-gray-300"
-                    [ngClass]="{ 'bg-gray-100': index % 2 === 1 }"
-                    [first]="first"
-                    [existingGame]="game"
-                    [gameDayId]="gameDay.id"
-                    [teams]="teams"
-                    [clubs]="clubs"
-                    [arenas]="arenas"
-                    [allGameDays]="gameDays"
-                    (refreshSchedule)="getSchdule(leagueId)"
-                  ></fb-game-edit>
-                </ng-container>
-                <!--              <table>-->
-                <!--                <tr>-->
-                <!--                  <td># Anpfiff</td>-->
-                <!--                  <td>Heim</td>-->
-                <!--                  <td>Gast</td>-->
-                <!--                  <td>Schirians.</td>-->
-                <!--                </tr>-->
-                <!--                <tr *ngFor="let game of gameDay.games">-->
-                <!--                  <td>{{ game.game_number }}, {{ game.start_time }}</td>-->
-                <!--                  <td>{{ game.home_team_name }}</td>-->
-                <!--                  <td>{{ game.guest_team_name }}</td>-->
-                <!--                  <td>{{ game.nominated_referees }}</td>-->
-                <!--                </tr>-->
-                <!--              </table>-->
-              </div>
-            </div>
-
-            <div class="bg-white my-[5px] px-[30px] py-[20px]">
-              <button
-                (click)="toggleNewGame(gameDay.id)"
-                class="flex uppercase font-bold text-gray-400 text-sm"
-                [ngClass]="{ 'mb-5': newGameOpen.includes(gameDay.id) }"
-              >
-                <span> Neues Spiel hinzufügen </span>
-
-                <span>
-                  <svg
-                    *ngIf="!newGameOpen.includes(gameDay.id)"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="ml-2 w-5 h-5"
+                    class="w-4 h-4 text-gray-400 transition-transform"
+                    [ngClass]="{
+                      'rotate-180': openGameDays.includes(gameDay.id),
+                    }"
                   >
                     <path
                       stroke-linecap="round"
@@ -291,37 +108,220 @@
                       d="M19.5 8.25l-7.5 7.5-7.5-7.5"
                     />
                   </svg>
-
-                  <svg
-                    *ngIf="newGameOpen.includes(gameDay.id)"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="ml-2 w-5 h-5"
+                  <div>
+                    <div class="uppercase font-bold text-gray-400 text-sm">
+                      Spieltag {{ gameDay.number }},
+                      {{ gameDay.date | date: "dd.MM.yyyy" }}
+                      @if (gameDay.games.length) {
+                        <span class="ml-1 font-normal normal-case"
+                          >({{ gameDay.games.length }}
+                          {{
+                            gameDay.games.length === 1 ? "Spiel" : "Spiele"
+                          }})</span
+                        >
+                      }
+                    </div>
+                    @if (gameDay.arena; as arena) {
+                      <div class="text-gray-400 text-sm">
+                        {{ arena.name
+                        }}{{ arena.city ? ", " + arena.city : "" }}
+                      </div>
+                    }
+                  </div>
+                </button>
+                <div class="flex items-center gap-2 ml-auto">
+                  @if (secretaryLinkByGameDay[gameDay.id]; as link) {
+                    <div
+                      class="flex items-center gap-2 text-xs text-fb-gray-400"
+                    >
+                      <span class="hidden lg:inline"
+                        >Link aktiv bis
+                        {{ link.expires_at | date: "dd.MM. HH:mm" }}</span
+                      >
+                      <button
+                        type="button"
+                        (click)="copyToClipboard(link.url)"
+                        title="Link kopieren"
+                        class="flex items-center font-bold text-black leading-[17px] text-sm px-3 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-4 h-4 md:mr-2"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75"
+                          />
+                        </svg>
+                        <span class="hidden md:inline">Link kopieren</span>
+                      </button>
+                    </div>
+                  }
+                  <button
+                    type="button"
+                    (click)="generateSecretaryLink(gameDay.id)"
+                    [disabled]="secretaryLinkGenerating[gameDay.id]"
+                    class="flex items-center font-bold text-black leading-[17px] text-sm px-3 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] disabled:opacity-40"
+                    title="Spielsekretariats-Link generieren – Link für Schiedsrichter/Spielsekretariat zum Abrufen der Lizenzen und Spielberichte"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M4.5 15.75l7.5-7.5 7.5 7.5"
-                    />
-                  </svg>
-                </span>
-              </button>
-              <fb-game-edit
-                *ngIf="newGameOpen.includes(gameDay.id)"
-                [first]="true"
-                [gameDayId]="gameDay.id"
-                [teams]="teams"
-                [clubs]="clubs"
-                [arenas]="arenas"
-                (refreshSchedule)="getSchdule(leagueId)"
-              ></fb-game-edit>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-4 h-4 md:mr-2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"
+                      />
+                    </svg>
+                    <span class="hidden md:inline">{{
+                      secretaryLinkGenerating[gameDay.id]
+                        ? "Wird generiert…"
+                        : "Spielsek-Link"
+                    }}</span>
+                  </button>
+                  <a
+                    class="flex items-center font-bold text-black leading-[17px] text-sm px-3 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    [routerLink]="[
+                      '/',
+                      'verwaltung',
+                      'ligen',
+                      leagueId,
+                      'spieltag',
+                      gameDay.id,
+                      'bearbeiten',
+                    ]"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-4 h-4 md:mr-2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
+                      />
+                    </svg>
+                    <span class="hidden md:inline"> Spieltag bearbeiten </span>
+                  </a>
+                </div>
+              </div>
             </div>
-          </ng-container>
-        </div>
-      </ng-container>
+            @if (openGameDays.includes(gameDay.id)) {
+              @if (gameDay.games.length) {
+                <div class="bg-white my-[5px] py-[15px]">
+                  <div
+                    class="uppercase font-bold text-gray-400 text-sm mb-5 px-[30px]"
+                  >
+                    Spiele
+                  </div>
+                  <div class="grid gap-2">
+                    @for (
+                      game of gameDay.games;
+                      track game;
+                      let first = $first;
+                      let index = $index
+                    ) {
+                      <fb-game-edit
+                        class="px-[30px] py-1 odd:bg-fb-gray-300"
+                        [ngClass]="{ 'bg-gray-100': index % 2 === 1 }"
+                        [first]="first"
+                        [existingGame]="game"
+                        [gameDayId]="gameDay.id"
+                        [teams]="teams"
+                        [clubs]="clubs"
+                        [arenas]="arenas"
+                        [allGameDays]="gameDays"
+                        (refreshSchedule)="getSchdule(leagueId)"
+                      ></fb-game-edit>
+                    }
+                    <!--              <table>-->
+                    <!--                <tr>-->
+                    <!--                  <td># Anpfiff</td>-->
+                    <!--                  <td>Heim</td>-->
+                    <!--                  <td>Gast</td>-->
+                    <!--                  <td>Schirians.</td>-->
+                    <!--                </tr>-->
+                    <!--                <tr *ngFor="let game of gameDay.games">-->
+                    <!--                  <td>{{ game.game_number }}, {{ game.start_time }}</td>-->
+                    <!--                  <td>{{ game.home_team_name }}</td>-->
+                    <!--                  <td>{{ game.guest_team_name }}</td>-->
+                    <!--                  <td>{{ game.nominated_referees }}</td>-->
+                    <!--                </tr>-->
+                    <!--              </table>-->
+                  </div>
+                </div>
+              }
+              <div class="bg-white my-[5px] px-[30px] py-[20px]">
+                <button
+                  (click)="toggleNewGame(gameDay.id)"
+                  class="flex uppercase font-bold text-gray-400 text-sm"
+                  [ngClass]="{ 'mb-5': newGameOpen.includes(gameDay.id) }"
+                >
+                  <span> Neues Spiel hinzufügen </span>
+                  <span>
+                    @if (!newGameOpen.includes(gameDay.id)) {
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="ml-2 w-5 h-5"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                        />
+                      </svg>
+                    }
+                    @if (newGameOpen.includes(gameDay.id)) {
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="ml-2 w-5 h-5"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M4.5 15.75l7.5-7.5 7.5 7.5"
+                        />
+                      </svg>
+                    }
+                  </span>
+                </button>
+                @if (newGameOpen.includes(gameDay.id)) {
+                  <fb-game-edit
+                    [first]="true"
+                    [gameDayId]="gameDay.id"
+                    [teams]="teams"
+                    [clubs]="clubs"
+                    [arenas]="arenas"
+                    (refreshSchedule)="getSchdule(leagueId)"
+                  ></fb-game-edit>
+                }
+              </div>
+            }
+          </div>
+        }
+      }
     </div>
   </div>
 </div>

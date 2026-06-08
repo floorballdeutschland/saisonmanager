@@ -7,51 +7,58 @@
   "
 >
   <div class="ml-3 pr-4 flex items-center w-10 h-5">
-    <input
-      type="checkbox"
-      class="rounded-full focus:ring-gray-400 h-6 w-6 text-gray-500 border-gray-300 rounded"
-      tabindex="-1"
-      [ngClass]="changed ? 'ring ring-red-300' : ''"
-      [ngModel]="checked"
-      [disabled]="!trikotNumber || hasGameEvents()"
-      (click)="handleButtonClick()"
-      *ngIf="gamePlayerEntry"
-    />
+    @if (gamePlayerEntry) {
+      <input
+        type="checkbox"
+        class="rounded-full focus:ring-gray-400 h-6 w-6 text-gray-500 border-gray-300 rounded"
+        tabindex="-1"
+        [ngClass]="changed ? 'ring ring-red-300' : ''"
+        [ngModel]="checked"
+        [disabled]="!trikotNumber || hasGameEvents()"
+        (click)="handleButtonClick()"
+      />
+    }
   </div>
   <div class="min-w-0 flex-1 text-sm text-left">
     <label class="font-medium text-gray-700 select-none">
       {{ player?.last_name }}, {{ player?.first_name }}
     </label>
-    <p *ngIf="changed" class="block mr-2 text-[11px] text-red-700">
-      Füge den Spieler hinzu, um die Änderung zu übernehmen
-    </p>
-    <p *ngIf="hasGameEvents()" class="block mr-2 text-[11px] text-orange-600">
-      Hat Ereignisse – gesperrt
-    </p>
+    @if (changed) {
+      <p class="block mr-2 text-[11px] text-red-700">
+        Füge den Spieler hinzu, um die Änderung zu übernehmen
+      </p>
+    }
+    @if (hasGameEvents()) {
+      <p class="block mr-2 text-[11px] text-orange-600">
+        Hat Ereignisse – gesperrt
+      </p>
+    }
   </div>
   <div class="flex items-center gap-2 min-w-0 text-sm">
-    <button
-      class="w-6 h-6 border border-fb-gray-500 rounded-full"
-      tabindex="-1"
-      [ngClass]="
-        captainPlayerId === player.id
-          ? 'text-white bg-fb-gray-500 font-extrabold'
-          : ''
-      "
-      (click)="toggleCaptain()"
-      *ngIf="gamePlayerEntry && !changed && !hasGameEvents()"
-    >
-      K
-    </button>
-    <button
-      class="w-6 h-6 border border-fb-gray-500 rounded-full"
-      tabindex="-1"
-      [ngClass]="goalkeeper ? 'text-white bg-fb-gray-500 font-extrabold' : ''"
-      (click)="toggleGoalkeeper()"
-      *ngIf="gamePlayerEntry && !changed && !hasGameEvents()"
-    >
-      T
-    </button>
+    @if (gamePlayerEntry && !changed && !hasGameEvents()) {
+      <button
+        class="w-6 h-6 border border-fb-gray-500 rounded-full"
+        tabindex="-1"
+        [ngClass]="
+          captainPlayerId === player.id
+            ? 'text-white bg-fb-gray-500 font-extrabold'
+            : ''
+        "
+        (click)="toggleCaptain()"
+      >
+        K
+      </button>
+    }
+    @if (gamePlayerEntry && !changed && !hasGameEvents()) {
+      <button
+        class="w-6 h-6 border border-fb-gray-500 rounded-full"
+        tabindex="-1"
+        [ngClass]="goalkeeper ? 'text-white bg-fb-gray-500 font-extrabold' : ''"
+        (click)="toggleGoalkeeper()"
+      >
+        T
+      </button>
+    }
 
     <input
       #trikotNumberInput
@@ -68,7 +75,9 @@
       [ngClass]="hasError ? 'border-red-600' : ''"
     />
     <div class="w-4">
-      <fb-glasses-icon *ngIf="(player | currentAge) < 18"></fb-glasses-icon>
+      @if ((player | currentAge) < 18) {
+        <fb-glasses-icon></fb-glasses-icon>
+      }
     </div>
   </div>
   <!-- TODO: Direktzugriff auf Spielereigenschaften -->

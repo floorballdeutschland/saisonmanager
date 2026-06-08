@@ -6,102 +6,119 @@
     {{ match.home_team_name }}
   </div>
   <div class="order-1 md:order-2 pr-3 md:pr-0">
-    <img
-      *ngIf="match.home_team_small_logo; else fallback"
-      [src]="match.home_team_small_logo"
-      class="h-8 md:h-full w-full object-contain"
-    />
+    @if (match.home_team_small_logo) {
+      <img
+        [src]="match.home_team_small_logo"
+        class="h-8 md:h-full w-full object-contain"
+      />
+    } @else {
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        data-prefix="fas"
+        data-icon="shield-alt"
+        class="text-fb-gray-400 p-0.5"
+        role="img"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+      >
+        <path
+          fill="currentColor"
+          d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
+        ></path>
+      </svg>
+    }
   </div>
 
   <div
     class="relative order-3 row-span-2 md:order-3 text-center font-bold tracking-widest md:grid md:grid-cols-1"
   >
-    <p
-      class="text-xs text-fb-gray-400 font-normal whitespace-nowrap"
-      *ngIf="match.date"
-    >
-      {{ match.date | date: "dd.MM.yyyy" }}
-    </p>
+    @if (match.date) {
+      <p class="text-xs text-fb-gray-400 font-normal whitespace-nowrap">
+        {{ match.date | date: "dd.MM.yyyy" }}
+      </p>
+    }
 
-    <div
-      *ngIf="match.notice_type"
-      class="absolute drop-shadow-lg tracking-[0.5px] w-[150px] md:w-[170px] top-1/2 right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 -translate-y-1/2 px-2 py-1.5 rounded border border-red-500 bg-red-200"
-    >
-      <div class="uppercase text-[13px] leading-none whitespace-nowrap">
-        {{ match.notice_type | gameNoticeHeadline }}
-      </div>
+    @if (match.notice_type) {
       <div
-        class="text-[10px] font-medium leading-none mt-1"
-        *ngIf="match.notice_string"
+        class="absolute drop-shadow-lg tracking-[0.5px] w-[150px] md:w-[170px] top-1/2 right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 -translate-y-1/2 px-2 py-1.5 rounded border border-red-500 bg-red-200"
       >
-        {{ match.notice_string }}
+        <div class="uppercase text-[13px] leading-none whitespace-nowrap">
+          {{ match.notice_type | gameNoticeHeadline }}
+        </div>
+        @if (match.notice_string) {
+          <div class="text-[10px] font-medium leading-none mt-1">
+            {{ match.notice_string }}
+          </div>
+        }
       </div>
-    </div>
+    }
 
-    <ng-container *ngIf="!match.started">
-      <p class="text-base whitespace-nowrap" *ngIf="match.time">
-        {{ match.time }} Uhr
-      </p>
-      <p class="text-xs leading-3" *ngIf="!match.time">
-        Keine Uhrzeit angegeben
-      </p>
-    </ng-container>
-    <ng-container *ngIf="match.started">
-      <ng-container *ngIf="match.result | normalizeMatchResult as resultData">
-        <p
-          *ngIf="resultData.result"
-          class="text-2xl"
-          [ngClass]="{
-            'text-pink-500 animate-pulse': match.started && !match.ended
-          }"
-        >
-          {{ resultData.result }}
-        </p>
-        <p
-          *ngIf="resultData.extraTime"
-          class="text-xs"
-          [ngClass]="{
-            'text-pink-500 animate-pulse': match.started && !match.ended
-          }"
-        >
-          {{ resultData.extraTime }}
-        </p>
-      </ng-container>
-    </ng-container>
+    @if (!match.started) {
+      @if (match.time) {
+        <p class="text-base whitespace-nowrap">{{ match.time }} Uhr</p>
+      }
+      @if (!match.time) {
+        <p class="text-xs leading-3">Keine Uhrzeit angegeben</p>
+      }
+    }
+    @if (match.started) {
+      @if (match.result | normalizeMatchResult; as resultData) {
+        @if (resultData.result) {
+          <p
+            class="text-2xl"
+            [ngClass]="{
+              'text-pink-500 animate-pulse': match.started && !match.ended,
+            }"
+          >
+            {{ resultData.result }}
+          </p>
+        }
+        @if (resultData.extraTime) {
+          <p
+            class="text-xs"
+            [ngClass]="{
+              'text-pink-500 animate-pulse': match.started && !match.ended,
+            }"
+          >
+            {{ resultData.extraTime }}
+          </p>
+        }
+      }
+    }
 
-    <ng-container *ngIf="match.started && !match.ended">
+    @if (match.started && !match.ended) {
       <p class="text-[10px] text-pink-500 tracking-[0.5px]">
         {{ match.current_period_title?.title }}
       </p>
-    </ng-container>
+    }
   </div>
 
   <div class="order-3 md:order-4 pr-3 md:pr-0">
-    <img
-      *ngIf="match.guest_team_small_logo; else fallback"
-      [src]="match.guest_team_small_logo"
-      class="h-8 md:h-full w-full object-contain"
-    />
+    @if (match.guest_team_small_logo) {
+      <img
+        [src]="match.guest_team_small_logo"
+        class="h-8 md:h-full w-full object-contain"
+      />
+    } @else {
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        data-prefix="fas"
+        data-icon="shield-alt"
+        class="text-fb-gray-400 p-0.5"
+        role="img"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+      >
+        <path
+          fill="currentColor"
+          d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
+        ></path>
+      </svg>
+    }
   </div>
   <div class="text-sm font-bold order-3 md:order-5 truncate">
     {{ match.guest_team_name }}
   </div>
 </a>
-
-<ng-template #fallback>
-  <svg
-    aria-hidden="true"
-    focusable="false"
-    data-prefix="fas"
-    data-icon="shield-alt"
-    class="text-fb-gray-400 p-0.5"
-    role="img"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 512 512"
-  >
-    <path
-      fill="currentColor"
-      d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
-    ></path>
-  </svg>
-</ng-template>

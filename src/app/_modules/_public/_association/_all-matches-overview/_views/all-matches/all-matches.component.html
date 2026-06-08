@@ -1,31 +1,29 @@
 <div class="container mx-auto px-4 lg:px-8 mb-5">
   <h2 class="font-bold text-xl lg:text-2xl mt-8">
-    Alle Spielbegegnungen @if (leagueId) {
-    <a
-      class="mt-4 sm:mt-0 text-fb-gray-400"
-      href="/calendar/leagues/{{ leagueId }}.ics"
-      >(als ics)</a
-    >
+    Alle Spielbegegnungen
+    @if (leagueId) {
+      <a
+        class="mt-4 sm:mt-0 text-fb-gray-400"
+        href="/calendar/leagues/{{ leagueId }}.ics"
+        >(als ics)</a
+      >
     }
   </h2>
 
   <div class="mt-4 lg:mt-8 pb-16">
-    <ng-container *ngIf="matches$ | async as matches; else loadingMatches">
-      <fb-match-encounter-list
-        *ngIf="matches.length; else noMatchesMessage"
-        [matches]="matches"
-        [withMatchDay]="true"
-      ></fb-match-encounter-list>
-
-      <ng-template #noMatchesMessage>
+    @if (matches$ | async; as matches) {
+      @if (matches.length) {
+        <fb-match-encounter-list
+          [matches]="matches"
+          [withMatchDay]="true"
+        ></fb-match-encounter-list>
+      } @else {
         <div class="text-center text-fb-gray-400 my-12">
           Noch keine Spiele für diesen Spieltag
         </div>
-      </ng-template>
-    </ng-container>
-
-    <ng-template #loadingMatches>
+      }
+    } @else {
       <fb-skeleton-match-encounter-list></fb-skeleton-match-encounter-list>
-    </ng-template>
+    }
   </div>
 </div>

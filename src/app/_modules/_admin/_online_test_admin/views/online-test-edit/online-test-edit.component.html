@@ -76,25 +76,31 @@
       />
     </div>
 
-    <div *ngIf="error" class="text-red-600 text-sm">{{ error }}</div>
+    @if (error) {
+      <div class="text-red-600 text-sm">{{ error }}</div>
+    }
 
     <div class="flex gap-3 mt-2">
       <fb-button (click)="save()" [disabled]="saving" icon="save">
         Speichern
       </fb-button>
-      <fb-button
-        *ngIf="!isNew && test.status === 'draft'"
-        variant="success"
-        (click)="publish()"
-      >
-        Veröffentlichen
-      </fb-button>
-      <a
-        *ngIf="!isNew"
-        [routerLink]="['/verwaltung', 'onlinepruefungen', test.id, 'zuweisung']"
-        class="font-bold text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
-        >SR zuweisen</a
-      >
+      @if (!isNew && test.status === "draft") {
+        <fb-button variant="success" (click)="publish()">
+          Veröffentlichen
+        </fb-button>
+      }
+      @if (!isNew) {
+        <a
+          [routerLink]="[
+            '/verwaltung',
+            'onlinepruefungen',
+            test.id,
+            'zuweisung',
+          ]"
+          class="font-bold text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
+          >SR zuweisen</a
+        >
+      }
     </div>
   </div>
 </div>

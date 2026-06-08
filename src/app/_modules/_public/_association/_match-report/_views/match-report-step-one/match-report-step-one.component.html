@@ -1,26 +1,3 @@
-<ng-template #loading>
-  <div class="bg-white my-[5px] py-[15px] px-[30px]">
-    <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-      <svg
-        class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
-        viewBox="0 0 100 101"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-          fill="currentColor"
-        />
-        <path
-          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-          fill="currentFill"
-        />
-      </svg>
-      Daten werden geladen...
-    </div>
-  </div>
-</ng-template>
-
 <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
   <h2 class="font-bold text-xl lg:text-2xl">Aufstellung</h2>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 lg:mt-8">
@@ -28,11 +5,13 @@
       <h3 class="font-bold mb-4">{{ game.home_team_name }}</h3>
 
       <div class="grid grid-cols-1 gap-2 mb-4">
-        <div *ngIf="false">
-          <fb-button (click)="openSquadHistoryHomeDialog()">
-            Kaderliste laden
-          </fb-button>
-        </div>
+        @if (false) {
+          <div>
+            <fb-button (click)="openSquadHistoryHomeDialog()">
+              Kaderliste laden
+            </fb-button>
+          </div>
+        }
         <div>
           <fb-button (handleClick)="openAddHomeDialog()">
             Kader bearbeiten
@@ -47,11 +26,13 @@
       <h3 class="font-bold mb-4">{{ game.guest_team_name }}</h3>
 
       <div class="grid grid-cols-1 gap-2 mb-4">
-        <div *ngIf="false">
-          <fb-button (click)="openSquadHistoryGuestDialog()">
-            Kaderliste laden
-          </fb-button>
-        </div>
+        @if (false) {
+          <div>
+            <fb-button (click)="openSquadHistoryGuestDialog()">
+              Kaderliste laden
+            </fb-button>
+          </div>
+        }
         <div>
           <fb-button (handleClick)="openAddGuestDialog()">
             Kader bearbeiten
@@ -63,7 +44,7 @@
     </div>
   </div>
 
-  <ng-container *ngIf="addDialogOpen !== ''">
+  @if (addDialogOpen !== "") {
     <fb-team-squad
       (handleClose)="closeAddDialog()"
       [side]="addDialogOpen"
@@ -80,16 +61,16 @@
       "
       [events]="game.events || []"
     ></fb-team-squad>
-  </ng-container>
+  }
 
-  <ng-container *ngIf="squadHistoryDialogOpen !== ''">
+  @if (squadHistoryDialogOpen !== "") {
     <fb-team-squad-history
       (handleClose)="closeSquadHistoryDialog()"
       [team]="
         addDialogOpen === 'guest' ? game.guest_team_name : game.home_team_name
       "
     ></fb-team-squad-history>
-  </ng-container>
+  }
 
   <!-- <fb-player-lineup-dialog></fb-player-lineup-dialog>-->
 </div>
@@ -101,43 +82,47 @@
     <div class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8">
       <div class="grid gap-4">
         <p class="font-bold">{{ game.home_team_name }}</p>
-        <fb-match-event-form
-          *ngFor="let num of homeCoachNums"
-          [type]="'coach' + num"
-          team="home"
-          (updateGame)="reloadGame()"
-          (updatePeriod)="(null)"
-          [match]="game"
-          [additionalFields]="additionalFields"
-        ></fb-match-event-form>
-        <button
-          *ngIf="homeCoachNums.length < 5"
-          type="button"
-          (click)="addCoach('home')"
-          class="text-sm text-fb-gray-500 hover:text-black text-left"
-        >
-          + Betreuer hinzufügen
-        </button>
+        @for (num of homeCoachNums; track num) {
+          <fb-match-event-form
+            [type]="'coach' + num"
+            team="home"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+            [additionalFields]="additionalFields"
+          ></fb-match-event-form>
+        }
+        @if (homeCoachNums.length < 5) {
+          <button
+            type="button"
+            (click)="addCoach('home')"
+            class="text-sm text-fb-gray-500 hover:text-black text-left"
+          >
+            + Betreuer hinzufügen
+          </button>
+        }
       </div>
       <div class="grid gap-4">
         <p class="font-bold">{{ game.guest_team_name }}</p>
-        <fb-match-event-form
-          *ngFor="let num of guestCoachNums"
-          [type]="'coach' + num"
-          team="guest"
-          (updateGame)="reloadGame()"
-          (updatePeriod)="(null)"
-          [match]="game"
-          [additionalFields]="additionalFields"
-        ></fb-match-event-form>
-        <button
-          *ngIf="guestCoachNums.length < 5"
-          type="button"
-          (click)="addCoach('guest')"
-          class="text-sm text-fb-gray-500 hover:text-black text-left"
-        >
-          + Betreuer hinzufügen
-        </button>
+        @for (num of guestCoachNums; track num) {
+          <fb-match-event-form
+            [type]="'coach' + num"
+            team="guest"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+            [additionalFields]="additionalFields"
+          ></fb-match-event-form>
+        }
+        @if (guestCoachNums.length < 5) {
+          <button
+            type="button"
+            (click)="addCoach('guest')"
+            class="text-sm text-fb-gray-500 hover:text-black text-left"
+          >
+            + Betreuer hinzufügen
+          </button>
+        }
       </div>
     </div>
   </div>
@@ -147,54 +132,71 @@
   <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
     <h2 class="font-bold text-xl lg:text-2xl">Spielinformationen</h2>
 
-    <div
-      class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8"
-      *ngIf="additionalFields; else loading"
-    >
-      <div class="md:col-span-2">
-        <fb-match-event-form
-          type="livestream"
-          team="both"
-          [fieldValue]="game.live_stream_link || ''"
-          (updateGame)="reloadGame()"
-          (updatePeriod)="(null)"
-          [match]="game"
-        ></fb-match-event-form>
+    @if (additionalFields) {
+      <div class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8">
+        <div class="md:col-span-2">
+          <fb-match-event-form
+            type="livestream"
+            team="both"
+            [fieldValue]="game.live_stream_link || ''"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+        <div class="md:col-span-2">
+          <fb-match-event-form
+            type="vodstream"
+            team="both"
+            [fieldValue]="game.vod_link || ''"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+        <div>
+          <fb-match-event-form
+            type="recordkeeper"
+            team="both"
+            [fieldValue]="additionalFields?.record_keeper_string || ''"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+        <div>
+          <fb-match-event-form
+            type="timekeeper"
+            team="both"
+            [fieldValue]="additionalFields?.time_keeper_string || ''"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
       </div>
-
-      <div class="md:col-span-2">
-        <fb-match-event-form
-          type="vodstream"
-          team="both"
-          [fieldValue]="game.vod_link || ''"
-          (updateGame)="reloadGame()"
-          (updatePeriod)="(null)"
-          [match]="game"
-        ></fb-match-event-form>
+    } @else {
+      <div class="bg-white my-[5px] py-[15px] px-[30px]">
+        <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+          <svg
+            class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+            viewBox="0 0 100 101"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+              fill="currentColor"
+            />
+            <path
+              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+              fill="currentFill"
+            />
+          </svg>
+          Daten werden geladen...
+        </div>
       </div>
-
-      <div>
-        <fb-match-event-form
-          type="recordkeeper"
-          team="both"
-          [fieldValue]="additionalFields?.record_keeper_string || ''"
-          (updateGame)="reloadGame()"
-          (updatePeriod)="(null)"
-          [match]="game"
-        ></fb-match-event-form>
-      </div>
-
-      <div>
-        <fb-match-event-form
-          type="timekeeper"
-          team="both"
-          [fieldValue]="additionalFields?.time_keeper_string || ''"
-          (updateGame)="reloadGame()"
-          (updatePeriod)="(null)"
-          [match]="game"
-        ></fb-match-event-form>
-      </div>
-    </div>
+    }
   </div>
 </div>
 
@@ -202,29 +204,49 @@
   <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
     <h2 class="font-bold text-xl lg:text-2xl">Schiedsrichter</h2>
 
-    <div
-      class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8"
-      *ngIf="additionalFields; else loading"
-    >
-      <div>
-        <fb-match-event-form
-          type="referee1"
-          team="both"
-          (updateGame)="reloadGame()"
-          (updatePeriod)="(null)"
-          [match]="game"
-        ></fb-match-event-form>
+    @if (additionalFields) {
+      <div class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8">
+        <div>
+          <fb-match-event-form
+            type="referee1"
+            team="both"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
+        <div>
+          <fb-match-event-form
+            type="referee2"
+            team="both"
+            (updateGame)="reloadGame()"
+            (updatePeriod)="(null)"
+            [match]="game"
+          ></fb-match-event-form>
+        </div>
       </div>
-      <div>
-        <fb-match-event-form
-          type="referee2"
-          team="both"
-          (updateGame)="reloadGame()"
-          (updatePeriod)="(null)"
-          [match]="game"
-        ></fb-match-event-form>
+    } @else {
+      <div class="bg-white my-[5px] py-[15px] px-[30px]">
+        <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+          <svg
+            class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+            viewBox="0 0 100 101"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+              fill="currentColor"
+            />
+            <path
+              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+              fill="currentFill"
+            />
+          </svg>
+          Daten werden geladen...
+        </div>
       </div>
-    </div>
+    }
   </div>
 </div>
 
@@ -234,17 +256,37 @@
       {{ fieldSize === "GF" ? "Starting six" : "Starting four" }}
     </h2>
 
-    <div
-      class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8"
-      *ngIf="additionalFields; else loading"
-    >
-      <div>
-        <fb-starting-player team="home" [match]="game"></fb-starting-player>
+    @if (additionalFields) {
+      <div class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8">
+        <div>
+          <fb-starting-player team="home" [match]="game"></fb-starting-player>
+        </div>
+        <div>
+          <fb-starting-player team="guest" [match]="game"></fb-starting-player>
+        </div>
       </div>
-      <div>
-        <fb-starting-player team="guest" [match]="game"></fb-starting-player>
+    } @else {
+      <div class="bg-white my-[5px] py-[15px] px-[30px]">
+        <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+          <svg
+            class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+            viewBox="0 0 100 101"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+              fill="currentColor"
+            />
+            <path
+              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+              fill="currentFill"
+            />
+          </svg>
+          Daten werden geladen...
+        </div>
       </div>
-    </div>
+    }
   </div>
 </div>
 

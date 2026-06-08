@@ -2,32 +2,35 @@
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold">Schiedsrichterverwaltung</h1>
     <div class="flex gap-2">
-      <a
-        *ngIf="!isRestricted"
-        [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'lizenzstufen']"
-        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
-      >
-        Lizenzstufen
-      </a>
-      <a
-        *ngIf="!isRestricted"
-        [routerLink]="[
-          '/',
-          'verwaltung',
-          'schiedsrichter',
-          'zusatzqualifikationen'
-        ]"
-        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
-      >
-        Zusatzqualifikationen
-      </a>
-      <a
-        *ngIf="canCreate"
-        [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'neu']"
-        class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
-      >
-        + Neu anlegen
-      </a>
+      @if (!isRestricted) {
+        <a
+          [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'lizenzstufen']"
+          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        >
+          Lizenzstufen
+        </a>
+      }
+      @if (!isRestricted) {
+        <a
+          [routerLink]="[
+            '/',
+            'verwaltung',
+            'schiedsrichter',
+            'zusatzqualifikationen',
+          ]"
+          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        >
+          Zusatzqualifikationen
+        </a>
+      }
+      @if (canCreate) {
+        <a
+          [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'neu']"
+          class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+        >
+          + Neu anlegen
+        </a>
+      }
     </div>
   </div>
 
@@ -40,17 +43,20 @@
       placeholder="Name oder Lizenznummer"
       class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-64"
     />
-    <select
-      *ngIf="!isRestricted"
-      [(ngModel)]="filterLandesverband"
-      (change)="onSearch()"
-      class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
-    >
-      <option value="">Alle Landesverbände</option>
-      <option *ngFor="let sa of stateAssociations" [value]="sa.name">
-        {{ sa.name }}
-      </option>
-    </select>
+    @if (!isRestricted) {
+      <select
+        [(ngModel)]="filterLandesverband"
+        (change)="onSearch()"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
+      >
+        <option value="">Alle Landesverbände</option>
+        @for (sa of stateAssociations; track sa) {
+          <option [value]="sa.name">
+            {{ sa.name }}
+          </option>
+        }
+      </select>
+    }
     <input
       type="text"
       [(ngModel)]="filterLizenzstufe"
@@ -77,117 +83,137 @@
   </div>
 
   <!-- Loading -->
-  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8 text-center">
-    Lade Schiedsrichter…
-  </div>
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      Lade Schiedsrichter…
+    </div>
+  }
 
   <!-- Tabelle -->
-  <div *ngIf="!loading" class="overflow-x-auto">
-    <p class="text-sm text-fb-gray-500 mb-3">{{ referees.length }} Einträge</p>
-    <table class="w-full text-sm">
-      <thead>
-        <tr class="border-b border-fb-gray-700 text-left">
-          <th class="py-2 pr-4 font-bold">
-            <button
-              (click)="toggleSort('lizenznummer')"
-              class="flex items-center gap-1 hover:text-fb-gray-400"
-            >
-              Lizenznummer
-              <span class="text-xs">
-                <ng-container *ngIf="sortBy === 'lizenznummer'">{{
-                  sortDir === "asc" ? "↑" : "↓"
-                }}</ng-container>
-                <ng-container *ngIf="sortBy !== 'lizenznummer'">↕</ng-container>
-              </span>
-            </button>
-          </th>
-          <th class="py-2 pr-4 font-bold">
-            <button
-              (click)="toggleSort('name')"
-              class="flex items-center gap-1 hover:text-fb-gray-400"
-            >
-              Name
-              <span class="text-xs">
-                <ng-container *ngIf="sortBy === 'name'">{{
-                  sortDir === "asc" ? "↑" : "↓"
-                }}</ng-container>
-                <ng-container *ngIf="sortBy !== 'name'">↕</ng-container>
-              </span>
-            </button>
-          </th>
-          <th class="py-2 pr-4 font-bold">Stufe</th>
-          <th class="py-2 pr-4 font-bold">Region / LV</th>
-          <th class="py-2 pr-4 font-bold">Gültigkeit</th>
-          <th class="py-2 pr-4 font-bold">Verein</th>
-          <th class="py-2"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          *ngFor="let r of referees"
-          class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
-        >
-          <td class="py-2 pr-4 font-mono">
-            {{ r.lizenznummer_display || r.lizenznummer }}
-            <span
-              *ngIf="r.guest"
-              title="Gastschiedsrichter"
-              class="ml-1 inline-block bg-fb-gray-700 text-fb-gray-500 text-[10px] font-bold px-1 rounded"
-              >G</span
-            >
-            <span
-              *ngIf="r.wallet_pass_issued_at"
-              title="Wallet-Ausweis ausgestellt"
-              class="ml-1 inline-block bg-black text-white text-[10px] font-bold px-1 rounded"
-              >W</span
-            >
-          </td>
-          <td class="py-2 pr-4 font-medium">
-            <a
-              [routerLink]="[
-                '/',
-                'verwaltung',
-                'schiedsrichter',
-                r.lizenznummer_display || r.lizenznummer
-              ]"
-              class="hover:underline"
-            >
-              {{ r.nachname }}, {{ r.vorname }}
-            </a>
-          </td>
-          <td class="py-2 pr-4">{{ r.lizenzstufe || "–" }}</td>
-          <td class="py-2 pr-4">{{ r.landesverband || "–" }}</td>
-          <td class="py-2 pr-4">
-            <span
-              *ngIf="r.gueltigkeit"
-              [class]="r.active ? 'text-green-600 font-medium' : 'text-red-500'"
-            >
-              {{ r.gueltigkeit }}
-            </span>
-            <span *ngIf="!r.gueltigkeit" class="text-fb-gray-500">–</span>
-          </td>
-          <td class="py-2 pr-4 text-fb-gray-500">{{ r.club_name || "–" }}</td>
-          <td class="py-2 text-right">
-            <a
-              [routerLink]="[
-                '/',
-                'verwaltung',
-                'schiedsrichter',
-                r.lizenznummer_display || r.lizenznummer,
-                'bearbeiten'
-              ]"
-              class="text-sm text-fb-gray-500 hover:text-black"
-            >
-              Bearbeiten
-            </a>
-          </td>
-        </tr>
-        <tr *ngIf="referees.length === 0">
-          <td colspan="7" class="py-8 text-center text-fb-gray-500">
-            Keine Einträge gefunden.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  @if (!loading) {
+    <div class="overflow-x-auto">
+      <p class="text-sm text-fb-gray-500 mb-3">
+        {{ referees.length }} Einträge
+      </p>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-fb-gray-700 text-left">
+            <th class="py-2 pr-4 font-bold">
+              <button
+                (click)="toggleSort('lizenznummer')"
+                class="flex items-center gap-1 hover:text-fb-gray-400"
+              >
+                Lizenznummer
+                <span class="text-xs">
+                  @if (sortBy === "lizenznummer") {
+                    {{ sortDir === "asc" ? "↑" : "↓" }}
+                  }
+                  @if (sortBy !== "lizenznummer") {
+                    ↕
+                  }
+                </span>
+              </button>
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              <button
+                (click)="toggleSort('name')"
+                class="flex items-center gap-1 hover:text-fb-gray-400"
+              >
+                Name
+                <span class="text-xs">
+                  @if (sortBy === "name") {
+                    {{ sortDir === "asc" ? "↑" : "↓" }}
+                  }
+                  @if (sortBy !== "name") {
+                    ↕
+                  }
+                </span>
+              </button>
+            </th>
+            <th class="py-2 pr-4 font-bold">Stufe</th>
+            <th class="py-2 pr-4 font-bold">Region / LV</th>
+            <th class="py-2 pr-4 font-bold">Gültigkeit</th>
+            <th class="py-2 pr-4 font-bold">Verein</th>
+            <th class="py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of referees; track r) {
+            <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
+              <td class="py-2 pr-4 font-mono">
+                {{ r.lizenznummer_display || r.lizenznummer }}
+                @if (r.guest) {
+                  <span
+                    title="Gastschiedsrichter"
+                    class="ml-1 inline-block bg-fb-gray-700 text-fb-gray-500 text-[10px] font-bold px-1 rounded"
+                    >G</span
+                  >
+                }
+                @if (r.wallet_pass_issued_at) {
+                  <span
+                    title="Wallet-Ausweis ausgestellt"
+                    class="ml-1 inline-block bg-black text-white text-[10px] font-bold px-1 rounded"
+                    >W</span
+                  >
+                }
+              </td>
+              <td class="py-2 pr-4 font-medium">
+                <a
+                  [routerLink]="[
+                    '/',
+                    'verwaltung',
+                    'schiedsrichter',
+                    r.lizenznummer_display || r.lizenznummer,
+                  ]"
+                  class="hover:underline"
+                >
+                  {{ r.nachname }}, {{ r.vorname }}
+                </a>
+              </td>
+              <td class="py-2 pr-4">{{ r.lizenzstufe || "–" }}</td>
+              <td class="py-2 pr-4">{{ r.landesverband || "–" }}</td>
+              <td class="py-2 pr-4">
+                @if (r.gueltigkeit) {
+                  <span
+                    [class]="
+                      r.active ? 'text-green-600 font-medium' : 'text-red-500'
+                    "
+                  >
+                    {{ r.gueltigkeit }}
+                  </span>
+                }
+                @if (!r.gueltigkeit) {
+                  <span class="text-fb-gray-500">–</span>
+                }
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{ r.club_name || "–" }}
+              </td>
+              <td class="py-2 text-right">
+                <a
+                  [routerLink]="[
+                    '/',
+                    'verwaltung',
+                    'schiedsrichter',
+                    r.lizenznummer_display || r.lizenznummer,
+                    'bearbeiten',
+                  ]"
+                  class="text-sm text-fb-gray-500 hover:text-black"
+                >
+                  Bearbeiten
+                </a>
+              </td>
+            </tr>
+          }
+          @if (referees.length === 0) {
+            <tr>
+              <td colspan="7" class="py-8 text-center text-fb-gray-500">
+                Keine Einträge gefunden.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

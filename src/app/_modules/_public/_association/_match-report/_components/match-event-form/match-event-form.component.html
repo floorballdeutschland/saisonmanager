@@ -1,534 +1,490 @@
-<div *ngIf="!['goal', 'penalty', 'timeout', 'next'].includes(type)">
-  <div *ngIf="type === 'overtime'">
-    <input
-      id="overtime"
-      type="checkbox"
-      class="mr-3"
-      (change)="submitFlag()"
-      [(ngModel)]="overtime"
-    />
-    <label for="overtime" class="font-medium text-base text-fb-gray-500"
-      >Verlängerung</label
-    >
-  </div>
-
-  <div *ngIf="type === 'protest'">
-    <input
-      id="protest"
-      type="checkbox"
-      class="mr-3"
-      (change)="submitFlag()"
-      [(ngModel)]="protest"
-    />
-    <label for="protest" class="font-medium text-base text-fb-gray-500"
-      >Protest</label
-    >
-  </div>
-
-  <div *ngIf="type === 'specialevent'">
-    <input
-      id="specialevent"
-      type="checkbox"
-      class="mr-3"
-      (change)="submitFlag()"
-      [(ngModel)]="specialevent"
-    />
-    <label for="specialevent" class="font-medium text-base text-fb-gray-500"
-      >Besonderes Ereignis</label
-    >
-    <div *ngIf="specialevent" class="mt-2">
-      <textarea
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Beschreibung des Ereignisses (z.B. Spielverzögerung wegen defektem Hallenlicht)"
-        rows="3"
-        (change)="submitField()"
-        [(ngModel)]="specialEventString"
-      ></textarea>
-      <p class="text-fb-gray-400 text-xs">
-        Dieses Feld wird automatisch gespeichert.
-      </p>
-    </div>
-  </div>
-
-  <div *ngIf="type === 'timekeepersigned'">
-    <input
-      id="timekeepersigned"
-      type="checkbox"
-      class="mr-3"
-      (change)="submitFlag()"
-      [(ngModel)]="timekeepersigned"
-    />
-    <label for="timekeepersigned" class="font-medium text-base text-fb-gray-500"
-      >Unterschrift Zeitnehmer/in</label
-    >
-  </div>
-
-  <div *ngIf="type === 'recordkeepersigned'">
-    <input
-      id="recordkeepersigned"
-      type="checkbox"
-      class="mr-3"
-      (change)="submitFlag()"
-      [(ngModel)]="recordkeepersigned"
-    />
-    <label
-      for="recordkeepersigned"
-      class="font-medium text-base text-fb-gray-500"
-      >Unterschrift Schriftführer/in</label
-    >
-  </div>
-
-  <div *ngIf="type === 'referee1signed'">
-    <input
-      id="referee1signed"
-      type="checkbox"
-      class="mr-3"
-      (change)="submitFlag()"
-      [(ngModel)]="referee1signed"
-    />
-    <label for="referee1signed" class="font-medium text-base text-fb-gray-500"
-      >Unterschrift Schiedsrichter 1</label
-    >
-  </div>
-
-  <div *ngIf="type === 'referee2signed'">
-    <input
-      id="referee2signed"
-      type="checkbox"
-      class="mr-3"
-      (change)="submitFlag()"
-      [(ngModel)]="referee2signed"
-    />
-    <label for="referee2signed" class="font-medium text-base text-fb-gray-500"
-      >Unterschrift Schiedsrichter 2</label
-    >
-  </div>
-
-  <div *ngIf="type === 'captainsigned'">
-    <input
-      [id]="'captainsigned-' + team"
-      type="checkbox"
-      class="mr-3"
-      (change)="submitFlag()"
-      [(ngModel)]="captainsignedhome"
-      *ngIf="team === 'home'"
-    />
-    <input
-      [id]="'captainsigned-' + team"
-      type="checkbox"
-      class="mr-3"
-      (change)="submitFlag()"
-      [(ngModel)]="captainsignedvisitor"
-      *ngIf="team === 'guest'"
-    />
-    <label
-      [for]="'captainsigned-' + team"
-      class="font-medium text-base text-fb-gray-500"
-      >Unterschrift {{ team === "home" ? "Heim" : "Gast" }}</label
-    >
-  </div>
-
-  <div *ngIf="type === 'visitors'">
-    <label class="font-medium text-base text-fb-gray-500">Zuschauerzahl</label>
-    <input
-      type="number"
-      inputmode="numeric"
-      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-      (change)="submitField()"
-      [(ngModel)]="visitors"
-    />
-    <p class="text-fb-gray-400 text-xs">
-      Dieses Feld wird automatisch gespeichert.
-    </p>
-  </div>
-
-  <div *ngIf="type === 'livestream'">
-    <label class="font-medium text-base text-fb-gray-500"
-      >Livestream Link</label
-    >
-    <p class="text-fb-gray-400 text-xs mt-0.5 mb-1.5">
-      Bitte verlinke sofern möglich direkt zum Livestream und nicht auf den
-      Account der entsprechenden Plattform.
-    </p>
-    <input
-      type="text"
-      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-      (change)="submitField()"
-      [(ngModel)]="livestream"
-    />
-    <p class="text-fb-gray-400 text-xs">
-      Dieses Feld wird automatisch gespeichert.
-    </p>
-  </div>
-
-  <div *ngIf="type === 'vodstream'">
-    <label class="font-medium text-base text-fb-gray-500">VOD Link</label>
-    <p class="text-fb-gray-400 text-xs mt-0.5 mb-1.5">
-      Trage an dieser Stelle einen Link zum Video des Spiels ein, über es
-      dauerhaft als Video on Demand abrufbar ist.<br />
-      <strong>Wichtig:</strong> Wenn das Spiel beispielsweise bei Twitch
-      gestreamt wird, ist es dort nur zwei Wochen lang einsehbar.<br />
-      In diesem Fall sollte hier der Link zu einer Alternativplattform
-      eingetragen werden, auf die das Video im Nachhinein hochgeladen wird, oder
-      dieser Abschnitt bleibt leer
-    </p>
-    <input
-      type="text"
-      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-      (change)="submitField()"
-      [(ngModel)]="vodstream"
-    />
-    <p class="text-fb-gray-400 text-xs">
-      Dieses Feld wird automatisch gespeichert.
-    </p>
-  </div>
-
-  <div *ngIf="type === 'comment'">
-    <label class="block text-sm text-fb-gray-500 pb-4">
-      Sollte es Unklarheiten bei der Eingabe geben, nutze gerne dieses Feld, um
-      der SBK deine Probleme mitzuteilen. Dieses Feld wird nicht öffentlich
-      angezeigt.
-    </label>
-
-    <textarea
-      type="text"
-      class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-      (change)="submitField()"
-      [(ngModel)]="comment"
-    ></textarea>
-
-    <p class="text-fb-gray-400 text-xs">
-      Dieses Feld wird automatisch gespeichert.
-    </p>
-  </div>
-
-  <div *ngIf="type === 'recordkeeper'">
-    <label class="font-medium text-base text-fb-gray-500"
-      >Schriftführer/in</label
-    >
-    <div class="grid md:grid-cols-2 gap-1">
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Vorname"
-        (change)="submitField()"
-        [(ngModel)]="recordkeeperFirstname"
-      />
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Nachname"
-        (change)="submitField()"
-        [(ngModel)]="recordkeeperLastname"
-      />
-      <p class="md:col-span-2 text-fb-gray-400 text-xs">
-        Diese Felder werden automatisch gespeichert.
-      </p>
-    </div>
-  </div>
-
-  <div *ngIf="type === 'coach1'">
-    <label class="font-medium text-base text-fb-gray-500">Betreuer 1</label>
-    <div class="grid md:grid-cols-2 gap-1">
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:rounded-tr-none md:rounded-br-none"
-        placeholder="Vorname"
-        (change)="submitField()"
-        [(ngModel)]="coach1.firstname"
-      />
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Nachname"
-        (change)="submitField()"
-        [(ngModel)]="coach1.lastname"
-      />
-    </div>
-  </div>
-
-  <div *ngIf="type === 'coach2'">
-    <label class="font-medium text-base text-fb-gray-500">Betreuer 2</label>
-    <div class="grid md:grid-cols-2 gap-1">
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Vorname"
-        (change)="submitField()"
-        [(ngModel)]="coach2.firstname"
-      />
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Nachname"
-        (change)="submitField()"
-        [(ngModel)]="coach2.lastname"
-      />
-    </div>
-  </div>
-
-  <div *ngIf="type === 'coach3'">
-    <label class="font-medium text-base text-fb-gray-500">Betreuer 3</label>
-    <div class="grid md:grid-cols-2 gap-1">
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Vorname"
-        (change)="submitField()"
-        [(ngModel)]="coach3.firstname"
-      />
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Nachname"
-        (change)="submitField()"
-        [(ngModel)]="coach3.lastname"
-      />
-    </div>
-  </div>
-
-  <div *ngIf="type === 'coach4'">
-    <label class="font-medium text-base text-fb-gray-500">Betreuer 4</label>
-    <div class="grid md:grid-cols-2 gap-1">
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Vorname"
-        (change)="submitField()"
-        [(ngModel)]="coach4.firstname"
-      />
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Nachname"
-        (change)="submitField()"
-        [(ngModel)]="coach4.lastname"
-      />
-    </div>
-  </div>
-
-  <div *ngIf="type === 'coach5'">
-    <label class="font-medium text-base text-fb-gray-500">Betreuer 5</label>
-    <div class="grid md:grid-cols-2 gap-1">
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Vorname"
-        (change)="submitField()"
-        [(ngModel)]="coach5.firstname"
-      />
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Nachname"
-        (change)="submitField()"
-        [(ngModel)]="coach5.lastname"
-      />
-      <p class="md:col-span-2 text-fb-gray-400 text-xs">
-        Diese Felder werden automatisch gespeichert.
-      </p>
-    </div>
-  </div>
-
-  <div *ngIf="type === 'timekeeper'">
-    <label class="font-medium text-base text-fb-gray-500">Zeitnehmer/in</label>
-    <div class="grid md:grid-cols-2 gap-1">
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Vorname"
-        (change)="submitField()"
-        [(ngModel)]="timekeeperFirstname"
-      />
-      <input
-        type="text"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        placeholder="Nachname"
-        (change)="submitField()"
-        [(ngModel)]="timekeeperLastname"
-      />
-      <p class="md:col-span-2 text-fb-gray-400 text-xs">
-        Diese Felder werden automatisch gespeichert.
-      </p>
-    </div>
-  </div>
-
-  <div *ngIf="type === 'referee1'">
-    <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 1</p>
-    <fb-referee-autocomplete
-      [selectedReferee]="selectedReferee1"
-      (refereeSelected)="onRefereeSelected(1, $event)"
-    ></fb-referee-autocomplete>
-    <fb-button
-      class="flex mt-1"
-      [fullWidth]="true"
-      [variant]="'success'"
-      (handleClick)="submitField()"
-    >
-      Speichern
-    </fb-button>
-  </div>
-
-  <div *ngIf="type === 'referee2'">
-    <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 2</p>
-    <fb-referee-autocomplete
-      [selectedReferee]="selectedReferee2"
-      (refereeSelected)="onRefereeSelected(2, $event)"
-    ></fb-referee-autocomplete>
-    <fb-button
-      class="flex mt-1"
-      [fullWidth]="true"
-      [variant]="'success'"
-      (handleClick)="submitField()"
-    >
-      Speichern
-    </fb-button>
-  </div>
-</div>
-<div
-  *ngIf="['goal', 'penalty', 'start', 'end', 'timeout', 'next'].includes(type)"
-  class="relative grid grid-cols-2 gap-3 p-4"
-  [ngClass]="{
-    'before:block before:absolute before:top-0 before:w-6 before:h-6 before:bg-gray-200 before:-translate-y-full before:origin-bottom-left before:rotate-45':
-      team !== undefined && team !== 'both',
-    'before:left-1/4 before:-translate-x-full':
-      team !== undefined && team !== 'both' && team === 'home',
-    'before:left-3/4 before:-translate-x-1/2':
-      team !== undefined && team !== 'both' && team === 'guest',
-    'bg-fb-gray-200': !noBackground
-  }"
->
-  <ng-container *ngIf="['goal', 'penalty', 'timeout'].includes(type)">
-    <div class="col-span-2">
-      <label class="font-medium text-base text-fb-gray-500"
-        >Spielabschnitt</label
-      >
-      <select
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        [ngModel]="currentPeriod"
-        (change)="changePeriod($event)"
-      >
-        <option value="">Spielabschnitt auswählen...</option>
-        <option
-          [value]="p.period"
-          *ngFor="let p of match.period_titles | onlyRunning"
+@if (!["goal", "penalty", "timeout", "next"].includes(type)) {
+  <div>
+    @if (type === "overtime") {
+      <div>
+        <input
+          id="overtime"
+          type="checkbox"
+          class="mr-3"
+          (change)="submitFlag()"
+          [(ngModel)]="overtime"
+        />
+        <label for="overtime" class="font-medium text-base text-fb-gray-500"
+          >Verlängerung</label
         >
-          {{ p.title }}
-        </option>
-      </select>
-    </div>
-
-    <div>
-      <label class="font-medium text-base text-fb-gray-500">Minuten</label>
-      <input
-        #minutefield
-        type="number"
-        inputmode="numeric"
-        maxlength="2"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        [(ngModel)]="minutes"
-        (ngModelChange)="onMinutesChange()"
-      />
-    </div>
-    <div>
-      <label class="font-medium text-base text-fb-gray-500">Sekunden</label>
-      <input
-        #secondsfield
-        type="number"
-        inputmode="numeric"
-        maxlength="2"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        [(ngModel)]="seconds"
-        (ngModelChange)="onSecondsChange()"
-      />
-    </div>
-
-    <ng-container *ngIf="type !== 'timeout'">
-      <div class="col-span-2">
-        <div class="grid grid-cols-[80px,1fr] gap-x-2">
-          <label class="col-span-2 font-medium text-base text-fb-gray-500">{{
-            type === "goal" ? "Torschütze" : "Spieler/in"
-          }}</label>
-
-          <div
-            class="flex w-full bg-white border border-fb-gray-600 rounded-[5px] focus:ring-0 overflow-hidden"
-            [ngClass]="playerError ? 'border-0 ring-2 ring-red-500' : ''"
-          >
-            <label class="flex items-center pl-2 text-fb-gray-500">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="block w-5 h-5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                />
-              </svg>
-            </label>
-
-            <input
-              #playerSearchField
-              [(ngModel)]="playerSearchNumber"
-              (ngModelChange)="
-                searchPlayerByNumber(team, playerSearchNumber || 0, false)
-              "
-              type="number"
-              inputmode="numeric"
-              placeholder="Nr."
-              class="inline w-full p-2 border-0 focus:ring-0"
-            />
+      </div>
+    }
+    @if (type === "protest") {
+      <div>
+        <input
+          id="protest"
+          type="checkbox"
+          class="mr-3"
+          (change)="submitFlag()"
+          [(ngModel)]="protest"
+        />
+        <label for="protest" class="font-medium text-base text-fb-gray-500"
+          >Protest</label
+        >
+      </div>
+    }
+    @if (type === "specialevent") {
+      <div>
+        <input
+          id="specialevent"
+          type="checkbox"
+          class="mr-3"
+          (change)="submitFlag()"
+          [(ngModel)]="specialevent"
+        />
+        <label for="specialevent" class="font-medium text-base text-fb-gray-500"
+          >Besonderes Ereignis</label
+        >
+        @if (specialevent) {
+          <div class="mt-2">
+            <textarea
+              class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+              placeholder="Beschreibung des Ereignisses (z.B. Spielverzögerung wegen defektem Hallenlicht)"
+              rows="3"
+              (change)="submitField()"
+              [(ngModel)]="specialEventString"
+            ></textarea>
+            <p class="text-fb-gray-400 text-xs">
+              Dieses Feld wird automatisch gespeichert.
+            </p>
           </div>
-
-          <select
+        }
+      </div>
+    }
+    @if (type === "timekeepersigned") {
+      <div>
+        <input
+          id="timekeepersigned"
+          type="checkbox"
+          class="mr-3"
+          (change)="submitFlag()"
+          [(ngModel)]="timekeepersigned"
+        />
+        <label
+          for="timekeepersigned"
+          class="font-medium text-base text-fb-gray-500"
+          >Unterschrift Zeitnehmer/in</label
+        >
+      </div>
+    }
+    @if (type === "recordkeepersigned") {
+      <div>
+        <input
+          id="recordkeepersigned"
+          type="checkbox"
+          class="mr-3"
+          (change)="submitFlag()"
+          [(ngModel)]="recordkeepersigned"
+        />
+        <label
+          for="recordkeepersigned"
+          class="font-medium text-base text-fb-gray-500"
+          >Unterschrift Schriftführer/in</label
+        >
+      </div>
+    }
+    @if (type === "referee1signed") {
+      <div>
+        <input
+          id="referee1signed"
+          type="checkbox"
+          class="mr-3"
+          (change)="submitFlag()"
+          [(ngModel)]="referee1signed"
+        />
+        <label
+          for="referee1signed"
+          class="font-medium text-base text-fb-gray-500"
+          >Unterschrift Schiedsrichter 1</label
+        >
+      </div>
+    }
+    @if (type === "referee2signed") {
+      <div>
+        <input
+          id="referee2signed"
+          type="checkbox"
+          class="mr-3"
+          (change)="submitFlag()"
+          [(ngModel)]="referee2signed"
+        />
+        <label
+          for="referee2signed"
+          class="font-medium text-base text-fb-gray-500"
+          >Unterschrift Schiedsrichter 2</label
+        >
+      </div>
+    }
+    @if (type === "captainsigned") {
+      <div>
+        @if (team === "home") {
+          <input
+            [id]="'captainsigned-' + team"
+            type="checkbox"
+            class="mr-3"
+            (change)="submitFlag()"
+            [(ngModel)]="captainsignedhome"
+          />
+        }
+        @if (team === "guest") {
+          <input
+            [id]="'captainsigned-' + team"
+            type="checkbox"
+            class="mr-3"
+            (change)="submitFlag()"
+            [(ngModel)]="captainsignedvisitor"
+          />
+        }
+        <label
+          [for]="'captainsigned-' + team"
+          class="font-medium text-base text-fb-gray-500"
+          >Unterschrift {{ team === "home" ? "Heim" : "Gast" }}</label
+        >
+      </div>
+    }
+    @if (type === "visitors") {
+      <div>
+        <label class="font-medium text-base text-fb-gray-500"
+          >Zuschauerzahl</label
+        >
+        <input
+          type="number"
+          inputmode="numeric"
+          class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+          (change)="submitField()"
+          [(ngModel)]="visitors"
+        />
+        <p class="text-fb-gray-400 text-xs">
+          Dieses Feld wird automatisch gespeichert.
+        </p>
+      </div>
+    }
+    @if (type === "livestream") {
+      <div>
+        <label class="font-medium text-base text-fb-gray-500"
+          >Livestream Link</label
+        >
+        <p class="text-fb-gray-400 text-xs mt-0.5 mb-1.5">
+          Bitte verlinke sofern möglich direkt zum Livestream und nicht auf den
+          Account der entsprechenden Plattform.
+        </p>
+        <input
+          type="text"
+          class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+          (change)="submitField()"
+          [(ngModel)]="livestream"
+        />
+        <p class="text-fb-gray-400 text-xs">
+          Dieses Feld wird automatisch gespeichert.
+        </p>
+      </div>
+    }
+    @if (type === "vodstream") {
+      <div>
+        <label class="font-medium text-base text-fb-gray-500">VOD Link</label>
+        <p class="text-fb-gray-400 text-xs mt-0.5 mb-1.5">
+          Trage an dieser Stelle einen Link zum Video des Spiels ein, über es
+          dauerhaft als Video on Demand abrufbar ist.<br />
+          <strong>Wichtig:</strong> Wenn das Spiel beispielsweise bei Twitch
+          gestreamt wird, ist es dort nur zwei Wochen lang einsehbar.<br />
+          In diesem Fall sollte hier der Link zu einer Alternativplattform
+          eingetragen werden, auf die das Video im Nachhinein hochgeladen wird,
+          oder dieser Abschnitt bleibt leer
+        </p>
+        <input
+          type="text"
+          class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+          (change)="submitField()"
+          [(ngModel)]="vodstream"
+        />
+        <p class="text-fb-gray-400 text-xs">
+          Dieses Feld wird automatisch gespeichert.
+        </p>
+      </div>
+    }
+    @if (type === "comment") {
+      <div>
+        <label class="block text-sm text-fb-gray-500 pb-4">
+          Sollte es Unklarheiten bei der Eingabe geben, nutze gerne dieses Feld,
+          um der SBK deine Probleme mitzuteilen. Dieses Feld wird nicht
+          öffentlich angezeigt.
+        </label>
+        <textarea
+          type="text"
+          class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+          (change)="submitField()"
+          [(ngModel)]="comment"
+        ></textarea>
+        <p class="text-fb-gray-400 text-xs">
+          Dieses Feld wird automatisch gespeichert.
+        </p>
+      </div>
+    }
+    @if (type === "recordkeeper") {
+      <div>
+        <label class="font-medium text-base text-fb-gray-500"
+          >Schriftführer/in</label
+        >
+        <div class="grid md:grid-cols-2 gap-1">
+          <input
+            type="text"
             class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-            tabindex="-1"
-            [(ngModel)]="playerNumber"
-            (change)="playerSearchNumber = undefined"
-          >
-            <option value="0">Bitte wählen...</option>
-            <option *ngIf="type === 'goal'" [value]="1000">Eigentor</option>
-            <option
-              [value]="player.trikot_number"
-              *ngFor="
-                let player of (team === 'home'
-                  ? match.players.home || []
-                  : match.players.guest || []
-                ) | sortTrikotNumber
-              "
-            >
-              {{ player.trikot_number }} - {{ player.player_name }},
-              {{ player.player_firstname }}
-            </option>
-            <option *ngIf="type === 'goal'" value="2000">
-              Nicht angegeben
-            </option>
-            <ng-container *ngIf="type === 'penalty'">
-              <option
-                *ngFor="let num of [1, 2, 3, 4, 5]"
-                [value]="2000 + num"
-                [hidden]="!hasCoach(num)"
-              >
-                Betreuer {{ num }} – {{ coachName(num) }}
-              </option>
-            </ng-container>
-          </select>
+            placeholder="Vorname"
+            (change)="submitField()"
+            [(ngModel)]="recordkeeperFirstname"
+          />
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Nachname"
+            (change)="submitField()"
+            [(ngModel)]="recordkeeperLastname"
+          />
+          <p class="md:col-span-2 text-fb-gray-400 text-xs">
+            Diese Felder werden automatisch gespeichert.
+          </p>
         </div>
       </div>
-
-      <ng-container *ngIf="type === 'goal'">
+    }
+    @if (type === "coach1") {
+      <div>
+        <label class="font-medium text-base text-fb-gray-500">Betreuer 1</label>
+        <div class="grid md:grid-cols-2 gap-1">
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px] md:rounded-tr-none md:rounded-br-none"
+            placeholder="Vorname"
+            (change)="submitField()"
+            [(ngModel)]="coach1.firstname"
+          />
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Nachname"
+            (change)="submitField()"
+            [(ngModel)]="coach1.lastname"
+          />
+        </div>
+      </div>
+    }
+    @if (type === "coach2") {
+      <div>
+        <label class="font-medium text-base text-fb-gray-500">Betreuer 2</label>
+        <div class="grid md:grid-cols-2 gap-1">
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Vorname"
+            (change)="submitField()"
+            [(ngModel)]="coach2.firstname"
+          />
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Nachname"
+            (change)="submitField()"
+            [(ngModel)]="coach2.lastname"
+          />
+        </div>
+      </div>
+    }
+    @if (type === "coach3") {
+      <div>
+        <label class="font-medium text-base text-fb-gray-500">Betreuer 3</label>
+        <div class="grid md:grid-cols-2 gap-1">
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Vorname"
+            (change)="submitField()"
+            [(ngModel)]="coach3.firstname"
+          />
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Nachname"
+            (change)="submitField()"
+            [(ngModel)]="coach3.lastname"
+          />
+        </div>
+      </div>
+    }
+    @if (type === "coach4") {
+      <div>
+        <label class="font-medium text-base text-fb-gray-500">Betreuer 4</label>
+        <div class="grid md:grid-cols-2 gap-1">
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Vorname"
+            (change)="submitField()"
+            [(ngModel)]="coach4.firstname"
+          />
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Nachname"
+            (change)="submitField()"
+            [(ngModel)]="coach4.lastname"
+          />
+        </div>
+      </div>
+    }
+    @if (type === "coach5") {
+      <div>
+        <label class="font-medium text-base text-fb-gray-500">Betreuer 5</label>
+        <div class="grid md:grid-cols-2 gap-1">
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Vorname"
+            (change)="submitField()"
+            [(ngModel)]="coach5.firstname"
+          />
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Nachname"
+            (change)="submitField()"
+            [(ngModel)]="coach5.lastname"
+          />
+          <p class="md:col-span-2 text-fb-gray-400 text-xs">
+            Diese Felder werden automatisch gespeichert.
+          </p>
+        </div>
+      </div>
+    }
+    @if (type === "timekeeper") {
+      <div>
+        <label class="font-medium text-base text-fb-gray-500"
+          >Zeitnehmer/in</label
+        >
+        <div class="grid md:grid-cols-2 gap-1">
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Vorname"
+            (change)="submitField()"
+            [(ngModel)]="timekeeperFirstname"
+          />
+          <input
+            type="text"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            placeholder="Nachname"
+            (change)="submitField()"
+            [(ngModel)]="timekeeperLastname"
+          />
+          <p class="md:col-span-2 text-fb-gray-400 text-xs">
+            Diese Felder werden automatisch gespeichert.
+          </p>
+        </div>
+      </div>
+    }
+    @if (type === "referee1") {
+      <div>
+        <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 1</p>
+        <fb-referee-autocomplete
+          [selectedReferee]="selectedReferee1"
+          (refereeSelected)="onRefereeSelected(1, $event)"
+        ></fb-referee-autocomplete>
+        <fb-button
+          class="flex mt-1"
+          [fullWidth]="true"
+          [variant]="'success'"
+          (handleClick)="submitField()"
+        >
+          Speichern
+        </fb-button>
+      </div>
+    }
+    @if (type === "referee2") {
+      <div>
+        <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 2</p>
+        <fb-referee-autocomplete
+          [selectedReferee]="selectedReferee2"
+          (refereeSelected)="onRefereeSelected(2, $event)"
+        ></fb-referee-autocomplete>
+        <fb-button
+          class="flex mt-1"
+          [fullWidth]="true"
+          [variant]="'success'"
+          (handleClick)="submitField()"
+        >
+          Speichern
+        </fb-button>
+      </div>
+    }
+  </div>
+}
+@if (["goal", "penalty", "start", "end", "timeout", "next"].includes(type)) {
+  <div
+    class="relative grid grid-cols-2 gap-3 p-4"
+    [ngClass]="{
+      'before:block before:absolute before:top-0 before:w-6 before:h-6 before:bg-gray-200 before:-translate-y-full before:origin-bottom-left before:rotate-45':
+        team !== undefined && team !== 'both',
+      'before:left-1/4 before:-translate-x-full':
+        team !== undefined && team !== 'both' && team === 'home',
+      'before:left-3/4 before:-translate-x-1/2':
+        team !== undefined && team !== 'both' && team === 'guest',
+      'bg-fb-gray-200': !noBackground,
+    }"
+  >
+    @if (["goal", "penalty", "timeout"].includes(type)) {
+      <div class="col-span-2">
+        <label class="font-medium text-base text-fb-gray-500"
+          >Spielabschnitt</label
+        >
+        <select
+          class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+          [ngModel]="currentPeriod"
+          (change)="changePeriod($event)"
+        >
+          <option value="">Spielabschnitt auswählen...</option>
+          @for (p of match.period_titles | onlyRunning; track p) {
+            <option [value]="p.period">
+              {{ p.title }}
+            </option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="font-medium text-base text-fb-gray-500">Minuten</label>
+        <input
+          #minutefield
+          type="number"
+          inputmode="numeric"
+          maxlength="2"
+          class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+          [(ngModel)]="minutes"
+          (ngModelChange)="onMinutesChange()"
+        />
+      </div>
+      <div>
+        <label class="font-medium text-base text-fb-gray-500">Sekunden</label>
+        <input
+          #secondsfield
+          type="number"
+          inputmode="numeric"
+          maxlength="2"
+          class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+          [(ngModel)]="seconds"
+          (ngModelChange)="onSecondsChange()"
+        />
+      </div>
+      @if (type !== "timeout") {
         <div class="col-span-2">
           <div class="grid grid-cols-[80px,1fr] gap-x-2">
-            <label class="col-span-2 font-medium text-base text-fb-gray-500"
-              >Assist</label
-            >
-
+            <label class="col-span-2 font-medium text-base text-fb-gray-500">{{
+              type === "goal" ? "Torschütze" : "Spieler/in"
+            }}</label>
             <div
               class="flex w-full bg-white border border-fb-gray-600 rounded-[5px] focus:ring-0 overflow-hidden"
+              [ngClass]="playerError ? 'border-0 ring-2 ring-red-500' : ''"
             >
               <label class="flex items-center pl-2 text-fb-gray-500">
                 <svg
@@ -546,16 +502,11 @@
                   />
                 </svg>
               </label>
-
               <input
-                #assistSearchField
-                [(ngModel)]="assistPlayerSearchNumber"
+                #playerSearchField
+                [(ngModel)]="playerSearchNumber"
                 (ngModelChange)="
-                  searchPlayerByNumber(
-                    team,
-                    assistPlayerSearchNumber || 0,
-                    true
-                  )
+                  searchPlayerByNumber(team, playerSearchNumber || 0, false)
                 "
                 type="number"
                 inputmode="numeric"
@@ -563,164 +514,243 @@
                 class="inline w-full p-2 border-0 focus:ring-0"
               />
             </div>
-
             <select
               class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
               tabindex="-1"
-              [(ngModel)]="assistPlayerNumber"
-              (change)="assistPlayerSearchNumber = undefined"
+              [(ngModel)]="playerNumber"
+              (change)="playerSearchNumber = undefined"
             >
-              <option value="0">Kein Assist</option>
-              <option
-                [value]="player.trikot_number"
-                *ngFor="
-                  let player of (team === 'home'
-                    ? match.players.home || []
-                    : match.players.guest || []
-                  ) | sortTrikotNumber
-                "
-              >
-                {{ player.trikot_number }} - {{ player.player_name }},
-                {{ player.player_firstname }}
-              </option>
+              <option value="0">Bitte wählen...</option>
+              @if (type === "goal") {
+                <option [value]="1000">Eigentor</option>
+              }
+              @for (
+                player of (team === "home"
+                  ? match.players.home || []
+                  : match.players.guest || []
+                ) | sortTrikotNumber;
+                track player
+              ) {
+                <option [value]="player.trikot_number">
+                  {{ player.trikot_number }} - {{ player.player_name }},
+                  {{ player.player_firstname }}
+                </option>
+              }
+              @if (type === "goal") {
+                <option value="2000">Nicht angegeben</option>
+              }
+              @if (type === "penalty") {
+                @for (num of [1, 2, 3, 4, 5]; track num) {
+                  <option [value]="2000 + num" [hidden]="!hasCoach(num)">
+                    Betreuer {{ num }} – {{ coachName(num) }}
+                  </option>
+                }
+              }
             </select>
           </div>
         </div>
-
+        @if (type === "goal") {
+          <div class="col-span-2">
+            <div class="grid grid-cols-[80px,1fr] gap-x-2">
+              <label class="col-span-2 font-medium text-base text-fb-gray-500"
+                >Assist</label
+              >
+              <div
+                class="flex w-full bg-white border border-fb-gray-600 rounded-[5px] focus:ring-0 overflow-hidden"
+              >
+                <label class="flex items-center pl-2 text-fb-gray-500">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="block w-5 h-5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                    />
+                  </svg>
+                </label>
+                <input
+                  #assistSearchField
+                  [(ngModel)]="assistPlayerSearchNumber"
+                  (ngModelChange)="
+                    searchPlayerByNumber(
+                      team,
+                      assistPlayerSearchNumber || 0,
+                      true
+                    )
+                  "
+                  type="number"
+                  inputmode="numeric"
+                  placeholder="Nr."
+                  class="inline w-full p-2 border-0 focus:ring-0"
+                />
+              </div>
+              <select
+                class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+                tabindex="-1"
+                [(ngModel)]="assistPlayerNumber"
+                (change)="assistPlayerSearchNumber = undefined"
+              >
+                <option value="0">Kein Assist</option>
+                @for (
+                  player of (team === "home"
+                    ? match.players.home || []
+                    : match.players.guest || []
+                  ) | sortTrikotNumber;
+                  track player
+                ) {
+                  <option [value]="player.trikot_number">
+                    {{ player.trikot_number }} - {{ player.player_name }},
+                    {{ player.player_firstname }}
+                  </option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="col-span-2">
+            <input
+              type="checkbox"
+              id="with_ps"
+              name="with_ps"
+              [(ngModel)]="with_ps"
+            />
+            <label
+              for="with_ps"
+              class="font-medium text-base text-fb-gray-500 p-2"
+              >durch Strafstoß?</label
+            >
+          </div>
+        }
+        @if (type === "penalty") {
+          <div class="col-span-2">
+            <label class="font-medium text-base text-fb-gray-500">Strafe</label>
+            <select
+              class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+              [(ngModel)]="penalty"
+            >
+              <option value="0">Bitte wählen...</option>
+              @for (p of penalties; track p) {
+                <option [value]="p.id">
+                  {{ p.name }}
+                </option>
+              }
+            </select>
+          </div>
+          <div class="col-span-2">
+            <label class="font-medium text-base text-fb-gray-500"
+              >Strafcode</label
+            >
+            <select
+              class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+              [(ngModel)]="penaltyCode"
+            >
+              <option value="0">Bitte wählen...</option>
+              @for (p of penaltyCodes; track p) {
+                <option [value]="p.id">
+                  {{ p.code }} - {{ p.description }}
+                </option>
+              }
+            </select>
+          </div>
+        }
+      }
+    }
+    @if (type === "start") {
+      <div class="col-span-2">
+        <input
+          id="editlive"
+          type="checkbox"
+          class="mr-3"
+          [(ngModel)]="editLive"
+        />
+        <label for="editlive" class="font-medium text-base text-fb-gray-500"
+          >Live eintragen?</label
+        >
+      </div>
+      @if (!editLive) {
         <div class="col-span-2">
+          <label for="starttime" class="font-medium text-base text-fb-gray-500"
+            >Startzeit</label
+          >
           <input
-            type="checkbox"
-            id="with_ps"
-            name="with_ps"
-            [(ngModel)]="with_ps"
+            id="starttime"
+            type="time"
+            placeholder="HH:mm"
+            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+            [(ngModel)]="startTime"
           />
-          <label
-            for="with_ps"
-            class="font-medium text-base text-fb-gray-500 p-2"
-            >durch Strafstoß?</label
-          >
         </div>
-      </ng-container>
-
-      <ng-container *ngIf="type === 'penalty'">
-        <div class="col-span-2">
-          <label class="font-medium text-base text-fb-gray-500">Strafe</label>
-          <select
-            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-            [(ngModel)]="penalty"
-          >
-            <option value="0">Bitte wählen...</option>
-            <option [value]="p.id" *ngFor="let p of penalties">
-              {{ p.name }}
-            </option>
-          </select>
-        </div>
-
-        <div class="col-span-2">
-          <label class="font-medium text-base text-fb-gray-500"
-            >Strafcode</label
-          >
-          <select
-            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-            [(ngModel)]="penaltyCode"
-          >
-            <option value="0">Bitte wählen...</option>
-            <option [value]="p.id" *ngFor="let p of penaltyCodes">
-              {{ p.code }} - {{ p.description }}
-            </option>
-          </select>
-        </div>
-      </ng-container>
-    </ng-container>
-  </ng-container>
-
-  <ng-container *ngIf="type === 'start'">
-    <div class="col-span-2">
-      <input
-        id="editlive"
-        type="checkbox"
-        class="mr-3"
-        [(ngModel)]="editLive"
-      />
-      <label for="editlive" class="font-medium text-base text-fb-gray-500"
-        >Live eintragen?</label
-      >
-    </div>
-
-    <div class="col-span-2" *ngIf="!editLive">
-      <label for="starttime" class="font-medium text-base text-fb-gray-500"
-        >Startzeit</label
-      >
-      <input
-        id="starttime"
-        type="time"
-        placeholder="HH:mm"
-        class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-        [(ngModel)]="startTime"
-      />
-    </div>
-  </ng-container>
-
-  <fb-button
-    (handleClick)="submitEvent()"
-    [disabled]="submitDisabled()"
-    [size]="'large'"
-    [variant]="'success'"
-    [fullWidth]="true"
-    *ngIf="['goal', 'penalty', 'timeout'].includes(type)"
-    class="col-span-2 disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
-  >
-    <ng-container *ngIf="['goal', 'penalty', 'timeout'].includes(type)">
-      <ng-template #missingInfo>Angaben unvollständig</ng-template>
-      <ng-container *ngIf="!submitDisabled(); else missingInfo">
-        {{ getEventString() }}
-        {{ existingEvent ? "aktualisieren" : "eintragen" }}
-      </ng-container>
-    </ng-container>
-  </fb-button>
-
-  <!--  <fb-button-->
-  <!--    (click)="submitEvent()"-->
-  <!--    [disabled]="submitDisabled()"-->
-
-  <fb-button
-    *ngIf="type === 'next' && nextPeriodTitle()"
-    [fullWidth]="true"
-    [size]="'large'"
-    [variant]="'success'"
-    (handleClick)="submitEvent()"
-    class="col-span-2 uppercase"
-  >
-    {{ nextPeriodTitle()?.title }} starten
-  </fb-button>
-
-  <ng-container *ngIf="['start', 'end', 'next'].includes(type)">
-    <fb-confirmation
-      class="col-span-2"
-      *ngIf="
-        ['start', 'end'].includes(type) || currentPeriodTitle()?.can_end_game
-      "
-      (handleSubmit)="startOrEndGame(type === 'start')"
-      [title]="type === 'start' ? 'Spiel starten?' : 'Spiel beenden?'"
-      [content]="
-        type === 'start'
-          ? 'Bitte starte das Spiel erst, wenn der Schiedsrichter anpfeift. Anschließend kannst du Ereignisse des Spiels wie Tore, Strafen oder Auszeiten eingeben.'
-          : 'Bitte beende das Spiel erst, wenn der Schiedsrichter abgepfiffen hat. Dieser Schritt kann nicht rückgängig gemacht werden! Im Anschluss können Unterschriften und besondere Ereignisse notiert werden. Möchtest du das Spiel wirklich beenden?'
-      "
-      [submitButtonTitle]="
-        type === 'start' ? 'Spiel jetzt starten' : 'Das Spiel wurde abgepfiffen'
-      "
-      buttonVariant="success"
-      icon="whistle"
-    >
+      }
+    }
+    @if (["goal", "penalty", "timeout"].includes(type)) {
       <fb-button
+        (handleClick)="submitEvent()"
+        [disabled]="submitDisabled()"
         [size]="'large'"
         [variant]="'success'"
         [fullWidth]="true"
+        class="col-span-2 disabled:bg-red-300 disabled:border-red-500 disabled:cursor-not-allowed"
+      >
+        @if (["goal", "penalty", "timeout"].includes(type)) {
+          @if (!submitDisabled()) {
+            {{ getEventString() }}
+            {{ existingEvent ? "aktualisieren" : "eintragen" }}
+          } @else {
+            Angaben unvollständig
+          }
+        }
+      </fb-button>
+    }
+    <!--  <fb-button-->
+    <!--    (click)="submitEvent()"-->
+    <!--    [disabled]="submitDisabled()"-->
+    @if (type === "next" && nextPeriodTitle()) {
+      <fb-button
+        [fullWidth]="true"
+        [size]="'large'"
+        [variant]="'success'"
+        (handleClick)="submitEvent()"
         class="col-span-2 uppercase"
       >
-        {{ type === "start" ? "Spiel starten" : "Spiel beenden" }}
+        {{ nextPeriodTitle()?.title }} starten
       </fb-button>
-    </fb-confirmation>
-  </ng-container>
-</div>
+    }
+    @if (["start", "end", "next"].includes(type)) {
+      @if (
+        ["start", "end"].includes(type) || currentPeriodTitle()?.can_end_game
+      ) {
+        <fb-confirmation
+          class="col-span-2"
+          (handleSubmit)="startOrEndGame(type === 'start')"
+          [title]="type === 'start' ? 'Spiel starten?' : 'Spiel beenden?'"
+          [content]="
+            type === 'start'
+              ? 'Bitte starte das Spiel erst, wenn der Schiedsrichter anpfeift. Anschließend kannst du Ereignisse des Spiels wie Tore, Strafen oder Auszeiten eingeben.'
+              : 'Bitte beende das Spiel erst, wenn der Schiedsrichter abgepfiffen hat. Dieser Schritt kann nicht rückgängig gemacht werden! Im Anschluss können Unterschriften und besondere Ereignisse notiert werden. Möchtest du das Spiel wirklich beenden?'
+          "
+          [submitButtonTitle]="
+            type === 'start'
+              ? 'Spiel jetzt starten'
+              : 'Das Spiel wurde abgepfiffen'
+          "
+          buttonVariant="success"
+          icon="whistle"
+        >
+          <fb-button
+            [size]="'large'"
+            [variant]="'success'"
+            [fullWidth]="true"
+            class="col-span-2 uppercase"
+          >
+            {{ type === "start" ? "Spiel starten" : "Spiel beenden" }}
+          </fb-button>
+        </fb-confirmation>
+      }
+    }
+  </div>
+}

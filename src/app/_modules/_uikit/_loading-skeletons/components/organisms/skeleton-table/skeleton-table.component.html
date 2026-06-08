@@ -6,7 +6,7 @@
     'grid-cols-[35px,1fr,repeat(4,35px)] md:grid-cols-[25px,1fr,repeat(4,60px)]':
       type === 'medium',
     'grid-cols-[35px,1fr,repeat(3,35px)] md:grid-cols-[25px,1fr,repeat(8,60px)] ':
-      type === 'default'
+      type === 'default',
   }"
 >
   <div><div class="h-[8px] w-[10px] bg-fb-gray-200"></div></div>
@@ -16,12 +16,12 @@
   <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
   <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
 
-  <ng-container *ngIf="type === 'medium'">
+  @if (type === "medium") {
     <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
     <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
-  </ng-container>
+  }
 
-  <ng-container *ngIf="type === 'default'">
+  @if (type === "default") {
     <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
     <div class="hidden md:block">
       <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
@@ -38,9 +38,9 @@
     <div class="hidden md:block">
       <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
     </div>
-  </ng-container>
+  }
 </div>
-<ng-container *ngFor="let item of [].constructor(amount)">
+@for (item of [].constructor(amount); track item) {
   <div
     class="h-12 grid place-items-center px-[10px] items-center odd:bg-fb-gray-300 animate-pulse"
     [ngClass]="{
@@ -49,7 +49,7 @@
       'grid-cols-[35px,1fr,repeat(4,35px)] md:grid-cols-[25px,1fr,repeat(4,60px)]':
         type === 'medium',
       'grid-cols-[35px,1fr,repeat(3,35px)] md:grid-cols-[25px,1fr,repeat(8,60px)]':
-        type === 'default'
+        type === 'default',
     }"
   >
     <div><div class="h-[8px] w-[10px] bg-fb-gray-200"></div></div>
@@ -61,13 +61,11 @@
       <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
     </div>
     <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
-
-    <ng-container *ngIf="type === 'medium'">
+    @if (type === "medium") {
       <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
       <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
-    </ng-container>
-
-    <ng-container *ngIf="type === 'default'">
+    }
+    @if (type === "default") {
       <div><div class="h-[8px] w-[20px] bg-fb-gray-200"></div></div>
       <div class="hidden md:block">
         <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
@@ -84,6 +82,6 @@
       <div class="hidden md:block">
         <div class="h-[8px] w-[20px] bg-fb-gray-200"></div>
       </div>
-    </ng-container>
+    }
   </div>
-</ng-container>
+}

@@ -1,9 +1,9 @@
-<ng-container *ngIf="notifications">
+@if (notifications) {
   <div
     class="flex flex-row lg:block justify-between items-center lg:h-full fixed z-50 top-0 lg:max-w-[800px] p-5 w-full lg:relative gap-[10px]"
   >
-    <ng-container *ngFor="let notification of notifications">
-      <ng-container *ngIf="notification.type === getType('success')">
+    @for (notification of notifications; track notification) {
+      @if (notification.type === getType("success")) {
         <div
           id="toast-success"
           class="fixed z-40 flex items-center w-full max-w-xs p-2 translate-y-[20px] text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800 lg:translate-y-0"
@@ -48,9 +48,8 @@
             </svg>
           </button>
         </div>
-      </ng-container>
-
-      <ng-container *ngIf="notification.type === getType('error')">
+      }
+      @if (notification.type === getType("error")) {
         <div
           id="toast-danger"
           class="fixed z-40 flex items-center w-full max-w-xs p-2 mb-2 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
@@ -95,9 +94,8 @@
             </svg>
           </button>
         </div>
-      </ng-container>
-
-      <ng-container *ngIf="notification.type === getType('warning')">
+      }
+      @if (notification.type === getType("warning")) {
         <div
           id="toast-warning"
           class="fixed z-40 flex items-center w-full max-w-xs p-2 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
@@ -142,7 +140,7 @@
             </svg>
           </button>
         </div>
-      </ng-container>
-    </ng-container>
+      }
+    }
   </div>
-</ng-container>
+}

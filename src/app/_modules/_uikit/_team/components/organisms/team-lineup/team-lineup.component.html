@@ -1,4 +1,4 @@
-<ng-container *ngFor="let player of lineup | sortTrikotNumber">
+@for (player of lineup | sortTrikotNumber; track player) {
   <fb-player-lineup-item
     [trikot_number]="player.trikot_number"
     [player_name]="player | fullName"
@@ -12,4 +12,4 @@
         : player.position
     "
   ></fb-player-lineup-item>
-</ng-container>
+}

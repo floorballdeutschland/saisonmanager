@@ -7,12 +7,18 @@
       [ngClass]="{
         'bg-green-100 text-green-700': view.variant === 'success',
         'bg-blue-100 text-blue-700': view.variant === 'info',
-        'bg-red-100 text-red-700': view.variant === 'error'
+        'bg-red-100 text-red-700': view.variant === 'error',
       }"
     >
-      <span *ngIf="view.variant === 'success'">✓</span>
-      <span *ngIf="view.variant === 'info'">i</span>
-      <span *ngIf="view.variant === 'error'">!</span>
+      @if (view.variant === "success") {
+        <span>✓</span>
+      }
+      @if (view.variant === "info") {
+        <span>i</span>
+      }
+      @if (view.variant === "error") {
+        <span>!</span>
+      }
     </div>
 
     <h1 class="text-xl font-bold mb-2">{{ view.title }}</h1>

@@ -57,13 +57,15 @@
               <div class="font-bold">Rolle</div>
               <div>
                 <select [(ngModel)]="selectedRoleId" class="w-full">
-                  <option *ngFor="let r of availableRoles" [ngValue]="r.id">
-                    {{ r.label }}
-                  </option>
+                  @for (r of availableRoles; track r) {
+                    <option [ngValue]="r.id">
+                      {{ r.label }}
+                    </option>
+                  }
                 </select>
               </div>
 
-              <ng-container *ngIf="selectedRole?.needsClub">
+              @if (selectedRole?.needsClub) {
                 <div class="font-bold">Verein</div>
                 <div>
                   <select
@@ -72,35 +74,34 @@
                     class="w-full"
                   >
                     <option [ngValue]="null">– Verein auswählen –</option>
-                    <option
-                      *ngFor="let c of isVm ? vmClubs : clubs"
-                      [ngValue]="c.id"
-                    >
-                      {{ c.name }}
-                    </option>
+                    @for (c of isVm ? vmClubs : clubs; track c) {
+                      <option [ngValue]="c.id">
+                        {{ c.name }}
+                      </option>
+                    }
                   </select>
                 </div>
-              </ng-container>
+              }
 
-              <ng-container *ngIf="selectedRole?.needsGo">
+              @if (selectedRole?.needsGo) {
                 <div class="font-bold">Verbund</div>
                 <div>
                   <select [(ngModel)]="selectedGoId" class="w-full">
                     <option [ngValue]="null">– Verbund auswählen –</option>
-                    <option *ngFor="let go of gameOperations" [ngValue]="go.id">
-                      {{ go.name }}
-                    </option>
+                    @for (go of gameOperations; track go) {
+                      <option [ngValue]="go.id">
+                        {{ go.name }}
+                      </option>
+                    }
                   </select>
                 </div>
-              </ng-container>
+              }
 
-              <ng-container
-                *ngIf="
-                  selectedRoleId === 5 &&
-                  selectedClubId &&
-                  availableTeams.length > 0
-                "
-              >
+              @if (
+                selectedRoleId === 5 &&
+                selectedClubId &&
+                availableTeams.length > 0
+              ) {
                 <div class="font-bold col-span-2 mt-2">
                   Teams zuweisen
                   <span class="text-xs font-normal text-fb-gray-500 ml-1"
@@ -108,25 +109,26 @@
                   >
                 </div>
                 <div class="col-span-2 flex flex-col gap-1">
-                  <label
-                    *ngFor="let team of availableTeams"
-                    class="flex items-center gap-2 text-sm cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      [checked]="isTeamSelected(team.id)"
-                      (change)="toggleTeam(team.id)"
-                      class="h-4 w-4 rounded border-fb-gray-600 accent-black"
-                    />
-                    {{ team.name }}
-                    <span
-                      *ngIf="team.league_name"
-                      class="text-xs text-fb-gray-500"
-                      >({{ team.league_name }})</span
+                  @for (team of availableTeams; track team) {
+                    <label
+                      class="flex items-center gap-2 text-sm cursor-pointer"
                     >
-                  </label>
+                      <input
+                        type="checkbox"
+                        [checked]="isTeamSelected(team.id)"
+                        (change)="toggleTeam(team.id)"
+                        class="h-4 w-4 rounded border-fb-gray-600 accent-black"
+                      />
+                      {{ team.name }}
+                      @if (team.league_name) {
+                        <span class="text-xs text-fb-gray-500"
+                          >({{ team.league_name }})</span
+                        >
+                      }
+                    </label>
+                  }
                 </div>
-              </ng-container>
+              }
             </div>
           </div>
 

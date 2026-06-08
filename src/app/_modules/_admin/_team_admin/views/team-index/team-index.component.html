@@ -12,7 +12,150 @@
       <div
         class="grid grid-cols-1 md:grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9"
       >
-        <ng-template #loading>
+        @if (league$ | async; as league) {
+          <div>
+            <div class="bg-white flex items-center justify-center">
+              <div
+                class="h-[65px] my-2.5 lg:my-5 flex-1 px-[20px] flex justify-center"
+              >
+                <h2
+                  class="font-bold text-[24px] lg:text-[24px] font-bold my-2 lg:my-4"
+                >
+                  {{ league.name }}
+                </h2>
+              </div>
+            </div>
+            <div class="bg-white my-[5px] py-[15px] px-[30px]">
+              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                Teams
+              </div>
+              @for (team of league.teams; track team) {
+                <div class="flex flex-col gap-2">
+                  <a
+                    class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
+                  >
+                    {{ team.name }} ({{ team.id }})
+                  </a>
+                  <div class="flex items-center mb-4">
+                    <a
+                      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                      [routerLink]="[
+                        '/',
+                        'verwaltung',
+                        'teams',
+                        team.id,
+                        'bearbeiten',
+                      ]"
+                    >
+                      Team bearbeiten
+                    </a>
+                  </div>
+                </div>
+              }
+              @if (league.teams.length === 0) {
+                <div class="flex flex-col gap-2">
+                  <p
+                    class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
+                  >
+                    noch keine Teams hinterlegt
+                  </p>
+                </div>
+              }
+            </div>
+            <div class="bg-white h-[57px] flex items-center justify-center">
+              <a
+                class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                [routerLink]="[
+                  '/',
+                  'verwaltung',
+                  'ligen',
+                  league.id,
+                  'teams',
+                  'neu',
+                ]"
+              >
+                Neues Team anlegen
+              </a>
+            </div>
+            <!-- Teams importieren -->
+            <div class="bg-white my-[5px] py-[15px] px-[30px]">
+              <button
+                class="uppercase font-bold text-gray-400 text-sm flex items-center gap-2"
+                (click)="showImport = !showImport"
+              >
+                Teams importieren
+                <span>{{ showImport ? "▲" : "▼" }}</span>
+              </button>
+              @if (showImport) {
+                <div class="mt-4 flex flex-col gap-4">
+                  <p class="text-sm text-gray-500">
+                    Importiert die Top-N-Teams aus einer anderen Liga in diese
+                    Liga. Teams deren Verein bereits eingetragen ist, werden
+                    übersprungen.
+                  </p>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-bold mb-1"
+                        >Quell-Liga</label
+                      >
+                      <select
+                        [(ngModel)]="importSourceLeagueId"
+                        class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm"
+                      >
+                        <option [ngValue]="null">Bitte auswählen…</option>
+                        @for (l of allLeagues; track l) {
+                          <option [ngValue]="l.id">
+                            [{{ l.goName }}] {{ l.name }}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-bold mb-1"
+                        >Top-N-Teams</label
+                      >
+                      <input
+                        type="number"
+                        [(ngModel)]="importTopN"
+                        min="0"
+                        max="32"
+                        class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm"
+                      />
+                      <p class="text-xs text-gray-400 mt-1">0 = alle Teams</p>
+                    </div>
+                  </div>
+                  <div>
+                    <button
+                      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer disabled:opacity-50"
+                      [disabled]="!importSourceLeagueId || importing"
+                      (click)="importTeams()"
+                    >
+                      {{ importing ? "Importiere…" : "Teams importieren" }}
+                    </button>
+                  </div>
+                  @if (importResult) {
+                    <div
+                      class="text-sm p-3 rounded"
+                      [ngClass]="
+                        importResult.imported > 0
+                          ? 'bg-green-50 text-green-800'
+                          : 'bg-gray-100 text-gray-600'
+                      "
+                    >
+                      {{ importResult.imported }} Team(s) importiert,
+                      {{ importResult.skipped }} übersprungen (bereits
+                      vorhanden)
+                      @if (importResult.failed > 0) {
+                        <span>, {{ importResult.failed }} fehlgeschlagen</span>
+                      }
+                      .
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               <svg
@@ -33,147 +176,7 @@
               Daten werden geladen...
             </div>
           </div>
-        </ng-template>
-
-        <div *ngIf="league$ | async as league; else loading">
-          <div class="bg-white flex items-center justify-center">
-            <div
-              class="h-[65px] my-2.5 lg:my-5 flex-1 px-[20px] flex justify-center"
-            >
-              <h2
-                class="font-bold text-[24px] lg:text-[24px] font-bold my-2 lg:my-4"
-              >
-                {{ league.name }}
-              </h2>
-            </div>
-          </div>
-
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Teams
-            </div>
-
-            <ng-container *ngFor="let team of league.teams">
-              <div class="flex flex-col gap-2">
-                <a
-                  class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
-                >
-                  {{ team.name }} ({{ team.id }})
-                </a>
-                <div class="flex items-center mb-4">
-                  <a
-                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                    [routerLink]="[
-                      '/',
-                      'verwaltung',
-                      'teams',
-                      team.id,
-                      'bearbeiten'
-                    ]"
-                  >
-                    Team bearbeiten
-                  </a>
-                </div>
-              </div>
-            </ng-container>
-            <div class="flex flex-col gap-2" *ngIf="league.teams.length === 0">
-              <p
-                class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
-              >
-                noch keine Teams hinterlegt
-              </p>
-            </div>
-          </div>
-
-          <div class="bg-white h-[57px] flex items-center justify-center">
-            <a
-              class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-              [routerLink]="[
-                '/',
-                'verwaltung',
-                'ligen',
-                league.id,
-                'teams',
-                'neu'
-              ]"
-            >
-              Neues Team anlegen
-            </a>
-          </div>
-
-          <!-- Teams importieren -->
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <button
-              class="uppercase font-bold text-gray-400 text-sm flex items-center gap-2"
-              (click)="showImport = !showImport"
-            >
-              Teams importieren
-              <span>{{ showImport ? "▲" : "▼" }}</span>
-            </button>
-
-            <div *ngIf="showImport" class="mt-4 flex flex-col gap-4">
-              <p class="text-sm text-gray-500">
-                Importiert die Top-N-Teams aus einer anderen Liga in diese Liga.
-                Teams deren Verein bereits eingetragen ist, werden übersprungen.
-              </p>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-bold mb-1">Quell-Liga</label>
-                  <select
-                    [(ngModel)]="importSourceLeagueId"
-                    class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm"
-                  >
-                    <option [ngValue]="null">Bitte auswählen…</option>
-                    <option *ngFor="let l of allLeagues" [ngValue]="l.id">
-                      [{{ l.goName }}] {{ l.name }}
-                    </option>
-                  </select>
-                </div>
-
-                <div>
-                  <label class="block text-sm font-bold mb-1"
-                    >Top-N-Teams</label
-                  >
-                  <input
-                    type="number"
-                    [(ngModel)]="importTopN"
-                    min="0"
-                    max="32"
-                    class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm"
-                  />
-                  <p class="text-xs text-gray-400 mt-1">0 = alle Teams</p>
-                </div>
-              </div>
-
-              <div>
-                <button
-                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer disabled:opacity-50"
-                  [disabled]="!importSourceLeagueId || importing"
-                  (click)="importTeams()"
-                >
-                  {{ importing ? "Importiere…" : "Teams importieren" }}
-                </button>
-              </div>
-
-              <div
-                *ngIf="importResult"
-                class="text-sm p-3 rounded"
-                [ngClass]="
-                  importResult.imported > 0
-                    ? 'bg-green-50 text-green-800'
-                    : 'bg-gray-100 text-gray-600'
-                "
-              >
-                {{ importResult.imported }} Team(s) importiert,
-                {{ importResult.skipped }} übersprungen (bereits vorhanden)<span
-                  *ngIf="importResult.failed > 0"
-                  >, {{ importResult.failed }} fehlgeschlagen</span
-                >.
-              </div>
-            </div>
-          </div>
-        </div>
+        }
       </div>
     </div>
   </div>

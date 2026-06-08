@@ -1,168 +1,145 @@
-<ng-template #loading>
-  <div class="bg-white my-[5px] py-[15px] px-[30px]">
-    <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-      <svg
-        class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
-        viewBox="0 0 100 101"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-          fill="currentColor"
-        />
-        <path
-          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-          fill="currentFill"
-        />
-      </svg>
-      Daten werden geladen...
-    </div>
-  </div>
-</ng-template>
-
-<div class="border-b-4 border-fb-gray-200" *ngIf="!game.started">
-  <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
-    <h2 class="font-bold text-xl lg:text-2xl">Ereignisse eingeben</h2>
-
-    <div class="mt-8 mb-12" *ngIf="!game.started">
-      <h3 class="text-lg font-bold pb-2">Anpfiffzeit</h3>
-      <p class="pb-6">
-        Das Spiel ist aktuell noch nicht gestartet. Bitte klicke auf den
-        untenstehenden Button erst, wenn der Schiedsrichter das Spiel anpfeift.
-        Anschließend kannst du Ereignisse des Spiels wie Tore, Strafen oder
-        Auszeiten eingeben.
-      </p>
-
-      <h3 class="text-lg font-bold pb-2">Live-Ticker</h3>
-      <p class="pb-3">
-        Wenn du das Spiel live in der Sporthalle einträgst, aktiviere bitte die
-        entsprechende Checkbox. Das Spiel wird dann mit der Auszeichnung "Live"
-        versehen und kann als Live-Ticker verwendet werden.
-      </p>
-
-      <p class="pb-6">
-        Trägst du das Spiel
-        <span class="font-bold underline">nach Abpfiff</span> ein, deaktiviere
-        bitte die Checkbox "Live eintragen".
-      </p>
-      <ng-container *ngIf="bothLineupsPresent(); else missingLineup">
-        <fb-match-event-form
-          class="col-span-2"
-          type="start"
-          team="both"
-          (updateGame)="reloadGame()"
-          (updatePeriod)="setCurrentPeriod($event)"
-          (scrollToSbbNavigation)="scrollToSbbNavigation()"
-          [currentPeriod]="currentPeriod"
-          [penalties]="penalties"
-          [penaltyCodes]="penaltyCodes"
-          [match]="game"
-          [noBackground]="true"
-        ></fb-match-event-form>
-      </ng-container>
-      <ng-template #missingLineup>
-        <div
-          class="rounded-md border border-yellow-300 bg-yellow-50 p-4 text-yellow-800"
-        >
-          <p class="font-bold">Kader unvollständig</p>
-          <p class="mt-1 text-sm">
-            Das Spiel kann erst gestartet werden, wenn beide Teams mindestens
-            einen Spieler im Kader eingetragen haben. Bitte zuerst die Kader in
-            Schritt 1 befüllen.
-          </p>
-        </div>
-      </ng-template>
-    </div>
-  </div>
-</div>
-
-<ng-container *ngIf="game.started">
+@if (!game.started) {
   <div class="border-b-4 border-fb-gray-200">
     <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
       <h2 class="font-bold text-xl lg:text-2xl">Ereignisse eingeben</h2>
+      @if (!game.started) {
+        <div class="mt-8 mb-12">
+          <h3 class="text-lg font-bold pb-2">Anpfiffzeit</h3>
+          <p class="pb-6">
+            Das Spiel ist aktuell noch nicht gestartet. Bitte klicke auf den
+            untenstehenden Button erst, wenn der Schiedsrichter das Spiel
+            anpfeift. Anschließend kannst du Ereignisse des Spiels wie Tore,
+            Strafen oder Auszeiten eingeben.
+          </p>
+          <h3 class="text-lg font-bold pb-2">Live-Ticker</h3>
+          <p class="pb-3">
+            Wenn du das Spiel live in der Sporthalle einträgst, aktiviere bitte
+            die entsprechende Checkbox. Das Spiel wird dann mit der Auszeichnung
+            "Live" versehen und kann als Live-Ticker verwendet werden.
+          </p>
+          <p class="pb-6">
+            Trägst du das Spiel
+            <span class="font-bold underline">nach Abpfiff</span> ein,
+            deaktiviere bitte die Checkbox "Live eintragen".
+          </p>
+          @if (bothLineupsPresent()) {
+            <fb-match-event-form
+              class="col-span-2"
+              type="start"
+              team="both"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              (scrollToSbbNavigation)="scrollToSbbNavigation()"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+              [noBackground]="true"
+            ></fb-match-event-form>
+          } @else {
+            <div
+              class="rounded-md border border-yellow-300 bg-yellow-50 p-4 text-yellow-800"
+            >
+              <p class="font-bold">Kader unvollständig</p>
+              <p class="mt-1 text-sm">
+                Das Spiel kann erst gestartet werden, wenn beide Teams
+                mindestens einen Spieler im Kader eingetragen haben. Bitte
+                zuerst die Kader in Schritt 1 befüllen.
+              </p>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
 
+@if (game.started) {
+  <div class="border-b-4 border-fb-gray-200">
+    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+      <h2 class="font-bold text-xl lg:text-2xl">Ereignisse eingeben</h2>
       <nav aria-label="Progress" class="mt-4">
         <ol
           role="list"
           class="divide-y divide-gray-300 rounded-md border border-gray-300 xl:flex xl:divide-y-0"
         >
-          <fb-match-timeline-item
-            class="flex-grow"
-            [last]="false"
-            [game]="game"
-            [gamePeriodOption]="regularTimeSummary"
-            [periodActive]="-1"
-            *ngIf="game.current_period_title?.optional"
-          ></fb-match-timeline-item>
-          <ng-container
-            *ngFor="
-              let gamePeriodOption of this.game.period_titles
-                | timelineFilter : game;
-              let index = index;
-              let last = last
-            "
-          >
+          @if (game.current_period_title?.optional) {
             <fb-match-timeline-item
               class="flex-grow"
-              [last]="
-                game.current_period_title?.optional
-                  ? last
-                  : last && this.game.ended
-              "
+              [last]="false"
               [game]="game"
-              [gamePeriodOption]="gamePeriodOption"
-              [periodActive]="isGamePeriodActive(index)"
-              *ngIf="
-                gamePeriodOption.optional ===
-                game.current_period_title?.optional
-              "
+              [gamePeriodOption]="regularTimeSummary"
+              [periodActive]="-1"
             ></fb-match-timeline-item>
-          </ng-container>
-
-          <fb-match-timeline-item
-            class="flex-grow"
-            [last]="true"
-            [game]="game"
-            [gamePeriodOption]="overtimeSummary"
-            [periodActive]="1"
-            *ngIf="!game.current_period_title?.optional && !this.game.ended"
-          ></fb-match-timeline-item>
+          }
+          @for (
+            gamePeriodOption of this.game.period_titles | timelineFilter: game;
+            track gamePeriodOption;
+            let index = $index;
+            let last = $last
+          ) {
+            @if (
+              gamePeriodOption.optional === game.current_period_title?.optional
+            ) {
+              <fb-match-timeline-item
+                class="flex-grow"
+                [last]="
+                  game.current_period_title?.optional
+                    ? last
+                    : last && this.game.ended
+                "
+                [game]="game"
+                [gamePeriodOption]="gamePeriodOption"
+                [periodActive]="isGamePeriodActive(index)"
+              ></fb-match-timeline-item>
+            }
+          }
+          @if (!game.current_period_title?.optional && !this.game.ended) {
+            <fb-match-timeline-item
+              class="flex-grow"
+              [last]="true"
+              [game]="game"
+              [gamePeriodOption]="overtimeSummary"
+              [periodActive]="1"
+            ></fb-match-timeline-item>
+          }
         </ol>
       </nav>
-
-      <div class="grid grid-cols-1 gap-8 mt-4 lg:mt-8" *ngIf="!game.ended">
-        <fb-button
-          (handleClick)="setEvent('next')"
-          [fullWidth]="true"
-          [size]="'large'"
-        >
-          {{
-            game.current_period_title?.running
-              ? game.current_period_title?.can_end_game
-                ? game.current_period_title?.status_id === "penalty_shots"
-                  ? "Spiel beenden"
-                  : "Spiel beenden oder nächste Unterbrechung"
-                : "Nächste Unterbrechung"
-              : "Nächster Spielabschnitt"
-          }}
-        </fb-button>
-        <div *ngIf="event === 'next'">
-          <fb-match-event-form
-            class="col-span-2"
-            type="next"
-            team="both"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="setCurrentPeriod($event)"
-            (scrollToSbbNavigation)="scrollToSbbNavigation()"
-            [currentPeriod]="currentPeriod"
-            [penalties]="penalties"
-            [penaltyCodes]="penaltyCodes"
-            [match]="game"
-          ></fb-match-event-form>
+      @if (!game.ended) {
+        <div class="grid grid-cols-1 gap-8 mt-4 lg:mt-8">
+          <fb-button
+            (handleClick)="setEvent('next')"
+            [fullWidth]="true"
+            [size]="'large'"
+          >
+            {{
+              game.current_period_title?.running
+                ? game.current_period_title?.can_end_game
+                  ? game.current_period_title?.status_id === "penalty_shots"
+                    ? "Spiel beenden"
+                    : "Spiel beenden oder nächste Unterbrechung"
+                  : "Nächste Unterbrechung"
+                : "Nächster Spielabschnitt"
+            }}
+          </fb-button>
+          @if (event === "next") {
+            <div>
+              <fb-match-event-form
+                class="col-span-2"
+                type="next"
+                team="both"
+                (updateGame)="reloadGame()"
+                (updatePeriod)="setCurrentPeriod($event)"
+                (scrollToSbbNavigation)="scrollToSbbNavigation()"
+                [currentPeriod]="currentPeriod"
+                [penalties]="penalties"
+                [penaltyCodes]="penaltyCodes"
+                [match]="game"
+              ></fb-match-event-form>
+            </div>
+          }
         </div>
-      </div>
-
+      }
       <div class="grid grid-cols-2 gap-4 mt-4 lg:mt-8">
         <fb-match-event-button
           type="goal"
@@ -178,7 +155,7 @@
           [team_name]="game.guest_team_name"
           (setEvent)="setEvent($event)"
         ></fb-match-event-button>
-        <ng-container *ngIf="event === 'goal-home'">
+        @if (event === "goal-home") {
           <fb-match-event-form
             class="col-span-2"
             type="goal"
@@ -190,8 +167,8 @@
             [penaltyCodes]="penaltyCodes"
             [match]="game"
           ></fb-match-event-form>
-        </ng-container>
-        <ng-container *ngIf="event === 'goal-guest'">
+        }
+        @if (event === "goal-guest") {
           <fb-match-event-form
             class="col-span-2"
             type="goal"
@@ -203,8 +180,7 @@
             [penaltyCodes]="penaltyCodes"
             [match]="game"
           ></fb-match-event-form>
-        </ng-container>
-
+        }
         <fb-match-event-button
           type="penalty"
           team="home"
@@ -219,7 +195,7 @@
           [team_name]="game.guest_team_name"
           (setEvent)="setEvent($event)"
         ></fb-match-event-button>
-        <ng-container *ngIf="event === 'penalty-home'">
+        @if (event === "penalty-home") {
           <fb-match-event-form
             class="col-span-2"
             type="penalty"
@@ -231,8 +207,8 @@
             [penaltyCodes]="penaltyCodes"
             [match]="game"
           ></fb-match-event-form>
-        </ng-container>
-        <ng-container *ngIf="event === 'penalty-guest'">
+        }
+        @if (event === "penalty-guest") {
           <fb-match-event-form
             class="col-span-2"
             type="penalty"
@@ -244,8 +220,7 @@
             [penaltyCodes]="penaltyCodes"
             [match]="game"
           ></fb-match-event-form>
-        </ng-container>
-
+        }
         <fb-match-event-button
           type="timeout"
           team="home"
@@ -260,7 +235,7 @@
           [team_name]="game.guest_team_name"
           (setEvent)="setEvent($event)"
         ></fb-match-event-button>
-        <ng-container *ngIf="event === 'timeout-home'">
+        @if (event === "timeout-home") {
           <fb-match-event-form
             class="col-span-2"
             type="timeout"
@@ -272,8 +247,8 @@
             [penaltyCodes]="penaltyCodes"
             [match]="game"
           ></fb-match-event-form>
-        </ng-container>
-        <ng-container *ngIf="event === 'timeout-guest'">
+        }
+        @if (event === "timeout-guest") {
           <fb-match-event-form
             class="col-span-2"
             type="timeout"
@@ -285,35 +260,52 @@
             [penaltyCodes]="penaltyCodes"
             [match]="game"
           ></fb-match-event-form>
-        </ng-container>
+        }
       </div>
     </div>
   </div>
-
   <div class="border-b-4 border-fb-gray-200">
     <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
       <h2 class="font-bold text-xl lg:text-2xl">Weitere Infos</h2>
-
-      <div
-        class="grid grid-cols-2 gap-4 mt-4 lg:mt-8"
-        *ngIf="additionalFields; else loading"
-      >
-        <div class="col-span-2">
-          <fb-match-event-form
-            type="visitors"
-            team="both"
-            [fieldValue]="game.audience?.toString() || ''"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="setCurrentPeriod($event)"
-            [currentPeriod]="currentPeriod"
-            [penalties]="penalties"
-            [penaltyCodes]="penaltyCodes"
-            [match]="game"
-          ></fb-match-event-form>
+      @if (additionalFields) {
+        <div class="grid grid-cols-2 gap-4 mt-4 lg:mt-8">
+          <div class="col-span-2">
+            <fb-match-event-form
+              type="visitors"
+              team="both"
+              [fieldValue]="game.audience?.toString() || ''"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+            ></fb-match-event-form>
+          </div>
         </div>
-      </div>
+      } @else {
+        <div class="bg-white my-[5px] py-[15px] px-[30px]">
+          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+            <svg
+              class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            Daten werden geladen...
+          </div>
+        </div>
+      }
     </div>
   </div>
-
   <fb-awards [match]="game"></fb-awards>
-</ng-container>
+}

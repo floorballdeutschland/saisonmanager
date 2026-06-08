@@ -44,33 +44,36 @@
           </div>
         </ng-template>
 
-        <div class="col-span-2" *ngIf="league?.league_id_preround">
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Lizenzen aus Vorrunde übernehmen
-            </div>
-            <p class="text-sm text-gray-600 mb-4">
-              Überträgt alle gültigen Lizenzen aus der Vorrunden-Liga
-              automatisch als erteilt. Spieler, die bereits eine Lizenz für
-              diese Liga haben, werden übersprungen.
-            </p>
-            <div class="flex items-center gap-4">
-              <button
-                (click)="copyPreroundLicenses()"
-                [disabled]="copyLoading"
-                class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-green-600 hover:bg-green-700 border-green-700 rounded-[5px] cursor-pointer disabled:opacity-50"
-              >
-                {{ copyLoading ? "Wird übertragen..." : "Lizenzen übernehmen" }}
-              </button>
-              <span
-                *ngIf="copyResult !== undefined"
-                class="text-sm text-green-700 font-medium"
-              >
-                {{ copyResult.copied }} Lizenz(en) übernommen.
-              </span>
+        @if (league?.league_id_preround) {
+          <div class="col-span-2">
+            <div class="bg-white my-[5px] py-[15px] px-[30px]">
+              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                Lizenzen aus Vorrunde übernehmen
+              </div>
+              <p class="text-sm text-gray-600 mb-4">
+                Überträgt alle gültigen Lizenzen aus der Vorrunden-Liga
+                automatisch als erteilt. Spieler, die bereits eine Lizenz für
+                diese Liga haben, werden übersprungen.
+              </p>
+              <div class="flex items-center gap-4">
+                <button
+                  (click)="copyPreroundLicenses()"
+                  [disabled]="copyLoading"
+                  class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-green-600 hover:bg-green-700 border-green-700 rounded-[5px] cursor-pointer disabled:opacity-50"
+                >
+                  {{
+                    copyLoading ? "Wird übertragen..." : "Lizenzen übernehmen"
+                  }}
+                </button>
+                @if (copyResult !== undefined) {
+                  <span class="text-sm text-green-700 font-medium">
+                    {{ copyResult.copied }} Lizenz(en) übernommen.
+                  </span>
+                }
+              </div>
             </div>
           </div>
-        </div>
+        }
 
         <div class="col-span-2">
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
@@ -86,193 +89,207 @@
               </button>
             </div>
             <ul role="list" class="divide-y divide-gray-400">
-              <ng-container
-                *ngFor="
-                  let team of teams | clubPlayerLicense : 2 : false;
-                  let teamIndex = index
-                "
-              >
-                <ng-container
-                  *ngFor="let player of team.players; let playerIndex = index"
-                >
-                  <li
-                    *ngIf="
-                      player.team_license.last_status.license_status_id === 2 &&
-                      !handledPlayerIds.includes(player.id)
-                    "
-                  >
-                    <fb-license-admin-detail
-                      [initiallyOpen]="!teamIndex && !playerIndex"
-                      [forceOpen]="allOpen"
-                      [player]="player"
-                      [team]="team"
-                      [allClubs]="allClubs"
-                      (handledPlayer)="handledPlayer($event)"
-                    ></fb-license-admin-detail>
-                  </li>
-                </ng-container>
-              </ng-container>
+              @for (
+                team of teams | clubPlayerLicense: 2 : false;
+                track team;
+                let teamIndex = $index
+              ) {
+                @for (
+                  player of team.players;
+                  track player;
+                  let playerIndex = $index
+                ) {
+                  @if (
+                    player.team_license.last_status.license_status_id === 2 &&
+                    !handledPlayerIds.includes(player.id)
+                  ) {
+                    <li>
+                      <fb-license-admin-detail
+                        [initiallyOpen]="!teamIndex && !playerIndex"
+                        [forceOpen]="allOpen"
+                        [player]="player"
+                        [team]="team"
+                        [allClubs]="allClubs"
+                        (handledPlayer)="handledPlayer($event)"
+                      ></fb-license-admin-detail>
+                    </li>
+                  }
+                }
+              }
             </ul>
           </div>
         </div>
 
-        <div
-          class="bg-white my-[5px] py-[15px] px-[30px]"
-          *ngFor="let team of teams"
-        >
-          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-            {{ team.name }}
-          </div>
-          <div class="flex flex-col gap-2">
-            <ul role="list" class="divide-y divide-gray-200">
-              <li *ngFor="let p of team.players">
-                <div href="#" class="block hover:bg-gray-50">
-                  <div class="-mx-4 px-4 py-4 sm:px-6 sm:-mx-6">
-                    <div class="flex items-start justify-between">
-                      <p class="truncate text-sm font-medium">
-                        {{ p.last_name }}, {{ p.first_name }}
-                        <span
-                          *ngIf="p.gender"
-                          class="ml-1 inline-block rounded px-1 text-xs font-normal text-fb-gray-400"
-                          >{{ p.gender | gender }}</span
-                        >
-                      </p>
-                      <div class="ml-2 flex flex-shrink-0 items-end gap-1">
-                        <span
-                          *ngIf="p.team_license.express"
-                          class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"
-                        >
-                          Expresslizenz
-                        </span>
-                        <div>
-                          <p
-                            class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-green-800 text-[13px]"
-                            [ngClass]="
-                              p.team_license.last_status.license_status_id === 3
-                                ? 'bg-red-100 text-red-800'
-                                : p.team_license.last_status
-                                    .license_status_id === 1
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
-                            "
-                          >
-                            {{ p.team_license.last_status_code }}
+        @for (team of teams; track team) {
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              {{ team.name }}
+            </div>
+            <div class="flex flex-col gap-2">
+              <ul role="list" class="divide-y divide-gray-200">
+                @for (p of team.players; track p) {
+                  <li>
+                    <div href="#" class="block hover:bg-gray-50">
+                      <div class="-mx-4 px-4 py-4 sm:px-6 sm:-mx-6">
+                        <div class="flex items-start justify-between">
+                          <p class="truncate text-sm font-medium">
+                            {{ p.last_name }}, {{ p.first_name }}
+                            @if (p.gender) {
+                              <span
+                                class="ml-1 inline-block rounded px-1 text-xs font-normal text-fb-gray-400"
+                                >{{ p.gender | gender }}</span
+                              >
+                            }
                           </p>
+                          <div class="ml-2 flex flex-shrink-0 items-end gap-1">
+                            @if (p.team_license.express) {
+                              <span
+                                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"
+                              >
+                                Expresslizenz
+                              </span>
+                            }
+                            <div>
+                              <p
+                                class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-green-800 text-[13px]"
+                                [ngClass]="
+                                  p.team_license.last_status
+                                    .license_status_id === 3
+                                    ? 'bg-red-100 text-red-800'
+                                    : p.team_license.last_status
+                                          .license_status_id === 1
+                                      ? 'bg-green-100 text-green-800'
+                                      : 'bg-gray-100 text-gray-800'
+                                "
+                              >
+                                {{ p.team_license.last_status_code }}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="mt-2 sm:flex sm:justify-between">
+                          <div class="sm:flex sm:flex-wrap sm:gap-x-4">
+                            <p class="flex items-start text-sm text-gray-500">
+                              <!-- Heroicon name: mini/calendar -->
+                              <svg
+                                class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z"
+                                  clip-rule="evenodd"
+                                />
+                              </svg>
+                              Geb.
+                              {{
+                                p.birthdate
+                                  ? (p.birthdate | date: "dd.MM.yyyy")
+                                  : "-"
+                              }}
+                            </p>
+                            @if (p.team_license.requested_at) {
+                              <p class="flex items-start text-sm text-gray-500">
+                                <span class="font-medium mr-1">Beantragt:</span>
+                                {{
+                                  p.team_license.requested_at
+                                    | date: "dd.MM.yyyy" : "Europe/Berlin"
+                                }}
+                              </p>
+                            }
+                            @if (p.team_license.approved_at) {
+                              <p class="flex items-start text-sm text-gray-500">
+                                <span class="font-medium mr-1">Erteilt:</span>
+                                {{
+                                  p.team_license.approved_at
+                                    | date: "dd.MM.yyyy" : "Europe/Berlin"
+                                }}
+                              </p>
+                            }
+                            @if (p.team_license.documents) {
+                              <div
+                                class="flex items-center gap-1.5 text-sm text-gray-500"
+                              >
+                                <span class="font-medium mr-1">Dokumente:</span>
+                                <!-- Pflichtdokumente aus Liga-Konfiguration -->
+                                @for (
+                                  docType of league?.required_documents;
+                                  track docType
+                                ) {
+                                  @if (docType !== "parental_consent") {
+                                    @if (
+                                      p.team_license.documents[docType + "_url"]
+                                    ) {
+                                      <a
+                                        [href]="
+                                          p.team_license.documents[
+                                            docType + '_url'
+                                          ]
+                                        "
+                                        target="_blank"
+                                        rel="noopener"
+                                        class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
+                                        [title]="
+                                          docTypeLabel(docType) + ' ansehen'
+                                        "
+                                        >{{ docTypeLabel(docType) }}</a
+                                      >
+                                    }
+                                    @if (
+                                      !p.team_license.documents[
+                                        docType + "_url"
+                                      ]
+                                    ) {
+                                      <span
+                                        class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
+                                        [title]="
+                                          docTypeLabel(docType) + ' fehlt'
+                                        "
+                                        >{{ docTypeLabel(docType) }}</span
+                                      >
+                                    }
+                                  }
+                                }
+                                <!-- Einverständnis (nur für Minderjährige) -->
+                                @if (isMinor(p.birthdate)) {
+                                  @if (
+                                    p.team_license.documents
+                                      .parental_consent_url
+                                  ) {
+                                    <a
+                                      [href]="
+                                        p.team_license.documents
+                                          .parental_consent_url
+                                      "
+                                      target="_blank"
+                                      rel="noopener"
+                                      class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
+                                      title="Einverständniserklärung ansehen"
+                                      >Einverständnis</a
+                                    >
+                                  } @else {
+                                    <span
+                                      class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
+                                      title="Einverständniserklärung fehlt"
+                                      >Einverständnis</span
+                                    >
+                                  }
+                                }
+                              </div>
+                            }
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div class="mt-2 sm:flex sm:justify-between">
-                      <div class="sm:flex sm:flex-wrap sm:gap-x-4">
-                        <p class="flex items-start text-sm text-gray-500">
-                          <!-- Heroicon name: mini/calendar -->
-                          <svg
-                            class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z"
-                              clip-rule="evenodd"
-                            />
-                          </svg>
-                          Geb.
-                          {{
-                            p.birthdate
-                              ? (p.birthdate | date : "dd.MM.yyyy")
-                              : "-"
-                          }}
-                        </p>
-                        <p
-                          *ngIf="p.team_license.requested_at"
-                          class="flex items-start text-sm text-gray-500"
-                        >
-                          <span class="font-medium mr-1">Beantragt:</span>
-                          {{
-                            p.team_license.requested_at
-                              | date : "dd.MM.yyyy" : "Europe/Berlin"
-                          }}
-                        </p>
-                        <p
-                          *ngIf="p.team_license.approved_at"
-                          class="flex items-start text-sm text-gray-500"
-                        >
-                          <span class="font-medium mr-1">Erteilt:</span>
-                          {{
-                            p.team_license.approved_at
-                              | date : "dd.MM.yyyy" : "Europe/Berlin"
-                          }}
-                        </p>
-                        <div
-                          *ngIf="p.team_license.documents"
-                          class="flex items-center gap-1.5 text-sm text-gray-500"
-                        >
-                          <span class="font-medium mr-1">Dokumente:</span>
-                          <!-- Pflichtdokumente aus Liga-Konfiguration -->
-                          <ng-container
-                            *ngFor="let docType of league?.required_documents"
-                          >
-                            <ng-container
-                              *ngIf="docType !== 'parental_consent'"
-                            >
-                              <a
-                                *ngIf="
-                                  p.team_license.documents[docType + '_url']
-                                "
-                                [href]="
-                                  p.team_license.documents[docType + '_url']
-                                "
-                                target="_blank"
-                                rel="noopener"
-                                class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
-                                [title]="docTypeLabel(docType) + ' ansehen'"
-                                >{{ docTypeLabel(docType) }}</a
-                              >
-                              <span
-                                *ngIf="
-                                  !p.team_license.documents[docType + '_url']
-                                "
-                                class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
-                                [title]="docTypeLabel(docType) + ' fehlt'"
-                                >{{ docTypeLabel(docType) }}</span
-                              >
-                            </ng-container>
-                          </ng-container>
-                          <!-- Einverständnis (nur für Minderjährige) -->
-                          <ng-container *ngIf="isMinor(p.birthdate)">
-                            <a
-                              *ngIf="
-                                p.team_license.documents.parental_consent_url;
-                                else consentMissing
-                              "
-                              [href]="
-                                p.team_license.documents.parental_consent_url
-                              "
-                              target="_blank"
-                              rel="noopener"
-                              class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
-                              title="Einverständniserklärung ansehen"
-                              >Einverständnis</a
-                            >
-                            <ng-template #consentMissing>
-                              <span
-                                class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
-                                title="Einverständniserklärung fehlt"
-                                >Einverständnis</span
-                              >
-                            </ng-template>
-                          </ng-container>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            </ul>
+                  </li>
+                }
+              </ul>
+            </div>
           </div>
-        </div>
+        }
       </div>
     </div>
   </div>

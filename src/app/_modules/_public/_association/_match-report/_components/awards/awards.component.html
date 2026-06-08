@@ -30,39 +30,40 @@
       <div class="text-lg lg:text-xl font-bold">
         {{ match.guest_team_name }}
       </div>
-      <div *ngFor="let team of teams">
-        <ng-container
-          *ngFor="
-            let award of team === 'home' ? awardsHome : awardsGuest;
-            let i = index
-          "
-        >
-          <label class="font-medium text-base text-fb-gray-500">{{
-            awardDefinitions[award.award]
-          }}</label>
-          <select
-            class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-            [(ngModel)]="
-              (team === 'home' ? awardsHome : awardsGuest)[i]['player_id']
-            "
-            (ngModelChange)="setAward(award.award, team, $event)"
-          >
-            <option value=""></option>
-            <option
-              *ngFor="
-                let player of (team === 'home'
+      @for (team of teams; track team) {
+        <div>
+          @for (
+            award of team === "home" ? awardsHome : awardsGuest;
+            track award;
+            let i = $index
+          ) {
+            <label class="font-medium text-base text-fb-gray-500">{{
+              awardDefinitions[award.award]
+            }}</label>
+            <select
+              class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+              [(ngModel)]="
+                (team === 'home' ? awardsHome : awardsGuest)[i]['player_id']
+              "
+              (ngModelChange)="setAward(award.award, team, $event)"
+            >
+              <option value=""></option>
+              @for (
+                player of (team === "home"
                   ? match.players.home || []
                   : match.players.guest || []
-                ) | sortTrikotNumber
-              "
-              [value]="player.player_id"
-            >
-              {{ player.trikot_number }} - {{ player.player_firstname }}
-              {{ player.player_name }}
-            </option>
-          </select>
-        </ng-container>
-      </div>
+                ) | sortTrikotNumber;
+                track player
+              ) {
+                <option [value]="player.player_id">
+                  {{ player.trikot_number }} - {{ player.player_firstname }}
+                  {{ player.player_name }}
+                </option>
+              }
+            </select>
+          }
+        </div>
+      }
     </div>
   </div>
 </div>

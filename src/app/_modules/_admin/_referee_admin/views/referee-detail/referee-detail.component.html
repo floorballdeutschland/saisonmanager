@@ -1,7 +1,9 @@
 <div class="p-4 lg:p-8">
-  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">Lade…</div>
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+  }
 
-  <ng-container *ngIf="!loading && referee">
+  @if (!loading && referee) {
     <!-- Header -->
     <div class="flex items-start justify-between mb-6">
       <div>
@@ -14,11 +16,12 @@
           <h1 class="text-2xl font-bold">
             {{ referee.nachname }}, {{ referee.vorname }}
           </h1>
-          <span
-            *ngIf="referee.guest"
-            class="text-xs font-bold px-2 py-0.5 bg-fb-gray-800 text-fb-gray-500 rounded"
-            >Gast</span
-          >
+          @if (referee.guest) {
+            <span
+              class="text-xs font-bold px-2 py-0.5 bg-fb-gray-800 text-fb-gray-500 rounded"
+              >Gast</span
+            >
+          }
         </div>
         <p class="text-fb-gray-500 font-mono text-sm mt-0.5">
           {{
@@ -35,7 +38,7 @@
             'verwaltung',
             'schiedsrichter',
             detailRouteId,
-            'bearbeiten'
+            'bearbeiten',
           ]"
           class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
         >
@@ -43,151 +46,176 @@
         </a>
       </div>
     </div>
-
     <!-- Stammdaten -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <div *ngIf="!referee.guest">
-        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-          Lizenzstufe
-        </p>
-        <p class="font-medium">{{ referee.lizenzstufe || "–" }}</p>
-      </div>
-      <div *ngIf="!referee.guest">
-        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-          Gültigkeit
-        </p>
-        <p
-          [class]="
-            isActive ? 'font-medium text-green-600' : 'font-medium text-red-500'
-          "
-        >
-          {{ referee.gueltigkeit || "–" }}
-          <span *ngIf="referee.gueltigkeit" class="text-xs ml-1">
-            ({{ isActive ? "aktiv" : "abgelaufen" }})
-          </span>
-        </p>
-      </div>
-      <div *ngIf="!referee.guest">
-        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-          Region / LV
-        </p>
-        <p class="font-medium">{{ referee.landesverband || "–" }}</p>
-      </div>
-      <div *ngIf="!referee.guest">
-        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">Verein</p>
-        <p class="font-medium">{{ referee.club_name || "–" }}</p>
-      </div>
-      <ng-container *ngIf="!referee.guest && referee.qualifications?.length">
-        <div *ngFor="let q of referee.qualifications">
+      @if (!referee.guest) {
+        <div>
           <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            Zusatzqualifikation {{ q.qualification_type_name }}
+            Lizenzstufe
           </p>
-          <p class="font-medium">
-            {{ q.qualification_type_name }}
-            <span *ngIf="q.valid_until" class="text-fb-gray-500 text-sm"
-              >(bis {{ q.valid_until }})</span
-            >
-          </p>
+          <p class="font-medium">{{ referee.lizenzstufe || "–" }}</p>
         </div>
-      </ng-container>
-      <div *ngIf="referee.email">
-        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">E-Mail</p>
-        <p class="font-medium">{{ referee.email }}</p>
-      </div>
-      <div *ngIf="referee.wallet_pass_issued_at">
-        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-          Wallet-Ausweis
-        </p>
-        <p class="font-medium text-sm">
-          ausgestellt am
-          {{ referee.wallet_pass_issued_at | date : "dd.MM.yyyy" }}
-          <a
-            *ngIf="referee.wallet_pass_url"
-            [href]="referee.wallet_pass_url"
-            target="_blank"
-            class="ml-2 text-blue-600 hover:underline"
-            >Download</a
+      }
+      @if (!referee.guest) {
+        <div>
+          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+            Gültigkeit
+          </p>
+          <p
+            [class]="
+              isActive
+                ? 'font-medium text-green-600'
+                : 'font-medium text-red-500'
+            "
           >
-        </p>
-      </div>
-      <div *ngIf="referee.user_name">
-        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-          Benutzerkonto
-        </p>
-        <p class="font-medium font-mono text-sm">{{ referee.user_name }}</p>
-      </div>
+            {{ referee.gueltigkeit || "–" }}
+            @if (referee.gueltigkeit) {
+              <span class="text-xs ml-1">
+                ({{ isActive ? "aktiv" : "abgelaufen" }})
+              </span>
+            }
+          </p>
+        </div>
+      }
+      @if (!referee.guest) {
+        <div>
+          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+            Region / LV
+          </p>
+          <p class="font-medium">{{ referee.landesverband || "–" }}</p>
+        </div>
+      }
+      @if (!referee.guest) {
+        <div>
+          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+            Verein
+          </p>
+          <p class="font-medium">{{ referee.club_name || "–" }}</p>
+        </div>
+      }
+      @if (!referee.guest && referee.qualifications?.length) {
+        @for (q of referee.qualifications; track q) {
+          <div>
+            <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+              Zusatzqualifikation {{ q.qualification_type_name }}
+            </p>
+            <p class="font-medium">
+              {{ q.qualification_type_name }}
+              @if (q.valid_until) {
+                <span class="text-fb-gray-500 text-sm"
+                  >(bis {{ q.valid_until }})</span
+                >
+              }
+            </p>
+          </div>
+        }
+      }
+      @if (referee.email) {
+        <div>
+          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+            E-Mail
+          </p>
+          <p class="font-medium">{{ referee.email }}</p>
+        </div>
+      }
+      @if (referee.wallet_pass_issued_at) {
+        <div>
+          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+            Wallet-Ausweis
+          </p>
+          <p class="font-medium text-sm">
+            ausgestellt am
+            {{ referee.wallet_pass_issued_at | date: "dd.MM.yyyy" }}
+            @if (referee.wallet_pass_url) {
+              <a
+                [href]="referee.wallet_pass_url"
+                target="_blank"
+                class="ml-2 text-blue-600 hover:underline"
+                >Download</a
+              >
+            }
+          </p>
+        </div>
+      }
+      @if (referee.user_name) {
+        <div>
+          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+            Benutzerkonto
+          </p>
+          <p class="font-medium font-mono text-sm">{{ referee.user_name }}</p>
+        </div>
+      }
     </div>
-
     <!-- Adresse & Partner (nur reguläre Schiedsrichter) -->
-    <ng-container
-      *ngIf="
-        !referee.guest && (referee.strasse || referee.partner_lizenznummer)
-      "
-    >
+    @if (!referee.guest && (referee.strasse || referee.partner_lizenznummer)) {
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div *ngIf="referee.strasse">
-          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            Heimadresse
-          </p>
-          <p class="font-medium">
-            {{ referee.strasse }} {{ referee.hausnummer }}, {{ referee.plz }}
-            {{ referee.ort }}
-          </p>
-        </div>
-        <div *ngIf="referee.partner_lizenznummer">
-          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            Bevorzugter Partner
-          </p>
-          <p class="font-medium font-mono">
-            {{ referee.partner_lizenznummer }}
-          </p>
-        </div>
+        @if (referee.strasse) {
+          <div>
+            <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+              Heimadresse
+            </p>
+            <p class="font-medium">
+              {{ referee.strasse }} {{ referee.hausnummer }}, {{ referee.plz }}
+              {{ referee.ort }}
+            </p>
+          </div>
+        }
+        @if (referee.partner_lizenznummer) {
+          <div>
+            <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+              Bevorzugter Partner
+            </p>
+            <p class="font-medium font-mono">
+              {{ referee.partner_lizenznummer }}
+            </p>
+          </div>
+        }
       </div>
-    </ng-container>
-
+    }
     <!-- Spielhistorie -->
     <h2 class="text-lg font-bold mb-4">Spielhistorie</h2>
+    @if (gamesLoading) {
+      <div class="text-fb-gray-500 text-sm py-4">Lade Spiele…</div>
+    }
+    @if (!gamesLoading) {
+      <div>
+        <p class="text-sm text-fb-gray-500 mb-3">{{ games.length }} Spiele</p>
+        @if (games.length > 0) {
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-fb-gray-700 text-left">
+                <th class="py-2 pr-4 font-bold">Nr.</th>
+                <th class="py-2 pr-4 font-bold">Datum</th>
+                <th class="py-2 pr-4 font-bold">Heimteam</th>
+                <th class="py-2 pr-4 font-bold">Gastteam</th>
+                <th class="py-2 pr-4 font-bold">Liga</th>
+                <th class="py-2 font-bold">Ergebnis</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (g of games; track g) {
+                <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
+                  <td class="py-2 pr-4 font-mono text-fb-gray-500">
+                    {{ g.game_number }}
+                  </td>
+                  <td class="py-2 pr-4">{{ g.date | date: "dd.MM.yyyy" }}</td>
+                  <td class="py-2 pr-4">{{ g.home_team }}</td>
+                  <td class="py-2 pr-4">{{ g.guest_team }}</td>
+                  <td class="py-2 pr-4 text-fb-gray-500">{{ g.league }}</td>
+                  <td class="py-2 font-mono">{{ g.result || "–" }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+        @if (games.length === 0) {
+          <p class="text-fb-gray-500 text-sm">Keine Spiele gefunden.</p>
+        }
+      </div>
+    }
+  }
 
-    <div *ngIf="gamesLoading" class="text-fb-gray-500 text-sm py-4">
-      Lade Spiele…
-    </div>
-
-    <div *ngIf="!gamesLoading">
-      <p class="text-sm text-fb-gray-500 mb-3">{{ games.length }} Spiele</p>
-      <table class="w-full text-sm" *ngIf="games.length > 0">
-        <thead>
-          <tr class="border-b border-fb-gray-700 text-left">
-            <th class="py-2 pr-4 font-bold">Nr.</th>
-            <th class="py-2 pr-4 font-bold">Datum</th>
-            <th class="py-2 pr-4 font-bold">Heimteam</th>
-            <th class="py-2 pr-4 font-bold">Gastteam</th>
-            <th class="py-2 pr-4 font-bold">Liga</th>
-            <th class="py-2 font-bold">Ergebnis</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            *ngFor="let g of games"
-            class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
-          >
-            <td class="py-2 pr-4 font-mono text-fb-gray-500">
-              {{ g.game_number }}
-            </td>
-            <td class="py-2 pr-4">{{ g.date | date : "dd.MM.yyyy" }}</td>
-            <td class="py-2 pr-4">{{ g.home_team }}</td>
-            <td class="py-2 pr-4">{{ g.guest_team }}</td>
-            <td class="py-2 pr-4 text-fb-gray-500">{{ g.league }}</td>
-            <td class="py-2 font-mono">{{ g.result || "–" }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p *ngIf="games.length === 0" class="text-fb-gray-500 text-sm">
-        Keine Spiele gefunden.
-      </p>
-    </div>
-  </ng-container>
-
-  <div *ngIf="!loading && !referee" class="text-fb-gray-500 py-8">
-    Schiedsrichter nicht gefunden.
-  </div>
+  @if (!loading && !referee) {
+    <div class="text-fb-gray-500 py-8">Schiedsrichter nicht gefunden.</div>
+  }
 </div>

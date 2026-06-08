@@ -1,70 +1,80 @@
 <div class="p-4 lg:p-8">
   <h1 class="text-2xl font-bold mb-6">Schiedsrichter*innen</h1>
 
-  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">
-    Lade Schiedsrichter…
-  </div>
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">Lade Schiedsrichter…</div>
+  }
 
-  <div *ngIf="!loading">
-    <p class="text-sm text-fb-gray-500 mb-4">
-      {{ referees.length }}
-      {{ referees.length === 1 ? "Schiedsrichter*in" : "Schiedsrichter*innen" }}
-      in deinem Verein
-    </p>
-
-    <table class="w-full text-sm" *ngIf="referees.length > 0">
-      <thead>
-        <tr class="border-b border-fb-gray-700 text-left">
-          <th class="py-2 pr-4 font-bold">Lizenznummer</th>
-          <th class="py-2 pr-4 font-bold">Name</th>
-          <th class="py-2 pr-4 font-bold">Stufe</th>
-          <th class="py-2 pr-4 font-bold">Gültigkeit</th>
-          <th class="py-2 pr-4 font-bold">Zusatzqualifikationen</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          *ngFor="let r of referees"
-          class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
-        >
-          <td class="py-2 pr-4 font-mono text-fb-gray-500">
-            {{ r.lizenznummer_display }}
-          </td>
-          <td class="py-2 pr-4 font-medium">
-            {{ r.nachname }}, {{ r.vorname }}
-          </td>
-          <td class="py-2 pr-4">{{ r.lizenzstufe || "–" }}</td>
-          <td class="py-2 pr-4">
-            <span
-              *ngIf="r.gueltigkeit"
-              [class]="r.active ? 'text-green-600 font-medium' : 'text-red-500'"
-            >
-              {{ r.gueltigkeit }}
-            </span>
-            <span *ngIf="!r.gueltigkeit" class="text-fb-gray-500">–</span>
-          </td>
-          <td class="py-2 pr-4">
-            <span
-              *ngFor="let q of r.qualifications; let last = last"
-              class="text-fb-gray-500"
-            >
-              {{ q.qualification_type_name
-              }}<span *ngIf="q.valid_until"> (bis {{ q.valid_until }})</span
-              ><span *ngIf="!last">, </span>
-            </span>
-            <span *ngIf="r.qualifications.length === 0" class="text-fb-gray-500"
-              >–</span
-            >
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p
-      *ngIf="referees.length === 0"
-      class="text-fb-gray-500 text-sm py-8 text-center"
-    >
-      Keine Schiedsrichter*innen für deinen Verein gefunden.
-    </p>
-  </div>
+  @if (!loading) {
+    <div>
+      <p class="text-sm text-fb-gray-500 mb-4">
+        {{ referees.length }}
+        {{
+          referees.length === 1 ? "Schiedsrichter*in" : "Schiedsrichter*innen"
+        }}
+        in deinem Verein
+      </p>
+      @if (referees.length > 0) {
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-fb-gray-700 text-left">
+              <th class="py-2 pr-4 font-bold">Lizenznummer</th>
+              <th class="py-2 pr-4 font-bold">Name</th>
+              <th class="py-2 pr-4 font-bold">Stufe</th>
+              <th class="py-2 pr-4 font-bold">Gültigkeit</th>
+              <th class="py-2 pr-4 font-bold">Zusatzqualifikationen</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of referees; track r) {
+              <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
+                <td class="py-2 pr-4 font-mono text-fb-gray-500">
+                  {{ r.lizenznummer_display }}
+                </td>
+                <td class="py-2 pr-4 font-medium">
+                  {{ r.nachname }}, {{ r.vorname }}
+                </td>
+                <td class="py-2 pr-4">{{ r.lizenzstufe || "–" }}</td>
+                <td class="py-2 pr-4">
+                  @if (r.gueltigkeit) {
+                    <span
+                      [class]="
+                        r.active ? 'text-green-600 font-medium' : 'text-red-500'
+                      "
+                    >
+                      {{ r.gueltigkeit }}
+                    </span>
+                  }
+                  @if (!r.gueltigkeit) {
+                    <span class="text-fb-gray-500">–</span>
+                  }
+                </td>
+                <td class="py-2 pr-4">
+                  @for (q of r.qualifications; track q; let last = $last) {
+                    <span class="text-fb-gray-500">
+                      {{ q.qualification_type_name }}
+                      @if (q.valid_until) {
+                        <span> (bis {{ q.valid_until }})</span>
+                      }
+                      @if (!last) {
+                        <span>, </span>
+                      }
+                    </span>
+                  }
+                  @if (r.qualifications.length === 0) {
+                    <span class="text-fb-gray-500">–</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      @if (referees.length === 0) {
+        <p class="text-fb-gray-500 text-sm py-8 text-center">
+          Keine Schiedsrichter*innen für deinen Verein gefunden.
+        </p>
+      }
+    </div>
+  }
 </div>

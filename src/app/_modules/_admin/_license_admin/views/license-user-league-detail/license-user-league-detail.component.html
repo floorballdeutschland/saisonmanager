@@ -15,7 +15,7 @@
     <span class="block text-[22px] lg:text-[24px]">{{ league?.name }}</span>
     <span class="block text-[14px] pt-2"
       >Diese Lizenzliste wurde am
-      {{ currentTime() | date : "dd.MM.yyyy HH:mm" }} Uhr erstellt.</span
+      {{ currentTime() | date: "dd.MM.yyyy HH:mm" }} Uhr erstellt.</span
     >
   </h2>
 </div>
@@ -89,75 +89,74 @@
           </div>
         </div>
         <div class="print:hidden"></div>
-        <ng-container *ngIf="gamedayDate">
-          <div
-            class="bg-white my-[5px] py-[15px] px-[30px] print:px-0 print:m-0 print:p-0 pagebreak"
-            *ngFor="let team of teams"
-          >
-            <p class="hidden print:block text-[14px] pt-4">
-              {{ league?.game_operation_name }}
-              <span class="block text-[20px]">{{ league?.name }}</span>
-              <span class="block text-[10px] pb-2"
-                >Diese Lizenzliste wurde am
-                {{ currentTime() | date : "dd.MM.YYYY HH:mm" }} Uhr
-                erstellt.</span
-              >
-            </p>
-            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              {{ team.name }}
-            </div>
-            <ul role="list" class="divide-y divide-gray-200">
-              <li
-                *ngFor="let p of team.players; let last = last"
-                [ngClass]="last ? '' : ''"
-              >
-                <div class="block hover:bg-gray-50 print:h-[22px]">
-                  <div class="py-3 print:py-0">
-                    <div
-                      class="license-direction grid grid-cols-[140px,40px,1fr] print:grid-cols-[115px,40px,1fr]"
-                    >
-                      <div class="ml-2 flex flex-shrink-0">
-                        <div class="">
-                          <p
-                            class="license-status block rounded-full px-2 text-[13px] font-semibold leading-5 text-green-800 print:mt-[3px] print:text-[10px] print:leading-4"
-                            [ngClass]="
-                              p.team_license.last_status.license_status_id === 3
-                                ? 'bg-red-100 text-red-800'
-                                : p.team_license.last_status
-                                    .license_status_id === 1
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
-                            "
-                          >
-                            {{ p.team_license.last_status_code }}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div
-                        class="flex flex-col justify-center items-end print:items-start"
-                      >
-                        <div class="w-5 h-5 print:w-3 print:h-3">
-                          <fb-glasses-icon
-                            *ngIf="(p | currentAge : gamedayDate) < 18"
-                          ></fb-glasses-icon>
-                        </div>
-                      </div>
-
-                      <div>
-                        <p
-                          class="truncate text-sm print:text-xs font-medium print:leading-[22px]"
+        @if (gamedayDate) {
+          @for (team of teams; track team) {
+            <div
+              class="bg-white my-[5px] py-[15px] px-[30px] print:px-0 print:m-0 print:p-0 pagebreak"
+            >
+              <p class="hidden print:block text-[14px] pt-4">
+                {{ league?.game_operation_name }}
+                <span class="block text-[20px]">{{ league?.name }}</span>
+                <span class="block text-[10px] pb-2"
+                  >Diese Lizenzliste wurde am
+                  {{ currentTime() | date: "dd.MM.YYYY HH:mm" }} Uhr
+                  erstellt.</span
+                >
+              </p>
+              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                {{ team.name }}
+              </div>
+              <ul role="list" class="divide-y divide-gray-200">
+                @for (p of team.players; track p; let last = $last) {
+                  <li [ngClass]="last ? '' : ''">
+                    <div class="block hover:bg-gray-50 print:h-[22px]">
+                      <div class="py-3 print:py-0">
+                        <div
+                          class="license-direction grid grid-cols-[140px,40px,1fr] print:grid-cols-[115px,40px,1fr]"
                         >
-                          {{ p.last_name }}, {{ p.first_name }}
-                        </p>
+                          <div class="ml-2 flex flex-shrink-0">
+                            <div class="">
+                              <p
+                                class="license-status block rounded-full px-2 text-[13px] font-semibold leading-5 text-green-800 print:mt-[3px] print:text-[10px] print:leading-4"
+                                [ngClass]="
+                                  p.team_license.last_status
+                                    .license_status_id === 3
+                                    ? 'bg-red-100 text-red-800'
+                                    : p.team_license.last_status
+                                          .license_status_id === 1
+                                      ? 'bg-green-100 text-green-800'
+                                      : 'bg-gray-100 text-gray-800'
+                                "
+                              >
+                                {{ p.team_license.last_status_code }}
+                              </p>
+                            </div>
+                          </div>
+                          <div
+                            class="flex flex-col justify-center items-end print:items-start"
+                          >
+                            <div class="w-5 h-5 print:w-3 print:h-3">
+                              @if ((p | currentAge: gamedayDate) < 18) {
+                                <fb-glasses-icon></fb-glasses-icon>
+                              }
+                            </div>
+                          </div>
+                          <div>
+                            <p
+                              class="truncate text-sm print:text-xs font-medium print:leading-[22px]"
+                            >
+                              {{ p.last_name }}, {{ p.first_name }}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </ng-container>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        }
       </div>
     </div>
   </div>

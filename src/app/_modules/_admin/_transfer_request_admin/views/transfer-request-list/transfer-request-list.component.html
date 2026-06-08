@@ -2,193 +2,201 @@
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold">Transferanträge</h1>
     <div class="flex items-center gap-2">
-      <button
-        *ngIf="isSbk && !loading && approvedRequests.length > 0"
-        (click)="exportCsv()"
-        class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
-      >
-        CSV exportieren
-      </button>
-      <button
-        *ngIf="isSbk"
-        (click)="directAssign()"
-        class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
-      >
-        Direktzuweisung
-      </button>
-      <button
-        *ngIf="canInitiate"
-        (click)="initiateNew()"
-        class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors"
-      >
-        Neuer Transferantrag
-      </button>
+      @if (isSbk && !loading && approvedRequests.length > 0) {
+        <button
+          (click)="exportCsv()"
+          class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
+        >
+          CSV exportieren
+        </button>
+      }
+      @if (isSbk) {
+        <button
+          (click)="directAssign()"
+          class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
+        >
+          Direktzuweisung
+        </button>
+      }
+      @if (canInitiate) {
+        <button
+          (click)="initiateNew()"
+          class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors"
+        >
+          Neuer Transferantrag
+        </button>
+      }
     </div>
   </div>
 
-  <div *ngIf="loading" class="text-fb-gray-500 text-sm py-8">
-    Lade Transferanträge…
-  </div>
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">Lade Transferanträge…</div>
+  }
 
   <!-- SBK-Ansicht: nur erfolgreich abgeschlossene Transfers -->
-  <ng-container *ngIf="!loading && isSbk">
-    <div *ngIf="approvedRequests.length > 0">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-fb-gray-700 text-left">
-              <th class="py-2 pr-4 font-bold">Spieler</th>
-              <th class="py-2 pr-4 font-bold">Von</th>
-              <th class="py-2 pr-4 font-bold">Nach</th>
-              <th class="py-2 pr-4 font-bold">Typ</th>
-              <th class="py-2 pr-4 font-bold">Genehmigt am</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              *ngFor="let r of approvedRequests"
-              (click)="openDetail(r.id)"
-              class="border-b border-fb-gray-700 hover:bg-fb-gray-700 cursor-pointer"
-            >
-              <td class="py-2 pr-4 font-medium">
-                {{ r.player.last_name }}, {{ r.player.first_name }}
-              </td>
-              <td class="py-2 pr-4 text-fb-gray-500">
-                {{ r.former_club.name }}
-              </td>
-              <td class="py-2 pr-4 text-fb-gray-500">
-                {{ r.requesting_club.name }}
-              </td>
-              <td class="py-2 pr-4">
-                <span [class]="typeClass(r)">{{ typeLabel(r) }}</span>
-              </td>
-              <td class="py-2 pr-4 text-fb-gray-500">
-                {{ r.lv_approved_at | date : "dd.MM.yyyy" }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+  @if (!loading && isSbk) {
+    @if (approvedRequests.length > 0) {
+      <div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-fb-gray-700 text-left">
+                <th class="py-2 pr-4 font-bold">Spieler</th>
+                <th class="py-2 pr-4 font-bold">Von</th>
+                <th class="py-2 pr-4 font-bold">Nach</th>
+                <th class="py-2 pr-4 font-bold">Typ</th>
+                <th class="py-2 pr-4 font-bold">Genehmigt am</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of approvedRequests; track r) {
+                <tr
+                  (click)="openDetail(r.id)"
+                  class="border-b border-fb-gray-700 hover:bg-fb-gray-700 cursor-pointer"
+                >
+                  <td class="py-2 pr-4 font-medium">
+                    {{ r.player.last_name }}, {{ r.player.first_name }}
+                  </td>
+                  <td class="py-2 pr-4 text-fb-gray-500">
+                    {{ r.former_club.name }}
+                  </td>
+                  <td class="py-2 pr-4 text-fb-gray-500">
+                    {{ r.requesting_club.name }}
+                  </td>
+                  <td class="py-2 pr-4">
+                    <span [class]="typeClass(r)">{{ typeLabel(r) }}</span>
+                  </td>
+                  <td class="py-2 pr-4 text-fb-gray-500">
+                    {{ r.lv_approved_at | date: "dd.MM.yyyy" }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-
-    <p
-      *ngIf="approvedRequests.length === 0"
-      class="text-fb-gray-500 text-sm py-8 text-center"
-    >
-      Keine abgeschlossenen Transfers vorhanden.
-    </p>
-  </ng-container>
+    }
+    @if (approvedRequests.length === 0) {
+      <p class="text-fb-gray-500 text-sm py-8 text-center">
+        Keine abgeschlossenen Transfers vorhanden.
+      </p>
+    }
+  }
 
   <!-- Admin/VM-Ansicht: offene und abgeschlossene Anträge -->
-  <ng-container *ngIf="!loading && !isSbk">
-    <div *ngIf="pendingRequests.length > 0" class="mb-8">
-      <h2 class="text-base font-semibold mb-3">Offene Anträge</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-fb-gray-700 text-left">
-              <th class="py-2 pr-4 font-bold">Spieler</th>
-              <th class="py-2 pr-4 font-bold">Von</th>
-              <th class="py-2 pr-4 font-bold">Nach</th>
-              <th class="py-2 pr-4 font-bold">Typ</th>
-              <th class="py-2 pr-4 font-bold">Status</th>
-              <th class="py-2 pr-4 font-bold">Datum</th>
-              <th class="py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              *ngFor="let r of pendingRequests"
-              (click)="openDetail(r.id)"
-              class="border-b border-fb-gray-700 hover:bg-fb-gray-700 cursor-pointer"
-            >
-              <td class="py-2 pr-4 font-medium">
-                {{ r.player.last_name }}, {{ r.player.first_name }}
-              </td>
-              <td class="py-2 pr-4 text-fb-gray-500">
-                {{ r.former_club.name }}
-              </td>
-              <td class="py-2 pr-4 text-fb-gray-500">
-                {{ r.requesting_club.name }}
-              </td>
-              <td class="py-2 pr-4">
-                <span [class]="typeClass(r)">{{ typeLabel(r) }}</span>
-              </td>
-              <td class="py-2 pr-4">
-                <span [class]="statusClass(r.status)">{{
-                  statusLabel(r.status)
-                }}</span>
-              </td>
-              <td class="py-2 pr-4 text-fb-gray-500">
-                {{ r.created_at | date : "dd.MM.yyyy" }}
-              </td>
-              <td class="py-2 text-right">
-                <button
-                  *ngIf="canWithdraw(r)"
-                  (click)="withdraw(r, $event)"
-                  [disabled]="withdrawingId === r.id"
-                  class="text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
+  @if (!loading && !isSbk) {
+    @if (pendingRequests.length > 0) {
+      <div class="mb-8">
+        <h2 class="text-base font-semibold mb-3">Offene Anträge</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-fb-gray-700 text-left">
+                <th class="py-2 pr-4 font-bold">Spieler</th>
+                <th class="py-2 pr-4 font-bold">Von</th>
+                <th class="py-2 pr-4 font-bold">Nach</th>
+                <th class="py-2 pr-4 font-bold">Typ</th>
+                <th class="py-2 pr-4 font-bold">Status</th>
+                <th class="py-2 pr-4 font-bold">Datum</th>
+                <th class="py-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of pendingRequests; track r) {
+                <tr
+                  (click)="openDetail(r.id)"
+                  class="border-b border-fb-gray-700 hover:bg-fb-gray-700 cursor-pointer"
                 >
-                  {{ withdrawingId === r.id ? "…" : "Zurückziehen" }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                  <td class="py-2 pr-4 font-medium">
+                    {{ r.player.last_name }}, {{ r.player.first_name }}
+                  </td>
+                  <td class="py-2 pr-4 text-fb-gray-500">
+                    {{ r.former_club.name }}
+                  </td>
+                  <td class="py-2 pr-4 text-fb-gray-500">
+                    {{ r.requesting_club.name }}
+                  </td>
+                  <td class="py-2 pr-4">
+                    <span [class]="typeClass(r)">{{ typeLabel(r) }}</span>
+                  </td>
+                  <td class="py-2 pr-4">
+                    <span [class]="statusClass(r.status)">{{
+                      statusLabel(r.status)
+                    }}</span>
+                  </td>
+                  <td class="py-2 pr-4 text-fb-gray-500">
+                    {{ r.created_at | date: "dd.MM.yyyy" }}
+                  </td>
+                  <td class="py-2 text-right">
+                    @if (canWithdraw(r)) {
+                      <button
+                        (click)="withdraw(r, $event)"
+                        [disabled]="withdrawingId === r.id"
+                        class="text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
+                      >
+                        {{ withdrawingId === r.id ? "…" : "Zurückziehen" }}
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-
-    <div *ngIf="completedRequests.length > 0">
-      <h2 class="text-base font-semibold mb-3">Abgeschlossene Anträge</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-fb-gray-700 text-left">
-              <th class="py-2 pr-4 font-bold">Spieler</th>
-              <th class="py-2 pr-4 font-bold">Von</th>
-              <th class="py-2 pr-4 font-bold">Nach</th>
-              <th class="py-2 pr-4 font-bold">Typ</th>
-              <th class="py-2 pr-4 font-bold">Status</th>
-              <th class="py-2 pr-4 font-bold">Datum</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              *ngFor="let r of completedRequests"
-              (click)="openDetail(r.id)"
-              class="border-b border-fb-gray-700 hover:bg-fb-gray-700 cursor-pointer"
-            >
-              <td class="py-2 pr-4 font-medium">
-                {{ r.player.last_name }}, {{ r.player.first_name }}
-              </td>
-              <td class="py-2 pr-4 text-fb-gray-500">
-                {{ r.former_club.name }}
-              </td>
-              <td class="py-2 pr-4 text-fb-gray-500">
-                {{ r.requesting_club.name }}
-              </td>
-              <td class="py-2 pr-4">
-                <span [class]="typeClass(r)">{{ typeLabel(r) }}</span>
-              </td>
-              <td class="py-2 pr-4">
-                <span [class]="statusClass(r.status)">{{
-                  statusLabel(r.status)
-                }}</span>
-              </td>
-              <td class="py-2 pr-4 text-fb-gray-500">
-                {{ r.created_at | date : "dd.MM.yyyy" }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    }
+    @if (completedRequests.length > 0) {
+      <div>
+        <h2 class="text-base font-semibold mb-3">Abgeschlossene Anträge</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-fb-gray-700 text-left">
+                <th class="py-2 pr-4 font-bold">Spieler</th>
+                <th class="py-2 pr-4 font-bold">Von</th>
+                <th class="py-2 pr-4 font-bold">Nach</th>
+                <th class="py-2 pr-4 font-bold">Typ</th>
+                <th class="py-2 pr-4 font-bold">Status</th>
+                <th class="py-2 pr-4 font-bold">Datum</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of completedRequests; track r) {
+                <tr
+                  (click)="openDetail(r.id)"
+                  class="border-b border-fb-gray-700 hover:bg-fb-gray-700 cursor-pointer"
+                >
+                  <td class="py-2 pr-4 font-medium">
+                    {{ r.player.last_name }}, {{ r.player.first_name }}
+                  </td>
+                  <td class="py-2 pr-4 text-fb-gray-500">
+                    {{ r.former_club.name }}
+                  </td>
+                  <td class="py-2 pr-4 text-fb-gray-500">
+                    {{ r.requesting_club.name }}
+                  </td>
+                  <td class="py-2 pr-4">
+                    <span [class]="typeClass(r)">{{ typeLabel(r) }}</span>
+                  </td>
+                  <td class="py-2 pr-4">
+                    <span [class]="statusClass(r.status)">{{
+                      statusLabel(r.status)
+                    }}</span>
+                  </td>
+                  <td class="py-2 pr-4 text-fb-gray-500">
+                    {{ r.created_at | date: "dd.MM.yyyy" }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-
-    <p
-      *ngIf="requests.length === 0"
-      class="text-fb-gray-500 text-sm py-8 text-center"
-    >
-      Keine Transferanträge vorhanden.
-    </p>
-  </ng-container>
+    }
+    @if (requests.length === 0) {
+      <p class="text-fb-gray-500 text-sm py-8 text-center">
+        Keine Transferanträge vorhanden.
+      </p>
+    }
+  }
 </div>

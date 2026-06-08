@@ -6,13 +6,30 @@
       <div class="flex flex-col justify-center order-1 lg:order-1 relative">
         <div class="grid grid-cols-1 gap-2 justify-center items-center">
           <div class="flex justify-center">
-            <img
-              *ngIf="game.home_team_logo; else fallback"
-              class="object-contain h-[90px] md:h-[160px]"
-              [src]="game.home_team_logo"
-              [alt]="game.home_team_name"
-              [title]="'Logo: ' + game.home_team_name"
-            />
+            @if (game.home_team_logo) {
+              <img
+                class="object-contain h-[90px] md:h-[160px]"
+                [src]="game.home_team_logo"
+                [alt]="game.home_team_name"
+                [title]="'Logo: ' + game.home_team_name"
+              />
+            } @else {
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                data-prefix="fas"
+                data-icon="shield-alt"
+                class="text-fb-gray-400 h-[90px] md:h-[160px]"
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 512 512"
+              >
+                <path
+                  fill="currentColor"
+                  d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
+                ></path>
+              </svg>
+            }
           </div>
           <div class="text-base lg:text-xl font-bold text-center truncate">
             {{ game.home_team_name }}
@@ -27,199 +44,216 @@
       <div
         class="relative col-span-2 lg:col-span-1 order-3 lg:order-2 grid grid-cols-1 gap-3 content-center justify-center text-center lg:max-w-[300px] md:min-w-[250px]"
       >
-        <div
-          *ngIf="game.notice_type"
-          class="drop-shadow-lg tracking-[0.5px] w-[150px] md:w-[170px] mx-auto mb-2 px-2 py-1.5 rounded border border-red-500 bg-red-200 text-center"
-        >
+        @if (game.notice_type) {
           <div
-            class="uppercase text-[13px] font-bold leading-none whitespace-nowrap"
+            class="drop-shadow-lg tracking-[0.5px] w-[150px] md:w-[170px] mx-auto mb-2 px-2 py-1.5 rounded border border-red-500 bg-red-200 text-center"
           >
-            {{ game.notice_type | gameNoticeHeadline }}
+            <div
+              class="uppercase text-[13px] font-bold leading-none whitespace-nowrap"
+            >
+              {{ game.notice_type | gameNoticeHeadline }}
+            </div>
+            @if (game.notice_string) {
+              <div class="text-[10px] font-medium leading-none mt-1">
+                {{ game.notice_string }}
+              </div>
+            }
           </div>
-          <div
-            class="text-[10px] font-medium leading-none mt-1"
-            *ngIf="game.notice_string"
-          >
-            {{ game.notice_string }}
-          </div>
-        </div>
+        }
         <p
           class="flex md:block text-base font-bold justify-center whitespace-nowrap md:whitespace-normal"
           [ngClass]="{ 'text-fb-gray-400': game.started && game.ended }"
         >
-          <ng-container *ngIf="game.started && !game.ended; else gameDate">
+          @if (game.started && !game.ended) {
             <div
               class="uppercase bg-pink-500 text-sm text-white inline-block mx-auto rounded px-2"
             >
               Live
             </div>
-          </ng-container>
-          <ng-template #gameDate>
+          } @else {
             <span class="tracking-widest">
-              <ng-container
-                *ngIf="game.notice_type | gameNoticeVisibility : 'date'"
-              >
-                {{ game.date | date : "dd.MM.yyyy" }}
-              </ng-container>
-              <ng-container
-                *ngIf="
-                  game.start_time && game.notice_type
-                    | gameNoticeVisibility : 'time'
-                "
-              >
+              @if (game.notice_type | gameNoticeVisibility: "date") {
+                {{ game.date | date: "dd.MM.yyyy" }}
+              }
+              @if (
+                game.start_time && game.notice_type
+                  | gameNoticeVisibility: "time"
+              ) {
                 – {{ game.start_time }} Uhr
-              </ng-container>
+              }
             </span>
-          </ng-template>
+          }
         </p>
-        <div
-          *ngIf="game.result_string && game.started"
-          [ngClass]="{
-            'animate-pulse text-pink-500': game.started && !game.ended
-          }"
-        >
-          <ng-container
-            *ngIf="game.result | normalizeMatchResult as resultData"
+        @if (game.result_string && game.started) {
+          <div
+            [ngClass]="{
+              'animate-pulse text-pink-500': game.started && !game.ended,
+            }"
           >
-            <p
-              *ngIf="resultData.result"
-              class="text-4.5xl font-bold leading-none whitespace-nowrap"
-            >
-              {{ resultData.result }}
-            </p>
-
-            <ng-container *ngIf="game.started && !game.ended">
-              <p class="text-md text-pink-500">
-                {{ game.current_period_title?.title }}
-              </p>
-            </ng-container>
-
-            <p
-              *ngIf="resultData.extraTime"
-              class="text-lg leading-none whitespace-nowrap"
-            >
-              {{ resultData.extraTime }}
-            </p>
-          </ng-container>
-        </div>
-        <ul
-          class="flex justify-center gap-5 whitespace-nowrap md:whitespace-normal"
-          *ngIf="game.result && game.started"
-        >
-          <ng-container
-            *ngFor="
-              let periodResult of game.result.home_goals_period;
-              let isLast = last;
-              let i = index
-            "
+            @if (game.result | normalizeMatchResult; as resultData) {
+              @if (resultData.result) {
+                <p class="text-4.5xl font-bold leading-none whitespace-nowrap">
+                  {{ resultData.result }}
+                </p>
+              }
+              @if (game.started && !game.ended) {
+                <p class="text-md text-pink-500">
+                  {{ game.current_period_title?.title }}
+                </p>
+              }
+              @if (resultData.extraTime) {
+                <p class="text-lg leading-none whitespace-nowrap">
+                  {{ resultData.extraTime }}
+                </p>
+              }
+            }
+          </div>
+        }
+        @if (game.result && game.started) {
+          <ul
+            class="flex justify-center gap-5 whitespace-nowrap md:whitespace-normal"
           >
-            <li
-              class="text-black text-base font-bold"
-              *ngIf="!isLast || (game.result.overtime && isLast)"
-            >
-              {{ periodResult }} : {{ game.result.guest_goals_period?.[i] }}
-            </li>
-          </ng-container>
-        </ul>
+            @for (
+              periodResult of game.result.home_goals_period;
+              track periodResult;
+              let isLast = $last;
+              let i = $index
+            ) {
+              @if (!isLast || (game.result.overtime && isLast)) {
+                <li class="text-black text-base font-bold">
+                  {{ periodResult }} : {{ game.result.guest_goals_period?.[i] }}
+                </li>
+              }
+            }
+          </ul>
+        }
         <div class="text-fb-gray-400">
-          <div *ngIf="game.arena_name && !game.ended">
-            {{ game.arena_name }}
-          </div>
-          <div *ngIf="game.arena_address && !game.ended">
-            {{ game.arena_address }}
-          </div>
-          <div class="mt-3" *ngIf="game.arena_address && !game.ended">
-            <a
-              href="https://www.google.de/maps/place/{{ game.arena_address }}"
-              title="Adresse auf Google Maps anzeigen"
-              target="_blank"
-              class="flex gap-2 justify-center items-center hover:text-gray-800 transition"
-            >
-              <svg
-                aria-hidden="true"
-                focusable="false"
-                data-prefix="fas"
-                data-icon="map-marked-alt"
-                class="w-6 h-6 object-contain svg-inline--fa fa-map-marked-alt fa-w-18"
-                role="img"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 576 512"
+          @if (game.arena_name && !game.ended) {
+            <div>
+              {{ game.arena_name }}
+            </div>
+          }
+          @if (game.arena_address && !game.ended) {
+            <div>
+              {{ game.arena_address }}
+            </div>
+          }
+          @if (game.arena_address && !game.ended) {
+            <div class="mt-3">
+              <a
+                href="https://www.google.de/maps/place/{{ game.arena_address }}"
+                title="Adresse auf Google Maps anzeigen"
+                target="_blank"
+                class="flex gap-2 justify-center items-center hover:text-gray-800 transition"
               >
-                <path
-                  fill="currentColor"
-                  d="M288 0c-69.59 0-126 56.41-126 126 0 56.26 82.35 158.8 113.9 196.02 6.39 7.54 17.82 7.54 24.2 0C331.65 284.8 414 182.26 414 126 414 56.41 357.59 0 288 0zm0 168c-23.2 0-42-18.8-42-42s18.8-42 42-42 42 18.8 42 42-18.8 42-42 42zM20.12 215.95A32.006 32.006 0 0 0 0 245.66v250.32c0 11.32 11.43 19.06 21.94 14.86L160 448V214.92c-8.84-15.98-16.07-31.54-21.25-46.42L20.12 215.95zM288 359.67c-14.07 0-27.38-6.18-36.51-16.96-19.66-23.2-40.57-49.62-59.49-76.72v182l192 64V266c-18.92 27.09-39.82 53.52-59.49 76.72-9.13 10.77-22.44 16.95-36.51 16.95zm266.06-198.51L416 224v288l139.88-55.95A31.996 31.996 0 0 0 576 426.34V176.02c0-11.32-11.43-19.06-21.94-14.86z"
-                ></path>
-              </svg>
-              Adresse auf Google Maps anzeigen
-            </a>
-          </div>
-          <div class="mt-1">
-            <a
-              *ngIf="game.live_stream_link || game.vod_link"
-              [href]="
-                !game.ended || !game.vod_link
-                  ? game.live_stream_link
-                  : game.vod_link
-              "
-              target="_blank"
-              class="flex gap-2 justify-center items-center hover:text-gray-800 transition"
-            >
-              <svg
-                *ngIf="!game.ended"
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-6 h-6 object-contain"
-                viewBox="0 0 576 512"
-              >
-                <path
-                  fill="currentColor"
-                  d="M384 112v288c0 26.51-21.49 48-48 48h-288c-26.51 0-48-21.49-48-48v-288c0-26.51 21.49-48 48-48h288C362.5 64 384 85.49 384 112zM576 127.5v256.9c0 25.5-29.17 40.39-50.39 25.79L416 334.7V177.3l109.6-75.56C546.9 87.13 576 102.1 576 127.5z"
-                />
-              </svg>
-
-              <svg
-                *ngIf="game.ended"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                class="w-6 h-6"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-
-              <span *ngIf="!game.ended || !game.vod_link">
-                Live-Stream anzeigen
-                <span
-                  *ngIf="
-                    game.ended &&
-                    (game.live_stream_link?.includes('twitch.tv') ||
-                      game.live_stream_link?.includes('youtube.com/user'))
-                  "
-                  class="block text-xs"
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  data-prefix="fas"
+                  data-icon="map-marked-alt"
+                  class="w-6 h-6 object-contain svg-inline--fa fa-map-marked-alt fa-w-18"
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 576 512"
                 >
-                  (ggf. nicht dauerhaft verfügbar)
-                </span>
-              </span>
-
-              <span *ngIf="game.ended && game.vod_link"> Video anzeigen </span>
-            </a>
-            <p *ngIf="!game.live_stream_link">Kein Live-Stream vorhanden</p>
+                  <path
+                    fill="currentColor"
+                    d="M288 0c-69.59 0-126 56.41-126 126 0 56.26 82.35 158.8 113.9 196.02 6.39 7.54 17.82 7.54 24.2 0C331.65 284.8 414 182.26 414 126 414 56.41 357.59 0 288 0zm0 168c-23.2 0-42-18.8-42-42s18.8-42 42-42 42 18.8 42 42-18.8 42-42 42zM20.12 215.95A32.006 32.006 0 0 0 0 245.66v250.32c0 11.32 11.43 19.06 21.94 14.86L160 448V214.92c-8.84-15.98-16.07-31.54-21.25-46.42L20.12 215.95zM288 359.67c-14.07 0-27.38-6.18-36.51-16.96-19.66-23.2-40.57-49.62-59.49-76.72v182l192 64V266c-18.92 27.09-39.82 53.52-59.49 76.72-9.13 10.77-22.44 16.95-36.51 16.95zm266.06-198.51L416 224v288l139.88-55.95A31.996 31.996 0 0 0 576 426.34V176.02c0-11.32-11.43-19.06-21.94-14.86z"
+                  ></path>
+                </svg>
+                Adresse auf Google Maps anzeigen
+              </a>
+            </div>
+          }
+          <div class="mt-1">
+            @if (game.live_stream_link || game.vod_link) {
+              <a
+                [href]="
+                  !game.ended || !game.vod_link
+                    ? game.live_stream_link
+                    : game.vod_link
+                "
+                target="_blank"
+                class="flex gap-2 justify-center items-center hover:text-gray-800 transition"
+              >
+                @if (!game.ended) {
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-6 h-6 object-contain"
+                    viewBox="0 0 576 512"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M384 112v288c0 26.51-21.49 48-48 48h-288c-26.51 0-48-21.49-48-48v-288c0-26.51 21.49-48 48-48h288C362.5 64 384 85.49 384 112zM576 127.5v256.9c0 25.5-29.17 40.39-50.39 25.79L416 334.7V177.3l109.6-75.56C546.9 87.13 576 102.1 576 127.5z"
+                    />
+                  </svg>
+                }
+                @if (game.ended) {
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="w-6 h-6"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                }
+                @if (!game.ended || !game.vod_link) {
+                  <span>
+                    Live-Stream anzeigen
+                    @if (
+                      game.ended &&
+                      (game.live_stream_link?.includes("twitch.tv") ||
+                        game.live_stream_link?.includes("youtube.com/user"))
+                    ) {
+                      <span class="block text-xs">
+                        (ggf. nicht dauerhaft verfügbar)
+                      </span>
+                    }
+                  </span>
+                }
+                @if (game.ended && game.vod_link) {
+                  <span> Video anzeigen </span>
+                }
+              </a>
+            }
+            @if (!game.live_stream_link) {
+              <p>Kein Live-Stream vorhanden</p>
+            }
           </div>
         </div>
       </div>
       <div class="flex flex-col justify-center order-2 lg:order-3">
         <div class="grid grid-cols-1 gap-2 justify-center items-center">
           <div class="flex justify-center">
-            <img
-              *ngIf="game.guest_team_logo; else fallback"
-              class="object-contain h-[90px] md:h-[160px] mx-auto"
-              [src]="game.guest_team_logo"
-              [alt]="game.guest_team_name"
-              [title]="'Logo: ' + game.guest_team_name"
-            />
+            @if (game.guest_team_logo) {
+              <img
+                class="object-contain h-[90px] md:h-[160px] mx-auto"
+                [src]="game.guest_team_logo"
+                [alt]="game.guest_team_name"
+                [title]="'Logo: ' + game.guest_team_name"
+              />
+            } @else {
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                data-prefix="fas"
+                data-icon="shield-alt"
+                class="text-fb-gray-400 h-[90px] md:h-[160px]"
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 512 512"
+              >
+                <path
+                  fill="currentColor"
+                  d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
+                ></path>
+              </svg>
+            }
           </div>
           <div class="text-base lg:text-xl font-bold text-center truncate">
             {{ game.guest_team_name }}
@@ -229,20 +263,3 @@
     </div>
   </div>
 </div>
-<ng-template #fallback>
-  <svg
-    aria-hidden="true"
-    focusable="false"
-    data-prefix="fas"
-    data-icon="shield-alt"
-    class="text-fb-gray-400 h-[90px] md:h-[160px]"
-    role="img"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 512 512"
-  >
-    <path
-      fill="currentColor"
-      d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"
-    ></path>
-  </svg>
-</ng-template>
