@@ -515,7 +515,11 @@
                   <button
                     type="button"
                     (click)="addDocumentIfMissing(league, 'id_copy')"
-                    [disabled]="league.required_documents?.includes('id_copy')"
+                    [disabled]="
+                      $safeNavigationMigration(
+                        league.required_documents?.includes('id_copy')
+                      )
+                    "
                     class="font-bold text-black text-sm px-4 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] disabled:opacity-40"
                   >
                     + Ausweiskopie

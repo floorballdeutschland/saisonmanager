@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import {
   GameService,
   LeagueService,
@@ -16,6 +22,7 @@ import { catchError } from 'rxjs/operators';
 @Component({
   selector: 'fb-awards',
   templateUrl: './awards.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class AwardsComponent implements OnInit {

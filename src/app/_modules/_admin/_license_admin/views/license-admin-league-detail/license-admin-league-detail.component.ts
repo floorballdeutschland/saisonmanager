@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Club, League, TeamWithPlayers } from '@floorball/types';
 import { ClubService, LeagueService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
@@ -8,6 +14,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'fb-license-admin-league-detail',
   templateUrl: './license-admin-league-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {

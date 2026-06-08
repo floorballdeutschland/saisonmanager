@@ -3,6 +3,10 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
+    // TS 6 deprecated 'baseUrl' (für die Pfad-Aliase unten weiter genutzt).
+    // Offizieller Escape-Hatch für die 6.x-Linie; vor TS 7 müssen die 'paths'
+    // baseUrl-frei (relativ zur tsconfig) umgestellt werden.
+    "ignoreDeprecations": "6.0",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,

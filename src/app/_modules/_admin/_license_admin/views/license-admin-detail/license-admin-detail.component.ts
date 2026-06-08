@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import {
   Club,
   PlayerLicense,
@@ -10,6 +17,7 @@ import { NotificationService, PlayerService } from '@floorball/core';
 @Component({
   selector: 'fb-license-admin-detail',
   templateUrl: './license-admin-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class LicenseAdminDetailComponent implements OnInit {

@@ -4,6 +4,7 @@ import {
   OnDestroy,
   OnInit,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   AssociationService,
@@ -24,6 +25,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 @Component({
   templateUrl: './league-edit.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class LeagueEditComponent implements OnInit, OnDestroy {

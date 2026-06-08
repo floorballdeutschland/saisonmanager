@@ -3,6 +3,7 @@ import {
   Component,
   OnInit,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { AssociationService, ClubService } from '@floorball/core';
 import {
@@ -16,6 +17,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
   templateUrl: './license-club-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class LicenseClubIndexComponent implements OnInit {

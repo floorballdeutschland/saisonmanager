@@ -5,6 +5,7 @@ import {
   OnChanges,
   OnInit,
   SimpleChanges,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   GameService,
@@ -18,6 +19,7 @@ import { catchError } from 'rxjs/operators';
 @Component({
   selector: 'fb-starting-player',
   templateUrl: './starting-player.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class StartingPlayerComponent implements OnInit, OnChanges {

@@ -1,4 +1,9 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Club, League, TeamWithPlayers } from '@floorball/types';
 import { ClubService, LeagueService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
@@ -8,6 +13,7 @@ import { Title } from '@angular/platform-browser';
   selector: 'fb-license-user-league-detail',
   templateUrl: './license-user-league-detail.component.html',
   styleUrls: ['./license-user-league-detail.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class LicenseUserLeagueDetailComponent implements OnInit {

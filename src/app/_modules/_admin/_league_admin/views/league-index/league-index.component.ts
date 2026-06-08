@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   OnInit,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   AssociationService,
@@ -21,6 +22,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 @Component({
   templateUrl: './league-index.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class LeagueIndexComponent implements OnInit {

@@ -3,6 +3,7 @@ import {
   provideHttpClient,
   withInterceptorsFromDi,
   withXsrfConfiguration,
+  withXhr,
 } from '@angular/common/http';
 import {
   APP_INITIALIZER,
@@ -56,6 +57,7 @@ import { CsrfInterceptor } from './_helpers/_interceptors/csrf.interceptor';
     SessionService,
     { provide: LOCALE_ID, useValue: 'de' },
     provideHttpClient(
+      withXhr(),
       withInterceptorsFromDi(),
       withXsrfConfiguration({
         cookieName: 'XSRF-TOKEN',

@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OnlineTestService } from '@floorball/core';
 import { RefereeOnlineTestDetail } from '@floorball/types';
 
 @Component({
   templateUrl: './referee-online-test-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class RefereeOnlineTestDetailComponent implements OnInit {

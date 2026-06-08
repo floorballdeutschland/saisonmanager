@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   NotificationService,
@@ -13,6 +13,7 @@ import {
 
 @Component({
   templateUrl: './online-test-assignments.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class OnlineTestAssignmentsComponent implements OnInit {

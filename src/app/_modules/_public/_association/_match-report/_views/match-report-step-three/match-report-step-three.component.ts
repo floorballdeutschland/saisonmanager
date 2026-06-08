@@ -4,6 +4,7 @@ import {
   EventEmitter,
   Input,
   Output,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Game, GameAdditionalFields, GameStatusOption } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
@@ -29,6 +30,7 @@ export const STB_ITEMS_AUSRICHTER = [
 @Component({
   selector: 'fb-match-report-step-three',
   templateUrl: './match-report-step-three.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class MatchReportStepThreeComponent {

@@ -1,4 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, take, takeUntil } from 'rxjs';
 import {
@@ -10,6 +15,7 @@ import { RefereeAdmin } from '@floorball/types';
 
 @Component({
   templateUrl: './referee-merge.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class RefereeMergeComponent implements OnInit, OnDestroy {

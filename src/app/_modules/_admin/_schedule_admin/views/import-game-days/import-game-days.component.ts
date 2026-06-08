@@ -5,6 +5,7 @@ import {
   OnInit,
   ViewChild,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { LeagueService, NotificationService } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
@@ -14,6 +15,7 @@ import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 @Component({
   templateUrl: './import-game-days.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ImportGameDaysComponent implements OnInit {

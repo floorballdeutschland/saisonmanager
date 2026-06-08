@@ -192,8 +192,9 @@
                                 {{ p.current_status?.created_by_name }}
                                 <br />
                                 {{
-                                  p.current_status?.created_at
-                                    | date: "dd.MM.yyyy HH:mm"
+                                  $safeNavigationMigration(
+                                    p.current_status?.created_at
+                                  ) | date: "dd.MM.yyyy HH:mm"
                                 }}
                               </p>
                             </div>

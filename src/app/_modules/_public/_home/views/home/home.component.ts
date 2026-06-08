@@ -1,4 +1,8 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  ViewEncapsulation,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { AssociationService } from '@floorball/core';
 import { GameOperation } from 'src/app/_models';
 import { Observable } from 'rxjs';
@@ -7,6 +11,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
   templateUrl: './home.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class HomeComponent {

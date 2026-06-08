@@ -3,6 +3,7 @@ import {
   Component,
   OnDestroy,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { PlayerService } from '@floorball/core';
 import { PlayerSearchResult } from '@floorball/models';
@@ -18,6 +19,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
   templateUrl: './player-search.component.html',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class PlayerSearchComponent implements OnDestroy {

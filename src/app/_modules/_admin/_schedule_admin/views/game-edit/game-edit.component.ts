@@ -5,6 +5,7 @@ import {
   Input,
   OnInit,
   Output,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   Arena,
@@ -21,6 +22,7 @@ import { switchMap } from 'rxjs/operators';
   selector: 'fb-game-edit',
   templateUrl: './game-edit.component.html',
   styleUrls: ['./game-edit.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class GameEditComponent implements OnInit {

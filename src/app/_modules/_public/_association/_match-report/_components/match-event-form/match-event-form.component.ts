@@ -8,6 +8,7 @@ import {
   OnInit,
   Output,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { GameService, NotificationService } from '@floorball/core';
 import {
@@ -25,6 +26,7 @@ import {
 @Component({
   selector: 'fb-match-event-form',
   templateUrl: './match-event-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class MatchEventFormComponent implements OnInit, AfterViewInit {
