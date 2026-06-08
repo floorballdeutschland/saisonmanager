@@ -49,7 +49,6 @@ import { CsrfInterceptor } from './_helpers/_interceptors/csrf.interceptor';
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     {
       provide: APP_INITIALIZER,
-      // eslint-disable-next-line
       useFactory: () => () => {},
       deps: [Sentry.TraceService],
       multi: true,
