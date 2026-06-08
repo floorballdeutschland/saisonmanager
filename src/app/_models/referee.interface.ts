@@ -192,6 +192,7 @@ export interface PublicLicenseEntry {
   birthdate?: string;
   license_status: string;
   approved_at?: string;
+  valid_until?: string;
 }
 
 export interface RefereeAssignableGame {

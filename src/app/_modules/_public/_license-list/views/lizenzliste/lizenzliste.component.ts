@@ -18,6 +18,7 @@ export class LizenzlisteComponent implements OnInit {
   data?: PublicLicenseList;
   error?: string;
   loading = true;
+  readonly today = new Date().toISOString().slice(0, 10);
 
   constructor(
     private _route: ActivatedRoute,
