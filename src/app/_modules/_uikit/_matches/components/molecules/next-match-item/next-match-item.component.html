@@ -3,10 +3,10 @@
   [routerLink]="routerPrefix.concat([match.game_id.toString()])"
 >
   <div
-    class="grid grid-cols-[1fr,auto] grid-rows-2 gap-x-[10px] gap-y-[5px] md:grid-rows-1 md:grid-cols-3 items-center md:justify-items-center my-2"
+    class="grid grid-cols-[1fr_auto] grid-rows-2 gap-x-[10px] gap-y-[5px] md:grid-rows-1 md:grid-cols-3 items-center md:justify-items-center my-2"
   >
     <div
-      class="grid grid-cols-[32px,1fr] md:grid-cols-1 gap-3 row-start-1 items-center md:col-start-1"
+      class="grid grid-cols-[32px_1fr] md:grid-cols-1 gap-3 row-start-1 items-center md:col-start-1"
     >
       <div class="w-[32px] h-[32px] md:w-[42px] md:h-[42px]">
         @if (match.home_team_small_logo) {
@@ -118,7 +118,7 @@
     </div>
 
     <div
-      class="grid grid-cols-[32px,1fr] md:grid-cols-1 gap-3 row-start-2 md:row-start-1 md:col-start-3 items-center"
+      class="grid grid-cols-[32px_1fr] md:grid-cols-1 gap-3 row-start-2 md:row-start-1 md:col-start-3 items-center"
     >
       <div class="w-[32px] h-[32px] md:w-[42px] md:h-[42px]">
         @if (match.guest_team_small_logo) {
