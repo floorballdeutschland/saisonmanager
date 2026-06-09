@@ -13,6 +13,7 @@ import {
   RefereeGameDay,
   RefereeHistorySeason,
   RefereeHistoryTestAttempt,
+  PenaltyCode,
   RefereeLicenseLevel,
   RefereeProfile,
   RefereePublicLicense,
@@ -212,6 +213,32 @@ export class RefereeService {
     return this.http.delete(
       environment.apiURL + 'admin/referee_license_levels/' + id
     );
+  }
+
+  // Penalty codes (admin)
+
+  public adminGetPenaltyCodes() {
+    return this.http.get<PenaltyCode[]>(
+      environment.apiURL + 'admin/penalty_codes'
+    );
+  }
+
+  public adminCreatePenaltyCode(data: Partial<PenaltyCode>) {
+    return this.http.post<PenaltyCode>(
+      environment.apiURL + 'admin/penalty_codes',
+      { penalty_code: data }
+    );
+  }
+
+  public adminUpdatePenaltyCode(id: string, data: Partial<PenaltyCode>) {
+    return this.http.put<PenaltyCode>(
+      environment.apiURL + 'admin/penalty_codes/' + id,
+      { penalty_code: data }
+    );
+  }
+
+  public adminDeletePenaltyCode(id: string) {
+    return this.http.delete(environment.apiURL + 'admin/penalty_codes/' + id);
   }
 
   // Assignment endpoints (admin/RSK)

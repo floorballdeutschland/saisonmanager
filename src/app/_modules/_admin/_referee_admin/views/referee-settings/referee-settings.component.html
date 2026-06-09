@@ -1,0 +1,193 @@
+<div class="p-4 lg:p-8 max-w-2xl">
+  <div class="mb-6">
+    <a
+      [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
+      class="text-fb-gray-500 hover:text-black text-sm"
+      >← Schiedsrichterverwaltung</a
+    >
+    <h1 class="text-2xl font-bold mt-1">Einstellungen</h1>
+  </div>
+
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="text-lg font-bold">Strafcodes</h2>
+      <p class="text-fb-gray-500 text-sm">
+        3-stelliger Code + Bezeichnung, z.&nbsp;B. „902 – Stockschlag". Aktive
+        Codes erscheinen im Strafcode-Dropdown der Spielbericht-Eingabe.
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="showNewForm = !showNewForm"
+      class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black whitespace-nowrap"
+    >
+      + Neu
+    </button>
+  </div>
+
+  <!-- Neuer Strafcode -->
+  @if (showNewForm) {
+    <div
+      class="mb-6 p-4 border border-fb-gray-700 rounded-[5px] flex flex-col gap-3"
+    >
+      <h3 class="text-sm font-bold">Neuer Strafcode</h3>
+      <div class="flex flex-col gap-1 max-w-[140px]">
+        <label class="text-xs font-bold">Code * (3 Ziffern)</label>
+        <input
+          type="text"
+          inputmode="numeric"
+          maxlength="3"
+          [(ngModel)]="newCode.code"
+          placeholder="z.B. 902"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold">Bezeichnung *</label>
+        <input
+          type="text"
+          [(ngModel)]="newCode.description"
+          placeholder="z.B. Stockschlag"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <label class="flex items-center gap-2 cursor-pointer text-sm">
+        <input type="checkbox" [(ngModel)]="newCode.active" class="w-4 h-4" />
+        Aktiv
+      </label>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          (click)="create()"
+          [disabled]="
+            !isValidCode(newCode.code) || !newCode.description || saving
+          "
+          class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+        >
+          Anlegen
+        </button>
+        <button
+          type="button"
+          (click)="showNewForm = false; newCode = { active: true }"
+          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        >
+          Abbrechen
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+  }
+
+  @if (!loading) {
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-fb-gray-700 text-left">
+          <th class="py-2 pr-4 font-bold">Code</th>
+          <th class="py-2 pr-4 font-bold">Bezeichnung</th>
+          <th class="py-2 pr-4 font-bold">Status</th>
+          <th class="py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of penaltyCodes; track c.id) {
+          <!-- Bearbeitungszeile -->
+          @if (editingId === c.id) {
+            <tr class="border-b border-fb-gray-800">
+              <td class="py-2 pr-4">
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="3"
+                  [(ngModel)]="editBuffer.code"
+                  class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-20 focus:outline-none focus:border-black"
+                />
+              </td>
+              <td class="py-2 pr-4">
+                <input
+                  type="text"
+                  [(ngModel)]="editBuffer.description"
+                  class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-full focus:outline-none focus:border-black"
+                />
+              </td>
+              <td class="py-2 pr-4">
+                <label class="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="editBuffer.active"
+                    class="w-3 h-3"
+                  />
+                  <span class="text-xs">Aktiv</span>
+                </label>
+              </td>
+              <td class="py-2">
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    (click)="saveEdit()"
+                    [disabled]="
+                      saving ||
+                      !isValidCode(editBuffer.code) ||
+                      !editBuffer.description
+                    "
+                    class="text-xs font-bold px-3 py-1 bg-black text-white rounded-[5px] disabled:opacity-50"
+                  >
+                    Speichern
+                  </button>
+                  <button
+                    type="button"
+                    (click)="cancelEdit()"
+                    class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black"
+                  >
+                    Abbruch
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+          <!-- Anzeigezeile -->
+          @if (editingId !== c.id) {
+            <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
+              <td class="py-2 pr-4 font-medium">{{ c.code }}</td>
+              <td class="py-2 pr-4">{{ c.description }}</td>
+              <td class="py-2 pr-4">
+                <span
+                  [class]="
+                    c.active
+                      ? 'text-xs font-bold text-green-600'
+                      : 'text-xs font-bold text-fb-gray-500'
+                  "
+                  >{{ c.active ? "Aktiv" : "Inaktiv" }}</span
+                >
+              </td>
+              <td class="py-2">
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    (click)="startEdit(c)"
+                    class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black"
+                  >
+                    Bearbeiten
+                  </button>
+                  <button
+                    type="button"
+                    (click)="delete(c)"
+                    class="text-xs font-bold px-3 py-1 border border-red-300 text-red-400 rounded-[5px] hover:border-red-500"
+                  >
+                    Löschen
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (!loading && penaltyCodes.length === 0) {
+    <p class="text-fb-gray-500 text-sm">Noch keine Strafcodes angelegt.</p>
+  }
+</div>

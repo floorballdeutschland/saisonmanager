@@ -19,6 +19,7 @@ import * as Views from './views';
     Views.RefereeDetailComponent,
     Views.RefereeQualificationTypesComponent,
     Views.RefereeLicenseLevelsComponent,
+    Views.RefereeSettingsComponent,
     Views.RefereeMergeComponent,
   ],
 })

@@ -28,6 +28,12 @@ const routes: Routes = [
     data: { scrollTop: true },
   },
   {
+    path: 'verwaltung/schiedsrichter/einstellungen',
+    pathMatch: 'full',
+    component: Views.RefereeSettingsComponent,
+    data: { scrollTop: true },
+  },
+  {
     path: 'verwaltung/schiedsrichter/:lizenznummer',
     pathMatch: 'full',
     component: Views.RefereeDetailComponent,
