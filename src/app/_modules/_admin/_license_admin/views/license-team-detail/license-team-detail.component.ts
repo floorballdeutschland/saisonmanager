@@ -16,6 +16,7 @@ import {
 import {
   AssociationService,
   ClubService,
+  NotificationService,
   PlayerService,
 } from '@floorball/core';
 import { Observable } from 'rxjs';
@@ -49,7 +50,8 @@ export class LicenseTeamDetailComponent implements OnInit {
     private _playerService: PlayerService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _notificationService: NotificationService
   ) {
     this.associations$ = this._associationService.associations$;
     this._metaTitle.setTitle(
@@ -171,6 +173,18 @@ export class LicenseTeamDetailComponent implements OnInit {
     this.guardianEmail = '';
   }
 
+  // Der ErrorInterceptor reicht den Fehler bereits als String (Server-Message)
+  // durch; nur 401/403/404/500/0 lösen dort eine Notification aus. 422-Antworten
+  // (z. B. Altersgrenze, Sperre, Doppelantrag) blieben sonst unsichtbar.
+  private _showRequestError(err: unknown, fallback: string) {
+    const msg = typeof err === 'string' && err ? err : fallback;
+    this._notificationService.error(msg, {
+      autoClose: false,
+      keepAfterRouteChange: false,
+    });
+    this._cdr.markForCheck();
+  }
+
   public createLicenseRequest() {
     this._clubService
       .userCreateLicenseRequest(
@@ -187,6 +201,11 @@ export class LicenseTeamDetailComponent implements OnInit {
           this.guardianEmail = '';
           this.loadUserLicenses();
         },
+        error: (err) =>
+          this._showRequestError(
+            err,
+            'Lizenzantrag konnte nicht erstellt werden.'
+          ),
       });
   }
 
@@ -197,6 +216,11 @@ export class LicenseTeamDetailComponent implements OnInit {
         // reload user licenses
         this.loadUserLicenses();
       },
+      error: (err) =>
+        this._showRequestError(
+          err,
+          'Lizenzantrag konnte nicht erneut gestellt werden.'
+        ),
     });
   }
 
@@ -207,6 +231,11 @@ export class LicenseTeamDetailComponent implements OnInit {
         next: () => {
           this.loadUserLicenses();
         },
+        error: (err) =>
+          this._showRequestError(
+            err,
+            'Lizenzantrag konnte nicht zurückgezogen werden.'
+          ),
       });
   }
 
