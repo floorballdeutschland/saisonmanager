@@ -19,7 +19,12 @@ import {
   Penalty,
   PenaltyCode,
 } from '@floorball/types';
-import { GameService, LeagueService, SessionService } from '@floorball/core';
+import {
+  GameService,
+  LeagueService,
+  NotificationService,
+  SessionService,
+} from '@floorball/core';
 
 @Component({
   selector: 'fb-match-report',
@@ -113,6 +118,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
     private _leagueService: LeagueService,
     private _sessionService: SessionService,
     private _gameService: GameService,
+    private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -159,6 +165,19 @@ export class MatchReportComponent implements OnInit, OnChanges {
         next: () => {
           this.game.game_status = newStatus;
           this.reloadGame();
+        },
+        error: (err) => {
+          // Der ErrorInterceptor verschluckt 422 nicht, ersetzt den Fehler aber
+          // durch die bereits extrahierte Meldung als reinen String
+          // (throwError(() => err.error?.message || ...)). Beim Abschließen/
+          // Freigeben blockiert das Backend u. a., wenn Schiedsrichter 1 fehlt
+          // oder die Checkliste unvollständig ist – diese Meldung muss sichtbar
+          // werden, und der Status darf nicht vorrücken.
+          const message =
+            (typeof err === 'string' ? err : err?.error?.message) ||
+            'Der Spielstatus konnte nicht geändert werden.';
+          this._notificationService.error(message);
+          this.appGameStatus = this.game.game_status;
         },
       });
     }
