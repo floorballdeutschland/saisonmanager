@@ -4,8 +4,10 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, forkJoin, takeUntil } from 'rxjs';
@@ -51,6 +53,8 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   qualifications: RefereeQualificationEntry[] = [];
   availableTypesList: RefereeQualificationType[][] = [];
   licenseLevels: RefereeLicenseLevel[] = [];
+
+  @ViewChild(NgForm) form?: NgForm;
 
   private _destroy$ = new Subject<void>();
 
@@ -297,6 +301,18 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
 
   createWalletPass(): void {
     if (!this.referee.id || this.referee.guest) return;
+    // Der Wallet-Pass wird serverseitig aus den GESPEICHERTEN Daten erzeugt und
+    // die Benachrichtigung nur an die gespeicherte E-Mail verschickt. Bei
+    // ungespeicherten Formularänderungen (z. B. neu eingetragener, aber noch
+    // nicht gespeicherter E-Mail) entstünde sonst ein Pass mit veralteten Daten
+    // bzw. kein Mailversand – ohne dass es auffällt. Daher: erst speichern.
+    if (this.form?.dirty) {
+      this._notificationService.warning(
+        'Es gibt ungespeicherte Änderungen. Bitte zuerst speichern, bevor du den Wallet-Ausweis ausstellst (z. B. eine neu eingetragene E-Mail-Adresse).',
+        { autoClose: false, keepAfterRouteChange: false }
+      );
+      return;
+    }
     this.walletLoading = true;
     this._refereeService
       .adminCreateWalletPass(this.referee.id)
@@ -310,10 +326,21 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           };
           this.walletLoading = false;
           this._cdr.markForCheck();
-          this._notificationService.success('Wallet-Ausweis ausgestellt.', {
-            autoClose: true,
-            keepAfterRouteChange: false,
-          });
+          // mail_sent === false: Backend hat den Pass erstellt, aber mangels
+          // hinterlegter E-Mail keine Benachrichtigung versendet. Strikt auf
+          // === false prüfen, damit ältere Backends (Feld fehlt) keinen
+          // Fehlalarm auslösen.
+          if (result.mail_sent === false) {
+            this._notificationService.warning(
+              'Wallet-Ausweis erstellt, aber keine Benachrichtigung versendet – beim Schiedsrichter ist keine E-Mail-Adresse hinterlegt.',
+              { autoClose: false, keepAfterRouteChange: false }
+            );
+          } else {
+            this._notificationService.success('Wallet-Ausweis ausgestellt.', {
+              autoClose: true,
+              keepAfterRouteChange: false,
+            });
+          }
         },
         error: (err: HttpErrorResponse) => {
           this.walletLoading = false;
