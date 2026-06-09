@@ -24,6 +24,9 @@ export interface AdminLicenseEntry {
   season_id: number | string | null;
   license_id: string;
   license_type: 'primary' | 'secondary';
+  // Echte Zweitlizenz (zwei Großfeld-Lizenzen, niedrigere Liga). Immer auch
+  // 'secondary'/Zusatzlizenz – wird nur zusätzlich hervorgehoben.
+  is_zweitlizenz: boolean;
   license_status_id: number;
   license_status: string;
   express: boolean;

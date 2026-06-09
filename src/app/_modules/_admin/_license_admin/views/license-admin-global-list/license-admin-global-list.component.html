@@ -138,9 +138,9 @@
           [(ngModel)]="filterLicenseType"
           (ngModelChange)="applyFilters()"
         >
-          <option [ngValue]="null">Erst- &amp; Zweitlizenzen</option>
+          <option [ngValue]="null">Erst- &amp; Zusatzlizenzen</option>
           <option value="primary">Nur Erstlizenzen</option>
-          <option value="secondary">Nur Zweitlizenzen</option>
+          <option value="secondary">Nur Zusatzlizenzen</option>
         </select>
 
         <label
@@ -358,8 +358,15 @@
                   @if (e.license_type === "secondary") {
                     <span
                       class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-purple-100 text-purple-800"
-                      >Zweitlizenz</span
+                      >Zusatzlizenz</span
                     >
+                    @if (e.is_zweitlizenz) {
+                      <span
+                        class="ml-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold leading-5 bg-amber-500 text-white ring-1 ring-amber-600"
+                        title="Zweite Großfeld-Lizenz (niedrigere Liga)"
+                        >Zweitlizenz</span
+                      >
+                    }
                   }
                   @if (e.license_type === "primary") {
                     <span

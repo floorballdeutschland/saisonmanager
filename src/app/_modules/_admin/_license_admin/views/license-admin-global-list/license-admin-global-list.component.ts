@@ -255,7 +255,11 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       e.game_operation_name ?? '',
       e.league_name,
       e.license_status,
-      e.license_type === 'primary' ? 'Erstlizenz' : 'Zweitlizenz',
+      e.is_zweitlizenz
+        ? 'Zweitlizenz'
+        : e.license_type === 'primary'
+          ? 'Erstlizenz'
+          : 'Zusatzlizenz',
       e.express ? 'Ja' : 'Nein',
       e.requested_at ? this._formatDate(e.requested_at) : '',
       e.approved_at ? this._formatDate(e.approved_at) : '',
