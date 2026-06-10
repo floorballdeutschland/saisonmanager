@@ -31,6 +31,7 @@ export interface League {
 
   deadline?: string;
   before_deadline?: boolean;
+  parental_consent_required: boolean;
 
   table_modus: string;
   direct_comparison: boolean;

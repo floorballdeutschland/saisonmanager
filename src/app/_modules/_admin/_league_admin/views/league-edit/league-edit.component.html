@@ -192,6 +192,24 @@
                     <option [ngValue]="false">Nein</option>
                   </select>
                 </div>
+                <div>
+                  <div class="font-bold">Elternzustimmung erforderlich</div>
+                  <div class="text-sm text-fb-gray-400 mt-1">
+                    Wenn minderjährige Spieler*innen bei der Lizenzbeantragung
+                    für diese Liga eine Elternzustimmung hochladen müssen, bitte
+                    aktivieren.
+                  </div>
+                </div>
+                <div>
+                  <select
+                    class="w-full"
+                    name="parental_consent_required"
+                    [(ngModel)]="league.parental_consent_required"
+                  >
+                    <option [ngValue]="true">Ja</option>
+                    <option [ngValue]="false">Nein</option>
+                  </select>
+                </div>
                 <div class="font-bold">Direkter Vergleich</div>
                 <div>
                   <select

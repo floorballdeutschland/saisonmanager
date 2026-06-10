@@ -6,6 +6,6 @@ export interface LicenseHash {
   current_requests: PlayerWithLicense[];
   other_players: Player[];
   express_license_enabled?: boolean;
-  is_buli?: boolean;
+  parental_consent_required?: boolean;
   required_documents?: string[];
 }

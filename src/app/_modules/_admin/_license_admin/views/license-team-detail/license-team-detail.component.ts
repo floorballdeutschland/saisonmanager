@@ -160,7 +160,11 @@ export class LicenseTeamDetailComponent implements OnInit {
 
   get needsMinorConsent(): boolean {
     const sp = this.selectedPlayer;
-    return !!(this.licenseHash?.is_buli && sp && this.isMinor(sp.birthdate));
+    return !!(
+      this.licenseHash?.parental_consent_required &&
+      sp &&
+      this.isMinor(sp.birthdate)
+    );
   }
 
   get submitDisabled(): boolean {
