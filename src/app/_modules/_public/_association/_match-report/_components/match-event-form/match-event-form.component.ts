@@ -421,51 +421,62 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
           ? { overtime: this.match.current_period_title.optional }
           : {}),
       })
-      .subscribe(() => {
-        if (!this.match.started) {
-          const hours = new Date(Date.now()).getHours();
-          const minutes = new Date(Date.now()).getMinutes();
-          this._gameService
-            .setGameField(this.match.id, {
-              actual_start_time: this.editLive
-                ? `${hours}:${this.pad(minutes, 2)}`
-                : this.startTime,
-            })
-            .subscribe();
-        }
+      .subscribe({
+        next: () => {
+          if (!this.match.started) {
+            const hours = new Date(Date.now()).getHours();
+            const minutes = new Date(Date.now()).getMinutes();
+            this._gameService
+              .setGameField(this.match.id, {
+                actual_start_time: this.editLive
+                  ? `${hours}:${this.pad(minutes, 2)}`
+                  : this.startTime,
+              })
+              .subscribe();
+          }
 
-        if (this.match.period_titles && startGame) {
-          const nextPeriod = this.nextPeriodTitle();
-          this._gameService
-            .setInGameStatus(this.match.id, nextPeriod?.status_id || '')
-            .subscribe({
-              next: () => {
-                this.scrollToSbbNavigation.emit();
+          if (this.match.period_titles && startGame) {
+            const nextPeriod = this.nextPeriodTitle();
+            this._gameService
+              .setInGameStatus(this.match.id, nextPeriod?.status_id || '')
+              .subscribe({
+                next: () => {
+                  this.scrollToSbbNavigation.emit();
 
-                this._notificationService.success('Spiel gestartet', {
-                  autoClose: true,
-                  keepAfterRouteChange: true,
-                });
-                this.updateGame.emit();
-              },
-            });
-        }
+                  this._notificationService.success('Spiel gestartet', {
+                    autoClose: true,
+                    keepAfterRouteChange: true,
+                  });
+                  this.updateGame.emit();
+                },
+              });
+          }
 
-        if (!startGame) {
-          this._gameService
-            .setGameStatus(this.match.id, 'aftergame')
-            .subscribe({
-              next: () => {
-                this.scrollToSbbNavigation.emit();
+          if (!startGame) {
+            this._gameService
+              .setGameStatus(this.match.id, 'aftergame')
+              .subscribe({
+                next: () => {
+                  this.scrollToSbbNavigation.emit();
 
-                this._notificationService.success('Spiel beendet', {
-                  autoClose: true,
-                  keepAfterRouteChange: true,
-                });
-                this.updateGame.emit();
-              },
-            });
-        }
+                  this._notificationService.success('Spiel beendet', {
+                    autoClose: true,
+                    keepAfterRouteChange: true,
+                  });
+                  this.updateGame.emit();
+                },
+              });
+          }
+        },
+        error: (err) => {
+          // Der ErrorInterceptor zeigt bei 422 keinen Toast und wirft die
+          // Meldung als String. Blockier-Meldungen beim Spielstart/-ende
+          // (z. B. Schiri-Pflicht oder fehlende Aufstellung) hier anzeigen.
+          this._notificationService.error(
+            typeof err === 'string' ? err : 'Aktion nicht möglich.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
+        },
       });
   }
 
