@@ -77,8 +77,19 @@
       (handleReload)="reloadGame()"
     ></fb-match-report>
   }
-  <!-- Schiri: Berichtsformular-Upload (nur bei besonderem Ereignis, nur für eingeloggte User) -->
-  @if ((isLoggedIn$ | async) && hasIncidentReport) {
+  <!--
+    Schiri: Berichtsformular-Upload. Nur für eingeloggte User, nur nach
+    Abschluss des Spielberichts (reportClosed) und nur in der öffentlichen
+    Ansicht – nicht während der Spielberichtseingabe. Dies ist das Upload-Ziel
+    der Erinnerungs-E-Mail, die bei besonderem Ereignis/Spielausschluss nach
+    Abschluss an die Schiris geht.
+  -->
+  @if (
+    (isLoggedIn$ | async) &&
+    isTabActive("public") &&
+    reportClosed &&
+    hasIncidentReport
+  ) {
     <div class="container mx-auto px-4 lg:px-8 py-6 max-w-2xl">
       <div class="border border-fb-gray-600 rounded-[5px] p-4">
         <h3 class="font-bold text-sm mb-1">Berichtsformular hochladen</h3>

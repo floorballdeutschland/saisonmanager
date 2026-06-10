@@ -175,7 +175,20 @@ export class MatchComponent implements OnInit, OnDestroy {
     const hasSpielausschluss = events.some(
       (e) => e.penalty_id?.toString() === '5'
     );
+    // Besonderes Ereignis oder Spielausschluss (rote Karte) lösen nach
+    // Spielbericht-Abschluss die Erinnerungs-E-Mail an die Schiris aus, die
+    // den Berichtsformular-Upload einfordert.
     return !!(this.additionalFields?.special_event || hasSpielausschluss);
+  }
+
+  // Der Upload wird erst nach Abschluss des Spielberichts angeboten – also
+  // dann, wenn die Erinnerungs-E-Mail an die Schiris rausgeht. Während der
+  // Spielberichtseingabe (offener Bericht) erscheint er bewusst nicht.
+  get reportClosed(): boolean {
+    return (
+      this.game?.game_status === 'match_record_closed' ||
+      this.game?.game_status === 'finalized'
+    );
   }
 
   onRefereeReportFile(event: Event): void {
