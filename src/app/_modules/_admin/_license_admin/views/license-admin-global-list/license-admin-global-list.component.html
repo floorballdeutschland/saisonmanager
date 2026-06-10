@@ -230,11 +230,6 @@
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Verein
-              </th>
-              <th
-                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-              >
                 Team
               </th>
               <th
@@ -304,12 +299,11 @@
                     Jg. {{ e.player_birthdate | date: "yyyy" }}
                   </p>
                 </td>
-                <!-- Verein -->
-                <td class="px-4 py-3 text-gray-700 whitespace-nowrap">
-                  {{ e.club_name ?? "–" }}
-                </td>
-                <!-- Team -->
-                <td class="px-4 py-3 text-gray-700 whitespace-nowrap">
+                <!-- Team (Verein als Tooltip beim Hovern) -->
+                <td
+                  class="px-4 py-3 text-gray-700 whitespace-nowrap"
+                  [attr.title]="e.club_name ? 'Verein: ' + e.club_name : null"
+                >
                   {{ e.team_name }}
                 </td>
                 <!-- Wettbewerb -->
