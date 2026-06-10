@@ -11,7 +11,6 @@ import {
   GameOperationWithLeagues,
   GameScheduleEntry,
   League,
-  LeagueClass,
   LeagueQualification,
   LeagueWithTeams,
   Penalty,
@@ -218,11 +217,6 @@ export class LeagueService {
   public deleteQualification(leagueId: number, qualId: number) {
     const path = `${environment.apiURL}admin/leagues/${leagueId}/qualifications/${qualId}.json`;
     return this.http.delete<void>(path);
-  }
-
-  public getAdminLeagueClasses() {
-    const path = environment.apiURL + 'admin/league_classes.json';
-    return this.http.get<LeagueClass[]>(path);
   }
 
   public getLeagueWithTeams(league: number) {

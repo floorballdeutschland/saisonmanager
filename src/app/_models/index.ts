@@ -40,7 +40,6 @@ export { RefereeEntry } from './referee-entry.interface';
 export { GameOperationWithClubs } from './game-operation.interface';
 export { GameEvent } from './game.interface';
 export { League } from './league.interface';
-export { LeagueClass } from './league-class.interface';
 export { Association } from './association.interface';
 export { SquatFilterType } from './squad-filter-type.interface';
 export { GameEventInput } from './game-event-input.interface';
