@@ -355,22 +355,6 @@
             Duplikat zusammenführen
           </a>
         }
-        @if (editMode && canIssueWallet && !referee.guest) {
-          <button
-            type="button"
-            (click)="createWalletPass()"
-            [disabled]="walletLoading"
-            class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
-          >
-            {{
-              walletLoading
-                ? "Erstelle…"
-                : referee.wallet_pass_issued_at
-                  ? "Wallet neu ausstellen"
-                  : "Wallet-Ausweis"
-            }}
-          </button>
-        }
         @if (editMode && canCreateUserAccount && !referee.user_id) {
           @if (referee.email) {
             <button

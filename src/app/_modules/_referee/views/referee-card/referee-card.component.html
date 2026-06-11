@@ -1,0 +1,112 @@
+<div class="p-4 lg:p-8 flex flex-col items-center">
+  <h1 class="text-2xl font-bold mb-6 self-start lg:self-center">
+    Mein Ausweis
+  </h1>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+  }
+
+  @if (!loading && profile) {
+    <!-- Ausweis-Karte im Kreditkartenformat, mobil optimiert -->
+    <div
+      class="w-full max-w-sm bg-white rounded-2xl border border-fb-gray-200 shadow-md overflow-hidden"
+    >
+      <!-- Kopf: Verbandslogo -->
+      <div class="px-6 pt-6 pb-2 flex justify-center">
+        <img
+          src="assets/images/logo-floorball-deutschland.png"
+          alt="Floorball Deutschland"
+          class="h-10 object-contain"
+        />
+      </div>
+
+      <!-- Gültigkeitsstatus -->
+      <div
+        class="mx-6 mb-4 rounded-[5px] px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide"
+        [ngClass]="
+          expired ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+        "
+      >
+        {{ expired ? "Lizenz abgelaufen" : "Lizenz gültig" }}
+      </div>
+
+      <!-- QR-Code -->
+      <div class="flex flex-col items-center px-6">
+        @if (qrDataUrl) {
+          <div class="border-4 border-blue-600 rounded-2xl p-2 bg-white">
+            <img
+              [src]="qrDataUrl"
+              alt="QR-Code zum Lizenzcheck"
+              class="w-44 h-44"
+            />
+          </div>
+        }
+        <p class="mt-3 text-xs text-fb-gray-500 uppercase font-bold">
+          Lizenznummer
+        </p>
+        <p class="text-xl font-bold">{{ profile.lizenznummer_display }}</p>
+      </div>
+
+      <!-- Name -->
+      <div class="px-6 pt-4 text-center">
+        <p class="text-2xl font-bold leading-tight">
+          {{ profile.vorname }} {{ profile.nachname }}
+        </p>
+      </div>
+
+      <!-- Daten -->
+      <div class="px-6 py-4 mt-2 divide-y divide-fb-gray-200 text-sm">
+        @if (profile.verein) {
+          <div class="flex justify-between py-2.5">
+            <span class="text-fb-gray-500">Verein</span>
+            <span class="font-bold text-right">{{ profile.verein }}</span>
+          </div>
+        }
+        @if (profile.geburtsdatum) {
+          <div class="flex justify-between py-2.5">
+            <span class="text-fb-gray-500">Geburtsdatum</span>
+            <span class="font-bold text-right">{{ profile.geburtsdatum }}</span>
+          </div>
+        }
+        <div class="flex justify-between py-2.5">
+          <span class="text-fb-gray-500">Lizenzstufe</span>
+          <span class="font-bold text-right">{{
+            profile.lizenzstufe || "–"
+          }}</span>
+        </div>
+        <div class="flex justify-between py-2.5">
+          <span class="text-fb-gray-500">Gültig bis</span>
+          <span
+            class="font-bold text-right"
+            [ngClass]="expired ? 'text-red-600' : 'text-green-600'"
+            >{{ profile.gueltigkeit || "–" }}</span
+          >
+        </div>
+        @if (profile.landesverband) {
+          <div class="flex justify-between py-2.5">
+            <span class="text-fb-gray-500">Verband</span>
+            <span class="font-bold text-right">{{
+              profile.landesverband
+            }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Hinweistext (Rückseite der Vorlage) -->
+      <div class="bg-fb-gray-100 px-6 py-4">
+        <p class="text-[11px] leading-snug text-fb-gray-500 text-center">
+          Dieser Ausweis wurde vom Floorball-Verband Deutschland e. V.
+          ausgestellt. Gültigkeit und Lizenzstufe können über den QR-Code oder
+          unter saisonmanager.org/lizenzcheck abgerufen werden.
+        </p>
+      </div>
+    </div>
+  }
+
+  @if (!loading && !profile) {
+    <div class="text-fb-gray-500 py-8">
+      Kein Schiedsrichter-Profil gefunden.
+    </div>
+  }
+</div>

@@ -82,6 +82,9 @@ export interface RefereeProfile {
   email?: string;
   lizenzstufe?: string;
   gueltigkeit?: string;
+  geburtsdatum?: string;
+  verein?: string;
+  landesverband?: string;
   strasse?: string;
   hausnummer?: string;
   plz?: string;

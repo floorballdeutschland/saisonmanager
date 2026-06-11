@@ -10,6 +10,7 @@ import * as Views from './views';
   imports: [CommonModule, FormsModule, RefereeRoutingModule, UikitCommonModule],
   declarations: [
     Views.RefereeProfileComponent,
+    Views.RefereeCardComponent,
     Views.RefereeHistoryComponent,
     Views.RefereeBlockedDatesComponent,
     Views.RefereeGameDaysComponent,

@@ -38,7 +38,6 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   editMode = false;
   loading = false;
   saving = false;
-  walletLoading = false;
   userAccountLoading = false;
   userDeleteLoading = false;
   isRestricted = false;
@@ -46,7 +45,6 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   canMerge = false;
   canCreateUserAccount = false;
   canDeleteUserAccount = false;
-  canIssueWallet = false;
   stateAssociations: StateAssociation[] = [];
   clubs: Club[] = [];
   qualificationTypes: RefereeQualificationType[] = [];
@@ -80,7 +78,6 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           this.canCreateUserAccount = !!user?.permissions['referee_can_create'];
           this.canDeleteUserAccount =
             !!user?.permissions['referee_can_delete_user'];
-          this.canIssueWallet = !!user?.permissions['referee_wallet'];
           this._cdr.markForCheck();
         },
       });
@@ -292,64 +289,6 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this._notificationService.error('Fehler beim Löschen.', {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
-        },
-      });
-  }
-
-  createWalletPass(): void {
-    if (!this.referee.id || this.referee.guest) return;
-    // Der Wallet-Pass wird serverseitig aus den GESPEICHERTEN Daten erzeugt und
-    // die Benachrichtigung nur an die gespeicherte E-Mail verschickt. Bei
-    // ungespeicherten Formularänderungen (z. B. neu eingetragener, aber noch
-    // nicht gespeicherter E-Mail) entstünde sonst ein Pass mit veralteten Daten
-    // bzw. kein Mailversand – ohne dass es auffällt. Daher: erst speichern.
-    if (this.form?.dirty) {
-      this._notificationService.warning(
-        'Es gibt ungespeicherte Änderungen. Bitte zuerst speichern, bevor du den Wallet-Ausweis ausstellst (z. B. eine neu eingetragene E-Mail-Adresse).',
-        { autoClose: false, keepAfterRouteChange: false }
-      );
-      return;
-    }
-    this.walletLoading = true;
-    this._refereeService
-      .adminCreateWalletPass(this.referee.id)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (result) => {
-          this.referee = {
-            ...this.referee,
-            wallet_pass_issued_at: new Date().toISOString(),
-            wallet_pass_url: result.url,
-          };
-          this.walletLoading = false;
-          this._cdr.markForCheck();
-          // mail_sent === false: Backend hat den Pass erstellt, aber mangels
-          // hinterlegter E-Mail keine Benachrichtigung versendet. Strikt auf
-          // === false prüfen, damit ältere Backends (Feld fehlt) keinen
-          // Fehlalarm auslösen.
-          if (result.mail_sent === false) {
-            this._notificationService.warning(
-              'Wallet-Ausweis erstellt, aber keine Benachrichtigung versendet – beim Schiedsrichter ist keine E-Mail-Adresse hinterlegt.',
-              { autoClose: false, keepAfterRouteChange: false }
-            );
-          } else {
-            this._notificationService.success('Wallet-Ausweis ausgestellt.', {
-              autoClose: true,
-              keepAfterRouteChange: false,
-            });
-          }
-        },
-        error: (err: HttpErrorResponse) => {
-          this.walletLoading = false;
-          this._cdr.markForCheck();
-          const msg =
-            typeof err?.error?.error === 'string'
-              ? err.error.error
-              : 'Wallet-Pass konnte nicht erstellt werden.';
-          this._notificationService.error(msg, {
             autoClose: false,
             keepAfterRouteChange: false,
           });

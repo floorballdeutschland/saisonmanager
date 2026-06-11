@@ -4,6 +4,12 @@ import * as Views from './views';
 
 const routes: Routes = [
   {
+    path: 'schiedsrichter/ausweis',
+    pathMatch: 'full',
+    component: Views.RefereeCardComponent,
+    data: { scrollTop: true },
+  },
+  {
     path: 'schiedsrichter/profil',
     pathMatch: 'full',
     component: Views.RefereeProfileComponent,

@@ -2,7 +2,9 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  OnInit,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { RefereePublicLicense } from '@floorball/types';
 import { RefereeService } from '@floorball/core';
@@ -12,7 +14,7 @@ import { RefereeService } from '@floorball/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
-export class LizenzcheckComponent {
+export class LizenzcheckComponent implements OnInit {
   lizenznummer = '';
   result?: RefereePublicLicense;
   notFound = false;
@@ -20,10 +22,22 @@ export class LizenzcheckComponent {
 
   constructor(
     private _refereeService: RefereeService,
+    private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _title: Title
   ) {
     this._title.setTitle('Lizenzcheck | Floorball Saisonmanager');
+  }
+
+  ngOnInit(): void {
+    // Der QR-Code auf dem Schiedsrichterausweis verlinkt auf /lizenzcheck?q=<Nr>.
+    // Ist die Lizenznummer als Query-Parameter vorhanden, das Feld vorbefüllen
+    // und die Prüfung direkt ausführen.
+    const q = this._route.snapshot.queryParamMap.get('q');
+    if (q) {
+      this.lizenznummer = q;
+      this.search();
+    }
   }
 
   search(): void {
