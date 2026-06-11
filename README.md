@@ -1,6 +1,6 @@
 # Saisonmanager – Frontend
 
-Angular 18 frontend for the Floorball Saisonmanager — a league management system for Floorball Deutschland covering schedules, player licensing, referee management, and club administration.
+Angular 22 frontend for the Floorball Saisonmanager — a league management system for Floorball Deutschland covering schedules, player licensing, referee management, and club administration.
 
 ## Related Repositories
 
@@ -12,17 +12,17 @@ Angular 18 frontend for the Floorball Saisonmanager — a league management syst
 
 ## Tech Stack
 
-- **Angular 18** with standalone-compatible lazy-loaded feature modules
-- **TypeScript** with strict path aliases
-- **Tailwind CSS** for styling
-- **Karma** for unit tests
-- **Husky + Prettier** for pre-commit linting
+- **Angular 22** with standalone-compatible lazy-loaded feature modules
+- **TypeScript 6** with strict path aliases
+- **Tailwind CSS v4** for styling
+- **Karma/Jasmine** for unit tests
+- **ESLint 9** (flat config) + **Husky + Prettier** for linting (pre-commit and CI)
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 20+ and npm (managed via [nvm](https://github.com/nvm-sh/nvm))
+- Node.js 24 (pinned in `.nvmrc`, managed via [nvm](https://github.com/nvm-sh/nvm))
 - The API running locally (see [saisonmanager-docker](https://github.com/floorballverband-deutschland/saisonmanager-docker))
 
 ### Setup
@@ -52,9 +52,12 @@ The app points to `http://localhost:3001/api/v2/` by default in dev mode.
 | `npm start`           | Dev server at `http://localhost:4200`            |
 | `npm run start-local` | Dev server bound to `0.0.0.0` (network access)   |
 | `npm run build`       | Production build → `dist/saisonmanager/browser/` |
-| `ng test`             | Karma unit tests                                 |
+| `ng test`             | Karma unit tests (watch mode)                    |
+| `ng lint`             | ESLint                                           |
 | `npm run lint`        | Prettier on staged files                         |
 | `./build-deploy.sh`   | Build + deploy to production server              |
+
+Run a single spec file with `ng test --no-watch --include='**/foo.component.spec.ts'`.
 
 > **Note:** `ng` requires nvm to be in PATH. If `ng: command not found`, run:
 >
@@ -74,19 +77,14 @@ src/app/
 │       └── error.interceptor.ts     # handles 401/403/404
 ├── _models/                    # TypeScript interfaces
 ├── _modules/
-│   ├── _admin/                 # Protected admin views
-│   │   ├── _league_admin/
-│   │   ├── _schedule_admin/
-│   │   ├── _license_admin/
-│   │   ├── _player_admin/
-│   │   ├── _club_admin/
-│   │   ├── _team_admin/
-│   │   ├── _referee_admin/
-│   │   ├── _state_association_admin/
-│   │   └── _api_key_admin/
+│   ├── _admin/                 # Protected admin views, one module per area
+│   │   ├── _league_admin/      # (~20 modules: leagues, schedules, licenses,
+│   │   ├── _player_admin/      #  players, clubs, teams, referees, assignments,
+│   │   └── ...                 #  transfer requests, settings, …)
 │   ├── _core/
 │   │   └── _services/          # Shared services (session, API)
 │   ├── _public/                # Public-facing views
+│   ├── _referee/               # Referee self-service portal
 │   └── _uikit/                 # Shared UI components
 └── environments/
     ├── environment.ts           # Development config
@@ -104,6 +102,7 @@ Defined in `tsconfig.json`:
 | `@floorball/uikit/*`                     | `src/app/_modules/_uikit/_*/`  |
 | `@floorball/admin/*`                     | `src/app/_modules/_admin/_*/`  |
 | `@floorball/public/*`                    | `src/app/_modules/_public/_*/` |
+| `@floorball/referee`                     | `src/app/_modules/_referee/`   |
 
 ## Authentication & Permissions
 
@@ -143,4 +142,5 @@ Requires nvm in PATH and SSH access to the production server (`ssh saisonmanager
 
 - Branch from `main`: `git checkout -b fix/description` or `feat/description`
 - Open a PR — no direct pushes to `main`
-- The pre-commit hook runs Prettier on staged files (requires nvm in PATH; see the nvm export workaround above if it fails)
+- CI (GitHub Actions) gates every PR: `ng lint`, headless Karma tests, and a production build
+- The pre-commit hook runs Prettier on staged files and `ng lint` (requires nvm in PATH; see the nvm export workaround above if it fails)
