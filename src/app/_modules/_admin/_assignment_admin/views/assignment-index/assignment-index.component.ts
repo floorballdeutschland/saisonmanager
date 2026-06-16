@@ -18,6 +18,7 @@ import {
   RefereeAssignableGame,
   RefereeAssignment,
   RefereeAssignmentAvailable,
+  RefereeAssignmentStub,
 } from '@floorball/types';
 
 interface RowState {
@@ -95,6 +96,66 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
 
   applyFilter(): void {
     this._load();
+  }
+
+  // CSV-Export der aktuell gefilterten Ansetzungen (Saison/Zeitraum).
+  // Semikolon-getrennt + UTF-8-BOM, damit Excel Umlaute korrekt darstellt.
+  exportCsv(): void {
+    if (this.rows.length === 0) return;
+    const t = (key: string) => this._transloco.translate(key);
+    const headers = [
+      t('assignmentAdmin.index.colDate'),
+      t('assignmentAdmin.index.colTime'),
+      t('assignmentAdmin.index.colLeague'),
+      t('assignmentAdmin.index.csvHome'),
+      t('assignmentAdmin.index.csvGuest'),
+      t('assignmentAdmin.index.csvArena'),
+      t('assignmentAdmin.index.csvHost'),
+      t('assignmentAdmin.index.colReferee1'),
+      t('assignmentAdmin.index.colReferee2'),
+      t('assignmentAdmin.index.colStatus'),
+    ];
+    const rows = this.rows.map((r) => [
+      r.game.date ?? '',
+      r.game.start_time ?? '',
+      r.game.league ?? '',
+      r.game.home_team ?? '',
+      r.game.guest_team ?? '',
+      r.game.arena ?? '',
+      r.game.club ?? r.assignment?.game?.club ?? '',
+      this._refereeCsvName(r.assignment?.referee1),
+      this._refereeCsvName(r.assignment?.referee2),
+      this.assignmentStatusLabel(r.game.assignment_status),
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';')
+      )
+      .join('\r\n');
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+
+    const blob = new Blob(['﻿' + csv], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ansetzungen-${yyyy}-${mm}-${dd}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      a.remove();
+    }, 0);
+  }
+
+  private _refereeCsvName(r?: RefereeAssignmentStub | null): string {
+    return r ? `${r.nachname}, ${r.vorname}` : '';
   }
 
   getState(gameId: number): RowState | undefined {

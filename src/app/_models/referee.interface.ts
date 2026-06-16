@@ -210,6 +210,7 @@ export interface RefereeAssignableGame {
   arena?: string;
   arena_postcode?: string;
   arena_city?: string;
+  club?: string;
   assignment_id?: number | null;
   assignment_status?: string | null;
 }
