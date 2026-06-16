@@ -158,6 +158,53 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     return r ? `${r.nachname}, ${r.vorname}` : '';
   }
 
+  // Warnung, wenn ein in dieser Zeile gewählter Schiri zugleich einem
+  // Parallelspiel (gleiches Datum + gleicher Anpfiff) in der aktuellen Liste
+  // zugeordnet ist. Rein clientseitig: Sperrtermine und tagesgleiche
+  // Doppelansetzungen filtert bereits das Backend aus dem Auswahl-Dropdown
+  // (`available`-Endpoint) – diese Prüfung ergänzt die zeitgleiche Kollision,
+  // die durch noch nicht gespeicherte/zwischengespeicherte Auswahlen entstehen
+  // kann.
+  refereeConflict(row: MergedGame): string | null {
+    const ids = this._selectedRefereeIds(row.game.id);
+    if (ids.length === 0) return null;
+
+    const conflictGames: string[] = [];
+    for (const other of this.rows) {
+      if (other.game.id === row.game.id) continue;
+      if (!this._isParallel(row.game, other.game)) continue;
+      const otherIds = this._selectedRefereeIds(other.game.id);
+      if (ids.some((id) => otherIds.includes(id))) {
+        conflictGames.push(this._gameLabel(other.game));
+      }
+    }
+
+    if (conflictGames.length === 0) return null;
+    return this._transloco.translate('assignmentAdmin.index.conflictParallel', {
+      games: conflictGames.join(', '),
+    });
+  }
+
+  private _selectedRefereeIds(gameId: number): number[] {
+    const state = this.rowStates.get(gameId);
+    if (!state) return [];
+    return [state.selectedReferee1Id, state.selectedReferee2Id].filter(
+      (id): id is number => id != null
+    );
+  }
+
+  private _isParallel(
+    a: RefereeAssignableGame,
+    b: RefereeAssignableGame
+  ): boolean {
+    return a.date === b.date && !!a.start_time && a.start_time === b.start_time;
+  }
+
+  private _gameLabel(g: RefereeAssignableGame): string {
+    const teams = [g.home_team, g.guest_team].filter(Boolean).join(' vs. ');
+    return g.game_number ? `#${g.game_number} ${teams}` : teams;
+  }
+
   getState(gameId: number): RowState | undefined {
     return this.rowStates.get(gameId);
   }

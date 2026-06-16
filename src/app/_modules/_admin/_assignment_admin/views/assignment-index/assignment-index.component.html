@@ -385,6 +385,13 @@
                 </td>
               }
             </tr>
+            @if (refereeConflict(row); as conflict) {
+              <tr class="bg-amber-50 border-b border-fb-gray-600">
+                <td colspan="9" class="py-1.5 px-2 text-xs text-amber-800">
+                  ⚠ {{ conflict }}
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>

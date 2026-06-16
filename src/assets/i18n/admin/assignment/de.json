@@ -11,6 +11,7 @@
     "csvGuest": "Gast",
     "csvArena": "Halle",
     "csvHost": "Ausrichter",
+    "conflictParallel": "Konflikt: Schiedsrichter ist zeitgleich für ein Parallelspiel angesetzt ({{ games }}).",
     "loading": "Lade…",
     "empty": "Keine Spiele gefunden.",
     "colDate": "Datum",

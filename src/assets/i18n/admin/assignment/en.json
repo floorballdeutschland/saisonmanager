@@ -11,6 +11,7 @@
     "csvGuest": "Guest",
     "csvArena": "Arena",
     "csvHost": "Host",
+    "conflictParallel": "Conflict: referee is assigned to a parallel game at the same time ({{ games }}).",
     "loading": "Loading…",
     "empty": "No games found.",
     "colDate": "Date",
