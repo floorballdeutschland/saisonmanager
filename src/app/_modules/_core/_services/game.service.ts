@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 import {
   AddLineupPlayerResponse,
@@ -19,6 +19,15 @@ import {
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
+export interface GameSchedulingConflict {
+  id: number;
+  game_number: string | null;
+  start_time: string | null;
+  home_team: string | null;
+  guest_team: string | null;
+  league_name: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -28,6 +37,25 @@ export class GameService {
   public getGame(gameId: number) {
     const path = environment.apiURL + 'games/' + gameId + '.json';
     return this.http.get<Game>(path);
+  }
+
+  // Prüft, ob ein (geplantes) Spiel zeitlich mit anderen Spielen in derselben
+  // Halle am selben Tag kollidiert. Nicht-blockierend (nur Warnung).
+  public getSchedulingConflicts(opts: {
+    gameDayId: number;
+    startTime: string;
+    gameId?: number;
+  }) {
+    let params = new HttpParams()
+      .set('game_day_id', String(opts.gameDayId))
+      .set('start_time', opts.startTime);
+    if (opts.gameId) {
+      params = params.set('game_id', String(opts.gameId));
+    }
+    return this.http.get<{ conflicts: GameSchedulingConflict[] }>(
+      environment.apiURL + 'games/scheduling_conflicts',
+      { params }
+    );
   }
 
   public createGame(game: GameInput) {

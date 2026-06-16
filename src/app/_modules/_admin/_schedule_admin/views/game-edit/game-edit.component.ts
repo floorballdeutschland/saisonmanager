@@ -15,7 +15,11 @@ import {
   GameInput,
   Team,
 } from '@floorball/types';
-import { GameService, NotificationService } from '@floorball/core';
+import {
+  GameSchedulingConflict,
+  GameService,
+  NotificationService,
+} from '@floorball/core';
 import { switchMap } from 'rxjs/operators';
 
 @Component({
@@ -57,6 +61,7 @@ export class GameEditComponent implements OnInit {
   hasGameDependencies = false;
   hasMoveGameDay = false;
   processing = false;
+  conflicts: GameSchedulingConflict[] = [];
 
   get isRskAssignment(): boolean {
     return (
@@ -127,6 +132,9 @@ export class GameEditComponent implements OnInit {
 
     this.hasMoveGameDay = false;
     this.processing = false;
+    // Alte Konfliktwarnung verwerfen, damit sie nach erfolgreichem Speichern/
+    // Zurücksetzen nicht fälschlich stehen bleibt.
+    this.conflicts = [];
     this._cdr.markForCheck();
   }
 
@@ -324,6 +332,35 @@ export class GameEditComponent implements OnInit {
         },
         error: () => {
           this.processing = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  // Nicht-blockierende Hallenbelegungs-Prüfung: warnt, wenn ein anderes Spiel in
+  // derselben Halle am selben Tag zeitlich kollidiert. Speichern bleibt erlaubt.
+  public checkConflicts() {
+    const gameDayId = this.game.game_day_id || this.gameDayId;
+    if (!this.game.start_time || !gameDayId) {
+      this.conflicts = [];
+      this._cdr.markForCheck();
+      return;
+    }
+
+    this._gameService
+      .getSchedulingConflicts({
+        gameDayId,
+        startTime: this.game.start_time,
+        gameId: this.game.id,
+      })
+      .subscribe({
+        next: (result) => {
+          this.conflicts = result.conflicts;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          // Konfliktprüfung ist optional; Fehler nicht aufdringlich melden.
+          this.conflicts = [];
           this._cdr.markForCheck();
         },
       });

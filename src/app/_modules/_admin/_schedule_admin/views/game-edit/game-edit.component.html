@@ -38,6 +38,7 @@
     <div class="col-span-2 md:col-span-1">
       <input
         [(ngModel)]="game.start_time"
+        (change)="checkConflicts()"
         [disabled]="processing || existingGame?.started || false"
         class="w-full bg-transparent border-gray-300"
         [placeholder]="'scheduleAdmin.gameEdit.kickoffPlaceholder' | transloco"
@@ -702,6 +703,7 @@
         <select
           class="w-full bg-transparent border-gray-300"
           [(ngModel)]="game.game_day_id"
+          (change)="checkConflicts()"
           [ngModelOptions]="{ standalone: true }"
         >
           @for (day of allGameDays; track day) {
@@ -715,6 +717,29 @@
         </select>
       </div>
       <div class="col-span-4"></div>
+    }
+
+    @if (conflicts.length > 0) {
+      <div
+        class="col-span-2 md:col-span-7 rounded-[5px] border border-yellow-400 bg-yellow-50 px-3 py-2 text-sm text-yellow-900"
+      >
+        <p class="font-bold">
+          {{ "scheduleAdmin.gameEdit.conflictWarning" | transloco }}
+        </p>
+        <ul class="list-disc list-inside">
+          @for (conflict of conflicts; track conflict.id) {
+            <li>
+              {{ conflict.start_time }} – {{ conflict.home_team }}
+              {{ "scheduleAdmin.gameEdit.conflictVs" | transloco }}
+              {{ conflict.guest_team }}
+              @if (conflict.game_number) {
+                ({{ "scheduleAdmin.gameEdit.conflictGameNumber" | transloco }}
+                {{ conflict.game_number }})
+              }
+            </li>
+          }
+        </ul>
+      </div>
     }
   }
 </form>
