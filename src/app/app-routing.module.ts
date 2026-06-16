@@ -160,6 +160,13 @@ const routes: Routes = [
             (m) => m.AdminEmailLogModule
           ),
       },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/admin/email-template').then(
+            (m) => m.AdminEmailTemplateModule
+          ),
+      },
     ],
   },
   {

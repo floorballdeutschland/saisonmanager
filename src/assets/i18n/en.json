@@ -58,7 +58,8 @@
     "myUsers": "My users",
     "seasonAdmin": "Season administration",
     "analytics": "Analytics",
-    "emailLog": "Email log"
+    "emailLog": "Email log",
+    "emailTemplates": "Email templates"
   },
   "account": {
     "title": "My account",

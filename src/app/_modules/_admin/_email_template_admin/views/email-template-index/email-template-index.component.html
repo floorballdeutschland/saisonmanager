@@ -1,0 +1,151 @@
+<div class="p-4 lg:p-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold">
+      {{ "emailTemplateAdmin.title" | transloco }}
+    </h1>
+    <p class="text-sm text-fb-gray-500 mt-2 max-w-3xl">
+      {{ "emailTemplateAdmin.intro" | transloco }}
+    </p>
+  </div>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      {{ "emailTemplateAdmin.loading" | transloco }}
+    </div>
+  }
+
+  @if (!loading && loadError) {
+    <div class="py-8 text-center">
+      <p class="text-sm text-red-600 mb-3">
+        {{ "emailTemplateAdmin.loadErrorHint" | transloco }}
+      </p>
+      <button
+        (click)="load()"
+        class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+      >
+        {{ "emailTemplateAdmin.retry" | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (!loading && !loadError) {
+    <p class="text-sm text-fb-gray-500 mb-6">
+      {{ "emailTemplateAdmin.count" | transloco: { count: templates.length } }}
+    </p>
+
+    @for (group of groups; track group.mailerClass) {
+      <section class="mb-10">
+        <h2 class="text-lg font-bold border-b border-fb-gray-700 pb-2 mb-4">
+          {{ group.mailerClass }}
+        </h2>
+
+        <div class="flex flex-col gap-6">
+          @for (template of group.templates; track template.key) {
+            <div class="border border-fb-gray-700 rounded-[5px] p-4 bg-white">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div>
+                  <p class="font-bold">{{ template.description }}</p>
+                  <p class="text-xs text-fb-gray-500 font-mono mt-1">
+                    {{ template.action_name }}
+                  </p>
+                </div>
+                @if (template.customized) {
+                  <span
+                    class="shrink-0 text-xs font-bold px-2 py-1 rounded-[5px] bg-green-100 text-green-800"
+                  >
+                    {{ "emailTemplateAdmin.customizedBadge" | transloco }}
+                  </span>
+                }
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="lg:col-span-2">
+                  <label class="block text-sm font-bold mb-1">{{
+                    "emailTemplateAdmin.subjectLabel" | transloco
+                  }}</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="edits[template.key].subject"
+                    [disabled]="isSaving(template)"
+                    [placeholder]="template.default_subject ?? ''"
+                    class="w-full border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:opacity-40"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold mb-1">{{
+                    "emailTemplateAdmin.fromLabel" | transloco
+                  }}</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="edits[template.key].from_address"
+                    [disabled]="isSaving(template)"
+                    [placeholder]="template.default_from ?? ''"
+                    class="w-full border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:opacity-40"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold mb-1">{{
+                    "emailTemplateAdmin.replyToLabel" | transloco
+                  }}</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="edits[template.key].reply_to_address"
+                    [disabled]="isSaving(template)"
+                    [placeholder]="template.default_reply_to ?? ''"
+                    class="w-full border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:opacity-40"
+                  />
+                </div>
+              </div>
+
+              @if (template.placeholders.length > 0) {
+                <div class="mt-4">
+                  <p class="text-xs font-bold text-fb-gray-500 mb-2">
+                    {{ "emailTemplateAdmin.placeholdersHint" | transloco }}
+                  </p>
+                  <div class="flex flex-wrap gap-2">
+                    @for (
+                      placeholder of template.placeholders;
+                      track placeholder.key
+                    ) {
+                      <span
+                        class="text-xs font-mono px-2 py-1 rounded-[5px] bg-fb-gray-900 border border-fb-gray-800"
+                        [title]="placeholder.description"
+                      >
+                        {{ placeholder.key }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+
+              <div class="flex gap-3 justify-end mt-4">
+                @if (template.customized) {
+                  <button
+                    (click)="reset(template)"
+                    [disabled]="isSaving(template)"
+                    class="px-4 py-2 text-sm text-fb-gray-500 hover:text-black disabled:opacity-40"
+                  >
+                    {{ "emailTemplateAdmin.reset" | transloco }}
+                  </button>
+                }
+                <button
+                  (click)="save(template)"
+                  [disabled]="isSaving(template)"
+                  class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+                >
+                  {{ "emailTemplateAdmin.save" | transloco }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (templates.length === 0) {
+      <p class="py-8 text-center text-fb-gray-500">
+        {{ "emailTemplateAdmin.empty" | transloco }}
+      </p>
+    }
+  }
+</div>

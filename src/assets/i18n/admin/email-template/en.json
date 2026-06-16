@@ -1,0 +1,23 @@
+{
+  "title": "Email templates",
+  "intro": "Here you can customize the subject, sender (From) and reply address (Reply-To) of the automatically sent emails. Empty fields use the respective default value from the code.",
+  "loading": "Loading email templates…",
+  "loadErrorHint": "Email templates could not be loaded.",
+  "retry": "Try again",
+  "count": "{{ count }} templates",
+  "subjectLabel": "Subject",
+  "fromLabel": "Sender (From)",
+  "replyToLabel": "Reply to (Reply-To)",
+  "placeholdersHint": "Available placeholders (usable in the subject):",
+  "customizedBadge": "customized",
+  "save": "Save",
+  "reset": "Reset",
+  "empty": "No email templates available.",
+  "confirmReset": "Really reset the customizations for \"{{ name }}\" to the default values?",
+  "notifications": {
+    "loadError": "Email templates could not be loaded.",
+    "saved": "\"{{ name }}\" saved.",
+    "reset": "\"{{ name }}\" reset to default values.",
+    "saveError": "Error while saving: {{ detail }}"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "title": "E-Mail-Vorlagen",
+  "intro": "Hier können Betreff, Absender (From) und Antwort-Adresse (Reply-To) der automatisch versendeten E-Mails angepasst werden. Leere Felder verwenden den jeweiligen Standardwert aus dem Code.",
+  "loading": "Lade E-Mail-Vorlagen…",
+  "loadErrorHint": "E-Mail-Vorlagen konnten nicht geladen werden.",
+  "retry": "Erneut versuchen",
+  "count": "{{ count }} Vorlagen",
+  "subjectLabel": "Betreff",
+  "fromLabel": "Absender (From)",
+  "replyToLabel": "Antwort an (Reply-To)",
+  "placeholdersHint": "Verfügbare Platzhalter (im Betreff verwendbar):",
+  "customizedBadge": "angepasst",
+  "save": "Speichern",
+  "reset": "Zurücksetzen",
+  "empty": "Keine E-Mail-Vorlagen vorhanden.",
+  "confirmReset": "Anpassungen für \"{{ name }}\" wirklich auf die Standardwerte zurücksetzen?",
+  "notifications": {
+    "loadError": "E-Mail-Vorlagen konnten nicht geladen werden.",
+    "saved": "\"{{ name }}\" gespeichert.",
+    "reset": "\"{{ name }}\" auf Standardwerte zurückgesetzt.",
+    "saveError": "Fehler beim Speichern: {{ detail }}"
+  }
+}

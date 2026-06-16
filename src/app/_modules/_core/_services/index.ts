@@ -26,4 +26,5 @@ export * from './settings.service';
 export * from './online-test.service';
 export * from './analytics.service';
 export * from './email-log.service';
+export * from './email-template.service';
 export * from './referee-course-import.service';

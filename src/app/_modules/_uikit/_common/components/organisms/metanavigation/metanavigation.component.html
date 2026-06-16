@@ -304,6 +304,7 @@
     showItem("menu_item_season_admin") ||
     showItem("menu_item_analytics_admin") ||
     showItem("menu_item_email_log_admin") ||
+    showItem("menu_item_email_template_admin") ||
     showItem("menu_item_user_vm")
   ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
@@ -388,6 +389,16 @@
               [routerLink]="['/', 'verwaltung', 'email-log']"
               (click)="closeMenu()"
               >{{ "nav.emailLog" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_email_template_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'email-vorlagen']"
+              (click)="closeMenu()"
+              >{{ "nav.emailTemplates" | transloco }}</a
             >
           </li>
         }
