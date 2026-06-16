@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   ClubService,
   UserManagementService,
@@ -55,6 +56,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
     private _gameOperationService: GameOperationService,
     private _notificationService: NotificationService,
     private _sessionService: SessionService,
+    private _transloco: TranslocoService,
     private _route: ActivatedRoute,
     private _router: Router,
     private _cdr: ChangeDetectorRef
@@ -89,9 +91,12 @@ export class UserEditComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: () => {
-          this._notificationService.error('Benutzer nicht gefunden.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate('userAdmin.notifications.userNotFound'),
+            {
+              autoClose: false,
+            }
+          );
           this._router.navigate(['/', 'verwaltung', 'benutzer']);
         },
       });
@@ -228,18 +233,24 @@ export class UserEditComponent implements OnInit, OnDestroy {
         next: (updated) => {
           this.user = updated;
           this.saving = false;
-          this._notificationService.success('Gespeichert.', {
-            autoClose: true,
-            keepAfterRouteChange: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate('userAdmin.notifications.saved'),
+            {
+              autoClose: true,
+              keepAfterRouteChange: true,
+            }
+          );
           this._router.navigate(['/', 'verwaltung', 'benutzer']);
         },
         error: () => {
           this.saving = false;
           this._cdr.markForCheck();
-          this._notificationService.error('Fehler beim Speichern.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate('userAdmin.notifications.saveError'),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }
@@ -256,17 +267,23 @@ export class UserEditComponent implements OnInit, OnDestroy {
           this.user = updated;
           this.editableTeamIds = updated.teams ? [...updated.teams] : [];
           this.savingTeams = false;
-          this._notificationService.success('Teams gespeichert.', {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate('userAdmin.notifications.teamsSaved'),
+            {
+              autoClose: true,
+            }
+          );
           this._cdr.markForCheck();
         },
         error: () => {
           this.savingTeams = false;
           this._cdr.markForCheck();
-          this._notificationService.error('Fehler beim Speichern.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate('userAdmin.notifications.saveError'),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }
@@ -282,17 +299,23 @@ export class UserEditComponent implements OnInit, OnDestroy {
         next: (updated) => {
           this.user = updated;
           this.savingAssignment = false;
-          this._notificationService.success('Verbund gespeichert.', {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate('userAdmin.notifications.goSaved'),
+            {
+              autoClose: true,
+            }
+          );
           this._cdr.markForCheck();
         },
         error: () => {
           this.savingAssignment = false;
           this._cdr.markForCheck();
-          this._notificationService.error('Fehler beim Speichern.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate('userAdmin.notifications.saveError'),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }
@@ -309,17 +332,23 @@ export class UserEditComponent implements OnInit, OnDestroy {
           this.user = updated;
           this.editableTeamIds = [];
           this.savingAssignment = false;
-          this._notificationService.success('Verein gespeichert.', {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate('userAdmin.notifications.clubSaved'),
+            {
+              autoClose: true,
+            }
+          );
           this._cdr.markForCheck();
         },
         error: () => {
           this.savingAssignment = false;
           this._cdr.markForCheck();
-          this._notificationService.error('Fehler beim Speichern.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate('userAdmin.notifications.saveError'),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }
@@ -328,7 +357,14 @@ export class UserEditComponent implements OnInit, OnDestroy {
     if (!this.user || !this.canChangeRole) return;
 
     const label = newRole === 4 ? 'VM' : 'TM';
-    if (!confirm(`Rolle auf ${label} ändern?`)) return;
+    if (
+      !confirm(
+        this._transloco.translate('userAdmin.notifications.confirmRoleChange', {
+          role: label,
+        })
+      )
+    )
+      return;
 
     this._userService
       .updateUser(this.user.id, { role: newRole })
@@ -336,15 +372,25 @@ export class UserEditComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (updated) => {
           this.user = updated;
-          this._notificationService.success(`Rolle auf ${label} geändert.`, {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate('userAdmin.notifications.roleChanged', {
+              role: label,
+            }),
+            {
+              autoClose: true,
+            }
+          );
           this._cdr.markForCheck();
         },
         error: () => {
-          this._notificationService.error('Fehler beim Ändern der Rolle.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate(
+              'userAdmin.notifications.roleChangeError'
+            ),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }
@@ -359,7 +405,9 @@ export class UserEditComponent implements OnInit, OnDestroy {
         next: () => {
           this.deleting = false;
           this._notificationService.success(
-            `Benutzer „${this.user!.username}" wurde gelöscht.`,
+            this._transloco.translate('userAdmin.notifications.userDeleted', {
+              username: this.user!.username,
+            }),
             { autoClose: true, keepAfterRouteChange: true }
           );
           this._router.navigate(['/', 'verwaltung', 'benutzer']);
@@ -367,9 +415,12 @@ export class UserEditComponent implements OnInit, OnDestroy {
         error: () => {
           this.deleting = false;
           this._cdr.markForCheck();
-          this._notificationService.error('Fehler beim Löschen.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate('userAdmin.notifications.deleteError'),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }
@@ -378,9 +429,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
     if (!this.user) return;
     if (
       !confirm(
-        `Passwort-Reset-Mail an "${
-          this.user.email || this.user.username
-        }" senden?`
+        this._transloco.translate(
+          'userAdmin.notifications.confirmPasswordReset',
+          { recipient: this.user.email || this.user.username }
+        )
       )
     )
       return;
@@ -392,17 +444,23 @@ export class UserEditComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.sendingReset = false;
-          this._notificationService.success('E-Mail wurde gesendet.', {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate('userAdmin.notifications.resetMailSent'),
+            {
+              autoClose: true,
+            }
+          );
           this._cdr.markForCheck();
         },
         error: () => {
           this.sendingReset = false;
           this._cdr.markForCheck();
-          this._notificationService.error('Fehler beim Senden.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate('userAdmin.notifications.resetMailError'),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }

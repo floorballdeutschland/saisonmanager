@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { Subject, takeUntil } from 'rxjs';
 import {
   NotificationService,
@@ -35,6 +36,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     private _sessionService: SessionService,
     private _notificationService: NotificationService,
     private _router: Router,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -70,7 +72,9 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this._notificationService.error(
-            'Transferanträge konnten nicht geladen werden.'
+            this._transloco.translate(
+              'transferRequestAdmin.notifications.loadError'
+            )
           );
           this.loading = false;
           this._cdr.markForCheck();
@@ -99,7 +103,14 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
 
   withdraw(r: TransferRequest, event: Event): void {
     event.stopPropagation();
-    if (!confirm('Antrag wirklich zurückziehen?')) return;
+    if (
+      !confirm(
+        this._transloco.translate(
+          'transferRequestAdmin.notifications.withdrawConfirm'
+        )
+      )
+    )
+      return;
 
     this.withdrawingId = r.id;
     this._transferService
@@ -111,34 +122,46 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
             req.id === updated.id ? updated : req
           );
           this.withdrawingId = null;
-          this._notificationService.success('Antrag zurückgezogen.', {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate(
+              'transferRequestAdmin.notifications.withdrawn'
+            ),
+            {
+              autoClose: true,
+            }
+          );
           this._cdr.markForCheck();
         },
         error: () => {
           this.withdrawingId = null;
-          this._notificationService.error('Fehler beim Zurückziehen.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate(
+              'transferRequestAdmin.notifications.withdrawError'
+            ),
+            {
+              autoClose: false,
+            }
+          );
           this._cdr.markForCheck();
         },
       });
   }
 
   statusLabel(status: string): string {
-    const labels: { [key: string]: string } = {
-      pending_club: 'Warten auf abgebenden Verein',
-      pending_lv: 'Warten auf Landesverband',
-      scheduled: 'Transfer geplant',
-      approved: 'Genehmigt',
-      rejected_by_club: 'Abgelehnt (Verein)',
-      rejected_by_lv: 'Abgelehnt (LV)',
-      revoked: 'Freigabe zurückgezogen',
-      withdrawn: 'Zurückgezogen',
-      expired: 'Automatisch annulliert',
+    const keys: { [key: string]: string } = {
+      pending_club: 'statusPendingClub',
+      pending_lv: 'statusPendingLv',
+      scheduled: 'statusScheduled',
+      approved: 'statusApproved',
+      rejected_by_club: 'statusRejectedByClub',
+      rejected_by_lv: 'statusRejectedByLv',
+      revoked: 'statusRevoked',
+      withdrawn: 'statusWithdrawn',
+      expired: 'statusExpired',
     };
-    return labels[status] || status;
+    return keys[status]
+      ? this._transloco.translate(`transferRequestAdmin.list.${keys[status]}`)
+      : status;
   }
 
   statusClass(status: string): string {
@@ -155,7 +178,11 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   }
 
   typeLabel(r: TransferRequest): string {
-    return r.request_type === 'release' ? 'Freigabe' : 'Transfer';
+    return this._transloco.translate(
+      r.request_type === 'release'
+        ? 'transferRequestAdmin.list.typeRelease'
+        : 'transferRequestAdmin.list.typeTransfer'
+    );
   }
 
   typeClass(r: TransferRequest): string {
@@ -174,21 +201,23 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
 
   exportCsv(): void {
     const headers = [
-      'Nachname',
-      'Vorname',
-      'Geburtsdatum',
-      'Typ',
-      'Direktzuweisung',
-      'Abgebender Verein',
-      'Aufnehmender Verein',
-      'Genehmigt am',
+      this._transloco.translate('transferRequestAdmin.list.csvLastName'),
+      this._transloco.translate('transferRequestAdmin.list.csvFirstName'),
+      this._transloco.translate('transferRequestAdmin.list.csvBirthdate'),
+      this._transloco.translate('transferRequestAdmin.list.csvType'),
+      this._transloco.translate('transferRequestAdmin.list.csvDirect'),
+      this._transloco.translate('transferRequestAdmin.list.csvFormerClub'),
+      this._transloco.translate('transferRequestAdmin.list.csvRequestingClub'),
+      this._transloco.translate('transferRequestAdmin.list.csvApprovedAt'),
     ];
     const rows = this.approvedRequests.map((r) => [
       r.player.last_name,
       r.player.first_name,
       r.player.birthdate ? this._formatDate(r.player.birthdate) : '',
       this.typeLabel(r),
-      r.direct ? 'Ja' : 'Nein',
+      r.direct
+        ? this._transloco.translate('transferRequestAdmin.list.csvYes')
+        : this._transloco.translate('transferRequestAdmin.list.csvNo'),
       r.former_club.name,
       r.requesting_club.name,
       r.lv_approved_at ? this._formatDate(r.lv_approved_at) : '',

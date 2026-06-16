@@ -21,6 +21,7 @@ import {
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   templateUrl: './league-edit.component.html',
@@ -52,16 +53,22 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     const file = input.files[0];
 
     if (file.type !== this._allowedBannerType) {
-      this._notificationService.error('Nur WebP-Dateien erlaubt.', {
-        autoClose: false,
-      });
+      this._notificationService.error(
+        this._transloco.translate('leagueAdmin.notifications.onlyWebp'),
+        {
+          autoClose: false,
+        }
+      );
       input.value = '';
       return;
     }
     if (file.size > this._maxBannerSize) {
-      this._notificationService.error('Datei zu groß (max. 500 KB).', {
-        autoClose: false,
-      });
+      this._notificationService.error(
+        this._transloco.translate('leagueAdmin.notifications.fileTooLarge'),
+        {
+          autoClose: false,
+        }
+      );
       input.value = '';
       return;
     }
@@ -73,15 +80,23 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
         next: (result) => {
           input.value = '';
           league.banner_url = result.banner_url;
-          this._notificationService.success('Banner erfolgreich hochgeladen.', {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate(
+              'leagueAdmin.notifications.bannerUploaded'
+            ),
+            {
+              autoClose: true,
+            }
+          );
           this._cdr.markForCheck();
         },
         error: (err) => {
           input.value = '';
           const msg: string =
-            err?.error?.message ?? 'Banner-Upload fehlgeschlagen.';
+            err?.error?.message ??
+            this._transloco.translate(
+              'leagueAdmin.notifications.bannerUploadFailed'
+            );
           this._notificationService.error(msg, { autoClose: false });
         },
       });
@@ -89,7 +104,14 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
 
   deleteBanner(league: League): void {
     if (!league.id || this.deletingBanner) return;
-    if (!confirm('Banner wirklich entfernen?')) return;
+    if (
+      !confirm(
+        this._transloco.translate(
+          'leagueAdmin.notifications.confirmDeleteBanner'
+        )
+      )
+    )
+      return;
     this.deletingBanner = true;
     this._leagueService
       .adminDeleteBanner(league.id)
@@ -103,7 +125,10 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.deletingBanner = false;
           const msg: string =
-            err?.error?.message ?? 'Banner konnte nicht gelöscht werden.';
+            err?.error?.message ??
+            this._transloco.translate(
+              'leagueAdmin.notifications.bannerDeleteFailed'
+            );
           this._notificationService.error(msg, { autoClose: false });
           this._cdr.markForCheck();
         },
@@ -117,7 +142,8 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     private _notificationService: NotificationService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
     this.associations$ = this._associationService.associations$;
     this._metaTitle.setTitle('Floorball Saisonmanager');
@@ -171,7 +197,9 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.log(error);
-        const errorMessage = 'Dieser Bereich steht dir nicht zur Verfügung.';
+        const errorMessage = this._transloco.translate(
+          'leagueAdmin.notifications.noAccess'
+        );
         this._notificationService.error(errorMessage);
         this._router.navigate(['/'], { state: { error: errorMessage } });
       },
@@ -250,44 +278,66 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     let msg = [];
 
     if (league.name.length < 1) {
-      msg.push('Es muss ein Liganame gesetzt werden');
+      msg.push(
+        this._transloco.translate('leagueAdmin.notifications.errNameRequired')
+      );
     }
 
     if (league.short_name.length < 1) {
-      msg.push('Es muss ein kurzer Liganame gesetzt werden');
+      msg.push(
+        this._transloco.translate(
+          'leagueAdmin.notifications.errShortNameRequired'
+        )
+      );
     }
 
     if (league.game_operation_id < 1) {
-      msg.push('Spielbetrieb falsch ausgewählt');
+      msg.push(
+        this._transloco.translate('leagueAdmin.notifications.errAssociation')
+      );
     }
 
     const regexpNum = new RegExp(/^\d+$/);
     if (!league.order_key || !regexpNum.test(league.order_key)) {
-      msg.push('Der Sortierschlüssel muss eine Zahl >= 0 sein');
+      msg.push(
+        this._transloco.translate('leagueAdmin.notifications.errOrderKey')
+      );
     }
 
     if (!league.periods || !(league.periods > 0)) {
-      msg.push('Der Anzahl Spielabschnitte muss eine Zahl >= 0 sein');
+      msg.push(
+        this._transloco.translate('leagueAdmin.notifications.errPeriods')
+      );
     }
 
     if (!league.period_length || !(league.period_length > 0)) {
-      msg.push('Die Abschnittsdauer muss eine Zahl >= 0 sein');
+      msg.push(
+        this._transloco.translate('leagueAdmin.notifications.errPeriodLength')
+      );
     }
 
     if (!league.overtime_length || !(league.overtime_length > 0)) {
-      msg.push('Die Verlängerungsdauer muss eine Zahl >= 0 sein');
+      msg.push(
+        this._transloco.translate('leagueAdmin.notifications.errOvertimeLength')
+      );
     }
 
     if (!league.age_group) {
-      msg.push('Es muss eine Altersklasse gesetzt werden');
+      msg.push(
+        this._transloco.translate('leagueAdmin.notifications.errAgeGroup')
+      );
     }
 
     if (league.league_modus === 'league' && !league.league_class_id) {
-      msg.push('Es muss eine Ligaklasse gesetzt werden');
+      msg.push(
+        this._transloco.translate('leagueAdmin.notifications.errLeagueClass')
+      );
     }
 
     if (league.legacy_league) {
-      msg.push('Eine alte Liga kann hier nicht geändert werden.');
+      msg.push(
+        this._transloco.translate('leagueAdmin.notifications.errLegacy')
+      );
     }
 
     return msg;
@@ -333,7 +383,11 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: (err) => {
-          const msg = err?.error?.errors?.join(', ') ?? 'Fehler beim Speichern';
+          const msg =
+            err?.error?.errors?.join(', ') ??
+            this._transloco.translate(
+              'leagueAdmin.notifications.qualificationSaveError'
+            );
           this._notificationService.error(msg, { autoClose: false });
         },
       });
@@ -352,9 +406,14 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: () => {
-          this._notificationService.error('Fehler beim Löschen', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate(
+              'leagueAdmin.notifications.qualificationDeleteError'
+            ),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }
@@ -368,13 +427,13 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     cup: '#a855f7',
   };
 
-  readonly qualificationTypeLabels: Record<string, string> = {
-    promotion: 'Aufstieg',
-    playoff: 'Playoffs',
-    playdown: 'Playdowns',
-    relegation: 'Abstieg',
-    championship: 'Deutsche Meisterschaft',
-    cup: 'Pokal',
+  readonly qualificationTypeLabelKeys: Record<string, string> = {
+    promotion: 'leagueAdmin.edit.typePromotion',
+    playoff: 'leagueAdmin.edit.typePlayoff',
+    playdown: 'leagueAdmin.edit.typePlaydown',
+    relegation: 'leagueAdmin.edit.typeRelegation',
+    championship: 'leagueAdmin.edit.typeChampionship',
+    cup: 'leagueAdmin.edit.typeCup',
   };
 
   qualificationColor(type: string): string {
@@ -382,12 +441,16 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   }
 
   qualificationTypeLabel(type: string): string {
-    return this.qualificationTypeLabels[type] ?? type;
+    const key = this.qualificationTypeLabelKeys[type];
+    return key ? this._transloco.translate(key) : type;
   }
 
   public docTypeLabel(docType: string): string {
-    const labels: Record<string, string> = { id_copy: 'Ausweiskopie' };
-    return labels[docType] ?? docType;
+    const labelKeys: Record<string, string> = {
+      id_copy: 'leagueAdmin.edit.idCopy',
+    };
+    const key = labelKeys[docType];
+    return key ? this._transloco.translate(key) : docType;
   }
 
   public addRequiredDocument(league: League): void {
@@ -411,13 +474,10 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   public submit(league: League) {
     this._leagueService.adminCreateLeagues(league).subscribe({
       next: () => {
-        const message = [
-          'Liga ',
-          league.name,
-          '(',
-          league.id,
-          ') erfolgreich geändert.',
-        ].join('');
+        const message = this._transloco.translate(
+          'leagueAdmin.notifications.leagueSaved',
+          { name: league.name, id: league.id }
+        );
         this._notificationService.success(message, {
           autoClose: true,
           keepAfterRouteChange: true,

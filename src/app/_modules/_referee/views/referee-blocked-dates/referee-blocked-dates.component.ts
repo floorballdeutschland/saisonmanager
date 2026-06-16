@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
 
 interface CalendarDay {
@@ -39,6 +40,16 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
   loading = true;
   saving = false;
 
+  readonly weekdayKeys = [
+    'refereeSelf.blockedDates.weekdayMon',
+    'refereeSelf.blockedDates.weekdayTue',
+    'refereeSelf.blockedDates.weekdayWed',
+    'refereeSelf.blockedDates.weekdayThu',
+    'refereeSelf.blockedDates.weekdayFri',
+    'refereeSelf.blockedDates.weekdaySat',
+    'refereeSelf.blockedDates.weekdaySun',
+  ];
+
   rangeStart: string | null = null;
   rangeHover: string | null = null;
 
@@ -51,6 +62,7 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
   constructor(
     private _refereeService: RefereeService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -74,7 +86,9 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
           this.loading = false;
           this._cdr.markForCheck();
           this._notificationService.error(
-            'Sperrtermine konnten nicht geladen werden.',
+            this._transloco.translate(
+              'refereeSelf.notifications.blockedDatesLoadError'
+            ),
             { autoClose: false, keepAfterRouteChange: false }
           );
         },
@@ -142,7 +156,10 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
           this.saving = false;
           this._cdr.markForCheck();
           const msg =
-            err?.error?.error || 'Fehler beim Entfernen des Sperrtermins.';
+            err?.error?.error ||
+            this._transloco.translate(
+              'refereeSelf.notifications.blockedDateDeleteError'
+            );
           this._notificationService.error(msg, {
             autoClose: false,
             keepAfterRouteChange: false,
@@ -166,7 +183,11 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.saving = false;
           this._cdr.markForCheck();
-          const msg = err?.error?.errors?.[0] || 'Fehler beim Speichern.';
+          const msg =
+            err?.error?.errors?.[0] ||
+            this._transloco.translate(
+              'refereeSelf.notifications.blockedDateSaveError'
+            );
           this._notificationService.error(msg, {
             autoClose: false,
             keepAfterRouteChange: false,
@@ -199,7 +220,13 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
           if (result.skipped.length) {
             this._notificationService.error(
-              `${result.created.length} gespeichert, ${result.skipped.length} übersprungen.`,
+              this._transloco.translate(
+                'refereeSelf.notifications.blockedDatesBulkPartial',
+                {
+                  created: result.created.length,
+                  skipped: result.skipped.length,
+                }
+              ),
               { autoClose: true, keepAfterRouteChange: false }
             );
           }
@@ -207,10 +234,15 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
         error: () => {
           this.saving = false;
           this._cdr.markForCheck();
-          this._notificationService.error('Fehler beim Speichern.', {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate(
+              'refereeSelf.notifications.blockedDateSaveError'
+            ),
+            {
+              autoClose: false,
+              keepAfterRouteChange: false,
+            }
+          );
         },
       });
   }
@@ -249,20 +281,9 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
       days.push(this._enrichDay(iso, d, past));
     }
 
-    const monthNames = [
-      'Januar',
-      'Februar',
-      'März',
-      'April',
-      'Mai',
-      'Juni',
-      'Juli',
-      'August',
-      'September',
-      'Oktober',
-      'November',
-      'Dezember',
-    ];
+    const monthNames = this._transloco.translate<string[]>(
+      'refereeSelf.blockedDates.months'
+    );
     return {
       label: `${monthNames[month]} ${year}`,
       year,

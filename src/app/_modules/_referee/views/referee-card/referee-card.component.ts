@@ -8,6 +8,7 @@ import {
 import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import QRCode from 'qrcode';
+import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
 import { RefereeProfile } from '@floorball/types';
 
@@ -33,10 +34,13 @@ export class RefereeCardComponent implements OnInit, OnDestroy {
   constructor(
     private _refereeService: RefereeService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef,
     private _title: Title
   ) {
-    this._title.setTitle('Mein Ausweis | Floorball Saisonmanager');
+    this._title.setTitle(
+      this._transloco.translate('refereeSelf.card.pageTitle')
+    );
   }
 
   ngOnInit(): void {
@@ -55,7 +59,9 @@ export class RefereeCardComponent implements OnInit, OnDestroy {
           this.loading = false;
           this._cdr.markForCheck();
           this._notificationService.error(
-            'Ausweis konnte nicht geladen werden.',
+            this._transloco.translate(
+              'refereeSelf.notifications.cardLoadError'
+            ),
             { autoClose: false, keepAfterRouteChange: false }
           );
         },

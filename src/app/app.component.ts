@@ -1,5 +1,6 @@
 import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
+import localeEn from '@angular/common/locales/en';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -23,6 +24,7 @@ import {
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 
 registerLocaleData(localeDe);
+registerLocaleData(localeEn);
 
 @Component({
   selector: 'fb-root',

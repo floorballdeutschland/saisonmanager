@@ -55,9 +55,10 @@
     }
   </div>
   <div class="grid gap-1">
-    <span class="font-bold text-[14px] leading-[12px]"
-      >{{ team?.name }} ({{ teamId }})</span
-    >
+    <span class="font-bold text-[14px] leading-[12px]">{{
+      "licenseAdmin.teamEntry.teamLabel"
+        | transloco: { team: team?.name, id: teamId }
+    }}</span>
     <span class="text-[12px]">{{ team?.league_name }}</span>
   </div>
 </li>

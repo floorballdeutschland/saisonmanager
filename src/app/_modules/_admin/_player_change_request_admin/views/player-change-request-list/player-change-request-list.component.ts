@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   NotificationService,
   PlayerChangeRequestService,
@@ -33,6 +34,7 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
     private _service: PlayerChangeRequestService,
     private _sessionService: SessionService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -79,17 +81,27 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
     this._service.approve(request.id).subscribe({
       next: (updated) => {
         this.replaceRequest(updated);
-        this._notificationService.success('Korrektur übernommen', {
-          autoClose: true,
-          keepAfterRouteChange: false,
-        });
+        this._notificationService.success(
+          this._transloco.translate(
+            'playerChangeRequest.notifications.approved'
+          ),
+          {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          }
+        );
         this._cdr.markForCheck();
       },
       error: () => {
-        this._notificationService.error('Genehmigung fehlgeschlagen.', {
-          autoClose: true,
-          keepAfterRouteChange: false,
-        });
+        this._notificationService.error(
+          this._transloco.translate(
+            'playerChangeRequest.notifications.approveError'
+          ),
+          {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          }
+        );
         this._cdr.markForCheck();
       },
     });
@@ -114,31 +126,45 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
         this.replaceRequest(updated);
         this.rejectingId = null;
         this.rejectionReason = '';
-        this._notificationService.success('Antrag abgelehnt', {
-          autoClose: true,
-          keepAfterRouteChange: false,
-        });
+        this._notificationService.success(
+          this._transloco.translate(
+            'playerChangeRequest.notifications.rejected'
+          ),
+          {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          }
+        );
         this._cdr.markForCheck();
       },
       error: () => {
-        this._notificationService.error('Ablehnung fehlgeschlagen.', {
-          autoClose: true,
-          keepAfterRouteChange: false,
-        });
+        this._notificationService.error(
+          this._transloco.translate(
+            'playerChangeRequest.notifications.rejectError'
+          ),
+          {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          }
+        );
         this._cdr.markForCheck();
       },
     });
   }
 
   correctionTypeLabel(type: string): string {
-    const labels: Record<string, string> = {
-      birthdate: 'Geburtsdatum',
-      first_name: 'Vorname',
-      last_name: 'Nachname',
-      names_swapped: 'Vor-/Nachname vertauscht',
-      nationality: 'Nationalität',
+    const keys: Record<string, string> = {
+      birthdate: 'birthdate',
+      first_name: 'firstName',
+      last_name: 'lastName',
+      names_swapped: 'namesSwapped',
+      nationality: 'nationality',
     };
-    return labels[type] ?? type;
+    const key = keys[type];
+    if (!key) return type;
+    return this._transloco.translate(
+      `playerChangeRequest.correctionTypes.${key}`
+    );
   }
 
   private replaceRequest(updated: PlayerChangeRequest): void {

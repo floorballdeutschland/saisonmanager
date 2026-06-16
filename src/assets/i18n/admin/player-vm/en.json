@@ -1,0 +1,40 @@
+{
+  "index": {
+    "title": "Players",
+    "loading": "Loading players…",
+    "intro": "Players who currently no longer take part in match operations can be deactivated. Deactivated players no longer appear in the dropdown for licence applications and keep the club overview clearer. Players can be reactivated at a later point in time.",
+    "countSingular": "player",
+    "countPlural": "players",
+    "deactivatedCountShow": "show {{ count }} deactivated",
+    "deactivatedCountHide": "hide {{ count }} deactivated",
+    "colName": "Name",
+    "colBirthdate": "Date of birth",
+    "colGender": "Gender",
+    "colStatus": "Status",
+    "genderMale": "m",
+    "genderFemale": "f",
+    "genderDiverse": "d",
+    "statusActive": "active",
+    "statusDeactivated": "deactivated {{ date }}",
+    "licenseLicensed": "Licensed",
+    "licenseRequested": "Requested",
+    "licenseNone": "No licence",
+    "deactivate": "Deactivate",
+    "confirmDeactivatePrompt": "Really deactivate? Please provide a reason:",
+    "reasonChoose": "Choose a reason…",
+    "reasonClubLeave": "Left the club",
+    "reasonCareerEnd": "End of career",
+    "reasonTemporaryBreak": "Temporary break",
+    "reasonOther": "Other",
+    "reasonOtherPlaceholder": "Short reason…",
+    "confirmDeactivateYes": "Yes, deactivate",
+    "cancel": "Cancel",
+    "reactivate": "Reactivate",
+    "empty": "No players found for your club."
+  },
+  "notifications": {
+    "deactivateError": "Deactivation failed.",
+    "reactivateError": "Reactivation failed.",
+    "reasonOtherPrefix": "Other: {{ detail }}"
+  }
+}

@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   NotificationService,
   RefereeService,
@@ -63,6 +64,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     private _refereeService: RefereeService,
     private _notificationService: NotificationService,
     private _settingsService: SettingsService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -264,15 +266,20 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
         row.game.assignment_status = saved.status;
         state.saving = false;
         this._cdr.markForCheck();
-        this._notificationService.success('Ansetzung gespeichert.', {
-          autoClose: true,
-          keepAfterRouteChange: false,
-        });
+        this._notificationService.success(
+          this._transloco.translate('assignmentAdmin.notifications.saved'),
+          {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          }
+        );
       },
       error: (err) => {
         state.saving = false;
         this._cdr.markForCheck();
-        const msg = err?.error?.errors?.[0] || 'Fehler beim Speichern.';
+        const msg =
+          err?.error?.errors?.[0] ||
+          this._transloco.translate('assignmentAdmin.notifications.saveError');
         this._notificationService.error(msg, {
           autoClose: false,
           keepAfterRouteChange: false,
@@ -296,18 +303,26 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
           row.assignment = updated;
           state.notifying = false;
           this._cdr.markForCheck();
-          this._notificationService.success('Benachrichtigung gesendet.', {
-            autoClose: true,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.success(
+            this._transloco.translate('assignmentAdmin.notifications.notified'),
+            {
+              autoClose: true,
+              keepAfterRouteChange: false,
+            }
+          );
         },
         error: () => {
           state.notifying = false;
           this._cdr.markForCheck();
-          this._notificationService.error('Fehler beim Senden.', {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate(
+              'assignmentAdmin.notifications.notifyError'
+            ),
+            {
+              autoClose: false,
+              keepAfterRouteChange: false,
+            }
+          );
         },
       });
   }
@@ -328,25 +343,38 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
           row.game.assignment_status = saved.status;
           state.publishing = false;
           this._cdr.markForCheck();
-          this._notificationService.success('Ansetzung veröffentlicht.', {
-            autoClose: true,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.success(
+            this._transloco.translate(
+              'assignmentAdmin.notifications.published'
+            ),
+            {
+              autoClose: true,
+              keepAfterRouteChange: false,
+            }
+          );
         },
         error: () => {
           state.publishing = false;
           this._cdr.markForCheck();
-          this._notificationService.error('Fehler beim Veröffentlichen.', {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate(
+              'assignmentAdmin.notifications.publishError'
+            ),
+            {
+              autoClose: false,
+              keepAfterRouteChange: false,
+            }
+          );
         },
       });
   }
 
   assignmentStatusLabel(status?: string | null): string {
-    if (!status) return 'Offen';
-    return status === 'published' ? 'Veröffentlicht' : 'Vorläufig';
+    if (!status)
+      return this._transloco.translate('assignmentAdmin.index.statusOpen');
+    return status === 'published'
+      ? this._transloco.translate('assignmentAdmin.index.statusPublished')
+      : this._transloco.translate('assignmentAdmin.index.statusDraft');
   }
 
   assignmentStatusClass(status?: string | null): string {
@@ -390,7 +418,9 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
           this.loading = false;
           this._cdr.markForCheck();
           this._notificationService.error(
-            'Daten konnten nicht geladen werden.',
+            this._transloco.translate(
+              'assignmentAdmin.notifications.loadError'
+            ),
             { autoClose: false, keepAfterRouteChange: false }
           );
         },

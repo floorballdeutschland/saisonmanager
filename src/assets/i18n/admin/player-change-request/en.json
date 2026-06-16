@@ -1,0 +1,33 @@
+{
+  "title": "Player data correction requests",
+  "loading": "Loading requests…",
+  "empty": "No requests available.",
+  "colPlayer": "Player",
+  "colClub": "Club",
+  "colCorrection": "Correction",
+  "colNewValue": "New value",
+  "colStatus": "Status",
+  "colDate": "Date",
+  "colAction": "Action",
+  "statusPending": "Pending",
+  "statusApproved": "Approved",
+  "statusRejected": "Rejected",
+  "approve": "Approve",
+  "reject": "Reject",
+  "rejectReasonPlaceholder": "Reason",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "correctionTypes": {
+    "birthdate": "Date of birth",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "namesSwapped": "First/last name swapped",
+    "nationality": "Nationality"
+  },
+  "notifications": {
+    "approved": "Correction applied",
+    "approveError": "Approval failed.",
+    "rejected": "Request rejected",
+    "rejectError": "Rejection failed."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Email log",
+  "testHeading": "Send test email",
+  "recipientLabel": "Recipient",
+  "recipientPlaceholder": "recipient@example.com",
+  "sending": "Sending…",
+  "send": "Send",
+  "logHeading": "Sent emails (last 30 days)",
+  "loading": "Loading email log…",
+  "count": "{{ count }} entries",
+  "colDateTime": "Date/time",
+  "colRecipient": "Recipient",
+  "colCc": "CC",
+  "colSubject": "Subject",
+  "colType": "Type",
+  "empty": "No emails sent in the last 30 days.",
+  "notifications": {
+    "loadError": "Email log could not be loaded.",
+    "testSent": "Test email sent to {{ recipient }}.",
+    "testErrorDetail": "Test email could not be sent: {{ detail }}",
+    "testError": "Test email could not be sent."
+  }
+}

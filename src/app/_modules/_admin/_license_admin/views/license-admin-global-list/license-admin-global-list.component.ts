@@ -9,6 +9,7 @@ import { AdminLicenseEntry, Season } from '@floorball/types';
 import { AssociationService, LeagueService } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 
 interface FilterOption {
   value: string | number | boolean | null;
@@ -38,12 +39,12 @@ const AGE_GROUPS: string[] = [
   'Damen',
 ];
 
-const LEAGUE_CLASSES: { value: string; label: string }[] = [
-  { value: '1fbl', label: '1. Floorball Bundesliga' },
-  { value: '2fbl', label: '2. Floorball Bundesliga' },
-  { value: 'rl', label: 'Regionalliga' },
-  { value: 'vl', label: 'Verbandsliga' },
-  { value: 'll', label: 'Landesliga' },
+const LEAGUE_CLASS_KEYS: { value: string; labelKey: string }[] = [
+  { value: '1fbl', labelKey: 'licenseAdmin.globalList.leagueClass1fbl' },
+  { value: '2fbl', labelKey: 'licenseAdmin.globalList.leagueClass2fbl' },
+  { value: 'rl', labelKey: 'licenseAdmin.globalList.leagueClassRl' },
+  { value: 'vl', labelKey: 'licenseAdmin.globalList.leagueClassVl' },
+  { value: 'll', labelKey: 'licenseAdmin.globalList.leagueClassLl' },
 ];
 
 @Component({
@@ -62,27 +63,11 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
 
   gameOperationOptions: FilterOption[] = [];
   leagueOptions: FilterOption[] = [];
-  ageGroupOptions: FilterOption[] = [
-    { value: null, label: 'Alle Altersklassen' },
-    ...AGE_GROUPS.map((g) => ({ value: g, label: g })),
-  ];
-  leagueClassOptions: FilterOption[] = [
-    { value: null, label: 'Alle Ligaklassen' },
-    ...LEAGUE_CLASSES.map((c) => ({ value: c.value, label: c.label })),
-  ];
+  ageGroupOptions: FilterOption[] = [];
+  leagueClassOptions: FilterOption[] = [];
   seasonOptions: FilterOption[] = [];
-  statusOptions: FilterOption[] = [
-    { value: null, label: 'Alle Status' },
-    { value: 1, label: 'Erteilt' },
-    { value: 2, label: 'Beantragt' },
-    { value: 3, label: 'Abgelehnt' },
-    { value: 8, label: 'Zurückgezogen' },
-  ];
-  fieldSizeOptions: FilterOption[] = [
-    { value: null, label: 'Alle Spielformen' },
-    { value: 'GF', label: 'Großfeld' },
-    { value: 'KF', label: 'Kleinfeld' },
-  ];
+  statusOptions: FilterOption[] = [];
+  fieldSizeOptions: FilterOption[] = [];
 
   search = '';
   clubSearch = '';
@@ -105,9 +90,38 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     private _leagueService: LeagueService,
     private _associationService: AssociationService,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
-    this._metaTitle.setTitle('Floorball Saisonmanager Lizenzverwaltung');
+    const t = (key: string) => this._transloco.translate(key);
+    this._metaTitle.setTitle(t('licenseAdmin.globalList.metaTitle'));
+
+    this.ageGroupOptions = [
+      { value: null, label: t('licenseAdmin.globalList.filterAllAgeGroups') },
+      ...AGE_GROUPS.map((g) => ({ value: g, label: g })),
+    ];
+    this.leagueClassOptions = [
+      {
+        value: null,
+        label: t('licenseAdmin.globalList.filterAllLeagueClasses'),
+      },
+      ...LEAGUE_CLASS_KEYS.map((c) => ({
+        value: c.value,
+        label: t(c.labelKey),
+      })),
+    ];
+    this.statusOptions = [
+      { value: null, label: t('licenseAdmin.globalList.filterAllStatuses') },
+      { value: 1, label: t('licenseAdmin.globalList.statusGranted') },
+      { value: 2, label: t('licenseAdmin.globalList.statusRequested') },
+      { value: 3, label: t('licenseAdmin.globalList.statusRejected') },
+      { value: 8, label: t('licenseAdmin.globalList.statusWithdrawn') },
+    ];
+    this.fieldSizeOptions = [
+      { value: null, label: t('licenseAdmin.globalList.filterAllFieldSizes') },
+      { value: 'GF', label: t('licenseAdmin.globalList.fieldSizeLarge') },
+      { value: 'KF', label: t('licenseAdmin.globalList.fieldSizeSmall') },
+    ];
   }
 
   ngOnInit(): void {
@@ -232,19 +246,20 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   }
 
   public exportCsv(): void {
+    const t = (key: string) => this._transloco.translate(key);
     const headers = [
-      'Nachname',
-      'Vorname',
-      'Geburtsjahr',
-      'Verein',
-      'Team',
-      'Spielbetrieb',
-      'Liga',
-      'Status',
-      'Lizenztyp',
-      'Express',
-      'Beantragt',
-      'Erteilt',
+      t('licenseAdmin.globalList.csvLastName'),
+      t('licenseAdmin.globalList.csvFirstName'),
+      t('licenseAdmin.globalList.csvBirthYear'),
+      t('licenseAdmin.globalList.csvClub'),
+      t('licenseAdmin.globalList.csvTeam'),
+      t('licenseAdmin.globalList.csvGameOperation'),
+      t('licenseAdmin.globalList.csvLeague'),
+      t('licenseAdmin.globalList.csvStatus'),
+      t('licenseAdmin.globalList.csvLicenseType'),
+      t('licenseAdmin.globalList.csvExpress'),
+      t('licenseAdmin.globalList.csvRequested'),
+      t('licenseAdmin.globalList.csvApproved'),
     ];
     const rows = this.filteredEntries.map((e) => [
       e.player_last_name,
@@ -256,11 +271,13 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       e.league_name,
       e.license_status,
       e.is_zweitlizenz
-        ? 'Zweitlizenz'
+        ? t('licenseAdmin.globalList.csvZweitlizenz')
         : e.license_type === 'primary'
-          ? 'Erstlizenz'
-          : 'Zusatzlizenz',
-      e.express ? 'Ja' : 'Nein',
+          ? t('licenseAdmin.globalList.csvErstlizenz')
+          : t('licenseAdmin.globalList.csvZusatzlizenz'),
+      e.express
+        ? t('licenseAdmin.globalList.csvYes')
+        : t('licenseAdmin.globalList.csvNo'),
       e.requested_at ? this._formatDate(e.requested_at) : '',
       e.approved_at ? this._formatDate(e.approved_at) : '',
     ]);
@@ -307,7 +324,11 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   }
 
   public docTypeLabel(docType: string): string {
-    const labels: Record<string, string> = { id_copy: 'Ausweis' };
+    const labels: Record<string, string> = {
+      id_copy: this._transloco.translate(
+        'licenseAdmin.globalList.docLabelIdCopy'
+      ),
+    };
     return labels[docType] ?? docType;
   }
 
@@ -351,7 +372,12 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     }
 
     this.gameOperationOptions = [
-      { value: null, label: 'Alle Spielbetriebe' },
+      {
+        value: null,
+        label: this._transloco.translate(
+          'licenseAdmin.globalList.filterAllGameOperations'
+        ),
+      },
       ...Array.from(goMap.entries()).map(([id, name]) => ({
         value: id,
         label: name,
@@ -371,7 +397,13 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     const current = currentIdx >= 0 ? sorted[currentIdx] : sorted[0];
     const previous = currentIdx >= 0 ? sorted[currentIdx + 1] : sorted[1];
     const options: FilterOption[] = [
-      { value: current.id, label: `${current.name} (aktuell)` },
+      {
+        value: current.id,
+        label: this._transloco.translate(
+          'licenseAdmin.globalList.seasonCurrentSuffix',
+          { name: current.name }
+        ),
+      },
     ];
     if (previous) {
       options.push({ value: previous.id, label: previous.name });
@@ -390,7 +422,12 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       }
     }
     this.leagueOptions = [
-      { value: null, label: 'Alle Ligen' },
+      {
+        value: null,
+        label: this._transloco.translate(
+          'licenseAdmin.globalList.filterAllLeagues'
+        ),
+      },
       ...Array.from(leagueMap.entries()).map(([id, name]) => ({
         value: id,
         label: name,

@@ -1,13 +1,15 @@
 <div class="p-4 lg:p-8">
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold">Transferanträge</h1>
+    <h1 class="text-2xl font-bold">
+      {{ "transferRequestAdmin.list.title" | transloco }}
+    </h1>
     <div class="flex items-center gap-2">
       @if (isSbk && !loading && approvedRequests.length > 0) {
         <button
           (click)="exportCsv()"
           class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
         >
-          CSV exportieren
+          {{ "transferRequestAdmin.list.exportCsv" | transloco }}
         </button>
       }
       @if (isSbk) {
@@ -15,7 +17,7 @@
           (click)="directAssign()"
           class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
         >
-          Direktzuweisung
+          {{ "transferRequestAdmin.list.directAssign" | transloco }}
         </button>
       }
       @if (canInitiate) {
@@ -23,14 +25,16 @@
           (click)="initiateNew()"
           class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors"
         >
-          Neuer Transferantrag
+          {{ "transferRequestAdmin.list.newRequest" | transloco }}
         </button>
       }
     </div>
   </div>
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8">Lade Transferanträge…</div>
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "transferRequestAdmin.list.loading" | transloco }}
+    </div>
   }
 
   <!-- SBK-Ansicht: nur erfolgreich abgeschlossene Transfers -->
@@ -41,11 +45,21 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-fb-gray-700 text-left">
-                <th class="py-2 pr-4 font-bold">Spieler</th>
-                <th class="py-2 pr-4 font-bold">Von</th>
-                <th class="py-2 pr-4 font-bold">Nach</th>
-                <th class="py-2 pr-4 font-bold">Typ</th>
-                <th class="py-2 pr-4 font-bold">Genehmigt am</th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colPlayer" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colFrom" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colTo" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colType" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colApprovedAt" | transloco }}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -78,7 +92,7 @@
     }
     @if (approvedRequests.length === 0) {
       <p class="text-fb-gray-500 text-sm py-8 text-center">
-        Keine abgeschlossenen Transfers vorhanden.
+        {{ "transferRequestAdmin.list.noCompletedTransfers" | transloco }}
       </p>
     }
   }
@@ -87,17 +101,31 @@
   @if (!loading && !isSbk) {
     @if (pendingRequests.length > 0) {
       <div class="mb-8">
-        <h2 class="text-base font-semibold mb-3">Offene Anträge</h2>
+        <h2 class="text-base font-semibold mb-3">
+          {{ "transferRequestAdmin.list.openRequests" | transloco }}
+        </h2>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-fb-gray-700 text-left">
-                <th class="py-2 pr-4 font-bold">Spieler</th>
-                <th class="py-2 pr-4 font-bold">Von</th>
-                <th class="py-2 pr-4 font-bold">Nach</th>
-                <th class="py-2 pr-4 font-bold">Typ</th>
-                <th class="py-2 pr-4 font-bold">Status</th>
-                <th class="py-2 pr-4 font-bold">Datum</th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colPlayer" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colFrom" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colTo" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colType" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colStatus" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colDate" | transloco }}
+                </th>
                 <th class="py-2"></th>
               </tr>
             </thead>
@@ -134,7 +162,12 @@
                         [disabled]="withdrawingId === r.id"
                         class="text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
                       >
-                        {{ withdrawingId === r.id ? "…" : "Zurückziehen" }}
+                        {{
+                          withdrawingId === r.id
+                            ? ("transferRequestAdmin.list.withdrawing"
+                              | transloco)
+                            : ("transferRequestAdmin.list.withdraw" | transloco)
+                        }}
                       </button>
                     }
                   </td>
@@ -147,17 +180,31 @@
     }
     @if (completedRequests.length > 0) {
       <div>
-        <h2 class="text-base font-semibold mb-3">Abgeschlossene Anträge</h2>
+        <h2 class="text-base font-semibold mb-3">
+          {{ "transferRequestAdmin.list.completedRequests" | transloco }}
+        </h2>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-fb-gray-700 text-left">
-                <th class="py-2 pr-4 font-bold">Spieler</th>
-                <th class="py-2 pr-4 font-bold">Von</th>
-                <th class="py-2 pr-4 font-bold">Nach</th>
-                <th class="py-2 pr-4 font-bold">Typ</th>
-                <th class="py-2 pr-4 font-bold">Status</th>
-                <th class="py-2 pr-4 font-bold">Datum</th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colPlayer" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colFrom" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colTo" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colType" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colStatus" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "transferRequestAdmin.list.colDate" | transloco }}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -195,7 +242,7 @@
     }
     @if (requests.length === 0) {
       <p class="text-fb-gray-500 text-sm py-8 text-center">
-        Keine Transferanträge vorhanden.
+        {{ "transferRequestAdmin.list.noRequests" | transloco }}
       </p>
     }
   }

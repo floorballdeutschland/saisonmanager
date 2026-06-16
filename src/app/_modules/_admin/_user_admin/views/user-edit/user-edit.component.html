@@ -3,13 +3,15 @@
     <a
       [routerLink]="['/', 'verwaltung', 'benutzer']"
       class="text-fb-gray-500 hover:text-black text-sm"
-      >← Zurück</a
+      >{{ "userAdmin.edit.back" | transloco }}</a
     >
-    <h1 class="text-2xl font-bold">Benutzer bearbeiten</h1>
+    <h1 class="text-2xl font-bold">{{ "userAdmin.edit.title" | transloco }}</h1>
   </div>
 
   @if (!user) {
-    <div class="text-fb-gray-500 text-sm py-8 text-center">Lade…</div>
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      {{ "userAdmin.edit.loading" | transloco }}
+    </div>
   }
 
   @if (user) {
@@ -18,43 +20,55 @@
       class="mb-6 border border-fb-gray-700 rounded-[5px] p-4 flex flex-col gap-2 text-sm"
     >
       <div class="flex gap-2">
-        <span class="text-fb-gray-500 w-32">Benutzername</span>
+        <span class="text-fb-gray-500 w-32">{{
+          "userAdmin.edit.username" | transloco
+        }}</span>
         <span class="font-medium">{{ user.username }}</span>
       </div>
       <div class="flex gap-2">
-        <span class="text-fb-gray-500 w-32">Name</span>
+        <span class="text-fb-gray-500 w-32">{{
+          "userAdmin.edit.name" | transloco
+        }}</span>
         <span>{{ user.name || "–" }}</span>
       </div>
       <div class="flex gap-2">
-        <span class="text-fb-gray-500 w-32">Letzter Login</span>
+        <span class="text-fb-gray-500 w-32">{{
+          "userAdmin.edit.lastLogin" | transloco
+        }}</span>
         <span>{{
           user.last_login_at
             ? (user.last_login_at | date: "dd.MM.yyyy HH:mm")
-            : "Noch nie"
+            : ("userAdmin.edit.neverLoggedIn" | transloco)
         }}</span>
       </div>
       <div class="flex gap-2">
-        <span class="text-fb-gray-500 w-32">Erstellt</span>
+        <span class="text-fb-gray-500 w-32">{{
+          "userAdmin.edit.createdAt" | transloco
+        }}</span>
         <span>{{ user.created_at | date: "dd.MM.yyyy" }}</span>
       </div>
       <div class="flex gap-2">
-        <span class="text-fb-gray-500 w-32">Aktualisiert</span>
+        <span class="text-fb-gray-500 w-32">{{
+          "userAdmin.edit.updatedAt" | transloco
+        }}</span>
         <span>{{ user.updated_at | date: "dd.MM.yyyy" }}</span>
       </div>
     </div>
     <!-- Bearbeitbares Formular -->
     <form (ngSubmit)="submit()" class="flex flex-col gap-4 mb-8">
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">E-Mail</label>
+        <label class="text-sm font-bold">{{
+          "userAdmin.edit.email" | transloco
+        }}</label>
         <input
           type="email"
           [(ngModel)]="email"
           name="email"
-          placeholder="benutzer@beispiel.de"
+          [placeholder]="'userAdmin.edit.emailPlaceholder' | transloco"
           class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
         />
         <span class="text-xs text-fb-gray-400">
-          Änderungen erfordern eine E-Mail-Bestätigung.
+          {{ "userAdmin.edit.emailHint" | transloco }}
         </span>
       </div>
       @if (isAdminOrSbk) {
@@ -65,7 +79,9 @@
             name="active"
             class="h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
-          <span class="text-sm font-bold">Benutzer aktiv</span>
+          <span class="text-sm font-bold">{{
+            "userAdmin.edit.userActive" | transloco
+          }}</span>
         </label>
       }
       <div class="flex items-center gap-3 mt-2">
@@ -74,13 +90,16 @@
           [disabled]="saving"
           class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
         >
-          {{ saving ? "Speichern…" : "Speichern" }}
+          {{
+            (saving ? "userAdmin.edit.saving" : "userAdmin.edit.save")
+              | transloco
+          }}
         </button>
         <a
           [routerLink]="['/', 'verwaltung', 'benutzer']"
           class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
         >
-          Abbrechen
+          {{ "userAdmin.edit.cancel" | transloco }}
         </a>
       </div>
     </form>
@@ -88,12 +107,15 @@
     @if (canChangeRole) {
       <div class="border-t border-fb-gray-200 pt-6 mb-6">
         <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-          Rolle
+          {{ "userAdmin.edit.role" | transloco }}
         </div>
         <p class="text-sm mb-3">
-          Aktuelle Rolle:
+          {{ "userAdmin.edit.currentRole" | transloco }}
           <strong>{{
-            currentRoleId === 4 ? "Vereinsmanager (VM)" : "Teammanager (TM)"
+            (currentRoleId === 4
+              ? "userAdmin.edit.roleVm"
+              : "userAdmin.edit.roleTm"
+            ) | transloco
           }}</strong>
         </p>
         <div class="flex gap-2">
@@ -103,7 +125,7 @@
               (click)="changeRole(4)"
               class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500"
             >
-              Auf VM upgraden
+              {{ "userAdmin.edit.upgradeToVm" | transloco }}
             </button>
           }
           @if (currentRoleId === 4) {
@@ -112,7 +134,7 @@
               (click)="changeRole(5)"
               class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
             >
-              Auf TM downgraden
+              {{ "userAdmin.edit.downgradeToTm" | transloco }}
             </button>
           }
         </div>
@@ -122,16 +144,18 @@
     @if (showGoAssignment) {
       <div class="border-t border-fb-gray-200 pt-6 mb-6">
         <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-          Verbund-Zuweisung
+          {{ "userAdmin.edit.goAssignment" | transloco }}
         </div>
         <p class="text-sm text-fb-gray-500 mb-3">
-          Welcher Spielbetrieb diesem Benutzer zugeteilt ist.
+          {{ "userAdmin.edit.goAssignmentHint" | transloco }}
         </p>
         <select
           [(ngModel)]="selectedGoId"
           class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm w-full mb-3"
         >
-          <option [ngValue]="null">– Spielbetrieb auswählen –</option>
+          <option [ngValue]="null">
+            {{ "userAdmin.edit.selectGameOperation" | transloco }}
+          </option>
           @for (go of gameOperations; track go) {
             <option [ngValue]="go.id">
               {{ go.name }}
@@ -144,7 +168,12 @@
           [disabled]="savingAssignment || selectedGoId === null"
           class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
         >
-          {{ savingAssignment ? "Speichern…" : "Verbund speichern" }}
+          {{
+            (savingAssignment
+              ? "userAdmin.edit.saving"
+              : "userAdmin.edit.saveGo"
+            ) | transloco
+          }}
         </button>
       </div>
     }
@@ -152,10 +181,10 @@
     @if (showClubAssignment) {
       <div class="border-t border-fb-gray-200 pt-6 mb-6">
         <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-          Verein-Zuweisung
+          {{ "userAdmin.edit.clubAssignment" | transloco }}
         </div>
         <p class="text-sm text-fb-gray-500 mb-3">
-          Welchem Verein dieser Benutzer zugeordnet ist.
+          {{ "userAdmin.edit.clubAssignmentHint" | transloco }}
         </p>
         @if (isVm) {
           <span class="text-sm">{{ selectedClubName }}</span>
@@ -164,7 +193,9 @@
             [(ngModel)]="selectedClubId"
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm w-full mb-3"
           >
-            <option [ngValue]="null">– Verein auswählen –</option>
+            <option [ngValue]="null">
+              {{ "userAdmin.edit.selectClub" | transloco }}
+            </option>
             @for (c of clubsWithTeams; track c) {
               <option [ngValue]="c.id">
                 {{ c.name }}
@@ -177,7 +208,12 @@
             [disabled]="savingAssignment || selectedClubId === null"
             class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
           >
-            {{ savingAssignment ? "Speichern…" : "Verein speichern" }}
+            {{
+              (savingAssignment
+                ? "userAdmin.edit.saving"
+                : "userAdmin.edit.saveClub"
+              ) | transloco
+            }}
           </button>
         }
       </div>
@@ -186,10 +222,10 @@
     @if (showTeamAssignment) {
       <div class="border-t border-fb-gray-200 pt-6 mb-6">
         <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-          Team-Zuweisung
+          {{ "userAdmin.edit.teamAssignment" | transloco }}
         </div>
         <p class="text-sm text-fb-gray-500 mb-3">
-          Wähle die Teams, für die dieser TM zuständig ist.
+          {{ "userAdmin.edit.teamAssignmentHint" | transloco }}
         </p>
         <div class="flex flex-col gap-1 mb-4">
           @for (team of availableTeams; track team) {
@@ -215,18 +251,20 @@
           [disabled]="savingTeams"
           class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
         >
-          {{ savingTeams ? "Speichern…" : "Teams speichern" }}
+          {{
+            (savingTeams ? "userAdmin.edit.saving" : "userAdmin.edit.saveTeams")
+              | transloco
+          }}
         </button>
       </div>
     }
     <!-- Passwort-Reset -->
     <div class="border-t border-fb-gray-200 pt-6">
       <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-        Passwort
+        {{ "userAdmin.edit.password" | transloco }}
       </div>
       <p class="text-sm text-fb-gray-500 mb-3">
-        Sendet dem Benutzer eine E-Mail mit einem Reset-Link. Das Passwort wird
-        nicht direkt geändert.
+        {{ "userAdmin.edit.passwordHint" | transloco }}
       </p>
       <button
         type="button"
@@ -234,11 +272,16 @@
         [disabled]="sendingReset || !user.email"
         class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
       >
-        {{ sendingReset ? "Sende…" : "Passwort-Reset-Mail senden" }}
+        {{
+          (sendingReset
+            ? "userAdmin.edit.sending"
+            : "userAdmin.edit.sendResetMail"
+          ) | transloco
+        }}
       </button>
       @if (!user.email) {
         <p class="text-xs text-red-500 mt-1">
-          Kein Versand möglich – keine E-Mail-Adresse hinterlegt.
+          {{ "userAdmin.edit.noEmailHint" | transloco }}
         </p>
       }
     </div>
@@ -246,20 +289,18 @@
     @if (canDelete) {
       <div class="border-t border-fb-gray-200 pt-6">
         <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-          Benutzer löschen
+          {{ "userAdmin.edit.deleteHeading" | transloco }}
         </div>
         <p class="text-sm text-fb-gray-500 mb-3">
-          Löscht das Konto dauerhaft. Diese Aktion kann nicht rückgängig gemacht
-          werden.
+          {{ "userAdmin.edit.deleteHint" | transloco }}
         </p>
         <fb-confirmation
-          title="Benutzer löschen"
+          [title]="'userAdmin.edit.deleteDialogTitle' | transloco"
           [content]="
-            'Benutzerkonto &bdquo;' +
-            user.username +
-            '&ldquo; wirklich dauerhaft löschen?'
+            'userAdmin.edit.deleteDialogContent'
+              | transloco: { username: user.username }
           "
-          submitButtonTitle="Endgültig löschen"
+          [submitButtonTitle]="'userAdmin.edit.deleteDialogSubmit' | transloco"
           buttonVariant="error"
           (handleSubmit)="deleteUser()"
         >
@@ -268,7 +309,12 @@
             [disabled]="deleting"
             class="px-4 py-2 text-sm font-bold text-red-600 border border-red-300 rounded-[5px] hover:border-red-500 disabled:opacity-50"
           >
-            {{ deleting ? "Lösche…" : "Benutzer löschen" }}
+            {{
+              (deleting
+                ? "userAdmin.edit.deleting"
+                : "userAdmin.edit.deleteButton"
+              ) | transloco
+            }}
           </button>
         </fb-confirmation>
       </div>

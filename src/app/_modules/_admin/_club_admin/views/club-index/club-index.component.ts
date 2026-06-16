@@ -14,6 +14,7 @@ import { GameOperation, GameOperationWithClubs } from '@floorball/types';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   templateUrl: './club-index.component.html',
@@ -32,7 +33,8 @@ export class ClubIndexComponent implements OnInit {
     private _clubService: ClubService,
     private _sessionService: SessionService,
     private _notificationService: NotificationService,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
     this.associations$ = this._associationService.associations$;
     this._metaTitle.setTitle('Floorball Saisonmanager');
@@ -59,12 +61,14 @@ export class ClubIndexComponent implements OnInit {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this._notificationService.success('Verein wurde dauerhaft gelöscht.');
+          this._notificationService.success(
+            this._transloco.translate('clubAdmin.notifications.deleteSuccess')
+          );
           this.loadClubs();
         },
         error: () => {
           this._notificationService.error(
-            'Verein konnte nicht gelöscht werden.'
+            this._transloco.translate('clubAdmin.notifications.deleteError')
           );
         },
       });

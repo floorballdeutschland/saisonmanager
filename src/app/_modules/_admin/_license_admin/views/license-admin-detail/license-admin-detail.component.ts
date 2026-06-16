@@ -13,6 +13,7 @@ import {
   TeamWithPlayers,
 } from '@floorball/types';
 import { NotificationService, PlayerService } from '@floorball/core';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'fb-license-admin-detail',
@@ -51,7 +52,8 @@ export class LicenseAdminDetailComponent implements OnInit {
 
   constructor(
     private _playerService: PlayerService,
-    private _notificationService: NotificationService
+    private _notificationService: NotificationService,
+    private _transloco: TranslocoService
   ) {}
 
   ngOnInit(): void {
@@ -67,7 +69,10 @@ export class LicenseAdminDetailComponent implements OnInit {
   }
 
   public getClubNameById(id: number): string {
-    return this.allClubs.find((club) => club.id === id)?.name || '(unbekannt)';
+    return (
+      this.allClubs.find((club) => club.id === id)?.name ||
+      this._transloco.translate('licenseAdmin.detail.unknown')
+    );
   }
 
   public calculateAge(dateString: string): number {
@@ -110,13 +115,14 @@ export class LicenseAdminDetailComponent implements OnInit {
           this.handledPlayer.emit(player.id);
           this.hidePlayer[player.id] = true;
           this._notificationService.success(
-            'Lizenz für Spieler ' +
-              player.first_name +
-              ' ' +
-              player.last_name +
-              ' (' +
-              player.id +
-              ') erteilt',
+            this._transloco.translate(
+              'licenseAdmin.notifications.licenseGranted',
+              {
+                firstName: player.first_name,
+                lastName: player.last_name,
+                id: player.id,
+              }
+            ),
             {
               autoClose: true,
               keepAfterRouteChange: false,
@@ -136,13 +142,14 @@ export class LicenseAdminDetailComponent implements OnInit {
           this.handledPlayer.emit(player.id);
           this.hidePlayer[player.id] = true;
           this._notificationService.success(
-            'Lizenzantrag für Spieler ' +
-              player.first_name +
-              ' ' +
-              player.last_name +
-              ' (' +
-              player.id +
-              ') abgelehnt',
+            this._transloco.translate(
+              'licenseAdmin.notifications.requestRejected',
+              {
+                firstName: player.first_name,
+                lastName: player.last_name,
+                id: player.id,
+              }
+            ),
             {
               autoClose: true,
               keepAfterRouteChange: false,
@@ -171,13 +178,14 @@ export class LicenseAdminDetailComponent implements OnInit {
           this.handledPlayer.emit(player.id);
           this.hidePlayer[player.id] = true;
           this._notificationService.success(
-            'Lizenz für Spieler ' +
-              player.first_name +
-              ' ' +
-              player.last_name +
-              ' (' +
-              player.id +
-              ') auf "beantragt" zurückgesetzt',
+            this._transloco.translate(
+              'licenseAdmin.notifications.licenseReset',
+              {
+                firstName: player.first_name,
+                lastName: player.last_name,
+                id: player.id,
+              }
+            ),
             {
               autoClose: true,
               keepAfterRouteChange: false,

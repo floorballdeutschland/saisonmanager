@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitPlayerModule } from '@floorball/uikit/player';
@@ -30,6 +31,13 @@ import * as Views from './views';
     Views.LicenseAdminDetailComponent,
     Views.LicenseUserLeagueDetailComponent,
     Views.LicenseUserLeagueIndexComponent,
+  ],
+  providers: [
+    {
+      provide: TRANSLOCO_SCOPE,
+      useValue: { scope: 'admin/license', alias: 'licenseAdmin' },
+      multi: true,
+    },
   ],
 })
 export class AdminLicenseModule {}

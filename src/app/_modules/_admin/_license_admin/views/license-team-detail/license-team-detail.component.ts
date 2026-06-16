@@ -22,6 +22,7 @@ import {
 import { Observable } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   templateUrl: './license-team-detail.component.html',
@@ -51,11 +52,12 @@ export class LicenseTeamDetailComponent implements OnInit {
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
-    private _notificationService: NotificationService
+    private _notificationService: NotificationService,
+    private _transloco: TranslocoService
   ) {
     this.associations$ = this._associationService.associations$;
     this._metaTitle.setTitle(
-      'Floorball Saisonmanager Lizenzverwaltung (Team: )'
+      this._transloco.translate('licenseAdmin.teamDetail.metaTitle')
     );
   }
 
@@ -88,7 +90,9 @@ export class LicenseTeamDetailComponent implements OnInit {
         this._cdr.markForCheck();
       },
       error: () => {
-        this.uploadError = 'Dokumente konnten nicht geladen werden.';
+        this.uploadError = this._transloco.translate(
+          'licenseAdmin.notifications.documentsLoadError'
+        );
         this._cdr.markForCheck();
       },
     });
@@ -118,7 +122,10 @@ export class LicenseTeamDetailComponent implements OnInit {
         error: (err) => {
           input.value = '';
           this.uploadError =
-            err?.error?.errors?.join(', ') ?? 'Upload fehlgeschlagen.';
+            err?.error?.errors?.join(', ') ??
+            this._transloco.translate(
+              'licenseAdmin.notifications.uploadFailed'
+            );
           this._cdr.markForCheck();
         },
       });
@@ -132,7 +139,9 @@ export class LicenseTeamDetailComponent implements OnInit {
     this._playerService.deleteLicenseDocument(playerId, documentId).subscribe({
       next: () => this.loadDocuments(playerId, licenseId),
       error: () => {
-        this.uploadError = 'Dokument konnte nicht gelöscht werden.';
+        this.uploadError = this._transloco.translate(
+          'licenseAdmin.notifications.documentDeleteError'
+        );
         this._cdr.markForCheck();
       },
     });
@@ -208,7 +217,9 @@ export class LicenseTeamDetailComponent implements OnInit {
         error: (err) =>
           this._showRequestError(
             err,
-            'Lizenzantrag konnte nicht erstellt werden.'
+            this._transloco.translate(
+              'licenseAdmin.notifications.createRequestError'
+            )
           ),
       });
   }
@@ -223,7 +234,9 @@ export class LicenseTeamDetailComponent implements OnInit {
       error: (err) =>
         this._showRequestError(
           err,
-          'Lizenzantrag konnte nicht erneut gestellt werden.'
+          this._transloco.translate(
+            'licenseAdmin.notifications.recreateRequestError'
+          )
         ),
     });
   }
@@ -238,7 +251,9 @@ export class LicenseTeamDetailComponent implements OnInit {
         error: (err) =>
           this._showRequestError(
             err,
-            'Lizenzantrag konnte nicht zurückgezogen werden.'
+            this._transloco.translate(
+              'licenseAdmin.notifications.withdrawRequestError'
+            )
           ),
       });
   }

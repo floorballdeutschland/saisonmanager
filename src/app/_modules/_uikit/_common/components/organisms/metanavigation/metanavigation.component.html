@@ -10,7 +10,9 @@
     showItem("menu_item_licence_admin") ||
     showItem("menu_item_team_game_days")
   ) {
-    <h2 class="uppercase text-fb-gray-100 font-bold mt-12">Spielbetrieb</h2>
+    <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
+      {{ "nav.section.gameOperations" | transloco }}
+    </h2>
     <nav>
       <ul>
         @if (showItem("menu_item_league_admin")) {
@@ -19,7 +21,7 @@
               [routerLink]="['/', 'verwaltung', 'ligen']"
               (click)="closeMenu()"
               class="font-bold text-fb-gray-500 hover:text-black text-base"
-              >Ligaverwaltung</a
+              >{{ "nav.leagueAdmin" | transloco }}</a
             >
           </li>
         }
@@ -29,7 +31,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'lizenzlisten']"
               (click)="closeMenu()"
-              >Lizenzlisten</a
+              >{{ "nav.licenseLists" | transloco }}</a
             >
           </li>
         }
@@ -39,7 +41,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'verband']"
               (click)="closeMenu()"
-              >Lizenzverwaltung</a
+              >{{ "nav.licenseAdmin" | transloco }}</a
             >
           </li>
         }
@@ -49,7 +51,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'verein']"
               (click)="closeMenu()"
-              >Lizenzverwaltung</a
+              >{{ "nav.licenseClubAdmin" | transloco }}</a
             >
           </li>
         }
@@ -59,7 +61,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'spieler', 'suche']"
               (click)="closeMenu()"
-              >Spielersuche</a
+              >{{ "nav.playerSearch" | transloco }}</a
             >
           </li>
         }
@@ -69,7 +71,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'spieler-verein']"
               (click)="closeMenu()"
-              >Meine Spieler*innen</a
+              >{{ "nav.myPlayers" | transloco }}</a
             >
           </li>
         }
@@ -79,7 +81,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verein', 'spieltage']"
               (click)="closeMenu()"
-              >Meine Spieltage</a
+              >{{ "nav.myTeamGameDays" | transloco }}</a
             >
           </li>
         }
@@ -89,7 +91,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'spielorte']"
               (click)="closeMenu()"
-              >Spielorte</a
+              >{{ "nav.arenas" | transloco }}</a
             >
           </li>
         }
@@ -99,7 +101,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'vereine']"
               (click)="closeMenu()"
-              >Vereinsverwaltung</a
+              >{{ "nav.clubAdmin" | transloco }}</a
             >
           </li>
         }
@@ -118,7 +120,7 @@
     showItem("menu_item_referee_settings")
   ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
-      Schiedsrichterwesen
+      {{ "nav.section.referee" | transloco }}
     </h2>
     <nav>
       <ul>
@@ -128,7 +130,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'schiedsrichter-ansetzungen']"
               (click)="closeMenu()"
-              >Ansetzungen</a
+              >{{ "nav.assignments" | transloco }}</a
             >
           </li>
         }
@@ -138,7 +140,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
               (click)="closeMenu()"
-              >Lizenzverwaltung</a
+              >{{ "nav.refereeLicenseAdmin" | transloco }}</a
             >
           </li>
         }
@@ -153,7 +155,7 @@
                 'einstellungen',
               ]"
               (click)="closeMenu()"
-              >Einstellungen</a
+              >{{ "nav.refereeSettings" | transloco }}</a
             >
           </li>
         }
@@ -163,7 +165,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'schiri-kurse']"
               (click)="closeMenu()"
-              >Kursergebnisse</a
+              >{{ "nav.courseResults" | transloco }}</a
             >
           </li>
         }
@@ -173,7 +175,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'schiri-kurse-freigabe']"
               (click)="closeMenu()"
-              >Kursergebnisse-Freigabe</a
+              >{{ "nav.courseReview" | transloco }}</a
             >
           </li>
         }
@@ -183,7 +185,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'schiedsrichter-verein']"
               (click)="closeMenu()"
-              >Schiedsrichter*innen</a
+              >{{ "nav.refereesVm" | transloco }}</a
             >
           </li>
         }
@@ -193,7 +195,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'schiedsrichter', 'ausweis']"
               (click)="closeMenu()"
-              >Mein Ausweis</a
+              >{{ "nav.myCard" | transloco }}</a
             >
           </li>
         }
@@ -203,7 +205,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'schiedsrichter', 'profil']"
               (click)="closeMenu()"
-              >Mein Profil</a
+              >{{ "nav.myProfile" | transloco }}</a
             >
           </li>
         }
@@ -223,7 +225,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'schiedsrichter', 'spieltage']"
               (click)="closeMenu()"
-              >Meine Spieltage</a
+              >{{ "nav.myRefereeGameDays" | transloco }}</a
             >
           </li>
         }
@@ -233,7 +235,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'schiedsrichter', 'sperrtermine']"
               (click)="closeMenu()"
-              >Meine Sperrtermine</a
+              >{{ "nav.myBlockedDates" | transloco }}</a
             >
           </li>
         }
@@ -243,7 +245,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'schiedsrichter', 'historie']"
               (click)="closeMenu()"
-              >Meine Historie</a
+              >{{ "nav.myHistory" | transloco }}</a
             >
           </li>
         }
@@ -266,7 +268,7 @@
     showItem("menu_item_player_change_requests")
   ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
-      Transfers und Freigaben
+      {{ "nav.section.transfers" | transloco }}
     </h2>
     <nav>
       <ul>
@@ -276,7 +278,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'transfer-anfragen']"
               (click)="closeMenu()"
-              >Transferanträge</a
+              >{{ "nav.transferRequests" | transloco }}</a
             >
           </li>
         }
@@ -286,7 +288,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'spieler-korrekturen']"
               (click)="closeMenu()"
-              >Spielerdaten-Korrekturen</a
+              >{{ "nav.playerChangeRequests" | transloco }}</a
             >
           </li>
         }
@@ -304,7 +306,9 @@
     showItem("menu_item_email_log_admin") ||
     showItem("menu_item_user_vm")
   ) {
-    <h2 class="uppercase text-fb-gray-100 font-bold mt-12">Verwaltung</h2>
+    <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
+      {{ "nav.section.administration" | transloco }}
+    </h2>
     <nav>
       <ul>
         @if (showItem("menu_item_api_key_admin")) {
@@ -313,7 +317,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'api-keys']"
               (click)="closeMenu()"
-              >API-Keys</a
+              >{{ "nav.apiKeys" | transloco }}</a
             >
           </li>
         }
@@ -323,7 +327,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'benutzer']"
               (click)="closeMenu()"
-              >Benutzerverwaltung</a
+              >{{ "nav.userAdmin" | transloco }}</a
             >
           </li>
         }
@@ -337,9 +341,10 @@
               [routerLink]="['/', 'verwaltung', 'landesverbaende']"
               (click)="closeMenu()"
               >{{
-                showItem("menu_item_state_association_admin")
-                  ? "Landesverbände"
-                  : "Verbandseinstellungen"
+                (showItem("menu_item_state_association_admin")
+                  ? "nav.stateAssociations"
+                  : "nav.associationSettings"
+                ) | transloco
               }}</a
             >
           </li>
@@ -352,7 +357,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'benutzer']"
               (click)="closeMenu()"
-              >Meine Benutzer</a
+              >{{ "nav.myUsers" | transloco }}</a
             >
           </li>
         }
@@ -362,7 +367,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'saison']"
               (click)="closeMenu()"
-              >Saison-Verwaltung</a
+              >{{ "nav.seasonAdmin" | transloco }}</a
             >
           </li>
         }
@@ -372,7 +377,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'analyse']"
               (click)="closeMenu()"
-              >Analyse</a
+              >{{ "nav.analytics" | transloco }}</a
             >
           </li>
         }
@@ -382,7 +387,7 @@
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'email-log']"
               (click)="closeMenu()"
-              >E-Mail-Log</a
+              >{{ "nav.emailLog" | transloco }}</a
             >
           </li>
         }
@@ -392,7 +397,8 @@
 }
 
 <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
-  Weitere<a href="/login">s</a>
+  {{ "nav.section.moreLead" | transloco
+  }}<a href="/login">{{ "nav.section.moreTail" | transloco }}</a>
 </h2>
 <nav>
   <ul>
@@ -401,17 +407,42 @@
         <a
           href="/login"
           class="font-bold text-fb-gray-500 hover:text-black text-base"
-          >Login</a
+          >{{ "nav.login" | transloco }}</a
         >
       </li>
     }
     @if (isLoggedIn$ | async) {
       <li class="mt-4 mb-4">
         <a
+          routerLink="/mein-konto"
+          (click)="closeMenu()"
+          class="font-bold text-fb-gray-500 hover:text-black text-base"
+          >{{ "nav.account" | transloco }}</a
+        >
+      </li>
+      <li class="mt-2 mb-4 flex items-center gap-2">
+        <span class="text-fb-gray-500 text-sm"
+          >{{ "language.label" | transloco }}:</span
+        >
+        @for (lang of availableLangs; track lang) {
+          <button
+            type="button"
+            (click)="switchLanguage(lang)"
+            class="text-sm uppercase hover:text-black"
+            [class.font-bold]="(activeLang$ | async) === lang"
+            [class.text-black]="(activeLang$ | async) === lang"
+            [class.text-fb-gray-500]="(activeLang$ | async) !== lang"
+          >
+            {{ lang }}
+          </button>
+        }
+      </li>
+      <li class="mt-4 mb-4">
+        <a
           href=""
           (click)="logout()"
           class="font-bold text-fb-gray-500 hover:text-black text-base"
-          >Logout ({{ username }})</a
+          >{{ "nav.logout" | transloco }} ({{ username }})</a
         >
       </li>
     }
@@ -420,7 +451,7 @@
         href="https://floorball.de/impressum/"
         target="_blank"
         class="font-bold text-fb-gray-500 hover:text-black text-base"
-        >Impressum</a
+        >{{ "nav.imprint" | transloco }}</a
       >
     </li>
   </ul>

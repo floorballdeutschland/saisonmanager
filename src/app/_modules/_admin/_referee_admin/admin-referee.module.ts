@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { AdminRefereeRoutingModule } from './admin-referee-routing.module';
 
@@ -21,6 +22,13 @@ import * as Views from './views';
     Views.RefereeLicenseLevelsComponent,
     Views.RefereeSettingsComponent,
     Views.RefereeMergeComponent,
+  ],
+  providers: [
+    {
+      provide: TRANSLOCO_SCOPE,
+      useValue: { scope: 'admin/referee', alias: 'refereeAdmin' },
+      multi: true,
+    },
   ],
 })
 export class AdminRefereeModule {}

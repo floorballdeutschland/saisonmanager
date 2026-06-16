@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import { ArenaService, NotificationService } from '@floorball/core';
 import { Arena } from '@floorball/types';
 
@@ -33,6 +34,7 @@ export class ArenaMergeComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _arenaService: ArenaService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -97,7 +99,9 @@ export class ArenaMergeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           this._notificationService.success(
-            `Spielorte zusammengeführt (${res.moved_game_days} Spieltag(e) umgehängt).`,
+            this._transloco.translate('arena.notifications.merged', {
+              count: res.moved_game_days,
+            }),
             { autoClose: true, keepAfterRouteChange: true }
           );
           this._router.navigate(['/', 'verwaltung', 'spielorte']);
@@ -106,7 +110,7 @@ export class ArenaMergeComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.error =
             err?.error?.error ||
-            'Spielorte konnten nicht zusammengeführt werden.';
+            this._transloco.translate('arena.notifications.mergeError');
           this._cdr.markForCheck();
         },
       });

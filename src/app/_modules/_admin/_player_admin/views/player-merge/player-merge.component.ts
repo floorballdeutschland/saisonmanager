@@ -5,6 +5,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { Subject, take, takeUntil } from 'rxjs';
 import {
   NotificationService,
@@ -33,7 +34,8 @@ export class PlayerMergeComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _playerService: PlayerService,
     private _notificationService: NotificationService,
-    private _sessionService: SessionService
+    private _sessionService: SessionService,
+    private _transloco: TranslocoService
   ) {}
 
   ngOnInit(): void {
@@ -101,7 +103,7 @@ export class PlayerMergeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this._notificationService.success(
-            'Spieler erfolgreich zusammengeführt.',
+            this._transloco.translate('playerAdmin.notifications.playerMerged'),
             { autoClose: true, keepAfterRouteChange: true }
           );
           this._router.navigate([
@@ -117,7 +119,8 @@ export class PlayerMergeComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.loading = false;
           this._notificationService.error(
-            err?.error?.message ?? 'Fehler beim Zusammenführen.'
+            err?.error?.message ??
+              this._transloco.translate('playerAdmin.notifications.mergeError')
           );
         },
       });

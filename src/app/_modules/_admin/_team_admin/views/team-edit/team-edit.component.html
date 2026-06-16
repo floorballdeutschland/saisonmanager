@@ -2,11 +2,14 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Teamverwaltung
+    {{ "teamAdmin.edit.title" | transloco }}
   </h1>
 
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    {{ editMode ? "Bearbeiten eines Teams" : "Neues Team anlegen" }}
+    {{
+      (editMode ? "teamAdmin.edit.editHeading" : "teamAdmin.edit.newHeading")
+        | transloco
+    }}
   </h2>
 </div>
 
@@ -20,16 +23,22 @@
           <div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Hauptdaten
+                {{ "teamAdmin.edit.mainData" | transloco }}
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div class="font-bold">Team ID</div>
+                <div class="font-bold">
+                  {{ "teamAdmin.edit.teamId" | transloco }}
+                </div>
                 <div>
                   {{
-                    team.id > 0 ? team.id : "Wird nach dem Anlegen festgelegt"
+                    team.id > 0
+                      ? team.id
+                      : ("teamAdmin.edit.teamIdPlaceholder" | transloco)
                   }}
                 </div>
-                <div class="font-bold">Name</div>
+                <div class="font-bold">
+                  {{ "teamAdmin.edit.name" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="team.name"
@@ -38,7 +47,9 @@
                     required
                   />
                 </div>
-                <div class="font-bold">Kurzname</div>
+                <div class="font-bold">
+                  {{ "teamAdmin.edit.shortName" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="team.short_name"
@@ -47,14 +58,17 @@
                     required
                   />
                 </div>
-                <div class="font-bold">Liga ID</div>
+                <div class="font-bold">
+                  {{ "teamAdmin.edit.leagueId" | transloco }}
+                </div>
                 <div>
                   {{ team.league_id }}
                 </div>
                 <div class="font-bold">
-                  Weitere Ligen<br /><small class="font-normal text-gray-400"
-                    >Cup / Endrunde</small
-                  >
+                  {{ "teamAdmin.edit.additionalLeagues" | transloco
+                  }}<br /><small class="font-normal text-gray-400">{{
+                    "teamAdmin.edit.additionalLeaguesHint" | transloco
+                  }}</small>
                 </div>
                 <div>
                   @for (go of permittedGameOperations; track go) {
@@ -80,12 +94,14 @@
                     }
                   }
                   @if (!hasCupLeagueOptions(team)) {
-                    <span class="text-gray-400 text-sm"
-                      >keine weiteren Ligen im selben Verbund</span
-                    >
+                    <span class="text-gray-400 text-sm">{{
+                      "teamAdmin.edit.noAdditionalLeagues" | transloco
+                    }}</span>
                   }
                 </div>
-                <div class="font-bold">Verein</div>
+                <div class="font-bold">
+                  {{ "teamAdmin.edit.club" | transloco }}
+                </div>
                 <div>
                   <select name="club_id" [(ngModel)]="team.club_id">
                     @for (c of clubs; track c) {
@@ -95,17 +111,25 @@
                     }
                   </select>
                   <br />
-                  Bei SGs hier den ersten Partner wählen.
+                  {{ "teamAdmin.edit.clubHint" | transloco }}
                 </div>
-                <div class="font-bold">Spielgemeinschaft?</div>
+                <div class="font-bold">
+                  {{ "teamAdmin.edit.syndicateQuestion" | transloco }}
+                </div>
                 <div>
                   <select name="syndicate" [(ngModel)]="team.syndicate">
-                    <option value="false">keine SG</option>
-                    <option value="true">Spielgemeinschaft</option>
+                    <option value="false">
+                      {{ "teamAdmin.edit.noSyndicate" | transloco }}
+                    </option>
+                    <option value="true">
+                      {{ "teamAdmin.edit.syndicate" | transloco }}
+                    </option>
                   </select>
                 </div>
                 @if (team.syndicate) {
-                  <div class="font-bold">SG-Vereine</div>
+                  <div class="font-bold">
+                    {{ "teamAdmin.edit.syndicateClubs" | transloco }}
+                  </div>
                   @if (team.syndicate_clubs) {
                     <div>
                       <select
@@ -121,15 +145,17 @@
                       </select>
                       <br />
                       <small
-                        >Hier sollten alle Vereine ausgewählt werden, auch der
-                        oben gewählte.<br />
-                        Mehrfachauswahl mit STRG am PC.</small
+                        >{{ "teamAdmin.edit.syndicateClubsHint" | transloco
+                        }}<br />
+                        {{
+                          "teamAdmin.edit.syndicateClubsMultiHint" | transloco
+                        }}</small
                       >
                     </div>
                   }
                   @if (!team.syndicate_clubs) {
                     <div>
-                      <p>keine Teams hinterlegt, das ist immer falsch.</p>
+                      <p>{{ "teamAdmin.edit.noSyndicateClubs" | transloco }}</p>
                     </div>
                   }
                 }
@@ -137,10 +163,12 @@
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Teamkontakt
+                {{ "teamAdmin.edit.teamContact" | transloco }}
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div class="font-bold">Ansprechpartner</div>
+                <div class="font-bold">
+                  {{ "teamAdmin.edit.contactPerson" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="team.contact_person"
@@ -148,9 +176,11 @@
                     id="name"
                     required
                   /><br />
-                  hier sollte ein voller Name stehen: Max Mustermann
+                  {{ "teamAdmin.edit.contactPersonHint" | transloco }}
                 </div>
-                <div class="font-bold">Team E-Mail</div>
+                <div class="font-bold">
+                  {{ "teamAdmin.edit.teamEmail" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="team.contact_email"
@@ -158,39 +188,42 @@
                     id="name"
                     required
                   /><br />
-                  hier soll eine teamspezifische Adresse stehen.<br />
-                  bitte keine globale Vereinsadresse, sondern denjenigen, der
-                  wirklich mit dem Team unterwegs ist erfassen
+                  {{ "teamAdmin.edit.teamEmailHint1" | transloco }}<br />
+                  {{ "teamAdmin.edit.teamEmailHint2" | transloco }}
                 </div>
               </div>
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Team-Logo
+                {{ "teamAdmin.edit.teamLogo" | transloco }}
               </div>
               @if (team.id === 0) {
                 <div class="grid grid-cols-1 gap-4">
-                  Teamlogos können erst nach dem Speichern hochgeladen werden
+                  {{ "teamAdmin.edit.logoSaveFirst" | transloco }}
                 </div>
               }
               @if (team.id > 0) {
                 <div class="grid grid-cols-2 gap-4 items-center">
-                  <div class="font-bold">Aktuelles Logo</div>
+                  <div class="font-bold">
+                    {{ "teamAdmin.edit.currentLogo" | transloco }}
+                  </div>
                   <div>
                     @if (team.logo_url) {
                       <img
                         [src]="team.logo_url"
-                        alt="Teamlogo"
+                        [attr.alt]="'teamAdmin.edit.logoAlt' | transloco"
                         class="h-16 object-contain"
                       />
                     }
                     @if (!team.logo_url) {
-                      <span class="text-gray-400"
-                        >kein Logo hinterlegt (Vereinslogo wird verwendet)</span
-                      >
+                      <span class="text-gray-400">{{
+                        "teamAdmin.edit.noLogo" | transloco
+                      }}</span>
                     }
                   </div>
-                  <div class="font-bold">Logo hochladen</div>
+                  <div class="font-bold">
+                    {{ "teamAdmin.edit.uploadLogo" | transloco }}
+                  </div>
                   <div>
                     <input
                       type="file"
@@ -198,10 +231,9 @@
                       #logoInput
                       (change)="onLogoSelected(team, logoInput)"
                     />
-                    <small class="block text-gray-500 mt-1"
-                      >PNG, JPG oder SVG · wird auf 100×100 Pixel
-                      verkleinert</small
-                    >
+                    <small class="block text-gray-500 mt-1">{{
+                      "teamAdmin.edit.logoHint" | transloco
+                    }}</small>
                   </div>
                 </div>
               }
@@ -211,7 +243,7 @@
                 @if (error(team)) {
                   <div class="mb-4">
                     <h3 class="text-lg leading-6 font-medium text-red-600">
-                      Speichern nicht möglich
+                      {{ "teamAdmin.edit.saveImpossible" | transloco }}
                     </h3>
                     @for (msg of errorMsg(team); track msg) {
                       <p>{{ msg }}</p>
@@ -224,7 +256,7 @@
                       class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       (click)="submit(team)"
                     >
-                      Änderungen speichern
+                      {{ "teamAdmin.edit.saveChanges" | transloco }}
                     </a>
                     <a
                       class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
@@ -237,7 +269,7 @@
                         'teams',
                       ]"
                     >
-                      Abbrechen
+                      {{ "teamAdmin.edit.cancel" | transloco }}
                     </a>
                   </div>
                 }
@@ -262,7 +294,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "teamAdmin.edit.loading" | transloco }}
             </div>
           </div>
         }

@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
 import { RefereeAdmin, RefereeAdminGame } from '@floorball/types';
 
@@ -30,6 +31,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     private _refereeService: RefereeService,
     private _route: ActivatedRoute,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -108,8 +110,8 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
 
   get detailRouteId(): string | number {
     return this.referee?.guest
-      ? this.referee.lizenznummer_display ?? this.referee.id
-      : this.referee?.lizenznummer ?? '';
+      ? (this.referee.lizenznummer_display ?? this.referee.id)
+      : (this.referee?.lizenznummer ?? '');
   }
 
   get isActive(): boolean {
@@ -124,9 +126,12 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   private _handleLoadError(): void {
     this.loading = false;
     this._cdr.markForCheck();
-    this._notificationService.error('Fehler beim Laden des Schiedsrichters.', {
-      autoClose: false,
-      keepAfterRouteChange: false,
-    });
+    this._notificationService.error(
+      this._transloco.translate('refereeAdmin.notifications.detailLoadError'),
+      {
+        autoClose: false,
+        keepAfterRouteChange: false,
+      }
+    );
   }
 }

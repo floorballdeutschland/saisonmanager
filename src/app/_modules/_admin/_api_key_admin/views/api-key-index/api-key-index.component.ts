@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import { ApiKeyService, NotificationService } from '@floorball/core';
 import { ApiKey } from '@floorball/types';
 
@@ -31,6 +32,7 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
   constructor(
     private _apiKeyService: ApiKeyService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -57,7 +59,7 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
         error: () => {
           this.loading = false;
           this._notificationService.error(
-            'API-Keys konnten nicht geladen werden.',
+            this._transloco.translate('apiKeys.notifications.loadError'),
             { autoClose: false }
           );
           this._cdr.markForCheck();
@@ -81,9 +83,12 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
         },
         error: (err: HttpErrorResponse) => {
           const detail = err.error?.errors?.join(', ') ?? err.message;
-          this._notificationService.error(`Fehler beim Erstellen: ${detail}`, {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate('apiKeys.notifications.createError', {
+              detail,
+            }),
+            { autoClose: false }
+          );
           this.creating = false;
           this._cdr.markForCheck();
         },
@@ -112,7 +117,7 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
     const parsed = raw.trim() === '' ? null : parseInt(raw, 10);
     if (raw.trim() !== '' && (isNaN(parsed!) || parsed! <= 0)) {
       this._notificationService.error(
-        'Rate Limit muss eine positive Zahl oder leer (= unbegrenzt) sein.',
+        this._transloco.translate('apiKeys.notifications.rateLimitInvalid'),
         { autoClose: true }
       );
       return;
@@ -139,31 +144,45 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
         error: (err: HttpErrorResponse) => {
           this.togglingIds.delete(id);
           const detail = err.error?.errors?.join(', ') ?? err.message;
-          this._notificationService.error(`Fehler: ${detail}`, {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate('apiKeys.notifications.genericError', {
+              detail,
+            }),
+            { autoClose: false }
+          );
           this._cdr.markForCheck();
         },
       });
   }
 
   delete(key: ApiKey): void {
-    if (!confirm(`API-Key "${key.name}" wirklich löschen?`)) return;
+    if (
+      !confirm(
+        this._transloco.translate('apiKeys.confirmDelete', { name: key.name })
+      )
+    )
+      return;
     this._apiKeyService
       .delete(key.id)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {
-          this._notificationService.success(`"${key.name}" gelöscht.`, {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate('apiKeys.notifications.deleted', {
+              name: key.name,
+            }),
+            { autoClose: true }
+          );
           this.load();
         },
         error: (err: HttpErrorResponse) => {
           const detail = err.error?.errors?.join(', ') ?? err.message;
-          this._notificationService.error(`Fehler beim Löschen: ${detail}`, {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate('apiKeys.notifications.deleteError', {
+              detail,
+            }),
+            { autoClose: false }
+          );
         },
       });
   }

@@ -3,15 +3,15 @@
     <a
       [routerLink]="['/', 'verwaltung', 'spielorte']"
       class="text-fb-gray-500 hover:text-black text-sm"
-      >← Zurück</a
+      >{{ "arena.merge.back" | transloco }}</a
     >
-    <h1 class="text-2xl font-bold">Spielorte zusammenlegen</h1>
+    <h1 class="text-2xl font-bold">{{ "arena.merge.title" | transloco }}</h1>
   </div>
 
   @if (master) {
     <div class="border border-fb-gray-600 rounded-[5px] p-4 mb-6">
       <div class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-        Verbleibender Spielort
+        {{ "arena.merge.remainingLabel" | transloco }}
       </div>
       <div class="font-bold">{{ master.name }}</div>
       <div class="text-sm text-fb-gray-500">{{ master.city }}</div>
@@ -21,15 +21,12 @@
   <!-- Step 1: Quell-Spielort auswählen -->
   @if (step === 1) {
     <p class="text-sm text-fb-gray-500 mb-3">
-      Wähle den doppelten Spielort, der mit „{{ master?.name }}" zusammengelegt
-      werden soll. Alle Spieltage des gewählten Spielorts werden auf den
-      verbleibenden Spielort umgehängt; der doppelte Eintrag wird anschließend
-      gelöscht.
+      {{ "arena.merge.step1Intro" | transloco: { master: master?.name } }}
     </p>
     <input
       type="text"
       [(ngModel)]="searchTerm"
-      placeholder="Spielort suchen (Name oder Stadt)…"
+      [placeholder]="'arena.merge.searchPlaceholder' | transloco"
       class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm mb-3 focus:outline-none focus:border-black"
     />
     <ul
@@ -46,13 +43,13 @@
             (click)="selectSecondary(a)"
             class="px-3 py-1 text-xs font-bold border border-fb-gray-600 rounded-[5px] hover:border-black shrink-0"
           >
-            Auswählen
+            {{ "arena.merge.select" | transloco }}
           </button>
         </li>
       }
       @if (candidates.length === 0) {
         <li class="px-3 py-2 text-sm text-fb-gray-500">
-          Kein passender Spielort gefunden.
+          {{ "arena.merge.noMatch" | transloco }}
         </li>
       }
     </ul>
@@ -64,16 +61,14 @@
       <p class="text-sm">
         <span class="font-bold">{{ secondary.name }}</span>
         <span class="text-fb-gray-500"> ({{ secondary.city }})</span>
-        wird mit
+        {{ "arena.merge.confirmIntro" | transloco }}
         <span class="font-bold">{{ master?.name }}</span>
-        zusammengelegt.
       </p>
       <p class="text-sm mt-2">
-        Alle Spieltage von „{{ secondary.name }}" werden auf „{{
-          master?.name
-        }}" umgehängt, danach wird „{{ secondary.name }}"
-        <span class="font-bold">gelöscht</span>. Das lässt sich nicht rückgängig
-        machen.
+        {{
+          "arena.merge.confirmDetail"
+            | transloco: { secondary: secondary.name, master: master?.name }
+        }}
       </p>
     </div>
     @if (error) {
@@ -86,7 +81,10 @@
         (click)="merge()"
         class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
       >
-        {{ loading ? "Wird zusammengeführt…" : "Zusammenführen" }}
+        {{
+          (loading ? "arena.merge.merging" : "arena.merge.mergeAction")
+            | transloco
+        }}
       </button>
       <button
         type="button"
@@ -94,7 +92,7 @@
         (click)="back()"
         class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
       >
-        Zurück
+        {{ "arena.merge.backAction" | transloco }}
       </button>
     </div>
   }

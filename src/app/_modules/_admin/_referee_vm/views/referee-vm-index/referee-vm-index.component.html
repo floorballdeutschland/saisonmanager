@@ -1,8 +1,12 @@
 <div class="p-4 lg:p-8">
-  <h1 class="text-2xl font-bold mb-6">Schiedsrichter*innen</h1>
+  <h1 class="text-2xl font-bold mb-6">
+    {{ "refereeVm.index.title" | transloco }}
+  </h1>
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8">Lade Schiedsrichter…</div>
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "refereeVm.index.loading" | transloco }}
+    </div>
   }
 
   @if (!loading) {
@@ -10,19 +14,31 @@
       <p class="text-sm text-fb-gray-500 mb-4">
         {{ referees.length }}
         {{
-          referees.length === 1 ? "Schiedsrichter*in" : "Schiedsrichter*innen"
+          referees.length === 1
+            ? ("refereeVm.index.countSingular" | transloco)
+            : ("refereeVm.index.countPlural" | transloco)
         }}
-        in deinem Verein
+        {{ "refereeVm.index.inYourClub" | transloco }}
       </p>
       @if (referees.length > 0) {
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b border-fb-gray-700 text-left">
-              <th class="py-2 pr-4 font-bold">Lizenznummer</th>
-              <th class="py-2 pr-4 font-bold">Name</th>
-              <th class="py-2 pr-4 font-bold">Stufe</th>
-              <th class="py-2 pr-4 font-bold">Gültigkeit</th>
-              <th class="py-2 pr-4 font-bold">Zusatzqualifikationen</th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "refereeVm.index.colLicenseNumber" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "refereeVm.index.colName" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "refereeVm.index.colLevel" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "refereeVm.index.colValidity" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "refereeVm.index.colQualifications" | transloco }}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -54,7 +70,12 @@
                     <span class="text-fb-gray-500">
                       {{ q.qualification_type_name }}
                       @if (q.valid_until) {
-                        <span> (bis {{ q.valid_until }})</span>
+                        <span>
+                          {{
+                            "refereeVm.index.validUntil"
+                              | transloco: { date: q.valid_until }
+                          }}</span
+                        >
                       }
                       @if (!last) {
                         <span>, </span>
@@ -72,7 +93,7 @@
       }
       @if (referees.length === 0) {
         <p class="text-fb-gray-500 text-sm py-8 text-center">
-          Keine Schiedsrichter*innen für deinen Verein gefunden.
+          {{ "refereeVm.index.empty" | transloco }}
         </p>
       }
     </div>

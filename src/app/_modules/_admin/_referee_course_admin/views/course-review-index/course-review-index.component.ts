@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   NotificationService,
   RefereeCourseImportService,
@@ -34,6 +35,7 @@ export class CourseReviewIndexComponent implements OnInit, OnDestroy {
   constructor(
     private _service: RefereeCourseImportService,
     private _notify: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -61,7 +63,10 @@ export class CourseReviewIndexComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.loading = false;
           this._notify.error(
-            err?.error?.error ?? 'Offene Vorgänge konnten nicht geladen werden'
+            err?.error?.error ??
+              this._transloco.translate(
+                'refereeCourseAdmin.notifications.loadPendingError'
+              )
           );
           this._cdr.markForCheck();
         },
@@ -97,12 +102,21 @@ export class CourseReviewIndexComponent implements OnInit, OnDestroy {
           this.results = this.results.filter((r) => r.id !== result.id);
           this.editBuffers.delete(result.id);
           this.approving.delete(result.id);
-          this._notify.success('Freigegeben');
+          this._notify.success(
+            this._transloco.translate(
+              'refereeCourseAdmin.notifications.approved'
+            )
+          );
           this._cdr.markForCheck();
         },
         error: (err) => {
           this.approving.delete(result.id);
-          this._notify.error(err?.error?.error ?? 'Freigabe fehlgeschlagen');
+          this._notify.error(
+            err?.error?.error ??
+              this._transloco.translate(
+                'refereeCourseAdmin.notifications.approveFailed'
+              )
+          );
           this._cdr.markForCheck();
         },
       });

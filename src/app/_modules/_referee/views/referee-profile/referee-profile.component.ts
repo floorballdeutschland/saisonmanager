@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
 import { RefereeProfile } from '@floorball/types';
 
@@ -27,6 +28,7 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
   constructor(
     private _refereeService: RefereeService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -46,7 +48,9 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
           this.loading = false;
           this._cdr.markForCheck();
           this._notificationService.error(
-            'Profil konnte nicht geladen werden.',
+            this._transloco.translate(
+              'refereeSelf.notifications.profileLoadError'
+            ),
             {
               autoClose: false,
               keepAfterRouteChange: false,
@@ -73,18 +77,26 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
           this.draft = { ...p };
           this.saving = false;
           this._cdr.markForCheck();
-          this._notificationService.success('Profil gespeichert.', {
-            autoClose: true,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.success(
+            this._transloco.translate('refereeSelf.notifications.profileSaved'),
+            {
+              autoClose: true,
+              keepAfterRouteChange: false,
+            }
+          );
         },
         error: () => {
           this.saving = false;
           this._cdr.markForCheck();
-          this._notificationService.error('Fehler beim Speichern.', {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate(
+              'refereeSelf.notifications.profileSaveError'
+            ),
+            {
+              autoClose: false,
+              keepAfterRouteChange: false,
+            }
+          );
         },
       });
   }

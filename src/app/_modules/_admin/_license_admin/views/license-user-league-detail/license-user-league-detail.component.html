@@ -2,21 +2,22 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8 print:pt-0 print:mt-0"
   >
-    Lizenzlisten
+    {{ "licenseAdmin.userLeagueDetail.title" | transloco }}
   </h1>
   <a
     [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'lizenzlisten']"
     class="text-sm text-fb-gray-500 hover:text-black"
-    >← Zurück zu den Lizenzlisten</a
+    >{{ "licenseAdmin.userLeagueDetail.backToLists" | transloco }}</a
   >
 
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
     {{ league?.game_operation_name }}
     <span class="block text-[22px] lg:text-[24px]">{{ league?.name }}</span>
-    <span class="block text-[14px] pt-2"
-      >Diese Lizenzliste wurde am
-      {{ currentTime() | date: "dd.MM.yyyy HH:mm" }} Uhr erstellt.</span
-    >
+    <span class="block text-[14px] pt-2">{{
+      "licenseAdmin.userLeagueDetail.createdAt"
+        | transloco
+          : { date: (currentTime() | date: "dd.MM.yyyy HH:mm") + " Uhr" }
+    }}</span>
   </h2>
 </div>
 
@@ -44,7 +45,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "licenseAdmin.userLeagueDetail.loadingData" | transloco }}
             </div>
           </div>
         </ng-template>
@@ -55,12 +56,11 @@
           <div
             class="uppercase font-bold text-gray-400 text-sm mb-5 print:hidden"
           >
-            Spieltags-Datum
+            {{ "licenseAdmin.userLeagueDetail.gamedayDate" | transloco }}
           </div>
           <div class="grid md:grid-cols-3 gap-2">
             <p class="text-sm md:col-span-3">
-              Bitte wähle das Datum, an dem der Spieltag stattfindet, aus, um
-              die Lizenzliste anzuzeigen.
+              {{ "licenseAdmin.userLeagueDetail.chooseDateHint" | transloco }}
             </p>
             <input
               type="date"
@@ -72,19 +72,19 @@
               (click)="setGamedayDate(0)"
               class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
             >
-              Heute
+              {{ "licenseAdmin.userLeagueDetail.today" | transloco }}
             </button>
             <button
               (click)="setGamedayDate(1)"
               class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
             >
-              Morgen
+              {{ "licenseAdmin.userLeagueDetail.tomorrow" | transloco }}
             </button>
             <button
               (click)="setGamedayDate(2)"
               class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
             >
-              Übermorgen
+              {{ "licenseAdmin.userLeagueDetail.dayAfterTomorrow" | transloco }}
             </button>
           </div>
         </div>
@@ -97,11 +97,14 @@
               <p class="hidden print:block text-[14px] pt-4">
                 {{ league?.game_operation_name }}
                 <span class="block text-[20px]">{{ league?.name }}</span>
-                <span class="block text-[10px] pb-2"
-                  >Diese Lizenzliste wurde am
-                  {{ currentTime() | date: "dd.MM.YYYY HH:mm" }} Uhr
-                  erstellt.</span
-                >
+                <span class="block text-[10px] pb-2">{{
+                  "licenseAdmin.userLeagueDetail.createdAt"
+                    | transloco
+                      : {
+                          date:
+                            (currentTime() | date: "dd.MM.YYYY HH:mm") + " Uhr",
+                        }
+                }}</span>
               </p>
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
                 {{ team.name }}

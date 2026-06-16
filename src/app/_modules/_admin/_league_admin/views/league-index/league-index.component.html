@@ -2,7 +2,7 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Ligaverwaltung
+    {{ "leagueAdmin.title" | transloco }}
   </h1>
 </div>
 
@@ -30,7 +30,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "leagueAdmin.loading" | transloco }}
             </div>
           </div>
         }
@@ -50,7 +50,7 @@
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Ligen
+                {{ "leagueAdmin.index.leaguesHeading" | transloco }}
               </div>
               <div
                 class="flex flex-col gap-2"
@@ -63,7 +63,7 @@
                       <span
                         cdkDragHandle
                         class="cursor-grab text-gray-400 hover:text-gray-600 select-none text-xl leading-none pr-1"
-                        title="Reihenfolge ändern"
+                        [title]="'leagueAdmin.index.reorderTitle' | transloco"
                         >≡</span
                       >
                       <a
@@ -84,7 +84,7 @@
                           'teams',
                         ]"
                       >
-                        Teamverwaltung
+                        {{ "leagueAdmin.index.teamManagement" | transloco }}
                       </a>
                       <a
                         class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
@@ -96,7 +96,7 @@
                           'spielplan',
                         ]"
                       >
-                        Spielplanverwaltung
+                        {{ "leagueAdmin.index.scheduleManagement" | transloco }}
                       </a>
                       <a
                         class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
@@ -104,7 +104,7 @@
                           league.id
                         }}/schedule_import_template.xlsx"
                       >
-                        Importvorlage
+                        {{ "leagueAdmin.index.importTemplate" | transloco }}
                       </a>
                     </div>
                     <div class="flex items-center mb-4 pl-7">
@@ -118,7 +118,7 @@
                           'bearbeiten',
                         ]"
                       >
-                        Liga bearbeiten
+                        {{ "leagueAdmin.index.editLeague" | transloco }}
                       </a>
                       <a
                         class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
@@ -131,7 +131,7 @@
                           'bearbeiten',
                         ]"
                       >
-                        Liga löschen
+                        {{ "leagueAdmin.index.deleteLeague" | transloco }}
                       </a>
                     </div>
                   </div>
@@ -140,7 +140,7 @@
                   <p
                     class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
                   >
-                    noch keine Liga hinterlegt
+                    {{ "leagueAdmin.index.noLeague" | transloco }}
                   </p>
                 }
               </div>
@@ -150,7 +150,7 @@
                 class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                 [routerLink]="['/', 'verwaltung', 'ligen', 'neu']"
               >
-                Neue Liga anlegen
+                {{ "leagueAdmin.index.newLeague" | transloco }}
               </a>
             </div>
           </div>

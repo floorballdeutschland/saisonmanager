@@ -1,14 +1,14 @@
 <div class="container mx-auto px-4 lg:px-8">
   <h1 class="font-bold text-[32px] lg:text-[42px] pt-4 lg:pt-0 my-4 lg:my-8">
-    Spielerverwaltung
+    {{ "playerAdmin.common.title" | transloco }}
   </h1>
   <a
     [routerLink]="['/', 'verwaltung', 'spieler', 'suche']"
     class="text-sm text-fb-gray-500 hover:text-black"
-    >← Zurück zur Spielersuche</a
+    >{{ "playerAdmin.merge.backToSearch" | transloco }}</a
   >
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    Duplikat zusammenführen
+    {{ "playerAdmin.merge.mergeDuplicate" | transloco }}
   </h2>
 </div>
 
@@ -20,7 +20,7 @@
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9">
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Master-Datensatz
+              {{ "playerAdmin.merge.masterRecord" | transloco }}
             </div>
             <p class="text-sm font-semibold">
               {{ master.last_name }}, {{ master.first_name }}
@@ -34,13 +34,15 @@
           </div>
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Duplikat suchen
+              {{ "playerAdmin.merge.searchDuplicate" | transloco }}
             </div>
             <div class="flex gap-3 mb-4">
               <input
                 type="text"
                 class="flex-1"
-                placeholder="Name des Duplikats"
+                [placeholder]="
+                  'playerAdmin.merge.duplicatePlaceholder' | transloco
+                "
                 [(ngModel)]="searchQuery"
                 (keyup.enter)="search()"
               />
@@ -48,7 +50,7 @@
                 (click)="search()"
                 class="font-bold text-white text-sm px-5 py-2 bg-fb-gray-900 hover:bg-black rounded-[5px] cursor-pointer"
               >
-                Suchen
+                {{ "playerAdmin.merge.doSearch" | transloco }}
               </button>
             </div>
             @if (searchResults.length > 0) {
@@ -75,7 +77,7 @@
             }
             @if (searchResults.length === 0 && searchQuery) {
               <p class="text-sm text-gray-500">
-                Keine weiteren Spieler gefunden.
+                {{ "playerAdmin.merge.noMorePlayers" | transloco }}
               </p>
             }
           </div>
@@ -86,32 +88,33 @@
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9">
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Master (wird behalten)
+              {{ "playerAdmin.merge.masterKept" | transloco }}
             </div>
             <p class="text-sm font-semibold">
               {{ master.last_name }}, {{ master.first_name }}
             </p>
             <p class="text-sm text-gray-500">ID: {{ master.id }}</p>
             <p class="text-sm text-gray-500">
-              Geburtsdatum:
+              {{ "playerAdmin.merge.birthdate" | transloco }}
               {{
                 master.birthdate ? (master.birthdate | date: "dd.MM.yyyy") : "–"
               }}
             </p>
             <p class="text-sm text-gray-500">
-              E-Mail: {{ master.email || "–" }}
+              {{ "playerAdmin.merge.email" | transloco }}
+              {{ master.email || "–" }}
             </p>
           </div>
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Duplikat (wird deaktiviert)
+              {{ "playerAdmin.merge.duplicateDeactivated" | transloco }}
             </div>
             <p class="text-sm font-semibold">
               {{ secondary.last_name }}, {{ secondary.first_name }}
             </p>
             <p class="text-sm text-gray-500">ID: {{ secondary.id }}</p>
             <p class="text-sm text-gray-500">
-              Geburtsdatum:
+              {{ "playerAdmin.merge.birthdate" | transloco }}
               {{
                 secondary.birthdate
                   ? (secondary.birthdate | date: "dd.MM.yyyy")
@@ -124,13 +127,13 @@
               (click)="confirm()"
               class="font-bold text-white text-sm px-5 py-2.5 bg-orange-600 hover:bg-orange-700 rounded-[5px] cursor-pointer"
             >
-              Zusammenführen
+              {{ "playerAdmin.merge.merge" | transloco }}
             </button>
             <button
               (click)="back()"
               class="font-bold text-gray-600 text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
             >
-              Zurück
+              {{ "playerAdmin.merge.back" | transloco }}
             </button>
           </div>
         </div>
@@ -142,20 +145,21 @@
             class="bg-white my-[5px] py-[15px] px-[30px] border border-red-300 rounded"
           >
             <div class="uppercase font-bold text-red-600 text-sm mb-5">
-              Achtung – nicht rückgängig zu machen
+              {{ "playerAdmin.merge.warningIrreversible" | transloco }}
             </div>
             <p class="text-sm text-gray-700 mb-3">
-              Spieler
+              {{ "playerAdmin.merge.player" | transloco }}
               <strong
                 >{{ secondary.last_name }}, {{ secondary.first_name }}</strong
               >
-              (ID: {{ secondary.id }}) wird mit
+              (ID: {{ secondary.id }})
+              {{ "playerAdmin.merge.mergedAndDeactivated" | transloco }}
               <strong>{{ master.last_name }}, {{ master.first_name }}</strong>
-              (ID: {{ master.id }}) zusammengeführt und danach deaktiviert.
+              (ID: {{ master.id }})
+              {{ "playerAdmin.merge.willBeMerged" | transloco }}
             </p>
             <p class="text-sm text-gray-700 mb-5">
-              Alle Spielreferenzen und Lizenzdaten des Duplikats werden auf den
-              Master übertragen.
+              {{ "playerAdmin.merge.transferNote" | transloco }}
             </p>
             <div class="flex gap-3">
               <button
@@ -163,14 +167,19 @@
                 [disabled]="loading"
                 class="font-bold text-white text-sm px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-[5px] cursor-pointer disabled:opacity-50"
               >
-                {{ loading ? "Wird zusammengeführt…" : "Ja, zusammenführen" }}
+                {{
+                  (loading
+                    ? "playerAdmin.merge.merging"
+                    : "playerAdmin.merge.yesMerge"
+                  ) | transloco
+                }}
               </button>
               <button
                 (click)="cancelConfirm()"
                 [disabled]="loading"
                 class="font-bold text-gray-600 text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
               >
-                Abbrechen
+                {{ "playerAdmin.merge.cancel" | transloco }}
               </button>
             </div>
           </div>

@@ -1,0 +1,60 @@
+{
+  "index": {
+    "title": "Venues",
+    "createNew": "Create new venue",
+    "searchPlaceholder": "Search by name or city…",
+    "loading": "Loading venues…",
+    "count": "{{ filtered }} of {{ total }} entries",
+    "colName": "Name",
+    "colCity": "City",
+    "colAddress": "Address",
+    "edit": "Edit",
+    "merge": "Merge",
+    "delete": "Delete",
+    "empty": "No venues found."
+  },
+  "edit": {
+    "back": "← Venues",
+    "titleNew": "Create new venue",
+    "titleEdit": "Edit venue",
+    "name": "Name",
+    "namePlaceholder": "e.g. Sports hall Sampletown",
+    "city": "City",
+    "cityPlaceholder": "e.g. Berlin",
+    "street": "Street",
+    "streetPlaceholder": "Sample Street",
+    "housenumber": "House number",
+    "housenumberPlaceholder": "12a",
+    "postcode": "Postcode",
+    "postcodePlaceholder": "10115",
+    "duplicateHeading": "A venue at this address may already exist:",
+    "createAnyway": "Create anyway",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "save": "Save"
+  },
+  "merge": {
+    "back": "← Back",
+    "title": "Merge venues",
+    "remainingLabel": "Remaining venue",
+    "step1Intro": "Choose the duplicate venue to merge with \"{{ master }}\". All game days of the selected venue will be moved to the remaining venue; the duplicate entry will then be deleted.",
+    "searchPlaceholder": "Search venue (name or city)…",
+    "select": "Select",
+    "noMatch": "No matching venue found.",
+    "confirmIntro": "will be merged with",
+    "confirmDetail": "All game days of \"{{ secondary }}\" will be moved to \"{{ master }}\", after which \"{{ secondary }}\" will be deleted. This cannot be undone.",
+    "merging": "Merging…",
+    "mergeAction": "Merge",
+    "backAction": "Back"
+  },
+  "notifications": {
+    "deleteError": "Venue could not be deleted.",
+    "deleteConfirm": "Really delete venue \"{{ name }}\"?",
+    "notFound": "Venue not found.",
+    "loadError": "Error while loading.",
+    "saved": "Venue saved.",
+    "saveError": "Error while saving.",
+    "merged": "Venues merged ({{ count }} game day(s) moved).",
+    "mergeError": "Venues could not be merged."
+  }
+}

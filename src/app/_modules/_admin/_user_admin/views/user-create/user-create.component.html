@@ -1,9 +1,9 @@
 <div class="container mx-auto px-4 lg:px-8">
   <h1 class="font-bold text-[32px] lg:text-[42px] pt-4 lg:pt-0 my-4 lg:my-8">
-    Benutzerverwaltung
+    {{ "userAdmin.create.title" | transloco }}
   </h1>
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    Neuen Benutzer anlegen
+    {{ "userAdmin.create.subtitle" | transloco }}
   </h2>
 </div>
 
@@ -14,36 +14,48 @@
         <div>
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Benutzerdaten
+              {{ "userAdmin.create.userData" | transloco }}
             </div>
             <div class="grid grid-cols-2 gap-4">
-              <div class="font-bold">Benutzername</div>
+              <div class="font-bold">
+                {{ "userAdmin.create.username" | transloco }}
+              </div>
               <div>
                 <input
                   [(ngModel)]="userName"
                   type="text"
                   class="w-full"
-                  placeholder="z.B. max_mustermann"
+                  [placeholder]="
+                    'userAdmin.create.usernamePlaceholder' | transloco
+                  "
                 />
               </div>
 
-              <div class="font-bold">Vorname</div>
+              <div class="font-bold">
+                {{ "userAdmin.create.firstName" | transloco }}
+              </div>
               <div>
                 <input [(ngModel)]="firstName" type="text" class="w-full" />
               </div>
 
-              <div class="font-bold">Nachname</div>
+              <div class="font-bold">
+                {{ "userAdmin.create.lastName" | transloco }}
+              </div>
               <div>
                 <input [(ngModel)]="lastName" type="text" class="w-full" />
               </div>
 
-              <div class="font-bold">E-Mail</div>
+              <div class="font-bold">
+                {{ "userAdmin.create.email" | transloco }}
+              </div>
               <div>
                 <input
                   [(ngModel)]="email"
                   type="email"
                   class="w-full"
-                  placeholder="z.B. max@verein.de"
+                  [placeholder]="
+                    'userAdmin.create.emailPlaceholder' | transloco
+                  "
                 />
               </div>
             </div>
@@ -51,10 +63,12 @@
 
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Rolle &amp; Zuordnung
+              {{ "userAdmin.create.roleAndAssignment" | transloco }}
             </div>
             <div class="grid grid-cols-2 gap-4">
-              <div class="font-bold">Rolle</div>
+              <div class="font-bold">
+                {{ "userAdmin.create.role" | transloco }}
+              </div>
               <div>
                 <select [(ngModel)]="selectedRoleId" class="w-full">
                   @for (r of availableRoles; track r) {
@@ -66,14 +80,18 @@
               </div>
 
               @if (selectedRole?.needsClub) {
-                <div class="font-bold">Verein</div>
+                <div class="font-bold">
+                  {{ "userAdmin.create.club" | transloco }}
+                </div>
                 <div>
                   <select
                     [(ngModel)]="selectedClubId"
                     (ngModelChange)="onClubChange()"
                     class="w-full"
                   >
-                    <option [ngValue]="null">– Verein auswählen –</option>
+                    <option [ngValue]="null">
+                      {{ "userAdmin.create.selectClub" | transloco }}
+                    </option>
                     @for (c of isVm ? vmClubs : clubs; track c) {
                       <option [ngValue]="c.id">
                         {{ c.name }}
@@ -84,10 +102,14 @@
               }
 
               @if (selectedRole?.needsGo) {
-                <div class="font-bold">Verbund</div>
+                <div class="font-bold">
+                  {{ "userAdmin.create.association" | transloco }}
+                </div>
                 <div>
                   <select [(ngModel)]="selectedGoId" class="w-full">
-                    <option [ngValue]="null">– Verbund auswählen –</option>
+                    <option [ngValue]="null">
+                      {{ "userAdmin.create.selectAssociation" | transloco }}
+                    </option>
                     @for (go of gameOperations; track go) {
                       <option [ngValue]="go.id">
                         {{ go.name }}
@@ -103,10 +125,10 @@
                 availableTeams.length > 0
               ) {
                 <div class="font-bold col-span-2 mt-2">
-                  Teams zuweisen
-                  <span class="text-xs font-normal text-fb-gray-500 ml-1"
-                    >(optional)</span
-                  >
+                  {{ "userAdmin.create.assignTeams" | transloco }}
+                  <span class="text-xs font-normal text-fb-gray-500 ml-1">{{
+                    "userAdmin.create.optional" | transloco
+                  }}</span>
                 </div>
                 <div class="col-span-2 flex flex-col gap-1">
                   @for (team of availableTeams; track team) {
@@ -134,8 +156,7 @@
 
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <p class="text-sm text-fb-gray-500 mb-4">
-              Der Benutzer erhält automatisch eine E-Mail mit einem Link zum
-              Passwort setzen.
+              {{ "userAdmin.create.emailHint" | transloco }}
             </p>
             <div class="flex items-center gap-4">
               <a
@@ -145,13 +166,18 @@
                 class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
                 (click)="submit()"
               >
-                {{ saving ? "Wird angelegt…" : "Benutzer anlegen" }}
+                {{
+                  (saving
+                    ? "userAdmin.create.creating"
+                    : "userAdmin.create.submit"
+                  ) | transloco
+                }}
               </a>
               <a
                 class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                 [routerLink]="['/', 'verwaltung', 'benutzer']"
               >
-                Abbrechen
+                {{ "userAdmin.create.cancel" | transloco }}
               </a>
             </div>
           </div>

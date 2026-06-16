@@ -3,15 +3,21 @@
     <a
       [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
       class="text-fb-gray-500 hover:text-black text-sm"
-      >← Zurück</a
+      >{{ "refereeAdmin.edit.back" | transloco }}</a
     >
     <h1 class="text-2xl font-bold">
-      {{ editMode ? "Schiedsrichter bearbeiten" : "Neuer Schiedsrichter" }}
+      {{
+        editMode
+          ? ("refereeAdmin.edit.titleEdit" | transloco)
+          : ("refereeAdmin.edit.titleNew" | transloco)
+      }}
     </h1>
   </div>
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "refereeAdmin.edit.loading" | transloco }}
+    </div>
   }
 
   @if (!loading) {
@@ -24,17 +30,21 @@
           name="guest"
           class="w-4 h-4"
         />
-        <span class="text-sm font-bold">Gastschiedsrichter</span>
-        <span class="text-xs text-fb-gray-500"
-          >(aus dem Ausland, nicht im FD-System)</span
-        >
+        <span class="text-sm font-bold">{{
+          "refereeAdmin.edit.guest" | transloco
+        }}</span>
+        <span class="text-xs text-fb-gray-500">{{
+          "refereeAdmin.edit.guestHint" | transloco
+        }}</span>
       </label>
       <!-- Stammdaten -->
       <div class="flex flex-col gap-4">
         <div class="grid grid-cols-2 gap-4">
           @if (!referee.guest) {
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-bold">Lizenznummer *</label>
+              <label class="text-sm font-bold">{{
+                "refereeAdmin.edit.licenseNumber" | transloco
+              }}</label>
               <input
                 type="number"
                 [(ngModel)]="referee.lizenznummer"
@@ -47,14 +57,18 @@
           }
           @if (!referee.guest) {
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-bold">Lizenzstufe</label>
+              <label class="text-sm font-bold">{{
+                "refereeAdmin.edit.licenseLevel" | transloco
+              }}</label>
               <select
                 [(ngModel)]="referee.lizenzstufe"
                 name="lizenzstufe"
                 [disabled]="isRestricted"
                 class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white disabled:bg-fb-gray-200 disabled:text-gray-700"
               >
-                <option value="">– keine –</option>
+                <option value="">
+                  {{ "refereeAdmin.edit.licenseLevelNone" | transloco }}
+                </option>
                 @for (l of licenseLevels; track l) {
                   <option [value]="l.name">
                     {{ l.name }}
@@ -64,19 +78,24 @@
                   referee.lizenzstufe && !hasLicenseLevel(referee.lizenzstufe)
                 ) {
                   <option [value]="referee.lizenzstufe">
-                    {{ referee.lizenzstufe }} (veraltet)
+                    {{
+                      "refereeAdmin.edit.licenseLevelOutdated"
+                        | transloco: { name: referee.lizenzstufe }
+                    }}
                   </option>
                 }
               </select>
               @if (isRestricted) {
                 <p class="text-xs text-fb-gray-500">
-                  Nur durch FD-RSK änderbar.
+                  {{ "refereeAdmin.edit.fdRskOnly" | transloco }}
                 </p>
               }
             </div>
           }
           <div class="flex flex-col gap-1">
-            <label class="text-sm font-bold">Vorname *</label>
+            <label class="text-sm font-bold">{{
+              "refereeAdmin.edit.firstName" | transloco
+            }}</label>
             <input
               type="text"
               [(ngModel)]="referee.vorname"
@@ -86,7 +105,9 @@
             />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-sm font-bold">Nachname *</label>
+            <label class="text-sm font-bold">{{
+              "refereeAdmin.edit.lastName" | transloco
+            }}</label>
             <input
               type="text"
               [(ngModel)]="referee.nachname"
@@ -99,7 +120,9 @@
         <!-- Lizenz (nur für reguläre Schiedsrichter) -->
         @if (!referee.guest) {
           <div class="flex flex-col gap-1">
-            <label class="text-sm font-bold">Lizenz gültig bis</label>
+            <label class="text-sm font-bold">{{
+              "refereeAdmin.edit.licenseValidUntil" | transloco
+            }}</label>
             <input
               type="date"
               [(ngModel)]="referee.gueltigkeit"
@@ -108,7 +131,9 @@
               class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-200 disabled:text-gray-700"
             />
             @if (isRestricted) {
-              <p class="text-xs text-fb-gray-500">Nur durch FD-RSK änderbar.</p>
+              <p class="text-xs text-fb-gray-500">
+                {{ "refereeAdmin.edit.fdRskOnly" | transloco }}
+              </p>
             }
           </div>
         }
@@ -116,13 +141,17 @@
         <div class="grid grid-cols-2 gap-4">
           @if (!referee.guest) {
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-bold">Verein</label>
+              <label class="text-sm font-bold">{{
+                "refereeAdmin.edit.club" | transloco
+              }}</label>
               <select
                 [(ngModel)]="referee.club_id"
                 name="club_id"
                 class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
               >
-                <option [ngValue]="null">– kein Verein –</option>
+                <option [ngValue]="null">
+                  {{ "refereeAdmin.edit.clubNone" | transloco }}
+                </option>
                 @for (c of clubs; track c) {
                   <option [ngValue]="c.id">
                     {{ c.name }}
@@ -133,7 +162,9 @@
           }
           @if (!referee.guest) {
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-bold">Landesverband</label>
+              <label class="text-sm font-bold">{{
+                "refereeAdmin.edit.association" | transloco
+              }}</label>
               <input
                 type="text"
                 [value]="derivedLandesverband || '–'"
@@ -141,12 +172,14 @@
                 class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm bg-fb-gray-200 text-gray-700"
               />
               <p class="text-xs text-fb-gray-500">
-                Wird automatisch aus dem Verein abgeleitet.
+                {{ "refereeAdmin.edit.associationHint" | transloco }}
               </p>
             </div>
           }
           <div class="flex flex-col gap-1">
-            <label class="text-sm font-bold">E-Mail</label>
+            <label class="text-sm font-bold">{{
+              "refereeAdmin.edit.email" | transloco
+            }}</label>
             <input
               type="email"
               [(ngModel)]="referee.email"
@@ -156,7 +189,9 @@
           </div>
           @if (!referee.guest) {
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-bold">Geburtsdatum</label>
+              <label class="text-sm font-bold">{{
+                "refereeAdmin.edit.birthDate" | transloco
+              }}</label>
               <input
                 type="date"
                 [(ngModel)]="referee.geburtsdatum"
@@ -171,7 +206,9 @@
       @if (!referee.guest) {
         <div class="flex flex-col gap-3">
           <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold">Zusatzqualifikationen</h2>
+            <h2 class="text-sm font-bold">
+              {{ "refereeAdmin.edit.qualifications" | transloco }}
+            </h2>
             @if (!isRestricted) {
               <button
                 type="button"
@@ -179,7 +216,7 @@
                 [disabled]="qualifications.length >= qualificationTypes.length"
                 class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
               >
-                + Hinzufügen
+                {{ "refereeAdmin.edit.addQualification" | transloco }}
               </button>
             }
           </div>
@@ -187,7 +224,7 @@
           @if (isRestricted) {
             @if (qualifications.length === 0) {
               <p class="text-xs text-fb-gray-500">
-                Keine Zusatzqualifikationen hinterlegt.
+                {{ "refereeAdmin.edit.noQualifications" | transloco }}
               </p>
             }
             @for (q of qualifications; track q) {
@@ -198,13 +235,15 @@
                 <span class="text-fb-gray-500">{{ q.valid_until || "–" }}</span>
               </div>
             }
-            <p class="text-xs text-fb-gray-500">Nur durch FD-RSK änderbar.</p>
+            <p class="text-xs text-fb-gray-500">
+              {{ "refereeAdmin.edit.fdRskOnly" | transloco }}
+            </p>
           }
           <!-- Editable view for full-access users -->
           @if (!isRestricted) {
             @if (qualificationTypes.length === 0) {
               <p class="text-xs text-fb-gray-500">
-                Keine Qualifikationstypen konfiguriert.
+                {{ "refereeAdmin.edit.noQualificationTypes" | transloco }}
               </p>
             }
             @for (q of qualifications; track q; let i = $index) {
@@ -228,12 +267,16 @@
                   type="date"
                   [(ngModel)]="q.valid_until"
                   [name]="'qual_valid_' + i"
-                  placeholder="Gültig bis"
+                  [attr.placeholder]="
+                    'refereeAdmin.edit.validUntilPlaceholder' | transloco
+                  "
                   class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-40"
                 />
                 <button
                   type="button"
-                  title="Qualifikation entfernen"
+                  [attr.title]="
+                    'refereeAdmin.edit.removeQualificationTitle' | transloco
+                  "
                   (click)="removeQualification(i)"
                   class="text-red-400 hover:text-red-600 text-sm font-bold px-2"
                 >
@@ -243,7 +286,7 @@
             }
             @if (qualifications.length === 0) {
               <p class="text-xs text-fb-gray-500">
-                Keine Zusatzqualifikationen hinterlegt.
+                {{ "refereeAdmin.edit.noQualifications" | transloco }}
               </p>
             }
           }
@@ -252,13 +295,17 @@
       <!-- Heimadresse (nur reguläre Schiedsrichter) -->
       @if (!referee.guest) {
         <div class="flex flex-col gap-2">
-          <h2 class="text-sm font-bold">Heimadresse</h2>
+          <h2 class="text-sm font-bold">
+            {{ "refereeAdmin.edit.homeAddress" | transloco }}
+          </h2>
           <p class="text-xs text-fb-gray-500">
-            Wird nur bei Ansetzungen für die Berechnung der Kilometer genutzt.
+            {{ "refereeAdmin.edit.homeAddressHint" | transloco }}
           </p>
           <div class="grid grid-cols-[2fr_1fr] gap-4">
             <div class="flex flex-col gap-1">
-              <label class="text-sm">Straße</label>
+              <label class="text-sm">{{
+                "refereeAdmin.edit.street" | transloco
+              }}</label>
               <input
                 type="text"
                 [(ngModel)]="referee.strasse"
@@ -267,7 +314,9 @@
               />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-sm">Hausnummer</label>
+              <label class="text-sm">{{
+                "refereeAdmin.edit.houseNumber" | transloco
+              }}</label>
               <input
                 type="text"
                 [(ngModel)]="referee.hausnummer"
@@ -278,7 +327,9 @@
           </div>
           <div class="grid grid-cols-[1fr_2fr] gap-4">
             <div class="flex flex-col gap-1">
-              <label class="text-sm">PLZ</label>
+              <label class="text-sm">{{
+                "refereeAdmin.edit.zip" | transloco
+              }}</label>
               <input
                 type="text"
                 [(ngModel)]="referee.plz"
@@ -287,7 +338,9 @@
               />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-sm">Ort</label>
+              <label class="text-sm">{{
+                "refereeAdmin.edit.city" | transloco
+              }}</label>
               <input
                 type="text"
                 [(ngModel)]="referee.ort"
@@ -302,17 +355,18 @@
       @if (!referee.guest) {
         <div class="flex flex-col gap-2">
           <h2 class="text-sm font-bold">
-            Häufigste/r Schiedsrichterpartner/in
+            {{ "refereeAdmin.edit.partnerHeading" | transloco }}
           </h2>
           <p class="text-xs text-fb-gray-500">
-            Gib hier die Lizenznummer des primären Partners bzw. der primären
-            Partnerin ein, damit uns Ansetzungen vereinfacht werden.
+            {{ "refereeAdmin.edit.partnerHint" | transloco }}
           </p>
           <input
             type="number"
             [(ngModel)]="referee.partner_lizenznummer"
             name="partner_lizenznummer"
-            placeholder="Lizenznummer"
+            [attr.placeholder]="
+              'refereeAdmin.edit.partnerPlaceholder' | transloco
+            "
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
           />
         </div>
@@ -324,13 +378,17 @@
           [disabled]="saving"
           class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
         >
-          {{ saving ? "Speichern…" : "Speichern" }}
+          {{
+            saving
+              ? ("refereeAdmin.edit.saving" | transloco)
+              : ("refereeAdmin.edit.save" | transloco)
+          }}
         </button>
         <a
           [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
           class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
         >
-          Abbrechen
+          {{ "refereeAdmin.edit.cancel" | transloco }}
         </a>
         @if (editMode && canDelete) {
           <button
@@ -338,7 +396,7 @@
             (click)="delete()"
             class="ml-auto px-5 py-2 text-sm font-bold text-red-500 border border-red-300 rounded-[5px] hover:border-red-500"
           >
-            Löschen
+            {{ "refereeAdmin.edit.delete" | transloco }}
           </button>
         }
         @if (editMode && canMerge && referee.lizenznummer_display) {
@@ -352,7 +410,7 @@
             ]"
             class="px-5 py-2 text-sm font-bold text-orange-600 border border-orange-300 rounded-[5px] hover:border-orange-500"
           >
-            Duplikat zusammenführen
+            {{ "refereeAdmin.edit.mergeDuplicate" | transloco }}
           </a>
         }
         @if (editMode && canCreateUserAccount && !referee.user_id) {
@@ -369,7 +427,7 @@
           @if (!referee.email) {
             <span
               class="px-3 py-2 text-xs text-fb-gray-400 border border-fb-gray-300 rounded-[5px] cursor-not-allowed"
-              title="E-Mail-Adresse erforderlich um ein Benutzerkonto anzulegen"
+              [title]="'refereeAdmin.edit.emailRequiredTitle' | transloco"
             >
               Benutzerkonto anlegen (keine E-Mail)
             </span>
@@ -380,7 +438,7 @@
             type="button"
             (click)="deleteUserAccount()"
             [disabled]="userDeleteLoading"
-            title="Verknüpftes Benutzerkonto löschen"
+            [title]="'refereeAdmin.edit.deleteLinkedAccountTitle' | transloco"
             class="px-5 py-2 text-sm font-bold text-red-500 border border-red-300 rounded-[5px] hover:border-red-500 disabled:opacity-40"
           >
             {{ userDeleteLoading ? "Lösche…" : "Benutzerkonto löschen" }}

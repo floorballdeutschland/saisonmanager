@@ -1,6 +1,6 @@
 <div class="container mx-auto px-4 lg:px-8">
   <h1 class="font-bold text-[32px] lg:text-[42px] pt-4 lg:pt-0 my-4 lg:my-8">
-    Saison-Verwaltung
+    {{ "settings.title" | transloco }}
   </h1>
 </div>
 
@@ -12,7 +12,7 @@
           <div
             class="bg-white my-[5px] py-[15px] px-[30px] text-gray-400 text-sm"
           >
-            Lade Saison-Daten…
+            {{ "settings.loading" | transloco }}
           </div>
         }
 
@@ -20,28 +20,31 @@
           <div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Aktuelle Saison
+                {{ "settings.currentSeasonHeading" | transloco }}
               </div>
               <p class="text-lg font-bold">{{ currentSeasonName }}</p>
               @if (success) {
                 <p class="mt-2 text-sm text-green-600 font-bold">
-                  Saison erfolgreich auf „{{ currentSeasonName }}" umgestellt.
+                  {{
+                    "settings.switchSuccess"
+                      | transloco: { name: currentSeasonName }
+                  }}
                 </p>
               }
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Neue Saison anlegen
+                {{ "settings.createSeasonHeading" | transloco }}
               </div>
               <div class="flex gap-2 items-end">
                 <div class="flex-1">
-                  <label class="block text-sm font-bold mb-1"
-                    >Saison-Name</label
-                  >
+                  <label class="block text-sm font-bold mb-1">{{
+                    "settings.seasonNameLabel" | transloco
+                  }}</label>
                   <input
                     type="text"
                     [(ngModel)]="newSeasonName"
-                    placeholder="z.B. 2026/27"
+                    [placeholder]="'settings.seasonNamePlaceholder' | transloco"
                     class="w-full border border-fb-gray-600 rounded-[5px] px-2 py-1.5 text-sm bg-white"
                   />
                 </div>
@@ -50,19 +53,22 @@
                   [disabled]="!newSeasonName.trim() || creatingSeason"
                   class="text-sm font-bold text-white px-4 py-1.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 rounded-[5px] border border-sky-600"
                 >
-                  {{ creatingSeason ? "Wird angelegt…" : "Anlegen" }}
+                  {{
+                    (creatingSeason ? "settings.creating" : "settings.create")
+                      | transloco
+                  }}
                 </button>
               </div>
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Saison wechseln
+                {{ "settings.switchSeasonHeading" | transloco }}
               </div>
               <div class="flex flex-col gap-3">
                 <div>
-                  <label class="block text-sm font-bold mb-1"
-                    >Neue aktive Saison</label
-                  >
+                  <label class="block text-sm font-bold mb-1">{{
+                    "settings.newActiveSeasonLabel" | transloco
+                  }}</label>
                   <select
                     [(ngModel)]="selectedSeasonId"
                     (ngModelChange)="onSeasonChange()"
@@ -71,7 +77,11 @@
                     @for (s of seasons; track s) {
                       <option [ngValue]="s.id">
                         {{ s.name
-                        }}{{ s.id === currentSeasonId ? " (aktuell)" : "" }}
+                        }}{{
+                          s.id === currentSeasonId
+                            ? ("settings.currentSuffix" | transloco)
+                            : ""
+                        }}
                       </option>
                     }
                   </select>
@@ -81,29 +91,28 @@
                     class="bg-amber-50 border border-amber-300 rounded p-4 text-sm"
                   >
                     <p class="font-bold text-amber-800 mb-2">
-                      ⚠ ACHTUNG: Diese Aktion hat weitreichende Folgen
+                      {{ "settings.warningHeading" | transloco }}
                     </p>
                     <ul class="list-disc ml-4 text-amber-700 space-y-1">
                       <li>
-                        Alle TM-Nutzer werden beim nächsten Login ausgesperrt,
-                        da ihre Teams nicht mehr zur aktiven Saison gehören.
+                        {{ "settings.warningTmUsers" | transloco }}
                       </li>
                       <li>
-                        Spieler-Lizenzen der alten Saison verlieren die
-                        Gültigkeit für neue Spielberichte.
+                        {{ "settings.warningLicenses" | transloco }}
                       </li>
                       <li>
-                        SBK-Nutzer müssen neue Ligen anlegen; Vereine müssen
-                        ihre Teams neu anmelden.
+                        {{ "settings.warningSbkUsers" | transloco }}
                       </li>
                     </ul>
                   </div>
                   <label class="flex items-center gap-2 text-sm cursor-pointer">
                     <input type="checkbox" [(ngModel)]="confirmed" />
                     <span
-                      >Ich verstehe die Konsequenzen und möchte von
-                      <strong>{{ currentSeasonName }}</strong> auf
-                      <strong>{{ selectedSeasonName }}</strong> wechseln.</span
+                      >{{ "settings.confirmIntro" | transloco }}
+                      <strong>{{ currentSeasonName }}</strong>
+                      {{ "settings.confirmTo" | transloco }}
+                      <strong>{{ selectedSeasonName }}</strong
+                      >{{ "settings.confirmOutro" | transloco }}</span
                     >
                   </label>
                   <a
@@ -113,7 +122,10 @@
                     class="inline-block font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-500 hover:bg-red-600 border-red-600 rounded-[5px]"
                     (click)="submit()"
                   >
-                    {{ saving ? "Wird umgestellt…" : "Saison jetzt umstellen" }}
+                    {{
+                      (saving ? "settings.switching" : "settings.switchNow")
+                        | transloco
+                    }}
                   </a>
                 }
               </div>

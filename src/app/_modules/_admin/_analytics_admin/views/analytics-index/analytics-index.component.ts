@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   AnalyticsService,
   AnalyticsData,
@@ -30,6 +31,7 @@ export class AnalyticsIndexComponent implements OnInit, OnDestroy {
 
   constructor(
     private _analyticsService: AnalyticsService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -56,7 +58,9 @@ export class AnalyticsIndexComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('[AnalyticsIndexComponent] Laden fehlgeschlagen', err);
-          this.loadError = 'Zugriffszahlen konnten nicht geladen werden.';
+          this.loadError = this._transloco.translate(
+            'analytics.notifications.loadError'
+          );
           this.loading = false;
           this._cdr.markForCheck();
         },
@@ -109,21 +113,10 @@ export class AnalyticsIndexComponent implements OnInit, OnDestroy {
 
   formatMonth(monthStr: string): string {
     const [year, month] = monthStr.split('-');
-    const names = [
-      'Jan',
-      'Feb',
-      'Mär',
-      'Apr',
-      'Mai',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Okt',
-      'Nov',
-      'Dez',
-    ];
-    return `${names[parseInt(month, 10) - 1]} ${year.slice(2)}`;
+    const name = this._transloco.translate(
+      `analytics.months.${parseInt(month, 10)}`
+    );
+    return `${name} ${year.slice(2)}`;
   }
 
   get last30Days(): DailyCount[] {

@@ -4,28 +4,31 @@
       (click)="cancel()"
       class="text-fb-gray-500 hover:text-black text-sm"
     >
-      ← Zurück
+      {{ "transferRequestAdmin.initiate.back" | transloco }}
     </button>
-    <h1 class="text-2xl font-bold">Transferantrag stellen</h1>
+    <h1 class="text-2xl font-bold">
+      {{ "transferRequestAdmin.initiate.title" | transloco }}
+    </h1>
   </div>
 
   <div class="bg-white border border-fb-gray-600 rounded p-4 mb-6">
     <p class="text-sm text-fb-gray-500 mb-4">
-      Suche den Spieler anhand von Vor- und Nachname sowie Geburtsdatum. Es wird
-      nur ein exakter Treffer akzeptiert.
+      {{ "transferRequestAdmin.initiate.intro" | transloco }}
     </p>
 
     <div class="flex flex-col gap-3">
       @if (currentUserClubIds.length > 1) {
         <div>
-          <label class="block text-xs font-bold text-fb-gray-500 mb-1"
-            >Antragstellender Verein</label
-          >
+          <label class="block text-xs font-bold text-fb-gray-500 mb-1">{{
+            "transferRequestAdmin.initiate.requestingClub" | transloco
+          }}</label>
           <select
             [(ngModel)]="selectedClubId"
             class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-black"
           >
-            <option [ngValue]="0">Verein wählen…</option>
+            <option [ngValue]="0">
+              {{ "transferRequestAdmin.initiate.chooseClub" | transloco }}
+            </option>
             @for (club of managedClubs; track club) {
               <option [ngValue]="club.id">
                 {{ club.name }}
@@ -36,31 +39,35 @@
       }
 
       <div>
-        <label class="block text-xs font-bold text-fb-gray-500 mb-1"
-          >Vorname</label
-        >
+        <label class="block text-xs font-bold text-fb-gray-500 mb-1">{{
+          "transferRequestAdmin.initiate.firstName" | transloco
+        }}</label>
         <input
           type="text"
           [(ngModel)]="firstName"
           class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-black"
-          placeholder="Vorname"
+          [attr.placeholder]="
+            'transferRequestAdmin.initiate.firstName' | transloco
+          "
         />
       </div>
       <div>
-        <label class="block text-xs font-bold text-fb-gray-500 mb-1"
-          >Nachname</label
-        >
+        <label class="block text-xs font-bold text-fb-gray-500 mb-1">{{
+          "transferRequestAdmin.initiate.lastName" | transloco
+        }}</label>
         <input
           type="text"
           [(ngModel)]="lastName"
           class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-black"
-          placeholder="Nachname"
+          [attr.placeholder]="
+            'transferRequestAdmin.initiate.lastName' | transloco
+          "
         />
       </div>
       <div>
-        <label class="block text-xs font-bold text-fb-gray-500 mb-1"
-          >Geburtsdatum</label
-        >
+        <label class="block text-xs font-bold text-fb-gray-500 mb-1">{{
+          "transferRequestAdmin.initiate.birthdate" | transloco
+        }}</label>
         <input
           type="date"
           [(ngModel)]="birthdate"
@@ -75,7 +82,11 @@
         "
         class="bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {{ searching ? "Suche…" : "Spieler suchen" }}
+        {{
+          searching
+            ? ("transferRequestAdmin.initiate.searching" | transloco)
+            : ("transferRequestAdmin.initiate.searchPlayer" | transloco)
+        }}
       </button>
     </div>
 
@@ -89,16 +100,21 @@
   @if (foundPlayer) {
     <div class="bg-white border border-fb-gray-600 rounded p-4 mb-6">
       <h2 class="text-sm font-semibold text-fb-gray-500 mb-3">
-        Spieler gefunden
+        {{ "transferRequestAdmin.initiate.playerFound" | transloco }}
       </h2>
       <p class="text-base font-medium mb-1">
         {{ foundPlayer.last_name }}, {{ foundPlayer.first_name }}
       </p>
       <p class="text-sm text-fb-gray-500">
-        Geburtsdatum: {{ foundPlayer.birthdate | date: "dd.MM.yyyy" }}
+        {{
+          "transferRequestAdmin.initiate.birthdateLabel"
+            | transloco: { date: (foundPlayer.birthdate | date: "dd.MM.yyyy") }
+        }}
       </p>
       <div class="mt-4 pt-4 border-t border-fb-gray-600">
-        <p class="text-sm font-semibold text-black mb-3">Art des Antrags</p>
+        <p class="text-sm font-semibold text-black mb-3">
+          {{ "transferRequestAdmin.initiate.requestType" | transloco }}
+        </p>
         <div class="flex flex-col gap-2 mb-4">
           <label class="flex items-start gap-2 text-sm cursor-pointer">
             <input
@@ -108,11 +124,12 @@
               class="mt-0.5"
             />
             <span class="flex flex-col gap-0.5">
-              <span class="font-medium">Transfer</span>
-              <span class="text-xs text-fb-gray-500"
-                >Spieler wechselt dauerhaft zu deinem Verein. Bestehende
-                Lizenzen werden ungültig.</span
-              >
+              <span class="font-medium">{{
+                "transferRequestAdmin.initiate.typeTransfer" | transloco
+              }}</span>
+              <span class="text-xs text-fb-gray-500">{{
+                "transferRequestAdmin.initiate.typeTransferHint" | transloco
+              }}</span>
             </span>
           </label>
           <label class="flex items-start gap-2 text-sm cursor-pointer">
@@ -123,19 +140,21 @@
               class="mt-0.5"
             />
             <span class="flex flex-col gap-0.5">
-              <span class="font-medium">Spielerfreigabe</span>
-              <span class="text-xs text-fb-gray-500"
-                >Spieler bleibt beim abgebenden Verein, darf aber bis zum 15.07.
-                auch für deinen Verein spielen. Bestehende Lizenzen bleiben
-                gültig.</span
-              >
+              <span class="font-medium">{{
+                "transferRequestAdmin.initiate.typeRelease" | transloco
+              }}</span>
+              <span class="text-xs text-fb-gray-500">{{
+                "transferRequestAdmin.initiate.typeReleaseHint" | transloco
+              }}</span>
             </span>
           </label>
         </div>
       </div>
       @if (requestType === "transfer") {
         <div class="pt-4 border-t border-fb-gray-600">
-          <p class="text-sm font-semibold text-black mb-3">Transferdatum</p>
+          <p class="text-sm font-semibold text-black mb-3">
+            {{ "transferRequestAdmin.initiate.transferDate" | transloco }}
+          </p>
           <div class="flex flex-col gap-2 mb-4">
             <label class="flex items-center gap-2 text-sm cursor-pointer">
               <input
@@ -143,7 +162,7 @@
                 [(ngModel)]="effectiveDateMode"
                 value="immediate"
               />
-              Nächstmöglich
+              {{ "transferRequestAdmin.initiate.immediate" | transloco }}
             </label>
             <label class="flex items-center gap-2 text-sm cursor-pointer">
               <input
@@ -151,7 +170,7 @@
                 [(ngModel)]="effectiveDateMode"
                 value="scheduled"
               />
-              Wunschdatum (mind. 7 Tage in der Zukunft)
+              {{ "transferRequestAdmin.initiate.scheduled" | transloco }}
             </label>
             @if (effectiveDateMode === "scheduled") {
               <input
@@ -167,14 +186,10 @@
       <div class="pt-4 border-t border-fb-gray-600">
         <p class="text-sm text-fb-gray-500 mb-3">
           @if (requestType === "transfer") {
-            Der Transferantrag wird für deinen Verein gestellt. Der abgebende
-            Verein muss anschließend zustimmen, danach genehmigt der
-            Landesverband.
+            {{ "transferRequestAdmin.initiate.noteTransfer" | transloco }}
           }
           @if (requestType === "release") {
-            Der Freigabeantrag wird für deinen Verein gestellt. Der abgebende
-            Verein muss zustimmen, danach genehmigt der Landesverband. Die
-            Freigabe gilt bis zum 15.07. des laufenden Jahres.
+            {{ "transferRequestAdmin.initiate.noteRelease" | transloco }}
           }
         </p>
         <button
@@ -189,10 +204,10 @@
         >
           {{
             submitting
-              ? "Wird gesendet…"
+              ? ("transferRequestAdmin.initiate.submitting" | transloco)
               : requestType === "release"
-                ? "Freigabeantrag stellen"
-                : "Transferantrag stellen"
+                ? ("transferRequestAdmin.initiate.submitRelease" | transloco)
+                : ("transferRequestAdmin.initiate.submitTransfer" | transloco)
           }}
         </button>
       </div>

@@ -1,6 +1,6 @@
 <div class="mx-auto w-full max-w-[1800px] px-4 lg:px-8">
   <h1 class="font-bold text-[32px] lg:text-[42px] pt-4 lg:pt-0 my-4 lg:my-8">
-    Lizenzverwaltung
+    {{ "licenseAdmin.globalList.title" | transloco }}
   </h1>
 </div>
 
@@ -8,12 +8,14 @@
   <div class="mx-auto w-full max-w-[1800px] px-4 lg:px-8">
     <!-- Filter-Panel -->
     <div class="bg-white p-5 mb-5">
-      <div class="uppercase font-bold text-gray-400 text-sm mb-4">Filter</div>
+      <div class="uppercase font-bold text-gray-400 text-sm mb-4">
+        {{ "licenseAdmin.globalList.filter" | transloco }}
+      </div>
       <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 mb-3">
         <input
           type="text"
           class="rounded border-gray-300 text-sm"
-          placeholder="Spieler suchen..."
+          [placeholder]="'licenseAdmin.globalList.searchPlayer' | transloco"
           [(ngModel)]="search"
           (ngModelChange)="applyFilters()"
         />
@@ -21,7 +23,7 @@
         <input
           type="text"
           class="rounded border-gray-300 text-sm"
-          placeholder="Verein suchen..."
+          [placeholder]="'licenseAdmin.globalList.searchClub' | transloco"
           [(ngModel)]="clubSearch"
           (ngModelChange)="applyFilters()"
         />
@@ -81,9 +83,15 @@
           [(ngModel)]="filterFemale"
           (ngModelChange)="applyFilters()"
         >
-          <option [ngValue]="null">männlich &amp; weiblich</option>
-          <option [ngValue]="false">männlich</option>
-          <option [ngValue]="true">weiblich</option>
+          <option [ngValue]="null">
+            {{ "licenseAdmin.globalList.genderBoth" | transloco }}
+          </option>
+          <option [ngValue]="false">
+            {{ "licenseAdmin.globalList.genderMale" | transloco }}
+          </option>
+          <option [ngValue]="true">
+            {{ "licenseAdmin.globalList.genderFemale" | transloco }}
+          </option>
         </select>
 
         <select
@@ -115,10 +123,18 @@
           [(ngModel)]="filterLeagueType"
           (ngModelChange)="applyFilters()"
         >
-          <option [ngValue]="null">Alle Ligamodi</option>
-          <option value="league">Liga</option>
-          <option value="cup">Pokal</option>
-          <option value="champ">Meister</option>
+          <option [ngValue]="null">
+            {{ "licenseAdmin.globalList.allLeagueModes" | transloco }}
+          </option>
+          <option value="league">
+            {{ "licenseAdmin.globalList.league" | transloco }}
+          </option>
+          <option value="cup">
+            {{ "licenseAdmin.globalList.cup" | transloco }}
+          </option>
+          <option value="champ">
+            {{ "licenseAdmin.globalList.champ" | transloco }}
+          </option>
         </select>
 
         <select
@@ -138,9 +154,15 @@
           [(ngModel)]="filterLicenseType"
           (ngModelChange)="applyFilters()"
         >
-          <option [ngValue]="null">Erst- &amp; Zusatzlizenzen</option>
-          <option value="primary">Nur Erstlizenzen</option>
-          <option value="secondary">Nur Zusatzlizenzen</option>
+          <option [ngValue]="null">
+            {{ "licenseAdmin.globalList.primaryAndSecondary" | transloco }}
+          </option>
+          <option value="primary">
+            {{ "licenseAdmin.globalList.onlyPrimary" | transloco }}
+          </option>
+          <option value="secondary">
+            {{ "licenseAdmin.globalList.onlySecondary" | transloco }}
+          </option>
         </select>
 
         <label
@@ -152,17 +174,22 @@
             [(ngModel)]="filterExpressOnly"
             (ngModelChange)="applyFilters()"
           />
-          Nur Expresslizenzen
+          {{ "licenseAdmin.globalList.onlyExpress" | transloco }}
         </label>
       </div>
 
       <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
         <span class="text-sm text-gray-500">
           @if (!loading) {
-            <span>{{ filteredEntries.length }} Lizenzen gefunden</span>
+            <span>{{
+              "licenseAdmin.globalList.licensesFound"
+                | transloco: { count: filteredEntries.length }
+            }}</span>
           }
           @if (loading) {
-            <span>Daten werden geladen...</span>
+            <span>{{
+              "licenseAdmin.globalList.loadingShort" | transloco
+            }}</span>
           }
         </span>
         <div class="flex items-center gap-4">
@@ -171,14 +198,14 @@
               class="text-sm text-fb-gray-500 hover:text-black underline"
               (click)="exportCsv()"
             >
-              CSV exportieren
+              {{ "licenseAdmin.globalList.exportCsv" | transloco }}
             </button>
           }
           <button
             class="text-sm text-fb-gray-500 hover:text-black underline"
             (click)="resetFilters()"
           >
-            Filter zurücksetzen
+            {{ "licenseAdmin.globalList.resetFilters" | transloco }}
           </button>
         </div>
       </div>
@@ -202,16 +229,18 @@
             fill="currentFill"
           />
         </svg>
-        Lizenzdaten werden geladen...
+        {{ "licenseAdmin.globalList.loadingLicenses" | transloco }}
       </div>
     }
 
     <!-- Fehler -->
     @if (loadError) {
       <div class="bg-white p-8 text-center text-red-600">
-        <p class="mb-4">Lizenzdaten konnten nicht geladen werden.</p>
+        <p class="mb-4">
+          {{ "licenseAdmin.globalList.loadErrorText" | transloco }}
+        </p>
         <button class="text-sm underline hover:text-red-800" (click)="load()">
-          Erneut versuchen
+          {{ "licenseAdmin.globalList.retry" | transloco }}
         </button>
       </div>
     }
@@ -225,57 +254,57 @@
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Spieler
+                {{ "licenseAdmin.globalList.colPlayer" | transloco }}
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Team
+                {{ "licenseAdmin.globalList.colTeam" | transloco }}
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Wettbewerb
+                {{ "licenseAdmin.globalList.colCompetition" | transloco }}
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Liga
+                {{ "licenseAdmin.globalList.colLeague" | transloco }}
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Status
+                {{ "licenseAdmin.globalList.colStatus" | transloco }}
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Typ
+                {{ "licenseAdmin.globalList.colType" | transloco }}
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Express
+                {{ "licenseAdmin.globalList.colExpress" | transloco }}
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Dokumente
+                {{ "licenseAdmin.globalList.colDocuments" | transloco }}
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Beantragt
+                {{ "licenseAdmin.globalList.colRequested" | transloco }}
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Erteilt
+                {{ "licenseAdmin.globalList.colApproved" | transloco }}
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                Gültig bis
+                {{ "licenseAdmin.globalList.colValidUntil" | transloco }}
               </th>
               <th class="px-4 py-3"></th>
             </tr>
@@ -284,7 +313,7 @@
             @if (filteredEntries.length === 0) {
               <tr>
                 <td colspan="12" class="px-4 py-8 text-center text-gray-400">
-                  Keine Lizenzen gefunden.
+                  {{ "licenseAdmin.globalList.noLicensesFound" | transloco }}
                 </td>
               </tr>
             }
@@ -296,13 +325,21 @@
                     {{ e.player_last_name }}, {{ e.player_first_name }}
                   </p>
                   <p class="text-xs text-gray-400">
-                    Jg. {{ e.player_birthdate | date: "yyyy" }}
+                    {{
+                      "licenseAdmin.globalList.birthYear"
+                        | transloco: { year: e.player_birthdate | date: "yyyy" }
+                    }}
                   </p>
                 </td>
                 <!-- Team (Verein als Tooltip beim Hovern) -->
                 <td
                   class="px-4 py-3 text-gray-700 whitespace-nowrap"
-                  [attr.title]="e.club_name ? 'Verein: ' + e.club_name : null"
+                  [attr.title]="
+                    e.club_name
+                      ? ('licenseAdmin.globalList.clubTooltip'
+                        | transloco: { club: e.club_name })
+                      : null
+                  "
                 >
                   {{ e.team_name }}
                 </td>
@@ -325,7 +362,9 @@
                     @if (e.league_type === "cup") {
                       <span
                         class="inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold bg-gray-100 text-gray-500"
-                        >Pokal</span
+                        >{{
+                          "licenseAdmin.globalList.cupBadge" | transloco
+                        }}</span
                       >
                     }
                   </div>
@@ -352,20 +391,28 @@
                   @if (e.license_type === "secondary") {
                     <span
                       class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-purple-100 text-purple-800"
-                      >Zusatzlizenz</span
+                      >{{
+                        "licenseAdmin.globalList.secondaryBadge" | transloco
+                      }}</span
                     >
                     @if (e.is_zweitlizenz) {
                       <span
                         class="ml-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold leading-5 bg-amber-500 text-white ring-1 ring-amber-600"
-                        title="Zweite Großfeld-Lizenz (niedrigere Liga)"
-                        >Zweitlizenz</span
+                        [title]="
+                          'licenseAdmin.globalList.zweitlizenzTitle' | transloco
+                        "
+                        >{{
+                          "licenseAdmin.globalList.zweitlizenzBadge" | transloco
+                        }}</span
                       >
                     }
                   }
                   @if (e.license_type === "primary") {
                     <span
                       class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-blue-100 text-blue-800"
-                      >Erstlizenz</span
+                      >{{
+                        "licenseAdmin.globalList.primaryBadge" | transloco
+                      }}</span
                     >
                   }
                 </td>
@@ -374,7 +421,9 @@
                   @if (e.express) {
                     <span
                       class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"
-                      >Express</span
+                      >{{
+                        "licenseAdmin.globalList.expressBadge" | transloco
+                      }}</span
                     >
                   }
                   @if (!e.express) {
@@ -392,7 +441,10 @@
                           target="_blank"
                           rel="noopener"
                           class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
-                          title="Elternzustimmung ansehen"
+                          [title]="
+                            'licenseAdmin.globalList.parentalConsentView'
+                              | transloco
+                          "
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -417,7 +469,10 @@
                               ? 'bg-red-100 text-red-600'
                               : 'bg-gray-100 text-gray-400'
                           "
-                          title="Elternzustimmung fehlt"
+                          [title]="
+                            'licenseAdmin.globalList.parentalConsentMissing'
+                              | transloco
+                          "
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -447,7 +502,10 @@
                           target="_blank"
                           rel="noopener"
                           class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
-                          [title]="docTypeLabel(docType) + ' ansehen'"
+                          [title]="
+                            'licenseAdmin.globalList.docView'
+                              | transloco: { doc: docTypeLabel(docType) }
+                          "
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -473,7 +531,10 @@
                               ? 'bg-red-100 text-red-600'
                               : 'bg-gray-100 text-gray-400'
                           "
-                          [title]="docTypeLabel(docType) + ' fehlt'"
+                          [title]="
+                            'licenseAdmin.globalList.docMissing'
+                              | transloco: { doc: docTypeLabel(docType) }
+                          "
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"

@@ -15,6 +15,7 @@ import {
 import { Arena, Club, GamedayInput } from '@floorball/types';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   templateUrl: './game-day-edit.component.html',
@@ -46,7 +47,8 @@ export class GameDayEditComponent implements OnInit {
     private _notificationService: NotificationService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
     // this._metaTitle.setTitle('Floorball Saisonmanager');
   }
@@ -155,10 +157,15 @@ export class GameDayEditComponent implements OnInit {
       const gameday = { ...this.gameday, league_id: this.leagueId };
       this._leagueService.adminUpdateGameDay(gameday).subscribe({
         next: () => {
-          this._notificationService.success('Spieltag gespeichert', {
-            autoClose: true,
-            keepAfterRouteChange: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate(
+              'scheduleAdmin.notifications.gameDaySaved'
+            ),
+            {
+              autoClose: true,
+              keepAfterRouteChange: true,
+            }
+          );
 
           this._router.navigate([
             '/',
@@ -174,10 +181,15 @@ export class GameDayEditComponent implements OnInit {
       delete gameday['id'];
       this._leagueService.adminCreateGameDay(gameday).subscribe({
         next: () => {
-          this._notificationService.success('Spieltag erstellt', {
-            autoClose: true,
-            keepAfterRouteChange: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate(
+              'scheduleAdmin.notifications.gameDayCreated'
+            ),
+            {
+              autoClose: true,
+              keepAfterRouteChange: true,
+            }
+          );
 
           this._router.navigate([
             '/',
@@ -194,10 +206,15 @@ export class GameDayEditComponent implements OnInit {
   public destroy() {
     this._leagueService.adminDestroyGameDay(this.gameday.id || 0).subscribe({
       next: () => {
-        this._notificationService.success('Spieltag gelöscht', {
-          autoClose: true,
-          keepAfterRouteChange: true,
-        });
+        this._notificationService.success(
+          this._transloco.translate(
+            'scheduleAdmin.notifications.gameDayDeleted'
+          ),
+          {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          }
+        );
 
         this._router.navigate([
           '/',

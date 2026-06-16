@@ -1,0 +1,60 @@
+{
+  "index": {
+    "title": "Spielorte",
+    "createNew": "Neuen Spielort anlegen",
+    "searchPlaceholder": "Nach Name oder Stadt suchen…",
+    "loading": "Lade Spielorte…",
+    "count": "{{ filtered }} von {{ total }} Einträgen",
+    "colName": "Name",
+    "colCity": "Stadt",
+    "colAddress": "Adresse",
+    "edit": "Bearbeiten",
+    "merge": "Zusammenlegen",
+    "delete": "Löschen",
+    "empty": "Keine Spielorte gefunden."
+  },
+  "edit": {
+    "back": "← Spielorte",
+    "titleNew": "Neuen Spielort anlegen",
+    "titleEdit": "Spielort bearbeiten",
+    "name": "Name",
+    "namePlaceholder": "z.B. Sporthalle Musterstadt",
+    "city": "Stadt",
+    "cityPlaceholder": "z.B. Berlin",
+    "street": "Straße",
+    "streetPlaceholder": "Musterstraße",
+    "housenumber": "Hausnummer",
+    "housenumberPlaceholder": "12a",
+    "postcode": "PLZ",
+    "postcodePlaceholder": "10115",
+    "duplicateHeading": "Möglicherweise existiert bereits ein Spielort an dieser Adresse:",
+    "createAnyway": "Trotzdem anlegen",
+    "cancel": "Abbrechen",
+    "saving": "Wird gespeichert…",
+    "save": "Speichern"
+  },
+  "merge": {
+    "back": "← Zurück",
+    "title": "Spielorte zusammenlegen",
+    "remainingLabel": "Verbleibender Spielort",
+    "step1Intro": "Wähle den doppelten Spielort, der mit „{{ master }}\" zusammengelegt werden soll. Alle Spieltage des gewählten Spielorts werden auf den verbleibenden Spielort umgehängt; der doppelte Eintrag wird anschließend gelöscht.",
+    "searchPlaceholder": "Spielort suchen (Name oder Stadt)…",
+    "select": "Auswählen",
+    "noMatch": "Kein passender Spielort gefunden.",
+    "confirmIntro": "wird mit",
+    "confirmDetail": "Alle Spieltage von „{{ secondary }}\" werden auf „{{ master }}\" umgehängt, danach wird „{{ secondary }}\" gelöscht. Das lässt sich nicht rückgängig machen.",
+    "merging": "Wird zusammengeführt…",
+    "mergeAction": "Zusammenführen",
+    "backAction": "Zurück"
+  },
+  "notifications": {
+    "deleteError": "Spielort konnte nicht gelöscht werden.",
+    "deleteConfirm": "Spielort \"{{ name }}\" wirklich löschen?",
+    "notFound": "Spielort nicht gefunden.",
+    "loadError": "Fehler beim Laden.",
+    "saved": "Spielort gespeichert.",
+    "saveError": "Fehler beim Speichern.",
+    "merged": "Spielorte zusammengeführt ({{ count }} Spieltag(e) umgehängt).",
+    "mergeError": "Spielorte konnten nicht zusammengeführt werden."
+  }
+}

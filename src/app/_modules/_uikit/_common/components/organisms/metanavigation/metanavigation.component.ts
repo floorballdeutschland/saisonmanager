@@ -8,7 +8,13 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { map } from 'rxjs';
-import { SessionService, VersionService } from '@floorball/core';
+import { TranslocoService } from '@jsverse/transloco';
+import {
+  AppLanguage,
+  AVAILABLE_LANGS,
+  SessionService,
+  VersionService,
+} from '@floorball/core';
 
 @Component({
   selector: 'fb-metanavigation',
@@ -35,9 +41,13 @@ export class MetanavigationComponent implements OnInit {
   permissions: { [key: string]: boolean } = {};
   username = '';
 
+  availableLangs = AVAILABLE_LANGS;
+  activeLang$ = this._transloco.langChanges$;
+
   constructor(
     private _sessionService: SessionService,
     private _versionService: VersionService,
+    private _transloco: TranslocoService,
     private router: Router
   ) {}
 
@@ -58,6 +68,14 @@ export class MetanavigationComponent implements OnInit {
     }
 
     return false;
+  }
+
+  public switchLanguage(lang: AppLanguage) {
+    if (this._transloco.getActiveLang() === lang) {
+      return;
+    }
+
+    this._sessionService.setLanguage(lang).subscribe();
   }
 
   public logout() {

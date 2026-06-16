@@ -1,41 +1,61 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-3xl font-bold">Schiedsrichter-Kursergebnisse</h1>
+    <h1 class="text-3xl font-bold">
+      {{ "refereeCourseAdmin.import.title" | transloco }}
+    </h1>
 
     <label
       class="inline-flex items-center px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] cursor-pointer hover:bg-fb-gray-500 disabled:opacity-50"
     >
       <input
         type="file"
-        aria-label="CSV-Datei mit Schiedsrichter-Kursergebnissen auswählen"
+        [attr.aria-label]="'refereeCourseAdmin.import.uploadLabel' | transloco"
         accept=".csv,text/csv"
         class="hidden"
         (change)="onFileSelected($event)"
         [disabled]="uploading"
       />
-      {{ uploading ? "Lade hoch..." : "CSV hochladen" }}
+      {{
+        (uploading
+          ? "refereeCourseAdmin.import.uploading"
+          : "refereeCourseAdmin.import.upload"
+        ) | transloco
+      }}
     </label>
   </div>
 
   <p class="text-fb-gray-600 mb-6">
-    Lade eine CSV-Datei mit Schiedsrichter-Kursergebnissen hoch. Jeder Import
-    durchläuft anschließend einen Review-Schritt — pro Zeile wird die
-    Lizenzstufe festgelegt und ggf. abweichende Stammdaten korrigiert.
+    {{ "refereeCourseAdmin.import.intro" | transloco }}
   </p>
 
   @if (loading) {
-    <div class="text-fb-gray-500">Lade...</div>
+    <div class="text-fb-gray-500">
+      {{ "refereeCourseAdmin.import.loading" | transloco }}
+    </div>
   }
 
   @if (!loading && imports.length) {
-    <table class="w-full border-collapse" aria-label="Imports">
+    <table
+      class="w-full border-collapse"
+      [attr.aria-label]="'refereeCourseAdmin.import.tableLabel' | transloco"
+    >
       <thead>
         <tr class="border-b border-fb-gray-200">
-          <th class="text-left py-2 px-3">Datei</th>
-          <th class="text-left py-2 px-3">Hochgeladen am</th>
-          <th class="text-left py-2 px-3">Datensätze</th>
-          <th class="text-left py-2 px-3">Offene Reviews</th>
-          <th class="text-left py-2 px-3">Status</th>
+          <th class="text-left py-2 px-3">
+            {{ "refereeCourseAdmin.import.colFile" | transloco }}
+          </th>
+          <th class="text-left py-2 px-3">
+            {{ "refereeCourseAdmin.import.colUploadedAt" | transloco }}
+          </th>
+          <th class="text-left py-2 px-3">
+            {{ "refereeCourseAdmin.import.colRecords" | transloco }}
+          </th>
+          <th class="text-left py-2 px-3">
+            {{ "refereeCourseAdmin.import.colOpenReviews" | transloco }}
+          </th>
+          <th class="text-left py-2 px-3">
+            {{ "refereeCourseAdmin.import.colStatus" | transloco }}
+          </th>
           <th></th>
         </tr>
       </thead>
@@ -53,7 +73,7 @@
               <a
                 [routerLink]="['/', 'verwaltung', 'schiri-kurse', imp.id]"
                 class="text-black underline hover:no-underline"
-                >Öffnen</a
+                >{{ "refereeCourseAdmin.import.open" | transloco }}</a
               >
             </td>
           </tr>
@@ -64,7 +84,7 @@
 
   @if (!loading && !imports.length) {
     <div class="text-fb-gray-500 py-12 text-center">
-      Noch keine Imports vorhanden.
+      {{ "refereeCourseAdmin.import.empty" | transloco }}
     </div>
   }
 </div>

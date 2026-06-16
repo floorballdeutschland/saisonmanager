@@ -109,6 +109,7 @@
         "src/app/_modules/_admin/_referee_course_admin"
       ],
       "@floorball/referee": ["src/app/_modules/_referee"],
+      "@floorball/account": ["src/app/_modules/_account"],
       "@floorball/team-game-days": ["src/app/_modules/_team_game_days"],
       "@floorball/models": ["src/app/_models"]
     },

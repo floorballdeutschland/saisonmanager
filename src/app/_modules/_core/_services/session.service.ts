@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { TranslocoService } from '@jsverse/transloco';
 
 import { LoginAnswer, User } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { Observable, of, ReplaySubject } from 'rxjs';
 import { catchError, map, startWith, take } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
+import { AppLanguage, DEFAULT_LANG } from '../_i18n/lang';
 import { Router } from '@angular/router';
 
 @Injectable({
@@ -29,12 +31,15 @@ export class SessionService {
   constructor(
     private http: HttpClient,
     private _router: Router,
-    private _notificationService: NotificationService
+    private _notificationService: NotificationService,
+    private _transloco: TranslocoService
   ) {
     const stored_user = localStorage.getItem('user');
 
     if (stored_user) {
-      this.currentUserSubject.next(JSON.parse(stored_user));
+      const user: User = JSON.parse(stored_user);
+      this.currentUserSubject.next(user);
+      this._transloco.setActiveLang(user.language ?? DEFAULT_LANG);
     }
   }
 
@@ -50,7 +55,7 @@ export class SessionService {
           if (loginAnswer.user.permissions['login_blocked']) {
             this._notificationService.error(
               loginAnswer.user.login_blocked_message ??
-                'Der Login ist für dich nicht freigeschaltet. Sorry.',
+                this._transloco.translate('session.loginBlocked'),
               {
                 autoClose: false,
                 keepAfterRouteChange: true,
@@ -58,9 +63,14 @@ export class SessionService {
             );
             this.logout(false);
           } else {
+            this._transloco.setActiveLang(
+              loginAnswer.user.language ?? DEFAULT_LANG
+            );
             this.currentUserSubject.next(loginAnswer.user);
             localStorage.setItem('user', JSON.stringify(loginAnswer.user));
-            this._notificationService.success('Login erfolgreich.');
+            this._notificationService.success(
+              this._transloco.translate('session.loginSuccess')
+            );
           }
         }
 
@@ -69,7 +79,9 @@ export class SessionService {
       catchError((error) => {
         console.error(error);
 
-        this._notificationService.error('Login fehlgeschlagen.');
+        this._notificationService.error(
+          this._transloco.translate('session.loginFailed')
+        );
 
         return of();
       })
@@ -92,7 +104,9 @@ export class SessionService {
       .pipe(take(1))
       .subscribe(() => {
         if (showotification) {
-          this._notificationService.success('Logout erfolgreich.');
+          this._notificationService.success(
+            this._transloco.translate('session.logoutSuccess')
+          );
         }
 
         if (showError) {
@@ -116,7 +130,7 @@ export class SessionService {
     return this.http.post<LoginAnswer>(path, data).pipe(
       map((loginAnswer) => {
         this._notificationService.success(
-          'Wenn ein Zugang existiert, erhältst du eine E-Mail.',
+          this._transloco.translate('session.lostPasswordSent'),
           {
             autoClose: false,
             keepAfterRouteChange: true,
@@ -128,10 +142,13 @@ export class SessionService {
       catchError((error) => {
         console.error(error);
 
-        this._notificationService.error('Fehler beim zurücksetzen', {
-          autoClose: false,
-          keepAfterRouteChange: false,
-        });
+        this._notificationService.error(
+          this._transloco.translate('session.lostPasswordError'),
+          {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          }
+        );
 
         return of();
       })
@@ -153,24 +170,69 @@ export class SessionService {
     };
     return this.http.post<LoginAnswer>(path, data).pipe(
       map((loginAnswer) => {
-        this._notificationService.success('Passwort erfolgreich gesetzt.', {
-          autoClose: true,
-          keepAfterRouteChange: true,
-        });
+        this._notificationService.success(
+          this._transloco.translate('session.passwordSet'),
+          {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          }
+        );
 
         return loginAnswer;
       }),
       catchError((error) => {
         console.error(error);
 
-        this._notificationService.error('Fehler beim Zurücksetzen', {
-          autoClose: false,
-          keepAfterRouteChange: false,
-        });
+        this._notificationService.error(
+          this._transloco.translate('session.passwordResetError'),
+          {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          }
+        );
 
         return of();
       })
     );
+  }
+
+  /**
+   * Setzt die Oberflächensprache des eingeloggten Users. Persistiert die Wahl
+   * im Backend, aktualisiert den gecachten User und lädt anschließend die Seite
+   * neu, damit auch der Angular-LOCALE_ID (date/number/currency-Pipes) folgt.
+   */
+  public setLanguage(lang: AppLanguage) {
+    const path = environment.apiURL + 'user/language.json';
+    return this.http.patch<LoginAnswer>(path, { language: lang }).pipe(
+      map((answer) => {
+        if (answer.success) {
+          this.currentUserSubject.next(answer.user);
+          localStorage.setItem('user', JSON.stringify(answer.user));
+          this._transloco.setActiveLang(lang);
+          window.location.reload();
+        }
+
+        return answer;
+      })
+    );
+  }
+
+  /**
+   * Ändert das eigene Passwort. Fehler (z. B. 422 bei falschem aktuellen
+   * Passwort) werden vom aufrufenden Component behandelt – der ErrorInterceptor
+   * verschluckt 422 still und reicht die Server-Nachricht als String durch.
+   */
+  public changePassword(
+    currentPassword: string,
+    password: string,
+    passwordConfirmation: string
+  ) {
+    const path = environment.apiURL + 'user/password.json';
+    return this.http.put<{ success: boolean; message?: string }>(path, {
+      current_password: currentPassword,
+      password: password,
+      password_confirmation: passwordConfirmation,
+    });
   }
 
   public canLoadPage(page: string): boolean {

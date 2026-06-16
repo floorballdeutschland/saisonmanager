@@ -8,6 +8,7 @@ import { LeagueService } from '@floorball/core';
 import { GameOperationWithLeagues } from '@floorball/types';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'fb-license-user-index',
@@ -22,9 +23,12 @@ export class LicenseUserLeagueIndexComponent implements OnInit {
     private _leagueService: LeagueService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
-    this._metaTitle.setTitle('Floorball Saisonmanager Lizenzverwaltung');
+    this._metaTitle.setTitle(
+      this._transloco.translate('licenseAdmin.userLeagueIndex.metaTitle')
+    );
   }
 
   ngOnInit(): void {

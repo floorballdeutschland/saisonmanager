@@ -1,10 +1,12 @@
 <div class="p-4 lg:p-8 flex flex-col items-center">
   <h1 class="text-2xl font-bold mb-6 self-start lg:self-center">
-    Mein Ausweis
+    {{ "refereeSelf.card.title" | transloco }}
   </h1>
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "refereeSelf.common.loading" | transloco }}
+    </div>
   }
 
   @if (!loading && profile) {
@@ -16,7 +18,7 @@
       <div class="px-6 pt-6 pb-2 flex justify-center">
         <img
           src="assets/images/logo-floorball-deutschland.png"
-          alt="Floorball Deutschland"
+          [alt]="'refereeSelf.card.logoAlt' | transloco"
           class="h-10 object-contain"
         />
       </div>
@@ -28,7 +30,12 @@
           expired ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
         "
       >
-        {{ expired ? "Lizenz abgelaufen" : "Lizenz gültig" }}
+        {{
+          (expired
+            ? "refereeSelf.card.licenseExpired"
+            : "refereeSelf.card.licenseValid"
+          ) | transloco
+        }}
       </div>
 
       <!-- QR-Code -->
@@ -37,13 +44,13 @@
           <div class="border-4 border-blue-600 rounded-2xl p-2 bg-white">
             <img
               [src]="qrDataUrl"
-              alt="QR-Code zum Lizenzcheck"
+              [alt]="'refereeSelf.card.qrAlt' | transloco"
               class="w-44 h-44"
             />
           </div>
         }
         <p class="mt-3 text-xs text-fb-gray-500 uppercase font-bold">
-          Lizenznummer
+          {{ "refereeSelf.card.licenseNumber" | transloco }}
         </p>
         <p class="text-xl font-bold">{{ profile.lizenznummer_display }}</p>
       </div>
@@ -59,24 +66,32 @@
       <div class="px-6 py-4 mt-2 divide-y divide-fb-gray-200 text-sm">
         @if (profile.verein) {
           <div class="flex justify-between py-2.5">
-            <span class="text-fb-gray-500">Verein</span>
+            <span class="text-fb-gray-500">{{
+              "refereeSelf.card.club" | transloco
+            }}</span>
             <span class="font-bold text-right">{{ profile.verein }}</span>
           </div>
         }
         @if (profile.geburtsdatum) {
           <div class="flex justify-between py-2.5">
-            <span class="text-fb-gray-500">Geburtsdatum</span>
+            <span class="text-fb-gray-500">{{
+              "refereeSelf.card.birthDate" | transloco
+            }}</span>
             <span class="font-bold text-right">{{ profile.geburtsdatum }}</span>
           </div>
         }
         <div class="flex justify-between py-2.5">
-          <span class="text-fb-gray-500">Lizenzstufe</span>
+          <span class="text-fb-gray-500">{{
+            "refereeSelf.card.licenseLevel" | transloco
+          }}</span>
           <span class="font-bold text-right">{{
             profile.lizenzstufe || "–"
           }}</span>
         </div>
         <div class="flex justify-between py-2.5">
-          <span class="text-fb-gray-500">Gültig bis</span>
+          <span class="text-fb-gray-500">{{
+            "refereeSelf.card.validUntil" | transloco
+          }}</span>
           <span
             class="font-bold text-right"
             [ngClass]="expired ? 'text-red-600' : 'text-green-600'"
@@ -85,7 +100,9 @@
         </div>
         @if (profile.landesverband) {
           <div class="flex justify-between py-2.5">
-            <span class="text-fb-gray-500">Verband</span>
+            <span class="text-fb-gray-500">{{
+              "refereeSelf.card.association" | transloco
+            }}</span>
             <span class="font-bold text-right">{{
               profile.landesverband
             }}</span>
@@ -96,9 +113,7 @@
       <!-- Hinweistext (Rückseite der Vorlage) -->
       <div class="bg-fb-gray-100 px-6 py-4">
         <p class="text-[11px] leading-snug text-fb-gray-500 text-center">
-          Dieser Ausweis wurde vom Floorball-Verband Deutschland e. V.
-          ausgestellt. Gültigkeit und Lizenzstufe können über den QR-Code oder
-          unter saisonmanager.org/lizenzcheck abgerufen werden.
+          {{ "refereeSelf.card.disclaimer" | transloco }}
         </p>
       </div>
     </div>
@@ -106,7 +121,7 @@
 
   @if (!loading && !profile) {
     <div class="text-fb-gray-500 py-8">
-      Kein Schiedsrichter-Profil gefunden.
+      {{ "refereeSelf.card.notFound" | transloco }}
     </div>
   }
 </div>

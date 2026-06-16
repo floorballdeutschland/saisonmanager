@@ -1,17 +1,17 @@
 <div class="p-4 lg:p-8">
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold">Analyse</h1>
+    <h1 class="text-2xl font-bold">{{ "analytics.title" | transloco }}</h1>
     <button
       class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
       (click)="load()"
     >
-      Aktualisieren
+      {{ "analytics.refresh" | transloco }}
     </button>
   </div>
 
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-8 text-center">
-      Lade Zugriffszahlen…
+      {{ "analytics.loading" | transloco }}
     </div>
   }
 
@@ -20,28 +20,36 @@
     <div class="grid grid-cols-3 gap-4 mb-10">
       <div class="border border-fb-gray-800 rounded-[5px] p-5">
         <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
-          Letzte 30 Tage
+          {{ "analytics.summary.last30Days" | transloco }}
         </div>
         <div class="text-3xl font-bold">{{ total30Days | number }}</div>
-        <div class="text-xs text-fb-gray-500 mt-1">Seitenaufrufe gesamt</div>
+        <div class="text-xs text-fb-gray-500 mt-1">
+          {{ "analytics.summary.totalPageViews" | transloco }}
+        </div>
       </div>
       <div class="border border-fb-gray-800 rounded-[5px] p-5">
         <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
-          Aktueller Monat
+          {{ "analytics.summary.currentMonth" | transloco }}
         </div>
         <div class="text-3xl font-bold">{{ currentMonthTotal | number }}</div>
-        <div class="text-xs text-fb-gray-500 mt-1">Seitenaufrufe gesamt</div>
+        <div class="text-xs text-fb-gray-500 mt-1">
+          {{ "analytics.summary.totalPageViews" | transloco }}
+        </div>
       </div>
       <div class="border border-fb-gray-800 rounded-[5px] p-5">
         <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
-          Letztes Jahr
+          {{ "analytics.summary.lastYear" | transloco }}
         </div>
         <div class="text-3xl font-bold">{{ totalYear | number }}</div>
-        <div class="text-xs text-fb-gray-500 mt-1">Seitenaufrufe gesamt</div>
+        <div class="text-xs text-fb-gray-500 mt-1">
+          {{ "analytics.summary.totalPageViews" | transloco }}
+        </div>
       </div>
     </div>
     <!-- Daily bar chart -->
-    <h2 class="text-base font-bold mb-4">Letzte 30 Tage – täglich</h2>
+    <h2 class="text-base font-bold mb-4">
+      {{ "analytics.dailyHeading" | transloco }}
+    </h2>
     <div class="analytics-chart mb-10" aria-hidden="true">
       @for (day of last30Days; track day) {
         <div
@@ -60,7 +68,9 @@
       }
     </div>
     <!-- Monthly bar chart -->
-    <h2 class="text-base font-bold mb-4">Letztes Jahr – monatlich</h2>
+    <h2 class="text-base font-bold mb-4">
+      {{ "analytics.monthlyHeading" | transloco }}
+    </h2>
     <div
       class="analytics-chart analytics-chart--monthly mb-10"
       aria-hidden="true"
@@ -84,20 +94,19 @@
       }
     </div>
     <p class="text-xs text-fb-gray-500">
-      Erfasst werden Zugriffe auf die öffentlichen Seiten (Spielplan, Tabelle,
-      Torschützen).
+      {{ "analytics.footnote" | transloco }}
     </p>
   }
 
   @if (!loading && loadError) {
     <div class="text-red-600 text-sm py-8 text-center">
-      {{ loadError }} Bitte Seite neu laden.
+      {{ loadError }} {{ "analytics.loadErrorReload" | transloco }}
     </div>
   }
 
   @if (!loading && !loadError && !data) {
     <div class="text-fb-gray-500 text-sm py-8 text-center">
-      Keine Daten verfügbar.
+      {{ "analytics.noData" | transloco }}
     </div>
   }
 </div>

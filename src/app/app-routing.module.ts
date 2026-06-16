@@ -122,6 +122,11 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/account').then((m) => m.AccountModule),
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/team-game-days').then((m) => m.TeamGameDaysModule),
       },
       {

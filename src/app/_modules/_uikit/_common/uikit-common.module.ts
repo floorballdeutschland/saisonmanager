@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { TranslocoModule } from '@jsverse/transloco';
 import {
   AwardTitlePipe,
   CompletedAwardsFilterPipe,
@@ -16,7 +17,13 @@ import * as Pipes from './pipes';
 import * as HelperPipes from 'src/app/_helpers/_pipes';
 
 @NgModule({
-  imports: [CommonModule, RouterModule, OverlayModule, FormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    OverlayModule,
+    FormsModule,
+    TranslocoModule,
+  ],
   declarations: [
     Atoms.LogoComponent,
     Atoms.TabItemComponent,
@@ -64,6 +71,7 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
     HelperPipes.TeamLineupPlayerPipe,
   ],
   exports: [
+    TranslocoModule,
     Atoms.LogoComponent,
     Atoms.TabItemComponent,
     Atoms.ButtonComponent,

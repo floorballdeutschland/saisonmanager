@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import { EmailLogService, NotificationService } from '@floorball/core';
 import { EmailLog } from '@floorball/types';
 
@@ -28,6 +29,7 @@ export class EmailLogIndexComponent implements OnInit, OnDestroy {
   constructor(
     private _emailLogService: EmailLogService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -55,7 +57,7 @@ export class EmailLogIndexComponent implements OnInit, OnDestroy {
           console.error('EmailLog load failed', err);
           this.loading = false;
           this._notificationService.error(
-            'E-Mail-Log konnte nicht geladen werden.',
+            this._transloco.translate('emailLog.notifications.loadError'),
             { autoClose: false }
           );
           this._cdr.markForCheck();
@@ -72,7 +74,9 @@ export class EmailLogIndexComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this._notificationService.success(
-            `Testmail an ${this.testRecipient} versendet.`,
+            this._transloco.translate('emailLog.notifications.testSent', {
+              recipient: this.testRecipient,
+            }),
             { autoClose: true }
           );
           this.testRecipient = '';
@@ -88,8 +92,11 @@ export class EmailLogIndexComponent implements OnInit, OnDestroy {
               : undefined;
           this._notificationService.error(
             detail
-              ? `Testmail konnte nicht versendet werden: ${detail}`
-              : 'Testmail konnte nicht versendet werden.',
+              ? this._transloco.translate(
+                  'emailLog.notifications.testErrorDetail',
+                  { detail }
+                )
+              : this._transloco.translate('emailLog.notifications.testError'),
             { autoClose: false }
           );
           this.sendingTest = false;

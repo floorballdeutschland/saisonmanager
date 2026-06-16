@@ -4,9 +4,11 @@
       <a
         [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
         class="text-fb-gray-500 hover:text-black text-sm"
-        >← Schiedsrichterverwaltung</a
+        >{{ "refereeAdmin.qualificationTypes.back" | transloco }}</a
       >
-      <h1 class="text-2xl font-bold mt-1">Zusatzqualifikationen</h1>
+      <h1 class="text-2xl font-bold mt-1">
+        {{ "refereeAdmin.index.qualifications" | transloco }}
+      </h1>
     </div>
     <button
       type="button"
@@ -22,23 +24,33 @@
     <div
       class="mb-6 p-4 border border-fb-gray-700 rounded-[5px] flex flex-col gap-3"
     >
-      <h2 class="text-sm font-bold">Neuer Qualifikationstyp</h2>
+      <h2 class="text-sm font-bold">
+        {{ "refereeAdmin.qualificationTypes.newHeading" | transloco }}
+      </h2>
       <div class="grid grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold">Name *</label>
+          <label class="text-xs font-bold">{{
+            "refereeAdmin.qualificationTypes.name" | transloco
+          }}</label>
           <input
             type="text"
             [(ngModel)]="newType.name"
-            placeholder="z.B. A4"
+            [placeholder]="
+              'refereeAdmin.qualificationTypes.namePlaceholder' | transloco
+            "
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold">Kurzname</label>
+          <label class="text-xs font-bold">{{
+            "refereeAdmin.qualificationTypes.shortName" | transloco
+          }}</label>
           <input
             type="text"
             [(ngModel)]="newType.short_name"
-            placeholder="z.B. A4"
+            [placeholder]="
+              'refereeAdmin.qualificationTypes.namePlaceholder' | transloco
+            "
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
           />
         </div>
@@ -68,17 +80,27 @@
   }
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "refereeAdmin.detail.loading" | transloco }}
+    </div>
   }
 
   @if (!loading) {
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b border-fb-gray-700 text-left">
-          <th class="py-2 pr-4 font-bold">Name</th>
-          <th class="py-2 pr-4 font-bold">Kurzname</th>
-          <th class="py-2 pr-4 font-bold">Verwendungen</th>
-          <th class="py-2 pr-4 font-bold">Status</th>
+          <th class="py-2 pr-4 font-bold">
+            {{ "refereeAdmin.index.colName" | transloco }}
+          </th>
+          <th class="py-2 pr-4 font-bold">
+            {{ "refereeAdmin.qualificationTypes.shortName" | transloco }}
+          </th>
+          <th class="py-2 pr-4 font-bold">
+            {{ "refereeAdmin.qualificationTypes.colUsage" | transloco }}
+          </th>
+          <th class="py-2 pr-4 font-bold">
+            {{ "refereeAdmin.qualificationTypes.colStatus" | transloco }}
+          </th>
           <th class="py-2"></th>
         </tr>
       </thead>
@@ -109,7 +131,9 @@
                     [(ngModel)]="editBuffer.active"
                     class="w-3 h-3"
                   />
-                  <span class="text-xs">Aktiv</span>
+                  <span class="text-xs">{{
+                    "refereeAdmin.qualificationTypes.active" | transloco
+                  }}</span>
                 </label>
               </td>
               <td class="py-2">

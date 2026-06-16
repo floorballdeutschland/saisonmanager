@@ -11,6 +11,7 @@ import { LeagueService, NotificationService } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   templateUrl: './import-game-days.component.html',
@@ -33,7 +34,8 @@ export class ImportGameDaysComponent implements OnInit {
     private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef,
     private formBuilder: UntypedFormBuilder,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
     this._metaTitle.setTitle('Floorball Saisonmanager');
   }
@@ -62,10 +64,15 @@ export class ImportGameDaysComponent implements OnInit {
       next: () => {
         // notification: alles super
         // redirect liga index
-        this._notificationService.success('Import erfolgreich', {
-          autoClose: true,
-          keepAfterRouteChange: true,
-        });
+        this._notificationService.success(
+          this._transloco.translate(
+            'scheduleAdmin.notifications.importSuccess'
+          ),
+          {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          }
+        );
         this._router.navigate(['verwaltung', 'ligen']);
         this.fileInput.nativeElement.value = '';
       },

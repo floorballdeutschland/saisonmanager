@@ -2,17 +2,17 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Ligaverwaltung
+    {{ "scheduleAdmin.importGameDays.title" | transloco }}
   </h1>
 
   <a
     [routerLink]="['/', 'verwaltung', 'ligen']"
     class="text-sm text-fb-gray-500 hover:text-black"
-    >← Zurück zur Ligaverwaltung</a
+    >{{ "scheduleAdmin.importGameDays.backToLeagueAdmin" | transloco }}</a
   >
 
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    Import Spiele/Spieltage mit einer Excel Importvorlage
+    {{ "scheduleAdmin.importGameDays.heading" | transloco }}
   </h2>
 </div>
 
@@ -25,11 +25,13 @@
         <div>
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Import Datei übermitteln
+              {{ "scheduleAdmin.importGameDays.submitFile" | transloco }}
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-              <div class="font-bold">Dateiauswahl</div>
+              <div class="font-bold">
+                {{ "scheduleAdmin.importGameDays.fileSelection" | transloco }}
+              </div>
               <div>
                 <input
                   type="file"
@@ -39,9 +41,7 @@
                 />
 
                 <p>
-                  Achtung: Hier dürfen nur Dateien mit der entsprechenden
-                  Vorlage hochgeladen werden. Dieser Vorgang kann nicht
-                  rückgängig gemacht werden.
+                  {{ "scheduleAdmin.importGameDays.fileWarning" | transloco }}
                 </p>
               </div>
             </div>
@@ -50,7 +50,7 @@
           @if (errors && errors.length > 0) {
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Fehler
+                {{ "scheduleAdmin.importGameDays.errorsHeading" | transloco }}
               </div>
               <div class="grid grid-cols-1 gap-4">
                 @for (error of errors; track error) {
@@ -63,7 +63,7 @@
           @if (warnings && warnings.length > 0) {
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Warnungen
+                {{ "scheduleAdmin.importGameDays.warningsHeading" | transloco }}
               </div>
               <div class="grid grid-cols-1 gap-4">
                 @for (warning of warnings; track warning) {
@@ -80,14 +80,14 @@
                   class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                   (click)="import()"
                 >
-                  Import starten
+                  {{ "scheduleAdmin.importGameDays.startImport" | transloco }}
                 </a>
                 <a
                   class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                   deactivated="true"
                   [routerLink]="['/', 'verwaltung', 'ligen']"
                 >
-                  Abbrechen
+                  {{ "scheduleAdmin.importGameDays.cancel" | transloco }}
                 </a>
               </div>
             </div>

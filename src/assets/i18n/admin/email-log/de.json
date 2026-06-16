@@ -1,0 +1,23 @@
+{
+  "title": "E-Mail-Log",
+  "testHeading": "Testmail versenden",
+  "recipientLabel": "Empfänger",
+  "recipientPlaceholder": "empfaenger@beispiel.de",
+  "sending": "Wird gesendet…",
+  "send": "Senden",
+  "logHeading": "Versendete E-Mails (letzte 30 Tage)",
+  "loading": "Lade E-Mail-Log…",
+  "count": "{{ count }} Einträge",
+  "colDateTime": "Datum/Uhrzeit",
+  "colRecipient": "Empfänger",
+  "colCc": "CC",
+  "colSubject": "Betreff",
+  "colType": "Typ",
+  "empty": "Keine E-Mails in den letzten 30 Tagen versendet.",
+  "notifications": {
+    "loadError": "E-Mail-Log konnte nicht geladen werden.",
+    "testSent": "Testmail an {{ recipient }} versendet.",
+    "testErrorDetail": "Testmail konnte nicht versendet werden: {{ detail }}",
+    "testError": "Testmail konnte nicht versendet werden."
+  }
+}

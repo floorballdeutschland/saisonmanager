@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   ClubService,
   AssociationService,
@@ -54,10 +55,30 @@ export class UserCreateComponent implements OnInit, OnDestroy {
   gameOperations: GameOperation[] = [];
 
   readonly allRoles: RoleOption[] = [
-    { id: 1, label: 'Admin', needsClub: false, needsGo: true },
-    { id: 2, label: 'SBK', needsClub: false, needsGo: true },
-    { id: 4, label: 'VM (Vereinsmanager)', needsClub: true, needsGo: false },
-    { id: 5, label: 'TM (Teammanager)', needsClub: true, needsGo: false },
+    {
+      id: 1,
+      label: this._transloco.translate('userAdmin.create.roleAdmin'),
+      needsClub: false,
+      needsGo: true,
+    },
+    {
+      id: 2,
+      label: this._transloco.translate('userAdmin.create.roleSbk'),
+      needsClub: false,
+      needsGo: true,
+    },
+    {
+      id: 4,
+      label: this._transloco.translate('userAdmin.create.roleVm'),
+      needsClub: true,
+      needsGo: false,
+    },
+    {
+      id: 5,
+      label: this._transloco.translate('userAdmin.create.roleTm'),
+      needsClub: true,
+      needsGo: false,
+    },
   ];
 
   private _destroy$ = new Subject<void>();
@@ -68,6 +89,7 @@ export class UserCreateComponent implements OnInit, OnDestroy {
     private _associationService: AssociationService,
     private _notificationService: NotificationService,
     private _sessionService: SessionService,
+    private _transloco: TranslocoService,
     private _router: Router,
     private _cdr: ChangeDetectorRef
   ) {}
@@ -212,14 +234,15 @@ export class UserCreateComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (created) => {
-          const isTm = this.selectedRoleId === 5;
-          const msg = isTm
-            ? `Benutzer ${created.name} angelegt. Eine E-Mail zum Passwort setzen wurde versandt.`
-            : `Benutzer ${created.name} angelegt. Eine E-Mail zum Passwort setzen wurde versandt.`;
-          this._notificationService.success(msg, {
-            autoClose: true,
-            keepAfterRouteChange: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate('userAdmin.notifications.userCreated', {
+              name: created.name,
+            }),
+            {
+              autoClose: true,
+              keepAfterRouteChange: true,
+            }
+          );
           this._router.navigate([
             '/',
             'verwaltung',
@@ -233,7 +256,7 @@ export class UserCreateComponent implements OnInit, OnDestroy {
           const msg =
             err?.error?.errors?.join(', ') ??
             err?.error?.error ??
-            'Fehler beim Anlegen';
+            this._transloco.translate('userAdmin.notifications.createError');
           this._notificationService.error(msg, { autoClose: false });
           this._cdr.markForCheck();
         },

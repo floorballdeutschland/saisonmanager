@@ -2,46 +2,67 @@
   <a
     [routerLink]="['/', 'verwaltung', 'schiri-kurse']"
     class="text-black underline hover:no-underline"
-    >← zurück zur Übersicht</a
+    >{{ "refereeCourseAdmin.detail.back" | transloco }}</a
   >
 
   @if (loading) {
-    <div class="text-fb-gray-500 mt-6">Lade...</div>
+    <div class="text-fb-gray-500 mt-6">
+      {{ "refereeCourseAdmin.detail.loading" | transloco }}
+    </div>
   }
 
   @if (!loading && importData) {
     <div class="flex flex-wrap items-baseline gap-x-4 mt-2 mb-2">
       <h1 class="text-3xl font-bold">{{ importData.filename }}</h1>
       <span class="text-fb-gray-600 text-sm">
-        Hochgeladen am
-        {{ importData.created_at | date: "dd.MM.yyyy HH:mm" }}
+        {{
+          "refereeCourseAdmin.detail.uploadedAt"
+            | transloco
+              : { date: (importData.created_at | date: "dd.MM.yyyy HH:mm") }
+        }}
       </span>
     </div>
     @if (importData.progress) {
       <div class="text-sm text-fb-gray-600 mb-6">
-        {{ importData.total_rows }} Datensätze •
-        {{ importData.progress.pending_review }} offen •
-        {{ importData.progress.applied }} angewendet
+        {{
+          "refereeCourseAdmin.detail.progress"
+            | transloco
+              : {
+                  total: importData.total_rows,
+                  pending: importData.progress.pending_review,
+                  applied: importData.progress.applied,
+                }
+        }}
       </div>
     }
     @if (importData.status === "in_review") {
       <div class="bg-fb-gray-50 rounded p-4 mb-6">
         <p class="text-sm">
-          Wähle pro Datensatz die Lizenzstufe und ggf. die korrekten Stammdaten.
-          Erst nach „Einreichen" werden die Datensätze – bei aktiviertem
-          Landesverband-Kontrollprozess – zur Freigabe vorgelegt.
+          {{ "refereeCourseAdmin.detail.reviewHint" | transloco }}
         </p>
       </div>
     }
     <table class="w-full border-collapse text-sm">
       <thead>
         <tr class="border-b border-fb-gray-300 bg-fb-gray-50">
-          <th class="text-left py-2 px-2">Match</th>
-          <th class="text-left py-2 px-2">Stammdaten</th>
-          <th class="text-left py-2 px-2">Kurs / Stichtag</th>
-          <th class="text-left py-2 px-2">Bisherige Lizenz</th>
-          <th class="text-left py-2 px-2">Vorsaison</th>
-          <th class="text-left py-2 px-2">Lizenzstufe</th>
+          <th class="text-left py-2 px-2">
+            {{ "refereeCourseAdmin.detail.colMatch" | transloco }}
+          </th>
+          <th class="text-left py-2 px-2">
+            {{ "refereeCourseAdmin.detail.colMaster" | transloco }}
+          </th>
+          <th class="text-left py-2 px-2">
+            {{ "refereeCourseAdmin.detail.colCourse" | transloco }}
+          </th>
+          <th class="text-left py-2 px-2">
+            {{ "refereeCourseAdmin.detail.colExistingLicense" | transloco }}
+          </th>
+          <th class="text-left py-2 px-2">
+            {{ "refereeCourseAdmin.detail.colPreviousSeason" | transloco }}
+          </th>
+          <th class="text-left py-2 px-2">
+            {{ "refereeCourseAdmin.detail.colLicenseLevel" | transloco }}
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -54,47 +75,70 @@
                 >{{ matchBadgeLabel(r) }}</span
               >
               @if (r.status === "applied") {
-                <div class="text-xs text-green-700 mt-1">✓ Angewendet</div>
+                <div class="text-xs text-green-700 mt-1">
+                  {{ "refereeCourseAdmin.detail.applied" | transloco }}
+                </div>
               }
               @if (
                 r.status === "pending_review" &&
                 importData.status !== "in_review"
               ) {
-                <div class="text-xs text-yellow-700 mt-1">⏳ Bei LV</div>
+                <div class="text-xs text-yellow-700 mt-1">
+                  {{ "refereeCourseAdmin.detail.pendingLv" | transloco }}
+                </div>
               }
             </td>
             <td class="py-3 px-2">
               <div class="space-y-1">
                 <div>
-                  <strong>Lizenz-Nr.:</strong>
-                  {{ r.master_by_importer.lizenznummer ?? "—" }}
+                  <strong>{{
+                    "refereeCourseAdmin.detail.licenseNumber" | transloco
+                  }}</strong>
+                  {{
+                    r.master_by_importer.lizenznummer ??
+                      ("refereeCourseAdmin.detail.dash" | transloco)
+                  }}
                 </div>
                 <div>
-                  <strong>Name:</strong>
+                  <strong>{{
+                    "refereeCourseAdmin.detail.name" | transloco
+                  }}</strong>
                   {{ r.master_by_importer.vorname }}
                   {{ r.master_by_importer.nachname }}
                 </div>
                 <div>
-                  <strong>Geburt:</strong>
+                  <strong>{{
+                    "refereeCourseAdmin.detail.birth" | transloco
+                  }}</strong>
                   {{ r.master_by_importer.geburtsdatum }}
                 </div>
                 <div>
-                  <strong>Verein:</strong>
+                  <strong>{{
+                    "refereeCourseAdmin.detail.club" | transloco
+                  }}</strong>
                   @if (r.matched_club) {
                     <span>{{ r.matched_club.name }}</span>
                   }
                   @if (!r.matched_club && r.csv.verein) {
-                    <span class="text-red-600"
-                      >„{{ r.csv.verein }}" (nicht zugeordnet)</span
-                    >
+                    <span class="text-red-600">{{
+                      "refereeCourseAdmin.detail.clubUnmatched"
+                        | transloco: { name: r.csv.verein }
+                    }}</span>
                   }
                   @if (!r.matched_club && !r.csv.verein) {
-                    <span>—</span>
+                    <span>{{
+                      "refereeCourseAdmin.detail.dash" | transloco
+                    }}</span>
                   }
                 </div>
                 <div>
-                  <strong>E-Mail:</strong>
-                  {{ r.master_by_importer.email ?? "—" }}
+                  <strong>{{
+                    "refereeCourseAdmin.detail.email" | transloco
+                  }}</strong>
+                  {{
+                    r.master_by_importer.email ??
+                      ("refereeCourseAdmin.detail.dash" | transloco)
+                  }}
                 </div>
               </div>
               <!-- Konflikte: Master-Wahl pro abweichendem Feld -->
@@ -102,7 +146,10 @@
                 @for (field of conflictFields; track field) {
                   @if (fieldsDiffer(r, field)) {
                     <div class="mt-2 p-2 bg-yellow-50 rounded text-xs">
-                      <strong>Abweichung „{{ field }}":</strong>
+                      <strong>{{
+                        "refereeCourseAdmin.detail.conflictLabel"
+                          | transloco: { field: field }
+                      }}</strong>
                       <div class="flex flex-wrap gap-2 mt-1">
                         <button
                           type="button"
@@ -115,7 +162,10 @@
                           "
                           (click)="pickMaster(r, field, 'csv')"
                         >
-                          CSV: {{ csvValue(r, field) }}
+                          {{
+                            "refereeCourseAdmin.detail.csvOption"
+                              | transloco: { value: csvValue(r, field) }
+                          }}
                         </button>
                         <button
                           type="button"
@@ -128,7 +178,10 @@
                           "
                           (click)="pickMaster(r, field, 'db')"
                         >
-                          DB: {{ dbValue(r, field) }}
+                          {{
+                            "refereeCourseAdmin.detail.dbOption"
+                              | transloco: { value: dbValue(r, field) }
+                          }}
                         </button>
                       </div>
                     </div>
@@ -139,43 +192,85 @@
             <td class="py-3 px-2">
               @if (r.course_data.kurs_1?.stufe) {
                 <div>
-                  Kurs 1: {{ r.course_data.kurs_1?.stufe }} —
-                  {{ r.course_data.kurs_1?.datum }}
+                  {{
+                    "refereeCourseAdmin.detail.course1"
+                      | transloco
+                        : {
+                            level: r.course_data.kurs_1?.stufe,
+                            date: r.course_data.kurs_1?.datum,
+                          }
+                  }}
                 </div>
               }
               @if (r.course_data.kurs_2?.stufe) {
                 <div>
-                  Kurs 2: {{ r.course_data.kurs_2?.stufe }} —
-                  {{ r.course_data.kurs_2?.datum }}
+                  {{
+                    "refereeCourseAdmin.detail.course2"
+                      | transloco
+                        : {
+                            level: r.course_data.kurs_2?.stufe,
+                            date: r.course_data.kurs_2?.datum,
+                          }
+                  }}
                 </div>
               }
               <div class="mt-2 text-xs text-fb-gray-600">
-                Stichtag: {{ r.kursstichtag }} • Alter:
-                {{ r.age_at_kursstichtag ?? "—" }}
+                {{
+                  "refereeCourseAdmin.detail.deadlineAge"
+                    | transloco
+                      : {
+                          deadline: r.kursstichtag,
+                          age:
+                            r.age_at_kursstichtag ??
+                            ("refereeCourseAdmin.detail.dash" | transloco),
+                        }
+                }}
               </div>
               <div class="text-xs text-fb-gray-600">
-                Gültig bis: {{ r.gueltigkeit }}
+                {{
+                  "refereeCourseAdmin.detail.validUntil"
+                    | transloco: { date: r.gueltigkeit }
+                }}
               </div>
             </td>
             <td class="py-3 px-2 text-xs">
               @if (r.referee_snapshot) {
-                <div>{{ r.referee_snapshot.lizenzstufe ?? "—" }}</div>
+                <div>
+                  {{
+                    r.referee_snapshot.lizenzstufe ??
+                      ("refereeCourseAdmin.detail.dash" | transloco)
+                  }}
+                </div>
                 @if (r.referee_snapshot.gueltigkeit) {
                   <div>
-                    bis
-                    {{ r.referee_snapshot.gueltigkeit | date: "dd.MM.yyyy" }}
+                    {{
+                      "refereeCourseAdmin.detail.snapshotUntil"
+                        | transloco
+                          : {
+                              date:
+                                (r.referee_snapshot.gueltigkeit
+                                | date: "dd.MM.yyyy"),
+                            }
+                    }}
                   </div>
                 }
               } @else {
-                <span class="text-fb-gray-500">Neu</span>
+                <span class="text-fb-gray-500">{{
+                  "refereeCourseAdmin.detail.newReferee" | transloco
+                }}</span>
               }
             </td>
             <td class="py-3 px-2 text-xs">
-              {{ r.previous_season_game_count ?? 0 }} Spiele
+              {{
+                "refereeCourseAdmin.detail.games"
+                  | transloco: { count: r.previous_season_game_count ?? 0 }
+              }}
             </td>
             <td class="py-3 px-2">
               <select
-                aria-label="Lizenzstufe für Schiedsrichter:in"
+                [attr.aria-label]="
+                  'refereeCourseAdmin.detail.selectLicenseLevel' | transloco
+                "
                 class="border rounded px-2 py-1 w-full"
                 [value]="r.lizenzstufe ?? ''"
                 [disabled]="
@@ -183,7 +278,11 @@
                 "
                 (change)="updateLizenzstufe(r, $any($event.target).value)"
               >
-                <option value="">— wählen —</option>
+                <option value="">
+                  {{
+                    "refereeCourseAdmin.detail.selectPlaceholder" | transloco
+                  }}
+                </option>
                 @for (level of licenseLevels; track level) {
                   <option [value]="level.name">
                     {{ level.name }}
@@ -198,21 +297,25 @@
     @if (importData.status === "in_review") {
       <div class="flex justify-between items-center mt-6">
         <fb-confirmation
-          title="Import abbrechen"
-          content="Diesen Import wirklich abbrechen? Alle hochgeladenen Zeilen und Vor-Anlagen werden verworfen."
-          submitButtonTitle="Import abbrechen"
+          [title]="'refereeCourseAdmin.detail.cancelTitle' | transloco"
+          [content]="'refereeCourseAdmin.detail.cancelContent' | transloco"
+          [submitButtonTitle]="
+            'refereeCourseAdmin.detail.cancelSubmitTitle' | transloco
+          "
           buttonVariant="error"
           (handleSubmit)="cancel()"
         >
           <button type="button" class="px-4 py-2 border rounded text-red-600">
-            Import abbrechen
+            {{ "refereeCourseAdmin.detail.cancelButton" | transloco }}
           </button>
         </fb-confirmation>
         <div class="text-right">
           @if (missingLicenseLevelCount() > 0) {
             <div class="text-red-600 text-sm mb-2">
-              Für {{ missingLicenseLevelCount() }} Datensätze fehlt noch die
-              Lizenzstufe.
+              {{
+                "refereeCourseAdmin.detail.missingLevels"
+                  | transloco: { count: missingLicenseLevelCount() }
+              }}
             </div>
           }
           <button
@@ -221,17 +324,19 @@
             [disabled]="!canSubmit() || submitting"
             (click)="submit()"
           >
-            {{ submitting ? "Reiche ein..." : "Einreichen" }}
+            {{
+              (submitting
+                ? "refereeCourseAdmin.detail.submitting"
+                : "refereeCourseAdmin.detail.submit"
+              ) | transloco
+            }}
           </button>
         </div>
       </div>
     }
     @if (importData.status === "submitted") {
       <div class="mt-6 p-4 bg-green-50 text-green-800 rounded">
-        Import eingereicht. Datensätze ohne Korrektur sind direkt angewendet.
-        Datensätze mit Korrektur warten – sofern der Landesverband den
-        Kontrollprozess aktiviert hat – auf eine Freigabe durch den RSK des
-        Landesverbands.
+        {{ "refereeCourseAdmin.detail.submittedInfo" | transloco }}
       </div>
     }
   }

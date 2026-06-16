@@ -16,6 +16,7 @@ import { Club, GameOperation, StateAssociation } from '@floorball/types';
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   templateUrl: './club-edit.component.html',
@@ -75,7 +76,8 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     private _notificationService: NotificationService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
     this.associations$ = this._associationService.associations$;
     this._metaTitle.setTitle('Floorball Saisonmanager');
@@ -167,15 +169,21 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     const msg = [];
 
     if (!club.name?.length) {
-      msg.push('Es muss ein Vereinsname gesetzt werden');
+      msg.push(
+        this._transloco.translate('clubAdmin.notifications.nameRequired')
+      );
     }
 
     if (!club.long_name?.length) {
-      msg.push('Es muss ein Vereinsname (aus dem Register) gesetzt werden');
+      msg.push(
+        this._transloco.translate('clubAdmin.notifications.longNameRequired')
+      );
     }
 
     if (!club.short_name?.length) {
-      msg.push('Es muss ein kurzer Vereinsname gesetzt werden');
+      msg.push(
+        this._transloco.translate('clubAdmin.notifications.shortNameRequired')
+      );
     }
 
     return msg;
@@ -193,16 +201,22 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     const file = input.files[0];
 
     if (!this._allowedLogoTypes.includes(file.type)) {
-      this._notificationService.error('Nur PNG, JPG oder SVG erlaubt.', {
-        autoClose: false,
-      });
+      this._notificationService.error(
+        this._transloco.translate('clubAdmin.notifications.logoTypeError'),
+        {
+          autoClose: false,
+        }
+      );
       input.value = '';
       return;
     }
     if (file.size > this._maxLogoSize) {
-      this._notificationService.error('Datei zu groß (max. 5 MB).', {
-        autoClose: false,
-      });
+      this._notificationService.error(
+        this._transloco.translate('clubAdmin.notifications.logoSizeError'),
+        {
+          autoClose: false,
+        }
+      );
       input.value = '';
       return;
     }
@@ -215,16 +229,26 @@ export class ClubEditComponent implements OnInit, OnDestroy {
           input.value = '';
           club.logo_url = result.logo_url;
           club.logo_small_url = result.logo_small_url;
-          this._notificationService.success('Logo erfolgreich hochgeladen.', {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate(
+              'clubAdmin.notifications.logoUploadSuccess'
+            ),
+            {
+              autoClose: true,
+            }
+          );
           this._cdr.markForCheck();
         },
         error: () => {
           input.value = '';
-          this._notificationService.error('Logo-Upload fehlgeschlagen.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate(
+              'clubAdmin.notifications.logoUploadError'
+            ),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }
@@ -250,15 +274,23 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     this._clubService.deactivateClub(club.id).subscribe({
       next: (result) => {
         club.deactivated_at = result.deactivated_at;
-        this._notificationService.success('Verein wurde deaktiviert.', {
-          autoClose: true,
-        });
+        this._notificationService.success(
+          this._transloco.translate(
+            'clubAdmin.notifications.deactivateSuccess'
+          ),
+          {
+            autoClose: true,
+          }
+        );
         this._cdr.markForCheck();
       },
       error: () => {
-        this._notificationService.error('Deaktivierung fehlgeschlagen.', {
-          autoClose: false,
-        });
+        this._notificationService.error(
+          this._transloco.translate('clubAdmin.notifications.deactivateError'),
+          {
+            autoClose: false,
+          }
+        );
       },
     });
   }
@@ -267,15 +299,23 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     this._clubService.reactivateClub(club.id).subscribe({
       next: (result) => {
         club.deactivated_at = result.deactivated_at;
-        this._notificationService.success('Verein wurde reaktiviert.', {
-          autoClose: true,
-        });
+        this._notificationService.success(
+          this._transloco.translate(
+            'clubAdmin.notifications.reactivateSuccess'
+          ),
+          {
+            autoClose: true,
+          }
+        );
         this._cdr.markForCheck();
       },
       error: () => {
-        this._notificationService.error('Reaktivierung fehlgeschlagen.', {
-          autoClose: false,
-        });
+        this._notificationService.error(
+          this._transloco.translate('clubAdmin.notifications.reactivateError'),
+          {
+            autoClose: false,
+          }
+        );
       },
     });
   }
@@ -283,13 +323,10 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   public submit(club: Club) {
     this._clubService.adminCreateClub(club).subscribe({
       next: (result) => {
-        const message = [
-          'Verein ',
-          result.name,
-          '(',
-          result.id,
-          ') erfolgreich geändert.',
-        ].join('');
+        const message = this._transloco.translate(
+          'clubAdmin.notifications.saveSuccess',
+          { name: result.name, id: result.id }
+        );
         this._notificationService.success(message, {
           autoClose: true,
           keepAfterRouteChange: true,

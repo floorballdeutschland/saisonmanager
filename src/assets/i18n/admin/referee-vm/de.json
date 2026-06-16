@@ -1,0 +1,16 @@
+{
+  "index": {
+    "title": "Schiedsrichter*innen",
+    "loading": "Lade Schiedsrichter…",
+    "countSingular": "Schiedsrichter*in",
+    "countPlural": "Schiedsrichter*innen",
+    "inYourClub": "in deinem Verein",
+    "colLicenseNumber": "Lizenznummer",
+    "colName": "Name",
+    "colLevel": "Stufe",
+    "colValidity": "Gültigkeit",
+    "colQualifications": "Zusatzqualifikationen",
+    "validUntil": "(bis {{ date }})",
+    "empty": "Keine Schiedsrichter*innen für deinen Verein gefunden."
+  }
+}

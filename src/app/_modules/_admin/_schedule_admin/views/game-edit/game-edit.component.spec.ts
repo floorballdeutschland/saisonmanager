@@ -1,3 +1,4 @@
+import { getTranslocoTestingModule } from '@floorball/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { GameEditComponent } from './game-edit.component';
@@ -9,7 +10,7 @@ describe('GameEditComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [getTranslocoTestingModule(), HttpClientTestingModule],
       declarations: [GameEditComponent],
     }).compileComponents();
   });

@@ -2,17 +2,21 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Spielplanverwaltung
+    {{ "scheduleAdmin.gameDayEdit.title" | transloco }}
   </h1>
 
   <a
     [routerLink]="['/', 'verwaltung', 'ligen', leagueId, 'spielplan']"
     class="text-sm text-fb-gray-500 hover:text-black"
-    >← Zurück zum Spielplan</a
+    >{{ "scheduleAdmin.gameDayEdit.backToSchedule" | transloco }}</a
   >
 
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    {{ editMode ? "Bearbeiten eines Spieltags" : "Neuen Spieltag anlegen" }}
+    {{
+      editMode
+        ? ("scheduleAdmin.gameDayEdit.headingEdit" | transloco)
+        : ("scheduleAdmin.gameDayEdit.headingNew" | transloco)
+    }}
   </h2>
 </div>
 
@@ -26,18 +30,23 @@
           <div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Spieltagseinstellungen
+                {{ "scheduleAdmin.gameDayEdit.settings" | transloco }}
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div class="font-bold">Spieltags ID</div>
+                <div class="font-bold">
+                  {{ "scheduleAdmin.gameDayEdit.gameDayId" | transloco }}
+                </div>
                 <div>
                   {{
                     gameday && gameday.id && gameday.id > 0
                       ? gameday.id
-                      : "Wird nach dem Anlegen festgelegt"
+                      : ("scheduleAdmin.gameDayEdit.gameDayIdPlaceholder"
+                        | transloco)
                   }}
                 </div>
-                <div class="font-bold">Spieltagsnummer</div>
+                <div class="font-bold">
+                  {{ "scheduleAdmin.gameDayEdit.gameDayNumber" | transloco }}
+                </div>
                 <div>
                   <input
                     class="w-full"
@@ -46,7 +55,9 @@
                     required
                   />
                 </div>
-                <div class="font-bold">Datum</div>
+                <div class="font-bold">
+                  {{ "scheduleAdmin.gameDayEdit.date" | transloco }}
+                </div>
                 <div>
                   <input
                     class="w-full"
@@ -55,7 +66,9 @@
                     required
                   />
                 </div>
-                <div class="font-bold">Austragungsort</div>
+                <div class="font-bold">
+                  {{ "scheduleAdmin.gameDayEdit.venue" | transloco }}
+                </div>
                 <div>
                   <select
                     class="w-full"
@@ -69,7 +82,9 @@
                     }
                   </select>
                 </div>
-                <div class="font-bold">Ausrichter</div>
+                <div class="font-bold">
+                  {{ "scheduleAdmin.gameDayEdit.host" | transloco }}
+                </div>
                 <div>
                   @if (!useAllClubs) {
                     <select
@@ -87,7 +102,9 @@
                       class="text-xs text-fb-gray-600 hover:underline cursor-pointer mt-1 inline-block"
                       (click)="enableAllClubs()"
                     >
-                      Anderen Verein als Ausrichter wählen…
+                      {{
+                        "scheduleAdmin.gameDayEdit.chooseOtherClub" | transloco
+                      }}
                     </a>
                   }
                   @if (useAllClubs) {
@@ -96,7 +113,10 @@
                         class="w-full"
                         type="text"
                         [value]="clubQuery"
-                        placeholder="Verein suchen…"
+                        [placeholder]="
+                          'scheduleAdmin.gameDayEdit.clubSearchPlaceholder'
+                            | transloco
+                        "
                         (input)="onClubInput($any($event.target).value)"
                         (focus)="onClubFocus()"
                         (blur)="onClubBlur()"
@@ -120,7 +140,9 @@
                       }
                       @if (allClubsLoading) {
                         <div class="text-xs text-fb-gray-400 mt-1">
-                          Lade Vereinsliste…
+                          {{
+                            "scheduleAdmin.gameDayEdit.loadingClubs" | transloco
+                          }}
                         </div>
                       }
                     </div>
@@ -128,7 +150,10 @@
                       class="text-xs text-fb-gray-600 hover:underline cursor-pointer mt-1 inline-block"
                       (click)="disableAllClubs()"
                     >
-                      ← zurück zu Liga-Vereinen
+                      {{
+                        "scheduleAdmin.gameDayEdit.backToLeagueClubs"
+                          | transloco
+                      }}
                     </a>
                   }
                 </div>
@@ -141,7 +166,7 @@
                     class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                     (click)="submit()"
                   >
-                    Änderungen speichern
+                    {{ "scheduleAdmin.gameDayEdit.saveChanges" | transloco }}
                   </a>
                   <a
                     class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-8 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
@@ -153,7 +178,7 @@
                       'spielplan',
                     ]"
                   >
-                    Zurück zur Liga
+                    {{ "scheduleAdmin.gameDayEdit.backToLeague" | transloco }}
                   </a>
                   @if ((gameday.id || 0) > 0 && gameday.deletable) {
                     <div class="">
@@ -161,7 +186,9 @@
                         class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                         (click)="destroy()"
                       >
-                        Spieltag löschen
+                        {{
+                          "scheduleAdmin.gameDayEdit.deleteGameDay" | transloco
+                        }}
                       </a>
                     </div>
                   }
@@ -170,7 +197,10 @@
                       <a
                         class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-100 hover:bg-fb-gray-100 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       >
-                        löschen nicht möglich
+                        {{
+                          "scheduleAdmin.gameDayEdit.deleteNotPossible"
+                            | transloco
+                        }}
                       </a>
                     </div>
                   }
@@ -196,7 +226,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "scheduleAdmin.gameDayEdit.loadingData" | transloco }}
             </div>
           </div>
         }

@@ -1,6 +1,8 @@
 <div class="p-4 lg:p-8">
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "refereeAdmin.detail.loading" | transloco }}
+    </div>
   }
 
   @if (!loading && referee) {
@@ -10,7 +12,7 @@
         <a
           [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
           class="text-fb-gray-500 hover:text-black text-sm"
-          >← Übersicht</a
+          >{{ "refereeAdmin.detail.back" | transloco }}</a
         >
         <div class="flex items-center gap-2 mt-1">
           <h1 class="text-2xl font-bold">
@@ -19,7 +21,7 @@
           @if (referee.guest) {
             <span
               class="text-xs font-bold px-2 py-0.5 bg-fb-gray-800 text-fb-gray-500 rounded"
-              >Gast</span
+              >{{ "refereeAdmin.detail.guestBadge" | transloco }}</span
             >
           }
         </div>
@@ -27,7 +29,8 @@
           {{
             referee.guest
               ? referee.lizenznummer_display
-              : "Lizenz #" + referee.lizenznummer
+              : ("refereeAdmin.detail.licensePrefix" | transloco) +
+                referee.lizenznummer
           }}
         </p>
       </div>
@@ -42,7 +45,7 @@
           ]"
           class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
         >
-          Bearbeiten
+          {{ "refereeAdmin.detail.edit" | transloco }}
         </a>
       </div>
     </div>
@@ -51,7 +54,7 @@
       @if (!referee.guest) {
         <div>
           <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            Lizenzstufe
+            {{ "refereeAdmin.detail.licenseLevel" | transloco }}
           </p>
           <p class="font-medium">{{ referee.lizenzstufe || "–" }}</p>
         </div>
@@ -59,7 +62,7 @@
       @if (!referee.guest) {
         <div>
           <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            Gültigkeit
+            {{ "refereeAdmin.detail.validity" | transloco }}
           </p>
           <p
             [class]="
@@ -71,7 +74,11 @@
             {{ referee.gueltigkeit || "–" }}
             @if (referee.gueltigkeit) {
               <span class="text-xs ml-1">
-                ({{ isActive ? "aktiv" : "abgelaufen" }})
+                ({{
+                  isActive
+                    ? ("refereeAdmin.detail.statusActive" | transloco)
+                    : ("refereeAdmin.detail.statusExpired" | transloco)
+                }})
               </span>
             }
           </p>
@@ -80,7 +87,7 @@
       @if (!referee.guest) {
         <div>
           <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            Region / LV
+            {{ "refereeAdmin.detail.region" | transloco }}
           </p>
           <p class="font-medium">{{ referee.landesverband || "–" }}</p>
         </div>
@@ -88,7 +95,7 @@
       @if (!referee.guest) {
         <div>
           <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            Verein
+            {{ "refereeAdmin.detail.club" | transloco }}
           </p>
           <p class="font-medium">{{ referee.club_name || "–" }}</p>
         </div>
@@ -97,14 +104,18 @@
         @for (q of referee.qualifications; track q) {
           <div>
             <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-              Zusatzqualifikation {{ q.qualification_type_name }}
+              {{
+                "refereeAdmin.detail.qualificationPrefix"
+                  | transloco: { name: q.qualification_type_name }
+              }}
             </p>
             <p class="font-medium">
               {{ q.qualification_type_name }}
               @if (q.valid_until) {
-                <span class="text-fb-gray-500 text-sm"
-                  >(bis {{ q.valid_until }})</span
-                >
+                <span class="text-fb-gray-500 text-sm">{{
+                  "refereeAdmin.detail.qualificationUntil"
+                    | transloco: { date: q.valid_until }
+                }}</span>
               }
             </p>
           </div>
@@ -113,7 +124,7 @@
       @if (referee.email) {
         <div>
           <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            E-Mail
+            {{ "refereeAdmin.detail.email" | transloco }}
           </p>
           <p class="font-medium">{{ referee.email }}</p>
         </div>
@@ -121,7 +132,7 @@
       @if (referee.user_name) {
         <div>
           <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            Benutzerkonto
+            {{ "refereeAdmin.detail.userAccount" | transloco }}
           </p>
           <p class="font-medium font-mono text-sm">{{ referee.user_name }}</p>
         </div>
@@ -133,7 +144,7 @@
         @if (referee.strasse) {
           <div>
             <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-              Heimadresse
+              {{ "refereeAdmin.detail.homeAddress" | transloco }}
             </p>
             <p class="font-medium">
               {{ referee.strasse }} {{ referee.hausnummer }}, {{ referee.plz }}
@@ -144,7 +155,7 @@
         @if (referee.partner_lizenznummer) {
           <div>
             <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-              Bevorzugter Partner
+              {{ "refereeAdmin.detail.preferredPartner" | transloco }}
             </p>
             <p class="font-medium font-mono">
               {{ referee.partner_lizenznummer }}
@@ -154,23 +165,44 @@
       </div>
     }
     <!-- Spielhistorie -->
-    <h2 class="text-lg font-bold mb-4">Spielhistorie</h2>
+    <h2 class="text-lg font-bold mb-4">
+      {{ "refereeAdmin.detail.gameHistory" | transloco }}
+    </h2>
     @if (gamesLoading) {
-      <div class="text-fb-gray-500 text-sm py-4">Lade Spiele…</div>
+      <div class="text-fb-gray-500 text-sm py-4">
+        {{ "refereeAdmin.detail.gamesLoading" | transloco }}
+      </div>
     }
     @if (!gamesLoading) {
       <div>
-        <p class="text-sm text-fb-gray-500 mb-3">{{ games.length }} Spiele</p>
+        <p class="text-sm text-fb-gray-500 mb-3">
+          {{
+            "refereeAdmin.detail.gamesCount"
+              | transloco: { count: games.length }
+          }}
+        </p>
         @if (games.length > 0) {
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-fb-gray-700 text-left">
-                <th class="py-2 pr-4 font-bold">Nr.</th>
-                <th class="py-2 pr-4 font-bold">Datum</th>
-                <th class="py-2 pr-4 font-bold">Heimteam</th>
-                <th class="py-2 pr-4 font-bold">Gastteam</th>
-                <th class="py-2 pr-4 font-bold">Liga</th>
-                <th class="py-2 font-bold">Ergebnis</th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeAdmin.detail.colNumber" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeAdmin.detail.colDate" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeAdmin.detail.colHomeTeam" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeAdmin.detail.colGuestTeam" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeAdmin.detail.colLeague" | transloco }}
+                </th>
+                <th class="py-2 font-bold">
+                  {{ "refereeAdmin.detail.colResult" | transloco }}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -190,13 +222,17 @@
           </table>
         }
         @if (games.length === 0) {
-          <p class="text-fb-gray-500 text-sm">Keine Spiele gefunden.</p>
+          <p class="text-fb-gray-500 text-sm">
+            {{ "refereeAdmin.detail.noGames" | transloco }}
+          </p>
         }
       </div>
     }
   }
 
   @if (!loading && !referee) {
-    <div class="text-fb-gray-500 py-8">Schiedsrichter nicht gefunden.</div>
+    <div class="text-fb-gray-500 py-8">
+      {{ "refereeAdmin.detail.notFound" | transloco }}
+    </div>
   }
 </div>

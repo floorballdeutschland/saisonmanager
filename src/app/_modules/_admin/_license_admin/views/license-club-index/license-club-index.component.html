@@ -2,7 +2,7 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Lizenzverwaltung
+    {{ "licenseAdmin.clubIndex.title" | transloco }}
   </h1>
 </div>
 
@@ -30,7 +30,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "licenseAdmin.clubIndex.loadingData" | transloco }}
             </div>
           </div>
         </ng-template>
@@ -46,7 +46,7 @@
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Teams
+                {{ "licenseAdmin.clubIndex.teams" | transloco }}
               </div>
               <div class="flex flex-col gap-2">
                 @for (team of club.teams; track team) {
@@ -68,7 +68,10 @@
                         team.id,
                       ]"
                     >
-                      Lizenzanträge verwalten
+                      {{
+                        "licenseAdmin.clubIndex.manageLicenseRequests"
+                          | transloco
+                      }}
                     </a>
                   </div>
                 }
@@ -76,7 +79,7 @@
                   <p
                     class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
                   >
-                    noch keine Teams hinterlegt
+                    {{ "licenseAdmin.clubIndex.noTeams" | transloco }}
                   </p>
                 }
               </div>

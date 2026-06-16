@@ -1,3 +1,4 @@
+import { getTranslocoTestingModule } from '@floorball/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ImportGameDaysComponent } from './import-game-days.component';
@@ -9,7 +10,7 @@ describe('ImportGameDaysComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [getTranslocoTestingModule(), HttpClientTestingModule],
       declarations: [ImportGameDaysComponent],
     }).compileComponents();
   });

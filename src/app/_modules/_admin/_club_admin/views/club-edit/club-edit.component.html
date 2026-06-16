@@ -2,11 +2,14 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Vereinsverwaltung
+    {{ "clubAdmin.edit.title" | transloco }}
   </h1>
 
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    {{ editMode ? "Bearbeiten eines Vereins" : "Neuen Verein anlegen" }}
+    {{
+      (editMode ? "clubAdmin.edit.editHeading" : "clubAdmin.edit.newHeading")
+        | transloco
+    }}
   </h2>
 </div>
 
@@ -20,16 +23,22 @@
           <div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Hauptdaten
+                {{ "clubAdmin.edit.mainData" | transloco }}
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div class="font-bold">Club ID</div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.clubId" | transloco }}
+                </div>
                 <div>
                   {{
-                    club.id > 0 ? club.id : "Wird nach dem Anlegen festgelegt"
+                    club.id > 0
+                      ? club.id
+                      : ("clubAdmin.edit.clubIdAfterCreate" | transloco)
                   }}
                 </div>
-                <div class="font-bold">Name</div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.name" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="club.name"
@@ -39,7 +48,9 @@
                     class="w-full"
                   />
                 </div>
-                <div class="font-bold">Name (kurz)</div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.shortName" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="club.short_name"
@@ -49,7 +60,9 @@
                     required
                   />
                 </div>
-                <div class="font-bold">Name Vereinsregister</div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.registerName" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="club.long_name"
@@ -59,10 +72,14 @@
                     required
                   />
                 </div>
-                <div class="font-bold">Bundesland (Vereinssitz)</div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.state" | transloco }}
+                </div>
                 <div>
                   <select name="state" [(ngModel)]="club.state" class="w-full">
-                    <option [ngValue]="null">– Bitte auswählen –</option>
+                    <option [ngValue]="null">
+                      {{ "clubAdmin.edit.pleaseSelect" | transloco }}
+                    </option>
                     @for (s of states; track s) {
                       <option [ngValue]="s.isocode">
                         {{ s.name }}
@@ -70,16 +87,22 @@
                     }
                   </select>
                 </div>
-                <div class="font-bold">Spielverbund</div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.sportverbund" | transloco }}
+                </div>
                 <div class="text-gray-700">{{ getSportverbund(club) }}</div>
-                <div class="font-bold">Landesverband</div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.stateAssociation" | transloco }}
+                </div>
                 <div>
                   <select
                     name="state_association_id"
                     [(ngModel)]="club.state_association_id"
                     class="w-full"
                   >
-                    <option [ngValue]="null">– Bitte auswählen –</option>
+                    <option [ngValue]="null">
+                      {{ "clubAdmin.edit.pleaseSelect" | transloco }}
+                    </option>
                     @for (sa of leafStateAssociations; track sa) {
                       <option [ngValue]="sa.id">
                         {{ sa.name }}
@@ -87,43 +110,53 @@
                     }
                   </select>
                 </div>
-                <div class="font-bold">Kontakt-E-Mail</div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.contactEmail" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="club.contact_email"
                     type="email"
                     id="contact_email"
                     class="w-full"
-                    placeholder="z.B. info@verein.de"
+                    [placeholder]="
+                      'clubAdmin.edit.contactEmailPlaceholder' | transloco
+                    "
                   />
                 </div>
               </div>
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Vereinslogo
+                {{ "clubAdmin.edit.logo" | transloco }}
               </div>
               @if (club.id === 0) {
                 <div class="grid grid-cols-1 gap-4">
-                  Logo kann erst nach dem Speichern hochgeladen werden
+                  {{ "clubAdmin.edit.logoUploadAfterSave" | transloco }}
                 </div>
               }
               @if (club.id > 0) {
                 <div class="grid grid-cols-2 gap-4 items-center">
-                  <div class="font-bold">Aktuelles Logo</div>
+                  <div class="font-bold">
+                    {{ "clubAdmin.edit.currentLogo" | transloco }}
+                  </div>
                   <div>
                     @if (club.logo_url) {
                       <img
                         [src]="club.logo_url"
-                        alt="Vereinslogo"
+                        [alt]="'clubAdmin.edit.logoAlt' | transloco"
                         class="h-16 object-contain"
                       />
                     }
                     @if (!club.logo_url) {
-                      <span class="text-gray-400">kein Logo hinterlegt</span>
+                      <span class="text-gray-400">{{
+                        "clubAdmin.edit.noLogo" | transloco
+                      }}</span>
                     }
                   </div>
-                  <div class="font-bold">Logo hochladen</div>
+                  <div class="font-bold">
+                    {{ "clubAdmin.edit.uploadLogo" | transloco }}
+                  </div>
                   <div>
                     <input
                       type="file"
@@ -131,10 +164,9 @@
                       #logoInput
                       (change)="onLogoSelected(club, logoInput)"
                     />
-                    <small class="block text-gray-500 mt-1"
-                      >PNG, JPG oder SVG · wird auf 100×100 Pixel
-                      verkleinert</small
-                    >
+                    <small class="block text-gray-500 mt-1">{{
+                      "clubAdmin.edit.logoHint" | transloco
+                    }}</small>
                   </div>
                 </div>
               }
@@ -147,13 +179,18 @@
                 <div
                   class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
                 >
-                  Vereinsstatus
+                  {{ "clubAdmin.edit.clubStatus" | transloco }}
                   @if (club.deactivated_at) {
                     <span
                       class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 normal-case"
                     >
-                      Deaktiviert am
-                      {{ club.deactivated_at | date: "dd.MM.yyyy" }}
+                      {{
+                        "clubAdmin.edit.deactivatedOn"
+                          | transloco
+                            : {
+                                date: club.deactivated_at | date: "dd.MM.yyyy",
+                              }
+                      }}
                     </span>
                   }
                 </div>
@@ -163,31 +200,32 @@
                       (click)="confirmDeactivate = true"
                       class="font-bold text-red-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-red-50 border-red-400 rounded-[5px] cursor-pointer"
                     >
-                      Verein deaktivieren
+                      {{ "clubAdmin.edit.deactivateClub" | transloco }}
                     </button>
                   </div>
                 }
                 @if (confirmDeactivate) {
                   <div class="border border-red-300 rounded p-4 bg-red-50">
                     <p class="text-sm font-semibold text-red-800 mb-1">
-                      Verein wirklich deaktivieren?
+                      {{ "clubAdmin.edit.deactivateConfirmTitle" | transloco }}
                     </p>
                     <p class="text-sm text-red-700 mb-4">
-                      Der Verein wird aus der aktiven Vereinsliste entfernt. Der
-                      Datensatz bleibt erhalten und kann reaktiviert werden.
+                      {{ "clubAdmin.edit.deactivateConfirmText" | transloco }}
                     </p>
                     <div class="flex gap-3">
                       <button
                         (click)="deactivateClub(club)"
                         class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-[5px] cursor-pointer"
                       >
-                        Ja, deaktivieren
+                        {{
+                          "clubAdmin.edit.deactivateConfirmSubmit" | transloco
+                        }}
                       </button>
                       <button
                         (click)="confirmDeactivate = false"
                         class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       >
-                        Abbrechen
+                        {{ "clubAdmin.edit.cancel" | transloco }}
                       </button>
                     </div>
                   </div>
@@ -198,7 +236,7 @@
                       (click)="reactivateClub(club)"
                       class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                     >
-                      Verein reaktivieren
+                      {{ "clubAdmin.edit.reactivateClub" | transloco }}
                     </button>
                   </div>
                 }
@@ -209,7 +247,7 @@
                 @if (error(club)) {
                   <div class="mb-4">
                     <h3 class="text-lg leading-6 font-medium text-red-600">
-                      Speichern nicht möglich
+                      {{ "clubAdmin.edit.saveError" | transloco }}
                     </h3>
                     @for (msg of errorMsg(club); track msg) {
                       <p>{{ msg }}</p>
@@ -222,7 +260,7 @@
                       class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       (click)="submit(club)"
                     >
-                      Änderungen speichern
+                      {{ "clubAdmin.edit.saveChanges" | transloco }}
                     </a>
                     <a
                       class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
@@ -234,14 +272,14 @@
                         'spieler',
                       ]"
                     >
-                      Spieler bearbeiten
+                      {{ "clubAdmin.edit.editPlayers" | transloco }}
                     </a>
                     <a
                       class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       deactivated="true"
                       [routerLink]="['/', 'verwaltung', 'vereine']"
                     >
-                      Abbrechen
+                      {{ "clubAdmin.edit.cancel" | transloco }}
                     </a>
                   </div>
                 }
@@ -266,7 +304,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "clubAdmin.edit.loading" | transloco }}
             </div>
           </div>
         }

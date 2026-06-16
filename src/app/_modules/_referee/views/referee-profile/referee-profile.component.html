@@ -1,8 +1,12 @@
 <div class="p-4 lg:p-8 max-w-2xl">
-  <h1 class="text-2xl font-bold mb-2">Mein Schiedsrichter-Profil</h1>
+  <h1 class="text-2xl font-bold mb-2">
+    {{ "refereeSelf.profile.title" | transloco }}
+  </h1>
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "refereeSelf.common.loading" | transloco }}
+    </div>
   }
 
   @if (!loading && profile) {
@@ -12,18 +16,26 @@
         <span class="ml-2">· {{ profile.lizenzstufe }}</span>
       }
       @if (profile.gueltigkeit) {
-        <span class="ml-2">· gültig bis {{ profile.gueltigkeit }}</span>
+        <span class="ml-2"
+          >·
+          {{
+            "refereeSelf.profile.validUntil"
+              | transloco: { date: profile.gueltigkeit }
+          }}</span
+        >
       }
     </p>
     <form (ngSubmit)="submit()" class="flex flex-col gap-6">
       <!-- Name & Kontakt -->
       <div class="flex flex-col gap-4">
         <h2 class="text-sm font-bold uppercase text-fb-gray-500">
-          Name & Kontakt
+          {{ "refereeSelf.profile.sectionContact" | transloco }}
         </h2>
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
-            <label class="text-sm font-bold">Vorname *</label>
+            <label class="text-sm font-bold">{{
+              "refereeSelf.profile.firstName" | transloco
+            }}</label>
             <input
               type="text"
               [(ngModel)]="draft.vorname"
@@ -33,7 +45,9 @@
             />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-sm font-bold">Nachname *</label>
+            <label class="text-sm font-bold">{{
+              "refereeSelf.profile.lastName" | transloco
+            }}</label>
             <input
               type="text"
               [(ngModel)]="draft.nachname"
@@ -43,7 +57,9 @@
             />
           </div>
           <div class="flex flex-col gap-1 col-span-2">
-            <label class="text-sm font-bold">E-Mail</label>
+            <label class="text-sm font-bold">{{
+              "refereeSelf.profile.email" | transloco
+            }}</label>
             <input
               type="email"
               [(ngModel)]="draft.email"
@@ -56,14 +72,16 @@
       <!-- Heimadresse -->
       <div class="flex flex-col gap-2">
         <h2 class="text-sm font-bold uppercase text-fb-gray-500">
-          Heimadresse
+          {{ "refereeSelf.profile.sectionAddress" | transloco }}
         </h2>
         <p class="text-xs text-fb-gray-500">
-          Wird nur bei Ansetzungen für die Berechnung der Kilometer genutzt.
+          {{ "refereeSelf.profile.addressHint" | transloco }}
         </p>
         <div class="grid grid-cols-[2fr_1fr] gap-4">
           <div class="flex flex-col gap-1">
-            <label class="text-sm">Straße</label>
+            <label class="text-sm">{{
+              "refereeSelf.profile.street" | transloco
+            }}</label>
             <input
               type="text"
               [(ngModel)]="draft.strasse"
@@ -72,7 +90,9 @@
             />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-sm">Hausnummer</label>
+            <label class="text-sm">{{
+              "refereeSelf.profile.houseNumber" | transloco
+            }}</label>
             <input
               type="text"
               [(ngModel)]="draft.hausnummer"
@@ -83,7 +103,9 @@
         </div>
         <div class="grid grid-cols-[1fr_2fr] gap-4">
           <div class="flex flex-col gap-1">
-            <label class="text-sm">PLZ</label>
+            <label class="text-sm">{{
+              "refereeSelf.profile.zip" | transloco
+            }}</label>
             <input
               type="text"
               [(ngModel)]="draft.plz"
@@ -92,7 +114,9 @@
             />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-sm">Ort</label>
+            <label class="text-sm">{{
+              "refereeSelf.profile.city" | transloco
+            }}</label>
             <input
               type="text"
               [(ngModel)]="draft.ort"
@@ -105,17 +129,16 @@
       <!-- Schiedsrichterpartner -->
       <div class="flex flex-col gap-2">
         <h2 class="text-sm font-bold uppercase text-fb-gray-500">
-          Häufigste/r Schiedsrichterpartner/in
+          {{ "refereeSelf.profile.sectionPartner" | transloco }}
         </h2>
         <p class="text-xs text-fb-gray-500">
-          Gib hier die Lizenznummer deines primären Partners bzw. deiner
-          primären Partnerin ein, damit uns Ansetzungen vereinfacht werden.
+          {{ "refereeSelf.profile.partnerHint" | transloco }}
         </p>
         <input
           type="number"
           [(ngModel)]="draft.partner_lizenznummer"
           name="partner_lizenznummer"
-          placeholder="Lizenznummer"
+          [placeholder]="'refereeSelf.profile.partnerPlaceholder' | transloco"
           class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
         />
       </div>
@@ -126,7 +149,10 @@
           [disabled]="saving"
           class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
         >
-          {{ saving ? "Speichern…" : "Speichern" }}
+          {{
+            (saving ? "refereeSelf.profile.saving" : "refereeSelf.profile.save")
+              | transloco
+          }}
         </button>
       </div>
     </form>
@@ -134,7 +160,7 @@
 
   @if (!loading && !profile) {
     <div class="text-fb-gray-500 py-8">
-      Kein Schiedsrichter-Profil gefunden.
+      {{ "refereeSelf.profile.notFound" | transloco }}
     </div>
   }
 </div>

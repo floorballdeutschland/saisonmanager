@@ -1,0 +1,40 @@
+{
+  "index": {
+    "title": "Spieler*innen",
+    "loading": "Lade Spieler…",
+    "intro": "Spieler*innen, die aktuell nicht mehr aktiv am Spielbetrieb teilnehmen können deaktiviert werden. Deaktivierte Spieler*innen tauchen im Dropdown für die Lizenzbeantragung nicht mehr auf und sorgen für mehr Übersichtlichkeit in der Vereinsübersicht. Spieler*innen können zu späteren Zeitpunkten wieder aktiviert werden.",
+    "countSingular": "Spieler*in",
+    "countPlural": "Spieler*innen",
+    "deactivatedCountShow": "{{ count }} deaktiviert einblenden",
+    "deactivatedCountHide": "{{ count }} deaktiviert ausblenden",
+    "colName": "Name",
+    "colBirthdate": "Geburtsdatum",
+    "colGender": "Geschlecht",
+    "colStatus": "Status",
+    "genderMale": "m",
+    "genderFemale": "w",
+    "genderDiverse": "d",
+    "statusActive": "aktiv",
+    "statusDeactivated": "deaktiviert {{ date }}",
+    "licenseLicensed": "Lizenziert",
+    "licenseRequested": "Beantragt",
+    "licenseNone": "Keine Lizenz",
+    "deactivate": "Deaktivieren",
+    "confirmDeactivatePrompt": "Wirklich deaktivieren? Bitte Grund angeben:",
+    "reasonChoose": "Grund wählen…",
+    "reasonClubLeave": "Vereinsaustritt",
+    "reasonCareerEnd": "Karriereende",
+    "reasonTemporaryBreak": "Temporäre Pause",
+    "reasonOther": "Sonstiges",
+    "reasonOtherPlaceholder": "Kurze Begründung…",
+    "confirmDeactivateYes": "Ja, deaktivieren",
+    "cancel": "Abbrechen",
+    "reactivate": "Reaktivieren",
+    "empty": "Keine Spieler*innen für deinen Verein gefunden."
+  },
+  "notifications": {
+    "deactivateError": "Deaktivierung fehlgeschlagen.",
+    "reactivateError": "Reaktivierung fehlgeschlagen.",
+    "reasonOtherPrefix": "Sonstiges: {{ detail }}"
+  }
+}

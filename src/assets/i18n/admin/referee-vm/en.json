@@ -1,0 +1,16 @@
+{
+  "index": {
+    "title": "Referees",
+    "loading": "Loading referees…",
+    "countSingular": "referee",
+    "countPlural": "referees",
+    "inYourClub": "in your club",
+    "colLicenseNumber": "License number",
+    "colName": "Name",
+    "colLevel": "Level",
+    "colValidity": "Validity",
+    "colQualifications": "Additional qualifications",
+    "validUntil": "(until {{ date }})",
+    "empty": "No referees found for your club."
+  }
+}

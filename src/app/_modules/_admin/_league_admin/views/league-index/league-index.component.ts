@@ -18,6 +18,7 @@ import {
 import { Observable, forkJoin } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   templateUrl: './league-index.component.html',
@@ -36,7 +37,8 @@ export class LeagueIndexComponent implements OnInit {
     private _leagueService: LeagueService,
     private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
     this.associations$ = this._associationService.associations$;
     this._metaTitle.setTitle('Floorball Saisonmanager');
@@ -74,14 +76,16 @@ export class LeagueIndexComponent implements OnInit {
       next: () => {
         this.savingOrder = false;
         this._cdr.markForCheck();
-        this._notificationService.success('Reihenfolge gespeichert.');
+        this._notificationService.success(
+          this._transloco.translate('leagueAdmin.notifications.orderSaved')
+        );
       },
       error: () => {
         go.leagues = snapshot;
         this.savingOrder = false;
         this._cdr.markForCheck();
         this._notificationService.error(
-          'Reihenfolge konnte nicht gespeichert werden.'
+          this._transloco.translate('leagueAdmin.notifications.orderSaveError')
         );
       },
     });

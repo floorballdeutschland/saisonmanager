@@ -16,6 +16,7 @@ import { Club, GameOperation, Team } from 'src/app/_models';
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { GameOperationWithLeagues } from 'src/app/_models/game-operation.interface';
 
 @Component({
@@ -46,6 +47,7 @@ export class TeamEditComponent implements OnInit, OnDestroy {
     private _notificationService: NotificationService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
+    private _transloco: TranslocoService,
     private _metaTitle: Title
   ) {
     this.associations$ = this._associationService.associations$;
@@ -78,7 +80,9 @@ export class TeamEditComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.log(error);
-        const errorMessage = 'Dieser Bereich steht dir nicht zur Verfügung.';
+        const errorMessage = this._transloco.translate(
+          'teamAdmin.notifications.noAccess'
+        );
         this._notificationService.error(errorMessage);
         this._router.navigate(['/'], { state: { error: errorMessage } });
       },
@@ -149,27 +153,29 @@ export class TeamEditComponent implements OnInit, OnDestroy {
     let msg = [];
 
     if (team.name.length < 1) {
-      msg.push('Es muss ein Teamname gesetzt werden');
+      msg.push(this._transloco.translate('teamAdmin.edit.errName'));
     }
 
     if (team.short_name.length < 1) {
-      msg.push('Es muss ein kurzer Teamname gesetzt werden');
+      msg.push(this._transloco.translate('teamAdmin.edit.errShortName'));
     }
 
     if (team.league_id < 1) {
-      msg.push('Liga ID falsch');
+      msg.push(this._transloco.translate('teamAdmin.edit.errLeagueId'));
     }
 
     if (team.club_id < 1) {
-      msg.push('Es muss ein Verein ausgewählt werden');
+      msg.push(this._transloco.translate('teamAdmin.edit.errClub'));
     }
 
     if (team.syndicate && team.syndicate_clubs.length < 2) {
-      msg.push('Eine SG muss aus zwei Teams bestehen.');
+      msg.push(this._transloco.translate('teamAdmin.edit.errSyndicateCount'));
     }
 
     if (team.syndicate && !team.syndicate_clubs.includes(team.club_id)) {
-      msg.push('Der Hauptverein muss auch SG-Verein sein');
+      msg.push(
+        this._transloco.translate('teamAdmin.edit.errSyndicateMainClub')
+      );
     }
 
     const regexp = new RegExp(
@@ -180,11 +186,11 @@ export class TeamEditComponent implements OnInit, OnDestroy {
       team.contact_email.length < 1 ||
       !regexp.test(team.contact_email)
     ) {
-      msg.push('Es muss eine korrekte Ansprechpartner E-Mail gesetzt werden');
+      msg.push(this._transloco.translate('teamAdmin.edit.errEmail'));
     }
 
     if (!team.contact_person || team.contact_person.length < 6) {
-      msg.push('Es muss eine Kontaktperson benannt werden');
+      msg.push(this._transloco.translate('teamAdmin.edit.errContactPerson'));
     }
 
     return msg;
@@ -202,16 +208,22 @@ export class TeamEditComponent implements OnInit, OnDestroy {
     const file = input.files[0];
 
     if (!this._allowedLogoTypes.includes(file.type)) {
-      this._notificationService.error('Nur PNG, JPG oder SVG erlaubt.', {
-        autoClose: false,
-      });
+      this._notificationService.error(
+        this._transloco.translate('teamAdmin.notifications.logoTypeInvalid'),
+        {
+          autoClose: false,
+        }
+      );
       input.value = '';
       return;
     }
     if (file.size > this._maxLogoSize) {
-      this._notificationService.error('Datei zu groß (max. 5 MB).', {
-        autoClose: false,
-      });
+      this._notificationService.error(
+        this._transloco.translate('teamAdmin.notifications.logoTooLarge'),
+        {
+          autoClose: false,
+        }
+      );
       input.value = '';
       return;
     }
@@ -224,16 +236,24 @@ export class TeamEditComponent implements OnInit, OnDestroy {
           input.value = '';
           team.logo_url = result.logo_url;
           team.logo_small = result.logo_small_url;
-          this._notificationService.success('Logo erfolgreich hochgeladen.', {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate('teamAdmin.notifications.logoUploaded'),
+            {
+              autoClose: true,
+            }
+          );
           this._cdr.markForCheck();
         },
         error: () => {
           input.value = '';
-          this._notificationService.error('Logo-Upload fehlgeschlagen.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate(
+              'teamAdmin.notifications.logoUploadFailed'
+            ),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }
@@ -259,13 +279,10 @@ export class TeamEditComponent implements OnInit, OnDestroy {
   public submit(team: Team) {
     this._leagueService.adminCreateTeam(team).subscribe({
       next: (result) => {
-        const message = [
-          'Team ',
-          result.name,
-          '(',
-          result.id,
-          ') erfolgreich geändert.',
-        ].join('');
+        const message = this._transloco.translate(
+          'teamAdmin.notifications.teamSaved',
+          { name: result.name, id: result.id }
+        );
         this._notificationService.success(message, {
           autoClose: true,
           keepAfterRouteChange: true,

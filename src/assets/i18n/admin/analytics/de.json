@@ -1,0 +1,33 @@
+{
+  "title": "Analyse",
+  "refresh": "Aktualisieren",
+  "loading": "Lade Zugriffszahlen…",
+  "summary": {
+    "last30Days": "Letzte 30 Tage",
+    "currentMonth": "Aktueller Monat",
+    "lastYear": "Letztes Jahr",
+    "totalPageViews": "Seitenaufrufe gesamt"
+  },
+  "dailyHeading": "Letzte 30 Tage – täglich",
+  "monthlyHeading": "Letztes Jahr – monatlich",
+  "footnote": "Erfasst werden Zugriffe auf die öffentlichen Seiten (Spielplan, Tabelle, Torschützen).",
+  "loadErrorReload": "Bitte Seite neu laden.",
+  "noData": "Keine Daten verfügbar.",
+  "months": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mär",
+    "4": "Apr",
+    "5": "Mai",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Okt",
+    "11": "Nov",
+    "12": "Dez"
+  },
+  "notifications": {
+    "loadError": "Zugriffszahlen konnten nicht geladen werden."
+  }
+}

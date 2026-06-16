@@ -1,31 +1,39 @@
 <div class="p-4 lg:p-8">
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold">Benutzerverwaltung</h1>
+    <h1 class="text-2xl font-bold">
+      {{ "userAdmin.index.title" | transloco }}
+    </h1>
     @if (canCreate) {
       <a
         [routerLink]="['/', 'verwaltung', 'benutzer', 'neu']"
         class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
       >
-        Neuen Benutzer anlegen
+        {{ "userAdmin.index.create" | transloco }}
       </a>
     }
   </div>
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8 text-center">Lade Benutzer…</div>
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      {{ "userAdmin.index.loading" | transloco }}
+    </div>
   }
 
   @if (!loading) {
     <div class="overflow-x-auto">
       <div class="flex items-center gap-4 mb-3">
         <p class="text-sm text-fb-gray-500">
-          {{ filteredUsers.length }} Einträge
+          {{
+            "userAdmin.index.count" | transloco: { count: filteredUsers.length }
+          }}
         </p>
         <select
           [(ngModel)]="selectedRole"
           class="text-sm border border-fb-gray-600 rounded px-2 py-1 bg-white"
         >
-          <option [ngValue]="null">Alle Rollen</option>
+          <option [ngValue]="null">
+            {{ "userAdmin.index.allRoles" | transloco }}
+          </option>
           @for (r of roleOptions; track r) {
             <option [ngValue]="r.value">
               {{ r.label }}
@@ -36,13 +44,27 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b border-fb-gray-700 text-left">
-            <th class="py-2 pr-4 font-bold">Name</th>
-            <th class="py-2 pr-4 font-bold">Benutzername</th>
-            <th class="py-2 pr-4 font-bold">E-Mail</th>
-            <th class="py-2 pr-4 font-bold">Rolle</th>
-            <th class="py-2 pr-4 font-bold">Zuordnung</th>
-            <th class="py-2 pr-4 font-bold">Letzter Login</th>
-            <th class="py-2 pr-4 font-bold">Status</th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "userAdmin.index.colName" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "userAdmin.index.colUsername" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "userAdmin.index.colEmail" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "userAdmin.index.colRole" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "userAdmin.index.colAssignment" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "userAdmin.index.colLastLogin" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "userAdmin.index.colStatus" | transloco }}
+            </th>
             <th class="py-2"></th>
           </tr>
         </thead>
@@ -57,7 +79,7 @@
                 @if (user.inactive) {
                   <span
                     class="ml-2 text-xs font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded"
-                    >Inaktiv (&gt;3 Jahre)</span
+                    >{{ "userAdmin.index.inactiveBadge" | transloco }}</span
                   >
                 }
               </td>
@@ -73,7 +95,7 @@
                 {{
                   user.last_login_at
                     ? (user.last_login_at | date: "dd.MM.yyyy HH:mm")
-                    : "Noch nie"
+                    : ("userAdmin.index.neverLoggedIn" | transloco)
                 }}
               </td>
               <td class="py-2 pr-4">
@@ -82,7 +104,12 @@
                   [class.text-red-500]="!user.active"
                   class="text-xs font-bold"
                 >
-                  {{ user.active ? "Aktiv" : "Deaktiviert" }}
+                  {{
+                    (user.active
+                      ? "userAdmin.index.statusActive"
+                      : "userAdmin.index.statusInactive"
+                    ) | transloco
+                  }}
                 </span>
               </td>
               <td class="py-2 text-right">
@@ -96,7 +123,7 @@
                   ]"
                   class="text-sm text-fb-gray-500 hover:text-black"
                 >
-                  Bearbeiten
+                  {{ "userAdmin.index.edit" | transloco }}
                 </a>
               </td>
             </tr>
@@ -104,7 +131,7 @@
           @if (filteredUsers.length === 0) {
             <tr>
               <td colspan="8" class="py-8 text-center text-fb-gray-500">
-                Keine Benutzer gefunden.
+                {{ "userAdmin.index.empty" | transloco }}
               </td>
             </tr>
           }

@@ -2,17 +2,20 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Spielerverwaltung
+    {{ "playerAdmin.common.title" | transloco }}
   </h1>
 
   <a
     [routerLink]="['/', 'verwaltung', 'vereine', club_id, 'spieler']"
     class="text-sm text-fb-gray-500 hover:text-black"
-    >← Zurück zur Spielerliste</a
+    >{{ "playerAdmin.edit.backToList" | transloco }}</a
   >
 
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    {{ editMode ? "Spieler bearbeiten" : "Neuen Spieler anlegen" }}
+    {{
+      (editMode ? "playerAdmin.edit.editPlayer" : "playerAdmin.edit.newPlayer")
+        | transloco
+    }}
   </h2>
 </div>
 
@@ -26,25 +29,31 @@
           <div class="xl:col-span-2">
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Spielerdaten
+                {{ "playerAdmin.edit.playerData" | transloco }}
               </div>
               <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                <label for="first_name" class="font-bold">Spieler ID</label>
+                <label for="first_name" class="font-bold">{{
+                  "playerAdmin.edit.playerId" | transloco
+                }}</label>
                 <div
                   class="md:col-span-2 xl:col-span-3 flex items-center gap-2"
                 >
                   {{
-                    editMode ? player.id : "Wird nach dem Anlegen festgelegt"
+                    editMode
+                      ? player.id
+                      : ("playerAdmin.edit.idAfterCreate" | transloco)
                   }}
                   @if (isDeactivated) {
                     <span
                       class="text-xs font-semibold px-1.5 py-0.5 rounded bg-red-100 text-red-700"
                     >
-                      Deaktiviert
+                      {{ "playerAdmin.edit.deactivated" | transloco }}
                     </span>
                   }
                 </div>
-                <label for="first_name" class="font-bold">Vorname</label>
+                <label for="first_name" class="font-bold">{{
+                  "playerAdmin.edit.firstName" | transloco
+                }}</label>
                 <div class="md:col-span-2 xl:col-span-3">
                   @if (can("player_create_update")) {
                     <input
@@ -59,7 +68,9 @@
                     {{ player.first_name }}
                   }
                 </div>
-                <label for="last_name" class="font-bold">Nachname</label>
+                <label for="last_name" class="font-bold">{{
+                  "playerAdmin.edit.lastName" | transloco
+                }}</label>
                 <div class="md:col-span-2 xl:col-span-3">
                   @if (can("player_create_update")) {
                     <input
@@ -74,7 +85,9 @@
                     {{ player.last_name }}
                   }
                 </div>
-                <label for="birthdate" class="font-bold">Geburtsdatum</label>
+                <label for="birthdate" class="font-bold">{{
+                  "playerAdmin.edit.birthdate" | transloco
+                }}</label>
                 <div class="md:col-span-2 xl:col-span-3">
                   @if (can("player_create_update")) {
                     <input
@@ -89,7 +102,9 @@
                     {{ player.birthdate | date: "dd.MM.yyyy" }}
                   }
                 </div>
-                <label for="gender" class="font-bold">Geschlecht</label>
+                <label for="gender" class="font-bold">{{
+                  "playerAdmin.edit.gender" | transloco
+                }}</label>
                 <div class="md:col-span-2 xl:col-span-3">
                   @if (can("player_create_update")) {
                     <select
@@ -109,7 +124,9 @@
                     {{ player.gender | gender }}
                   }
                 </div>
-                <label for="nation_id" class="font-bold">Nationalität</label>
+                <label for="nation_id" class="font-bold">{{
+                  "playerAdmin.edit.nationality" | transloco
+                }}</label>
                 <div class="md:col-span-2 xl:col-span-3">
                   @if (can("player_create_update")) {
                     <select
@@ -118,7 +135,9 @@
                       class="w-full xl:w-1/3"
                       required
                     >
-                      <option [value]="0">Bitte auswählen...</option>
+                      <option [value]="0">
+                        {{ "playerAdmin.edit.pleaseSelect" | transloco }}
+                      </option>
                       @for (nation of nations; track nation) {
                         <option [value]="nation.id">
                           {{ nation.name }}
@@ -130,7 +149,9 @@
                     {{ getPlayersNationString() }}
                   }
                 </div>
-                <label for="email" class="font-bold">E-Mail</label>
+                <label for="email" class="font-bold">{{
+                  "playerAdmin.edit.email" | transloco
+                }}</label>
                 <div class="md:col-span-2 xl:col-span-3">
                   @if (
                     can("player_create_update") || can("update_player_email")
@@ -140,7 +161,9 @@
                       type="email"
                       id="email"
                       class="w-full xl:w-1/3"
-                      placeholder="optional"
+                      [placeholder]="
+                        'playerAdmin.edit.emailOptional' | transloco
+                      "
                     />
                   }
                   @if (
@@ -149,8 +172,7 @@
                     {{ player.email || "–" }}
                   }
                   <p class="text-sm text-gray-500 mt-1">
-                    Optional. Wird für Benachrichtigungen zu Lizenzerteilung,
-                    Transferstatus und mehr verwendet.
+                    {{ "playerAdmin.edit.emailHint" | transloco }}
                   </p>
                   @if (
                     can("update_player_email") && !can("player_create_update")
@@ -164,7 +186,7 @@
                         [class.cursor-pointer]="!!player?.email"
                         (click)="saveEmail()"
                       >
-                        E-Mail speichern
+                        {{ "playerAdmin.edit.saveEmail" | transloco }}
                       </a>
                     </div>
                   }
@@ -177,7 +199,7 @@
                   @if (error(player)) {
                     <div class="mb-4">
                       <h3 class="text-lg leading-6 font-medium text-red-600">
-                        Speichern nicht möglich
+                        {{ "playerAdmin.edit.saveNotPossible" | transloco }}
                       </h3>
                       @for (msg of errorMsg(player); track msg) {
                         <p>{{ msg }}</p>
@@ -190,7 +212,7 @@
                         class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                         (click)="submit(player)"
                       >
-                        Änderungen speichern
+                        {{ "playerAdmin.edit.saveChanges" | transloco }}
                       </a>
                     </div>
                   }
@@ -200,46 +222,60 @@
             <!-- Korrekturantrag für VM -->
             @if (editMode && can("create_player_change_request")) {
               <div class="bg-white my-[5px] py-[15px] px-[30px]">
-                <h2 class="text-lg font-bold mb-4">Korrektur beantragen</h2>
+                <h2 class="text-lg font-bold mb-4">
+                  {{ "playerAdmin.edit.requestCorrection" | transloco }}
+                </h2>
                 <p class="text-sm text-gray-500 mb-4">
-                  Wenn ein Stammdatum des Spielers falsch erfasst wurde, können
-                  Sie hier eine Korrektur beantragen. Die zuständige SBK prüft
-                  und genehmigt die Änderung.
+                  {{ "playerAdmin.edit.correctionHint" | transloco }}
                 </p>
                 @if (changeRequestSent) {
                   <div class="text-green-600 text-sm mb-4">
-                    Ihr Korrekturantrag wurde eingereicht.
+                    {{ "playerAdmin.edit.correctionSent" | transloco }}
                   </div>
                 }
                 @if (!changeRequestSent) {
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <div>
-                      <label class="block text-sm font-bold mb-1"
-                        >Zu korrigierendes Feld</label
-                      >
+                      <label class="block text-sm font-bold mb-1">{{
+                        "playerAdmin.edit.fieldToCorrect" | transloco
+                      }}</label>
                       <select
                         [(ngModel)]="changeRequestType"
                         class="w-full"
                         (change)="onChangeRequestTypeChange()"
                       >
-                        <option value="">Bitte auswählen…</option>
-                        <option value="first_name">Vorname</option>
-                        <option value="last_name">Nachname</option>
-                        <option value="names_swapped">
-                          Vor-/Nachname vertauscht
+                        <option value="">
+                          {{
+                            "playerAdmin.edit.pleaseSelectEllipsis" | transloco
+                          }}
                         </option>
-                        <option value="birthdate">Geburtsdatum</option>
-                        <option value="nationality">Nationalität</option>
-                        <option value="gender">Geschlecht</option>
+                        <option value="first_name">
+                          {{ "playerAdmin.edit.firstName" | transloco }}
+                        </option>
+                        <option value="last_name">
+                          {{ "playerAdmin.edit.lastName" | transloco }}
+                        </option>
+                        <option value="names_swapped">
+                          {{ "playerAdmin.edit.namesSwapped" | transloco }}
+                        </option>
+                        <option value="birthdate">
+                          {{ "playerAdmin.edit.birthdate" | transloco }}
+                        </option>
+                        <option value="nationality">
+                          {{ "playerAdmin.edit.nationality" | transloco }}
+                        </option>
+                        <option value="gender">
+                          {{ "playerAdmin.edit.gender" | transloco }}
+                        </option>
                       </select>
                     </div>
                     @if (
                       changeRequestType && changeRequestType !== "names_swapped"
                     ) {
                       <div>
-                        <label class="block text-sm font-bold mb-1"
-                          >Korrekter Wert</label
-                        >
+                        <label class="block text-sm font-bold mb-1">{{
+                          "playerAdmin.edit.correctValue" | transloco
+                        }}</label>
                         @if (changeRequestType === "birthdate") {
                           <input
                             [(ngModel)]="changeRequestValue"
@@ -252,7 +288,12 @@
                             [(ngModel)]="changeRequestValue"
                             class="w-full"
                           >
-                            <option value="">Bitte auswählen…</option>
+                            <option value="">
+                              {{
+                                "playerAdmin.edit.pleaseSelectEllipsis"
+                                  | transloco
+                              }}
+                            </option>
                             @for (nation of nations; track nation) {
                               <option [value]="nation.id">
                                 {{ nation.name }}
@@ -268,7 +309,9 @@
                             [(ngModel)]="changeRequestValue"
                             type="text"
                             class="w-full"
-                            placeholder="Korrekter Name"
+                            [placeholder]="
+                              'playerAdmin.edit.correctName' | transloco
+                            "
                           />
                         }
                         @if (changeRequestType === "gender") {
@@ -276,10 +319,21 @@
                             [(ngModel)]="changeRequestValue"
                             class="w-full"
                           >
-                            <option value="">Bitte auswählen…</option>
-                            <option value="M">Männlich</option>
-                            <option value="W">Weiblich</option>
-                            <option value="D">Divers</option>
+                            <option value="">
+                              {{
+                                "playerAdmin.edit.pleaseSelectEllipsis"
+                                  | transloco
+                              }}
+                            </option>
+                            <option value="M">
+                              {{ "playerAdmin.edit.genderMale" | transloco }}
+                            </option>
+                            <option value="W">
+                              {{ "playerAdmin.edit.genderFemale" | transloco }}
+                            </option>
+                            <option value="D">
+                              {{ "playerAdmin.edit.genderDiverse" | transloco }}
+                            </option>
                           </select>
                         }
                       </div>
@@ -293,7 +347,7 @@
                         "
                         (click)="submitChangeRequest(player)"
                       >
-                        Antrag einreichen
+                        {{ "playerAdmin.edit.submitRequest" | transloco }}
                       </fb-button>
                     </div>
                   </div>
@@ -319,7 +373,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "playerAdmin.common.loading" | transloco }}
             </div>
           </div>
         }
@@ -328,7 +382,7 @@
           <div class="xl:col-span-2">
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Lizenzen
+                {{ "playerAdmin.edit.licenses" | transloco }}
               </div>
               @for (license of player.licenses; track license) {
                 <div class="mb-3">
@@ -340,7 +394,7 @@
                     <span
                       class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800"
                     >
-                      gesperrt
+                      {{ "playerAdmin.edit.suspended" | transloco }}
                     </span>
                   }
                   @if (
@@ -351,7 +405,7 @@
                       class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       (click)="setLicenseToTransfer(license)"
                     >
-                      Für Transfer ungültig setzen
+                      {{ "playerAdmin.edit.setInvalidForTransfer" | transloco }}
                     </a>
                   }
                   @if (
@@ -363,7 +417,7 @@
                       class="font-bold text-amber-700 leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
                       (click)="openLicenseSuspend(license)"
                     >
-                      Lizenz sperren
+                      {{ "playerAdmin.edit.suspendLicense" | transloco }}
                     </a>
                   }
                   @if (suspendLicenseId === license.id) {
@@ -371,12 +425,14 @@
                       class="border border-amber-300 rounded p-3 bg-amber-50 my-2"
                     >
                       <p class="text-sm font-semibold text-amber-800 mb-2">
-                        Diese Lizenz sperren
+                        {{ "playerAdmin.edit.suspendThisLicense" | transloco }}
                       </p>
                       <div class="mb-2">
                         <label
                           class="block text-xs font-semibold text-amber-800 mb-1"
-                          >Gesperrt bis *</label
+                          >{{
+                            "playerAdmin.edit.suspendedUntil" | transloco
+                          }}</label
                         >
                         <input
                           type="date"
@@ -388,12 +444,15 @@
                       <div class="mb-2">
                         <label
                           class="block text-xs font-semibold text-amber-800 mb-1"
-                          >Grund</label
+                          >{{ "playerAdmin.edit.reason" | transloco }}</label
                         >
                         <input
                           type="text"
                           [(ngModel)]="licenseSuspendReason"
-                          placeholder="z. B. Spielsperre nach roter Karte"
+                          [placeholder]="
+                            'playerAdmin.edit.licenseSuspendReasonPlaceholder'
+                              | transloco
+                          "
                           class="w-full xl:w-2/3 border border-amber-300 rounded-[5px] px-3 py-2 text-sm"
                         />
                       </div>
@@ -403,26 +462,30 @@
                           [disabled]="!licenseSuspendUntil"
                           class="font-bold text-white leading-[17px] text-sm px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Sperren
+                          {{ "playerAdmin.edit.suspend" | transloco }}
                         </button>
                         <button
                           (click)="cancelLicenseSuspend()"
                           class="font-bold text-gray-600 leading-[17px] text-sm px-4 py-2 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                         >
-                          Abbrechen
+                          {{ "playerAdmin.edit.cancel" | transloco }}
                         </button>
                       </div>
                     </div>
                   }
                   <br />
-                  Verlauf:<br />
+                  {{ "playerAdmin.edit.history" | transloco }}<br />
                   @for (hist of license.history; track hist) {
                     <div>
                       {{ hist.created_at | date: "dd.MM.yyyy HH:mm:ss" }},
                       <b>{{ hist.license_status }}</b
-                      >, durch: {{ hist.created_by_name }}
+                      >, {{ "playerAdmin.edit.by" | transloco }}
+                      {{ hist.created_by_name }}
                       @if (hist.reason) {
-                        <span>- Begründung: {{ hist.reason }}</span>
+                        <span>{{
+                          "playerAdmin.edit.historyReason"
+                            | transloco: { reason: hist.reason }
+                        }}</span>
                       }
                     </div>
                   }
@@ -448,7 +511,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "playerAdmin.common.loading" | transloco }}
             </div>
           </div>
         }
@@ -457,13 +520,13 @@
           <div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Freigaben
+                {{ "playerAdmin.edit.releases" | transloco }}
               </div>
               @if (!additionalClubs().length) {
                 <p
                   class="block text-base truncate text-fb-gray-500 hover:text-black"
                 >
-                  keine Freigaben vorhanden
+                  {{ "playerAdmin.edit.noReleases" | transloco }}
                 </p>
               }
               <div class="grid grid-cols-1 gap-4">
@@ -479,10 +542,10 @@
                       </p>
                       <p>
                         @if (additionalClub.created_at) {
-                          vom
+                          {{ "playerAdmin.edit.from" | transloco }}
                           {{ additionalClub.created_at | date: "dd.MM.yyyy" }}
                         }
-                        bis
+                        {{ "playerAdmin.edit.until" | transloco }}
                         {{ additionalClub.valid_until | date: "dd.MM.yyyy" }}
                       </p>
                     </div>
@@ -500,7 +563,7 @@
                             )
                           "
                         >
-                          Erneut freigeben
+                          {{ "playerAdmin.edit.releaseAgain" | transloco }}
                         </a>
                       }
                       @if (
@@ -517,7 +580,7 @@
                             )
                           "
                         >
-                          Freigabe beenden
+                          {{ "playerAdmin.edit.endRelease" | transloco }}
                         </a>
                       }
                     </div>
@@ -528,11 +591,13 @@
             @if (can("player_add_additional_clubs")) {
               <div class="bg-white my-[5px] py-[15px] px-[30px]">
                 <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                  Neue Freigabe erteilen
+                  {{ "playerAdmin.edit.newRelease" | transloco }}
                 </div>
                 <div class="grid grid-cols-1 gap-4">
                   <select [(ngModel)]="additionalClubId">
-                    <option value="0">Verein auswählen...</option>
+                    <option value="0">
+                      {{ "playerAdmin.edit.selectClub" | transloco }}
+                    </option>
                     @for (club of allClubs; track club) {
                       @if (
                         !isAdditionalClubActive(club.id) && !isHomeClub(club.id)
@@ -548,7 +613,7 @@
                       class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       (click)="addAdditionalClub(player, additionalClubId)"
                     >
-                      Spieler freigeben
+                      {{ "playerAdmin.edit.releasePlayer" | transloco }}
                     </a>
                   </div>
                 </div>
@@ -558,7 +623,7 @@
           <div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Hauptverein
+                {{ "playerAdmin.edit.homeClub" | transloco }}
               </div>
               <div class="grid grid-cols-1 gap-4">
                 @for (club of homeClubs(); track club) {
@@ -568,14 +633,15 @@
                     </p>
                     <p>
                       @if (club.created_at) {
-                        vom {{ club.created_at | date: "dd.MM.yyyy" }}
+                        {{ "playerAdmin.edit.from" | transloco }}
+                        {{ club.created_at | date: "dd.MM.yyyy" }}
                       }
                       @if (club.valid_until) {
-                        bis
+                        {{ "playerAdmin.edit.until" | transloco }}
                         {{ club.valid_until | date: "dd.MM.yyyy" }}
                       }
                       @if (!club.valid_until) {
-                        bis heute
+                        {{ "playerAdmin.edit.untilToday" | transloco }}
                       }
                     </p>
                   </div>
@@ -585,11 +651,13 @@
             @if (can("player_transfer")) {
               <div class="bg-white my-[5px] py-[15px] px-[30px]">
                 <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                  Transfer durchführen
+                  {{ "playerAdmin.edit.performTransfer" | transloco }}
                 </div>
                 <div class="grid grid-cols-1 gap-4">
                   <select [(ngModel)]="transferClubId">
-                    <option value="0">Verein auswählen...</option>
+                    <option value="0">
+                      {{ "playerAdmin.edit.selectClub" | transloco }}
+                    </option>
                     @for (club of allClubs; track club) {
                       @if (
                         !isAdditionalClubActive(club.id) && !isHomeClub(club.id)
@@ -605,7 +673,7 @@
                       class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       (click)="transfer(player, transferClubId)"
                     >
-                      Spieler transferieren
+                      {{ "playerAdmin.edit.transferPlayer" | transloco }}
                     </a>
                   </div>
                 </div>
@@ -620,20 +688,19 @@
             <div
               class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
             >
-              Vereinsaustritt
+              {{ "playerAdmin.edit.clubLeave" | transloco }}
               @if (isDeactivated) {
                 <span
                   class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 normal-case"
                 >
-                  Deaktiviert am
+                  {{ "playerAdmin.edit.deactivatedOn" | transloco }}
                   {{ player.deactivated_at | date: "dd.MM.yyyy" }}
                 </span>
               }
             </div>
             @if (isDeactivated) {
               <p class="text-sm text-gray-500 mb-4">
-                Dieser Spieler ist deaktiviert und erscheint nicht mehr in der
-                aktiven Spielerliste.
+                {{ "playerAdmin.edit.deactivatedHint" | transloco }}
               </p>
             }
             @if (canReactivate) {
@@ -643,7 +710,7 @@
                   variant="success"
                   (click)="reactivatePlayer()"
                 >
-                  Reaktivieren
+                  {{ "playerAdmin.edit.reactivate" | transloco }}
                 </fb-button>
               </div>
             }
@@ -653,39 +720,50 @@
                   (click)="confirmDeactivate = true"
                   class="font-bold text-red-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-red-50 border-red-400 rounded-[5px] cursor-pointer"
                 >
-                  Spieler deaktivieren
+                  {{ "playerAdmin.edit.deactivatePlayer" | transloco }}
                 </button>
               </div>
             }
             @if (confirmDeactivate) {
               <div class="border border-red-300 rounded p-4 bg-red-50">
                 <p class="text-sm font-semibold text-red-800 mb-1">
-                  Spieler wirklich deaktivieren?
+                  {{ "playerAdmin.edit.deactivateConfirm" | transloco }}
                 </p>
                 <p class="text-sm text-red-700 mb-4">
-                  Der Spieler wird aus der aktiven Spielerliste entfernt. Alle
-                  Vereinsmitgliedschaften und Lizenzen werden auf ungültig
-                  gesetzt. Der Datensatz bleibt erhalten.
+                  {{ "playerAdmin.edit.deactivateWarning" | transloco }}
                 </p>
                 <div class="mb-4">
-                  <label class="block text-sm font-semibold text-red-800 mb-1"
-                    >Grund *</label
+                  <label
+                    class="block text-sm font-semibold text-red-800 mb-1"
+                    >{{ "playerAdmin.edit.reasonRequired" | transloco }}</label
                   >
                   <select
                     [(ngModel)]="deactivateReason"
                     class="w-full xl:w-1/2 border border-red-300 rounded-[5px] px-3 py-2 text-sm bg-white"
                   >
-                    <option value="">Bitte auswählen…</option>
-                    <option value="Vereinsaustritt">Vereinsaustritt</option>
-                    <option value="Karriereende">Karriereende</option>
-                    <option value="Temporäre Pause">Temporäre Pause</option>
-                    <option value="Sonstiges">Sonstiges</option>
+                    <option value="">
+                      {{ "playerAdmin.edit.pleaseSelectEllipsis" | transloco }}
+                    </option>
+                    <option value="Vereinsaustritt">
+                      {{ "playerAdmin.edit.reasonClubLeave" | transloco }}
+                    </option>
+                    <option value="Karriereende">
+                      {{ "playerAdmin.edit.reasonCareerEnd" | transloco }}
+                    </option>
+                    <option value="Temporäre Pause">
+                      {{ "playerAdmin.edit.reasonTemporaryBreak" | transloco }}
+                    </option>
+                    <option value="Sonstiges">
+                      {{ "playerAdmin.edit.reasonOther" | transloco }}
+                    </option>
                   </select>
                   @if (deactivateReason === "Sonstiges") {
                     <input
                       [(ngModel)]="deactivateReasonOther"
                       type="text"
-                      placeholder="Kurze Begründung…"
+                      [placeholder]="
+                        'playerAdmin.edit.reasonOtherPlaceholder' | transloco
+                      "
                       class="mt-2 w-full xl:w-1/2 border border-red-300 rounded-[5px] px-3 py-2 text-sm"
                     />
                   }
@@ -700,13 +778,13 @@
                     "
                     class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Ja, deaktivieren
+                    {{ "playerAdmin.edit.yesDeactivate" | transloco }}
                   </button>
                   <button
                     (click)="cancelDeactivate()"
                     class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                   >
-                    Abbrechen
+                    {{ "playerAdmin.edit.cancel" | transloco }}
                   </button>
                 </div>
               </div>
@@ -792,8 +870,9 @@
                 </p>
                 <div class="mb-3 flex flex-wrap gap-4">
                   <div>
-                    <label class="block text-sm font-semibold text-red-800 mb-1"
-                      >Beginn</label
+                    <label
+                      class="block text-sm font-semibold text-red-800 mb-1"
+                      >{{ "playerAdmin.edit.start" | transloco }}</label
                     >
                     <input
                       type="date"
@@ -802,8 +881,11 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-semibold text-red-800 mb-1"
-                      >Gesperrt bis *</label
+                    <label
+                      class="block text-sm font-semibold text-red-800 mb-1"
+                      >{{
+                        "playerAdmin.edit.suspendedUntil" | transloco
+                      }}</label
                     >
                     <input
                       type="date"
@@ -814,13 +896,16 @@
                   </div>
                 </div>
                 <div class="mb-4">
-                  <label class="block text-sm font-semibold text-red-800 mb-1"
-                    >Grund</label
+                  <label
+                    class="block text-sm font-semibold text-red-800 mb-1"
+                    >{{ "playerAdmin.edit.reason" | transloco }}</label
                   >
                   <input
                     type="text"
                     [(ngModel)]="blockReason"
-                    placeholder="z. B. NADA-Sanktion, 2 Jahre"
+                    [placeholder]="
+                      'playerAdmin.edit.blockReasonPlaceholder' | transloco
+                    "
                     class="w-full xl:w-2/3 border border-red-300 rounded-[5px] px-3 py-2 text-sm"
                   />
                 </div>

@@ -1,8 +1,12 @@
 <div class="p-4 lg:p-8">
-  <h1 class="text-2xl font-bold mb-6">Spieler*innen</h1>
+  <h1 class="text-2xl font-bold mb-6">
+    {{ "playerVm.index.title" | transloco }}
+  </h1>
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8">Lade Spieler…</div>
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "playerVm.index.loading" | transloco }}
+    </div>
   }
 
   @if (actionError) {
@@ -14,11 +18,7 @@
   }
 
   <p class="text-sm text-fb-gray-500 mb-6 max-w-2xl">
-    Spieler*innen, die aktuell nicht mehr aktiv am Spielbetrieb teilnehmen
-    können deaktiviert werden. Deaktivierte Spieler*innen tauchen im Dropdown
-    für die Lizenzbeantragung nicht mehr auf und sorgen für mehr
-    Übersichtlichkeit in der Vereinsübersicht. Spieler*innen können zu späteren
-    Zeitpunkten wieder aktiviert werden.
+    {{ "playerVm.index.intro" | transloco }}
   </p>
 
   @for (list of clubLists; track list) {
@@ -29,7 +29,11 @@
     }
     <p class="text-sm text-fb-gray-500 mb-4">
       {{ visiblePlayers(list).length }}
-      {{ visiblePlayers(list).length === 1 ? "Spieler*in" : "Spieler*innen" }}
+      {{
+        visiblePlayers(list).length === 1
+          ? ("playerVm.index.countSingular" | transloco)
+          : ("playerVm.index.countPlural" | transloco)
+      }}
       @if (deactivatedCount(list) > 0) {
         &nbsp;·&nbsp;
         <button
@@ -37,8 +41,12 @@
           class="underline hover:text-black"
           (click)="toggleDeactivated(list)"
         >
-          {{ deactivatedCount(list) }} deaktiviert
-          {{ list.showDeactivated ? "ausblenden" : "einblenden" }}
+          {{
+            (list.showDeactivated
+              ? "playerVm.index.deactivatedCountHide"
+              : "playerVm.index.deactivatedCountShow"
+            ) | transloco: { count: deactivatedCount(list) }
+          }}
         </button>
       }
     </p>
@@ -46,10 +54,18 @@
       <table class="w-full text-sm mb-10">
         <thead>
           <tr class="border-b border-fb-gray-700 text-left">
-            <th class="py-2 pr-4 font-bold">Name</th>
-            <th class="py-2 pr-4 font-bold">Geburtsdatum</th>
-            <th class="py-2 pr-4 font-bold">Geschlecht</th>
-            <th class="py-2 pr-4 font-bold">Status</th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "playerVm.index.colName" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "playerVm.index.colBirthdate" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "playerVm.index.colGender" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "playerVm.index.colStatus" | transloco }}
+            </th>
             <th class="py-2 font-bold"></th>
           </tr>
         </thead>
@@ -80,19 +96,28 @@
               <td class="py-2 pr-4 text-fb-gray-500">
                 {{
                   player.gender === "M"
-                    ? "m"
+                    ? ("playerVm.index.genderMale" | transloco)
                     : player.gender === "W"
-                      ? "w"
-                      : "d"
+                      ? ("playerVm.index.genderFemale" | transloco)
+                      : ("playerVm.index.genderDiverse" | transloco)
                 }}
               </td>
               <td class="py-2 pr-4">
                 @if (!player.deactivated_at) {
-                  <span class="text-green-600 text-xs font-medium">aktiv</span>
+                  <span class="text-green-600 text-xs font-medium">{{
+                    "playerVm.index.statusActive" | transloco
+                  }}</span>
                 }
                 @if (player.deactivated_at) {
                   <span class="text-red-500 text-xs font-medium">
-                    deaktiviert {{ player.deactivated_at | date: "dd.MM.yyyy" }}
+                    {{
+                      "playerVm.index.statusDeactivated"
+                        | transloco
+                          : {
+                              date:
+                                (player.deactivated_at | date: "dd.MM.yyyy"),
+                            }
+                    }}
                   </span>
                 }
                 @if (!player.deactivated_at) {
@@ -100,13 +125,13 @@
                   @if (player.current_license_status_id === 1) {
                     <span
                       class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-green-100 text-green-800"
-                      >Lizenziert</span
+                      >{{ "playerVm.index.licenseLicensed" | transloco }}</span
                     >
                   }
                   @if (player.current_license_status_id === 2) {
                     <span
                       class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-yellow-100 text-yellow-800"
-                      >Beantragt</span
+                      >{{ "playerVm.index.licenseRequested" | transloco }}</span
                     >
                   }
                   @if (
@@ -122,7 +147,7 @@
                   @if (!player.current_license_status_id) {
                     <span
                       class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
-                      >Keine Lizenz</span
+                      >{{ "playerVm.index.licenseNone" | transloco }}</span
                     >
                   }
                 }
@@ -135,29 +160,43 @@
                       variant="error"
                       (click)="startDeactivate(player)"
                     >
-                      Deaktivieren
+                      {{ "playerVm.index.deactivate" | transloco }}
                     </fb-button>
                   }
                   @if (confirmDeactivateId === player.id) {
                     <div class="flex flex-col gap-2 items-start">
-                      <span class="text-xs text-red-700 font-medium"
-                        >Wirklich deaktivieren? Bitte Grund angeben:</span
-                      >
+                      <span class="text-xs text-red-700 font-medium">{{
+                        "playerVm.index.confirmDeactivatePrompt" | transloco
+                      }}</span>
                       <select
                         [(ngModel)]="deactivateReason"
                         class="border border-red-300 rounded-[5px] px-2 py-1 text-xs bg-white"
                       >
-                        <option value="">Grund wählen…</option>
-                        <option value="Vereinsaustritt">Vereinsaustritt</option>
-                        <option value="Karriereende">Karriereende</option>
-                        <option value="Temporäre Pause">Temporäre Pause</option>
-                        <option value="Sonstiges">Sonstiges</option>
+                        <option value="">
+                          {{ "playerVm.index.reasonChoose" | transloco }}
+                        </option>
+                        <option value="Vereinsaustritt">
+                          {{ "playerVm.index.reasonClubLeave" | transloco }}
+                        </option>
+                        <option value="Karriereende">
+                          {{ "playerVm.index.reasonCareerEnd" | transloco }}
+                        </option>
+                        <option value="Temporäre Pause">
+                          {{
+                            "playerVm.index.reasonTemporaryBreak" | transloco
+                          }}
+                        </option>
+                        <option value="Sonstiges">
+                          {{ "playerVm.index.reasonOther" | transloco }}
+                        </option>
                       </select>
                       @if (deactivateReason === "Sonstiges") {
                         <input
                           [(ngModel)]="deactivateReasonOther"
                           type="text"
-                          placeholder="Kurze Begründung…"
+                          [attr.placeholder]="
+                            'playerVm.index.reasonOtherPlaceholder' | transloco
+                          "
                           class="border border-red-300 rounded-[5px] px-2 py-1 text-xs w-48"
                         />
                       }
@@ -171,11 +210,13 @@
                               !deactivateReasonOther)
                           "
                           (click)="deactivate(list, player)"
-                          >Ja, deaktivieren</fb-button
+                          >{{
+                            "playerVm.index.confirmDeactivateYes" | transloco
+                          }}</fb-button
                         >
-                        <fb-button size="small" (click)="cancelDeactivate()"
-                          >Abbrechen</fb-button
-                        >
+                        <fb-button size="small" (click)="cancelDeactivate()">{{
+                          "playerVm.index.cancel" | transloco
+                        }}</fb-button>
                       </div>
                     </div>
                   }
@@ -186,7 +227,7 @@
                     variant="success"
                     (click)="reactivate(list, player)"
                   >
-                    Reaktivieren
+                    {{ "playerVm.index.reactivate" | transloco }}
                   </fb-button>
                 }
               </td>
@@ -197,7 +238,7 @@
     }
     @if (list.players.length === 0) {
       <p class="text-fb-gray-500 text-sm py-8 text-center">
-        Keine Spieler*innen für deinen Verein gefunden.
+        {{ "playerVm.index.empty" | transloco }}
       </p>
     }
   }

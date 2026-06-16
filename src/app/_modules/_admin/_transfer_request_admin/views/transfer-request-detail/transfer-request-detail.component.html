@@ -1,13 +1,17 @@
 <div class="p-4 lg:p-8 max-w-xl">
   <div class="flex items-center gap-3 mb-6">
     <button (click)="back()" class="text-fb-gray-500 hover:text-black text-sm">
-      ← Zurück
+      {{ "transferRequestAdmin.detail.back" | transloco }}
     </button>
-    <h1 class="text-2xl font-bold">Transferantrag</h1>
+    <h1 class="text-2xl font-bold">
+      {{ "transferRequestAdmin.detail.title" | transloco }}
+    </h1>
   </div>
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "transferRequestAdmin.detail.loading" | transloco }}
+    </div>
   }
 
   @if (!loading && request) {
@@ -26,8 +30,8 @@
           >
             {{
               request.request_type === "release"
-                ? "Spielerfreigabe"
-                : "Transfer"
+                ? ("transferRequestAdmin.detail.typeRelease" | transloco)
+                : ("transferRequestAdmin.detail.typeTransfer" | transloco)
             }}
           </span>
           <span [class]="statusClass(request.status) + ' text-sm'">
@@ -37,46 +41,67 @@
       </div>
       <div class="text-sm text-fb-gray-500 space-y-1">
         <p>
-          <span class="font-medium">Geburtsdatum:</span>
+          <span class="font-medium">{{
+            "transferRequestAdmin.detail.birthdate" | transloco
+          }}</span>
           {{ request.player.birthdate | date: "dd.MM.yyyy" }}
         </p>
         <p>
           <span class="font-medium">{{
-            request.request_type === "release" ? "Freigabe von:" : "Von:"
+            request.request_type === "release"
+              ? ("transferRequestAdmin.detail.releaseFrom" | transloco)
+              : ("transferRequestAdmin.detail.from" | transloco)
           }}</span>
           {{ request.former_club.name }}
         </p>
         <p>
           <span class="font-medium">{{
-            request.request_type === "release" ? "Freigabe für:" : "Nach:"
+            request.request_type === "release"
+              ? ("transferRequestAdmin.detail.releaseFor" | transloco)
+              : ("transferRequestAdmin.detail.to" | transloco)
           }}</span>
           {{ request.requesting_club.name }}
         </p>
         <p>
-          <span class="font-medium">Gestellt am:</span>
+          <span class="font-medium">{{
+            "transferRequestAdmin.detail.submittedAt" | transloco
+          }}</span>
           {{ request.created_at | date: "dd.MM.yyyy" }}
         </p>
         @if (request.request_type !== "release") {
           @if (request.effective_date) {
             <p>
-              <span class="font-medium">Wunschdatum:</span>
+              <span class="font-medium">{{
+                "transferRequestAdmin.detail.desiredDate" | transloco
+              }}</span>
               {{ request.effective_date | date: "dd.MM.yyyy" }}
             </p>
           }
           @if (!request.effective_date) {
-            <p><span class="font-medium">Wunschdatum:</span> Nächstmöglich</p>
+            <p>
+              <span class="font-medium">{{
+                "transferRequestAdmin.detail.desiredDate" | transloco
+              }}</span>
+              {{ "transferRequestAdmin.detail.immediate" | transloco }}
+            </p>
           }
         }
         @if (request.request_type === "release") {
           <p>
-            <span class="font-medium">Gültig bis:</span> 15.07. des laufenden
-            Jahres
+            <span class="font-medium">{{
+              "transferRequestAdmin.detail.validUntil" | transloco
+            }}</span>
+            {{ "transferRequestAdmin.detail.validUntilDate" | transloco }}
           </p>
         }
       </div>
       @if (request.rejection_reason) {
         <div class="mt-3 pt-3 border-t border-fb-gray-600">
-          <p class="text-xs text-fb-gray-500 mb-1">Ablehnungsgrund</p>
+          <p class="text-xs text-fb-gray-500 mb-1">
+            {{
+              "transferRequestAdmin.detail.rejectionReasonHeading" | transloco
+            }}
+          </p>
           <p class="text-sm text-red-600">{{ request.rejection_reason }}</p>
         </div>
       }
@@ -89,14 +114,18 @@
           [disabled]="actionPending"
           class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50"
         >
-          {{ actionPending ? "Wird verarbeitet…" : "Bestätigen" }}
+          {{
+            actionPending
+              ? ("transferRequestAdmin.detail.processing" | transloco)
+              : ("transferRequestAdmin.detail.confirm" | transloco)
+          }}
         </button>
         <button
           (click)="startReject('club')"
           [disabled]="actionPending"
           class="border border-red-500 text-red-600 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
         >
-          Ablehnen
+          {{ "transferRequestAdmin.detail.reject" | transloco }}
         </button>
       </div>
     }
@@ -106,13 +135,18 @@
         <div
           class="bg-white border border-fb-gray-600 rounded p-3 mb-3 text-sm text-fb-gray-500"
         >
-          Transfer genehmigt, wird am
+          {{
+            "transferRequestAdmin.detail.transferApprovedEffective" | transloco
+          }}
           <strong>{{ request.effective_date | date: "dd.MM.yyyy" }}</strong>
-          wirksam.
+          {{
+            "transferRequestAdmin.detail.transferApprovedEffectiveSuffix"
+              | transloco
+          }}
           @if (canExecuteScheduled) {
-            <span class="block mt-1 text-yellow-600"
-              >Datum erreicht – Transfer kann jetzt vollzogen werden.</span
-            >
+            <span class="block mt-1 text-yellow-600">{{
+              "transferRequestAdmin.detail.dateReached" | transloco
+            }}</span>
           }
         </div>
         @if (canExecuteScheduled) {
@@ -122,7 +156,9 @@
             class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50"
           >
             {{
-              actionPending ? "Wird verarbeitet…" : "Transfer jetzt vollziehen"
+              actionPending
+                ? ("transferRequestAdmin.detail.processing" | transloco)
+                : ("transferRequestAdmin.detail.executeTransfer" | transloco)
             }}
           </button>
         }
@@ -136,14 +172,18 @@
           [disabled]="actionPending"
           class="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50"
         >
-          {{ actionPending ? "Wird verarbeitet…" : "Genehmigen (LV)" }}
+          {{
+            actionPending
+              ? ("transferRequestAdmin.detail.processing" | transloco)
+              : ("transferRequestAdmin.detail.approveLv" | transloco)
+          }}
         </button>
         <button
           (click)="startReject('lv')"
           [disabled]="actionPending"
           class="border border-red-500 text-red-600 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
         >
-          Ablehnen
+          {{ "transferRequestAdmin.detail.reject" | transloco }}
         </button>
       </div>
     }
@@ -151,13 +191,15 @@
     @if (showRejectForm) {
       <div class="bg-white border border-red-400 rounded p-4 mb-4">
         <p class="text-sm font-medium mb-3">
-          Bitte gib einen Ablehnungsgrund an:
+          {{ "transferRequestAdmin.detail.rejectPrompt" | transloco }}
         </p>
         <textarea
           [(ngModel)]="rejectionReason"
           rows="3"
           class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500 resize-none"
-          placeholder="Begründung (Pflichtfeld)"
+          [attr.placeholder]="
+            'transferRequestAdmin.detail.reasonPlaceholder' | transloco
+          "
         ></textarea>
         <div class="flex gap-3 mt-3">
           <button
@@ -165,13 +207,17 @@
             [disabled]="actionPending || !rejectionReason.trim()"
             class="bg-red-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-red-500 transition-colors disabled:opacity-50"
           >
-            {{ actionPending ? "Wird gesendet…" : "Ablehnen bestätigen" }}
+            {{
+              actionPending
+                ? ("transferRequestAdmin.detail.sending" | transloco)
+                : ("transferRequestAdmin.detail.confirmReject" | transloco)
+            }}
           </button>
           <button
             (click)="cancelReject()"
             class="text-fb-gray-500 hover:text-black px-4 py-2 text-sm"
           >
-            Abbrechen
+            {{ "transferRequestAdmin.detail.cancel" | transloco }}
           </button>
         </div>
       </div>
@@ -184,7 +230,7 @@
           [disabled]="actionPending"
           class="border border-red-500 text-red-600 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
         >
-          Freigabe zurückziehen
+          {{ "transferRequestAdmin.detail.revokeRelease" | transloco }}
         </button>
       </div>
     }
@@ -196,24 +242,34 @@
           [disabled]="actionPending"
           class="border border-red-500 text-red-600 px-4 py-2 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
         >
-          {{ actionPending ? "Wird verarbeitet…" : "Transfer annullieren" }}
+          {{
+            actionPending
+              ? ("transferRequestAdmin.detail.processing" | transloco)
+              : ("transferRequestAdmin.detail.cancelTransfer" | transloco)
+          }}
         </button>
       </div>
     }
     <!-- Revoke form -->
     @if (showRevokeForm) {
       <div class="bg-white border border-red-400 rounded p-4 mb-4">
-        <p class="text-sm font-medium mb-1">Freigabe zurückziehen</p>
+        <p class="text-sm font-medium mb-1">
+          {{ "transferRequestAdmin.detail.revokeReleaseHeading" | transloco }}
+        </p>
         <p class="text-xs text-fb-gray-500 mb-3">
-          Alle beantragten und erteilten Lizenzen des Spielers für Teams von
+          {{ "transferRequestAdmin.detail.revokeReleaseHint" | transloco }}
           <strong>{{ request?.requesting_club?.name }}</strong>
-          werden auf ungültig gesetzt.
+          {{
+            "transferRequestAdmin.detail.revokeReleaseHintSuffix" | transloco
+          }}
         </p>
         <textarea
           [(ngModel)]="revocationReason"
           rows="3"
           class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500 resize-none"
-          placeholder="Begründung (Pflichtfeld)"
+          [attr.placeholder]="
+            'transferRequestAdmin.detail.reasonPlaceholder' | transloco
+          "
         ></textarea>
         <div class="flex gap-3 mt-3">
           <button
@@ -221,13 +277,17 @@
             [disabled]="actionPending || !revocationReason.trim()"
             class="bg-red-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-red-500 transition-colors disabled:opacity-50"
           >
-            {{ actionPending ? "Wird verarbeitet…" : "Freigabe zurückziehen" }}
+            {{
+              actionPending
+                ? ("transferRequestAdmin.detail.processing" | transloco)
+                : ("transferRequestAdmin.detail.revokeRelease" | transloco)
+            }}
           </button>
           <button
             (click)="cancelRevoke()"
             class="text-fb-gray-500 hover:text-black px-4 py-2 text-sm"
           >
-            Abbrechen
+            {{ "transferRequestAdmin.detail.cancel" | transloco }}
           </button>
         </div>
       </div>
@@ -241,13 +301,13 @@
         <p
           class="text-xs font-semibold text-fb-gray-500 uppercase tracking-wide mb-3"
         >
-          Protokoll
+          {{ "transferRequestAdmin.detail.protocol" | transloco }}
         </p>
         <div class="space-y-2 text-sm">
           <div class="flex items-start gap-2">
             <span class="text-green-600 mt-0.5">✓</span>
             <span class="text-fb-gray-500">
-              Freigabe erteilt am
+              {{ "transferRequestAdmin.detail.releaseGrantedAt" | transloco }}
               <strong>{{
                 $safeNavigationMigration(request?.lv_approved_at)
                   | date: "dd.MM.yyyy"
@@ -258,7 +318,7 @@
             <div class="flex items-start gap-2">
               <span class="text-red-600 mt-0.5">✕</span>
               <span class="text-fb-gray-500">
-                Freigabe zurückgezogen am
+                {{ "transferRequestAdmin.detail.releaseRevokedAt" | transloco }}
                 <strong>{{
                   $safeNavigationMigration(request?.revoked_at)
                     | date: "dd.MM.yyyy"
@@ -278,7 +338,7 @@
 
   @if (!loading && !request) {
     <div class="text-fb-gray-500 text-sm py-8">
-      Transferantrag nicht gefunden.
+      {{ "transferRequestAdmin.detail.notFound" | transloco }}
     </div>
   }
 </div>

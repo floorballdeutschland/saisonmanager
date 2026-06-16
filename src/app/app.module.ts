@@ -16,9 +16,12 @@ import { BrowserModule } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import * as Sentry from '@sentry/angular';
 
+import { TranslocoModule } from '@jsverse/transloco';
+
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { provideTranslocoRoot, readInitialLang } from '@floorball/core';
 import { SessionService } from './_modules/_core/_services';
 import { ErrorInterceptor } from './_helpers/_interceptors/error.interceptor';
 import { ApiKeyInterceptor } from './_helpers/_interceptors/api-key.interceptor';
@@ -28,7 +31,12 @@ import { CsrfInterceptor } from './_helpers/_interceptors/csrf.interceptor';
 @NgModule({
   declarations: [AppComponent],
   bootstrap: [AppComponent],
-  imports: [BrowserModule, AppRoutingModule, UikitCommonModule],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    UikitCommonModule,
+    TranslocoModule,
+  ],
   providers: [
     {
       provide: ErrorHandler,
@@ -55,7 +63,12 @@ import { CsrfInterceptor } from './_helpers/_interceptors/csrf.interceptor';
       multi: true,
     },
     SessionService,
-    { provide: LOCALE_ID, useValue: 'de' },
+    ...provideTranslocoRoot(),
+    // Sprache der Angular-Pipes (date/number/currency) folgt der persistierten
+    // Oberflächensprache. LOCALE_ID kann nicht zur Laufzeit wechseln; der
+    // SessionService lädt die Seite beim Sprachwechsel neu, sodass diese
+    // Factory die neue Sprache übernimmt.
+    { provide: LOCALE_ID, useFactory: readInitialLang },
     provideHttpClient(
       withXhr(),
       withInterceptorsFromDi(),

@@ -1,12 +1,15 @@
 <div class="p-4 lg:p-8 max-w-5xl">
-  <h1 class="text-2xl font-bold mb-2">Meine Sperrtermine</h1>
+  <h1 class="text-2xl font-bold mb-2">
+    {{ "refereeSelf.blockedDates.title" | transloco }}
+  </h1>
   <p class="text-sm text-fb-gray-500 mb-6">
-    Klicke einen Tag an, um ihn zu sperren oder die Sperrung aufzuheben. Für
-    einen Zeitraum: ersten Tag anklicken, dann letzten Tag anklicken.
+    {{ "refereeSelf.blockedDates.intro" | transloco }}
   </p>
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-4">Lade…</div>
+    <div class="text-fb-gray-500 text-sm py-4">
+      {{ "refereeSelf.common.loading" | transloco }}
+    </div>
   }
 
   @if (rangeStart) {
@@ -14,21 +17,24 @@
       class="mb-4 flex items-center gap-3 text-sm bg-blue-50 border border-blue-200 rounded-[5px] px-4 py-2"
     >
       <span
-        >Startdatum gewählt: <strong>{{ rangeStart }}</strong
-        >. Klicke nun auf das Enddatum.</span
+        >{{ "refereeSelf.blockedDates.rangeStartSelected" | transloco
+        }}<strong>{{ rangeStart }}</strong
+        >{{ "refereeSelf.blockedDates.rangeStartHint" | transloco }}</span
       >
       <button
         type="button"
         (click)="cancelRange()"
         class="text-xs text-fb-gray-500 hover:underline"
       >
-        Abbrechen
+        {{ "refereeSelf.blockedDates.cancel" | transloco }}
       </button>
     </div>
   }
 
   @if (saving) {
-    <div class="mb-4 text-sm text-fb-gray-500">Speichern…</div>
+    <div class="mb-4 text-sm text-fb-gray-500">
+      {{ "refereeSelf.blockedDates.saving" | transloco }}
+    </div>
   }
 
   @if (!loading) {
@@ -40,10 +46,10 @@
           <p class="text-sm font-bold mb-2">{{ month.label }}</p>
           <!-- Weekday header -->
           <div class="grid grid-cols-7 mb-1">
-            @for (wd of ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]; track wd) {
+            @for (wd of weekdayKeys; track wd) {
               <span
                 class="text-center text-[10px] text-fb-gray-400 font-bold"
-                >{{ wd }}</span
+                >{{ wd | transloco }}</span
               >
             }
           </div>
@@ -75,7 +81,12 @@
                 [class.hover:bg-fb-gray-100]="
                   !day.past && !day.blocked && !day.inRange
                 "
-                [title]="day.blocked ? 'Sperrtermin entfernen' : 'Tag sperren'"
+                [title]="
+                  (day.blocked
+                    ? 'refereeSelf.blockedDates.removeBlockedDate'
+                    : 'refereeSelf.blockedDates.blockDay'
+                  ) | transloco
+                "
               >
                 {{ day.day }}
               </button>
@@ -91,19 +102,19 @@
     <div class="mt-8 flex items-center gap-6 text-xs text-fb-gray-500">
       <span class="flex items-center gap-1">
         <span class="inline-block w-4 h-4 rounded-[3px] bg-red-500"></span>
-        Gesperrt
+        {{ "refereeSelf.blockedDates.legendBlocked" | transloco }}
       </span>
       <span class="flex items-center gap-1">
         <span
           class="inline-block w-4 h-4 rounded-[3px] bg-blue-100 border border-blue-200"
         ></span>
-        Auswahl
+        {{ "refereeSelf.blockedDates.legendSelection" | transloco }}
       </span>
       <span class="flex items-center gap-1">
         <span
           class="inline-block w-4 h-4 rounded-[3px] bg-fb-gray-100 border border-fb-gray-300"
         ></span>
-        Frei
+        {{ "refereeSelf.blockedDates.legendFree" | transloco }}
       </span>
     </div>
   }

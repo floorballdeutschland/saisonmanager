@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import { ArenaService, NotificationService } from '@floorball/core';
 import { Arena } from '@floorball/types';
 
@@ -35,6 +36,7 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
   constructor(
     private _arenaService: ArenaService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _route: ActivatedRoute,
     private _router: Router,
     private _cdr: ChangeDetectorRef
@@ -51,9 +53,12 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
           next: (arenas) => {
             const found = arenas.find((a) => a.id === +arenaId);
             if (!found) {
-              this._notificationService.error('Spielort nicht gefunden.', {
-                autoClose: false,
-              });
+              this._notificationService.error(
+                this._transloco.translate('arena.notifications.notFound'),
+                {
+                  autoClose: false,
+                }
+              );
               this._router.navigate(['/', 'verwaltung', 'spielorte']);
               return;
             }
@@ -66,9 +71,12 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
             this._cdr.markForCheck();
           },
           error: () => {
-            this._notificationService.error('Fehler beim Laden.', {
-              autoClose: false,
-            });
+            this._notificationService.error(
+              this._transloco.translate('arena.notifications.loadError'),
+              {
+                autoClose: false,
+              }
+            );
             this._router.navigate(['/', 'verwaltung', 'spielorte']);
           },
         });
@@ -101,10 +109,13 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
     obs.pipe(takeUntil(this._destroy$)).subscribe({
       next: () => {
         this.saving = false;
-        this._notificationService.success('Spielort gespeichert.', {
-          autoClose: true,
-          keepAfterRouteChange: true,
-        });
+        this._notificationService.success(
+          this._transloco.translate('arena.notifications.saved'),
+          {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          }
+        );
         this._router.navigate(['/', 'verwaltung', 'spielorte']);
       },
       error: (err) => {
@@ -114,7 +125,8 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
           this.duplicates = err.error.duplicates;
         } else {
           this._notificationService.error(
-            err.error?.errors?.join(', ') || 'Fehler beim Speichern.',
+            err.error?.errors?.join(', ') ||
+              this._transloco.translate('arena.notifications.saveError'),
             { autoClose: false }
           );
         }

@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { Subject, takeUntil } from 'rxjs';
 import {
   ClubService,
@@ -41,6 +42,7 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
     private _clubService: ClubService,
     private _notificationService: NotificationService,
     private _router: Router,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -59,7 +61,9 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this._notificationService.error(
-            'Vereinsdaten konnten nicht geladen werden.'
+            this._transloco.translate(
+              'transferRequestAdmin.notifications.clubLoadError'
+            )
           );
           this._cdr.markForCheck();
         },
@@ -96,13 +100,19 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
         next: (result) => {
           this.foundPlayer = result.player;
           if (!result.player) {
-            this.searchError = 'Kein Spieler mit diesen Daten gefunden.';
+            this.searchError = this._transloco.translate(
+              'transferRequestAdmin.notifications.playerNotFound'
+            );
           }
           this.searching = false;
           this._cdr.markForCheck();
         },
         error: (err) => {
-          this.searchError = err?.error?.error || 'Fehler bei der Suche.';
+          this.searchError =
+            err?.error?.error ||
+            this._transloco.translate(
+              'transferRequestAdmin.notifications.searchError'
+            );
           this.searching = false;
           this._cdr.markForCheck();
         },
@@ -119,12 +129,19 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.submitting = false;
-          this._notificationService.success('Direktzuweisung durchgeführt.');
+          this._notificationService.success(
+            this._transloco.translate(
+              'transferRequestAdmin.notifications.directAssignSuccess'
+            )
+          );
           this._router.navigate(['/verwaltung/transfer-anfragen']);
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error || 'Direktzuweisung fehlgeschlagen.'
+            err?.error?.error ||
+              this._transloco.translate(
+                'transferRequestAdmin.notifications.directAssignError'
+              )
           );
           this.submitting = false;
           this._cdr.markForCheck();

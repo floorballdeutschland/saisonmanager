@@ -1,5 +1,7 @@
 <div class="p-4 lg:p-8 max-w-4xl">
-  <h1 class="text-2xl font-bold mb-6">Meine Historie</h1>
+  <h1 class="text-2xl font-bold mb-6">
+    {{ "refereeSelf.history.title" | transloco }}
+  </h1>
 
   <!-- Tab switcher -->
   <div class="flex border-b border-fb-gray-300 mb-6">
@@ -12,7 +14,7 @@
       [class.border-transparent]="activeTab !== 'games'"
       [class.text-fb-gray-500]="activeTab !== 'games'"
     >
-      Gepfiffene Spiele
+      {{ "refereeSelf.history.tabGames" | transloco }}
     </button>
     <button
       type="button"
@@ -23,7 +25,7 @@
       [class.border-transparent]="activeTab !== 'tests'"
       [class.text-fb-gray-500]="activeTab !== 'tests'"
     >
-      Prüfungsergebnisse
+      {{ "refereeSelf.history.tabTests" | transloco }}
     </button>
   </div>
 
@@ -31,10 +33,14 @@
   @if (activeTab === "games") {
     <div>
       @if (loadingGames) {
-        <div class="text-fb-gray-500 text-sm">Lade…</div>
+        <div class="text-fb-gray-500 text-sm">
+          {{ "refereeSelf.common.loading" | transloco }}
+        </div>
       }
       @if (!loadingGames && seasons.length === 0) {
-        <div class="text-fb-gray-500 text-sm">Noch keine Spiele gefunden.</div>
+        <div class="text-fb-gray-500 text-sm">
+          {{ "refereeSelf.history.noGames" | transloco }}
+        </div>
       }
       @if (!loadingGames && seasons.length > 0) {
         <div class="flex flex-col gap-3">
@@ -49,11 +55,12 @@
                 class="w-full flex items-center justify-between px-4 py-3 bg-fb-gray-50 hover:bg-fb-gray-100 text-left"
               >
                 <span class="font-bold text-sm">{{ season.season_name }}</span>
-                <span class="text-xs text-fb-gray-500"
-                  >{{ season.games.length }} Spiel{{
-                    season.games.length === 1 ? "" : "e"
-                  }}</span
-                >
+                <span class="text-xs text-fb-gray-500">{{
+                  (season.games.length === 1
+                    ? "refereeSelf.history.gameCountOne"
+                    : "refereeSelf.history.gameCountOther"
+                  ) | transloco: { count: season.games.length }
+                }}</span>
               </button>
               <!-- Games table -->
               @if (expandedSeasons.has(season.season_id)) {
@@ -66,27 +73,27 @@
                         <th
                           class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500"
                         >
-                          Datum
+                          {{ "refereeSelf.history.colDate" | transloco }}
                         </th>
                         <th
                           class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500"
                         >
-                          Heim
+                          {{ "refereeSelf.history.colHome" | transloco }}
                         </th>
                         <th
                           class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500"
                         >
-                          Gast
+                          {{ "refereeSelf.history.colGuest" | transloco }}
                         </th>
                         <th
                           class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500 hidden sm:table-cell"
                         >
-                          Liga
+                          {{ "refereeSelf.history.colLeague" | transloco }}
                         </th>
                         <th
                           class="text-right px-4 py-2 font-bold text-xs text-fb-gray-500"
                         >
-                          Ergebnis
+                          {{ "refereeSelf.history.colResult" | transloco }}
                         </th>
                       </tr>
                     </thead>
@@ -127,11 +134,13 @@
   @if (activeTab === "tests") {
     <div>
       @if (loadingTests) {
-        <div class="text-fb-gray-500 text-sm">Lade…</div>
+        <div class="text-fb-gray-500 text-sm">
+          {{ "refereeSelf.common.loading" | transloco }}
+        </div>
       }
       @if (!loadingTests && tests.length === 0) {
         <div class="text-fb-gray-500 text-sm">
-          Noch keine Prüfungsergebnisse vorhanden.
+          {{ "refereeSelf.history.noTests" | transloco }}
         </div>
       }
       @if (!loadingTests && tests.length > 0) {
@@ -144,7 +153,11 @@
                 <p class="font-bold text-sm">{{ attempt.test_name }}</p>
                 <p class="text-xs text-fb-gray-500">
                   {{ attempt.lizenzstufe ? attempt.lizenzstufe + " · " : "" }}
-                  Versuch {{ attempt.attempt_number }} ·
+                  {{
+                    "refereeSelf.history.attempt"
+                      | transloco: { number: attempt.attempt_number }
+                  }}
+                  ·
                   {{ formatDateTime(attempt.completed_at) }}
                 </p>
               </div>
@@ -159,20 +172,26 @@
                   [class.text-gray-700]="attempt.passed === null"
                 >
                   @if (attempt.passed === true) {
-                    Bestanden
+                    {{ "refereeSelf.history.passed" | transloco }}
                   }
                   @if (attempt.passed === false) {
-                    Nicht bestanden
+                    {{ "refereeSelf.history.notPassed" | transloco }}
                   }
                   @if (attempt.passed === null) {
-                    Abgeschlossen
+                    {{ "refereeSelf.history.completed" | transloco }}
                   }
                 </span>
                 @if (attempt.error_points !== null) {
                   <p class="text-xs text-fb-gray-500 mt-1">
-                    Fehlerpunkte: {{ attempt.error_points }}
+                    {{
+                      "refereeSelf.history.errorPoints"
+                        | transloco: { points: attempt.error_points }
+                    }}
                     @if (attempt.pass_threshold_points !== null) {
-                      / max. {{ attempt.pass_threshold_points }}
+                      {{
+                        "refereeSelf.history.errorPointsMax"
+                          | transloco: { max: attempt.pass_threshold_points }
+                      }}
                     }
                   </p>
                 }

@@ -1,0 +1,41 @@
+{
+  "index": {
+    "title": "Referee assignments",
+    "filterSeason": "Season",
+    "filterSeasonAll": "All seasons",
+    "filterFrom": "From",
+    "filterTo": "To",
+    "filterApply": "Filter",
+    "loading": "Loading…",
+    "empty": "No games found.",
+    "colDate": "Date",
+    "colTime": "Time",
+    "colLocation": "Location",
+    "colGame": "Game",
+    "colLeague": "League",
+    "colStatus": "Status",
+    "colReferee1": "Referee 1",
+    "colReferee2": "Referee 2",
+    "colActions": "Actions",
+    "vs": "vs.",
+    "namePlaceholder": "Name…",
+    "saving": "Saving…",
+    "saveDraft": "Save draft",
+    "sending": "Sending…",
+    "sendEmail": "Send email",
+    "publishing": "Publishing…",
+    "publish": "Publish",
+    "statusOpen": "Open",
+    "statusPublished": "Published",
+    "statusDraft": "Draft"
+  },
+  "notifications": {
+    "saved": "Assignment saved.",
+    "saveError": "Error while saving.",
+    "notified": "Notification sent.",
+    "notifyError": "Error while sending.",
+    "published": "Assignment published.",
+    "publishError": "Error while publishing.",
+    "loadError": "Data could not be loaded."
+  }
+}

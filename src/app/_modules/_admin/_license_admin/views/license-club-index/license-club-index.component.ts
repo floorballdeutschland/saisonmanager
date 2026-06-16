@@ -13,6 +13,7 @@ import {
 } from '@floorball/types';
 import { Observable } from 'rxjs';
 import { Title } from '@angular/platform-browser';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   templateUrl: './license-club-index.component.html',
@@ -31,11 +32,12 @@ export class LicenseClubIndexComponent implements OnInit {
     private _associationService: AssociationService,
     private _clubService: ClubService,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
     this.associations$ = this._associationService.associations$;
     this._metaTitle.setTitle(
-      'Floorball Saisonmanager Lizenzverwaltung (Verein)'
+      this._transloco.translate('licenseAdmin.clubIndex.metaTitle')
     );
   }
 

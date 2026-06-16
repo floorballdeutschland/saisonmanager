@@ -1,19 +1,21 @@
 <div class="p-4 lg:p-8 max-w-3xl">
-  <h1 class="text-2xl font-bold mb-2">Meine Spieltage</h1>
+  <h1 class="text-2xl font-bold mb-2">
+    {{ "refereeSelf.gameDays.title" | transloco }}
+  </h1>
   <p class="text-sm text-fb-gray-500 mb-6">
-    Sofern dein Landesverband eine Spieltagscheckliste hinterlegt hat, bestätige
-    hier deine Spieltage als ordnungsgemäß durchgeführt – oder melde sie als
-    nicht ordnungsgemäß und beantworte die Checkliste. Bestätigung ist ab Beginn
-    des letzten Spiels möglich. Ohne Bestätigung innerhalb von 48 Stunden gilt
-    ein Spieltag automatisch als bestätigt.
+    {{ "refereeSelf.gameDays.intro" | transloco }}
   </p>
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-4">Lade…</div>
+    <div class="text-fb-gray-500 text-sm py-4">
+      {{ "refereeSelf.common.loading" | transloco }}
+    </div>
   }
 
   @if (!loading && gameDays.length === 0) {
-    <div class="text-fb-gray-500 text-sm py-4">Keine Spieltage gefunden.</div>
+    <div class="text-fb-gray-500 text-sm py-4">
+      {{ "refereeSelf.gameDays.empty" | transloco }}
+    </div>
   }
 
   @if (!loading && gameDays.length > 0) {
@@ -45,9 +47,10 @@
                     (click)="confirmOk(gd)"
                   >
                     {{
-                      confirmingId === gd.id
-                        ? "Speichere…"
-                        : "Ordnungsgemäß bestätigen"
+                      (confirmingId === gd.id
+                        ? "refereeSelf.gameDays.saving"
+                        : "refereeSelf.gameDays.confirmProper"
+                      ) | transloco
                     }}
                   </fb-button>
                   <button
@@ -56,13 +59,12 @@
                     (click)="startReject(gd)"
                     class="px-3 py-1.5 text-xs font-bold text-red-600 border border-red-300 rounded-[5px] hover:border-red-500 disabled:opacity-50"
                   >
-                    Nicht ordnungsgemäß
+                    {{ "refereeSelf.gameDays.reportImproper" | transloco }}
                   </button>
                 } @else {
                   <span class="text-xs text-fb-gray-500 text-right">
-                    Bestätigung ab<br />{{
-                      formatDateTime(gd.confirmable_from!)
-                    }}
+                    {{ "refereeSelf.gameDays.confirmableFrom" | transloco
+                    }}<br />{{ formatDateTime(gd.confirmable_from!) }}
                   </span>
                 }
               </div>
@@ -94,10 +96,11 @@
           <!-- "Nicht ordnungsgemäß": Checkliste beantworten -->
           @if (rejectingId === gd.id) {
             <div class="border border-red-200 bg-red-50 rounded-[5px] p-3 mb-3">
-              <div class="text-sm font-bold mb-2">Spieltagscheckliste</div>
+              <div class="text-sm font-bold mb-2">
+                {{ "refereeSelf.gameDays.checklistTitle" | transloco }}
+              </div>
               <p class="text-xs text-fb-gray-500 mb-3">
-                Bitte beantworte jede Frage. Bei „Nein" wird die zuständige SBK
-                informiert.
+                {{ "refereeSelf.gameDays.checklistHint" | transloco }}
               </p>
               <div class="flex flex-col gap-2 mb-3">
                 @for (item of gd.checklist_items; track item) {
@@ -114,7 +117,7 @@
                             : 'border-fb-gray-600 hover:border-black'
                         "
                       >
-                        Ja
+                        {{ "refereeSelf.gameDays.answerYes" | transloco }}
                       </button>
                       <button
                         type="button"
@@ -126,7 +129,7 @@
                             : 'border-fb-gray-600 hover:border-black'
                         "
                       >
-                        Nein
+                        {{ "refereeSelf.gameDays.answerNo" | transloco }}
                       </button>
                     </span>
                   </div>
@@ -140,7 +143,10 @@
                   class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
                 >
                   {{
-                    confirmingId === gd.id ? "Speichere…" : "Meldung absenden"
+                    (confirmingId === gd.id
+                      ? "refereeSelf.gameDays.saving"
+                      : "refereeSelf.gameDays.submitReport"
+                    ) | transloco
                   }}
                 </button>
                 <button
@@ -149,7 +155,7 @@
                   (click)="cancelReject()"
                   class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
                 >
-                  Abbrechen
+                  {{ "refereeSelf.gameDays.cancel" | transloco }}
                 </button>
               </div>
             </div>
@@ -159,25 +165,35 @@
             <div class="flex flex-col gap-1 text-xs mt-2">
               <!-- My status -->
               <div class="flex items-start gap-2">
-                <span class="text-fb-gray-500 w-32 shrink-0"
-                  >Meine Bestätigung:</span
-                >
+                <span class="text-fb-gray-500 w-32 shrink-0">{{
+                  "refereeSelf.gameDays.myConfirmation" | transloco
+                }}</span>
                 @if (confirmationStatus(gd) === "confirmed") {
                   <span class="text-green-600 font-medium">
-                    Ordnungsgemäß bestätigt am
-                    {{ formatDateTime(gd.my_confirmed_at!) }}
+                    {{
+                      "refereeSelf.gameDays.confirmedProperlyAt"
+                        | transloco
+                          : { date: formatDateTime(gd.my_confirmed_at!) }
+                    }}
                   </span>
                 }
                 @if (confirmationStatus(gd) === "auto") {
-                  <span class="text-fb-gray-500"> Automatisch bestätigt </span>
+                  <span class="text-fb-gray-500">
+                    {{ "refereeSelf.gameDays.autoConfirmed" | transloco }}
+                  </span>
                 }
                 @if (confirmationStatus(gd) === "pending") {
-                  <span class="text-amber-600"> Ausstehend </span>
+                  <span class="text-amber-600">
+                    {{ "refereeSelf.gameDays.pending" | transloco }}
+                  </span>
                 }
                 @if (confirmationStatus(gd) === "not_ok") {
                   <span class="text-red-600 font-medium">
-                    Als nicht ordnungsgemäß gemeldet am
-                    {{ formatDateTime(gd.my_confirmed_at!) }}
+                    {{
+                      "refereeSelf.gameDays.reportedImproperAt"
+                        | transloco
+                          : { date: formatDateTime(gd.my_confirmed_at!) }
+                    }}
                   </span>
                 }
               </div>
@@ -191,7 +207,10 @@
                     <li>
                       {{ a.question }}:
                       <span [class.text-red-600]="!a.answer">{{
-                        a.answer ? "Ja" : "Nein"
+                        (a.answer
+                          ? "refereeSelf.gameDays.answerYes"
+                          : "refereeSelf.gameDays.answerNo"
+                        ) | transloco
                       }}</span>
                     </li>
                   }
@@ -199,14 +218,19 @@
               }
               <!-- Partner status -->
               <div class="flex items-center gap-2">
-                <span class="text-fb-gray-500 w-32 shrink-0">Partner:</span>
+                <span class="text-fb-gray-500 w-32 shrink-0">{{
+                  "refereeSelf.gameDays.partner" | transloco
+                }}</span>
                 @if (
                   gd.partner_confirmed_at &&
                   gd.partner_properly_conducted !== false
                 ) {
                   <span class="text-green-600 font-medium">
-                    Ordnungsgemäß bestätigt am
-                    {{ formatDateTime(gd.partner_confirmed_at) }}
+                    {{
+                      "refereeSelf.gameDays.confirmedProperlyAt"
+                        | transloco
+                          : { date: formatDateTime(gd.partner_confirmed_at) }
+                    }}
                   </span>
                 }
                 @if (
@@ -214,15 +238,22 @@
                   gd.partner_properly_conducted === false
                 ) {
                   <span class="text-red-600 font-medium">
-                    Als nicht ordnungsgemäß gemeldet am
-                    {{ formatDateTime(gd.partner_confirmed_at) }}
+                    {{
+                      "refereeSelf.gameDays.reportedImproperAt"
+                        | transloco
+                          : { date: formatDateTime(gd.partner_confirmed_at) }
+                    }}
                   </span>
                 }
                 @if (!gd.partner_confirmed_at && gd.auto_confirmed) {
-                  <span class="text-fb-gray-500"> Automatisch bestätigt </span>
+                  <span class="text-fb-gray-500">
+                    {{ "refereeSelf.gameDays.autoConfirmed" | transloco }}
+                  </span>
                 }
                 @if (!gd.partner_confirmed_at && !gd.auto_confirmed) {
-                  <span class="text-amber-600"> Ausstehend </span>
+                  <span class="text-amber-600">
+                    {{ "refereeSelf.gameDays.pending" | transloco }}
+                  </span>
                 }
               </div>
             </div>

@@ -3,27 +3,30 @@
     <a
       [routerLink]="['/', 'verwaltung', 'transfer-anfragen']"
       class="text-fb-gray-500 hover:text-black text-sm"
-      >← Zurück</a
+      >{{ "transferRequestAdmin.direct.back" | transloco }}</a
     >
-    <h1 class="text-2xl font-bold">Direktzuweisung</h1>
+    <h1 class="text-2xl font-bold">
+      {{ "transferRequestAdmin.direct.title" | transloco }}
+    </h1>
   </div>
 
   <p class="text-sm text-fb-gray-500 mb-6">
-    Weist einen Spieler direkt einem Verein zu – ohne den mehrstufigen
-    Genehmigungsprozess. Der Wechsel wird sofort vollzogen und erscheint in der
-    Transferliste. Nur für Vereine im eigenen Landesverband (FD
-    verbandsübergreifend).
+    {{ "transferRequestAdmin.direct.intro" | transloco }}
   </p>
 
   <div class="flex flex-col gap-4">
     <div class="flex flex-col gap-1">
-      <label class="text-sm font-bold">Aufnehmender Verein</label>
+      <label class="text-sm font-bold">{{
+        "transferRequestAdmin.direct.requestingClub" | transloco
+      }}</label>
       <select
         name="club"
         [(ngModel)]="selectedClubId"
         class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
       >
-        <option [ngValue]="0">– Verein wählen –</option>
+        <option [ngValue]="0">
+          {{ "transferRequestAdmin.direct.chooseClub" | transloco }}
+        </option>
         @for (c of clubs; track c) {
           <option [ngValue]="c.id">{{ c.name }}</option>
         }
@@ -32,7 +35,9 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Vorname</label>
+        <label class="text-sm font-bold">{{
+          "transferRequestAdmin.direct.firstName" | transloco
+        }}</label>
         <input
           type="text"
           [(ngModel)]="firstName"
@@ -40,7 +45,9 @@
         />
       </div>
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Nachname</label>
+        <label class="text-sm font-bold">{{
+          "transferRequestAdmin.direct.lastName" | transloco
+        }}</label>
         <input
           type="text"
           [(ngModel)]="lastName"
@@ -48,7 +55,9 @@
         />
       </div>
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-bold">Geburtsdatum</label>
+        <label class="text-sm font-bold">{{
+          "transferRequestAdmin.direct.birthdate" | transloco
+        }}</label>
         <input
           type="date"
           [(ngModel)]="birthdate"
@@ -65,7 +74,11 @@
       (click)="search()"
       class="self-start px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
     >
-      {{ searching ? "Suche…" : "Spieler suchen" }}
+      {{
+        searching
+          ? ("transferRequestAdmin.direct.searching" | transloco)
+          : ("transferRequestAdmin.direct.searchPlayer" | transloco)
+      }}
     </button>
 
     @if (searchError) {
@@ -83,7 +96,10 @@
             {{ foundPlayer.last_name }}, {{ foundPlayer.first_name }}
           </div>
           <div class="text-sm text-fb-gray-500">
-            geb. {{ foundPlayer.birthdate }}
+            {{
+              "transferRequestAdmin.direct.bornPrefix"
+                | transloco: { date: foundPlayer.birthdate }
+            }}
           </div>
         </div>
         <button
@@ -92,7 +108,11 @@
           (click)="submit()"
           class="self-start px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
         >
-          {{ submitting ? "Wird zugewiesen…" : "Direkt zuweisen" }}
+          {{
+            submitting
+              ? ("transferRequestAdmin.direct.submitting" | transloco)
+              : ("transferRequestAdmin.direct.assignDirectly" | transloco)
+          }}
         </button>
       </div>
     }

@@ -1,0 +1,28 @@
+{
+  "title": "Season management",
+  "loading": "Loading season data…",
+  "currentSeasonHeading": "Current season",
+  "switchSuccess": "Season successfully switched to “{{ name }}”.",
+  "createSeasonHeading": "Create new season",
+  "seasonNameLabel": "Season name",
+  "seasonNamePlaceholder": "e.g. 2026/27",
+  "creating": "Creating…",
+  "create": "Create",
+  "switchSeasonHeading": "Switch season",
+  "newActiveSeasonLabel": "New active season",
+  "currentSuffix": " (current)",
+  "warningHeading": "⚠ CAUTION: This action has far-reaching consequences",
+  "warningTmUsers": "All TM users will be locked out on their next login, as their teams no longer belong to the active season.",
+  "warningLicenses": "Player licenses from the old season lose their validity for new game reports.",
+  "warningSbkUsers": "SBK users must create new leagues; clubs must re-register their teams.",
+  "confirmIntro": "I understand the consequences and want to switch from",
+  "confirmTo": "to",
+  "confirmOutro": ".",
+  "switching": "Switching…",
+  "switchNow": "Switch season now",
+  "notifications": {
+    "seasonCreated": "Season “{{ name }}” created.",
+    "createError": "Error while creating the season",
+    "switchError": "Error while switching the season"
+  }
+}

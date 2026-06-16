@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
 import { RefereeGameDay } from '@floorball/types';
 
@@ -30,6 +31,7 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   constructor(
     private _refereeService: RefereeService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -145,16 +147,25 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
           this.rejectAnswers = {};
           this._cdr.markForCheck();
           this._notificationService.success(
-            properly ? 'Spieltag bestätigt.' : 'Meldung gespeichert.',
+            this._transloco.translate(
+              properly
+                ? 'refereeSelf.notifications.gameDayConfirmed'
+                : 'refereeSelf.notifications.gameDayReportSaved'
+            ),
             { autoClose: true, keepAfterRouteChange: false }
           );
         },
         error: () => {
           this.confirmingId = null;
           this._cdr.markForCheck();
-          this._notificationService.error('Speichern fehlgeschlagen.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate(
+              'refereeSelf.notifications.gameDaySaveError'
+            ),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }

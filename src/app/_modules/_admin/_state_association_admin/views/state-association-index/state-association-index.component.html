@@ -1,32 +1,41 @@
 <div class="p-4 lg:p-8">
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold">Landesverbände</h1>
+    <h1 class="text-2xl font-bold">
+      {{ "stateAssociationAdmin.index.title" | transloco }}
+    </h1>
     @if (canManageLifecycle) {
       <a
         [routerLink]="['/', 'verwaltung', 'landesverbaende', 'neu']"
         class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
       >
-        + Neu anlegen
+        {{ "stateAssociationAdmin.index.newButton" | transloco }}
       </a>
     }
   </div>
 
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-8 text-center">
-      Lade Landesverbände…
+      {{ "stateAssociationAdmin.index.loading" | transloco }}
     </div>
   }
 
   @if (!loading) {
     <div class="overflow-x-auto">
       <p class="text-sm text-fb-gray-500 mb-3">
-        {{ stateAssociations.length }} Einträge
+        {{
+          "stateAssociationAdmin.index.count"
+            | transloco: { count: stateAssociations.length }
+        }}
       </p>
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b border-fb-gray-700 text-left">
-            <th class="py-2 pr-4 font-bold">Name</th>
-            <th class="py-2 pr-4 font-bold">Kürzel</th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "stateAssociationAdmin.index.colName" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "stateAssociationAdmin.index.colShortName" | transloco }}
+            </th>
             <th class="py-2"></th>
           </tr>
         </thead>
@@ -53,14 +62,19 @@
                   ]"
                   class="text-sm text-fb-gray-500 hover:text-black"
                 >
-                  {{ isAdmin || isSbkOnly ? "Bearbeiten" : "Details" }}
+                  {{
+                    (isAdmin || isSbkOnly
+                      ? "stateAssociationAdmin.index.edit"
+                      : "stateAssociationAdmin.index.details"
+                    ) | transloco
+                  }}
                 </a>
                 @if (canManageLifecycle) {
                   <button
                     (click)="delete(row.sa)"
                     class="text-sm text-red-400 hover:text-red-600"
                   >
-                    Löschen
+                    {{ "stateAssociationAdmin.index.delete" | transloco }}
                   </button>
                 }
               </td>
@@ -69,7 +83,7 @@
           @if (sortedRows.length === 0) {
             <tr>
               <td colspan="3" class="py-8 text-center text-fb-gray-500">
-                Noch keine Landesverbände angelegt.
+                {{ "stateAssociationAdmin.index.empty" | transloco }}
               </td>
             </tr>
           }

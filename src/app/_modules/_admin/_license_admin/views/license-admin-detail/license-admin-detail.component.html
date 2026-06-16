@@ -46,7 +46,9 @@
           </div>
           <div>
             <p class="text-sm text-gray-900">
-              <span class="font-bold">Beantragt:</span>
+              <span class="font-bold">{{
+                "licenseAdmin.detail.requestedLabel" | transloco
+              }}</span>
               {{
                 (player.team_license.requested_at
                   | date: "EEEE, dd.MM.yyyy HH:mm") || ""
@@ -58,7 +60,7 @@
                 <span
                   class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"
                 >
-                  Expresslizenz
+                  {{ "licenseAdmin.detail.express" | transloco }}
                 </span>
               </p>
             }
@@ -78,7 +80,7 @@
                     clip-rule="evenodd"
                   />
                 </svg>
-                Prüfungen erfolgreich
+                {{ "licenseAdmin.detail.checksPassed" | transloco }}
               </p>
             }
           </div>
@@ -129,19 +131,27 @@
       <div class="grid gap-4 lg:grid-cols-3">
         <div class="grid gap-4 md:grid-cols-2 lg:col-span-2">
           <div class="md:col-span-2">
-            <p class="uppercase font-bold text-gray-400 text-sm mb-3">Alter</p>
+            <p class="uppercase font-bold text-gray-400 text-sm mb-3">
+              {{ "licenseAdmin.detail.age" | transloco }}
+            </p>
             <div class="grid gap-1">
               <p class="font-bold text-[14px] leading-[12px]">
-                {{ calculateAge(player.birthdate) }} Jahre
+                {{
+                  "licenseAdmin.detail.ageYears"
+                    | transloco: { age: calculateAge(player.birthdate) }
+                }}
               </p>
               <p class="text-[12px]">
-                Geb. {{ player.birthdate | date: "dd.MM.yyyy" }}
+                {{
+                  "licenseAdmin.detail.bornOn"
+                    | transloco: { date: player.birthdate | date: "dd.MM.yyyy" }
+                }}
               </p>
             </div>
           </div>
           <div>
             <p class="uppercase font-bold text-gray-400 text-sm mb-3">
-              Lizenzen
+              {{ "licenseAdmin.detail.licenses" | transloco }}
             </p>
             <ul class="grid gap-4">
               @for (license of player.licenses || []; track license) {
@@ -156,7 +166,7 @@
           </div>
           <div>
             <p class="uppercase font-bold text-gray-400 text-sm mb-3">
-              Freigaben
+              {{ "licenseAdmin.detail.approvals" | transloco }}
             </p>
             <ul class="grid gap-2">
               @for (
@@ -172,7 +182,9 @@
         </div>
         <div class="flex flex-col items-start justify-start">
           <div class="w-full mb-2">
-            <label class="block text-xs text-gray-500 mb-1">Gültig bis</label>
+            <label class="block text-xs text-gray-500 mb-1">{{
+              "licenseAdmin.detail.validUntil" | transloco
+            }}</label>
             <input
               type="date"
               class="w-full border border-gray-300 rounded px-2 py-1 text-sm"
@@ -183,26 +195,26 @@
             class="w-full h-10 font-bold text-center text-green-700 leading-[17px] text-sm px-5 py-2.5 mr-4 mb-2 border bg-green-100 hover:bg-green-200 border-green-900 rounded-[5px] cursor-pointer"
             (click)="approveLicense(player)"
           >
-            Lizenz erteilen
+            {{ "licenseAdmin.detail.grantLicense" | transloco }}
           </button>
           <button
             class="w-full h-10 font-bold text-center text-red-700 leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-red-100 hover:bg-fb-gray-200 border-red-900 rounded-[5px] cursor-pointer"
             (click)="cancelLicense(player)"
           >
-            Antrag ablehnen
+            {{ "licenseAdmin.detail.rejectRequest" | transloco }}
           </button>
           @if (player.team_license.last_status.license_status_id !== 2) {
             <button
               class="w-full h-10 font-bold text-center text-yellow-700 leading-[17px] text-sm px-5 py-2.5 mr-4 mt-2 border bg-yellow-50 hover:bg-yellow-100 border-yellow-700 rounded-[5px] cursor-pointer"
               (click)="resetLicenseToPending(player)"
             >
-              Zurück auf „beantragt"
+              {{ "licenseAdmin.detail.resetToPending" | transloco }}
             </button>
           }
           <div class="mt-2">
-            <label class="font-bold text-[14px] leading-[12px]"
-              >Begründung</label
-            >
+            <label class="font-bold text-[14px] leading-[12px]">{{
+              "licenseAdmin.detail.reason" | transloco
+            }}</label>
             <input
               type="text"
               class="w-full rounded"

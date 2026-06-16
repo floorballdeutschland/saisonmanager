@@ -2,11 +2,16 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Ligaverwaltung
+    {{ "leagueAdmin.title" | transloco }}
   </h1>
 
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    {{ editMode ? "Bearbeiten einer Liga" : "Neue Liga anlegen" }}
+    {{
+      (editMode
+        ? "leagueAdmin.edit.headingEdit"
+        : "leagueAdmin.edit.headingNew"
+      ) | transloco
+    }}
   </h2>
 </div>
 
@@ -20,18 +25,22 @@
           <div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Hauptdaten
+                {{ "leagueAdmin.edit.mainData" | transloco }}
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div class="font-bold">Liga ID</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.leagueId" | transloco }}
+                </div>
                 <div>
                   {{
                     league.id > 0
                       ? league.id
-                      : "Wird nach dem Anlegen festgelegt"
+                      : ("leagueAdmin.edit.leagueIdPlaceholder" | transloco)
                   }}
                 </div>
-                <div class="font-bold">Verband</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.association" | transloco }}
+                </div>
                 <div>
                   <select
                     class="w-full"
@@ -45,7 +54,9 @@
                     }
                   </select>
                 </div>
-                <div class="font-bold">Name</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.name" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="league.name"
@@ -55,15 +66,23 @@
                     required
                   />
                   <p class="text-xs text-gray-500 mt-1">
-                    <span class="font-medium">Großfeld:</span> kein Zusatz —
-                    z.&#x202F;B. „Regionalliga Nord U17 Juniorinnen"<br />
-                    <span class="font-medium">Kleinfeld:</span> Zusatz „KF" —
-                    z.&#x202F;B. „Regionalliga Süd U17 Junioren KF"<br />
-                    <span class="font-medium">Kleintorliga:</span> Zusatz „KT" —
-                    z.&#x202F;B. „Regionalliga Nord U17 KT"
+                    <span class="font-medium">{{
+                      "leagueAdmin.edit.nameHintGfLabel" | transloco
+                    }}</span>
+                    {{ "leagueAdmin.edit.nameHintGf" | transloco }}<br />
+                    <span class="font-medium">{{
+                      "leagueAdmin.edit.nameHintKfLabel" | transloco
+                    }}</span>
+                    {{ "leagueAdmin.edit.nameHintKf" | transloco }}<br />
+                    <span class="font-medium">{{
+                      "leagueAdmin.edit.nameHintKtLabel" | transloco
+                    }}</span>
+                    {{ "leagueAdmin.edit.nameHintKt" | transloco }}
                   </p>
                 </div>
-                <div class="font-bold">Kurzbezeichnung</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.shortName" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="league.short_name"
@@ -73,7 +92,9 @@
                     required
                   />
                 </div>
-                <div class="font-bold">Sortierschlüssel</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.orderKey" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="league.order_key"
@@ -83,7 +104,9 @@
                     required
                   />
                 </div>
-                <div class="font-bold">Ligamodus</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.leagueModus" | transloco }}
+                </div>
                 <div>
                   <select
                     class="w-full"
@@ -91,15 +114,21 @@
                     [(ngModel)]="league.league_modus"
                     (ngModelChange)="onLeagueModusChange(league, $event)"
                   >
-                    <option value="league">Liga</option>
-                    <option value="cup">Pokal</option>
+                    <option value="league">
+                      {{ "leagueAdmin.edit.modusLeague" | transloco }}
+                    </option>
+                    <option value="cup">
+                      {{ "leagueAdmin.edit.modusCup" | transloco }}
+                    </option>
                     <option value="champ">
-                      DM/Endrunde (1-4 Gruppen + Platzierungsspiele)
+                      {{ "leagueAdmin.edit.modusChamp" | transloco }}
                     </option>
                   </select>
                 </div>
                 @if (league.league_modus === "league") {
-                  <div class="font-bold">Ligaklasse</div>
+                  <div class="font-bold">
+                    {{ "leagueAdmin.edit.leagueClass" | transloco }}
+                  </div>
                   <div>
                     <select
                       class="w-full"
@@ -108,21 +137,29 @@
                     >
                       @if (isBuliPermitted) {
                         <option value="1fbl">
-                          1. Floorball Bundesliga (1. FBL)
+                          {{ "leagueAdmin.edit.class1fbl" | transloco }}
                         </option>
                       }
                       @if (isBuliPermitted) {
                         <option value="2fbl">
-                          2. Floorball Bundesliga (2. FBL)
+                          {{ "leagueAdmin.edit.class2fbl" | transloco }}
                         </option>
                       }
-                      <option value="rl">Regionalliga (RL)</option>
-                      <option value="vl">Verbandsliga (VL)</option>
-                      <option value="ll">Landesliga (LL)</option>
+                      <option value="rl">
+                        {{ "leagueAdmin.edit.classRl" | transloco }}
+                      </option>
+                      <option value="vl">
+                        {{ "leagueAdmin.edit.classVl" | transloco }}
+                      </option>
+                      <option value="ll">
+                        {{ "leagueAdmin.edit.classLl" | transloco }}
+                      </option>
                     </select>
                   </div>
                 }
-                <div class="font-bold">Altersklasse</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.ageGroup" | transloco }}
+                </div>
                 <div>
                   <select
                     class="w-full"
@@ -131,73 +168,129 @@
                     (ngModelChange)="league.female = femaleFromAgeGroup($event)"
                     required
                   >
-                    <option value="">— bitte wählen —</option>
-                    <option value="U19 Junioren">U19 Junioren</option>
-                    <option value="U17 Junioren">U17 Junioren</option>
-                    <option value="U15 Junioren">U15 Junioren</option>
-                    <option value="U13 Junioren">U13 Junioren</option>
-                    <option value="U11 Junioren">U11 Junioren</option>
-                    <option value="U9 Junioren">U9 Junioren</option>
-                    <option value="U7 Junioren">U7 Junioren</option>
-                    <option value="U5 Junioren">U5 Junioren</option>
-                    <option value="U19 Juniorinnen">U19 Juniorinnen</option>
-                    <option value="U17 Juniorinnen">U17 Juniorinnen</option>
-                    <option value="U15 Juniorinnen">U15 Juniorinnen</option>
-                    <option value="U13 Juniorinnen">U13 Juniorinnen</option>
-                    <option value="U11 Juniorinnen">U11 Juniorinnen</option>
-                    <option value="U9 Juniorinnen">U9 Juniorinnen</option>
-                    <option value="U7 Juniorinnen">U7 Juniorinnen</option>
-                    <option value="U5 Juniorinnen">U5 Juniorinnen</option>
-                    <option value="Ü30">Ü30</option>
-                    <option value="Herren">Herren</option>
-                    <option value="Damen">Damen</option>
+                    <option value="">
+                      {{ "leagueAdmin.edit.pleaseSelect" | transloco }}
+                    </option>
+                    <option value="U19 Junioren">
+                      {{ "leagueAdmin.edit.ageGroups.u19m" | transloco }}
+                    </option>
+                    <option value="U17 Junioren">
+                      {{ "leagueAdmin.edit.ageGroups.u17m" | transloco }}
+                    </option>
+                    <option value="U15 Junioren">
+                      {{ "leagueAdmin.edit.ageGroups.u15m" | transloco }}
+                    </option>
+                    <option value="U13 Junioren">
+                      {{ "leagueAdmin.edit.ageGroups.u13m" | transloco }}
+                    </option>
+                    <option value="U11 Junioren">
+                      {{ "leagueAdmin.edit.ageGroups.u11m" | transloco }}
+                    </option>
+                    <option value="U9 Junioren">
+                      {{ "leagueAdmin.edit.ageGroups.u9m" | transloco }}
+                    </option>
+                    <option value="U7 Junioren">
+                      {{ "leagueAdmin.edit.ageGroups.u7m" | transloco }}
+                    </option>
+                    <option value="U5 Junioren">
+                      {{ "leagueAdmin.edit.ageGroups.u5m" | transloco }}
+                    </option>
+                    <option value="U19 Juniorinnen">
+                      {{ "leagueAdmin.edit.ageGroups.u19f" | transloco }}
+                    </option>
+                    <option value="U17 Juniorinnen">
+                      {{ "leagueAdmin.edit.ageGroups.u17f" | transloco }}
+                    </option>
+                    <option value="U15 Juniorinnen">
+                      {{ "leagueAdmin.edit.ageGroups.u15f" | transloco }}
+                    </option>
+                    <option value="U13 Juniorinnen">
+                      {{ "leagueAdmin.edit.ageGroups.u13f" | transloco }}
+                    </option>
+                    <option value="U11 Juniorinnen">
+                      {{ "leagueAdmin.edit.ageGroups.u11f" | transloco }}
+                    </option>
+                    <option value="U9 Juniorinnen">
+                      {{ "leagueAdmin.edit.ageGroups.u9f" | transloco }}
+                    </option>
+                    <option value="U7 Juniorinnen">
+                      {{ "leagueAdmin.edit.ageGroups.u7f" | transloco }}
+                    </option>
+                    <option value="U5 Juniorinnen">
+                      {{ "leagueAdmin.edit.ageGroups.u5f" | transloco }}
+                    </option>
+                    <option value="Ü30">
+                      {{ "leagueAdmin.edit.ageGroups.over30" | transloco }}
+                    </option>
+                    <option value="Herren">
+                      {{ "leagueAdmin.edit.ageGroups.men" | transloco }}
+                    </option>
+                    <option value="Damen">
+                      {{ "leagueAdmin.edit.ageGroups.women" | transloco }}
+                    </option>
                   </select>
                 </div>
               </div>
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                weitere Daten
+                {{ "leagueAdmin.edit.moreData" | transloco }}
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div class="font-bold">Feldgröße</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.fieldSize" | transloco }}
+                </div>
                 <div>
                   <select
                     class="w-full"
                     name="field_size"
                     [(ngModel)]="league.field_size"
                   >
-                    <option value="GF">Großfeld</option>
-                    <option value="KF">Kleinfeld</option>
+                    <option value="GF">
+                      {{ "leagueAdmin.edit.fieldGf" | transloco }}
+                    </option>
+                    <option value="KF">
+                      {{ "leagueAdmin.edit.fieldKf" | transloco }}
+                    </option>
                   </select>
                 </div>
-                <div class="font-bold">Punktsystem</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.pointSystem" | transloco }}
+                </div>
                 <div>
                   <select
                     class="w-full"
                     name="table_modus"
                     [(ngModel)]="league.table_modus"
                   >
-                    <option value="classic">3 Punkte</option>
+                    <option value="classic">
+                      {{ "leagueAdmin.edit.points3" | transloco }}
+                    </option>
                   </select>
                 </div>
-                <div class="font-bold">Scorerliste sichtbar</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.scorerVisible" | transloco }}
+                </div>
                 <div>
                   <select
                     class="w-full"
                     name="enable_scorer"
                     [(ngModel)]="league.enable_scorer"
                   >
-                    <option [ngValue]="true">Ja</option>
-                    <option [ngValue]="false">Nein</option>
+                    <option [ngValue]="true">
+                      {{ "leagueAdmin.edit.yes" | transloco }}
+                    </option>
+                    <option [ngValue]="false">
+                      {{ "leagueAdmin.edit.no" | transloco }}
+                    </option>
                   </select>
                 </div>
                 <div>
-                  <div class="font-bold">Elternzustimmung erforderlich</div>
+                  <div class="font-bold">
+                    {{ "leagueAdmin.edit.parentalConsentRequired" | transloco }}
+                  </div>
                   <div class="text-sm text-fb-gray-400 mt-1">
-                    Wenn minderjährige Spieler*innen bei der Lizenzbeantragung
-                    für diese Liga eine Elternzustimmung hochladen müssen, bitte
-                    aktivieren.
+                    {{ "leagueAdmin.edit.parentalConsentHint" | transloco }}
                   </div>
                 </div>
                 <div>
@@ -206,11 +299,17 @@
                     name="parental_consent_required"
                     [(ngModel)]="league.parental_consent_required"
                   >
-                    <option [ngValue]="true">Ja</option>
-                    <option [ngValue]="false">Nein</option>
+                    <option [ngValue]="true">
+                      {{ "leagueAdmin.edit.yes" | transloco }}
+                    </option>
+                    <option [ngValue]="false">
+                      {{ "leagueAdmin.edit.no" | transloco }}
+                    </option>
                   </select>
                 </div>
-                <div class="font-bold">Direkter Vergleich</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.directComparison" | transloco }}
+                </div>
                 <div>
                   <select
                     class="w-full"
@@ -218,10 +317,10 @@
                     [(ngModel)]="league.direct_comparison"
                   >
                     <option [ngValue]="false">
-                      deaktiviert (Gesamttordifferenz)
+                      {{ "leagueAdmin.edit.directComparisonOff" | transloco }}
                     </option>
                     <option [ngValue]="true">
-                      aktiviert (direkter Vergleich)
+                      {{ "leagueAdmin.edit.directComparisonOn" | transloco }}
                     </option>
                   </select>
                 </div>
@@ -229,17 +328,23 @@
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Spielereinstellungen
+                {{ "leagueAdmin.edit.playerSettings" | transloco }}
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div class="font-bold">Spielberechtigt</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.eligible" | transloco }}
+                </div>
                 <div class="flex items-center gap-2">
                   <select
                     name="before_deadline"
                     [(ngModel)]="league.before_deadline"
                   >
-                    <option [ngValue]="false">jünger als</option>
-                    <option [ngValue]="true">älter als</option>
+                    <option [ngValue]="false">
+                      {{ "leagueAdmin.edit.youngerThan" | transloco }}
+                    </option>
+                    <option [ngValue]="true">
+                      {{ "leagueAdmin.edit.olderThan" | transloco }}
+                    </option>
                   </select>
                   <input
                     [(ngModel)]="league.deadline"
@@ -252,10 +357,12 @@
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Spieleinstellungen
+                {{ "leagueAdmin.edit.gameSettings" | transloco }}
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div class="font-bold">Anzahl Spielabschnitte</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.periods" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="league.periods"
@@ -265,7 +372,9 @@
                     required
                   />
                 </div>
-                <div class="font-bold">Dauer Spielabschnitte (min)</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.periodLength" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="league.period_length"
@@ -275,7 +384,9 @@
                     required
                   />
                 </div>
-                <div class="font-bold">Dauer Verlängerung (min)</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.overtimeLength" | transloco }}
+                </div>
                 <div>
                   <input
                     [(ngModel)]="league.overtime_length"
@@ -290,17 +401,21 @@
             <!-- Vorrundeneinstellungen -->
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Vorrundeneinstellungen
+                {{ "leagueAdmin.edit.preroundSettings" | transloco }}
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div class="font-bold">Vorrunden-Liga</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.preroundLeague" | transloco }}
+                </div>
                 <div>
                   <select
                     class="w-full"
                     name="league_id_preround"
                     [(ngModel)]="league.league_id_preround"
                   >
-                    <option [ngValue]="null">— keine Vorrunde —</option>
+                    <option [ngValue]="null">
+                      {{ "leagueAdmin.edit.noPreround" | transloco }}
+                    </option>
                     @for (l of allLeagues; track l) {
                       <option [ngValue]="l.id" [disabled]="l.id === league.id">
                         {{ l.name }}
@@ -308,24 +423,27 @@
                     }
                   </select>
                   <p class="text-xs text-gray-500 mt-1">
-                    Liga, aus der die Tabellenpunkte und Lizenzen übernommen
-                    werden sollen.
+                    {{ "leagueAdmin.edit.preroundLeagueHint" | transloco }}
                   </p>
                 </div>
                 @if (league.league_id_preround) {
-                  <div class="font-bold">Tabellenübernahme</div>
+                  <div class="font-bold">
+                    {{ "leagueAdmin.edit.tableTransfer" | transloco }}
+                  </div>
                   <div>
                     <select
                       class="w-full"
                       name="preround_point_modus"
                       [(ngModel)]="league.preround_point_modus"
                     >
-                      <option [ngValue]="null">keine Punktübernahme</option>
+                      <option [ngValue]="null">
+                        {{ "leagueAdmin.edit.noPointTransfer" | transloco }}
+                      </option>
                       <option value="full">
-                        alle Vorrundenpunkte übernehmen
+                        {{ "leagueAdmin.edit.fullPointTransfer" | transloco }}
                       </option>
                       <option value="half">
-                        halbe Vorrundenpunkte übernehmen
+                        {{ "leagueAdmin.edit.halfPointTransfer" | transloco }}
                       </option>
                     </select>
                   </div>
@@ -335,17 +453,21 @@
             <!-- Direktbegegnungen -->
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Direktbegegnungen
+                {{ "leagueAdmin.edit.directEncounters" | transloco }}
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div class="font-bold">Direktbegegnungen übernehmen</div>
+                <div class="font-bold">
+                  {{ "leagueAdmin.edit.directEncountersTransfer" | transloco }}
+                </div>
                 <div>
                   <select
                     class="w-full"
                     name="league_id_direct_encounters"
                     [(ngModel)]="league.league_id_direct_encounters"
                   >
-                    <option [ngValue]="null">— keine —</option>
+                    <option [ngValue]="null">
+                      {{ "leagueAdmin.edit.none" | transloco }}
+                    </option>
                     @for (l of allLeagues; track l) {
                       <option [ngValue]="l.id" [disabled]="l.id === league.id">
                         {{ l.name }}
@@ -353,8 +475,7 @@
                     }
                   </select>
                   <p class="text-xs text-gray-500 mt-1">
-                    Liga, aus der Ergebnisse direkter Begegnungen in diese
-                    Tabelle übernommen werden.
+                    {{ "leagueAdmin.edit.directEncountersHint" | transloco }}
                   </p>
                 </div>
               </div>
@@ -363,13 +484,17 @@
             @if (editMode) {
               <div class="bg-white my-[5px] py-[15px] px-[30px]">
                 <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                  Qualifikationsregeln
+                  {{ "leagueAdmin.edit.qualificationRules" | transloco }}
                 </div>
                 <div class="flex flex-col gap-3">
                   @for (qual of league.qualifications; track qual) {
                     <div class="flex items-center gap-3 text-sm">
                       <span class="font-medium min-w-[120px]">
-                        Platz {{ qual.rank_from }}–{{ qual.rank_to }}
+                        {{
+                          "leagueAdmin.edit.rank"
+                            | transloco
+                              : { from: qual.rank_from, to: qual.rank_to }
+                        }}
                       </span>
                       <span
                         class="inline-block px-2 py-0.5 rounded text-xs font-semibold text-white"
@@ -394,25 +519,29 @@
                         (click)="deleteQualification(league, qual)"
                         class="ml-auto text-red-400 hover:text-red-600 text-xs px-2 py-1 border border-red-300 rounded"
                       >
-                        Entfernen
+                        {{ "leagueAdmin.edit.remove" | transloco }}
                       </button>
                     </div>
                   }
                   @if (!league.qualifications?.length) {
                     <p class="text-xs text-gray-400">
-                      Keine Qualifikationsregeln hinterlegt.
+                      {{ "leagueAdmin.edit.noQualificationRules" | transloco }}
                     </p>
                   }
                   <div class="grid grid-cols-2 gap-3 mt-2 border-t pt-3">
-                    <div class="font-bold text-sm">Neue Regel</div>
+                    <div class="font-bold text-sm">
+                      {{ "leagueAdmin.edit.newRule" | transloco }}
+                    </div>
                     <div></div>
-                    <div class="font-bold text-sm">Platzbereich</div>
+                    <div class="font-bold text-sm">
+                      {{ "leagueAdmin.edit.rankRange" | transloco }}
+                    </div>
                     <div class="flex gap-2 items-center">
                       <input
                         type="number"
                         [(ngModel)]="newQual.rank_from"
                         min="1"
-                        placeholder="Von"
+                        [placeholder]="'leagueAdmin.edit.rankFrom' | transloco"
                         class="w-20 border border-fb-gray-600 rounded-[5px] px-2 py-1.5 text-sm"
                       />
                       <span class="text-gray-500">–</span>
@@ -420,48 +549,68 @@
                         type="number"
                         [(ngModel)]="newQual.rank_to"
                         min="1"
-                        placeholder="Bis"
+                        [placeholder]="'leagueAdmin.edit.rankTo' | transloco"
                         class="w-20 border border-fb-gray-600 rounded-[5px] px-2 py-1.5 text-sm"
                       />
                     </div>
-                    <div class="font-bold text-sm">Typ</div>
+                    <div class="font-bold text-sm">
+                      {{ "leagueAdmin.edit.type" | transloco }}
+                    </div>
                     <div>
                       <select
                         class="w-full"
                         [(ngModel)]="newQual.qualification_type"
                       >
-                        <option value="promotion">Aufstieg</option>
-                        <option value="playoff">Playoffs</option>
-                        <option value="playdown">Playdowns</option>
-                        <option value="relegation">Abstieg</option>
-                        <option value="championship">
-                          Deutsche Meisterschaft
+                        <option value="promotion">
+                          {{ "leagueAdmin.edit.typePromotion" | transloco }}
                         </option>
-                        <option value="cup">Pokal</option>
+                        <option value="playoff">
+                          {{ "leagueAdmin.edit.typePlayoff" | transloco }}
+                        </option>
+                        <option value="playdown">
+                          {{ "leagueAdmin.edit.typePlaydown" | transloco }}
+                        </option>
+                        <option value="relegation">
+                          {{ "leagueAdmin.edit.typeRelegation" | transloco }}
+                        </option>
+                        <option value="championship">
+                          {{ "leagueAdmin.edit.typeChampionship" | transloco }}
+                        </option>
+                        <option value="cup">
+                          {{ "leagueAdmin.edit.typeCup" | transloco }}
+                        </option>
                       </select>
                     </div>
                     <div class="font-bold text-sm">
-                      Bezeichnung
-                      <span class="font-normal text-gray-400">(optional)</span>
+                      {{ "leagueAdmin.edit.label" | transloco }}
+                      <span class="font-normal text-gray-400">{{
+                        "leagueAdmin.edit.optional" | transloco
+                      }}</span>
                     </div>
                     <div>
                       <input
                         type="text"
                         [(ngModel)]="newQual.label"
-                        placeholder="z.B. DM-Qualifikation"
+                        [placeholder]="
+                          'leagueAdmin.edit.labelPlaceholder' | transloco
+                        "
                         class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-1.5 text-sm"
                       />
                     </div>
                     <div class="font-bold text-sm">
-                      Ziel-Liga
-                      <span class="font-normal text-gray-400">(optional)</span>
+                      {{ "leagueAdmin.edit.targetLeague" | transloco }}
+                      <span class="font-normal text-gray-400">{{
+                        "leagueAdmin.edit.optional" | transloco
+                      }}</span>
                     </div>
                     <div>
                       <select
                         class="w-full"
                         [(ngModel)]="newQual.target_league_id"
                       >
-                        <option [ngValue]="null">— keine —</option>
+                        <option [ngValue]="null">
+                          {{ "leagueAdmin.edit.none" | transloco }}
+                        </option>
                         @for (l of allLeagues; track l) {
                           <option
                             [ngValue]="l.id"
@@ -480,7 +629,7 @@
                         [disabled]="!newQual.rank_from || !newQual.rank_to"
                         class="font-bold text-black text-sm px-4 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] disabled:opacity-40"
                       >
-                        Hinzufügen
+                        {{ "leagueAdmin.edit.add" | transloco }}
                       </button>
                     </div>
                   </div>
@@ -490,7 +639,7 @@
             <!-- Dokumente für Lizenzantrag -->
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Dokumente für Lizenzantrag
+                {{ "leagueAdmin.edit.licenseDocuments" | transloco }}
               </div>
               <div class="flex flex-col gap-3">
                 @for (
@@ -507,20 +656,22 @@
                       (click)="removeRequiredDocument(league, i)"
                       class="text-red-400 hover:text-red-600 text-xs px-2 py-1 border border-red-300 rounded"
                     >
-                      Entfernen
+                      {{ "leagueAdmin.edit.remove" | transloco }}
                     </button>
                   </div>
                 }
                 @if (!league.required_documents?.length) {
                   <p class="text-xs text-gray-400">
-                    Keine Pflichtdokumente hinterlegt.
+                    {{ "leagueAdmin.edit.noRequiredDocuments" | transloco }}
                   </p>
                 }
                 <div class="flex gap-2 mt-1">
                   <input
                     type="text"
                     [(ngModel)]="newDocumentName"
-                    placeholder="Dokumenttyp (z.B. id_copy)"
+                    [placeholder]="
+                      'leagueAdmin.edit.documentTypePlaceholder' | transloco
+                    "
                     class="border border-fb-gray-600 rounded-[5px] px-3 py-1.5 text-sm flex-1"
                   />
                   <button
@@ -528,7 +679,7 @@
                     (click)="addRequiredDocument(league)"
                     class="font-bold text-black text-sm px-4 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
                   >
-                    Hinzufügen
+                    {{ "leagueAdmin.edit.add" | transloco }}
                   </button>
                   <button
                     type="button"
@@ -540,7 +691,7 @@
                     "
                     class="font-bold text-black text-sm px-4 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] disabled:opacity-40"
                   >
-                    + Ausweiskopie
+                    {{ "leagueAdmin.edit.addIdCopy" | transloco }}
                   </button>
                 </div>
               </div>
@@ -549,26 +700,30 @@
             @if (editMode && league.id) {
               <div class="bg-white my-[5px] py-[15px] px-[30px]">
                 <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-                  Werbebanner
+                  {{ "leagueAdmin.edit.banner" | transloco }}
                 </div>
                 <div class="grid grid-cols-2 gap-4 items-center">
-                  <div class="font-bold text-sm">Aktueller Banner</div>
+                  <div class="font-bold text-sm">
+                    {{ "leagueAdmin.edit.currentBanner" | transloco }}
+                  </div>
                   <div>
                     @if (league.banner_url) {
                       <img
                         [src]="league.banner_url"
-                        alt="Werbebanner"
+                        [alt]="'leagueAdmin.edit.bannerAlt' | transloco"
                         class="w-full max-w-xs object-contain"
                         style="aspect-ratio: 6/1"
                       />
                     }
                     @if (!league.banner_url) {
-                      <span class="text-sm text-fb-gray-400"
-                        >kein Banner hinterlegt</span
-                      >
+                      <span class="text-sm text-fb-gray-400">{{
+                        "leagueAdmin.edit.noBanner" | transloco
+                      }}</span>
                     }
                   </div>
-                  <div class="font-bold text-sm">Banner hochladen</div>
+                  <div class="font-bold text-sm">
+                    {{ "leagueAdmin.edit.uploadBanner" | transloco }}
+                  </div>
                   <div>
                     <input
                       type="file"
@@ -576,12 +731,13 @@
                       #bannerInput
                       (change)="onBannerSelected(league, bannerInput)"
                     />
-                    <small class="block text-fb-gray-400 mt-1"
-                      >WebP · max. 500 KB · empfohlenes Format 1200 × 200 px
-                      (6:1)</small
-                    >
+                    <small class="block text-fb-gray-400 mt-1">{{
+                      "leagueAdmin.edit.bannerUploadHint" | transloco
+                    }}</small>
                   </div>
-                  <div class="font-bold text-sm">Link-URL</div>
+                  <div class="font-bold text-sm">
+                    {{ "leagueAdmin.edit.linkUrl" | transloco }}
+                  </div>
                   <div>
                     <input
                       type="url"
@@ -589,10 +745,9 @@
                       placeholder="https://..."
                       class="border border-fb-gray-300 rounded px-3 py-1.5 text-sm w-full"
                     />
-                    <small class="block text-fb-gray-400 mt-1"
-                      >Optional – Banner wird dann klickbar · wird erst beim
-                      Speichern der Liga übernommen</small
-                    >
+                    <small class="block text-fb-gray-400 mt-1">{{
+                      "leagueAdmin.edit.linkUrlHint" | transloco
+                    }}</small>
                   </div>
                   <div></div>
                   <div>
@@ -604,7 +759,10 @@
                         class="text-sm text-red-500 underline disabled:opacity-50"
                       >
                         {{
-                          deletingBanner ? "Wird entfernt…" : "Banner entfernen"
+                          (deletingBanner
+                            ? "leagueAdmin.edit.removingBanner"
+                            : "leagueAdmin.edit.removeBanner"
+                          ) | transloco
                         }}
                       </button>
                     }
@@ -617,7 +775,7 @@
                 @if (error(league)) {
                   <div class="mb-4">
                     <h3 class="text-lg leading-6 font-medium text-red-600">
-                      Speichern nicht möglich
+                      {{ "leagueAdmin.edit.saveNotPossible" | transloco }}
                     </h3>
                     @for (msg of errorMsg(league); track msg) {
                       <p>{{ msg }}</p>
@@ -630,14 +788,14 @@
                       class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       (click)="submit(league)"
                     >
-                      Änderungen speichern
+                      {{ "leagueAdmin.edit.saveChanges" | transloco }}
                     </a>
                     <a
                       class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       deactivated="true"
                       [routerLink]="['/', 'verwaltung', 'ligen']"
                     >
-                      Abbrechen
+                      {{ "leagueAdmin.edit.cancel" | transloco }}
                     </a>
                   </div>
                 }
@@ -662,7 +820,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "leagueAdmin.loading" | transloco }}
             </div>
           </div>
         }

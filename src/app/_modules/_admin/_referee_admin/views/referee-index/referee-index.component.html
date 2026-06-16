@@ -1,13 +1,15 @@
 <div class="p-4 lg:p-8">
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold">Schiedsrichterverwaltung</h1>
+    <h1 class="text-2xl font-bold">
+      {{ "refereeAdmin.index.title" | transloco }}
+    </h1>
     <div class="flex gap-2">
       @if (!isRestricted) {
         <a
           [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'lizenzstufen']"
           class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
         >
-          Lizenzstufen
+          {{ "refereeAdmin.index.licenseLevels" | transloco }}
         </a>
       }
       @if (!isRestricted) {
@@ -20,7 +22,7 @@
           ]"
           class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
         >
-          Zusatzqualifikationen
+          {{ "refereeAdmin.index.qualifications" | transloco }}
         </a>
       }
       @if (canCreate) {
@@ -28,7 +30,7 @@
           [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'neu']"
           class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
         >
-          + Neu anlegen
+          {{ "refereeAdmin.index.createNew" | transloco }}
         </a>
       }
     </div>
@@ -40,7 +42,7 @@
       type="text"
       [(ngModel)]="searchQuery"
       (keyup.enter)="onSearch()"
-      placeholder="Name oder Lizenznummer"
+      [attr.placeholder]="'refereeAdmin.index.searchPlaceholder' | transloco"
       class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-64"
     />
     @if (!isRestricted) {
@@ -49,7 +51,9 @@
         (change)="onSearch()"
         class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black bg-white"
       >
-        <option value="">Alle Landesverbände</option>
+        <option value="">
+          {{ "refereeAdmin.index.allAssociations" | transloco }}
+        </option>
         @for (sa of stateAssociations; track sa) {
           <option [value]="sa.name">
             {{ sa.name }}
@@ -61,31 +65,33 @@
       type="text"
       [(ngModel)]="filterLizenzstufe"
       (keyup.enter)="onSearch()"
-      placeholder="Lizenzstufe (z.B. A, B, N1)"
+      [attr.placeholder]="
+        'refereeAdmin.index.licenseLevelPlaceholder' | transloco
+      "
       class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-48"
     />
     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
       <input type="checkbox" [(ngModel)]="filterActive" (change)="onSearch()" />
-      Nur aktive Lizenzen
+      {{ "refereeAdmin.index.onlyActive" | transloco }}
     </label>
     <button
       (click)="onSearch()"
       class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
     >
-      Suchen
+      {{ "refereeAdmin.index.search" | transloco }}
     </button>
     <button
       (click)="clearFilters()"
       class="px-4 py-2 text-sm text-fb-gray-500 hover:text-black"
     >
-      Filter zurücksetzen
+      {{ "refereeAdmin.index.resetFilters" | transloco }}
     </button>
   </div>
 
   <!-- Loading -->
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-8 text-center">
-      Lade Schiedsrichter…
+      {{ "refereeAdmin.index.loading" | transloco }}
     </div>
   }
 
@@ -93,7 +99,7 @@
   @if (!loading) {
     <div class="overflow-x-auto">
       <p class="text-sm text-fb-gray-500 mb-3">
-        {{ referees.length }} Einträge
+        {{ "refereeAdmin.index.count" | transloco: { count: referees.length } }}
       </p>
       <table class="w-full text-sm">
         <thead>
@@ -103,7 +109,7 @@
                 (click)="toggleSort('lizenznummer')"
                 class="flex items-center gap-1 hover:text-fb-gray-400"
               >
-                Lizenznummer
+                {{ "refereeAdmin.index.colLicenseNumber" | transloco }}
                 <span class="text-xs">
                   @if (sortBy === "lizenznummer") {
                     {{ sortDir === "asc" ? "↑" : "↓" }}
@@ -119,7 +125,7 @@
                 (click)="toggleSort('name')"
                 class="flex items-center gap-1 hover:text-fb-gray-400"
               >
-                Name
+                {{ "refereeAdmin.index.colName" | transloco }}
                 <span class="text-xs">
                   @if (sortBy === "name") {
                     {{ sortDir === "asc" ? "↑" : "↓" }}
@@ -130,10 +136,18 @@
                 </span>
               </button>
             </th>
-            <th class="py-2 pr-4 font-bold">Stufe</th>
-            <th class="py-2 pr-4 font-bold">Region / LV</th>
-            <th class="py-2 pr-4 font-bold">Gültigkeit</th>
-            <th class="py-2 pr-4 font-bold">Verein</th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "refereeAdmin.index.colLevel" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "refereeAdmin.index.colRegion" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "refereeAdmin.index.colValidity" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "refereeAdmin.index.colClub" | transloco }}
+            </th>
             <th class="py-2"></th>
           </tr>
         </thead>
@@ -144,14 +158,14 @@
                 {{ r.lizenznummer_display || r.lizenznummer }}
                 @if (r.guest) {
                   <span
-                    title="Gastschiedsrichter"
+                    [attr.title]="'refereeAdmin.index.guestTitle' | transloco"
                     class="ml-1 inline-block bg-fb-gray-700 text-fb-gray-500 text-[10px] font-bold px-1 rounded"
                     >G</span
                   >
                 }
                 @if (r.wallet_pass_issued_at) {
                   <span
-                    title="Wallet-Ausweis ausgestellt"
+                    [attr.title]="'refereeAdmin.index.walletTitle' | transloco"
                     class="ml-1 inline-block bg-black text-white text-[10px] font-bold px-1 rounded"
                     >W</span
                   >
@@ -200,7 +214,7 @@
                   ]"
                   class="text-sm text-fb-gray-500 hover:text-black"
                 >
-                  Bearbeiten
+                  {{ "refereeAdmin.index.edit" | transloco }}
                 </a>
               </td>
             </tr>
@@ -208,7 +222,7 @@
           @if (referees.length === 0) {
             <tr>
               <td colspan="7" class="py-8 text-center text-fb-gray-500">
-                Keine Einträge gefunden.
+                {{ "refereeAdmin.index.empty" | transloco }}
               </td>
             </tr>
           }

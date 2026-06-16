@@ -1,0 +1,33 @@
+{
+  "title": "Spielerdaten-Korrekturanträge",
+  "loading": "Lade Anträge…",
+  "empty": "Keine Anträge vorhanden.",
+  "colPlayer": "Spieler",
+  "colClub": "Verein",
+  "colCorrection": "Korrektur",
+  "colNewValue": "Neuer Wert",
+  "colStatus": "Status",
+  "colDate": "Datum",
+  "colAction": "Aktion",
+  "statusPending": "Ausstehend",
+  "statusApproved": "Genehmigt",
+  "statusRejected": "Abgelehnt",
+  "approve": "Annehmen",
+  "reject": "Ablehnen",
+  "rejectReasonPlaceholder": "Begründung",
+  "confirm": "Bestätigen",
+  "cancel": "Abbrechen",
+  "correctionTypes": {
+    "birthdate": "Geburtsdatum",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "namesSwapped": "Vor-/Nachname vertauscht",
+    "nationality": "Nationalität"
+  },
+  "notifications": {
+    "approved": "Korrektur übernommen",
+    "approveError": "Genehmigung fehlgeschlagen.",
+    "rejected": "Antrag abgelehnt",
+    "rejectError": "Ablehnung fehlgeschlagen."
+  }
+}

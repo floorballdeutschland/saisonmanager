@@ -1,0 +1,87 @@
+<div class="p-4 lg:p-8 max-w-2xl">
+  <h1 class="text-2xl font-bold mb-6">{{ "account.title" | transloco }}</h1>
+
+  <!-- Sprache -->
+  <section class="flex flex-col gap-2 mb-10">
+    <h2 class="text-sm font-bold uppercase text-fb-gray-500">
+      {{ "account.languageSection" | transloco }}
+    </h2>
+    <p class="text-xs text-fb-gray-500">
+      {{ "account.languageHint" | transloco }}
+    </p>
+    <div class="flex gap-3 mt-2">
+      @for (lang of availableLangs; track lang) {
+        <button
+          type="button"
+          (click)="switchLanguage(lang)"
+          class="px-4 py-2 text-sm font-bold rounded-[5px] border"
+          [class.bg-black]="(activeLang$ | async) === lang"
+          [class.text-white]="(activeLang$ | async) === lang"
+          [class.border-black]="(activeLang$ | async) === lang"
+          [class.border-fb-gray-600]="(activeLang$ | async) !== lang"
+          [class.text-fb-gray-500]="(activeLang$ | async) !== lang"
+          [class.hover:border-black]="(activeLang$ | async) !== lang"
+        >
+          {{ "language." + lang | transloco }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Passwort ändern -->
+  <section class="flex flex-col gap-2">
+    <h2 class="text-sm font-bold uppercase text-fb-gray-500">
+      {{ "account.passwordSection" | transloco }}
+    </h2>
+    <form (ngSubmit)="submitPassword()" class="flex flex-col gap-4 mt-2">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">
+          {{ "account.currentPassword" | transloco }}
+        </label>
+        <input
+          type="password"
+          [(ngModel)]="currentPassword"
+          name="currentPassword"
+          autocomplete="current-password"
+          required
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">
+          {{ "account.newPassword" | transloco }}
+        </label>
+        <input
+          type="password"
+          [(ngModel)]="newPassword"
+          name="newPassword"
+          autocomplete="new-password"
+          required
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">
+          {{ "account.newPasswordConfirmation" | transloco }}
+        </label>
+        <input
+          type="password"
+          [(ngModel)]="newPasswordConfirmation"
+          name="newPasswordConfirmation"
+          autocomplete="new-password"
+          required
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
+        />
+      </div>
+      <div class="flex items-center gap-3 mt-2">
+        <button
+          type="submit"
+          [disabled]="savingPassword"
+          class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+        >
+          {{ "account.changePassword" | transloco }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

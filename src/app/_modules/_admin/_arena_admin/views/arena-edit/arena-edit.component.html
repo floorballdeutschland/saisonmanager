@@ -4,17 +4,17 @@
       [routerLink]="['/', 'verwaltung', 'spielorte']"
       class="text-fb-gray-500 hover:text-black text-sm"
     >
-      ← Spielorte
+      {{ "arena.edit.back" | transloco }}
     </a>
     <h1 class="text-2xl font-bold">
-      {{ isNew ? "Neuen Spielort anlegen" : "Spielort bearbeiten" }}
+      {{ (isNew ? "arena.edit.titleNew" : "arena.edit.titleEdit") | transloco }}
     </h1>
   </div>
 
   <form (ngSubmit)="submit()" #arenaForm="ngForm">
     <div class="mb-4">
       <label class="block text-sm font-medium mb-1">
-        Name <span class="text-red-500">*</span>
+        {{ "arena.edit.name" | transloco }} <span class="text-red-500">*</span>
       </label>
       <input
         type="text"
@@ -22,13 +22,13 @@
         [(ngModel)]="name"
         name="name"
         required
-        placeholder="z.B. Sporthalle Musterstadt"
+        [placeholder]="'arena.edit.namePlaceholder' | transloco"
       />
     </div>
 
     <div class="mb-4">
       <label class="block text-sm font-medium mb-1">
-        Stadt <span class="text-red-500">*</span>
+        {{ "arena.edit.city" | transloco }} <span class="text-red-500">*</span>
       </label>
       <input
         type="text"
@@ -36,48 +36,54 @@
         [(ngModel)]="city"
         name="city"
         required
-        placeholder="z.B. Berlin"
+        [placeholder]="'arena.edit.cityPlaceholder' | transloco"
       />
     </div>
 
     <div class="grid grid-cols-3 gap-3 mb-4">
       <div class="col-span-2">
-        <label class="block text-sm font-medium mb-1">Straße</label>
+        <label class="block text-sm font-medium mb-1">
+          {{ "arena.edit.street" | transloco }}
+        </label>
         <input
           type="text"
           class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-white"
           [(ngModel)]="street"
           name="street"
-          placeholder="Musterstraße"
+          [placeholder]="'arena.edit.streetPlaceholder' | transloco"
         />
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Hausnummer</label>
+        <label class="block text-sm font-medium mb-1">
+          {{ "arena.edit.housenumber" | transloco }}
+        </label>
         <input
           type="text"
           class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-white"
           [(ngModel)]="housenumber"
           name="housenumber"
-          placeholder="12a"
+          [placeholder]="'arena.edit.housenumberPlaceholder' | transloco"
         />
       </div>
     </div>
 
     <div class="mb-6">
-      <label class="block text-sm font-medium mb-1">PLZ</label>
+      <label class="block text-sm font-medium mb-1">
+        {{ "arena.edit.postcode" | transloco }}
+      </label>
       <input
         type="text"
         class="w-full p-2 border border-fb-gray-600 rounded-[5px] bg-white"
         [(ngModel)]="postcode"
         name="postcode"
-        placeholder="10115"
+        [placeholder]="'arena.edit.postcodePlaceholder' | transloco"
       />
     </div>
 
     @if (duplicateWarning) {
       <div class="bg-white border border-yellow-700 rounded p-4 mb-4">
         <p class="text-sm font-medium mb-2">
-          Möglicherweise existiert bereits ein Spielort an dieser Adresse:
+          {{ "arena.edit.duplicateHeading" | transloco }}
         </p>
         <ul class="text-xs text-fb-gray-400 mb-3 space-y-1">
           @for (d of duplicates; track d) {
@@ -96,14 +102,14 @@
             (click)="submit(true)"
             class="text-sm bg-yellow-700 hover:bg-yellow-600 text-white px-3 py-1.5 rounded"
           >
-            Trotzdem anlegen
+            {{ "arena.edit.createAnyway" | transloco }}
           </button>
           <button
             type="button"
             (click)="duplicateWarning = false"
             class="text-sm border border-fb-gray-600 hover:border-fb-gray-400 px-3 py-1.5 rounded"
           >
-            Abbrechen
+            {{ "arena.edit.cancel" | transloco }}
           </button>
         </div>
       </div>
@@ -116,13 +122,13 @@
           [disabled]="saving || arenaForm.invalid"
           class="text-sm bg-fb-gray-800 hover:bg-fb-gray-700 disabled:opacity-50 px-4 py-2 rounded"
         >
-          {{ saving ? "Wird gespeichert…" : "Speichern" }}
+          {{ (saving ? "arena.edit.saving" : "arena.edit.save") | transloco }}
         </button>
         <a
           [routerLink]="['/', 'verwaltung', 'spielorte']"
           class="text-sm border border-fb-gray-600 hover:border-fb-gray-400 px-4 py-2 rounded"
         >
-          Abbrechen
+          {{ "arena.edit.cancel" | transloco }}
         </a>
       </div>
     }

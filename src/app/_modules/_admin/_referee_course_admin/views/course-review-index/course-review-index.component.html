@@ -1,22 +1,20 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
   <h1 class="text-3xl font-bold mb-2">
-    Schiedsrichter-Kursergebnisse: Freigabe
+    {{ "refereeCourseAdmin.review.title" | transloco }}
   </h1>
   <p class="text-fb-gray-600 mb-6">
-    Datensätze mit korrigierten oder neu angelegten Stammdaten, die der
-    Kontrollprozess deines Landesverbands zur Freigabe vorgelegt hat. Du kannst
-    die Stammdaten direkt anpassen — die Korrektur wird mit „Freigeben" in den
-    Schiedsrichter-Datensatz übernommen. Lizenzstufe und Gültigkeit sind
-    festgelegt und werden bereits sofort gesetzt.
+    {{ "refereeCourseAdmin.review.intro" | transloco }}
   </p>
 
   @if (loading) {
-    <div class="text-fb-gray-500">Lade...</div>
+    <div class="text-fb-gray-500">
+      {{ "refereeCourseAdmin.review.loading" | transloco }}
+    </div>
   }
 
   @if (!loading && !results.length) {
     <div class="text-fb-gray-500 py-12 text-center">
-      Aktuell keine offenen Vorgänge.
+      {{ "refereeCourseAdmin.review.empty" | transloco }}
     </div>
   }
 
@@ -26,8 +24,17 @@
         <div>
           <strong>{{ r.master.vorname }} {{ r.master.nachname }}</strong>
           <span class="ml-2 text-fb-gray-600 text-sm">
-            Lizenz-Nr.: {{ r.master.lizenznummer ?? "—" }} • Lizenzstufe:
-            {{ r.lizenzstufe }} • gültig bis {{ r.gueltigkeit }}
+            {{
+              "refereeCourseAdmin.review.summary"
+                | transloco
+                  : {
+                      licenseNumber:
+                        r.master.lizenznummer ??
+                        ("refereeCourseAdmin.detail.dash" | transloco),
+                      level: r.lizenzstufe,
+                      validUntil: r.gueltigkeit,
+                    }
+            }}
           </span>
         </div>
         @if (r.state_association) {
@@ -38,27 +45,49 @@
       </div>
       @if (r.new_referee_created) {
         <div class="text-xs text-blue-700 mb-2">
-          Neu angelegter Schiedsrichter.
+          {{ "refereeCourseAdmin.review.newRefereeCreated" | transloco }}
         </div>
       }
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-fb-gray-600 border-b border-fb-gray-100">
-            <th class="py-1">Feld</th>
-            <th class="py-1">In Datenbank</th>
-            <th class="py-1">Aus CSV / vom Importeur</th>
-            <th class="py-1">Final (editierbar)</th>
+            <th class="py-1">
+              {{ "refereeCourseAdmin.review.colField" | transloco }}
+            </th>
+            <th class="py-1">
+              {{ "refereeCourseAdmin.review.colDatabase" | transloco }}
+            </th>
+            <th class="py-1">
+              {{ "refereeCourseAdmin.review.colCsv" | transloco }}
+            </th>
+            <th class="py-1">
+              {{ "refereeCourseAdmin.review.colFinal" | transloco }}
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr class="border-b border-fb-gray-50">
-            <td class="py-1">Lizenz-Nr.</td>
-            <td>{{ r.referee_snapshot?.lizenznummer ?? "—" }}</td>
-            <td>{{ r.csv.lizenznummer ?? "—" }}</td>
+            <td class="py-1">
+              {{ "refereeCourseAdmin.review.fieldLicenseNumber" | transloco }}
+            </td>
+            <td>
+              {{
+                r.referee_snapshot?.lizenznummer ??
+                  ("refereeCourseAdmin.detail.dash" | transloco)
+              }}
+            </td>
+            <td>
+              {{
+                r.csv.lizenznummer ??
+                  ("refereeCourseAdmin.detail.dash" | transloco)
+              }}
+            </td>
             <td>
               <input
                 type="number"
-                aria-label="Lizenznummer (final)"
+                [attr.aria-label]="
+                  'refereeCourseAdmin.review.ariaLicenseNumber' | transloco
+                "
                 class="border rounded px-2 py-1 w-32"
                 [value]="r.master.lizenznummer ?? ''"
                 (input)="
@@ -72,13 +101,26 @@
             </td>
           </tr>
           <tr class="border-b border-fb-gray-50">
-            <td class="py-1">Vorname</td>
-            <td>{{ r.referee_snapshot?.vorname ?? "—" }}</td>
-            <td>{{ r.csv.vorname ?? "—" }}</td>
+            <td class="py-1">
+              {{ "refereeCourseAdmin.review.fieldFirstName" | transloco }}
+            </td>
+            <td>
+              {{
+                r.referee_snapshot?.vorname ??
+                  ("refereeCourseAdmin.detail.dash" | transloco)
+              }}
+            </td>
+            <td>
+              {{
+                r.csv.vorname ?? ("refereeCourseAdmin.detail.dash" | transloco)
+              }}
+            </td>
             <td>
               <input
                 type="text"
-                aria-label="Vorname (final)"
+                [attr.aria-label]="
+                  'refereeCourseAdmin.review.ariaFirstName' | transloco
+                "
                 class="border rounded px-2 py-1 w-full"
                 [value]="r.master.vorname ?? ''"
                 (input)="setField(r, 'vorname', $any($event.target).value)"
@@ -86,13 +128,26 @@
             </td>
           </tr>
           <tr class="border-b border-fb-gray-50">
-            <td class="py-1">Nachname</td>
-            <td>{{ r.referee_snapshot?.nachname ?? "—" }}</td>
-            <td>{{ r.csv.nachname ?? "—" }}</td>
+            <td class="py-1">
+              {{ "refereeCourseAdmin.review.fieldLastName" | transloco }}
+            </td>
+            <td>
+              {{
+                r.referee_snapshot?.nachname ??
+                  ("refereeCourseAdmin.detail.dash" | transloco)
+              }}
+            </td>
+            <td>
+              {{
+                r.csv.nachname ?? ("refereeCourseAdmin.detail.dash" | transloco)
+              }}
+            </td>
             <td>
               <input
                 type="text"
-                aria-label="Nachname (final)"
+                [attr.aria-label]="
+                  'refereeCourseAdmin.review.ariaLastName' | transloco
+                "
                 class="border rounded px-2 py-1 w-full"
                 [value]="r.master.nachname ?? ''"
                 (input)="setField(r, 'nachname', $any($event.target).value)"
@@ -100,13 +155,27 @@
             </td>
           </tr>
           <tr class="border-b border-fb-gray-50">
-            <td class="py-1">Geburtsdatum</td>
-            <td>{{ r.referee_snapshot?.geburtsdatum ?? "—" }}</td>
-            <td>{{ r.csv.geburtsdatum ?? "—" }}</td>
+            <td class="py-1">
+              {{ "refereeCourseAdmin.review.fieldBirthDate" | transloco }}
+            </td>
+            <td>
+              {{
+                r.referee_snapshot?.geburtsdatum ??
+                  ("refereeCourseAdmin.detail.dash" | transloco)
+              }}
+            </td>
+            <td>
+              {{
+                r.csv.geburtsdatum ??
+                  ("refereeCourseAdmin.detail.dash" | transloco)
+              }}
+            </td>
             <td>
               <input
                 type="date"
-                aria-label="Geburtsdatum (final)"
+                [attr.aria-label]="
+                  'refereeCourseAdmin.review.ariaBirthDate' | transloco
+                "
                 class="border rounded px-2 py-1"
                 [value]="r.master.geburtsdatum ?? ''"
                 (input)="
@@ -116,13 +185,26 @@
             </td>
           </tr>
           <tr class="border-b border-fb-gray-50">
-            <td class="py-1">E-Mail</td>
-            <td>{{ r.referee_snapshot?.email ?? "—" }}</td>
-            <td>{{ r.csv.email ?? "—" }}</td>
+            <td class="py-1">
+              {{ "refereeCourseAdmin.review.fieldEmail" | transloco }}
+            </td>
+            <td>
+              {{
+                r.referee_snapshot?.email ??
+                  ("refereeCourseAdmin.detail.dash" | transloco)
+              }}
+            </td>
+            <td>
+              {{
+                r.csv.email ?? ("refereeCourseAdmin.detail.dash" | transloco)
+              }}
+            </td>
             <td>
               <input
                 type="email"
-                aria-label="E-Mail (final)"
+                [attr.aria-label]="
+                  'refereeCourseAdmin.review.ariaEmail' | transloco
+                "
                 class="border rounded px-2 py-1 w-full"
                 [value]="r.master.email ?? ''"
                 (input)="
@@ -140,7 +222,12 @@
           [disabled]="approving.has(r.id)"
           (click)="approve(r)"
         >
-          {{ approving.has(r.id) ? "Speichere..." : "Freigeben" }}
+          {{
+            (approving.has(r.id)
+              ? "refereeCourseAdmin.review.saving"
+              : "refereeCourseAdmin.review.approve"
+            ) | transloco
+          }}
         </button>
       </div>
     </div>

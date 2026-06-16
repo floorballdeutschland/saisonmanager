@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   UserManagementService,
   NotificationService,
@@ -27,12 +28,15 @@ export class UserIndexComponent implements OnInit, OnDestroy {
   selectedRole: number | null = null;
 
   readonly roleOptions = [
-    { label: 'Admin', value: 1 },
-    { label: 'SBK', value: 2 },
-    { label: 'RSK', value: 3 },
-    { label: 'VM', value: 4 },
-    { label: 'TM', value: 5 },
-    { label: 'Schiedsrichter', value: 6 },
+    { label: this._transloco.translate('userAdmin.index.roleAdmin'), value: 1 },
+    { label: this._transloco.translate('userAdmin.index.roleSbk'), value: 2 },
+    { label: this._transloco.translate('userAdmin.index.roleRsk'), value: 3 },
+    { label: this._transloco.translate('userAdmin.index.roleVm'), value: 4 },
+    { label: this._transloco.translate('userAdmin.index.roleTm'), value: 5 },
+    {
+      label: this._transloco.translate('userAdmin.index.roleReferee'),
+      value: 6,
+    },
   ];
 
   private _destroy$ = new Subject<void>();
@@ -41,6 +45,7 @@ export class UserIndexComponent implements OnInit, OnDestroy {
     private _userService: UserManagementService,
     private _notificationService: NotificationService,
     private _sessionService: SessionService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 

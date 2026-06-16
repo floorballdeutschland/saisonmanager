@@ -2,7 +2,7 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Teamverwaltung
+    {{ "teamAdmin.index.title" | transloco }}
   </h1>
 </div>
 
@@ -27,14 +27,17 @@
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Teams
+                {{ "teamAdmin.index.teams" | transloco }}
               </div>
               @for (team of league.teams; track team) {
                 <div class="flex flex-col gap-2">
                   <a
                     class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
                   >
-                    {{ team.name }} ({{ team.id }})
+                    {{
+                      "teamAdmin.index.teamLabel"
+                        | transloco: { name: team.name, id: team.id }
+                    }}
                   </a>
                   <div class="flex items-center mb-4">
                     <a
@@ -47,7 +50,7 @@
                         'bearbeiten',
                       ]"
                     >
-                      Team bearbeiten
+                      {{ "teamAdmin.index.editTeam" | transloco }}
                     </a>
                   </div>
                 </div>
@@ -57,7 +60,7 @@
                   <p
                     class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
                   >
-                    noch keine Teams hinterlegt
+                    {{ "teamAdmin.index.noTeams" | transloco }}
                   </p>
                 </div>
               }
@@ -74,7 +77,7 @@
                   'neu',
                 ]"
               >
-                Neues Team anlegen
+                {{ "teamAdmin.index.newTeam" | transloco }}
               </a>
             </div>
             <!-- Teams importieren -->
@@ -83,37 +86,40 @@
                 class="uppercase font-bold text-gray-400 text-sm flex items-center gap-2"
                 (click)="showImport = !showImport"
               >
-                Teams importieren
+                {{ "teamAdmin.index.import" | transloco }}
                 <span>{{ showImport ? "▲" : "▼" }}</span>
               </button>
               @if (showImport) {
                 <div class="mt-4 flex flex-col gap-4">
                   <p class="text-sm text-gray-500">
-                    Importiert die Top-N-Teams aus einer anderen Liga in diese
-                    Liga. Teams deren Verein bereits eingetragen ist, werden
-                    übersprungen.
+                    {{ "teamAdmin.index.importHint" | transloco }}
                   </p>
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label class="block text-sm font-bold mb-1"
-                        >Quell-Liga</label
-                      >
+                      <label class="block text-sm font-bold mb-1">{{
+                        "teamAdmin.index.sourceLeague" | transloco
+                      }}</label>
                       <select
                         [(ngModel)]="importSourceLeagueId"
                         class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm"
                       >
-                        <option [ngValue]="null">Bitte auswählen…</option>
+                        <option [ngValue]="null">
+                          {{ "teamAdmin.index.selectPlaceholder" | transloco }}
+                        </option>
                         @for (l of allLeagues; track l) {
                           <option [ngValue]="l.id">
-                            [{{ l.goName }}] {{ l.name }}
+                            {{
+                              "teamAdmin.index.leagueOption"
+                                | transloco: { goName: l.goName, name: l.name }
+                            }}
                           </option>
                         }
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm font-bold mb-1"
-                        >Top-N-Teams</label
-                      >
+                      <label class="block text-sm font-bold mb-1">{{
+                        "teamAdmin.index.topN" | transloco
+                      }}</label>
                       <input
                         type="number"
                         [(ngModel)]="importTopN"
@@ -121,7 +127,9 @@
                         max="32"
                         class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm"
                       />
-                      <p class="text-xs text-gray-400 mt-1">0 = alle Teams</p>
+                      <p class="text-xs text-gray-400 mt-1">
+                        {{ "teamAdmin.index.topNHint" | transloco }}
+                      </p>
                     </div>
                   </div>
                   <div>
@@ -130,7 +138,12 @@
                       [disabled]="!importSourceLeagueId || importing"
                       (click)="importTeams()"
                     >
-                      {{ importing ? "Importiere…" : "Teams importieren" }}
+                      {{
+                        (importing
+                          ? "teamAdmin.index.importing"
+                          : "teamAdmin.index.import"
+                        ) | transloco
+                      }}
                     </button>
                   </div>
                   @if (importResult) {
@@ -142,11 +155,19 @@
                           : 'bg-gray-100 text-gray-600'
                       "
                     >
-                      {{ importResult.imported }} Team(s) importiert,
-                      {{ importResult.skipped }} übersprungen (bereits
-                      vorhanden)
+                      {{
+                        "teamAdmin.index.importResult"
+                          | transloco
+                            : {
+                                imported: importResult.imported,
+                                skipped: importResult.skipped,
+                              }
+                      }}
                       @if (importResult.failed > 0) {
-                        <span>, {{ importResult.failed }} fehlgeschlagen</span>
+                        <span>{{
+                          "teamAdmin.index.importFailed"
+                            | transloco: { failed: importResult.failed }
+                        }}</span>
                       }
                       .
                     </div>
@@ -173,7 +194,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "teamAdmin.index.loading" | transloco }}
             </div>
           </div>
         }

@@ -1,18 +1,22 @@
 <div class="p-4 lg:p-8">
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold">E-Mail-Log</h1>
+    <h1 class="text-2xl font-bold">{{ "emailLog.title" | transloco }}</h1>
   </div>
 
   <!-- Testmail -->
   <div class="mb-8 p-4 border border-fb-gray-700 rounded-[5px]">
-    <h2 class="text-base font-bold mb-3">Testmail versenden</h2>
+    <h2 class="text-base font-bold mb-3">
+      {{ "emailLog.testHeading" | transloco }}
+    </h2>
     <div class="flex gap-3 items-end">
       <div class="flex-1">
-        <label class="block text-sm font-bold mb-1">Empfänger</label>
+        <label class="block text-sm font-bold mb-1">{{
+          "emailLog.recipientLabel" | transloco
+        }}</label>
         <input
           type="email"
           [(ngModel)]="testRecipient"
-          placeholder="empfaenger@beispiel.de"
+          [placeholder]="'emailLog.recipientPlaceholder' | transloco"
           class="w-full border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
         />
       </div>
@@ -21,31 +25,45 @@
         [disabled]="!testRecipient.trim() || sendingTest"
         class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
       >
-        {{ sendingTest ? "Wird gesendet…" : "Senden" }}
+        {{ (sendingTest ? "emailLog.sending" : "emailLog.send") | transloco }}
       </button>
     </div>
   </div>
 
   <!-- Log -->
-  <h2 class="text-base font-bold mb-3">Versendete E-Mails (letzte 30 Tage)</h2>
+  <h2 class="text-base font-bold mb-3">
+    {{ "emailLog.logHeading" | transloco }}
+  </h2>
 
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-8 text-center">
-      Lade E-Mail-Log…
+      {{ "emailLog.loading" | transloco }}
     </div>
   }
 
   @if (!loading) {
     <div class="overflow-x-auto">
-      <p class="text-sm text-fb-gray-500 mb-3">{{ logs.length }} Einträge</p>
+      <p class="text-sm text-fb-gray-500 mb-3">
+        {{ "emailLog.count" | transloco: { count: logs.length } }}
+      </p>
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b border-fb-gray-700 text-left">
-            <th class="py-2 pr-4 font-bold whitespace-nowrap">Datum/Uhrzeit</th>
-            <th class="py-2 pr-4 font-bold">Empfänger</th>
-            <th class="py-2 pr-4 font-bold">CC</th>
-            <th class="py-2 pr-4 font-bold">Betreff</th>
-            <th class="py-2 font-bold">Typ</th>
+            <th class="py-2 pr-4 font-bold whitespace-nowrap">
+              {{ "emailLog.colDateTime" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "emailLog.colRecipient" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "emailLog.colCc" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "emailLog.colSubject" | transloco }}
+            </th>
+            <th class="py-2 font-bold">
+              {{ "emailLog.colType" | transloco }}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -65,7 +83,7 @@
           @if (logs.length === 0) {
             <tr>
               <td colspan="5" class="py-8 text-center text-fb-gray-500">
-                Keine E-Mails in den letzten 30 Tagen versendet.
+                {{ "emailLog.empty" | transloco }}
               </td>
             </tr>
           }

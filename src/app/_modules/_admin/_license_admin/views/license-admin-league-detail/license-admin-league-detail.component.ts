@@ -10,6 +10,7 @@ import { ClubService, LeagueService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'fb-license-admin-league-detail',
@@ -39,9 +40,12 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
     private _clubService: ClubService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
-    this._metaTitle.setTitle('Floorball Saisonmanager Lizenzverwaltung');
+    this._metaTitle.setTitle(
+      this._transloco.translate('licenseAdmin.leagueDetail.metaTitle')
+    );
   }
 
   ngOnInit(): void {
@@ -121,7 +125,11 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
   }
 
   public docTypeLabel(docType: string): string {
-    const labels: Record<string, string> = { id_copy: 'Ausweis' };
+    const labels: Record<string, string> = {
+      id_copy: this._transloco.translate(
+        'licenseAdmin.leagueDetail.docLabelIdCopy'
+      ),
+    };
     return labels[docType] ?? docType;
   }
 

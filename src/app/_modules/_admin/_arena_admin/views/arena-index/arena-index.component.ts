@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import { ArenaService } from '@floorball/core';
 import { Arena } from '@floorball/types';
 
@@ -36,6 +37,7 @@ export class ArenaIndexComponent implements OnInit, OnDestroy {
 
   constructor(
     private _arenaService: ArenaService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -67,7 +69,14 @@ export class ArenaIndexComponent implements OnInit, OnDestroy {
   }
 
   public deleteArena(arena: Arena): void {
-    if (!confirm(`Spielort "${arena.name}" wirklich löschen?`)) return;
+    if (
+      !confirm(
+        this._transloco.translate('arena.notifications.deleteConfirm', {
+          name: arena.name,
+        })
+      )
+    )
+      return;
     this.deleteError = null;
     this._arenaService
       .deleteArena(arena.id)
@@ -79,7 +88,8 @@ export class ArenaIndexComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.deleteError =
-            err.error?.error || 'Spielort konnte nicht gelöscht werden.';
+            err.error?.error ||
+            this._transloco.translate('arena.notifications.deleteError');
           this._cdr.markForCheck();
         },
       });

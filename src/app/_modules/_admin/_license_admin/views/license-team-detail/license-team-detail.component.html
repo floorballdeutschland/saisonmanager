@@ -2,13 +2,13 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Lizenzverwaltung
+    {{ "licenseAdmin.teamDetail.title" | transloco }}
   </h1>
 
   <a
     [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'verein']"
     class="text-sm text-fb-gray-500 hover:text-black"
-    >← Zurück zur Vereinsübersicht</a
+    >{{ "licenseAdmin.teamDetail.backToClubs" | transloco }}</a
   >
 </div>
 
@@ -35,7 +35,7 @@
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Anträge
+                {{ "licenseAdmin.teamDetail.requests" | transloco }}
               </div>
               <div class="overflow-hidden bg-white">
                 <ul role="list" class="divide-y divide-gray-200">
@@ -52,19 +52,22 @@
                                 <div class="flex flex-col items-end gap-0.5">
                                   <fb-confirmation
                                     [title]="
-                                      isInGracePeriod(p)
-                                        ? 'Lizenzantrag kostenfrei löschen'
-                                        : 'Lizenzantrag zurückziehen'
+                                      (isInGracePeriod(p)
+                                        ? 'licenseAdmin.teamDetail.withdrawTitleFree'
+                                        : 'licenseAdmin.teamDetail.withdrawTitle'
+                                      ) | transloco
                                     "
                                     [content]="
-                                      isInGracePeriod(p)
-                                        ? 'Möchtest du diesen Lizenzantrag kostenfrei löschen?'
-                                        : 'Möchtest du diesen Lizenzantrag wirklich zurückziehen? Diese Aktion kann nicht einfach rückgängig gemacht werden.'
+                                      (isInGracePeriod(p)
+                                        ? 'licenseAdmin.teamDetail.withdrawContentFree'
+                                        : 'licenseAdmin.teamDetail.withdrawContent'
+                                      ) | transloco
                                     "
                                     [submitButtonTitle]="
-                                      isInGracePeriod(p)
-                                        ? 'Kostenfrei löschen'
-                                        : 'Zurückziehen'
+                                      (isInGracePeriod(p)
+                                        ? 'licenseAdmin.teamDetail.withdrawSubmitFree'
+                                        : 'licenseAdmin.teamDetail.withdrawSubmit'
+                                      ) | transloco
                                     "
                                     buttonVariant="error"
                                     (handleSubmit)="
@@ -90,16 +93,21 @@
                                       </svg>
                                       <span class="pl-1 text-[13px]">
                                         {{
-                                          isInGracePeriod(p)
-                                            ? "kostenfrei löschen"
-                                            : "zurückziehen"
+                                          (isInGracePeriod(p)
+                                            ? "licenseAdmin.teamDetail.withdrawLinkFree"
+                                            : "licenseAdmin.teamDetail.withdrawLink"
+                                          ) | transloco
                                         }}
                                       </span>
                                     </a>
                                   </fb-confirmation>
                                   @if (isInGracePeriod(p)) {
                                     <span class="text-[10px] text-green-700">
-                                      kostenfrei bis {{ gracePeriodLabel(p) }}
+                                      {{
+                                        "licenseAdmin.teamDetail.freeUntil"
+                                          | transloco
+                                            : { time: gracePeriodLabel(p) }
+                                      }}
                                     </span>
                                   }
                                 </div>
@@ -132,7 +140,10 @@
                                     />
                                   </svg>
                                   <span class="pl-1 text-[13px]">
-                                    erneut beantragen
+                                    {{
+                                      "licenseAdmin.teamDetail.reapply"
+                                        | transloco
+                                    }}
                                   </span>
                                 </a>
                               }
@@ -154,7 +165,10 @@
                                   <span
                                     class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"
                                   >
-                                    Expresslizenz
+                                    {{
+                                      "licenseAdmin.teamDetail.expressLicense"
+                                        | transloco
+                                    }}
                                   </span>
                                 }
                               </div>
@@ -177,7 +191,7 @@
                                     clip-rule="evenodd"
                                   />
                                 </svg>
-                                Geb.
+                                {{ "licenseAdmin.teamDetail.born" | transloco }}
                                 {{
                                   p.birthdate
                                     ? (p.birthdate | date: "dd.MM.yyyy")
@@ -204,7 +218,9 @@
                             <p
                               class="text-xs font-semibold text-gray-400 uppercase mb-2"
                             >
-                              Dokumente
+                              {{
+                                "licenseAdmin.teamDetail.documents" | transloco
+                              }}
                             </p>
                             <div class="flex flex-wrap gap-3">
                               <!-- Pflichtdokumente (dynamisch) -->
@@ -235,7 +251,10 @@
                                         )
                                       "
                                       class="text-red-400 hover:text-red-600 text-xs"
-                                      title="Löschen"
+                                      [title]="
+                                        'licenseAdmin.teamDetail.deleteDoc'
+                                          | transloco
+                                      "
                                     >
                                       ✕
                                     </button>
@@ -257,7 +276,10 @@
                                           d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
                                         />
                                       </svg>
-                                      {{ docType }} hochladen
+                                      {{
+                                        "licenseAdmin.teamDetail.uploadDoc"
+                                          | transloco: { doc: docType }
+                                      }}
                                       <input
                                         type="file"
                                         class="hidden"
@@ -292,7 +314,11 @@
                                       class="text-xs text-green-700 underline truncate max-w-[140px]"
                                       title="{{ doc.filename }}"
                                     >
-                                      ✓ Elternzustimmung
+                                      ✓
+                                      {{
+                                        "licenseAdmin.teamDetail.parentalConsent"
+                                          | transloco
+                                      }}
                                     </a>
                                     <button
                                       (click)="
@@ -303,7 +329,10 @@
                                         )
                                       "
                                       class="text-red-400 hover:text-red-600 text-xs"
-                                      title="Löschen"
+                                      [title]="
+                                        'licenseAdmin.teamDetail.deleteDoc'
+                                          | transloco
+                                      "
                                     >
                                       ✕
                                     </button>
@@ -325,7 +354,10 @@
                                           d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
                                         />
                                       </svg>
-                                      Elternzustimmung hochladen
+                                      {{
+                                        "licenseAdmin.teamDetail.uploadParentalConsent"
+                                          | transloco
+                                      }}
                                       <input
                                         type="file"
                                         class="hidden"
@@ -360,13 +392,13 @@
                 <p
                   class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
                 >
-                  noch keine Lizenzanträge hinterlegt
+                  {{ "licenseAdmin.teamDetail.noRequests" | transloco }}
                 </p>
               }
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Neue Lizenz beantragen
+                {{ "licenseAdmin.teamDetail.newLicense" | transloco }}
               </div>
               <div class="flex flex-col gap-2">
                 <div>
@@ -398,18 +430,12 @@
                           class="mt-0.5 h-4 w-4 rounded border-gray-300 accent-black"
                         />
                         <span class="flex flex-col gap-0.5">
-                          <span class="text-sm font-bold"
-                            >Als Expresslizenz (gemäß Gebührenordnung)
-                            beantragen</span
-                          >
-                          <span class="text-xs text-fb-gray-400"
-                            >Expresslizenzen ermöglichen eine kurzfristige
-                            Nachlizenzierung kurz vor oder nach dem ersten
-                            Spieltag. Die Beantragung ist gemäß Gebührenordnung
-                            mit Zusatzkosten verbunden und löst eine sofortige
-                            Benachrichtigung der zuständigen
-                            Spielbetriebskommission per E-Mail aus.</span
-                          >
+                          <span class="text-sm font-bold">{{
+                            "licenseAdmin.teamDetail.expressLabel" | transloco
+                          }}</span>
+                          <span class="text-xs text-fb-gray-400">{{
+                            "licenseAdmin.teamDetail.expressHint" | transloco
+                          }}</span>
                         </span>
                       </label>
                     </div>
@@ -420,22 +446,24 @@
                       class="mt-3 p-4 border border-amber-300 bg-amber-50 rounded"
                     >
                       <p class="text-sm font-bold text-amber-900 mb-1">
-                        Datenschutzinformation für minderjährige
-                        Bundesligaspieler*innen
+                        {{
+                          "licenseAdmin.teamDetail.minorPrivacyHeading"
+                            | transloco
+                        }}
                       </p>
                       <p class="text-xs text-amber-800 mb-3">
-                        Dieser Lizenzantrag betrifft eine minderjährige Person,
-                        die an der 1. oder 2. Floorball Bundesliga teilnehmen
-                        soll. Gemäß §&nbsp;4.12 der Spielordnung ist der Verein
-                        verpflichtet, die gesetzliche Vertretung vor
-                        Antragstellung über die Verarbeitung von Bild- und
-                        Tonaufnahmen im Bundesligabetrieb zu informieren.
+                        {{
+                          "licenseAdmin.teamDetail.minorPrivacyText" | transloco
+                        }}
                         <a
                           href="https://www.floorball.de/datenschutz-informationsblatt-bundesliga"
                           target="_blank"
                           rel="noopener"
                           class="underline"
-                          >Informationsblatt herunterladen</a
+                          >{{
+                            "licenseAdmin.teamDetail.downloadInfoSheet"
+                              | transloco
+                          }}</a
                         >
                       </p>
                       <div class="mb-3">
@@ -443,7 +471,10 @@
                           class="block text-xs font-medium text-amber-900 mb-1"
                           for="guardian_email"
                         >
-                          E-Mail-Adresse der gesetzlichen Vertretung
+                          {{
+                            "licenseAdmin.teamDetail.guardianEmailLabel"
+                              | transloco
+                          }}
                           <span class="text-red-600">*</span>
                         </label>
                         <input
@@ -452,12 +483,16 @@
                           name="guardian_email"
                           [(ngModel)]="guardianEmail"
                           class="block w-full text-sm border border-gray-300 rounded px-2 py-1.5"
-                          placeholder="e-mail@beispiel.de"
+                          [placeholder]="
+                            'licenseAdmin.teamDetail.guardianEmailPlaceholder'
+                              | transloco
+                          "
                         />
                         <p class="text-xs text-amber-700 mt-1">
-                          Diese Adresse wird ausschließlich zur Übermittlung
-                          datenschutzrechtlich erforderlicher Informationen
-                          verwendet (Art.&nbsp;13 DSGVO).
+                          {{
+                            "licenseAdmin.teamDetail.guardianEmailHint"
+                              | transloco
+                          }}
                         </p>
                       </div>
                       <label class="flex items-start gap-2 cursor-pointer">
@@ -468,11 +503,10 @@
                           class="mt-0.5 h-4 w-4 rounded border-gray-300 accent-black"
                         />
                         <span class="text-xs text-amber-900">
-                          Ich bestätige, dass ich die gesetzliche Vertretung
-                          des/der minderjährigen Spieler*in vor dieser
-                          Lizenzbeantragung über die Datenverarbeitung gemäß
-                          §&nbsp;4.12 SPO informiert habe. Das Informationsblatt
-                          von FD wurde ausgehändigt oder übermittelt.
+                          {{
+                            "licenseAdmin.teamDetail.minorConsentLabel"
+                              | transloco
+                          }}
                         </span>
                       </label>
                     </div>
@@ -493,7 +527,7 @@
                       [disabled]="submitDisabled"
                       (click)="createLicenseRequest()"
                     >
-                      Lizenz beantragen!
+                      {{ "licenseAdmin.teamDetail.requestLicense" | transloco }}
                     </button>
                   </div>
                 </div>
@@ -518,7 +552,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "licenseAdmin.teamDetail.loadingData" | transloco }}
             </div>
           </div>
         }

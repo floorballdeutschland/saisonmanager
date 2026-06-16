@@ -1,18 +1,24 @@
 <div class="p-4 lg:p-8">
   <div class="mb-6">
-    <h1 class="text-2xl font-bold">Schiedsrichter-Ansetzungen</h1>
+    <h1 class="text-2xl font-bold">
+      {{ "assignmentAdmin.index.title" | transloco }}
+    </h1>
   </div>
 
   <!-- Filter -->
   <div class="flex flex-wrap gap-4 mb-6 items-end">
     <div class="flex flex-col gap-1">
-      <label class="text-xs font-bold uppercase text-fb-gray-500">Saison</label>
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "assignmentAdmin.index.filterSeason" | transloco
+      }}</label>
       <select
         [(ngModel)]="filterSeasonId"
         [disabled]="seasonsLoading"
         class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
       >
-        <option value="">Alle Saisonen</option>
+        <option value="">
+          {{ "assignmentAdmin.index.filterSeasonAll" | transloco }}
+        </option>
         @for (s of seasons; track s) {
           <option [value]="s.id.toString()">
             {{ s.name }}
@@ -21,7 +27,9 @@
       </select>
     </div>
     <div class="flex flex-col gap-1">
-      <label class="text-xs font-bold uppercase text-fb-gray-500">Von</label>
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "assignmentAdmin.index.filterFrom" | transloco
+      }}</label>
       <input
         type="date"
         [(ngModel)]="filterDateFrom"
@@ -29,7 +37,9 @@
       />
     </div>
     <div class="flex flex-col gap-1">
-      <label class="text-xs font-bold uppercase text-fb-gray-500">Bis</label>
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "assignmentAdmin.index.filterTo" | transloco
+      }}</label>
       <input
         type="date"
         [(ngModel)]="filterDateTo"
@@ -41,16 +51,20 @@
       (click)="applyFilter()"
       class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
     >
-      Filtern
+      {{ "assignmentAdmin.index.filterApply" | transloco }}
     </button>
   </div>
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8">Lade…</div>
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "assignmentAdmin.index.loading" | transloco }}
+    </div>
   }
 
   @if (!loading && rows.length === 0) {
-    <div class="text-fb-gray-500 py-8">Keine Spiele gefunden.</div>
+    <div class="text-fb-gray-500 py-8">
+      {{ "assignmentAdmin.index.empty" | transloco }}
+    </div>
   }
 
   @if (!loading && rows.length > 0) {
@@ -63,15 +77,33 @@
           <tr
             class="text-left text-xs uppercase text-fb-gray-500 border-b border-fb-gray-600"
           >
-            <th class="py-2 pr-3 whitespace-nowrap">Datum</th>
-            <th class="py-2 pr-3 whitespace-nowrap">Uhrzeit</th>
-            <th class="py-2 pr-3">Ort</th>
-            <th class="py-2 pr-3">Spiel</th>
-            <th class="py-2 pr-3">Liga</th>
-            <th class="py-2 pr-3 whitespace-nowrap">Status</th>
-            <th class="py-2 pr-3" style="min-width: 150px">Schiri 1</th>
-            <th class="py-2 pr-3" style="min-width: 150px">Schiri 2</th>
-            <th class="py-2">Aktionen</th>
+            <th class="py-2 pr-3 whitespace-nowrap">
+              {{ "assignmentAdmin.index.colDate" | transloco }}
+            </th>
+            <th class="py-2 pr-3 whitespace-nowrap">
+              {{ "assignmentAdmin.index.colTime" | transloco }}
+            </th>
+            <th class="py-2 pr-3">
+              {{ "assignmentAdmin.index.colLocation" | transloco }}
+            </th>
+            <th class="py-2 pr-3">
+              {{ "assignmentAdmin.index.colGame" | transloco }}
+            </th>
+            <th class="py-2 pr-3">
+              {{ "assignmentAdmin.index.colLeague" | transloco }}
+            </th>
+            <th class="py-2 pr-3 whitespace-nowrap">
+              {{ "assignmentAdmin.index.colStatus" | transloco }}
+            </th>
+            <th class="py-2 pr-3" style="min-width: 150px">
+              {{ "assignmentAdmin.index.colReferee1" | transloco }}
+            </th>
+            <th class="py-2 pr-3" style="min-width: 150px">
+              {{ "assignmentAdmin.index.colReferee2" | transloco }}
+            </th>
+            <th class="py-2">
+              {{ "assignmentAdmin.index.colActions" | transloco }}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -99,7 +131,9 @@
                   }
                 </td>
                 <td class="py-2 pr-3 align-top">
-                  {{ row.game.home_team }} vs. {{ row.game.guest_team }}
+                  {{ row.game.home_team }}
+                  {{ "assignmentAdmin.index.vs" | transloco }}
+                  {{ row.game.guest_team }}
                   @if (row.game.game_number) {
                     <span class="text-fb-gray-500 text-xs ml-1"
                       >#{{ row.game.game_number }}</span
@@ -130,7 +164,9 @@
                       <input
                         type="text"
                         autocomplete="off"
-                        placeholder="Name…"
+                        [attr.placeholder]="
+                          'assignmentAdmin.index.namePlaceholder' | transloco
+                        "
                         [value]="state.referee1Query"
                         class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-xs min-w-0"
                         (focus)="onRefereeFocus(row.game.id)"
@@ -216,7 +252,9 @@
                       <input
                         type="text"
                         autocomplete="off"
-                        placeholder="Name…"
+                        [attr.placeholder]="
+                          'assignmentAdmin.index.namePlaceholder' | transloco
+                        "
                         [value]="state.referee2Query"
                         class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-xs min-w-0"
                         (focus)="onRefereeFocus(row.game.id)"
@@ -302,7 +340,12 @@
                       "
                       class="px-2 py-1 text-xs bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40 whitespace-nowrap"
                     >
-                      {{ state.saving ? "Speichern…" : "Vorläufig speichern" }}
+                      {{
+                        (state.saving
+                          ? "assignmentAdmin.index.saving"
+                          : "assignmentAdmin.index.saveDraft"
+                        ) | transloco
+                      }}
                     </button>
                     <button
                       type="button"

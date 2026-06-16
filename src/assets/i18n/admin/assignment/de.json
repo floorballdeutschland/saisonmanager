@@ -1,0 +1,41 @@
+{
+  "index": {
+    "title": "Schiedsrichter-Ansetzungen",
+    "filterSeason": "Saison",
+    "filterSeasonAll": "Alle Saisonen",
+    "filterFrom": "Von",
+    "filterTo": "Bis",
+    "filterApply": "Filtern",
+    "loading": "Lade…",
+    "empty": "Keine Spiele gefunden.",
+    "colDate": "Datum",
+    "colTime": "Uhrzeit",
+    "colLocation": "Ort",
+    "colGame": "Spiel",
+    "colLeague": "Liga",
+    "colStatus": "Status",
+    "colReferee1": "Schiri 1",
+    "colReferee2": "Schiri 2",
+    "colActions": "Aktionen",
+    "vs": "vs.",
+    "namePlaceholder": "Name…",
+    "saving": "Speichern…",
+    "saveDraft": "Vorläufig speichern",
+    "sending": "Sende…",
+    "sendEmail": "E-Mail versenden",
+    "publishing": "Publizieren…",
+    "publish": "Veröffentlichen",
+    "statusOpen": "Offen",
+    "statusPublished": "Veröffentlicht",
+    "statusDraft": "Vorläufig"
+  },
+  "notifications": {
+    "saved": "Ansetzung gespeichert.",
+    "saveError": "Fehler beim Speichern.",
+    "notified": "Benachrichtigung gesendet.",
+    "notifyError": "Fehler beim Senden.",
+    "published": "Ansetzung veröffentlicht.",
+    "publishError": "Fehler beim Veröffentlichen.",
+    "loadError": "Daten konnten nicht geladen werden."
+  }
+}

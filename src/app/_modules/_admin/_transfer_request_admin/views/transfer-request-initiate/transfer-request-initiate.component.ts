@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { Subject, take, takeUntil } from 'rxjs';
 import {
   ClubService,
@@ -57,6 +58,7 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
     private _clubService: ClubService,
     private _notificationService: NotificationService,
     private _router: Router,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -81,7 +83,9 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
                 },
                 error: () => {
                   this._notificationService.error(
-                    'Vereinsdaten konnten nicht geladen werden.'
+                    this._transloco.translate(
+                      'transferRequestAdmin.notifications.clubLoadError'
+                    )
                   );
                   this._cdr.markForCheck();
                 },
@@ -116,7 +120,9 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
         next: (result) => {
           this.foundPlayer = result.player;
           if (!result.player) {
-            this.searchError = 'Kein Spieler mit diesen Daten gefunden.';
+            this.searchError = this._transloco.translate(
+              'transferRequestAdmin.notifications.playerNotFound'
+            );
           }
           this.searching = false;
           this._cdr.markForCheck();
@@ -125,7 +131,10 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
           this.searchError =
             typeof err === 'string'
               ? err
-              : err?.message || 'Fehler bei der Suche.';
+              : err?.message ||
+                this._transloco.translate(
+                  'transferRequestAdmin.notifications.searchError'
+                );
           this.searching = false;
           this._cdr.markForCheck();
         },
@@ -159,15 +168,20 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
         next: () => {
           this.submitting = false;
           this._notificationService.success(
-            this.requestType === 'release'
-              ? 'Freigabeantrag erfolgreich gestellt.'
-              : 'Transferantrag erfolgreich gestellt.'
+            this._transloco.translate(
+              this.requestType === 'release'
+                ? 'transferRequestAdmin.notifications.createReleaseSuccess'
+                : 'transferRequestAdmin.notifications.createTransferSuccess'
+            )
           );
           this._router.navigate(['/verwaltung/transfer-anfragen']);
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error || 'Fehler beim Erstellen des Antrags.'
+            err?.error?.error ||
+              this._transloco.translate(
+                'transferRequestAdmin.notifications.createError'
+              )
           );
           this.submitting = false;
           this._cdr.markForCheck();

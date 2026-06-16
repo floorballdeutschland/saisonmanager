@@ -1,0 +1,33 @@
+{
+  "title": "Analytics",
+  "refresh": "Refresh",
+  "loading": "Loading page views…",
+  "summary": {
+    "last30Days": "Last 30 days",
+    "currentMonth": "Current month",
+    "lastYear": "Last year",
+    "totalPageViews": "Total page views"
+  },
+  "dailyHeading": "Last 30 days – daily",
+  "monthlyHeading": "Last year – monthly",
+  "footnote": "Page views of the public pages (schedule, standings, top scorers) are recorded.",
+  "loadErrorReload": "Please reload the page.",
+  "noData": "No data available.",
+  "months": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mar",
+    "4": "Apr",
+    "5": "May",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Oct",
+    "11": "Nov",
+    "12": "Dec"
+  },
+  "notifications": {
+    "loadError": "Page views could not be loaded."
+  }
+}

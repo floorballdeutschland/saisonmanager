@@ -3,11 +3,21 @@
   class="relative my-3 md:my-0 grid grid-cols-2 md:grid-cols-[60px_130px_2fr_2fr_1fr_105px_40px] gap-2"
 >
   @if (first) {
-    <div class="hidden md:block">Nr.</div>
-    <div class="hidden md:block">Anpfiff</div>
-    <div class="hidden md:block">Heim</div>
-    <div class="hidden md:block">Gast</div>
-    <div class="hidden md:block">Schiedsrichter</div>
+    <div class="hidden md:block">
+      {{ "scheduleAdmin.gameEdit.colNumber" | transloco }}
+    </div>
+    <div class="hidden md:block">
+      {{ "scheduleAdmin.gameEdit.colKickoff" | transloco }}
+    </div>
+    <div class="hidden md:block">
+      {{ "scheduleAdmin.gameEdit.colHome" | transloco }}
+    </div>
+    <div class="hidden md:block">
+      {{ "scheduleAdmin.gameEdit.colGuest" | transloco }}
+    </div>
+    <div class="hidden md:block">
+      {{ "scheduleAdmin.gameEdit.colReferees" | transloco }}
+    </div>
     <div class="hidden md:block"></div>
     <div class="hidden md:block"></div>
   }
@@ -18,7 +28,9 @@
         [(ngModel)]="game.game_number"
         [disabled]="processing || existingGame?.started || false"
         class="w-full bg-transparent border-gray-300 md:text-center"
-        placeholder="Spielnummer"
+        [placeholder]="
+          'scheduleAdmin.gameEdit.gameNumberPlaceholder' | transloco
+        "
         name="gameNumber"
         type="text"
       />
@@ -28,7 +40,7 @@
         [(ngModel)]="game.start_time"
         [disabled]="processing || existingGame?.started || false"
         class="w-full bg-transparent border-gray-300"
-        placeholder="Anpfiff"
+        [placeholder]="'scheduleAdmin.gameEdit.kickoffPlaceholder' | transloco"
         name="startTime"
         type="time"
       />
@@ -41,7 +53,9 @@
         name="homeTeamId"
         type="text"
       >
-        <option [ngValue]="0">Nicht ausgewählt...</option>
+        <option [ngValue]="0">
+          {{ "scheduleAdmin.gameEdit.notSelected" | transloco }}
+        </option>
         @for (team of teams; track team) {
           <option [value]="team.id">
             {{ team.name }}
@@ -57,7 +71,9 @@
         name="guestTeamId"
         type="text"
       >
-        <option [ngValue]="0">Nicht ausgewählt...</option>
+        <option [ngValue]="0">
+          {{ "scheduleAdmin.gameEdit.notSelected" | transloco }}
+        </option>
         @for (team of teams; track team) {
           <option [value]="team.id">
             {{ team.name }}
@@ -70,7 +86,7 @@
         [(ngModel)]="game.nominated_referee_string"
         [disabled]="processing || existingGame?.started || isRskAssignment"
         class="w-full bg-transparent border-gray-300 disabled:text-gray-400"
-        placeholder="Schiedsrichter"
+        [placeholder]="'scheduleAdmin.gameEdit.refereesPlaceholder' | transloco"
         name="referees"
         type="text"
       />
@@ -85,7 +101,7 @@
             : 'text-gray-400 border-gray-300 hover:text-gray-600'
         "
       >
-        Ansetzung durch RSK
+        {{ "scheduleAdmin.gameEdit.rskAssignment" | transloco }}
       </button>
     </div>
     <div
@@ -96,7 +112,7 @@
           <button
             (click)="createGame()"
             class="px-3 md:px-1 text-green-700 hover:text-green-900"
-            title="Spiel anlegen"
+            [title]="'scheduleAdmin.gameEdit.titleCreateGame' | transloco"
             type="submit"
           >
             <!-- Heroicon name: add -->
@@ -119,7 +135,7 @@
         @if (existingGame && !existingGame.started && hasChanges()) {
           <button
             class="px-3 md:px-1"
-            title="Änderungen speichern"
+            [title]="'scheduleAdmin.gameEdit.titleSaveChanges' | transloco"
             type="submit"
           >
             <!-- Heroicon name: check -->
@@ -143,7 +159,7 @@
           <button
             (click)="resetGame()"
             class="px-3 md:px-1"
-            title="Änderungen verwerfen"
+            [title]="'scheduleAdmin.gameEdit.titleDiscardChanges' | transloco"
           >
             <!-- Heroicon name: check -->
             <svg
@@ -166,7 +182,7 @@
           <button
             (click)="deleteGame()"
             class="px-3 md:px-1"
-            title="Spiel löschen"
+            [title]="'scheduleAdmin.gameEdit.titleDeleteGame' | transloco"
           >
             <!-- Heroicon name: check -->
             <svg
@@ -190,7 +206,7 @@
             (click)="toggleNotice()"
             class="relative px-3 md:px-1"
             [ngClass]="{ 'megaphone-stroke': hasNotice }"
-            title="Spiel-Notiz bearbeiten"
+            [title]="'scheduleAdmin.gameEdit.titleEditNotice' | transloco"
           >
             <!-- Heroicon name: megaphone -->
             <svg
@@ -214,7 +230,7 @@
             (click)="toggleGameDependencies()"
             class="relative px-3 md:px-1"
             [ngClass]="{ 'calculator-stroke': hasGameDependencies }"
-            title="Playoff-Abhängigkeiten / Gruppe bearbeiten"
+            [title]="'scheduleAdmin.gameEdit.titleEditPlayoff' | transloco"
           >
             <!-- Heroicon name: calculator -->
             <svg
@@ -243,7 +259,7 @@
             (click)="toggleMoveGameDay()"
             class="relative px-3 md:px-1"
             [ngClass]="{ 'text-primary': hasMoveGameDay }"
-            title="Spieltag wechseln"
+            [title]="'scheduleAdmin.gameEdit.titleMoveGameDay' | transloco"
           >
             <!-- Heroicon name: arrows-right-left -->
             <svg
@@ -263,7 +279,9 @@
           </button>
         }
         @if (existingGame && existingGame.forfait) {
-          <p class="text-xs font-bold uppercase">forfait</p>
+          <p class="text-xs font-bold uppercase">
+            {{ "scheduleAdmin.gameEdit.forfait" | transloco }}
+          </p>
         }
       } @else {
         <svg
@@ -326,7 +344,7 @@
                 [for]="'context-' + existingGame.id"
                 [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 0 }"
                 class="block px-3 py-1.5 hover:bg-fb-gray-700 cursor-pointer"
-                >Reguläre Wertung</label
+                >{{ "scheduleAdmin.gameEdit.ratingRegular" | transloco }}</label
               >
             </li>
             <li>
@@ -335,7 +353,7 @@
                 [for]="'context-' + existingGame.id"
                 [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 1 }"
                 class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
-                >Forfait Heim</label
+                >{{ "scheduleAdmin.gameEdit.forfaitHome" | transloco }}</label
               >
             </li>
             <li>
@@ -344,7 +362,7 @@
                 [for]="'context-' + existingGame.id"
                 [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 2 }"
                 class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
-                >Forfait Gast</label
+                >{{ "scheduleAdmin.gameEdit.forfaitGuest" | transloco }}</label
               >
             </li>
             <li>
@@ -353,7 +371,7 @@
                 [for]="'context-' + existingGame.id"
                 [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 3 }"
                 class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
-                >Forfait beide Teams</label
+                >{{ "scheduleAdmin.gameEdit.forfaitBoth" | transloco }}</label
               >
             </li>
           </ul>
@@ -365,7 +383,7 @@
         <div class="h-7 bg-red-300 rotate-45 transform origin-top-left"></div>
       </div>
       <div class="flex items-center font-medium text-fb-gray-900">
-        <span>Spiel-Noitz</span>
+        <span>{{ "scheduleAdmin.gameEdit.noticeLabel" | transloco }}</span>
       </div>
       <div class="col-span-2">
         <input
@@ -383,10 +401,18 @@
           [disabled]="existingGame?.started || false"
           [ngModelOptions]="{ standalone: true }"
         >
-          <option [value]="null">Bitte wählen...</option>
-          <option [value]="'Postponed'">Spiel verschoben</option>
-          <option [value]="'Canceled'">Spiel abgesagt</option>
-          <option [value]="'NoDateAndTime'">Noch nicht terminiert</option>
+          <option [value]="null">
+            {{ "scheduleAdmin.gameEdit.pleaseSelect" | transloco }}
+          </option>
+          <option [value]="'Postponed'">
+            {{ "scheduleAdmin.gameEdit.noticePostponed" | transloco }}
+          </option>
+          <option [value]="'Canceled'">
+            {{ "scheduleAdmin.gameEdit.noticeCanceled" | transloco }}
+          </option>
+          <option [value]="'NoDateAndTime'">
+            {{ "scheduleAdmin.gameEdit.noticeNoDateAndTime" | transloco }}
+          </option>
         </select>
       </div>
       <div class="col-span-2"></div>
@@ -396,7 +422,7 @@
         <div class="h-7 bg-blue-300 rotate-45 transform origin-top-left"></div>
       </div>
       <div class="flex items-center font-medium text-fb-gray-900">
-        <span>Gruppe</span>
+        <span>{{ "scheduleAdmin.gameEdit.groupLabel" | transloco }}</span>
       </div>
       <div class="col-span-2">
         <select
@@ -404,11 +430,21 @@
           [(ngModel)]="game.group_identifier"
           [ngModelOptions]="{ standalone: true }"
         >
-          <option [value]="null">ohne Gruppe</option>
-          <option [value]="'group_a'">Gruppe A</option>
-          <option [value]="'group_b'">Gruppe B</option>
-          <option [value]="'group_c'">Gruppe C</option>
-          <option [value]="'group_d'">Gruppe D</option>
+          <option [value]="null">
+            {{ "scheduleAdmin.gameEdit.withoutGroup" | transloco }}
+          </option>
+          <option [value]="'group_a'">
+            {{ "scheduleAdmin.gameEdit.groupA" | transloco }}
+          </option>
+          <option [value]="'group_b'">
+            {{ "scheduleAdmin.gameEdit.groupB" | transloco }}
+          </option>
+          <option [value]="'group_c'">
+            {{ "scheduleAdmin.gameEdit.groupC" | transloco }}
+          </option>
+          <option [value]="'group_d'">
+            {{ "scheduleAdmin.gameEdit.groupD" | transloco }}
+          </option>
         </select>
       </div>
       <div class="col-span-3"></div>
@@ -416,13 +452,15 @@
         <div class="h-7 bg-blue-300 rotate-45 transform origin-top-left"></div>
       </div>
       <div class="flex items-center font-medium text-fb-gray-900">
-        <span>Serien-Titel</span>
+        <span>{{ "scheduleAdmin.gameEdit.seriesTitleLabel" | transloco }}</span>
       </div>
       <div class="col-span-2">
         <input
           class="w-full bg-transparent border-gray-300"
           type="text"
-          placeholder="(z.B. Finale, Halbfinale, Spiel um Platz 3)"
+          [placeholder]="
+            'scheduleAdmin.gameEdit.seriesTitlePlaceholder' | transloco
+          "
           [(ngModel)]="game.series_title"
           [disabled]="existingGame?.started || false"
           [ngModelOptions]="{ standalone: true }"
@@ -433,7 +471,9 @@
         <div class="h-7 bg-blue-300 rotate-45 transform origin-top-left"></div>
       </div>
       <div class="flex items-center font-medium text-fb-gray-900">
-        <span>Nummer in Serie</span>
+        <span>{{
+          "scheduleAdmin.gameEdit.seriesNumberLabel" | transloco
+        }}</span>
       </div>
       <div class="col-span-2">
         <input
@@ -450,7 +490,7 @@
         <div class="h-7 bg-blue-300 rotate-45 transform origin-top-left"></div>
       </div>
       <div class="flex items-center font-medium text-fb-gray-900">
-        <span>Autobelegung Heimteam</span>
+        <span>{{ "scheduleAdmin.gameEdit.homeFillingLabel" | transloco }}</span>
       </div>
       <div>
         <select
@@ -458,13 +498,27 @@
           [(ngModel)]="game.home_team_filling_rule"
           [ngModelOptions]="{ standalone: true }"
         >
-          <option [ngValue]="null">deaktiviert</option>
-          <option [ngValue]="'place_a'">Gruppe A Platzierung</option>
-          <option [ngValue]="'place_b'">Gruppe B Platzierung</option>
-          <option [ngValue]="'place_c'">Gruppe C Platzierung</option>
-          <option [ngValue]="'place_d'">Gruppe D Platzierung</option>
-          <option [ngValue]="'game_winner'">Gewinner Spiel</option>
-          <option [ngValue]="'game_loser'">Verlierer Spiel</option>
+          <option [ngValue]="null">
+            {{ "scheduleAdmin.gameEdit.fillingDisabled" | transloco }}
+          </option>
+          <option [ngValue]="'place_a'">
+            {{ "scheduleAdmin.gameEdit.placeA" | transloco }}
+          </option>
+          <option [ngValue]="'place_b'">
+            {{ "scheduleAdmin.gameEdit.placeB" | transloco }}
+          </option>
+          <option [ngValue]="'place_c'">
+            {{ "scheduleAdmin.gameEdit.placeC" | transloco }}
+          </option>
+          <option [ngValue]="'place_d'">
+            {{ "scheduleAdmin.gameEdit.placeD" | transloco }}
+          </option>
+          <option [ngValue]="'game_winner'">
+            {{ "scheduleAdmin.gameEdit.gameWinner" | transloco }}
+          </option>
+          <option [ngValue]="'game_loser'">
+            {{ "scheduleAdmin.gameEdit.gameLoser" | transloco }}
+          </option>
         </select>
       </div>
       <div>
@@ -475,20 +529,44 @@
           [ngModelOptions]="{ standalone: true }"
         >
           @if (game.home_team_filling_rule?.startsWith("place")) {
-            <option [ngValue]="null">Platz wählen...</option>
-            <option [ngValue]="1">1. Platz</option>
-            <option [ngValue]="2">2. Platz</option>
-            <option [ngValue]="3">3. Platz</option>
-            <option [ngValue]="4">4. Platz</option>
-            <option [ngValue]="5">5. Platz</option>
-            <option [ngValue]="6">6. Platz</option>
-            <option [ngValue]="7">7. Platz</option>
-            <option [ngValue]="8">8. Platz</option>
-            <option [ngValue]="9">9. Platz</option>
-            <option [ngValue]="10">10. Platz</option>
+            <option [ngValue]="null">
+              {{ "scheduleAdmin.gameEdit.choosePlace" | transloco }}
+            </option>
+            <option [ngValue]="1">
+              {{ "scheduleAdmin.gameEdit.place1" | transloco }}
+            </option>
+            <option [ngValue]="2">
+              {{ "scheduleAdmin.gameEdit.place2" | transloco }}
+            </option>
+            <option [ngValue]="3">
+              {{ "scheduleAdmin.gameEdit.place3" | transloco }}
+            </option>
+            <option [ngValue]="4">
+              {{ "scheduleAdmin.gameEdit.place4" | transloco }}
+            </option>
+            <option [ngValue]="5">
+              {{ "scheduleAdmin.gameEdit.place5" | transloco }}
+            </option>
+            <option [ngValue]="6">
+              {{ "scheduleAdmin.gameEdit.place6" | transloco }}
+            </option>
+            <option [ngValue]="7">
+              {{ "scheduleAdmin.gameEdit.place7" | transloco }}
+            </option>
+            <option [ngValue]="8">
+              {{ "scheduleAdmin.gameEdit.place8" | transloco }}
+            </option>
+            <option [ngValue]="9">
+              {{ "scheduleAdmin.gameEdit.place9" | transloco }}
+            </option>
+            <option [ngValue]="10">
+              {{ "scheduleAdmin.gameEdit.place10" | transloco }}
+            </option>
           }
           @if (game.home_team_filling_rule?.startsWith("game")) {
-            <option [ngValue]="null">Spiel wählen...</option>
+            <option [ngValue]="null">
+              {{ "scheduleAdmin.gameEdit.chooseGame" | transloco }}
+            </option>
             @for (gameDay of allGameDays; track gameDay) {
               @for (g of gameDay.games; track g) {
                 @if (g.id !== game.id) {
@@ -513,7 +591,9 @@
         <div class="h-7 bg-blue-300 rotate-45 transform origin-top-left"></div>
       </div>
       <div class="flex items-center font-medium text-fb-gray-900">
-        <span>Autobelegung Gastteam</span>
+        <span>{{
+          "scheduleAdmin.gameEdit.guestFillingLabel" | transloco
+        }}</span>
       </div>
       <div>
         <select
@@ -521,13 +601,27 @@
           [(ngModel)]="game.guest_team_filling_rule"
           [ngModelOptions]="{ standalone: true }"
         >
-          <option [ngValue]="null">deaktiviert</option>
-          <option [ngValue]="'place_a'">Gruppe A Platzierung</option>
-          <option [ngValue]="'place_b'">Gruppe B Platzierung</option>
-          <option [ngValue]="'place_c'">Gruppe C Platzierung</option>
-          <option [ngValue]="'place_d'">Gruppe D Platzierung</option>
-          <option [ngValue]="'game_winner'">Gewinner Spiel</option>
-          <option [ngValue]="'game_loser'">Verlierer Spiel</option>
+          <option [ngValue]="null">
+            {{ "scheduleAdmin.gameEdit.fillingDisabled" | transloco }}
+          </option>
+          <option [ngValue]="'place_a'">
+            {{ "scheduleAdmin.gameEdit.placeA" | transloco }}
+          </option>
+          <option [ngValue]="'place_b'">
+            {{ "scheduleAdmin.gameEdit.placeB" | transloco }}
+          </option>
+          <option [ngValue]="'place_c'">
+            {{ "scheduleAdmin.gameEdit.placeC" | transloco }}
+          </option>
+          <option [ngValue]="'place_d'">
+            {{ "scheduleAdmin.gameEdit.placeD" | transloco }}
+          </option>
+          <option [ngValue]="'game_winner'">
+            {{ "scheduleAdmin.gameEdit.gameWinner" | transloco }}
+          </option>
+          <option [ngValue]="'game_loser'">
+            {{ "scheduleAdmin.gameEdit.gameLoser" | transloco }}
+          </option>
         </select>
       </div>
       <div>
@@ -538,20 +632,44 @@
           [ngModelOptions]="{ standalone: true }"
         >
           @if (game.guest_team_filling_rule?.startsWith("place")) {
-            <option [ngValue]="null">Platz wählen...</option>
-            <option [ngValue]="1">1. Platz</option>
-            <option [ngValue]="2">2. Platz</option>
-            <option [ngValue]="3">3. Platz</option>
-            <option [ngValue]="4">4. Platz</option>
-            <option [ngValue]="5">5. Platz</option>
-            <option [ngValue]="6">6. Platz</option>
-            <option [ngValue]="7">7. Platz</option>
-            <option [ngValue]="8">8. Platz</option>
-            <option [ngValue]="9">9. Platz</option>
-            <option [ngValue]="10">10. Platz</option>
+            <option [ngValue]="null">
+              {{ "scheduleAdmin.gameEdit.choosePlace" | transloco }}
+            </option>
+            <option [ngValue]="1">
+              {{ "scheduleAdmin.gameEdit.place1" | transloco }}
+            </option>
+            <option [ngValue]="2">
+              {{ "scheduleAdmin.gameEdit.place2" | transloco }}
+            </option>
+            <option [ngValue]="3">
+              {{ "scheduleAdmin.gameEdit.place3" | transloco }}
+            </option>
+            <option [ngValue]="4">
+              {{ "scheduleAdmin.gameEdit.place4" | transloco }}
+            </option>
+            <option [ngValue]="5">
+              {{ "scheduleAdmin.gameEdit.place5" | transloco }}
+            </option>
+            <option [ngValue]="6">
+              {{ "scheduleAdmin.gameEdit.place6" | transloco }}
+            </option>
+            <option [ngValue]="7">
+              {{ "scheduleAdmin.gameEdit.place7" | transloco }}
+            </option>
+            <option [ngValue]="8">
+              {{ "scheduleAdmin.gameEdit.place8" | transloco }}
+            </option>
+            <option [ngValue]="9">
+              {{ "scheduleAdmin.gameEdit.place9" | transloco }}
+            </option>
+            <option [ngValue]="10">
+              {{ "scheduleAdmin.gameEdit.place10" | transloco }}
+            </option>
           }
           @if (game.guest_team_filling_rule?.startsWith("game")) {
-            <option [ngValue]="null">Spiel wählen...</option>
+            <option [ngValue]="null">
+              {{ "scheduleAdmin.gameEdit.chooseGame" | transloco }}
+            </option>
             @for (gameDay of allGameDays; track gameDay) {
               @for (g of gameDay.games; track g) {
                 @if (g.id !== game.id) {
@@ -578,7 +696,7 @@
         <div class="h-7 bg-primary rotate-45 transform origin-top-left"></div>
       </div>
       <div class="flex items-center font-medium text-fb-gray-900">
-        <span>Spieltag</span>
+        <span>{{ "scheduleAdmin.gameEdit.gameDay" | transloco }}</span>
       </div>
       <div class="col-span-2">
         <select

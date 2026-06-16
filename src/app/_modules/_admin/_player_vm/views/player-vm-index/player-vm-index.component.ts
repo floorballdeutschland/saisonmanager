@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, forkJoin, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import { ClubService, PlayerService } from '@floorball/core';
 import { ClubWithTeams, Player } from '@floorball/types';
 import { Title } from '@angular/platform-browser';
@@ -37,7 +38,8 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
     private _clubService: ClubService,
     private _playerService: PlayerService,
     private _cdr: ChangeDetectorRef,
-    private _title: Title
+    private _title: Title,
+    private _transloco: TranslocoService
   ) {
     this._title.setTitle('Floorball Saisonmanager Spielerliste (Verein)');
   }
@@ -121,7 +123,12 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
     this.actionError = null;
     const reason =
       this.deactivateReason === 'Sonstiges'
-        ? `Sonstiges: ${this.deactivateReasonOther}`
+        ? this._transloco.translate(
+            'playerVm.notifications.reasonOtherPrefix',
+            {
+              detail: this.deactivateReasonOther,
+            }
+          )
         : this.deactivateReason;
     this._playerService
       .deactivatePlayer(player.id, reason)
@@ -135,7 +142,8 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.actionError =
-            err?.error?.message ?? 'Deaktivierung fehlgeschlagen.';
+            err?.error?.message ??
+            this._transloco.translate('playerVm.notifications.deactivateError');
           this.deactivateReason = '';
           this.deactivateReasonOther = '';
           this._cdr.markForCheck();
@@ -157,7 +165,8 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.actionError =
-            err?.error?.message ?? 'Reaktivierung fehlgeschlagen.';
+            err?.error?.message ??
+            this._transloco.translate('playerVm.notifications.reactivateError');
           this._cdr.markForCheck();
         },
       });

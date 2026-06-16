@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { Subject, takeUntil } from 'rxjs';
 import {
   StateAssociationService,
@@ -56,6 +57,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     private _route: ActivatedRoute,
     private _router: Router,
     private _sessionService: SessionService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -159,7 +161,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
         : this.stateAssociation.scan_required,
       referee_license_review_enabled: this.hasParent
         ? false
-        : this.stateAssociation.referee_license_review_enabled ?? false,
+        : (this.stateAssociation.referee_license_review_enabled ?? false),
       banner_link_url: this.stateAssociation.banner_link_url ?? null,
     };
 
@@ -174,9 +176,11 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     call.pipe(takeUntil(this._destroy$)).subscribe({
       next: () => {
         this._notificationService.success(
-          this.editMode
-            ? 'Landesverband gespeichert.'
-            : 'Landesverband angelegt.',
+          this._transloco.translate(
+            this.editMode
+              ? 'stateAssociationAdmin.notifications.saved'
+              : 'stateAssociationAdmin.notifications.created'
+          ),
           { autoClose: true, keepAfterRouteChange: true }
         );
         this._router.navigate(['/', 'verwaltung', 'landesverbaende']);
@@ -184,9 +188,14 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       error: () => {
         this.saving = false;
         this._cdr.markForCheck();
-        this._notificationService.error('Fehler beim Speichern.', {
-          autoClose: false,
-        });
+        this._notificationService.error(
+          this._transloco.translate(
+            'stateAssociationAdmin.notifications.saveError'
+          ),
+          {
+            autoClose: false,
+          }
+        );
       },
     });
   }
@@ -284,7 +293,9 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
           this.addingRelease = false;
           this._cdr.markForCheck();
           this._notificationService.error(
-            'Freigabe konnte nicht erteilt werden.',
+            this._transloco.translate(
+              'stateAssociationAdmin.notifications.releaseAddError'
+            ),
             { autoClose: false }
           );
         },
@@ -301,16 +312,26 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     const file = input.files[0];
 
     if (file.type !== this._allowedBannerType) {
-      this._notificationService.error('Nur WebP-Dateien erlaubt.', {
-        autoClose: false,
-      });
+      this._notificationService.error(
+        this._transloco.translate(
+          'stateAssociationAdmin.notifications.bannerTypeError'
+        ),
+        {
+          autoClose: false,
+        }
+      );
       input.value = '';
       return;
     }
     if (file.size > this._maxBannerSize) {
-      this._notificationService.error('Datei zu groß (max. 500 KB).', {
-        autoClose: false,
-      });
+      this._notificationService.error(
+        this._transloco.translate(
+          'stateAssociationAdmin.notifications.bannerSizeError'
+        ),
+        {
+          autoClose: false,
+        }
+      );
       input.value = '';
       return;
     }
@@ -322,15 +343,23 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
         next: (result) => {
           input.value = '';
           this.stateAssociation.banner_url = result.banner_url;
-          this._notificationService.success('Banner erfolgreich hochgeladen.', {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate(
+              'stateAssociationAdmin.notifications.bannerUploaded'
+            ),
+            {
+              autoClose: true,
+            }
+          );
           this._cdr.markForCheck();
         },
         error: (err) => {
           input.value = '';
           const msg: string =
-            err?.error?.message ?? 'Banner-Upload fehlgeschlagen.';
+            err?.error?.message ??
+            this._transloco.translate(
+              'stateAssociationAdmin.notifications.bannerUploadError'
+            );
           this._notificationService.error(msg, { autoClose: false });
         },
       });
@@ -338,7 +367,14 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
 
   deleteBanner(): void {
     if (!this.stateAssociation.id || this.deletingBanner) return;
-    if (!confirm('Banner wirklich entfernen?')) return;
+    if (
+      !confirm(
+        this._transloco.translate(
+          'stateAssociationAdmin.notifications.confirmDeleteBanner'
+        )
+      )
+    )
+      return;
     this.deletingBanner = true;
     this._stateAssociationService
       .adminDeleteBanner(this.stateAssociation.id)
@@ -352,7 +388,10 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.deletingBanner = false;
           const msg: string =
-            err?.error?.message ?? 'Banner konnte nicht gelöscht werden.';
+            err?.error?.message ??
+            this._transloco.translate(
+              'stateAssociationAdmin.notifications.bannerDeleteError'
+            );
           this._notificationService.error(msg, { autoClose: false });
           this._cdr.markForCheck();
         },
@@ -367,16 +406,26 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     const file = input.files[0];
 
     if (!this._allowedLogoTypes.includes(file.type)) {
-      this._notificationService.error('Nur WebP erlaubt.', {
-        autoClose: false,
-      });
+      this._notificationService.error(
+        this._transloco.translate(
+          'stateAssociationAdmin.notifications.logoTypeError'
+        ),
+        {
+          autoClose: false,
+        }
+      );
       input.value = '';
       return;
     }
     if (file.size > this._maxLogoSize) {
-      this._notificationService.error('Datei zu groß (max. 5 MB).', {
-        autoClose: false,
-      });
+      this._notificationService.error(
+        this._transloco.translate(
+          'stateAssociationAdmin.notifications.logoSizeError'
+        ),
+        {
+          autoClose: false,
+        }
+      );
       input.value = '';
       return;
     }
@@ -388,14 +437,23 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
         next: (result) => {
           input.value = '';
           this.stateAssociation.logo_url = result.logo_url;
-          this._notificationService.success('Logo erfolgreich hochgeladen.', {
-            autoClose: true,
-          });
+          this._notificationService.success(
+            this._transloco.translate(
+              'stateAssociationAdmin.notifications.logoUploaded'
+            ),
+            {
+              autoClose: true,
+            }
+          );
           this._cdr.markForCheck();
         },
         error: (err) => {
           input.value = '';
-          const msg = err?.error?.message ?? 'Logo-Upload fehlgeschlagen.';
+          const msg =
+            err?.error?.message ??
+            this._transloco.translate(
+              'stateAssociationAdmin.notifications.logoUploadError'
+            );
           this._notificationService.error(msg, {
             autoClose: false,
           });
@@ -416,7 +474,9 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
         error: () => {
           this._cdr.markForCheck();
           this._notificationService.error(
-            'Freigabe konnte nicht entfernt werden.',
+            this._transloco.translate(
+              'stateAssociationAdmin.notifications.releaseDeleteError'
+            ),
             { autoClose: false }
           );
         },

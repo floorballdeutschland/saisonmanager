@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   NotificationService,
   RefereeCourseImportService,
@@ -53,6 +54,7 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     private _service: RefereeCourseImportService,
     private _refereeService: RefereeService,
     private _notify: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -67,7 +69,9 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this._notify.error(
-            'Lizenzstufen konnten nicht geladen werden — Submit ist erst nach Reload möglich.'
+            this._transloco.translate(
+              'refereeCourseAdmin.notifications.licenseLevelsLoadError'
+            )
           );
           this._cdr.markForCheck();
         },
@@ -98,7 +102,10 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.loading = false;
           this._notify.error(
-            err?.error?.error ?? 'Import konnte nicht geladen werden'
+            err?.error?.error ??
+              this._transloco.translate(
+                'refereeCourseAdmin.notifications.loadImportError'
+              )
           );
           this._cdr.markForCheck();
         },
@@ -144,8 +151,8 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     if (field === 'club_id') return;
     const value =
       source === 'csv'
-        ? this.csvValue(result, field) ?? null
-        : this.dbValue(result, field) ?? null;
+        ? (this.csvValue(result, field) ?? null)
+        : (this.dbValue(result, field) ?? null);
     this.patchMaster(result, {
       [field]: value,
     } as Partial<RefereeCourseMasterFields>);
@@ -172,7 +179,11 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.saving.delete(result.id);
           this._notify.error(
-            err?.error?.error ?? `Speichern fehlgeschlagen für ${rowLabel}`
+            err?.error?.error ??
+              this._transloco.translate(
+                'refereeCourseAdmin.notifications.saveFailedForRow',
+                { row: rowLabel }
+              )
           );
           this.load(result.referee_course_import_id);
         },
@@ -197,7 +208,10 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
           this.saving.delete(result.id);
           this._notify.error(
             err?.error?.error ??
-              `Lizenzstufe konnte nicht gespeichert werden für ${rowLabel}`
+              this._transloco.translate(
+                'refereeCourseAdmin.notifications.licenseLevelSaveFailedForRow',
+                { row: rowLabel }
+              )
           );
           this.load(result.referee_course_import_id);
         },
@@ -212,7 +226,21 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
       .filter(Boolean)
       .join(' ');
     const liz = result.master_by_importer.lizenznummer;
-    return liz ? `${name} (Liz. ${liz})` : name || `Zeile #${result.id}`;
+    if (liz) {
+      return this._transloco.translate(
+        'refereeCourseAdmin.notifications.rowWithLicense',
+        { name, licenseNumber: liz }
+      );
+    }
+    return (
+      name ||
+      this._transloco.translate(
+        'refereeCourseAdmin.notifications.rowFallback',
+        {
+          id: result.id,
+        }
+      )
+    );
   }
 
   // --- Submit ------------------------------------------------------------
@@ -241,12 +269,21 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.importData = data;
           this.submitting = false;
-          this._notify.success('Import eingereicht');
+          this._notify.success(
+            this._transloco.translate(
+              'refereeCourseAdmin.notifications.submitted'
+            )
+          );
           this._cdr.markForCheck();
         },
         error: (err) => {
           this.submitting = false;
-          this._notify.error(err?.error?.error ?? 'Einreichen fehlgeschlagen');
+          this._notify.error(
+            err?.error?.error ??
+              this._transloco.translate(
+                'refereeCourseAdmin.notifications.submitFailed'
+              )
+          );
           this._cdr.markForCheck();
         },
       });
@@ -262,7 +299,12 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
         next: () => {
           this._router.navigate(['/verwaltung/schiri-kurse']);
         },
-        error: () => this._notify.error('Abbruch fehlgeschlagen'),
+        error: () =>
+          this._notify.error(
+            this._transloco.translate(
+              'refereeCourseAdmin.notifications.cancelFailed'
+            )
+          ),
       });
   }
 
@@ -271,11 +313,16 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
   matchBadgeLabel(result: RefereeCourseResult): string {
     switch (result.match_type) {
       case 'exact_match':
-        return 'Exakter Match (6/6)';
+        return this._transloco.translate(
+          'refereeCourseAdmin.detail.badgeExact'
+        );
       case 'partial_match':
-        return `Teilmatch (${result.match_field_count}/6)`;
+        return this._transloco.translate(
+          'refereeCourseAdmin.detail.badgePartial',
+          { count: result.match_field_count }
+        );
       case 'new_entry':
-        return 'Neuanlage';
+        return this._transloco.translate('refereeCourseAdmin.detail.badgeNew');
     }
   }
 

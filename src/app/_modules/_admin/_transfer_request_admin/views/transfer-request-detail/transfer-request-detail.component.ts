@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { Subject, switchMap, takeUntil } from 'rxjs';
 import {
   NotificationService,
@@ -43,6 +44,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
     private _notificationService: NotificationService,
     private _route: ActivatedRoute,
     private _router: Router,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -78,7 +80,9 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this._notificationService.error(
-            'Transferantrag konnte nicht geladen werden.'
+            this._transloco.translate(
+              'transferRequestAdmin.notifications.detailLoadError'
+            )
           );
           this.loading = false;
           this._cdr.markForCheck();
@@ -135,7 +139,14 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
 
   cancelTransfer(): void {
     if (!this.request) return;
-    if (!confirm('Diesen laufenden Transfer wirklich annullieren?')) return;
+    if (
+      !confirm(
+        this._transloco.translate(
+          'transferRequestAdmin.notifications.cancelConfirm'
+        )
+      )
+    )
+      return;
 
     this.actionPending = true;
     this._transferService
@@ -145,12 +156,19 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         next: (updated) => {
           this.request = updated;
           this.actionPending = false;
-          this._notificationService.success('Transfer annulliert.');
+          this._notificationService.success(
+            this._transloco.translate(
+              'transferRequestAdmin.notifications.cancelled'
+            )
+          );
           this._cdr.markForCheck();
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error || 'Annullierung fehlgeschlagen.'
+            err?.error?.error ||
+              this._transloco.translate(
+                'transferRequestAdmin.notifications.cancelError'
+              )
           );
           this.actionPending = false;
           this._cdr.markForCheck();
@@ -169,16 +187,20 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
           this.request = updated;
           this.actionPending = false;
           this._notificationService.success(
-            updated.request_type === 'release'
-              ? 'Freigabeantrag bestätigt.'
-              : 'Transferantrag bestätigt.'
+            this._transloco.translate(
+              updated.request_type === 'release'
+                ? 'transferRequestAdmin.notifications.releaseConfirmed'
+                : 'transferRequestAdmin.notifications.transferConfirmed'
+            )
           );
           this._cdr.markForCheck();
         },
         error: (err) => {
           this._notificationService.error(
             err?.error?.error ||
-              'Vereinsfreigabe konnte nicht gespeichert werden.'
+              this._transloco.translate(
+                'transferRequestAdmin.notifications.clubApprovalError'
+              )
           );
           this.actionPending = false;
           this._cdr.markForCheck();
@@ -218,12 +240,19 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
           this.request = updated;
           this.showRevokeForm = false;
           this.actionPending = false;
-          this._notificationService.success('Spielerfreigabe zurückgezogen.');
+          this._notificationService.success(
+            this._transloco.translate(
+              'transferRequestAdmin.notifications.releaseRevoked'
+            )
+          );
           this._cdr.markForCheck();
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error || 'Freigabe konnte nicht zurückgezogen werden.'
+            err?.error?.error ||
+              this._transloco.translate(
+                'transferRequestAdmin.notifications.revokeError'
+              )
           );
           this.actionPending = false;
           this._cdr.markForCheck();
@@ -250,15 +279,20 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         this.showRejectForm = false;
         this.actionPending = false;
         this._notificationService.success(
-          updated.request_type === 'release'
-            ? 'Freigabeantrag abgelehnt.'
-            : 'Transferantrag abgelehnt.'
+          this._transloco.translate(
+            updated.request_type === 'release'
+              ? 'transferRequestAdmin.notifications.releaseRejected'
+              : 'transferRequestAdmin.notifications.transferRejected'
+          )
         );
         this._cdr.markForCheck();
       },
       error: (err) => {
         this._notificationService.error(
-          err?.error?.error || 'Ablehnung konnte nicht gespeichert werden.'
+          err?.error?.error ||
+            this._transloco.translate(
+              'transferRequestAdmin.notifications.rejectError'
+            )
         );
         this.actionPending = false;
         this._cdr.markForCheck();
@@ -278,19 +312,31 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
           this.actionPending = false;
           this._notificationService.success(
             updated.request_type === 'release'
-              ? 'Spielerfreigabe erteilt.'
+              ? this._transloco.translate(
+                  'transferRequestAdmin.notifications.releaseGranted'
+                )
               : updated.status === 'scheduled' && updated.effective_date
-              ? `Transfer genehmigt – Vollzug am ${updated.effective_date
-                  .split('-')
-                  .reverse()
-                  .join('.')}.`
-              : 'Transfer genehmigt und vollzogen.'
+                ? this._transloco.translate(
+                    'transferRequestAdmin.notifications.transferScheduled',
+                    {
+                      date: updated.effective_date
+                        .split('-')
+                        .reverse()
+                        .join('.'),
+                    }
+                  )
+                : this._transloco.translate(
+                    'transferRequestAdmin.notifications.transferApprovedExecuted'
+                  )
           );
           this._cdr.markForCheck();
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error || 'LV-Freigabe konnte nicht gespeichert werden.'
+            err?.error?.error ||
+              this._transloco.translate(
+                'transferRequestAdmin.notifications.lvApprovalError'
+              )
           );
           this.actionPending = false;
           this._cdr.markForCheck();
@@ -308,12 +354,19 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         next: (updated) => {
           this.request = updated;
           this.actionPending = false;
-          this._notificationService.success('Transfer vollzogen.');
+          this._notificationService.success(
+            this._transloco.translate(
+              'transferRequestAdmin.notifications.transferExecuted'
+            )
+          );
           this._cdr.markForCheck();
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error || 'Transfer konnte nicht vollzogen werden.'
+            err?.error?.error ||
+              this._transloco.translate(
+                'transferRequestAdmin.notifications.executeError'
+              )
           );
           this.actionPending = false;
           this._cdr.markForCheck();
@@ -327,27 +380,33 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
 
   statusLabel(status: string, requestType?: string): string {
     if (requestType === 'release') {
-      const labels: { [key: string]: string } = {
-        pending_club: 'Warten auf abgebenden Verein',
-        pending_lv: 'Warten auf LV-Genehmigung',
-        approved: 'Freigabe erteilt',
-        rejected_by_club: 'Abgelehnt durch abgebenden Verein',
-        rejected_by_lv: 'Abgelehnt durch Landesverband',
-        revoked: 'Freigabe zurückgezogen',
-        expired: 'Automatisch annulliert',
+      const keys: { [key: string]: string } = {
+        pending_club: 'statusPendingClub',
+        pending_lv: 'statusReleasePendingLv',
+        approved: 'statusReleaseApproved',
+        rejected_by_club: 'statusRejectedByClub',
+        rejected_by_lv: 'statusRejectedByLv',
+        revoked: 'statusRevoked',
+        expired: 'statusExpired',
       };
-      return labels[status] || status;
+      return keys[status]
+        ? this._transloco.translate(
+            `transferRequestAdmin.detail.${keys[status]}`
+          )
+        : status;
     }
-    const labels: { [key: string]: string } = {
-      pending_club: 'Warten auf abgebenden Verein',
-      pending_lv: 'Warten auf Landesverband',
-      scheduled: 'Genehmigt – Transfer geplant',
-      approved: 'Genehmigt – Transfer vollzogen',
-      rejected_by_club: 'Abgelehnt durch abgebenden Verein',
-      rejected_by_lv: 'Abgelehnt durch Landesverband',
-      expired: 'Automatisch annulliert',
+    const keys: { [key: string]: string } = {
+      pending_club: 'statusPendingClub',
+      pending_lv: 'statusPendingLv',
+      scheduled: 'statusScheduled',
+      approved: 'statusApproved',
+      rejected_by_club: 'statusRejectedByClub',
+      rejected_by_lv: 'statusRejectedByLv',
+      expired: 'statusExpired',
     };
-    return labels[status] || status;
+    return keys[status]
+      ? this._transloco.translate(`transferRequestAdmin.detail.${keys[status]}`)
+      : status;
   }
 
   statusClass(status: string): string {

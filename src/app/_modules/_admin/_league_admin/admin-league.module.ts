@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
+import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { AdminLeagueRoutingModule } from './admin-league-routing.module';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitPlayerModule } from '@floorball/uikit/player';
@@ -22,5 +23,12 @@ import * as Views from './views';
     DragDropModule,
   ],
   declarations: [Views.LeagueIndexComponent, Views.LeagueEditComponent],
+  providers: [
+    {
+      provide: TRANSLOCO_SCOPE,
+      useValue: { scope: 'admin/league', alias: 'leagueAdmin' },
+      multi: true,
+    },
+  ],
 })
 export class AdminLeagueModule {}

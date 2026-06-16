@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   NotificationService,
   SettingsService,
@@ -36,6 +37,7 @@ export class SeasonAdminComponent implements OnInit, OnDestroy {
   constructor(
     private _settingsService: SettingsService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -100,14 +102,18 @@ export class SeasonAdminComponent implements OnInit, OnDestroy {
           this.newSeasonName = '';
           this.creatingSeason = false;
           this._notificationService.success(
-            `Saison „${season.name}" angelegt.`,
+            this._transloco.translate('settings.notifications.seasonCreated', {
+              name: season.name,
+            }),
             { autoClose: true }
           );
           this._cdr.markForCheck();
         },
         error: (err) => {
           this.creatingSeason = false;
-          const msg = err?.error?.error ?? 'Fehler beim Anlegen der Saison';
+          const msg =
+            err?.error?.error ??
+            this._transloco.translate('settings.notifications.createError');
           this._notificationService.error(msg, { autoClose: false });
           this._cdr.markForCheck();
         },
@@ -137,7 +143,9 @@ export class SeasonAdminComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.saving = false;
-          const msg = err?.error?.error ?? 'Fehler beim Saison-Wechsel';
+          const msg =
+            err?.error?.error ??
+            this._transloco.translate('settings.notifications.switchError');
           this._notificationService.error(msg, { autoClose: false });
           this._cdr.markForCheck();
         },

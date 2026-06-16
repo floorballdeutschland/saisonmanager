@@ -2,16 +2,16 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Lizenzverwaltung
+    {{ "licenseAdmin.leagueDetail.title" | transloco }}
   </h1>
   <a
     [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'verband']"
     class="text-sm text-fb-gray-500 hover:text-black"
-    >← Zurück zur Ligaübersicht</a
+    >{{ "licenseAdmin.leagueDetail.backToLeagues" | transloco }}</a
   >
 
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    {{ "Liga verwalten" }}
+    {{ "licenseAdmin.leagueDetail.manageLeague" | transloco }}
   </h2>
 </div>
 
@@ -39,7 +39,7 @@
                   fill="currentFill"
                 />
               </svg>
-              Daten werden geladen...
+              {{ "licenseAdmin.leagueDetail.loadingData" | transloco }}
             </div>
           </div>
         </ng-template>
@@ -48,12 +48,12 @@
           <div class="col-span-2">
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                Lizenzen aus Vorrunde übernehmen
+                {{
+                  "licenseAdmin.leagueDetail.copyPrerounidHeading" | transloco
+                }}
               </div>
               <p class="text-sm text-gray-600 mb-4">
-                Überträgt alle gültigen Lizenzen aus der Vorrunden-Liga
-                automatisch als erteilt. Spieler, die bereits eine Lizenz für
-                diese Liga haben, werden übersprungen.
+                {{ "licenseAdmin.leagueDetail.copyPreroundText" | transloco }}
               </p>
               <div class="flex items-center gap-4">
                 <button
@@ -62,12 +62,18 @@
                   class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-green-600 hover:bg-green-700 border-green-700 rounded-[5px] cursor-pointer disabled:opacity-50"
                 >
                   {{
-                    copyLoading ? "Wird übertragen..." : "Lizenzen übernehmen"
+                    (copyLoading
+                      ? "licenseAdmin.leagueDetail.copyButtonLoading"
+                      : "licenseAdmin.leagueDetail.copyButton"
+                    ) | transloco
                   }}
                 </button>
                 @if (copyResult !== undefined) {
                   <span class="text-sm text-green-700 font-medium">
-                    {{ copyResult.copied }} Lizenz(en) übernommen.
+                    {{
+                      "licenseAdmin.leagueDetail.copyResult"
+                        | transloco: { count: copyResult.copied }
+                    }}
                   </span>
                 }
               </div>
@@ -78,14 +84,19 @@
         <div class="col-span-2">
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Offene Lizenzanträge
+              {{ "licenseAdmin.leagueDetail.openRequests" | transloco }}
             </div>
             <div class="flex justify-end mb-3">
               <button
                 (click)="toggleAll()"
                 class="text-sm text-gray-500 hover:text-black underline"
               >
-                {{ allOpen ? "Alle zuklappen" : "Alle aufklappen" }}
+                {{
+                  (allOpen
+                    ? "licenseAdmin.leagueDetail.collapseAll"
+                    : "licenseAdmin.leagueDetail.expandAll"
+                  ) | transloco
+                }}
               </button>
             </div>
             <ul role="list" class="divide-y divide-gray-400">
@@ -146,7 +157,10 @@
                               <span
                                 class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"
                               >
-                                Expresslizenz
+                                {{
+                                  "licenseAdmin.leagueDetail.expressLicense"
+                                    | transloco
+                                }}
                               </span>
                             }
                             <div>
@@ -184,7 +198,7 @@
                                   clip-rule="evenodd"
                                 />
                               </svg>
-                              Geb.
+                              {{ "licenseAdmin.leagueDetail.born" | transloco }}
                               {{
                                 p.birthdate
                                   ? (p.birthdate | date: "dd.MM.yyyy")
@@ -193,7 +207,10 @@
                             </p>
                             @if (p.team_license.requested_at) {
                               <p class="flex items-start text-sm text-gray-500">
-                                <span class="font-medium mr-1">Beantragt:</span>
+                                <span class="font-medium mr-1">{{
+                                  "licenseAdmin.leagueDetail.requested"
+                                    | transloco
+                                }}</span>
                                 {{
                                   p.team_license.requested_at
                                     | date: "dd.MM.yyyy" : "Europe/Berlin"
@@ -202,7 +219,10 @@
                             }
                             @if (p.team_license.approved_at) {
                               <p class="flex items-start text-sm text-gray-500">
-                                <span class="font-medium mr-1">Erteilt:</span>
+                                <span class="font-medium mr-1">{{
+                                  "licenseAdmin.leagueDetail.approved"
+                                    | transloco
+                                }}</span>
                                 {{
                                   p.team_license.approved_at
                                     | date: "dd.MM.yyyy" : "Europe/Berlin"
@@ -213,7 +233,10 @@
                               <div
                                 class="flex items-center gap-1.5 text-sm text-gray-500"
                               >
-                                <span class="font-medium mr-1">Dokumente:</span>
+                                <span class="font-medium mr-1">{{
+                                  "licenseAdmin.leagueDetail.documents"
+                                    | transloco
+                                }}</span>
                                 <!-- Pflichtdokumente aus Liga-Konfiguration -->
                                 @for (
                                   docType of league?.required_documents;
@@ -233,7 +256,9 @@
                                         rel="noopener"
                                         class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
                                         [title]="
-                                          docTypeLabel(docType) + ' ansehen'
+                                          'licenseAdmin.leagueDetail.docView'
+                                            | transloco
+                                              : { doc: docTypeLabel(docType) }
                                         "
                                         >{{ docTypeLabel(docType) }}</a
                                       >
@@ -246,7 +271,9 @@
                                       <span
                                         class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
                                         [title]="
-                                          docTypeLabel(docType) + ' fehlt'
+                                          'licenseAdmin.leagueDetail.docMissing'
+                                            | transloco
+                                              : { doc: docTypeLabel(docType) }
                                         "
                                         >{{ docTypeLabel(docType) }}</span
                                       >
@@ -267,14 +294,26 @@
                                       target="_blank"
                                       rel="noopener"
                                       class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
-                                      title="Einverständniserklärung ansehen"
-                                      >Einverständnis</a
+                                      [title]="
+                                        'licenseAdmin.leagueDetail.parentalConsentView'
+                                          | transloco
+                                      "
+                                      >{{
+                                        "licenseAdmin.leagueDetail.parentalConsent"
+                                          | transloco
+                                      }}</a
                                     >
                                   } @else {
                                     <span
                                       class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
-                                      title="Einverständniserklärung fehlt"
-                                      >Einverständnis</span
+                                      [title]="
+                                        'licenseAdmin.leagueDetail.parentalConsentMissing'
+                                          | transloco
+                                      "
+                                      >{{
+                                        "licenseAdmin.leagueDetail.parentalConsent"
+                                          | transloco
+                                      }}</span
                                     >
                                   }
                                 }

@@ -2,10 +2,10 @@
   <h1
     class="font-bold text-[32px] lg:text-[42px] font-bold pt-4 lg:pt-0 my-4 lg:my-8"
   >
-    Spielerverwaltung
+    {{ "playerAdmin.common.title" | transloco }}
   </h1>
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    Globale Spielersuche
+    {{ "playerAdmin.search.globalSearch" | transloco }}
   </h2>
 </div>
 
@@ -18,12 +18,12 @@
         <div>
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Suche
+              {{ "playerAdmin.search.search" | transloco }}
             </div>
             <input
               type="text"
               class="w-full"
-              placeholder="Vor- oder Nachname (mind. 2 Zeichen)"
+              [placeholder]="'playerAdmin.search.searchPlaceholder' | transloco"
               [ngModel]="query"
               (ngModelChange)="onQueryChange($event)"
             />
@@ -33,16 +33,18 @@
         <div class="col-span-2">
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Ergebnisse
+              {{ "playerAdmin.search.results" | transloco }}
               @if (loading) {
                 <span class="ml-2 text-gray-400 normal-case font-normal">
-                  wird gesucht...
+                  {{ "playerAdmin.search.searching" | transloco }}
                 </span>
               }
             </div>
 
             @if (!loading && searched && results.length === 0) {
-              <p class="text-sm text-gray-500">Keine Spieler gefunden.</p>
+              <p class="text-sm text-gray-500">
+                {{ "playerAdmin.search.noResults" | transloco }}
+              </p>
             }
 
             @if (results.length > 0) {
@@ -89,7 +91,7 @@
 
             @if (!searched && query.length < 2) {
               <p class="text-sm text-gray-500">
-                Mindestens 2 Zeichen eingeben, um die Suche zu starten.
+                {{ "playerAdmin.search.minChars" | transloco }}
               </p>
             }
           </div>

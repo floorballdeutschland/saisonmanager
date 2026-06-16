@@ -1,0 +1,28 @@
+{
+  "title": "Saison-Verwaltung",
+  "loading": "Lade Saison-Daten…",
+  "currentSeasonHeading": "Aktuelle Saison",
+  "switchSuccess": "Saison erfolgreich auf „{{ name }}\" umgestellt.",
+  "createSeasonHeading": "Neue Saison anlegen",
+  "seasonNameLabel": "Saison-Name",
+  "seasonNamePlaceholder": "z.B. 2026/27",
+  "creating": "Wird angelegt…",
+  "create": "Anlegen",
+  "switchSeasonHeading": "Saison wechseln",
+  "newActiveSeasonLabel": "Neue aktive Saison",
+  "currentSuffix": " (aktuell)",
+  "warningHeading": "⚠ ACHTUNG: Diese Aktion hat weitreichende Folgen",
+  "warningTmUsers": "Alle TM-Nutzer werden beim nächsten Login ausgesperrt, da ihre Teams nicht mehr zur aktiven Saison gehören.",
+  "warningLicenses": "Spieler-Lizenzen der alten Saison verlieren die Gültigkeit für neue Spielberichte.",
+  "warningSbkUsers": "SBK-Nutzer müssen neue Ligen anlegen; Vereine müssen ihre Teams neu anmelden.",
+  "confirmIntro": "Ich verstehe die Konsequenzen und möchte von",
+  "confirmTo": "auf",
+  "confirmOutro": "wechseln.",
+  "switching": "Wird umgestellt…",
+  "switchNow": "Saison jetzt umstellen",
+  "notifications": {
+    "seasonCreated": "Saison „{{ name }}\" angelegt.",
+    "createError": "Fehler beim Anlegen der Saison",
+    "switchError": "Fehler beim Saison-Wechsel"
+  }
+}
