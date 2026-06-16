@@ -71,6 +71,23 @@
                     class="w-full border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:opacity-40"
                   />
                 </div>
+                <div class="lg:col-span-2">
+                  <label class="block text-sm font-bold mb-1">{{
+                    "emailTemplateAdmin.bodyLabel" | transloco
+                  }}</label>
+                  <textarea
+                    [(ngModel)]="edits[template.key].body"
+                    [disabled]="isSaving(template)"
+                    rows="6"
+                    [placeholder]="
+                      'emailTemplateAdmin.bodyPlaceholder' | transloco
+                    "
+                    class="w-full font-mono border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:opacity-40"
+                  ></textarea>
+                  <p class="text-xs text-fb-gray-500 mt-1">
+                    {{ "emailTemplateAdmin.bodyHint" | transloco }}
+                  </p>
+                </div>
                 <div>
                   <label class="block text-sm font-bold mb-1">{{
                     "emailTemplateAdmin.fromLabel" | transloco
