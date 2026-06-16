@@ -80,6 +80,7 @@ export interface RefereeProfile {
   vorname: string;
   nachname: string;
   email?: string;
+  telefonnummer?: string;
   lizenzstufe?: string;
   gueltigkeit?: string;
   geburtsdatum?: string;

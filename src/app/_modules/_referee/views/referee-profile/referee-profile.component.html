@@ -67,6 +67,20 @@
               class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
             />
           </div>
+          <div class="flex flex-col gap-1 col-span-2">
+            <label class="text-sm font-bold">{{
+              "refereeSelf.profile.phone" | transloco
+            }}</label>
+            <input
+              type="tel"
+              [(ngModel)]="draft.telefonnummer"
+              name="telefonnummer"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+            <p class="text-xs text-fb-gray-500">
+              {{ "refereeSelf.profile.phoneHint" | transloco }}
+            </p>
+          </div>
         </div>
       </div>
       <!-- Heimadresse -->

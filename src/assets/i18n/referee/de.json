@@ -10,6 +10,8 @@
     "firstName": "Vorname *",
     "lastName": "Nachname *",
     "email": "E-Mail",
+    "phone": "Telefonnummer",
+    "phoneHint": "Die Telefonnummer wird ausschließlich in dringenden Fällen von der RSK bei der Ansetzung genutzt. Eine Weitergabe an Dritte oder eine Nutzung zu anderen Zwecken erfolgt nicht.",
     "sectionAddress": "Heimadresse",
     "addressHint": "Wird nur bei Ansetzungen für die Berechnung der Kilometer genutzt.",
     "street": "Straße",

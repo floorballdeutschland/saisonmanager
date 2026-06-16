@@ -10,6 +10,8 @@
     "firstName": "First name *",
     "lastName": "Last name *",
     "email": "Email",
+    "phone": "Phone number",
+    "phoneHint": "The phone number is used by the RSK solely in urgent cases during assignment. It is not shared with third parties or used for any other purpose.",
     "sectionAddress": "Home address",
     "addressHint": "Only used for distance calculation when assigning games.",
     "street": "Street",
