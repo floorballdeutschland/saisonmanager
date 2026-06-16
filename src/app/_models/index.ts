@@ -81,4 +81,5 @@ export * from './online-test.interface';
 export * from './license-document.interface';
 export * from './league-qualification.interface';
 export * from './email-log.interface';
+export * from './proceeding-proposal.interface';
 export * from './email-template.interface';

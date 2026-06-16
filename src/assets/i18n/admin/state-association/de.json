@@ -30,6 +30,8 @@
     "refereeReviewHint": "Beim CSV-Import von Kursergebnissen werden Datensätze mit Stammdaten-Korrekturen oder Neuanlagen dem RSK dieses Landesverbands zur Kontrolle und Freigabe vorgelegt, bevor sie in den Stammdatensatz übernommen werden.",
     "scanRequiredLabel": "Papierspielberichtsbogen hochladen",
     "scanRequiredHint": "Teilnehmer müssen nach dem Spiel den physischen Spielberichtsbogen hochladen. Der Ausrichter erhält nach Spieltagsabschluss eine E-Mail-Erinnerung.",
+    "manualProceedingLabel": "Manuelle Erstellung von Protesten durch die SBK",
+    "manualProceedingHint": "Die SBK kann Verfahrensvorschläge prüfen und Sportgerichtsverfahren manuell eröffnen oder ablehnen.",
     "inheritedValueYes": "Wert: Ja (geerbt)",
     "inheritedValueNo": "Wert: Nein (geerbt)",
     "emailHeading": "E-Mail-Adressen",

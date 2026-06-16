@@ -1,0 +1,37 @@
+{
+  "title": "Verfahrensvorschläge",
+  "description": "Eingegangene Vorschläge für Sportgerichtsverfahren. Eröffne ein Verfahren (die VSK wird per E-Mail informiert) oder lehne den Vorschlag ab.",
+  "loading": "Lade Verfahrensvorschläge…",
+  "loadingDetail": "Lade Details…",
+  "count": "{{ count }} offene Vorschläge",
+  "colGame": "Spiel-Nr.",
+  "colTeams": "Teams",
+  "colLeague": "Liga",
+  "colGameDate": "Spieldatum",
+  "colReceived": "Eingegangen",
+  "expand": "Details",
+  "collapse": "Schließen",
+  "documentLabel": "Dokument:",
+  "documentOpen": "Dokument öffnen",
+  "noDocument": "Kein Dokument vorhanden.",
+  "open": "Verfahren eröffnen",
+  "reject": "Ablehnen",
+  "empty": "Keine offenen Verfahrensvorschläge.",
+  "openDialog": {
+    "title": "Verfahren eröffnen?",
+    "content": "Mit dem Eröffnen wird die VSK per E-Mail über das Verfahren informiert. Fortfahren?",
+    "submit": "Verfahren eröffnen"
+  },
+  "rejectDialog": {
+    "title": "Vorschlag ablehnen?",
+    "content": "Achtung: Beim Ablehnen werden alle zu diesem Vorschlag hochgeladenen Dokumente endgültig und unwiderruflich verworfen. Dieser Schritt kann nicht rückgängig gemacht werden. Wirklich ablehnen?",
+    "submit": "Endgültig ablehnen"
+  },
+  "notifications": {
+    "loadError": "Verfahrensvorschläge konnten nicht geladen werden.",
+    "detailError": "Details konnten nicht geladen werden.",
+    "opened": "Verfahren wurde eröffnet, die VSK wurde informiert.",
+    "rejected": "Vorschlag abgelehnt, die Dokumente wurden verworfen.",
+    "actionError": "Fehler: {{ detail }}"
+  }
+}

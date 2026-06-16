@@ -162,6 +162,10 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       referee_license_review_enabled: this.hasParent
         ? false
         : (this.stateAssociation.referee_license_review_enabled ?? false),
+      // Pro-LV (Backend vererbt dieses Flag nicht vom Parent) → auch für
+      // Kind-LVs editierbar.
+      manual_proceeding_creation:
+        this.stateAssociation.manual_proceeding_creation ?? false,
       banner_link_url: this.stateAssociation.banner_link_url ?? null,
     };
 

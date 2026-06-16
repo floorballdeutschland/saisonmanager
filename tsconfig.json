@@ -93,6 +93,9 @@
       "@floorball/admin/transfer-requests": [
         "src/app/_modules/_admin/_transfer_request_admin"
       ],
+      "@floorball/admin/proceeding-proposal": [
+        "src/app/_modules/_admin/_proceeding_proposal_admin"
+      ],
       "@floorball/admin/users": ["src/app/_modules/_admin/_user_admin"],
       "@floorball/admin/arena": ["src/app/_modules/_admin/_arena_admin"],
       "@floorball/admin/settings": ["src/app/_modules/_admin/_settings_admin"],

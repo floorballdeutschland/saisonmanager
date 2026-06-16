@@ -1,0 +1,37 @@
+{
+  "title": "Proceeding proposals",
+  "description": "Incoming proposals for sports-court proceedings. Open a proceeding (the VSK is notified by email) or reject the proposal.",
+  "loading": "Loading proceeding proposals…",
+  "loadingDetail": "Loading details…",
+  "count": "{{ count }} open proposals",
+  "colGame": "Game no.",
+  "colTeams": "Teams",
+  "colLeague": "League",
+  "colGameDate": "Game date",
+  "colReceived": "Received",
+  "expand": "Details",
+  "collapse": "Close",
+  "documentLabel": "Document:",
+  "documentOpen": "Open document",
+  "noDocument": "No document available.",
+  "open": "Open proceeding",
+  "reject": "Reject",
+  "empty": "No open proceeding proposals.",
+  "openDialog": {
+    "title": "Open proceeding?",
+    "content": "Opening the proceeding will notify the VSK by email. Continue?",
+    "submit": "Open proceeding"
+  },
+  "rejectDialog": {
+    "title": "Reject proposal?",
+    "content": "Warning: Rejecting will permanently and irrevocably discard all documents uploaded for this proposal. This step cannot be undone. Really reject?",
+    "submit": "Reject permanently"
+  },
+  "notifications": {
+    "loadError": "Proceeding proposals could not be loaded.",
+    "detailError": "Details could not be loaded.",
+    "opened": "Proceeding opened, the VSK has been notified.",
+    "rejected": "Proposal rejected, the documents have been discarded.",
+    "actionError": "Error: {{ detail }}"
+  }
+}

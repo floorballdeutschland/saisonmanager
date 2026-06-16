@@ -28,3 +28,4 @@ export * from './analytics.service';
 export * from './email-log.service';
 export * from './email-template.service';
 export * from './referee-course-import.service';
+export * from './proceeding-proposal.service';

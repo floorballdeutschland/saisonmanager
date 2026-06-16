@@ -30,6 +30,8 @@
     "refereeReviewHint": "When importing course results via CSV, records with master-data corrections or new entries are submitted to this state association's RSK for review and approval before being added to the master record.",
     "scanRequiredLabel": "Upload paper game report sheet",
     "scanRequiredHint": "Participants must upload the physical game report sheet after the game. The host receives an email reminder once the game day is closed.",
+    "manualProceedingLabel": "Manual creation of protests by the SBK",
+    "manualProceedingHint": "The SBK can review proceeding proposals and manually open or reject sports-court proceedings.",
     "inheritedValueYes": "Value: Yes (inherited)",
     "inheritedValueNo": "Value: No (inherited)",
     "emailHeading": "Email addresses",

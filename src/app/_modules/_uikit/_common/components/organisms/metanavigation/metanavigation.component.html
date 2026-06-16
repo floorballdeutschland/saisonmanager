@@ -265,7 +265,8 @@
   <!-- Transfers und Freigaben -->
   @if (
     showItem("menu_item_transfer_requests") ||
-    showItem("menu_item_player_change_requests")
+    showItem("menu_item_player_change_requests") ||
+    showItem("menu_item_proceeding_proposal_admin")
   ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
       {{ "nav.section.transfers" | transloco }}
@@ -289,6 +290,16 @@
               [routerLink]="['/', 'verwaltung', 'spieler-korrekturen']"
               (click)="closeMenu()"
               >{{ "nav.playerChangeRequests" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_proceeding_proposal_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'verfahrensvorschlaege']"
+              (click)="closeMenu()"
+              >{{ "nav.proceedingProposals" | transloco }}</a
             >
           </li>
         }

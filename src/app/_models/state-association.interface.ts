@@ -22,6 +22,7 @@ export interface StateAssociation {
   scan_required?: boolean;
   referee_license_review_enabled?: boolean;
   effective_referee_license_review_enabled?: boolean;
+  manual_proceeding_creation?: boolean;
   logo_url?: string | null;
   banner_url?: string | null;
   banner_link_url?: string | null;

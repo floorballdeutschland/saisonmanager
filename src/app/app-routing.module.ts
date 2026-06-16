@@ -117,6 +117,13 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/proceeding-proposal').then(
+            (m) => m.AdminProceedingProposalModule
+          ),
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/referee').then((m) => m.RefereeModule),
       },
       {

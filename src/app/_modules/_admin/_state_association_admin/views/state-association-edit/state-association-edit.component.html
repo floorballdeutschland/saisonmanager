@@ -161,6 +161,22 @@
         <label class="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
+            [(ngModel)]="stateAssociation.manual_proceeding_creation"
+            name="manual_proceeding_creation"
+            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+          />
+          <span class="flex flex-col gap-0.5">
+            <span class="text-sm font-bold">{{
+              "stateAssociationAdmin.edit.manualProceedingLabel" | transloco
+            }}</span>
+            <span class="text-xs text-fb-gray-400">{{
+              "stateAssociationAdmin.edit.manualProceedingHint" | transloco
+            }}</span>
+          </span>
+        </label>
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
             [(ngModel)]="stateAssociation.scan_required"
             name="scan_required"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"

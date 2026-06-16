@@ -1,0 +1,186 @@
+<div class="p-4 lg:p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">
+      {{ "proceedingProposalAdmin.title" | transloco }}
+    </h1>
+  </div>
+
+  <p class="text-sm text-fb-gray-500 mb-6">
+    {{ "proceedingProposalAdmin.description" | transloco }}
+  </p>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      {{ "proceedingProposalAdmin.loading" | transloco }}
+    </div>
+  }
+
+  @if (!loading) {
+    <div class="overflow-x-auto">
+      <p class="text-sm text-fb-gray-500 mb-3">
+        {{
+          "proceedingProposalAdmin.count"
+            | transloco: { count: proposals.length }
+        }}
+      </p>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-fb-gray-700 text-left">
+            <th class="py-2 pr-4 font-bold">
+              {{ "proceedingProposalAdmin.colGame" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "proceedingProposalAdmin.colTeams" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "proceedingProposalAdmin.colLeague" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "proceedingProposalAdmin.colGameDate" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "proceedingProposalAdmin.colReceived" | transloco }}
+            </th>
+            <th class="py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (proposal of proposals; track proposal) {
+            <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
+              <td class="py-2 pr-4 font-medium">
+                {{ proposal.game_number || "–" }}
+              </td>
+              <td class="py-2 pr-4">
+                {{ proposal.home_team }} – {{ proposal.guest_team }}
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{ proposal.league_name }}
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{
+                  proposal.game_date
+                    ? (proposal.game_date | date: "dd.MM.yyyy")
+                    : "–"
+                }}
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{ proposal.created_at | date: "dd.MM.yyyy" }}
+              </td>
+              <td class="py-2 text-right">
+                <button
+                  (click)="toggle(proposal)"
+                  class="text-sm text-fb-gray-500 hover:text-black"
+                >
+                  {{
+                    (expandedId === proposal.id
+                      ? "proceedingProposalAdmin.collapse"
+                      : "proceedingProposalAdmin.expand"
+                    ) | transloco
+                  }}
+                </button>
+              </td>
+            </tr>
+            @if (expandedId === proposal.id) {
+              <tr class="border-b border-fb-gray-800 bg-fb-gray-900">
+                <td colspan="6" class="py-4 px-4">
+                  @if (loadingDetail) {
+                    <div class="text-sm text-fb-gray-500">
+                      {{ "proceedingProposalAdmin.loadingDetail" | transloco }}
+                    </div>
+                  }
+                  @if (!loadingDetail && detail) {
+                    <div class="flex flex-col gap-4">
+                      <div>
+                        <span class="text-sm font-bold">{{
+                          "proceedingProposalAdmin.documentLabel" | transloco
+                        }}</span>
+                        @if (detail.report?.url) {
+                          <a
+                            [href]="detail.report?.url"
+                            target="_blank"
+                            rel="noopener"
+                            class="ml-2 text-sm text-blue-600 underline hover:text-blue-800"
+                          >
+                            {{
+                              detail.report?.filename ||
+                                ("proceedingProposalAdmin.documentOpen"
+                                  | transloco)
+                            }}
+                          </a>
+                        }
+                        @if (!detail.report?.url) {
+                          <span class="ml-2 text-sm text-fb-gray-500">{{
+                            "proceedingProposalAdmin.noDocument" | transloco
+                          }}</span>
+                        }
+                      </div>
+
+                      <div class="flex gap-3">
+                        <fb-confirmation
+                          [title]="
+                            'proceedingProposalAdmin.openDialog.title'
+                              | transloco
+                          "
+                          [content]="
+                            'proceedingProposalAdmin.openDialog.content'
+                              | transloco
+                          "
+                          [submitButtonTitle]="
+                            'proceedingProposalAdmin.openDialog.submit'
+                              | transloco
+                          "
+                          buttonVariant="success"
+                          (handleSubmit)="open(proposal)"
+                        >
+                          <button
+                            type="button"
+                            [disabled]="processingIds.has(proposal.id)"
+                            class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+                          >
+                            {{ "proceedingProposalAdmin.open" | transloco }}
+                          </button>
+                        </fb-confirmation>
+
+                        <fb-confirmation
+                          [title]="
+                            'proceedingProposalAdmin.rejectDialog.title'
+                              | transloco
+                          "
+                          [content]="
+                            'proceedingProposalAdmin.rejectDialog.content'
+                              | transloco
+                          "
+                          [submitButtonTitle]="
+                            'proceedingProposalAdmin.rejectDialog.submit'
+                              | transloco
+                          "
+                          buttonVariant="error"
+                          (handleSubmit)="reject(proposal)"
+                        >
+                          <button
+                            type="button"
+                            [disabled]="processingIds.has(proposal.id)"
+                            class="px-4 py-2 border border-red-400 text-red-500 text-sm font-bold rounded-[5px] hover:bg-red-50 disabled:opacity-40"
+                          >
+                            {{ "proceedingProposalAdmin.reject" | transloco }}
+                          </button>
+                        </fb-confirmation>
+                      </div>
+                    </div>
+                  }
+                </td>
+              </tr>
+            }
+          }
+          @if (proposals.length === 0) {
+            <tr>
+              <td colspan="6" class="py-8 text-center text-fb-gray-500">
+                {{ "proceedingProposalAdmin.empty" | transloco }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
