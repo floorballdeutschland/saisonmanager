@@ -15,6 +15,7 @@ import * as Molecules from './components/molecules';
 import * as Organisms from './components/organisms';
 import * as Pipes from './pipes';
 import * as HelperPipes from 'src/app/_helpers/_pipes';
+import { UikitShellModule } from './uikit-shell.module';
 
 @NgModule({
   imports: [
@@ -23,9 +24,12 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
     OverlayModule,
     FormsModule,
     TranslocoModule,
+    // Eager geladene Shell-Komponenten (Sidebar, Notification, Navigationen,
+    // Metanavigation, Logo, NormalizeLeagueRoutePipe). Hier nur importiert +
+    // re-exportiert, damit Lazy-Feature-Module sie weiterhin auflösen.
+    UikitShellModule,
   ],
   declarations: [
-    Atoms.LogoComponent,
     Atoms.TabItemComponent,
     Atoms.ButtonComponent,
     Atoms.WhistleIconComponent,
@@ -35,18 +39,12 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
     Molecules.RefereeAutocompleteComponent,
     Organisms.ConfirmationDialogComponent,
     Organisms.ConfirmationComponent,
-    Organisms.LeagueNavigationComponent,
-    Organisms.SidebarComponent,
-    Organisms.NotificationComponent,
-    Organisms.MetanavigationComponent,
-    Organisms.FavoritesNavigationComponent,
     Organisms.HeaderComponent,
     Organisms.SimilarLeaguesComponent,
     Pipes.GradientPipe,
     Pipes.NormalizeEventPipe,
     Pipes.NormalizeMatchResultPipe,
     Pipes.NormalizeRefereePipe,
-    Pipes.NormalizeLeagueRoutePipe,
     Pipes.RouteMergePipe,
     Pipes.ToNumberPipe,
     Pipes.FilterPeriodEventsPipe,
@@ -72,7 +70,8 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
   ],
   exports: [
     TranslocoModule,
-    Atoms.LogoComponent,
+    // Re-Export der eager Shell-Komponenten/-Pipe für Lazy-Feature-Module.
+    UikitShellModule,
     Atoms.TabItemComponent,
     Atoms.ButtonComponent,
     Atoms.WhistleIconComponent,
@@ -82,18 +81,12 @@ import * as HelperPipes from 'src/app/_helpers/_pipes';
     Molecules.RefereeAutocompleteComponent,
     Organisms.ConfirmationDialogComponent,
     Organisms.ConfirmationComponent,
-    Organisms.LeagueNavigationComponent,
-    Organisms.SidebarComponent,
-    Organisms.NotificationComponent,
-    Organisms.MetanavigationComponent,
-    Organisms.FavoritesNavigationComponent,
     Organisms.HeaderComponent,
     Organisms.SimilarLeaguesComponent,
     Pipes.GradientPipe,
     Pipes.NormalizeEventPipe,
     Pipes.NormalizeMatchResultPipe,
     Pipes.NormalizeRefereePipe,
-    Pipes.NormalizeLeagueRoutePipe,
     Pipes.RouteMergePipe,
     Pipes.ToNumberPipe,
     Pipes.FilterPeriodEventsPipe,

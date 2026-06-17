@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
@@ -223,6 +223,9 @@ const routes: Routes = [
     RouterModule.forRoot(routes, {
       paramsInheritanceStrategy: 'always',
       scrollPositionRestoration: 'top',
+      // Lazy-Module nach dem initialen Laden im Hintergrund vorladen, damit das
+      // Navigieren zwischen Bereichen ohne Chunk-Download-Wartezeit erfolgt.
+      preloadingStrategy: PreloadAllModules,
     }),
   ],
   exports: [RouterModule],

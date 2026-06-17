@@ -25,7 +25,6 @@
     "@jsverse/transloco": "^8.4.0",
     "@ngneat/reactive-forms": "^5.0.2",
     "@sentry/angular": "^10.57.0",
-    "jshint": "^2.13.1",
     "qrcode": "^1.5.4",
     "rxjs": "~7.8.0",
     "source-map-explorer": "^2.5.2",

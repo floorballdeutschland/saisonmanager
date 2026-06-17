@@ -20,7 +20,10 @@ import { TranslocoModule } from '@jsverse/transloco';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { UikitCommonModule } from '@floorball/uikit/common';
+// Direkt aus der Datei importieren (nicht über das Barrel @floorball/uikit/common),
+// damit das eager geladene AppModule NICHT die UikitCommonModule mitzieht – sonst
+// landen FormsModule/CDK/alle Feature-Komponenten wieder im Initial-Bundle.
+import { UikitShellModule } from './_modules/_uikit/_common/uikit-shell.module';
 import { provideTranslocoRoot, readInitialLang } from '@floorball/core';
 import { SessionService } from './_modules/_core/_services';
 import { ErrorInterceptor } from './_helpers/_interceptors/error.interceptor';
@@ -31,12 +34,7 @@ import { CsrfInterceptor } from './_helpers/_interceptors/csrf.interceptor';
 @NgModule({
   declarations: [AppComponent],
   bootstrap: [AppComponent],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    UikitCommonModule,
-    TranslocoModule,
-  ],
+  imports: [BrowserModule, AppRoutingModule, UikitShellModule, TranslocoModule],
   providers: [
     {
       provide: ErrorHandler,
