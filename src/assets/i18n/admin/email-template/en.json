@@ -9,6 +9,8 @@
   "bodyLabel": "Body (HTML)",
   "bodyPlaceholder": "Leave empty for the default text …",
   "bodyHint": "HTML with placeholders. Empty = the system's default text. Leave empty for emails with dynamic content (e.g. tables).",
+  "defaultBodyLabel": "Default text (currently being sent)",
+  "defaultBodyHint": "Source of the default template defined in code. Dynamic values appear as <%= … %> (inserted at runtime). As long as no custom text is set above, exactly this text is sent.",
   "fromLabel": "Sender (From)",
   "replyToLabel": "Reply to (Reply-To)",
   "placeholdersHint": "Available placeholders (usable in subject and body):",

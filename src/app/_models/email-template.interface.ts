@@ -10,6 +10,7 @@ export interface EmailTemplate {
   description: string;
   placeholders: EmailTemplatePlaceholder[];
   default_subject: string | null;
+  default_body: string | null;
   default_from: string | null;
   default_reply_to: string | null;
   subject: string | null;
