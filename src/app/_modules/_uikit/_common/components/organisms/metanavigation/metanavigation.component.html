@@ -442,23 +442,6 @@
           >{{ "nav.account" | transloco }}</a
         >
       </li>
-      <li class="mt-2 mb-4 flex items-center gap-2">
-        <span class="text-fb-gray-500 text-sm"
-          >{{ "language.label" | transloco }}:</span
-        >
-        @for (lang of availableLangs; track lang) {
-          <button
-            type="button"
-            (click)="switchLanguage(lang)"
-            class="text-sm uppercase hover:text-black"
-            [class.font-bold]="(activeLang$ | async) === lang"
-            [class.text-black]="(activeLang$ | async) === lang"
-            [class.text-fb-gray-500]="(activeLang$ | async) !== lang"
-          >
-            {{ lang }}
-          </button>
-        }
-      </li>
       <li class="mt-4 mb-4">
         <a
           href=""
