@@ -67,94 +67,123 @@
               class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
             />
           </div>
-          <div class="flex flex-col gap-1 col-span-2">
-            <label class="text-sm font-bold">{{
-              "refereeSelf.profile.phone" | transloco
-            }}</label>
-            <input
-              type="tel"
-              [(ngModel)]="draft.telefonnummer"
-              name="telefonnummer"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-            />
-            <p class="text-xs text-fb-gray-500">
-              {{ "refereeSelf.profile.phoneHint" | transloco }}
-            </p>
-          </div>
         </div>
       </div>
-      <!-- Heimadresse -->
-      <div class="flex flex-col gap-2">
-        <h2 class="text-sm font-bold uppercase text-fb-gray-500">
-          {{ "refereeSelf.profile.sectionAddress" | transloco }}
-        </h2>
-        <p class="text-xs text-fb-gray-500">
-          {{ "refereeSelf.profile.addressHint" | transloco }}
-        </p>
-        <div class="grid grid-cols-[2fr_1fr] gap-4">
-          <div class="flex flex-col gap-1">
-            <label class="text-sm">{{
-              "refereeSelf.profile.street" | transloco
-            }}</label>
+      <!-- Ansetzungsinformationen -->
+      <div
+        class="flex flex-col gap-6 border border-fb-gray-700 rounded-[5px] p-4"
+      >
+        <div class="flex flex-col gap-1">
+          <h2 class="text-sm font-bold uppercase text-fb-gray-500">
+            {{ "refereeSelf.profile.sectionAssignmentInfo" | transloco }}
+          </h2>
+          <p class="text-xs text-fb-gray-500">
+            {{ "refereeSelf.profile.assignmentInfoHint" | transloco }}
+          </p>
+        </div>
+        <!-- Kurzfristig mobil -->
+        <div class="flex flex-col gap-1">
+          <label class="flex items-center gap-2 text-sm font-bold">
             <input
-              type="text"
-              [(ngModel)]="draft.strasse"
-              name="strasse"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              type="checkbox"
+              [(ngModel)]="draft.kurzfristig_mobil"
+              name="kurzfristig_mobil"
+              class="h-4 w-4"
             />
+            {{ "refereeSelf.profile.shortNoticeMobile" | transloco }}
+          </label>
+          <p class="text-xs text-fb-gray-500">
+            {{ "refereeSelf.profile.shortNoticeMobileHint" | transloco }}
+          </p>
+        </div>
+        <!-- Telefonnummer -->
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">{{
+            "refereeSelf.profile.phone" | transloco
+          }}</label>
+          <input
+            type="tel"
+            [(ngModel)]="draft.telefonnummer"
+            name="telefonnummer"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+          <p class="text-xs text-fb-gray-500">
+            {{ "refereeSelf.profile.phoneHint" | transloco }}
+          </p>
+        </div>
+        <!-- Heimadresse -->
+        <div class="flex flex-col gap-2">
+          <h3 class="text-xs font-bold uppercase text-fb-gray-500">
+            {{ "refereeSelf.profile.sectionAddress" | transloco }}
+          </h3>
+          <p class="text-xs text-fb-gray-500">
+            {{ "refereeSelf.profile.addressHint" | transloco }}
+          </p>
+          <div class="grid grid-cols-[2fr_1fr] gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-sm">{{
+                "refereeSelf.profile.street" | transloco
+              }}</label>
+              <input
+                type="text"
+                [(ngModel)]="draft.strasse"
+                name="strasse"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-sm">{{
+                "refereeSelf.profile.houseNumber" | transloco
+              }}</label>
+              <input
+                type="text"
+                [(ngModel)]="draft.hausnummer"
+                name="hausnummer"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              />
+            </div>
           </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-sm">{{
-              "refereeSelf.profile.houseNumber" | transloco
-            }}</label>
-            <input
-              type="text"
-              [(ngModel)]="draft.hausnummer"
-              name="hausnummer"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-            />
+          <div class="grid grid-cols-[1fr_2fr] gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-sm">{{
+                "refereeSelf.profile.zip" | transloco
+              }}</label>
+              <input
+                type="text"
+                [(ngModel)]="draft.plz"
+                name="plz"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-sm">{{
+                "refereeSelf.profile.city" | transloco
+              }}</label>
+              <input
+                type="text"
+                [(ngModel)]="draft.ort"
+                name="ort"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              />
+            </div>
           </div>
         </div>
-        <div class="grid grid-cols-[1fr_2fr] gap-4">
-          <div class="flex flex-col gap-1">
-            <label class="text-sm">{{
-              "refereeSelf.profile.zip" | transloco
-            }}</label>
-            <input
-              type="text"
-              [(ngModel)]="draft.plz"
-              name="plz"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-            />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-sm">{{
-              "refereeSelf.profile.city" | transloco
-            }}</label>
-            <input
-              type="text"
-              [(ngModel)]="draft.ort"
-              name="ort"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-            />
-          </div>
+        <!-- Schiedsrichterpartner -->
+        <div class="flex flex-col gap-2">
+          <h3 class="text-xs font-bold uppercase text-fb-gray-500">
+            {{ "refereeSelf.profile.sectionPartner" | transloco }}
+          </h3>
+          <p class="text-xs text-fb-gray-500">
+            {{ "refereeSelf.profile.partnerHint" | transloco }}
+          </p>
+          <input
+            type="number"
+            [(ngModel)]="draft.partner_lizenznummer"
+            name="partner_lizenznummer"
+            [placeholder]="'refereeSelf.profile.partnerPlaceholder' | transloco"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
+          />
         </div>
-      </div>
-      <!-- Schiedsrichterpartner -->
-      <div class="flex flex-col gap-2">
-        <h2 class="text-sm font-bold uppercase text-fb-gray-500">
-          {{ "refereeSelf.profile.sectionPartner" | transloco }}
-        </h2>
-        <p class="text-xs text-fb-gray-500">
-          {{ "refereeSelf.profile.partnerHint" | transloco }}
-        </p>
-        <input
-          type="number"
-          [(ngModel)]="draft.partner_lizenznummer"
-          name="partner_lizenznummer"
-          [placeholder]="'refereeSelf.profile.partnerPlaceholder' | transloco"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
-        />
       </div>
       <!-- Actions -->
       <div class="flex items-center gap-3 mt-2">

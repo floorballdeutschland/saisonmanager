@@ -91,6 +91,7 @@ export interface RefereeProfile {
   plz?: string;
   ort?: string;
   partner_lizenznummer?: number | null;
+  kurzfristig_mobil?: boolean;
 }
 
 export interface RefereeAdminGame {
