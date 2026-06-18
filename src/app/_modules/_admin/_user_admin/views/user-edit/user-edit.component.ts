@@ -81,10 +81,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
           this.active = user.active;
           this.editableTeamIds = user.teams ? [...user.teams] : [];
 
-          const sbkRskRole = user.roles?.find((r) =>
-            [2, 3].includes(r.user_group_id)
+          const goScopedRole = user.roles?.find((r) =>
+            [2, 3, 7].includes(r.user_group_id)
           );
-          this.selectedGoId = sbkRskRole?.game_operation_id ?? null;
+          this.selectedGoId = goScopedRole?.game_operation_id ?? null;
 
           this.selectedClubId = user.club_id ?? null;
 
@@ -159,7 +159,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
   get userPrimaryRoleId(): number | null {
     if (!this.user) return null;
     const role = this.user.roles?.find((r) =>
-      [2, 3, 4, 5].includes(r.user_group_id)
+      [2, 3, 4, 5, 7].includes(r.user_group_id)
     );
     return role?.user_group_id ?? null;
   }
@@ -174,7 +174,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
 
   get showGoAssignment(): boolean {
     const roleId = this.userPrimaryRoleId;
-    return this.isAdminOrSbk && roleId !== null && [2, 3].includes(roleId);
+    return this.isAdminOrSbk && roleId !== null && [2, 3, 7].includes(roleId);
   }
 
   get showClubAssignment(): boolean {

@@ -68,6 +68,18 @@ export class UserCreateComponent implements OnInit, OnDestroy {
       needsGo: true,
     },
     {
+      id: 3,
+      label: this._transloco.translate('userAdmin.create.roleRsk'),
+      needsClub: false,
+      needsGo: true,
+    },
+    {
+      id: 7,
+      label: this._transloco.translate('userAdmin.create.roleAnsetzer'),
+      needsClub: false,
+      needsGo: true,
+    },
+    {
       id: 4,
       label: this._transloco.translate('userAdmin.create.roleVm'),
       needsClub: true,

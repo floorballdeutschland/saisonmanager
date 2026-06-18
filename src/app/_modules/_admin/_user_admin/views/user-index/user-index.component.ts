@@ -31,6 +31,10 @@ export class UserIndexComponent implements OnInit, OnDestroy {
     { label: this._transloco.translate('userAdmin.index.roleAdmin'), value: 1 },
     { label: this._transloco.translate('userAdmin.index.roleSbk'), value: 2 },
     { label: this._transloco.translate('userAdmin.index.roleRsk'), value: 3 },
+    {
+      label: this._transloco.translate('userAdmin.index.roleAnsetzer'),
+      value: 7,
+    },
     { label: this._transloco.translate('userAdmin.index.roleVm'), value: 4 },
     { label: this._transloco.translate('userAdmin.index.roleTm'), value: 5 },
     {
@@ -102,7 +106,7 @@ export class UserIndexComponent implements OnInit, OnDestroy {
     return user.roles.map((r) => r.role_name).join(', ');
   }
 
-  // Zuordnung je nach Rolle: VM→Verein, TM→Team(s), SBK/RSK→Sportverbund.
+  // Zuordnung je nach Rolle: VM→Verein, TM→Team(s), SBK/RSK/Ansetzer→Sportverbund.
   assignmentLabel(user: UserAdminEntry): string {
     const parts: string[] = [];
     for (const r of user.roles) {
@@ -110,7 +114,7 @@ export class UserIndexComponent implements OnInit, OnDestroy {
         if (user.team_names?.length) parts.push(...user.team_names);
       } else if (r.user_group_id === 4) {
         if (r.club_name) parts.push(r.club_name);
-      } else if (r.user_group_id === 2 || r.user_group_id === 3) {
+      } else if ([2, 3, 7].includes(r.user_group_id)) {
         if (r.game_operation_name) parts.push(r.game_operation_name);
       }
     }

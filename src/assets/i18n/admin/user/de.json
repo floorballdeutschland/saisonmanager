@@ -21,6 +21,7 @@
     "roleAdmin": "Admin",
     "roleSbk": "SBK",
     "roleRsk": "RSK",
+    "roleAnsetzer": "Ansetzer",
     "roleVm": "VM",
     "roleTm": "TM",
     "roleReferee": "Schiedsrichter"
@@ -49,6 +50,8 @@
     "cancel": "Abbrechen",
     "roleAdmin": "Admin",
     "roleSbk": "SBK",
+    "roleRsk": "RSK",
+    "roleAnsetzer": "Ansetzer",
     "roleVm": "VM (Vereinsmanager)",
     "roleTm": "TM (Teammanager)"
   },
