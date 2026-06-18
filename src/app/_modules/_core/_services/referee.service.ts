@@ -288,6 +288,7 @@ export class RefereeService {
     game_id: number;
     referee1_id?: number | null;
     referee2_id?: number | null;
+    coach_id?: number | null;
   }) {
     return this.http.post<RefereeAssignment>(
       environment.apiURL + 'admin/referee_assignments',
@@ -301,6 +302,7 @@ export class RefereeService {
       game_id?: number;
       referee1_id?: number | null;
       referee2_id?: number | null;
+      coach_id?: number | null;
     }
   ) {
     return this.http.put<RefereeAssignment>(
@@ -328,6 +330,14 @@ export class RefereeService {
     if (gameId) query += `&game_id=${gameId}`;
     return this.http.get<RefereeAssignmentAvailable[]>(
       environment.apiURL + 'admin/referee_assignments/available' + query
+    );
+  }
+
+  // Mögliche Schiedsrichtercoaches (gültige B-Zusatzlizenz, kein Sperrtermin am Tag).
+  public adminGetAvailableCoaches(date: string) {
+    const query = `?date=${encodeURIComponent(date)}`;
+    return this.http.get<RefereeAssignmentAvailable[]>(
+      environment.apiURL + 'admin/referee_assignments/available_coaches' + query
     );
   }
 

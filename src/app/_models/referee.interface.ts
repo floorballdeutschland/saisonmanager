@@ -169,6 +169,7 @@ export interface RefereeAssignment {
   published_at?: string;
   referee1?: RefereeAssignmentStub | null;
   referee2?: RefereeAssignmentStub | null;
+  coach?: RefereeAssignmentStub | null;
   game?: RefereeAssignmentGame | null;
 }
 

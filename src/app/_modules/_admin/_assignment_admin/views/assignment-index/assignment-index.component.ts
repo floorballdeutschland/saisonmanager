@@ -24,12 +24,17 @@ import {
 interface RowState {
   referee1Query: string;
   referee2Query: string;
+  coachQuery: string;
   selectedReferee1Id: number | null;
   selectedReferee2Id: number | null;
+  selectedCoachId: number | null;
   showReferee1Dropdown: boolean;
   showReferee2Dropdown: boolean;
+  showCoachDropdown: boolean;
   availableReferees: RefereeAssignmentAvailable[];
+  availableCoaches: RefereeAssignmentAvailable[];
   loadingReferees: boolean;
+  loadingCoaches: boolean;
   saving: boolean;
   notifying: boolean;
   publishing: boolean;
@@ -113,6 +118,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       t('assignmentAdmin.index.csvHost'),
       t('assignmentAdmin.index.colReferee1'),
       t('assignmentAdmin.index.colReferee2'),
+      t('assignmentAdmin.index.colCoach'),
       t('assignmentAdmin.index.colStatus'),
     ];
     const rows = this.rows.map((r) => [
@@ -125,6 +131,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       r.game.club ?? r.assignment?.game?.club ?? '',
       this._refereeCsvName(r.assignment?.referee1),
       this._refereeCsvName(r.assignment?.referee2),
+      this._refereeCsvName(r.assignment?.coach),
       this.assignmentStatusLabel(r.game.assignment_status),
     ]);
 
@@ -351,6 +358,86 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
+  filteredCoaches(gameId: number, query: string): RefereeAssignmentAvailable[] {
+    const state = this.rowStates.get(gameId);
+    if (!state) return [];
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return state.availableCoaches.filter(
+      (r) =>
+        r.vorname.toLowerCase().includes(q) ||
+        r.nachname.toLowerCase().includes(q)
+    );
+  }
+
+  onCoachFocus(gameId: number): void {
+    const state = this.rowStates.get(gameId);
+    if (!state || state.loadingCoaches || state.availableCoaches.length > 0)
+      return;
+    const row = this.rows.find((r) => r.game.id === gameId);
+    if (!row) return;
+    state.loadingCoaches = true;
+    this._cdr.markForCheck();
+    this._refereeService
+      .adminGetAvailableCoaches(row.game.date)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (list) => {
+          state.availableCoaches = list;
+          state.loadingCoaches = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          state.loadingCoaches = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  onCoachInput(gameId: number, value: string): void {
+    const state = this.rowStates.get(gameId);
+    if (!state) return;
+    state.coachQuery = value;
+    state.selectedCoachId = null;
+    state.showCoachDropdown = value.trim().length > 0;
+    this._cdr.markForCheck();
+  }
+
+  selectCoach(gameId: number, r: RefereeAssignmentAvailable): void {
+    const state = this.rowStates.get(gameId);
+    if (!state) return;
+    state.selectedCoachId = r.id;
+    state.coachQuery = this._refereeName(r);
+    state.showCoachDropdown = false;
+    this._cdr.markForCheck();
+  }
+
+  clearCoach(gameId: number): void {
+    const state = this.rowStates.get(gameId);
+    if (!state) return;
+    state.selectedCoachId = null;
+    state.coachQuery = '';
+    state.showCoachDropdown = false;
+    this._cdr.markForCheck();
+  }
+
+  onCoachBlur(gameId: number): void {
+    setTimeout(() => {
+      const state = this.rowStates.get(gameId);
+      if (!state) return;
+      state.showCoachDropdown = false;
+      if (!state.selectedCoachId) {
+        state.coachQuery = '';
+      } else {
+        const r = state.availableCoaches.find(
+          (x) => x.id === state.selectedCoachId
+        );
+        if (r) state.coachQuery = this._refereeName(r);
+      }
+      this._cdr.markForCheck();
+    }, 200);
+  }
+
   save(row: MergedGame): void {
     const state = this.rowStates.get(row.game.id);
     if (!state || state.saving) return;
@@ -361,6 +448,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       game_id: row.game.id,
       referee1_id: state.selectedReferee1Id,
       referee2_id: state.selectedReferee2Id,
+      coach_id: state.selectedCoachId,
     };
 
     const call = row.assignment
@@ -562,15 +650,21 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   private _createRowState(assignment: RefereeAssignment | null): RowState {
     const ref1 = assignment?.referee1 ?? null;
     const ref2 = assignment?.referee2 ?? null;
+    const coach = assignment?.coach ?? null;
     return {
       referee1Query: ref1 ? this._refereeName(ref1) : '',
       referee2Query: ref2 ? this._refereeName(ref2) : '',
+      coachQuery: coach ? this._refereeName(coach) : '',
       selectedReferee1Id: ref1?.id ?? null,
       selectedReferee2Id: ref2?.id ?? null,
+      selectedCoachId: coach?.id ?? null,
       showReferee1Dropdown: false,
       showReferee2Dropdown: false,
+      showCoachDropdown: false,
       availableReferees: [],
+      availableCoaches: [],
       loadingReferees: false,
+      loadingCoaches: false,
       saving: false,
       notifying: false,
       publishing: false,
