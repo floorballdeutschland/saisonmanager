@@ -7,6 +7,7 @@ import {
   RefereeAssignableGame,
   RefereeAssignment,
   RefereeAssignmentAvailable,
+  RefereeAvailability,
   RefereeBlockedDate,
   RefereeBlockedDatesBulkResult,
   RefereeEntry,
@@ -338,6 +339,25 @@ export class RefereeService {
     const query = `?date=${encodeURIComponent(date)}`;
     return this.http.get<RefereeAssignmentAvailable[]>(
       environment.apiURL + 'admin/referee_assignments/available_coaches' + query
+    );
+  }
+
+  // Wochenend-Verfügbarkeitsmatrix („war room") für die Ansetzung.
+  public adminGetAvailability(params?: {
+    season_id?: string;
+    date_from?: string;
+    date_to?: string;
+  }) {
+    const parts: string[] = [];
+    if (params?.season_id)
+      parts.push(`season_id=${encodeURIComponent(params.season_id)}`);
+    if (params?.date_from)
+      parts.push(`date_from=${encodeURIComponent(params.date_from)}`);
+    if (params?.date_to)
+      parts.push(`date_to=${encodeURIComponent(params.date_to)}`);
+    const query = parts.length ? '?' + parts.join('&') : '';
+    return this.http.get<RefereeAvailability>(
+      environment.apiURL + 'admin/referee_assignments/availability' + query
     );
   }
 

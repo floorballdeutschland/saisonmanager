@@ -83,6 +83,9 @@
       "@floorball/admin/assignment": [
         "src/app/_modules/_admin/_assignment_admin"
       ],
+      "@floorball/admin/availability": [
+        "src/app/_modules/_admin/_availability_admin"
+      ],
       "@floorball/admin/state-associations": [
         "src/app/_modules/_admin/_state_association_admin"
       ],

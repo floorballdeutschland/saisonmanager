@@ -1,0 +1,214 @@
+<div class="p-4 lg:p-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold">
+      {{ "availabilityAdmin.index.title" | transloco }}
+    </h1>
+    <p class="text-sm text-fb-gray-500 mt-2 max-w-3xl">
+      {{ "availabilityAdmin.index.intro" | transloco }}
+    </p>
+  </div>
+
+  <!-- Filter -->
+  <div class="flex flex-wrap gap-4 mb-4 items-end">
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "availabilityAdmin.index.filterSeason" | transloco
+      }}</label>
+      <select
+        [(ngModel)]="filterSeasonId"
+        [disabled]="seasonsLoading"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      >
+        <option value="">
+          {{ "availabilityAdmin.index.filterSeasonAll" | transloco }}
+        </option>
+        @for (s of seasons; track s) {
+          <option [value]="s.id.toString()">{{ s.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "availabilityAdmin.index.filterFrom" | transloco
+      }}</label>
+      <input
+        type="date"
+        [(ngModel)]="filterDateFrom"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "availabilityAdmin.index.filterTo" | transloco
+      }}</label>
+      <input
+        type="date"
+        [(ngModel)]="filterDateTo"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      />
+    </div>
+    <button
+      type="button"
+      (click)="applyFilter()"
+      class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+    >
+      {{ "availabilityAdmin.index.filterApply" | transloco }}
+    </button>
+  </div>
+
+  <!-- Lizenzstufen-Filter + Legende -->
+  @if (!loading && licenseLevels.length > 0) {
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mb-4 text-xs">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="font-bold uppercase text-fb-gray-500">{{
+          "availabilityAdmin.index.filterLevels" | transloco
+        }}</span>
+        @for (level of licenseLevels; track level) {
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input
+              type="checkbox"
+              [checked]="isLevelSelected(level)"
+              (change)="toggleLevel(level)"
+              class="h-3.5 w-3.5"
+            />
+            {{ level }}
+          </label>
+        }
+      </div>
+      <div class="flex items-center gap-3">
+        <span
+          class="px-2 py-0.5 rounded bg-green-100 text-green-800 font-bold"
+          >{{ "availabilityAdmin.index.stateFree" | transloco }}</span
+        >
+        <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">{{
+          "availabilityAdmin.index.stateAssigned" | transloco
+        }}</span>
+        <span class="px-2 py-0.5 rounded bg-red-100 text-red-700 font-bold">{{
+          "availabilityAdmin.index.stateBlocked" | transloco
+        }}</span>
+      </div>
+    </div>
+  }
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "availabilityAdmin.index.loading" | transloco }}
+    </div>
+  }
+
+  @if (!loading && weekends.length === 0) {
+    <div class="text-fb-gray-500 py-8">
+      {{ "availabilityAdmin.index.empty" | transloco }}
+    </div>
+  }
+
+  @if (!loading && weekends.length > 0) {
+    <div class="overflow-x-auto border border-fb-gray-700 rounded-[5px]">
+      <table class="text-xs border-collapse w-full">
+        <thead>
+          <tr class="bg-fb-gray-800 border-b border-fb-gray-600">
+            <th
+              class="sticky left-0 z-10 bg-fb-gray-800 text-left py-2 px-3 font-bold uppercase text-fb-gray-500"
+              style="min-width: 200px"
+            >
+              {{ "availabilityAdmin.index.colReferee" | transloco }}
+            </th>
+            <th
+              class="text-left py-2 px-2 font-bold uppercase text-fb-gray-500 whitespace-nowrap"
+            >
+              {{ "availabilityAdmin.index.colLevel" | transloco }}
+            </th>
+            @for (w of weekends; track w.key) {
+              <th
+                class="py-2 px-1 text-center font-bold text-fb-gray-500 whitespace-nowrap"
+                [title]="w.saturday + ' – ' + w.sunday"
+              >
+                {{ formatShortDate(w.saturday) }}
+                <div class="font-normal text-fb-gray-400">
+                  {{
+                    "availabilityAdmin.index.gamesCount"
+                      | transloco: { count: w.game_count }
+                  }}
+                </div>
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of displayReferees; track r.id) {
+            <tr class="border-b border-fb-gray-700 hover:bg-fb-gray-100">
+              <td
+                class="sticky left-0 z-10 bg-white py-1.5 px-3 whitespace-nowrap"
+              >
+                {{ refereeName(r) }}
+              </td>
+              <td class="py-1.5 px-2 text-fb-gray-500 whitespace-nowrap">
+                {{ r.lizenzstufe || "–" }}
+              </td>
+              @for (w of weekends; track w.key) {
+                <td
+                  class="py-1 px-1 text-center font-bold"
+                  [ngClass]="cellClass(r.states[w.key])"
+                  [title]="stateLabel(r.states[w.key])"
+                >
+                  {{ cellGlyph(r.states[w.key]) }}
+                </td>
+              }
+            </tr>
+          }
+          @if (displayReferees.length === 0) {
+            <tr>
+              <td
+                [attr.colspan]="weekends.length + 2"
+                class="py-6 text-center text-fb-gray-500"
+              >
+                {{ "availabilityAdmin.index.noneForFilter" | transloco }}
+              </td>
+            </tr>
+          }
+        </tbody>
+        <tfoot class="border-t-2 border-fb-gray-600">
+          <tr class="bg-green-50">
+            <td
+              class="sticky left-0 z-10 bg-green-50 py-1.5 px-3 font-bold text-green-800"
+            >
+              {{ "availabilityAdmin.index.totalFree" | transloco }}
+            </td>
+            <td class="bg-green-50"></td>
+            @for (w of weekends; track w.key) {
+              <td class="py-1.5 px-1 text-center font-bold text-green-800">
+                {{ totals[w.key].free }}
+              </td>
+            }
+          </tr>
+          <tr class="bg-fb-gray-800">
+            <td
+              class="sticky left-0 z-10 bg-fb-gray-800 py-1.5 px-3 text-fb-gray-500"
+            >
+              {{ "availabilityAdmin.index.totalAssigned" | transloco }}
+            </td>
+            <td class="bg-fb-gray-800"></td>
+            @for (w of weekends; track w.key) {
+              <td class="py-1.5 px-1 text-center text-blue-800">
+                {{ totals[w.key].assigned }}
+              </td>
+            }
+          </tr>
+          <tr class="bg-fb-gray-800">
+            <td
+              class="sticky left-0 z-10 bg-fb-gray-800 py-1.5 px-3 text-fb-gray-500"
+            >
+              {{ "availabilityAdmin.index.totalBlocked" | transloco }}
+            </td>
+            <td class="bg-fb-gray-800"></td>
+            @for (w of weekends; track w.key) {
+              <td class="py-1.5 px-1 text-center text-red-700">
+                {{ totals[w.key].blocked }}
+              </td>
+            }
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  }
+</div>

@@ -183,6 +183,29 @@ export interface RefereeAssignmentAvailable {
   partner_lizenznummer?: number | null;
 }
 
+export type RefereeAvailabilityState = 'free' | 'blocked' | 'assigned';
+
+export interface RefereeAvailabilityWeekend {
+  key: string;
+  saturday: string;
+  sunday: string;
+  game_count: number;
+}
+
+export interface RefereeAvailabilityReferee {
+  id: number;
+  lizenznummer_display: string;
+  vorname: string;
+  nachname: string;
+  lizenzstufe?: string;
+  states: { [weekendKey: string]: RefereeAvailabilityState };
+}
+
+export interface RefereeAvailability {
+  weekends: RefereeAvailabilityWeekend[];
+  referees: RefereeAvailabilityReferee[];
+}
+
 export interface RefereeBlockedDate {
   id: number;
   date: string;

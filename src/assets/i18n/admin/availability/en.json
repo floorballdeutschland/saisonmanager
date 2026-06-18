@@ -1,0 +1,25 @@
+{
+  "index": {
+    "title": "Referee availability",
+    "intro": "Weekend overview of the availability of all active referees in your association – the basis for assignments. For each match weekend you can see who is free, blocked or already assigned.",
+    "filterSeason": "Season",
+    "filterSeasonAll": "All seasons",
+    "filterFrom": "From",
+    "filterTo": "To",
+    "filterApply": "Apply",
+    "filterLevels": "License levels",
+    "colReferee": "Referee",
+    "colLevel": "Level",
+    "gamesCount": "{{ count }} games",
+    "stateFree": "Free",
+    "stateAssigned": "Assigned",
+    "stateBlocked": "Blocked",
+    "totalFree": "Free / available",
+    "totalAssigned": "Already assigned",
+    "totalBlocked": "Blocked",
+    "loading": "Loading availability…",
+    "empty": "No match weekends found in the selected period.",
+    "noneForFilter": "No referees for the selected license levels.",
+    "loadError": "Availability could not be loaded."
+  }
+}

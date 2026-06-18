@@ -1,0 +1,25 @@
+{
+  "index": {
+    "title": "Schiedsrichter-Verfügbarkeiten",
+    "intro": "Wochenend-Übersicht der Verfügbarkeit aller aktiven Schiedsrichter*innen deines Verbands – Grundlage für die Ansetzung. Pro Spielwochenende siehst du, wer frei, gesperrt oder bereits angesetzt ist.",
+    "filterSeason": "Saison",
+    "filterSeasonAll": "Alle Saisons",
+    "filterFrom": "Von",
+    "filterTo": "Bis",
+    "filterApply": "Anwenden",
+    "filterLevels": "Lizenzstufen",
+    "colReferee": "Schiedsrichter*in",
+    "colLevel": "Stufe",
+    "gamesCount": "{{ count }} Sp.",
+    "stateFree": "Frei",
+    "stateAssigned": "Angesetzt",
+    "stateBlocked": "Gesperrt",
+    "totalFree": "Frei verfügbar",
+    "totalAssigned": "Bereits angesetzt",
+    "totalBlocked": "Gesperrt",
+    "loading": "Lade Verfügbarkeiten…",
+    "empty": "Keine Spielwochenenden im gewählten Zeitraum gefunden.",
+    "noneForFilter": "Keine Schiedsrichter*innen für die gewählten Lizenzstufen.",
+    "loadError": "Verfügbarkeiten konnten nicht geladen werden."
+  }
+}
