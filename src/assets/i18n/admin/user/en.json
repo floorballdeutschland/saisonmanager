@@ -100,7 +100,12 @@
     "deleteDialogContent": "Really permanently delete user account &bdquo;{{ username }}&ldquo;?",
     "deleteDialogSubmit": "Delete permanently",
     "deleting": "Deleting…",
-    "deleteButton": "Delete user"
+    "deleteButton": "Delete user",
+    "rolesTitle": "Roles",
+    "rolesHint": "An account can have multiple roles (e.g. RSK and assignor). Association- or club-bound roles need the respective assignment.",
+    "removeRole": "Remove",
+    "selectRole": "Select role…",
+    "addRole": "Add role"
   },
   "notifications": {
     "userCreated": "User {{ name }} created. An email to set the password has been sent.",
@@ -118,6 +123,9 @@
     "deleteError": "Error while deleting.",
     "confirmPasswordReset": "Send password reset email to \"{{ recipient }}\"?",
     "resetMailSent": "Email has been sent.",
-    "resetMailError": "Error while sending."
+    "resetMailError": "Error while sending.",
+    "roleAdded": "Role added.",
+    "roleRemoved": "Role removed.",
+    "confirmRemoveRole": "Really remove role \"{{ role }}\"?"
   }
 }

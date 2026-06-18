@@ -100,7 +100,12 @@
     "deleteDialogContent": "Benutzerkonto &bdquo;{{ username }}&ldquo; wirklich dauerhaft löschen?",
     "deleteDialogSubmit": "Endgültig löschen",
     "deleting": "Lösche…",
-    "deleteButton": "Benutzer löschen"
+    "deleteButton": "Benutzer löschen",
+    "rolesTitle": "Rollen",
+    "rolesHint": "Ein Konto kann mehrere Rollen haben (z. B. RSK und Ansetzer). Verbund- bzw. vereinsgebundene Rollen brauchen die jeweilige Zuordnung.",
+    "removeRole": "Entfernen",
+    "selectRole": "Rolle wählen…",
+    "addRole": "Rolle hinzufügen"
   },
   "notifications": {
     "userCreated": "Benutzer {{ name }} angelegt. Eine E-Mail zum Passwort setzen wurde versandt.",
@@ -118,6 +123,9 @@
     "deleteError": "Fehler beim Löschen.",
     "confirmPasswordReset": "Passwort-Reset-Mail an \"{{ recipient }}\" senden?",
     "resetMailSent": "E-Mail wurde gesendet.",
-    "resetMailError": "Fehler beim Senden."
+    "resetMailError": "Fehler beim Senden.",
+    "roleAdded": "Rolle hinzugefügt.",
+    "roleRemoved": "Rolle entfernt.",
+    "confirmRemoveRole": "Rolle „{{ role }}\" wirklich entfernen?"
   }
 }

@@ -48,6 +48,36 @@ export class UserManagementService {
     return this.http.post<UserAdminEntry>(`${this.base}.json`, data);
   }
 
+  addRole(
+    id: number,
+    body: {
+      user_group_id: number;
+      game_operation_id?: number;
+      club_id?: number;
+    }
+  ): Observable<UserAdminEntry> {
+    return this.http.post<UserAdminEntry>(
+      `${this.base}/${id}/add_role.json`,
+      body
+    );
+  }
+
+  removeRole(
+    id: number,
+    body: {
+      user_group_id: number;
+      game_operation_id?: number;
+      club_id?: number;
+    }
+  ): Observable<UserAdminEntry> {
+    return this.http.delete<UserAdminEntry>(
+      `${this.base}/${id}/remove_role.json`,
+      {
+        body,
+      }
+    );
+  }
+
   triggerPasswordReset(id: number): Observable<{ success: boolean }> {
     return this.http.post<{ success: boolean }>(
       `${this.base}/${id}/trigger_password_reset.json`,

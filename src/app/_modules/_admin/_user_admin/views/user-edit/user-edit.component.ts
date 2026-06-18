@@ -20,6 +20,7 @@ import {
   ClubWithTeams,
   Team,
   UserAdminEntry,
+  UserAdminRole,
   User,
   GameOperation,
 } from '@floorball/types';
@@ -47,6 +48,44 @@ export class UserEditComponent implements OnInit, OnDestroy {
   selectedGoId: number | null = null;
   selectedClubId: number | null = null;
   savingAssignment = false;
+
+  // Mehrfachrollen-Verwaltung (nur Admin). Admin-Rolle (1) wird hier bewusst nicht angeboten.
+  readonly roleOptions = [
+    {
+      id: 2,
+      labelKey: 'userAdmin.create.roleSbk',
+      needsGo: true,
+      needsClub: false,
+    },
+    {
+      id: 3,
+      labelKey: 'userAdmin.create.roleRsk',
+      needsGo: true,
+      needsClub: false,
+    },
+    {
+      id: 7,
+      labelKey: 'userAdmin.create.roleAnsetzer',
+      needsGo: true,
+      needsClub: false,
+    },
+    {
+      id: 4,
+      labelKey: 'userAdmin.create.roleVm',
+      needsGo: false,
+      needsClub: true,
+    },
+    {
+      id: 5,
+      labelKey: 'userAdmin.create.roleTm',
+      needsGo: false,
+      needsClub: true,
+    },
+  ];
+  newRoleId: number | null = null;
+  newRoleGoId: number | null = null;
+  newRoleClubId: number | null = null;
+  managingRole = false;
 
   private _destroy$ = new Subject<void>();
 
@@ -215,6 +254,107 @@ export class UserEditComponent implements OnInit, OnDestroy {
     } else {
       this.editableTeamIds = [...this.editableTeamIds, teamId];
     }
+  }
+
+  get canManageRoles(): boolean {
+    return !!this.currentUser?.permissions['manage_user_roles'] && !this.isSelf;
+  }
+
+  get newRoleNeedsGo(): boolean {
+    return this.newRoleId !== null && [2, 3, 7].includes(this.newRoleId);
+  }
+
+  get newRoleNeedsClub(): boolean {
+    return this.newRoleId !== null && [4, 5].includes(this.newRoleId);
+  }
+
+  get canSubmitNewRole(): boolean {
+    if (this.managingRole || this.newRoleId === null) return false;
+    if (this.newRoleNeedsGo && !this.newRoleGoId) return false;
+    if (this.newRoleNeedsClub && !this.newRoleClubId) return false;
+    return true;
+  }
+
+  addRole(): void {
+    if (!this.user || !this.canSubmitNewRole) return;
+    const body: {
+      user_group_id: number;
+      game_operation_id?: number;
+      club_id?: number;
+    } = { user_group_id: this.newRoleId! };
+    if (this.newRoleNeedsGo) body.game_operation_id = this.newRoleGoId!;
+    if (this.newRoleNeedsClub) body.club_id = this.newRoleClubId!;
+
+    this.managingRole = true;
+    this._userService
+      .addRole(this.user.id, body)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.user = updated;
+          this.newRoleId = null;
+          this.newRoleGoId = null;
+          this.newRoleClubId = null;
+          this.managingRole = false;
+          this._notificationService.success(
+            this._transloco.translate('userAdmin.notifications.roleAdded')
+          );
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this.managingRole = false;
+          this._cdr.markForCheck();
+          this._notificationService.error(
+            err?.error?.error ||
+              this._transloco.translate('userAdmin.notifications.saveError'),
+            { autoClose: false }
+          );
+        },
+      });
+  }
+
+  removeRole(role: UserAdminRole): void {
+    if (!this.user || this.managingRole) return;
+    if (
+      !confirm(
+        this._transloco.translate('userAdmin.notifications.confirmRemoveRole', {
+          role: role.role_name,
+        })
+      )
+    )
+      return;
+
+    const body: {
+      user_group_id: number;
+      game_operation_id?: number;
+      club_id?: number;
+    } = { user_group_id: role.user_group_id };
+    if (role.game_operation_id) body.game_operation_id = role.game_operation_id;
+    if (role.club_id) body.club_id = role.club_id;
+
+    this.managingRole = true;
+    this._userService
+      .removeRole(this.user.id, body)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.user = updated;
+          this.managingRole = false;
+          this._notificationService.success(
+            this._transloco.translate('userAdmin.notifications.roleRemoved')
+          );
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this.managingRole = false;
+          this._cdr.markForCheck();
+          this._notificationService.error(
+            err?.error?.error ||
+              this._transloco.translate('userAdmin.notifications.saveError'),
+            { autoClose: false }
+          );
+        },
+      });
   }
 
   submit(): void {

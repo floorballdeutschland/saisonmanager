@@ -140,6 +140,91 @@
         </div>
       </div>
     }
+    <!-- Mehrfachrollen verwalten (nur Admin) -->
+    @if (canManageRoles) {
+      <div class="border-t border-fb-gray-200 pt-6 mb-6">
+        <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+          {{ "userAdmin.edit.rolesTitle" | transloco }}
+        </div>
+        <p class="text-sm text-fb-gray-500 mb-3">
+          {{ "userAdmin.edit.rolesHint" | transloco }}
+        </p>
+        <ul class="flex flex-col gap-2 mb-4">
+          @for (role of user.roles; track role) {
+            <li
+              class="flex items-center justify-between gap-3 border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm"
+            >
+              <span>
+                <strong>{{ role.role_name }}</strong>
+                @if (role.game_operation_name) {
+                  <span class="text-fb-gray-500"
+                    >· {{ role.game_operation_name }}</span
+                  >
+                }
+                @if (role.club_name) {
+                  <span class="text-fb-gray-500">· {{ role.club_name }}</span>
+                }
+              </span>
+              <button
+                type="button"
+                (click)="removeRole(role)"
+                [disabled]="managingRole || user.roles.length <= 1"
+                class="text-xs font-bold text-red-700 hover:text-red-900 disabled:opacity-40 whitespace-nowrap"
+              >
+                {{ "userAdmin.edit.removeRole" | transloco }}
+              </button>
+            </li>
+          }
+        </ul>
+        <div class="flex flex-wrap items-end gap-2">
+          <select
+            [(ngModel)]="newRoleId"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+          >
+            <option [ngValue]="null">
+              {{ "userAdmin.edit.selectRole" | transloco }}
+            </option>
+            @for (opt of roleOptions; track opt.id) {
+              <option [ngValue]="opt.id">{{ opt.labelKey | transloco }}</option>
+            }
+          </select>
+          @if (newRoleNeedsGo) {
+            <select
+              [(ngModel)]="newRoleGoId"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+            >
+              <option [ngValue]="null">
+                {{ "userAdmin.edit.selectGameOperation" | transloco }}
+              </option>
+              @for (go of gameOperations; track go) {
+                <option [ngValue]="go.id">{{ go.name }}</option>
+              }
+            </select>
+          }
+          @if (newRoleNeedsClub) {
+            <select
+              [(ngModel)]="newRoleClubId"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+            >
+              <option [ngValue]="null">
+                {{ "userAdmin.edit.selectClub" | transloco }}
+              </option>
+              @for (c of clubsWithTeams; track c) {
+                <option [ngValue]="c.id">{{ c.name }}</option>
+              }
+            </select>
+          }
+          <button
+            type="button"
+            (click)="addRole()"
+            [disabled]="!canSubmitNewRole"
+            class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+          >
+            {{ "userAdmin.edit.addRole" | transloco }}
+          </button>
+        </div>
+      </div>
+    }
     <!-- Verbund-Zuweisung (für SBK/RSK-Nutzer) -->
     @if (showGoAssignment) {
       <div class="border-t border-fb-gray-200 pt-6 mb-6">
