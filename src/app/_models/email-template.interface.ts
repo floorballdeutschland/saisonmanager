@@ -24,7 +24,9 @@ export interface EmailTemplateUpdatePayload {
   mailer_class: string;
   action_name: string;
   subject: string;
-  body: string;
+  // Body wird nicht mehr über die UI gepflegt (nur read-only Anzeige des
+  // Code-Defaults); Feld bleibt optional für Abwärtskompatibilität der API.
+  body?: string;
   from_address: string;
   reply_to_address: string;
 }

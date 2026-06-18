@@ -24,5 +24,7 @@
     "saved": "\"{{ name }}\" gespeichert.",
     "reset": "\"{{ name }}\" auf Standardwerte zurückgesetzt.",
     "saveError": "Fehler beim Speichern: {{ detail }}"
-  }
+  },
+  "bodyReadonlyLabel": "Text (Standard – schreibgeschützt)",
+  "bodyReadonlyHint": "Der E-Mail-Text wird zentral im Code gepflegt und ist hier nur zur Kontrolle sichtbar. Betreff, Absender und Antwortadresse lassen sich oben anpassen."
 }

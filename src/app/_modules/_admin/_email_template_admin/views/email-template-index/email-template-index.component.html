@@ -73,40 +73,19 @@
                 </div>
                 <div class="lg:col-span-2">
                   <label class="block text-sm font-bold mb-1">{{
-                    "emailTemplateAdmin.bodyLabel" | transloco
+                    "emailTemplateAdmin.bodyReadonlyLabel" | transloco
                   }}</label>
-                  <textarea
-                    [(ngModel)]="edits[template.key].body"
-                    [disabled]="isSaving(template)"
-                    rows="6"
-                    [placeholder]="
-                      'emailTemplateAdmin.bodyPlaceholder' | transloco
-                    "
-                    class="w-full font-mono border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:opacity-40"
-                  ></textarea>
-                  <p class="text-xs text-fb-gray-500 mt-1">
-                    {{ "emailTemplateAdmin.bodyHint" | transloco }}
-                  </p>
-
                   @if (template.default_body) {
-                    <details
-                      [open]="!template.customized"
-                      class="mt-2 border border-fb-gray-700 rounded-[5px] bg-fb-gray-800"
+                    <pre
+                      class="border border-fb-gray-700 rounded-[5px] bg-fb-gray-800 px-3 py-2 text-xs font-mono whitespace-pre-wrap break-words text-fb-gray-500"
+                      >{{ template.default_body }}</pre
                     >
-                      <summary
-                        class="cursor-pointer select-none px-3 py-2 text-xs font-bold text-fb-gray-500"
-                      >
-                        {{ "emailTemplateAdmin.defaultBodyLabel" | transloco }}
-                      </summary>
-                      <pre
-                        class="px-3 pb-3 text-xs font-mono whitespace-pre-wrap break-words text-fb-gray-500"
-                        >{{ template.default_body }}</pre
-                      >
-                    </details>
-                    <p class="text-xs text-fb-gray-500 mt-1">
-                      {{ "emailTemplateAdmin.defaultBodyHint" | transloco }}
-                    </p>
+                  } @else {
+                    <p class="text-xs text-fb-gray-500">–</p>
                   }
+                  <p class="text-xs text-fb-gray-500 mt-1">
+                    {{ "emailTemplateAdmin.bodyReadonlyHint" | transloco }}
+                  </p>
                 </div>
                 <div>
                   <label class="block text-sm font-bold mb-1">{{

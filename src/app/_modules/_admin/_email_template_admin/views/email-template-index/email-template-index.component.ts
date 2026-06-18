@@ -14,7 +14,6 @@ import { EmailTemplate } from '@floorball/types';
 
 interface TemplateEdit {
   subject: string;
-  body: string;
   from_address: string;
   reply_to_address: string;
 }
@@ -97,7 +96,6 @@ export class EmailTemplateIndexComponent implements OnInit, OnDestroy {
         mailer_class: template.mailer_class,
         action_name: template.action_name,
         subject: edit.subject.trim(),
-        body: edit.body.trim(),
         from_address: edit.from_address.trim(),
         reply_to_address: edit.reply_to_address.trim(),
       })
@@ -191,7 +189,6 @@ export class EmailTemplateIndexComponent implements OnInit, OnDestroy {
     for (const template of this.templates) {
       this.edits[template.key] = {
         subject: template.subject ?? template.default_subject ?? '',
-        body: template.body ?? '',
         from_address: template.from_address ?? template.default_from ?? '',
         reply_to_address:
           template.reply_to_address ?? template.default_reply_to ?? '',

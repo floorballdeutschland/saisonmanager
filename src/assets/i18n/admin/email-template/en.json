@@ -24,5 +24,7 @@
     "saved": "\"{{ name }}\" saved.",
     "reset": "\"{{ name }}\" reset to default values.",
     "saveError": "Error while saving: {{ detail }}"
-  }
+  },
+  "bodyReadonlyLabel": "Body (default – read-only)",
+  "bodyReadonlyHint": "The email body is maintained centrally in code and shown here for reference only. Subject, sender and reply-to can be changed above."
 }
