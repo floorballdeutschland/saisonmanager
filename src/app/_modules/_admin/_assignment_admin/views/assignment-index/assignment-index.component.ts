@@ -233,13 +233,16 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   ): RefereeAssignmentAvailable[] {
     const state = this.rowStates.get(gameId);
     if (!state) return [];
+    const prefiltered = state.availableReferees.filter((r) =>
+      this._passesPrefilters(r)
+    );
     const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return state.availableReferees.filter(
+    // Leeres Feld (z. B. beim Anklicken): vorgefilterte Liste komplett zeigen.
+    if (!q) return prefiltered;
+    return prefiltered.filter(
       (r) =>
-        this._passesPrefilters(r) &&
-        (r.vorname.toLowerCase().includes(q) ||
-          r.nachname.toLowerCase().includes(q))
+        r.vorname.toLowerCase().includes(q) ||
+        r.nachname.toLowerCase().includes(q)
     );
   }
 
@@ -277,16 +280,37 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   // Lizenzstufe = keine Lizenz-Einschränkung (alle anzeigen).
   private _passesPrefilters(r: RefereeAssignmentAvailable): boolean {
     if (this.filterShortNotice && !r.kurzfristig_mobil) return false;
-    if (
-      this.selectedLicenseLevels.size > 0 &&
-      (!r.lizenzstufe || !this.selectedLicenseLevels.has(r.lizenzstufe))
-    ) {
-      return false;
+    if (this.selectedLicenseLevels.size > 0) {
+      // Eine gewählte Stufe matcht per Präfix: „N" trifft N1/N2/N3, „L" trifft
+      // L1/L2/… – eine konkrete Stufe wie „N1" trifft weiterhin nur exakt N1.
+      const level = r.lizenzstufe;
+      const matches =
+        !!level &&
+        Array.from(this.selectedLicenseLevels).some((sel) =>
+          level.startsWith(sel)
+        );
+      if (!matches) return false;
     }
     return true;
   }
 
-  onRefereeFocus(gameId: number): void {
+  onReferee1Focus(gameId: number): void {
+    const state = this.rowStates.get(gameId);
+    if (!state) return;
+    state.showReferee1Dropdown = true;
+    this._cdr.markForCheck();
+    this._loadAvailableReferees(gameId);
+  }
+
+  onReferee2Focus(gameId: number): void {
+    const state = this.rowStates.get(gameId);
+    if (!state) return;
+    state.showReferee2Dropdown = true;
+    this._cdr.markForCheck();
+    this._loadAvailableReferees(gameId);
+  }
+
+  private _loadAvailableReferees(gameId: number): void {
     const state = this.rowStates.get(gameId);
     if (!state || state.loadingReferees || state.availableReferees.length > 0)
       return;
@@ -315,7 +339,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     if (!state) return;
     state.referee1Query = value;
     state.selectedReferee1Id = null;
-    state.showReferee1Dropdown = value.trim().length > 0;
+    state.showReferee1Dropdown = true;
     this._cdr.markForCheck();
   }
 
@@ -324,7 +348,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     if (!state) return;
     state.referee2Query = value;
     state.selectedReferee2Id = null;
-    state.showReferee2Dropdown = value.trim().length > 0;
+    state.showReferee2Dropdown = true;
     this._cdr.markForCheck();
   }
 
@@ -412,7 +436,8 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     const state = this.rowStates.get(gameId);
     if (!state) return [];
     const q = query.trim().toLowerCase();
-    if (!q) return [];
+    // Leeres Feld (z. B. beim Anklicken): verfügbare Coaches komplett zeigen.
+    if (!q) return state.availableCoaches;
     return state.availableCoaches.filter(
       (r) =>
         r.vorname.toLowerCase().includes(q) ||
@@ -421,6 +446,14 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   }
 
   onCoachFocus(gameId: number): void {
+    const state = this.rowStates.get(gameId);
+    if (!state) return;
+    state.showCoachDropdown = true;
+    this._cdr.markForCheck();
+    this._loadAvailableCoaches(gameId);
+  }
+
+  private _loadAvailableCoaches(gameId: number): void {
     const state = this.rowStates.get(gameId);
     if (!state || state.loadingCoaches || state.availableCoaches.length > 0)
       return;
@@ -449,7 +482,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     if (!state) return;
     state.coachQuery = value;
     state.selectedCoachId = null;
-    state.showCoachDropdown = value.trim().length > 0;
+    state.showCoachDropdown = true;
     this._cdr.markForCheck();
   }
 
