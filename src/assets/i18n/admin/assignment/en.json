@@ -38,7 +38,8 @@
     "prefilterLabel": "Selection pre-filter:",
     "filterShortNotice": "Short-notice mobile only",
     "filterLicense": "License level",
-    "shortNoticeBadge": "Available on short notice"
+    "shortNoticeBadge": "Available on short notice",
+    "updateSend": "Send change & notify"
   },
   "notifications": {
     "saved": "Assignment saved.",

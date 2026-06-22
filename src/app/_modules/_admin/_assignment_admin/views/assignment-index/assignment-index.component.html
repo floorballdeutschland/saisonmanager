@@ -482,15 +482,15 @@
                     <button
                       type="button"
                       (click)="save(row)"
-                      [disabled]="
-                        state.saving || row.assignment?.status === 'published'
-                      "
+                      [disabled]="state.saving"
                       class="px-2 py-1 text-xs bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40 whitespace-nowrap"
                     >
                       {{
                         (state.saving
                           ? "assignmentAdmin.index.saving"
-                          : "assignmentAdmin.index.saveDraft"
+                          : row.assignment?.status === "published"
+                            ? "assignmentAdmin.index.updateSend"
+                            : "assignmentAdmin.index.saveDraft"
                         ) | transloco
                       }}
                     </button>

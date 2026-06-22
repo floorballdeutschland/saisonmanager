@@ -38,7 +38,8 @@
     "prefilterLabel": "Auswahl-Vorfilter:",
     "filterShortNotice": "Nur kurzfristig mobil",
     "filterLicense": "Lizenzstufe",
-    "shortNoticeBadge": "Kurzfristig mobil"
+    "shortNoticeBadge": "Kurzfristig mobil",
+    "updateSend": "Änderung & Benachrichtigung senden"
   },
   "notifications": {
     "saved": "Ansetzung gespeichert.",
