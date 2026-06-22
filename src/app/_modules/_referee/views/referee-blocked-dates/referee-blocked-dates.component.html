@@ -41,7 +41,7 @@
     <div
       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
     >
-      @for (month of months; track month) {
+      @for (month of months; track month.label) {
         <div class="select-none">
           <p class="text-sm font-bold mb-2">{{ month.label }}</p>
           <!-- Weekday header -->
@@ -56,11 +56,11 @@
           <!-- Day grid -->
           <div class="grid grid-cols-7 gap-[2px]">
             <!-- Leading empty cells -->
-            @for (_ of [].constructor(month.leadingEmpty); track _) {
+            @for (_ of [].constructor(month.leadingEmpty); track $index) {
               <span class="aspect-square"></span>
             }
             <!-- Day cells -->
-            @for (day of month.days; track day) {
+            @for (day of month.days; track day.iso) {
               <button
                 type="button"
                 [disabled]="day.past || saving"
