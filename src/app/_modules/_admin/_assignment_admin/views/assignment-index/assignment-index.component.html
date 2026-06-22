@@ -76,6 +76,41 @@
   }
 
   @if (!loading && rows.length > 0) {
+    <!-- Auswahl-Vorfilter für die Schiri-Dropdowns (rein clientseitig) -->
+    <div class="flex flex-wrap items-center gap-3 mb-4 text-sm">
+      <span class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "assignmentAdmin.index.prefilterLabel" | transloco
+      }}</span>
+      <label class="flex items-center gap-1.5 cursor-pointer">
+        <input
+          type="checkbox"
+          [checked]="filterShortNotice"
+          (change)="toggleShortNotice()"
+        />
+        <span>{{ "assignmentAdmin.index.filterShortNotice" | transloco }}</span>
+      </label>
+      @if (licenseLevelOptions().length > 0) {
+        <span class="text-fb-gray-500"
+          >{{ "assignmentAdmin.index.filterLicense" | transloco }}:</span
+        >
+        <div class="flex flex-wrap gap-1">
+          @for (lvl of licenseLevelOptions(); track lvl) {
+            <button
+              type="button"
+              (click)="toggleLicenseLevel(lvl)"
+              class="px-2 py-0.5 rounded-full border text-xs"
+              [class.bg-black]="selectedLicenseLevels.has(lvl)"
+              [class.text-white]="selectedLicenseLevels.has(lvl)"
+              [class.border-black]="selectedLicenseLevels.has(lvl)"
+              [class.border-fb-gray-400]="!selectedLicenseLevels.has(lvl)"
+              [class.text-fb-gray-600]="!selectedLicenseLevels.has(lvl)"
+            >
+              {{ lvl }}
+            </button>
+          }
+        </div>
+      }
+    </div>
     <div class="overflow-x-auto">
       <table
         class="text-sm border-collapse"
@@ -246,6 +281,16 @@
                                 >({{ r.lizenzstufe }})</span
                               >
                             }
+                            @if (r.kurzfristig_mobil) {
+                              <span
+                                class="text-amber-600 ml-1"
+                                [title]="
+                                  'assignmentAdmin.index.shortNoticeBadge'
+                                    | transloco
+                                "
+                                >⚡</span
+                              >
+                            }
                           </li>
                         }
                       </ul>
@@ -332,6 +377,16 @@
                             @if (r.lizenzstufe) {
                               <span class="text-fb-gray-400 ml-1"
                                 >({{ r.lizenzstufe }})</span
+                              >
+                            }
+                            @if (r.kurzfristig_mobil) {
+                              <span
+                                class="text-amber-600 ml-1"
+                                [title]="
+                                  'assignmentAdmin.index.shortNoticeBadge'
+                                    | transloco
+                                "
+                                >⚡</span
                               >
                             }
                           </li>

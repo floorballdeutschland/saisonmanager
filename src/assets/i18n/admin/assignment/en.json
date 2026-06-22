@@ -34,7 +34,11 @@
     "publish": "Publish",
     "statusOpen": "Open",
     "statusPublished": "Published",
-    "statusDraft": "Draft"
+    "statusDraft": "Draft",
+    "prefilterLabel": "Selection pre-filter:",
+    "filterShortNotice": "Short-notice mobile only",
+    "filterLicense": "License level",
+    "shortNoticeBadge": "Available on short notice"
   },
   "notifications": {
     "saved": "Assignment saved.",

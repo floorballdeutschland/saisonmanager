@@ -34,7 +34,11 @@
     "publish": "Veröffentlichen",
     "statusOpen": "Offen",
     "statusPublished": "Veröffentlicht",
-    "statusDraft": "Vorläufig"
+    "statusDraft": "Vorläufig",
+    "prefilterLabel": "Auswahl-Vorfilter:",
+    "filterShortNotice": "Nur kurzfristig mobil",
+    "filterLicense": "Lizenzstufe",
+    "shortNoticeBadge": "Kurzfristig mobil"
   },
   "notifications": {
     "saved": "Ansetzung gespeichert.",

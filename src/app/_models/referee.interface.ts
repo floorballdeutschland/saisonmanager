@@ -180,6 +180,7 @@ export interface RefereeAssignmentAvailable {
   vorname: string;
   nachname: string;
   lizenzstufe?: string;
+  kurzfristig_mobil?: boolean;
   partner_lizenznummer?: number | null;
 }
 
@@ -236,6 +237,7 @@ export interface RefereeAssignableGame {
   arena_postcode?: string;
   arena_city?: string;
   club?: string;
+  national?: boolean;
   assignment_id?: number | null;
   assignment_status?: string | null;
 }

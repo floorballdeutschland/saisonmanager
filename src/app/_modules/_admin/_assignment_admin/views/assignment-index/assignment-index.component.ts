@@ -61,6 +61,12 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   filterDateFrom = new Date().toLocaleDateString('sv-SE');
   filterDateTo = '';
 
+  // Weiche, clientseitige Vorfilter für die Schiri-Auswahl-Dropdowns. Schränken
+  // nur die Anzeige ein, nie den (serverseitig verbandsgescopten) Bestand.
+  filterShortNotice = false;
+  selectedLicenseLevels = new Set<string>();
+  private _licenseDefaultApplied = false;
+
   rowStates = new Map<number, RowState>();
 
   private _assignments: RefereeAssignment[] = [];
@@ -231,9 +237,53 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     if (!q) return [];
     return state.availableReferees.filter(
       (r) =>
-        r.vorname.toLowerCase().includes(q) ||
-        r.nachname.toLowerCase().includes(q)
+        this._passesPrefilters(r) &&
+        (r.vorname.toLowerCase().includes(q) ||
+          r.nachname.toLowerCase().includes(q))
     );
+  }
+
+  // Lizenzstufen, die als Filter-Chips angeboten werden: alle in den bereits
+  // geladenen Kandidatenlisten vorkommenden Stufen plus die aktuell gewählten.
+  // (Bewusst aus den Daten abgeleitet, um keine zusätzliche – ggf. für Ansetzer
+  // gesperrte – Lizenzstufen-API aufzurufen.)
+  licenseLevelOptions(): string[] {
+    const set = new Set<string>(this.selectedLicenseLevels);
+    this.rowStates.forEach((s) =>
+      s.availableReferees.forEach((r) => {
+        if (r.lizenzstufe) set.add(r.lizenzstufe);
+      })
+    );
+    return Array.from(set).sort();
+  }
+
+  toggleLicenseLevel(level: string): void {
+    if (this.selectedLicenseLevels.has(level)) {
+      this.selectedLicenseLevels.delete(level);
+    } else {
+      this.selectedLicenseLevels.add(level);
+    }
+    // Manuelle Auswahl gewinnt – beim nächsten Laden nicht wieder vorbelegen.
+    this._licenseDefaultApplied = true;
+    this._cdr.markForCheck();
+  }
+
+  toggleShortNotice(): void {
+    this.filterShortNotice = !this.filterShortNotice;
+    this._cdr.markForCheck();
+  }
+
+  // Weiche Vorfilter (Lizenzstufe + „kurzfristig mobil"). Keine ausgewählte
+  // Lizenzstufe = keine Lizenz-Einschränkung (alle anzeigen).
+  private _passesPrefilters(r: RefereeAssignmentAvailable): boolean {
+    if (this.filterShortNotice && !r.kurzfristig_mobil) return false;
+    if (
+      this.selectedLicenseLevels.size > 0 &&
+      (!r.lizenzstufe || !this.selectedLicenseLevels.has(r.lizenzstufe))
+    ) {
+      return false;
+    }
+    return true;
   }
 
   onRefereeFocus(gameId: number): void {
@@ -633,6 +683,16 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       game: g,
       assignment: assignmentMap.get(g.id) ?? null,
     }));
+
+    // Lizenz-Vorauswahl: Sind ausschließlich Bundesspiele (FD) in der Liste,
+    // auf N-Lizenz vorbelegen. Sonst keine Vorauswahl (alle Stufen). Nur einmal
+    // und nur, solange der Ansetzer nicht selbst eine Auswahl getroffen hat.
+    if (!this._licenseDefaultApplied && this.rows.length > 0) {
+      if (this.rows.every((r) => r.game.national)) {
+        this.selectedLicenseLevels = new Set(['N']);
+      }
+      this._licenseDefaultApplied = true;
+    }
 
     const existingIds = new Set(this.rowStates.keys());
     this.rows.forEach((r) => {
