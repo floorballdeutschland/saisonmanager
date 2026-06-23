@@ -144,3 +144,9 @@ Requires nvm in PATH and SSH access to the production server (`ssh saisonmanager
 - Open a PR — no direct pushes to `main`
 - CI (GitHub Actions) gates every PR: `ng lint`, headless Karma tests, and a production build
 - The pre-commit hook runs Prettier on staged files and `ng lint` (requires nvm in PATH; see the nvm export workaround above if it fails)
+
+## License
+
+This project is licensed under the **GNU Affero General Public License v3.0** (AGPLv3) — see the [LICENSE](LICENSE) file for the full text.
+
+© Floorball Deutschland. As an AGPLv3 work, you may use, study, share, and modify it under the license terms; networked deployments must make their corresponding source available to users.
