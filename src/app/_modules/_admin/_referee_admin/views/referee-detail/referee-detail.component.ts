@@ -136,7 +136,13 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
 
   // Lädt das Schiri-Feedback, sobald Berechtigung und Schiri-Datensatz vorliegen.
   private _maybeLoadFeedback(): void {
-    if (!this.canViewFeedback || !this.referee || this.feedback) return;
+    if (
+      !this.canViewFeedback ||
+      !this.referee ||
+      this.feedback ||
+      this.feedbackLoading
+    )
+      return;
 
     this.feedbackLoading = true;
     this._refereeService
