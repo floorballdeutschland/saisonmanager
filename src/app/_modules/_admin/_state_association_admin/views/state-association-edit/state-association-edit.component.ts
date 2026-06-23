@@ -166,6 +166,10 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       // Kind-LVs editierbar.
       manual_proceeding_creation:
         this.stateAssociation.manual_proceeding_creation ?? false,
+      // Pro-LV (keine Parent-Vererbung); steuert, ob die Ansetzungslogik für
+      // diesen Landesverband nutzbar ist.
+      referee_assignment_enabled:
+        this.stateAssociation.referee_assignment_enabled ?? false,
       banner_link_url: this.stateAssociation.banner_link_url ?? null,
     };
 

@@ -32,6 +32,8 @@
     "scanRequiredHint": "Teilnehmer müssen nach dem Spiel den physischen Spielberichtsbogen hochladen. Der Ausrichter erhält nach Spieltagsabschluss eine E-Mail-Erinnerung.",
     "manualProceedingLabel": "Manuelle Erstellung von Protesten durch die SBK",
     "manualProceedingHint": "Die SBK kann Verfahrensvorschläge prüfen und Sportgerichtsverfahren manuell eröffnen oder ablehnen.",
+    "refereeAssignmentLabel": "Schiedsrichter-Ansetzung durch die RSK",
+    "refereeAssignmentHint": "Nur wenn aktiv, kann im Spiel-Editor „Ansetzung durch RSK\" gewählt werden und die Rolle Ansetzer sieht die Menüpunkte „Ansetzungen\" und „Verfügbarkeiten\".",
     "inheritedValueYes": "Wert: Ja (geerbt)",
     "inheritedValueNo": "Wert: Nein (geerbt)",
     "emailHeading": "E-Mail-Adressen",

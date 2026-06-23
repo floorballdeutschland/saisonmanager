@@ -29,6 +29,8 @@ export class ScheduleIndexComponent implements OnInit {
   newGameOpen: number[] = [];
   openGameDays: number[] = [];
   leagueId = 0;
+  // Ob die Liga die Ansetzung durch die RSK nutzen darf (LV-Flag / FD immer aktiv).
+  refereeAssignmentEnabled = false;
 
   loading = true;
 
@@ -60,6 +62,8 @@ export class ScheduleIndexComponent implements OnInit {
               this.teams = result.teams;
               this.clubs = result.clubs;
               this.arenas = result.arenas;
+              this.refereeAssignmentEnabled =
+                result.referee_assignment_enabled ?? false;
               this._cdr.markForCheck();
             },
           });

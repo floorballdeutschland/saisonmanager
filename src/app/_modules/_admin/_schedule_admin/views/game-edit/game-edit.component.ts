@@ -51,6 +51,11 @@ export class GameEditComponent implements OnInit {
   @Input()
   arenas!: Arena[];
 
+  // Steuert, ob die Option „Ansetzung durch RSK" angeboten wird (LV-Flag bzw.
+  // national/FD immer aktiv). Default aus, damit ohne Kontext nichts angeboten wird.
+  @Input()
+  refereeAssignmentEnabled = false;
+
   @Output()
   refreshSchedule = new EventEmitter<void>();
 
