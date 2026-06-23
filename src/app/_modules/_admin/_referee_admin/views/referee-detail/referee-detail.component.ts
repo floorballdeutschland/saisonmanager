@@ -9,8 +9,17 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
-import { NotificationService, RefereeService } from '@floorball/core';
-import { RefereeAdmin, RefereeAdminGame } from '@floorball/types';
+import {
+  NotificationService,
+  RefereeService,
+  SessionService,
+} from '@floorball/core';
+import {
+  RefereeAdmin,
+  RefereeAdminGame,
+  RefereeFeedbackProfileResponse,
+  RefereeProfileFeedback,
+} from '@floorball/types';
 
 @Component({
   templateUrl: './referee-detail.component.html',
@@ -25,6 +34,11 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   gamesLoading = false;
   selectedSeasonId?: number;
 
+  canViewFeedback = false;
+  feedback?: RefereeFeedbackProfileResponse;
+  feedbackLoading = false;
+  moderatingId: number | null = null;
+
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -32,10 +46,21 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     private _route: ActivatedRoute,
     private _notificationService: NotificationService,
     private _transloco: TranslocoService,
+    private _sessionService: SessionService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (user) => {
+          this.canViewFeedback = !!user?.permissions['referee_feedback_view'];
+          this._maybeLoadFeedback();
+          this._cdr.markForCheck();
+        },
+      });
+
     const param = this._route.snapshot.params['lizenznummer'] as string;
     this.loading = true;
 
@@ -51,6 +76,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
             this.loading = false;
             this._cdr.markForCheck();
             this.loadGames(r.id);
+            this._maybeLoadFeedback();
           },
           error: () => this._handleLoadError(),
         });
@@ -106,6 +132,67 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
       });
+  }
+
+  // Lädt das Schiri-Feedback, sobald Berechtigung und Schiri-Datensatz vorliegen.
+  private _maybeLoadFeedback(): void {
+    if (!this.canViewFeedback || !this.referee || this.feedback) return;
+
+    this.feedbackLoading = true;
+    this._refereeService
+      .adminGetFeedbacks(this.referee.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.feedback = result;
+          this.feedbackLoading = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.feedbackLoading = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  moderate(item: RefereeProfileFeedback): void {
+    const next = item.status === 'visible' ? 'hidden' : 'visible';
+    this.moderatingId = item.id;
+    this._refereeService
+      .adminModerateFeedback(item.id, next)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          item.status = next;
+          this.moderatingId = null;
+          this._recalcFeedbackSummary();
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.moderatingId = null;
+          this._cdr.markForCheck();
+          this._notificationService.error('Aktion fehlgeschlagen.', {
+            autoClose: false,
+          });
+        },
+      });
+  }
+
+  // Durchschnitte nach einer Moderation aus den sichtbaren Feedbacks neu berechnen.
+  private _recalcFeedbackSummary(): void {
+    if (!this.feedback) return;
+    const visible = this.feedback.feedbacks.filter(
+      (f) => f.status === 'visible'
+    );
+    const avg = (vals: number[]): number | null =>
+      vals.length
+        ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10
+        : null;
+    this.feedback.summary = {
+      count: visible.length,
+      avg_line_rating: avg(visible.map((f) => f.line_rating)),
+      avg_communication_rating: avg(visible.map((f) => f.communication_rating)),
+    };
   }
 
   get detailRouteId(): string | number {

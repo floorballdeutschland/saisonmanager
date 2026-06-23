@@ -51,6 +51,8 @@
     "no": "No",
     "parentalConsentRequired": "Parental consent required",
     "parentalConsentHint": "Enable this if underage players must upload parental consent when applying for a license for this league.",
+    "refereeFeedbackEnabled": "Referee feedback active",
+    "refereeFeedbackHint": "If active, teams must submit mandatory referee feedback after every game in this league.",
     "directComparison": "Head-to-head comparison",
     "directComparisonOff": "disabled (overall goal difference)",
     "directComparisonOn": "enabled (head-to-head comparison)",

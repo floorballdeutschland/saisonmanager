@@ -7,6 +7,7 @@ export { PlayerService } from './player.service';
 export { TeamService } from './team.service';
 export { OverlayService } from './overlay.service';
 export { RefereeService } from './referee.service';
+export { RefereeFeedbackService } from './referee-feedback.service';
 export { ArenaService } from './arena.service';
 export * from './association.service';
 export * from './storage.service';

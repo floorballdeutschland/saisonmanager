@@ -307,6 +307,28 @@
                     </option>
                   </select>
                 </div>
+                <div>
+                  <div class="font-bold">
+                    {{ "leagueAdmin.edit.refereeFeedbackEnabled" | transloco }}
+                  </div>
+                  <div class="text-sm text-fb-gray-400 mt-1">
+                    {{ "leagueAdmin.edit.refereeFeedbackHint" | transloco }}
+                  </div>
+                </div>
+                <div>
+                  <select
+                    class="w-full"
+                    name="referee_feedback_enabled"
+                    [(ngModel)]="league.referee_feedback_enabled"
+                  >
+                    <option [ngValue]="true">
+                      {{ "leagueAdmin.edit.yes" | transloco }}
+                    </option>
+                    <option [ngValue]="false">
+                      {{ "leagueAdmin.edit.no" | transloco }}
+                    </option>
+                  </select>
+                </div>
                 <div class="font-bold">
                   {{ "leagueAdmin.edit.directComparison" | transloco }}
                 </div>

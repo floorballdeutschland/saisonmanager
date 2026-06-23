@@ -20,6 +20,7 @@ import {
   RefereePublicLicense,
   RefereeQualificationType,
   RefereeVm,
+  RefereeFeedbackProfileResponse,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -119,6 +120,19 @@ export class RefereeService {
     return this.http.get<RefereeAdminGame[]>(
       environment.apiURL + 'admin/referees/' + id + '/games' + query
     );
+  }
+
+  // Schiri-Feedback der Vereine (nur Admin/FD-RSK/FD-Ansetzer).
+  public adminGetFeedbacks(id: number) {
+    return this.http.get<RefereeFeedbackProfileResponse>(
+      environment.apiURL + 'admin/referees/' + id + '/feedbacks'
+    );
+  }
+
+  public adminModerateFeedback(id: number, status: 'visible' | 'hidden') {
+    return this.http.put(environment.apiURL + 'admin/referee_feedbacks/' + id, {
+      status,
+    });
   }
 
   public adminCreateUserAccount(id: number) {

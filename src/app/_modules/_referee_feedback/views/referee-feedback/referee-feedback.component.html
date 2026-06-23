@@ -1,0 +1,193 @@
+<div class="p-4 lg:p-8 max-w-3xl">
+  <h1 class="text-2xl font-bold mb-2">Schiri-Feedback</h1>
+  <p class="text-sm text-fb-gray-500 mb-6">
+    Gib hier für deine Mannschaften eine Rückmeldung zum Schiedsrichtergespann
+    ab. Das Feedback ist pro Spiel verpflichtend und kann je Mannschaft genau
+    einmal abgegeben werden – frühestens 24 Stunden nach dem Spiel. Bitte gib
+    das Feedback auf sachlicher Basis; unsachliche Rückmeldungen werden
+    kommentarlos gelöscht.
+  </p>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-4">Lade…</div>
+  }
+
+  @if (!loading && games.length === 0) {
+    <div class="text-fb-gray-500 text-sm py-4">
+      Aktuell sind keine Spiele für ein Schiri-Feedback vorhanden.
+    </div>
+  }
+
+  @if (!loading && games.length > 0) {
+    <ul class="flex flex-col gap-4">
+      @for (game of games; track key(game)) {
+        <li class="border border-fb-gray-600 rounded-[5px] p-4">
+          <!-- Header: date, league, game number -->
+          <div class="flex items-start justify-between gap-4 mb-2">
+            <div>
+              <div class="font-bold text-sm">
+                {{ game.team_name }}
+                <span class="text-fb-gray-500 font-normal">
+                  {{ game.home ? "gegen" : "bei" }} {{ game.opponent_name }}
+                </span>
+              </div>
+              <div class="text-xs text-fb-gray-500 mt-0.5">
+                {{ formatDate(game.date) }}
+                @if (game.start_time) {
+                  <span> · {{ game.start_time }}</span>
+                }
+                @if (game.game_number) {
+                  <span> · Spiel {{ game.game_number }}</span>
+                }
+                @if (game.league) {
+                  <span> · {{ game.league }}</span>
+                }
+              </div>
+              @if (game.referees.length) {
+                <div class="text-xs text-fb-gray-500 mt-0.5">
+                  Schiedsrichter: {{ game.referees.join(" / ") }}
+                </div>
+              }
+            </div>
+            <!-- Status / open button -->
+            <div class="shrink-0">
+              @if (game.done) {
+                <span
+                  class="text-xs text-green-600 font-medium text-right block"
+                >
+                  ✓ Abgegeben<br />{{ formatDateTime(game.submitted_at!) }}
+                </span>
+              } @else if (notYetFillable(game)) {
+                <span class="text-xs text-fb-gray-500 text-right block">
+                  Möglich ab<br />{{ formatDateTime(game.fillable_from) }}
+                </span>
+              } @else if (openKey !== key(game)) {
+                <fb-button
+                  variant="default"
+                  icon="edit"
+                  size="small"
+                  (click)="open(game)"
+                >
+                  Feedback abgeben
+                </fb-button>
+              }
+            </div>
+          </div>
+
+          <!-- Feedback form -->
+          @if (openKey === key(game)) {
+            <div
+              class="border-t border-fb-gray-600 pt-3 mt-3 flex flex-col gap-4"
+            >
+              <!-- Linie / Konstanz -->
+              <div>
+                <div class="text-sm font-bold mb-1">
+                  Wie wurde die Linie der Schiedsrichter*innen empfunden?
+                </div>
+                <p class="text-xs text-fb-gray-500 mb-2">
+                  1 = erwartete Linie in unter 10 % der Fälle erfüllt · 10 = in
+                  über 95 % der Fälle erfüllt
+                </p>
+                <div class="flex flex-wrap gap-1">
+                  @for (n of ratingScale; track n) {
+                    <button
+                      type="button"
+                      (click)="form.lineRating = n"
+                      class="w-8 h-8 text-xs font-bold rounded-[5px] border"
+                      [ngClass]="
+                        form.lineRating === n
+                          ? 'bg-black text-white border-black'
+                          : 'border-fb-gray-600 hover:border-black'
+                      "
+                    >
+                      {{ n }}
+                    </button>
+                  }
+                </div>
+                <textarea
+                  [(ngModel)]="form.lineComment"
+                  name="lineComment"
+                  rows="2"
+                  placeholder="Ausführungen zu Linie und Konstanz (optional)"
+                  class="w-full mt-2 text-sm border border-fb-gray-600 rounded-[5px] p-2"
+                ></textarea>
+              </div>
+
+              <!-- Kommunikation -->
+              <div>
+                <div class="text-sm font-bold mb-1">
+                  Wie wurde die Kommunikation der Schiedsrichter*innen zum Team
+                  empfunden?
+                </div>
+                <p class="text-xs text-fb-gray-500 mb-2">
+                  1 = Spieler*innen nicht beachtet · 10 = für jedes Teammitglied
+                  ansprechbar und proaktiv
+                </p>
+                <div class="flex flex-wrap gap-1">
+                  @for (n of ratingScale; track n) {
+                    <button
+                      type="button"
+                      (click)="form.communicationRating = n"
+                      class="w-8 h-8 text-xs font-bold rounded-[5px] border"
+                      [ngClass]="
+                        form.communicationRating === n
+                          ? 'bg-black text-white border-black'
+                          : 'border-fb-gray-600 hover:border-black'
+                      "
+                    >
+                      {{ n }}
+                    </button>
+                  }
+                </div>
+                <textarea
+                  [(ngModel)]="form.communicationComment"
+                  name="communicationComment"
+                  rows="2"
+                  placeholder="Ausführung zur Kommunikation (optional)"
+                  class="w-full mt-2 text-sm border border-fb-gray-600 rounded-[5px] p-2"
+                ></textarea>
+              </div>
+
+              <!-- Weitere Anmerkungen -->
+              <div>
+                <div class="text-sm font-bold mb-1">Weitere Anmerkungen</div>
+                <textarea
+                  [(ngModel)]="form.generalComment"
+                  name="generalComment"
+                  rows="2"
+                  placeholder="Weitere sachliche Anmerkungen (optional, auch zum Feedbackbogen)"
+                  class="w-full text-sm border border-fb-gray-600 rounded-[5px] p-2"
+                ></textarea>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <fb-button
+                  variant="success"
+                  icon="save"
+                  size="small"
+                  [disabled]="!canSubmit() || submittingKey === key(game)"
+                  (click)="submit(game)"
+                >
+                  {{ submittingKey === key(game) ? "Speichere…" : "Absenden" }}
+                </fb-button>
+                <button
+                  type="button"
+                  [disabled]="submittingKey === key(game)"
+                  (click)="cancel()"
+                  class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
+                >
+                  Abbrechen
+                </button>
+              </div>
+              @if (!canSubmit()) {
+                <p class="text-xs text-fb-gray-500 -mt-2">
+                  Bitte beide Bewertungen (1–10) auswählen.
+                </p>
+              }
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>
