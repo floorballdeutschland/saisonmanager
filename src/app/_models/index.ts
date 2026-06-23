@@ -28,6 +28,14 @@ export {
   TeamGameDayChecklistAnswer,
   TeamGameDayConfirmResponse,
 } from './team-game-day.interface';
+export {
+  RefereeFeedbackGame,
+  RefereeFeedbackSubmit,
+  RefereeFeedbackStatus,
+  RefereeFeedbackSummary,
+  RefereeProfileFeedback,
+  RefereeFeedbackProfileResponse,
+} from './referee-feedback.interface';
 export { GameScheduleEntry } from './game-schedule-entry.interface';
 export { Game } from './game.interface';
 export { GameInput } from './game.interface';

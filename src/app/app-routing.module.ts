@@ -146,6 +146,13 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/referee-feedback').then(
+            (m) => m.RefereeFeedbackModule
+          ),
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/users').then((m) => m.AdminUserModule),
       },
       {

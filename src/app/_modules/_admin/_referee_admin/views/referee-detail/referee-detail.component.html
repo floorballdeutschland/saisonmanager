@@ -228,6 +228,108 @@
         }
       </div>
     }
+
+    <!-- Schiri-Feedback der Vereine (nur Admin / FD-RSK / FD-Ansetzer) -->
+    @if (canViewFeedback) {
+      <h2 class="text-lg font-bold mb-4 mt-10">Schiri-Feedback der Vereine</h2>
+      @if (feedbackLoading) {
+        <div class="text-fb-gray-500 text-sm py-4">Lade…</div>
+      }
+      @if (!feedbackLoading && feedback) {
+        @if (feedback.summary.count > 0) {
+          <div class="flex flex-wrap gap-6 mb-4 text-sm">
+            <div>
+              <span class="text-fb-gray-500">Ø Linie/Konstanz:</span>
+              <span class="font-bold ml-1">
+                {{ feedback.summary.avg_line_rating ?? "–" }} / 10
+              </span>
+            </div>
+            <div>
+              <span class="text-fb-gray-500">Ø Kommunikation:</span>
+              <span class="font-bold ml-1">
+                {{ feedback.summary.avg_communication_rating ?? "–" }} / 10
+              </span>
+            </div>
+            <div>
+              <span class="text-fb-gray-500">Rückmeldungen:</span>
+              <span class="font-bold ml-1">{{ feedback.summary.count }}</span>
+            </div>
+          </div>
+        }
+        @if (feedback.feedbacks.length === 0) {
+          <p class="text-fb-gray-500 text-sm">
+            Noch keine Rückmeldungen vorhanden.
+          </p>
+        }
+        <ul class="flex flex-col gap-3">
+          @for (f of feedback.feedbacks; track f.id) {
+            <li
+              class="border border-fb-gray-700 rounded-[5px] p-3 text-sm"
+              [class.opacity-50]="f.status === 'hidden'"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div class="text-xs text-fb-gray-500">
+                  {{ f.date | date: "dd.MM.yyyy" }}
+                  @if (f.game_number) {
+                    <span> · Spiel {{ f.game_number }}</span>
+                  }
+                  @if (f.league) {
+                    <span> · {{ f.league }}</span>
+                  }
+                  @if (f.team_name) {
+                    <span> · von {{ f.team_name }}</span>
+                  }
+                  @if (f.status === "hidden") {
+                    <span class="text-red-600 font-bold"> · ausgeblendet</span>
+                  }
+                </div>
+                <button
+                  type="button"
+                  [disabled]="moderatingId === f.id"
+                  (click)="moderate(f)"
+                  class="text-xs font-bold underline shrink-0 disabled:opacity-50"
+                  [ngClass]="
+                    f.status === 'visible' ? 'text-red-600' : 'text-green-600'
+                  "
+                >
+                  {{ f.status === "visible" ? "Ausblenden" : "Einblenden" }}
+                </button>
+              </div>
+              <div class="flex flex-wrap gap-6 mt-2">
+                <span>
+                  <span class="text-fb-gray-500">Linie/Konstanz:</span>
+                  <span class="font-bold ml-1">{{ f.line_rating }}/10</span>
+                </span>
+                <span>
+                  <span class="text-fb-gray-500">Kommunikation:</span>
+                  <span class="font-bold ml-1">
+                    {{ f.communication_rating }}/10
+                  </span>
+                </span>
+              </div>
+              @if (f.line_comment) {
+                <p class="mt-2">
+                  <span class="text-fb-gray-500">Linie:</span>
+                  {{ f.line_comment }}
+                </p>
+              }
+              @if (f.communication_comment) {
+                <p class="mt-1">
+                  <span class="text-fb-gray-500">Kommunikation:</span>
+                  {{ f.communication_comment }}
+                </p>
+              }
+              @if (f.general_comment) {
+                <p class="mt-1">
+                  <span class="text-fb-gray-500">Anmerkungen:</span>
+                  {{ f.general_comment }}
+                </p>
+              }
+            </li>
+          }
+        </ul>
+      }
+    }
   }
 
   @if (!loading && !referee) {

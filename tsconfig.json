@@ -120,6 +120,7 @@
       "@floorball/referee": ["src/app/_modules/_referee"],
       "@floorball/account": ["src/app/_modules/_account"],
       "@floorball/team-game-days": ["src/app/_modules/_team_game_days"],
+      "@floorball/referee-feedback": ["src/app/_modules/_referee_feedback"],
       "@floorball/models": ["src/app/_models"]
     },
     "useDefineForClassFields": false
