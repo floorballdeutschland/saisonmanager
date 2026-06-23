@@ -190,6 +190,22 @@
             }}</span>
           </span>
         </label>
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            [(ngModel)]="stateAssociation.referee_assignment_enabled"
+            name="referee_assignment_enabled"
+            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+          />
+          <span class="flex flex-col gap-0.5">
+            <span class="text-sm font-bold">{{
+              "stateAssociationAdmin.edit.refereeAssignmentLabel" | transloco
+            }}</span>
+            <span class="text-xs text-fb-gray-400">{{
+              "stateAssociationAdmin.edit.refereeAssignmentHint" | transloco
+            }}</span>
+          </span>
+        </label>
       </div>
     </div>
 

@@ -236,9 +236,12 @@ export class LeagueService {
       'admin/leagues/' +
       id +
       '/additional_references.json';
-    return this.http.get<{ arenas: Arena[]; teams: Team[]; clubs: Club[] }>(
-      path
-    );
+    return this.http.get<{
+      arenas: Arena[];
+      teams: Team[];
+      clubs: Club[];
+      referee_assignment_enabled: boolean;
+    }>(path);
   }
 
   public adminImportGameSchedule(data: FormData) {
