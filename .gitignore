@@ -52,3 +52,12 @@ Thumbs.db
 src/environments/.api-key
 src/environments/environment.prod.ts.bak
 .claude/
+
+# Personenbezogene Daten / Importe (NIEMALS committen)
+members.csv
+schiri/
+scripts/*.csv
+*.xlsx
+*.xls
+*:Zone.Identifier
+produktivdaten/
