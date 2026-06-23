@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a monorepo-adjacent setup across three separate repos:
 
-- `~/saisonmanager` – Angular 18 frontend (this repo)
+- `~/saisonmanager` – Angular 22 frontend (this repo)
 - `~/saisonmanager-api` – Rails 7 API backend
 - `~/saisonmanager-docker` – Docker Compose setup for local dev
 
@@ -88,7 +88,7 @@ The API runs at **http://localhost:3001** (port 3000 is taken by another service
 
 ## Architecture
 
-### Frontend (Angular 18)
+### Frontend (Angular 22, TypeScript 6, Tailwind CSS v4)
 
 **Module structure** under `src/app/`:
 

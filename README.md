@@ -4,11 +4,11 @@ Angular 22 frontend for the Floorball Saisonmanager — a league management syst
 
 ## Related Repositories
 
-| Repo                                                                                         | Description                                |
-| -------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| [saisonmanager](https://github.com/floorballverband-deutschland/saisonmanager)               | This repo – Angular frontend               |
-| [saisonmanager-api](https://github.com/floorballverband-deutschland/saisonmanager-api)       | Rails 7 API backend                        |
-| [saisonmanager-docker](https://github.com/floorballverband-deutschland/saisonmanager-docker) | Docker Compose setup for local development |
+| Repo                                                                                 | Description                                |
+| ------------------------------------------------------------------------------------ | ------------------------------------------ |
+| [saisonmanager](https://github.com/floorballdeutschland/saisonmanager)               | This repo – Angular frontend               |
+| [saisonmanager-api](https://github.com/floorballdeutschland/saisonmanager-api)       | Rails 7 API backend                        |
+| [saisonmanager-docker](https://github.com/floorballdeutschland/saisonmanager-docker) | Docker Compose setup for local development |
 
 ## Tech Stack
 
@@ -23,7 +23,7 @@ Angular 22 frontend for the Floorball Saisonmanager — a league management syst
 ### Prerequisites
 
 - Node.js 24 (pinned in `.nvmrc`, managed via [nvm](https://github.com/nvm-sh/nvm))
-- The API running locally (see [saisonmanager-docker](https://github.com/floorballverband-deutschland/saisonmanager-docker))
+- The API running locally (see [saisonmanager-docker](https://github.com/floorballdeutschland/saisonmanager-docker))
 
 ### Setup
 
