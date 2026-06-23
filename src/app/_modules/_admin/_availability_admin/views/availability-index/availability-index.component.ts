@@ -21,9 +21,9 @@ import {
 } from '@floorball/types';
 
 interface WeekendTotals {
-  free: number;
+  available: number;
   assigned: number;
-  blocked: number;
+  unavailable: number;
 }
 
 @Component({
@@ -120,10 +120,10 @@ export class AvailabilityIndexComponent implements OnInit, OnDestroy {
     switch (state) {
       case 'assigned':
         return 'bg-blue-100 text-blue-800';
-      case 'blocked':
-        return 'bg-red-100 text-red-700';
-      default:
+      case 'available':
         return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-fb-gray-100 text-fb-gray-500';
     }
   }
 
@@ -131,10 +131,10 @@ export class AvailabilityIndexComponent implements OnInit, OnDestroy {
     switch (state) {
       case 'assigned':
         return 'A';
-      case 'blocked':
-        return '✕';
-      default:
+      case 'available':
         return '✓';
+      default:
+        return '✕';
     }
   }
 
@@ -144,12 +144,14 @@ export class AvailabilityIndexComponent implements OnInit, OnDestroy {
         return this._transloco.translate(
           'availabilityAdmin.index.stateAssigned'
         );
-      case 'blocked':
+      case 'available':
         return this._transloco.translate(
-          'availabilityAdmin.index.stateBlocked'
+          'availabilityAdmin.index.stateAvailable'
         );
       default:
-        return this._transloco.translate('availabilityAdmin.index.stateFree');
+        return this._transloco.translate(
+          'availabilityAdmin.index.stateUnavailable'
+        );
     }
   }
 
@@ -200,11 +202,11 @@ export class AvailabilityIndexComponent implements OnInit, OnDestroy {
 
     const totals: { [key: string]: WeekendTotals } = {};
     this.weekends.forEach((w) => {
-      totals[w.key] = { free: 0, assigned: 0, blocked: 0 };
+      totals[w.key] = { available: 0, assigned: 0, unavailable: 0 };
     });
     this.displayReferees.forEach((r) => {
       this.weekends.forEach((w) => {
-        const state = r.states[w.key] ?? 'free';
+        const state = r.states[w.key] ?? 'unavailable';
         totals[w.key][state] += 1;
       });
     });

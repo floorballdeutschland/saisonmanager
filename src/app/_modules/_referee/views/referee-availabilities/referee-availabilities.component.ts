@@ -14,8 +14,8 @@ interface CalendarDay {
   iso: string;
   day: number;
   past: boolean;
-  blocked: boolean;
-  blockedId: number | null;
+  available: boolean;
+  availabilityId: number | null;
   inRange: boolean;
   rangeStart: boolean;
   rangeEnd: boolean;
@@ -30,30 +30,30 @@ interface CalendarMonth {
 }
 
 @Component({
-  templateUrl: './referee-blocked-dates.component.html',
+  templateUrl: './referee-availabilities.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
-export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
+export class RefereeAvailabilitiesComponent implements OnInit, OnDestroy {
   months: CalendarMonth[] = [];
   loading = true;
   saving = false;
 
   readonly weekdayKeys = [
-    'refereeSelf.blockedDates.weekdayMon',
-    'refereeSelf.blockedDates.weekdayTue',
-    'refereeSelf.blockedDates.weekdayWed',
-    'refereeSelf.blockedDates.weekdayThu',
-    'refereeSelf.blockedDates.weekdayFri',
-    'refereeSelf.blockedDates.weekdaySat',
-    'refereeSelf.blockedDates.weekdaySun',
+    'refereeSelf.availabilities.weekdayMon',
+    'refereeSelf.availabilities.weekdayTue',
+    'refereeSelf.availabilities.weekdayWed',
+    'refereeSelf.availabilities.weekdayThu',
+    'refereeSelf.availabilities.weekdayFri',
+    'refereeSelf.availabilities.weekdaySat',
+    'refereeSelf.availabilities.weekdaySun',
   ];
 
   rangeStart: string | null = null;
   rangeHover: string | null = null;
 
-  private _blockedMap = new Map<string, number>();
+  private _availabilityMap = new Map<string, number>();
   private _destroy$ = new Subject<void>();
 
   private _today = new Date();
@@ -72,12 +72,12 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
     const to = this._isoDate(new Date(now.getFullYear() + 1, 11, 31));
 
     this._refereeService
-      .getBlockedDates({ date_from: from, date_to: to })
+      .getAvailabilities({ date_from: from, date_to: to })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (dates) => {
-          this._blockedMap.clear();
-          dates.forEach((d) => this._blockedMap.set(d.date, d.id));
+          this._availabilityMap.clear();
+          dates.forEach((d) => this._availabilityMap.set(d.date, d.id));
           this._buildCalendar();
           this.loading = false;
           this._cdr.markForCheck();
@@ -87,7 +87,7 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
           this._notificationService.error(
             this._transloco.translate(
-              'refereeSelf.notifications.blockedDatesLoadError'
+              'refereeSelf.notifications.availabilitiesLoadError'
             ),
             { autoClose: false, keepAfterRouteChange: false }
           );
@@ -104,7 +104,7 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
     if (day.past || this.saving) return;
 
     if (!this.rangeStart) {
-      if (day.blocked && day.blockedId !== null) {
+      if (day.available && day.availabilityId !== null) {
         this._deleteDate(day);
       } else {
         this.rangeStart = day.iso;
@@ -143,11 +143,11 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
   private _deleteDate(day: CalendarDay): void {
     this.saving = true;
     this._refereeService
-      .deleteBlockedDate(day.blockedId!)
+      .deleteAvailability(day.availabilityId!)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: () => {
-          this._blockedMap.delete(day.iso);
+          this._availabilityMap.delete(day.iso);
           this.saving = false;
           this._rebuildDays();
           this._cdr.markForCheck();
@@ -158,7 +158,7 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
           const msg =
             err?.error?.error ||
             this._transloco.translate(
-              'refereeSelf.notifications.blockedDateDeleteError'
+              'refereeSelf.notifications.availabilityDeleteError'
             );
           this._notificationService.error(msg, {
             autoClose: false,
@@ -171,11 +171,11 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
   private _createSingle(iso: string): void {
     this.saving = true;
     this._refereeService
-      .createBlockedDate(iso)
+      .createAvailability(iso)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (d) => {
-          this._blockedMap.set(d.date, d.id);
+          this._availabilityMap.set(d.date, d.id);
           this.saving = false;
           this._rebuildDays();
           this._cdr.markForCheck();
@@ -186,7 +186,7 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
           const msg =
             err?.error?.errors?.[0] ||
             this._transloco.translate(
-              'refereeSelf.notifications.blockedDateSaveError'
+              'refereeSelf.notifications.availabilitySaveError'
             );
           this._notificationService.error(msg, {
             autoClose: false,
@@ -202,7 +202,7 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
     const endDate = new Date(end + 'T00:00:00');
     while (cur <= endDate) {
       const iso = this._isoDate(cur);
-      if (!this._blockedMap.has(iso)) dates.push(iso);
+      if (!this._availabilityMap.has(iso)) dates.push(iso);
       cur.setDate(cur.getDate() + 1);
     }
 
@@ -210,18 +210,20 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
 
     this.saving = true;
     this._refereeService
-      .createBlockedDatesBulk(dates)
+      .createAvailabilitiesBulk(dates)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
-          result.created.forEach((d) => this._blockedMap.set(d.date, d.id));
+          result.created.forEach((d) =>
+            this._availabilityMap.set(d.date, d.id)
+          );
           this.saving = false;
           this._rebuildDays();
           this._cdr.markForCheck();
           if (result.skipped.length) {
             this._notificationService.error(
               this._transloco.translate(
-                'refereeSelf.notifications.blockedDatesBulkPartial',
+                'refereeSelf.notifications.availabilitiesBulkPartial',
                 {
                   created: result.created.length,
                   skipped: result.skipped.length,
@@ -236,7 +238,7 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
           this._notificationService.error(
             this._transloco.translate(
-              'refereeSelf.notifications.blockedDateSaveError'
+              'refereeSelf.notifications.availabilitySaveError'
             ),
             {
               autoClose: false,
@@ -282,7 +284,7 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
     }
 
     const monthNames = this._transloco.translate<string[]>(
-      'refereeSelf.blockedDates.months'
+      'refereeSelf.availabilities.months'
     );
     return {
       label: `${monthNames[month]} ${year}`,
@@ -294,8 +296,8 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
   }
 
   private _enrichDay(iso: string, day: number, past: boolean): CalendarDay {
-    const blocked = this._blockedMap.has(iso);
-    const blockedId = this._blockedMap.get(iso) ?? null;
+    const available = this._availabilityMap.has(iso);
+    const availabilityId = this._availabilityMap.get(iso) ?? null;
 
     let inRange = false;
     let rangeStart = false;
@@ -314,8 +316,8 @@ export class RefereeBlockedDatesComponent implements OnInit, OnDestroy {
       iso,
       day,
       past,
-      blocked,
-      blockedId,
+      available,
+      availabilityId,
       inRange,
       rangeStart,
       rangeEnd,

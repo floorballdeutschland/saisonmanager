@@ -22,9 +22,9 @@ const routes: Routes = [
     data: { scrollTop: true },
   },
   {
-    path: 'schiedsrichter/sperrtermine',
+    path: 'schiedsrichter/verfuegbarkeiten',
     pathMatch: 'full',
-    component: Views.RefereeBlockedDatesComponent,
+    component: Views.RefereeAvailabilitiesComponent,
     data: { scrollTop: true },
   },
   {

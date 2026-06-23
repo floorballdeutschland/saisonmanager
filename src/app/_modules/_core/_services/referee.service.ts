@@ -8,8 +8,8 @@ import {
   RefereeAssignment,
   RefereeAssignmentAvailable,
   RefereeAvailability,
-  RefereeBlockedDate,
-  RefereeBlockedDatesBulkResult,
+  RefereeAvailabilityBulkResult,
+  RefereeAvailabilityEntry,
   RefereeEntry,
   RefereeGameDay,
   RefereeHistorySeason,
@@ -348,7 +348,7 @@ export class RefereeService {
     );
   }
 
-  // Mögliche Schiedsrichtercoaches (gültige B-Zusatzlizenz, kein Sperrtermin am Tag).
+  // Mögliche Schiedsrichtercoaches (gültige B-Zusatzlizenz, Verfügbarkeit am Tag).
   public adminGetAvailableCoaches(date: string) {
     const query = `?date=${encodeURIComponent(date)}`;
     return this.http.get<RefereeAssignmentAvailable[]>(
@@ -375,9 +375,9 @@ export class RefereeService {
     );
   }
 
-  // Blocked dates (self-service for logged-in referee)
+  // Availabilities (self-service for logged-in referee)
 
-  public getBlockedDates(params?: { date_from?: string; date_to?: string }) {
+  public getAvailabilities(params?: { date_from?: string; date_to?: string }) {
     let query = '';
     if (params) {
       const parts: string[] = [];
@@ -385,27 +385,29 @@ export class RefereeService {
       if (params.date_to) parts.push(`date_to=${params.date_to}`);
       if (parts.length) query = '?' + parts.join('&');
     }
-    return this.http.get<RefereeBlockedDate[]>(
-      environment.apiURL + 'referee/blocked_dates' + query
+    return this.http.get<RefereeAvailabilityEntry[]>(
+      environment.apiURL + 'referee/availabilities' + query
     );
   }
 
-  public createBlockedDate(date: string) {
-    return this.http.post<RefereeBlockedDate>(
-      environment.apiURL + 'referee/blocked_dates',
-      { blocked_date: { date } }
+  public createAvailability(date: string) {
+    return this.http.post<RefereeAvailabilityEntry>(
+      environment.apiURL + 'referee/availabilities',
+      { availability: { date } }
     );
   }
 
-  public createBlockedDatesBulk(dates: string[]) {
-    return this.http.post<RefereeBlockedDatesBulkResult>(
-      environment.apiURL + 'referee/blocked_dates/bulk',
+  public createAvailabilitiesBulk(dates: string[]) {
+    return this.http.post<RefereeAvailabilityBulkResult>(
+      environment.apiURL + 'referee/availabilities/bulk',
       { dates }
     );
   }
 
-  public deleteBlockedDate(id: number) {
-    return this.http.delete(environment.apiURL + 'referee/blocked_dates/' + id);
+  public deleteAvailability(id: number) {
+    return this.http.delete(
+      environment.apiURL + 'referee/availabilities/' + id
+    );
   }
 
   // Game day confirmations (self-service for logged-in referee)

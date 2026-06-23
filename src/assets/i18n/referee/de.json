@@ -64,9 +64,9 @@
     "errorPoints": "Fehlerpunkte: {{ points }}",
     "errorPointsMax": "/ max. {{ max }}"
   },
-  "blockedDates": {
-    "title": "Meine Sperrtermine",
-    "intro": "Klicke einen Tag an, um ihn zu sperren oder die Sperrung aufzuheben. Für einen Zeitraum: ersten Tag anklicken, dann letzten Tag anklicken.",
+  "availabilities": {
+    "title": "Meine Verfügbarkeiten",
+    "intro": "Klicke einen Tag an, um dich als verfügbar zu markieren oder die Markierung aufzuheben. Für einen Zeitraum: ersten Tag anklicken, dann letzten Tag anklicken. Ansetzer können dich nur an Tagen einplanen, die du als verfügbar markiert hast.",
     "rangeStartSelected": "Startdatum gewählt: ",
     "rangeStartHint": ". Klicke nun auf das Enddatum.",
     "cancel": "Abbrechen",
@@ -78,11 +78,11 @@
     "weekdayFri": "Fr",
     "weekdaySat": "Sa",
     "weekdaySun": "So",
-    "removeBlockedDate": "Sperrtermin entfernen",
-    "blockDay": "Tag sperren",
-    "legendBlocked": "Gesperrt",
+    "removeAvailability": "Verfügbarkeit entfernen",
+    "markDay": "Als verfügbar markieren",
+    "legendAvailable": "Verfügbar",
     "legendSelection": "Auswahl",
-    "legendFree": "Frei",
+    "legendUnmarked": "Nicht markiert",
     "months": [
       "Januar",
       "Februar",
@@ -124,10 +124,10 @@
     "profileSaved": "Profil gespeichert.",
     "profileSaveError": "Fehler beim Speichern.",
     "cardLoadError": "Ausweis konnte nicht geladen werden.",
-    "blockedDatesLoadError": "Sperrtermine konnten nicht geladen werden.",
-    "blockedDateDeleteError": "Fehler beim Entfernen des Sperrtermins.",
-    "blockedDateSaveError": "Fehler beim Speichern.",
-    "blockedDatesBulkPartial": "{{ created }} gespeichert, {{ skipped }} übersprungen.",
+    "availabilitiesLoadError": "Verfügbarkeiten konnten nicht geladen werden.",
+    "availabilityDeleteError": "Fehler beim Entfernen der Verfügbarkeit.",
+    "availabilitySaveError": "Fehler beim Speichern.",
+    "availabilitiesBulkPartial": "{{ created }} gespeichert, {{ skipped }} übersprungen.",
     "gameDayConfirmed": "Spieltag bestätigt.",
     "gameDayReportSaved": "Meldung gespeichert.",
     "gameDaySaveError": "Speichern fehlgeschlagen."

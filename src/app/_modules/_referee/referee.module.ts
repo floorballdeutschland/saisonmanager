@@ -13,7 +13,7 @@ import * as Views from './views';
     Views.RefereeProfileComponent,
     Views.RefereeCardComponent,
     Views.RefereeHistoryComponent,
-    Views.RefereeBlockedDatesComponent,
+    Views.RefereeAvailabilitiesComponent,
     Views.RefereeGameDaysComponent,
     Views.RefereeOnlineTestIndexComponent,
     Views.RefereeOnlineTestDetailComponent,

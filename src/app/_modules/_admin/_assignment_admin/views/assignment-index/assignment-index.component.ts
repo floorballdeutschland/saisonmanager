@@ -173,7 +173,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
 
   // Warnung, wenn ein in dieser Zeile gewählter Schiri zugleich einem
   // Parallelspiel (gleiches Datum + gleicher Anpfiff) in der aktuellen Liste
-  // zugeordnet ist. Rein clientseitig: Sperrtermine und tagesgleiche
+  // zugeordnet ist. Rein clientseitig: fehlende Verfügbarkeit und tagesgleiche
   // Doppelansetzungen filtert bereits das Backend aus dem Auswahl-Dropdown
   // (`available`-Endpoint) – diese Prüfung ergänzt die zeitgleiche Kollision,
   // die durch noch nicht gespeicherte/zwischengespeicherte Auswahlen entstehen

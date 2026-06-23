@@ -64,9 +64,9 @@
     "errorPoints": "Error points: {{ points }}",
     "errorPointsMax": "/ max. {{ max }}"
   },
-  "blockedDates": {
-    "title": "My blocked dates",
-    "intro": "Click a day to block it or remove the block. For a range: click the first day, then click the last day.",
+  "availabilities": {
+    "title": "My availability",
+    "intro": "Click a day to mark yourself as available or to remove the mark. For a range: click the first day, then click the last day. Assigners can only schedule you on days you have marked as available.",
     "rangeStartSelected": "Start date selected: ",
     "rangeStartHint": ". Now click the end date.",
     "cancel": "Cancel",
@@ -78,11 +78,11 @@
     "weekdayFri": "Fri",
     "weekdaySat": "Sat",
     "weekdaySun": "Sun",
-    "removeBlockedDate": "Remove blocked date",
-    "blockDay": "Block day",
-    "legendBlocked": "Blocked",
+    "removeAvailability": "Remove availability",
+    "markDay": "Mark as available",
+    "legendAvailable": "Available",
     "legendSelection": "Selection",
-    "legendFree": "Available",
+    "legendUnmarked": "Not marked",
     "months": [
       "January",
       "February",
@@ -124,10 +124,10 @@
     "profileSaved": "Profile saved.",
     "profileSaveError": "Error while saving.",
     "cardLoadError": "Card could not be loaded.",
-    "blockedDatesLoadError": "Blocked dates could not be loaded.",
-    "blockedDateDeleteError": "Error while removing the blocked date.",
-    "blockedDateSaveError": "Error while saving.",
-    "blockedDatesBulkPartial": "{{ created }} saved, {{ skipped }} skipped.",
+    "availabilitiesLoadError": "Availability could not be loaded.",
+    "availabilityDeleteError": "Error while removing the availability.",
+    "availabilitySaveError": "Error while saving.",
+    "availabilitiesBulkPartial": "{{ created }} saved, {{ skipped }} skipped.",
     "gameDayConfirmed": "Match day confirmed.",
     "gameDayReportSaved": "Report saved.",
     "gameDaySaveError": "Saving failed."

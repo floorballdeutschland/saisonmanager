@@ -184,7 +184,7 @@ export interface RefereeAssignmentAvailable {
   partner_lizenznummer?: number | null;
 }
 
-export type RefereeAvailabilityState = 'free' | 'blocked' | 'assigned';
+export type RefereeAvailabilityState = 'available' | 'unavailable' | 'assigned';
 
 export interface RefereeAvailabilityWeekend {
   key: string;
@@ -207,13 +207,13 @@ export interface RefereeAvailability {
   referees: RefereeAvailabilityReferee[];
 }
 
-export interface RefereeBlockedDate {
+export interface RefereeAvailabilityEntry {
   id: number;
   date: string;
 }
 
-export interface RefereeBlockedDatesBulkResult {
-  created: RefereeBlockedDate[];
+export interface RefereeAvailabilityBulkResult {
+  created: RefereeAvailabilityEntry[];
   skipped: { date: string; reason: string }[];
 }
 

@@ -1,9 +1,9 @@
 <div class="p-4 lg:p-8 max-w-5xl">
   <h1 class="text-2xl font-bold mb-2">
-    {{ "refereeSelf.blockedDates.title" | transloco }}
+    {{ "refereeSelf.availabilities.title" | transloco }}
   </h1>
   <p class="text-sm text-fb-gray-500 mb-6">
-    {{ "refereeSelf.blockedDates.intro" | transloco }}
+    {{ "refereeSelf.availabilities.intro" | transloco }}
   </p>
 
   @if (loading) {
@@ -17,23 +17,23 @@
       class="mb-4 flex items-center gap-3 text-sm bg-blue-50 border border-blue-200 rounded-[5px] px-4 py-2"
     >
       <span
-        >{{ "refereeSelf.blockedDates.rangeStartSelected" | transloco
+        >{{ "refereeSelf.availabilities.rangeStartSelected" | transloco
         }}<strong>{{ rangeStart }}</strong
-        >{{ "refereeSelf.blockedDates.rangeStartHint" | transloco }}</span
+        >{{ "refereeSelf.availabilities.rangeStartHint" | transloco }}</span
       >
       <button
         type="button"
         (click)="cancelRange()"
         class="text-xs text-fb-gray-500 hover:underline"
       >
-        {{ "refereeSelf.blockedDates.cancel" | transloco }}
+        {{ "refereeSelf.availabilities.cancel" | transloco }}
       </button>
     </div>
   }
 
   @if (saving) {
     <div class="mb-4 text-sm text-fb-gray-500">
-      {{ "refereeSelf.blockedDates.saving" | transloco }}
+      {{ "refereeSelf.availabilities.saving" | transloco }}
     </div>
   }
 
@@ -69,22 +69,24 @@
                 class="aspect-square rounded-[3px] text-xs font-medium flex items-center justify-center transition-colors"
                 [class.text-fb-gray-300]="day.past"
                 [class.cursor-default]="day.past"
-                [class.bg-red-500]="!day.past && day.blocked && !day.inRange"
-                [class.text-white]="!day.past && day.blocked && !day.inRange"
-                [class.hover:bg-red-400]="
-                  !day.past && day.blocked && !day.inRange
+                [class.bg-green-500]="
+                  !day.past && day.available && !day.inRange
                 "
-                [class.bg-blue-100]="!day.past && !day.blocked && day.inRange"
-                [class.bg-blue-200]="!day.past && day.blocked && day.inRange"
+                [class.text-white]="!day.past && day.available && !day.inRange"
+                [class.hover:bg-green-400]="
+                  !day.past && day.available && !day.inRange
+                "
+                [class.bg-blue-100]="!day.past && !day.available && day.inRange"
+                [class.bg-blue-200]="!day.past && day.available && day.inRange"
                 [class.rounded-l-[3px]]="day.rangeStart"
                 [class.rounded-r-[3px]]="day.rangeEnd"
                 [class.hover:bg-fb-gray-100]="
-                  !day.past && !day.blocked && !day.inRange
+                  !day.past && !day.available && !day.inRange
                 "
                 [title]="
-                  (day.blocked
-                    ? 'refereeSelf.blockedDates.removeBlockedDate'
-                    : 'refereeSelf.blockedDates.blockDay'
+                  (day.available
+                    ? 'refereeSelf.availabilities.removeAvailability'
+                    : 'refereeSelf.availabilities.markDay'
                   ) | transloco
                 "
               >
@@ -101,20 +103,20 @@
   @if (!loading) {
     <div class="mt-8 flex items-center gap-6 text-xs text-fb-gray-500">
       <span class="flex items-center gap-1">
-        <span class="inline-block w-4 h-4 rounded-[3px] bg-red-500"></span>
-        {{ "refereeSelf.blockedDates.legendBlocked" | transloco }}
+        <span class="inline-block w-4 h-4 rounded-[3px] bg-green-500"></span>
+        {{ "refereeSelf.availabilities.legendAvailable" | transloco }}
       </span>
       <span class="flex items-center gap-1">
         <span
           class="inline-block w-4 h-4 rounded-[3px] bg-blue-100 border border-blue-200"
         ></span>
-        {{ "refereeSelf.blockedDates.legendSelection" | transloco }}
+        {{ "refereeSelf.availabilities.legendSelection" | transloco }}
       </span>
       <span class="flex items-center gap-1">
         <span
           class="inline-block w-4 h-4 rounded-[3px] bg-fb-gray-100 border border-fb-gray-300"
         ></span>
-        {{ "refereeSelf.blockedDates.legendFree" | transloco }}
+        {{ "refereeSelf.availabilities.legendUnmarked" | transloco }}
       </span>
     </div>
   }
