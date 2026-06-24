@@ -83,6 +83,9 @@
     "legendAvailable": "Verfügbar",
     "legendSelection": "Auswahl",
     "legendUnmarked": "Nicht markiert",
+    "legendPast": "Vergangenheit (gemeldet)",
+    "pastAvailable": "Vergangener Tag – du hattest Verfügbarkeit gemeldet (nicht mehr änderbar)",
+    "pastUnmarked": "Vergangener Tag – keine Verfügbarkeit gemeldet (nicht mehr änderbar)",
     "months": [
       "Januar",
       "Februar",

@@ -279,7 +279,9 @@ export class RefereeAvailabilitiesComponent implements OnInit, OnDestroy {
       const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(
         d
       ).padStart(2, '0')}`;
-      const past = iso <= this._todayIso;
+      // Heute ist NICHT Vergangenheit → bleibt auswählbar; nur echte Vortage
+      // sind read-only.
+      const past = iso < this._todayIso;
       days.push(this._enrichDay(iso, d, past));
     }
 

@@ -67,7 +67,7 @@
                 (click)="onDayClick(day)"
                 (mouseenter)="onDayHover(day)"
                 class="aspect-square rounded-[3px] text-xs font-medium flex items-center justify-center transition-colors"
-                [class.text-fb-gray-300]="day.past"
+                [class.text-fb-gray-300]="day.past && !day.available"
                 [class.cursor-default]="day.past"
                 [class.bg-green-500]="
                   !day.past && day.available && !day.inRange
@@ -76,6 +76,8 @@
                 [class.hover:bg-green-400]="
                   !day.past && day.available && !day.inRange
                 "
+                [class.bg-green-200]="day.past && day.available"
+                [class.text-green-800]="day.past && day.available"
                 [class.bg-blue-100]="!day.past && !day.available && day.inRange"
                 [class.bg-blue-200]="!day.past && day.available && day.inRange"
                 [class.rounded-l-[3px]]="day.rangeStart"
@@ -84,9 +86,13 @@
                   !day.past && !day.available && !day.inRange
                 "
                 [title]="
-                  (day.available
-                    ? 'refereeSelf.availabilities.removeAvailability'
-                    : 'refereeSelf.availabilities.markDay'
+                  (day.past
+                    ? (day.available
+                        ? 'refereeSelf.availabilities.pastAvailable'
+                        : 'refereeSelf.availabilities.pastUnmarked')
+                    : day.available
+                      ? 'refereeSelf.availabilities.removeAvailability'
+                      : 'refereeSelf.availabilities.markDay'
                   ) | transloco
                 "
               >
@@ -117,6 +123,10 @@
           class="inline-block w-4 h-4 rounded-[3px] bg-fb-gray-100 border border-fb-gray-300"
         ></span>
         {{ "refereeSelf.availabilities.legendUnmarked" | transloco }}
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="inline-block w-4 h-4 rounded-[3px] bg-green-200"></span>
+        {{ "refereeSelf.availabilities.legendPast" | transloco }}
       </span>
     </div>
   }

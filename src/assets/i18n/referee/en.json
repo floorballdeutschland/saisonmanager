@@ -83,6 +83,9 @@
     "legendAvailable": "Available",
     "legendSelection": "Selection",
     "legendUnmarked": "Not marked",
+    "legendPast": "Past (reported)",
+    "pastAvailable": "Past day – you had reported availability (read-only)",
+    "pastUnmarked": "Past day – no availability reported (read-only)",
     "months": [
       "January",
       "February",
