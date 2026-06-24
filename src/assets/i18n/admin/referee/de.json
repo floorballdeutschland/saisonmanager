@@ -136,6 +136,8 @@
     "newHeading": "Neue Lizenzstufe",
     "name": "Name *",
     "namePlaceholder": "z.B. A, B, N1",
+    "validityYears": "Gültigkeitsdauer (Jahre)",
+    "colValidity": "Gültigkeit (J.)",
     "active": "Aktiv",
     "create": "Anlegen",
     "cancel": "Abbrechen",

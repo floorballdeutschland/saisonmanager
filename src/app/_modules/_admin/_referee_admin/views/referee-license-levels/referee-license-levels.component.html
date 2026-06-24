@@ -40,6 +40,17 @@
           class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
         />
       </div>
+      <div class="flex flex-col gap-1 max-w-xs">
+        <label class="text-xs font-bold">{{
+          "refereeAdmin.licenseLevels.validityYears" | transloco
+        }}</label>
+        <input
+          type="number"
+          min="1"
+          [(ngModel)]="newLevel.validity_years"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
       <label class="flex items-center gap-2 cursor-pointer text-sm">
         <input type="checkbox" [(ngModel)]="newLevel.active" class="w-4 h-4" />
         Aktiv
@@ -55,7 +66,7 @@
         </button>
         <button
           type="button"
-          (click)="showNewForm = false; newLevel = { active: true }"
+          (click)="showNewForm = false; newLevel = { active: true, validity_years: 2 }"
           class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
         >
           Abbrechen
@@ -78,6 +89,9 @@
             {{ "refereeAdmin.index.colName" | transloco }}
           </th>
           <th class="py-2 pr-4 font-bold">
+            {{ "refereeAdmin.licenseLevels.colValidity" | transloco }}
+          </th>
+          <th class="py-2 pr-4 font-bold">
             {{ "refereeAdmin.qualificationTypes.colUsage" | transloco }}
           </th>
           <th class="py-2 pr-4 font-bold">
@@ -96,6 +110,14 @@
                   type="text"
                   [(ngModel)]="editBuffer.name"
                   class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-full focus:outline-none focus:border-black"
+                />
+              </td>
+              <td class="py-2 pr-4">
+                <input
+                  type="number"
+                  min="1"
+                  [(ngModel)]="editBuffer.validity_years"
+                  class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-16 focus:outline-none focus:border-black"
                 />
               </td>
               <td class="py-2 pr-4 text-fb-gray-500">{{ l.usage_count }}</td>
@@ -136,6 +158,7 @@
           @if (editingId !== l.id) {
             <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
               <td class="py-2 pr-4 font-medium">{{ l.name }}</td>
+              <td class="py-2 pr-4 text-fb-gray-500">{{ l.validity_years }}</td>
               <td class="py-2 pr-4 text-fb-gray-500">{{ l.usage_count }}</td>
               <td class="py-2 pr-4">
                 <span

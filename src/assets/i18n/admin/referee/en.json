@@ -136,6 +136,8 @@
     "newHeading": "New license level",
     "name": "Name *",
     "namePlaceholder": "e.g. A, B, N1",
+    "validityYears": "Validity period (years)",
+    "colValidity": "Validity (yrs)",
     "active": "Active",
     "create": "Create",
     "cancel": "Cancel",
