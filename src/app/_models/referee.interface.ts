@@ -19,6 +19,7 @@ export interface RefereeLicenseLevel {
   name: string;
   active: boolean;
   position?: number;
+  validity_years?: number;
   usage_count?: number;
 }
 

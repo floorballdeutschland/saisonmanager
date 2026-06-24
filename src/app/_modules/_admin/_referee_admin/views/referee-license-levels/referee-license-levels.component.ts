@@ -22,7 +22,7 @@ export class RefereeLicenseLevelsComponent implements OnInit, OnDestroy {
   saving = false;
   editingId: number | null = null;
   editBuffer: Partial<RefereeLicenseLevel> = {};
-  newLevel: Partial<RefereeLicenseLevel> = { active: true };
+  newLevel: Partial<RefereeLicenseLevel> = { active: true, validity_years: 2 };
   showNewForm = false;
 
   private _destroy$ = new Subject<void>();
