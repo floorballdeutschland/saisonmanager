@@ -12,6 +12,7 @@
     "csvArena": "Halle",
     "csvHost": "Ausrichter",
     "conflictParallel": "Konflikt: Schiedsrichter ist zeitgleich für ein Parallelspiel angesetzt ({{ games }}).",
+    "clubConflict": "Befangenheit: {{ names }} ist Mitglied eines der beiden beteiligten Vereine.",
     "loading": "Lade…",
     "empty": "Keine Spiele gefunden.",
     "colDate": "Datum",

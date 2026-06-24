@@ -12,6 +12,7 @@
     "csvArena": "Arena",
     "csvHost": "Host",
     "conflictParallel": "Conflict: referee is assigned to a parallel game at the same time ({{ games }}).",
+    "clubConflict": "Conflict of interest: {{ names }} is a member of one of the two clubs involved.",
     "loading": "Loading…",
     "empty": "No games found.",
     "colDate": "Date",
