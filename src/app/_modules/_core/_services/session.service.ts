@@ -218,6 +218,27 @@ export class SessionService {
   }
 
   /**
+   * Schaltet den Empfang informeller System-Mails an/aus (nur Teammanager).
+   * Aktualisiert den gespeicherten User aus der Server-Antwort (kein Reload).
+   */
+  public updateMailPreferences(receiveInfoMails: boolean) {
+    const path = environment.apiURL + 'user/mail-preferences.json';
+    return this.http
+      .patch<LoginAnswer>(path, { receive_info_mails: receiveInfoMails })
+      .pipe(
+        map((answer) => {
+          if (answer.success) {
+            this.currentUser = answer.user;
+            this.currentUserSubject.next(answer.user);
+            localStorage.setItem('user', JSON.stringify(answer.user));
+          }
+
+          return answer;
+        })
+      );
+  }
+
+  /**
    * Ändert das eigene Passwort. Fehler (z. B. 422 bei falschem aktuellen
    * Passwort) werden vom aufrufenden Component behandelt – der ErrorInterceptor
    * verschluckt 422 still und reicht die Server-Nachricht als String durch.

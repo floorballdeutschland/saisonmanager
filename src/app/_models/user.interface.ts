@@ -6,6 +6,9 @@ export interface User {
   permissions: { [key: string]: boolean };
   club_ids: number[];
   language?: 'de' | 'en';
+  receive_info_mails?: boolean;
+  // true nur für Teammanager – steuert die Sichtbarkeit des Info-Mail-Toggles.
+  can_manage_mail_preferences?: boolean;
   login_blocked_message?: string;
 }
 

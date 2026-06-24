@@ -26,11 +26,39 @@ export class AccountComponent {
   newPasswordConfirmation = '';
   savingPassword = false;
 
+  // Info-Mail-Opt-out: nur für Teammanager sichtbar (Backend liefert das Gate).
+  canManageMailPreferences =
+    this._sessionService.currentUser?.can_manage_mail_preferences ?? false;
+  receiveInfoMails =
+    this._sessionService.currentUser?.receive_info_mails ?? true;
+  savingMailPref = false;
+
   constructor(
     private _sessionService: SessionService,
     private _notificationService: NotificationService,
     private _transloco: TranslocoService
   ) {}
+
+  public toggleInfoMails(receive: boolean) {
+    this.savingMailPref = true;
+    this._sessionService.updateMailPreferences(receive).subscribe({
+      next: (answer) => {
+        this.savingMailPref = false;
+        if (answer.success) {
+          this.receiveInfoMails = receive;
+          this._notificationService.success(
+            this._transloco.translate('account.mailPrefSaved')
+          );
+        }
+      },
+      error: () => {
+        this.savingMailPref = false;
+        this._notificationService.error(
+          this._transloco.translate('account.mailPrefError')
+        );
+      },
+    });
+  }
 
   public switchLanguage(lang: AppLanguage) {
     if (this._transloco.getActiveLang() === lang) {
