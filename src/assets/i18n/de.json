@@ -77,7 +77,12 @@
     "passwordMismatch": "Die neuen Passwörter stimmen nicht überein.",
     "passwordTooShort": "Das neue Passwort muss mindestens 8 Zeichen lang sein.",
     "passwordError": "Passwort konnte nicht geändert werden.",
-    "languageError": "Sprache konnte nicht geändert werden."
+    "languageError": "Sprache konnte nicht geändert werden.",
+    "mailSection": "Benachrichtigungen",
+    "mailHint": "Steuere, ob du informelle E-Mails des Systems erhältst (z. B. Hinweis auf ein verfügbares Schiri-Feedback-Formular).",
+    "receiveInfoMails": "Info-E-Mails vom System erhalten",
+    "mailPrefSaved": "Einstellung gespeichert.",
+    "mailPrefError": "Einstellung konnte nicht gespeichert werden."
   },
   "session": {
     "loginSuccess": "Login erfolgreich.",

@@ -77,7 +77,12 @@
     "passwordMismatch": "The new passwords do not match.",
     "passwordTooShort": "The new password must be at least 8 characters long.",
     "passwordError": "The password could not be changed.",
-    "languageError": "The language could not be changed."
+    "languageError": "The language could not be changed.",
+    "mailSection": "Notifications",
+    "mailHint": "Control whether you receive informational emails from the system (e.g. a hint that a referee feedback form is available).",
+    "receiveInfoMails": "Receive informational emails from the system",
+    "mailPrefSaved": "Setting saved.",
+    "mailPrefError": "The setting could not be saved."
   },
   "session": {
     "loginSuccess": "Login successful.",

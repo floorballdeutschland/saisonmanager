@@ -28,6 +28,28 @@
     </div>
   </section>
 
+  <!-- Info-Mails (nur Teammanager) -->
+  @if (canManageMailPreferences) {
+    <section class="flex flex-col gap-2 mb-10">
+      <h2 class="text-sm font-bold uppercase text-fb-gray-500">
+        {{ "account.mailSection" | transloco }}
+      </h2>
+      <p class="text-xs text-fb-gray-500">
+        {{ "account.mailHint" | transloco }}
+      </p>
+      <label class="flex items-center gap-3 mt-2 cursor-pointer">
+        <input
+          type="checkbox"
+          [checked]="receiveInfoMails"
+          [disabled]="savingMailPref"
+          (change)="toggleInfoMails($any($event.target).checked)"
+          class="h-4 w-4"
+        />
+        <span class="text-sm">{{ "account.receiveInfoMails" | transloco }}</span>
+      </label>
+    </section>
+  }
+
   <!-- Passwort ändern -->
   <section class="flex flex-col gap-2">
     <h2 class="text-sm font-bold uppercase text-fb-gray-500">
