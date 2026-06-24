@@ -198,6 +198,35 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Befangenheits-Warnung: angesetzter Schiri/Coach ist Mitglied eines der beiden
+  // Vereine, deren Mannschaften in diesem Spiel gegeneinander spielen.
+  clubConflict(row: MergedGame): string | null {
+    const state = this.rowStates.get(row.game.id);
+    if (!state) return null;
+
+    const clubIds = [row.game.home_team_club_id, row.game.guest_team_club_id].filter(
+      (id): id is number => id != null
+    );
+    if (clubIds.length === 0) return null;
+
+    const names: string[] = [];
+    const check = (refId: number | null, pool: RefereeAssignmentAvailable[]): void => {
+      if (refId == null) return;
+      const ref = pool.find((r) => r.id === refId);
+      if (ref?.club_id != null && clubIds.includes(ref.club_id)) {
+        names.push(`${ref.vorname} ${ref.nachname}`);
+      }
+    };
+    check(state.selectedReferee1Id, state.availableReferees);
+    check(state.selectedReferee2Id, state.availableReferees);
+    check(state.selectedCoachId, state.availableCoaches);
+
+    if (names.length === 0) return null;
+    return this._transloco.translate('assignmentAdmin.index.clubConflict', {
+      names: names.join(', '),
+    });
+  }
+
   private _selectedRefereeIds(gameId: number): number[] {
     const state = this.rowStates.get(gameId);
     if (!state) return [];

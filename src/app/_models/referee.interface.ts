@@ -182,6 +182,7 @@ export interface RefereeAssignmentAvailable {
   lizenzstufe?: string;
   kurzfristig_mobil?: boolean;
   partner_lizenznummer?: number | null;
+  club_id?: number | null;
 }
 
 export type RefereeAvailabilityState = 'available' | 'unavailable' | 'assigned';
@@ -232,6 +233,8 @@ export interface RefereeAssignableGame {
   start_time?: string;
   home_team?: string;
   guest_team?: string;
+  home_team_club_id?: number | null;
+  guest_team_club_id?: number | null;
   league?: string;
   arena?: string;
   arena_postcode?: string;
