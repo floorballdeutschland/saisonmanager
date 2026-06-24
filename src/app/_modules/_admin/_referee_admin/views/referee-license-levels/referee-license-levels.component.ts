@@ -110,7 +110,7 @@ export class RefereeLicenseLevelsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (created) => {
           this.levels = [...this.levels, created];
-          this.newLevel = { active: true };
+          this.newLevel = { active: true, validity_years: 2 };
           this.showNewForm = false;
           this.saving = false;
           this._notificationService.success('Lizenzstufe angelegt.', {
