@@ -165,7 +165,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error ||
+            (typeof err === 'string' ? err : err?.error?.error) ||
               this._transloco.translate(
                 'transferRequestAdmin.notifications.cancelError'
               )
@@ -197,7 +197,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error ||
+            (typeof err === 'string' ? err : err?.error?.error) ||
               this._transloco.translate(
                 'transferRequestAdmin.notifications.clubApprovalError'
               )
@@ -249,7 +249,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error ||
+            (typeof err === 'string' ? err : err?.error?.error) ||
               this._transloco.translate(
                 'transferRequestAdmin.notifications.revokeError'
               )
@@ -289,7 +289,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this._notificationService.error(
-          err?.error?.error ||
+          (typeof err === 'string' ? err : err?.error?.error) ||
             this._transloco.translate(
               'transferRequestAdmin.notifications.rejectError'
             )
@@ -333,7 +333,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error ||
+            (typeof err === 'string' ? err : err?.error?.error) ||
               this._transloco.translate(
                 'transferRequestAdmin.notifications.lvApprovalError'
               )
@@ -363,7 +363,7 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error ||
+            (typeof err === 'string' ? err : err?.error?.error) ||
               this._transloco.translate(
                 'transferRequestAdmin.notifications.executeError'
               )

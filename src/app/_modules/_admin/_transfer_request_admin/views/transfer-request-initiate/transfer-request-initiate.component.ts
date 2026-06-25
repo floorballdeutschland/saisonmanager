@@ -178,7 +178,7 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error ||
+            (typeof err === 'string' ? err : err?.error?.error) ||
               this._transloco.translate(
                 'transferRequestAdmin.notifications.createError'
               )

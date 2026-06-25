@@ -109,7 +109,7 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.searchError =
-            err?.error?.error ||
+            (typeof err === 'string' ? err : err?.error?.error) ||
             this._transloco.translate(
               'transferRequestAdmin.notifications.searchError'
             );
@@ -138,7 +138,7 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this._notificationService.error(
-            err?.error?.error ||
+            (typeof err === 'string' ? err : err?.error?.error) ||
               this._transloco.translate(
                 'transferRequestAdmin.notifications.directAssignError'
               )
