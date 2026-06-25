@@ -42,7 +42,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   club_id?: number;
 
   additionalClubId?: string = '0';
-  transferClubId?: string = '0';
 
   editMode = true;
   confirmDeactivate = false;
@@ -342,33 +341,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           if (player?.id) {
             this.getPlayer(player.id.toString());
           }
-        },
-        error: (error) => {
-          this._notificationService.error(error, {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
-        },
-      });
-  }
-
-  public transfer(player: Player | undefined, clubId: string | undefined) {
-    this._playerService
-      .adminTransferPlayer(player?.id || 0, clubId || '0')
-      .subscribe({
-        next: () => {
-          const message = 'Spieler wurde erfolgreich transferiert.';
-          this._notificationService.success(message, {
-            autoClose: true,
-            keepAfterRouteChange: true,
-          });
-          this._router.navigate([
-            '/',
-            'verwaltung',
-            'vereine',
-            this.club_id,
-            'spieler',
-          ]);
         },
         error: (error) => {
           this._notificationService.error(error, {

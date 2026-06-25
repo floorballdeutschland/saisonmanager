@@ -648,37 +648,6 @@
                 }
               </div>
             </div>
-            @if (can("player_transfer")) {
-              <div class="bg-white my-[5px] py-[15px] px-[30px]">
-                <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                  {{ "playerAdmin.edit.performTransfer" | transloco }}
-                </div>
-                <div class="grid grid-cols-1 gap-4">
-                  <select [(ngModel)]="transferClubId">
-                    <option value="0">
-                      {{ "playerAdmin.edit.selectClub" | transloco }}
-                    </option>
-                    @for (club of allClubs; track club) {
-                      @if (
-                        !isAdditionalClubActive(club.id) && !isHomeClub(club.id)
-                      ) {
-                        <option [value]="club.id">
-                          {{ club.name }}
-                        </option>
-                      }
-                    }
-                  </select>
-                  <div>
-                    <a
-                      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                      (click)="transfer(player, transferClubId)"
-                    >
-                      {{ "playerAdmin.edit.transferPlayer" | transloco }}
-                    </a>
-                  </div>
-                </div>
-              </div>
-            }
           </div>
         }
 

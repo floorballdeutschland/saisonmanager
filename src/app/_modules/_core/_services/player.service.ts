@@ -72,15 +72,6 @@ export class PlayerService {
     });
   }
 
-  public adminTransferPlayer(playerId: number, clubId: string) {
-    const path =
-      environment.apiURL + 'admin/players/' + playerId + '/transfer.json';
-    return this.http.post<Player>(path, {
-      player_id: playerId,
-      club_id: parseInt(clubId, 10),
-    });
-  }
-
   public updateLicenseStatus(
     playerId: number,
     licenseId: string,
