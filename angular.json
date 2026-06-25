@@ -60,7 +60,9 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "outputHashing": "all",
+              "outputHashing": "all"
+            },
+            "prerender": {
               "server": "src/main.server.ts",
               "prerender": {
                 "routesFile": "prerender-routes.txt",

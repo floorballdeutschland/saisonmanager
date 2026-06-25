@@ -34,5 +34,8 @@ export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
 # Schlägt der API-Aufruf fehl, bleibt die eingecheckte prerender-routes.txt erhalten.
 FRONTEND_API_KEY="${API_KEY}" node scripts/generate-prerender-routes.mjs
 
-./node_modules/.bin/ng build
+# Prerender (SSG) läuft nur hier beim Deploy – nur jetzt liegen API-Key und
+# Routenliste vor. Die CI baut bewusst ohne Prerender (Config "production"),
+# da ihr beides fehlt und der Render sonst an 401ern hängenbliebe.
+./node_modules/.bin/ng build --configuration production,prerender
 scp -r dist/saisonmanager/browser/* saisonmanager:/opt/saisonmanager/saisonmanager-frontend/
