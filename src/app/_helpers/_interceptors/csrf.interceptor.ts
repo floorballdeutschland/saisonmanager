@@ -33,6 +33,10 @@ export class CsrfInterceptor implements HttpInterceptor {
   }
 
   private getCsrfToken(): string | null {
+    // Beim Server-Rendering (SSR/Prerender) gibt es kein document/Cookie.
+    if (typeof document === 'undefined') {
+      return null;
+    }
     const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
     return match ? decodeURIComponent(match[1]) : null;
   }
