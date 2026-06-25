@@ -98,7 +98,11 @@ export class SessionService {
     redirect = false
   ) {
     this.currentUserSubject.next(null);
-    localStorage.removeItem('user');
+    // logout() wird beim Prerender via ErrorInterceptor (401) ausgelöst, wo
+    // kein localStorage existiert – dort gibt es keine persistierte Session.
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('user');
+    }
 
     const path = environment.apiURL + 'logout.json';
     const data = {};
