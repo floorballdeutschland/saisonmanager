@@ -49,6 +49,7 @@
   "notifications": {
     "saved": "Assignment saved.",
     "saveError": "Error while saving.",
+    "clubRequired": "Please select a club.",
     "notified": "Notification sent.",
     "notifyError": "Error while sending.",
     "published": "Assignment published.",

@@ -49,6 +49,7 @@
   "notifications": {
     "saved": "Ansetzung gespeichert.",
     "saveError": "Fehler beim Speichern.",
+    "clubRequired": "Bitte einen Verein auswählen.",
     "notified": "Benachrichtigung gesendet.",
     "notifyError": "Fehler beim Senden.",
     "published": "Ansetzung veröffentlicht.",

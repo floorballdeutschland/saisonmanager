@@ -609,6 +609,17 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   save(row: MergedGame): void {
     const state = this.rowStates.get(row.game.id);
     if (!state || state.saving) return;
+
+    // Im Vereins-Modus muss ein Verein gewählt sein – sonst würde eine leere
+    // Ansetzung gespeichert. Klar zurückmelden statt still zu speichern.
+    if (state.mode === 'club' && state.selectedClubId == null) {
+      this._notificationService.error(
+        this._transloco.translate('assignmentAdmin.notifications.clubRequired'),
+        { autoClose: true, keepAfterRouteChange: false }
+      );
+      return;
+    }
+
     state.saving = true;
     this._cdr.markForCheck();
 
