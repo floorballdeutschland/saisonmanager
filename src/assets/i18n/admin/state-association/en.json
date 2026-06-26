@@ -32,7 +32,7 @@
     "scanRequiredHint": "Participants must upload the physical game report sheet after the game. The host receives an email reminder once the game day is closed.",
     "manualProceedingLabel": "Manual creation of protests by the SBK",
     "manualProceedingHint": "The SBK can review proceeding proposals and manually open or reject sports-court proceedings.",
-    "refereeAssignmentLabel": "Referee assignment by the RSK",
+    "refereeAssignmentLabel": "Enable referee assignment by the RSK",
     "refereeAssignmentHint": "Only when active can \"Assignment by RSK\" be selected in the game editor, and the Assigner role sees the \"Assignments\" and \"Availability\" menu items.",
     "inheritedValueYes": "Value: Yes (inherited)",
     "inheritedValueNo": "Value: No (inherited)",
