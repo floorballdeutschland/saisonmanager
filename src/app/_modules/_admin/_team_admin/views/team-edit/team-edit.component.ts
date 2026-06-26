@@ -37,6 +37,10 @@ export class TeamEditComponent implements OnInit, OnDestroy {
   clubs: Club[] = [];
   isBuliPermitted = false;
 
+  // Merkt sich den zuletzt gewählten Hauptverein, um ihn beim Wechsel aus
+  // syndicate_clubs zu entfernen (der Hauptverein wird dort automatisch geführt).
+  private _prevMainClubId?: number;
+
   private _destroy$ = new Subject<boolean>();
 
   constructor(
@@ -113,6 +117,7 @@ export class TeamEditComponent implements OnInit, OnDestroy {
           if (!team) {
             return;
           }
+          this._prevMainClubId = team.club_id;
         }),
         take(1),
         takeUntil(this._destroy$)
@@ -266,6 +271,45 @@ export class TeamEditComponent implements OnInit, OnDestroy {
     } else {
       team.cup_leagues = team.cup_leagues.filter((id) => id !== leagueId);
     }
+  }
+
+  // SG-Partner an-/abwählen. Der Hauptverein wird hier nicht aufgeführt – er
+  // ist immer Teil der SG und wird automatisch in syndicate_clubs gehalten.
+  public toggleSyndicateClub(team: Team, clubId: number, event: Event): void {
+    if (!team.syndicate_clubs) team.syndicate_clubs = [];
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked) {
+      if (!team.syndicate_clubs.includes(clubId))
+        team.syndicate_clubs.push(clubId);
+    } else {
+      team.syndicate_clubs = team.syndicate_clubs.filter((id) => id !== clubId);
+    }
+  }
+
+  // Wird der Hauptverein oben gewechselt, den alten aus der SG-Auswahl nehmen
+  // und den neuen aufnehmen (sofern es eine SG ist).
+  public onMainClubChange(team: Team): void {
+    if (!team.syndicate_clubs) team.syndicate_clubs = [];
+    if (this._prevMainClubId) {
+      team.syndicate_clubs = team.syndicate_clubs.filter(
+        (id) => id !== this._prevMainClubId
+      );
+    }
+    this._prevMainClubId = team.club_id;
+    this.addMainClubToSyndicate(team);
+  }
+
+  // Beim Umschalten auf „Spielgemeinschaft" den Hauptverein automatisch
+  // aufnehmen, damit nur noch die Partnervereine anzuhaken sind.
+  public onSyndicateChange(team: Team): void {
+    this.addMainClubToSyndicate(team);
+  }
+
+  private addMainClubToSyndicate(team: Team): void {
+    if (!team.syndicate || !team.club_id) return;
+    if (!team.syndicate_clubs) team.syndicate_clubs = [];
+    if (!team.syndicate_clubs.includes(team.club_id))
+      team.syndicate_clubs.push(team.club_id);
   }
 
   public hasCupLeagueOptions(team: Team): boolean {
