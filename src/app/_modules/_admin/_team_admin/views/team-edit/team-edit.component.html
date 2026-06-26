@@ -103,7 +103,11 @@
                   {{ "teamAdmin.edit.club" | transloco }}
                 </div>
                 <div>
-                  <select name="club_id" [(ngModel)]="team.club_id">
+                  <select
+                    name="club_id"
+                    [(ngModel)]="team.club_id"
+                    (ngModelChange)="onMainClubChange(team)"
+                  >
                     @for (c of clubs; track c) {
                       <option [ngValue]="c.id">
                         {{ c.name }}
@@ -117,11 +121,15 @@
                   {{ "teamAdmin.edit.syndicateQuestion" | transloco }}
                 </div>
                 <div>
-                  <select name="syndicate" [(ngModel)]="team.syndicate">
-                    <option value="false">
+                  <select
+                    name="syndicate"
+                    [(ngModel)]="team.syndicate"
+                    (ngModelChange)="onSyndicateChange(team)"
+                  >
+                    <option [ngValue]="false">
                       {{ "teamAdmin.edit.noSyndicate" | transloco }}
                     </option>
-                    <option value="true">
+                    <option [ngValue]="true">
                       {{ "teamAdmin.edit.syndicate" | transloco }}
                     </option>
                   </select>
@@ -130,34 +138,31 @@
                   <div class="font-bold">
                     {{ "teamAdmin.edit.syndicateClubs" | transloco }}
                   </div>
-                  @if (team.syndicate_clubs) {
-                    <div>
-                      <select
-                        name="syndicate_clubs"
-                        [(ngModel)]="team.syndicate_clubs"
-                        multiple
-                      >
-                        @for (c of clubs; track c) {
-                          <option [ngValue]="c.id">
-                            {{ c.name }}
-                          </option>
-                        }
-                      </select>
-                      <br />
-                      <small
-                        >{{ "teamAdmin.edit.syndicateClubsHint" | transloco
-                        }}<br />
-                        {{
-                          "teamAdmin.edit.syndicateClubsMultiHint" | transloco
-                        }}</small
-                      >
-                    </div>
-                  }
-                  @if (!team.syndicate_clubs) {
-                    <div>
+                  <div>
+                    @for (c of clubs; track c.id) {
+                      @if (c.id !== team.club_id) {
+                        <label
+                          class="flex items-center gap-2 mb-1 text-sm cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            [checked]="
+                              (team.syndicate_clubs || []).includes(c.id)
+                            "
+                            (change)="toggleSyndicateClub(team, c.id, $event)"
+                          />
+                          {{ c.name }}
+                        </label>
+                      }
+                    }
+                    @if (clubs.length <= 1) {
                       <p>{{ "teamAdmin.edit.noSyndicateClubs" | transloco }}</p>
-                    </div>
-                  }
+                    }
+                    <br />
+                    <small>{{
+                      "teamAdmin.edit.syndicateClubsHint" | transloco
+                    }}</small>
+                  </div>
                 }
               </div>
             </div>
