@@ -15,19 +15,25 @@ import {
   SettingsService,
 } from '@floorball/core';
 import {
+  AssignmentClub,
   RefereeAssignableGame,
   RefereeAssignment,
   RefereeAssignmentAvailable,
   RefereeAssignmentStub,
 } from '@floorball/types';
 
+type AssignmentMode = 'referees' | 'club';
+
 interface RowState {
+  // Ansetzungsart: zwei Schiedsrichter ODER ein Verein (entweder/oder).
+  mode: AssignmentMode;
   referee1Query: string;
   referee2Query: string;
   coachQuery: string;
   selectedReferee1Id: number | null;
   selectedReferee2Id: number | null;
   selectedCoachId: number | null;
+  selectedClubId: number | null;
   showReferee1Dropdown: boolean;
   showReferee2Dropdown: boolean;
   showCoachDropdown: boolean;
@@ -54,6 +60,9 @@ interface MergedGame {
 export class AssignmentIndexComponent implements OnInit, OnDestroy {
   rows: MergedGame[] = [];
   seasons: SeasonInfo[] = [];
+  // Vereine, die als „angesetzter Verein" gewählt werden können (eigener LV +
+  // geteilte LV). Einmalig geladen, für alle Zeilen geteilt.
+  clubs: AssignmentClub[] = [];
   loading = false;
   seasonsLoading = true;
 
@@ -81,6 +90,19 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this._refereeService
+      .adminGetAssignmentClubs()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (clubs) => {
+          this.clubs = clubs;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          // Vereinsliste optional – ohne sie ist nur der Modus „Verein" leer.
+        },
+      });
+
     this._settingsService
       .getSeasons()
       .pipe(takeUntil(this._destroy$))
@@ -204,13 +226,17 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     const state = this.rowStates.get(row.game.id);
     if (!state) return null;
 
-    const clubIds = [row.game.home_team_club_id, row.game.guest_team_club_id].filter(
-      (id): id is number => id != null
-    );
+    const clubIds = [
+      row.game.home_team_club_id,
+      row.game.guest_team_club_id,
+    ].filter((id): id is number => id != null);
     if (clubIds.length === 0) return null;
 
     const names: string[] = [];
-    const check = (refId: number | null, pool: RefereeAssignmentAvailable[]): void => {
+    const check = (
+      refId: number | null,
+      pool: RefereeAssignmentAvailable[]
+    ): void => {
       if (refId == null) return;
       const ref = pool.find((r) => r.id === refId);
       if (ref?.club_id != null && clubIds.includes(ref.club_id)) {
@@ -220,6 +246,17 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     check(state.selectedReferee1Id, state.availableReferees);
     check(state.selectedReferee2Id, state.availableReferees);
     check(state.selectedCoachId, state.availableCoaches);
+
+    // Vereins-Ansetzung: angesetzter Verein ist selbst einer der beiden
+    // spielenden Vereine.
+    if (
+      state.mode === 'club' &&
+      state.selectedClubId != null &&
+      clubIds.includes(state.selectedClubId)
+    ) {
+      const c = this.clubs.find((x) => x.id === state.selectedClubId);
+      if (c) names.push(c.name);
+    }
 
     if (names.length === 0) return null;
     return this._transloco.translate('assignmentAdmin.index.clubConflict', {
@@ -249,6 +286,25 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
 
   getState(gameId: number): RowState | undefined {
     return this.rowStates.get(gameId);
+  }
+
+  // Umschalten zwischen „2 Schiedsrichter" und „Verein". Beim Wechsel wird die
+  // jeweils andere Auswahl geleert (entweder/oder).
+  setMode(gameId: number, mode: AssignmentMode): void {
+    const state = this.rowStates.get(gameId);
+    if (!state || state.mode === mode) return;
+    state.mode = mode;
+    if (mode === 'club') {
+      this.clearReferee1(gameId);
+      this.clearReferee2(gameId);
+    } else {
+      state.selectedClubId = null;
+    }
+    this._cdr.markForCheck();
+  }
+
+  onClubChange(): void {
+    this._cdr.markForCheck();
   }
 
   arenaLocation(game: RefereeAssignableGame): string {
@@ -553,15 +609,36 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   save(row: MergedGame): void {
     const state = this.rowStates.get(row.game.id);
     if (!state || state.saving) return;
+
+    // Im Vereins-Modus muss ein Verein gewählt sein – sonst würde eine leere
+    // Ansetzung gespeichert. Klar zurückmelden statt still zu speichern.
+    if (state.mode === 'club' && state.selectedClubId == null) {
+      this._notificationService.error(
+        this._transloco.translate('assignmentAdmin.notifications.clubRequired'),
+        { autoClose: true, keepAfterRouteChange: false }
+      );
+      return;
+    }
+
     state.saving = true;
     this._cdr.markForCheck();
 
-    const data = {
-      game_id: row.game.id,
-      referee1_id: state.selectedReferee1Id,
-      referee2_id: state.selectedReferee2Id,
-      coach_id: state.selectedCoachId,
-    };
+    const data =
+      state.mode === 'club'
+        ? {
+            game_id: row.game.id,
+            club_id: state.selectedClubId,
+            referee1_id: null,
+            referee2_id: null,
+            coach_id: state.selectedCoachId,
+          }
+        : {
+            game_id: row.game.id,
+            referee1_id: state.selectedReferee1Id,
+            referee2_id: state.selectedReferee2Id,
+            club_id: null,
+            coach_id: state.selectedCoachId,
+          };
 
     const call = row.assignment
       ? this._refereeService.adminUpdateAssignment(row.assignment.id, data)
@@ -773,13 +850,16 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     const ref1 = assignment?.referee1 ?? null;
     const ref2 = assignment?.referee2 ?? null;
     const coach = assignment?.coach ?? null;
+    const club = assignment?.club ?? null;
     return {
+      mode: club ? 'club' : 'referees',
       referee1Query: ref1 ? this._refereeName(ref1) : '',
       referee2Query: ref2 ? this._refereeName(ref2) : '',
       coachQuery: coach ? this._refereeName(coach) : '',
       selectedReferee1Id: ref1?.id ?? null,
       selectedReferee2Id: ref2?.id ?? null,
       selectedCoachId: coach?.id ?? null,
+      selectedClubId: club?.id ?? null,
       showReferee1Dropdown: false,
       showReferee2Dropdown: false,
       showCoachDropdown: false,

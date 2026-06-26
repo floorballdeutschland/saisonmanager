@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
+  AssignmentClub,
   PublicLicenseList,
   RefereeAdmin,
   RefereeAdminGame,
@@ -304,6 +305,7 @@ export class RefereeService {
     referee1_id?: number | null;
     referee2_id?: number | null;
     coach_id?: number | null;
+    club_id?: number | null;
   }) {
     return this.http.post<RefereeAssignment>(
       environment.apiURL + 'admin/referee_assignments',
@@ -318,11 +320,20 @@ export class RefereeService {
       referee1_id?: number | null;
       referee2_id?: number | null;
       coach_id?: number | null;
+      club_id?: number | null;
     }
   ) {
     return this.http.put<RefereeAssignment>(
       environment.apiURL + 'admin/referee_assignments/' + id,
       { assignment: data }
+    );
+  }
+
+  // Vereine, die als „angesetzter Verein" gewählt werden können (eigener LV +
+  // geteilte LV; Admin = alle).
+  public adminGetAssignmentClubs() {
+    return this.http.get<AssignmentClub[]>(
+      environment.apiURL + 'admin/referee_assignments/clubs'
     );
   }
 

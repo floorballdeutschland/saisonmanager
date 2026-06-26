@@ -26,6 +26,10 @@
     "colCoach": "SR-Coach",
     "colActions": "Aktionen",
     "vs": "vs.",
+    "modeReferees": "2 Schiris",
+    "modeClub": "Verein",
+    "clubPlaceholder": "– Verein wählen –",
+    "clubCoversBoth": "(Verein stellt die Schiris)",
     "namePlaceholder": "Name…",
     "saving": "Speichern…",
     "saveDraft": "Vorläufig speichern",
@@ -45,6 +49,7 @@
   "notifications": {
     "saved": "Ansetzung gespeichert.",
     "saveError": "Fehler beim Speichern.",
+    "clubRequired": "Bitte einen Verein auswählen.",
     "notified": "Benachrichtigung gesendet.",
     "notifyError": "Fehler beim Senden.",
     "published": "Ansetzung veröffentlicht.",

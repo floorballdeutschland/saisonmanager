@@ -163,6 +163,11 @@ export interface RefereeAssignmentGame {
   result?: string;
 }
 
+export interface AssignmentClub {
+  id: number;
+  name: string;
+}
+
 export interface RefereeAssignment {
   id: number;
   game_id: number;
@@ -172,6 +177,7 @@ export interface RefereeAssignment {
   referee1?: RefereeAssignmentStub | null;
   referee2?: RefereeAssignmentStub | null;
   coach?: RefereeAssignmentStub | null;
+  club?: AssignmentClub | null;
   game?: RefereeAssignmentGame | null;
 }
 

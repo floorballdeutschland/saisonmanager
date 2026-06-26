@@ -26,6 +26,10 @@
     "colCoach": "Referee coach",
     "colActions": "Actions",
     "vs": "vs.",
+    "modeReferees": "2 referees",
+    "modeClub": "Club",
+    "clubPlaceholder": "– Select club –",
+    "clubCoversBoth": "(club provides the referees)",
     "namePlaceholder": "Name…",
     "saving": "Saving…",
     "saveDraft": "Save draft",
@@ -45,6 +49,7 @@
   "notifications": {
     "saved": "Assignment saved.",
     "saveError": "Error while saving.",
+    "clubRequired": "Please select a club.",
     "notified": "Notification sent.",
     "notifyError": "Error while sending.",
     "published": "Assignment published.",
