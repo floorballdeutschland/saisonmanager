@@ -148,6 +148,9 @@
             <th class="py-2 pr-4 font-bold">
               {{ "refereeAdmin.index.colClub" | transloco }}
             </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "refereeAdmin.index.colSeasonGames" | transloco }}
+            </th>
             <th class="py-2"></th>
           </tr>
         </thead>
@@ -203,6 +206,19 @@
               <td class="py-2 pr-4 text-fb-gray-500">
                 {{ r.club_name || "–" }}
               </td>
+              <td class="py-2 pr-4">
+                <a
+                  [routerLink]="[
+                    '/',
+                    'verwaltung',
+                    'schiedsrichter',
+                    r.lizenznummer_display || r.lizenznummer,
+                  ]"
+                  class="hover:underline"
+                >
+                  {{ r.season_game_count ?? 0 }}
+                </a>
+              </td>
               <td class="py-2 text-right">
                 <a
                   [routerLink]="[
@@ -221,7 +237,7 @@
           }
           @if (referees.length === 0) {
             <tr>
-              <td colspan="7" class="py-8 text-center text-fb-gray-500">
+              <td colspan="8" class="py-8 text-center text-fb-gray-500">
                 {{ "refereeAdmin.index.empty" | transloco }}
               </td>
             </tr>
