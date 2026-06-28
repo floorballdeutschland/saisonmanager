@@ -32,6 +32,7 @@
         --c-vm: #2563eb;
         --c-tm: #0891b2;
         --c-schiri: #db2777;
+        --c-entwickler: #475569;
         --c-player: #b45309;
         --c-auto: #64748b;
       }
@@ -152,7 +153,8 @@
       body:has(#panel-rsk-lv:target) .navlink[href="#panel-rsk-lv"],
       body:has(#panel-vm:target) .navlink[href="#panel-vm"],
       body:has(#panel-tm:target) .navlink[href="#panel-tm"],
-      body:has(#panel-schiri:target) .navlink[href="#panel-schiri"] {
+      body:has(#panel-schiri:target) .navlink[href="#panel-schiri"],
+      body:has(#panel-entwickler:target) .navlink[href="#panel-entwickler"] {
         background: rgba(255, 255, 255, 0.1);
         color: #fff;
         font-weight: 700;
@@ -175,7 +177,10 @@
       body:has(#panel-rsk-lv:target) .navlink[href="#panel-rsk-lv"] .dot,
       body:has(#panel-vm:target) .navlink[href="#panel-vm"] .dot,
       body:has(#panel-tm:target) .navlink[href="#panel-tm"] .dot,
-      body:has(#panel-schiri:target) .navlink[href="#panel-schiri"] .dot {
+      body:has(#panel-schiri:target) .navlink[href="#panel-schiri"] .dot,
+      body:has(#panel-entwickler:target)
+        .navlink[href="#panel-entwickler"]
+        .dot {
         box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot) 30%, transparent);
       }
       .navlink .abbr {
@@ -715,6 +720,36 @@
         border-radius: 4px;
       }
 
+      /* ════════ Do/Don't checklist ════════ */
+      .checklist {
+        list-style: none;
+        margin-top: 14px;
+        display: grid;
+        gap: 6px;
+      }
+      .checklist li {
+        font-size: 0.82rem;
+        color: #3a4050;
+        padding: 3px 0;
+        display: flex;
+        gap: 9px;
+        line-height: 1.5;
+      }
+      .checklist li::before {
+        flex-shrink: 0;
+        font-weight: 800;
+        width: 1.1em;
+        text-align: center;
+      }
+      .checklist li.good::before {
+        content: "✓";
+        color: #047857;
+      }
+      .checklist li.bad::before {
+        content: "✗";
+        color: #dc2626;
+      }
+
       /* ════════ Überblick: Rollen-Karten ════════ */
       .role-cards {
         display: grid;
@@ -865,6 +900,50 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
+      }
+
+      /* ════════ Endpoint-Tabelle (Entwickler) ════════ */
+      .matrix.endpoints {
+        min-width: 720px;
+      }
+      .matrix.endpoints td {
+        text-align: left;
+        vertical-align: top;
+        color: #3a4050;
+        line-height: 1.5;
+      }
+      .matrix.endpoints td.path {
+        font-family: var(--mono);
+        font-size: 0.74rem;
+        white-space: nowrap;
+        color: var(--text);
+      }
+      .method {
+        display: inline-block;
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        padding: 2px 7px;
+        border-radius: 5px;
+        color: #fff;
+      }
+      .method.get {
+        background: #047857;
+      }
+      .method.post {
+        background: #b45309;
+      }
+      pre.code {
+        background: #10141f;
+        color: #e6e9f0;
+        border-radius: 10px;
+        padding: 14px 16px;
+        overflow-x: auto;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        line-height: 1.6;
+        margin-top: 14px;
       }
 
       /* ════════ Überblick: Prozess-Schnellübersicht ════════ */
@@ -1026,6 +1105,15 @@
           >
             <span class="dot"></span> Schiedsrichter
             <span class="abbr">SR</span>
+          </a>
+          <div class="nav-group-label">Schnittstelle</div>
+          <a
+            class="navlink"
+            href="#panel-entwickler"
+            style="--dot: var(--c-entwickler)"
+          >
+            <span class="dot"></span> Entwickler &amp; API
+            <span class="abbr">API</span>
           </a>
         </nav>
         <div class="sidebar-foot">
@@ -3213,6 +3301,61 @@
 
           <details class="proc">
             <summary>
+              <span class="proc-icon">👤</span>
+              <div>
+                <div class="proc-title">Spieler korrekt anlegen</div>
+                <div class="proc-sub">
+                  Stammdaten sauber erfassen – häufige Fehler vermeiden
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <div class="note">
+                Vor dem Anlegen prüfen, ob der Spieler bereits existiert (auch
+                unter abweichender Schreibweise) – Doppelanlagen erschweren
+                Transfers und Lizenzierung.
+              </div>
+              <ul class="checklist">
+                <li class="good">
+                  Vor- und Nachnamen in normaler Schreibweise
+                  (Groß-/Kleinschreibung), z. B. <code>Max Mustermann</code>
+                </li>
+                <li class="bad">
+                  Keine durchgehenden GROSSBUCHSTABEN (<code>MUSTERMANN</code>)
+                </li>
+                <li class="good">
+                  Vorname ins Vorname-Feld, Nachname ins Nachname-Feld – nicht
+                  vertauschen
+                </li>
+                <li class="good">
+                  Doppelnamen vollständig im jeweiligen Feld
+                  (<code>Anna-Lena</code>, <code>Müller-Schmidt</code>)
+                </li>
+                <li class="bad">
+                  Keine führenden/zusätzlichen Leerzeichen vor oder zwischen
+                  Namen
+                </li>
+                <li class="good">
+                  Geburtsdatum exakt prüfen – maßgeblich für Altersklassen und
+                  Spielberechtigung
+                </li>
+                <li class="good">
+                  Korrekte Nationalität wählen (relevant für
+                  Kontingentregelungen)
+                </li>
+              </ul>
+              <div class="note">
+                <strong>Fehler entdeckt?</strong> Den Spieler <em>nicht</em> neu
+                anlegen, sondern den Namen anklicken und eine
+                <strong>Spielerdaten-Korrekturanfrage</strong> stellen (siehe
+                unten). So bleiben Lizenz- und Spielhistorie erhalten.
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
               <span class="proc-icon">📋</span>
               <div>
                 <div class="proc-title">Spielerdaten-Korrekturanfrage</div>
@@ -3378,6 +3521,61 @@
                   ><span class="act">ablehnen</span><span class="ar">→</span
                   ><span class="chip error">Abgelehnt</span>
                 </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">👤</span>
+              <div>
+                <div class="proc-title">Spieler korrekt anlegen</div>
+                <div class="proc-sub">
+                  Stammdaten sauber erfassen – häufige Fehler vermeiden
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <div class="note">
+                Vor dem Anlegen prüfen, ob der Spieler bereits existiert (auch
+                unter abweichender Schreibweise) – Doppelanlagen erschweren
+                Transfers und Lizenzierung.
+              </div>
+              <ul class="checklist">
+                <li class="good">
+                  Vor- und Nachnamen in normaler Schreibweise
+                  (Groß-/Kleinschreibung), z. B. <code>Max Mustermann</code>
+                </li>
+                <li class="bad">
+                  Keine durchgehenden GROSSBUCHSTABEN (<code>MUSTERMANN</code>)
+                </li>
+                <li class="good">
+                  Vorname ins Vorname-Feld, Nachname ins Nachname-Feld – nicht
+                  vertauschen
+                </li>
+                <li class="good">
+                  Doppelnamen vollständig im jeweiligen Feld
+                  (<code>Anna-Lena</code>, <code>Müller-Schmidt</code>)
+                </li>
+                <li class="bad">
+                  Keine führenden/zusätzlichen Leerzeichen vor oder zwischen
+                  Namen
+                </li>
+                <li class="good">
+                  Geburtsdatum exakt prüfen – maßgeblich für Altersklassen und
+                  Spielberechtigung
+                </li>
+                <li class="good">
+                  Korrekte Nationalität wählen (relevant für
+                  Kontingentregelungen)
+                </li>
+              </ul>
+              <div class="note">
+                <strong>Fehler entdeckt?</strong> Den Spieler <em>nicht</em> neu
+                anlegen. Eine Korrektur der Stammdaten läuft über den
+                Vereinsmanager (Korrekturanfrage) bzw. die SBK – so bleiben
+                Lizenz- und Spielhistorie erhalten.
               </div>
             </div>
           </details>
@@ -3653,6 +3851,297 @@
               </div>
             </div>
           </details>
+        </section>
+
+        <!-- ═══════════ ENTWICKLER & API ═══════════ -->
+        <section
+          class="panel"
+          id="panel-entwickler"
+          style="--rc: var(--c-entwickler)"
+        >
+          <div class="hero">
+            <span class="hero-mark">&lt;/&gt;</span>
+            <div class="hero-badge">Entwickler</div>
+            <h1>Entwickler &amp; API</h1>
+            <p>
+              Die öffentlichen Daten des Saisonmanagers (Spielpläne, Tabellen,
+              Statistiken, Schiedsrichter-Lizenzen u. a.) lassen sich über eine
+              HTTP-JSON-Schnittstelle abrufen. Diese Seite richtet sich an
+              Entwickler von Vereins-Websites, Apps und sonstigen Integrationen.
+            </p>
+            <div class="hero-scope">
+              🔑 Zugriff per <code>X-Api-Key</code>-Header – Nutzung nur nach
+              Zustimmung zu den Nutzungsbedingungen
+            </div>
+          </div>
+
+          <div class="sec">
+            <span class="num">01</span>
+            <h2>Zugang &amp; Nutzungsbedingungen</h2>
+          </div>
+          <div class="note">
+            <strong
+              >Für die Nutzung der API sind die Nutzungsbedingungen von
+              Floorball Deutschland zu akzeptieren.</strong
+            >
+            Diese sowie ein persönlicher API-Schlüssel können unter
+            <code>office@floorball.de</code> angefragt werden. Der ausgegebene
+            Schlüssel wird bei jeder Anfrage im HTTP-Header
+            <code>X-Api-Key</code> mitgesendet.
+          </div>
+          <div class="note">
+            Ohne gültigen Schlüssel (oder aktive Login-Session) antworten die
+            unten gelisteten Endpunkte mit <code>401 Unauthorized</code>. Bitte
+            beachten: Schlüssel sind personen-/projektgebunden und nicht für die
+            Weitergabe an Dritte bestimmt.
+          </div>
+
+          <div class="sec">
+            <span class="num">02</span>
+            <h2>Authentifizierung</h2>
+          </div>
+          <p style="font-size: 0.85rem; color: #474d5c; line-height: 1.65">
+            Alle Anfragen gehen an
+            <code>https://saisonmanager.org/api/v2/…</code>
+            und tragen den Schlüssel im Header. Beispiel mit
+            <code>curl</code>:
+          </p>
+          <pre class="code">
+curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
+     https://saisonmanager.org/api/v2/leagues</pre
+          >
+          <div class="note">
+            Antworten sind UTF-8-kodiertes JSON. Einige Endpunkte werden
+            serverseitig zwischengespeichert (z. B. <code>/init</code> und
+            <code>/transfers/public</code> ca. 30&nbsp;Min., Spielpläne/Tabellen
+            wenige Minuten). Live-Spielstände können bei Nicht-Realtime-Keys
+            leicht verzögert ausgeliefert werden.
+          </div>
+
+          <div class="sec">
+            <span class="num">03</span>
+            <h2>Endpunkte</h2>
+          </div>
+
+          <h3 style="margin: 6px 0 4px; font-size: 0.95rem">
+            Initialisierung &amp; Strukturen
+          </h3>
+          <div class="matrix-wrap">
+            <table class="matrix endpoints">
+              <thead>
+                <tr>
+                  <th>Methode</th>
+                  <th>Pfad</th>
+                  <th>Beschreibung</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/init</td>
+                  <td>
+                    Bootstrap-Daten: Saisons, aktuelle Saison,
+                    Spielbetriebsstellen, Landesverbände
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/state_associations</td>
+                  <td>Alle Landesverbände</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/game_operations</td>
+                  <td>Alle Spielbetriebsstellen (Regionalverbände)</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/game_operations/:id/leagues</td>
+                  <td>
+                    Ligen einer Spielbetriebsstelle (optional
+                    <code>?season_id=</code>)
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">
+                    /api/v2/game_operations/by_shortname/:name
+                  </td>
+                  <td>
+                    Spielbetriebsstelle nach Kurznamen (z. B. <code>fvd</code>)
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 style="margin: 18px 0 4px; font-size: 0.95rem">
+            Ligen, Spielpläne &amp; Tabellen
+          </h3>
+          <div class="matrix-wrap">
+            <table class="matrix endpoints">
+              <thead>
+                <tr>
+                  <th>Methode</th>
+                  <th>Pfad</th>
+                  <th>Beschreibung</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/leagues</td>
+                  <td>Alle Ligen (aktuelle und historische)</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/leagues/:id</td>
+                  <td>Liga-Details / Metadaten</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/leagues/:id/schedule</td>
+                  <td>Kompletter Spielplan (Spieltage mit Spielen)</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">
+                    /api/v2/leagues/:id/game_days/current/schedule
+                  </td>
+                  <td>Spielplan des aktuellen Spieltags</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">
+                    /api/v2/leagues/:id/game_days/:number/schedule
+                  </td>
+                  <td>Spielplan eines bestimmten Spieltags</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/leagues/:id/table</td>
+                  <td>Tabelle der Liga</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/leagues/:id/grouped_table</td>
+                  <td>Tabelle gruppiert (z. B. Vor-/Endrunde)</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/leagues/:id/scorer</td>
+                  <td>Torschützen-/Scorerliste</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 style="margin: 18px 0 4px; font-size: 0.95rem">
+            Spiele, Teams &amp; Spieler
+          </h3>
+          <div class="matrix-wrap">
+            <table class="matrix endpoints">
+              <thead>
+                <tr>
+                  <th>Methode</th>
+                  <th>Pfad</th>
+                  <th>Beschreibung</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/games/:id</td>
+                  <td>Einzelspiel mit Ereignissen und Spielstand</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/teams/:id</td>
+                  <td>
+                    Team-Spielplan im iCal-Format (<code>?format=ics</code>)
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/teams/:id/stats</td>
+                  <td>Team-Statistiken (Scorer, letzte Spiele)</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/players/:id/stats</td>
+                  <td>Spielerstatistik über alle Saisons</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/transfers/public</td>
+                  <td>Öffentliche Spielerwechsel der aktuellen Saison</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 style="margin: 18px 0 4px; font-size: 0.95rem">Schiedsrichter</h3>
+          <div class="matrix-wrap">
+            <table class="matrix endpoints">
+              <thead>
+                <tr>
+                  <th>Methode</th>
+                  <th>Pfad</th>
+                  <th>Beschreibung</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/user/referees/:lizenznummer</td>
+                  <td>
+                    Öffentliche Lizenzdaten eines Schiedsrichters (Lizenzcheck)
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/referees/search</td>
+                  <td>
+                    Schiedsrichter-Suche / Autocomplete (<code>?q=</code>)
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/referees/:lizenznummer/games</td>
+                  <td>Gepfiffene Spiele (optional <code>?season_id=</code>)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="note">
+            Daneben existiert die ältere Live-Ticker-API unter
+            <code>/api/v1/ticker/…</code> (ebenfalls schlüsselgeschützt). Die
+            Endpunkte <code>/api/v2/version</code> sowie Login/Logout sind
+            schlüsselfrei; einzelne Ansichten (Lizenzlisten, Secretary) sind
+            über signierte Links statt per Schlüssel zugänglich.
+          </div>
+
+          <div class="sec">
+            <span class="num">04</span>
+            <h2>Beispiel-Response</h2>
+          </div>
+          <p style="font-size: 0.85rem; color: #474d5c; line-height: 1.65">
+            Auszug aus <code>GET /api/v2/user/referees/:lizenznummer</code>
+            (Felder können sich weiterentwickeln – maßgeblich ist stets die
+            tatsächliche API-Antwort):
+          </p>
+          <pre class="code">
+{
+  "lizenznummer": "12345",
+  "lizenzstufe": "Landesliga",
+  "gueltigkeit": "31.07.2027",
+  "landesverband": "Floorball Verband Berlin",
+  "qualifications": [
+    { "qualification_type_name": "Schiri-Coach", "valid_until": "2027-07-31" }
+  ]
+}</pre
+          >
         </section>
 
         <footer class="page-foot">
