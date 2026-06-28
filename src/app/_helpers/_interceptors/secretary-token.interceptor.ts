@@ -16,7 +16,11 @@ export class SecretaryTokenInterceptor implements HttpInterceptor {
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
-    const token = sessionStorage.getItem(STORAGE_KEY);
+    // Beim Server-Rendering (SSR/Prerender) gibt es keinen sessionStorage.
+    const token =
+      typeof sessionStorage === 'undefined'
+        ? null
+        : sessionStorage.getItem(STORAGE_KEY);
     if (token && request.url.startsWith(environment.apiURL)) {
       request = request.clone({
         setHeaders: { 'X-Secretary-Token': token },

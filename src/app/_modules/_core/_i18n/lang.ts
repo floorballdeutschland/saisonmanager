@@ -14,6 +14,10 @@ export const DEFAULT_LANG: AppLanguage = 'de';
  * Fällt bei fehlendem/ungültigem Wert auf `de` zurück.
  */
 export function readInitialLang(): AppLanguage {
+  // Beim Server-Rendering (SSR/Prerender) existiert kein localStorage.
+  if (typeof localStorage === 'undefined') {
+    return DEFAULT_LANG;
+  }
   try {
     const stored = localStorage.getItem('user');
     const lang = stored
