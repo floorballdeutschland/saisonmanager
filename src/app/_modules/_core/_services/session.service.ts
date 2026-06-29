@@ -34,7 +34,10 @@ export class SessionService {
     private _notificationService: NotificationService,
     private _transloco: TranslocoService
   ) {
-    const stored_user = localStorage.getItem('user');
+    // Beim Server-Rendering (SSR/Prerender) existiert kein localStorage –
+    // dann startet die App ohne persistierte Session.
+    const stored_user =
+      typeof localStorage === 'undefined' ? null : localStorage.getItem('user');
 
     if (stored_user) {
       const user: User = JSON.parse(stored_user);
@@ -95,7 +98,11 @@ export class SessionService {
     redirect = false
   ) {
     this.currentUserSubject.next(null);
-    localStorage.removeItem('user');
+    // logout() wird beim Prerender via ErrorInterceptor (401) ausgelöst, wo
+    // kein localStorage existiert – dort gibt es keine persistierte Session.
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('user');
+    }
 
     const path = environment.apiURL + 'logout.json';
     const data = {};

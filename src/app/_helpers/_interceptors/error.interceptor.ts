@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   HttpEvent,
   HttpHandler,
@@ -15,7 +16,8 @@ export class ErrorInterceptor implements HttpInterceptor {
   constructor(
     private sessionService: SessionService,
     private _router: Router,
-    private _notificationService: NotificationService
+    private _notificationService: NotificationService,
+    @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
   public intercept(
@@ -24,6 +26,18 @@ export class ErrorInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(
       catchError((err) => {
+        // Beim Server-Rendering (Prerender) keine Browser-Seiteneffekte
+        // (logout, Navigation, Notifications). Zudem ein echtes Error-Objekt
+        // werfen, damit ein fehlgeschlagener API-Call den Prerender-Worker
+        // nicht an einem String-Reject hängen lässt ("catch clause variable
+        // is not an Error instance"). Im Browser bleibt das String-Wurf-
+        // verhalten erhalten – aufrufende Component-Handler erwarten einen String.
+        if (!isPlatformBrowser(this.platformId)) {
+          const serverError =
+            err.error?.message || err.error?.error || err.statusText;
+          return throwError(() => new Error(serverError));
+        }
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           const returnUrl = this._router.url;
           this.sessionService.logout(false, true, 'Bitte einloggen.', false);
