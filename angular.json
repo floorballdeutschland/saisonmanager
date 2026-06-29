@@ -71,6 +71,7 @@
               "outputHashing": "all"
             },
             "staging": {
+              "outputPath": "dist/saisonmanager-staging",
               "budgets": [
                 {
                   "type": "initial",

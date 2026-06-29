@@ -41,5 +41,7 @@ sed -i "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment
 export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
 
 # Kein Prerender auf Staging (analog CI) – einfacher, keine Build-Zeit-API-Calls.
+# Die staging-Config baut nach dist/saisonmanager-staging/ (eigener outputPath),
+# damit ein paralleler Prod-build-deploy.sh (dist/saisonmanager/) nicht kollidiert.
 ./node_modules/.bin/ng build --configuration staging
-scp -r dist/saisonmanager/browser/* saisonmanager:/opt/saisonmanager/saisonmanager-frontend-staging/
+scp -r dist/saisonmanager-staging/browser/* saisonmanager:/opt/saisonmanager/saisonmanager-frontend-staging/
