@@ -3964,6 +3964,17 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
                 </tr>
                 <tr>
                   <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/game_operations/:id/clubs</td>
+                  <td>
+                    Vereine einer Spielbetriebsstelle samt der Teams, die in der
+                    Saison im Einsatz sind (optional
+                    <code>?season_id=</code>, sonst aktuelle Saison). Enthält
+                    auch Spielgemeinschaften (ein SG-Team erscheint unter allen
+                    beteiligten Vereinen).
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
                   <td class="path">
                     /api/v2/game_operations/by_shortname/:name
                   </td>
