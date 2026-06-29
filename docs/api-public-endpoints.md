@@ -72,12 +72,14 @@
 
 ## Sportverbände
 
-| Methode | Pfad                                      | Beschreibung                              |
-| ------- | ----------------------------------------- | ----------------------------------------- |
-| `GET`   | `/game_operations`                        | Alle Verbände                             |
-| `GET`   | `/game_operations/:id/leagues`            | Ligen eines Verbands (aktuelle Saison)    |
-| `GET`   | `/game_operations/:id/leagues/:season_id` | Ligen eines Verbands für bestimmte Saison |
-| `GET`   | `/game_operations/by_shortname/:name`     | Verband nach Kurzname                     |
+| Methode | Pfad                                      | Beschreibung                                              |
+| ------- | ----------------------------------------- | --------------------------------------------------------- |
+| `GET`   | `/game_operations`                        | Alle Verbände                                             |
+| `GET`   | `/game_operations/:id/leagues`            | Ligen eines Verbands (aktuelle Saison)                    |
+| `GET`   | `/game_operations/:id/leagues/:season_id` | Ligen eines Verbands für bestimmte Saison                 |
+| `GET`   | `/game_operations/:id/clubs`              | Vereine eines Verbands mit ihren Teams (aktuelle Saison)  |
+| `GET`   | `/game_operations/:id/clubs/:season_id`   | Vereine eines Verbands mit ihren Teams (bestimmte Saison) |
+| `GET`   | `/game_operations/by_shortname/:name`     | Verband nach Kurzname                                     |
 
 ## Schiedsrichter
 
