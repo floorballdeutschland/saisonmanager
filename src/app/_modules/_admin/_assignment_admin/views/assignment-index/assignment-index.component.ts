@@ -20,6 +20,7 @@ import {
   RefereeAssignment,
   RefereeAssignmentAvailable,
   RefereeAssignmentStub,
+  RefereeTag,
 } from '@floorball/types';
 
 type AssignmentMode = 'referees' | 'club';
@@ -74,6 +75,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   // nur die Anzeige ein, nie den (serverseitig verbandsgescopten) Bestand.
   filterShortNotice = false;
   selectedLicenseLevels = new Set<string>();
+  selectedTagIds = new Set<number>();
   private _licenseDefaultApplied = false;
 
   rowStates = new Map<number, RowState>();
@@ -361,6 +363,30 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
+  // Tags, die als Filter-Chips angeboten werden: alle in den geladenen
+  // Kandidatenlisten vorkommenden Tags plus die aktuell gewählten (analog zu
+  // den Lizenzstufen, aus den Daten abgeleitet – kein zusätzlicher API-Call).
+  tagFilterOptions(): RefereeTag[] {
+    const byId = new Map<number, RefereeTag>();
+    this.rowStates.forEach((s) =>
+      s.availableReferees.forEach((r) =>
+        (r.tags ?? []).forEach((t) => byId.set(t.id, t))
+      )
+    );
+    return Array.from(byId.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+  }
+
+  toggleTag(id: number): void {
+    if (this.selectedTagIds.has(id)) {
+      this.selectedTagIds.delete(id);
+    } else {
+      this.selectedTagIds.add(id);
+    }
+    this._cdr.markForCheck();
+  }
+
   // Weiche Vorfilter (Lizenzstufe + „kurzfristig mobil"). Keine ausgewählte
   // Lizenzstufe = keine Lizenz-Einschränkung (alle anzeigen).
   private _passesPrefilters(r: RefereeAssignmentAvailable): boolean {
@@ -375,6 +401,11 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
           level.startsWith(sel)
         );
       if (!matches) return false;
+    }
+    // Tag-Filter (ODER): mind. einer der gewählten Tags muss am Schiri hängen.
+    if (this.selectedTagIds.size > 0) {
+      const tagIds = (r.tags ?? []).map((t) => t.id);
+      if (!tagIds.some((id) => this.selectedTagIds.has(id))) return false;
     }
     return true;
   }

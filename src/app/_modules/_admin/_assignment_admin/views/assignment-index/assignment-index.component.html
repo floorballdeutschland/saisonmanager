@@ -110,6 +110,33 @@
           }
         </div>
       }
+      @if (tagFilterOptions().length > 0) {
+        <span class="text-fb-gray-500"
+          >{{ "assignmentAdmin.index.filterTags" | transloco }}:</span
+        >
+        <div class="flex flex-wrap gap-1">
+          @for (tag of tagFilterOptions(); track tag.id) {
+            <button
+              type="button"
+              (click)="toggleTag(tag.id)"
+              class="px-2 py-0.5 rounded-full border text-xs inline-flex items-center gap-1"
+              [class.bg-black]="selectedTagIds.has(tag.id)"
+              [class.text-white]="selectedTagIds.has(tag.id)"
+              [class.border-black]="selectedTagIds.has(tag.id)"
+              [class.border-fb-gray-400]="!selectedTagIds.has(tag.id)"
+              [class.text-fb-gray-600]="!selectedTagIds.has(tag.id)"
+            >
+              @if (tag.color) {
+                <span
+                  class="inline-block w-2 h-2 rounded-full"
+                  [style.backgroundColor]="tag.color"
+                ></span>
+              }
+              {{ tag.name }}
+            </button>
+          }
+        </div>
+      }
     </div>
     <div class="overflow-x-auto">
       <table
@@ -319,6 +346,19 @@
                                   >⚡</span
                                 >
                               }
+                              @for (t of r.tags; track t.id) {
+                                <span
+                                  class="ml-1 inline-flex items-center gap-0.5 text-[10px] text-fb-gray-500"
+                                >
+                                  <span
+                                    class="inline-block w-1.5 h-1.5 rounded-full"
+                                    [style.backgroundColor]="
+                                      t.color || '#9ca3af'
+                                    "
+                                  ></span
+                                  >{{ t.name }}</span
+                                >
+                              }
                             </li>
                           }
                         </ul>
@@ -435,6 +475,19 @@
                                       | transloco
                                   "
                                   >⚡</span
+                                >
+                              }
+                              @for (t of r.tags; track t.id) {
+                                <span
+                                  class="ml-1 inline-flex items-center gap-0.5 text-[10px] text-fb-gray-500"
+                                >
+                                  <span
+                                    class="inline-block w-1.5 h-1.5 rounded-full"
+                                    [style.backgroundColor]="
+                                      t.color || '#9ca3af'
+                                    "
+                                  ></span
+                                  >{{ t.name }}</span
                                 >
                               }
                             </li>

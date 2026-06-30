@@ -43,6 +43,7 @@
     "prefilterLabel": "Auswahl-Vorfilter:",
     "filterShortNotice": "Nur kurzfristig mobil",
     "filterLicense": "Lizenzstufe",
+    "filterTags": "Tags",
     "shortNoticeBadge": "Kurzfristig mobil",
     "updateSend": "Änderung & Benachrichtigung senden"
   },

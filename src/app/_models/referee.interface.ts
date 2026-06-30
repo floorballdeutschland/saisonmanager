@@ -30,6 +30,16 @@ export interface RefereeQualificationEntry {
   valid_until?: string;
 }
 
+export interface RefereeTag {
+  id: number;
+  name: string;
+  color?: string | null;
+  // Spielbetrieb, dem der Tag zugeordnet ist (null = global). Nur im Katalog
+  // relevant; die schlanke Variante an Schiri/Verfügbarkeit liefert nur id/name/color.
+  game_operation_id?: number | null;
+  usage_count?: number;
+}
+
 export interface RefereeAdmin {
   id: number;
   lizenznummer: number | null;
@@ -59,6 +69,8 @@ export interface RefereeAdmin {
   plz?: string;
   ort?: string;
   partner_lizenznummer?: number | null;
+  tags?: RefereeTag[];
+  tag_ids?: number[];
 }
 
 export interface RefereeVm {
@@ -191,6 +203,7 @@ export interface RefereeAssignmentAvailable {
   kurzfristig_mobil?: boolean;
   partner_lizenznummer?: number | null;
   club_id?: number | null;
+  tags?: RefereeTag[];
 }
 
 export type RefereeAvailabilityState = 'available' | 'unavailable' | 'assigned';

@@ -20,6 +20,7 @@ import {
   RefereeProfile,
   RefereePublicLicense,
   RefereeQualificationType,
+  RefereeTag,
   RefereeVm,
   RefereeFeedbackProfileResponse,
 } from '@floorball/types';
@@ -198,6 +199,33 @@ export class RefereeService {
     return this.http.delete(
       environment.apiURL + 'admin/referee_qualification_types/' + id
     );
+  }
+
+  // Tags (admin/RSK/Ansetzer) – frei definierbarer Tag-Katalog, pro Spielbetrieb
+  // gescopt. Zur Kategorisierung & Vorfilterung von Schiedsrichtern.
+
+  public adminGetTags() {
+    return this.http.get<RefereeTag[]>(
+      environment.apiURL + 'admin/referee_tags'
+    );
+  }
+
+  public adminCreateTag(data: Partial<RefereeTag>) {
+    return this.http.post<RefereeTag>(
+      environment.apiURL + 'admin/referee_tags',
+      { referee_tag: data }
+    );
+  }
+
+  public adminUpdateTag(id: number, data: Partial<RefereeTag>) {
+    return this.http.put<RefereeTag>(
+      environment.apiURL + 'admin/referee_tags/' + id,
+      { referee_tag: data }
+    );
+  }
+
+  public adminDeleteTag(id: number) {
+    return this.http.delete(environment.apiURL + 'admin/referee_tags/' + id);
   }
 
   // License levels (admin/RSK)

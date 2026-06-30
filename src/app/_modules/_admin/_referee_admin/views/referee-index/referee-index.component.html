@@ -4,6 +4,12 @@
       {{ "refereeAdmin.index.title" | transloco }}
     </h1>
     <div class="flex gap-2">
+      <a
+        [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'tags']"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+      >
+        {{ "refereeAdmin.index.tags" | transloco }}
+      </a>
       @if (!isRestricted) {
         <a
           [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'lizenzstufen']"

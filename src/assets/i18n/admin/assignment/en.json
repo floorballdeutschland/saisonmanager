@@ -43,6 +43,7 @@
     "prefilterLabel": "Selection pre-filter:",
     "filterShortNotice": "Short-notice mobile only",
     "filterLicense": "License level",
+    "filterTags": "Tags",
     "shortNoticeBadge": "Available on short notice",
     "updateSend": "Send change & notify"
   },
