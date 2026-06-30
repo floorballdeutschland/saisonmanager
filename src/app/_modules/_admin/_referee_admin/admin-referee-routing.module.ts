@@ -28,6 +28,12 @@ const routes: Routes = [
     data: { scrollTop: true },
   },
   {
+    path: 'verwaltung/schiedsrichter/tags',
+    pathMatch: 'full',
+    component: Views.RefereeTagsComponent,
+    data: { scrollTop: true },
+  },
+  {
     path: 'verwaltung/schiedsrichter/einstellungen',
     pathMatch: 'full',
     component: Views.RefereeSettingsComponent,

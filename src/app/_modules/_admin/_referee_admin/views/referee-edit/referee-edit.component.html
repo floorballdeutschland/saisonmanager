@@ -292,6 +292,45 @@
           }
         </div>
       }
+      <!-- Tags (nur reguläre Schiedsrichter) -->
+      @if (!referee.guest) {
+        <div class="flex flex-col gap-2">
+          <h2 class="text-sm font-bold">
+            {{ "refereeAdmin.edit.tags" | transloco }}
+          </h2>
+          <p class="text-xs text-fb-gray-500">
+            {{ "refereeAdmin.edit.tagsHint" | transloco }}
+          </p>
+          @if (tags.length === 0) {
+            <p class="text-xs text-fb-gray-500">
+              {{ "refereeAdmin.edit.noTags" | transloco }}
+            </p>
+          } @else {
+            <div class="flex flex-wrap gap-1.5">
+              @for (tag of tags; track tag.id) {
+                <button
+                  type="button"
+                  (click)="toggleTag(tag.id)"
+                  class="px-2.5 py-1 rounded-full border text-xs inline-flex items-center gap-1.5"
+                  [class.bg-black]="isTagSelected(tag.id)"
+                  [class.text-white]="isTagSelected(tag.id)"
+                  [class.border-black]="isTagSelected(tag.id)"
+                  [class.border-fb-gray-400]="!isTagSelected(tag.id)"
+                  [class.text-fb-gray-600]="!isTagSelected(tag.id)"
+                >
+                  @if (tag.color) {
+                    <span
+                      class="inline-block w-2 h-2 rounded-full"
+                      [style.backgroundColor]="tag.color"
+                    ></span>
+                  }
+                  {{ tag.name }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
       <!-- Heimadresse (nur reguläre Schiedsrichter) -->
       @if (!referee.guest) {
         <div class="flex flex-col gap-2">

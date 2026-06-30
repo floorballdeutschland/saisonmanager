@@ -24,6 +24,7 @@ import {
   RefereeAdmin,
   RefereeQualificationEntry,
   RefereeQualificationType,
+  RefereeTag,
   StateAssociation,
 } from '@floorball/types';
 
@@ -51,6 +52,8 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
   qualifications: RefereeQualificationEntry[] = [];
   availableTypesList: RefereeQualificationType[][] = [];
   licenseLevels: RefereeLicenseLevel[] = [];
+  tags: RefereeTag[] = [];
+  selectedTagIds: number[] = [];
 
   @ViewChild(NgForm) form?: NgForm;
 
@@ -95,13 +98,15 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
       this._clubService.getAdminClubAll(),
       this._refereeService.adminGetQualificationTypes(),
       this._refereeService.adminGetLicenseLevels(),
+      this._refereeService.adminGetTags(),
     ])
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: ([clubs, types, levels]) => {
+        next: ([clubs, types, levels, tags]) => {
           this.clubs = clubs.sort((a, b) => a.name.localeCompare(b.name));
           this.qualificationTypes = types.filter((t) => t.active);
           this.licenseLevels = levels.filter((l) => l.active);
+          this.tags = tags;
           this._recomputeAvailableTypes();
           this._cdr.markForCheck();
         },
@@ -210,6 +215,16 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
     this._recomputeAvailableTypes();
   }
 
+  isTagSelected(id: number): boolean {
+    return this.selectedTagIds.includes(id);
+  }
+
+  toggleTag(id: number): void {
+    this.selectedTagIds = this.isTagSelected(id)
+      ? this.selectedTagIds.filter((x) => x !== id)
+      : [...this.selectedTagIds, id];
+  }
+
   trackById(_index: number, item: { id: number }): number {
     return item.id;
   }
@@ -236,6 +251,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
         ...q,
         valid_until: this._fromInputDate(q.valid_until),
       })),
+      tag_ids: this.selectedTagIds,
     };
 
     const call =
@@ -404,6 +420,7 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
       ...q,
       valid_until: this._toInputDate(q.valid_until),
     }));
+    this.selectedTagIds = r.tag_ids ?? (r.tags ?? []).map((t) => t.id);
     this._recomputeAvailableTypes();
     this.loading = false;
     this._cdr.markForCheck();
