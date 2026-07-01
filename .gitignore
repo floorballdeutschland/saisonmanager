@@ -51,6 +51,7 @@ Thumbs.db
 # Secrets (never commit)
 src/environments/.api-key
 src/environments/environment.prod.ts.bak
+src/environments/environment.staging.ts.bak
 .claude/
 
 # Personenbezogene Daten / Importe (NIEMALS committen)
