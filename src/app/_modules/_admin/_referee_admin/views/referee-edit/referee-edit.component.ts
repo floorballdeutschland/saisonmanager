@@ -78,7 +78,8 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           this.isRestricted = !!user?.permissions['referee_edit_restricted'];
           this.canDelete = !this.isRestricted;
           this.canMerge = !!user?.permissions['referee_merge'];
-          this.canCreateUserAccount = !!user?.permissions['referee_can_create'];
+          this.canCreateUserAccount =
+            !!user?.permissions['referee_can_create_user'];
           this.canDeleteUserAccount =
             !!user?.permissions['referee_can_delete_user'];
           this._cdr.markForCheck();
