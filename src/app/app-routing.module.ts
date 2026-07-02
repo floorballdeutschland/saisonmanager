@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
-import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
+import { SelectivePreloadingStrategy } from './_helpers/selective-preloading.strategy';
 
 const routes: Routes = [
   {
@@ -9,12 +10,14 @@ const routes: Routes = [
         path: '',
         loadChildren: () =>
           import('@floorball/public/home').then((m) => m.PublicHomeModule),
+        data: { preload: true },
       },
 
       {
         path: '',
         loadChildren: () =>
           import('@floorball/public/login').then((m) => m.PublicLoginModule),
+        data: { preload: true },
       },
       {
         path: '',
@@ -194,6 +197,7 @@ const routes: Routes = [
     path: '',
     loadChildren: () =>
       import('@floorball/public/player').then((m) => m.PublicPlayerModule),
+    data: { preload: true },
   },
   {
     path: '',
@@ -201,6 +205,7 @@ const routes: Routes = [
       import('@floorball/public/referee-license').then(
         (m) => m.PublicRefereeLicenseModule
       ),
+    data: { preload: true },
   },
   {
     path: '',
@@ -208,6 +213,7 @@ const routes: Routes = [
       import('@floorball/public/license-list').then(
         (m) => m.PublicLicenseListModule
       ),
+    data: { preload: true },
   },
   {
     path: '',
@@ -215,6 +221,7 @@ const routes: Routes = [
       import('@floorball/public/secretary').then(
         (m) => m.PublicSecretaryModule
       ),
+    data: { preload: true },
   },
   {
     path: '',
@@ -222,6 +229,7 @@ const routes: Routes = [
       import('@floorball/public/association/host').then(
         (m) => m.PublicAssociationHostModule
       ),
+    data: { preload: true },
   },
   {
     path: '',
@@ -229,6 +237,7 @@ const routes: Routes = [
       import('@floorball/public/transfer-confirmation').then(
         (m) => m.PublicTransferConfirmationModule
       ),
+    data: { preload: true },
   },
 ];
 
@@ -237,9 +246,10 @@ const routes: Routes = [
     RouterModule.forRoot(routes, {
       paramsInheritanceStrategy: 'always',
       scrollPositionRestoration: 'top',
-      // Lazy-Module nach dem initialen Laden im Hintergrund vorladen, damit das
-      // Navigieren zwischen Bereichen ohne Chunk-Download-Wartezeit erfolgt.
-      preloadingStrategy: PreloadAllModules,
+      // Nur öffentliche Bereiche (data.preload=true) im Hintergrund vorladen –
+      // die vielen, selten genutzten Admin-Module bleiben lazy und belasten den
+      // initialen Start nicht mehr.
+      preloadingStrategy: SelectivePreloadingStrategy,
     }),
   ],
   exports: [RouterModule],
