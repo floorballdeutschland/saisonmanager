@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import {
   Club,
+  League,
   PlayerLicense,
   PlayerWithLicense,
   TeamWithPlayers,
@@ -40,6 +41,9 @@ export class LicenseAdminDetailComponent implements OnInit {
 
   @Input()
   license!: PlayerLicense;
+
+  @Input()
+  league?: League;
 
   @Output() handledPlayer = new EventEmitter<number>();
 
@@ -159,8 +163,23 @@ export class LicenseAdminDetailComponent implements OnInit {
       });
   }
 
+  public docTypeLabel(docType: string): string {
+    const labels: Record<string, string> = {
+      id_copy: this._transloco.translate(
+        'licenseAdmin.leagueDetail.docLabelIdCopy'
+      ),
+    };
+    return labels[docType] ?? docType;
+  }
+
   public isDocumentsComplete(player: PlayerWithLicense): boolean {
     const docs = player.team_license?.documents;
+    // Alle von der Liga geforderten Dokumente (außer Einverständnis, das nur
+    // Minderjährige betrifft) müssen hochgeladen sein.
+    const filesMissing = (this.league?.required_documents ?? [])
+      .filter((docType) => docType !== 'parental_consent')
+      .some((docType) => !docs?.[docType + '_url']);
+    if (filesMissing) return false;
     if (docs?.['id_copy'] === false) return false;
     const isMinor = player.birthdate
       ? this.calculateAge(player.birthdate) < 18

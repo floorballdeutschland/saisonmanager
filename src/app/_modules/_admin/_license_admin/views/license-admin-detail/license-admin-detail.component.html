@@ -179,6 +179,75 @@
               }
             </ul>
           </div>
+          <div class="md:col-span-2">
+            <p class="uppercase font-bold text-gray-400 text-sm mb-3">
+              {{ "licenseAdmin.leagueDetail.documents" | transloco }}
+            </p>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <!-- Pflichtdokumente aus Liga-Konfiguration -->
+              @for (docType of league?.required_documents; track docType) {
+                @if (docType !== "parental_consent") {
+                  @if (player.team_license.documents?.[docType + "_url"]) {
+                    <a
+                      [href]="player.team_license.documents![docType + '_url']"
+                      target="_blank"
+                      rel="noopener"
+                      class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
+                      [title]="
+                        'licenseAdmin.leagueDetail.docView'
+                          | transloco: { doc: docTypeLabel(docType) }
+                      "
+                      >{{ docTypeLabel(docType) }}</a
+                    >
+                  } @else {
+                    <span
+                      class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
+                      [title]="
+                        'licenseAdmin.leagueDetail.docMissing'
+                          | transloco: { doc: docTypeLabel(docType) }
+                      "
+                      >{{ docTypeLabel(docType) }}</span
+                    >
+                  }
+                }
+              }
+              <!-- Einverständnis (nur für Minderjährige) -->
+              @if (calculateAge(player.birthdate) < 18) {
+                @if (player.team_license.documents?.parental_consent_url) {
+                  <a
+                    [href]="player.team_license.documents!.parental_consent_url"
+                    target="_blank"
+                    rel="noopener"
+                    class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
+                    [title]="
+                      'licenseAdmin.leagueDetail.parentalConsentView'
+                        | transloco
+                    "
+                    >{{
+                      "licenseAdmin.leagueDetail.parentalConsent" | transloco
+                    }}</a
+                  >
+                } @else {
+                  <span
+                    class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
+                    [title]="
+                      'licenseAdmin.leagueDetail.parentalConsentMissing'
+                        | transloco
+                    "
+                    >{{
+                      "licenseAdmin.leagueDetail.parentalConsent" | transloco
+                    }}</span
+                  >
+                }
+              }
+              @if (
+                !league?.required_documents?.length &&
+                calculateAge(player.birthdate) >= 18
+              ) {
+                <span class="text-[12px] text-gray-400">–</span>
+              }
+            </div>
+          </div>
         </div>
         <div class="flex flex-col items-start justify-start">
           <div class="w-full mb-2">
