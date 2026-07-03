@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 import {
   Club,
+  GfRole,
   LicenseDocument,
   Nation,
   Player,
@@ -77,7 +78,8 @@ export class PlayerService {
     licenseId: string,
     licenseStatusId: number,
     reason: string,
-    validUntil?: string
+    validUntil?: string,
+    gfRole?: GfRole
   ) {
     const path =
       environment.apiURL +
@@ -90,6 +92,25 @@ export class PlayerService {
       license_status_id: licenseStatusId,
       reason: reason,
       ...(validUntil ? { valid_until: validUntil } : {}),
+      ...(gfRole ? { gf_role: gfRole } : {}),
+    });
+  }
+
+  // Setzt/tauscht die Erst-/Zweitlizenz-Zuordnung einer GF-Erwachsenen-Lizenz.
+  // gfRole null entfernt die Zuordnung.
+  public setGfLicenseRole(
+    playerId: number,
+    licenseId: string,
+    gfRole: GfRole | null
+  ) {
+    const path =
+      environment.apiURL +
+      'admin/players/' +
+      playerId +
+      '/set_gf_license_role.json';
+    return this.http.post<{ success: boolean }>(path, {
+      license_id: licenseId,
+      gf_role: gfRole ?? '',
     });
   }
 

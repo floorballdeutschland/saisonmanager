@@ -165,6 +165,25 @@
           </option>
         </select>
 
+        <select
+          class="rounded border-gray-300 text-sm"
+          [(ngModel)]="filterGfRole"
+          (ngModelChange)="applyFilters()"
+        >
+          <option [ngValue]="null">
+            {{ "licenseAdmin.globalList.filterAllGfRoles" | transloco }}
+          </option>
+          <option value="erstlizenz">
+            {{ "licenseAdmin.globalList.onlyErstlizenz" | transloco }}
+          </option>
+          <option value="zweitlizenz">
+            {{ "licenseAdmin.globalList.onlyZweitlizenz" | transloco }}
+          </option>
+          <option value="none">
+            {{ "licenseAdmin.globalList.onlyWithoutGfRole" | transloco }}
+          </option>
+        </select>
+
         <label
           class="flex items-center gap-2 text-sm cursor-pointer col-span-2 md:col-span-1"
         >
@@ -395,23 +414,35 @@
                         "licenseAdmin.globalList.secondaryBadge" | transloco
                       }}</span
                     >
-                    @if (e.is_zweitlizenz) {
-                      <span
-                        class="ml-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold leading-5 bg-amber-500 text-white ring-1 ring-amber-600"
-                        [title]="
-                          'licenseAdmin.globalList.zweitlizenzTitle' | transloco
-                        "
-                        >{{
-                          "licenseAdmin.globalList.zweitlizenzBadge" | transloco
-                        }}</span
-                      >
-                    }
                   }
                   @if (e.license_type === "primary") {
                     <span
                       class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-blue-100 text-blue-800"
                       >{{
                         "licenseAdmin.globalList.primaryBadge" | transloco
+                      }}</span
+                    >
+                  }
+                  <!-- Manuelle Erst-/Zweitlizenz-Zuordnung (GF-Erwachsenenbereich) -->
+                  @if (e.gf_role === "erstlizenz") {
+                    <span
+                      class="ml-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold leading-5 bg-emerald-600 text-white ring-1 ring-emerald-700"
+                      [title]="
+                        'licenseAdmin.globalList.erstlizenzTitle' | transloco
+                      "
+                      >{{
+                        "licenseAdmin.globalList.erstlizenzBadge" | transloco
+                      }}</span
+                    >
+                  }
+                  @if (e.gf_role === "zweitlizenz") {
+                    <span
+                      class="ml-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold leading-5 bg-amber-500 text-white ring-1 ring-amber-600"
+                      [title]="
+                        'licenseAdmin.globalList.zweitlizenzTitle' | transloco
+                      "
+                      >{{
+                        "licenseAdmin.globalList.zweitlizenzBadge" | transloco
                       }}</span
                     >
                   }

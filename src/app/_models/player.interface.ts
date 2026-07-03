@@ -55,7 +55,28 @@ export interface PlayerWithLicense extends Player {
   };
   can_withdraw: boolean;
   grace_period_ends_at?: string;
-  other_licenses?: { team_name: string; league_name?: string }[];
+  other_licenses?: PlayerOtherLicense[];
+}
+
+// Weitere aktive Lizenz eines Spielers (Kontext für die Erst-/Zweitlizenz-
+// Zuordnung in der Genehmigungskarte).
+export interface PlayerOtherLicense {
+  license_id?: string;
+  team_name: string;
+  league_name?: string;
+  last_status_id?: number;
+  gf_adult?: boolean;
+  female?: boolean;
+  gf_role?: GfRole | null;
+}
+
+export type GfRole = 'erstlizenz' | 'zweitlizenz';
+
+export interface GfRoleHistoryEntry {
+  gf_role: GfRole | null;
+  source: 'assign' | 'swap' | 'auto';
+  created_by: number | null;
+  created_at: string;
 }
 
 export interface PlayerLicenseHistory {
@@ -80,11 +101,15 @@ export interface PlayerLicense {
   id: string;
   history: PlayerLicenseHistory[];
   team_id: number;
+  season_id?: number | string;
   team?: Team;
   league?: League;
   league_class_id: string;
   requested_at: string;
   set_transfer_allowed?: boolean;
+  // Manuelle Erst-/Zweitlizenz-Zuordnung im GF-Erwachsenenbereich.
+  gf_role?: GfRole | null;
+  gf_role_history?: GfRoleHistoryEntry[];
 }
 
 export interface PlayerSuspension {

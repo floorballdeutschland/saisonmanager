@@ -80,6 +80,8 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   filterLeagueType: string | null = null;
   filterStatusId: number | null = null;
   filterLicenseType: string | null = null;
+  // 'erstlizenz' | 'zweitlizenz' | 'none' (= ohne Zuordnung) | null (= alle)
+  filterGfRole: string | null = null;
   filterExpressOnly = false;
 
   filterSeasonId: number | null = null;
@@ -217,6 +219,13 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
         return false;
       if (this.filterLicenseType && e.license_type !== this.filterLicenseType)
         return false;
+      if (this.filterGfRole === 'none' && e.gf_role) return false;
+      if (
+        this.filterGfRole &&
+        this.filterGfRole !== 'none' &&
+        e.gf_role !== this.filterGfRole
+      )
+        return false;
       if (this.filterExpressOnly && !e.express) return false;
       return true;
     });
@@ -234,6 +243,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     this.filterLeagueType = null;
     this.filterStatusId = null;
     this.filterLicenseType = null;
+    this.filterGfRole = null;
     this.filterExpressOnly = false;
     const reloadNeeded = this.filterSeasonId !== this._currentSeasonId;
     this.filterSeasonId = this._currentSeasonId;
@@ -257,6 +267,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       t('licenseAdmin.globalList.csvLeague'),
       t('licenseAdmin.globalList.csvStatus'),
       t('licenseAdmin.globalList.csvLicenseType'),
+      t('licenseAdmin.globalList.csvGfRole'),
       t('licenseAdmin.globalList.csvExpress'),
       t('licenseAdmin.globalList.csvRequested'),
       t('licenseAdmin.globalList.csvApproved'),
@@ -270,11 +281,14 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       e.game_operation_name ?? '',
       e.league_name,
       e.license_status,
-      e.is_zweitlizenz
-        ? t('licenseAdmin.globalList.csvZweitlizenz')
-        : e.license_type === 'primary'
-          ? t('licenseAdmin.globalList.csvErstlizenz')
-          : t('licenseAdmin.globalList.csvZusatzlizenz'),
+      e.license_type === 'primary'
+        ? t('licenseAdmin.globalList.csvHauptlizenz')
+        : t('licenseAdmin.globalList.csvZusatzlizenz'),
+      e.gf_role === 'erstlizenz'
+        ? t('licenseAdmin.globalList.csvErstlizenz')
+        : e.gf_role === 'zweitlizenz'
+          ? t('licenseAdmin.globalList.csvZweitlizenz')
+          : '',
       e.express
         ? t('licenseAdmin.globalList.csvYes')
         : t('licenseAdmin.globalList.csvNo'),

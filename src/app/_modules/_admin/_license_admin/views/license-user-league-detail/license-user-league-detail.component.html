@@ -149,6 +149,38 @@
                               class="truncate text-sm print:text-xs font-medium print:leading-[22px]"
                             >
                               {{ p.last_name }}, {{ p.first_name }}
+                              <!-- Erst-/Zweitlizenz-Zuordnung (GF-Erwachsenenbereich):
+                                   für VM/TM sichtbar, z. B. Pokal-Spielberechtigung -->
+                              @if (
+                                p.team_license.license.gf_role === "erstlizenz"
+                              ) {
+                                <span
+                                  class="ml-1 inline-flex rounded-full px-2 text-[11px] font-bold leading-5 bg-emerald-600 text-white print:bg-transparent print:text-emerald-700 print:border print:border-emerald-700 print:text-[9px]"
+                                  [title]="
+                                    'licenseAdmin.userLeagueDetail.erstlizenzTitle'
+                                      | transloco
+                                  "
+                                  >{{
+                                    "licenseAdmin.userLeagueDetail.erstlizenzBadge"
+                                      | transloco
+                                  }}</span
+                                >
+                              }
+                              @if (
+                                p.team_license.license.gf_role === "zweitlizenz"
+                              ) {
+                                <span
+                                  class="ml-1 inline-flex rounded-full px-2 text-[11px] font-bold leading-5 bg-amber-500 text-white print:bg-transparent print:text-amber-700 print:border print:border-amber-700 print:text-[9px]"
+                                  [title]="
+                                    'licenseAdmin.userLeagueDetail.zweitlizenzTitle'
+                                      | transloco
+                                  "
+                                  >{{
+                                    "licenseAdmin.userLeagueDetail.zweitlizenzBadge"
+                                      | transloco
+                                  }}</span
+                                >
+                              }
                             </p>
                           </div>
                         </div>

@@ -397,6 +397,22 @@
                       {{ "playerAdmin.edit.suspended" | transloco }}
                     </span>
                   }
+                  @if (license.gf_role === "erstlizenz") {
+                    <span
+                      class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-600 text-white"
+                      [title]="'playerAdmin.edit.gfRoleErstTitle' | transloco"
+                    >
+                      {{ "playerAdmin.edit.gfRoleErstlizenz" | transloco }}
+                    </span>
+                  }
+                  @if (license.gf_role === "zweitlizenz") {
+                    <span
+                      class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500 text-white"
+                      [title]="'playerAdmin.edit.gfRoleZweitTitle' | transloco"
+                    >
+                      {{ "playerAdmin.edit.gfRoleZweitlizenz" | transloco }}
+                    </span>
+                  }
                   @if (
                     can("player_set_license_to_transfer") &&
                     license.set_transfer_allowed
@@ -419,6 +435,48 @@
                     >
                       {{ "playerAdmin.edit.suspendLicense" | transloco }}
                     </a>
+                  }
+                  @if (gfRoleEditable(license)) {
+                    <div
+                      class="border border-indigo-200 rounded p-3 bg-indigo-50 my-2"
+                    >
+                      <p class="text-sm font-semibold text-indigo-900 mb-2">
+                        {{ "playerAdmin.edit.gfRoleHeading" | transloco }}
+                      </p>
+                      <div class="flex flex-wrap gap-3 items-center">
+                        @if (license.gf_role !== "erstlizenz") {
+                          <button
+                            class="font-bold text-indigo-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-indigo-100 border-indigo-400 rounded-[5px] cursor-pointer"
+                            (click)="setGfRole(license, 'erstlizenz')"
+                          >
+                            {{ "playerAdmin.edit.gfRoleMakeErst" | transloco }}
+                          </button>
+                        }
+                        @if (license.gf_role !== "zweitlizenz") {
+                          <button
+                            class="font-bold text-indigo-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-indigo-100 border-indigo-400 rounded-[5px] cursor-pointer"
+                            (click)="setGfRole(license, 'zweitlizenz')"
+                          >
+                            {{ "playerAdmin.edit.gfRoleMakeZweit" | transloco }}
+                          </button>
+                        }
+                        @if (license.gf_role) {
+                          <button
+                            class="font-bold text-gray-600 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                            (click)="setGfRole(license, null)"
+                          >
+                            {{ "playerAdmin.edit.gfRoleClear" | transloco }}
+                          </button>
+                        }
+                      </div>
+                      <p class="text-[11px] text-indigo-900 mt-2">
+                        {{
+                          "playerAdmin.edit.gfRoleSwapCount"
+                            | transloco: { count: gfSwapCount(license) }
+                        }}
+                        {{ "playerAdmin.edit.gfRoleSwapHint" | transloco }}
+                      </p>
+                    </div>
                   }
                   @if (suspendLicenseId === license.id) {
                     <div

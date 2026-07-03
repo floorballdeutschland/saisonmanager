@@ -93,7 +93,17 @@
     "blockReasonPlaceholder": "z. B. NADA-Sanktion, 2 Jahre",
     "setupBlock": "Sperre einrichten",
     "mergeDuplicate": "Duplikat zusammenführen",
-    "mergeHint": "Diesen Spieler als Master-Datensatz verwenden und einen Duplikat-Datensatz damit zusammenführen."
+    "mergeHint": "Diesen Spieler als Master-Datensatz verwenden und einen Duplikat-Datensatz damit zusammenführen.",
+    "gfRoleErstlizenz": "Erstlizenz",
+    "gfRoleZweitlizenz": "Zweitlizenz",
+    "gfRoleErstTitle": "Erstlizenz im GF-Erwachsenenbereich – volle Spielberechtigung",
+    "gfRoleZweitTitle": "Zweitlizenz im GF-Erwachsenenbereich – eingeschränkte Spielberechtigung (z. B. kein FD-Pokal)",
+    "gfRoleHeading": "Erst-/Zweitlizenz (Großfeld)",
+    "gfRoleMakeErst": "Zur Erstlizenz machen",
+    "gfRoleMakeZweit": "Zur Zweitlizenz machen",
+    "gfRoleClear": "Zuordnung entfernen",
+    "gfRoleSwapCount": "In dieser Saison bereits getauscht: {{count}}×.",
+    "gfRoleSwapHint": "Ein Tausch ist einmal pro Saison möglich, danach nur durch die FD-Administration."
   },
   "search": {
     "globalSearch": "Globale Spielersuche",
