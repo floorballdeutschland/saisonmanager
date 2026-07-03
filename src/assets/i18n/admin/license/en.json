@@ -236,6 +236,7 @@
     "documentDeleteError": "Document could not be deleted.",
     "createRequestError": "License request could not be created.",
     "recreateRequestError": "License request could not be submitted again.",
-    "withdrawRequestError": "License request could not be withdrawn."
+    "withdrawRequestError": "License request could not be withdrawn.",
+    "actionFailed": "Action failed."
   }
 }

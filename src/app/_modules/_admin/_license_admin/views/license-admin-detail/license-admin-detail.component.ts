@@ -161,6 +161,7 @@ export class LicenseAdminDetailComponent implements OnInit {
             }
           );
         },
+        error: (err) => this.showActionError(err),
       });
   }
 
@@ -188,7 +189,22 @@ export class LicenseAdminDetailComponent implements OnInit {
             }
           );
         },
+        error: (err) => this.showActionError(err),
       });
+  }
+
+  // Der globale ErrorInterceptor zeigt 422 nicht an (z. B. aktive Sperre oder
+  // ungültige Erst-/Zweitlizenz-Zuordnung) – Meldung hier explizit ausgeben.
+  private showActionError(err: {
+    error?: { message?: string | object };
+  }): void {
+    const message =
+      typeof err?.error?.message === 'string' ? err.error.message : undefined;
+    this._notificationService.error(
+      message ??
+        this._transloco.translate('licenseAdmin.notifications.actionFailed'),
+      { autoClose: false, keepAfterRouteChange: false }
+    );
   }
 
   public docTypeLabel(docType: string): string {
@@ -239,6 +255,7 @@ export class LicenseAdminDetailComponent implements OnInit {
             }
           );
         },
+        error: (err) => this.showActionError(err),
       });
   }
 }

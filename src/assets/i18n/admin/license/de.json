@@ -236,6 +236,7 @@
     "documentDeleteError": "Dokument konnte nicht gelöscht werden.",
     "createRequestError": "Lizenzantrag konnte nicht erstellt werden.",
     "recreateRequestError": "Lizenzantrag konnte nicht erneut gestellt werden.",
-    "withdrawRequestError": "Lizenzantrag konnte nicht zurückgezogen werden."
+    "withdrawRequestError": "Lizenzantrag konnte nicht zurückgezogen werden.",
+    "actionFailed": "Aktion fehlgeschlagen."
   }
 }

@@ -513,14 +513,15 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     return !!license.gf_role || this.gfPartnerLicenses(license).length > 0;
   }
 
-  // Bereits erfolgte Täusche in diesem Wettbewerb (jeder Tausch schreibt einen
-  // 'swap'-Eintrag auf die gewechselte Lizenz).
+  // Bereits erfolgte Täusche in diesem Wettbewerb: jeder Tausch schreibt genau
+  // einen 'swap'-Eintrag auf die gewechselte Lizenz (Partner erhält 'auto'),
+  // die Summe über die Wettbewerbs-Lizenzen zählt also die Tausch-Vorgänge.
   public gfSwapCount(license: PlayerLicense): number {
-    return Math.max(
-      ...[license, ...this.gfPartnerLicenses(license)].map(
-        (l) =>
-          (l.gf_role_history ?? []).filter((h) => h.source === 'swap').length
-      )
+    return [license, ...this.gfPartnerLicenses(license)].reduce(
+      (sum, l) =>
+        sum +
+        (l.gf_role_history ?? []).filter((h) => h.source === 'swap').length,
+      0
     );
   }
 
