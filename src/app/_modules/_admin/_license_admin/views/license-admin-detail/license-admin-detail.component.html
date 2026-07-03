@@ -260,6 +260,51 @@
               [(ngModel)]="validUntilDates[player.team_license.license.id]"
             />
           </div>
+          @if (gfRoleSelectable()) {
+            <div
+              class="w-full mb-2 border border-indigo-200 bg-indigo-50 rounded p-2"
+            >
+              <label class="block text-xs font-semibold text-indigo-900 mb-1">{{
+                "licenseAdmin.detail.gfRoleLabel" | transloco
+              }}</label>
+              <select
+                class="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white"
+                [(ngModel)]="gfRoles[player.team_license.license.id]"
+              >
+                <option value="erstlizenz">
+                  {{ "licenseAdmin.detail.gfRoleErstlizenz" | transloco }}
+                </option>
+                <option value="zweitlizenz">
+                  {{ "licenseAdmin.detail.gfRoleZweitlizenz" | transloco }}
+                </option>
+              </select>
+              <p class="text-[11px] text-indigo-900 mt-1">
+                {{
+                  "licenseAdmin.detail.gfRoleExisting"
+                    | transloco
+                      : {
+                          team: otherGfLicense()?.team_name,
+                          league: otherGfLicense()?.league_name,
+                          role:
+                            (otherGfLicense()?.gf_role === "erstlizenz"
+                              ? "licenseAdmin.detail.gfRoleErstlizenz"
+                              : otherGfLicense()?.gf_role === "zweitlizenz"
+                                ? "licenseAdmin.detail.gfRoleZweitlizenz"
+                                : "licenseAdmin.detail.gfRoleNone"
+                            ) | transloco,
+                        }
+                }}
+              </p>
+              @if (
+                gfRoles[player.team_license.license.id] === "erstlizenz" &&
+                otherGfLicense()?.gf_role !== "zweitlizenz"
+              ) {
+                <p class="text-[11px] font-semibold text-indigo-900 mt-1">
+                  {{ "licenseAdmin.detail.gfRoleDemoteHint" | transloco }}
+                </p>
+              }
+            </div>
+          }
           <button
             class="w-full h-10 font-bold text-center text-green-700 leading-[17px] text-sm px-5 py-2.5 mr-4 mb-2 border bg-green-100 hover:bg-green-200 border-green-900 rounded-[5px] cursor-pointer"
             (click)="approveLicense(player)"

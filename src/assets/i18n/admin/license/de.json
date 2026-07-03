@@ -28,7 +28,13 @@
     "rejectRequest": "Antrag ablehnen",
     "resetToPending": "Zurück auf „beantragt\"",
     "reason": "Begründung",
-    "unknown": "(unbekannt)"
+    "unknown": "(unbekannt)",
+    "gfRoleLabel": "Erst-/Zweitlizenz (Großfeld)",
+    "gfRoleErstlizenz": "Erstlizenz",
+    "gfRoleZweitlizenz": "Zweitlizenz",
+    "gfRoleNone": "ohne Zuordnung",
+    "gfRoleExisting": "Bestehende GF-Lizenz: {{team}} ({{league}}) – aktuell {{role}}.",
+    "gfRoleDemoteHint": "Die bestehende GF-Lizenz wird bei der Genehmigung automatisch zur Zweitlizenz."
   },
   "globalList": {
     "title": "Lizenzverwaltung",
@@ -42,8 +48,8 @@
     "league": "Liga",
     "cup": "Pokal",
     "champ": "Meister",
-    "primaryAndSecondary": "Erst- & Zusatzlizenzen",
-    "onlyPrimary": "Nur Erstlizenzen",
+    "primaryAndSecondary": "Haupt- & Zusatzlizenzen",
+    "onlyPrimary": "Nur Hauptlizenzen",
     "onlySecondary": "Nur Zusatzlizenzen",
     "onlyExpress": "Nur Expresslizenzen",
     "licensesFound": "{{ count }} Lizenzen gefunden",
@@ -70,8 +76,8 @@
     "cupBadge": "Pokal",
     "secondaryBadge": "Zusatzlizenz",
     "zweitlizenzBadge": "Zweitlizenz",
-    "zweitlizenzTitle": "Zweite Großfeld-Lizenz (niedrigere Liga)",
-    "primaryBadge": "Erstlizenz",
+    "zweitlizenzTitle": "Zweitlizenz im GF-Erwachsenenbereich – eingeschränkte Spielberechtigung (z. B. kein FD-Pokal)",
+    "primaryBadge": "Hauptlizenz",
     "expressBadge": "Express",
     "parentalConsentView": "Elternzustimmung ansehen",
     "parentalConsentMissing": "Elternzustimmung fehlt",
@@ -113,7 +119,15 @@
     "csvZusatzlizenz": "Zusatzlizenz",
     "csvYes": "Ja",
     "csvNo": "Nein",
-    "docLabelIdCopy": "Ausweis"
+    "docLabelIdCopy": "Ausweis",
+    "erstlizenzBadge": "Erstlizenz",
+    "erstlizenzTitle": "Erstlizenz im GF-Erwachsenenbereich – volle Spielberechtigung",
+    "filterAllGfRoles": "Erst-/Zweitlizenz: alle",
+    "onlyErstlizenz": "Nur Erstlizenzen",
+    "onlyZweitlizenz": "Nur Zweitlizenzen",
+    "onlyWithoutGfRole": "Ohne Erst-/Zweit-Zuordnung",
+    "csvHauptlizenz": "Hauptlizenz",
+    "csvGfRole": "Erst-/Zweitlizenz (GF)"
   },
   "leagueDetail": {
     "title": "Lizenzverwaltung",
@@ -196,7 +210,11 @@
     "today": "Heute",
     "tomorrow": "Morgen",
     "dayAfterTomorrow": "Übermorgen",
-    "metaTitle": "Floorball Saisonmanager Lizenzverwaltung"
+    "metaTitle": "Floorball Saisonmanager Lizenzverwaltung",
+    "erstlizenzBadge": "Erstlizenz",
+    "zweitlizenzBadge": "Zweitlizenz",
+    "erstlizenzTitle": "Erstlizenz im GF-Erwachsenenbereich – volle Spielberechtigung",
+    "zweitlizenzTitle": "Zweitlizenz im GF-Erwachsenenbereich – eingeschränkte Spielberechtigung (z. B. kein FD-Pokal)"
   },
   "userLeagueIndex": {
     "title": "Lizenzlisten",
@@ -218,6 +236,7 @@
     "documentDeleteError": "Dokument konnte nicht gelöscht werden.",
     "createRequestError": "Lizenzantrag konnte nicht erstellt werden.",
     "recreateRequestError": "Lizenzantrag konnte nicht erneut gestellt werden.",
-    "withdrawRequestError": "Lizenzantrag konnte nicht zurückgezogen werden."
+    "withdrawRequestError": "Lizenzantrag konnte nicht zurückgezogen werden.",
+    "actionFailed": "Aktion fehlgeschlagen."
   }
 }

@@ -28,7 +28,13 @@
     "rejectRequest": "Reject request",
     "resetToPending": "Reset to “requested”",
     "reason": "Reason",
-    "unknown": "(unknown)"
+    "unknown": "(unknown)",
+    "gfRoleLabel": "First/second license (large field)",
+    "gfRoleErstlizenz": "First license",
+    "gfRoleZweitlizenz": "Second license",
+    "gfRoleNone": "not assigned",
+    "gfRoleExisting": "Existing large-field license: {{team}} ({{league}}) – currently {{role}}.",
+    "gfRoleDemoteHint": "The existing large-field license will automatically become the second license upon approval."
   },
   "globalList": {
     "title": "License management",
@@ -42,8 +48,8 @@
     "league": "League",
     "cup": "Cup",
     "champ": "Championship",
-    "primaryAndSecondary": "Primary & additional licenses",
-    "onlyPrimary": "Primary licenses only",
+    "primaryAndSecondary": "Main & additional licenses",
+    "onlyPrimary": "Main licenses only",
     "onlySecondary": "Additional licenses only",
     "onlyExpress": "Express licenses only",
     "licensesFound": "{{ count }} licenses found",
@@ -70,8 +76,8 @@
     "cupBadge": "Cup",
     "secondaryBadge": "Additional license",
     "zweitlizenzBadge": "Second license",
-    "zweitlizenzTitle": "Second large-field license (lower league)",
-    "primaryBadge": "Primary license",
+    "zweitlizenzTitle": "Second license in adult large-field play – restricted eligibility (e.g. no FD cup)",
+    "primaryBadge": "Main license",
     "expressBadge": "Express",
     "parentalConsentView": "View parental consent",
     "parentalConsentMissing": "Parental consent missing",
@@ -109,11 +115,19 @@
     "csvRequested": "Requested",
     "csvApproved": "Granted",
     "csvZweitlizenz": "Second license",
-    "csvErstlizenz": "Primary license",
+    "csvErstlizenz": "First license",
     "csvZusatzlizenz": "Additional license",
     "csvYes": "Yes",
     "csvNo": "No",
-    "docLabelIdCopy": "ID card"
+    "docLabelIdCopy": "ID card",
+    "erstlizenzBadge": "First license",
+    "erstlizenzTitle": "First license in adult large-field play – full eligibility",
+    "filterAllGfRoles": "First/second license: all",
+    "onlyErstlizenz": "First licenses only",
+    "onlyZweitlizenz": "Second licenses only",
+    "onlyWithoutGfRole": "Without first/second assignment",
+    "csvHauptlizenz": "Main license",
+    "csvGfRole": "First/second license (large field)"
   },
   "leagueDetail": {
     "title": "License management",
@@ -196,7 +210,11 @@
     "today": "Today",
     "tomorrow": "Tomorrow",
     "dayAfterTomorrow": "Day after tomorrow",
-    "metaTitle": "Floorball Saisonmanager License Management"
+    "metaTitle": "Floorball Saisonmanager License Management",
+    "erstlizenzBadge": "First license",
+    "zweitlizenzBadge": "Second license",
+    "erstlizenzTitle": "First license in adult large-field play – full eligibility",
+    "zweitlizenzTitle": "Second license in adult large-field play – restricted eligibility (e.g. no FD cup)"
   },
   "userLeagueIndex": {
     "title": "License lists",
@@ -218,6 +236,7 @@
     "documentDeleteError": "Document could not be deleted.",
     "createRequestError": "License request could not be created.",
     "recreateRequestError": "License request could not be submitted again.",
-    "withdrawRequestError": "License request could not be withdrawn."
+    "withdrawRequestError": "License request could not be withdrawn.",
+    "actionFailed": "Action failed."
   }
 }

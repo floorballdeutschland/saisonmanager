@@ -8,8 +8,10 @@ import {
 } from '@angular/core';
 import {
   Club,
+  GfRole,
   League,
   PlayerLicense,
+  PlayerOtherLicense,
   PlayerWithLicense,
   TeamWithPlayers,
 } from '@floorball/types';
@@ -49,6 +51,7 @@ export class LicenseAdminDetailComponent implements OnInit {
 
   reasons: { [key: string]: string } = {};
   validUntilDates: { [key: string]: string } = {};
+  gfRoles: { [key: string]: GfRole } = {};
 
   hidePlayer: { [key: number]: boolean } = {};
 
@@ -65,7 +68,28 @@ export class LicenseAdminDetailComponent implements OnInit {
     const licenseId = this.player?.team_license?.license?.id;
     if (licenseId) {
       this.validUntilDates[licenseId] = this.defaultValidUntil();
+      if (this.gfRoleSelectable()) {
+        // Sinnvolle Vorbelegung: Komplement zur bestehenden GF-Lizenz.
+        const other = this.otherGfLicense();
+        this.gfRoles[licenseId] =
+          other?.gf_role === 'zweitlizenz' ? 'erstlizenz' : 'zweitlizenz';
+      }
     }
+  }
+
+  // Ist die zu genehmigende Lizenz eine GF-Erwachsenen-Lizenz und hat der
+  // Spieler bereits eine weitere aktive GF-Lizenz im selben Wettbewerb
+  // (männlich/weiblich)? Nur dann gibt es eine Erst-/Zweitlizenz-Wahl.
+  public gfRoleSelectable(): boolean {
+    if (!this.league || this.league.field_size !== 'GF') return false;
+    if (/^U\d/.test(this.league.age_group ?? '')) return false;
+    return !!this.otherGfLicense();
+  }
+
+  public otherGfLicense(): PlayerOtherLicense | undefined {
+    return (this.player?.other_licenses ?? []).find(
+      (o) => o.gf_adult && o.female === this.league?.female
+    );
   }
 
   public toggleDetails(): void {
@@ -105,6 +129,9 @@ export class LicenseAdminDetailComponent implements OnInit {
     const licenseId = player.team_license.license.id;
     const validUntil =
       this.validUntilDates[licenseId] || this.defaultValidUntil();
+    const gfRole = this.gfRoleSelectable()
+      ? this.gfRoles[licenseId]
+      : undefined;
 
     this._playerService
       .updateLicenseStatus(
@@ -112,7 +139,8 @@ export class LicenseAdminDetailComponent implements OnInit {
         licenseId,
         1,
         this.reasons[licenseId],
-        validUntil
+        validUntil,
+        gfRole
       )
       .subscribe({
         next: () => {
@@ -133,6 +161,7 @@ export class LicenseAdminDetailComponent implements OnInit {
             }
           );
         },
+        error: (err) => this.showActionError(err),
       });
   }
 
@@ -160,7 +189,22 @@ export class LicenseAdminDetailComponent implements OnInit {
             }
           );
         },
+        error: (err) => this.showActionError(err),
       });
+  }
+
+  // Der globale ErrorInterceptor zeigt 422 nicht an (z. B. aktive Sperre oder
+  // ungültige Erst-/Zweitlizenz-Zuordnung) – Meldung hier explizit ausgeben.
+  private showActionError(err: {
+    error?: { message?: string | object };
+  }): void {
+    const message =
+      typeof err?.error?.message === 'string' ? err.error.message : undefined;
+    this._notificationService.error(
+      message ??
+        this._transloco.translate('licenseAdmin.notifications.actionFailed'),
+      { autoClose: false, keepAfterRouteChange: false }
+    );
   }
 
   public docTypeLabel(docType: string): string {
@@ -211,6 +255,7 @@ export class LicenseAdminDetailComponent implements OnInit {
             }
           );
         },
+        error: (err) => this.showActionError(err),
       });
   }
 }

@@ -93,7 +93,17 @@
     "blockReasonPlaceholder": "e.g. NADA sanction, 2 years",
     "setupBlock": "Set up suspension",
     "mergeDuplicate": "Merge duplicate",
-    "mergeHint": "Use this player as the master record and merge a duplicate record into it."
+    "mergeHint": "Use this player as the master record and merge a duplicate record into it.",
+    "gfRoleErstlizenz": "First license",
+    "gfRoleZweitlizenz": "Second license",
+    "gfRoleErstTitle": "First license in adult large-field play – full eligibility",
+    "gfRoleZweitTitle": "Second license in adult large-field play – restricted eligibility (e.g. no FD cup)",
+    "gfRoleHeading": "First/second license (large field)",
+    "gfRoleMakeErst": "Make first license",
+    "gfRoleMakeZweit": "Make second license",
+    "gfRoleClear": "Remove assignment",
+    "gfRoleSwapCount": "Already swapped this season: {{count}}×.",
+    "gfRoleSwapHint": "One swap per season is allowed; further swaps only by the FD administration."
   },
   "search": {
     "globalSearch": "Global player search",

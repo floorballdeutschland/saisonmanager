@@ -17,6 +17,7 @@ import {
   Club,
   CorrectionType,
   GenderKey,
+  GfRole,
   Nation,
   Player,
   PlayerLicense,
@@ -476,6 +477,75 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           },
         });
     }
+  }
+
+  // --- Erst-/Zweitlizenz-Zuordnung (GF-Erwachsenenbereich) -----------------
+
+  public isGfAdultLicense(license: PlayerLicense): boolean {
+    const league = license.league;
+    if (!league || league.field_size !== 'GF') return false;
+    // Jugendligen (U19/U17/…) kennen keine Erst-/Zweitlizenz.
+    return !/^U\d/.test(league.age_group ?? '');
+  }
+
+  public isActiveLicense(license: PlayerLicense): boolean {
+    const last = license.history?.[license.history.length - 1];
+    return last?.license_status_id === 1 || last?.license_status_id === 2;
+  }
+
+  // Weitere aktive Lizenzen im selben GF-Erwachsenen-Wettbewerb
+  // (gleiche Saison, gleiches female-Flag der Liga).
+  public gfPartnerLicenses(license: PlayerLicense): PlayerLicense[] {
+    return (this.player?.licenses ?? []).filter(
+      (l) =>
+        l.id !== license.id &&
+        String(l.season_id) === String(license.season_id) &&
+        this.isActiveLicense(l) &&
+        this.isGfAdultLicense(l) &&
+        l.league?.female === license.league?.female
+    );
+  }
+
+  public gfRoleEditable(license: PlayerLicense): boolean {
+    if (!this.can('player_set_gf_role')) return false;
+    if (!this.isGfAdultLicense(license) || !this.isActiveLicense(license))
+      return false;
+    return !!license.gf_role || this.gfPartnerLicenses(license).length > 0;
+  }
+
+  // Bereits erfolgte Täusche in diesem Wettbewerb: jeder Tausch schreibt genau
+  // einen 'swap'-Eintrag auf die gewechselte Lizenz (Partner erhält 'auto'),
+  // die Summe über die Wettbewerbs-Lizenzen zählt also die Tausch-Vorgänge.
+  public gfSwapCount(license: PlayerLicense): number {
+    return [license, ...this.gfPartnerLicenses(license)].reduce(
+      (sum, l) =>
+        sum +
+        (l.gf_role_history ?? []).filter((h) => h.source === 'swap').length,
+      0
+    );
+  }
+
+  public setGfRole(license: PlayerLicense, role: GfRole | null): void {
+    if (!this.player?.id) return;
+    this._playerService
+      .setGfLicenseRole(this.player.id, license.id, role)
+      .subscribe({
+        next: () => {
+          this._notificationService.success(
+            'Erst-/Zweitlizenz-Zuordnung aktualisiert.',
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this.getPlayer('' + this.player?.id);
+        },
+        // Der globale ErrorInterceptor zeigt 422 nicht an – Meldung (z. B.
+        // Tausch-Limit) hier explizit ausgeben.
+        error: (err) => {
+          this._notificationService.error(
+            err?.error?.message ?? 'Zuordnung konnte nicht geändert werden.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
+        },
+      });
   }
 
   public onChangeRequestTypeChange(): void {
