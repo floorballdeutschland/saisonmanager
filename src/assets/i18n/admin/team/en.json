@@ -20,6 +20,7 @@
   },
   "edit": {
     "title": "Team management",
+    "backToList": "← Back to team list",
     "editHeading": "Edit a team",
     "newHeading": "Create new team",
     "mainData": "Main data",

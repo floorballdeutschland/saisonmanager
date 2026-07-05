@@ -18,6 +18,7 @@
   },
   "edit": {
     "title": "Vereinsverwaltung",
+    "backToList": "← Zurück zur Vereinsliste",
     "editHeading": "Bearbeiten eines Vereins",
     "newHeading": "Neuen Verein anlegen",
     "mainData": "Hauptdaten",
