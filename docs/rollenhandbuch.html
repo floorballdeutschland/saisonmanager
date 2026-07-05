@@ -29,6 +29,8 @@
         --c-sbklv: #2c9e5a;
         --c-rskfd: #ea580c;
         --c-rsklv: #d97706;
+        --c-ansetzerfd: #4338ca;
+        --c-ansetzerlv: #6366f1;
         --c-vm: #2563eb;
         --c-tm: #0891b2;
         --c-schiri: #db2777;
@@ -151,6 +153,8 @@
       body:has(#panel-sbk-lv:target) .navlink[href="#panel-sbk-lv"],
       body:has(#panel-rsk-fd:target) .navlink[href="#panel-rsk-fd"],
       body:has(#panel-rsk-lv:target) .navlink[href="#panel-rsk-lv"],
+      body:has(#panel-ansetzer-fd:target) .navlink[href="#panel-ansetzer-fd"],
+      body:has(#panel-ansetzer-lv:target) .navlink[href="#panel-ansetzer-lv"],
       body:has(#panel-vm:target) .navlink[href="#panel-vm"],
       body:has(#panel-tm:target) .navlink[href="#panel-tm"],
       body:has(#panel-schiri:target) .navlink[href="#panel-schiri"],
@@ -175,6 +179,12 @@
       body:has(#panel-sbk-lv:target) .navlink[href="#panel-sbk-lv"] .dot,
       body:has(#panel-rsk-fd:target) .navlink[href="#panel-rsk-fd"] .dot,
       body:has(#panel-rsk-lv:target) .navlink[href="#panel-rsk-lv"] .dot,
+      body:has(#panel-ansetzer-fd:target)
+        .navlink[href="#panel-ansetzer-fd"]
+        .dot,
+      body:has(#panel-ansetzer-lv:target)
+        .navlink[href="#panel-ansetzer-lv"]
+        .dot,
       body:has(#panel-vm:target) .navlink[href="#panel-vm"] .dot,
       body:has(#panel-tm:target) .navlink[href="#panel-tm"] .dot,
       body:has(#panel-schiri:target) .navlink[href="#panel-schiri"] .dot,
@@ -574,6 +584,9 @@
       }
       .rb.rsk {
         --bc: var(--c-rskfd);
+      }
+      .rb.ansetzer {
+        --bc: var(--c-ansetzerfd);
       }
       .rb.vm {
         --bc: var(--c-vm);
@@ -1061,7 +1074,7 @@
         <div class="brand">
           <div class="wordmark">Saison<em>manager</em></div>
           <div class="doc-title">Rollenhandbuch</div>
-          <span class="edition">Stand · Juni 2026</span>
+          <span class="edition">Stand · Juli 2026</span>
         </div>
         <nav class="nav">
           <div class="nav-group-label">Einstieg</div>
@@ -1088,6 +1101,22 @@
           <a class="navlink" href="#panel-rsk-lv" style="--dot: var(--c-rsklv)">
             <span class="dot"></span> RSK Landesverband
             <span class="abbr">RSK·LV</span>
+          </a>
+          <a
+            class="navlink"
+            href="#panel-ansetzer-fd"
+            style="--dot: var(--c-ansetzerfd)"
+          >
+            <span class="dot"></span> Ansetzer*in Floorball Deutschland
+            <span class="abbr">ANS·FD</span>
+          </a>
+          <a
+            class="navlink"
+            href="#panel-ansetzer-lv"
+            style="--dot: var(--c-ansetzerlv)"
+          >
+            <span class="dot"></span> Ansetzer*in Landesverband
+            <span class="abbr">ANS·LV</span>
           </a>
           <div class="nav-group-label">Vereinsrollen</div>
           <a class="navlink" href="#panel-vm" style="--dot: var(--c-vm)">
@@ -1131,10 +1160,11 @@
             <div class="hero-badge">Überblick</div>
             <h1>Wer darf was im Saisonmanager?</h1>
             <p>
-              Acht Benutzerrollen decken den gesamten Spielbetrieb ab – von der
+              Zehn Benutzerrollen decken den gesamten Spielbetrieb ab – von der
               bundesweiten Administration bis zum Self-Service für
-              Schiedsrichter. Diese Seite zeigt alle Rollen und Zuständigkeiten
-              auf einen Blick.
+              Schiedsrichter. Ein Benutzerkonto kann dabei auch mehrere Rollen
+              gleichzeitig innehaben. Diese Seite zeigt alle Rollen und
+              Zuständigkeiten auf einen Blick.
             </p>
           </div>
 
@@ -1189,8 +1219,7 @@
               <span class="rc-abbr">RSK · FD</span>
               <h3>Schiedsrichterkommission FD</h3>
               <p>
-                Bundesweite Schiedsrichterverwaltung, Spielansetzungen und
-                Qualifikationswesen.
+                Bundesweite Schiedsrichterverwaltung und Qualifikationswesen.
               </p>
               <span class="rc-scope">🌐 National – alle Schiedsrichter</span>
               <span class="rc-link">Details ansehen →</span>
@@ -1203,6 +1232,33 @@
               <span class="rc-abbr">RSK · LV</span>
               <h3>Schiedsrichterkommission LV</h3>
               <p>Schiedsrichterverwaltung für den eigenen Landesverband.</p>
+              <span class="rc-scope">📍 Ein Landesverband</span>
+              <span class="rc-link">Details ansehen →</span>
+            </a>
+            <a
+              class="role-card"
+              href="#panel-ansetzer-fd"
+              style="--rcc: var(--c-ansetzerfd)"
+            >
+              <span class="rc-abbr">ANS · FD</span>
+              <h3>Ansetzer*in Floorball Deutschland</h3>
+              <p>
+                Schiedsrichter-Ansetzungen für die Spiele des eigenen
+                Spielbetriebs auf Bundesebene.
+              </p>
+              <span class="rc-scope"
+                >🌐 Bundesebene – zugeordnete Spielbetriebe</span
+              >
+              <span class="rc-link">Details ansehen →</span>
+            </a>
+            <a
+              class="role-card"
+              href="#panel-ansetzer-lv"
+              style="--rcc: var(--c-ansetzerlv)"
+            >
+              <span class="rc-abbr">ANS · LV</span>
+              <h3>Ansetzer*in Landesverband</h3>
+              <p>Schiedsrichter-Ansetzungen für den eigenen Landesverband.</p>
               <span class="rc-scope">📍 Ein Landesverband</span>
               <span class="rc-link">Details ansehen →</span>
             </a>
@@ -1240,6 +1296,20 @@
               <span class="rc-scope">👤 Eigener Schiedsrichter-Account</span>
               <span class="rc-link">Details ansehen →</span>
             </a>
+          </div>
+
+          <div class="note">
+            <strong>Rollen lassen sich kombinieren:</strong> Ein Benutzerkonto
+            ist nicht auf eine Rolle beschränkt – mehrere Verbandsrollen können
+            gleichzeitig zugewiesen werden, wenn dieselbe Person mehrere
+            Funktionen ausübt. Üblich sind zum Beispiel
+            <span class="rb rsk">RSK</span> +
+            <span class="rb ansetzer">Ansetzer</span> (Schiridaten und Ansetzung
+            in einer Hand, sofern nicht getrennt organisiert) oder
+            <span class="rb sbk">SBK</span> + <span class="rb rsk">RSK</span>
+            (Spielbetrieb und Schiedsrichterwesen desselben Landesverbands).
+            Verbands- bzw. vereinsgebundene Rollen benötigen dabei jeweils ihre
+            eigene Zuordnung (Spielbetrieb, Landesverband oder Verein).
           </div>
 
           <div class="sec">
@@ -1287,6 +1357,20 @@
                     >RSK LV
                   </th>
                   <th>
+                    <span
+                      class="th-dot"
+                      style="background: var(--c-ansetzerfd)"
+                    ></span
+                    >Ansetzer FD
+                  </th>
+                  <th>
+                    <span
+                      class="th-dot"
+                      style="background: var(--c-ansetzerlv)"
+                    ></span
+                    >Ansetzer LV
+                  </th>
+                  <th>
                     <span class="th-dot" style="background: var(--c-vm)"></span
                     >VM
                   </th>
@@ -1318,6 +1402,8 @@
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
                 </tr>
                 <tr>
                   <th>Vereine, Teams &amp; Hallen</th>
@@ -1328,6 +1414,8 @@
                       >◐</span
                     >
                   </td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
@@ -1347,6 +1435,8 @@
                       >◐</span
                     >
                   </td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
                   <td>
@@ -1382,6 +1472,8 @@
                   </td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
                   <td><span class="sym read" title="Beantragen">○</span></td>
                   <td><span class="sym read" title="Beantragen">○</span></td>
                   <td><span class="sym none">—</span></td>
@@ -1409,6 +1501,8 @@
                   </td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
                   <td>
                     <span
                       class="sym part"
@@ -1432,6 +1526,8 @@
                     >
                   </td>
                   <td><span class="sym part" title="Eigener LV">◐</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
                   <td>
@@ -1461,6 +1557,8 @@
                   </td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
                   <td>
                     <span
                       class="sym part"
@@ -1477,6 +1575,20 @@
                   <td><span class="sym read" title="Lesezugriff">○</span></td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym full" title="Bundesweit">●</span></td>
+                  <td>
+                    <span
+                      class="sym part"
+                      title="Eigener LV, Lizenzstufen nur lesend"
+                      >◐</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="sym part"
+                      title="Zugeordneter Spielbetrieb, Lizenzstufen nur lesend"
+                      >◐</span
+                    >
+                  </td>
                   <td>
                     <span
                       class="sym part"
@@ -1509,8 +1621,12 @@
                   </td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
                   <td>
-                    <span class="sym full" title="Erstellen und veröffentlichen"
+                    <span
+                      class="sym full"
+                      title="Erstellen und veröffentlichen (zugeordneter Spielbetrieb)"
                       >●</span
                     >
                   </td>
@@ -1553,10 +1669,14 @@
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
                 </tr>
                 <tr>
                   <th>System (API-Keys, Saisons, Analyse)</th>
                   <td><span class="sym full" title="Vollzugriff">●</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
@@ -1617,7 +1737,7 @@
             <div class="quick-proc">
               <div class="qp-name">📅 Schiri-Ansetzung</div>
               <div class="qp-chain">
-                <span class="rb rsk">RSK / Admin</span> setzt an &amp;
+                <span class="rb ansetzer">Ansetzer / Admin</span> setzt an &amp;
                 veröffentlicht → <span class="rb schiri">Schiri</span> bestätigt
               </div>
             </div>
@@ -1918,19 +2038,19 @@
                 <div class="st start">Spiel offen</div>
                 <div class="cn act">
                   <span class="cl">Ansetzung erstellen</span
-                  ><span class="rb rsk">RSK / Admin</span
+                  ><span class="rb ansetzer">Ansetzer / Admin</span
                   ><span class="ar">→</span>
                 </div>
                 <div class="st pending">Vorläufig</div>
                 <div class="cn act">
                   <span class="cl">vorläufig benachrichtigen</span
-                  ><span class="rb rsk">RSK / Admin</span
+                  ><span class="rb ansetzer">Ansetzer / Admin</span
                   ><span class="ar">→</span>
                 </div>
                 <div class="st info">Vorläufig &amp; benachrichtigt</div>
                 <div class="cn act">
                   <span class="cl">veröffentlichen</span
-                  ><span class="rb rsk">RSK / Admin</span
+                  ><span class="rb ansetzer">Ansetzer / Admin</span
                   ><span class="ar">→</span>
                 </div>
                 <div class="st success">Veröffentlicht</div>
@@ -2916,12 +3036,9 @@
             <span class="hero-mark">RSK</span>
             <div class="hero-badge">RSK FD</div>
             <h1>Schiedsrichterkommission – Floorball Deutschland</h1>
-            <p>
-              Bundesweite Schiedsrichterverwaltung, Spielansetzungen und
-              Qualifikationswesen.
-            </p>
+            <p>Bundesweite Schiedsrichterverwaltung und Qualifikationswesen.</p>
             <div class="hero-scope">
-              🌐 Nationaler Scope – alle Schiedsrichter und Ansetzungen
+              🌐 Nationaler Scope – alle Schiedsrichter
             </div>
           </div>
 
@@ -2956,50 +3073,18 @@
             <h2>Prozesse im Detail</h2>
           </div>
 
-          <details class="proc" open>
-            <summary>
-              <span class="proc-icon">📅</span>
-              <div>
-                <div class="proc-title">Schiedsrichter-Ansetzung</div>
-                <div class="proc-sub">
-                  Von vorläufig bis zur finalen Veröffentlichung
-                </div>
-              </div>
-              <span class="proc-chev">▾</span>
-            </summary>
-            <div class="proc-body">
-              <div class="flow">
-                <div class="st start">Spiel offen</div>
-                <div class="cn act">
-                  <span class="cl">Ansetzung erstellen</span
-                  ><span class="rb rsk">RSK FD</span><span class="ar">→</span>
-                </div>
-                <div class="st pending">Vorläufig</div>
-                <div class="cn act">
-                  <span class="cl">vorläufig benachrichtigen</span
-                  ><span class="rb rsk">RSK FD</span><span class="ar">→</span>
-                </div>
-                <div class="st info">Vorläufig &amp; benachrichtigt</div>
-                <div class="cn act">
-                  <span class="cl">veröffentlichen</span
-                  ><span class="rb rsk">RSK FD</span><span class="ar">→</span>
-                </div>
-                <div class="st success">Veröffentlicht</div>
-              </div>
-              <div class="note">
-                <strong>Vorläufige Benachrichtigung:</strong> Die angesetzten
-                Schiedsrichter erhalten eine E-Mail; der Status bleibt
-                Vorläufig. · <strong>Veröffentlichen:</strong> Schiedsrichter
-                erhalten eine E-Mail mit einem Lizenzkarten-Link (72 Stunden
-                gültig); die Schiedsrichterbezeichnung am Spiel wird gesetzt. ·
-                <strong>Verfügbarkeitsprüfung:</strong> Schiedsrichter mit
-                Sperrterminen oder bestehenden Ansetzungen am selben Tag werden
-                in der Auswahl ausgeblendet.
-              </div>
-            </div>
-          </details>
+          <div class="note">
+            <strong
+              >Schiedsrichter-Ansetzung ist keine RSK-Aufgabe mehr:</strong
+            >
+            Das Ansetzen zu Spielen, die Verfügbarkeitsprüfung und das
+            Veröffentlichen liegen bei der Rolle
+            <span class="rb ansetzer">Ansetzer</span> (oder Admin), siehe
+            <a href="#panel-ansetzer-fd">Ansetzer*in Floorball Deutschland</a>.
+            Eine All-in-One-Person erhält dafür zusätzlich die Ansetzer-Rolle.
+          </div>
 
-          <details class="proc">
+          <details class="proc" open>
             <summary>
               <span class="proc-icon">👤</span>
               <div>
@@ -3092,6 +3177,266 @@
             <h2>Prozesse im Detail</h2>
           </div>
 
+          <div class="note">
+            <strong
+              >Schiedsrichter-Ansetzung ist keine RSK-Aufgabe mehr:</strong
+            >
+            Das Ansetzen zu Spielen des eigenen Landesverbands, die
+            Verfügbarkeitsprüfung und das Veröffentlichen liegen bei der Rolle
+            <span class="rb ansetzer">Ansetzer</span> (oder Admin), siehe
+            <a href="#panel-ansetzer-lv">Ansetzer*in Landesverband</a>. Eine
+            All-in-One-Person erhält dafür zusätzlich die Ansetzer-Rolle.
+          </div>
+        </section>
+
+        <!-- ═══════════ ANSETZER FD ═══════════ -->
+        <section
+          class="panel"
+          id="panel-ansetzer-fd"
+          style="--rc: var(--c-ansetzerfd)"
+        >
+          <div class="hero">
+            <span class="hero-mark">ANS</span>
+            <div class="hero-badge">Ansetzer FD</div>
+            <h1>Ansetzer*in – Floorball Deutschland</h1>
+            <p>
+              Schiedsrichter-Ansetzungen für die Spiele des eigenen
+              Spielbetriebs auf Bundesebene.
+            </p>
+            <div class="hero-scope">
+              🌐 Bundesebene – zugeordnete Spielbetriebe
+            </div>
+          </div>
+
+          <div class="sec">
+            <span class="num">01</span>
+            <h2>Bereiche</h2>
+          </div>
+          <div class="caps">
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">📅</div>
+                <div>
+                  <h3>Schiedsrichter-Ansetzung</h3>
+                  <div class="cap-sub">
+                    Spiele des zugeordneten Spielbetriebs
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  Ansetzung erstellen: zwei Schiedsrichter oder einen
+                  ansetzenden Verein
+                </li>
+                <li>Vorläufig benachrichtigen und veröffentlichen</li>
+                <li>
+                  Filter nach Lizenzstufe, Schiedsrichter-Tag und
+                  kurzfristig/mobil beim Ansetzen
+                </li>
+              </ul>
+            </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">📆</div>
+                <div>
+                  <h3>Verfügbarkeiten</h3>
+                  <div class="cap-sub">
+                    Verfügbarkeits-Matrix aller Schiedsrichter
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  Verfügbarkeits-Matrix je Wochenende einsehen (verfügbar /
+                  angesetzt / nicht verfügbar)
+                </li>
+                <li>Nach Lizenzstufe filtern</li>
+                <li>
+                  Ansetzbar sind nur Tage, die der Schiedsrichter als verfügbar
+                  markiert hat
+                </li>
+              </ul>
+            </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">🦺</div>
+                <div>
+                  <h3>Schiedsrichterdaten (eingeschränkt)</h3>
+                  <div class="cap-sub">Lesezugriff + Tag-Verwaltung</div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  Schiedsrichterliste einsehen (kein Anlegen neuer
+                  Schiedsrichter)
+                </li>
+                <li>
+                  Stammdaten bearbeiten, Lizenzstufen und Qualifikationen nur
+                  lesend
+                </li>
+                <li>
+                  Schiedsrichter-Tags zuweisen (nur Tags des eigenen
+                  Spielbetriebs sowie globale Tags)
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="sec">
+            <span class="num">02</span>
+            <h2>Prozesse im Detail</h2>
+          </div>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">📅</span>
+              <div>
+                <div class="proc-title">Schiedsrichter-Ansetzung</div>
+                <div class="proc-sub">
+                  Von vorläufig bis zur finalen Veröffentlichung
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <div class="flow">
+                <div class="st start">Spiel offen</div>
+                <div class="cn act">
+                  <span class="cl">Ansetzung erstellen</span
+                  ><span class="rb ansetzer">Ansetzer FD</span
+                  ><span class="ar">→</span>
+                </div>
+                <div class="st pending">Vorläufig</div>
+                <div class="cn act">
+                  <span class="cl">vorläufig benachrichtigen</span
+                  ><span class="rb ansetzer">Ansetzer FD</span
+                  ><span class="ar">→</span>
+                </div>
+                <div class="st info">Vorläufig &amp; benachrichtigt</div>
+                <div class="cn act">
+                  <span class="cl">veröffentlichen</span
+                  ><span class="rb ansetzer">Ansetzer FD</span
+                  ><span class="ar">→</span>
+                </div>
+                <div class="st success">Veröffentlicht</div>
+              </div>
+              <div class="note">
+                <strong>Vorläufige Benachrichtigung:</strong> Die angesetzten
+                Schiedsrichter erhalten eine E-Mail; der Status bleibt
+                Vorläufig. · <strong>Veröffentlichen:</strong> Schiedsrichter
+                erhalten eine E-Mail mit einem Lizenzkarten-Link (72 Stunden
+                gültig); die Schiedsrichterbezeichnung am Spiel wird gesetzt. ·
+                <strong>Verfügbarkeitsprüfung:</strong> Nur Schiedsrichter, die
+                den Tag als verfügbar markiert haben, stehen zur Auswahl; bei
+                Ligaspielen zusätzlich nur, wer an diesem Tag noch nicht
+                anderweitig angesetzt ist (bei Pokalspielen entfällt diese
+                Zusatzprüfung).
+              </div>
+            </div>
+          </details>
+
+          <div class="note">
+            <strong>Scope-Besonderheit:</strong> Ansetzer FD ist nicht
+            automatisch bundesweit für alle Landesverbände zuständig – der
+            Zugriff bezieht sich auf den eigenen zugeordneten Spielbetrieb (i.
+            d. R. die Bundes-Ligen). Für Zugriff auf mehrere oder alle
+            Spielbetriebe muss jeder Spielbetrieb einzeln zugewiesen werden.
+          </div>
+        </section>
+
+        <!-- ═══════════ ANSETZER LV ═══════════ -->
+        <section
+          class="panel"
+          id="panel-ansetzer-lv"
+          style="--rc: var(--c-ansetzerlv)"
+        >
+          <div class="hero">
+            <span class="hero-mark">ANS</span>
+            <div class="hero-badge">Ansetzer LV</div>
+            <h1>Ansetzer*in – Landesverband</h1>
+            <p>Schiedsrichter-Ansetzungen für den eigenen Landesverband.</p>
+            <div class="hero-scope">📍 Zuständig für einen Landesverband</div>
+          </div>
+
+          <div class="sec">
+            <span class="num">01</span>
+            <h2>Bereiche</h2>
+          </div>
+          <div class="caps">
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">📅</div>
+                <div>
+                  <h3>Schiedsrichter-Ansetzung</h3>
+                  <div class="cap-sub">Spiele des eigenen Landesverbands</div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  Ansetzung erstellen: zwei Schiedsrichter oder einen
+                  ansetzenden Verein
+                </li>
+                <li>Vorläufig benachrichtigen und veröffentlichen</li>
+                <li>
+                  Filter nach Lizenzstufe, Schiedsrichter-Tag und
+                  kurzfristig/mobil beim Ansetzen
+                </li>
+              </ul>
+            </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">📆</div>
+                <div>
+                  <h3>Verfügbarkeiten</h3>
+                  <div class="cap-sub">
+                    Verfügbarkeits-Matrix der Schiedsrichter des eigenen LV
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  Verfügbarkeits-Matrix je Wochenende einsehen (verfügbar /
+                  angesetzt / nicht verfügbar)
+                </li>
+                <li>Nach Lizenzstufe filtern</li>
+                <li>
+                  Ansetzbar sind nur Tage, die der Schiedsrichter als verfügbar
+                  markiert hat
+                </li>
+              </ul>
+            </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">🦺</div>
+                <div>
+                  <h3>Schiedsrichterdaten (eingeschränkt)</h3>
+                  <div class="cap-sub">
+                    Schiedsrichter des eigenen Landesverbands
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  Schiedsrichterliste des eigenen LV einsehen (kein Anlegen
+                  neuer Schiedsrichter)
+                </li>
+                <li>
+                  Stammdaten bearbeiten, Lizenzstufen und Qualifikationen nur
+                  lesend
+                </li>
+                <li>
+                  Schiedsrichter-Tags zuweisen (nur Tags des eigenen
+                  Landesverbands sowie globale Tags)
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="sec">
+            <span class="num">02</span>
+            <h2>Prozesse im Detail</h2>
+          </div>
+
           <details class="proc" open>
             <summary>
               <span class="proc-icon">📅</span>
@@ -3108,24 +3453,29 @@
                 <div class="st start">Spiel offen</div>
                 <div class="cn act">
                   <span class="cl">Ansetzung erstellen</span
-                  ><span class="rb rsk">RSK LV</span><span class="ar">→</span>
+                  ><span class="rb ansetzer">Ansetzer LV</span
+                  ><span class="ar">→</span>
                 </div>
                 <div class="st pending">Vorläufig</div>
                 <div class="cn act">
                   <span class="cl">vorläufig benachrichtigen</span
-                  ><span class="rb rsk">RSK LV</span><span class="ar">→</span>
+                  ><span class="rb ansetzer">Ansetzer LV</span
+                  ><span class="ar">→</span>
                 </div>
                 <div class="st info">Vorläufig &amp; benachrichtigt</div>
                 <div class="cn act">
                   <span class="cl">veröffentlichen</span
-                  ><span class="rb rsk">RSK LV</span><span class="ar">→</span>
+                  ><span class="rb ansetzer">Ansetzer LV</span
+                  ><span class="ar">→</span>
                 </div>
                 <div class="st success">Veröffentlicht</div>
               </div>
               <div class="note">
                 Ansetzungen, Benachrichtigungen und Veröffentlichungen erfolgen
-                nur für Spiele des eigenen Landesverbands. Die Verfügbarkeit der
-                Schiedsrichter wird vor der Ansetzung geprüft.
+                nur für Spiele des eigenen Landesverbands. Angesetzt werden kann
+                nur, wer den Tag als verfügbar markiert hat; bei Ligaspielen
+                zusätzlich nur, wer an diesem Tag noch nicht anderweitig
+                angesetzt ist (bei Pokalspielen entfällt diese Zusatzprüfung).
               </div>
             </div>
           </details>
@@ -3792,12 +4142,14 @@
                 <div class="st neutral">Vorläufig angesetzt</div>
                 <div class="cn">
                   <span class="cl">vorläufig benachrichtigt</span
-                  ><span class="rb rsk">RSK</span><span class="ar">→</span>
+                  ><span class="rb ansetzer">Ansetzer</span
+                  ><span class="ar">→</span>
                 </div>
                 <div class="st info">E-Mail erhalten</div>
                 <div class="cn">
                   <span class="cl">veröffentlicht</span
-                  ><span class="rb rsk">RSK</span><span class="ar">→</span>
+                  ><span class="rb ansetzer">Ansetzer</span
+                  ><span class="ar">→</span>
                 </div>
                 <div class="st pending">Veröffentlicht (Lizenzkarten-Link)</div>
                 <div class="cn act">
