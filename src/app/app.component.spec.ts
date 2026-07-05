@@ -49,7 +49,10 @@ describe('AppComponent', () => {
 
       expect(errorSpy).toHaveBeenCalledWith(
         jasmine.stringContaining('konnte nicht geladen werden'),
-        jasmine.objectContaining({ autoClose: false })
+        // Kein keepAfterRouteChange: die Meldung entsteht nach dem
+        // NavigationStart-Cleanup und soll die nächste Navigation NICHT
+        // überleben (sonst bleibt sie auf der intakten Zielseite stehen).
+        { autoClose: false }
       );
     });
 

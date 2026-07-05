@@ -79,15 +79,20 @@ export class AppComponent implements OnInit {
       this._router.events
         .pipe(
           filter(
-            (event): event is NavigationError =>
+            (event) =>
               event instanceof NavigationError &&
               LAZY_LOAD_ERROR.test(String(event.error?.message ?? event.error))
           )
         )
         .subscribe(() => {
+          // keepAfterRouteChange bewusst nicht gesetzt: NavigationStart feuert
+          // vor NavigationError, die Meldung entsteht also erst NACH dem
+          // Aufräumen der eigenen Navigation. So bleibt sie auf der hängenden
+          // Seite stehen, wird aber bei der nächsten (erfolgreichen)
+          // Navigation entfernt und stapelt sich bei Retries nicht.
           this._notificationService.error(
             'Die Seite konnte nicht geladen werden. Bitte prüfe deine Internetverbindung und lade die Seite neu.',
-            { autoClose: false, keepAfterRouteChange: true }
+            { autoClose: false }
           );
         });
     }
