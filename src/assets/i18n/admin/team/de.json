@@ -20,6 +20,7 @@
   },
   "edit": {
     "title": "Teamverwaltung",
+    "backToList": "← Zurück zur Teamliste",
     "editHeading": "Bearbeiten eines Teams",
     "newHeading": "Neues Team anlegen",
     "mainData": "Hauptdaten",
