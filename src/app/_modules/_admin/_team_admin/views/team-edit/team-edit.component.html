@@ -5,6 +5,14 @@
     {{ "teamAdmin.edit.title" | transloco }}
   </h1>
 
+  @if (leagueId) {
+    <a
+      [routerLink]="['/', 'verwaltung', 'ligen', leagueId, 'teams']"
+      class="text-sm text-fb-gray-500 hover:text-black"
+      >{{ "teamAdmin.edit.backToList" | transloco }}</a
+    >
+  }
+
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
     {{
       (editMode ? "teamAdmin.edit.editHeading" : "teamAdmin.edit.newHeading")

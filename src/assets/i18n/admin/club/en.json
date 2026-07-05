@@ -18,6 +18,7 @@
   },
   "edit": {
     "title": "Club administration",
+    "backToList": "← Back to club list",
     "editHeading": "Edit a club",
     "newHeading": "Create new club",
     "mainData": "Main data",

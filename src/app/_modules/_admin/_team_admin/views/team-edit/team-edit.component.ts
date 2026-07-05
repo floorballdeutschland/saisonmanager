@@ -77,6 +77,7 @@ export class TeamEditComponent implements OnInit, OnDestroy {
           } else {
             this.editMode = false;
             const leagueId = parseInt(params['leagueId']);
+            this.leagueId = leagueId;
             this.getClubs(leagueId, 'l');
             this.newTeam(leagueId);
           }
@@ -118,6 +119,8 @@ export class TeamEditComponent implements OnInit, OnDestroy {
             return;
           }
           this._prevMainClubId = team.club_id;
+          this.leagueId = team.league_id;
+          this._cdr.markForCheck();
         }),
         take(1),
         takeUntil(this._destroy$)
