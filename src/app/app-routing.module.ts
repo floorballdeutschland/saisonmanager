@@ -139,15 +139,6 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
-          import('@floorball/admin/online-tests').then(
-            (m) => m.AdminOnlineTestModule
-          ),
-        canActivate: [permissionGuard],
-        data: { permission: 'menu_item_online_test_admin' },
-      },
-      {
-        path: '',
-        loadChildren: () =>
           import('@floorball/admin/api-keys').then((m) => m.AdminApiKeyModule),
         canActivate: [permissionGuard],
         data: { permission: 'menu_item_api_key_admin' },

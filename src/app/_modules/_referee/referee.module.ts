@@ -15,9 +15,6 @@ import * as Views from './views';
     Views.RefereeHistoryComponent,
     Views.RefereeAvailabilitiesComponent,
     Views.RefereeGameDaysComponent,
-    Views.RefereeOnlineTestIndexComponent,
-    Views.RefereeOnlineTestDetailComponent,
-    Views.RefereeOnlineTestExamComponent,
   ],
   providers: [
     {

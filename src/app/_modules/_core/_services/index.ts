@@ -24,7 +24,6 @@ export * from './player-change-request.service';
 export * from './transfer-request.service';
 export * from './user-management.service';
 export * from './settings.service';
-export * from './online-test.service';
 export * from './analytics.service';
 export * from './email-log.service';
 export * from './email-template.service';

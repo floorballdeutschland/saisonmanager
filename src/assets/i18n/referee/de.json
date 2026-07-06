@@ -57,12 +57,16 @@
     "colLeague": "Liga",
     "colResult": "Ergebnis",
     "noTests": "Noch keine Prüfungsergebnisse vorhanden.",
-    "attempt": "Versuch {{ number }}",
-    "passed": "Bestanden",
-    "notPassed": "Nicht bestanden",
-    "completed": "Abgeschlossen",
-    "errorPoints": "Fehlerpunkte: {{ points }}",
-    "errorPointsMax": "/ max. {{ max }}"
+    "statusApplied": "Anerkannt",
+    "statusPending": "In Prüfung",
+    "statusRejected": "Abgelehnt",
+    "courseDate": "Kursstichtag: {{ date }}",
+    "rejectionReason": "Begründung: {{ reason }}",
+    "course1": "Kurs 1",
+    "course2": "Kurs 2",
+    "testversion": "Testversion {{ version }}",
+    "points": "{{ points }} Punkte",
+    "instructor": "Ausbilder: {{ name }}"
   },
   "availabilities": {
     "title": "Meine Verfügbarkeiten",

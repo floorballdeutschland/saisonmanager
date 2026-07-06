@@ -12,9 +12,9 @@ import {
   RefereeAvailabilityBulkResult,
   RefereeAvailabilityEntry,
   RefereeEntry,
+  RefereeCourseResultSummary,
   RefereeGameDay,
   RefereeHistorySeason,
-  RefereeHistoryTestAttempt,
   PenaltyCode,
   RefereeLicenseLevel,
   RefereeProfile,
@@ -497,7 +497,7 @@ export class RefereeService {
   }
 
   public getHistoryTests() {
-    return this.http.get<RefereeHistoryTestAttempt[]>(
+    return this.http.get<RefereeCourseResultSummary[]>(
       environment.apiURL + 'referee/history/tests'
     );
   }
