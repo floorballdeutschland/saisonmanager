@@ -486,10 +486,13 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
         this._router.navigate(['verwaltung', 'ligen']);
       },
       error: (error) => {
-        this._notificationService.error(error, {
-          autoClose: false,
-          keepAfterRouteChange: false,
-        });
+        this._notificationService.error(
+          error?.error?.message ?? 'Fehler beim Speichern.',
+          {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          }
+        );
       },
     });
   }

@@ -343,10 +343,13 @@ export class TeamEditComponent implements OnInit, OnDestroy {
         ]);
       },
       error: (error) => {
-        this._notificationService.error(error, {
-          autoClose: false,
-          keepAfterRouteChange: false,
-        });
+        this._notificationService.error(
+          error?.error?.message ?? 'Fehler beim Speichern.',
+          {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          }
+        );
       },
     });
   }

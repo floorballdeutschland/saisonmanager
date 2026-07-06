@@ -10,17 +10,19 @@
         {{ "refereeAdmin.index.qualifications" | transloco }}
       </h1>
     </div>
-    <button
-      type="button"
-      (click)="showNewForm = !showNewForm"
-      class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
-    >
-      + Neu
-    </button>
+    @if (isAdmin) {
+      <button
+        type="button"
+        (click)="showNewForm = !showNewForm"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+      >
+        + Neu
+      </button>
+    }
   </div>
 
   <!-- Neuer Qualifikationstyp -->
-  @if (showNewForm) {
+  @if (showNewForm && isAdmin) {
     <div
       class="mb-6 p-4 border border-fb-gray-700 rounded-[5px] flex flex-col gap-3"
     >
@@ -176,23 +178,25 @@
                 >
               </td>
               <td class="py-2">
-                <div class="flex gap-2">
-                  <button
-                    type="button"
-                    (click)="startEdit(t)"
-                    class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black"
-                  >
-                    Bearbeiten
-                  </button>
-                  <button
-                    type="button"
-                    (click)="delete(t)"
-                    [disabled]="(t.usage_count ?? 0) > 0"
-                    class="text-xs font-bold px-3 py-1 border border-red-300 text-red-400 rounded-[5px] hover:border-red-500 disabled:opacity-40"
-                  >
-                    Löschen
-                  </button>
-                </div>
+                @if (isAdmin) {
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      (click)="startEdit(t)"
+                      class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black"
+                    >
+                      Bearbeiten
+                    </button>
+                    <button
+                      type="button"
+                      (click)="delete(t)"
+                      [disabled]="(t.usage_count ?? 0) > 0"
+                      class="text-xs font-bold px-3 py-1 border border-red-300 text-red-400 rounded-[5px] hover:border-red-500 disabled:opacity-40"
+                    >
+                      Löschen
+                    </button>
+                  </div>
+                }
               </td>
             </tr>
           }

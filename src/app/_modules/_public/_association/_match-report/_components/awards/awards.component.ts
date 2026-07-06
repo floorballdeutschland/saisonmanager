@@ -77,10 +77,13 @@ export class AwardsComponent implements OnInit {
         }),
         catchError((error) => {
           if (error) {
-            this._notificationService.error(error, {
-              autoClose: true,
-              keepAfterRouteChange: false,
-            });
+            this._notificationService.error(
+              error?.error?.message ?? 'Fehler beim Speichern.',
+              {
+                autoClose: true,
+                keepAfterRouteChange: false,
+              }
+            );
           }
 
           this.presetFromExistingMatch();

@@ -77,8 +77,10 @@ export class ImportGameDaysComponent implements OnInit {
         this.fileInput.nativeElement.value = '';
       },
       error: (errRes) => {
-        console.log(errRes);
-        const msg = JSON.parse(errRes);
+        // Backend liefert errors/warnings als JSON-String in error.message
+        // (siehe LeaguesController#admin_schedule_import_games); errRes ist
+        // seit dem ErrorInterceptor-Umbau die HttpErrorResponse, kein String mehr.
+        const msg = JSON.parse(errRes?.error?.message ?? '{}');
 
         this.errors = msg.errors;
         this.warnings = msg.warnings;
