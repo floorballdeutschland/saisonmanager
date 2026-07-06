@@ -42,16 +42,24 @@ const routes: Routes = [
         data: { permission: 'menu_item_player_admin' },
       },
       {
+        // Nur über die Liga-Verwaltung erreichbare Drill-Downs (kein eigener
+        // Menüpunkt) – daher dasselbe Gate wie die Liga-Verwaltung selbst.
         path: '',
         loadChildren: () =>
           import('@floorball/admin/teams').then((m) => m.AdminTeamModule),
+        canActivate: [permissionGuard],
+        data: { permission: 'menu_item_league_admin' },
       },
       {
+        // Nur über die Liga-Verwaltung erreichbare Drill-Downs (kein eigener
+        // Menüpunkt) – daher dasselbe Gate wie die Liga-Verwaltung selbst.
         path: '',
         loadChildren: () =>
           import('@floorball/admin/schedule').then(
             (m) => m.AdminScheduleModule
           ),
+        canActivate: [permissionGuard],
+        data: { permission: 'menu_item_league_admin' },
       },
       {
         // Lizenzwesen bündelt drei getrennt berechtigte Bereiche
