@@ -30,8 +30,10 @@ export class ErrorInterceptor implements HttpInterceptor {
         // (logout, Navigation, Notifications). Zudem ein echtes Error-Objekt
         // werfen, damit ein fehlgeschlagener API-Call den Prerender-Worker
         // nicht an einem String-Reject hängen lässt ("catch clause variable
-        // is not an Error instance"). Im Browser bleibt das String-Wurf-
-        // verhalten erhalten – aufrufende Component-Handler erwarten einen String.
+        // is not an Error instance"). Im Browser wird weiter unten die
+        // ursprüngliche HttpErrorResponse weitergereicht (Objekt mit .status,
+        // .message und .error), damit Component-Handler auf diese Felder
+        // zugreifen können.
         if (!isPlatformBrowser(this.platformId)) {
           const serverError =
             err.error?.message || err.error?.error || err.statusText;
@@ -70,6 +72,22 @@ export class ErrorInterceptor implements HttpInterceptor {
           );
         }
 
+        // Übrige 4xx (z. B. 400, 409, 422) sichtbar machen. Bisher wurden diese
+        // stillschweigend verschluckt ("der Button tut nichts"). 401/403/404
+        // sind oben bereits gesondert behandelt.
+        if (
+          err.status >= 400 &&
+          err.status < 500 &&
+          ![401, 403, 404].includes(err.status)
+        ) {
+          this._notificationService.error(
+            err.error?.message ||
+              err.error?.error ||
+              'Die Eingabe konnte nicht verarbeitet werden.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
+        }
+
         if (err.status >= 500) {
           this._notificationService.error(
             'Server-Fehler. Bitte versuche es später erneut.',
@@ -84,8 +102,10 @@ export class ErrorInterceptor implements HttpInterceptor {
           );
         }
 
-        const error = err.error?.message || err.error?.error || err.statusText;
-        return throwError(() => error);
+        // Die ursprüngliche HttpErrorResponse weiterreichen (statt eines bloßen
+        // Strings): aufrufende error-Handler können so auf .status, .message und
+        // den .error-Body (inkl. errors[]) zugreifen.
+        return throwError(() => err);
       })
     );
   }
