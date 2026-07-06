@@ -287,10 +287,13 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           ]);
         },
         error: (error) => {
-          this._notificationService.error(error, {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.error(
+            error?.error?.message ?? 'Fehler beim Speichern.',
+            {
+              autoClose: false,
+              keepAfterRouteChange: false,
+            }
+          );
         },
       });
   }
@@ -313,10 +316,13 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          this._notificationService.error(error, {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.error(
+            error?.error?.message ?? 'Fehler beim Freigeben.',
+            {
+              autoClose: false,
+              keepAfterRouteChange: false,
+            }
+          );
         },
       });
   }
@@ -344,10 +350,13 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          this._notificationService.error(error, {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.error(
+            error?.error?.message ?? 'Fehler beim Freigeben.',
+            {
+              autoClose: false,
+              keepAfterRouteChange: false,
+            }
+          );
         },
       });
   }
