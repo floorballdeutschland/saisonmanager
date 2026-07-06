@@ -263,11 +263,20 @@ export class SessionService {
     });
   }
 
-  public canLoadPage(page: string): boolean {
-    if (this.currentUser && this.currentUser.permissions[page]) {
-      return true;
-    }
+  /**
+   * Synchroner Zugriff auf den eingeloggten User aus dem persistierten
+   * localStorage – dieselbe Quelle, aus der `currentUser$` beim Start gespeist
+   * wird und aus der die Menü-Sichtbarkeit (`showItem`) ihre Permissions liest.
+   * Wird von den Route-Guards genutzt, die synchron entscheiden müssen.
+   */
+  public get currentUserValue(): User | null {
+    const stored =
+      typeof localStorage === 'undefined' ? null : localStorage.getItem('user');
 
-    return false;
+    return stored ? (JSON.parse(stored) as User) : null;
+  }
+
+  public canLoadPage(page: string): boolean {
+    return !!this.currentUserValue?.permissions?.[page];
   }
 }
