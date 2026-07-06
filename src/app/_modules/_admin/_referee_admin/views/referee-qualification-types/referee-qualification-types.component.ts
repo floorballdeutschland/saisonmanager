@@ -7,7 +7,11 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
-import { NotificationService, RefereeService } from '@floorball/core';
+import {
+  NotificationService,
+  RefereeService,
+  SessionService,
+} from '@floorball/core';
 import { RefereeQualificationType } from '@floorball/types';
 
 @Component({
@@ -24,16 +28,27 @@ export class RefereeQualificationTypesComponent implements OnInit, OnDestroy {
   editBuffer: Partial<RefereeQualificationType> = {};
   newType: Partial<RefereeQualificationType> = { active: true };
   showNewForm = false;
+  // Pflege ist Admin-only (bundesweiter Katalog) – Lesen bleibt RSK/SBK/Ansetzer erlaubt.
+  isAdmin = false;
 
   private _destroy$ = new Subject<void>();
 
   constructor(
     private _refereeService: RefereeService,
     private _notificationService: NotificationService,
+    private _sessionService: SessionService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (user) => {
+          this.isAdmin = !!user?.permissions?.['admin'];
+          this._cdr.markForCheck();
+        },
+      });
     this.load();
   }
 
