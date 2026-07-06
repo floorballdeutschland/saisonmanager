@@ -138,16 +138,26 @@ export interface RefereeHistorySeason {
   games: RefereeHistoryGame[];
 }
 
-export interface RefereeHistoryTestAttempt {
+export interface RefereeCourseResultCourseData {
+  stufe?: string | null;
+  datum?: string | null;
+  testversion?: string | null;
+  punkte?: string | null;
+}
+
+export interface RefereeCourseResultSummary {
   id: number;
-  online_test_id: number;
-  test_name: string;
   lizenzstufe: string | null;
-  attempt_number: number;
-  completed_at: string;
-  error_points: number | null;
-  passed: boolean | null;
-  pass_threshold_points: number | null;
+  gueltigkeit: string | null;
+  kursstichtag: string | null;
+  status: 'pending_review' | 'applied' | 'rejected';
+  applied_at: string | null;
+  rejection_reason: string | null;
+  course_data: {
+    kurs_1?: RefereeCourseResultCourseData;
+    kurs_2?: RefereeCourseResultCourseData;
+    ausbilder?: string | null;
+  };
 }
 
 export interface RefereeAssignmentStub {

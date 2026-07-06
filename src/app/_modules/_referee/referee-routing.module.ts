@@ -33,24 +33,6 @@ const routes: Routes = [
     component: Views.RefereeHistoryComponent,
     data: { scrollTop: true },
   },
-  {
-    path: 'schiedsrichter/onlinepruefungen',
-    pathMatch: 'full',
-    component: Views.RefereeOnlineTestIndexComponent,
-    data: { scrollTop: true },
-  },
-  {
-    path: 'schiedsrichter/onlinepruefungen/:id',
-    pathMatch: 'full',
-    component: Views.RefereeOnlineTestDetailComponent,
-    data: { scrollTop: true },
-  },
-  {
-    path: 'schiedsrichter/onlinepruefungen/:id/pruefung',
-    pathMatch: 'full',
-    component: Views.RefereeOnlineTestExamComponent,
-    data: { scrollTop: true },
-  },
 ];
 
 @NgModule({

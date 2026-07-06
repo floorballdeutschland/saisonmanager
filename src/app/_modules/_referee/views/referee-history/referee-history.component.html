@@ -145,56 +145,67 @@
       }
       @if (!loadingTests && tests.length > 0) {
         <div class="flex flex-col gap-2">
-          @for (attempt of tests; track attempt) {
+          @for (result of tests; track result) {
             <div
               class="border border-fb-gray-300 rounded-[5px] px-4 py-3 flex items-center justify-between"
             >
               <div>
-                <p class="font-bold text-sm">{{ attempt.test_name }}</p>
-                <p class="text-xs text-fb-gray-500">
-                  {{ attempt.lizenzstufe ? attempt.lizenzstufe + " · " : "" }}
+                <p class="font-bold text-sm">
+                  {{ result.lizenzstufe ? result.lizenzstufe + " · " : "" }}
                   {{
-                    "refereeSelf.history.attempt"
-                      | transloco: { number: attempt.attempt_number }
+                    "refereeSelf.history.courseDate"
+                      | transloco: { date: result.kursstichtag || "–" }
                   }}
-                  ·
-                  {{ formatDateTime(attempt.completed_at) }}
                 </p>
+                @if (result.status === "rejected" && result.rejection_reason) {
+                  <p class="text-xs text-red-600 mt-1">
+                    {{
+                      "refereeSelf.history.rejectionReason"
+                        | transloco: { reason: result.rejection_reason }
+                    }}
+                  </p>
+                }
+                @if (courseLine(result.course_data?.kurs_1); as line1) {
+                  <p class="text-xs text-fb-gray-500 mt-1">
+                    {{ "refereeSelf.history.course1" | transloco }}:
+                    {{ line1 }}
+                  </p>
+                }
+                @if (courseLine(result.course_data?.kurs_2); as line2) {
+                  <p class="text-xs text-fb-gray-500 mt-1">
+                    {{ "refereeSelf.history.course2" | transloco }}:
+                    {{ line2 }}
+                  </p>
+                }
+                @if (result.course_data?.ausbilder) {
+                  <p class="text-xs text-fb-gray-500 mt-1">
+                    {{
+                      "refereeSelf.history.instructor"
+                        | transloco: { name: result.course_data.ausbilder }
+                    }}
+                  </p>
+                }
               </div>
               <div class="text-right">
                 <span
                   class="px-2 py-0.5 rounded text-xs font-bold"
-                  [class.bg-green-100]="attempt.passed === true"
-                  [class.text-green-800]="attempt.passed === true"
-                  [class.bg-red-100]="attempt.passed === false"
-                  [class.text-red-800]="attempt.passed === false"
-                  [class.bg-gray-100]="attempt.passed === null"
-                  [class.text-gray-700]="attempt.passed === null"
+                  [class.bg-green-100]="result.status === 'applied'"
+                  [class.text-green-800]="result.status === 'applied'"
+                  [class.bg-red-100]="result.status === 'rejected'"
+                  [class.text-red-800]="result.status === 'rejected'"
+                  [class.bg-gray-100]="result.status === 'pending_review'"
+                  [class.text-gray-700]="result.status === 'pending_review'"
                 >
-                  @if (attempt.passed === true) {
-                    {{ "refereeSelf.history.passed" | transloco }}
+                  @if (result.status === "applied") {
+                    {{ "refereeSelf.history.statusApplied" | transloco }}
                   }
-                  @if (attempt.passed === false) {
-                    {{ "refereeSelf.history.notPassed" | transloco }}
+                  @if (result.status === "rejected") {
+                    {{ "refereeSelf.history.statusRejected" | transloco }}
                   }
-                  @if (attempt.passed === null) {
-                    {{ "refereeSelf.history.completed" | transloco }}
+                  @if (result.status === "pending_review") {
+                    {{ "refereeSelf.history.statusPending" | transloco }}
                   }
                 </span>
-                @if (attempt.error_points !== null) {
-                  <p class="text-xs text-fb-gray-500 mt-1">
-                    {{
-                      "refereeSelf.history.errorPoints"
-                        | transloco: { points: attempt.error_points }
-                    }}
-                    @if (attempt.pass_threshold_points !== null) {
-                      {{
-                        "refereeSelf.history.errorPointsMax"
-                          | transloco: { max: attempt.pass_threshold_points }
-                      }}
-                    }
-                  </p>
-                }
               </div>
             </div>
           }

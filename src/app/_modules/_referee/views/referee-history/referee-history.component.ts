@@ -4,10 +4,12 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { RefereeService } from '@floorball/core';
 import {
+  RefereeCourseResultCourseData,
+  RefereeCourseResultSummary,
   RefereeHistorySeason,
-  RefereeHistoryTestAttempt,
 } from '@floorball/types';
 
 @Component({
@@ -17,7 +19,7 @@ import {
 })
 export class RefereeHistoryComponent implements OnInit {
   seasons: RefereeHistorySeason[] = [];
-  tests: RefereeHistoryTestAttempt[] = [];
+  tests: RefereeCourseResultSummary[] = [];
   loadingGames = true;
   loadingTests = true;
   activeTab: 'games' | 'tests' = 'games';
@@ -26,7 +28,8 @@ export class RefereeHistoryComponent implements OnInit {
 
   constructor(
     private _refereeService: RefereeService,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private _transloco: TranslocoService
   ) {}
 
   ngOnInit(): void {
@@ -81,5 +84,27 @@ export class RefereeHistoryComponent implements OnInit {
       month: '2-digit',
       year: 'numeric',
     });
+  }
+
+  courseLine(data?: RefereeCourseResultCourseData): string | null {
+    if (!data) return null;
+    const parts: string[] = [];
+    if (data.stufe) parts.push(data.stufe);
+    if (data.datum) parts.push(data.datum);
+    if (data.testversion) {
+      parts.push(
+        this._transloco.translate('refereeSelf.history.testversion', {
+          version: data.testversion,
+        })
+      );
+    }
+    if (data.punkte) {
+      parts.push(
+        this._transloco.translate('refereeSelf.history.points', {
+          points: data.punkte,
+        })
+      );
+    }
+    return parts.length ? parts.join(', ') : null;
   }
 }
