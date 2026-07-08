@@ -89,6 +89,9 @@
       "@floorball/admin/state-associations": [
         "src/app/_modules/_admin/_state_association_admin"
       ],
+      "@floorball/admin/document-types": [
+        "src/app/_modules/_admin/_document_type_admin"
+      ],
       "@floorball/admin/api-keys": ["src/app/_modules/_admin/_api_key_admin"],
       "@floorball/admin/player-change-requests": [
         "src/app/_modules/_admin/_player_change_request_admin"

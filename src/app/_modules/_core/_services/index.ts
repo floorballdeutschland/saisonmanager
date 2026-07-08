@@ -4,6 +4,7 @@ export { MetaService } from './meta.service';
 export { GameService } from './game.service';
 export type { GameSchedulingConflict } from './game.service';
 export { PlayerService } from './player.service';
+export { DocumentTypeService } from './document-type.service';
 export { TeamService } from './team.service';
 export { OverlayService } from './overlay.service';
 export { RefereeService } from './referee.service';

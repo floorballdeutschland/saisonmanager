@@ -45,6 +45,9 @@ export interface PlayerWithLicense extends Player {
       parental_consent_url?: string | null;
       [key: string]: boolean | string | null | undefined;
     };
+    // Für diesen Spieler tatsächlich erforderliche Dokumentarten-Keys
+    // (Altersregeln serverseitig zum Antragsdatum aufgelöst).
+    required_documents?: string[];
   };
   current_status?: {
     created_at: Date;
@@ -56,6 +59,9 @@ export interface PlayerWithLicense extends Player {
   can_withdraw: boolean;
   grace_period_ends_at?: string;
   other_licenses?: PlayerOtherLicense[];
+  // Für diesen Spieler tatsächlich erforderliche Dokumentarten-Keys
+  // (Altersregeln serverseitig zum Antragsdatum aufgelöst).
+  required_documents?: string[];
 }
 
 // Weitere aktive Lizenz eines Spielers (Kontext für die Erst-/Zweitlizenz-

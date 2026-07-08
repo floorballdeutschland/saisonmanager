@@ -238,9 +238,11 @@
                                   "licenseAdmin.leagueDetail.documents"
                                     | transloco
                                 }}</span>
-                                <!-- Pflichtdokumente aus Liga-Konfiguration -->
+                                <!-- Pflichtdokumente (pro Spieler aufgelöst) -->
                                 @for (
-                                  docType of league?.required_documents;
+                                  docType of p.team_license
+                                    .required_documents ??
+                                    league?.required_documents;
                                   track docType
                                 ) {
                                   @if (docType !== "parental_consent") {

@@ -184,8 +184,8 @@
               {{ "licenseAdmin.leagueDetail.documents" | transloco }}
             </p>
             <div class="flex flex-wrap items-center gap-1.5">
-              <!-- Pflichtdokumente aus Liga-Konfiguration -->
-              @for (docType of league?.required_documents; track docType) {
+              <!-- Pflichtdokumente (pro Spieler aufgelöst) -->
+              @for (docType of requiredDocs(); track docType) {
                 @if (docType !== "parental_consent") {
                   @if (player.team_license.documents?.[docType + "_url"]) {
                     <a
@@ -241,8 +241,7 @@
                 }
               }
               @if (
-                !league?.required_documents?.length &&
-                calculateAge(player.birthdate) >= 18
+                !requiredDocs().length && calculateAge(player.birthdate) >= 18
               ) {
                 <span class="text-[12px] text-gray-400">–</span>
               }

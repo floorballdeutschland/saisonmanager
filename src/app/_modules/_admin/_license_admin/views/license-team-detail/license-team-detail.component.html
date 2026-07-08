@@ -223,16 +223,13 @@
                               }}
                             </p>
                             <div class="flex flex-wrap gap-3">
-                              <!-- Pflichtdokumente (dynamisch) -->
+                              <!-- Pflichtdokumente (pro Spieler aufgelöst) -->
                               @for (
-                                docType of licenseHash.required_documents;
+                                docType of requiredDocsFor(p);
                                 track docType
                               ) {
                                 <div class="flex items-center gap-2">
-                                  @if (
-                                    getDoc(p.team_license.id, docType);
-                                    as doc
-                                  ) {
+                                  @if (getDoc(p.id, docType); as doc) {
                                     <a
                                       [href]="doc.url"
                                       target="_blank"
@@ -240,16 +237,10 @@
                                       class="text-xs text-green-700 underline truncate max-w-[140px]"
                                       title="{{ doc.filename }}"
                                     >
-                                      ✓ {{ docType }}
+                                      ✓ {{ docLabel(docType) }}
                                     </a>
                                     <button
-                                      (click)="
-                                        deleteDocument(
-                                          p.id,
-                                          p.team_license.id,
-                                          doc.id
-                                        )
-                                      "
+                                      (click)="deleteDocument(p.id, doc.id)"
                                       class="text-red-400 hover:text-red-600 text-xs"
                                       [title]="
                                         'licenseAdmin.teamDetail.deleteDoc'
@@ -278,33 +269,46 @@
                                       </svg>
                                       {{
                                         "licenseAdmin.teamDetail.uploadDoc"
-                                          | transloco: { doc: docType }
+                                          | transloco
+                                            : { doc: docLabel(docType) }
                                       }}
                                       <input
                                         type="file"
                                         class="hidden"
                                         accept="application/pdf,image/png,image/jpeg"
                                         (change)="
-                                          onFileSelected(
-                                            $event,
-                                            p.id,
-                                            p.team_license.id,
-                                            docType
-                                          )
+                                          onFileSelected($event, p.id, docType)
                                         "
                                       />
                                     </label>
                                   }
+                                  @if (
+                                    docTemplateUrl(docType);
+                                    as templateUrl
+                                  ) {
+                                    <a
+                                      [href]="templateUrl"
+                                      target="_blank"
+                                      rel="noopener"
+                                      class="text-xs text-fb-gray-500 underline hover:text-black"
+                                      [title]="
+                                        'licenseAdmin.teamDetail.templateLinkTitle'
+                                          | transloco
+                                      "
+                                    >
+                                      {{
+                                        "licenseAdmin.teamDetail.templateLink"
+                                          | transloco
+                                      }}
+                                    </a>
+                                  }
                                 </div>
                               }
-                              <!-- Elternzustimmung (nur Minderjährige) -->
-                              @if (isMinor(p.birthdate)) {
+                              <!-- Elternzustimmung (nur wenn erforderlich) -->
+                              @if (needsConsentFor(p)) {
                                 <div class="flex items-center gap-2">
                                   @if (
-                                    getDoc(
-                                      p.team_license.id,
-                                      "parental_consent"
-                                    );
+                                    getDoc(p.id, "parental_consent");
                                     as doc
                                   ) {
                                     <a
@@ -321,13 +325,7 @@
                                       }}
                                     </a>
                                     <button
-                                      (click)="
-                                        deleteDocument(
-                                          p.id,
-                                          p.team_license.id,
-                                          doc.id
-                                        )
-                                      "
+                                      (click)="deleteDocument(p.id, doc.id)"
                                       class="text-red-400 hover:text-red-600 text-xs"
                                       [title]="
                                         'licenseAdmin.teamDetail.deleteDoc'
@@ -366,12 +364,31 @@
                                           onFileSelected(
                                             $event,
                                             p.id,
-                                            p.team_license.id,
                                             'parental_consent'
                                           )
                                         "
                                       />
                                     </label>
+                                  }
+                                  @if (
+                                    docTemplateUrl("parental_consent");
+                                    as templateUrl
+                                  ) {
+                                    <a
+                                      [href]="templateUrl"
+                                      target="_blank"
+                                      rel="noopener"
+                                      class="text-xs text-fb-gray-500 underline hover:text-black"
+                                      [title]="
+                                        'licenseAdmin.teamDetail.templateLinkTitle'
+                                          | transloco
+                                      "
+                                    >
+                                      {{
+                                        "licenseAdmin.teamDetail.templateLink"
+                                          | transloco
+                                      }}
+                                    </a>
                                   }
                                 </div>
                               }

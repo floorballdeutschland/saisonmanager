@@ -688,32 +688,26 @@
                   </p>
                 }
                 <div class="flex gap-2 mt-1">
-                  <input
-                    type="text"
-                    [(ngModel)]="newDocumentName"
-                    [placeholder]="
-                      'leagueAdmin.edit.documentTypePlaceholder' | transloco
-                    "
+                  <select
+                    [(ngModel)]="selectedDocTypeKey"
                     class="border border-fb-gray-600 rounded-[5px] px-3 py-1.5 text-sm flex-1"
-                  />
-                  <button
-                    type="button"
-                    (click)="addRequiredDocument(league)"
-                    class="font-bold text-black text-sm px-4 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
                   >
-                    {{ "leagueAdmin.edit.add" | transloco }}
-                  </button>
+                    <option value="">
+                      {{ "leagueAdmin.edit.selectDocumentType" | transloco }}
+                    </option>
+                    @for (dt of availableDocumentTypes(league); track dt.id) {
+                      <option [value]="dt.key">
+                        {{ docTypeOptionLabel(dt) }}
+                      </option>
+                    }
+                  </select>
                   <button
                     type="button"
-                    (click)="addDocumentIfMissing(league, 'id_copy')"
-                    [disabled]="
-                      $safeNavigationMigration(
-                        league.required_documents?.includes('id_copy')
-                      )
-                    "
+                    (click)="addSelectedDocumentType(league)"
+                    [disabled]="!selectedDocTypeKey"
                     class="font-bold text-black text-sm px-4 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] disabled:opacity-40"
                   >
-                    {{ "leagueAdmin.edit.addIdCopy" | transloco }}
+                    {{ "leagueAdmin.edit.add" | transloco }}
                   </button>
                 </div>
               </div>

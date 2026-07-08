@@ -98,8 +98,10 @@
     "add": "Add",
     "licenseDocuments": "Documents for license application",
     "noRequiredDocuments": "No required documents set up.",
-    "documentTypePlaceholder": "Document type (e.g. id_copy)",
-    "addIdCopy": "+ ID copy",
+    "selectDocumentType": "Select document type…",
+    "docValidityOnce": "once",
+    "docValidityPerSeason": "per season",
+    "docBelowAge": "below U{{ age }}",
     "banner": "Advertising banner",
     "currentBanner": "Current banner",
     "bannerAlt": "Advertising banner",
@@ -113,7 +115,6 @@
     "saveNotPossible": "Saving not possible",
     "saveChanges": "Save changes",
     "cancel": "Cancel",
-    "idCopy": "ID copy",
     "ageGroups": {
       "u19m": "U19 boys",
       "u17m": "U17 boys",
@@ -134,7 +135,8 @@
       "over30": "Over 30",
       "men": "Men",
       "women": "Women"
-    }
+    },
+    "docTypesLoadError": "Failed to load the document type catalog."
   },
   "notifications": {
     "orderSaved": "Order saved.",

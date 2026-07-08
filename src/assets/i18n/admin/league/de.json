@@ -98,8 +98,10 @@
     "add": "Hinzufügen",
     "licenseDocuments": "Dokumente für Lizenzantrag",
     "noRequiredDocuments": "Keine Pflichtdokumente hinterlegt.",
-    "documentTypePlaceholder": "Dokumenttyp (z.B. id_copy)",
-    "addIdCopy": "+ Ausweiskopie",
+    "selectDocumentType": "Dokumentart wählen…",
+    "docValidityOnce": "einmalig",
+    "docValidityPerSeason": "je Saison",
+    "docBelowAge": "bis U{{ age }}",
     "banner": "Werbebanner",
     "currentBanner": "Aktueller Banner",
     "bannerAlt": "Werbebanner",
@@ -113,7 +115,6 @@
     "saveNotPossible": "Speichern nicht möglich",
     "saveChanges": "Änderungen speichern",
     "cancel": "Abbrechen",
-    "idCopy": "Ausweiskopie",
     "ageGroups": {
       "u19m": "U19 Junioren",
       "u17m": "U17 Junioren",
@@ -134,7 +135,8 @@
       "over30": "Ü30",
       "men": "Herren",
       "women": "Damen"
-    }
+    },
+    "docTypesLoadError": "Dokumentarten-Katalog konnte nicht geladen werden."
   },
   "notifications": {
     "orderSaved": "Reihenfolge gespeichert.",

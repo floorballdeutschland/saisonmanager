@@ -184,6 +184,8 @@
     "uploadDoc": "Upload {{ doc }}",
     "parentalConsent": "Parental consent",
     "uploadParentalConsent": "Upload parental consent",
+    "templateLink": "Template",
+    "templateLinkTitle": "Download template",
     "newLicense": "Request new license",
     "expressLabel": "Request as express license (per fee schedule)",
     "expressHint": "Express licenses allow short-term post-licensing shortly before or after the first matchday. The request entails additional costs per the fee schedule and triggers an immediate email notification to the responsible game operations committee.",
