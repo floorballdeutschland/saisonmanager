@@ -182,6 +182,15 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           this.documentTypes = result;
           this._cdr.markForCheck();
         },
+        error: () => {
+          // Ohne Katalog wäre die Auswahl still leer – sichtbar machen
+          // (der ErrorInterceptor zeigt nicht jeden Fehlerstatus an).
+          this._notificationService.error(
+            this._transloco.translate('leagueAdmin.edit.docTypesLoadError'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this._cdr.markForCheck();
+        },
       });
 
     this._leagueService.getAdminLeagues().subscribe({

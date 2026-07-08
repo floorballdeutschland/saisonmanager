@@ -32,6 +32,7 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
 
   loading = false;
+  loadFailed = false;
   saving = false;
 
   editingId: number | null = null;
@@ -89,6 +90,7 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
 
   load(): void {
     this.loading = true;
+    this.loadFailed = false;
     this._documentTypeService
       .adminGetDocumentTypes()
       .pipe(takeUntil(this._destroy$))
@@ -98,8 +100,11 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
           this.loading = false;
           this._cdr.markForCheck();
         },
-        error: () => {
+        error: (err) => {
+          // Ein Ladefehler darf nicht wie ein leerer Katalog aussehen.
           this.loading = false;
+          this.loadFailed = true;
+          this._showError(err, 'documentTypeAdmin.index.loadError');
           this._cdr.markForCheck();
         },
       });

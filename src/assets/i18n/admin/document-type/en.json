@@ -43,6 +43,7 @@
     "deleted": "Deleted.",
     "createError": "Error while creating.",
     "saveError": "Error while saving.",
-    "deleteError": "Deletion not possible."
+    "deleteError": "Deletion not possible.",
+    "loadError": "Failed to load document types."
   }
 }

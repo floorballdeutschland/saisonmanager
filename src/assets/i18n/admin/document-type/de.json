@@ -43,6 +43,7 @@
     "deleted": "Gelöscht.",
     "createError": "Fehler beim Anlegen.",
     "saveError": "Fehler beim Speichern.",
-    "deleteError": "Löschen nicht möglich."
+    "deleteError": "Löschen nicht möglich.",
+    "loadError": "Dokumentarten konnten nicht geladen werden."
   }
 }

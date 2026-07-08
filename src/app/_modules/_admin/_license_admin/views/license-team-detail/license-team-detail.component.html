@@ -304,8 +304,8 @@
                                   }
                                 </div>
                               }
-                              <!-- Elternzustimmung (nur Minderjährige) -->
-                              @if (isMinor(p.birthdate)) {
+                              <!-- Elternzustimmung (nur wenn erforderlich) -->
+                              @if (needsConsentFor(p)) {
                                 <div class="flex items-center gap-2">
                                   @if (
                                     getDoc(p.id, "parental_consent");

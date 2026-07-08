@@ -403,7 +403,13 @@
     </table>
   }
 
-  @if (!loading && documentTypes.length === 0) {
+  @if (!loading && loadFailed) {
+    <p class="text-red-600 text-sm">
+      {{ "documentTypeAdmin.index.loadError" | transloco }}
+    </p>
+  }
+
+  @if (!loading && !loadFailed && documentTypes.length === 0) {
     <p class="text-fb-gray-500 text-sm">
       {{ "documentTypeAdmin.index.empty" | transloco }}
     </p>

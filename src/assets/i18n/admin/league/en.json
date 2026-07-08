@@ -135,7 +135,8 @@
       "over30": "Over 30",
       "men": "Men",
       "women": "Women"
-    }
+    },
+    "docTypesLoadError": "Failed to load the document type catalog."
   },
   "notifications": {
     "orderSaved": "Order saved.",

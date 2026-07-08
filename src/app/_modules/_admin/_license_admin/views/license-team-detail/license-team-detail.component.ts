@@ -42,8 +42,10 @@ export class LicenseTeamDetailComponent implements OnInit {
   minorConsent = false;
   guardianEmail = '';
 
-  // Dokumente gelten pro Spieler (saisonübergreifend), nicht mehr pro Lizenz.
+  // Dokumente gelten pro Spieler (saisonübergreifend), nicht mehr pro Lizenz;
+  // per_season-Dokumentarten zählen nur mit Upload aus der laufenden Saison.
   documents: Record<number, LicenseDocument[]> = {};
+  currentSeasonId: number | null = null;
   uploadError: string | null = null;
 
   constructor(
@@ -63,6 +65,11 @@ export class LicenseTeamDetailComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this._associationService.currentSeasonId$.subscribe((seasonId) => {
+      this.currentSeasonId = seasonId;
+      this._cdr.markForCheck();
+    });
+
     this._route.params.subscribe((params) => {
       if (params['teamId']) {
         this.teamId = params['teamId'];
@@ -100,7 +107,31 @@ export class LicenseTeamDetailComponent implements OnInit {
   }
 
   public getDoc(playerId: number, type: string): LicenseDocument | undefined {
-    return this.documents[playerId]?.find((d) => d.document_type === type);
+    const docs = this.documents[playerId] ?? [];
+    const documentType = this.licenseHash?.document_types?.find(
+      (dt) => dt.key === type
+    );
+    // per_season: nur Uploads aus der laufenden Saison gelten (gleiche Logik
+    // wie serverseitig in LicenseDocumentPresentation).
+    if (
+      documentType?.validity === 'per_season' &&
+      this.currentSeasonId !== null
+    ) {
+      return docs.find(
+        (d) =>
+          d.document_type === type &&
+          Number(d.season_id) === Number(this.currentSeasonId)
+      );
+    }
+    return docs.find((d) => d.document_type === type);
+  }
+
+  // Elternzustimmung anzeigen, wenn die API sie für diesen Antrag fordert
+  // (altersaufgelöst zum Antragsdatum) – Fallback: Minderjährig nach Alter
+  // heute (Flag-basierter Ablauf ohne Katalog-Eintrag).
+  public needsConsentFor(p: PlayerWithLicense): boolean {
+    if (p.required_documents?.includes('parental_consent')) return true;
+    return this.isMinor(p.birthdate);
   }
 
   // Für diesen Spieler tatsächlich erforderliche Dokumentarten (serverseitig

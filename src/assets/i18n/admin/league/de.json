@@ -135,7 +135,8 @@
       "over30": "Ü30",
       "men": "Herren",
       "women": "Damen"
-    }
+    },
+    "docTypesLoadError": "Dokumentarten-Katalog konnte nicht geladen werden."
   },
   "notifications": {
     "orderSaved": "Reihenfolge gespeichert.",

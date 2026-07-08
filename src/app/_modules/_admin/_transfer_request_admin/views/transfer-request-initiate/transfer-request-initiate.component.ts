@@ -128,10 +128,12 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: (err) => {
+          // err.message wäre nur der technische HTTP-Text – die fachliche
+          // Meldung (z.B. Geburtsdatum-Format, 422) steckt in err.error.error.
           this.searchError =
             typeof err === 'string'
               ? err
-              : err?.message ||
+              : err?.error?.error ||
                 this._transloco.translate(
                   'transferRequestAdmin.notifications.searchError'
                 );
