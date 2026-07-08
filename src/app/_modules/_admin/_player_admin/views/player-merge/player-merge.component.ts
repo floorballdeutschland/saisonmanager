@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   OnDestroy,
   OnInit,
@@ -35,7 +36,8 @@ export class PlayerMergeComponent implements OnInit, OnDestroy {
     private _playerService: PlayerService,
     private _notificationService: NotificationService,
     private _sessionService: SessionService,
-    private _transloco: TranslocoService
+    private _transloco: TranslocoService,
+    private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -55,7 +57,13 @@ export class PlayerMergeComponent implements OnInit, OnDestroy {
           .getPlayer(id)
           .pipe(takeUntil(this._destroy$))
           .subscribe({
-            next: (p) => (this.master = p),
+            // markForCheck: Die App-Root ist OnPush – eine späte HTTP-Antwort
+            // stößt sonst keine Change Detection mehr an und die Seite bliebe
+            // (timing-abhängig) beim @if(master)-Zustand "leer" hängen.
+            next: (p) => {
+              this.master = p;
+              this._cdr.markForCheck();
+            },
             error: () =>
               this._router.navigate(['/', 'verwaltung', 'spieler', 'suche']),
           });
@@ -76,6 +84,7 @@ export class PlayerMergeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (results) => {
           this.searchResults = results.filter((r) => r.id !== masterId);
+          this._cdr.markForCheck();
         },
       });
   }
@@ -122,6 +131,7 @@ export class PlayerMergeComponent implements OnInit, OnDestroy {
             err?.error?.message ??
               this._transloco.translate('playerAdmin.notifications.mergeError')
           );
+          this._cdr.markForCheck();
         },
       });
   }

@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   OnDestroy,
   OnInit,
@@ -33,7 +34,8 @@ export class RefereeMergeComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _refereeService: RefereeService,
     private _notificationService: NotificationService,
-    private _sessionService: SessionService
+    private _sessionService: SessionService,
+    private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -69,7 +71,13 @@ export class RefereeMergeComponent implements OnInit, OnDestroy {
         .adminGetById(id)
         .pipe(takeUntil(this._destroy$))
         .subscribe({
-          next: (r) => (this.master = r),
+          // markForCheck: Die App-Root ist OnPush – eine späte HTTP-Antwort
+          // stößt sonst keine Change Detection mehr an und die Seite bliebe
+          // (timing-abhängig) beim @if(master)-Zustand "leer" hängen.
+          next: (r) => {
+            this.master = r;
+            this._cdr.markForCheck();
+          },
           error: () =>
             this._router.navigate(['/', 'verwaltung', 'schiedsrichter']),
         });
@@ -93,7 +101,10 @@ export class RefereeMergeComponent implements OnInit, OnDestroy {
               .adminGetById(match.id)
               .pipe(takeUntil(this._destroy$))
               .subscribe({
-                next: (r) => (this.master = r),
+                next: (r) => {
+                  this.master = r;
+                  this._cdr.markForCheck();
+                },
                 error: () =>
                   this._router.navigate(['/', 'verwaltung', 'schiedsrichter']),
               });
@@ -113,6 +124,7 @@ export class RefereeMergeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (results) => {
           this.searchResults = results.filter((r) => r.id !== masterId);
+          this._cdr.markForCheck();
         },
       });
   }
@@ -155,6 +167,7 @@ export class RefereeMergeComponent implements OnInit, OnDestroy {
           this._notificationService.error(
             err?.error?.message ?? 'Fehler beim Zusammenführen.'
           );
+          this._cdr.markForCheck();
         },
       });
   }
