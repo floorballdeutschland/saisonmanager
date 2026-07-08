@@ -150,13 +150,6 @@ export class RefereeService {
     );
   }
 
-  public adminCreateWalletPass(id: number) {
-    return this.http.post<{ url: string; mail_sent?: boolean }>(
-      environment.apiURL + 'admin/referees/' + id + '/wallet_pass',
-      {}
-    );
-  }
-
   public adminGetNextLizenznummer() {
     return this.http.get<{ next_lizenznummer: number }>(
       environment.apiURL + 'admin/referees/next_lizenznummer'
