@@ -216,11 +216,25 @@ export class LicenseAdminDetailComponent implements OnInit {
     return labels[docType] ?? docType;
   }
 
+  // Für diesen Spieler tatsächlich erforderliche Dokumentarten-Keys
+  // (serverseitig aufgelöst); Fallback: Liga-Konfiguration.
+  public requiredDocs(): string[] {
+    return (
+      this.player?.team_license?.required_documents ??
+      this.league?.required_documents ??
+      []
+    );
+  }
+
   public isDocumentsComplete(player: PlayerWithLicense): boolean {
     const docs = player.team_license?.documents;
-    // Alle von der Liga geforderten Dokumente (außer Einverständnis, das nur
-    // Minderjährige betrifft) müssen hochgeladen sein.
-    const filesMissing = (this.league?.required_documents ?? [])
+    // Alle für den Spieler geforderten Dokumente (außer Einverständnis, das
+    // nur Minderjährige betrifft) müssen hochgeladen sein.
+    const filesMissing = (
+      player.team_license?.required_documents ??
+      this.league?.required_documents ??
+      []
+    )
       .filter((docType) => docType !== 'parental_consent')
       .some((docType) => !docs?.[docType + '_url']);
     if (filesMissing) return false;

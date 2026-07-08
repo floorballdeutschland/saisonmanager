@@ -184,6 +184,8 @@
     "uploadDoc": "{{ doc }} hochladen",
     "parentalConsent": "Elternzustimmung",
     "uploadParentalConsent": "Elternzustimmung hochladen",
+    "templateLink": "Vorlage",
+    "templateLinkTitle": "Vorlage herunterladen",
     "newLicense": "Neue Lizenz beantragen",
     "expressLabel": "Als Expresslizenz (gemäß Gebührenordnung) beantragen",
     "expressHint": "Expresslizenzen ermöglichen eine kurzfristige Nachlizenzierung kurz vor oder nach dem ersten Spieltag. Die Beantragung ist gemäß Gebührenordnung mit Zusatzkosten verbunden und löst eine sofortige Benachrichtigung der zuständigen Spielbetriebskommission per E-Mail aus.",

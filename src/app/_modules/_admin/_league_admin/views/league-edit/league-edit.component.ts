@@ -8,10 +8,12 @@ import {
 } from '@angular/core';
 import {
   AssociationService,
+  DocumentTypeService,
   LeagueService,
   NotificationService,
 } from '@floorball/core';
 import {
+  DocumentType,
   GameOperation,
   GameOperationWithLeagues,
   League,
@@ -137,6 +139,7 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
 
   constructor(
     private _associationService: AssociationService,
+    private _documentTypeService: DocumentTypeService,
     private _leagueService: LeagueService,
     private _router: Router,
     private _notificationService: NotificationService,
@@ -170,6 +173,17 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
+    // Dokumentarten-Katalog für die Pflichtdokument-Auswahl (admin/SBK).
+    this._documentTypeService
+      .adminGetDocumentTypes()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.documentTypes = result;
+          this._cdr.markForCheck();
+        },
+      });
+
     this._leagueService.getAdminLeagues().subscribe({
       next: (result) => {
         // this is the case, when we have enough permissions
@@ -344,7 +358,8 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     return msg;
   }
 
-  newDocumentName = '';
+  documentTypes: DocumentType[] = [];
+  selectedDocTypeKey = '';
 
   newQual: {
     rank_from: number | null;
@@ -447,23 +462,45 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   }
 
   public docTypeLabel(docType: string): string {
-    const labelKeys: Record<string, string> = {
-      id_copy: 'leagueAdmin.edit.idCopy',
-    };
-    const key = labelKeys[docType];
-    return key ? this._transloco.translate(key) : docType;
+    return this.documentTypes.find((dt) => dt.key === docType)?.name ?? docType;
   }
 
-  public addRequiredDocument(league: League): void {
-    const name = this.newDocumentName.trim();
-    if (!name) return;
-    league.required_documents = [...(league.required_documents ?? []), name];
-    this.newDocumentName = '';
+  // Katalog-Einträge, die dieser Liga zur Auswahl stehen: global oder aus dem
+  // Verband der Liga, und noch nicht ausgewählt.
+  public availableDocumentTypes(league: League): DocumentType[] {
+    return this.documentTypes.filter(
+      (dt) =>
+        (dt.game_operation_id === null ||
+          dt.game_operation_id === league.game_operation_id) &&
+        !league.required_documents?.includes(dt.key)
+    );
   }
 
-  public addDocumentIfMissing(league: League, docType: string): void {
-    if (league.required_documents?.includes(docType)) return;
-    league.required_documents = [...(league.required_documents ?? []), docType];
+  // Anzeige-Hinweis je Option, z.B. „Sportärztliches Attest (bis U16, einmalig)".
+  public docTypeOptionLabel(documentType: DocumentType): string {
+    const hints: string[] = [];
+    if (documentType.required_below_age) {
+      hints.push(
+        this._transloco.translate('leagueAdmin.edit.docBelowAge', {
+          age: documentType.required_below_age,
+        })
+      );
+    }
+    hints.push(
+      this._transloco.translate(
+        documentType.validity === 'per_season'
+          ? 'leagueAdmin.edit.docValidityPerSeason'
+          : 'leagueAdmin.edit.docValidityOnce'
+      )
+    );
+    return `${documentType.name} (${hints.join(', ')})`;
+  }
+
+  public addSelectedDocumentType(league: League): void {
+    const key = this.selectedDocTypeKey;
+    if (!key || league.required_documents?.includes(key)) return;
+    league.required_documents = [...(league.required_documents ?? []), key];
+    this.selectedDocTypeKey = '';
   }
 
   public removeRequiredDocument(league: League, index: number): void {

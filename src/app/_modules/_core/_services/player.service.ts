@@ -196,19 +196,19 @@ export class PlayerService {
     return this.http.get<Player[]>(path);
   }
 
-  public getLicenseDocuments(playerId: number, licenseId: string) {
+  // Lizenz-Dokumente gelten pro Spieler (saisonübergreifend), nicht mehr pro
+  // Lizenz.
+  public getLicenseDocuments(playerId: number) {
     const path =
       environment.apiURL +
       'admin/players/' +
       playerId +
-      '/license_documents.json?license_id=' +
-      encodeURIComponent(licenseId);
+      '/license_documents.json';
     return this.http.get<LicenseDocument[]>(path);
   }
 
   public uploadLicenseDocument(
     playerId: number,
-    licenseId: string,
     documentType: string,
     file: File
   ) {
@@ -218,7 +218,6 @@ export class PlayerService {
       playerId +
       '/license_documents.json';
     const formData = new FormData();
-    formData.append('license_id', licenseId);
     formData.append('document_type', documentType);
     formData.append('file', file);
     return this.http.post<LicenseDocument>(path, formData);

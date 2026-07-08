@@ -139,6 +139,15 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/document-types').then(
+            (m) => m.AdminDocumentTypeModule
+          ),
+        canActivate: [permissionGuard],
+        data: { permission: 'menu_item_document_type_admin' },
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/api-keys').then((m) => m.AdminApiKeyModule),
         canActivate: [permissionGuard],
         data: { permission: 'menu_item_api_key_admin' },

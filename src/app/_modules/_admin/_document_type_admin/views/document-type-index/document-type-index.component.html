@@ -1,0 +1,411 @@
+<div class="p-4 lg:p-8 max-w-5xl">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold mt-1">
+      {{ "documentTypeAdmin.index.title" | transloco }}
+    </h1>
+    <p class="text-fb-gray-500 text-sm mt-1">
+      {{ "documentTypeAdmin.index.hint" | transloco }}
+    </p>
+  </div>
+
+  <div class="flex items-center justify-end mb-4">
+    <button
+      type="button"
+      (click)="showNewForm = !showNewForm"
+      class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black whitespace-nowrap"
+    >
+      {{ "documentTypeAdmin.index.new" | transloco }}
+    </button>
+  </div>
+
+  <!-- Neue Dokumentart -->
+  @if (showNewForm) {
+    <div
+      class="mb-6 p-4 border border-fb-gray-700 rounded-[5px] flex flex-col gap-3"
+    >
+      <h3 class="text-sm font-bold">
+        {{ "documentTypeAdmin.index.newHeading" | transloco }}
+      </h3>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold">{{
+          "documentTypeAdmin.index.name" | transloco
+        }}</label>
+        <input
+          type="text"
+          maxlength="80"
+          [(ngModel)]="newType.name"
+          [placeholder]="'documentTypeAdmin.index.namePlaceholder' | transloco"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold"
+          >{{ "documentTypeAdmin.index.description" | transloco }}
+          <span class="font-normal text-fb-gray-500">{{
+            "documentTypeAdmin.index.optional" | transloco
+          }}</span></label
+        >
+        <textarea
+          rows="2"
+          [(ngModel)]="newType.description"
+          [placeholder]="
+            'documentTypeAdmin.index.descriptionPlaceholder' | transloco
+          "
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        ></textarea>
+      </div>
+      @if (canChooseGameOperation) {
+        <div class="flex flex-col gap-1 max-w-xs">
+          <label class="text-xs font-bold">{{
+            "documentTypeAdmin.index.scope" | transloco
+          }}</label>
+          <select
+            [(ngModel)]="newType.game_operation_id"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          >
+            <option [ngValue]="null">
+              {{ "documentTypeAdmin.index.scopeGlobal" | transloco }}
+            </option>
+            @for (go of permittedGameOperations; track go.id) {
+              <option [ngValue]="go.id">{{ go.name }}</option>
+            }
+          </select>
+        </div>
+      }
+      <div class="flex flex-wrap gap-4">
+        <div class="flex flex-col gap-1 max-w-xs">
+          <label class="text-xs font-bold">{{
+            "documentTypeAdmin.index.validity" | transloco
+          }}</label>
+          <select
+            [(ngModel)]="newType.validity"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          >
+            <option value="once">
+              {{ "documentTypeAdmin.index.validityOnce" | transloco }}
+            </option>
+            <option value="per_season">
+              {{ "documentTypeAdmin.index.validityPerSeason" | transloco }}
+            </option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1 max-w-[180px]">
+          <label class="text-xs font-bold"
+            >{{ "documentTypeAdmin.index.requiredBelowAge" | transloco }}
+            <span class="font-normal text-fb-gray-500">{{
+              "documentTypeAdmin.index.optional" | transloco
+            }}</span></label
+          >
+          <input
+            type="number"
+            min="1"
+            max="99"
+            placeholder="18"
+            [(ngModel)]="newType.required_below_age"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+          <span class="text-[11px] text-fb-gray-500">{{
+            "documentTypeAdmin.index.requiredBelowAgeHint" | transloco
+          }}</span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold"
+          >{{ "documentTypeAdmin.index.template" | transloco }}
+          <span class="font-normal text-fb-gray-500">{{
+            "documentTypeAdmin.index.optional" | transloco
+          }}</span></label
+        >
+        <input
+          type="file"
+          accept="application/pdf,image/png,image/jpeg"
+          (change)="onNewTemplateSelected($event)"
+          class="text-sm"
+        />
+      </div>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          (click)="create()"
+          [disabled]="!newType.name || saving"
+          class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+        >
+          {{ "documentTypeAdmin.index.create" | transloco }}
+        </button>
+        <button
+          type="button"
+          (click)="cancelNew()"
+          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        >
+          {{ "documentTypeAdmin.index.cancel" | transloco }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "documentTypeAdmin.index.loading" | transloco }}
+    </div>
+  }
+
+  @if (!loading) {
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-fb-gray-700 text-left">
+          <th class="py-2 pr-4 font-bold">
+            {{ "documentTypeAdmin.index.colName" | transloco }}
+          </th>
+          <th class="py-2 pr-4 font-bold">
+            {{ "documentTypeAdmin.index.colScope" | transloco }}
+          </th>
+          <th class="py-2 pr-4 font-bold">
+            {{ "documentTypeAdmin.index.colValidity" | transloco }}
+          </th>
+          <th class="py-2 pr-4 font-bold">
+            {{ "documentTypeAdmin.index.colTemplate" | transloco }}
+          </th>
+          <th class="py-2 pr-4 font-bold">
+            {{ "documentTypeAdmin.index.colUsage" | transloco }}
+          </th>
+          <th class="py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (t of documentTypes; track t.id) {
+          <!-- Bearbeitungszeile -->
+          @if (editingId === t.id) {
+            <tr class="border-b border-fb-gray-800 align-top">
+              <td class="py-2 pr-4">
+                <div class="flex flex-col gap-2">
+                  <input
+                    type="text"
+                    maxlength="80"
+                    [(ngModel)]="editBuffer.name"
+                    class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-full focus:outline-none focus:border-black"
+                  />
+                  <textarea
+                    rows="2"
+                    [(ngModel)]="editBuffer.description"
+                    [placeholder]="
+                      'documentTypeAdmin.index.descriptionPlaceholder'
+                        | transloco
+                    "
+                    class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-full focus:outline-none focus:border-black"
+                  ></textarea>
+                </div>
+              </td>
+              <td class="py-2 pr-4">
+                @if (canChooseGameOperation) {
+                  <select
+                    [(ngModel)]="editBuffer.game_operation_id"
+                    class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
+                  >
+                    <option [ngValue]="null">
+                      {{ "documentTypeAdmin.index.scopeGlobal" | transloco }}
+                    </option>
+                    @for (go of permittedGameOperations; track go.id) {
+                      <option [ngValue]="go.id">{{ go.name }}</option>
+                    }
+                  </select>
+                } @else {
+                  <span class="text-fb-gray-500">{{
+                    gameOperationName(t.game_operation_id)
+                  }}</span>
+                }
+              </td>
+              <td class="py-2 pr-4">
+                <div class="flex flex-col gap-2">
+                  <select
+                    [(ngModel)]="editBuffer.validity"
+                    class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
+                  >
+                    <option value="once">
+                      {{ "documentTypeAdmin.index.validityOnce" | transloco }}
+                    </option>
+                    <option value="per_season">
+                      {{
+                        "documentTypeAdmin.index.validityPerSeason" | transloco
+                      }}
+                    </option>
+                  </select>
+                  <input
+                    type="number"
+                    min="1"
+                    max="99"
+                    placeholder="18"
+                    [(ngModel)]="editBuffer.required_below_age"
+                    [title]="
+                      'documentTypeAdmin.index.requiredBelowAge' | transloco
+                    "
+                    class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-[80px] focus:outline-none focus:border-black"
+                  />
+                </div>
+              </td>
+              <td class="py-2 pr-4">
+                <div class="flex flex-col gap-1">
+                  @if (t.template_url && !editRemoveTemplate) {
+                    <div class="flex items-center gap-2">
+                      <a
+                        [href]="t.template_url"
+                        target="_blank"
+                        rel="noopener"
+                        class="text-xs underline text-fb-gray-500 hover:text-black"
+                        >{{
+                          "documentTypeAdmin.index.templateDownload" | transloco
+                        }}</a
+                      >
+                      <button
+                        type="button"
+                        (click)="editRemoveTemplate = true"
+                        class="text-xs text-red-400 hover:text-red-600"
+                      >
+                        {{
+                          "documentTypeAdmin.index.templateRemove" | transloco
+                        }}
+                      </button>
+                    </div>
+                  }
+                  @if (editRemoveTemplate) {
+                    <span class="text-xs text-red-500">
+                      {{
+                        "documentTypeAdmin.index.templateRemoveMarked"
+                          | transloco
+                      }}
+                      <button
+                        type="button"
+                        (click)="editRemoveTemplate = false"
+                        class="underline"
+                      >
+                        {{ "documentTypeAdmin.index.undo" | transloco }}
+                      </button>
+                    </span>
+                  }
+                  <input
+                    type="file"
+                    accept="application/pdf,image/png,image/jpeg"
+                    (change)="onEditTemplateSelected($event)"
+                    class="text-xs max-w-[180px]"
+                  />
+                </div>
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500 whitespace-nowrap">
+                {{
+                  "documentTypeAdmin.index.usage"
+                    | transloco
+                      : {
+                          uploads: t.usage_count ?? 0,
+                          leagues: t.league_count ?? 0,
+                        }
+                }}
+              </td>
+              <td class="py-2">
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    (click)="saveEdit()"
+                    [disabled]="saving || !editBuffer.name"
+                    class="text-xs font-bold px-3 py-1 bg-black text-white rounded-[5px] disabled:opacity-50"
+                  >
+                    {{ "documentTypeAdmin.index.save" | transloco }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="cancelEdit()"
+                    class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black"
+                  >
+                    {{ "documentTypeAdmin.index.abort" | transloco }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+          <!-- Anzeigezeile -->
+          @if (editingId !== t.id) {
+            <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
+              <td class="py-2 pr-4">
+                <span class="font-medium">{{ t.name }}</span>
+                @if (t.description) {
+                  <p class="text-xs text-fb-gray-500">{{ t.description }}</p>
+                }
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{ gameOperationName(t.game_operation_id) }}
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{ validityLabel(t.validity) }}
+                @if (t.required_below_age) {
+                  <span
+                    class="ml-1 inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-600"
+                    >{{
+                      "documentTypeAdmin.index.belowAgeBadge"
+                        | transloco: { age: t.required_below_age }
+                    }}</span
+                  >
+                }
+              </td>
+              <td class="py-2 pr-4">
+                @if (t.template_url) {
+                  <a
+                    [href]="t.template_url"
+                    target="_blank"
+                    rel="noopener"
+                    class="text-xs underline text-fb-gray-500 hover:text-black"
+                    >{{
+                      "documentTypeAdmin.index.templateDownload" | transloco
+                    }}</a
+                  >
+                } @else {
+                  <span class="text-xs text-fb-gray-500">–</span>
+                }
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500 whitespace-nowrap">
+                {{
+                  "documentTypeAdmin.index.usage"
+                    | transloco
+                      : {
+                          uploads: t.usage_count ?? 0,
+                          leagues: t.league_count ?? 0,
+                        }
+                }}
+              </td>
+              <td class="py-2">
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    (click)="startEdit(t)"
+                    class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black"
+                  >
+                    {{ "documentTypeAdmin.index.edit" | transloco }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="delete(t)"
+                    [disabled]="
+                      (t.usage_count ?? 0) + (t.league_count ?? 0) > 0
+                    "
+                    [title]="
+                      (t.usage_count ?? 0) + (t.league_count ?? 0) > 0
+                        ? ('documentTypeAdmin.index.deleteInUseHint'
+                          | transloco)
+                        : ''
+                    "
+                    class="text-xs font-bold px-3 py-1 border border-red-300 text-red-400 rounded-[5px] hover:border-red-500 disabled:opacity-40 disabled:hover:border-red-300"
+                  >
+                    {{ "documentTypeAdmin.index.delete" | transloco }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (!loading && documentTypes.length === 0) {
+    <p class="text-fb-gray-500 text-sm">
+      {{ "documentTypeAdmin.index.empty" | transloco }}
+    </p>
+  }
+</div>

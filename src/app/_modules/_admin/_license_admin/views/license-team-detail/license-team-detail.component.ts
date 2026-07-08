@@ -42,7 +42,8 @@ export class LicenseTeamDetailComponent implements OnInit {
   minorConsent = false;
   guardianEmail = '';
 
-  documents: Record<string, LicenseDocument[]> = {};
+  // Dokumente gelten pro Spieler (saisonübergreifend), nicht mehr pro Lizenz.
+  documents: Record<number, LicenseDocument[]> = {};
   uploadError: string | null = null;
 
   constructor(
@@ -76,17 +77,17 @@ export class LicenseTeamDetailComponent implements OnInit {
         this.licenseHash = result;
         this.documents = {};
         result.current_requests.forEach((p) => {
-          this.loadDocuments(p.id, p.team_license.id);
+          this.loadDocuments(p.id);
         });
         this._cdr.markForCheck();
       },
     });
   }
 
-  public loadDocuments(playerId: number, licenseId: string) {
-    this._playerService.getLicenseDocuments(playerId, licenseId).subscribe({
+  public loadDocuments(playerId: number) {
+    this._playerService.getLicenseDocuments(playerId).subscribe({
       next: (docs) => {
-        this.documents[licenseId] = docs;
+        this.documents[playerId] = docs;
         this._cdr.markForCheck();
       },
       error: () => {
@@ -98,26 +99,45 @@ export class LicenseTeamDetailComponent implements OnInit {
     });
   }
 
-  public getDoc(licenseId: string, type: string): LicenseDocument | undefined {
-    return this.documents[licenseId]?.find((d) => d.document_type === type);
+  public getDoc(playerId: number, type: string): LicenseDocument | undefined {
+    return this.documents[playerId]?.find((d) => d.document_type === type);
   }
 
-  public onFileSelected(
-    event: Event,
-    playerId: number,
-    licenseId: string,
-    documentType: string
-  ) {
+  // Für diesen Spieler tatsächlich erforderliche Dokumentarten (serverseitig
+  // aufgelöst); Elternzustimmung hat einen eigenen Block für Minderjährige.
+  public requiredDocsFor(p: PlayerWithLicense): string[] {
+    return (
+      p.required_documents ??
+      this.licenseHash?.required_documents ??
+      []
+    ).filter((docType) => docType !== 'parental_consent');
+  }
+
+  public docLabel(docType: string): string {
+    return (
+      this.licenseHash?.document_types?.find((dt) => dt.key === docType)
+        ?.name ?? docType
+    );
+  }
+
+  public docTemplateUrl(docType: string): string | null {
+    return (
+      this.licenseHash?.document_types?.find((dt) => dt.key === docType)
+        ?.template_url ?? null
+    );
+  }
+
+  public onFileSelected(event: Event, playerId: number, documentType: string) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
     this.uploadError = null;
     this._playerService
-      .uploadLicenseDocument(playerId, licenseId, documentType, file)
+      .uploadLicenseDocument(playerId, documentType, file)
       .subscribe({
         next: () => {
           input.value = '';
-          this.loadDocuments(playerId, licenseId);
+          this.loadDocuments(playerId);
         },
         error: (err) => {
           input.value = '';
@@ -131,13 +151,9 @@ export class LicenseTeamDetailComponent implements OnInit {
       });
   }
 
-  public deleteDocument(
-    playerId: number,
-    licenseId: string,
-    documentId: number
-  ) {
+  public deleteDocument(playerId: number, documentId: number) {
     this._playerService.deleteLicenseDocument(playerId, documentId).subscribe({
-      next: () => this.loadDocuments(playerId, licenseId),
+      next: () => this.loadDocuments(playerId),
       error: () => {
         this.uploadError = this._transloco.translate(
           'licenseAdmin.notifications.documentDeleteError'

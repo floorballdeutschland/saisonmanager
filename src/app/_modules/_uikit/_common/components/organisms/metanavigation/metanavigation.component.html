@@ -8,6 +8,7 @@
     showItem("menu_item_licence_list") ||
     showItem("menu_item_licence_club_admin") ||
     showItem("menu_item_licence_admin") ||
+    showItem("menu_item_document_type_admin") ||
     showItem("menu_item_team_game_days") ||
     showItem("menu_item_referee_feedback")
   ) {
@@ -53,6 +54,16 @@
               [routerLink]="['/', 'verwaltung', 'lizenzwesen', 'verein']"
               (click)="closeMenu()"
               >{{ "nav.licenseClubAdmin" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_document_type_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'dokumentarten']"
+              (click)="closeMenu()"
+              >{{ "nav.documentTypeAdmin" | transloco }}</a
             >
           </li>
         }
