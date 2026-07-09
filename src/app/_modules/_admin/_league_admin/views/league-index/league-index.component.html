@@ -145,14 +145,90 @@
                 }
               </div>
             </div>
-            <div class="bg-white h-[57px] flex items-center justify-center">
+            <div
+              class="bg-white min-h-[57px] py-2.5 flex flex-wrap items-center justify-center gap-2"
+            >
               <a
                 class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                 [routerLink]="['/', 'verwaltung', 'ligen', 'neu']"
               >
                 {{ "leagueAdmin.index.newLeague" | transloco }}
               </a>
+              @if (previousSeason) {
+                <button
+                  type="button"
+                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                  (click)="toggleCopyPanel(gameOperation.id)"
+                >
+                  {{ "leagueAdmin.index.copyFromPreviousSeason" | transloco }}
+                </button>
+              }
             </div>
+            @if (previousSeason && copyPanelGoId === gameOperation.id) {
+              <div class="bg-white mt-[5px] py-[15px] px-[30px]">
+                <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                  {{ "leagueAdmin.index.copyTitle" | transloco }}
+                </div>
+                @if (copyLeaguesLoading) {
+                  <p class="text-sm text-fb-gray-500">
+                    {{ "leagueAdmin.loading" | transloco }}
+                  </p>
+                } @else if (copySourceLeagues.length === 0) {
+                  <p class="text-sm text-fb-gray-500">
+                    {{ "leagueAdmin.index.copyNoLeagues" | transloco }}
+                  </p>
+                } @else {
+                  <label
+                    class="block font-bold text-sm mb-1"
+                    for="copy-source-league-{{ gameOperation.id }}"
+                  >
+                    {{
+                      "leagueAdmin.index.copySourceLeague"
+                        | transloco: { season: previousSeason.name }
+                    }}
+                  </label>
+                  <select
+                    id="copy-source-league-{{ gameOperation.id }}"
+                    class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 mb-4 bg-white"
+                    [(ngModel)]="copySourceLeagueId"
+                  >
+                    <option [ngValue]="null">
+                      {{ "leagueAdmin.index.copyPleaseSelect" | transloco }}
+                    </option>
+                    @for (league of copySourceLeagues; track league.id) {
+                      <option [ngValue]="league.id">
+                        {{ league.name }} ({{ league.id }})
+                      </option>
+                    }
+                  </select>
+                  <label class="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      class="mt-0.5"
+                      [(ngModel)]="copyIncludeTeams"
+                    />
+                    <span class="text-sm font-bold">
+                      {{ "leagueAdmin.index.copyIncludeTeams" | transloco }}
+                    </span>
+                  </label>
+                  <p class="text-sm text-fb-gray-500 mt-1 mb-4 pl-6">
+                    {{ "leagueAdmin.index.copyIncludeTeamsHint" | transloco }}
+                  </p>
+                  <div class="flex items-center gap-2">
+                    <fb-button
+                      variant="success"
+                      [disabled]="!copySourceLeagueId || copying"
+                      (handleClick)="submitCopy()"
+                    >
+                      {{ "leagueAdmin.index.copySubmit" | transloco }}
+                    </fb-button>
+                    <fb-button icon="cancel" (handleClick)="closeCopyPanel()">
+                      {{ "leagueAdmin.index.copyCancel" | transloco }}
+                    </fb-button>
+                  </div>
+                }
+              </div>
+            }
           </div>
         }
       </div>

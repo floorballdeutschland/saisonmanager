@@ -10,7 +10,16 @@
     "editLeague": "Liga bearbeiten",
     "deleteLeague": "Liga löschen",
     "noLeague": "noch keine Liga hinterlegt",
-    "newLeague": "Neue Liga anlegen"
+    "newLeague": "Neue Liga anlegen",
+    "copyFromPreviousSeason": "Aus Vorsaison kopieren",
+    "copyTitle": "Liga aus Vorsaison kopieren",
+    "copySourceLeague": "Quell-Liga ({{ season }})",
+    "copyPleaseSelect": "— bitte wählen —",
+    "copyNoLeagues": "Keine Ligen in der Vorsaison gefunden.",
+    "copyIncludeTeams": "Teams übernehmen",
+    "copyIncludeTeamsHint": "Teams werden unbestätigt angelegt. Teammanager-Zuordnungen sowie Auf- und Absteiger bitte anschließend manuell prüfen.",
+    "copySubmit": "Kopieren",
+    "copyCancel": "Abbrechen"
   },
   "edit": {
     "headingEdit": "Bearbeiten einer Liga",
@@ -140,6 +149,9 @@
   },
   "notifications": {
     "orderSaved": "Reihenfolge gespeichert.",
+    "copySuccess": "Liga erfolgreich kopiert.",
+    "copyError": "Liga konnte nicht kopiert werden.",
+    "copyLoadError": "Ligen der Vorsaison konnten nicht geladen werden.",
     "orderSaveError": "Reihenfolge konnte nicht gespeichert werden.",
     "onlyWebp": "Nur WebP-Dateien erlaubt.",
     "fileTooLarge": "Datei zu groß (max. 500 KB).",
