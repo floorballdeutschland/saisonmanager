@@ -1,0 +1,25 @@
+@if (matches$ | async; as matches) {
+  @if (matches | finalRounds; as rounds) {
+    @if (rounds.length) {
+      <div class="mt-4 grid grid-cols-1 gap-8 lg:mt-8">
+        @for (round of rounds; track $index) {
+          <div>
+            <h3 class="mb-2 mt-4 font-bold text-lg lg:text-xl">
+              {{ round.round_title }}
+            </h3>
+            <fb-match-encounter-list
+              [matches]="round.matches"
+              [baseRoute]="['./']"
+            ></fb-match-encounter-list>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="text-center text-fb-gray-400 my-12">
+        Noch keine Platzierungsspiele
+      </div>
+    }
+  }
+} @else {
+  <fb-skeleton-match-encounter-list></fb-skeleton-match-encounter-list>
+}

@@ -1,10 +1,33 @@
 @if (selectedLeague) {
   <div class="">
     <div class="container mx-auto px-4 lg:px-8">
-      <fb-tournament-matches-group
-        [selectedLeague]="selectedLeague"
-        [matches$]="matches$"
-      ></fb-tournament-matches-group>
+      <div class="overflow-x-auto -mx-3">
+        <ul class="flex gap-1 items-center text-xl lg:text-2xl font-bold">
+          @for (r of [0, 1]; track r) {
+            <li>
+              <button
+                class="transition hover:bg-fb-gray-200 rounded px-3 whitespace-nowrap"
+                [ngClass]="{ 'bg-fb-gray-200': round === r }"
+                (click)="round = r"
+              >
+                {{ r === 0 ? "Gruppenphase" : "Platzierungsspiele" }}
+              </button>
+            </li>
+          }
+        </ul>
+      </div>
+
+      @if (round === 0) {
+        <fb-tournament-matches-group
+          [selectedLeague]="selectedLeague"
+          [matches$]="matches$"
+        ></fb-tournament-matches-group>
+      }
+      @if (round === 1) {
+        <fb-tournament-matches-final
+          [matches$]="matches$"
+        ></fb-tournament-matches-final>
+      }
     </div>
   </div>
 }

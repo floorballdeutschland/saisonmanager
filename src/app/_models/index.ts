@@ -36,7 +36,7 @@ export {
   RefereeProfileFeedback,
   RefereeFeedbackProfileResponse,
 } from './referee-feedback.interface';
-export { GameScheduleEntry } from './game-schedule-entry.interface';
+export { GameScheduleEntry, FinalRound } from './game-schedule-entry.interface';
 export { Game } from './game.interface';
 export { GameInput } from './game.interface';
 export * from './game.interface';
