@@ -162,6 +162,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
           this.league = league;
           this._cdr.markForCheck();
         },
+        error: () => {},
       });
     }
 
