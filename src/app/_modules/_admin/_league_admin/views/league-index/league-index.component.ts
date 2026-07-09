@@ -14,9 +14,11 @@ import {
   GameOperation,
   GameOperationWithLeagues,
   League,
+  Season,
 } from '@floorball/types';
 import { Observable, forkJoin } from 'rxjs';
 import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { TranslocoService } from '@jsverse/transloco';
 
@@ -32,13 +34,23 @@ export class LeagueIndexComponent implements OnInit {
   loading = true;
   savingOrder = false;
 
+  previousSeason: Season | null = null;
+
+  copyPanelGoId: number | null = null;
+  copySourceLeagues: League[] = [];
+  copySourceLeagueId: number | null = null;
+  copyIncludeTeams = false;
+  copyLeaguesLoading = false;
+  copying = false;
+
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
     private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
-    private _transloco: TranslocoService
+    private _transloco: TranslocoService,
+    private _router: Router
   ) {
     this.associations$ = this._associationService.associations$;
     this._metaTitle.setTitle('Floorball Saisonmanager');
@@ -55,6 +67,16 @@ export class LeagueIndexComponent implements OnInit {
         this.loading = false;
         this._cdr.markForCheck();
       },
+    });
+
+    this._associationService.seasons$.subscribe((seasons) => {
+      const current = (seasons ?? []).find((s) => s.current);
+      this.previousSeason = current
+        ? ((seasons ?? [])
+            .filter((s) => s.id < current.id)
+            .sort((a, b) => b.id - a.id)[0] ?? null)
+        : null;
+      this._cdr.markForCheck();
     });
   }
 
@@ -89,5 +111,72 @@ export class LeagueIndexComponent implements OnInit {
         );
       },
     });
+  }
+
+  toggleCopyPanel(goId: number): void {
+    if (this.copyPanelGoId === goId) {
+      this.closeCopyPanel();
+      return;
+    }
+
+    this.copyPanelGoId = goId;
+    this.copySourceLeagues = [];
+    this.copySourceLeagueId = null;
+    this.copyIncludeTeams = false;
+
+    if (!this.previousSeason) return;
+
+    this.copyLeaguesLoading = true;
+    this._leagueService.getLeagues(goId, this.previousSeason.id).subscribe({
+      next: (leagues) => {
+        if (this.copyPanelGoId !== goId) return;
+        this.copySourceLeagues = leagues;
+        this.copyLeaguesLoading = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        if (this.copyPanelGoId !== goId) return;
+        this.copyLeaguesLoading = false;
+        this._cdr.markForCheck();
+        this._notificationService.error(
+          this._transloco.translate('leagueAdmin.notifications.copyLoadError')
+        );
+      },
+    });
+  }
+
+  closeCopyPanel(): void {
+    this.copyPanelGoId = null;
+  }
+
+  submitCopy(): void {
+    if (!this.copySourceLeagueId || this.copying) return;
+
+    this.copying = true;
+    this._leagueService
+      .adminCopyLeague(this.copySourceLeagueId, this.copyIncludeTeams)
+      .subscribe({
+        next: (league) => {
+          this.copying = false;
+          this._cdr.markForCheck();
+          this._notificationService.success(
+            this._transloco.translate('leagueAdmin.notifications.copySuccess')
+          );
+          this._router.navigate([
+            '/',
+            'verwaltung',
+            'ligen',
+            league.id,
+            'bearbeiten',
+          ]);
+        },
+        error: () => {
+          this.copying = false;
+          this._cdr.markForCheck();
+          this._notificationService.error(
+            this._transloco.translate('leagueAdmin.notifications.copyError')
+          );
+        },
+      });
   }
 }

@@ -10,7 +10,16 @@
     "editLeague": "Edit league",
     "deleteLeague": "Delete league",
     "noLeague": "no league set up yet",
-    "newLeague": "Create new league"
+    "newLeague": "Create new league",
+    "copyFromPreviousSeason": "Copy from previous season",
+    "copyTitle": "Copy league from previous season",
+    "copySourceLeague": "Source league ({{ season }})",
+    "copyPleaseSelect": "— please select —",
+    "copyNoLeagues": "No leagues found in the previous season.",
+    "copyIncludeTeams": "Copy teams",
+    "copyIncludeTeamsHint": "Teams are created unconfirmed. Please review team manager assignments as well as promoted and relegated teams manually afterwards.",
+    "copySubmit": "Copy",
+    "copyCancel": "Cancel"
   },
   "edit": {
     "headingEdit": "Edit a league",
@@ -140,6 +149,9 @@
   },
   "notifications": {
     "orderSaved": "Order saved.",
+    "copySuccess": "League copied successfully.",
+    "copyError": "League could not be copied.",
+    "copyLoadError": "Previous season leagues could not be loaded.",
     "orderSaveError": "Order could not be saved.",
     "onlyWebp": "Only WebP files allowed.",
     "fileTooLarge": "File too large (max. 500 KB).",
