@@ -5,6 +5,7 @@ export * from './completed-awards-filter.pipe';
 export * from './current-period.pipe';
 export * from './game-notice-headline.pipe';
 export * from './game-notice-visibility.pipe';
+export * from './final-rounds.pipe';
 export * from './game-timeline-filter.pipe';
 export * from './group-identifier-filter.pipe';
 export * from './has-starting-player.pipe';
