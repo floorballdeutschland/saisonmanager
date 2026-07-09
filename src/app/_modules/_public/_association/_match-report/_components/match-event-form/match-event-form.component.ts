@@ -10,18 +10,29 @@ import {
   ViewChild,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { GameService, NotificationService } from '@floorball/core';
+import {
+  GameService,
+  LeagueService,
+  NotificationService,
+} from '@floorball/core';
 import {
   Game,
   GameAdditionalFields,
   GameEvent,
   GameFields,
   GameFlags,
+  League,
   Penalty,
   PenaltyCode,
   PeriodTitles,
   RefereeEntry,
 } from '@floorball/types';
+import {
+  formatSecondsAsGameTime,
+  getPeriodTimeRange,
+  isEventTimeInRange,
+  PeriodTimeRange,
+} from './event-time-validation';
 
 @Component({
   selector: 'fb-match-event-form',
@@ -90,6 +101,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   minutesValid = false;
   seconds?: number;
   secondsValid = false;
+  league: League | null = null;
 
   playerSearchNumber?: number;
   playerNumber = 0;
@@ -133,11 +145,27 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
 
   constructor(
     private _gameService: GameService,
+    private _leagueService: LeagueService,
     private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   public ngOnInit(): void {
+    // Liga-Einstellungen (Perioden, Periodenlänge, Verlängerung) für die
+    // Validierung der Ereigniszeit laden – nur für zeitbehaftete Ereignisse.
+    if (
+      ['goal', 'penalty', 'timeout'].includes(this.type) &&
+      this.match?.league_id
+    ) {
+      this._leagueService.getSingleLeague(this.match.league_id).subscribe({
+        next: (league) => {
+          this.league = league;
+          this._cdr.markForCheck();
+        },
+        error: () => {},
+      });
+    }
+
     if (this.type === 'referee1' && this.match.referees[0]) {
       const r = this.match.referees[0];
       this.selectedReferee1 = {
@@ -407,7 +435,41 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         (!this.penaltyCode || !this.penalty)) ||
       (['goal', 'penalty'].includes(this.type) && !this.playerNumber) ||
       (['goal', 'penalty', 'timeout'].includes(this.type) &&
-        (!this.minutesValid || !this.secondsValid))
+        (!this.minutesValid || !this.secondsValid || this.timeOutOfRange()))
+    );
+  }
+
+  private eventPeriod(): number {
+    return parseInt(
+      this.currentPeriod || this.existingEvent?.period?.toString() || '',
+      10
+    );
+  }
+
+  public periodTimeRange(): PeriodTimeRange | null {
+    return getPeriodTimeRange(this.league, this.eventPeriod());
+  }
+
+  public timeOutOfRange(): boolean {
+    if (this.minutes === undefined || this.minutes === null) {
+      return false;
+    }
+    return !isEventTimeInRange(
+      this.periodTimeRange(),
+      this.minutes,
+      this.seconds ?? 0
+    );
+  }
+
+  public timeRangeErrorText(): string {
+    const range = this.periodTimeRange();
+    if (!range) {
+      return 'Ungültige Zeitangabe.';
+    }
+    return (
+      'Die Zeit liegt außerhalb des gewählten Spielabschnitts ' +
+      `(erlaubt: ${formatSecondsAsGameTime(range.startSeconds)} bis ` +
+      `${formatSecondsAsGameTime(range.endSeconds)}).`
     );
   }
 
@@ -843,8 +905,13 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   }
 
   public changePeriod(event: Event) {
-    if ((event.target as HTMLInputElement).value) {
-      this.updatePeriod?.emit((event.target as HTMLInputElement).value);
+    const value = (event.target as HTMLInputElement).value;
+    if (value) {
+      // lokal nachziehen, damit die Zeitvalidierung sofort den neuen
+      // Spielabschnitt berücksichtigt (der Input wird erst durch den
+      // Parent aktualisiert)
+      this.currentPeriod = value;
+      this.updatePeriod?.emit(value);
     }
   }
 

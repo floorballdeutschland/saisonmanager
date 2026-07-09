@@ -460,6 +460,7 @@
           inputmode="numeric"
           maxlength="2"
           class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+          [ngClass]="timeOutOfRange() ? 'border-0 ring-2 ring-red-500' : ''"
           [(ngModel)]="minutes"
           (ngModelChange)="onMinutesChange()"
         />
@@ -472,10 +473,16 @@
           inputmode="numeric"
           maxlength="2"
           class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+          [ngClass]="timeOutOfRange() ? 'border-0 ring-2 ring-red-500' : ''"
           [(ngModel)]="seconds"
           (ngModelChange)="onSecondsChange()"
         />
       </div>
+      @if (timeOutOfRange()) {
+        <p class="col-span-2 -mt-2 text-sm text-red-500">
+          {{ timeRangeErrorText() }}
+        </p>
+      }
       @if (type !== "timeout") {
         <div class="col-span-2">
           <div class="grid grid-cols-[80px_1fr] gap-x-2">
@@ -700,6 +707,8 @@
           @if (!submitDisabled()) {
             {{ getEventString() }}
             {{ existingEvent ? "aktualisieren" : "eintragen" }}
+          } @else if (timeOutOfRange()) {
+            Zeit außerhalb des Spielabschnitts
           } @else {
             Angaben unvollständig
           }
