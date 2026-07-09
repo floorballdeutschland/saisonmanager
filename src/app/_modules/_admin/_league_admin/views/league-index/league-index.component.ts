@@ -157,6 +157,8 @@ export class LeagueIndexComponent implements OnInit {
       .adminCopyLeague(this.copySourceLeagueId, this.copyIncludeTeams)
       .subscribe({
         next: (league) => {
+          this.copying = false;
+          this._cdr.markForCheck();
           this._notificationService.success(
             this._transloco.translate('leagueAdmin.notifications.copySuccess')
           );
