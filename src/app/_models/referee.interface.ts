@@ -57,8 +57,6 @@ export interface RefereeAdmin {
   gueltigkeit?: string;
   active?: boolean;
   qualifications?: RefereeQualificationEntry[];
-  wallet_pass_issued_at?: string;
-  wallet_pass_url?: string;
   season_game_count?: number;
   user_id?: number | null;
   user_name?: string | null;
