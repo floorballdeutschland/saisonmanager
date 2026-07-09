@@ -83,25 +83,27 @@
                 >
                   {{ "arena.index.edit" | transloco }}
                 </a>
-                <a
-                  [routerLink]="[
-                    '/',
-                    'verwaltung',
-                    'spielorte',
-                    arena.id,
-                    'zusammenlegen',
-                  ]"
-                  class="text-sm text-fb-gray-500 hover:text-black mr-4"
-                >
-                  {{ "arena.index.merge" | transloco }}
-                </a>
-                <button
-                  type="button"
-                  (click)="deleteArena(arena)"
-                  class="text-sm text-red-500 hover:text-red-300"
-                >
-                  {{ "arena.index.delete" | transloco }}
-                </button>
+                @if (canManageLifecycle) {
+                  <a
+                    [routerLink]="[
+                      '/',
+                      'verwaltung',
+                      'spielorte',
+                      arena.id,
+                      'zusammenlegen',
+                    ]"
+                    class="text-sm text-fb-gray-500 hover:text-black mr-4"
+                  >
+                    {{ "arena.index.merge" | transloco }}
+                  </a>
+                  <button
+                    type="button"
+                    (click)="deleteArena(arena)"
+                    class="text-sm text-red-500 hover:text-red-300"
+                  >
+                    {{ "arena.index.delete" | transloco }}
+                  </button>
+                }
               </td>
             </tr>
           }

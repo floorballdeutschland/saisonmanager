@@ -8,8 +8,8 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
-import { ArenaService } from '@floorball/core';
-import { Arena } from '@floorball/types';
+import { ArenaService, SessionService } from '@floorball/core';
+import { Arena, User } from '@floorball/types';
 
 @Component({
   templateUrl: './arena-index.component.html',
@@ -22,6 +22,13 @@ export class ArenaIndexComponent implements OnInit, OnDestroy {
   searchTerm = '';
   loading = false;
   deleteError: string | null = null;
+  currentUser: User | null = null;
+
+  // Zusammenlegen/Löschen von Spielorten bleibt echten Admins vorbehalten;
+  // SBKs sehen die Liste, dürfen den Lebenszyklus aber nicht verändern.
+  get canManageLifecycle(): boolean {
+    return !!this.currentUser?.permissions['arena_manage_lifecycle'];
+  }
 
   get filteredArenas(): Arena[] {
     const term = this.searchTerm.toLowerCase().trim();
@@ -37,11 +44,19 @@ export class ArenaIndexComponent implements OnInit, OnDestroy {
 
   constructor(
     private _arenaService: ArenaService,
+    private _sessionService: SessionService,
     private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((user) => {
+        this.currentUser = user;
+        this._cdr.markForCheck();
+      });
+
     this.load();
   }
 

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+import { permissionGuard } from '../../../_helpers/_guards/permission.guard';
 import * as Views from './views';
 
 const routes: Routes = [
@@ -26,7 +27,8 @@ const routes: Routes = [
     path: 'verwaltung/spielorte/:arenaId/zusammenlegen',
     pathMatch: 'full',
     component: Views.ArenaMergeComponent,
-    data: { scrollTop: true },
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'arena_manage_lifecycle' },
   },
 ];
 
