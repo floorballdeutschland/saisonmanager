@@ -243,6 +243,7 @@
     "createRequestError": "License request could not be created.",
     "recreateRequestError": "License request could not be submitted again.",
     "withdrawRequestError": "License request could not be withdrawn.",
-    "actionFailed": "Action failed."
+    "actionFailed": "Action failed.",
+    "fileTooLarge": "The file may not exceed 5 MB."
   }
 }

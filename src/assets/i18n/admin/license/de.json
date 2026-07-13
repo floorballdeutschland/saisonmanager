@@ -243,6 +243,7 @@
     "createRequestError": "Lizenzantrag konnte nicht erstellt werden.",
     "recreateRequestError": "Lizenzantrag konnte nicht erneut gestellt werden.",
     "withdrawRequestError": "Lizenzantrag konnte nicht zurückgezogen werden.",
-    "actionFailed": "Aktion fehlgeschlagen."
+    "actionFailed": "Aktion fehlgeschlagen.",
+    "fileTooLarge": "Die Datei darf maximal 5 MB groß sein."
   }
 }

@@ -173,6 +173,16 @@ export class LicenseTeamDetailComponent implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
     this.uploadError = null;
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.uploadError = this._transloco.translate(
+        'licenseAdmin.notifications.fileTooLarge'
+      );
+      input.value = '';
+      this._cdr.markForCheck();
+      return;
+    }
+
     this._playerService
       .uploadLicenseDocument(playerId, documentType, file)
       .subscribe({
