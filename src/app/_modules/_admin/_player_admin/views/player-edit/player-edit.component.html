@@ -709,6 +709,56 @@
           </div>
         }
 
+        <!-- Dokumente section -->
+        @if (editMode && player) {
+          <div class="xl:col-span-2">
+            <div class="bg-white my-[5px] py-[15px] px-[30px]">
+              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                {{ "playerAdmin.edit.documents" | transloco }}
+              </div>
+              @if (!licenseDocuments.length) {
+                <p class="block text-base text-fb-gray-500">
+                  {{ "playerAdmin.edit.noDocuments" | transloco }}
+                </p>
+              }
+              @for (group of documentGroups; track group.gameOperationId) {
+                <div class="mb-5">
+                  <p class="font-bold mb-2">
+                    @if (group.gameOperationId === null) {
+                      {{ "playerAdmin.edit.documentsNationwide" | transloco }}
+                    } @else {
+                      {{ group.gameOperationName }}
+                    }
+                  </p>
+                  <div class="grid grid-cols-1 gap-2">
+                    @for (doc of group.documents; track doc.id) {
+                      <div class="grid grid-cols-4 items-center">
+                        <div class="col-span-3">
+                          <p class="font-semibold">{{ documentLabel(doc) }}</p>
+                          <p class="text-sm text-fb-gray-500">
+                            {{ doc.filename }} ·
+                            {{ doc.created_at | date: "dd.MM.yyyy" }}
+                          </p>
+                        </div>
+                        <div class="flex flex-row items-center">
+                          <a
+                            [href]="doc.url"
+                            target="_blank"
+                            rel="noopener"
+                            class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                          >
+                            {{ "playerAdmin.edit.viewDocument" | transloco }}
+                          </a>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <!-- Deactivation section -->
         @if (editMode && player) {
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
