@@ -171,6 +171,35 @@
                                     }}
                                   </span>
                                 }
+                                <!-- Erst-/Zweitlizenz-Zuordnung (GF-Erwachsenenbereich) -->
+                                @if (p.team_license.gf_role === "erstlizenz") {
+                                  <span
+                                    class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-emerald-100 text-emerald-800"
+                                    [title]="
+                                      'licenseAdmin.teamDetail.erstlizenzTitle'
+                                        | transloco
+                                    "
+                                  >
+                                    {{
+                                      "licenseAdmin.teamDetail.erstlizenzBadge"
+                                        | transloco
+                                    }}
+                                  </span>
+                                }
+                                @if (p.team_license.gf_role === "zweitlizenz") {
+                                  <span
+                                    class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-amber-100 text-amber-800"
+                                    [title]="
+                                      'licenseAdmin.teamDetail.zweitlizenzTitle'
+                                        | transloco
+                                    "
+                                  >
+                                    {{
+                                      "licenseAdmin.teamDetail.zweitlizenzBadge"
+                                        | transloco
+                                    }}
+                                  </span>
+                                }
                               </div>
                             </div>
                           </div>
