@@ -43,6 +43,8 @@
     "genderDiverse": "Diverse",
     "submitRequest": "Submit request",
     "licenses": "Licenses",
+    "currentSeason": "current season",
+    "licensesNoSeason": "No season (legacy)",
     "suspended": "suspended",
     "setInvalidForTransfer": "Set invalid for transfer",
     "suspendLicense": "Suspend license",

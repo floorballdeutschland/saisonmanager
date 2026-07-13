@@ -24,8 +24,10 @@ export class PlayerService {
     return this.http.get<Club>(path);
   }
 
-  public getPlayer(playerId: number) {
-    const path = environment.apiURL + 'admin/players/' + playerId + '.json';
+  public getPlayer(playerId: number, allLicenses = false) {
+    const query = allLicenses ? '?all_licenses=true' : '';
+    const path =
+      environment.apiURL + 'admin/players/' + playerId + '.json' + query;
     return this.http.get<Player>(path);
   }
 

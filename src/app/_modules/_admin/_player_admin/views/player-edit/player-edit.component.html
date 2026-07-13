@@ -384,166 +384,214 @@
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
                 {{ "playerAdmin.edit.licenses" | transloco }}
               </div>
-              @for (license of player.licenses; track license) {
-                <div class="mb-3">
-                  <b>{{ license.team?.name }}</b> ({{ license.team?.id }}) -
-                  {{ license?.league?.name }} ({{
-                    license?.league?.game_operation_name
-                  }})
-                  @if (isLicenseSuspended(license)) {
-                    <span
-                      class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800"
-                    >
-                      {{ "playerAdmin.edit.suspended" | transloco }}
+              @for (group of licenseSeasonGroups(); track group.seasonId) {
+                <div class="mb-6">
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="font-bold text-sm text-gray-700">
+                      @if (group.name) {
+                        {{ group.name }}
+                      } @else {
+                        {{ "playerAdmin.edit.licensesNoSeason" | transloco }}
+                      }
                     </span>
-                  }
-                  @if (license.gf_role === "erstlizenz") {
-                    <span
-                      class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-600 text-white"
-                      [title]="'playerAdmin.edit.gfRoleErstTitle' | transloco"
-                    >
-                      {{ "playerAdmin.edit.gfRoleErstlizenz" | transloco }}
-                    </span>
-                  }
-                  @if (license.gf_role === "zweitlizenz") {
-                    <span
-                      class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500 text-white"
-                      [title]="'playerAdmin.edit.gfRoleZweitTitle' | transloco"
-                    >
-                      {{ "playerAdmin.edit.gfRoleZweitlizenz" | transloco }}
-                    </span>
-                  }
-                  @if (
-                    can("player_set_license_to_transfer") &&
-                    license.set_transfer_allowed
-                  ) {
-                    <a
-                      class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                      (click)="setLicenseToTransfer(license)"
-                    >
-                      {{ "playerAdmin.edit.setInvalidForTransfer" | transloco }}
-                    </a>
-                  }
-                  @if (
-                    can("player_suspend") &&
-                    !isLicenseSuspended(license) &&
-                    suspendLicenseId !== license.id
-                  ) {
-                    <a
-                      class="font-bold text-amber-700 leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
-                      (click)="openLicenseSuspend(license)"
-                    >
-                      {{ "playerAdmin.edit.suspendLicense" | transloco }}
-                    </a>
-                  }
-                  @if (gfRoleEditable(license)) {
-                    <div
-                      class="border border-indigo-200 rounded p-3 bg-indigo-50 my-2"
-                    >
-                      <p class="text-sm font-semibold text-indigo-900 mb-2">
-                        {{ "playerAdmin.edit.gfRoleHeading" | transloco }}
-                      </p>
-                      <div class="flex flex-wrap gap-3 items-center">
-                        @if (license.gf_role !== "erstlizenz") {
-                          <button
-                            class="font-bold text-indigo-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-indigo-100 border-indigo-400 rounded-[5px] cursor-pointer"
-                            (click)="setGfRole(license, 'erstlizenz')"
-                          >
-                            {{ "playerAdmin.edit.gfRoleMakeErst" | transloco }}
-                          </button>
-                        }
-                        @if (license.gf_role !== "zweitlizenz") {
-                          <button
-                            class="font-bold text-indigo-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-indigo-100 border-indigo-400 rounded-[5px] cursor-pointer"
-                            (click)="setGfRole(license, 'zweitlizenz')"
-                          >
-                            {{ "playerAdmin.edit.gfRoleMakeZweit" | transloco }}
-                          </button>
-                        }
-                        @if (license.gf_role) {
-                          <button
-                            class="font-bold text-gray-600 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                            (click)="setGfRole(license, null)"
-                          >
-                            {{ "playerAdmin.edit.gfRoleClear" | transloco }}
-                          </button>
-                        }
-                      </div>
-                      <p class="text-[11px] text-indigo-900 mt-2">
-                        {{
-                          "playerAdmin.edit.gfRoleSwapCount"
-                            | transloco: { count: gfSwapCount(license) }
-                        }}
-                        {{ "playerAdmin.edit.gfRoleSwapHint" | transloco }}
-                      </p>
-                    </div>
-                  }
-                  @if (suspendLicenseId === license.id) {
-                    <div
-                      class="border border-amber-300 rounded p-3 bg-amber-50 my-2"
-                    >
-                      <p class="text-sm font-semibold text-amber-800 mb-2">
-                        {{ "playerAdmin.edit.suspendThisLicense" | transloco }}
-                      </p>
-                      <div class="mb-2">
-                        <label
-                          class="block text-xs font-semibold text-amber-800 mb-1"
-                          >{{
-                            "playerAdmin.edit.suspendedUntil" | transloco
-                          }}</label
+                    @if (group.current) {
+                      <span
+                        class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-600 text-white"
+                      >
+                        {{ "playerAdmin.edit.currentSeason" | transloco }}
+                      </span>
+                    }
+                  </div>
+                  @for (license of group.licenses; track license) {
+                    <div class="mb-3">
+                      <b>{{ license.team?.name }}</b> ({{ license.team?.id }}) -
+                      {{ license?.league?.name }} ({{
+                        license?.league?.game_operation_name
+                      }})
+                      @if (isLicenseSuspended(license)) {
+                        <span
+                          class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800"
                         >
-                        <input
-                          type="date"
-                          [(ngModel)]="licenseSuspendUntil"
-                          [min]="today()"
-                          class="border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
-                        />
-                      </div>
-                      <div class="mb-2">
-                        <label
-                          class="block text-xs font-semibold text-amber-800 mb-1"
-                          >{{ "playerAdmin.edit.reason" | transloco }}</label
-                        >
-                        <input
-                          type="text"
-                          [(ngModel)]="licenseSuspendReason"
-                          [placeholder]="
-                            'playerAdmin.edit.licenseSuspendReasonPlaceholder'
-                              | transloco
+                          {{ "playerAdmin.edit.suspended" | transloco }}
+                        </span>
+                      }
+                      @if (license.gf_role === "erstlizenz") {
+                        <span
+                          class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-600 text-white"
+                          [title]="
+                            'playerAdmin.edit.gfRoleErstTitle' | transloco
                           "
-                          class="w-full xl:w-2/3 border border-amber-300 rounded-[5px] px-3 py-2 text-sm"
-                        />
-                      </div>
-                      <div class="flex gap-3">
-                        <button
-                          (click)="submitLicenseSuspend(license)"
-                          [disabled]="!licenseSuspendUntil"
-                          class="font-bold text-white leading-[17px] text-sm px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {{ "playerAdmin.edit.suspend" | transloco }}
-                        </button>
-                        <button
-                          (click)="cancelLicenseSuspend()"
-                          class="font-bold text-gray-600 leading-[17px] text-sm px-4 py-2 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                          {{ "playerAdmin.edit.gfRoleErstlizenz" | transloco }}
+                        </span>
+                      }
+                      @if (license.gf_role === "zweitlizenz") {
+                        <span
+                          class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500 text-white"
+                          [title]="
+                            'playerAdmin.edit.gfRoleZweitTitle' | transloco
+                          "
                         >
-                          {{ "playerAdmin.edit.cancel" | transloco }}
-                        </button>
-                      </div>
-                    </div>
-                  }
-                  <br />
-                  {{ "playerAdmin.edit.history" | transloco }}<br />
-                  @for (hist of license.history; track hist) {
-                    <div>
-                      {{ hist.created_at | date: "dd.MM.yyyy HH:mm:ss" }},
-                      <b>{{ hist.license_status }}</b
-                      >, {{ "playerAdmin.edit.by" | transloco }}
-                      {{ hist.created_by_name }}
-                      @if (hist.reason) {
-                        <span>{{
-                          "playerAdmin.edit.historyReason"
-                            | transloco: { reason: hist.reason }
-                        }}</span>
+                          {{ "playerAdmin.edit.gfRoleZweitlizenz" | transloco }}
+                        </span>
+                      }
+                      @if (isCurrentSeasonLicense(license)) {
+                        @if (
+                          can("player_set_license_to_transfer") &&
+                          license.set_transfer_allowed
+                        ) {
+                          <a
+                            class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                            (click)="setLicenseToTransfer(license)"
+                          >
+                            {{
+                              "playerAdmin.edit.setInvalidForTransfer"
+                                | transloco
+                            }}
+                          </a>
+                        }
+                        @if (
+                          can("player_suspend") &&
+                          !isLicenseSuspended(license) &&
+                          suspendLicenseId !== license.id
+                        ) {
+                          <a
+                            class="font-bold text-amber-700 leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
+                            (click)="openLicenseSuspend(license)"
+                          >
+                            {{ "playerAdmin.edit.suspendLicense" | transloco }}
+                          </a>
+                        }
+                        @if (gfRoleEditable(license)) {
+                          <div
+                            class="border border-indigo-200 rounded p-3 bg-indigo-50 my-2"
+                          >
+                            <p
+                              class="text-sm font-semibold text-indigo-900 mb-2"
+                            >
+                              {{ "playerAdmin.edit.gfRoleHeading" | transloco }}
+                            </p>
+                            <div class="flex flex-wrap gap-3 items-center">
+                              @if (license.gf_role !== "erstlizenz") {
+                                <button
+                                  class="font-bold text-indigo-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-indigo-100 border-indigo-400 rounded-[5px] cursor-pointer"
+                                  (click)="setGfRole(license, 'erstlizenz')"
+                                >
+                                  {{
+                                    "playerAdmin.edit.gfRoleMakeErst"
+                                      | transloco
+                                  }}
+                                </button>
+                              }
+                              @if (license.gf_role !== "zweitlizenz") {
+                                <button
+                                  class="font-bold text-indigo-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-indigo-100 border-indigo-400 rounded-[5px] cursor-pointer"
+                                  (click)="setGfRole(license, 'zweitlizenz')"
+                                >
+                                  {{
+                                    "playerAdmin.edit.gfRoleMakeZweit"
+                                      | transloco
+                                  }}
+                                </button>
+                              }
+                              @if (license.gf_role) {
+                                <button
+                                  class="font-bold text-gray-600 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                                  (click)="setGfRole(license, null)"
+                                >
+                                  {{
+                                    "playerAdmin.edit.gfRoleClear" | transloco
+                                  }}
+                                </button>
+                              }
+                            </div>
+                            <p class="text-[11px] text-indigo-900 mt-2">
+                              {{
+                                "playerAdmin.edit.gfRoleSwapCount"
+                                  | transloco: { count: gfSwapCount(license) }
+                              }}
+                              {{
+                                "playerAdmin.edit.gfRoleSwapHint" | transloco
+                              }}
+                            </p>
+                          </div>
+                        }
+                        @if (suspendLicenseId === license.id) {
+                          <div
+                            class="border border-amber-300 rounded p-3 bg-amber-50 my-2"
+                          >
+                            <p
+                              class="text-sm font-semibold text-amber-800 mb-2"
+                            >
+                              {{
+                                "playerAdmin.edit.suspendThisLicense"
+                                  | transloco
+                              }}
+                            </p>
+                            <div class="mb-2">
+                              <label
+                                class="block text-xs font-semibold text-amber-800 mb-1"
+                                >{{
+                                  "playerAdmin.edit.suspendedUntil" | transloco
+                                }}</label
+                              >
+                              <input
+                                type="date"
+                                [(ngModel)]="licenseSuspendUntil"
+                                [min]="today()"
+                                class="border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
+                              />
+                            </div>
+                            <div class="mb-2">
+                              <label
+                                class="block text-xs font-semibold text-amber-800 mb-1"
+                                >{{
+                                  "playerAdmin.edit.reason" | transloco
+                                }}</label
+                              >
+                              <input
+                                type="text"
+                                [(ngModel)]="licenseSuspendReason"
+                                [placeholder]="
+                                  'playerAdmin.edit.licenseSuspendReasonPlaceholder'
+                                    | transloco
+                                "
+                                class="w-full xl:w-2/3 border border-amber-300 rounded-[5px] px-3 py-2 text-sm"
+                              />
+                            </div>
+                            <div class="flex gap-3">
+                              <button
+                                (click)="submitLicenseSuspend(license)"
+                                [disabled]="!licenseSuspendUntil"
+                                class="font-bold text-white leading-[17px] text-sm px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {{ "playerAdmin.edit.suspend" | transloco }}
+                              </button>
+                              <button
+                                (click)="cancelLicenseSuspend()"
+                                class="font-bold text-gray-600 leading-[17px] text-sm px-4 py-2 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                              >
+                                {{ "playerAdmin.edit.cancel" | transloco }}
+                              </button>
+                            </div>
+                          </div>
+                        }
+                      }
+                      <br />
+                      {{ "playerAdmin.edit.history" | transloco }}<br />
+                      @for (hist of license.history; track hist) {
+                        <div>
+                          {{ hist.created_at | date: "dd.MM.yyyy HH:mm:ss" }},
+                          <b>{{ hist.license_status }}</b
+                          >, {{ "playerAdmin.edit.by" | transloco }}
+                          {{ hist.created_by_name }}
+                          @if (hist.reason) {
+                            <span>{{
+                              "playerAdmin.edit.historyReason"
+                                | transloco: { reason: hist.reason }
+                            }}</span>
+                          }
+                        </div>
                       }
                     </div>
                   }
