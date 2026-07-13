@@ -28,6 +28,10 @@ export interface PlayerWithLicense extends Player {
   team_license: {
     id: string;
     license: PlayerLicense;
+    // Erst-/Zweitlizenz-Rolle (GF-Erwachsenenbereich). Im Team-Lizenzwesen
+    // (user_team_licenses) liegt sie direkt auf team_license; in der Liga-
+    // Lizenzliste zusätzlich verschachtelt unter license.gf_role.
+    gf_role?: GfRole | null;
 
     last_status: {
       created_at: string;
