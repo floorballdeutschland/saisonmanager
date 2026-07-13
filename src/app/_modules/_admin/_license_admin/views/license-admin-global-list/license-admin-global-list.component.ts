@@ -138,8 +138,13 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Warten, bis der lazy geladene Scope 'admin/license' wirklich da ist.
+    // selectTranslate() lädt scope-korrekt ('admin/license/<lang>') und emittiert
+    // erst nach dem Laden; selectTranslation('admin/license') dagegen fehlinterpretiert
+    // den zweistufigen Pfad (Segment 'license' als Sprache) und kann vor dem Laden
+    // feuern – dann würden die rohen Keys eingefroren. Der Rückgabewert ist egal.
     this._transloco
-      .selectTranslation('admin/license')
+      .selectTranslate('globalList.metaTitle', {}, 'admin/license')
       .pipe(takeUntil(this._destroy$))
       .subscribe(() => this.buildStaticLabels());
 

@@ -47,8 +47,10 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Titel erst setzen, wenn der lazy geladene Scope 'admin/license' verfügbar
     // ist – im Konstruktor liefert translate() sonst nur den rohen Key-Pfad.
+    // selectTranslate() lädt scope-korrekt und emittiert erst nach dem Laden;
+    // selectTranslation('admin/license') fehlinterpretiert den zweistufigen Pfad.
     this._transloco
-      .selectTranslation('admin/license')
+      .selectTranslate('leagueDetail.metaTitle', {}, 'admin/license')
       .pipe(takeUntil(this._destroy$))
       .subscribe(() =>
         this._metaTitle.setTitle(
