@@ -9,6 +9,7 @@ import { GameOperationWithLeagues } from '@floorball/types';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { TranslocoService } from '@jsverse/transloco';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'fb-license-user-index',
@@ -25,13 +26,20 @@ export class LicenseUserLeagueIndexComponent implements OnInit {
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
     private _transloco: TranslocoService
-  ) {
-    this._metaTitle.setTitle(
-      this._transloco.translate('licenseAdmin.userLeagueIndex.metaTitle')
-    );
-  }
+  ) {}
 
   ngOnInit(): void {
+    // Titel erst setzen, wenn der lazy geladene Scope 'admin/license' verfügbar
+    // ist – im Konstruktor liefert translate() sonst nur den rohen Key-Pfad.
+    this._transloco
+      .selectTranslation('admin/license')
+      .pipe(take(1))
+      .subscribe(() =>
+        this._metaTitle.setTitle(
+          this._transloco.translate('licenseAdmin.userLeagueIndex.metaTitle')
+        )
+      );
+
     this.getGameOperations();
   }
 

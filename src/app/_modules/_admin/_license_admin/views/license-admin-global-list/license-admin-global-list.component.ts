@@ -87,6 +87,10 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   filterSeasonId: number | null = null;
   private _currentSeasonId: number | null = null;
   private _destroy$ = new Subject<void>();
+  // Zuletzt empfangene Saisons, damit die Saison-Optionen (mit übersetztem
+  // "(aktuell)"-Suffix) auch dann neu gebaut werden, wenn der Scope erst nach
+  // dem synchronen seasons$-Emit geladen ist.
+  private _seasons: Season[] = [];
 
   constructor(
     private _leagueService: LeagueService,
@@ -94,7 +98,12 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
     private _transloco: TranslocoService
-  ) {
+  ) {}
+
+  // Titel und statische Dropdown-Labels erst bauen, wenn der (lazy geladene)
+  // Scope 'admin/license' verfügbar ist – sonst würden hier die rohen Keys
+  // eingefroren, weil translate() vor dem Laden nur den Key-Pfad zurückgibt.
+  private buildStaticLabels(): void {
     const t = (key: string) => this._transloco.translate(key);
     this._metaTitle.setTitle(t('licenseAdmin.globalList.metaTitle'));
 
@@ -124,13 +133,21 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       { value: 'GF', label: t('licenseAdmin.globalList.fieldSizeLarge') },
       { value: 'KF', label: t('licenseAdmin.globalList.fieldSizeSmall') },
     ];
+    this.buildSeasonOptions(this._seasons);
+    this._cdr.markForCheck();
   }
 
   ngOnInit(): void {
+    this._transloco
+      .selectTranslation('admin/license')
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.buildStaticLabels());
+
     this._associationService.seasons$
       .pipe(takeUntil(this._destroy$))
       .subscribe((seasons) => {
-        this.buildSeasonOptions(seasons ?? []);
+        this._seasons = seasons ?? [];
+        this.buildSeasonOptions(this._seasons);
         const current = (seasons ?? []).find((s) => s.current);
         this._currentSeasonId = current?.id ?? null;
         if (this.filterSeasonId === null) {
