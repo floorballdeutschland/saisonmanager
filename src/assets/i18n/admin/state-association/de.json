@@ -34,6 +34,8 @@
     "manualProceedingHint": "Die SBK kann Verfahrensvorschläge prüfen und Sportgerichtsverfahren manuell eröffnen oder ablehnen.",
     "refereeAssignmentLabel": "Schiedsrichter-Ansetzung durch die RSK ermöglichen",
     "refereeAssignmentHint": "Nur wenn aktiv, kann im Spiel-Editor „Ansetzung durch RSK\" gewählt werden und die Rolle Ansetzer sieht die Menüpunkte „Ansetzungen\" und „Verfügbarkeiten\".",
+    "reportFormEmailLabel": "Berichtsformular per E-Mail-Workflow",
+    "reportFormEmailHint": "Nur wenn aktiv, wird das vom Schiedsrichter hochgeladene Berichtsformular automatisch per E-Mail an die VSK-Adresse dieses Landesverbands versendet.",
     "inheritedValueYes": "Wert: Ja (geerbt)",
     "inheritedValueNo": "Wert: Nein (geerbt)",
     "emailHeading": "E-Mail-Adressen",

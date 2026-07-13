@@ -170,6 +170,10 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       // diesen Landesverband nutzbar ist.
       referee_assignment_enabled:
         this.stateAssociation.referee_assignment_enabled ?? false,
+      // Pro-LV (keine Parent-Vererbung); steuert, ob das Berichtsformular des
+      // Schiris per E-Mail an die VSK versendet wird.
+      report_form_email_enabled:
+        this.stateAssociation.report_form_email_enabled ?? false,
       banner_link_url: this.stateAssociation.banner_link_url ?? null,
     };
 
