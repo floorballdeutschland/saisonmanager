@@ -154,7 +154,7 @@
               {{ "licenseAdmin.detail.licenses" | transloco }}
             </p>
             <ul class="grid gap-4">
-              @for (license of player.licenses || []; track license) {
+              @for (license of currentSeasonLicenses(); track license) {
                 <li>
                   <fb-license-admin-team-entry
                     [teamId]="license.team_id"
