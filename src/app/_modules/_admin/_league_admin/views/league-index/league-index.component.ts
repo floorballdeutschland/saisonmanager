@@ -15,6 +15,7 @@ import {
   GameOperationWithLeagues,
   League,
   Season,
+  Team,
 } from '@floorball/types';
 import { Observable, forkJoin } from 'rxjs';
 import { Title } from '@angular/platform-browser';
@@ -39,8 +40,10 @@ export class LeagueIndexComponent implements OnInit {
   copyPanelGoId: number | null = null;
   copySourceLeagues: League[] = [];
   copySourceLeagueId: number | null = null;
-  copyIncludeTeams = false;
+  copySourceTeams: Team[] = [];
+  copySelectedTeamIds = new Set<number>();
   copyLeaguesLoading = false;
+  copyTeamsLoading = false;
   copying = false;
 
   constructor(
@@ -122,7 +125,9 @@ export class LeagueIndexComponent implements OnInit {
     this.copyPanelGoId = goId;
     this.copySourceLeagues = [];
     this.copySourceLeagueId = null;
-    this.copyIncludeTeams = false;
+    this.copySourceTeams = [];
+    this.copySelectedTeamIds = new Set<number>();
+    this.copyTeamsLoading = false;
 
     if (!this.previousSeason) return;
 
@@ -149,12 +154,72 @@ export class LeagueIndexComponent implements OnInit {
     this.copyPanelGoId = null;
   }
 
+  onCopySourceLeagueChange(): void {
+    this.copySourceTeams = [];
+    this.copySelectedTeamIds = new Set<number>();
+
+    const leagueId = this.copySourceLeagueId;
+    if (!leagueId) return;
+
+    this.copyTeamsLoading = true;
+    this._leagueService.getLeagueWithTeams(leagueId).subscribe({
+      next: (data) => {
+        if (this.copySourceLeagueId !== leagueId) return;
+        this.copySourceTeams = data.teams ?? [];
+        // Standard: alle Teams vorausgewählt.
+        this.copySelectedTeamIds = new Set(
+          this.copySourceTeams.map((t) => t.id)
+        );
+        this.copyTeamsLoading = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        if (this.copySourceLeagueId !== leagueId) return;
+        this.copyTeamsLoading = false;
+        this._cdr.markForCheck();
+        this._notificationService.error(
+          this._transloco.translate(
+            'leagueAdmin.notifications.copyTeamsLoadError'
+          )
+        );
+      },
+    });
+  }
+
+  isCopyTeamSelected(teamId: number): boolean {
+    return this.copySelectedTeamIds.has(teamId);
+  }
+
+  toggleCopyTeam(teamId: number): void {
+    if (this.copySelectedTeamIds.has(teamId)) {
+      this.copySelectedTeamIds.delete(teamId);
+    } else {
+      this.copySelectedTeamIds.add(teamId);
+    }
+  }
+
+  get allCopyTeamsSelected(): boolean {
+    return (
+      this.copySourceTeams.length > 0 &&
+      this.copySelectedTeamIds.size === this.copySourceTeams.length
+    );
+  }
+
+  toggleAllCopyTeams(): void {
+    this.copySelectedTeamIds = this.allCopyTeamsSelected
+      ? new Set<number>()
+      : new Set(this.copySourceTeams.map((t) => t.id));
+  }
+
   submitCopy(): void {
     if (!this.copySourceLeagueId || this.copying) return;
 
     this.copying = true;
     this._leagueService
-      .adminCopyLeague(this.copySourceLeagueId, this.copyIncludeTeams)
+      .adminCopyLeague(
+        this.copySourceLeagueId,
+        Array.from(this.copySelectedTeamIds)
+      )
       .subscribe({
         next: (league) => {
           this.copying = false;

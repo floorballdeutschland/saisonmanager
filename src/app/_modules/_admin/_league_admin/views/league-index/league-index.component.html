@@ -191,6 +191,7 @@
                     id="copy-source-league-{{ gameOperation.id }}"
                     class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 mb-4 bg-white"
                     [(ngModel)]="copySourceLeagueId"
+                    (ngModelChange)="onCopySourceLeagueChange()"
                   >
                     <option [ngValue]="null">
                       {{ "leagueAdmin.index.copyPleaseSelect" | transloco }}
@@ -201,19 +202,50 @@
                       </option>
                     }
                   </select>
-                  <label class="flex items-start gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      class="mt-0.5"
-                      [(ngModel)]="copyIncludeTeams"
-                    />
-                    <span class="text-sm font-bold">
-                      {{ "leagueAdmin.index.copyIncludeTeams" | transloco }}
-                    </span>
-                  </label>
-                  <p class="text-sm text-fb-gray-500 mt-1 mb-4 pl-6">
-                    {{ "leagueAdmin.index.copyIncludeTeamsHint" | transloco }}
-                  </p>
+                  @if (copySourceLeagueId) {
+                    @if (copyTeamsLoading) {
+                      <p class="text-sm text-fb-gray-500 mb-4">
+                        {{ "leagueAdmin.loading" | transloco }}
+                      </p>
+                    } @else if (copySourceTeams.length === 0) {
+                      <p class="text-sm text-fb-gray-500 mb-4">
+                        {{ "leagueAdmin.index.copyNoTeams" | transloco }}
+                      </p>
+                    } @else {
+                      <div class="font-bold text-sm mb-1">
+                        {{ "leagueAdmin.index.copyTeamsLabel" | transloco }}
+                      </div>
+                      <label
+                        class="flex items-center gap-2 cursor-pointer mb-2 border-b border-fb-gray-200 pb-2"
+                      >
+                        <input
+                          type="checkbox"
+                          [checked]="allCopyTeamsSelected"
+                          (change)="toggleAllCopyTeams()"
+                        />
+                        <span class="text-sm font-bold">
+                          {{ "leagueAdmin.index.copySelectAllTeams" | transloco }}
+                        </span>
+                      </label>
+                      <div
+                        class="flex flex-col gap-1 max-h-64 overflow-y-auto pl-1"
+                      >
+                        @for (team of copySourceTeams; track team.id) {
+                          <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              [checked]="isCopyTeamSelected(team.id)"
+                              (change)="toggleCopyTeam(team.id)"
+                            />
+                            <span class="text-sm">{{ team.name }}</span>
+                          </label>
+                        }
+                      </div>
+                      <p class="text-sm text-fb-gray-500 mt-2 mb-4">
+                        {{ "leagueAdmin.index.copyTeamsHint" | transloco }}
+                      </p>
+                    }
+                  }
                   <div class="flex items-center gap-2">
                     <fb-button
                       variant="success"
