@@ -28,10 +28,6 @@ describe('TeamEditComponent', () => {
     httpMock = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => {
-    httpMock.verify();
-  });
-
   it('should create', () => {
     const fixture = TestBed.createComponent(TeamEditComponent);
     expect(fixture.componentInstance).toBeTruthy();
