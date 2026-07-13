@@ -5,7 +5,10 @@ import {
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Router } from '@angular/router';
-import { getTranslocoTestingModule } from '@floorball/core';
+import {
+  getTranslocoTestingModule,
+  NotificationService,
+} from '@floorball/core';
 import { environment } from 'src/environments/environment';
 import { Team } from 'src/app/_models';
 import { TeamEditComponent } from './team-edit.component';
@@ -74,6 +77,40 @@ describe('TeamEditComponent', () => {
       'teams',
     ]);
     expect(component.deleting).toBeFalse();
+  });
+
+  it('deleteTeam resets deleting and shows an error notification when the backend rejects', () => {
+    const fixture = TestBed.createComponent(TeamEditComponent);
+    const component = fixture.componentInstance;
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = spyOn(notificationService, 'error');
+
+    component.currentUser = {
+      id: 1,
+      username: 'admin',
+      permissions: { team_delete: true },
+    } as never;
+
+    const team = { id: 42, name: 'Testteam', league_id: 7 } as Team;
+    component.deleteTeam(team);
+
+    const req = httpMock.expectOne(`${environment.apiURL}admin/teams/42.json`);
+    req.flush(
+      {
+        message:
+          'Team kann nicht gelöscht werden: Es sind noch Spiele zugeordnet.',
+      },
+      { status: 422, statusText: 'Unprocessable Entity' }
+    );
+
+    expect(component.deleting).toBeFalse();
+    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Team kann nicht gelöscht werden: Es sind noch Spiele zugeordnet.',
+      { autoClose: false }
+    );
   });
 
   it('deleteTeam does nothing when the user lacks permission', () => {
