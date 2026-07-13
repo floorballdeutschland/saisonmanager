@@ -37,68 +37,14 @@
     </div>
   }
 
-  <!-- SBK-Ansicht: nur erfolgreich abgeschlossene Transfers -->
-  @if (!loading && isSbk) {
-    @if (approvedRequests.length > 0) {
-      <div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-fb-gray-700 text-left">
-                <th class="py-2 pr-4 font-bold">
-                  {{ "transferRequestAdmin.list.colPlayer" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "transferRequestAdmin.list.colFrom" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "transferRequestAdmin.list.colTo" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "transferRequestAdmin.list.colType" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "transferRequestAdmin.list.colApprovedAt" | transloco }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (r of approvedRequests; track r) {
-                <tr
-                  (click)="openDetail(r.id)"
-                  class="border-b border-fb-gray-700 hover:bg-fb-gray-700 cursor-pointer"
-                >
-                  <td class="py-2 pr-4 font-medium">
-                    {{ r.player.last_name }}, {{ r.player.first_name }}
-                  </td>
-                  <td class="py-2 pr-4 text-fb-gray-500">
-                    {{ r.former_club.name }}
-                  </td>
-                  <td class="py-2 pr-4 text-fb-gray-500">
-                    {{ r.requesting_club.name }}
-                  </td>
-                  <td class="py-2 pr-4">
-                    <span [class]="typeClass(r)">{{ typeLabel(r) }}</span>
-                  </td>
-                  <td class="py-2 pr-4 text-fb-gray-500">
-                    {{ r.lv_approved_at | date: "dd.MM.yyyy" }}
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    }
-    @if (approvedRequests.length === 0) {
-      <p class="text-fb-gray-500 text-sm py-8 text-center">
-        {{ "transferRequestAdmin.list.noCompletedTransfers" | transloco }}
-      </p>
-    }
-  }
-
-  <!-- Admin/VM-Ansicht: offene und abgeschlossene Anträge -->
-  @if (!loading && !isSbk) {
+  <!-- Alle Rollen (VM/TM, SBK, Admin): offene und abgeschlossene Anträge.
+       SBK/Admin erhalten serverseitig alle bzw. die für ihren Verband relevanten
+       Anträge (Fixpunkt: abgebender Verein) und sehen damit auch offene/initiierte
+       Transfers und Freigaben, um Auskunft über den Status geben zu können.
+       SBK-spezifische Aktionen (CSV-Export, Direktzuweisung) sind in der Kopfzeile
+       über isSbk gegated; die Zurückziehen-Aktion bleibt über canWithdraw auf den
+       aufnehmenden Verein beschränkt. -->
+  @if (!loading) {
     @if (pendingRequests.length > 0) {
       <div class="mb-8">
         <h2 class="text-base font-semibold mb-3">

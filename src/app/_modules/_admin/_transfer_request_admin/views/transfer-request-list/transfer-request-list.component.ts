@@ -150,10 +150,12 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   statusLabel(status: string): string {
     const keys: { [key: string]: string } = {
       pending_club: 'statusPendingClub',
+      pending_player: 'statusPendingPlayer',
       pending_lv: 'statusPendingLv',
       scheduled: 'statusScheduled',
       approved: 'statusApproved',
       rejected_by_club: 'statusRejectedByClub',
+      rejected_by_player: 'statusRejectedByPlayer',
       rejected_by_lv: 'statusRejectedByLv',
       revoked: 'statusRevoked',
       withdrawn: 'statusWithdrawn',
@@ -258,6 +260,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     return this.requests.filter(
       (r) =>
         r.status === 'pending_club' ||
+        r.status === 'pending_player' ||
         r.status === 'pending_lv' ||
         r.status === 'scheduled'
     );
