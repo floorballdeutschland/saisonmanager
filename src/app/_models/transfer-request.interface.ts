@@ -2,10 +2,12 @@ export type TransferRequestType = 'transfer' | 'release';
 
 export type TransferRequestStatus =
   | 'pending_club'
+  | 'pending_player'
   | 'pending_lv'
   | 'scheduled'
   | 'approved'
   | 'rejected_by_club'
+  | 'rejected_by_player'
   | 'rejected_by_lv'
   | 'revoked'
   | 'withdrawn'
