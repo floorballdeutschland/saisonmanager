@@ -141,17 +141,21 @@ export class OverviewComponent implements OnInit, OnDestroy {
       .pipe(
         take(1),
         tap((games) => {
-          if (!games) {
+          if (!games || !games.length) {
             return;
           }
           this.selectedMatchDay =
             league.game_day_titles.find(
               (_item) => _item.game_day_number === games[0].game_day
-            ) ?? league.game_day_titles[0];
+            ) ??
+            league.game_day_titles[0] ??
+            null;
 
           this.getDateRange(games);
 
-          this.currentMatchDayNumber = this.selectedMatchDay.game_day_number;
+          if (this.selectedMatchDay) {
+            this.currentMatchDayNumber = this.selectedMatchDay.game_day_number;
+          }
         }),
         takeUntil(this._destroy$)
       )
