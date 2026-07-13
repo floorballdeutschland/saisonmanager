@@ -184,10 +184,10 @@ export class LeagueService {
     return this.http.patch<League>(path, { league: data });
   }
 
-  public adminCopyLeague(sourceLeagueId: number, includeTeams: boolean) {
+  public adminCopyLeague(sourceLeagueId: number, teamIds: number[]) {
     const path =
       environment.apiURL + 'admin/leagues/' + sourceLeagueId + '/copy.json';
-    return this.http.post<League>(path, { include_teams: includeTeams });
+    return this.http.post<League>(path, { team_ids: teamIds });
   }
 
   public copyPreroundLicenses(leagueId: number) {

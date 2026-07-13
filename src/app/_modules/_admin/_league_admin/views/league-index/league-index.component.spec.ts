@@ -48,21 +48,21 @@ describe('LeagueIndexComponent', () => {
     expect(fixture.componentInstance.previousSeason?.id).toBe(16);
   });
 
-  it('copies a league and navigates to the edit view of the new league', () => {
+  it('copies a league with the selected team ids and navigates to the edit view', () => {
     const fixture = TestBed.createComponent(LeagueIndexComponent);
     const component = fixture.componentInstance;
     const httpMock = TestBed.inject(HttpTestingController);
     const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
 
     component.copySourceLeagueId = 5;
-    component.copyIncludeTeams = true;
+    component.copySelectedTeamIds = new Set([11, 22]);
     component.submitCopy();
 
     const req = httpMock.expectOne((r) =>
       r.url.endsWith('admin/leagues/5/copy.json')
     );
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ include_teams: true });
+    expect(req.request.body).toEqual({ team_ids: [11, 22] });
     req.flush({ id: 99 });
 
     expect(navigateSpy).toHaveBeenCalledWith([
@@ -72,5 +72,26 @@ describe('LeagueIndexComponent', () => {
       99,
       'bearbeiten',
     ]);
+  });
+
+  it('loads the source league teams and pre-selects all of them', () => {
+    const fixture = TestBed.createComponent(LeagueIndexComponent);
+    const component = fixture.componentInstance;
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.copySourceLeagueId = 5;
+    component.onCopySourceLeagueChange();
+
+    const req = httpMock.expectOne((r) =>
+      r.url.endsWith('admin/leagues/5/teams.json')
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({ teams: [{ id: 11 }, { id: 22 }, { id: 33 }] });
+
+    expect(component.copySourceTeams.length).toBe(3);
+    expect(Array.from(component.copySelectedTeamIds).sort()).toEqual([
+      11, 22, 33,
+    ]);
+    expect(component.allCopyTeamsSelected).toBeTrue();
   });
 });
