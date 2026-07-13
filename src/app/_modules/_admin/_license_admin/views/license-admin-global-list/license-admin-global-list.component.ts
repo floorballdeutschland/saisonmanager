@@ -87,6 +87,10 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   filterSeasonId: number | null = null;
   private _currentSeasonId: number | null = null;
   private _destroy$ = new Subject<void>();
+  // Zuletzt empfangene Saisons, damit die Saison-Optionen (mit übersetztem
+  // "(aktuell)"-Suffix) auch dann neu gebaut werden, wenn der Scope erst nach
+  // dem synchronen seasons$-Emit geladen ist.
+  private _seasons: Season[] = [];
 
   constructor(
     private _leagueService: LeagueService,
@@ -129,6 +133,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       { value: 'GF', label: t('licenseAdmin.globalList.fieldSizeLarge') },
       { value: 'KF', label: t('licenseAdmin.globalList.fieldSizeSmall') },
     ];
+    this.buildSeasonOptions(this._seasons);
     this._cdr.markForCheck();
   }
 
@@ -141,7 +146,8 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     this._associationService.seasons$
       .pipe(takeUntil(this._destroy$))
       .subscribe((seasons) => {
-        this.buildSeasonOptions(seasons ?? []);
+        this._seasons = seasons ?? [];
+        this.buildSeasonOptions(this._seasons);
         const current = (seasons ?? []).find((s) => s.current);
         this._currentSeasonId = current?.id ?? null;
         if (this.filterSeasonId === null) {
