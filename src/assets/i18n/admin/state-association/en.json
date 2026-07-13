@@ -34,6 +34,8 @@
     "manualProceedingHint": "The SBK can review proceeding proposals and manually open or reject sports-court proceedings.",
     "refereeAssignmentLabel": "Enable referee assignment by the RSK",
     "refereeAssignmentHint": "Only when active can \"Assignment by RSK\" be selected in the game editor, and the Assigner role sees the \"Assignments\" and \"Availability\" menu items.",
+    "reportFormEmailLabel": "Report form via email workflow",
+    "reportFormEmailHint": "Only when active is the referee's uploaded report form automatically sent by email to this state association's VSK address.",
     "inheritedValueYes": "Value: Yes (inherited)",
     "inheritedValueNo": "Value: No (inherited)",
     "emailHeading": "Email addresses",
