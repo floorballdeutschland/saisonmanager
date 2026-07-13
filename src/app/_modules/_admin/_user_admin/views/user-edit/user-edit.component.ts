@@ -125,7 +125,23 @@ export class UserEditComponent implements OnInit, OnDestroy {
           );
           this.selectedGoId = goScopedRole?.game_operation_id ?? null;
 
-          this.selectedClubId = user.club_id ?? null;
+          // Verein-Vorbelegung aus der Rollen-Berechtigung (VM/TM) statt aus der
+          // ggf. abweichenden Spalte user.club_id – die Berechtigung ist die
+          // Quelle der Wahrheit für den Verein. club_id kann dort als String
+          // vorliegen, daher auf number normalisieren, damit die Dropdown-Option
+          // (number) matcht und der Verein nicht fälschlich als "leer" erscheint.
+          const clubScopedRole = user.roles?.find((r) =>
+            [4, 5].includes(r.user_group_id)
+          );
+          const clubId = clubScopedRole?.club_id ?? user.club_id;
+          const parsedClubId = clubId != null ? Number(clubId) : null;
+          // Kein NaN in selectedClubId zulassen – sonst würde ein defekter
+          // club_id-Wert beim Hauptspeichern als club_id: null serialisiert und
+          // die Zuweisung ungewollt entfernen.
+          this.selectedClubId =
+            parsedClubId != null && !Number.isNaN(parsedClubId)
+              ? parsedClubId
+              : null;
 
           this._cdr.markForCheck();
         },
@@ -364,6 +380,12 @@ export class UserEditComponent implements OnInit, OnDestroy {
     const payload: Partial<UserAdminEntry> = { email: this.email };
     if (this.isAdminOrSbk) {
       payload.active = this.active;
+    }
+    // Die aktuell gewählte Vereinszuweisung mit dem Haupt-"Speichern"
+    // persistieren, damit sie nicht verloren geht, wenn der separate
+    // "Verein speichern"-Button nicht gedrückt wurde.
+    if (this.showClubAssignment && this.selectedClubId != null) {
+      payload.club_id = this.selectedClubId;
     }
 
     this._userService
