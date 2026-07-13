@@ -92,6 +92,19 @@ export class LicenseAdminDetailComponent implements OnInit {
     );
   }
 
+  // Nur die Lizenzen der Saison anzeigen, in der diese Liga läuft. Ältere
+  // Saisons – u. a. Legacy-Importe, deren Teams eine hohe ID haben und daher
+  // die team_id-Heuristik der API passieren – blenden wir hier aus. Fehlt die
+  // season_id der Liga, zeigen wir sicherheitshalber alles.
+  public currentSeasonLicenses(): PlayerLicense[] {
+    const licenses = this.player?.licenses ?? [];
+    const seasonId = this.league?.season_id;
+    if (seasonId == null) return licenses;
+    return licenses.filter(
+      (l) => l.season_id != null && String(l.season_id) === String(seasonId)
+    );
+  }
+
   public toggleDetails(): void {
     this.open = !this.open;
   }
