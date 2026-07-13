@@ -134,7 +134,14 @@ export class UserEditComponent implements OnInit, OnDestroy {
             [4, 5].includes(r.user_group_id)
           );
           const clubId = clubScopedRole?.club_id ?? user.club_id;
-          this.selectedClubId = clubId != null ? Number(clubId) : null;
+          const parsedClubId = clubId != null ? Number(clubId) : null;
+          // Kein NaN in selectedClubId zulassen – sonst würde ein defekter
+          // club_id-Wert beim Hauptspeichern als club_id: null serialisiert und
+          // die Zuweisung ungewollt entfernen.
+          this.selectedClubId =
+            parsedClubId != null && !Number.isNaN(parsedClubId)
+              ? parsedClubId
+              : null;
 
           this._cdr.markForCheck();
         },
