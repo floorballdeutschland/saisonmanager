@@ -64,7 +64,14 @@
     "errSyndicateCount": "Eine SG muss aus zwei Teams bestehen.",
     "errSyndicateMainClub": "Der Hauptverein muss auch SG-Verein sein",
     "errEmail": "Es muss eine korrekte Ansprechpartner E-Mail gesetzt werden",
-    "errContactPerson": "Es muss eine Kontaktperson benannt werden"
+    "errContactPerson": "Es muss eine Kontaktperson benannt werden",
+    "deleteHeading": "Team löschen",
+    "deleteHint": "Das Team kann nur gelöscht werden, wenn ihm keine Spieler/Lizenzen und keine Spiele oder Ergebnisse mehr zugeordnet sind.",
+    "deleteDialogTitle": "Team löschen?",
+    "deleteDialogContent": "Soll das Team „{{ name }}“ wirklich unwiderruflich gelöscht werden?",
+    "deleteDialogSubmit": "Endgültig löschen",
+    "deleteButton": "Team löschen",
+    "deleting": "Wird gelöscht…"
   },
   "notifications": {
     "noAccess": "Dieser Bereich steht dir nicht zur Verfügung.",
@@ -72,6 +79,8 @@
     "logoTooLarge": "Datei zu groß (max. 5 MB).",
     "logoUploaded": "Logo erfolgreich hochgeladen.",
     "logoUploadFailed": "Logo-Upload fehlgeschlagen.",
-    "teamSaved": "Team {{ name }}({{ id }}) erfolgreich geändert."
+    "teamSaved": "Team {{ name }}({{ id }}) erfolgreich geändert.",
+    "teamDeleted": "Team {{ name }} wurde gelöscht.",
+    "deleteError": "Team konnte nicht gelöscht werden."
   }
 }

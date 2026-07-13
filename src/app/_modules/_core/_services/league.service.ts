@@ -279,6 +279,11 @@ export class LeagueService {
     return this.http.get<Team>(path);
   }
 
+  public adminDeleteTeam(teamId: number) {
+    const path = environment.apiURL + 'admin/teams/' + teamId + '.json';
+    return this.http.delete<void>(path);
+  }
+
   public getLeagueClubs(id: number, type: string) {
     const path =
       environment.apiURL + 'admin/league/clubs/' + type + '/' + id + '.json';

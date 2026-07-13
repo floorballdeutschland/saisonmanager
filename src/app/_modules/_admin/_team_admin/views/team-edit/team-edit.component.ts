@@ -11,8 +11,9 @@ import {
   ClubService,
   LeagueService,
   NotificationService,
+  SessionService,
 } from '@floorball/core';
-import { Club, GameOperation, Team } from 'src/app/_models';
+import { Club, GameOperation, Team, User } from 'src/app/_models';
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -37,6 +38,9 @@ export class TeamEditComponent implements OnInit, OnDestroy {
   clubs: Club[] = [];
   isBuliPermitted = false;
 
+  currentUser: User | null = null;
+  deleting = false;
+
   // Merkt sich den zuletzt gewählten Hauptverein, um ihn beim Wechsel aus
   // syndicate_clubs zu entfernen (der Hauptverein wird dort automatisch geführt).
   private _prevMainClubId?: number;
@@ -52,13 +56,21 @@ export class TeamEditComponent implements OnInit, OnDestroy {
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _transloco: TranslocoService,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _sessionService: SessionService
   ) {
     this.associations$ = this._associationService.associations$;
     this._metaTitle.setTitle('Floorball Saisonmanager');
   }
 
   public ngOnInit(): void {
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((user) => {
+        this.currentUser = user;
+        this._cdr.markForCheck();
+      });
+
     this._leagueService.getAdminLeagues().subscribe({
       next: (result) => {
         // this is the case, when we have enough permissions
@@ -321,6 +333,44 @@ export class TeamEditComponent implements OnInit, OnDestroy {
     );
     if (!go) return false;
     return go.leagues.some((l) => l.id !== team.league_id);
+  }
+
+  get canDelete(): boolean {
+    return !!this.currentUser?.permissions['team_delete'];
+  }
+
+  public deleteTeam(team: Team): void {
+    if (!team.id || !this.canDelete) return;
+    this.deleting = true;
+    this._leagueService
+      .adminDeleteTeam(team.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.deleting = false;
+          this._notificationService.success(
+            this._transloco.translate('teamAdmin.notifications.teamDeleted', {
+              name: team.name,
+            }),
+            { autoClose: true, keepAfterRouteChange: true }
+          );
+          this._router.navigate([
+            'verwaltung',
+            'ligen',
+            team.league_id,
+            'teams',
+          ]);
+        },
+        error: (error) => {
+          this.deleting = false;
+          this._cdr.markForCheck();
+          this._notificationService.error(
+            error?.error?.message ??
+              this._transloco.translate('teamAdmin.notifications.deleteError'),
+            { autoClose: false }
+          );
+        },
+      });
   }
 
   public submit(team: Team) {
