@@ -18,6 +18,7 @@ import {
   CorrectionType,
   GenderKey,
   GfRole,
+  LicenseDocument,
   Nation,
   Player,
   PlayerLicense,
@@ -52,6 +53,11 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   changeRequestType: CorrectionType | '' = '';
   changeRequestValue = '';
   changeRequestSent = false;
+
+  // Lizenz-Dokumente des Spielers (saisonübergreifend). Die Sichtbarkeit
+  // (bundesweit vs. verbandsspezifisch) filtert bereits die API abhängig vom
+  // Verbands-Scope des angemeldeten Nutzers.
+  licenseDocuments: LicenseDocument[] = [];
 
   suspensions: PlayerSuspension[] = [];
   // Ebene 1: id der Lizenz, für die gerade das Sperr-Formular offen ist
@@ -111,10 +117,65 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       next: (result) => {
         this.player = result;
         this.loadSuspensions();
+        this.loadLicenseDocuments();
 
         this._cdr.markForCheck();
       },
     });
+  }
+
+  public loadLicenseDocuments(): void {
+    if (!this.player?.id) return;
+
+    this._playerService.getLicenseDocuments(this.player.id).subscribe({
+      next: (result) => {
+        this.licenseDocuments = result;
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  // Dokumente nach Landesverband/Spielbetrieb gruppiert; bundesweit gültige
+  // Dokumentarten (game_operation_id = null) zuerst, danach alphabetisch nach
+  // Verbandsname.
+  public get documentGroups(): {
+    gameOperationId: number | null;
+    gameOperationName: string | null;
+    documents: LicenseDocument[];
+  }[] {
+    const groups = new Map<
+      string,
+      {
+        gameOperationId: number | null;
+        gameOperationName: string | null;
+        documents: LicenseDocument[];
+      }
+    >();
+
+    for (const doc of this.licenseDocuments) {
+      const goId = doc.game_operation_id ?? null;
+      const key = goId === null ? 'global' : String(goId);
+      let group = groups.get(key);
+      if (!group) {
+        group = {
+          gameOperationId: goId,
+          gameOperationName: doc.game_operation_name ?? null,
+          documents: [],
+        };
+        groups.set(key, group);
+      }
+      group.documents.push(doc);
+    }
+
+    return Array.from(groups.values()).sort((a, b) => {
+      if (a.gameOperationId === null) return -1;
+      if (b.gameOperationId === null) return 1;
+      return (a.gameOperationName || '').localeCompare(b.gameOperationName || '');
+    });
+  }
+
+  public documentLabel(doc: LicenseDocument): string {
+    return doc.document_type_name || doc.document_type;
   }
 
   public loadSuspensions(): void {
