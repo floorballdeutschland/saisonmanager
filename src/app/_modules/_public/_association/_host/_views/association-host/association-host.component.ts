@@ -6,10 +6,18 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { AssociationService, LeagueService } from '@floorball/core';
-import { GameOperation, League } from '@floorball/types';
-import { Observable, Subject, takeUntil, tap } from 'rxjs';
+import { GameOperation, League, Season } from '@floorball/types';
+import {
+  filter,
+  map,
+  Observable,
+  startWith,
+  Subject,
+  takeUntil,
+  tap,
+} from 'rxjs';
 
 @Component({
   templateUrl: './association-host.component.html',
@@ -21,6 +29,9 @@ export class AssociationHostComponent implements OnInit, OnDestroy {
   selectedAssociation$!: Observable<GameOperation | null>;
   association$!: Observable<GameOperation[]>;
   leagues$?: Observable<League[] | null>;
+  seasons$!: Observable<Season[]>;
+  selectedSeasonId$!: Observable<number | null>;
+  hasSelectedLeague$!: Observable<boolean>;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -28,6 +39,7 @@ export class AssociationHostComponent implements OnInit, OnDestroy {
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
     private _route: ActivatedRoute,
+    private _router: Router,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -41,6 +53,14 @@ export class AssociationHostComponent implements OnInit, OnDestroy {
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.leagues$ = this._leagueService.leagues$;
     this.association$ = this._associationService.associations$;
+    this.seasons$ = this._associationService.seasons$;
+    this.selectedSeasonId$ = this._associationService.currentSeasonId$;
+
+    this.hasSelectedLeague$ = this._router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map(() => !!this._route.snapshot.firstChild),
+      startWith(!!this._route.snapshot.firstChild)
+    );
 
     this._route.params
       .pipe(
@@ -51,5 +71,10 @@ export class AssociationHostComponent implements OnInit, OnDestroy {
         takeUntil(this._destroy$)
       )
       .subscribe();
+  }
+
+  onSeasonChange(event: Event) {
+    const id = parseInt((event.target as HTMLSelectElement).value, 10);
+    this._associationService.selectSeason(id);
   }
 }

@@ -1,3 +1,79 @@
-@if (selectedAssociation$ | async) {
+@if (selectedAssociation$ | async; as association) {
+  @if ((hasSelectedLeague$ | async) === false) {
+    <div class="container mx-auto px-4 lg:px-8">
+      <div class="flex items-center gap-4 pt-4 lg:pt-0 my-4 lg:my-8">
+        @if (association.logo_url) {
+          <img
+            [src]="association.logo_url"
+            [alt]="association.name"
+            class="h-[48px] lg:h-[65px] max-w-full object-contain"
+          />
+        }
+        <h1 class="font-bold text-[28px] lg:text-[36px]">
+          {{ association.name }}
+        </h1>
+      </div>
+
+      @if (seasons$ | async; as seasons) {
+        @if (seasons.length > 1) {
+          <select
+            [value]="selectedSeasonId$ | async"
+            (change)="onSeasonChange($event)"
+            class="mb-6 w-full max-w-xs text-sm font-bold text-fb-gray-500 bg-white border border-fb-gray-600 rounded-[5px] px-3 py-2 cursor-pointer hover:border-black focus:outline-none"
+          >
+            @for (s of seasons; track s) {
+              <option [value]="s.id">{{ s.name }}</option>
+            }
+          </select>
+        }
+      }
+    </div>
+
+    <div class="bg-fb-gray-800 pt-4 lg:pt-8 pb-16">
+      <div class="container mx-auto px-4 lg:px-8">
+        <h2 class="font-bold text-xl lg:text-2xl">Ligen</h2>
+        @if (leagues$ | async; as leagues) {
+          @if (leagues.length) {
+            <ul class="mt-4 lg:mt-9">
+              @for (league of leagues; track league) {
+                <li
+                  class="grid gap-4 grid-cols-[1fr_100px] justify-between items-center border-b border-fb-gray-700 py-2.5 bg-white px-4"
+                >
+                  <a
+                    [routerLink]="[
+                      '/',
+                      association.path,
+                      league | normalizeLeagueRoute,
+                    ]"
+                    class="font-bold text-black hover:text-fb-gray-500"
+                  >
+                    {{ league.name }}
+                  </a>
+                  <span
+                    class="text-sm font-bold text-right text-fb-gray-500 hover:text-black"
+                  >
+                    <a
+                      [routerLink]="[
+                        '/',
+                        association.path,
+                        league | normalizeLeagueRoute,
+                      ]"
+                    >
+                      Zur Liga
+                    </a>
+                  </span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="mt-4 text-fb-gray-500">
+              Für diese Saison sind aktuell keine Ligen hinterlegt.
+            </p>
+          }
+        }
+      </div>
+    </div>
+  }
+
   <router-outlet></router-outlet>
 }

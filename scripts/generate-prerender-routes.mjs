@@ -48,7 +48,7 @@ try {
     `game_operations/${operation.id}/leagues/${seasonId}.json`
   );
 
-  const routes = ["/"];
+  const routes = ["/", `/${GO_PATH}`];
   for (const league of leagues) {
     const base = `/${GO_PATH}/${league.id}`;
     routes.push(base); // Übersicht (enthält Spielplan + Tabelle)
