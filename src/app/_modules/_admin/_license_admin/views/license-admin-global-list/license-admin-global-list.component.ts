@@ -94,7 +94,12 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
     private _transloco: TranslocoService
-  ) {
+  ) {}
+
+  // Titel und statische Dropdown-Labels erst bauen, wenn der (lazy geladene)
+  // Scope 'admin/license' verfügbar ist – sonst würden hier die rohen Keys
+  // eingefroren, weil translate() vor dem Laden nur den Key-Pfad zurückgibt.
+  private buildStaticLabels(): void {
     const t = (key: string) => this._transloco.translate(key);
     this._metaTitle.setTitle(t('licenseAdmin.globalList.metaTitle'));
 
@@ -124,9 +129,15 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       { value: 'GF', label: t('licenseAdmin.globalList.fieldSizeLarge') },
       { value: 'KF', label: t('licenseAdmin.globalList.fieldSizeSmall') },
     ];
+    this._cdr.markForCheck();
   }
 
   ngOnInit(): void {
+    this._transloco
+      .selectTranslation('admin/license')
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.buildStaticLabels());
+
     this._associationService.seasons$
       .pipe(takeUntil(this._destroy$))
       .subscribe((seasons) => {

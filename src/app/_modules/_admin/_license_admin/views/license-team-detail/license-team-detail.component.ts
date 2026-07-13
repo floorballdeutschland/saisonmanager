@@ -19,7 +19,7 @@ import {
   NotificationService,
   PlayerService,
 } from '@floorball/core';
-import { Observable } from 'rxjs';
+import { Observable, take } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
@@ -59,12 +59,20 @@ export class LicenseTeamDetailComponent implements OnInit {
     private _transloco: TranslocoService
   ) {
     this.associations$ = this._associationService.associations$;
-    this._metaTitle.setTitle(
-      this._transloco.translate('licenseAdmin.teamDetail.metaTitle')
-    );
   }
 
   public ngOnInit(): void {
+    // Titel erst setzen, wenn der lazy geladene Scope 'admin/license' verfügbar
+    // ist – im Konstruktor liefert translate() sonst nur den rohen Key-Pfad.
+    this._transloco
+      .selectTranslation('admin/license')
+      .pipe(take(1))
+      .subscribe(() =>
+        this._metaTitle.setTitle(
+          this._transloco.translate('licenseAdmin.teamDetail.metaTitle')
+        )
+      );
+
     this._associationService.currentSeasonId$.subscribe((seasonId) => {
       this.currentSeasonId = seasonId;
       this._cdr.markForCheck();

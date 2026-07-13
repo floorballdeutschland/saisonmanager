@@ -11,7 +11,7 @@ import {
   GameOperation,
   GameOperationWithClubs,
 } from '@floorball/types';
-import { Observable } from 'rxjs';
+import { Observable, take } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { TranslocoService } from '@jsverse/transloco';
 
@@ -36,12 +36,20 @@ export class LicenseClubIndexComponent implements OnInit {
     private _transloco: TranslocoService
   ) {
     this.associations$ = this._associationService.associations$;
-    this._metaTitle.setTitle(
-      this._transloco.translate('licenseAdmin.clubIndex.metaTitle')
-    );
   }
 
   public ngOnInit(): void {
+    // Titel erst setzen, wenn der lazy geladene Scope 'admin/license' verfügbar
+    // ist – im Konstruktor liefert translate() sonst nur den rohen Key-Pfad.
+    this._transloco
+      .selectTranslation('admin/license')
+      .pipe(take(1))
+      .subscribe(() =>
+        this._metaTitle.setTitle(
+          this._transloco.translate('licenseAdmin.clubIndex.metaTitle')
+        )
+      );
+
     this._clubService.adminGetClubAndTeams().subscribe({
       next: (result) => {
         this.clubAndTeams = result;

@@ -42,13 +42,20 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
     private _transloco: TranslocoService
-  ) {
-    this._metaTitle.setTitle(
-      this._transloco.translate('licenseAdmin.leagueDetail.metaTitle')
-    );
-  }
+  ) {}
 
   ngOnInit(): void {
+    // Titel erst setzen, wenn der lazy geladene Scope 'admin/license' verfügbar
+    // ist – im Konstruktor liefert translate() sonst nur den rohen Key-Pfad.
+    this._transloco
+      .selectTranslation('admin/license')
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() =>
+        this._metaTitle.setTitle(
+          this._transloco.translate('licenseAdmin.leagueDetail.metaTitle')
+        )
+      );
+
     this._route.params.pipe(takeUntil(this._destroy$)).subscribe((params) => {
       const parsed = parseInt(params['leagueId'], 10);
       this._leagueId = Number.isNaN(parsed) ? undefined : parsed;
