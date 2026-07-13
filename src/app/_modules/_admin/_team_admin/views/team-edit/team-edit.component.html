@@ -251,6 +251,41 @@
                 </div>
               }
             </div>
+            @if (team.id > 0 && canDelete) {
+              <div class="bg-white my-[5px] py-[15px] px-[30px]">
+                <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                  {{ "teamAdmin.edit.deleteHeading" | transloco }}
+                </div>
+                <p class="text-sm text-fb-gray-500 mb-3">
+                  {{ "teamAdmin.edit.deleteHint" | transloco }}
+                </p>
+                <fb-confirmation
+                  [title]="'teamAdmin.edit.deleteDialogTitle' | transloco"
+                  [content]="
+                    'teamAdmin.edit.deleteDialogContent'
+                      | transloco: { name: team.name }
+                  "
+                  [submitButtonTitle]="
+                    'teamAdmin.edit.deleteDialogSubmit' | transloco
+                  "
+                  buttonVariant="error"
+                  (handleSubmit)="deleteTeam(team)"
+                >
+                  <button
+                    type="button"
+                    [disabled]="deleting"
+                    class="px-4 py-2 text-sm font-bold text-red-600 border border-red-300 rounded-[5px] hover:border-red-500 disabled:opacity-50"
+                  >
+                    {{
+                      (deleting
+                        ? "teamAdmin.edit.deleting"
+                        : "teamAdmin.edit.deleteButton"
+                      ) | transloco
+                    }}
+                  </button>
+                </fb-confirmation>
+              </div>
+            }
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="flex flex-col gap-2">
                 @if (error(team)) {

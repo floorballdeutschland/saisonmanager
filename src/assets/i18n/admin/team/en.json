@@ -64,7 +64,14 @@
     "errSyndicateCount": "A syndicate must consist of two teams.",
     "errSyndicateMainClub": "The main club must also be a syndicate club",
     "errEmail": "A valid contact email must be set",
-    "errContactPerson": "A contact person must be named"
+    "errContactPerson": "A contact person must be named",
+    "deleteHeading": "Delete team",
+    "deleteHint": "The team can only be deleted while no players/licenses and no games or results are assigned to it.",
+    "deleteDialogTitle": "Delete team?",
+    "deleteDialogContent": "Do you really want to permanently delete the team \"{{ name }}\"?",
+    "deleteDialogSubmit": "Delete permanently",
+    "deleteButton": "Delete team",
+    "deleting": "Deleting…"
   },
   "notifications": {
     "noAccess": "This area is not available to you.",
@@ -72,6 +79,8 @@
     "logoTooLarge": "File too large (max. 5 MB).",
     "logoUploaded": "Logo uploaded successfully.",
     "logoUploadFailed": "Logo upload failed.",
-    "teamSaved": "Team {{ name }}({{ id }}) changed successfully."
+    "teamSaved": "Team {{ name }}({{ id }}) changed successfully.",
+    "teamDeleted": "Team {{ name }} has been deleted.",
+    "deleteError": "Team could not be deleted."
   }
 }
