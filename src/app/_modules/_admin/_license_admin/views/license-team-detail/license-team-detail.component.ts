@@ -64,8 +64,10 @@ export class LicenseTeamDetailComponent implements OnInit {
   public ngOnInit(): void {
     // Titel erst setzen, wenn der lazy geladene Scope 'admin/license' verfügbar
     // ist – im Konstruktor liefert translate() sonst nur den rohen Key-Pfad.
+    // selectTranslate() lädt scope-korrekt und emittiert erst nach dem Laden;
+    // selectTranslation('admin/license') fehlinterpretiert den zweistufigen Pfad.
     this._transloco
-      .selectTranslation('admin/license')
+      .selectTranslate('teamDetail.metaTitle', {}, 'admin/license')
       .pipe(take(1))
       .subscribe(() =>
         this._metaTitle.setTitle(
