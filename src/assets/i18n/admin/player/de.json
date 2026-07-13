@@ -43,6 +43,8 @@
     "genderDiverse": "Divers",
     "submitRequest": "Antrag einreichen",
     "licenses": "Lizenzen",
+    "currentSeason": "aktuelle Saison",
+    "licensesNoSeason": "Ohne Saison (Altbestand)",
     "suspended": "gesperrt",
     "setInvalidForTransfer": "Für Transfer ungültig setzen",
     "suspendLicense": "Lizenz sperren",

@@ -7,6 +7,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import {
+  AssociationService,
   ClubService,
   NotificationService,
   PlayerChangeRequestService,
@@ -23,12 +24,21 @@ import {
   Player,
   PlayerLicense,
   PlayerSuspension,
+  Season,
 } from '@floorball/models';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PLAYER_GENDERS } from '@floorball/types';
+
+// Lizenzen des Spielers, nach Saison gruppiert (aktuelle Saison zuerst).
+export interface LicenseSeasonGroup {
+  seasonId?: string;
+  name: string;
+  current: boolean;
+  licenses: PlayerLicense[];
+}
 
 @Component({
   templateUrl: './player-edit.component.html',
@@ -59,6 +69,9 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   // Verbands-Scope des angemeldeten Nutzers.
   licenseDocuments: LicenseDocument[] = [];
 
+  seasons: Season[] = [];
+  currentSeasonId?: number;
+
   suspensions: PlayerSuspension[] = [];
   // Ebene 1: id der Lizenz, für die gerade das Sperr-Formular offen ist
   suspendLicenseId: string | null = null;
@@ -81,6 +94,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _notificationService: NotificationService,
     private _changeRequestService: PlayerChangeRequestService,
+    private _associationService: AssociationService,
     private _metaTitle: Title
   ) {
     this._metaTitle.setTitle('Floorball Saisonmanager Spielerverwaltung');
@@ -105,6 +119,19 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         this.permissions = user?.permissions || {};
       },
     });
+
+    this._associationService.seasons$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((seasons) => {
+        this.seasons = seasons ?? [];
+        this._cdr.markForCheck();
+      });
+    this._associationService.currentSeasonId$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((id) => {
+        this.currentSeasonId = id;
+        this._cdr.markForCheck();
+      });
   }
 
   ngOnDestroy(): void {
@@ -113,7 +140,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   public getPlayer(id: string): void {
-    this._playerService.getPlayer(parseInt(id)).subscribe({
+    // Im Profil die vollständige, saisonübergreifende Lizenzhistorie laden.
+    this._playerService.getPlayer(parseInt(id), true).subscribe({
       next: (result) => {
         this.player = result;
         this.loadSuspensions();
@@ -170,7 +198,9 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     return Array.from(groups.values()).sort((a, b) => {
       if (a.gameOperationId === null) return -1;
       if (b.gameOperationId === null) return 1;
-      return (a.gameOperationName || '').localeCompare(b.gameOperationName || '');
+      return (a.gameOperationName || '').localeCompare(
+        b.gameOperationName || ''
+      );
     });
   }
 
@@ -547,6 +577,46 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           },
         });
     }
+  }
+
+  // --- Saison-gruppierte Lizenzhistorie ------------------------------------
+
+  public seasonName(seasonId: number | string | undefined): string {
+    const found = this.seasons.find((s) => String(s.id) === String(seasonId));
+    return found?.name ?? `${seasonId}`;
+  }
+
+  public isCurrentSeasonLicense(license: PlayerLicense): boolean {
+    return (
+      this.currentSeasonId != null &&
+      String(license.season_id) === String(this.currentSeasonId)
+    );
+  }
+
+  // Lizenzen nach Saison gruppieren: aktuelle Saison zuerst, danach absteigend;
+  // Altbestand ohne season_id (Legacy-Import) ganz zuletzt.
+  public licenseSeasonGroups(): LicenseSeasonGroup[] {
+    const groups = new Map<string, PlayerLicense[]>();
+    for (const license of this.player?.licenses ?? []) {
+      const key = license.season_id == null ? '' : String(license.season_id);
+      const list = groups.get(key);
+      if (list) list.push(license);
+      else groups.set(key, [license]);
+    }
+
+    return [...groups.entries()]
+      .map(([key, licenses]) => ({
+        seasonId: key || undefined,
+        name: key ? this.seasonName(key) : '',
+        current: !!key && key === String(this.currentSeasonId),
+        licenses,
+      }))
+      .sort((a, b) => {
+        if (a.current !== b.current) return a.current ? -1 : 1;
+        if (!a.seasonId) return 1;
+        if (!b.seasonId) return -1;
+        return Number(b.seasonId) - Number(a.seasonId);
+      });
   }
 
   // --- Erst-/Zweitlizenz-Zuordnung (GF-Erwachsenenbereich) -----------------
