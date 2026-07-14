@@ -12,6 +12,7 @@
             [headline]="selectedLeague.name"
             type="league"
             [subline]="season.name"
+            [activeBanner]="activeBanner$ | async"
             [isMarkedAsFavorite]="isLeagueFavorite(selectedLeague.id)"
             (markAsFavorite)="addToFavorites(selectedLeague)"
             (removeFromFavorites)="removeFavorite(selectedLeague.id)"

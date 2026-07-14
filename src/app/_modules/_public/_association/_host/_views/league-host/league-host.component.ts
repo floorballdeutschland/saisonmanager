@@ -19,6 +19,8 @@ import {
 } from '@floorball/types';
 import {
   BehaviorSubject,
+  combineLatest,
+  map,
   Observable,
   retry,
   Subject,
@@ -40,6 +42,7 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
   selectedSeason$!: Observable<Season | null>;
   matches$?: Observable<GameScheduleEntry[] | null>;
   displayAssociationHeader$!: BehaviorSubject<boolean>;
+  activeBanner$!: Observable<{ url: string; linkUrl?: string | null } | null>;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -62,6 +65,23 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
     this.selectedLeague$ = this._leagueService.selectedLeague$;
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.selectedSeason$ = this._associationService.selectedSeason$;
+
+    // Werbebanner (Liga-Banner hat Vorrang vor Landesverband-Banner) – auf
+    // dem Desktop mittig in der Kopfzeile statt in der Seitenleiste.
+    this.activeBanner$ = combineLatest([
+      this._leagueService.selectedLeague$,
+      this._associationService.selectedStateAssociation$,
+    ]).pipe(
+      map(([league, sa]) => {
+        if (league?.banner_url) {
+          return { url: league.banner_url, linkUrl: league.banner_link_url };
+        }
+        if (sa?.banner_url) {
+          return { url: sa.banner_url, linkUrl: sa.banner_link_url };
+        }
+        return null;
+      })
+    );
 
     this._route.params
       .pipe(

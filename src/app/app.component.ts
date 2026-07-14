@@ -25,13 +25,7 @@ import {
   Season,
   StateAssociation,
 } from '@floorball/types';
-import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  map,
-  Observable,
-} from 'rxjs';
+import { BehaviorSubject, filter, Observable } from 'rxjs';
 
 // Fehlermeldungen der Browser, wenn ein lazy geladenes Routen-Modul nicht
 // nachgeladen werden kann (Verbindungsabriss oder nach einem Deploy entfernte
@@ -54,7 +48,6 @@ export class AppComponent implements OnInit {
   leagues$!: Observable<League[] | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
   selectedStateAssociation$!: Observable<StateAssociation | null>;
-  activeBanner$!: Observable<{ url: string; linkUrl?: string | null } | null>;
   seasons$!: Observable<Season[]>;
   selectedSeasonId$!: Observable<number>;
 
@@ -106,21 +99,6 @@ export class AppComponent implements OnInit {
     this.selectedSeasonId$ = this._associationService.currentSeasonId$;
     this.favoriteLeagues$ = this._favoriteService.favoriteLeagues$;
     this.favoriteTeams$ = this._favoriteService.favoriteTeams$;
-
-    this.activeBanner$ = combineLatest([
-      this._leagueService.selectedLeague$,
-      this.selectedStateAssociation$,
-    ]).pipe(
-      map(([league, sa]) => {
-        if (league?.banner_url) {
-          return { url: league.banner_url, linkUrl: league.banner_link_url };
-        }
-        if (sa?.banner_url) {
-          return { url: sa.banner_url, linkUrl: sa.banner_link_url };
-        }
-        return null;
-      })
-    );
   }
 
   onSeasonChange(seasonId: number): void {

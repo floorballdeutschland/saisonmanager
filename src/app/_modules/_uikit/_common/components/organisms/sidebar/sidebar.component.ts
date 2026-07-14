@@ -21,7 +21,6 @@ import { MobileHeaderComponent } from '..';
 export class SidebarComponent {
   @Input() association?: GameOperation | null;
   @Input() stateAssociation?: StateAssociation | null;
-  @Input() activeBanner?: { url: string; linkUrl?: string | null } | null;
 
   overlayComponentRef?: ComponentRef<MobileHeaderComponent>;
   menuIsOpen = false;
@@ -51,17 +50,5 @@ export class SidebarComponent {
 
   closeMenu() {
     this.overlayComponentRef?.instance.onClose$.next(true);
-  }
-
-  safeBannerLink(url: string | null | undefined): string | null {
-    if (!url) return null;
-    try {
-      const parsed = new URL(url);
-      return parsed.protocol === 'https:' || parsed.protocol === 'http:'
-        ? url
-        : null;
-    } catch {
-      return null;
-    }
   }
 }
