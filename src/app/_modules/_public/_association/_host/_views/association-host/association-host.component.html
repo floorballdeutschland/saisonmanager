@@ -12,6 +12,33 @@
         <h1 class="font-bold text-[28px] lg:text-[36px]">
           {{ association.name }}
         </h1>
+
+        @if (activeBanner$ | async; as banner) {
+          <div class="hidden lg:flex ml-auto shrink min-w-0 pl-4">
+            @if (safeBannerLink(banner.linkUrl)) {
+              <a
+                [href]="safeBannerLink(banner.linkUrl)"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Werbung – externer Link öffnet in neuem Tab"
+              >
+                <img
+                  [src]="banner.url"
+                  alt="Anzeige"
+                  class="h-10 xl:h-12 w-auto max-w-full object-contain"
+                  style="aspect-ratio: 6/1"
+                />
+              </a>
+            } @else {
+              <img
+                [src]="banner.url"
+                alt="Anzeige"
+                class="h-10 xl:h-12 w-auto max-w-full object-contain"
+                style="aspect-ratio: 6/1"
+              />
+            }
+          </div>
+        }
       </div>
 
       @if (seasons$ | async; as seasons) {
