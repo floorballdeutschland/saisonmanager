@@ -148,6 +148,7 @@
          Standard = Überblick, solange kein Panel per Anker aktiv ist. */
       body:not(:has(.panel:target)) .navlink[href="#panel-ueberblick"],
       body:has(#panel-ueberblick:target) .navlink[href="#panel-ueberblick"],
+      body:has(#panel-prozesse:target) .navlink[href="#panel-prozesse"],
       body:has(#panel-admin:target) .navlink[href="#panel-admin"],
       body:has(#panel-sbk-fd:target) .navlink[href="#panel-sbk-fd"],
       body:has(#panel-sbk-lv:target) .navlink[href="#panel-sbk-lv"],
@@ -174,6 +175,7 @@
       body:has(#panel-ueberblick:target)
         .navlink[href="#panel-ueberblick"]
         .dot,
+      body:has(#panel-prozesse:target) .navlink[href="#panel-prozesse"] .dot,
       body:has(#panel-admin:target) .navlink[href="#panel-admin"] .dot,
       body:has(#panel-sbk-fd:target) .navlink[href="#panel-sbk-fd"] .dot,
       body:has(#panel-sbk-lv:target) .navlink[href="#panel-sbk-lv"] .dot,
@@ -1065,6 +1067,116 @@
           print-color-adjust: exact;
         }
       }
+
+
+      /* ════════ Prozesse & Funktionen (rollenübergreifend) ════════ */
+      .cat {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin: 54px 0 4px;
+        padding-top: 22px;
+        border-top: 2px solid var(--line);
+      }
+      .cat:first-of-type {
+        border-top: none;
+        padding-top: 0;
+        margin-top: 34px;
+      }
+      .cat .code {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--rc);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .cat h2 {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 1.4rem;
+        letter-spacing: -0.015em;
+      }
+      .cat + .cat-lead {
+        color: var(--muted);
+        max-width: 70ch;
+        margin: 0 0 18px;
+        font-size: 0.95rem;
+      }
+      .proc-text {
+        max-width: 72ch;
+        margin: 0 0 12px;
+      }
+      .proc-text + .proc-text {
+        margin-top: 12px;
+      }
+      .proc-text strong {
+        color: var(--ink-2);
+      }
+      .proc-h {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 0.9rem;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 20px 0 8px;
+      }
+      .kv {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 6px 18px;
+        max-width: 72ch;
+        margin: 4px 0 16px;
+        font-size: 0.92rem;
+      }
+      .kv dt {
+        font-weight: 600;
+        color: var(--ink-2);
+      }
+      .kv dd {
+        color: var(--text);
+      }
+      .roles-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 2px 0 14px;
+      }
+      .flags {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 16px;
+        font-size: 0.9rem;
+      }
+      .flags th,
+      .flags td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      .flags th {
+        font-family: var(--mono);
+        font-size: 0.66rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .flags td strong {
+        color: var(--ink-2);
+      }
+      .flags .def {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .flags-wrap {
+        overflow-x: auto;
+        margin: 8px 0 16px;
+      }
+    
     </style>
   </head>
   <body>
@@ -1080,6 +1192,10 @@
           <div class="nav-group-label">Einstieg</div>
           <a class="navlink" href="#panel-ueberblick" style="--dot: #9ec5ff">
             <span class="dot"></span> Überblick
+          </a>
+          <a class="navlink" href="#panel-prozesse" style="--dot: #6366f1">
+            <span class="dot"></span> Prozesse &amp; Funktionen
+            <span class="abbr">PRZ</span>
           </a>
           <div class="nav-group-label">Verbandsrollen</div>
           <a class="navlink" href="#panel-admin" style="--dot: var(--c-admin)">
@@ -1757,6 +1873,1447 @@
               </div>
             </div>
           </div>
+        </section>
+
+        <!-- ═══════════ PROZESSE & FUNKTIONEN ═══════════ -->
+        <section class="panel" id="panel-prozesse" style="--rc: #4f46e5">
+          <div class="hero">
+            <span class="hero-mark">PRZ</span>
+            <div class="hero-badge">Rollenübergreifend</div>
+            <h1>Prozesse &amp; Funktionen</h1>
+            <p>
+              Alle Abläufe des Saisonmanagers, unabhängig davon, wer sie ausführt.
+              Die Rollenkapitel sagen dir, <em>wer was darf</em>. Hier erfährst du,
+              <em>wie eine Funktion arbeitet</em>: von der Auslösung über jeden
+              Zwischenschritt bis zu allen möglichen Ergebnissen, samt Sonderfällen
+              und Regeln.
+            </p>
+            <div class="hero-scope">🧭 Nachschlagewerk nach Themenbereichen</div>
+          </div>
+
+          <div class="cat">
+            <span class="code">Öffentlich</span>
+            <h2>Öffentliche Ansichten</h2>
+          </div>
+          <p class="cat-lead">
+            Alles, was Fans, Vereine und Medien ohne Login sehen: Spielplan,
+            Tabelle, Scorer, Statistiken und der Lizenzcheck.
+          </p>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">🌐</span>
+              <div>
+                <div class="proc-title">Verband, Liga &amp; Saison-Umschalter</div>
+                <div class="proc-sub">
+                  Einstieg über den Verband, Wechsel bis in alte Saisons
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Der Einstieg läuft über den Verband, darunter siehst du dessen Ligen
+                der gewählten Saison. Im Kopfbereich der Verbandsseite gibt es einen
+                <strong>Saison-Umschalter</strong>, sobald mehr als eine Saison
+                hinterlegt ist. Er listet alle Saisons absteigend und reicht so weit
+                zurück, wie Saisons im System gepflegt sind, in der Praxis bis
+                2010/2011. Wechselst du die Saison, lädt das System die passenden
+                Ligen nach.
+              </p>
+              <p class="proc-text">
+                Innerhalb einer Liga führt eine Tab-Navigation zu Übersicht, Tabelle
+                (bei Ligen) und Scorer (wenn aktiviert). Ganz oben aktualisiert sich
+                eine Liste der nächsten Spiele automatisch alle 30 Sekunden. Ligen
+                und Teams lassen sich lokal als Favorit markieren.
+              </p>
+            </div>
+          </details>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">📊</span>
+              <div>
+                <div class="proc-title">Spielplan, Tabelle &amp; Scorer</div>
+                <div class="proc-sub">Die öffentlichen Kernansichten je Liga</div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Die <strong>Übersicht</strong> zeigt den aktuellen Spieltag mit
+                Paarungen und einer Kurz-Tabelle, bei Pokal- und Turnierformaten
+                stattdessen Runden bzw. Turnierbaum. Der
+                <strong>Spielplan</strong> lässt sich Spieltag für Spieltag
+                durchblättern oder komplett anzeigen. Die
+                <strong>Tabelle</strong> sortiert nach Punkten, Tordifferenz und
+                erzielten Toren, optional nach direktem Vergleich. Der
+                <strong>Scorer</strong> listet die besten Punktesammler, paginiert
+                zu 30 Einträgen, mit Toren, Vorlagen, Punkten und Strafen.
+              </p>
+              <div class="proc-h">Playoff- und Playdown-Markierungen</div>
+              <p class="proc-text">
+                Die Tabelle markiert die konfigurierten Qualifikationsränge mit
+                einem farbigen linken Rand und einer Legende darunter: Aufstieg
+                grün, Playoffs blau, Playdowns orange, Abstieg rot, Deutsche
+                Meisterschaft violett, Pokal. Punktabzüge erscheinen als Fußnote,
+                ebenso ein Hinweis, wenn Direktbegegnungen aus der Hinrunde
+                eingerechnet sind.
+              </p>
+              <div class="note">
+                Ergebnisse laufender Spiele werden für Ticker-Partner ohne
+                Echtzeit-Freigabe ausgeblendet. Öffentliche Ansichten sind zur
+                Entlastung serverseitig einige Minuten zwischengespeichert.
+              </div>
+            </div>
+          </details>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">👟</span>
+              <div>
+                <div class="proc-title">Spieler- &amp; Teamstatistik</div>
+                <div class="proc-sub">
+                  Karriere pro Spieler, Saisonbilanz pro Team
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Ein Klick auf einen <strong>Spielernamen</strong>, etwa in der
+                Scorer-Liste, öffnet das öffentliche Spielerprofil: Gesamtzahlen
+                (Spiele, Tore, Vorlagen, Punkte pro Spiel) und darunter pro Saison
+                und Liga eine Tabelle mit Verein, Spielen, Toren, Vorlagen, Punkten
+                und Strafminuten. Ist ein Spieler nicht mehr aktiv, wird das
+                vermerkt.
+              </p>
+              <p class="proc-text">
+                Die <strong>Team-Seite</strong> zeigt die Bilanz für die Saison des
+                Teams: Kennzahlen, die letzten und kommenden zehn Spiele mit
+                Ergebnis und Sieg/Niederlage-Kennzeichnung sowie die Scorer der
+                Saison. Ein Klick lädt den <strong>Team-Kalender als ICS</strong>.
+                Statistiken vergangener Saisons stimmen, weil die Auswertung an die
+                Saison der eigenen Liga des Teams gebunden ist, nicht an die
+                laufende Saison.
+              </p>
+            </div>
+          </details>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">✅</span>
+              <div>
+                <div class="proc-title">Öffentlicher Lizenzcheck (Schiri)</div>
+                <div class="proc-sub">
+                  Gültigkeit einer Schiedsrichterlizenz per Nummer prüfen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Über den Lizenzcheck prüfst du eine Schiedsrichterlizenz per
+                Lizenznummer. Das Ergebnis zeigt Status (gültig oder abgelaufen),
+                Lizenzstufe, Gültig-bis-Datum, Verband und Zusatzqualifikationen mit
+                eigenem Ablaufdatum. Der QR-Code auf dem digitalen Ausweis führt
+                direkt hierher und füllt die Nummer vor, sodass die Prüfung sofort
+                läuft. Ausgegeben werden nur lizenzbezogene, keine personenbezogenen
+                Daten.
+              </p>
+              <div class="note">
+                Weitere öffentliche Feeds: <strong>iCal-Export</strong> für Team,
+                Liga und einzelne Spiele sowie die
+                <strong>Liveticker-API</strong> für die dafür konfigurierten Ligen.
+              </div>
+            </div>
+          </details>
+
+          <!-- ═══════════════════════════════════════════════════
+               8 · SYSTEM & VERWALTUNG
+          ═══════════════════════════════════════════════════ -->
+
+          <div class="cat">
+            <span class="code">Spieler</span>
+            <h2>Spieler-Stammdaten</h2>
+          </div>
+          <p class="cat-lead">
+            Anlegen, pflegen und bereinigen von Spielerprofilen samt ihrer
+            Vereinshistorie.
+          </p>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">👤</span>
+              <div>
+                <div class="proc-title">
+                  Spieler anlegen, deaktivieren, reaktivieren
+                </div>
+                <div class="proc-sub">Lebenszyklus eines Spielerprofils</div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Team- und Vereinsmanager legen neue Spieler an, Admin und SBK haben
+                systemweiten Zugriff. Statt ein Profil zu löschen, wird es
+                <strong>deaktiviert</strong>, damit die Spielhistorie erhalten
+                bleibt. Deaktivierte Spieler tauchen nicht mehr in Suche, Transfer-
+                und Freigabeanträgen auf, und ihre Lizenzen werden ungültig.
+                Reaktivieren ist möglich.
+              </p>
+              <p class="proc-text">
+                Ein Spieler trägt seine <strong>Vereinsmitgliedschaften</strong> als
+                Historie mit Start- und Enddatum. Zusätzliche Mitgliedschaften, etwa
+                für Spielgemeinschaften, verwaltest du separat.
+              </p>
+              <div class="roles-inline">
+                <span class="rb tm">TM</span>
+                <span class="rb vm">VM</span>
+                <span class="rb sbk">SBK</span>
+                <span class="rb admin">Admin</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">🧬</span>
+              <div>
+                <div class="proc-title">Doppelprofile zusammenführen</div>
+                <div class="proc-sub">
+                  Verlustfreies Verschmelzen zweier Datensätze desselben Spielers
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Existiert ein Spieler versehentlich doppelt, führt der Admin die
+                Profile zusammen. Das Verschmelzen ist <strong>verlustfrei</strong>:
+                Transfers, Transfer-Anfragen, Lizenzdokumente, Änderungsanträge,
+                Sperren und Spieleinsätze werden auf den verbleibenden Datensatz
+                umgehängt. Zusammengeführt wird in den Datensatz mit der kleinsten
+                ID. Das Zweitprofil bleibt deaktiviert erhalten und verweist auf das
+                Master-Profil.
+              </p>
+              <p class="proc-text">
+                Lizenzen werden pro Team und Saison zusammengeführt, die Historie
+                gemergt statt dupliziert. Stünden beide Spieler in derselben
+                Aufstellung, verweigert das System den Merge, statt einen
+                Doppeleintrag zu erzeugen.
+              </p>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">✏️</span>
+              <div>
+                <div class="proc-title">Spielerdaten-Korrektur</div>
+                <div class="proc-sub">
+                  Vereinsmanager beantragt, SBK entscheidet
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Stimmen Stammdaten eines Spielers nicht, stellt der Vereinsmanager
+                einen Änderungsantrag. Die SBK bzw. der Admin prüft ihn und
+                übernimmt oder lehnt ab. So bleiben Korrekturen an fremden
+                Vereinsspielern kontrolliert.
+              </p>
+              <div class="flow">
+                <div class="st start">Korrektur nötig</div>
+                <div class="cn act">
+                  <span class="cl">beantragen</span><span class="rb vm">VM</span
+                  ><span class="ar">→</span>
+                </div>
+                <div class="st pending">Prüfung</div>
+                <div class="cn act">
+                  <span class="cl">entscheiden</span
+                  ><span class="rb sbk">SBK / Admin</span><span class="ar">→</span>
+                </div>
+                <div class="st success">Übernommen</div>
+              </div>
+            </div>
+          </details>
+
+          <!-- ═══════════════════════════════════════════════════
+               5 · SCHIEDSRICHTERWESEN
+          ═══════════════════════════════════════════════════ -->
+
+          <div class="cat">
+            <span class="code">Schiri</span>
+            <h2>Schiedsrichterwesen</h2>
+          </div>
+          <p class="cat-lead">
+            Von der Lizenzstufe über den Kurs-Import bis zur Ansetzung am Spieltag
+            und dem digitalen Ausweis.
+          </p>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">🦺</span>
+              <div>
+                <div class="proc-title">
+                  Schiri-Stammdaten, Lizenzstufen &amp; Gültigkeit
+                </div>
+                <div class="proc-sub">
+                  Lizenz mit Stufe und Ablaufdatum nach Regeljahr-Logik
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Jeder Schiedsrichter hat eine Lizenznummer, eine Lizenzstufe und ein
+                Ablaufdatum. Neue Schiedsrichter legt der Admin bzw. die bundesweite
+                RSK an, ein Landesverbands-RSK verwaltet nur den eigenen Bestand.
+                Die Gültigkeit richtet sich nach der Stufe und einem Stichtag: In
+                <strong>Regeljahren</strong> (alle vier Jahre) laufen Lizenzen am
+                31. Juli ab, sonst am 30. September.
+              </p>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb rsk">RSK FD</span>
+                <span class="rb rsk">RSK LV (nur eigener Bestand)</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">📇</span>
+              <div>
+                <div class="proc-title">Kurs-Import &amp; Freigabe (LV-Review)</div>
+                <div class="proc-sub">
+                  Kursergebnisse als CSV einspielen und prüfen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Kursergebnisse werden als CSV importiert. Ist am Landesverband der
+                <strong>Kontrollprozess</strong> aktiv, legt das System Datensätze
+                mit Stammdaten-Korrekturen oder Neuanlagen dem RSK zur Freigabe vor,
+                bevor sie wirksam werden. Beim Anwenden leitet das System das
+                Ablaufdatum aus Kursjahr, Gültigkeitsdauer der Stufe und
+                Regeljahr-Stichtag ab.
+              </p>
+              <div class="flow">
+                <div class="st start">CSV hochladen</div>
+                <div class="cn act">
+                  <span class="cl">Vorschau prüfen</span
+                  ><span class="rb rsk">RSK</span><span class="ar">→</span>
+                </div>
+                <div class="st pending">Review</div>
+                <div class="cn act">
+                  <span class="cl">anwenden</span><span class="rb rsk">RSK</span
+                  ><span class="ar">→</span>
+                </div>
+                <div class="st success">Lizenzen aktualisiert</div>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">📅</span>
+              <div>
+                <div class="proc-title">Schiedsrichter ansetzen</div>
+                <div class="proc-sub">
+                  Von der vorläufigen Ansetzung bis zur Veröffentlichung
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Ist am Landesverband die
+                <strong>Ansetzung durch die RSK</strong> aktiv, setzt der Ansetzer
+                bzw. Admin Schiedsrichter zu Spielen an. In der Auswahl erscheinen
+                nur Schiedsrichter, die den Spieltag als verfügbar markiert haben
+                und nicht schon am selben Tag angesetzt sind. Zuerst kannst du
+                <strong>vorläufig benachrichtigen</strong> (die Schiris bekommen
+                eine E-Mail, der Status bleibt vorläufig), danach
+                <strong>veröffentlichen</strong>. Beim Veröffentlichen erhalten die
+                Schiris eine E-Mail mit einem Lizenzkarten-Link (72 Stunden gültig),
+                und die Schiedsrichterbezeichnung am Spiel wird gesetzt.
+              </p>
+              <div class="flow">
+                <div class="st start">Spiel offen</div>
+                <div class="cn act">
+                  <span class="cl">ansetzen</span
+                  ><span class="rb ansetzer">Ansetzer / Admin</span
+                  ><span class="ar">→</span>
+                </div>
+                <div class="st pending">Vorläufig</div>
+                <div class="cn act">
+                  <span class="cl">benachrichtigen</span
+                  ><span class="rb ansetzer">Ansetzer / Admin</span
+                  ><span class="ar">→</span>
+                </div>
+                <div class="st info">Vorläufig &amp; benachrichtigt</div>
+                <div class="cn act">
+                  <span class="cl">veröffentlichen</span
+                  ><span class="rb ansetzer">Ansetzer / Admin</span
+                  ><span class="ar">→</span>
+                </div>
+                <div class="st success">Veröffentlicht</div>
+              </div>
+              <div class="note">
+                <strong>Verfügbarkeiten</strong> pflegen die Schiris selbst im
+                Portal. <strong>Tags</strong> helfen bei der Auswahl und sind pro
+                Verband gescopt, globale Tags legt nur der Admin an.
+              </div>
+            </div>
+          </details>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">🎫</span>
+              <div>
+                <div class="proc-title">Schiri-Portal &amp; digitaler Ausweis</div>
+                <div class="proc-sub">Self-Service für Schiedsrichter</div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Schiedsrichter mit Benutzerkonto pflegen im Portal ihr Profil, ihre
+                Verfügbarkeiten und sehen ihre Spieltage und ihre Historie inklusive
+                der eigenen Kurs- und Prüfungsergebnisse. Der
+                <strong>digitale Ausweis</strong> zeigt die aktuelle Lizenz, sein
+                QR-Code führt auf den öffentlichen Lizenzcheck.
+              </p>
+              <div class="roles-inline">
+                <span class="rb schiri">Schiedsrichter</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">💬</span>
+              <div>
+                <div class="proc-title">Schiri-Feedback der Vereine</div>
+                <div class="proc-sub">
+                  Rückmeldung zu eingesetzten Schiedsrichtern
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Vereine geben Feedback zu den Schiedsrichtern ihrer Spiele. Das
+                Feedback wird an die
+                <strong>tatsächlich im Spielbericht eingesetzten</strong>
+                Schiedsrichter gehängt, nicht nur an eine eventuelle Ansetzung, und
+                erscheint auf deren Profil. So landet auch Feedback zu Spielen ohne
+                Ansetzungs-Modul beim richtigen Schiri.
+              </p>
+              <div class="roles-inline">
+                <span class="rb vm">VM</span>
+                <span class="rb tm">TM</span>
+              </div>
+            </div>
+          </details>
+
+          <!-- ═══════════════════════════════════════════════════
+               6 · SPIELTAG & SPIELBERICHT
+          ═══════════════════════════════════════════════════ -->
+
+          <div class="cat">
+            <span class="code">Lizenzen</span>
+            <h2>Spielerlizenzen</h2>
+          </div>
+          <p class="cat-lead">
+            Die Spielberechtigung eines Spielers für ein Team: beantragen,
+            genehmigen, mit den nötigen Dokumenten belegen, plus die Sonderregeln
+            des Großfeld-Erwachsenenbereichs.
+          </p>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📄</span>
+              <div>
+                <div class="proc-title">Lizenz beantragen &amp; erteilen</div>
+                <div class="proc-sub">
+                  Spielberechtigung anfordern, prüfen und automatische Statuswechsel
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Eine Lizenz macht einen Spieler für ein bestimmtes Team
+                spielberechtigt.
+                <strong>Team- oder Vereinsmanager beantragen</strong> sie, die
+                zuständige <strong>SBK bzw. der Admin erteilt</strong> sie. Beim
+                Beantragen prüft das System die für die Liga hinterlegten
+                Pflichtdokumente (siehe unten) und, je nach Liga, die
+                Altersberechtigung.
+              </p>
+              <p class="proc-text">
+                Über den einfachen Weg Beantragt, dann Erteilt hinaus kennt die
+                Lizenz mehrere <strong>automatische Statuswechsel</strong>, die aus
+                anderen Vorgängen ausgelöst werden. Wird ein Transfer genehmigt,
+                setzt das System laufende Lizenzen auf <em>Ungültig (Transfer)</em>.
+                Eine widerrufene Freigabe setzt die Lizenzen der Zweitmitgliedschaft
+                auf <em>Zurückgezogen</em>. Eine Spielersperre setzt aktive Lizenzen
+                auf <em>Gesperrt</em> und stellt sie beim Aufheben wieder her, und
+                ein deaktivierter Spieler verliert seine Lizenzen
+                (<em>Gelöscht</em>).
+              </p>
+              <div class="proc-h">Wer macht das?</div>
+              <div class="roles-inline">
+                <span class="rb tm">Teammanager</span>
+                <span class="rb vm">Vereinsmanager</span>
+                <span class="rb sbk">SBK</span>
+                <span class="rb admin">Admin</span>
+              </div>
+              <div class="flow">
+                <div class="st pending">Beantragt</div>
+                <div class="cn act">
+                  <span class="cl">genehmigen</span
+                  ><span class="rb sbk">SBK / Admin</span><span class="ar">→</span>
+                </div>
+                <div class="st success">Erteilt</div>
+              </div>
+              <div class="branches">
+                <div class="branch">
+                  <span class="from">aus Beantragt:</span
+                  ><span class="rb sbk">SBK / Admin</span
+                  ><span class="act">ablehnen</span><span class="ar">→</span
+                  ><span class="chip error">Abgelehnt</span>
+                </div>
+                <div class="branch">
+                  <span class="from">aus Beantragt oder Erteilt:</span
+                  ><span class="rb auto">automatisch</span
+                  ><span class="act">Transfer genehmigt</span
+                  ><span class="ar">→</span
+                  ><span class="chip warning">Ungültig (Transfer)</span>
+                </div>
+                <div class="branch">
+                  <span class="from">aus Beantragt oder Erteilt:</span
+                  ><span class="rb auto">automatisch</span
+                  ><span class="act">Spieler gesperrt</span><span class="ar">→</span
+                  ><span class="chip error">Gesperrt</span>
+                </div>
+              </div>
+              <div class="note">
+                <strong>Gültig bis:</strong> Bei der Erteilung kannst du ein
+                Gültig-bis-Datum setzen (Standard: 31. Juli des Saisonendes). ·
+                <strong>Historie:</strong> Jeden Statuswechsel protokolliert das
+                System mit Zeitpunkt und auslösendem Nutzer, einsehbar im
+                Spielerprofil, dort auch saisonübergreifend.
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📎</span>
+              <div>
+                <div class="proc-title">Pflichtdokumente am Spieler</div>
+                <div class="proc-sub">
+                  Saisonübergreifend hinterlegte Nachweise statt Anhang je Lizenz
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Nachweise wie Unterstellungs-/Anti-Doping-Erklärung,
+                Schiedsvereinbarung, Zustimmung der Erziehungsberechtigten oder das
+                sportärztliche Attest hängen <strong>am Spieler</strong>, nicht mehr
+                an der einzelnen Lizenz. Ein einmal hochgeladenes Dokument gilt für
+                alle künftigen Lizenzanträge, du musst es nicht bei jedem Antrag neu
+                beibringen.
+              </p>
+              <p class="proc-text">
+                Welche Dokumente es überhaupt gibt, steuerst du über einen zentralen
+                <strong>Dokumentarten-Katalog</strong> (Admin bundesweit, SBK für
+                den eigenen Verband). Je Dokumentart legst du Beschreibung, eine
+                Vorlage zum Download, die Gültigkeit (einmalig oder je Saison) und
+                eine Altersgrenze fest, zum Beispiel Zustimmung der
+                Erziehungsberechtigten unter 18 oder Attest unter 16. Welche davon
+                eine Liga verlangt, wählt sie über ihre Pflichtdokumente.
+                Altersabhängige Dokumente prüft das System zum
+                <strong>Datum der Lizenzbeantragung</strong>.
+              </p>
+              <div class="note">
+                <strong>Sichtbarkeit:</strong> Admin und bundesweite SBK sehen alle
+                Dokumente, ein verbandsgebundener SBK sieht globale und die eigenen
+                Verbandsdokumente. Vereins- und Teammanager sehen die Dokumente
+                ihres Spielers.
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🥇</span>
+              <div>
+                <div class="proc-title">
+                  Erst- und Zweitlizenz (Großfeld, Erwachsene)
+                </div>
+                <div class="proc-sub">
+                  Manuelle Zuordnung mit Wirkung auf die Spielberechtigung
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Ob eine Großfeld-Lizenz Erst- oder Zweitlizenz ist, hängt weder von
+                der Ligahöhe noch vom Zeitpunkt des Antrags ab. Es ist eine bewusste
+                Zuordnung und betrifft die Spielberechtigung, denn mit einer
+                Zweitlizenz ist zum Beispiel der FD-Pokal ausgeschlossen. Deshalb
+                dokumentierst du sie <strong>manuell</strong>, statt sie automatisch
+                ableiten zu lassen.
+              </p>
+              <p class="proc-text">
+                Die SBK setzt die Zuordnung
+                <strong>bei der Lizenzgenehmigung</strong>. Wird die neue Lizenz
+                Erstlizenz, macht das System eine bestehende im selben Wettbewerb
+                automatisch zur Zweitlizenz. Später änderst du sie im Spielerprofil.
+                Sie gilt <strong>pro Wettbewerb</strong> (Großfeld Erwachsene,
+                getrennt nach männlich und weiblich). Ein Tausch ist einmal pro
+                Saison erlaubt, weitere Täusche macht nur ein Admin. Alle Wechsel
+                sind mit Nutzer und Zeitpunkt nachvollziehbar.
+              </p>
+              <div class="roles-inline">
+                <span class="rb sbk">SBK</span>
+                <span class="rb admin">Admin (weitere Täusche)</span>
+              </div>
+            </div>
+          </details>
+
+          <!-- ═══════════════════════════════════════════════════
+               3 · TRANSFERS & FREIGABEN
+          ═══════════════════════════════════════════════════ -->
+
+          <div class="cat">
+            <span class="code">Transfers</span>
+            <h2>Transfers &amp; Freigaben</h2>
+          </div>
+          <p class="cat-lead">
+            Vereinswechsel und vorübergehende Freigaben, mit Bestätigung durch den
+            Spieler selbst und Endkontrolle durch den Landesverband.
+          </p>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🔄</span>
+              <div>
+                <div class="proc-title">Transfer &amp; Freigabe eines Spielers</div>
+                <div class="proc-sub">
+                  Vereinswechsel oder vorübergehende Freigabe, mehrstufig
+                  freigegeben
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Beim Vereinswechsel wählst du als aufnehmender Verein den Spieler
+                über Name und Geburtsdatum aus und stellst einen Antrag. Danach
+                durchläuft der Antrag mehrere Stationen: Erst gibt der
+                <strong>abgebende Verein</strong> frei, dann bestätigt der
+                <strong>Spieler</strong>
+                selbst über einen E-Mail-Link, zuletzt prüft der
+                <strong>Landesverband</strong>. Erst danach ist der Transfer
+                genehmigt.
+              </p>
+              <p class="proc-text">
+                Jede Station kann ablehnen, und der aufnehmende Verein kann den
+                Antrag bis zur Genehmigung zurückziehen. Setzt du ein
+                <strong>Wirkungsdatum in der Zukunft</strong>, wird der Transfer
+                geplant und erst ab diesem Datum vollzogen. Bei Genehmigung setzt
+                das System die laufenden Lizenzen des Spielers automatisch auf
+                Ungültig (Transfer). Die vorübergehende Freigabe funktioniert analog
+                und lässt sich später widerrufen, was die Lizenzen der
+                Zweitmitgliedschaft zurückzieht.
+              </p>
+              <div class="proc-h">So läuft es ab</div>
+              <div class="flow">
+                <div class="st start">Spieler auswählen</div>
+                <div class="cn act">
+                  <span class="cl">Antrag erstellen</span
+                  ><span class="rb vm">VM aufnehmend</span><span class="ar">→</span>
+                </div>
+                <div class="st pending">Vereinsprüfung</div>
+                <div class="cn act">
+                  <span class="cl">genehmigen</span
+                  ><span class="rb vm">VM abgebend</span><span class="ar">→</span>
+                </div>
+                <div class="st pending">Spielerbestätigung</div>
+                <div class="cn act">
+                  <span class="cl">bestätigen</span
+                  ><span class="rb player">Spieler</span><span class="ar">→</span>
+                </div>
+                <div class="st pending">LV-Prüfung</div>
+                <div class="cn act">
+                  <span class="cl">genehmigen</span
+                  ><span class="rb sbk">LV / Admin</span><span class="ar">→</span>
+                </div>
+                <div class="st success">Genehmigt</div>
+              </div>
+              <div class="branches">
+                <div class="branch">
+                  <span class="from">jede Prüfstation:</span
+                  ><span class="rb vm">Verein / LV</span
+                  ><span class="act">lehnt ab</span><span class="ar">→</span
+                  ><span class="chip error">Abgelehnt</span>
+                </div>
+                <div class="branch">
+                  <span class="from">vor Genehmigung:</span
+                  ><span class="rb vm">VM aufnehmend</span
+                  ><span class="act">zieht zurück</span><span class="ar">→</span
+                  ><span class="chip neutral">Zurückgezogen</span>
+                </div>
+                <div class="branch">
+                  <span class="from">nach Genehmigung (Freigabe):</span
+                  ><span class="rb admin">Admin</span
+                  ><span class="act">widerruft</span><span class="ar">→</span
+                  ><span class="chip warning">Widerrufen</span>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- ═══════════════════════════════════════════════════
+               4 · SPIELER-STAMMDATEN
+          ═══════════════════════════════════════════════════ -->
+
+          <div class="cat">
+            <span class="code">Spieltag</span>
+            <h2>Spieltag &amp; Spielbericht</h2>
+          </div>
+          <p class="cat-lead">
+            Was am Spieltag passiert: Bericht erfassen, Checkliste beantworten,
+            einreichen und finalisieren, plus der Sonderweg für rote Karten.
+          </p>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📝</span>
+              <div>
+                <div class="proc-title">
+                  Spielbericht erfassen &amp; finalisieren
+                </div>
+                <div class="proc-sub">
+                  Vom Kampfgericht bis zur Freigabe durch die SBK
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Der Spielbericht entsteht am Spieltag: Aufstellungen, Tore, Strafen
+                und Auszeichnungen. Team- oder Vereinsmanager erfassen und reichen
+                ihn ein, die SBK bzw. der Admin finalisiert. Erst dann fließt das
+                Ergebnis endgültig in Tabelle und Statistiken. Solange kein Spiel
+                begonnen hat, lässt sich der Spielplan noch komplett neu
+                importieren, danach nicht mehr (siehe Spielplan-Import).
+              </p>
+              <div class="flow">
+                <div class="st start">Vorbereitung</div>
+                <div class="cn act">
+                  <span class="cl">erfassen</span><span class="rb tm">TM / VM</span
+                  ><span class="ar">→</span>
+                </div>
+                <div class="st pending">Erfasst</div>
+                <div class="cn act">
+                  <span class="cl">einreichen</span
+                  ><span class="rb tm">TM / VM</span><span class="ar">→</span>
+                </div>
+                <div class="st info">Eingereicht</div>
+                <div class="cn act">
+                  <span class="cl">finalisieren</span
+                  ><span class="rb sbk">SBK / Admin</span><span class="ar">→</span>
+                </div>
+                <div class="st success">Abgeschlossen</div>
+              </div>
+              <div class="note">
+                <strong>Live-Erfassung &amp; Ticker:</strong> Ereignisse lassen sich
+                live erfassen und fließen in den öffentlichen Ticker. ·
+                <strong>Pflicht-Scan:</strong> Ist er am Landesverband aktiv, muss
+                der Papierbogen nach dem Spiel hochgeladen werden.
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">☑️</span>
+              <div>
+                <div class="proc-title">Spieltagscheckliste &amp; Sekretariat</div>
+                <div class="proc-sub">
+                  Pflichtfragen vor dem Abschluss und Zugang fürs Kampfgericht
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Der Landesverband kann eine <strong>Spieltagscheckliste</strong> aus
+                Ja/Nein-Fragen definieren, die vor dem Abschluss eines Spielberichts
+                zu beantworten sind. Werden Punkte verneint, geht eine E-Mail als
+                BCC an die hinterlegte SBK-Adresse. Für das Kampfgericht vor Ort
+                gibt es <strong>Sekretariats-Links</strong> und eine öffentliche
+                <strong>Lizenzliste</strong> über einen signierten Link, der die
+                lizenzierten und beantragten Spieler beider Teams zeigt.
+              </p>
+              <div class="roles-inline">
+                <span class="rb sbk">SBK / LV</span>
+                <span class="rb tm">TM / VM</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🟥</span>
+              <div>
+                <div class="proc-title">Rote Karten &amp; besondere Ereignisse</div>
+                <div class="proc-sub">
+                  Digitaler Berichtsworkflow, gesteuert über zwei Verbandsschalter
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Für rote Karten und besondere Ereignisse gibt es einen digitalen
+                Berichtsweg, den zwei Schalter am Landesverband steuern. Der
+                <strong>Master-Schalter</strong> (Berichtsworkflow aktiv)
+                entscheidet, ob überhaupt digital berichtet wird. Ist er aus, bleibt
+                es beim analogen Papierbericht vor Ort, und es passiert nichts
+                weiter.
+              </p>
+              <p class="proc-text">
+                Ist er an, entscheidet der zweite Schalter über den Weg des
+                hochgeladenen Berichts: Bei
+                <strong>manueller Protesterstellung</strong>
+                landet der Bericht als Verfahrensvorschlag zur Prüfung bei der SBK.
+                Ist dieser Schalter aus, geht der Bericht automatisch per E-Mail an
+                die VSK-Adresse des Verbands.
+              </p>
+              <div class="branches">
+                <div class="branch">
+                  <span class="from">Master-Schalter aus:</span
+                  ><span class="rb auto">System</span
+                  ><span class="act">kein digitaler Bericht</span
+                  ><span class="ar">→</span
+                  ><span class="chip neutral">Papierbericht vor Ort</span>
+                </div>
+                <div class="branch">
+                  <span class="from">an + manuell:</span
+                  ><span class="rb sbk">SBK</span
+                  ><span class="act">prüft Vorschlag</span><span class="ar">→</span
+                  ><span class="chip info">Verfahren oder Ablehnung</span>
+                </div>
+                <div class="branch">
+                  <span class="from">an + automatisch:</span
+                  ><span class="rb auto">System</span
+                  ><span class="act">sendet Bericht</span><span class="ar">→</span
+                  ><span class="chip success">E-Mail an VSK</span>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- ═══════════════════════════════════════════════════
+               7 · ÖFFENTLICHE ANSICHTEN
+          ═══════════════════════════════════════════════════ -->
+
+          <div class="cat">
+            <span class="code">Spielbetrieb</span>
+            <h2>Spielbetrieb &amp; Saison</h2>
+          </div>
+          <p class="cat-lead">
+            So baust du ein Spieljahr auf: Ligen aus der Vorsaison übernehmen, Teams
+            melden, den Spielplan einspielen und festlegen, wie Ergebnisse und
+            Platzierungen zwischen Ligen zusammenspielen.
+          </p>
+
+          <!-- Liga kopieren -->
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🗂️</span>
+              <div>
+                <div class="proc-title">Liga aus der Vorsaison kopieren</div>
+                <div class="proc-sub">
+                  Saisonwechsel: Stammdaten und wählbare Teams übernehmen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Zu Saisonbeginn musst du nicht jede Liga von Hand neu anlegen. Du
+                kopierst eine bestehende Liga der Vorsaison in die aktuelle Saison.
+                Die Stammdaten (Name, Klasse, Modus, Einstellungen) wandern mit, die
+                Anmeldefrist rückt automatisch um ein Jahr nach vorne, und die
+                Quell-Liga wird als <strong>Vorsaison-Liga</strong> verknüpft.
+              </p>
+              <p class="proc-text">
+                Spieltage, Spiele und Ergebnisse nimmt das System
+                <strong>bewusst nicht</strong> mit, der Spielplan entsteht danach
+                neu. Die Teams der Quell-Liga wählst du dagegen
+                <strong>gezielt einzeln aus</strong> und übernimmst genau die
+                Mannschaften, die auch in der neuen Saison antreten. Kopierte Teams
+                landen <strong>unbestätigt</strong> in der neuen Liga, du musst die
+                Meldung also aktiv neu bestätigen, und die Teammanager-Zuordnungen
+                setzt du neu.
+              </p>
+              <div class="proc-h">Wer macht das?</div>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb sbk">SBK (Quell-Verband)</span>
+              </div>
+              <div class="flow">
+                <div class="st start">Quell-Liga (Vorsaison)</div>
+                <div class="cn act">
+                  <span class="cl">kopieren, Teams wählen</span
+                  ><span class="rb sbk">SBK / Admin</span><span class="ar">→</span>
+                </div>
+                <div class="st info">Neue Liga (Frist +1 Jahr)</div>
+                <div class="cn act">
+                  <span class="cl">Teams bestätigen</span
+                  ><span class="rb sbk">SBK / Admin</span><span class="ar">→</span>
+                </div>
+                <div class="st success">Liga gemeldet</div>
+              </div>
+              <div class="note">
+                <strong>Verknüpfung:</strong> Die neue Liga zeigt über
+                <em>Vorsaison-Liga</em> auf ihre Quelle, damit Tabellen-Historie und
+                Qualifikationsregeln darauf aufbauen können. ·
+                <strong>Ligaklasse:</strong> Alt-Werte der Ligaklasse werden beim
+                Kopieren auf die kanonischen Codes normalisiert, damit die neue Liga
+                gültig gespeichert wird.
+              </div>
+            </div>
+          </details>
+
+          <!-- Spielplan importieren (FLAGGSCHIFF) -->
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📅</span>
+              <div>
+                <div class="proc-title">
+                  Spielplan importieren &amp; überschreiben
+                </div>
+                <div class="proc-sub">
+                  Spieltage und Spiele aus einer Excel-Vorlage einspielen, mehrfach,
+                  bis zum ersten Spiel
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Den Spielplan einer Liga erfasst du nicht Spiel für Spiel von Hand,
+                sondern spielst ihn aus einer
+                <strong>Excel-Importvorlage</strong> ein. Die Vorlage erzeugst du
+                pro Liga, und sie enthält bereits die gültigen Bausteine dieser
+                Liga: die hinterlegten <strong>Hallen</strong>, die gemeldeten
+                <strong>Teams</strong> und die möglichen
+                <strong>Ausrichter</strong>, jeweils mit ihrer ID. In der Vorlage
+                beschreibst du dann Zeile für Zeile ein Spiel: Spieltag,
+                Spielnummer, Datum, Anpfiffzeit, Halle, Ausrichter sowie Heim- und
+                Gastteam.
+              </p>
+              <p class="proc-text">
+                Neu ist: Du kannst die Vorlage <strong>mehrfach hochladen</strong>.
+                Bisher war der Import einmalig, sobald eine Liga auch nur einen
+                Spieltag hatte, wurde jeder weitere Import abgewiesen. Jetzt
+                <strong
+                  >ersetzt ein erneuter Import den bestehenden Spielplan
+                  vollständig</strong
+                >, solange in der Liga noch
+                <strong>kein Spiel begonnen bzw. gespielt</strong> wurde. So spielst
+                du schon vor dem ersten Spieltag eine erste, ausdrücklich auch
+                <strong>lückenhafte</strong> Fassung ein und verfeinerst sie später.
+              </p>
+              <p class="proc-text">
+                <strong>Lücken sind erlaubt:</strong> Fehlen für einen Spieltag noch
+                Halle oder Ausrichter, ist das kein Fehler, sondern nur ein Hinweis.
+                Der Spieltag wird trotzdem angelegt, und du trägst die Angaben
+                später per erneutem Import nach. Das erhöht ganz bewusst den sanften
+                Druck auf Vereine, deren Daten noch fehlen: Der Spielplan steht
+                sichtbar, die Lücke fällt auf.
+              </p>
+              <div class="proc-h">Wer macht das?</div>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb sbk">SBK (mit Import-Recht)</span>
+              </div>
+              <div class="proc-h">So läuft es ab</div>
+              <div class="flow">
+                <div class="st start">Vorlage herunterladen</div>
+                <div class="cn act">
+                  <span class="cl">ausfüllen &amp; hochladen</span
+                  ><span class="rb sbk">SBK / Admin</span><span class="ar">→</span>
+                </div>
+                <div class="st pending">Prüfung</div>
+                <div class="cn act">
+                  <span class="cl">kein Spiel begonnen</span
+                  ><span class="rb auto">System</span><span class="ar">→</span>
+                </div>
+                <div class="st info">alter Plan wird ersetzt</div>
+                <div class="cn act">
+                  <span class="cl">anlegen (atomar)</span
+                  ><span class="rb auto">System</span><span class="ar">→</span>
+                </div>
+                <div class="st success">Spielplan aktiv</div>
+              </div>
+              <div class="branches">
+                <div class="branch">
+                  <span class="from">bei der Prüfung:</span
+                  ><span class="rb auto">System</span
+                  ><span class="act">≥ 1 Spiel begonnen/gespielt</span
+                  ><span class="ar">→</span
+                  ><span class="chip error">Import blockiert</span>
+                </div>
+                <div class="branch">
+                  <span class="from">beim Einlesen:</span
+                  ><span class="rb auto">System</span
+                  ><span class="act">Team/Datum/Zeit/Spielnummer unklar</span
+                  ><span class="ar">→</span
+                  ><span class="chip neutral">Abgewiesen, Plan unverändert</span>
+                </div>
+                <div class="branch">
+                  <span class="from">beim Neuanlegen:</span
+                  ><span class="rb auto">System</span><span class="act">Fehler</span
+                  ><span class="ar">→</span
+                  ><span class="chip neutral">Rollback, alter Plan bleibt</span>
+                </div>
+              </div>
+              <div class="proc-h">Wann ist Überschreiben gesperrt?</div>
+              <p class="proc-text">
+                Sobald <strong>ein einziges</strong> Spiel der Liga als begonnen
+                oder gespielt gilt, ist der gesamte Import gesperrt. Ein teilweises
+                Überschreiben gibt es nicht. Als begonnen oder gespielt zählt ein
+                Spiel, das gestartet oder beendet wurde, für das ein Spielbericht
+                angelegt wurde oder dessen Bericht abgeschlossen ist. Bis dahin ist
+                der Plan reine Planung, und du darfst ihn beliebig oft neu
+                einspielen.
+              </p>
+              <div class="proc-h">Was passiert beim Ersetzen?</div>
+              <p class="proc-text">
+                Der Vorgang ist <strong>atomar</strong>: Das System löscht den alten
+                Spielplan und legt den neuen in einem Zug an. Schlägt das Neuanlegen
+                fehl, etwa wegen einer fehlerhaften Zeile, rollt alles zurück, und
+                der
+                <strong>bisherige Spielplan bleibt unverändert erhalten</strong>.
+                Beim erfolgreichen Ersetzen verschwinden die alten Spieltage und
+                Spiele <strong>mitsamt allem, was daran hängt</strong>: bereits
+                gesetzte Schiedsrichter-Ansetzungen, Sekretariats-Links und
+                Spieltags-Bestätigungen. Vor dem Ersetzen weist die Oberfläche dich
+                deshalb ausdrücklich darauf hin.
+              </p>
+              <dl class="kv">
+                <dt>Format</dt>
+                <dd>Eine Excel-Datei (.xlsx) auf Basis der Liga-Vorlage.</dd>
+                <dt>Pflicht je Zeile</dt>
+                <dd>
+                  Spieltag, Spielnummer (eindeutig), Datum, Anpfiffzeit, Heim- und
+                  Gastteam.
+                </dd>
+                <dt>Optional (nur Hinweis)</dt>
+                <dd>Halle und Ausrichter, dürfen zunächst leer bleiben.</dd>
+                <dt>Wiederholbar</dt>
+                <dd>Beliebig oft, bis das erste Spiel begonnen hat.</dd>
+              </dl>
+              <div class="note">
+                <strong>Tipp aus der Praxis:</strong> Spiel früh eine erste Fassung
+                ein, ruhig mit offenen Hallen und Ausrichtern, damit der Spielplan
+                öffentlich sichtbar wird. Die Lücken schließt du danach per erneutem
+                Import, statt bis zur Vollständigkeit zu warten.
+              </div>
+            </div>
+          </details>
+
+          <!-- Teams importieren -->
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📥</span>
+              <div>
+                <div class="proc-title">
+                  Teams aus einer anderen Liga übernehmen (Top-N)
+                </div>
+                <div class="proc-sub">
+                  Endrunden und Playoffs mit den besten Teams der Quell-Liga füllen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Wenn du eine neue Liga aufsetzt, etwa eine Meister- oder Endrunde,
+                übernimmst du die besten Teams direkt aus der Abschlusstabelle einer
+                Quell-Liga. Du gibst die Quell-Liga und ein
+                <strong>Top-N</strong> an (zum Beispiel die besten 2), und das
+                System legt genau diese Teams in der neuen Liga an.
+                <strong>N = 0 übernimmt alle</strong> Teams. Das funktioniert auch
+                ligaübergreifend, also aus Ligen anderer Landesverbände.
+              </p>
+              <p class="proc-text">
+                Die Reihenfolge stammt aus der fertigen Tabelle der Quell-Liga, also
+                inklusive Sortierung und Direktvergleich. Ist der Verein eines Teams
+                in der Zielliga <strong>schon vertreten</strong>, überspringt das
+                System das Team, damit keine Doppelungen entstehen. Übernommene
+                Teams werden wie beim Kopieren
+                <strong>unbestätigt</strong> angelegt. Am Ende siehst du, wie viele
+                Teams übernommen, übersprungen oder fehlgeschlagen sind.
+              </p>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb sbk">SBK</span>
+              </div>
+            </div>
+          </details>
+
+          <!-- Ergebnisübernahme -->
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🔗</span>
+              <div>
+                <div class="proc-title">Ergebnisse zwischen Ligen übernehmen</div>
+                <div class="proc-sub">
+                  Vorrundenpunkte und Direktbegegnungen in eine Folge-Liga
+                  einrechnen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Für Modelle mit Vorrunde und anschließender Meister- oder
+                Platzierungsrunde kannst du festlegen, dass Ergebnisse aus einer
+                anderen Liga in die Tabelle einer Folge-Liga einfließen. Dafür gibt
+                es zwei getrennte, kombinierbare Mechanismen, jeweils im
+                Liga-Bearbeitungsformular einstellbar.
+              </p>
+              <div class="proc-h">Vorrundenpunkte übernehmen</div>
+              <p class="proc-text">
+                Du verknüpfst die Folge-Liga mit einer
+                <strong>Vorrunden-Liga</strong> und wählst, ob die dort erspielten
+                Tabellenpunkte <strong>voll</strong> oder
+                <strong>halbiert</strong> als Startguthaben mitkommen. Die Zuordnung
+                läuft über den Verein, nicht über die Team-ID, weil dasselbe Team in
+                beiden Ligen ein eigener Datensatz ist. Halbierte Punkte werden
+                abgerundet. Auf Wunsch übernimmst du zusätzlich die genehmigten
+                Spielerlizenzen der Vorrunden-Teams.
+              </p>
+              <div class="proc-h">Direktbegegnungen übernehmen</div>
+              <p class="proc-text">
+                Alternativ oder ergänzend rechnest du die
+                <strong>direkten Aufeinandertreffen</strong> aus einer anderen Liga
+                voll mit ein, also Spiele, Tore, Siege und Punkte, bewertet mit den
+                Punktregeln der Zielliga. Typischer Fall: In einer Meisterrunde
+                sollen die bereits in der Vorrunde gegeneinander gespielten Partien
+                der qualifizierten Teams weiterzählen. Es zählen nur beendete
+                Spiele, bei denen beide Vereine auch in der Zielliga vertreten sind.
+                Die Tabelle weist das mit einer Fußnote aus.
+              </p>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb sbk">SBK (mit Liga-Recht)</span>
+              </div>
+            </div>
+          </details>
+
+          <!-- Qualifikationsregeln -->
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🏅</span>
+              <div>
+                <div class="proc-title">
+                  Auf-/Abstiegs- und Qualifikationsregeln
+                </div>
+                <div class="proc-sub">
+                  Playoff-, Playdown- und Aufstiegsränge definieren und in der
+                  Tabelle markieren
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Pro Liga legst du Platzbereiche fest und gibst ihnen eine Bedeutung,
+                zum Beispiel Platz 1 bis 2 Aufstieg, Platz 3 bis 6 Playoffs, letzter
+                Platz Abstieg. Diese Regeln markieren die öffentliche Tabelle farbig
+                und erzeugen darunter automatisch eine Legende. Die Platzbereiche
+                dürfen sich nicht überschneiden.
+              </p>
+              <p class="proc-text">
+                Es gibt sechs Rang-Typen mit fester Farbe und Standard-Label, das du
+                überschreiben kannst: <strong>Aufstieg</strong> (grün),
+                <strong>Playoffs</strong> (blau),
+                <strong>Playdowns</strong> (orange), <strong>Abstieg</strong> (rot),
+                <strong>Deutsche Meisterschaft</strong> (violett) und
+                <strong>Pokal</strong>. Optional hinterlegst du je Regel eine
+                Ziel-Liga, in die der Bereich führt.
+              </p>
+              <div class="proc-h">Wer macht das?</div>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb sbk">SBK (im Spielbetrieb der Liga)</span>
+              </div>
+              <div class="note">
+                Die Markierung erscheint als farbiger linker Rand der Tabellenzeile
+                plus Eintrag in der Legende. Teilen sich mehrere Teams bei
+                Gleichstand einen Platz, greift die Regel für alle gleich
+                platzierten Teams.
+              </div>
+            </div>
+          </details>
+
+          <!-- Gruppenphase -->
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🎯</span>
+              <div>
+                <div class="proc-title">Gruppenphase &amp; Platzierungsspiele</div>
+                <div class="proc-sub">
+                  Gruppentabellen und automatisch befüllte Finalrunden
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Wettbewerbe mit Gruppenphase, etwa die Deutsche Meisterschaft
+                Kleinfeld, zeigen statt einer Gesamttabelle mehrere Gruppentabellen.
+                Ob ein Spiel zu einer Gruppe gehört, ergibt sich aus seiner
+                Gruppen-Kennung. Jede Gruppentabelle enthält nur die Teams, die in
+                der Gruppe tatsächlich gespielt haben, nicht alle Ligateams.
+              </p>
+              <p class="proc-text">
+                Die anschließenden <strong>Platzierungsspiele</strong> (Halbfinale,
+                Finale, Platz 3) füllt das System automatisch, sobald sie
+                feststehen. Eine Füllregel lautet entweder
+                <em>Gewinner/Verlierer eines Referenzspiels</em> oder
+                <em>Platz N einer bestimmten Gruppe</em>. Wichtig: Die
+                Platzierungsspiele werden erst befüllt, wenn
+                <strong>alle</strong> Gruppenspiele abgeschlossen sind, damit
+                niemand aus einer noch unfertigen Tabelle eingesetzt wird.
+              </p>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb sbk">SBK</span>
+              </div>
+            </div>
+          </details>
+
+          <!-- ═══════════════════════════════════════════════════
+               2 · SPIELERLIZENZEN
+          ═══════════════════════════════════════════════════ -->
+
+          <div class="cat">
+            <span class="code">System</span>
+            <h2>System &amp; Verwaltung</h2>
+          </div>
+          <p class="cat-lead">
+            Die Konfigurationsebene: Benutzer und Rollen, alle
+            Verbandseinstellungen, Banner, Logos und die zentralen Kataloge.
+          </p>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">⚙️</span>
+              <div>
+                <div class="proc-title">Verbandseinstellungen (alle Optionen)</div>
+                <div class="proc-sub">Was du pro Landesverband konfigurierst</div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Der Landesverband ist die zentrale Konfigurationseinheit. Ganze
+                Verbände anlegen oder löschen darf nur ein globaler Admin.
+                Bearbeiten (Stammdaten, Schalter, Logo, Banner, Checkliste,
+                Freigaben) darf der Admin überall, ein SBK nur seinen eigenen
+                Verband. Über eine
+                <strong>Eltern-Kind-Hierarchie</strong> erbt ein Kind-Verband
+                Einstellungen und E-Mail-Adressen vom übergeordneten Verband, die
+                geerbten Felder sind dann gesperrt.
+              </p>
+              <div class="proc-h">Die Schalter im Überblick</div>
+              <div class="flags-wrap">
+                <table class="flags">
+                  <thead>
+                    <tr>
+                      <th>Option</th>
+                      <th>Wirkung, wenn aktiv</th>
+                      <th>Standard</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Expresslizenzen</strong></td>
+                      <td>
+                        Vereinsmanager können bei Lizenzanträgen die Express-Option
+                        nutzen, die SBK wird automatisch benachrichtigt.
+                      </td>
+                      <td class="def">aus</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Kontrollprozess Schiri-Lizenzen</strong></td>
+                      <td>
+                        Beim Kurs-Import werden Korrekturen und Neuanlagen dem RSK
+                        zur Freigabe vorgelegt. Wird nur am obersten Verband
+                        gesetzt.
+                      </td>
+                      <td class="def">aus</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Pflicht-Scan Spielbericht</strong></td>
+                      <td>
+                        Der Papierbogen muss nach dem Spiel hochgeladen werden, der
+                        Ausrichter wird per E-Mail erinnert.
+                      </td>
+                      <td class="def">aus</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Ansetzung durch die RSK</strong></td>
+                      <td>
+                        Schaltet das Ansetzungs-Modul frei (Menüpunkte Ansetzungen
+                        und Verfügbarkeiten, Auswahl im Spiel-Editor).
+                      </td>
+                      <td class="def">aus</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Berichtsworkflow rote Karten</strong></td>
+                      <td>
+                        Master-Schalter: ersetzt den Papierbericht durch digitalen
+                        Upload. Aus bedeutet Papierbericht vor Ort.
+                      </td>
+                      <td class="def">aus</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Manuelle Protesterstellung</strong></td>
+                      <td>
+                        SBK prüft hochgeladene Berichte als Verfahrensvorschlag.
+                        Wirkt nur, wenn der Berichtsworkflow aktiv ist. Aus bedeutet
+                        automatische E-Mail an die VSK.
+                      </td>
+                      <td class="def">aus</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="proc-h">Weitere Einstellungen</div>
+              <dl class="kv">
+                <dt>Stammdaten</dt>
+                <dd>Name (Pflicht) und Kürzel.</dd>
+                <dt>E-Mail</dt>
+                <dd>
+                  VSK-Adresse (Empfänger für Schiri-Berichte) und SBK-Adresse (BCC
+                  bei verneinter Checkliste).
+                </dd>
+                <dt>Logo</dt>
+                <dd>WebP, max. 5 MB.</dd>
+                <dt>Werbebanner</dt>
+                <dd>
+                  WebP, max. 500 KB, empfohlen 1200 × 200 (6:1), optional mit Link.
+                </dd>
+                <dt>Spieltagscheckliste</dt>
+                <dd>
+                  Ja/Nein-Fragen mit Reihenfolge, nur an Verbänden ohne
+                  Elternverband.
+                </dd>
+                <dt>Vereinsfreigaben</dt>
+                <dd>
+                  Andere Sportverbünde saisonweise für die Vereine dieses Verbands
+                  freigeben.
+                </dd>
+              </dl>
+              <div class="roles-inline">
+                <span class="rb admin">Admin (alle)</span>
+                <span class="rb sbk">SBK (eigener Verband)</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🖼️</span>
+              <div>
+                <div class="proc-title">Werbebanner &amp; Logos</div>
+                <div class="proc-sub">Auf welcher Ebene was gepflegt wird</div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                <strong>Werbebanner</strong> gibt es auf drei Ebenen, jeweils WebP
+                und max. 500 KB: Liga, Sportverbund und Landesverband. Auf
+                öffentlichen Seiten gewinnt das speziellste Banner, ein Liga-Banner
+                hat also Vorrang vor dem Verbandsbanner. Banner pflegt die
+                zuständige Admin- oder SBK-Rolle, nicht die Vereine.
+              </p>
+              <p class="proc-text">
+                <strong>Logos</strong> laufen getrennt: Das Verbandslogo (WebP, max.
+                5 MB) pflegt Admin oder SBK. Das <strong>Vereinslogo</strong> pflegt
+                der Verein selbst über den Vereinsmanager (PNG, JPG oder SVG, wird
+                auf 100 × 100 verkleinert), ebenso das Teamlogo über den
+                Teammanager. So halten die Vereine ihre Logos ohne Umweg über die
+                Geschäftsstelle aktuell.
+              </p>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb sbk">SBK</span>
+                <span class="rb vm">VM (Vereinslogo)</span>
+                <span class="rb tm">TM (Teamlogo)</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🔐</span>
+              <div>
+                <div class="proc-title">Benutzer, Rollen &amp; Zugänge</div>
+                <div class="proc-sub">
+                  Konten, Scopes und technische Schnittstellen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Admin und SBK legen Benutzer an und geben ihnen ihre Rolle plus
+                einen
+                <strong>Scope</strong>: verbandsweit oder auf bestimmte Vereine
+                begrenzt. Nach Rechteänderungen müssen sich Nutzer einmal neu
+                anmelden, damit die neuen Berechtigungen greifen. Anmelden kannst du
+                dich mit Benutzername oder hinterlegter E-Mail-Adresse.
+              </p>
+              <p class="proc-text">
+                Dazu kommen die technischen Bereiche: der
+                <strong>Dokumentarten-Katalog</strong> für Lizenznachweise,
+                <strong>API-Schlüssel</strong> für den öffentlichen Zugriff und das
+                <strong>E-Mail-Protokoll</strong> samt Vorlagen. Jeder eingeloggte
+                Nutzer verwaltet unter <em>Mein Konto</em> Sprache, Passwort und,
+                als Teammanager, den Empfang von Info-Mails.
+              </p>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb sbk">SBK</span>
+              </div>
+            </div>
+          </details>
         </section>
 
         <!-- ═══════════ ADMIN ═══════════ -->
@@ -4561,7 +6118,7 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
 
         <footer class="page-foot">
           <span>Saisonmanager · Rollenhandbuch</span>
-          <span>Stand: Juni 2026</span>
+          <span>Stand: Juli 2026</span>
         </footer>
       </div>
     </div>
