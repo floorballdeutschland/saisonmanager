@@ -6,7 +6,6 @@
       <fb-sidebar
         [association]="selectedAssociation$ | async"
         [stateAssociation]="selectedStateAssociation$ | async"
-        [activeBanner]="activeBanner$ | async"
       >
         <fb-favorites-navigation
           [favorites]="(favoriteLeagues$ | async) ?? []"

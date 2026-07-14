@@ -20,33 +20,6 @@
     }
   </a>
 
-  @if (activeBanner) {
-    <div class="hidden lg:block mt-4 px-0">
-      @if (safeBannerLink(activeBanner.linkUrl)) {
-        <a
-          [href]="safeBannerLink(activeBanner.linkUrl)"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Werbung – externer Link öffnet in neuem Tab"
-        >
-          <img
-            [src]="activeBanner.url"
-            alt="Anzeige"
-            class="w-full"
-            style="aspect-ratio: 6/1; object-fit: contain"
-          />
-        </a>
-      } @else {
-        <img
-          [src]="activeBanner.url"
-          alt="Anzeige"
-          class="w-full"
-          style="aspect-ratio: 6/1; object-fit: contain"
-        />
-      }
-    </div>
-  }
-
   <!-- open menu -->
   @if (!menuIsOpen) {
     <a

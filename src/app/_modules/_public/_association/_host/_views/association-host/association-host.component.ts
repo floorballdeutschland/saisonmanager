@@ -32,6 +32,7 @@ export class AssociationHostComponent implements OnInit, OnDestroy {
   seasons$!: Observable<Season[]>;
   selectedSeasonId$!: Observable<number | null>;
   hasSelectedLeague$!: Observable<boolean>;
+  activeBanner$!: Observable<{ url: string; linkUrl?: string | null } | null>;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -62,6 +63,17 @@ export class AssociationHostComponent implements OnInit, OnDestroy {
       startWith(!!this._route.snapshot.firstChild)
     );
 
+    // Landesverband-Werbebanner – auf der Verbands-Startseite (z. B. /fvd) auf
+    // dem Desktop oben rechts in der Kopfzeile. Mobil bleibt es im Menü.
+    this.activeBanner$ =
+      this._associationService.selectedStateAssociation$.pipe(
+        map((sa) =>
+          sa?.banner_url
+            ? { url: sa.banner_url, linkUrl: sa.banner_link_url }
+            : null
+        )
+      );
+
     this._route.params
       .pipe(
         tap(() => {
@@ -76,5 +88,17 @@ export class AssociationHostComponent implements OnInit, OnDestroy {
   onSeasonChange(event: Event) {
     const id = parseInt((event.target as HTMLSelectElement).value, 10);
     this._associationService.selectSeason(id);
+  }
+
+  safeBannerLink(url: string | null | undefined): string | null {
+    if (!url) return null;
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+        ? url
+        : null;
+    } catch {
+      return null;
+    }
   }
 }

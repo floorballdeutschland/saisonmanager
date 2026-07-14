@@ -18,6 +18,7 @@ import {
   GameOperation,
   League,
   LeaguesWithOperation,
+  StateAssociation,
 } from '@floorball/types';
 import { BehaviorSubject, combineLatest, map, Observable, Subject } from 'rxjs';
 
@@ -32,6 +33,7 @@ export class MobileHeaderComponent implements OnInit {
   isLoading$!: Observable<boolean>;
   leagues$!: Observable<League[] | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
+  selectedStateAssociation$!: Observable<StateAssociation | null>;
   activeBanner$!: Observable<{ url: string; linkUrl?: string | null } | null>;
   favoriteLeagues$?: BehaviorSubject<LeaguesWithOperation[]>;
   favoriteTeams$?: BehaviorSubject<FavoriteTeam[]>;
@@ -54,6 +56,8 @@ export class MobileHeaderComponent implements OnInit {
     this.isLoading$ = this._associationService.associationsIsLoading$;
     this.leagues$ = this._leagueService.leagues$;
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
+    this.selectedStateAssociation$ =
+      this._associationService.selectedStateAssociation$;
     this.favoriteLeagues$ = this._favoriteService.favoriteLeagues$;
     this.favoriteTeams$ = this._favoriteService.favoriteTeams$;
 

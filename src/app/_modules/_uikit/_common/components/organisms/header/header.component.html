@@ -1,23 +1,54 @@
 <div
   class="flex flex-col sm:flex-row items-start sm:items-end py-[30px] px-4 lg:px-8 content-between border-b border-fb-gray-200"
 >
-  @if (headline) {
-    <h1
-      class="font-bold text-black text-2xl md:text-3xl xl:text-4.5xl leading-[26px] xl:leading-[52px]"
-    >
-      {{ headline }}
-    </h1>
-  }
-  @if (subline) {
-    <h2
-      class="mt-4 sm:mt-0 sm:mx-5 font-bold text-fb-gray-400 text-1xl lg:text-1xl xl:text-2xl leading-[18px] xl:leading-[39px]"
-    >
-      {{ subline }}
-    </h2>
+  <div
+    class="flex flex-col sm:flex-row sm:items-end min-w-0 lg:flex-1 lg:basis-0"
+  >
+    @if (headline) {
+      <h1
+        class="font-bold text-black text-2xl md:text-3xl xl:text-4.5xl leading-[26px] xl:leading-[52px]"
+      >
+        {{ headline }}
+      </h1>
+    }
+    @if (subline) {
+      <h2
+        class="mt-4 sm:mt-0 sm:mx-5 font-bold text-fb-gray-400 text-1xl lg:text-1xl xl:text-2xl leading-[18px] xl:leading-[39px]"
+      >
+        {{ subline }}
+      </h2>
+    }
+  </div>
+
+  @if (activeBanner) {
+    <div class="hidden lg:flex shrink min-w-0 justify-center px-4">
+      @if (safeBannerLink(activeBanner.linkUrl)) {
+        <a
+          [href]="safeBannerLink(activeBanner.linkUrl)"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Werbung – externer Link öffnet in neuem Tab"
+        >
+          <img
+            [src]="activeBanner.url"
+            alt="Anzeige"
+            class="h-10 xl:h-12 w-auto max-w-full object-contain"
+            style="aspect-ratio: 6/1"
+          />
+        </a>
+      } @else {
+        <img
+          [src]="activeBanner.url"
+          alt="Anzeige"
+          class="h-10 xl:h-12 w-auto max-w-full object-contain"
+          style="aspect-ratio: 6/1"
+        />
+      }
+    </div>
   }
 
   <div
-    class="md:ml-auto mt-5 md:mt-0 min-w-[205px] flex justify-start md:justify-end"
+    class="md:ml-auto lg:ml-0 lg:flex-1 lg:basis-0 mt-5 md:mt-0 min-w-[205px] flex justify-start md:justify-end"
   >
     @if (type === "match" || type === "team") {
       <button
