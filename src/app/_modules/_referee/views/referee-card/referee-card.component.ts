@@ -23,7 +23,7 @@ export class RefereeCardComponent implements OnInit, OnDestroy {
   // der Ausweis gerade angezeigt wird (z. B. lokal). Daher bewusst hartkodiert
   // und nicht aus window.location/environment abgeleitet.
   private static readonly LIZENZCHECK_BASE_URL =
-    'https://saisonmanager.org/lizenzcheck';
+    'https://saisonmanager.de/lizenzcheck';
 
   profile?: RefereeProfile;
   qrDataUrl?: string;
