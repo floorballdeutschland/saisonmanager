@@ -121,10 +121,13 @@
     "heading": "Import games/game days with an Excel import template",
     "submitFile": "Submit import file",
     "fileSelection": "File selection",
-    "fileWarning": "Caution: only files using the appropriate template may be uploaded here. This action cannot be undone.",
+    "fileWarning": "Caution: only files using the appropriate template may be uploaded here.",
+    "reimportNote": "The template can be uploaded multiple times and each time fully replaces the existing schedule – as long as no game has started or been played yet. This means (incomplete) templates can already be imported before the first game day and refined later. Once the first game has started, re-importing is no longer possible.",
     "errorsHeading": "Errors",
     "warningsHeading": "Warnings",
     "startImport": "Start import",
+    "confirmTitle": "Import / replace schedule?",
+    "confirmContent": "If this league already has a schedule, it will be fully replaced by the uploaded template – including any existing referee assignments, scorekeeper links and confirmations. This is only possible as long as no game has started. Continue?",
     "cancel": "Cancel"
   },
   "notifications": {
