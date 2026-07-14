@@ -18,7 +18,7 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const API_URL = (
-  process.env.API_URL ?? "https://saisonmanager.org/api/v2/"
+  process.env.API_URL ?? "https://saisonmanager.de/api/v2/"
 ).replace(/\/?$/, "/");
 const GO_PATH = process.env.PRERENDER_GO_PATH ?? "fvd";
 const API_KEY = process.env.FRONTEND_API_KEY ?? "";
