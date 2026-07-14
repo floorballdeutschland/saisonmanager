@@ -121,10 +121,13 @@
     "heading": "Import Spiele/Spieltage mit einer Excel Importvorlage",
     "submitFile": "Import Datei übermitteln",
     "fileSelection": "Dateiauswahl",
-    "fileWarning": "Achtung: Hier dürfen nur Dateien mit der entsprechenden Vorlage hochgeladen werden. Dieser Vorgang kann nicht rückgängig gemacht werden.",
+    "fileWarning": "Achtung: Hier dürfen nur Dateien mit der entsprechenden Vorlage hochgeladen werden.",
+    "reimportNote": "Die Vorlage kann mehrfach hochgeladen werden und ersetzt den bestehenden Spielplan jeweils vollständig – solange noch kein Spiel begonnen bzw. gespielt wurde. So können auch vor dem ersten Spieltag bereits (unvollständige) Vorlagen eingespielt und später verfeinert werden. Sobald das erste Spiel begonnen hat, ist kein erneuter Import mehr möglich.",
     "errorsHeading": "Fehler",
     "warningsHeading": "Warnungen",
     "startImport": "Import starten",
+    "confirmTitle": "Spielplan importieren / ersetzen?",
+    "confirmContent": "Falls diese Liga bereits einen Spielplan hat, wird er vollständig durch die hochgeladene Vorlage ersetzt – inklusive bereits vorhandener Schiedsrichter-Ansetzungen, Sekretär-Zuordnungen und Bestätigungen. Dies ist nur möglich, solange noch kein Spiel begonnen wurde. Fortfahren?",
     "cancel": "Abbrechen"
   },
   "notifications": {
