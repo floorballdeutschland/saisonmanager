@@ -1290,8 +1290,8 @@
               <span class="rc-abbr">SR</span>
               <h3>Schiedsrichter</h3>
               <p>
-                Eigenes Profil pflegen, Spieltage bestätigen und Sperrtermine
-                selbst verwalten.
+                Eigenes Profil pflegen, Spieltage bestätigen und
+                Verfügbarkeiten selbst verwalten.
               </p>
               <span class="rc-scope">👤 Eigener Schiedsrichter-Account</span>
               <span class="rc-link">Details ansehen →</span>
@@ -1607,7 +1607,7 @@
                   <td>
                     <span
                       class="sym part"
-                      title="Eigenes Profil und Sperrtermine"
+                      title="Eigenes Profil und Verfügbarkeiten"
                       >◐</span
                     >
                   </td>
@@ -2062,9 +2062,9 @@
                 zu Veröffentlicht; Schiedsrichter erhalten eine E-Mail mit einem
                 Lizenzkarten-Link (72 Stunden gültig); die
                 Schiedsrichterbezeichnung am Spiel wird gesetzt. ·
-                <strong>Verfügbarkeitsprüfung:</strong> Schiedsrichter mit
-                eingetragenen Sperrterminen oder bereits angesetzten Spielen am
-                selben Tag werden in der Auswahl ausgeblendet.
+                <strong>Verfügbarkeitsprüfung:</strong> In der Auswahl
+                erscheinen nur Schiedsrichter, die den Spieltag als verfügbar
+                markiert haben und nicht bereits am selben Tag angesetzt sind.
               </div>
             </div>
           </details>
@@ -3535,6 +3535,16 @@
                 <li>Lizenzliste einsehen</li>
                 <li>Lizenzen für eigene Spieler beantragen</li>
                 <li>Lizenzstatus prüfen</li>
+                <li>
+                  Erforderliche Dokumente hochladen (z. B.
+                  Einverständnis&shy;erklärung der Erziehungsberechtigten bei
+                  Minderjährigen); Dokumente gelten saisonübergreifend pro
+                  Spieler
+                </li>
+                <li>
+                  Großfeld: Kennzeichnung als Erst- oder Zweitlizenz – ein
+                  Wechsel ist maximal einmal pro Saison möglich
+                </li>
               </ul>
             </div>
             <div class="cap">
@@ -3566,6 +3576,25 @@
                 <li>Qualifikationen und Lizenzstufen ansehen</li>
               </ul>
             </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">💬</div>
+                <div>
+                  <h3>Schiri-Feedback</h3>
+                  <div class="cap-sub">
+                    Rückmeldung zu eingesetzten Schiedsrichtern
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  Feedback zu den bei eigenen Spielen eingesetzten
+                  Schiedsrichtern geben (sofern der Landesverband die Funktion
+                  aktiviert hat)
+                </li>
+                <li>Erreichbar unter „Verein → Schiri-Feedback"</li>
+              </ul>
+            </div>
           </div>
 
           <div class="sec">
@@ -3585,6 +3614,11 @@
               <span class="proc-chev">▾</span>
             </summary>
             <div class="proc-body">
+              <div class="note">
+                Fristen: Für Transfers gilt ein saisonaler Stichtag (15.07.);
+                nach einem Vereinswechsel greift zusätzlich eine vierwöchige
+                Transfersperre für den Spieler.
+              </div>
               <div class="variant-label">
                 Als aufnehmender Verein (initiiert den Transfer)
               </div>
@@ -3990,7 +4024,7 @@
             <h1>Schiedsrichter (Self-Service)</h1>
             <p>
               Eigenes Profil pflegen, angesetzte Spieltage einsehen und
-              bestätigen sowie Sperrtermine selbst verwalten.
+              bestätigen sowie Verfügbarkeiten selbst verwalten.
             </p>
             <div class="hero-scope">👤 Eigener Schiedsrichter-Account</div>
           </div>
@@ -4032,22 +4066,29 @@
             </div>
             <div class="cap">
               <div class="cap-head">
-                <div class="cap-icon">🚫</div>
+                <div class="cap-icon">📅</div>
                 <div>
-                  <h3>Meine Sperrtermine</h3>
+                  <h3>Meine Verfügbarkeiten</h3>
                   <div class="cap-sub">
-                    Eigene Verfügbarkeit (Kalenderansicht)
+                    Melden, an welchen Tagen man pfeifen kann
                   </div>
                 </div>
               </div>
               <ul>
                 <li>2-Jahres-Kalender (aktuelles + nächstes Jahr)</li>
-                <li>Einzelklick: Tag sperren oder Sperrung aufheben</li>
                 <li>
-                  Bereichsauswahl: Startdatum → Enddatum → alle Tage dazwischen
-                  sperren
+                  Einzelklick: Tag als verfügbar markieren oder Markierung
+                  aufheben
                 </li>
-                <li>Vergangene Tage nicht anklickbar</li>
+                <li>
+                  Zeitraum: Startdatum → Enddatum anklicken → alle Tage
+                  dazwischen als verfügbar markieren
+                </li>
+                <li>
+                  Ansetzer können nur an Tagen einplanen, die als verfügbar
+                  markiert sind
+                </li>
+                <li>Vergangene Tage sind nicht mehr änderbar</li>
               </ul>
             </div>
             <div class="cap">
@@ -4080,11 +4121,11 @@
 
           <details class="proc" open>
             <summary>
-              <span class="proc-icon">🚫</span>
+              <span class="proc-icon">📅</span>
               <div>
-                <div class="proc-title">Sperrtermine verwalten</div>
+                <div class="proc-title">Verfügbarkeiten verwalten</div>
                 <div class="proc-sub">
-                  Eigene Abwesenheiten per Kalender hinterlegen
+                  Eigene Einsatz-Verfügbarkeit per Kalender hinterlegen
                 </div>
               </div>
               <span class="proc-chev">▾</span>
@@ -4097,16 +4138,16 @@
                   ><span class="rb schiri">Schiri</span
                   ><span class="ar">→</span>
                 </div>
-                <div class="st info">Tag gesperrt</div>
+                <div class="st info">Tag als verfügbar markiert</div>
                 <div class="cn">
                   <span class="cl">bei Ansetzung berücksichtigt</span
                   ><span class="rb auto">automatisch</span
                   ><span class="ar">→</span>
                 </div>
-                <div class="st success">An dem Tag nicht ansetzbar</div>
+                <div class="st success">Nur an markierten Tagen ansetzbar</div>
               </div>
               <div class="subflow">
-                <span class="subflow-label">Bereichsauswahl:</span>
+                <span class="subflow-label">Zeitraum:</span>
                 <div class="cn act">
                   <span class="cl">Startdatum klicken</span
                   ><span class="rb schiri">Schiri</span
@@ -4118,16 +4159,15 @@
                   ><span class="rb schiri">Schiri</span
                   ><span class="ar">→</span>
                 </div>
-                <div class="st success">Alle Tage gesperrt</div>
+                <div class="st success">Alle Tage als verfügbar markiert</div>
               </div>
               <div class="note">
-                Gesperrte Tage sind rot markiert; ein erneuter Klick auf einen
-                roten Tag hebt die Sperrung auf. Während der Bereichsauswahl
-                gibt es eine blaue Hover-Vorschau; „Abbrechen“ bricht den
-                Vorgang ab. Bereits gesperrte Tage im Bereich werden
-                übersprungen. Vergangene Tage sind nicht anklickbar.
-                Sperrtermine können nur vom Schiedsrichter selbst eingetragen
-                und gelöscht werden – nicht durch Admin oder RSK.
+                Verfügbare Tage sind grün markiert; ein erneuter Klick auf einen
+                markierten Tag hebt die Verfügbarkeit auf. Während der
+                Zeitraumauswahl gibt es eine Hover-Vorschau; „Abbrechen“ bricht
+                den Vorgang ab. Vergangene Tage sind nicht mehr änderbar.
+                Verfügbarkeiten können nur vom Schiedsrichter selbst eingetragen
+                und entfernt werden – nicht durch Admin oder RSK.
               </div>
             </div>
           </details>
