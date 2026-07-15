@@ -6,12 +6,26 @@
       Saisonmanager-Login
     </h1>
 
-    <p class="font-bold text-center mb-4 text-red-600">
-      Mit dem Sommer-Update 2026 wurde eine Vielzahl an Verbesserungen
-      umgesetzt. Wenn etwas noch nicht klappt oder ihr auf einen Fehler stoßt,
-      meldet ihn bitte (ggf. auch mit Screenshot) an
-      <a href="mailto:it@floorball.de" class="underline">it@floorball.de</a>.
-    </p>
+    <div class="max-w-[600px] mb-4 text-center">
+      <p class="font-bold text-red-600">
+        Mit dem Sommer-Update 2026 wurde eine Vielzahl an Verbesserungen
+        umgesetzt. Wenn etwas noch nicht klappt, ihr auf einen Fehler stoßt oder
+        eine Idee habt, meldet euch am besten (gerne mit Screenshot) über unser
+        Feedback-Repository auf GitHub:
+        <a
+          href="https://github.com/floorballdeutschland/saisonmanager-feedback/issues"
+          target="_blank"
+          rel="noopener"
+          class="underline"
+          >saisonmanager-feedback</a
+        >.
+      </p>
+      <p class="mt-2 text-fb-gray-500">
+        Dort lässt sich alles nachvollziehen und gemeinsam an Ideen arbeiten.
+        Für dringende Themen erreicht ihr uns zusätzlich per E-Mail an
+        <a href="mailto:it@floorball.de" class="underline">it@floorball.de</a>.
+      </p>
+    </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="loginSubmit(loginForm.value)">
       <div class="flex flex-col">
