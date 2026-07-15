@@ -369,13 +369,20 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             autoClose: true,
             keepAfterRouteChange: true,
           });
-          this._router.navigate([
-            '/',
-            'verwaltung',
-            'vereine',
-            this.club_id,
-            'spieler',
-          ]);
+          // Vereins-/Teammanager (ohne Admin/SBK-Zugriff) kommen über ihre
+          // eigene Spielerliste hierher und dürfen die vereinsbezogene
+          // Adminliste nicht betreten, daher zurück nach spieler-verein.
+          if (this.permissions['menu_item_player_admin']) {
+            this._router.navigate([
+              '/',
+              'verwaltung',
+              'vereine',
+              this.club_id,
+              'spieler',
+            ]);
+          } else {
+            this._router.navigate(['/', 'verwaltung', 'spieler-verein']);
+          }
         },
         error: (error) => {
           this._notificationService.error(
