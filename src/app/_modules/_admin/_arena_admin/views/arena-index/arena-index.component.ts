@@ -24,8 +24,9 @@ export class ArenaIndexComponent implements OnInit, OnDestroy {
   deleteError: string | null = null;
   currentUser: User | null = null;
 
-  // Zusammenlegen/Löschen von Spielorten bleibt echten Admins vorbehalten;
-  // SBKs sehen die Liste, dürfen den Lebenszyklus aber nicht verändern.
+  // Zusammenlegen/Löschen von Spielorten bleibt Admins und der global
+  // gescopten FD-SBK vorbehalten (Flag arena_manage_lifecycle); regionale
+  // SBK sehen die Liste, dürfen den Lebenszyklus aber nicht verändern.
   get canManageLifecycle(): boolean {
     return !!this.currentUser?.permissions['arena_manage_lifecycle'];
   }
