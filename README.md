@@ -145,6 +145,12 @@ Requires nvm in PATH and SSH access to the production server (`ssh saisonmanager
 - CI (GitHub Actions) gates every PR: `ng lint`, headless Karma tests, and a production build
 - The pre-commit hook runs Prettier on staged files and `ng lint` (requires nvm in PATH; see the nvm export workaround above if it fails)
 
+## Feedback & Contact
+
+- Bug reports and feature requests from players, clubs, and officials: [saisonmanager-feedback](https://github.com/floorballdeutschland/saisonmanager-feedback) (German)
+- Everything else: [it@floorball.de](mailto:it@floorball.de)
+- Security vulnerabilities: please follow [SECURITY.md](SECURITY.md) instead of opening a public issue
+
 ## License
 
 This project is licensed under the **GNU Affero General Public License v3.0** (AGPLv3) — see the [LICENSE](LICENSE) file for the full text.
