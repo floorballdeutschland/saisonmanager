@@ -4,12 +4,13 @@ import { RouterModule, Routes } from '@angular/router';
 import { permissionGuard } from '../../../_helpers/_guards/permission.guard';
 import * as Views from './views';
 
-// Admin/SBK-only vs. auch VM/TM erreichbar: Die Detail-/Bearbeiten-Seite und
-// die vereinsbezogene Spielerliste werden auch von Vereins-/Teammanagern über
-// ihre eigene Spielerliste (spieler-verein) angesteuert – hier gilt daher
-// dasselbe Gate wie am dortigen Einstieg (`menu_item_player_vm`, VM+TM).
-// Die Gesamtliste, die Suche und die Dublettenzusammenführung bleiben
-// Admin/SBK vorbehalten. Der Server erzwingt die eigentliche Autorisierung.
+// Guards sitzen pro Kind-Route statt am Modul. Die Spieler-Detail-/Bearbeiten-
+// Seite steuern auch Vereins-/Teammanager über ihre eigene Spielerliste
+// (spieler-verein) an, daher gilt dort dasselbe Gate wie am dortigen Einstieg
+// (`menu_item_player_vm`, VM+TM). Alle übrigen Ansichten (Gesamtliste, Suche,
+// vereinsbezogene Adminliste, Neuanlage, Dublettenzusammenführung) bleiben
+// Admin/SBK vorbehalten; VM/TM landen nach dem Speichern wieder auf
+// spieler-verein. Der Server erzwingt die eigentliche Autorisierung.
 const PLAYER_ADMIN = 'menu_item_player_admin';
 const PLAYER_SHARED = ['menu_item_player_admin', 'menu_item_player_vm'];
 
@@ -51,7 +52,7 @@ const routes: Routes = [
     canActivate: [permissionGuard],
     data: {
       scrollTop: true,
-      permission: PLAYER_SHARED,
+      permission: PLAYER_ADMIN,
     },
   },
   {

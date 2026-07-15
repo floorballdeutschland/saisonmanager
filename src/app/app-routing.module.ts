@@ -39,7 +39,7 @@ const routes: Routes = [
         // (Gesamtliste, Suche, Dublettenzusammenführung) mit der Spieler-
         // Detail-/Bearbeiten-Seite, die auch Vereins-/Teammanager über ihre
         // eigene Spielerliste (spieler-verein) ansteuern. Ein einziger
-        // Modul-Gate mit `menu_item_player_admin` sperrt VM/TM aus – daher
+        // Modul-Gate mit `menu_item_player_admin` würde VM/TM aussperren, daher
         // sitzen die Guards auf den Kind-Routen in
         // admin-player-routing.module.ts.
         path: '',
