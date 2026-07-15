@@ -267,6 +267,9 @@
                         <option value="gender">
                           {{ "playerAdmin.edit.gender" | transloco }}
                         </option>
+                        <option value="merge">
+                          {{ "playerAdmin.edit.mergeDuplicate" | transloco }}
+                        </option>
                       </select>
                     </div>
                     @if (
@@ -274,8 +277,35 @@
                     ) {
                       <div>
                         <label class="block text-sm font-bold mb-1">{{
-                          "playerAdmin.edit.correctValue" | transloco
+                          (changeRequestType === "merge"
+                            ? "playerAdmin.edit.mergeSelect"
+                            : "playerAdmin.edit.correctValue"
+                          ) | transloco
                         }}</label>
+                        @if (changeRequestType === "merge") {
+                          <select
+                            [(ngModel)]="mergeSecondaryId"
+                            class="w-full"
+                            [disabled]="mergeLoadingPlayers"
+                          >
+                            <option [ngValue]="''">
+                              {{
+                                mergeLoadingPlayers
+                                  ? ("playerAdmin.edit.mergeLoading"
+                                    | transloco)
+                                  : ("playerAdmin.edit.pleaseSelectEllipsis"
+                                    | transloco)
+                              }}
+                            </option>
+                            @for (p of mergeClubPlayers; track p.id) {
+                              <option [ngValue]="p.id">
+                                {{ p.last_name }}, {{ p.first_name }} ({{
+                                  p.birthdate | date: "dd.MM.yyyy"
+                                }})
+                              </option>
+                            }
+                          </select>
+                        }
                         @if (changeRequestType === "birthdate") {
                           <input
                             [(ngModel)]="changeRequestValue"
@@ -342,8 +372,10 @@
                       <fb-button
                         [disabled]="
                           !changeRequestType ||
-                          (changeRequestType !== 'names_swapped' &&
-                            !changeRequestValue)
+                          (changeRequestType === 'merge'
+                            ? !mergeSecondaryId
+                            : changeRequestType !== 'names_swapped' &&
+                              !changeRequestValue)
                         "
                         (click)="submitChangeRequest(player)"
                       >
@@ -351,6 +383,27 @@
                       </fb-button>
                     </div>
                   </div>
+                  @if (changeRequestType === "merge") {
+                    <p class="text-sm text-gray-500 mt-3">
+                      {{ "playerAdmin.edit.mergeHint" | transloco }}
+                    </p>
+                    @if (selectedMergePlayer; as duplicate) {
+                      <div
+                        class="border border-gray-300 rounded p-3 mt-3 text-sm"
+                      >
+                        <span class="font-bold"
+                          >{{ duplicate.last_name }},
+                          {{ duplicate.first_name }}</span
+                        >
+                        <span class="text-gray-500 ml-2">{{
+                          duplicate.birthdate | date: "dd.MM.yyyy"
+                        }}</span>
+                        <p class="text-gray-500 mt-1">
+                          {{ "playerAdmin.edit.mergeSelectedHint" | transloco }}
+                        </p>
+                      </div>
+                    }
+                  }
                 }
               </div>
             }

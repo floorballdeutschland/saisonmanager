@@ -64,6 +64,12 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   changeRequestValue = '';
   changeRequestSent = false;
 
+  // Duplikat-Auswahl für Merge-Anträge (correction_type 'merge'): aktive
+  // Spieler des eigenen Vereins ohne das gerade geöffnete Profil.
+  mergeClubPlayers: Player[] = [];
+  mergeSecondaryId: number | '' = '';
+  mergeLoadingPlayers = false;
+
   // Lizenz-Dokumente des Spielers (saisonübergreifend). Die Sichtbarkeit
   // (bundesweit vs. verbandsspezifisch) filtert bereits die API abhängig vom
   // Verbands-Scope des angemeldeten Nutzers.
@@ -697,28 +703,74 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   public onChangeRequestTypeChange(): void {
     this.changeRequestValue = '';
+    this.mergeSecondaryId = '';
+    if (this.changeRequestType === 'merge') this.loadMergeClubPlayers();
+  }
+
+  public get selectedMergePlayer(): Player | undefined {
+    return this.mergeClubPlayers.find((p) => p.id === +this.mergeSecondaryId);
+  }
+
+  private loadMergeClubPlayers(): void {
+    if (!this.club_id) return;
+
+    this.mergeLoadingPlayers = true;
+    this._playerService
+      .vmGetPlayers(+this.club_id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (players) => {
+          this.mergeClubPlayers = players.filter(
+            (p) => p.id !== this.player?.id && !p.deactivated_at
+          );
+          this.mergeLoadingPlayers = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.mergeLoadingPlayers = false;
+          this._notificationService.error(
+            'Spieler des Vereins konnten nicht geladen werden.',
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this._cdr.markForCheck();
+        },
+      });
   }
 
   public submitChangeRequest(player: Player): void {
     if (!this.changeRequestType || !this.club_id || !player.id) return;
+    if (this.changeRequestType === 'merge' && !this.mergeSecondaryId) return;
 
-    const value =
-      this.changeRequestType === 'names_swapped'
-        ? undefined
-        : this.changeRequestValue;
+    const value = ['names_swapped', 'merge'].includes(this.changeRequestType)
+      ? undefined
+      : this.changeRequestValue;
+    const secondaryId =
+      this.changeRequestType === 'merge' && this.mergeSecondaryId
+        ? +this.mergeSecondaryId
+        : undefined;
 
     this._changeRequestService
-      .create(player.id, +this.club_id, this.changeRequestType, value)
+      .create(
+        player.id,
+        +this.club_id,
+        this.changeRequestType,
+        value,
+        secondaryId
+      )
       .subscribe({
         next: () => {
           this.changeRequestSent = true;
           this.changeRequestType = '';
           this.changeRequestValue = '';
+          this.mergeSecondaryId = '';
           this._cdr.markForCheck();
         },
-        error: () => {
+        error: (err) => {
+          // 422-Detail (z.B. "bereits zusammengeführt") sichtbar machen –
+          // der globale ErrorInterceptor zeigt 422 nicht an.
           this._notificationService.error(
-            'Antrag konnte nicht eingereicht werden.',
+            err?.error?.errors?.join(', ') ||
+              'Antrag konnte nicht eingereicht werden.',
             {
               autoClose: true,
               keepAfterRouteChange: false,

@@ -18,13 +18,15 @@ export class PlayerChangeRequestService {
     playerId: number,
     clubId: number,
     correctionType: CorrectionType,
-    newValue?: string
+    newValue?: string,
+    secondaryPlayerId?: number
   ): Observable<PlayerChangeRequest> {
     return this._http.post<PlayerChangeRequest>(`${this._baseUrl}.json`, {
       player_id: playerId,
       club_id: clubId,
       correction_type: correctionType,
       new_value: newValue ?? null,
+      secondary_player_id: secondaryPlayerId ?? null,
     });
   }
 

@@ -17,12 +17,15 @@
   "rejectReasonPlaceholder": "Reason",
   "confirm": "Confirm",
   "cancel": "Cancel",
+  "mergeConfirmHint": "Irreversibly merges both profiles. The duplicate (column \"New value\") will be deactivated.",
   "correctionTypes": {
     "birthdate": "Date of birth",
     "firstName": "First name",
     "lastName": "Last name",
     "namesSwapped": "First/last name swapped",
-    "nationality": "Nationality"
+    "nationality": "Nationality",
+    "gender": "Gender",
+    "merge": "Merge duplicate"
   },
   "notifications": {
     "approved": "Correction applied",
