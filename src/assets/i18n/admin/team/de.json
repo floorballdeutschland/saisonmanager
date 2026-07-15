@@ -52,7 +52,7 @@
     "logoAlt": "Teamlogo",
     "noLogo": "kein Logo hinterlegt (Vereinslogo wird verwendet)",
     "uploadLogo": "Logo hochladen",
-    "logoHint": "PNG, JPG oder SVG · wird auf 100×100 Pixel verkleinert",
+    "logoHint": "PNG, JPG oder WebP · wird auf 100×100 Pixel verkleinert",
     "saveImpossible": "Speichern nicht möglich",
     "saveChanges": "Änderungen speichern",
     "cancel": "Abbrechen",

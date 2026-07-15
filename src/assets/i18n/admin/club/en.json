@@ -39,7 +39,7 @@
     "logoAlt": "Club logo",
     "noLogo": "no logo set",
     "uploadLogo": "Upload logo",
-    "logoHint": "PNG, JPG or SVG · resized to 100×100 pixels",
+    "logoHint": "PNG, JPG or WebP · resized to 100×100 pixels",
     "clubStatus": "Club status",
     "deactivatedOn": "Deactivated on {{ date }}",
     "deactivateClub": "Deactivate club",

@@ -52,7 +52,7 @@
     "logoAlt": "Team logo",
     "noLogo": "no logo set (club logo is used)",
     "uploadLogo": "Upload logo",
-    "logoHint": "PNG, JPG or SVG · will be resized to 100×100 pixels",
+    "logoHint": "PNG, JPG or WebP · will be resized to 100×100 pixels",
     "saveImpossible": "Saving not possible",
     "saveChanges": "Save changes",
     "cancel": "Cancel",
