@@ -225,25 +225,25 @@ Frontend is built locally and `scp`'d; API/nginx/docker are pulled + restarted s
 
 ### Staging (`saisonmanager.dev`)
 
-Isolated stack alongside prod: `rails-api-staging` (branch `staging`), `postgres-staging`, and `mailpit` (catches **all** outgoing mail — nothing reaches real recipients). Serves an **anonymized clone** of the prod DB, behind Basic Auth + `noindex`. App login: any real (cloned) username + password `staging-password`.
+Isolated stack alongside prod: `rails-api-staging` (branch `staging`), `postgres-staging`, and `mailpit` (catches **all** outgoing mail — nothing reaches real recipients). Serves an **anonymized clone** of the prod DB, behind Basic Auth + `noindex`. App login: any real (cloned) username + the shared staging password (set by the anonymize task; value in the private `saisonmanager-docker` repo).
 
 - **Frontend:** `./build-deploy-staging.sh` (builds to `dist/saisonmanager-staging`, `scp` to `saisonmanager-frontend-staging`)
 - **API + configs:** `ssh saisonmanager <docker-dir>/deploy-staging.sh` — `git pull` on `saisonmanager-docker`, then `git reset --hard origin/staging` on the `/opt/saisonmanager/saisonmanager-api-staging` checkout, then rebuild/restart the staging container
-- **Refresh staging DB from prod (anonymized):** `scripts/staging-db-refresh.sh` in `saisonmanager-docker` (also copies ActiveStorage files; resets **all** logins to `staging-password`)
+- **Refresh staging DB from prod (anonymized):** `scripts/staging-db-refresh.sh` in `saisonmanager-docker` (also copies ActiveStorage files; resets **all** logins to the shared staging password)
 
 **Gotchas:**
 
 - `nginx -t` on the server must use `-c /etc/nginx/nginx.prod.conf` — bare `nginx -t` tests the local dev wrapper and fails.
 - The staging containers (`rails-api-staging`, `mailpit`) must be running **before** an nginx recreate, or nginx aborts with "host not found in upstream".
-- After a staging DB refresh, all logins reset to `staging-password` — re-set any custom demo passwords afterwards.
+- After a staging DB refresh, all logins reset to the shared staging password — re-set any custom demo passwords afterwards.
 
-**Production server:** `ssh saisonmanager` → `root@178.104.133.109` (YubiKey FIDO2, `~/.ssh/yubikey`)
+**Production server:** reachable via the `ssh saisonmanager` alias (host, user, and key live in the local `~/.ssh/config`; hardware-key auth)
 
 - Docker setup lives at `/opt/saisonmanager/saisonmanager-docker/`
 - Deploy scripts: `/opt/saisonmanager/deploy.sh` (prod), `deploy-staging.sh` (staging), both in the docker repo
-- SSH needs the YubiKey (touch + passphrase) — reliable only interactively (via the `!` prefix), not from non-interactive tool calls
+- SSH needs the hardware key (touch + passphrase) — reliable only interactively (via the `!` prefix), not from non-interactive tool calls
 
-**Archive server:** `archiv.saisonmanager.org` → Hetzner `116.203.113.70` (SSH via YubiKey)
+**Archive server:** `archiv.saisonmanager.org` (SSH via the same hardware-key setup)
 
 ## Versioning & Changelog
 
