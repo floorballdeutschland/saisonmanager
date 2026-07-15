@@ -192,9 +192,9 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   private readonly _allowedLogoTypes = [
     'image/png',
     'image/jpeg',
-    'image/svg+xml',
+    'image/webp',
   ];
-  private readonly _maxLogoSize = 5 * 1024 * 1024;
+  private readonly _maxLogoSize = 3 * 1024 * 1024;
 
   public onLogoSelected(club: Club, input: HTMLInputElement) {
     if (!input.files?.length || !club.id) return;

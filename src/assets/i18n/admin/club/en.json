@@ -56,8 +56,8 @@
   "notifications": {
     "deleteSuccess": "Club was permanently deleted.",
     "deleteError": "Club could not be deleted.",
-    "logoTypeError": "Only PNG, JPG or SVG allowed.",
-    "logoSizeError": "File too large (max. 5 MB).",
+    "logoTypeError": "Only PNG, JPG or WebP allowed.",
+    "logoSizeError": "File too large (max. 3 MB).",
     "logoUploadSuccess": "Logo uploaded successfully.",
     "logoUploadError": "Logo upload failed.",
     "deactivateSuccess": "Club was deactivated.",

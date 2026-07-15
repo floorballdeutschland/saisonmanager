@@ -56,8 +56,8 @@
   "notifications": {
     "deleteSuccess": "Verein wurde dauerhaft gelöscht.",
     "deleteError": "Verein konnte nicht gelöscht werden.",
-    "logoTypeError": "Nur PNG, JPG oder SVG erlaubt.",
-    "logoSizeError": "Datei zu groß (max. 5 MB).",
+    "logoTypeError": "Nur PNG, JPG oder WebP erlaubt.",
+    "logoSizeError": "Datei zu groß (max. 3 MB).",
     "logoUploadSuccess": "Logo erfolgreich hochgeladen.",
     "logoUploadError": "Logo-Upload fehlgeschlagen.",
     "deactivateSuccess": "Verein wurde deaktiviert.",

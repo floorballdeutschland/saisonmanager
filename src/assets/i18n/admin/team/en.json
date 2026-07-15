@@ -75,8 +75,8 @@
   },
   "notifications": {
     "noAccess": "This area is not available to you.",
-    "logoTypeInvalid": "Only PNG, JPG or SVG allowed.",
-    "logoTooLarge": "File too large (max. 5 MB).",
+    "logoTypeInvalid": "Only PNG, JPG or WebP allowed.",
+    "logoTooLarge": "File too large (max. 3 MB).",
     "logoUploaded": "Logo uploaded successfully.",
     "logoUploadFailed": "Logo upload failed.",
     "teamSaved": "Team {{ name }}({{ id }}) changed successfully.",
