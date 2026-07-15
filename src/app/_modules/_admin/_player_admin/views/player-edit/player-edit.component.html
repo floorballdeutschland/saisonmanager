@@ -267,10 +267,15 @@
                         <option value="gender">
                           {{ "playerAdmin.edit.gender" | transloco }}
                         </option>
+                        <option value="merge">
+                          {{ "playerAdmin.edit.mergeDuplicate" | transloco }}
+                        </option>
                       </select>
                     </div>
                     @if (
-                      changeRequestType && changeRequestType !== "names_swapped"
+                      changeRequestType &&
+                      changeRequestType !== "names_swapped" &&
+                      changeRequestType !== "merge"
                     ) {
                       <div>
                         <label class="block text-sm font-bold mb-1">{{
@@ -342,8 +347,10 @@
                       <fb-button
                         [disabled]="
                           !changeRequestType ||
-                          (changeRequestType !== 'names_swapped' &&
-                            !changeRequestValue)
+                          (changeRequestType === 'merge'
+                            ? !mergeFoundPlayer
+                            : changeRequestType !== 'names_swapped' &&
+                              !changeRequestValue)
                         "
                         (click)="submitChangeRequest(player)"
                       >
@@ -351,6 +358,86 @@
                       </fb-button>
                     </div>
                   </div>
+                  @if (changeRequestType === "merge") {
+                    <div class="mt-4">
+                      <p class="text-sm text-gray-500 mb-3">
+                        {{ "playerAdmin.edit.mergeHint" | transloco }}
+                      </p>
+                      <div
+                        class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end"
+                      >
+                        <div>
+                          <label class="block text-sm font-bold mb-1">{{
+                            "playerAdmin.edit.firstName" | transloco
+                          }}</label>
+                          <input
+                            [(ngModel)]="mergeFirstName"
+                            type="text"
+                            class="w-full"
+                          />
+                        </div>
+                        <div>
+                          <label class="block text-sm font-bold mb-1">{{
+                            "playerAdmin.edit.lastName" | transloco
+                          }}</label>
+                          <input
+                            [(ngModel)]="mergeLastName"
+                            type="text"
+                            class="w-full"
+                          />
+                        </div>
+                        <div>
+                          <label class="block text-sm font-bold mb-1">{{
+                            "playerAdmin.edit.birthdate" | transloco
+                          }}</label>
+                          <input
+                            [(ngModel)]="mergeBirthdate"
+                            type="date"
+                            class="w-full"
+                          />
+                        </div>
+                        <div>
+                          <fb-button
+                            [disabled]="
+                              mergeSearching ||
+                              !mergeFirstName ||
+                              !mergeLastName ||
+                              !mergeBirthdate
+                            "
+                            (click)="searchMergeDuplicate(player)"
+                          >
+                            {{
+                              mergeSearching
+                                ? ("playerAdmin.edit.mergeSearching"
+                                  | transloco)
+                                : ("playerAdmin.edit.mergeSearch" | transloco)
+                            }}
+                          </fb-button>
+                        </div>
+                      </div>
+                      @if (mergeSearchError) {
+                        <p class="text-red-600 text-sm mt-2">
+                          {{ mergeSearchError }}
+                        </p>
+                      }
+                      @if (mergeFoundPlayer) {
+                        <div
+                          class="border border-gray-300 rounded p-3 mt-3 text-sm"
+                        >
+                          <span class="font-bold"
+                            >{{ mergeFoundPlayer.last_name }},
+                            {{ mergeFoundPlayer.first_name }}</span
+                          >
+                          <span class="text-gray-500 ml-2">{{
+                            mergeFoundPlayer.birthdate | date: "dd.MM.yyyy"
+                          }}</span>
+                          <p class="text-gray-500 mt-1">
+                            {{ "playerAdmin.edit.mergeFoundHint" | transloco }}
+                          </p>
+                        </div>
+                      }
+                    </div>
+                  }
                 }
               </div>
             }

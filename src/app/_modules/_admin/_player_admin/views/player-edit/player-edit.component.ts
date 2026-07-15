@@ -13,6 +13,7 @@ import {
   PlayerChangeRequestService,
   PlayerService,
   SessionService,
+  TransferRequestService,
 } from '@floorball/core';
 import {
   Club,
@@ -23,11 +24,13 @@ import {
   Nation,
   Player,
   PlayerLicense,
+  PlayerSearchResult,
   PlayerSuspension,
   Season,
 } from '@floorball/models';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { TranslocoService } from '@jsverse/transloco';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PLAYER_GENDERS } from '@floorball/types';
@@ -64,6 +67,14 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   changeRequestValue = '';
   changeRequestSent = false;
 
+  // Duplikat-Suche für Merge-Anträge (correction_type 'merge')
+  mergeFirstName = '';
+  mergeLastName = '';
+  mergeBirthdate = '';
+  mergeFoundPlayer: PlayerSearchResult | null = null;
+  mergeSearching = false;
+  mergeSearchError = '';
+
   // Lizenz-Dokumente des Spielers (saisonübergreifend). Die Sichtbarkeit
   // (bundesweit vs. verbandsspezifisch) filtert bereits die API abhängig vom
   // Verbands-Scope des angemeldeten Nutzers.
@@ -94,6 +105,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _notificationService: NotificationService,
     private _changeRequestService: PlayerChangeRequestService,
+    private _transferService: TransferRequestService,
+    private _transloco: TranslocoService,
     private _associationService: AssociationService,
     private _metaTitle: Title
   ) {
@@ -690,28 +703,89 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   public onChangeRequestTypeChange(): void {
     this.changeRequestValue = '';
+    this.resetMergeSearch();
+  }
+
+  public searchMergeDuplicate(player: Player): void {
+    if (
+      !this.mergeFirstName ||
+      !this.mergeLastName ||
+      !this.mergeBirthdate ||
+      !this.club_id
+    )
+      return;
+
+    this.mergeSearching = true;
+    this.mergeFoundPlayer = null;
+    this.mergeSearchError = '';
+
+    this._transferService
+      .searchPlayer(
+        this.mergeFirstName,
+        this.mergeLastName,
+        this.mergeBirthdate,
+        +this.club_id
+      )
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          if (result.player?.id === player.id) {
+            // Der Treffer ist das gerade geöffnete Profil selbst.
+            this.mergeSearchError = this._transloco.translate(
+              'playerAdmin.edit.mergeSameProfile'
+            );
+          } else if (result.player) {
+            this.mergeFoundPlayer = result.player;
+          } else {
+            this.mergeSearchError = this._transloco.translate(
+              'playerAdmin.edit.mergeNotFound'
+            );
+          }
+          this.mergeSearching = false;
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          // Der globale ErrorInterceptor zeigt 422 nicht an – die fachliche
+          // Meldung (z.B. Geburtsdatum-Format) steckt in err.error.error.
+          this.mergeSearchError =
+            err?.error?.error ||
+            this._transloco.translate('playerAdmin.edit.mergeSearchError');
+          this.mergeSearching = false;
+          this._cdr.markForCheck();
+        },
+      });
   }
 
   public submitChangeRequest(player: Player): void {
     if (!this.changeRequestType || !this.club_id || !player.id) return;
+    if (this.changeRequestType === 'merge' && !this.mergeFoundPlayer) return;
 
-    const value =
-      this.changeRequestType === 'names_swapped'
-        ? undefined
-        : this.changeRequestValue;
+    const value = ['names_swapped', 'merge'].includes(this.changeRequestType)
+      ? undefined
+      : this.changeRequestValue;
 
     this._changeRequestService
-      .create(player.id, +this.club_id, this.changeRequestType, value)
+      .create(
+        player.id,
+        +this.club_id,
+        this.changeRequestType,
+        value,
+        this.mergeFoundPlayer?.id
+      )
       .subscribe({
         next: () => {
           this.changeRequestSent = true;
           this.changeRequestType = '';
           this.changeRequestValue = '';
+          this.resetMergeSearch();
           this._cdr.markForCheck();
         },
-        error: () => {
+        error: (err) => {
+          // 422-Detail (z.B. "bereits zusammengeführt") sichtbar machen –
+          // der globale ErrorInterceptor zeigt 422 nicht an.
           this._notificationService.error(
-            'Antrag konnte nicht eingereicht werden.',
+            err?.error?.errors?.join(', ') ||
+              'Antrag konnte nicht eingereicht werden.',
             {
               autoClose: true,
               keepAfterRouteChange: false,
@@ -719,6 +793,15 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           );
         },
       });
+  }
+
+  private resetMergeSearch(): void {
+    this.mergeFirstName = '';
+    this.mergeLastName = '';
+    this.mergeBirthdate = '';
+    this.mergeFoundPlayer = null;
+    this.mergeSearching = false;
+    this.mergeSearchError = '';
   }
 
   // --- Spielersperren (Issue #508) ---------------------------------------

@@ -17,12 +17,15 @@
   "rejectReasonPlaceholder": "Begründung",
   "confirm": "Bestätigen",
   "cancel": "Abbrechen",
+  "mergeConfirmHint": "Führt beide Profile unwiderruflich zusammen. Das Duplikat (Spalte „Neuer Wert\") wird deaktiviert.",
   "correctionTypes": {
     "birthdate": "Geburtsdatum",
     "firstName": "Vorname",
     "lastName": "Nachname",
     "namesSwapped": "Vor-/Nachname vertauscht",
-    "nationality": "Nationalität"
+    "nationality": "Nationalität",
+    "gender": "Geschlecht",
+    "merge": "Duplikat zusammenführen"
   },
   "notifications": {
     "approved": "Korrektur übernommen",

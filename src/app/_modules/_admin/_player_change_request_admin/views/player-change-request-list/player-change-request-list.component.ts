@@ -27,6 +27,9 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
   permissions: { [key: string]: boolean } = {};
   rejectingId: number | null = null;
   rejectionReason = '';
+  // Merge-Anträge werden mit einem zweiten Klick bestätigt: das Genehmigen
+  // führt die Profile unwiderruflich zusammen.
+  confirmingMergeId: number | null = null;
 
   private _destroy$ = new Subject<void>();
 
@@ -78,6 +81,15 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
   }
 
   approve(request: PlayerChangeRequest): void {
+    if (
+      request.correction_type === 'merge' &&
+      this.confirmingMergeId !== request.id
+    ) {
+      this.confirmingMergeId = request.id;
+      this._cdr.markForCheck();
+      return;
+    }
+    this.confirmingMergeId = null;
     this._service.approve(request.id).subscribe({
       next: (updated) => {
         this.replaceRequest(updated);
@@ -92,11 +104,14 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
         );
         this._cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
+        // 422-Detail sichtbar machen (z.B. "bereits zusammengeführt" bei
+        // Merge-Anträgen) – der globale ErrorInterceptor zeigt 422 nicht an.
         this._notificationService.error(
-          this._transloco.translate(
-            'playerChangeRequest.notifications.approveError'
-          ),
+          err?.error?.errors?.join(', ') ||
+            this._transloco.translate(
+              'playerChangeRequest.notifications.approveError'
+            ),
           {
             autoClose: true,
             keepAfterRouteChange: false,
@@ -107,9 +122,15 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
     });
   }
 
+  cancelApprove(): void {
+    this.confirmingMergeId = null;
+    this._cdr.markForCheck();
+  }
+
   startReject(id: number): void {
     this.rejectingId = id;
     this.rejectionReason = '';
+    this.confirmingMergeId = null;
     this._cdr.markForCheck();
   }
 
@@ -159,6 +180,8 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
       last_name: 'lastName',
       names_swapped: 'namesSwapped',
       nationality: 'nationality',
+      gender: 'gender',
+      merge: 'merge',
     };
     const key = keys[type];
     if (!key) return type;

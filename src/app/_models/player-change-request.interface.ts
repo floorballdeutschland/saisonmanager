@@ -4,7 +4,8 @@ export type CorrectionType =
   | 'last_name'
   | 'names_swapped'
   | 'nationality'
-  | 'gender';
+  | 'gender'
+  | 'merge';
 
 export type ChangeRequestStatus = 'pending' | 'approved' | 'rejected';
 
@@ -23,6 +24,14 @@ export interface PlayerChangeRequest {
     nation_id: number;
   };
   club: { id: number; name: string };
+  // Nur bei correction_type 'merge': das Duplikat, das in `player` aufgehen soll.
+  secondary_player: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    birthdate: string;
+    deactivated_at: string | null;
+  } | null;
   requested_by_user_id: number;
   reviewed_by_user_id: number | null;
 }
