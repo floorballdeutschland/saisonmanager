@@ -13,7 +13,6 @@ import {
   PlayerChangeRequestService,
   PlayerService,
   SessionService,
-  TransferRequestService,
 } from '@floorball/core';
 import {
   Club,
@@ -24,13 +23,11 @@ import {
   Nation,
   Player,
   PlayerLicense,
-  PlayerSearchResult,
   PlayerSuspension,
   Season,
 } from '@floorball/models';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { TranslocoService } from '@jsverse/transloco';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PLAYER_GENDERS } from '@floorball/types';
@@ -67,13 +64,11 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   changeRequestValue = '';
   changeRequestSent = false;
 
-  // Duplikat-Suche für Merge-Anträge (correction_type 'merge')
-  mergeFirstName = '';
-  mergeLastName = '';
-  mergeBirthdate = '';
-  mergeFoundPlayer: PlayerSearchResult | null = null;
-  mergeSearching = false;
-  mergeSearchError = '';
+  // Duplikat-Auswahl für Merge-Anträge (correction_type 'merge'): aktive
+  // Spieler des eigenen Vereins ohne das gerade geöffnete Profil.
+  mergeClubPlayers: Player[] = [];
+  mergeSecondaryId: number | '' = '';
+  mergeLoadingPlayers = false;
 
   // Lizenz-Dokumente des Spielers (saisonübergreifend). Die Sichtbarkeit
   // (bundesweit vs. verbandsspezifisch) filtert bereits die API abhängig vom
@@ -105,8 +100,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _notificationService: NotificationService,
     private _changeRequestService: PlayerChangeRequestService,
-    private _transferService: TransferRequestService,
-    private _transloco: TranslocoService,
     private _associationService: AssociationService,
     private _metaTitle: Title
   ) {
@@ -703,54 +696,35 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   public onChangeRequestTypeChange(): void {
     this.changeRequestValue = '';
-    this.resetMergeSearch();
+    this.mergeSecondaryId = '';
+    if (this.changeRequestType === 'merge') this.loadMergeClubPlayers();
   }
 
-  public searchMergeDuplicate(player: Player): void {
-    if (
-      !this.mergeFirstName ||
-      !this.mergeLastName ||
-      !this.mergeBirthdate ||
-      !this.club_id
-    )
-      return;
+  public get selectedMergePlayer(): Player | undefined {
+    return this.mergeClubPlayers.find((p) => p.id === +this.mergeSecondaryId);
+  }
 
-    this.mergeSearching = true;
-    this.mergeFoundPlayer = null;
-    this.mergeSearchError = '';
+  private loadMergeClubPlayers(): void {
+    if (!this.club_id) return;
 
-    this._transferService
-      .searchPlayer(
-        this.mergeFirstName,
-        this.mergeLastName,
-        this.mergeBirthdate,
-        +this.club_id
-      )
+    this.mergeLoadingPlayers = true;
+    this._playerService
+      .vmGetPlayers(+this.club_id)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: (result) => {
-          if (result.player?.id === player.id) {
-            // Der Treffer ist das gerade geöffnete Profil selbst.
-            this.mergeSearchError = this._transloco.translate(
-              'playerAdmin.edit.mergeSameProfile'
-            );
-          } else if (result.player) {
-            this.mergeFoundPlayer = result.player;
-          } else {
-            this.mergeSearchError = this._transloco.translate(
-              'playerAdmin.edit.mergeNotFound'
-            );
-          }
-          this.mergeSearching = false;
+        next: (players) => {
+          this.mergeClubPlayers = players.filter(
+            (p) => p.id !== this.player?.id && !p.deactivated_at
+          );
+          this.mergeLoadingPlayers = false;
           this._cdr.markForCheck();
         },
-        error: (err) => {
-          // Der globale ErrorInterceptor zeigt 422 nicht an – die fachliche
-          // Meldung (z.B. Geburtsdatum-Format) steckt in err.error.error.
-          this.mergeSearchError =
-            err?.error?.error ||
-            this._transloco.translate('playerAdmin.edit.mergeSearchError');
-          this.mergeSearching = false;
+        error: () => {
+          this.mergeLoadingPlayers = false;
+          this._notificationService.error(
+            'Spieler des Vereins konnten nicht geladen werden.',
+            { autoClose: true, keepAfterRouteChange: false }
+          );
           this._cdr.markForCheck();
         },
       });
@@ -758,11 +732,15 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   public submitChangeRequest(player: Player): void {
     if (!this.changeRequestType || !this.club_id || !player.id) return;
-    if (this.changeRequestType === 'merge' && !this.mergeFoundPlayer) return;
+    if (this.changeRequestType === 'merge' && !this.mergeSecondaryId) return;
 
     const value = ['names_swapped', 'merge'].includes(this.changeRequestType)
       ? undefined
       : this.changeRequestValue;
+    const secondaryId =
+      this.changeRequestType === 'merge' && this.mergeSecondaryId
+        ? +this.mergeSecondaryId
+        : undefined;
 
     this._changeRequestService
       .create(
@@ -770,14 +748,14 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         +this.club_id,
         this.changeRequestType,
         value,
-        this.mergeFoundPlayer?.id
+        secondaryId
       )
       .subscribe({
         next: () => {
           this.changeRequestSent = true;
           this.changeRequestType = '';
           this.changeRequestValue = '';
-          this.resetMergeSearch();
+          this.mergeSecondaryId = '';
           this._cdr.markForCheck();
         },
         error: (err) => {
@@ -793,15 +771,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           );
         },
       });
-  }
-
-  private resetMergeSearch(): void {
-    this.mergeFirstName = '';
-    this.mergeLastName = '';
-    this.mergeBirthdate = '';
-    this.mergeFoundPlayer = null;
-    this.mergeSearching = false;
-    this.mergeSearchError = '';
   }
 
   // --- Spielersperren (Issue #508) ---------------------------------------
