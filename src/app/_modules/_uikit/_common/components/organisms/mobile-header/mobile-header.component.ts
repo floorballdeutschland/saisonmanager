@@ -18,6 +18,7 @@ import {
   GameOperation,
   League,
   LeaguesWithOperation,
+  Season,
   StateAssociation,
 } from '@floorball/types';
 import { BehaviorSubject, combineLatest, map, Observable, Subject } from 'rxjs';
@@ -32,6 +33,8 @@ import { BehaviorSubject, combineLatest, map, Observable, Subject } from 'rxjs';
 export class MobileHeaderComponent implements OnInit {
   isLoading$!: Observable<boolean>;
   leagues$!: Observable<League[] | null>;
+  seasons$!: Observable<Season[]>;
+  selectedSeasonId$!: Observable<number | null>;
   selectedAssociation$!: Observable<GameOperation | null>;
   selectedStateAssociation$!: Observable<StateAssociation | null>;
   activeBanner$!: Observable<{ url: string; linkUrl?: string | null } | null>;
@@ -55,6 +58,8 @@ export class MobileHeaderComponent implements OnInit {
   ngOnInit(): void {
     this.isLoading$ = this._associationService.associationsIsLoading$;
     this.leagues$ = this._leagueService.leagues$;
+    this.seasons$ = this._associationService.seasons$;
+    this.selectedSeasonId$ = this._associationService.currentSeasonId$;
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.selectedStateAssociation$ =
       this._associationService.selectedStateAssociation$;
@@ -91,6 +96,13 @@ export class MobileHeaderComponent implements OnInit {
 
   close() {
     this.onClose$.next(true);
+  }
+
+  // Bewusst ohne close(): Nach dem Saisonwechsel lädt die Ligenliste im Menü
+  // neu, damit der Nutzer direkt eine Liga der neuen Saison auswählen kann.
+  onSeasonChange(event: Event) {
+    const id = parseInt((event.target as HTMLSelectElement).value, 10);
+    this._associationService.selectSeason(id);
   }
 
   removeFavoriteLeague(id: number): void {
