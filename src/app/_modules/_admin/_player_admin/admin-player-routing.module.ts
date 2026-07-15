@@ -1,55 +1,77 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+import { permissionGuard } from '../../../_helpers/_guards/permission.guard';
 import * as Views from './views';
+
+// Admin/SBK-only vs. auch VM/TM erreichbar: Die Detail-/Bearbeiten-Seite und
+// die vereinsbezogene Spielerliste werden auch von Vereins-/Teammanagern über
+// ihre eigene Spielerliste (spieler-verein) angesteuert – hier gilt daher
+// dasselbe Gate wie am dortigen Einstieg (`menu_item_player_vm`, VM+TM).
+// Die Gesamtliste, die Suche und die Dublettenzusammenführung bleiben
+// Admin/SBK vorbehalten. Der Server erzwingt die eigentliche Autorisierung.
+const PLAYER_ADMIN = 'menu_item_player_admin';
+const PLAYER_SHARED = ['menu_item_player_admin', 'menu_item_player_vm'];
 
 const routes: Routes = [
   {
     path: 'verwaltung/spieler/:id/duplikat',
     pathMatch: 'full',
     component: Views.PlayerMergeComponent,
+    canActivate: [permissionGuard],
     data: {
       scrollTop: true,
+      permission: PLAYER_ADMIN,
     },
   },
   {
     path: 'verwaltung/spieler/suche',
     pathMatch: 'full',
     component: Views.PlayerSearchComponent,
+    canActivate: [permissionGuard],
     data: {
       scrollTop: true,
+      permission: PLAYER_ADMIN,
     },
   },
   {
     path: 'verwaltung/vereine/alle/spieler',
     pathMatch: 'full',
     component: Views.PlayerIndexComponent,
+    canActivate: [permissionGuard],
     data: {
       scrollTop: true,
+      permission: PLAYER_ADMIN,
     },
   },
   {
     path: 'verwaltung/vereine/:clubId/spieler',
     pathMatch: 'full',
     component: Views.PlayerIndexComponent,
+    canActivate: [permissionGuard],
     data: {
       scrollTop: true,
+      permission: PLAYER_SHARED,
     },
   },
   {
     path: 'verwaltung/vereine/:clubId/spieler/:playerId/bearbeiten',
     pathMatch: 'full',
     component: Views.PlayerEditComponent,
+    canActivate: [permissionGuard],
     data: {
       scrollTop: true,
+      permission: PLAYER_SHARED,
     },
   },
   {
     path: 'verwaltung/vereine/:clubId/spieler/neu',
     pathMatch: 'full',
     component: Views.PlayerEditComponent,
+    canActivate: [permissionGuard],
     data: {
       scrollTop: true,
+      permission: PLAYER_ADMIN,
     },
   },
 ];

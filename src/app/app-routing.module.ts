@@ -35,11 +35,16 @@ const routes: Routes = [
         data: { permission: 'menu_item_league_admin' },
       },
       {
+        // Die Spieler-Verwaltung bündelt admin-/SBK-eigene Ansichten
+        // (Gesamtliste, Suche, Dublettenzusammenführung) mit der Spieler-
+        // Detail-/Bearbeiten-Seite, die auch Vereins-/Teammanager über ihre
+        // eigene Spielerliste (spieler-verein) ansteuern. Ein einziger
+        // Modul-Gate mit `menu_item_player_admin` sperrt VM/TM aus – daher
+        // sitzen die Guards auf den Kind-Routen in
+        // admin-player-routing.module.ts.
         path: '',
         loadChildren: () =>
           import('@floorball/admin/player').then((m) => m.AdminPlayerModule),
-        canActivate: [permissionGuard],
-        data: { permission: 'menu_item_player_admin' },
       },
       {
         // Nur über die Liga-Verwaltung erreichbare Drill-Downs (kein eigener
