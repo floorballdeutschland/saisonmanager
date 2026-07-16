@@ -122,29 +122,22 @@
                 }
                 @if (!player.deactivated_at) {
                   <br />
-                  @if (player.current_license_status_id === 1) {
+                  @for (lic of licenseBadges(player); track $index) {
                     <span
-                      class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-green-100 text-green-800"
-                      >{{ "playerVm.index.licenseLicensed" | transloco }}</span
+                      class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 mr-1"
+                      [class]="badgeClass(lic.license_status_id)"
                     >
-                  }
-                  @if (player.current_license_status_id === 2) {
-                    <span
-                      class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-yellow-100 text-yellow-800"
-                      >{{ "playerVm.index.licenseRequested" | transloco }}</span
-                    >
-                  }
-                  @if (
-                    player.current_license_status_id &&
-                    player.current_license_status_id !== 1 &&
-                    player.current_license_status_id !== 2
-                  ) {
-                    <span
-                      class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-red-100 text-red-800"
-                      >{{ player.current_license_status }}</span
-                    >
-                  }
-                  @if (!player.current_license_status_id) {
+                      {{
+                        lic.license_status_id === 1
+                          ? ("playerVm.index.licenseLicensed" | transloco)
+                          : lic.license_status_id === 2
+                            ? ("playerVm.index.licenseRequested" | transloco)
+                            : lic.license_status
+                      }}{{
+                        lic.league_short_name ? " " + lic.league_short_name : ""
+                      }}
+                    </span>
+                  } @empty {
                     <span
                       class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
                       >{{ "playerVm.index.licenseNone" | transloco }}</span
