@@ -96,25 +96,21 @@ export class UserIndexComponent implements OnInit, OnDestroy {
   }
 
   get filteredUsers(): UserAdminEntry[] {
-    const byRole =
-      this.selectedRole === null
-        ? this.users
-        : this.users.filter((u) =>
-            u.roles.some((r) => r.user_group_id === this.selectedRole)
-          );
+    const byRole = this.roleFilteredUsers;
     return this.showArchived ? byRole : byRole.filter((u) => !u.archived_at);
   }
 
   // Anzahl archivierter Konten im aktuellen Rollen-Filter (für den
   // Anzeigen/Ausblenden-Link, analog zur VM-Spielerliste).
   get archivedCount(): number {
-    const byRole =
-      this.selectedRole === null
-        ? this.users
-        : this.users.filter((u) =>
-            u.roles.some((r) => r.user_group_id === this.selectedRole)
-          );
-    return byRole.filter((u) => u.archived_at).length;
+    return this.roleFilteredUsers.filter((u) => u.archived_at).length;
+  }
+
+  private get roleFilteredUsers(): UserAdminEntry[] {
+    if (this.selectedRole === null) return this.users;
+    return this.users.filter((u) =>
+      u.roles.some((r) => r.user_group_id === this.selectedRole)
+    );
   }
 
   roleLabel(user: UserAdminEntry): string {
