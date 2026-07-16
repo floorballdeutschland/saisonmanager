@@ -26,6 +26,7 @@ export class UserIndexComponent implements OnInit, OnDestroy {
   loading = false;
   currentUser: User | null = null;
   selectedRole: number | null = null;
+  showArchived = false;
 
   readonly roleOptions = [
     { label: this._transloco.translate('userAdmin.index.roleAdmin'), value: 1 },
@@ -95,6 +96,17 @@ export class UserIndexComponent implements OnInit, OnDestroy {
   }
 
   get filteredUsers(): UserAdminEntry[] {
+    const byRole = this.roleFilteredUsers;
+    return this.showArchived ? byRole : byRole.filter((u) => !u.archived_at);
+  }
+
+  // Anzahl archivierter Konten im aktuellen Rollen-Filter (für den
+  // Anzeigen/Ausblenden-Link, analog zur VM-Spielerliste).
+  get archivedCount(): number {
+    return this.roleFilteredUsers.filter((u) => u.archived_at).length;
+  }
+
+  private get roleFilteredUsers(): UserAdminEntry[] {
     if (this.selectedRole === null) return this.users;
     return this.users.filter((u) =>
       u.roles.some((r) => r.user_group_id === this.selectedRole)

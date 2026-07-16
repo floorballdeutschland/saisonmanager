@@ -15,6 +15,16 @@
   }
 
   @if (user) {
+    @if (user.archived_at) {
+      <div
+        class="mb-6 border border-amber-300 bg-amber-50 rounded-[5px] p-4 text-sm"
+      >
+        {{
+          "userAdmin.edit.archivedNotice"
+            | transloco: { date: user.archived_at | date: "dd.MM.yyyy" }
+        }}
+      </div>
+    }
     <!-- Stammdaten (read-only) -->
     <div
       class="mb-6 border border-fb-gray-700 rounded-[5px] p-4 flex flex-col gap-2 text-sm"
@@ -71,19 +81,6 @@
           {{ "userAdmin.edit.emailHint" | transloco }}
         </span>
       </div>
-      @if (isAdminOrSbk) {
-        <label class="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            [(ngModel)]="active"
-            name="active"
-            class="h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span class="text-sm font-bold">{{
-            "userAdmin.edit.userActive" | transloco
-          }}</span>
-        </label>
-      }
       <div class="flex items-center gap-3 mt-2">
         <button
           type="submit"
@@ -370,6 +367,60 @@
         </p>
       }
     </div>
+    <!-- Archivieren / Reaktivieren -->
+    @if (canArchive) {
+      <div class="border-t border-fb-gray-200 pt-6 mt-6">
+        <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+          {{ "userAdmin.edit.archiveHeading" | transloco }}
+        </div>
+        @if (!user.archived_at) {
+          <p class="text-sm text-fb-gray-500 mb-3">
+            {{ "userAdmin.edit.archiveHint" | transloco }}
+          </p>
+          <fb-confirmation
+            [title]="'userAdmin.edit.archiveDialogTitle' | transloco"
+            [content]="
+              'userAdmin.edit.archiveDialogContent'
+                | transloco: { username: user.username }
+            "
+            [submitButtonTitle]="
+              'userAdmin.edit.archiveDialogSubmit' | transloco
+            "
+            (handleSubmit)="archiveUser()"
+          >
+            <button
+              type="button"
+              [disabled]="archiving"
+              class="px-4 py-2 text-sm font-bold text-amber-700 border border-amber-300 rounded-[5px] hover:border-amber-500 disabled:opacity-50"
+            >
+              {{
+                (archiving
+                  ? "userAdmin.edit.archiving"
+                  : "userAdmin.edit.archiveButton"
+                ) | transloco
+              }}
+            </button>
+          </fb-confirmation>
+        } @else {
+          <p class="text-sm text-fb-gray-500 mb-3">
+            {{ "userAdmin.edit.unarchiveHint" | transloco }}
+          </p>
+          <button
+            type="button"
+            (click)="unarchiveUser()"
+            [disabled]="archiving"
+            class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+          >
+            {{
+              (archiving
+                ? "userAdmin.edit.archiving"
+                : "userAdmin.edit.unarchiveButton"
+              ) | transloco
+            }}
+          </button>
+        }
+      </div>
+    }
     <!-- Löschen -->
     @if (canDelete) {
       <div class="border-t border-fb-gray-200 pt-6">

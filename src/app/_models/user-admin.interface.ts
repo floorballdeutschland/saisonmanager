@@ -15,7 +15,7 @@ export interface UserAdminEntry {
   last_name: string;
   email: string;
   club_id: number | null;
-  active: boolean;
+  archived_at: string | null;
   inactive?: boolean;
   last_login_at: string | null;
   created_at: string;

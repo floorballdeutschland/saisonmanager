@@ -40,6 +40,20 @@
             </option>
           }
         </select>
+        @if (archivedCount > 0) {
+          <button
+            type="button"
+            (click)="showArchived = !showArchived"
+            class="text-sm text-fb-gray-500 underline hover:text-black"
+          >
+            {{
+              (showArchived
+                ? "userAdmin.index.archivedCountHide"
+                : "userAdmin.index.archivedCountShow"
+              ) | transloco: { count: archivedCount }
+            }}
+          </button>
+        }
       </div>
       <table class="w-full text-sm">
         <thead>
@@ -71,12 +85,13 @@
         <tbody>
           @for (user of filteredUsers; track user) {
             <tr
-              [class.bg-amber-50]="user.inactive"
+              [class.bg-amber-50]="user.inactive && !user.archived_at"
+              [class.opacity-50]="!!user.archived_at"
               class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
             >
               <td class="py-2 pr-4 font-medium">
                 {{ user.name || "–" }}
-                @if (user.inactive) {
+                @if (user.inactive && !user.archived_at) {
                   <span
                     class="ml-2 text-xs font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded"
                     >{{ "userAdmin.index.inactiveBadge" | transloco }}</span
@@ -99,18 +114,18 @@
                 }}
               </td>
               <td class="py-2 pr-4">
-                <span
-                  [class.text-green-600]="user.active"
-                  [class.text-red-500]="!user.active"
-                  class="text-xs font-bold"
-                >
-                  {{
-                    (user.active
-                      ? "userAdmin.index.statusActive"
-                      : "userAdmin.index.statusInactive"
-                    ) | transloco
-                  }}
-                </span>
+                @if (user.archived_at) {
+                  <span
+                    class="text-xs font-bold text-fb-gray-500"
+                    [title]="user.archived_at | date: 'dd.MM.yyyy'"
+                  >
+                    {{ "userAdmin.index.statusArchived" | transloco }}
+                  </span>
+                } @else {
+                  <span class="text-xs font-bold text-green-600">
+                    {{ "userAdmin.index.statusActive" | transloco }}
+                  </span>
+                }
               </td>
               <td class="py-2 text-right">
                 <a

@@ -78,6 +78,17 @@ export class UserManagementService {
     );
   }
 
+  archiveUser(id: number): Observable<UserAdminEntry> {
+    return this.http.post<UserAdminEntry>(`${this.base}/${id}/archive.json`, {});
+  }
+
+  unarchiveUser(id: number): Observable<UserAdminEntry> {
+    return this.http.post<UserAdminEntry>(
+      `${this.base}/${id}/unarchive.json`,
+      {}
+    );
+  }
+
   triggerPasswordReset(id: number): Observable<{ success: boolean }> {
     return this.http.post<{ success: boolean }>(
       `${this.base}/${id}/trigger_password_reset.json`,

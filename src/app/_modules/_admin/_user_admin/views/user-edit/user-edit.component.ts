@@ -35,10 +35,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
   user: UserAdminEntry | null = null;
   currentUser: User | null = null;
   email = '';
-  active = true;
   saving = false;
   sendingReset = false;
   deleting = false;
+  archiving = false;
 
   clubsWithTeams: ClubWithTeams[] = [];
   editableTeamIds: number[] = [];
@@ -117,7 +117,6 @@ export class UserEditComponent implements OnInit, OnDestroy {
         next: (user) => {
           this.user = user;
           this.email = user.email ?? '';
-          this.active = user.active;
           this.editableTeamIds = user.teams ? [...user.teams] : [];
 
           const goScopedRole = user.roles?.find((r) =>
@@ -191,6 +190,12 @@ export class UserEditComponent implements OnInit, OnDestroy {
       !!this.currentUser?.permissions['user_delete'] &&
       this.user?.id !== this.currentUser?.id
     );
+  }
+
+  // Archivieren hängt an denselben Rechten wie das Bearbeiten (Admin/SBK
+  // global, VM für die eigenen Vereinskonten); das eigene Konto ist gesperrt.
+  get canArchive(): boolean {
+    return !this.isSelf && (this.isAdminOrSbk || this.isVm);
   }
 
   get isVm(): boolean {
@@ -378,9 +383,6 @@ export class UserEditComponent implements OnInit, OnDestroy {
     this.saving = true;
 
     const payload: Partial<UserAdminEntry> = { email: this.email };
-    if (this.isAdminOrSbk) {
-      payload.active = this.active;
-    }
     // Die aktuell gewählte Vereinszuweisung mit dem Haupt-"Speichern"
     // persistieren, damit sie nicht verloren geht, wenn der separate
     // "Verein speichern"-Button nicht gedrückt wurde.
@@ -552,6 +554,66 @@ export class UserEditComponent implements OnInit, OnDestroy {
             {
               autoClose: false,
             }
+          );
+        },
+      });
+  }
+
+  archiveUser(): void {
+    if (!this.user || !this.canArchive || this.archiving) return;
+    this.archiving = true;
+    this._userService
+      .archiveUser(this.user.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.user = updated;
+          this.archiving = false;
+          this._notificationService.success(
+            this._transloco.translate('userAdmin.notifications.archived', {
+              username: updated.username,
+            }),
+            { autoClose: true }
+          );
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this.archiving = false;
+          this._cdr.markForCheck();
+          this._notificationService.error(
+            err?.error?.error ||
+              this._transloco.translate('userAdmin.notifications.saveError'),
+            { autoClose: false }
+          );
+        },
+      });
+  }
+
+  unarchiveUser(): void {
+    if (!this.user || !this.canArchive || this.archiving) return;
+    this.archiving = true;
+    this._userService
+      .unarchiveUser(this.user.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.user = updated;
+          this.archiving = false;
+          this._notificationService.success(
+            this._transloco.translate('userAdmin.notifications.unarchived', {
+              username: updated.username,
+            }),
+            { autoClose: true }
+          );
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this.archiving = false;
+          this._cdr.markForCheck();
+          this._notificationService.error(
+            err?.error?.error ||
+              this._transloco.translate('userAdmin.notifications.saveError'),
+            { autoClose: false }
           );
         },
       });

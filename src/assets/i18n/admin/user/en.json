@@ -15,7 +15,6 @@
     "inactiveBadge": "Inactive (>3 years)",
     "neverLoggedIn": "Never",
     "statusActive": "Active",
-    "statusInactive": "Disabled",
     "edit": "Edit",
     "empty": "No users found.",
     "roleAdmin": "Admin",
@@ -24,7 +23,10 @@
     "roleAnsetzer": "Assigner",
     "roleVm": "VM",
     "roleTm": "TM",
-    "roleReferee": "Referee"
+    "roleReferee": "Referee",
+    "statusArchived": "Archived",
+    "archivedCountShow": "Show {{count}} archived",
+    "archivedCountHide": "Hide {{count}} archived"
   },
   "create": {
     "title": "User management",
@@ -69,7 +71,6 @@
     "email": "Email",
     "emailPlaceholder": "user@example.com",
     "emailHint": "Changes require email confirmation.",
-    "userActive": "User active",
     "saving": "Saving…",
     "save": "Save",
     "cancel": "Cancel",
@@ -106,7 +107,17 @@
     "rolesHint": "An account can have multiple roles (e.g. RSK and assignor). Association- or club-bound roles need the respective assignment.",
     "removeRole": "Remove",
     "selectRole": "Select role…",
-    "addRole": "Add role"
+    "addRole": "Add role",
+    "archivedNotice": "This account has been archived since {{date}}. Logging in is no longer possible.",
+    "archiveHeading": "Archive",
+    "archiveHint": "An archived account can no longer log in. All data and references are kept; the account can be reactivated at any time.",
+    "unarchiveHint": "This account is archived. After reactivating, logging in is possible again.",
+    "archiveButton": "Archive user",
+    "unarchiveButton": "Reactivate user",
+    "archiving": "Saving …",
+    "archiveDialogTitle": "Archive user",
+    "archiveDialogContent": "Do you really want to archive the account \"{{username}}\"? Login will be blocked; the account can be reactivated at any time.",
+    "archiveDialogSubmit": "Archive"
   },
   "notifications": {
     "userCreated": "User {{ name }} created. An email to set the password has been sent.",
@@ -127,6 +138,8 @@
     "resetMailError": "Error while sending.",
     "roleAdded": "Role added.",
     "roleRemoved": "Role removed.",
-    "confirmRemoveRole": "Really remove role \"{{ role }}\"?"
+    "confirmRemoveRole": "Really remove role \"{{ role }}\"?",
+    "archived": "Account \"{{username}}\" has been archived.",
+    "unarchived": "Account \"{{username}}\" has been reactivated."
   }
 }
