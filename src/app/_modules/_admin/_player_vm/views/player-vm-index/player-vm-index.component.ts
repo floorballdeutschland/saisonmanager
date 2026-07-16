@@ -9,7 +9,11 @@ import {
 import { Subject, forkJoin, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { ClubService, PlayerService } from '@floorball/core';
-import { ClubWithTeams, Player } from '@floorball/types';
+import {
+  ClubWithTeams,
+  Player,
+  PlayerCurrentLicense,
+} from '@floorball/types';
 import { Title } from '@angular/platform-browser';
 
 interface ClubPlayerList {
@@ -86,6 +90,36 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
+  }
+
+  // Ein Badge pro Liga-Lizenz der laufenden Saison; solange die API das
+  // Feld current_licenses noch nicht liefert, Fallback auf den bisherigen
+  // Einzelstatus (dann ohne Liga-Kürzel).
+  licenseBadges(player: Player): PlayerCurrentLicense[] {
+    if (player.current_licenses?.length) {
+      return player.current_licenses;
+    }
+    if (player.current_license_status_id) {
+      return [
+        {
+          license_status_id: player.current_license_status_id,
+          license_status: player.current_license_status ?? '',
+          league_id: 0,
+          league_short_name: '',
+        },
+      ];
+    }
+    return [];
+  }
+
+  badgeClass(statusId: number): string {
+    if (statusId === 1) {
+      return 'bg-green-100 text-green-800';
+    }
+    if (statusId === 2) {
+      return 'bg-yellow-100 text-yellow-800';
+    }
+    return 'bg-red-100 text-red-800';
   }
 
   visiblePlayers(list: ClubPlayerList): Player[] {

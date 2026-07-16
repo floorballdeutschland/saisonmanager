@@ -21,7 +21,17 @@ export interface Player {
   deactivated_at?: string;
   current_license_status_id?: number;
   current_license_status?: string;
+  current_licenses?: PlayerCurrentLicense[];
   deactivation_reason?: string;
+}
+
+// Lizenz-Badge der VM-Spielerliste: ein Eintrag pro Liga-Lizenz der laufenden
+// Saison (admin/vm/players.json), höchste Liga zuerst.
+export interface PlayerCurrentLicense {
+  license_status_id: number;
+  license_status: string;
+  league_id: number;
+  league_short_name: string;
 }
 
 export interface PlayerWithLicense extends Player {
