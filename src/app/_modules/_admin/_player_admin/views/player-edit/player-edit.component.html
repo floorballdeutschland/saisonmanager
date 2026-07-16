@@ -371,6 +371,7 @@
                     <div>
                       <fb-button
                         [disabled]="
+                          changeRequestSubmitting ||
                           !changeRequestType ||
                           (changeRequestType === 'merge'
                             ? !mergeSecondaryId
