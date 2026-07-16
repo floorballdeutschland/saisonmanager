@@ -15,7 +15,6 @@
     "inactiveBadge": "Inaktiv (>3 Jahre)",
     "neverLoggedIn": "Noch nie",
     "statusActive": "Aktiv",
-    "statusInactive": "Deaktiviert",
     "edit": "Bearbeiten",
     "empty": "Keine Benutzer gefunden.",
     "roleAdmin": "Admin",
@@ -24,7 +23,10 @@
     "roleAnsetzer": "Ansetzer",
     "roleVm": "VM",
     "roleTm": "TM",
-    "roleReferee": "Schiedsrichter"
+    "roleReferee": "Schiedsrichter",
+    "statusArchived": "Archiviert",
+    "archivedCountShow": "{{count}} archivierte anzeigen",
+    "archivedCountHide": "{{count}} archivierte ausblenden"
   },
   "create": {
     "title": "Benutzerverwaltung",
@@ -69,7 +71,6 @@
     "email": "E-Mail",
     "emailPlaceholder": "benutzer@beispiel.de",
     "emailHint": "Änderungen erfordern eine E-Mail-Bestätigung.",
-    "userActive": "Benutzer aktiv",
     "saving": "Speichern…",
     "save": "Speichern",
     "cancel": "Abbrechen",
@@ -106,7 +107,17 @@
     "rolesHint": "Ein Konto kann mehrere Rollen haben (z. B. RSK und Ansetzer). Verbund- bzw. vereinsgebundene Rollen brauchen die jeweilige Zuordnung.",
     "removeRole": "Entfernen",
     "selectRole": "Rolle wählen…",
-    "addRole": "Rolle hinzufügen"
+    "addRole": "Rolle hinzufügen",
+    "archivedNotice": "Dieses Konto ist seit dem {{date}} archiviert. Ein Login ist nicht mehr möglich.",
+    "archiveHeading": "Archivieren",
+    "archiveHint": "Ein archiviertes Konto kann sich nicht mehr einloggen. Alle Daten und Verknüpfungen bleiben erhalten; das Konto kann jederzeit reaktiviert werden.",
+    "unarchiveHint": "Das Konto ist archiviert. Nach dem Reaktivieren ist der Login wieder möglich.",
+    "archiveButton": "Benutzer archivieren",
+    "unarchiveButton": "Benutzer reaktivieren",
+    "archiving": "Wird gespeichert …",
+    "archiveDialogTitle": "Benutzer archivieren",
+    "archiveDialogContent": "Soll das Konto „{{username}}\" wirklich archiviert werden? Der Login wird gesperrt; das Konto kann jederzeit reaktiviert werden.",
+    "archiveDialogSubmit": "Archivieren"
   },
   "notifications": {
     "userCreated": "Benutzer {{ name }} angelegt. Eine E-Mail zum Passwort setzen wurde versandt.",
@@ -127,6 +138,8 @@
     "resetMailError": "Fehler beim Senden.",
     "roleAdded": "Rolle hinzugefügt.",
     "roleRemoved": "Rolle entfernt.",
-    "confirmRemoveRole": "Rolle „{{ role }}\" wirklich entfernen?"
+    "confirmRemoveRole": "Rolle „{{ role }}\" wirklich entfernen?",
+    "archived": "Konto „{{username}}\" wurde archiviert.",
+    "unarchived": "Konto „{{username}}\" wurde reaktiviert."
   }
 }
