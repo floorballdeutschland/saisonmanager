@@ -63,6 +63,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   changeRequestType: CorrectionType | '' = '';
   changeRequestValue = '';
   changeRequestSent = false;
+  changeRequestSubmitting = false;
 
   // Duplikat-Auswahl für Merge-Anträge (correction_type 'merge'): aktive
   // Spieler des eigenen Vereins ohne das gerade geöffnete Profil.
@@ -738,6 +739,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   public submitChangeRequest(player: Player): void {
+    if (this.changeRequestSubmitting) return;
     if (!this.changeRequestType || !this.club_id || !player.id) return;
     if (this.changeRequestType === 'merge' && !this.mergeSecondaryId) return;
 
@@ -749,6 +751,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         ? +this.mergeSecondaryId
         : undefined;
 
+    this.changeRequestSubmitting = true;
     this._changeRequestService
       .create(
         player.id,
@@ -759,6 +762,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
+          this.changeRequestSubmitting = false;
           this.changeRequestSent = true;
           this.changeRequestType = '';
           this.changeRequestValue = '';
@@ -766,8 +770,10 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: (err) => {
+          this.changeRequestSubmitting = false;
           // 422-Detail (z.B. "bereits zusammengeführt") sichtbar machen –
-          // der globale ErrorInterceptor zeigt 422 nicht an.
+          // der globale ErrorInterceptor wertet nur message/error aus, nicht
+          // errors[], und zeigt daher nur eine generische Meldung (#84).
           this._notificationService.error(
             err?.error?.errors?.join(', ') ||
               'Antrag konnte nicht eingereicht werden.',
@@ -776,6 +782,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
               keepAfterRouteChange: false,
             }
           );
+          this._cdr.markForCheck();
         },
       });
   }
