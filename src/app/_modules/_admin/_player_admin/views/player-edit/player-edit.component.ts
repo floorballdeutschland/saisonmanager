@@ -772,7 +772,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.changeRequestSubmitting = false;
           // 422-Detail (z.B. "bereits zusammengeführt") sichtbar machen –
-          // der globale ErrorInterceptor zeigt 422 nicht an.
+          // der globale ErrorInterceptor wertet nur message/error aus, nicht
+          // errors[], und zeigt daher nur eine generische Meldung (#84).
           this._notificationService.error(
             err?.error?.errors?.join(', ') ||
               'Antrag konnte nicht eingereicht werden.',
