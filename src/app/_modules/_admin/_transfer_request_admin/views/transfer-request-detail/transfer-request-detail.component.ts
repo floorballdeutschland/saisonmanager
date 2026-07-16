@@ -54,10 +54,9 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (user) => {
           this.currentUserClubIds = user?.club_ids || [];
-          this.isAdmin = !!(
-            user?.permissions?.['menu_item_transfer_requests_admin'] ||
-            user?.permissions?.['menu_item_league_admin']
-          );
+          // Echter Admin-Boolean vom Backend – menu_item_league_admin ist auch
+          // für SBK true und zeigte SBK-Usern fälschlich die Vereins-Freigabe.
+          this.isAdmin = !!user?.permissions?.['admin'];
           this.isSbk = !!user?.permissions?.['menu_item_transfer_requests_sbk'];
           this._cdr.markForCheck();
         },
