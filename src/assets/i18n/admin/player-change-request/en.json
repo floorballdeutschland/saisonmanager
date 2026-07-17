@@ -1,5 +1,6 @@
 {
   "title": "Player data correction requests",
+  "intro": "This page only shows the status of ongoing correction requests. New correction requests are submitted from the player detail page (My players → click on the name).",
   "loading": "Loading requests…",
   "empty": "No requests available.",
   "colPlayer": "Player",
