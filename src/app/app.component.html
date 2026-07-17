@@ -1,3 +1,10 @@
+@if (isStaging) {
+  <div class="staging-badge" aria-hidden="true">
+    <span class="staging-badge__title">Testsystem</span>
+    <span class="staging-badge__hint">Daten sind eine anonymisierte Kopie</span>
+  </div>
+}
+
 @if ((isLoading$ | async) === false) {
   <div
     class="lg:grid lg:grid-cols-[300px_1fr] min-h-screen print:lg:grid-cols-1"

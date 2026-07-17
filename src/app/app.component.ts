@@ -26,6 +26,7 @@ import {
   StateAssociation,
 } from '@floorball/types';
 import { BehaviorSubject, filter, Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 // Fehlermeldungen der Browser, wenn ein lazy geladenes Routen-Modul nicht
 // nachgeladen werden kann (Verbindungsabriss oder nach einem Deploy entfernte
@@ -53,6 +54,11 @@ export class AppComponent implements OnInit {
 
   favoriteLeagues$?: BehaviorSubject<LeaguesWithOperation[]>;
   favoriteTeams$?: BehaviorSubject<FavoriteTeam[]>;
+
+  // Auf dem Staging-System (saisonmanager.dev) eine dauerhaft sichtbare
+  // Kennzeichnung einblenden, damit Testsystem und Produktion nicht
+  // verwechselt werden. Wird über die Build-Konfiguration gesetzt.
+  readonly isStaging = environment.staging;
 
   constructor(
     private _associationService: AssociationService,

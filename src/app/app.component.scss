@@ -1,0 +1,39 @@
+// Kennzeichnung des Staging-/Testsystems (saisonmanager.dev). Fest verankert,
+// immer sichtbar und ohne Klick-Interaktion (pointer-events: none), damit sie
+// keine Bedienelemente blockiert. Bewusst unten links: die mobilen Kopfzeilen
+// belegen oben links (Logo) und oben rechts (Menü).
+.staging-badge {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: #dc2626;
+  color: #fff;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 35%);
+  pointer-events: none;
+  user-select: none;
+
+  &__title {
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  &__hint {
+    font-size: 11px;
+    line-height: 1.3;
+    opacity: 0.9;
+  }
+}
+
+@media print {
+  .staging-badge {
+    display: none;
+  }
+}
