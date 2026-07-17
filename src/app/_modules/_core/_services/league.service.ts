@@ -23,12 +23,13 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
-  map,
   Observable,
   of,
   shareReplay,
   switchMap,
+  tap,
 } from 'rxjs';
 import { AssociationService } from '.';
 import { GroupedTable } from '../../../_models/table-entry.interface';
@@ -86,9 +87,28 @@ export class LeagueService {
   }
 
   public getLeague(leagueId: number) {
-    //return this.getSingleLeague(leagueId);
+    // Fallback für Ligen außerhalb der gewählten Saison (z. B. Deep-Links von
+    // der Spielerseite): einzeln nachladen und den Saison-Switcher auf die
+    // Saison der Liga stellen, damit Saisonanzeige und Ligenliste passen.
+    const singleLeague$ = this.getSingleLeague(leagueId).pipe(
+      tap((_league) => {
+        const seasonId = Number(_league.season_id);
+        if (seasonId) {
+          this._associationService.selectSeason(seasonId);
+        }
+      }),
+      catchError(() => of(null)),
+      shareReplay(1)
+    );
+
     return this.leagues$.pipe(
-      map((_leagues) => _leagues?.find((_l) => _l.id === leagueId) ?? null)
+      switchMap((_leagues) => {
+        if (!_leagues) {
+          return of(null);
+        }
+        const league = _leagues.find((_l) => _l.id === leagueId);
+        return league ? of(league) : singleLeague$;
+      })
     );
   }
 

@@ -114,7 +114,11 @@ export class AssociationService {
   }
 
   selectSeason(seasonId: number) {
-    this._selectedSeasonId$.next(seasonId);
+    // Gleiche Saison nicht erneut emittieren – sonst lösen Aufrufer wie der
+    // Einzel-Liga-Fallback im LeagueService unnötige Neu-Ladungen aus.
+    if (this._selectedSeasonId$.value !== seasonId) {
+      this._selectedSeasonId$.next(seasonId);
+    }
   }
 
   public getInit() {
