@@ -1,5 +1,6 @@
 {
   "title": "Spielerdaten-Korrekturanträge",
+  "intro": "Diese Seite zeigt nur den Status laufender Korrekturanträge. Neue Korrekturanträge werden über die Spielerdetailseite gestellt (Meine Spieler*innen → Klick auf den Namen).",
   "loading": "Lade Anträge…",
   "empty": "Keine Anträge vorhanden.",
   "colPlayer": "Spieler",
