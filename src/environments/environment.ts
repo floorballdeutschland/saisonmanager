@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  staging: false,
   apiURL: 'http://localhost:3001/api/v2/',
   frontendApiKey: '',
 };
