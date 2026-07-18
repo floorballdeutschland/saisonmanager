@@ -24,6 +24,10 @@ export class LeagueNavigationComponent {
   @Input()
   associations: GameOperation[] = [];
 
+  // Nur auf der Startseite einblenden – steuert der Aufrufer bei.
+  @Input()
+  showAssociations = false;
+
   @Input()
   selectedAssociation!: GameOperation | null;
 

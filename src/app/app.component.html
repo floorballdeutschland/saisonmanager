@@ -24,6 +24,7 @@
         <fb-league-navigation
           [leagues]="(leagues$ | async) ?? []"
           [associations]="(associations$ | async) ?? []"
+          [showAssociations]="(isHome$ | async) ?? false"
           [selectedAssociation]="selectedAssociation$ | async"
           [seasons]="(seasons$ | async) ?? []"
           [selectedSeasonId]="(selectedSeasonId$ | async) ?? null"
