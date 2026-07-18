@@ -6,7 +6,6 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { ApiKeyService, NotificationService } from '@floorball/core';
@@ -81,14 +80,7 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
           this.load();
         },
-        error: (err: HttpErrorResponse) => {
-          const detail = err.error?.errors?.join(', ') ?? err.message;
-          this._notificationService.error(
-            this._transloco.translate('apiKeys.notifications.createError', {
-              detail,
-            }),
-            { autoClose: false }
-          );
+        error: () => {
           this.creating = false;
           this._cdr.markForCheck();
         },
@@ -141,15 +133,8 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
           this.togglingIds.delete(id);
           this.load();
         },
-        error: (err: HttpErrorResponse) => {
+        error: () => {
           this.togglingIds.delete(id);
-          const detail = err.error?.errors?.join(', ') ?? err.message;
-          this._notificationService.error(
-            this._transloco.translate('apiKeys.notifications.genericError', {
-              detail,
-            }),
-            { autoClose: false }
-          );
           this._cdr.markForCheck();
         },
       });
@@ -175,15 +160,7 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
           );
           this.load();
         },
-        error: (err: HttpErrorResponse) => {
-          const detail = err.error?.errors?.join(', ') ?? err.message;
-          this._notificationService.error(
-            this._transloco.translate('apiKeys.notifications.deleteError', {
-              detail,
-            }),
-            { autoClose: false }
-          );
-        },
+        // Fehlermeldungen zeigt der globale ErrorInterceptor (#84).
       });
   }
 

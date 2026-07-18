@@ -391,15 +391,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             this._router.navigate(['/', 'verwaltung', 'spieler-verein']);
           }
         },
-        error: (error) => {
-          this._notificationService.error(
-            error?.error?.message ?? 'Fehler beim Speichern.',
-            {
-              autoClose: false,
-              keepAfterRouteChange: false,
-            }
-          );
-        },
+        // Fehlermeldungen zeigt der globale ErrorInterceptor (#84).
       });
   }
 
@@ -419,15 +411,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           if (player?.id) {
             this.getPlayer(player.id.toString());
           }
-        },
-        error: (error) => {
-          this._notificationService.error(
-            error?.error?.message ?? 'Fehler beim Freigeben.',
-            {
-              autoClose: false,
-              keepAfterRouteChange: false,
-            }
-          );
         },
       });
   }
@@ -453,15 +436,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           if (player?.id) {
             this.getPlayer(player.id.toString());
           }
-        },
-        error: (error) => {
-          this._notificationService.error(
-            error?.error?.message ?? 'Fehler beim Freigeben.',
-            {
-              autoClose: false,
-              keepAfterRouteChange: false,
-            }
-          );
         },
       });
   }
@@ -505,11 +479,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           });
           this._cdr.markForCheck();
         },
-        error: (err) => {
-          this._notificationService.error(
-            err?.error?.message ?? 'Deaktivierung fehlgeschlagen.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
+        error: () => {
           this.cancelDeactivate();
           this._cdr.markForCheck();
         },
@@ -530,11 +500,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           });
           this._cdr.markForCheck();
         },
-        error: (err) => {
-          this._notificationService.error(
-            err?.error?.message ?? 'Reaktivierung fehlgeschlagen.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
+        error: () => {
           this._cdr.markForCheck();
         },
       });
@@ -551,12 +517,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             autoClose: true,
             keepAfterRouteChange: false,
           });
-        },
-        error: (err) => {
-          this._notificationService.error(
-            err?.error?.message ?? 'Fehler beim Speichern der E-Mail.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
         },
       });
   }
@@ -691,14 +651,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           );
           this.getPlayer('' + this.player?.id);
         },
-        // Der globale ErrorInterceptor zeigt 422 nicht an – Meldung (z. B.
-        // Tausch-Limit) hier explizit ausgeben.
-        error: (err) => {
-          this._notificationService.error(
-            err?.error?.message ?? 'Zuordnung konnte nicht geändert werden.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
-        },
       });
   }
 
@@ -729,10 +681,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.mergeLoadingPlayers = false;
-          this._notificationService.error(
-            'Spieler des Vereins konnten nicht geladen werden.',
-            { autoClose: true, keepAfterRouteChange: false }
-          );
           this._cdr.markForCheck();
         },
       });
@@ -769,19 +717,10 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           this.mergeSecondaryId = '';
           this._cdr.markForCheck();
         },
-        error: (err) => {
+        error: () => {
           this.changeRequestSubmitting = false;
-          // 422-Detail (z.B. "bereits zusammengeführt") sichtbar machen –
-          // der globale ErrorInterceptor wertet nur message/error aus, nicht
-          // errors[], und zeigt daher nur eine generische Meldung (#84).
-          this._notificationService.error(
-            err?.error?.errors?.join(', ') ||
-              'Antrag konnte nicht eingereicht werden.',
-            {
-              autoClose: true,
-              keepAfterRouteChange: false,
-            }
-          );
+          // Die Fehlermeldung (inkl. errors[]-Detail) zeigt der globale
+          // ErrorInterceptor — hier kein eigener Toast, sonst doppelt (#84).
           this._cdr.markForCheck();
         },
       });
@@ -835,12 +774,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           this.cancelLicenseSuspend();
           this.getPlayer('' + this.player?.id);
         },
-        error: (err) => {
-          this._notificationService.error(
-            err?.error?.message ?? 'Sperre konnte nicht gesetzt werden.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
-        },
       });
   }
 
@@ -877,12 +810,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           this.cancelApplicationBlock();
           this.getPlayer('' + this.player?.id);
         },
-        error: (err) => {
-          this._notificationService.error(
-            err?.error?.message ?? 'Sperre konnte nicht gesetzt werden.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
-        },
       });
   }
 
@@ -898,12 +825,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             keepAfterRouteChange: false,
           });
           this.getPlayer('' + this.player?.id);
-        },
-        error: (err) => {
-          this._notificationService.error(
-            err?.error?.message ?? 'Sperre konnte nicht aufgehoben werden.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
         },
       });
   }

@@ -20,6 +20,18 @@
     }
   </a>
 
+  @if (isStaging) {
+    <div
+      class="hidden lg:block w-full rounded-md bg-red-600 text-white px-3 py-2 mt-4 shadow-md"
+      aria-hidden="true"
+    >
+      <span class="block font-bold text-sm leading-snug"
+        >Staging- und Testsystem vom Saisonmanager</span
+      >
+      <span class="block text-xs leading-snug opacity-90">Keine Echtdaten.</span>
+    </div>
+  }
+
   <!-- open menu -->
   @if (!menuIsOpen) {
     <a

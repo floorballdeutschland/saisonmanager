@@ -1,3 +1,9 @@
+@if (isStaging) {
+  <div class="staging-ribbon" aria-hidden="true">
+    <span class="staging-ribbon__text">Testsystem</span>
+  </div>
+}
+
 @if ((isLoading$ | async) === false) {
   <div
     class="lg:grid lg:grid-cols-[300px_1fr] min-h-screen print:lg:grid-cols-1"
@@ -14,16 +20,16 @@
           (removeTeamFavorite)="removeFavoriteTeam($event)"
           class="hidden lg:block"
         ></fb-favorites-navigation>
-        @if (leagues$ | async; as leagues) {
-          <fb-league-navigation
-            [leagues]="leagues"
-            [selectedAssociation]="selectedAssociation$ | async"
-            [seasons]="(seasons$ | async) ?? []"
-            [selectedSeasonId]="(selectedSeasonId$ | async) ?? null"
-            (seasonChange)="onSeasonChange($event)"
-            class="hidden lg:block"
-          ></fb-league-navigation>
-        }
+        <fb-league-navigation
+          [leagues]="(leagues$ | async) ?? []"
+          [associations]="(associations$ | async) ?? []"
+          [showAssociations]="(isHome$ | async) ?? false"
+          [selectedAssociation]="selectedAssociation$ | async"
+          [seasons]="(seasons$ | async) ?? []"
+          [selectedSeasonId]="(selectedSeasonId$ | async) ?? null"
+          (seasonChange)="onSeasonChange($event)"
+          class="hidden lg:block"
+        ></fb-league-navigation>
       </fb-sidebar>
     </div>
     <div

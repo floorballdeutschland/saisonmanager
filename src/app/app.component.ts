@@ -9,7 +9,7 @@ import {
   PLATFORM_ID,
   ViewEncapsulation,
 } from '@angular/core';
-import { NavigationError, Router } from '@angular/router';
+import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import {
   AssociationService,
   FavoriteService,
@@ -25,7 +25,8 @@ import {
   Season,
   StateAssociation,
 } from '@floorball/types';
-import { BehaviorSubject, filter, Observable } from 'rxjs';
+import { BehaviorSubject, filter, map, Observable, startWith } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 // Fehlermeldungen der Browser, wenn ein lazy geladenes Routen-Modul nicht
 // nachgeladen werden kann (Verbindungsabriss oder nach einem Deploy entfernte
@@ -39,6 +40,7 @@ registerLocaleData(localeEn);
 @Component({
   selector: 'fb-root',
   templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
@@ -46,6 +48,11 @@ registerLocaleData(localeEn);
 export class AppComponent implements OnInit {
   isLoading$!: Observable<boolean>;
   leagues$!: Observable<League[] | null>;
+  associations$!: Observable<GameOperation[]>;
+  // Nur auf der Startseite sollen die Spielbetriebe im Seitenmenü erscheinen –
+  // nicht auf Login-, Konto- oder Verwaltungsseiten, die ebenfalls keinen
+  // Spielbetrieb gewählt haben.
+  isHome$!: Observable<boolean>;
   selectedAssociation$!: Observable<GameOperation | null>;
   selectedStateAssociation$!: Observable<StateAssociation | null>;
   seasons$!: Observable<Season[]>;
@@ -53,6 +60,11 @@ export class AppComponent implements OnInit {
 
   favoriteLeagues$?: BehaviorSubject<LeaguesWithOperation[]>;
   favoriteTeams$?: BehaviorSubject<FavoriteTeam[]>;
+
+  // Auf dem Staging-System (saisonmanager.dev) eine dauerhaft sichtbare
+  // Kennzeichnung einblenden, damit Testsystem und Produktion nicht
+  // verwechselt werden. Wird über die Build-Konfiguration gesetzt.
+  readonly isStaging = environment.staging;
 
   constructor(
     private _associationService: AssociationService,
@@ -92,6 +104,12 @@ export class AppComponent implements OnInit {
 
     this.isLoading$ = this._associationService.associationsIsLoading$;
     this.leagues$ = this._leagueService.leagues$;
+    this.associations$ = this._associationService.associations$;
+    this.isHome$ = this._router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map((event) => this._isHomeUrl((event as NavigationEnd).urlAfterRedirects)),
+      startWith(this._isHomeUrl(this._router.url))
+    );
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.selectedStateAssociation$ =
       this._associationService.selectedStateAssociation$;
@@ -99,6 +117,11 @@ export class AppComponent implements OnInit {
     this.selectedSeasonId$ = this._associationService.currentSeasonId$;
     this.favoriteLeagues$ = this._favoriteService.favoriteLeagues$;
     this.favoriteTeams$ = this._favoriteService.favoriteTeams$;
+  }
+
+  private _isHomeUrl(url: string): boolean {
+    const path = url.split(/[?#]/)[0];
+    return path === '/' || path === '';
   }
 
   onSeasonChange(seasonId: number): void {

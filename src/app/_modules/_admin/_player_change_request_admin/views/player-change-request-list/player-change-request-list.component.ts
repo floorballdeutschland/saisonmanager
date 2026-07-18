@@ -104,19 +104,9 @@ export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
         );
         this._cdr.markForCheck();
       },
-      error: (err) => {
-        // 422-Detail sichtbar machen (z.B. "bereits zusammengeführt" bei
-        // Merge-Anträgen) – der globale ErrorInterceptor zeigt 422 nicht an.
-        this._notificationService.error(
-          err?.error?.errors?.join(', ') ||
-            this._transloco.translate(
-              'playerChangeRequest.notifications.approveError'
-            ),
-          {
-            autoClose: true,
-            keepAfterRouteChange: false,
-          }
-        );
+      error: () => {
+        // Die Fehlermeldung (inkl. errors[]-Detail) zeigt der globale
+        // ErrorInterceptor (#84).
         this._cdr.markForCheck();
       },
     });

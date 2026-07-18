@@ -123,13 +123,8 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
         if (err.status === 409 && err.error?.duplicates) {
           this.duplicateWarning = true;
           this.duplicates = err.error.duplicates;
-        } else {
-          this._notificationService.error(
-            err.error?.errors?.join(', ') ||
-              this._transloco.translate('arena.notifications.saveError'),
-            { autoClose: false }
-          );
         }
+        // Sonstige Fehlermeldungen zeigt der globale ErrorInterceptor (#84).
         this._cdr.markForCheck();
       },
     });

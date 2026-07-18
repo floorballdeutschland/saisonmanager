@@ -1,0 +1,61 @@
+// Kennzeichnung des Staging-/Testsystems (saisonmanager.dev): eine rote
+// Banderole, die diagonal über die obere rechte Ecke läuft. Fest verankert,
+// immer sichtbar und ohne Klick-Interaktion (pointer-events: none), damit sie
+// keine Bedienelemente blockiert. Ergänzt den roten Hinweiskasten unter dem
+// Logo in der Seitenleiste.
+//
+// Auf schmalen Viewports (< 1024px) wird die mobile Kopfzeile mit dem
+// Hamburger-Menü oben rechts eingeblendet. Damit die Banderole das Menü nicht
+// verdeckt, ist sie dort kompakter und sitzt weiter in der Ecke; ab lg (die
+// Desktop-Sidebar hat kein Hamburger-Menü) läuft sie in voller Größe.
+.staging-ribbon {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 9999;
+  width: 88px;
+  height: 88px;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+
+  &__text {
+    position: absolute;
+    top: 14px;
+    right: -34px;
+    display: block;
+    width: 120px;
+    padding: 3px 0;
+    transform: rotate(45deg);
+    background: #dc2626;
+    color: #fff;
+    text-align: center;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 35%);
+  }
+}
+
+@media (min-width: 1024px) {
+  .staging-ribbon {
+    width: 160px;
+    height: 160px;
+
+    &__text {
+      top: 34px;
+      right: -42px;
+      width: 200px;
+      padding: 6px 0;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+    }
+  }
+}
+
+@media print {
+  .staging-ribbon {
+    display: none;
+  }
+}

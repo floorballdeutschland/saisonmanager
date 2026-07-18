@@ -9,6 +9,7 @@ import {
 import { OverlayService } from '@floorball/core';
 import { GameOperation, StateAssociation } from '@floorball/types';
 import { take, tap } from 'rxjs';
+import { environment } from 'src/environments/environment';
 import { MobileHeaderComponent } from '..';
 
 @Component({
@@ -24,6 +25,10 @@ export class SidebarComponent {
 
   overlayComponentRef?: ComponentRef<MobileHeaderComponent>;
   menuIsOpen = false;
+
+  // Auf dem Staging-System (saisonmanager.dev) einen roten Hinweiskasten unter
+  // dem Logo einblenden. Über die Build-Konfiguration gesetzt (nur Staging).
+  readonly isStaging = environment.staging;
 
   constructor(
     private _overlayService: OverlayService,
