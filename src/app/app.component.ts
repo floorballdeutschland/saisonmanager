@@ -47,6 +47,7 @@ registerLocaleData(localeEn);
 export class AppComponent implements OnInit {
   isLoading$!: Observable<boolean>;
   leagues$!: Observable<League[] | null>;
+  associations$!: Observable<GameOperation[]>;
   selectedAssociation$!: Observable<GameOperation | null>;
   selectedStateAssociation$!: Observable<StateAssociation | null>;
   seasons$!: Observable<Season[]>;
@@ -98,6 +99,7 @@ export class AppComponent implements OnInit {
 
     this.isLoading$ = this._associationService.associationsIsLoading$;
     this.leagues$ = this._leagueService.leagues$;
+    this.associations$ = this._associationService.associations$;
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.selectedStateAssociation$ =
       this._associationService.selectedStateAssociation$;
