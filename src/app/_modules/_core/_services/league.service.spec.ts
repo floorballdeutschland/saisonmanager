@@ -4,6 +4,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { of } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 
 import { LeagueService } from './league.service';
 import { AssociationService } from './association.service';
@@ -64,10 +65,12 @@ describe('LeagueService', () => {
     httpMock.expectOne(leaguesUrl(18)).flush([currentLeague]);
   });
 
-  it('lädt eine Liga aus einer anderen Saison einzeln nach und stellt die Saison um', (done) => {
+  it('lädt eine Liga aus einer anderen Saison einzeln nach (ohne selbst die Saison umzustellen)', (done) => {
     service.getLeague(944).subscribe((league) => {
       expect(league).toEqual(pastLeague);
-      expect(associationServiceMock.selectSeason).toHaveBeenCalledWith(12);
+      // getLeague stellt die Saison nicht mehr selbst um – das übernimmt
+      // selectedLeague$ (siehe eigener Test).
+      expect(associationServiceMock.selectSeason).not.toHaveBeenCalled();
       done();
     });
 
@@ -86,5 +89,23 @@ describe('LeagueService', () => {
     httpMock
       .expectOne(singleLeagueUrl)
       .flush('not found', { status: 404, statusText: 'Not Found' });
+  });
+
+  it('stellt beim Betrachten einer Liga den Saison-Switcher auf deren Saison', (done) => {
+    const route = {
+      snapshot: { params: { leagueId: '944' } },
+    } as unknown as ActivatedRoute;
+
+    service.selectedLeague$.subscribe((league) => {
+      if (!league) return;
+      expect(league).toEqual(pastLeague);
+      expect(associationServiceMock.selectSeason).toHaveBeenCalledWith(12);
+      done();
+    });
+
+    service.selectLeague(route);
+
+    httpMock.expectOne(leaguesUrl(18)).flush([currentLeague]);
+    httpMock.expectOne(singleLeagueUrl).flush(pastLeague);
   });
 });
