@@ -180,18 +180,9 @@ export class RefereeAvailabilitiesComponent implements OnInit, OnDestroy {
           this._rebuildDays();
           this._cdr.markForCheck();
         },
-        error: (err) => {
+        error: () => {
           this.saving = false;
           this._cdr.markForCheck();
-          const msg =
-            err?.error?.errors?.[0] ||
-            this._transloco.translate(
-              'refereeSelf.notifications.availabilitySaveError'
-            );
-          this._notificationService.error(msg, {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
         },
       });
   }
@@ -236,15 +227,6 @@ export class RefereeAvailabilitiesComponent implements OnInit, OnDestroy {
         error: () => {
           this.saving = false;
           this._cdr.markForCheck();
-          this._notificationService.error(
-            this._transloco.translate(
-              'refereeSelf.notifications.availabilitySaveError'
-            ),
-            {
-              autoClose: false,
-              keepAfterRouteChange: false,
-            }
-          );
         },
       });
   }

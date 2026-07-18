@@ -263,13 +263,8 @@ export class UserCreateComponent implements OnInit, OnDestroy {
             'bearbeiten',
           ]);
         },
-        error: (err) => {
+        error: () => {
           this.saving = false;
-          const msg =
-            err?.error?.errors?.join(', ') ??
-            err?.error?.error ??
-            this._transloco.translate('userAdmin.notifications.createError');
-          this._notificationService.error(msg, { autoClose: false });
           this._cdr.markForCheck();
         },
       });

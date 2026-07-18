@@ -6,7 +6,6 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { EmailTemplateService, NotificationService } from '@floorball/core';
@@ -113,16 +112,8 @@ export class EmailTemplateIndexComponent implements OnInit, OnDestroy {
           );
           this._cdr.markForCheck();
         },
-        error: (err: HttpErrorResponse) => {
+        error: () => {
           this.savingKeys.delete(template.key);
-          const detail = err.error?.errors?.join(', ') ?? err.message;
-          this._notificationService.error(
-            this._transloco.translate(
-              'emailTemplateAdmin.notifications.saveError',
-              { detail }
-            ),
-            { autoClose: false }
-          );
           this._cdr.markForCheck();
         },
       });
@@ -162,16 +153,8 @@ export class EmailTemplateIndexComponent implements OnInit, OnDestroy {
           );
           this._cdr.markForCheck();
         },
-        error: (err: HttpErrorResponse) => {
+        error: () => {
           this.savingKeys.delete(template.key);
-          const detail = err.error?.errors?.join(', ') ?? err.message;
-          this._notificationService.error(
-            this._transloco.translate(
-              'emailTemplateAdmin.notifications.saveError',
-              { detail }
-            ),
-            { autoClose: false }
-          );
           this._cdr.markForCheck();
         },
       });

@@ -690,16 +690,9 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
           }
         );
       },
-      error: (err) => {
+      error: () => {
         state.saving = false;
         this._cdr.markForCheck();
-        const msg =
-          err?.error?.errors?.[0] ||
-          this._transloco.translate('assignmentAdmin.notifications.saveError');
-        this._notificationService.error(msg, {
-          autoClose: false,
-          keepAfterRouteChange: false,
-        });
       },
     });
   }

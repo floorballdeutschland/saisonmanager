@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, forkJoin, takeUntil } from 'rxjs';
 import {
   AssociationService,
@@ -351,17 +350,9 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
             );
           }
         },
-        error: (err: HttpErrorResponse) => {
+        error: () => {
           this.userAccountLoading = false;
           this._cdr.markForCheck();
-          const msg =
-            err?.error?.errors?.[0] ??
-            err?.error?.error ??
-            'Fehler beim Anlegen des Benutzerkontos.';
-          this._notificationService.error(msg, {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
         },
       });
   }
@@ -395,17 +386,9 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
             keepAfterRouteChange: false,
           });
         },
-        error: (err: HttpErrorResponse) => {
+        error: () => {
           this.userDeleteLoading = false;
           this._cdr.markForCheck();
-          const msg =
-            err?.error?.errors?.[0] ??
-            err?.error?.error ??
-            'Fehler beim Löschen des Benutzerkontos.';
-          this._notificationService.error(msg, {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
         },
       });
   }

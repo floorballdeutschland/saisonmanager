@@ -407,14 +407,7 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           };
           this._cdr.markForCheck();
         },
-        error: (err) => {
-          const msg =
-            err?.error?.errors?.join(', ') ??
-            this._transloco.translate(
-              'leagueAdmin.notifications.qualificationSaveError'
-            );
-          this._notificationService.error(msg, { autoClose: false });
-        },
+        // Fehlermeldungen zeigt der globale ErrorInterceptor (#84).
       });
   }
 
