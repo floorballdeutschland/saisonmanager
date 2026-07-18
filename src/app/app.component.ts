@@ -40,6 +40,7 @@ registerLocaleData(localeEn);
 @Component({
   selector: 'fb-root',
   templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
