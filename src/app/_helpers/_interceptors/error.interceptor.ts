@@ -20,6 +20,21 @@ export class ErrorInterceptor implements HttpInterceptor {
     @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
+  // Fehlerdetails aus dem Response-Body ziehen. Rails-Endpunkte liefern
+  // wahlweise { message }, { error } oder { errors: [...] } (z. B. bei 422
+  // aus ActiveModel-Validierungen) — alle drei Formen auswerten, damit der
+  // Interceptor die spezifische Meldung zeigt statt einer generischen (#84).
+  private errorDetail(err: {
+    error?: { message?: string; error?: string; errors?: string[] };
+  }): string | undefined {
+    if (err.error?.message) return err.error.message;
+    if (err.error?.error) return err.error.error;
+    if (Array.isArray(err.error?.errors) && err.error.errors.length > 0) {
+      return err.error.errors.join(', ');
+    }
+    return undefined;
+  }
+
   public intercept(
     request: HttpRequest<unknown>,
     next: HttpHandler
@@ -35,8 +50,7 @@ export class ErrorInterceptor implements HttpInterceptor {
         // .message und .error), damit Component-Handler auf diese Felder
         // zugreifen können.
         if (!isPlatformBrowser(this.platformId)) {
-          const serverError =
-            err.error?.message || err.error?.error || err.statusText;
+          const serverError = this.errorDetail(err) || err.statusText;
           return throwError(() => new Error(serverError));
         }
 
@@ -48,8 +62,7 @@ export class ErrorInterceptor implements HttpInterceptor {
 
         if (err.status === 403) {
           this._notificationService.error(
-            'Berechtigungsfehler: ' +
-              (err.error?.message || err.error?.error || 'Kein Zugriff'),
+            'Berechtigungsfehler: ' + (this.errorDetail(err) || 'Kein Zugriff'),
             {
               autoClose: false,
               keepAfterRouteChange: true,
@@ -62,9 +75,7 @@ export class ErrorInterceptor implements HttpInterceptor {
           console.error(err);
           this._notificationService.error(
             'Nicht gefunden: ' +
-              (err.error?.message ||
-                err.error?.error ||
-                'Ressource nicht gefunden'),
+              (this.errorDetail(err) || 'Ressource nicht gefunden'),
             {
               autoClose: false,
               keepAfterRouteChange: true,
@@ -81,8 +92,7 @@ export class ErrorInterceptor implements HttpInterceptor {
           ![401, 403, 404].includes(err.status)
         ) {
           this._notificationService.error(
-            err.error?.message ||
-              err.error?.error ||
+            this.errorDetail(err) ||
               'Die Eingabe konnte nicht verarbeitet werden.',
             { autoClose: false, keepAfterRouteChange: false }
           );

@@ -6,7 +6,6 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
@@ -122,9 +121,9 @@ export class ProceedingProposalIndexComponent implements OnInit, OnDestroy {
           this._remove(proposal.id);
           this._cdr.markForCheck();
         },
-        error: (err: HttpErrorResponse) => {
+        error: () => {
           this.processingIds.delete(proposal.id);
-          this._handleActionError(err);
+          this._cdr.markForCheck();
         },
       });
   }
@@ -147,9 +146,9 @@ export class ProceedingProposalIndexComponent implements OnInit, OnDestroy {
           this._remove(proposal.id);
           this._cdr.markForCheck();
         },
-        error: (err: HttpErrorResponse) => {
+        error: () => {
           this.processingIds.delete(proposal.id);
-          this._handleActionError(err);
+          this._cdr.markForCheck();
         },
       });
   }
@@ -160,19 +159,5 @@ export class ProceedingProposalIndexComponent implements OnInit, OnDestroy {
       this.expandedId = null;
       this.detail = null;
     }
-  }
-
-  // Eigener Handler, weil der ErrorInterceptor 422 verschluckt.
-  private _handleActionError(err: HttpErrorResponse): void {
-    const detail =
-      err.error?.errors?.join(', ') ?? err.error?.message ?? err.message;
-    this._notificationService.error(
-      this._transloco.translate(
-        'proceedingProposalAdmin.notifications.actionError',
-        { detail }
-      ),
-      { autoClose: false }
-    );
-    this._cdr.markForCheck();
   }
 }

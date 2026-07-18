@@ -100,11 +100,11 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
           this.loading = false;
           this._cdr.markForCheck();
         },
-        error: (err) => {
+        error: () => {
           // Ein Ladefehler darf nicht wie ein leerer Katalog aussehen.
+          // Die Fehlermeldung zeigt der globale ErrorInterceptor (#84).
           this.loading = false;
           this.loadFailed = true;
-          this._showError(err, 'documentTypeAdmin.index.loadError');
           this._cdr.markForCheck();
         },
       });
@@ -187,9 +187,8 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
           );
           this._cdr.markForCheck();
         },
-        error: (err) => {
+        error: () => {
           this.saving = false;
-          this._showError(err, 'documentTypeAdmin.index.saveError');
           this._cdr.markForCheck();
         },
       });
@@ -217,9 +216,8 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
           // Neu laden, damit usage_count/league_count gefüllt sind.
           this.load();
         },
-        error: (err) => {
+        error: () => {
           this.saving = false;
-          this._showError(err, 'documentTypeAdmin.index.createError');
           this._cdr.markForCheck();
         },
       });
@@ -255,8 +253,7 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
           );
           this._cdr.markForCheck();
         },
-        error: (err) => {
-          this._showError(err, 'documentTypeAdmin.index.deleteError');
+        error: () => {
           this._cdr.markForCheck();
         },
       });
@@ -282,20 +279,5 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
       payload.game_operation_id = data.game_operation_id ?? null;
     }
     return payload;
-  }
-
-  // Der ErrorInterceptor zeigt 422 nicht an – Server-Meldung (Validierung
-  // bzw. "wird bereits verwendet") explizit ausgeben.
-  private _showError(
-    err: { error?: { error?: string; errors?: string[] } },
-    fallbackKey: string
-  ): void {
-    const serverMessage = err?.error?.errors?.join(', ') ?? err?.error?.error;
-    const message: string =
-      serverMessage ?? this._transloco.translate(fallbackKey);
-    this._notificationService.error(message, {
-      autoClose: false,
-      keepAfterRouteChange: false,
-    });
   }
 }
