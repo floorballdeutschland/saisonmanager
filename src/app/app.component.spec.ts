@@ -29,7 +29,7 @@ describe('AppComponent', () => {
     beforeEach(() => {
       events$ = new Subject<unknown>();
       TestBed.overrideProvider(Router, {
-        useValue: { events: events$.asObservable() },
+        useValue: { events: events$.asObservable(), url: '/' },
       });
       errorSpy = spyOn(TestBed.inject(NotificationService), 'error');
       const fixture = TestBed.createComponent(AppComponent);

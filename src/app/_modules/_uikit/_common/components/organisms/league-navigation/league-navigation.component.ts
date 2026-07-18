@@ -19,6 +19,15 @@ export class LeagueNavigationComponent {
   @Input()
   leagues!: League[];
 
+  // Auf der Startseite (kein Spielbetrieb gewählt) zeigt das Seitenmenü statt
+  // der Liga-Liste diese Spielbetriebe als Einstiegspunkte an.
+  @Input()
+  associations: GameOperation[] = [];
+
+  // Nur auf der Startseite einblenden – steuert der Aufrufer bei.
+  @Input()
+  showAssociations = false;
+
   @Input()
   selectedAssociation!: GameOperation | null;
 
