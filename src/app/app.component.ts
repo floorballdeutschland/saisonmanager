@@ -15,6 +15,7 @@ import {
   FavoriteService,
   LeagueService,
   NotificationService,
+  SessionService,
   StorageService,
 } from '@floorball/core';
 import {
@@ -25,7 +26,14 @@ import {
   Season,
   StateAssociation,
 } from '@floorball/types';
-import { BehaviorSubject, filter, map, Observable, startWith } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  startWith,
+} from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 // Fehlermeldungen der Browser, wenn ein lazy geladenes Routen-Modul nicht
@@ -49,9 +57,9 @@ export class AppComponent implements OnInit {
   isLoading$!: Observable<boolean>;
   leagues$!: Observable<League[] | null>;
   associations$!: Observable<GameOperation[]>;
-  // Nur auf der Startseite sollen die Spielbetriebe im Seitenmenü erscheinen –
-  // nicht auf Login-, Konto- oder Verwaltungsseiten, die ebenfalls keinen
-  // Spielbetrieb gewählt haben.
+  // Nur auf der Startseite UND nur für nicht eingeloggte Besucher sollen die
+  // Spielbetriebe im Seitenmenü erscheinen – eingeloggte Nutzer (z.B.
+  // Schiedsrichter) sehen dort stattdessen ihre eigene Navigation.
   isHome$!: Observable<boolean>;
   selectedAssociation$!: Observable<GameOperation | null>;
   selectedStateAssociation$!: Observable<StateAssociation | null>;
@@ -73,6 +81,7 @@ export class AppComponent implements OnInit {
     private _favoriteService: FavoriteService,
     private _router: Router,
     private _notificationService: NotificationService,
+    private _sessionService: SessionService,
     @Inject(PLATFORM_ID) private _platformId: object
   ) {}
 
@@ -105,11 +114,16 @@ export class AppComponent implements OnInit {
     this.isLoading$ = this._associationService.associationsIsLoading$;
     this.leagues$ = this._leagueService.leagues$;
     this.associations$ = this._associationService.associations$;
-    this.isHome$ = this._router.events.pipe(
-      filter((event) => event instanceof NavigationEnd),
-      map((event) => this._isHomeUrl((event as NavigationEnd).urlAfterRedirects)),
-      startWith(this._isHomeUrl(this._router.url))
-    );
+    this.isHome$ = combineLatest([
+      this._router.events.pipe(
+        filter((event) => event instanceof NavigationEnd),
+        map((event) =>
+          this._isHomeUrl((event as NavigationEnd).urlAfterRedirects)
+        ),
+        startWith(this._isHomeUrl(this._router.url))
+      ),
+      this._sessionService.isLoggedIn$,
+    ]).pipe(map(([isHome, isLoggedIn]) => isHome && !isLoggedIn));
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.selectedStateAssociation$ =
       this._associationService.selectedStateAssociation$;

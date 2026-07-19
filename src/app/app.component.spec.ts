@@ -1,16 +1,23 @@
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { NavigationError, Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { NavigationEnd, NavigationError, Router } from '@angular/router';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { AppComponent } from './app.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { NotificationService } from '@floorball/core';
+import { NotificationService, SessionService } from '@floorball/core';
 
 describe('AppComponent', () => {
+  // SessionService wird gestubbt: sein echter TranslocoService-Abhängigkeitsbaum
+  // ist im TestBed nicht bereitgestellt (NG0201 TRANSLOCO_TRANSPILER). Der Stub
+  // liefert nur das im Bauteil genutzte isLoggedIn$.
+  let isLoggedIn$: BehaviorSubject<boolean>;
+
   beforeEach(async () => {
+    isLoggedIn$ = new BehaviorSubject<boolean>(false);
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [AppComponent],
+      providers: [{ provide: SessionService, useValue: { isLoggedIn$ } }],
     })
       .overrideTemplate(AppComponent, '')
       .compileComponents();
@@ -20,6 +27,51 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
+  });
+
+  describe('isHome$ (Spielbetriebe-Seitenmenü)', () => {
+    let events$: Subject<unknown>;
+
+    beforeEach(() => {
+      events$ = new Subject<unknown>();
+      TestBed.overrideProvider(Router, {
+        useValue: { events: events$.asObservable(), url: '/' },
+      });
+    });
+
+    it('ist true auf der Startseite für nicht eingeloggte Besucher', () => {
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.detectChanges(); // ngOnInit
+
+      const seen: boolean[] = [];
+      fixture.componentInstance.isHome$.subscribe((v) => seen.push(v));
+
+      expect(seen.at(-1)).toBe(true);
+    });
+
+    it('ist false auf der Startseite, sobald der Nutzer eingeloggt ist', () => {
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.detectChanges();
+
+      const seen: boolean[] = [];
+      fixture.componentInstance.isHome$.subscribe((v) => seen.push(v));
+
+      isLoggedIn$.next(true);
+
+      expect(seen.at(-1)).toBe(false);
+    });
+
+    it('ist false abseits der Startseite, auch nicht eingeloggt', () => {
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.detectChanges();
+
+      const seen: boolean[] = [];
+      fixture.componentInstance.isHome$.subscribe((v) => seen.push(v));
+
+      events$.next(new NavigationEnd(1, '/login', '/login'));
+
+      expect(seen.at(-1)).toBe(false);
+    });
   });
 
   describe('Lazy-Load-Fehler', () => {
