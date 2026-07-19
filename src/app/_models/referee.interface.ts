@@ -92,6 +92,9 @@ export interface RefereeProfile {
   vorname: string;
   nachname: string;
   email?: string;
+  // Login-Adresse des verknüpften Benutzerkontos (read-only Anzeige; die
+  // Pflege läuft über „Mein Konto" und zieht die Schiri-Adresse mit).
+  account_email?: string | null;
   telefonnummer?: string;
   lizenzstufe?: string;
   gueltigkeit?: string;

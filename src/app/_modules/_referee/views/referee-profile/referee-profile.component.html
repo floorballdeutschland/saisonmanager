@@ -62,10 +62,28 @@
             }}</label>
             <input
               type="email"
-              [(ngModel)]="draft.email"
-              name="email"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              [value]="profile.email || ''"
+              readonly
+              class="border border-fb-gray-700 bg-fb-gray-800 text-fb-gray-500 rounded-[5px] px-3 py-2 text-sm"
             />
+            <p class="text-xs text-fb-gray-500">
+              {{ "refereeSelf.profile.emailReadOnlyHint" | transloco }}
+              <a
+                [routerLink]="['/', 'mein-konto']"
+                class="font-bold underline hover:text-black"
+                >{{ "refereeSelf.profile.emailReadOnlyLink" | transloco }}</a
+              >
+            </p>
+            @if (
+              profile.account_email && profile.account_email !== profile.email
+            ) {
+              <p class="text-xs text-amber-700">
+                {{
+                  "refereeSelf.profile.emailDiverged"
+                    | transloco: { accountEmail: profile.account_email }
+                }}
+              </p>
+            }
           </div>
         </div>
       </div>
