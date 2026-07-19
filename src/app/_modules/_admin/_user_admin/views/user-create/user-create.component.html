@@ -76,7 +76,7 @@
                 <select [(ngModel)]="selectedRoleId" class="w-full">
                   @for (r of availableRoles; track r) {
                     <option [ngValue]="r.id">
-                      {{ r.label }}
+                      {{ r.labelKey | transloco }}
                     </option>
                   }
                 </select>

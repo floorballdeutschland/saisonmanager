@@ -14,6 +14,7 @@ import { RefereeProfile } from '@floorball/types';
 
 @Component({
   templateUrl: './referee-card.component.html',
+  styleUrls: ['./referee-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })

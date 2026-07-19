@@ -54,6 +54,13 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => new Error(serverError));
         }
 
+        // Die Bestätigungsseite für E-Mail-Änderungen (/email-bestaetigen)
+        // rendert Fehler (ungültiger/abgelaufener Link) als eigene Ansicht –
+        // keine globalen Toasts oder Redirects für diesen Endpoint.
+        if (request.url.includes('user/email/confirm')) {
+          return throwError(() => err);
+        }
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           const returnUrl = this._router.url;
           this.sessionService.logout(false, true, 'Bitte einloggen.', false);

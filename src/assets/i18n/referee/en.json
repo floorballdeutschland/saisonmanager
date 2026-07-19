@@ -26,7 +26,10 @@
     "partnerHint": "Enter the license number of your primary partner here to simplify our assignments.",
     "partnerPlaceholder": "License number",
     "save": "Save",
-    "saving": "Saving…"
+    "saving": "Saving…",
+    "emailReadOnlyHint": "Your email address is managed centrally in your user account. Changing it there also updates the address used for assignment and RSK emails.",
+    "emailReadOnlyLink": "Go to “My account”",
+    "emailDiverged": "Note: your login currently uses {{accountEmail}}. Once you change and confirm the address under “My account”, both addresses are merged."
   },
   "card": {
     "title": "My card",
@@ -41,7 +44,7 @@
     "licenseLevel": "License level",
     "validUntil": "Valid until",
     "association": "Association",
-    "disclaimer": "This card was issued by Floorball-Verband Deutschland e. V. Validity and license level can be checked via the QR code or at saisonmanager.de/lizenzcheck.",
+    "disclaimer": "This card was issued by Floorball-Verband Deutschland e. V. Validity and license level can be checked via the QR code or at saisonmanager.de/lizenzcheck. From iOS 27 and Android 8 onwards, you can also import this QR code into your official wallet app. To do so, open your wallet app and follow the instructions there.",
     "notFound": "No referee profile found."
   },
   "history": {

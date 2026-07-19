@@ -26,7 +26,10 @@
     "partnerHint": "Gib hier die Lizenznummer deines primären Partners bzw. deiner primären Partnerin ein, damit uns Ansetzungen vereinfacht werden.",
     "partnerPlaceholder": "Lizenznummer",
     "save": "Speichern",
-    "saving": "Speichern…"
+    "saving": "Speichern…",
+    "emailReadOnlyHint": "Deine E-Mail-Adresse wird zentral in deinem Benutzerkonto gepflegt. Eine Änderung dort aktualisiert automatisch auch die Adresse für Ansetzungs- und RSK-Mails.",
+    "emailReadOnlyLink": "Zu „Mein Konto“",
+    "emailDiverged": "Hinweis: Dein Login läuft aktuell über {{accountEmail}}. Sobald du die Adresse unter „Mein Konto“ änderst und bestätigst, werden beide Adressen zusammengeführt."
   },
   "card": {
     "title": "Mein Ausweis",
@@ -41,7 +44,7 @@
     "licenseLevel": "Lizenzstufe",
     "validUntil": "Gültig bis",
     "association": "Verband",
-    "disclaimer": "Dieser Ausweis wurde vom Floorball-Verband Deutschland e. V. ausgestellt. Gültigkeit und Lizenzstufe können über den QR-Code oder unter saisonmanager.de/lizenzcheck abgerufen werden.",
+    "disclaimer": "Dieser Ausweis wurde vom Floorball-Verband Deutschland e. V. ausgestellt. Gültigkeit und Lizenzstufe können über den QR-Code oder unter saisonmanager.de/lizenzcheck abgerufen werden. Ab iOS 27 und Android 8 kannst du diesen QR-Codes auch in deine offiziellen Wallet-App importieren. Öffne dazu deine Wallet-App und folge den dortigen Anweisungen.",
     "notFound": "Kein Schiedsrichter-Profil gefunden."
   },
   "history": {

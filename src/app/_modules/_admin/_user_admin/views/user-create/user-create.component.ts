@@ -26,7 +26,7 @@ import {
 
 interface RoleOption {
   id: number;
-  label: string;
+  labelKey: string;
   needsClub: boolean;
   needsGo: boolean;
 }
@@ -54,40 +54,43 @@ export class UserCreateComponent implements OnInit, OnDestroy {
   clubsWithTeams: ClubWithTeams[] = [];
   gameOperations: GameOperation[] = [];
 
+  // Nur Keys ablegen und im Template per Pipe übersetzen – translate() im
+  // Feld-Initialisierer läuft, bevor der userAdmin-Scope geladen ist, und
+  // liefert dann die rohen Keys.
   readonly allRoles: RoleOption[] = [
     {
       id: 1,
-      label: this._transloco.translate('userAdmin.create.roleAdmin'),
+      labelKey: 'userAdmin.create.roleAdmin',
       needsClub: false,
       needsGo: true,
     },
     {
       id: 2,
-      label: this._transloco.translate('userAdmin.create.roleSbk'),
+      labelKey: 'userAdmin.create.roleSbk',
       needsClub: false,
       needsGo: true,
     },
     {
       id: 3,
-      label: this._transloco.translate('userAdmin.create.roleRsk'),
+      labelKey: 'userAdmin.create.roleRsk',
       needsClub: false,
       needsGo: true,
     },
     {
       id: 7,
-      label: this._transloco.translate('userAdmin.create.roleAnsetzer'),
+      labelKey: 'userAdmin.create.roleAnsetzer',
       needsClub: false,
       needsGo: true,
     },
     {
       id: 4,
-      label: this._transloco.translate('userAdmin.create.roleVm'),
+      labelKey: 'userAdmin.create.roleVm',
       needsClub: true,
       needsGo: false,
     },
     {
       id: 5,
-      label: this._transloco.translate('userAdmin.create.roleTm'),
+      labelKey: 'userAdmin.create.roleTm',
       needsClub: true,
       needsGo: false,
     },

@@ -21,12 +21,13 @@
 
   @if (!loading) {
     <div class="overflow-x-auto">
-      <div class="flex items-center gap-4 mb-3">
-        <p class="text-sm text-fb-gray-500">
-          {{
-            "userAdmin.index.count" | transloco: { count: filteredUsers.length }
-          }}
-        </p>
+      <div class="flex flex-wrap items-center gap-4 mb-3">
+        <input
+          type="search"
+          [(ngModel)]="searchQuery"
+          [placeholder]="'userAdmin.index.searchPlaceholder' | transloco"
+          class="text-sm border border-fb-gray-600 rounded px-2 py-1 bg-white w-80 max-w-full"
+        />
         <select
           [(ngModel)]="selectedRole"
           class="text-sm border border-fb-gray-600 rounded px-2 py-1 bg-white"
@@ -36,10 +37,15 @@
           </option>
           @for (r of roleOptions; track r) {
             <option [ngValue]="r.value">
-              {{ r.label }}
+              {{ r.labelKey | transloco }}
             </option>
           }
         </select>
+        <p class="text-sm text-fb-gray-500">
+          {{
+            "userAdmin.index.count" | transloco: { count: filteredUsers.length }
+          }}
+        </p>
         @if (archivedCount > 0) {
           <button
             type="button"
@@ -58,8 +64,26 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b border-fb-gray-700 text-left">
-            <th class="py-2 pr-4 font-bold">
-              {{ "userAdmin.index.colName" | transloco }}
+            <th
+              class="py-2 pr-4 font-bold"
+              [attr.aria-sort]="
+                sortColumn === 'name'
+                  ? sortDirection === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : null
+              "
+            >
+              <button
+                type="button"
+                (click)="toggleSort('name')"
+                class="font-bold cursor-pointer hover:text-fb-gray-500"
+              >
+                {{ "userAdmin.index.colName" | transloco }}
+                @if (sortColumn === "name") {
+                  <span>{{ sortDirection === "asc" ? "▲" : "▼" }}</span>
+                }
+              </button>
             </th>
             <th class="py-2 pr-4 font-bold">
               {{ "userAdmin.index.colUsername" | transloco }}
@@ -70,8 +94,26 @@
             <th class="py-2 pr-4 font-bold">
               {{ "userAdmin.index.colRole" | transloco }}
             </th>
-            <th class="py-2 pr-4 font-bold">
-              {{ "userAdmin.index.colAssignment" | transloco }}
+            <th
+              class="py-2 pr-4 font-bold"
+              [attr.aria-sort]="
+                sortColumn === 'assignment'
+                  ? sortDirection === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : null
+              "
+            >
+              <button
+                type="button"
+                (click)="toggleSort('assignment')"
+                class="font-bold cursor-pointer hover:text-fb-gray-500"
+              >
+                {{ "userAdmin.index.colAssignment" | transloco }}
+                @if (sortColumn === "assignment") {
+                  <span>{{ sortDirection === "asc" ? "▲" : "▼" }}</span>
+                }
+              </button>
             </th>
             <th class="py-2 pr-4 font-bold">
               {{ "userAdmin.index.colLastLogin" | transloco }}
