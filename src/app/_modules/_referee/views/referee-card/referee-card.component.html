@@ -41,12 +41,14 @@
       <!-- QR-Code -->
       <div class="flex flex-col items-center px-6">
         @if (qrDataUrl) {
-          <div class="border-4 border-blue-600 rounded-2xl p-2 bg-white">
-            <img
-              [src]="qrDataUrl"
-              [alt]="'refereeSelf.card.qrAlt' | transloco"
-              class="w-44 h-44"
-            />
+          <div class="qr-frame">
+            <div class="qr-frame__inner p-2">
+              <img
+                [src]="qrDataUrl"
+                [alt]="'refereeSelf.card.qrAlt' | transloco"
+                class="w-44 h-44"
+              />
+            </div>
           </div>
         }
         <p class="mt-3 text-xs text-fb-gray-500 uppercase font-bold">
