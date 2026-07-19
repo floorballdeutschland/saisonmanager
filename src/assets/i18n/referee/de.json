@@ -49,6 +49,7 @@
   },
   "history": {
     "title": "Meine Historie",
+    "disclaimer": "Bitte beachte, dass die Datenerfassung bis einschließlich der Saison 2025/2026 sehr heterogen erfolgt ist und Eintragungen fehlen können. Wenn du Spiele gepfiffen hast, die hier nicht auftauchen, kannst du die Spiele unter Angabe deines Schiedsrichterpartners/-partnerin und mit dem entsprechenden Link zu der Partie an it@floorball.de nachmelden.",
     "tabGames": "Gepfiffene Spiele",
     "seasonHeading": "Saison {{ name }}",
     "tabTests": "Prüfungsergebnisse",

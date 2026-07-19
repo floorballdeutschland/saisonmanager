@@ -49,6 +49,7 @@
   },
   "history": {
     "title": "My history",
+    "disclaimer": "Please note that data collection through the 2025/2026 season was very inconsistent and entries may be missing. If you have officiated games that don't appear here, you can report them to it@floorball.de, naming your refereeing partner and including the link to the match.",
     "tabGames": "Officiated games",
     "seasonHeading": "Season {{ name }}",
     "tabTests": "Exam results",
