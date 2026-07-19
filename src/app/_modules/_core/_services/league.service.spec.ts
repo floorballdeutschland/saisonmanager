@@ -4,7 +4,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { of } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { LeagueService } from './league.service';
 import { AssociationService } from './association.service';
@@ -19,6 +19,7 @@ describe('LeagueService', () => {
     currentSeasonId$: unknown;
     selectSeason: jasmine.Spy;
   };
+  let routerMock: { navigate: jasmine.Spy };
 
   const association = { id: 1, path: 'fvd' } as GameOperation;
   const currentLeague = { id: 1000, name: 'Aktuelle Liga' } as League;
@@ -39,11 +40,18 @@ describe('LeagueService', () => {
       selectSeason: jasmine.createSpy('selectSeason'),
     };
 
+    routerMock = {
+      navigate: jasmine
+        .createSpy('navigate')
+        .and.returnValue(Promise.resolve(true)),
+    };
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         LeagueService,
         { provide: AssociationService, useValue: associationServiceMock },
+        { provide: Router, useValue: routerMock },
       ],
     });
 
@@ -107,5 +115,56 @@ describe('LeagueService', () => {
 
     httpMock.expectOne(leaguesUrl(18)).flush([currentLeague]);
     httpMock.expectOne(singleLeagueUrl).flush(pastLeague);
+  });
+
+  it('changeSeason ohne geöffnete Liga stellt die Saison direkt um', () => {
+    service.changeSeason(12);
+
+    expect(associationServiceMock.selectSeason).toHaveBeenCalledWith(12);
+    expect(routerMock.navigate).not.toHaveBeenCalled();
+  });
+
+  it('changeSeason mit geöffneter Liga navigiert zur Verbands-Übersicht und stellt erst danach die Saison um', async () => {
+    // paramsInheritanceStrategy 'always': association liegt direkt auf der Liga-Route.
+    const route = {
+      snapshot: { params: { leagueId: '944', association: 'fvd' } },
+    } as unknown as ActivatedRoute;
+    service.selectLeague(route);
+
+    service.changeSeason(12);
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/', 'fvd']);
+    // Reihenfolge: Navigation zuerst, Saison erst im then() (siehe changeSeason).
+    expect(associationServiceMock.selectSeason).not.toHaveBeenCalled();
+
+    await routerMock.navigate.calls.mostRecent().returnValue;
+    expect(associationServiceMock.selectSeason).toHaveBeenCalledWith(12);
+  });
+
+  it('changeSeason lässt die Saison unverändert, wenn die Navigation nicht zustande kommt', async () => {
+    routerMock.navigate.and.returnValue(Promise.resolve(false));
+    const route = {
+      snapshot: { params: { leagueId: '944', association: 'fvd' } },
+    } as unknown as ActivatedRoute;
+    service.selectLeague(route);
+
+    service.changeSeason(12);
+    await routerMock.navigate.calls.mostRecent().returnValue;
+
+    // Liga-Seite ist noch offen – selectSeason würde nur den Tap-Reset auslösen.
+    expect(associationServiceMock.selectSeason).not.toHaveBeenCalled();
+  });
+
+  it('changeSeason nach clearLeague stellt die Saison wieder direkt um', () => {
+    const route = {
+      snapshot: { params: { leagueId: '944', association: 'fvd' } },
+    } as unknown as ActivatedRoute;
+    service.selectLeague(route);
+    service.clearLeague();
+
+    service.changeSeason(15);
+
+    expect(associationServiceMock.selectSeason).toHaveBeenCalledWith(15);
+    expect(routerMock.navigate).not.toHaveBeenCalled();
   });
 });

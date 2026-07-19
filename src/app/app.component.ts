@@ -139,7 +139,7 @@ export class AppComponent implements OnInit {
   }
 
   onSeasonChange(seasonId: number): void {
-    this._associationService.selectSeason(seasonId);
+    this._leagueService.changeSeason(seasonId);
   }
 
   removeFavoriteLeague(id: number): void {

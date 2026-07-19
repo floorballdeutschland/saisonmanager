@@ -100,9 +100,12 @@ export class MobileHeaderComponent implements OnInit {
 
   // Bewusst ohne close(): Nach dem Saisonwechsel lädt die Ligenliste im Menü
   // neu, damit der Nutzer direkt eine Liga der neuen Saison auswählen kann.
+  // changeSeason navigiert dabei ggf. im Hintergrund von einer Liga-Seite zur
+  // Verbands-Übersicht; das Menü-Overlay bleibt davon unberührt (schließt nur
+  // über onClose$).
   onSeasonChange(event: Event) {
     const id = parseInt((event.target as HTMLSelectElement).value, 10);
-    this._associationService.selectSeason(id);
+    this._leagueService.changeSeason(id);
   }
 
   removeFavoriteLeague(id: number): void {

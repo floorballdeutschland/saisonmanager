@@ -4,7 +4,11 @@ import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { AppComponent } from './app.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { NotificationService, SessionService } from '@floorball/core';
+import {
+  LeagueService,
+  NotificationService,
+  SessionService,
+} from '@floorball/core';
 
 describe('AppComponent', () => {
   // SessionService wird gestubbt: sein echter TranslocoService-Abhängigkeitsbaum
@@ -27,6 +31,17 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
+  });
+
+  // Regressionsschutz zu #103: Der Sidebar-Switcher muss über changeSeason
+  // gehen, nicht direkt über AssociationService.selectSeason.
+  it('onSeasonChange delegiert an LeagueService.changeSeason', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const changeSeason = spyOn(TestBed.inject(LeagueService), 'changeSeason');
+
+    fixture.componentInstance.onSeasonChange(12);
+
+    expect(changeSeason).toHaveBeenCalledWith(12);
   });
 
   describe('isHome$ (Spielbetriebe-Seitenmenü)', () => {
