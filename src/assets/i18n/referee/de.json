@@ -26,7 +26,10 @@
     "partnerHint": "Gib hier die Lizenznummer deines primären Partners bzw. deiner primären Partnerin ein, damit uns Ansetzungen vereinfacht werden.",
     "partnerPlaceholder": "Lizenznummer",
     "save": "Speichern",
-    "saving": "Speichern…"
+    "saving": "Speichern…",
+    "emailReadOnlyHint": "Deine E-Mail-Adresse wird zentral in deinem Benutzerkonto gepflegt. Eine Änderung dort aktualisiert automatisch auch die Adresse für Ansetzungs- und RSK-Mails.",
+    "emailReadOnlyLink": "Zu „Mein Konto“",
+    "emailDiverged": "Hinweis: Dein Login läuft aktuell über {{accountEmail}}. Sobald du die Adresse unter „Mein Konto“ änderst und bestätigst, werden beide Adressen zusammengeführt."
   },
   "card": {
     "title": "Mein Ausweis",
