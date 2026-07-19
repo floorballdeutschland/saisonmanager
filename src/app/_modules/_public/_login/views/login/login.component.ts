@@ -74,6 +74,8 @@ export class LoginComponent implements OnInit, OnDestroy {
           if (data.success) {
             if (this._isSafeReturnUrl(this.returnUrl)) {
               this._router.navigateByUrl(this.returnUrl);
+            } else if (data.user.permissions['menu_item_referee_profile']) {
+              this._router.navigate(['/', 'schiedsrichter', 'profil']);
             } else if (data.user.permissions['show_league_index_admin']) {
               this._router.navigate(['verwaltung', 'ligen']);
             } else if (data.user.permissions['menu_item_licence_club_admin']) {
