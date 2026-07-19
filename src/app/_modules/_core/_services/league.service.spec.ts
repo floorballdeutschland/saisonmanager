@@ -125,31 +125,39 @@ describe('LeagueService', () => {
   });
 
   it('changeSeason mit geöffneter Liga navigiert zur Verbands-Übersicht und stellt erst danach die Saison um', async () => {
+    // paramsInheritanceStrategy 'always': association liegt direkt auf der Liga-Route.
     const route = {
-      snapshot: {
-        params: { leagueId: '944' },
-        parent: { params: { association: 'fvd' } },
-      },
+      snapshot: { params: { leagueId: '944', association: 'fvd' } },
     } as unknown as ActivatedRoute;
     service.selectLeague(route);
 
     service.changeSeason(12);
 
     expect(routerMock.navigate).toHaveBeenCalledWith(['/', 'fvd']);
-    // Saison erst NACH der Navigation umstellen, sonst setzt der
-    // selectedLeague$-Tap die Wahl sofort auf die Liga-Saison zurück.
+    // Reihenfolge: Navigation zuerst, Saison erst im then() (siehe changeSeason).
     expect(associationServiceMock.selectSeason).not.toHaveBeenCalled();
 
     await routerMock.navigate.calls.mostRecent().returnValue;
     expect(associationServiceMock.selectSeason).toHaveBeenCalledWith(12);
   });
 
+  it('changeSeason lässt die Saison unverändert, wenn die Navigation nicht zustande kommt', async () => {
+    routerMock.navigate.and.returnValue(Promise.resolve(false));
+    const route = {
+      snapshot: { params: { leagueId: '944', association: 'fvd' } },
+    } as unknown as ActivatedRoute;
+    service.selectLeague(route);
+
+    service.changeSeason(12);
+    await routerMock.navigate.calls.mostRecent().returnValue;
+
+    // Liga-Seite ist noch offen – selectSeason würde nur den Tap-Reset auslösen.
+    expect(associationServiceMock.selectSeason).not.toHaveBeenCalled();
+  });
+
   it('changeSeason nach clearLeague stellt die Saison wieder direkt um', () => {
     const route = {
-      snapshot: {
-        params: { leagueId: '944' },
-        parent: { params: { association: 'fvd' } },
-      },
+      snapshot: { params: { leagueId: '944', association: 'fvd' } },
     } as unknown as ActivatedRoute;
     service.selectLeague(route);
     service.clearLeague();
