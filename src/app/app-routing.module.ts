@@ -312,6 +312,14 @@ const routes: Routes = [
       ),
     data: { preload: true },
   },
+  {
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/email-confirmation').then(
+        (m) => m.PublicEmailConfirmationModule
+      ),
+    data: { preload: true },
+  },
 ];
 
 @NgModule({

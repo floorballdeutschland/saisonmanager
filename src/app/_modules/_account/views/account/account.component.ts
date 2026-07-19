@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ViewEncapsulation,
 } from '@angular/core';
@@ -26,6 +27,14 @@ export class AccountComponent {
   newPasswordConfirmation = '';
   savingPassword = false;
 
+  // E-Mail-Änderung (Double-Opt-In): neue Adresse wird erst nach Bestätigung
+  // des Mail-Links aktiv, bis dahin zeigt pendingEmail den Schwebezustand.
+  email = this._sessionService.currentUser?.email ?? '';
+  pendingEmail = this._sessionService.currentUser?.pending_email ?? null;
+  newEmail = '';
+  emailCurrentPassword = '';
+  savingEmail = false;
+
   // Info-Mail-Opt-out: nur für Teammanager sichtbar (Backend liefert das Gate).
   canManageMailPreferences =
     this._sessionService.currentUser?.can_manage_mail_preferences ?? false;
@@ -36,8 +45,51 @@ export class AccountComponent {
   constructor(
     private _sessionService: SessionService,
     private _notificationService: NotificationService,
-    private _transloco: TranslocoService
+    private _transloco: TranslocoService,
+    private _cdr: ChangeDetectorRef
   ) {}
+
+  public submitEmail() {
+    const email = this.newEmail.trim();
+
+    if (!email || !email.includes('@')) {
+      this._notificationService.error(
+        this._transloco.translate('account.emailInvalid')
+      );
+      return;
+    }
+
+    if (!this.emailCurrentPassword) {
+      this._notificationService.error(
+        this._transloco.translate('account.emailPasswordMissing')
+      );
+      return;
+    }
+
+    this.savingEmail = true;
+    this._sessionService
+      .requestEmailChange(this.emailCurrentPassword, email)
+      .subscribe({
+        next: (answer) => {
+          this.savingEmail = false;
+          if (answer.success) {
+            this.pendingEmail = answer.user.pending_email ?? email;
+            this.newEmail = '';
+            this.emailCurrentPassword = '';
+            this._notificationService.success(
+              this._transloco.translate('account.emailChangeRequested')
+            );
+          }
+          this._cdr.markForCheck();
+        },
+        // Fehlermeldungen (falsches Passwort, Adresse vergeben, 422) zeigt
+        // bereits der ErrorInterceptor als Notification – hier nur aufräumen.
+        error: () => {
+          this.savingEmail = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
 
   public toggleInfoMails(receive: boolean) {
     this.savingMailPref = true;
