@@ -45,10 +45,73 @@
           (change)="toggleInfoMails($any($event.target).checked)"
           class="h-4 w-4"
         />
-        <span class="text-sm">{{ "account.receiveInfoMails" | transloco }}</span>
+        <span class="text-sm">{{
+          "account.receiveInfoMails" | transloco
+        }}</span>
       </label>
     </section>
   }
+
+  <!-- E-Mail-Adresse ändern (Double-Opt-In) -->
+  <section class="flex flex-col gap-2 mb-10">
+    <h2 class="text-sm font-bold uppercase text-fb-gray-500">
+      {{ "account.emailSection" | transloco }}
+    </h2>
+    <p class="text-xs text-fb-gray-500">
+      {{ "account.emailHint" | transloco }}
+    </p>
+    <p class="text-sm mt-2">
+      {{ "account.currentEmail" | transloco }}:
+      <strong>{{ email }}</strong>
+    </p>
+    @if (pendingEmail) {
+      <div
+        class="border border-amber-300 bg-amber-50 rounded-[5px] px-3 py-2 text-xs text-amber-800 max-w-md"
+      >
+        {{ "account.emailPending" | transloco }}
+        <strong>{{ pendingEmail }}</strong
+        ><br />
+        {{ "account.emailPendingHint" | transloco }}
+      </div>
+    }
+    <form (ngSubmit)="submitEmail()" class="flex flex-col gap-4 mt-2">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">
+          {{ "account.newEmail" | transloco }}
+        </label>
+        <input
+          type="email"
+          [(ngModel)]="newEmail"
+          name="newEmail"
+          autocomplete="email"
+          required
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold">
+          {{ "account.currentPassword" | transloco }}
+        </label>
+        <input
+          type="password"
+          [(ngModel)]="emailCurrentPassword"
+          name="emailCurrentPassword"
+          autocomplete="current-password"
+          required
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
+        />
+      </div>
+      <div class="flex items-center gap-3 mt-2">
+        <button
+          type="submit"
+          [disabled]="savingEmail"
+          class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+        >
+          {{ "account.changeEmail" | transloco }}
+        </button>
+      </div>
+    </form>
+  </section>
 
   <!-- Passwort ändern -->
   <section class="flex flex-col gap-2">

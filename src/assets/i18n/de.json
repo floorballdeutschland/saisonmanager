@@ -83,7 +83,17 @@
     "mailHint": "Steuere, ob du informelle E-Mails des Systems erhältst (z. B. Hinweis auf ein verfügbares Schiri-Feedback-Formular).",
     "receiveInfoMails": "Info-E-Mails vom System erhalten",
     "mailPrefSaved": "Einstellung gespeichert.",
-    "mailPrefError": "Einstellung konnte nicht gespeichert werden."
+    "mailPrefError": "Einstellung konnte nicht gespeichert werden.",
+    "emailSection": "E-Mail-Adresse",
+    "emailHint": "Deine E-Mail-Adresse für Login und Systemnachrichten. Eine Änderung wird erst wirksam, nachdem du die neue Adresse über den per E-Mail verschickten Link bestätigt hast (24 Stunden gültig).",
+    "currentEmail": "Aktuelle E-Mail-Adresse",
+    "newEmail": "Neue E-Mail-Adresse",
+    "changeEmail": "E-Mail-Adresse ändern",
+    "emailChangeRequested": "Bestätigungsmail verschickt. Bitte bestätige die neue Adresse innerhalb von 24 Stunden.",
+    "emailPending": "Bestätigung ausstehend für:",
+    "emailPendingHint": "Bis zur Bestätigung bleibt deine bisherige Adresse aktiv. Erneutes Absenden verschickt einen neuen Link.",
+    "emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein.",
+    "emailPasswordMissing": "Bitte gib dein aktuelles Passwort ein."
   },
   "session": {
     "loginSuccess": "Login erfolgreich.",
@@ -94,5 +104,13 @@
     "lostPasswordError": "Fehler beim Zurücksetzen.",
     "passwordSet": "Passwort erfolgreich gesetzt.",
     "passwordResetError": "Fehler beim Zurücksetzen."
+  },
+  "emailConfirmation": {
+    "loading": "Deine E-Mail-Adresse wird bestätigt …",
+    "successTitle": "E-Mail-Adresse bestätigt",
+    "successMessage": "Deine neue E-Mail-Adresse ist jetzt aktiv. Du kannst sie ab sofort auch für den Login verwenden.",
+    "errorTitle": "Link ungültig",
+    "errorMessage": "Der Bestätigungslink ist ungültig oder abgelaufen. Du kannst die Änderung unter „Mein Konto“ erneut anstoßen.",
+    "toHome": "Zur Startseite"
   }
 }

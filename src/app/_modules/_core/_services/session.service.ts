@@ -246,6 +246,42 @@ export class SessionService {
   }
 
   /**
+   * Stößt die Änderung der eigenen E-Mail-Adresse an (Double-Opt-In): Die neue
+   * Adresse wird erst aktiv, nachdem der per Mail verschickte Bestätigungslink
+   * (24h gültig) geklickt wurde. Aktualisiert den gespeicherten User aus der
+   * Server-Antwort (enthält pending_email). Fehler behandelt das aufrufende
+   * Component.
+   */
+  public requestEmailChange(currentPassword: string, email: string) {
+    const path = environment.apiURL + 'user/email.json';
+    return this.http
+      .patch<LoginAnswer>(path, { current_password: currentPassword, email })
+      .pipe(
+        map((answer) => {
+          if (answer.success) {
+            this.currentUser = answer.user;
+            this.currentUserSubject.next(answer.user);
+            localStorage.setItem('user', JSON.stringify(answer.user));
+          }
+
+          return answer;
+        })
+      );
+  }
+
+  /**
+   * Bestätigt eine E-Mail-Änderung mit dem Token aus dem Mail-Link
+   * (öffentliche Seite /email-bestaetigen). Fehlerbehandlung im Component;
+   * der ErrorInterceptor lässt diesen Endpoint bewusst unangetastet.
+   */
+  public confirmEmailChange(token: string) {
+    const path = environment.apiURL + 'user/email/confirm.json';
+    return this.http.post<{ success: boolean; email?: string }>(path, {
+      token,
+    });
+  }
+
+  /**
    * Ändert das eigene Passwort. Fehler (z. B. 422 bei falschem aktuellen
    * Passwort) werden vom aufrufenden Component behandelt – der ErrorInterceptor
    * verschluckt 422 still und reicht die Server-Nachricht als String durch.

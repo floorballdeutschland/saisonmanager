@@ -71,6 +71,9 @@
       "@floorball/public/transfer-confirmation": [
         "src/app/_modules/_public/_transfer-confirmation"
       ],
+      "@floorball/public/email-confirmation": [
+        "src/app/_modules/_public/_email-confirmation"
+      ],
       "@floorball/admin/league": ["src/app/_modules/_admin/_league_admin"],
       "@floorball/admin/club": ["src/app/_modules/_admin/_club_admin"],
       "@floorball/admin/player": ["src/app/_modules/_admin/_player_admin"],

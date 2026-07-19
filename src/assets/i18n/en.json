@@ -83,7 +83,17 @@
     "mailHint": "Control whether you receive informational emails from the system (e.g. a hint that a referee feedback form is available).",
     "receiveInfoMails": "Receive informational emails from the system",
     "mailPrefSaved": "Setting saved.",
-    "mailPrefError": "The setting could not be saved."
+    "mailPrefError": "The setting could not be saved.",
+    "emailSection": "Email address",
+    "emailHint": "Your email address for login and system messages. A change only takes effect after you confirm the new address via the link sent by email (valid for 24 hours).",
+    "currentEmail": "Current email address",
+    "newEmail": "New email address",
+    "changeEmail": "Change email address",
+    "emailChangeRequested": "Confirmation email sent. Please confirm the new address within 24 hours.",
+    "emailPending": "Confirmation pending for:",
+    "emailPendingHint": "Your current address stays active until the change is confirmed. Submitting again sends a new link.",
+    "emailInvalid": "Please enter a valid email address.",
+    "emailPasswordMissing": "Please enter your current password."
   },
   "session": {
     "loginSuccess": "Login successful.",
@@ -94,5 +104,13 @@
     "lostPasswordError": "Error while resetting.",
     "passwordSet": "Password set successfully.",
     "passwordResetError": "Error while resetting."
+  },
+  "emailConfirmation": {
+    "loading": "Confirming your email address …",
+    "successTitle": "Email address confirmed",
+    "successMessage": "Your new email address is now active. From now on you can also use it to log in.",
+    "errorTitle": "Invalid link",
+    "errorMessage": "The confirmation link is invalid or has expired. You can restart the change under “My account”.",
+    "toHome": "Go to home page"
   }
 }

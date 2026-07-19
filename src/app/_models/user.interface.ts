@@ -1,6 +1,8 @@
 export interface User {
   id: number;
   email: string;
+  // Neue E-Mail-Adresse, solange ihre Bestätigung aussteht (Double-Opt-In).
+  pending_email?: string | null;
   username: string;
   name: string;
   permissions: { [key: string]: boolean };

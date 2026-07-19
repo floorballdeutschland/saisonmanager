@@ -1,0 +1,48 @@
+<div class="min-h-screen flex items-center justify-center p-4 bg-fb-gray-800">
+  <div
+    class="max-w-md w-full bg-white rounded-[5px] border border-fb-gray-600 p-8 text-center"
+  >
+    @if (state === "loading") {
+      <p class="text-sm text-fb-gray-500">
+        {{ "emailConfirmation.loading" | transloco }}
+      </p>
+    }
+
+    @if (state === "success") {
+      <div
+        class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full text-2xl bg-green-100 text-green-700"
+      >
+        <span>✓</span>
+      </div>
+      <h1 class="text-xl font-bold mb-2">
+        {{ "emailConfirmation.successTitle" | transloco }}
+      </h1>
+      <p class="text-sm text-fb-gray-500">
+        {{ "emailConfirmation.successMessage" | transloco }}
+      </p>
+      @if (confirmedEmail) {
+        <p class="text-sm font-bold mt-2">{{ confirmedEmail }}</p>
+      }
+    }
+
+    @if (state === "error") {
+      <div
+        class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full text-2xl bg-red-100 text-red-700"
+      >
+        <span>!</span>
+      </div>
+      <h1 class="text-xl font-bold mb-2">
+        {{ "emailConfirmation.errorTitle" | transloco }}
+      </h1>
+      <p class="text-sm text-fb-gray-500">
+        {{ "emailConfirmation.errorMessage" | transloco }}
+      </p>
+    }
+
+    <a
+      [routerLink]="['/']"
+      class="inline-block mt-6 text-sm font-bold text-fb-gray-500 hover:text-black"
+      >{{ "emailConfirmation.toHome" | transloco }}</a
+    >
+  </div>
+</div>
