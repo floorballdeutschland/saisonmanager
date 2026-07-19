@@ -102,7 +102,7 @@ export class MobileHeaderComponent implements OnInit {
   // neu, damit der Nutzer direkt eine Liga der neuen Saison auswählen kann.
   onSeasonChange(event: Event) {
     const id = parseInt((event.target as HTMLSelectElement).value, 10);
-    this._associationService.selectSeason(id);
+    this._leagueService.changeSeason(id);
   }
 
   removeFavoriteLeague(id: number): void {

@@ -20,7 +20,7 @@ import {
   Team,
   TeamWithPlayers,
 } from '@floorball/types';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   BehaviorSubject,
   catchError,
@@ -45,7 +45,8 @@ export class LeagueService {
 
   constructor(
     private http: HttpClient,
-    private _associationService: AssociationService
+    private _associationService: AssociationService,
+    private _router: Router
   ) {
     this.selectedLeague$ = this._route$.pipe(
       switchMap((_route) => {
@@ -167,6 +168,24 @@ export class LeagueService {
 
   clearLeague() {
     this._route$.next(null);
+  }
+
+  // Nutzer-initiierter Saisonwechsel über den Saison-Switcher. Bei geöffneter
+  // Liga-Seite muss erst zur Verbands-Übersicht navigiert werden: die Liga
+  // existiert in der anderen Saison nicht unter derselben ID, und solange sie
+  // geöffnet bleibt, setzt der selectedLeague$-Tap die Saisonwahl sofort
+  // wieder auf die Liga-Saison zurück (Nutzerwahl hätte nie Wirkung).
+  changeSeason(seasonId: number) {
+    const leagueRoute = this._route$.getValue();
+    if (!leagueRoute) {
+      this._associationService.selectSeason(seasonId);
+      return;
+    }
+
+    const association = leagueRoute.snapshot.parent?.params['association'];
+    void this._router
+      .navigate(association ? ['/', association] : ['/'])
+      .then(() => this._associationService.selectSeason(seasonId));
   }
 
   //
