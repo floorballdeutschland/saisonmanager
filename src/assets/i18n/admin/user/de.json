@@ -26,7 +26,8 @@
     "roleReferee": "Schiedsrichter",
     "statusArchived": "Archiviert",
     "archivedCountShow": "{{count}} archivierte anzeigen",
-    "archivedCountHide": "{{count}} archivierte ausblenden"
+    "archivedCountHide": "{{count}} archivierte ausblenden",
+    "searchPlaceholder": "Suche: Name, Benutzername, E-Mail, Zuordnung"
   },
   "create": {
     "title": "Benutzerverwaltung",

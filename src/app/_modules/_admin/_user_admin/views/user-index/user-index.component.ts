@@ -7,7 +7,6 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
-import { TranslocoService } from '@jsverse/transloco';
 import {
   UserManagementService,
   NotificationService,
@@ -27,21 +26,21 @@ export class UserIndexComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   selectedRole: number | null = null;
   showArchived = false;
+  searchQuery = '';
+  sortColumn: 'name' | 'assignment' = 'name';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
+  // Nur Keys ablegen und im Template per Pipe übersetzen – translate() im
+  // Feld-Initialisierer läuft, bevor der userAdmin-Scope geladen ist, und
+  // liefert dann die rohen Keys.
   readonly roleOptions = [
-    { label: this._transloco.translate('userAdmin.index.roleAdmin'), value: 1 },
-    { label: this._transloco.translate('userAdmin.index.roleSbk'), value: 2 },
-    { label: this._transloco.translate('userAdmin.index.roleRsk'), value: 3 },
-    {
-      label: this._transloco.translate('userAdmin.index.roleAnsetzer'),
-      value: 7,
-    },
-    { label: this._transloco.translate('userAdmin.index.roleVm'), value: 4 },
-    { label: this._transloco.translate('userAdmin.index.roleTm'), value: 5 },
-    {
-      label: this._transloco.translate('userAdmin.index.roleReferee'),
-      value: 6,
-    },
+    { labelKey: 'userAdmin.index.roleAdmin', value: 1 },
+    { labelKey: 'userAdmin.index.roleSbk', value: 2 },
+    { labelKey: 'userAdmin.index.roleRsk', value: 3 },
+    { labelKey: 'userAdmin.index.roleAnsetzer', value: 7 },
+    { labelKey: 'userAdmin.index.roleVm', value: 4 },
+    { labelKey: 'userAdmin.index.roleTm', value: 5 },
+    { labelKey: 'userAdmin.index.roleReferee', value: 6 },
   ];
 
   private _destroy$ = new Subject<void>();
@@ -50,7 +49,6 @@ export class UserIndexComponent implements OnInit, OnDestroy {
     private _userService: UserManagementService,
     private _notificationService: NotificationService,
     private _sessionService: SessionService,
-    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -96,21 +94,75 @@ export class UserIndexComponent implements OnInit, OnDestroy {
   }
 
   get filteredUsers(): UserAdminEntry[] {
-    const byRole = this.roleFilteredUsers;
-    return this.showArchived ? byRole : byRole.filter((u) => !u.archived_at);
+    const matched = this.matchedUsers;
+    const visible = this.showArchived
+      ? matched
+      : matched.filter((u) => !u.archived_at);
+    return [...visible].sort((a, b) => this.compareUsers(a, b));
   }
 
-  // Anzahl archivierter Konten im aktuellen Rollen-Filter (für den
+  // Anzahl archivierter Konten im aktuellen Rollen-/Such-Filter (für den
   // Anzeigen/Ausblenden-Link, analog zur VM-Spielerliste).
   get archivedCount(): number {
-    return this.roleFilteredUsers.filter((u) => u.archived_at).length;
+    return this.matchedUsers.filter((u) => u.archived_at).length;
   }
 
-  private get roleFilteredUsers(): UserAdminEntry[] {
-    if (this.selectedRole === null) return this.users;
-    return this.users.filter((u) =>
-      u.roles.some((r) => r.user_group_id === this.selectedRole)
-    );
+  toggleSort(column: 'name' | 'assignment'): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+  }
+
+  // Rollen-Filter und Freitextsuche kombiniert (UND-verknüpft).
+  private get matchedUsers(): UserAdminEntry[] {
+    let result = this.users;
+    if (this.selectedRole !== null) {
+      result = result.filter((u) =>
+        u.roles.some((r) => r.user_group_id === this.selectedRole)
+      );
+    }
+    const query = this.searchQuery.trim().toLowerCase();
+    if (query) {
+      result = result.filter((u) =>
+        [u.name, u.username, u.email, this.assignmentLabel(u)].some(
+          (field) => !!field && field.toLowerCase().includes(query)
+        )
+      );
+    }
+    return result;
+  }
+
+  private compareUsers(a: UserAdminEntry, b: UserAdminEntry): number {
+    const direction = this.sortDirection === 'asc' ? 1 : -1;
+    if (this.sortColumn === 'assignment') {
+      return (
+        this.compareBlanksLast(
+          this.assignmentLabel(a),
+          this.assignmentLabel(b),
+          direction
+        ) || this.compareBlanksLast(a.name, b.name, 1)
+      );
+    }
+    return this.compareBlanksLast(a.name, b.name, direction);
+  }
+
+  // Leere Werte ("–", null) stehen unabhängig von der Sortierrichtung hinten,
+  // sonst beginnt die Liste mit einem Block Striche.
+  private compareBlanksLast(
+    a: string | null | undefined,
+    b: string | null | undefined,
+    direction: number
+  ): number {
+    const av = a && a !== '–' ? a : '';
+    const bv = b && b !== '–' ? b : '';
+    if (!av || !bv) {
+      if (av === bv) return 0;
+      return av ? -1 : 1;
+    }
+    return av.localeCompare(bv, 'de', { sensitivity: 'base' }) * direction;
   }
 
   roleLabel(user: UserAdminEntry): string {
