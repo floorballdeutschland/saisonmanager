@@ -47,6 +47,7 @@
   "history": {
     "title": "Meine Historie",
     "tabGames": "Gepfiffene Spiele",
+    "seasonHeading": "Saison {{ name }}",
     "tabTests": "Prüfungsergebnisse",
     "noGames": "Noch keine Spiele gefunden.",
     "gameCountOne": "{{ count }} Spiel",
