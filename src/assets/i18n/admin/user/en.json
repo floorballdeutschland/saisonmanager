@@ -26,7 +26,8 @@
     "roleReferee": "Referee",
     "statusArchived": "Archived",
     "archivedCountShow": "Show {{count}} archived",
-    "archivedCountHide": "Hide {{count}} archived"
+    "archivedCountHide": "Hide {{count}} archived",
+    "searchPlaceholder": "Search: name, username, email, assignment"
   },
   "create": {
     "title": "User management",
