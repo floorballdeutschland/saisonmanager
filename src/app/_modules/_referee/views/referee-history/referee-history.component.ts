@@ -36,7 +36,9 @@ export class RefereeHistoryComponent implements OnInit {
     this._refereeService.getHistoryGames().subscribe({
       next: (seasons) => {
         this.seasons = seasons;
-        if (seasons.length) this.expandedSeasons.add(seasons[0].season_id);
+        // Alle Saisons aufgeklappt starten, damit auch die Spiele
+        // vergangener Saisons ohne Extra-Klick sichtbar sind.
+        this.expandedSeasons = new Set(seasons.map((s) => s.season_id));
         this.loadingGames = false;
         this._cdr.markForCheck();
       },

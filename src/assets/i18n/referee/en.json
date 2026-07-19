@@ -47,6 +47,7 @@
   "history": {
     "title": "My history",
     "tabGames": "Officiated games",
+    "seasonHeading": "Season {{ name }}",
     "tabTests": "Exam results",
     "noGames": "No games found yet.",
     "gameCountOne": "{{ count }} game",
