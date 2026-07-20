@@ -18,6 +18,8 @@ import { Title } from '@angular/platform-browser';
   standalone: false,
 })
 export class ScorerComponent implements OnInit, OnDestroy {
+  league$ = this._leagueService.selectedLeague$;
+
   playerRankings$?: Observable<ScorerEntry[] | null>;
 
   currentPage = 1;
@@ -36,7 +38,10 @@ export class ScorerComponent implements OnInit, OnDestroy {
         tap((league) => {
           if (league?.id) {
             this._metaTitle.setTitle(`${league.name} - Scorer | SaisonManager`);
-            this.getPlayerRanking(league.id);
+            // Scorerliste nur laden, wenn sie für die Liga aktiviert ist.
+            if (league.enable_scorer) {
+              this.getPlayerRanking(league.id);
+            }
             this._cdr.markForCheck();
           }
         }),
