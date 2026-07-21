@@ -58,6 +58,7 @@
     "pointSystem": "Point system",
     "points3": "3 points",
     "scorerVisible": "Scorer list visible",
+    "scorerVisibleHint": "FD recommends not actively displaying the scorer list for the U13 age group and younger.",
     "yes": "Yes",
     "no": "No",
     "parentalConsentRequired": "Parental consent required",
