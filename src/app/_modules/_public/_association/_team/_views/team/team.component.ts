@@ -29,7 +29,7 @@ export class TeamComponent implements OnInit, OnDestroy {
   public error = false;
   public isFavorite = false;
 
-  private _operationPath = '';
+  public _operationPath = '';
   private _leaguePath = '';
   private _destroy$ = new Subject<boolean>();
 

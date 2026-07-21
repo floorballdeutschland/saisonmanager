@@ -105,7 +105,8 @@
           class="border border-fb-gray-200 rounded divide-y divide-fb-gray-200"
         >
           @for (game of stats.upcoming_games; track game) {
-            <div
+            <a
+              [routerLink]="[this._operationPath, game.league_name, 'game', game.game_id]"
               class="grid grid-cols-[1fr_40px_80px_40px_1fr] gap-2 items-center px-3 py-2 hover:bg-fb-gray-200 transition-colors"
             >
               <div class="flex items-center gap-2 justify-end">
@@ -173,7 +174,7 @@
                 }}</span>
               </div>
               <div></div>
-            </div>
+            </a>
           }
         </div>
       </div>
@@ -186,7 +187,8 @@
           class="border border-fb-gray-200 rounded divide-y divide-fb-gray-200"
         >
           @for (game of stats.recent_games; track game) {
-            <div
+            <a
+              [routerLink]="[this._operationPath, game.league_name, 'game', game.game_id]"
               class="grid grid-cols-[1fr_40px_80px_40px_1fr] gap-2 items-center px-3 py-2 hover:bg-fb-gray-200 transition-colors"
             >
               <div class="flex items-center gap-2 justify-end">
@@ -256,7 +258,7 @@
                 }}</span>
               </div>
               <div></div>
-            </div>
+            </a>
           }
         </div>
       </div>
