@@ -32,6 +32,11 @@
                 <p class="text-xs text-gray-400 mt-1">
                   {{ "userAdmin.create.usernameHint" | transloco }}
                 </p>
+                @if (userName.trim() && !userNameFormatValid) {
+                  <p class="text-xs text-red-500 mt-1">
+                    {{ "userAdmin.create.usernameInvalid" | transloco }}
+                  </p>
+                }
               </div>
 
               <div class="font-bold">

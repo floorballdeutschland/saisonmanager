@@ -45,6 +45,11 @@ export class UserCreateComponent implements OnInit, OnDestroy {
   firstName = '';
   lastName = '';
   email = '';
+
+  // Benutzernamen werden serverseitig kleingeschrieben und dürfen nur
+  // Kleinbuchstaben, Ziffern, Punkt und Bindestrich enthalten (Empfehlung:
+  // vorname.nachname). Umlaute/ß und sonstige Sonderzeichen sind nicht erlaubt.
+  readonly usernamePattern = /^[a-z0-9.-]+$/;
   selectedRoleId: number = 4;
   selectedClubId: number | null = null;
   selectedGoId: number | null = null;
@@ -190,6 +195,18 @@ export class UserCreateComponent implements OnInit, OnDestroy {
     return this.allRoles.find((r) => r.id === this.selectedRoleId);
   }
 
+  // Auf den serverseitig normalisierten Wert (getrimmt + kleingeschrieben)
+  // geprüft. Großbuchstaben sind kein Fehler – sie werden beim Absenden klein
+  // geschrieben; nur Umlaute/Sonderzeichen führen zur Ablehnung.
+  get normalizedUserName(): string {
+    return this.userName.trim().toLowerCase();
+  }
+
+  get userNameFormatValid(): boolean {
+    const name = this.normalizedUserName;
+    return name.length === 0 || this.usernamePattern.test(name);
+  }
+
   get isValid(): boolean {
     if (
       !this.userName.trim() ||
@@ -198,6 +215,7 @@ export class UserCreateComponent implements OnInit, OnDestroy {
       !this.email.trim()
     )
       return false;
+    if (!this.usernamePattern.test(this.normalizedUserName)) return false;
     if (this.selectedRole?.needsClub && !this.selectedClubId) return false;
     if (this.selectedRole?.needsGo && !this.selectedGoId) return false;
     return true;
@@ -232,7 +250,7 @@ export class UserCreateComponent implements OnInit, OnDestroy {
     this._userService
       .createUser({
         user: {
-          user_name: this.userName.trim(),
+          user_name: this.normalizedUserName,
           first_name: this.firstName.trim(),
           last_name: this.lastName.trim(),
           email: this.email.trim(),
