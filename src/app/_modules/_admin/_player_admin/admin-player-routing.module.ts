@@ -7,12 +7,15 @@ import * as Views from './views';
 // Guards sitzen pro Kind-Route statt am Modul. Die Spieler-Detail-/Bearbeiten-
 // und die Neuanlage-Seite steuern auch Vereins-/Teammanager über ihre eigene
 // Spielerliste (spieler-verein) an, daher gilt dort dasselbe Gate wie am
-// dortigen Einstieg (`menu_item_player_vm`, VM+TM). VM/TM dürfen laut
-// Berechtigungsmodell Spieler für den eigenen Verein anlegen (`create_player`
-// in Club#user_permissions); die API erzwingt die vereinsbezogene
-// Autorisierung. Die übrigen Ansichten (Gesamtliste, Suche, vereinsbezogene
-// Adminliste, Dublettenzusammenführung) bleiben Admin/SBK vorbehalten; VM/TM
-// landen nach dem Speichern wieder auf spieler-verein.
+// dortigen Einstieg (`menu_item_player_vm`, VM+TM). Das Anlegen selbst erlaubt
+// die API laut Berechtigungsmodell aber nur Vereinsmanager*innen für den
+// eigenen Verein (`create_player` in Club#user_permissions, nicht TM); die
+// spieler-verein-Liste zeigt den Neuanlage-Button entsprechend nur für die
+// eigenen VM-Vereine. Der Guard ist bewusst weiter (VM+TM), die API erzwingt
+// die vereinsbezogene Autorisierung. Die übrigen Ansichten (Gesamtliste,
+// Suche, vereinsbezogene Adminliste, Dublettenzusammenführung) bleiben
+// Admin/SBK vorbehalten; VM/TM landen nach dem Speichern wieder auf
+// spieler-verein.
 const PLAYER_ADMIN = 'menu_item_player_admin';
 const PLAYER_SHARED = ['menu_item_player_admin', 'menu_item_player_vm'];
 
