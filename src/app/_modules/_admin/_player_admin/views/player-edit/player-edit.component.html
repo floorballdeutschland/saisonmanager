@@ -6,7 +6,11 @@
   </h1>
 
   <a
-    [routerLink]="['/', 'verwaltung', 'vereine', club_id, 'spieler']"
+    [routerLink]="
+      permissions['menu_item_player_admin']
+        ? ['/', 'verwaltung', 'vereine', club_id, 'spieler']
+        : ['/', 'verwaltung', 'spieler-verein']
+    "
     class="text-sm text-fb-gray-500 hover:text-black"
     >{{ "playerAdmin.edit.backToList" | transloco }}</a
   >
