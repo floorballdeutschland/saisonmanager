@@ -40,6 +40,7 @@ interface RoleOption {
 export class UserCreateComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   saving = false;
+  userNameTaken = false;
 
   userName = '';
   firstName = '';
@@ -242,6 +243,7 @@ export class UserCreateComponent implements OnInit, OnDestroy {
     if (!this.isValid || this.saving) return;
 
     this.saving = true;
+    this.userNameTaken = false;
     const teams =
       this.selectedRoleId === 5 && this.selectedTeamIds.length > 0
         ? this.selectedTeamIds
@@ -284,10 +286,25 @@ export class UserCreateComponent implements OnInit, OnDestroy {
             'bearbeiten',
           ]);
         },
-        error: () => {
+        error: (err) => {
           this.saving = false;
+          this.userNameTaken = this._isUserNameTakenError(err);
           this._cdr.markForCheck();
         },
       });
+  }
+
+  // Der einzige Uniqueness-Validator am User ist user_name (users.email hat
+  // keinen Unique-Constraint), daher reicht das Erkennen der Rails-Meldung
+  // "has already been taken" bei einer 422, um den Benutzername-Konflikt vom
+  // generischen Fehler abzugrenzen.
+  private _isUserNameTakenError(err: unknown): boolean {
+    const httpErr = err as { status?: number; error?: { errors?: string[] } };
+    if (httpErr?.status !== 422) return false;
+    const messages = httpErr.error?.errors;
+    return (
+      Array.isArray(messages) &&
+      messages.some((m) => /already been taken|bereits vergeben/i.test(m))
+    );
   }
 }

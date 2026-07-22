@@ -37,6 +37,7 @@
     "usernamePlaceholder": "e.g. max.mustermann",
     "usernameHint": "Recommended: firstname.lastname. Only lowercase letters, digits, dot and hyphen. Please transliterate umlauts (ae, oe, ue) and ß as ss.",
     "usernameInvalid": "Only lowercase letters, digits, dot and hyphen are allowed. Please transliterate umlauts (ä, ö, ü) and ß.",
+    "usernameTakenInfo": "To assign additional roles to an existing user account, please send a short email to",
     "firstName": "First name",
     "lastName": "Last name",
     "email": "Email",
