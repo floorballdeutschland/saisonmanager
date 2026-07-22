@@ -2,6 +2,7 @@
   "index": {
     "title": "Schedule management",
     "newGameDay": "Create new game day",
+    "importSchedule": "Import schedule",
     "collapseAll": "Collapse all game days",
     "expandAll": "Expand all game days",
     "loading": "Loading schedule...",

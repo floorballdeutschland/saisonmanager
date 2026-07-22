@@ -2,6 +2,7 @@
   "index": {
     "title": "Spielplanverwaltung",
     "newGameDay": "Neuen Spieltag anlegen",
+    "importSchedule": "Spielplan importieren",
     "collapseAll": "Alle Spieltage zuklappen",
     "expandAll": "Alle Spieltage aufklappen",
     "loading": "Spielplan wird geladen...",
