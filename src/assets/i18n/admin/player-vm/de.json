@@ -1,7 +1,7 @@
 {
   "index": {
     "title": "Spieler*innen",
-    "newPlayer": "Neue*r Spieler*in",
+    "newPlayer": "Neu anlegen",
     "loading": "Lade Spieler…",
     "intro": "Spieler*innen, die aktuell nicht mehr aktiv am Spielbetrieb teilnehmen können deaktiviert werden. Deaktivierte Spieler*innen tauchen im Dropdown für die Lizenzbeantragung nicht mehr auf und sorgen für mehr Übersichtlichkeit in der Vereinsübersicht. Spieler*innen können zu späteren Zeitpunkten wieder aktiviert werden.",
     "countSingular": "Spieler*in",
