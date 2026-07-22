@@ -2,6 +2,7 @@
   "index": {
     "title": "Document types",
     "hint": "Central catalog of document types for license application requirements. Leagues pick from this catalog which documents a license application requires.",
+    "requestHint": "New document types can be requested at <a href=\"mailto:sbk@floorball.de\" class=\"underline hover:text-black\">sbk@floorball.de</a>.",
     "new": "+ New document type",
     "newHeading": "Create new document type",
     "name": "Name",

@@ -6,17 +6,25 @@
     <p class="text-fb-gray-500 text-sm mt-1">
       {{ "documentTypeAdmin.index.hint" | transloco }}
     </p>
+    @if (!canManage) {
+      <p
+        class="text-fb-gray-500 text-sm mt-2"
+        [innerHTML]="'documentTypeAdmin.index.requestHint' | transloco"
+      ></p>
+    }
   </div>
 
-  <div class="flex items-center justify-end mb-4">
-    <button
-      type="button"
-      (click)="showNewForm = !showNewForm"
-      class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black whitespace-nowrap"
-    >
-      {{ "documentTypeAdmin.index.new" | transloco }}
-    </button>
-  </div>
+  @if (canManage) {
+    <div class="flex items-center justify-end mb-4">
+      <button
+        type="button"
+        (click)="showNewForm = !showNewForm"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black whitespace-nowrap"
+      >
+        {{ "documentTypeAdmin.index.new" | transloco }}
+      </button>
+    </div>
+  }
 
   <!-- Neue Dokumentart -->
   @if (showNewForm) {
@@ -370,31 +378,33 @@
                 }}
               </td>
               <td class="py-2">
-                <div class="flex gap-2">
-                  <button
-                    type="button"
-                    (click)="startEdit(t)"
-                    class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black"
-                  >
-                    {{ "documentTypeAdmin.index.edit" | transloco }}
-                  </button>
-                  <button
-                    type="button"
-                    (click)="delete(t)"
-                    [disabled]="
-                      (t.usage_count ?? 0) + (t.league_count ?? 0) > 0
-                    "
-                    [title]="
-                      (t.usage_count ?? 0) + (t.league_count ?? 0) > 0
-                        ? ('documentTypeAdmin.index.deleteInUseHint'
-                          | transloco)
-                        : ''
-                    "
-                    class="text-xs font-bold px-3 py-1 border border-red-300 text-red-400 rounded-[5px] hover:border-red-500 disabled:opacity-40 disabled:hover:border-red-300"
-                  >
-                    {{ "documentTypeAdmin.index.delete" | transloco }}
-                  </button>
-                </div>
+                @if (canManage) {
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      (click)="startEdit(t)"
+                      class="text-xs font-bold px-3 py-1 border border-fb-gray-600 rounded-[5px] hover:border-black"
+                    >
+                      {{ "documentTypeAdmin.index.edit" | transloco }}
+                    </button>
+                    <button
+                      type="button"
+                      (click)="delete(t)"
+                      [disabled]="
+                        (t.usage_count ?? 0) + (t.league_count ?? 0) > 0
+                      "
+                      [title]="
+                        (t.usage_count ?? 0) + (t.league_count ?? 0) > 0
+                          ? ('documentTypeAdmin.index.deleteInUseHint'
+                            | transloco)
+                          : ''
+                      "
+                      class="text-xs font-bold px-3 py-1 border border-red-300 text-red-400 rounded-[5px] hover:border-red-500 disabled:opacity-40 disabled:hover:border-red-300"
+                    >
+                      {{ "documentTypeAdmin.index.delete" | transloco }}
+                    </button>
+                  </div>
+                }
               </td>
             </tr>
           }
