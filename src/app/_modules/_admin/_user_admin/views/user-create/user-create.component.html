@@ -23,6 +23,7 @@
               <div>
                 <input
                   [(ngModel)]="userName"
+                  (ngModelChange)="userNameTaken = false"
                   type="text"
                   class="w-full"
                   [placeholder]="
@@ -35,6 +36,14 @@
                 @if (userName.trim() && !userNameFormatValid) {
                   <p class="text-xs text-red-500 mt-1">
                     {{ "userAdmin.create.usernameInvalid" | transloco }}
+                  </p>
+                }
+                @if (userNameTaken) {
+                  <p class="text-xs text-red-500 mt-2">
+                    {{ "userAdmin.create.usernameTakenInfo" | transloco }}
+                    <a class="underline" href="mailto:it@floorball.de"
+                      >it@floorball.de</a
+                    >
                   </p>
                 }
               </div>

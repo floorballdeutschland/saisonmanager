@@ -37,6 +37,7 @@
     "usernamePlaceholder": "z. B. max.mustermann",
     "usernameHint": "Empfehlung: vorname.nachname. Nur Kleinbuchstaben, Ziffern, Punkt und Bindestrich. Umlaute bitte auflösen (ae, oe, ue) und ß als ss.",
     "usernameInvalid": "Nur Kleinbuchstaben, Ziffern, Punkt und Bindestrich erlaubt. Umlaute (ä, ö, ü) und ß bitte auflösen.",
+    "usernameTakenInfo": "Um einem existierenden Benutzerkonto weitere Rollen zuzuweisen, schreib bitte eine kurze E-Mail an",
     "firstName": "Vorname",
     "lastName": "Nachname",
     "email": "E-Mail",
