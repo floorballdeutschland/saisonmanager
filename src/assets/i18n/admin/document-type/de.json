@@ -2,6 +2,7 @@
   "index": {
     "title": "Dokumentarten",
     "hint": "Zentraler Katalog der Dokumentarten für Lizenz-Pflichtdokumente. Ligen wählen hieraus, welche Dokumente ein Lizenzantrag erfordert.",
+    "requestHint": "Neue Dokumentarten können bei <a href=\"mailto:sbk@floorball.de\" class=\"underline hover:text-black\">sbk@floorball.de</a> beantragt/angefragt werden.",
     "new": "+ Neue Dokumentart",
     "newHeading": "Neue Dokumentart anlegen",
     "name": "Name",

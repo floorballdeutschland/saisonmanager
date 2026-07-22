@@ -55,11 +55,16 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
     private _cdr: ChangeDetectorRef
   ) {}
 
-  // Admin bzw. global gescopte SBK dürfen den Verband frei wählen (inkl.
-  // global/bundesweit); verbands-gescopte SBK bekommen ihren Spielbetrieb von
-  // der API zugewiesen – gleiche Semantik wie serverseitig (scoped_sbk?).
-  get canChooseGameOperation(): boolean {
+  // Anlegen/Ändern/Löschen dürfen nur Admin und die bundesweite SBK (SBK FD) –
+  // gleiche Semantik wie serverseitig (authorize_manage!). Verbands-gescopte SBK
+  // haben nur Lesezugriff; neue Dokumentarten beantragen sie bei sbk@floorball.de.
+  get canManage(): boolean {
     return !!this.currentUser?.permissions['menu_item_state_association_admin'];
+  }
+
+  // Wer pflegen darf, darf auch den Verband frei wählen (inkl. global/bundesweit).
+  get canChooseGameOperation(): boolean {
+    return this.canManage;
   }
 
   ngOnInit(): void {

@@ -122,7 +122,7 @@
   "direct": {
     "back": "← Back",
     "title": "Direct assignment",
-    "intro": "Assigns a player directly to a club – without the multi-step approval process. The change takes effect immediately and appears in the transfer list. Only for clubs within your own state association (FD across associations).",
+    "intro": "Assigns a player directly to a club – without the multi-step approval process. The change takes effect immediately and appears in the transfer list. Only for clubs within your own state association (FD across associations). Transfers can be carried out directly on this page. Player releases can still be set up on the player detail pages.",
     "requestingClub": "Receiving club",
     "chooseClub": "– Choose club –",
     "firstName": "First name",

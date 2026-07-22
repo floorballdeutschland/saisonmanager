@@ -122,7 +122,7 @@
   "direct": {
     "back": "← Zurück",
     "title": "Direktzuweisung",
-    "intro": "Weist einen Spieler direkt einem Verein zu – ohne den mehrstufigen Genehmigungsprozess. Der Wechsel wird sofort vollzogen und erscheint in der Transferliste. Nur für Vereine im eigenen Landesverband (FD verbandsübergreifend).",
+    "intro": "Weist einen Spieler direkt einem Verein zu – ohne den mehrstufigen Genehmigungsprozess. Der Wechsel wird sofort vollzogen und erscheint in der Transferliste. Nur für Vereine im eigenen Landesverband (FD verbandsübergreifend). Auf dieser Seite können Transfers direkt durchgeführt werden. Spielerfreigaben können weiterhin auf den Spielerdetailseiten eingerichtet werden.",
     "requestingClub": "Aufnehmender Verein",
     "chooseClub": "– Verein wählen –",
     "firstName": "Vorname",
