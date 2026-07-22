@@ -1,6 +1,7 @@
 {
   "index": {
     "title": "Players",
+    "newPlayer": "Create new",
     "loading": "Loading players…",
     "intro": "Players who currently no longer take part in match operations can be deactivated. Deactivated players no longer appear in the dropdown for licence applications and keep the club overview clearer. Players can be reactivated at a later point in time.",
     "countSingular": "player",
