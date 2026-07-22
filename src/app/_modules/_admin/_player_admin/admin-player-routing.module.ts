@@ -5,12 +5,14 @@ import { permissionGuard } from '../../../_helpers/_guards/permission.guard';
 import * as Views from './views';
 
 // Guards sitzen pro Kind-Route statt am Modul. Die Spieler-Detail-/Bearbeiten-
-// Seite steuern auch Vereins-/Teammanager über ihre eigene Spielerliste
-// (spieler-verein) an, daher gilt dort dasselbe Gate wie am dortigen Einstieg
-// (`menu_item_player_vm`, VM+TM). Alle übrigen Ansichten (Gesamtliste, Suche,
-// vereinsbezogene Adminliste, Neuanlage, Dublettenzusammenführung) bleiben
-// Admin/SBK vorbehalten; VM/TM landen nach dem Speichern wieder auf
-// spieler-verein. Der Server erzwingt die eigentliche Autorisierung.
+// und die Neuanlage-Seite steuern auch Vereins-/Teammanager über ihre eigene
+// Spielerliste (spieler-verein) an, daher gilt dort dasselbe Gate wie am
+// dortigen Einstieg (`menu_item_player_vm`, VM+TM). VM/TM dürfen laut
+// Berechtigungsmodell Spieler für den eigenen Verein anlegen (`create_player`
+// in Club#user_permissions); die API erzwingt die vereinsbezogene
+// Autorisierung. Die übrigen Ansichten (Gesamtliste, Suche, vereinsbezogene
+// Adminliste, Dublettenzusammenführung) bleiben Admin/SBK vorbehalten; VM/TM
+// landen nach dem Speichern wieder auf spieler-verein.
 const PLAYER_ADMIN = 'menu_item_player_admin';
 const PLAYER_SHARED = ['menu_item_player_admin', 'menu_item_player_vm'];
 
@@ -72,7 +74,7 @@ const routes: Routes = [
     canActivate: [permissionGuard],
     data: {
       scrollTop: true,
-      permission: PLAYER_ADMIN,
+      permission: PLAYER_SHARED,
     },
   },
 ];
