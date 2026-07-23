@@ -28,6 +28,9 @@ export class MatchEventButtonComponent {
   @Input()
   event!: string;
 
+  @Input()
+  disabled = false;
+
   @Output()
   setEvent: EventEmitter<string> = new EventEmitter<string>();
 
@@ -53,6 +56,9 @@ export class MatchEventButtonComponent {
   }
 
   handleButtonClick(eventType: string): void {
+    if (this.disabled) {
+      return;
+    }
     this.setEvent.emit(eventType);
   }
 }

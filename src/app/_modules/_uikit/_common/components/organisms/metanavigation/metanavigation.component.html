@@ -206,6 +206,16 @@
             >
           </li>
         }
+        @if (showItem("referee_feedback_view")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiri-feedback-auswertung']"
+              (click)="closeMenu()"
+              >{{ "nav.refereeFeedbackReport" | transloco }}</a
+            >
+          </li>
+        }
         @if (showItem("menu_item_referee_course_import")) {
           <li class="mt-4 mb-4">
             <a
