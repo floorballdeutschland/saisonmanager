@@ -1,0 +1,465 @@
+<div class="p-4 lg:p-8">
+  <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
+    <h1 class="text-2xl font-bold">
+      {{ "refereeFeedbackReport.index.title" | transloco }}
+    </h1>
+    <div class="flex gap-3">
+      <button
+        class="px-4 py-2 border border-fb-gray-800 text-sm font-bold rounded-[5px] hover:bg-fb-gray-900 disabled:opacity-50"
+        [disabled]="exporting || loading || !data"
+        (click)="exportCsv()"
+      >
+        {{ "refereeFeedbackReport.index.exportCsv" | transloco }}
+      </button>
+      <button
+        class="px-4 py-2 border border-fb-gray-800 text-sm font-bold rounded-[5px] hover:bg-fb-gray-900 disabled:opacity-50"
+        [disabled]="exporting || loading || !data"
+        (click)="exportXlsx()"
+      >
+        {{ "refereeFeedbackReport.index.exportXlsx" | transloco }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Filterleiste -->
+  <div
+    class="border border-fb-gray-800 rounded-[5px] p-4 mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end"
+  >
+    <label class="flex flex-col text-xs font-bold text-fb-gray-500 uppercase">
+      {{ "refereeFeedbackReport.index.filterGroup" | transloco }}
+      <select
+        class="mt-1 border border-fb-gray-800 rounded-[5px] px-2 py-2 text-sm font-normal normal-case text-black"
+        [(ngModel)]="filterTagId"
+      >
+        <option [ngValue]="null">
+          {{ "refereeFeedbackReport.index.filterAll" | transloco }}
+        </option>
+        @for (tag of tags; track tag.id) {
+          <option [ngValue]="tag.id">{{ tag.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex flex-col text-xs font-bold text-fb-gray-500 uppercase">
+      {{ "refereeFeedbackReport.index.filterResult" | transloco }}
+      <select
+        class="mt-1 border border-fb-gray-800 rounded-[5px] px-2 py-2 text-sm font-normal normal-case text-black"
+        [(ngModel)]="filterResult"
+      >
+        <option value="">
+          {{ "refereeFeedbackReport.index.filterAll" | transloco }}
+        </option>
+        <option value="won">
+          {{ "refereeFeedbackReport.index.resultWon" | transloco }}
+        </option>
+        <option value="lost">
+          {{ "refereeFeedbackReport.index.resultLost" | transloco }}
+        </option>
+      </select>
+    </label>
+
+    <label class="flex flex-col text-xs font-bold text-fb-gray-500 uppercase">
+      {{ "refereeFeedbackReport.index.filterFrom" | transloco }}
+      <input
+        type="date"
+        class="mt-1 border border-fb-gray-800 rounded-[5px] px-2 py-2 text-sm font-normal normal-case text-black"
+        [(ngModel)]="filterFrom"
+      />
+    </label>
+
+    <label class="flex flex-col text-xs font-bold text-fb-gray-500 uppercase">
+      {{ "refereeFeedbackReport.index.filterTo" | transloco }}
+      <input
+        type="date"
+        class="mt-1 border border-fb-gray-800 rounded-[5px] px-2 py-2 text-sm font-normal normal-case text-black"
+        [(ngModel)]="filterTo"
+      />
+    </label>
+
+    <label class="flex flex-col text-xs font-bold text-fb-gray-500 uppercase">
+      {{ "refereeFeedbackReport.index.filterMinCount" | transloco }}
+      <input
+        type="number"
+        min="0"
+        class="mt-1 border border-fb-gray-800 rounded-[5px] px-2 py-2 text-sm font-normal normal-case text-black"
+        [(ngModel)]="filterMinCount"
+      />
+    </label>
+
+    <div class="lg:col-span-5 flex justify-end">
+      <button
+        class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+        (click)="apply()"
+      >
+        {{ "refereeFeedbackReport.index.apply" | transloco }}
+      </button>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      {{ "refereeFeedbackReport.index.loading" | transloco }}
+    </div>
+  }
+
+  @if (!loading && loadError) {
+    <div class="text-red-600 text-sm py-8 text-center">{{ loadError }}</div>
+  }
+
+  @if (!loading && !loadError && data) {
+    @if (data.overall.count === 0) {
+      <div class="text-fb-gray-500 text-sm py-8 text-center">
+        {{ "refereeFeedbackReport.index.empty" | transloco }}
+      </div>
+    } @else {
+      <!-- KPI-Kacheln -->
+      <div
+        class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10"
+        [ngClass]="{ 'lg:grid-cols-6': data.group }"
+      >
+        <div class="border border-fb-gray-800 rounded-[5px] p-5">
+          <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+            {{ "refereeFeedbackReport.index.kpiAvgLine" | transloco }}
+          </div>
+          <div class="text-3xl font-bold">
+            {{
+              data.overall.avg_line_rating !== null
+                ? (data.overall.avg_line_rating | number: "1.1-1")
+                : "–"
+            }}
+          </div>
+          <div class="text-xs text-fb-gray-500 mt-1">
+            {{ "refereeFeedbackReport.index.kpiOverall" | transloco }}
+          </div>
+        </div>
+        <div class="border border-fb-gray-800 rounded-[5px] p-5">
+          <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+            {{ "refereeFeedbackReport.index.kpiAvgCommunication" | transloco }}
+          </div>
+          <div class="text-3xl font-bold">
+            {{
+              data.overall.avg_communication_rating !== null
+                ? (data.overall.avg_communication_rating | number: "1.1-1")
+                : "–"
+            }}
+          </div>
+          <div class="text-xs text-fb-gray-500 mt-1">
+            {{ "refereeFeedbackReport.index.kpiOverall" | transloco }}
+          </div>
+        </div>
+        <div class="border border-fb-gray-800 rounded-[5px] p-5">
+          <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+            {{ "refereeFeedbackReport.index.kpiCount" | transloco }}
+          </div>
+          <div class="text-3xl font-bold">
+            {{ data.overall.count | number }}
+          </div>
+          <div class="text-xs text-fb-gray-500 mt-1">
+            {{ "refereeFeedbackReport.index.kpiOverall" | transloco }}
+          </div>
+        </div>
+
+        @if (data.group) {
+          <div class="border border-fb-gray-800 rounded-[5px] p-5">
+            <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+              {{ "refereeFeedbackReport.index.kpiAvgLine" | transloco }}
+            </div>
+            <div class="text-3xl font-bold">
+              {{
+                data.group.avg_line_rating !== null
+                  ? (data.group.avg_line_rating | number: "1.1-1")
+                  : "–"
+              }}
+            </div>
+            <div class="text-xs text-fb-gray-500 mt-1">
+              {{ data.group.tag_name }}
+            </div>
+          </div>
+          <div class="border border-fb-gray-800 rounded-[5px] p-5">
+            <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+              {{
+                "refereeFeedbackReport.index.kpiAvgCommunication" | transloco
+              }}
+            </div>
+            <div class="text-3xl font-bold">
+              {{
+                data.group.avg_communication_rating !== null
+                  ? (data.group.avg_communication_rating | number: "1.1-1")
+                  : "–"
+              }}
+            </div>
+            <div class="text-xs text-fb-gray-500 mt-1">
+              {{ data.group.tag_name }}
+            </div>
+          </div>
+          <div class="border border-fb-gray-800 rounded-[5px] p-5">
+            <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+              {{ "refereeFeedbackReport.index.kpiCount" | transloco }}
+            </div>
+            <div class="text-3xl font-bold">
+              {{ data.group.count | number }}
+            </div>
+            <div class="text-xs text-fb-gray-500 mt-1">
+              {{ data.group.tag_name }}
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Verteilung -->
+      <h2 class="text-base font-bold mb-4">
+        {{ "refereeFeedbackReport.index.distributionHeading" | transloco }}
+      </h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-4">
+        <div>
+          <div class="text-sm font-bold mb-3">
+            {{ "refereeFeedbackReport.index.ratingLine" | transloco }}
+          </div>
+          <div class="rfr-dist-chart" aria-hidden="true">
+            @for (band of bands; track band) {
+              <div
+                class="rfr-dist-col"
+                [title]="band + ': ' + data.overall.distribution.line[band]"
+              >
+                <span class="rfr-dist-value text-fb-gray-500">{{
+                  data.overall.distribution.line[band] || ""
+                }}</span>
+                <div
+                  class="rfr-dist-bar"
+                  [style.height.%]="
+                    distributionHeight(data.overall.distribution.line, band)
+                  "
+                ></div>
+                <span class="rfr-dist-label">{{ band }}</span>
+              </div>
+            }
+          </div>
+        </div>
+        <div>
+          <div class="text-sm font-bold mb-3">
+            {{ "refereeFeedbackReport.index.ratingCommunication" | transloco }}
+          </div>
+          <div class="rfr-dist-chart" aria-hidden="true">
+            @for (band of bands; track band) {
+              <div
+                class="rfr-dist-col"
+                [title]="
+                  band + ': ' + data.overall.distribution.communication[band]
+                "
+              >
+                <span class="rfr-dist-value text-fb-gray-500">{{
+                  data.overall.distribution.communication[band] || ""
+                }}</span>
+                <div
+                  class="rfr-dist-bar rfr-dist-bar--communication"
+                  [style.height.%]="
+                    distributionHeight(
+                      data.overall.distribution.communication,
+                      band
+                    )
+                  "
+                ></div>
+                <span class="rfr-dist-label">{{ band }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Zeitreihe (Ø Spielleitung pro Monat) -->
+      <h2 class="text-base font-bold mb-2 mt-10">
+        {{ "refereeFeedbackReport.index.timeSeriesHeading" | transloco }}
+      </h2>
+      <div class="flex items-center gap-4 mb-4 text-xs text-fb-gray-500">
+        <span class="flex items-center gap-1">
+          <span
+            class="inline-block w-3 h-3 rounded-sm"
+            style="background: #1a1a1a"
+          ></span>
+          {{ "refereeFeedbackReport.index.legendOverall" | transloco }}
+        </span>
+        @if (data.group) {
+          <span class="flex items-center gap-1">
+            <span
+              class="inline-block w-3 h-3 rounded-sm"
+              style="background: #2563eb"
+            ></span>
+            {{ data.group.tag_name }}
+          </span>
+        }
+      </div>
+      @if (timeSeriesOverall.length > 0) {
+        <div class="rfr-time-chart mb-10" aria-hidden="true">
+          @for (point of timeSeriesOverall; track point.period) {
+            <div
+              class="rfr-time-col"
+              [title]="
+                formatPeriod(point.period) +
+                ': ' +
+                (point.avg_line_rating !== null
+                  ? (point.avg_line_rating | number: '1.1-1')
+                  : '–')
+              "
+            >
+              <span class="rfr-time-value">{{
+                point.avg_line_rating !== null
+                  ? (point.avg_line_rating | number: "1.1-1")
+                  : ""
+              }}</span>
+              <div class="rfr-time-bars">
+                <div
+                  class="rfr-time-bar"
+                  [style.height.%]="ratingHeight(point.avg_line_rating)"
+                ></div>
+                @if (
+                  data.group && timeSeriesGroupByPeriod[point.period];
+                  as gp
+                ) {
+                  <div
+                    class="rfr-time-bar rfr-time-bar--group"
+                    [style.height.%]="ratingHeight(gp.avg_line_rating)"
+                  ></div>
+                }
+              </div>
+              <span class="rfr-time-label">{{
+                formatPeriod(point.period)
+              }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="text-sm text-fb-gray-500 mb-10">
+          {{ "refereeFeedbackReport.index.timeSeriesEmpty" | transloco }}
+        </p>
+      }
+
+      <!-- Schiri-Tabelle -->
+      <h2 class="text-base font-bold mb-4">
+        {{ "refereeFeedbackReport.index.tableHeading" | transloco }}
+      </h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-fb-gray-700 text-left">
+              <th
+                class="py-2 pr-4 font-bold cursor-pointer select-none"
+                (click)="setSort('referee_name')"
+              >
+                {{ "refereeFeedbackReport.index.colReferee" | transloco }}
+                @if (sortKey === "referee_name") {
+                  <span>{{ sortDir === "asc" ? "▲" : "▼" }}</span>
+                }
+              </th>
+              <th
+                class="py-2 pr-4 font-bold cursor-pointer select-none text-right"
+                (click)="setSort('count')"
+              >
+                {{ "refereeFeedbackReport.index.colCount" | transloco }}
+                @if (sortKey === "count") {
+                  <span>{{ sortDir === "asc" ? "▲" : "▼" }}</span>
+                }
+              </th>
+              <th
+                class="py-2 pr-4 font-bold cursor-pointer select-none text-right"
+                (click)="setSort('avg_line_rating')"
+              >
+                {{ "refereeFeedbackReport.index.colAvgLine" | transloco }}
+                @if (sortKey === "avg_line_rating") {
+                  <span>{{ sortDir === "asc" ? "▲" : "▼" }}</span>
+                }
+              </th>
+              <th
+                class="py-2 pr-4 font-bold cursor-pointer select-none text-right"
+                (click)="setSort('avg_communication_rating')"
+              >
+                {{
+                  "refereeFeedbackReport.index.colAvgCommunication" | transloco
+                }}
+                @if (sortKey === "avg_communication_rating") {
+                  <span>{{ sortDir === "asc" ? "▲" : "▼" }}</span>
+                }
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "refereeFeedbackReport.index.colTrend" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "refereeFeedbackReport.index.colGroup" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "refereeFeedbackReport.index.colPartners" | transloco }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ref of referees; track ref.referee_id) {
+              <tr
+                class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
+                [class.text-fb-gray-500]="!ref.ranked"
+              >
+                <td class="py-2 pr-4 font-medium">
+                  {{ ref.referee_name }}
+                  @if (!ref.ranked) {
+                    <span class="text-xs text-fb-gray-500 ml-1"
+                      >({{
+                        "refereeFeedbackReport.index.lowData" | transloco
+                      }})</span
+                    >
+                  }
+                </td>
+                <td class="py-2 pr-4 text-right">{{ ref.count | number }}</td>
+                <td class="py-2 pr-4 text-right">
+                  {{
+                    ref.avg_line_rating !== null
+                      ? (ref.avg_line_rating | number: "1.1-1")
+                      : "–"
+                  }}
+                </td>
+                <td class="py-2 pr-4 text-right">
+                  {{
+                    ref.avg_communication_rating !== null
+                      ? (ref.avg_communication_rating | number: "1.1-1")
+                      : "–"
+                  }}
+                </td>
+                <td class="py-2 pr-4">
+                  @if (ref.trend_line !== null) {
+                    <span
+                      [class.text-green-600]="ref.trend_line > 0"
+                      [class.text-red-600]="ref.trend_line < 0"
+                    >
+                      {{
+                        ref.trend_line > 0 ? "▲" : ref.trend_line < 0 ? "▼" : ""
+                      }}
+                      {{ ref.trend_line | number: "1.1-1" }}
+                    </span>
+                  } @else {
+                    <span class="text-fb-gray-500">–</span>
+                  }
+                </td>
+                <td class="py-2 pr-4">
+                  @if (ref.in_group) {
+                    <span
+                      class="inline-block px-2 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-800"
+                    >
+                      {{ "refereeFeedbackReport.index.inGroup" | transloco }}
+                    </span>
+                  }
+                </td>
+                <td class="py-2 pr-4 text-fb-gray-500">
+                  {{ ref.partners.length ? ref.partners.join(", ") : "–" }}
+                </td>
+              </tr>
+            }
+            @if (referees.length === 0) {
+              <tr>
+                <td colspan="7" class="py-8 text-center text-fb-gray-500">
+                  {{ "refereeFeedbackReport.index.empty" | transloco }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

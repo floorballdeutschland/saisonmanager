@@ -14,7 +14,11 @@ import {
   PenaltyCode,
   PeriodTitles,
 } from '@floorball/types';
-import { LeagueService } from '@floorball/core';
+import {
+  GameService,
+  LeagueService,
+  NotificationService,
+} from '@floorball/core';
 
 @Component({
   selector: 'fb-match-report-step-two',
@@ -69,6 +73,8 @@ export class MatchReportStepTwoComponent implements OnInit {
 
   constructor(
     private _leagueService: LeagueService,
+    private _gameService: GameService,
+    private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -116,6 +122,25 @@ export class MatchReportStepTwoComponent implements OnInit {
       (this.game?.players?.home?.length ?? 0) > 0 &&
       (this.game?.players?.guest?.length ?? 0) > 0
     );
+  }
+
+  // Befindet sich das Spiel aktuell im Penalty-Schießen?
+  public isShootout(): boolean {
+    return this.game?.current_period_title?.status_id === 'penalty_shots';
+  }
+
+  public removeTimeout(team: 'home' | 'guest'): void {
+    const field =
+      team === 'home' ? 'home_timeout_string' : 'guest_timeout_string';
+    this._gameService.setGameField(this.game.id, { [field]: '' }).subscribe({
+      next: () => {
+        this._notificationService.success('Time-Out entfernt', {
+          autoClose: true,
+          keepAfterRouteChange: true,
+        });
+        this.reloadGame();
+      },
+    });
   }
 
   public isGamePeriodActive(index: number) {

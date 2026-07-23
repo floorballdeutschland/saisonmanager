@@ -139,7 +139,8 @@
     showItem("menu_item_referee_course_review") ||
     showItem("menu_item_referee_profile") ||
     showItem("menu_item_referee_vm") ||
-    showItem("menu_item_referee_settings")
+    showItem("menu_item_referee_settings") ||
+    showItem("referee_feedback_view")
   ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
       {{ "nav.section.referee" | transloco }}
@@ -180,6 +181,16 @@
             >
           </li>
         }
+        @if (showItem("referee_feedback_view")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiri-feedback-kommentare']"
+              (click)="closeMenu()"
+              >{{ "nav.feedbackComments" | transloco }}</a
+            >
+          </li>
+        }
         @if (showItem("menu_item_referee_settings")) {
           <li class="mt-4 mb-4">
             <a
@@ -192,6 +203,16 @@
               ]"
               (click)="closeMenu()"
               >{{ "nav.refereeSettings" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("referee_feedback_view")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiri-feedback-auswertung']"
+              (click)="closeMenu()"
+              >{{ "nav.refereeFeedbackReport" | transloco }}</a
             >
           </li>
         }

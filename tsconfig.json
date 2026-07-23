@@ -82,6 +82,9 @@
       "@floorball/admin/licenses": ["src/app/_modules/_admin/_license_admin"],
       "@floorball/admin/referees": ["src/app/_modules/_admin/_referee_admin"],
       "@floorball/admin/referee-vm": ["src/app/_modules/_admin/_referee_vm"],
+      "@floorball/admin/referee-feedback-report": [
+        "src/app/_modules/_admin/_referee_feedback_report_admin"
+      ],
       "@floorball/admin/player-vm": ["src/app/_modules/_admin/_player_vm"],
       "@floorball/admin/assignment": [
         "src/app/_modules/_admin/_assignment_admin"
@@ -119,6 +122,9 @@
       ],
       "@floorball/admin/referee-courses": [
         "src/app/_modules/_admin/_referee_course_admin"
+      ],
+      "@floorball/admin/feedback-comments": [
+        "src/app/_modules/_admin/_feedback_comments_admin"
       ],
       "@floorball/referee": ["src/app/_modules/_referee"],
       "@floorball/account": ["src/app/_modules/_account"],

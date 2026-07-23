@@ -144,6 +144,15 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/referee-feedback-report').then(
+            (m) => m.AdminRefereeFeedbackReportModule
+          ),
+        canActivate: [permissionGuard],
+        data: { permission: 'referee_feedback_view' },
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/document-types').then(
             (m) => m.AdminDocumentTypeModule
           ),
@@ -211,6 +220,15 @@ const routes: Routes = [
           ),
         canActivate: [permissionGuard],
         data: { permission: 'menu_item_referee_feedback' },
+      },
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/admin/feedback-comments').then(
+            (m) => m.AdminFeedbackCommentsModule
+          ),
+        canActivate: [permissionGuard],
+        data: { permission: 'referee_feedback_view' },
       },
       {
         path: '',

@@ -4,6 +4,7 @@ export interface GameFields {
   actual_start_time?: string;
   live_stream_link?: string;
   vod_link?: string;
+  home_timeout_string?: string;
   guest_timeout_string?: string;
   referee1_signed?: string;
   time_keeper_string?: string;

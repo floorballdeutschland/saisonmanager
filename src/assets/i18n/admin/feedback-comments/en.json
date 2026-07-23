@@ -1,0 +1,85 @@
+{
+  "index": {
+    "title": "Referee feedback comments",
+    "manageThemes": "Manage themes",
+    "loading": "Loading comments…",
+    "loadError": "The comments could not be loaded.",
+    "count": "{{ count }} comments",
+    "empty": "No comments found for these filters."
+  },
+  "filter": {
+    "group": "Top group",
+    "theme": "Theme",
+    "maxRating": "Max rating",
+    "maxRatingPlaceholder": "e.g. 3",
+    "from": "From",
+    "to": "To",
+    "all": "All",
+    "apply": "Apply",
+    "reset": "Reset"
+  },
+  "card": {
+    "referees": "Referees:",
+    "lineRating": "Line:",
+    "communicationRating": "Communication:",
+    "line": "Line",
+    "communication": "Communication",
+    "general": "General",
+    "themes": "Themes",
+    "noThemes": "no themes assigned",
+    "saving": "Saving…",
+    "editThemes": "Edit themes",
+    "done": "Done",
+    "noThemesDefined": "No themes defined yet. Create some first under \"Manage themes\"."
+  },
+  "stats": {
+    "show": "Show theme evaluation",
+    "hide": "Hide theme evaluation",
+    "title": "Theme evaluation",
+    "loading": "Loading evaluation…",
+    "empty": "No data for the current selection.",
+    "rankingHeading": "Frequency by theme",
+    "groupCount": "top group",
+    "timeSeriesHeading": "Trend (tagged comments per month)",
+    "timeSeriesEmpty": "No trend data available."
+  },
+  "months": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mar",
+    "4": "Apr",
+    "5": "May",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Oct",
+    "11": "Nov",
+    "12": "Dec"
+  },
+  "themes": {
+    "back": "← Back",
+    "title": "Manage themes",
+    "description": "Freely editable theme catalogue for manually tagging feedback comments.",
+    "loading": "Loading themes…",
+    "usageCount": "{{ count }}×",
+    "edit": "Edit",
+    "delete": "Delete",
+    "ok": "OK",
+    "cancel": "Cancel",
+    "empty": "No themes created yet.",
+    "new": "New theme",
+    "newPlaceholder": "Enter theme name…",
+    "add": "Add",
+    "saved": "Theme saved.",
+    "saveError": "Error while saving.",
+    "created": "Theme created.",
+    "createError": "Error while creating.",
+    "confirmDelete": "Really delete theme \"{{ name }}\"?",
+    "deleted": "Theme deleted.",
+    "deleteError": "Theme could not be deleted."
+  },
+  "notifications": {
+    "themeError": "Themes could not be saved."
+  }
+}

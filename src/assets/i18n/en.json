@@ -47,6 +47,7 @@
     "courseResults": "Course results",
     "courseReview": "Course result approval",
     "refereesVm": "Referees",
+    "refereeFeedbackReport": "Feedback analytics",
     "myCard": "My ID card",
     "myProfile": "My profile",
     "myRefereeGameDays": "My match days",
@@ -63,7 +64,8 @@
     "seasonAdmin": "Season administration",
     "analytics": "Analytics",
     "emailLog": "Email log",
-    "emailTemplates": "Email templates"
+    "emailTemplates": "Email templates",
+    "feedbackComments": "Referee feedback comments"
   },
   "account": {
     "title": "My account",

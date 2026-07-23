@@ -1,0 +1,400 @@
+<div class="p-4 lg:p-8">
+  <div class="flex items-center justify-between mb-6 gap-3 flex-wrap">
+    <h1 class="text-2xl font-bold">
+      {{ "feedbackComments.index.title" | transloco }}
+    </h1>
+    <a
+      [routerLink]="['/', 'verwaltung', 'schiri-feedback-kommentare', 'themen']"
+      class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+    >
+      {{ "feedbackComments.index.manageThemes" | transloco }}
+    </a>
+  </div>
+
+  <!-- Filterleiste -->
+  <div
+    class="border border-fb-gray-800 rounded-[5px] p-4 mb-6 flex flex-wrap items-end gap-4"
+  >
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "feedbackComments.filter.group" | transloco
+      }}</label>
+      <select
+        [(ngModel)]="filter.tag_id"
+        name="tag_id"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      >
+        <option [ngValue]="null">
+          {{ "feedbackComments.filter.all" | transloco }}
+        </option>
+        @for (tag of tags; track tag) {
+          <option [ngValue]="tag.id">{{ tag.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "feedbackComments.filter.theme" | transloco
+      }}</label>
+      <select
+        [(ngModel)]="filter.theme_id"
+        name="theme_id"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      >
+        <option [ngValue]="null">
+          {{ "feedbackComments.filter.all" | transloco }}
+        </option>
+        @for (theme of themes; track theme) {
+          <option [ngValue]="theme.id">{{ theme.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "feedbackComments.filter.maxRating" | transloco
+      }}</label>
+      <input
+        type="number"
+        min="1"
+        max="6"
+        [(ngModel)]="filter.max_rating"
+        name="max_rating"
+        [placeholder]="
+          'feedbackComments.filter.maxRatingPlaceholder' | transloco
+        "
+        class="w-28 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "feedbackComments.filter.from" | transloco
+      }}</label>
+      <input
+        type="date"
+        [(ngModel)]="filter.from"
+        name="from"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "feedbackComments.filter.to" | transloco
+      }}</label>
+      <input
+        type="date"
+        [(ngModel)]="filter.to"
+        name="to"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      />
+    </div>
+
+    <div class="flex items-center gap-2">
+      <fb-button variant="default" (handleClick)="apply()">{{
+        "feedbackComments.filter.apply" | transloco
+      }}</fb-button>
+      <button
+        type="button"
+        (click)="resetFilter()"
+        class="text-sm text-fb-gray-500 hover:text-black"
+      >
+        {{ "feedbackComments.filter.reset" | transloco }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Auswertungs-Umschalter -->
+  <div class="mb-6">
+    <button
+      type="button"
+      (click)="toggleStats()"
+      class="text-sm font-bold text-fb-gray-500 hover:text-black"
+    >
+      {{
+        (showStats
+          ? "feedbackComments.stats.hide"
+          : "feedbackComments.stats.show"
+        ) | transloco
+      }}
+    </button>
+  </div>
+
+  <!-- Themen-Auswertung -->
+  @if (showStats) {
+    <div class="border border-fb-gray-800 rounded-[5px] p-5 mb-8">
+      <h2 class="text-base font-bold mb-4">
+        {{ "feedbackComments.stats.title" | transloco }}
+      </h2>
+
+      @if (statsLoading) {
+        <div class="text-fb-gray-500 text-sm py-4 text-center">
+          {{ "feedbackComments.stats.loading" | transloco }}
+        </div>
+      }
+
+      @if (!statsLoading && statThemes.length === 0) {
+        <div class="text-fb-gray-500 text-sm py-4 text-center">
+          {{ "feedbackComments.stats.empty" | transloco }}
+        </div>
+      }
+
+      @if (!statsLoading && statThemes.length > 0) {
+        <!-- Ranking -->
+        <h3 class="text-sm font-bold mb-3">
+          {{ "feedbackComments.stats.rankingHeading" | transloco }}
+        </h3>
+        <div class="flex flex-col gap-2 mb-8">
+          @for (theme of statThemes; track theme.theme_id) {
+            <div class="fc-rank-row">
+              <div class="fc-rank-label text-sm">
+                <span
+                  class="fc-chip-dot"
+                  [style.background]="theme.color || '#1a1a1a'"
+                ></span>
+                {{ theme.name }}
+              </div>
+              <div class="fc-rank-track">
+                <div
+                  class="fc-rank-bar"
+                  [style.width.%]="themeBarWidth(theme.count)"
+                  [style.background]="theme.color || '#1a1a1a'"
+                ></div>
+              </div>
+              <div class="fc-rank-count text-sm font-bold">
+                {{ theme.count }}
+                @if (hasGroupFilter && theme.group_count !== null) {
+                  <span class="text-fb-gray-500 font-normal">
+                    ({{ "feedbackComments.stats.groupCount" | transloco }}:
+                    {{ theme.group_count }})
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Zeitreihe -->
+        <h3 class="text-sm font-bold mb-3">
+          {{ "feedbackComments.stats.timeSeriesHeading" | transloco }}
+        </h3>
+        @if (timeSeriesBars.length === 0) {
+          <div class="text-fb-gray-500 text-sm py-2">
+            {{ "feedbackComments.stats.timeSeriesEmpty" | transloco }}
+          </div>
+        }
+        @if (timeSeriesBars.length > 0) {
+          <div class="fc-chart" aria-hidden="true">
+            @for (bar of timeSeriesBars; track bar.period) {
+              <div
+                class="fc-bar-col"
+                [title]="formatPeriod(bar.period) + ': ' + bar.total"
+              >
+                <span class="fc-bar-value text-xs text-fb-gray-500">{{
+                  bar.total || ""
+                }}</span>
+                <div
+                  class="fc-bar"
+                  [style.height.%]="timeSeriesHeight(bar.total)"
+                ></div>
+                <span class="fc-bar-label">{{ formatPeriod(bar.period) }}</span>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <!-- Ladezustand / Fehler -->
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      {{ "feedbackComments.index.loading" | transloco }}
+    </div>
+  }
+
+  @if (!loading && loadError) {
+    <div class="text-red-600 text-sm py-8 text-center">
+      {{ "feedbackComments.index.loadError" | transloco }}
+    </div>
+  }
+
+  @if (!loading && !loadError) {
+    <p class="text-sm text-fb-gray-500 mb-4">
+      {{
+        "feedbackComments.index.count" | transloco: { count: comments.length }
+      }}
+    </p>
+
+    @if (comments.length === 0) {
+      <div class="text-fb-gray-500 text-sm py-8 text-center">
+        {{ "feedbackComments.index.empty" | transloco }}
+      </div>
+    }
+
+    <div class="flex flex-col gap-4">
+      @for (comment of pagedComments; track comment.id) {
+        <div class="border border-fb-gray-800 rounded-[5px] p-4">
+          <!-- Kopf: Spiel-Metadaten -->
+          <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2">
+            @if (comment.game_number) {
+              <span class="text-sm font-bold">#{{ comment.game_number }}</span>
+            }
+            @if (comment.date) {
+              <span class="text-sm text-fb-gray-500">{{ comment.date }}</span>
+            }
+            @if (comment.league) {
+              <span class="text-sm">{{ comment.league }}</span>
+            }
+            @if (comment.team_name) {
+              <span class="text-sm text-fb-gray-500">{{
+                comment.team_name
+              }}</span>
+            }
+          </div>
+
+          @if (comment.referee_names) {
+            <div class="text-sm mb-2">
+              <span class="text-fb-gray-500">{{
+                "feedbackComments.card.referees" | transloco
+              }}</span>
+              {{ comment.referee_names }}
+            </div>
+          }
+
+          <!-- Bewertungen -->
+          <div class="flex flex-wrap gap-4 mb-3 text-sm">
+            @if (comment.line_rating !== null) {
+              <span>
+                <span class="text-fb-gray-500">{{
+                  "feedbackComments.card.lineRating" | transloco
+                }}</span>
+                <span class="font-bold">{{ comment.line_rating }}</span>
+              </span>
+            }
+            @if (comment.communication_rating !== null) {
+              <span>
+                <span class="text-fb-gray-500">{{
+                  "feedbackComments.card.communicationRating" | transloco
+                }}</span>
+                <span class="font-bold">{{
+                  comment.communication_rating
+                }}</span>
+              </span>
+            }
+          </div>
+
+          <!-- Freitexte -->
+          <div class="flex flex-col gap-2 mb-3">
+            @if (comment.line_comment) {
+              <div>
+                <div class="text-xs font-bold uppercase text-fb-gray-500">
+                  {{ "feedbackComments.card.line" | transloco }}
+                </div>
+                <div class="text-sm whitespace-pre-line">
+                  {{ comment.line_comment }}
+                </div>
+              </div>
+            }
+            @if (comment.communication_comment) {
+              <div>
+                <div class="text-xs font-bold uppercase text-fb-gray-500">
+                  {{ "feedbackComments.card.communication" | transloco }}
+                </div>
+                <div class="text-sm whitespace-pre-line">
+                  {{ comment.communication_comment }}
+                </div>
+              </div>
+            }
+            @if (comment.general_comment) {
+              <div>
+                <div class="text-xs font-bold uppercase text-fb-gray-500">
+                  {{ "feedbackComments.card.general" | transloco }}
+                </div>
+                <div class="text-sm whitespace-pre-line">
+                  {{ comment.general_comment }}
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Themen -->
+          <div class="border-t border-fb-gray-800 pt-3">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="text-xs font-bold uppercase text-fb-gray-500">{{
+                "feedbackComments.card.themes" | transloco
+              }}</span>
+              @for (theme of comment.themes; track theme.id) {
+                <span
+                  class="fc-chip"
+                  [style.background]="theme.color || '#1a1a1a'"
+                  >{{ theme.name }}</span
+                >
+              }
+              @if (comment.themes.length === 0) {
+                <span class="text-sm text-fb-gray-500">{{
+                  "feedbackComments.card.noThemes" | transloco
+                }}</span>
+              }
+              @if (savingThemesId === comment.id) {
+                <span class="text-xs text-fb-gray-500">{{
+                  "feedbackComments.card.saving" | transloco
+                }}</span>
+              }
+              <button
+                type="button"
+                (click)="toggleThemeEditor(comment)"
+                class="text-sm text-fb-gray-500 hover:text-black ml-auto"
+              >
+                {{
+                  (editingCommentId === comment.id
+                    ? "feedbackComments.card.done"
+                    : "feedbackComments.card.editThemes"
+                  ) | transloco
+                }}
+              </button>
+            </div>
+
+            @if (editingCommentId === comment.id) {
+              @if (themes.length === 0) {
+                <div class="text-sm text-fb-gray-500 py-2">
+                  {{ "feedbackComments.card.noThemesDefined" | transloco }}
+                </div>
+              }
+              <div class="flex flex-wrap gap-x-4 gap-y-2 py-2">
+                @for (theme of themes; track theme.id) {
+                  <label class="flex items-center gap-2 cursor-pointer text-sm">
+                    <input
+                      type="checkbox"
+                      [checked]="isThemeSelected(comment, theme.id)"
+                      [disabled]="savingThemesId === comment.id"
+                      (change)="toggleTheme(comment, theme)"
+                      class="h-4 w-4 rounded border-fb-gray-600 accent-black"
+                    />
+                    <span
+                      class="fc-chip-dot"
+                      [style.background]="theme.color || '#1a1a1a'"
+                    ></span>
+                    {{ theme.name }}
+                  </label>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (numberOfPages > 1) {
+      <div class="mt-6">
+        <fb-pagination
+          [numberOfPages]="numberOfPages"
+          [currentPage]="currentPage"
+          (changePage)="changePage($event)"
+        ></fb-pagination>
+      </div>
+    }
+  }
+</div>
