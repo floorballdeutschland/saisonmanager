@@ -75,20 +75,7 @@
             <table class="w-full text-xs mb-3">
               <tbody>
                 @for (g of gd.games; track g) {
-                  <tr
-                    class="border-t border-fb-gray-600"
-                    [routerLink]="matchLink(gd, g)"
-                    [ngClass]="
-                      matchLink(gd, g)
-                        ? 'cursor-pointer hover:bg-fb-gray-100'
-                        : ''
-                    "
-                    [attr.title]="
-                      matchLink(gd, g)
-                        ? ('refereeSelf.gameDays.openMatch' | transloco)
-                        : null
-                    "
-                  >
+                  <tr class="border-t border-fb-gray-600">
                     <td class="py-1.5 pr-2 text-fb-gray-500 w-16">
                       {{ g.start_time || "–" }}
                     </td>
@@ -96,7 +83,19 @@
                       {{ g.game_number || "–" }}
                     </td>
                     <td class="py-1.5 pr-2">
-                      {{ g.home_team }} – {{ g.guest_team }}
+                      @if (matchLink(gd, g); as link) {
+                        <a
+                          [routerLink]="link"
+                          class="hover:underline focus:underline"
+                          [attr.title]="
+                            'refereeSelf.gameDays.openMatch' | transloco
+                          "
+                        >
+                          {{ g.home_team }} – {{ g.guest_team }}
+                        </a>
+                      } @else {
+                        {{ g.home_team }} – {{ g.guest_team }}
+                      }
                     </td>
                     <td class="py-1.5 text-right font-mono">
                       {{ g.result || "–" }}
