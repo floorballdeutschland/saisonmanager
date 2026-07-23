@@ -718,7 +718,11 @@
     <!--  <fb-button-->
     <!--    (click)="submitEvent()"-->
     <!--    [disabled]="submitDisabled()"-->
-    @if (type === "next" && nextPeriodTitle()) {
+    @if (
+      type === "next" &&
+      nextPeriodTitle() &&
+      (!advanceLeadsToShootoutPause() || scoreLevel())
+    ) {
       <fb-button
         [fullWidth]="true"
         [size]="'large'"
