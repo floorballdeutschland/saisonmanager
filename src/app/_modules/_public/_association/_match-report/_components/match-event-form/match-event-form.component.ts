@@ -968,4 +968,17 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
       ) || 0;
     return this.match.period_titles[index + 1] || null;
   }
+
+  // Steht es unentschieden? Nutzt dieselbe Torquelle wie submitEvent().
+  public scoreLevel(): boolean {
+    return (
+      (this.match.result?.home_goals || 0) ===
+      (this.match.result?.guest_goals || 0)
+    );
+  }
+
+  // Führt der nächste Spielabschnitt in die Pause vor dem Penalty-Schießen?
+  public advanceLeadsToShootoutPause(): boolean {
+    return this.nextPeriodTitle()?.status_id === 'pause_ps';
+  }
 }
