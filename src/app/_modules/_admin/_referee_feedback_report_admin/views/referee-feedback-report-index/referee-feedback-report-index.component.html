@@ -290,11 +290,7 @@
       </div>
       @if (timeSeriesOverall.length > 0) {
         <div class="rfr-time-chart mb-10" aria-hidden="true">
-          @for (
-            point of timeSeriesOverall;
-            track point.period;
-            let i = $index
-          ) {
+          @for (point of timeSeriesOverall; track point.period) {
             <div
               class="rfr-time-col"
               [title]="
@@ -315,12 +311,13 @@
                   class="rfr-time-bar"
                   [style.height.%]="ratingHeight(point.avg_line_rating)"
                 ></div>
-                @if (data.group && timeSeriesGroup[i]) {
+                @if (
+                  data.group && timeSeriesGroupByPeriod[point.period];
+                  as gp
+                ) {
                   <div
                     class="rfr-time-bar rfr-time-bar--group"
-                    [style.height.%]="
-                      ratingHeight(timeSeriesGroup[i].avg_line_rating)
-                    "
+                    [style.height.%]="ratingHeight(gp.avg_line_rating)"
                   ></div>
                 }
               </div>

@@ -196,6 +196,20 @@ export class RefereeFeedbackReportIndexComponent implements OnInit, OnDestroy {
     return this.data?.time_series?.group ?? [];
   }
 
+  // Gruppen-Zeitreihe nach Monat indexiert. Overall- und Gruppen-Reihe lassen
+  // leere Monate unabhängig voneinander weg, daher NICHT per Array-Index paaren,
+  // sondern über die period nachschlagen (sonst rutschen die Gruppen-Balken).
+  get timeSeriesGroupByPeriod(): Record<
+    string,
+    RefereeFeedbackReportTimePoint
+  > {
+    const map: Record<string, RefereeFeedbackReportTimePoint> = {};
+    for (const point of this.timeSeriesGroup) {
+      map[point.period] = point;
+    }
+    return map;
+  }
+
   ratingHeight(rating: number | null): number {
     if (rating == null) return 0;
     return (rating / 10) * 100;
