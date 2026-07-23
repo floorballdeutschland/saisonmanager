@@ -224,6 +224,15 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/feedback-comments').then(
+            (m) => m.AdminFeedbackCommentsModule
+          ),
+        canActivate: [permissionGuard],
+        data: { permission: 'referee_feedback_view' },
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/users').then((m) => m.AdminUserModule),
         canActivate: [permissionGuard],
         data: {

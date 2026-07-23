@@ -1,0 +1,85 @@
+{
+  "index": {
+    "title": "Schiri-Feedback-Kommentare",
+    "manageThemes": "Themen verwalten",
+    "loading": "Lade Kommentare…",
+    "loadError": "Die Kommentare konnten nicht geladen werden.",
+    "count": "{{ count }} Kommentare",
+    "empty": "Keine Kommentare für diese Filter gefunden."
+  },
+  "filter": {
+    "group": "Top-Gruppe",
+    "theme": "Thema",
+    "maxRating": "Notenschwelle",
+    "maxRatingPlaceholder": "z.B. 3",
+    "from": "Von",
+    "to": "Bis",
+    "all": "Alle",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen"
+  },
+  "card": {
+    "referees": "Schiedsrichter:",
+    "lineRating": "Linie:",
+    "communicationRating": "Kommunikation:",
+    "line": "Linie",
+    "communication": "Kommunikation",
+    "general": "Allgemein",
+    "themes": "Themen",
+    "noThemes": "keine Themen zugeordnet",
+    "saving": "Speichern…",
+    "editThemes": "Themen bearbeiten",
+    "done": "Fertig",
+    "noThemesDefined": "Noch keine Themen angelegt. Lege zuerst welche unter „Themen verwalten\" an."
+  },
+  "stats": {
+    "show": "Themen-Auswertung anzeigen",
+    "hide": "Themen-Auswertung ausblenden",
+    "title": "Themen-Auswertung",
+    "loading": "Lade Auswertung…",
+    "empty": "Keine Daten für die aktuelle Auswahl.",
+    "rankingHeading": "Häufigkeit nach Thema",
+    "groupCount": "Top-Gruppe",
+    "timeSeriesHeading": "Verlauf (verschlagwortete Kommentare pro Monat)",
+    "timeSeriesEmpty": "Keine Verlaufsdaten vorhanden."
+  },
+  "months": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mär",
+    "4": "Apr",
+    "5": "Mai",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Okt",
+    "11": "Nov",
+    "12": "Dez"
+  },
+  "themes": {
+    "back": "← Zurück",
+    "title": "Themen verwalten",
+    "description": "Frei pflegbarer Themen-Katalog zur manuellen Verschlagwortung der Feedback-Kommentare.",
+    "loading": "Lade Themen…",
+    "usageCount": "{{ count }}×",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "ok": "OK",
+    "cancel": "Abbrechen",
+    "empty": "Noch keine Themen angelegt.",
+    "new": "Neues Thema",
+    "newPlaceholder": "Themenname eingeben…",
+    "add": "Hinzufügen",
+    "saved": "Thema gespeichert.",
+    "saveError": "Fehler beim Speichern.",
+    "created": "Thema angelegt.",
+    "createError": "Fehler beim Anlegen.",
+    "confirmDelete": "Thema „{{ name }}\" wirklich löschen?",
+    "deleted": "Thema gelöscht.",
+    "deleteError": "Thema konnte nicht gelöscht werden."
+  },
+  "notifications": {
+    "themeError": "Themen konnten nicht gespeichert werden."
+  }
+}

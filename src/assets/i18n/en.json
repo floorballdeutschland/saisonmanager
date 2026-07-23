@@ -64,7 +64,8 @@
     "seasonAdmin": "Season administration",
     "analytics": "Analytics",
     "emailLog": "Email log",
-    "emailTemplates": "Email templates"
+    "emailTemplates": "Email templates",
+    "feedbackComments": "Referee feedback comments"
   },
   "account": {
     "title": "My account",
