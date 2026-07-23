@@ -1,0 +1,108 @@
+// Verteilungs-Bänder (vertikale Balken pro Band 1-2 … 9-10).
+.rfr-dist-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 120px;
+  padding-bottom: 22px;
+  position: relative;
+}
+
+.rfr-dist-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+}
+
+.rfr-dist-bar {
+  width: 100%;
+  background: #1a1a1a;
+  min-height: 2px;
+  transition: height 0.3s ease;
+  border-radius: 2px 2px 0 0;
+}
+
+.rfr-dist-bar--communication {
+  background: #9ca3af;
+}
+
+.rfr-dist-label {
+  position: absolute;
+  bottom: -20px;
+  font-size: 10px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.rfr-dist-value {
+  position: absolute;
+  top: -18px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+// Zeitreihe (Balken pro Monat, avg_line_rating 0-10 → Höhe %).
+.rfr-time-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 160px;
+  padding-bottom: 28px;
+  position: relative;
+}
+
+.rfr-time-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+}
+
+// Zwei Balken nebeneinander (Gesamt / Gruppe), wenn eine Gruppe aktiv ist.
+.rfr-time-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+}
+
+.rfr-time-bar {
+  flex: 1;
+  max-width: 18px;
+  background: #1a1a1a;
+  min-height: 2px;
+  transition: height 0.3s ease;
+  border-radius: 2px 2px 0 0;
+}
+
+.rfr-time-bar--group {
+  background: #2563eb;
+}
+
+.rfr-time-label {
+  position: absolute;
+  bottom: -24px;
+  font-size: 9px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+
+.rfr-time-value {
+  position: absolute;
+  top: -16px;
+  font-size: 9px;
+  color: #888;
+  white-space: nowrap;
+}

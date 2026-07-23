@@ -144,6 +144,15 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/referee-feedback-report').then(
+            (m) => m.AdminRefereeFeedbackReportModule
+          ),
+        canActivate: [permissionGuard],
+        data: { permission: 'referee_feedback_view' },
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/document-types').then(
             (m) => m.AdminDocumentTypeModule
           ),
