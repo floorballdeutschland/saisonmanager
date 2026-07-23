@@ -826,15 +826,23 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
 
   private _load(): void {
     this.loading = true;
-    const filters = {
+    // Offene, ansetzbare Spiele: mit Heute-Untergrenze (Standard des Datumsfilters).
+    const gameFilters = {
       season_id: this.filterSeasonId || undefined,
       date_from: this.filterDateFrom || undefined,
       date_to: this.filterDateTo || undefined,
     };
+    // Ansetzungen speisen die Anreicherung offener Zeilen UND den Verlauf. Bewusst
+    // ohne die Heute-Untergrenze, sonst bliebe der „Vergangene"-Tab (gespielte
+    // Ansetzungen liegen vor heute) standardmäßig leer.
+    const assignmentFilters = {
+      season_id: this.filterSeasonId || undefined,
+      date_to: this.filterDateTo || undefined,
+    };
 
     forkJoin({
-      games: this._refereeService.adminGetAssignableGames(filters),
-      assignments: this._refereeService.adminGetAssignments(filters),
+      games: this._refereeService.adminGetAssignableGames(gameFilters),
+      assignments: this._refereeService.adminGetAssignments(assignmentFilters),
     })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
