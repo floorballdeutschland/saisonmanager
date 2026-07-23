@@ -75,7 +75,20 @@
             <table class="w-full text-xs mb-3">
               <tbody>
                 @for (g of gd.games; track g) {
-                  <tr class="border-t border-fb-gray-600">
+                  <tr
+                    class="border-t border-fb-gray-600"
+                    [routerLink]="matchLink(gd, g)"
+                    [ngClass]="
+                      matchLink(gd, g)
+                        ? 'cursor-pointer hover:bg-fb-gray-100'
+                        : ''
+                    "
+                    [attr.title]="
+                      matchLink(gd, g)
+                        ? ('refereeSelf.gameDays.openMatch' | transloco)
+                        : null
+                    "
+                  >
                     <td class="py-1.5 pr-2 text-fb-gray-500 w-16">
                       {{ g.start_time || "–" }}
                     </td>

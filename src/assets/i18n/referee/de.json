@@ -114,6 +114,7 @@
     "title": "Meine Spieltage",
     "intro": "Sofern dein Landesverband eine Spieltagscheckliste hinterlegt hat, bestätige hier deine Spieltage als ordnungsgemäß durchgeführt – oder melde sie als nicht ordnungsgemäß und beantworte die Checkliste. Bestätigung ist ab Beginn des letzten Spiels möglich. Ohne Bestätigung innerhalb von 48 Stunden gilt ein Spieltag automatisch als bestätigt.",
     "empty": "Keine Spieltage gefunden.",
+    "openMatch": "Zum Spiel / Spielbericht",
     "saving": "Speichere…",
     "confirmProper": "Ordnungsgemäß bestätigen",
     "reportImproper": "Nicht ordnungsgemäß",
