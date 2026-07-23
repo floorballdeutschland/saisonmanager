@@ -12,7 +12,8 @@ import {
   FavoriteService,
   TeamService,
 } from '@floorball/core';
-import { FavoriteTeam, TeamStats } from '@floorball/types';
+import { leagueRouteSegment } from '@floorball/uikit/common';
+import { FavoriteTeam, TeamRecentGame, TeamStats } from '@floorball/types';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -124,5 +125,18 @@ export class TeamComponent implements OnInit, OnDestroy {
     if (label === 'S') return 'bg-green-100 text-green-800';
     if (label === 'N') return 'bg-red-100 text-red-800';
     return 'bg-gray-100 text-gray-800';
+  }
+
+  // Direktlink zur Spielseite. Die Spiele können über mehrere Ligen des Teams
+  // verteilt sein, daher wird das Liga-Segment pro Spiel aus dessen league_id
+  // gebaut (nicht aus der aktuell geöffneten Liga).
+  gameLink(game: TeamRecentGame): (string | number)[] {
+    return [
+      '/',
+      this._operationPath,
+      leagueRouteSegment(game.league_id, game.league_name ?? ''),
+      'spiel',
+      game.game_id,
+    ];
   }
 }

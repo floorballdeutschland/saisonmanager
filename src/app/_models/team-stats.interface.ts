@@ -20,6 +20,7 @@ export interface TeamRecentGame {
   guest_goals: number | null;
   date: string;
   start_time?: string;
+  league_id: number;
   league_name?: string;
   league_short_name?: string;
 }
