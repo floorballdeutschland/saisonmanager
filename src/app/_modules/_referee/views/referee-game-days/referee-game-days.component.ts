@@ -9,7 +9,7 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
-import { RefereeGameDay } from '@floorball/types';
+import { RefereeGameDay, RefereeGameDayGame } from '@floorball/types';
 
 @Component({
   templateUrl: './referee-game-days.component.html',
@@ -42,6 +42,17 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
+  }
+
+  // Direktlink zur (öffentlichen) Spielseite: /:association/:leagueId/spiel/:matchId.
+  // Nur wenn der Spieltag Verband-Slug und Liga-ID mitliefert (ältere Payloads
+  // ohne diese Felder bleiben ohne Link).
+  matchLink(
+    gd: RefereeGameDay,
+    g: RefereeGameDayGame
+  ): (string | number)[] | null {
+    if (!gd.game_operation_slug || !gd.league_id) return null;
+    return ['/', gd.game_operation_slug, gd.league_id, 'spiel', g.id];
   }
 
   /** Aktion überhaupt nötig: nur wenn eine Checkliste existiert und noch offen. */

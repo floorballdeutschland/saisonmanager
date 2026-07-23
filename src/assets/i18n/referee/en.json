@@ -114,6 +114,7 @@
     "title": "My match days",
     "intro": "If your state association has set up a match day checklist, confirm your match days here as properly conducted – or report them as not properly conducted and answer the checklist. Confirmation is possible from the start of the last game. Without confirmation within 48 hours, a match day is automatically considered confirmed.",
     "empty": "No match days found.",
+    "openMatch": "Open game / match report",
     "saving": "Saving…",
     "confirmProper": "Confirm as proper",
     "reportImproper": "Not properly conducted",
