@@ -1,0 +1,102 @@
+// Themen-Chips & Auswertungsbalken – handgerollt, analog zum Analytics-Modul.
+
+.fc-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.4;
+}
+
+.fc-chip-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  flex: none;
+}
+
+// --- Themen-Ranking (horizontale Balken) ---
+
+.fc-rank-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.fc-rank-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fc-rank-track {
+  background: #eee;
+  border-radius: 3px;
+  height: 16px;
+  overflow: hidden;
+}
+
+.fc-rank-bar {
+  height: 100%;
+  min-width: 2px;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.fc-rank-count {
+  white-space: nowrap;
+}
+
+// --- Zeitreihe (vertikale Balken) ---
+
+.fc-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 160px;
+  padding-bottom: 28px;
+  position: relative;
+}
+
+.fc-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+}
+
+.fc-bar {
+  width: 100%;
+  background: #1a1a1a;
+  min-height: 2px;
+  transition: height 0.3s ease;
+  border-radius: 2px 2px 0 0;
+}
+
+.fc-bar-label {
+  position: absolute;
+  bottom: -24px;
+  font-size: 9px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+
+.fc-bar-value {
+  position: absolute;
+  top: -18px;
+  font-size: 9px;
+  white-space: nowrap;
+}

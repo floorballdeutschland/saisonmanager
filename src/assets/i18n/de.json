@@ -63,7 +63,8 @@
     "seasonAdmin": "Saison-Verwaltung",
     "analytics": "Analyse",
     "emailLog": "E-Mail-Log",
-    "emailTemplates": "E-Mail-Vorlagen"
+    "emailTemplates": "E-Mail-Vorlagen",
+    "feedbackComments": "Schiri-Feedback-Kommentare"
   },
   "account": {
     "title": "Mein Konto",
