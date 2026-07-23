@@ -83,7 +83,19 @@
                       {{ g.game_number || "–" }}
                     </td>
                     <td class="py-1.5 pr-2">
-                      {{ g.home_team }} – {{ g.guest_team }}
+                      @if (matchLink(gd, g); as link) {
+                        <a
+                          [routerLink]="link"
+                          class="hover:underline focus:underline"
+                          [attr.title]="
+                            'refereeSelf.gameDays.openMatch' | transloco
+                          "
+                        >
+                          {{ g.home_team }} – {{ g.guest_team }}
+                        </a>
+                      } @else {
+                        {{ g.home_team }} – {{ g.guest_team }}
+                      }
                     </td>
                     <td class="py-1.5 text-right font-mono">
                       {{ g.result || "–" }}

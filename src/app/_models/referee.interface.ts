@@ -301,6 +301,9 @@ export interface RefereeGameDay {
   id: number;
   date: string;
   league?: string;
+  // Für den Direktlink zur Spielseite: /:association/:leagueId/spiel/:matchId
+  league_id?: number;
+  game_operation_slug?: string;
   arena?: string;
   club?: string;
   my_confirmed_at?: string | null;
