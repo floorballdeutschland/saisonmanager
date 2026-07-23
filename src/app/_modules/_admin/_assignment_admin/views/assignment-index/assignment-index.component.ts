@@ -60,6 +60,9 @@ interface MergedGame {
 })
 export class AssignmentIndexComponent implements OnInit, OnDestroy {
   rows: MergedGame[] = [];
+  // Ansicht: offene (ansetzbare) Spiele vs. Historie bereits angepfiffener/
+  // gespielter Ansetzungen. Beide speisen sich aus demselben Ladevorgang.
+  activeTab: 'open' | 'history' = 'open';
   seasons: SeasonInfo[] = [];
   // Vereine, die als „angesetzter Verein" gewählt werden können (eigener LV +
   // geteilte LV). Einmalig geladen, für alle Zeilen geteilt.
@@ -791,6 +794,24 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     return status === 'published'
       ? 'bg-green-100 text-green-800'
       : 'bg-yellow-100 text-yellow-800';
+  }
+
+  setTab(tab: 'open' | 'history'): void {
+    this.activeTab = tab;
+  }
+
+  // Historie = alle geladenen Ansetzungen (aus #index, inkl. vergangener), deren
+  // Spiel nicht mehr in der Liste ansetzbarer Spiele (#games = Game.not_started)
+  // auftaucht – also bereits angepfiffen/gespielt. Read-only, neueste zuerst.
+  get historyRows(): RefereeAssignment[] {
+    const openGameIds = new Set(this.rows.map((r) => r.game.id));
+    return this._assignments
+      .filter((a) => a.game && !openGameIds.has(a.game_id))
+      .sort((x, y) => (y.game?.date ?? '').localeCompare(x.game?.date ?? ''));
+  }
+
+  assignmentRefereeName(stub?: RefereeAssignmentStub | null): string {
+    return stub ? `${stub.nachname}, ${stub.vorname}` : '–';
   }
 
   private _refereeName(r: {
