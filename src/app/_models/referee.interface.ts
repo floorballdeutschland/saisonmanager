@@ -191,6 +191,13 @@ export interface AssignmentClub {
   name: string;
 }
 
+// Laut Spielbericht tatsächlich eingesetzter Schiedsrichter. `id` fehlt bei
+// Gästen und Altdaten ohne verknüpften Schiedsrichter-Datensatz.
+export interface RefereeAssignmentOfficial {
+  id?: number | null;
+  name: string;
+}
+
 export interface RefereeAssignment {
   id: number;
   game_id: number;
@@ -201,6 +208,9 @@ export interface RefereeAssignment {
   referee2?: RefereeAssignmentStub | null;
   coach?: RefereeAssignmentStub | null;
   club?: AssignmentClub | null;
+  // Positionstreu je Slot (Schiri 1/2), null = kein Eintrag im Spielbericht.
+  // Nur die Listen-Antwort füllt das Feld.
+  officials?: (RefereeAssignmentOfficial | null)[];
   game?: RefereeAssignmentGame | null;
 }
 
