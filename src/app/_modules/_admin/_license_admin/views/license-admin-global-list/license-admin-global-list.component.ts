@@ -10,6 +10,7 @@ import { AssociationService, LeagueService } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
+import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 
 interface FilterOption {
   value: string | number | boolean | null;
@@ -318,28 +319,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       e.approved_at ? this._formatDate(e.approved_at) : '',
     ]);
 
-    const csv = [headers, ...rows]
-      .map((row) =>
-        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';')
-      )
-      .join('\r\n');
-
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `lizenzen-${yyyy}-${mm}-${dd}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-      a.remove();
-    }, 0);
+    downloadCsv('lizenzen', headers, rows);
   }
 
   public statusBadgeClass(statusId: number): string {

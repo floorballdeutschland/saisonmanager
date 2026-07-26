@@ -15,6 +15,7 @@ import {
   TransferRequestService,
 } from '@floorball/core';
 import { TransferRequest } from '@floorball/types';
+import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 
 @Component({
   templateUrl: './transfer-request-list.component.html',
@@ -225,28 +226,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
       r.lv_approved_at ? this._formatDate(r.lv_approved_at) : '',
     ]);
 
-    const csv = [headers, ...rows]
-      .map((row) =>
-        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';')
-      )
-      .join('\r\n');
-
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `transfers-${yyyy}-${mm}-${dd}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-      a.remove();
-    }, 0);
+    downloadCsv('transfers', headers, rows);
   }
 
   private _formatDate(dateStr: string): string {
