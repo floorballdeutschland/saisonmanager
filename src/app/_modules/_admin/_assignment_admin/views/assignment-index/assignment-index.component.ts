@@ -6,7 +6,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { forkJoin, Subject, takeUntil } from 'rxjs';
+import { forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
   NotificationService,
@@ -22,6 +22,7 @@ import {
   RefereeAssignmentStub,
   RefereeTag,
 } from '@floorball/types';
+import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 
 type AssignmentMode = 'referees' | 'club';
 type AssignmentTab = 'open' | 'history';
@@ -160,7 +161,6 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   }
 
   // CSV-Export der aktuell gefilterten Ansetzungen (Saison/Zeitraum).
-  // Semikolon-getrennt + UTF-8-BOM, damit Excel Umlaute korrekt darstellt.
   exportCsv(): void {
     if (this.rows.length === 0) return;
     const t = (key: string) => this._transloco.translate(key);
@@ -191,33 +191,11 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       this.assignmentStatusLabel(r.game.assignment_status),
     ]);
 
-    this._downloadCsv([headers, ...rows], 'ansetzungen');
+    downloadCsv('ansetzungen', headers, rows);
   }
 
   private _refereeCsvName(r?: RefereeAssignmentStub | null): string {
     return r ? `${r.nachname}, ${r.vorname}` : '';
-  }
-
-  private _downloadCsv(table: string[][], filePrefix: string): void {
-    const csv = table
-      .map((row) =>
-        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';')
-      )
-      .join('\r\n');
-
-    const blob = new Blob(['﻿' + csv], {
-      type: 'text/csv;charset=utf-8;',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${filePrefix}-${todayIso()}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-      a.remove();
-    }, 0);
   }
 
   // Warnung, wenn ein in dieser Zeile gewählter Schiri zugleich einem
@@ -872,8 +850,8 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     return stub ? `${stub.nachname}, ${stub.vorname}` : '–';
   }
 
-  // CSV-Export des Verlaufs. Gleiches Format wie der Export der offenen Spiele
-  // (Semikolon + UTF-8-BOM), damit Excel Umlaute korrekt darstellt.
+  // CSV-Export des Verlaufs, über denselben Helfer wie der Export der offenen
+  // Spiele (Semikolon + UTF-8-BOM, damit Excel Umlaute korrekt darstellt).
   exportHistoryCsv(): void {
     const history = this.historyRows;
     if (history.length === 0) return;
@@ -900,7 +878,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       a.game?.result ?? '',
     ]);
 
-    this._downloadCsv([headers, ...rows], 'ansetzungen-verlauf');
+    downloadCsv('ansetzungen-verlauf', headers, rows);
   }
 
   // Im CSV wird die Herkunft mitgeführt, sonst ließe sich eine ersatzweise
@@ -940,15 +918,24 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       date_to: this.filterDateTo || undefined,
     };
 
+    // Der Verlauf braucht nur die Ansetzungen. Die ansetzbaren Spiele bewusst
+    // NICHT nachladen: mit dem Rückblick-Zeitraum lieferte die Abfrage einen
+    // anderen Spielbestand, und _buildRows würde die Zeilenzustände der offenen
+    // Spiele verwerfen – samt der dort noch nicht gespeicherten Schiri-Auswahl.
+    const games$ =
+      this.activeTab === 'history'
+        ? of(null)
+        : this._refereeService.adminGetAssignableGames(filters);
+
     forkJoin({
-      games: this._refereeService.adminGetAssignableGames(filters),
+      games: games$,
       assignments: this._refereeService.adminGetAssignments(filters),
     })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: ({ games, assignments }) => {
           this._assignments = assignments;
-          this._buildRows(games);
+          if (games) this._buildRows(games);
           this.loading = false;
           this._cdr.markForCheck();
         },

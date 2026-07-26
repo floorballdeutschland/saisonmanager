@@ -4,6 +4,14 @@
       {{ "refereeAdmin.index.title" | transloco }}
     </h1>
     <div class="flex gap-2">
+      <button
+        type="button"
+        (click)="exportCsv()"
+        [disabled]="loading || referees.length === 0"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {{ "refereeAdmin.index.exportCsv" | transloco }}
+      </button>
       <a
         [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'tags']"
         class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
