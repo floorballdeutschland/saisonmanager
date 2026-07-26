@@ -6,7 +6,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { forkJoin, Subject, takeUntil } from 'rxjs';
+import { forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
   NotificationService,
@@ -25,6 +25,21 @@ import {
 import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 
 type AssignmentMode = 'referees' | 'club';
+type AssignmentTab = 'open' | 'history';
+
+// Herkunft eines im Verlauf angezeigten Namens: aus dem Spielbericht (wer
+// wirklich gepfiffen hat), ersatzweise aus der Ansetzung oder der angesetzte
+// Verein, wenn der Bericht keine Schiedsrichter nennt.
+type HistoryOfficialSource = 'report' | 'assignment' | 'club';
+
+interface HistoryOfficial {
+  name: string;
+  source: HistoryOfficialSource;
+}
+
+function todayIso(): string {
+  return new Date().toLocaleDateString('sv-SE');
+}
 
 interface RowState {
   // Ansetzungsart: zwei Schiedsrichter ODER ein Verein (entweder/oder).
@@ -61,9 +76,9 @@ interface MergedGame {
 })
 export class AssignmentIndexComponent implements OnInit, OnDestroy {
   rows: MergedGame[] = [];
-  // Ansicht: offene (ansetzbare) Spiele vs. Historie bereits angepfiffener/
-  // gespielter Ansetzungen. Beide speisen sich aus demselben Ladevorgang.
-  activeTab: 'open' | 'history' = 'open';
+  // Ansicht: offene (ansetzbare) Spiele vs. Verlauf der bereits erfolgten
+  // Ansetzungen. Beide speisen sich aus demselben Ladevorgang.
+  activeTab: AssignmentTab = 'open';
   seasons: SeasonInfo[] = [];
   // Vereine, die als „angesetzter Verein" gewählt werden können (eigener LV +
   // geteilte LV). Einmalig geladen, für alle Zeilen geteilt.
@@ -72,8 +87,16 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   seasonsLoading = true;
 
   filterSeasonId = '';
-  filterDateFrom = new Date().toLocaleDateString('sv-SE');
+  filterDateFrom = todayIso();
   filterDateTo = '';
+
+  // Datumsgrenzen je Tab: „Offen" blickt ab heute nach vorn, der Verlauf bis
+  // heute zurück. Beim Wechsel wird die zuletzt gewählte Grenze je Tab bewahrt,
+  // damit die Filterleiste in beiden Ansichten sinnvoll vorbelegt ist.
+  private _tabDates: Record<AssignmentTab, { from: string; to: string }> = {
+    open: { from: todayIso(), to: '' },
+    history: { from: '', to: todayIso() },
+  };
 
   // Weiche, clientseitige Vorfilter für die Schiri-Auswahl-Dropdowns. Schränken
   // nur die Anzeige ein, nie den (serverseitig verbandsgescopten) Bestand.
@@ -773,22 +796,105 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       : 'bg-yellow-100 text-yellow-800';
   }
 
-  setTab(tab: 'open' | 'history'): void {
+  setTab(tab: AssignmentTab): void {
+    if (tab === this.activeTab) return;
+
+    this._tabDates[this.activeTab] = {
+      from: this.filterDateFrom,
+      to: this.filterDateTo,
+    };
     this.activeTab = tab;
+    this.filterDateFrom = this._tabDates[tab].from;
+    this.filterDateTo = this._tabDates[tab].to;
+    this._load();
   }
 
-  // Historie = alle geladenen Ansetzungen (aus #index, inkl. vergangener), deren
-  // Spiel nicht mehr in der Liste ansetzbarer Spiele (#games = Game.not_started)
-  // auftaucht – also bereits angepfiffen/gespielt. Read-only, neueste zuerst.
+  // Verlauf = alle geladenen Ansetzungen des gewählten Zeitraums, neueste
+  // zuerst. Read-only; die Eingrenzung übernimmt allein der Datumsfilter, der
+  // im Verlaufs-Tab standardmäßig bis heute zurückblickt.
   get historyRows(): RefereeAssignment[] {
-    const openGameIds = new Set(this.rows.map((r) => r.game.id));
     return this._assignments
-      .filter((a) => a.game && !openGameIds.has(a.game_id))
+      .filter((a) => a.game)
       .sort((x, y) => (y.game?.date ?? '').localeCompare(x.game?.date ?? ''));
+  }
+
+  // Wer das Spiel in diesem Slot geleitet hat. Vorrang hat der Spielbericht,
+  // denn die tatsächliche Besetzung weicht von der Ansetzung ab, sobald jemand
+  // getauscht wurde. Fehlt der Bericht (noch nicht ausgefüllt), zeigen wir die
+  // Ansetzung und kennzeichnen das.
+  historyOfficial(
+    assignment: RefereeAssignment,
+    slot: number
+  ): HistoryOfficial | null {
+    const official = assignment.officials?.[slot];
+    if (official?.name) return { name: official.name, source: 'report' };
+
+    const assigned = slot === 0 ? assignment.referee1 : assignment.referee2;
+    if (assigned) {
+      return {
+        name: `${assigned.nachname}, ${assigned.vorname}`,
+        source: 'assignment',
+      };
+    }
+
+    // Vereinsansetzung ohne Bericht: der Verein stellt beide Schiedsrichter,
+    // deshalb steht sein Name einmal im ersten Slot.
+    if (slot === 0 && assignment.club) {
+      return { name: assignment.club.name, source: 'club' };
+    }
+
+    return null;
   }
 
   assignmentRefereeName(stub?: RefereeAssignmentStub | null): string {
     return stub ? `${stub.nachname}, ${stub.vorname}` : '–';
+  }
+
+  // CSV-Export des Verlaufs, über denselben Helfer wie der Export der offenen
+  // Spiele (Semikolon + UTF-8-BOM, damit Excel Umlaute korrekt darstellt).
+  exportHistoryCsv(): void {
+    const history = this.historyRows;
+    if (history.length === 0) return;
+
+    const t = (key: string) => this._transloco.translate(key);
+    const headers = [
+      t('assignmentAdmin.index.colDate'),
+      t('assignmentAdmin.index.colLeague'),
+      t('assignmentAdmin.index.csvHome'),
+      t('assignmentAdmin.index.csvGuest'),
+      t('assignmentAdmin.index.colReferee1'),
+      t('assignmentAdmin.index.colReferee2'),
+      t('assignmentAdmin.index.colCoach'),
+      t('assignmentAdmin.index.colResult'),
+    ];
+    const rows = history.map((a) => [
+      a.game?.date ?? '',
+      a.game?.league ?? '',
+      a.game?.home_team ?? '',
+      a.game?.guest_team ?? '',
+      this._historyCsvOfficial(a, 0),
+      this._historyCsvOfficial(a, 1),
+      this._refereeCsvName(a.coach),
+      a.game?.result ?? '',
+    ]);
+
+    downloadCsv('ansetzungen-verlauf', headers, rows);
+  }
+
+  // Im CSV wird die Herkunft mitgeführt, sonst ließe sich eine ersatzweise
+  // angezeigte Ansetzung nicht von einem echten Einsatz unterscheiden.
+  private _historyCsvOfficial(
+    assignment: RefereeAssignment,
+    slot: number
+  ): string {
+    const official = this.historyOfficial(assignment, slot);
+    if (!official) return '';
+    if (official.source === 'report') return official.name;
+    return `${official.name} (${this._transloco.translate(
+      official.source === 'club'
+        ? 'assignmentAdmin.index.historySourceClub'
+        : 'assignmentAdmin.index.historySourceAssignment'
+    )})`;
   }
 
   private _refereeName(r: {
@@ -803,29 +909,33 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
 
   private _load(): void {
     this.loading = true;
-    // Offene, ansetzbare Spiele: mit Heute-Untergrenze (Standard des Datumsfilters).
-    const gameFilters = {
+    // Beide Anfragen nutzen denselben Zeitraum. Dass der Verlauf trotzdem
+    // vergangene Ansetzungen findet, sorgt die Tab-abhängige Vorbelegung der
+    // Datumsgrenzen (siehe _tabDates), nicht ein Sonderfall beim Laden.
+    const filters = {
       season_id: this.filterSeasonId || undefined,
       date_from: this.filterDateFrom || undefined,
       date_to: this.filterDateTo || undefined,
     };
-    // Ansetzungen speisen die Anreicherung offener Zeilen UND den Verlauf. Bewusst
-    // ohne die Heute-Untergrenze, sonst bliebe der „Vergangene"-Tab (gespielte
-    // Ansetzungen liegen vor heute) standardmäßig leer.
-    const assignmentFilters = {
-      season_id: this.filterSeasonId || undefined,
-      date_to: this.filterDateTo || undefined,
-    };
+
+    // Der Verlauf braucht nur die Ansetzungen. Die ansetzbaren Spiele bewusst
+    // NICHT nachladen: mit dem Rückblick-Zeitraum lieferte die Abfrage einen
+    // anderen Spielbestand, und _buildRows würde die Zeilenzustände der offenen
+    // Spiele verwerfen – samt der dort noch nicht gespeicherten Schiri-Auswahl.
+    const games$ =
+      this.activeTab === 'history'
+        ? of(null)
+        : this._refereeService.adminGetAssignableGames(filters);
 
     forkJoin({
-      games: this._refereeService.adminGetAssignableGames(gameFilters),
-      assignments: this._refereeService.adminGetAssignments(assignmentFilters),
+      games: games$,
+      assignments: this._refereeService.adminGetAssignments(filters),
     })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: ({ games, assignments }) => {
           this._assignments = assignments;
-          this._buildRows(games);
+          if (games) this._buildRows(games);
           this.loading = false;
           this._cdr.markForCheck();
         },

@@ -62,10 +62,19 @@
       >
         {{ "assignmentAdmin.index.export" | transloco }}
       </button>
+    } @else {
+      <button
+        type="button"
+        (click)="exportHistoryCsv()"
+        [disabled]="historyRows.length === 0"
+        class="px-4 py-2 border border-black text-sm font-bold rounded-[5px] hover:bg-fb-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {{ "assignmentAdmin.index.export" | transloco }}
+      </button>
     }
   </div>
 
-  <!-- Tabs: offene (ansetzbare) Spiele vs. Historie gespielter Ansetzungen -->
+  <!-- Tabs: offene (ansetzbare) Spiele vs. Verlauf erfolgter Ansetzungen -->
   <div class="flex gap-1 mb-6 border-b border-fb-gray-600">
     <button
       type="button"
@@ -682,6 +691,9 @@
         {{ "assignmentAdmin.index.historyEmpty" | transloco }}
       </div>
     } @else {
+      <div class="text-sm text-fb-gray-500 mb-4">
+        {{ "assignmentAdmin.index.historyHint" | transloco }}
+      </div>
       <div class="overflow-x-auto">
         <table
           class="text-sm border-collapse"
@@ -726,21 +738,26 @@
                   {{ a.game?.guest_team }}
                 </td>
                 <td class="py-2 pr-3">{{ a.game?.league }}</td>
-                <td class="py-2 pr-3">
-                  @if (a.club) {
-                    {{ a.club.name }}
-                    <span class="text-fb-gray-500">{{
-                      "assignmentAdmin.index.clubCoversBoth" | transloco
-                    }}</span>
-                  } @else {
-                    {{ assignmentRefereeName(a.referee1) }}
-                  }
-                </td>
-                <td class="py-2 pr-3">
-                  @if (!a.club) {
-                    {{ assignmentRefereeName(a.referee2) }}
-                  }
-                </td>
+                @for (slot of [0, 1]; track slot) {
+                  <td class="py-2 pr-3">
+                    @let official = historyOfficial(a, slot);
+                    @if (official) {
+                      {{ official.name }}
+                      @if (official.source !== "report") {
+                        <span class="text-fb-gray-500 whitespace-nowrap"
+                          >({{
+                            (official.source === "club"
+                              ? "assignmentAdmin.index.historySourceClub"
+                              : "assignmentAdmin.index.historySourceAssignment"
+                            ) | transloco
+                          }})</span
+                        >
+                      }
+                    } @else {
+                      –
+                    }
+                  </td>
+                }
                 <td class="py-2 pr-3">{{ assignmentRefereeName(a.coach) }}</td>
                 <td class="py-2 pr-3 whitespace-nowrap font-medium">
                   {{ a.game?.result }}
