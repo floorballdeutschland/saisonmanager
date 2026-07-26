@@ -22,7 +22,15 @@
     "colSeasonGames": "Season games",
     "guestTitle": "Guest referee",
     "edit": "Edit",
-    "empty": "No entries found."
+    "empty": "No entries found.",
+    "exportCsv": "CSV export",
+    "csvLastName": "Last name",
+    "csvFirstName": "First name",
+    "csvStatus": "Status",
+    "csvEmail": "Email",
+    "csvActive": "active",
+    "csvExpired": "expired",
+    "csvGuest": "guest"
   },
   "detail": {
     "loading": "Loading…",

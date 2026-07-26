@@ -22,6 +22,7 @@ import {
   RefereeAssignmentStub,
   RefereeTag,
 } from '@floorball/types';
+import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 
 type AssignmentMode = 'referees' | 'club';
 
@@ -137,7 +138,6 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   }
 
   // CSV-Export der aktuell gefilterten Ansetzungen (Saison/Zeitraum).
-  // Semikolon-getrennt + UTF-8-BOM, damit Excel Umlaute korrekt darstellt.
   exportCsv(): void {
     if (this.rows.length === 0) return;
     const t = (key: string) => this._transloco.translate(key);
@@ -168,30 +168,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       this.assignmentStatusLabel(r.game.assignment_status),
     ]);
 
-    const csv = [headers, ...rows]
-      .map((row) =>
-        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';')
-      )
-      .join('\r\n');
-
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-
-    const blob = new Blob(['﻿' + csv], {
-      type: 'text/csv;charset=utf-8;',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ansetzungen-${yyyy}-${mm}-${dd}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-      a.remove();
-    }, 0);
+    downloadCsv('ansetzungen', headers, rows);
   }
 
   private _refereeCsvName(r?: RefereeAssignmentStub | null): string {

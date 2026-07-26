@@ -22,7 +22,15 @@
     "colSeasonGames": "Saisonspiele",
     "guestTitle": "Gastschiedsrichter",
     "edit": "Bearbeiten",
-    "empty": "Keine Einträge gefunden."
+    "empty": "Keine Einträge gefunden.",
+    "exportCsv": "CSV-Export",
+    "csvLastName": "Nachname",
+    "csvFirstName": "Vorname",
+    "csvStatus": "Status",
+    "csvEmail": "E-Mail",
+    "csvActive": "aktiv",
+    "csvExpired": "abgelaufen",
+    "csvGuest": "Gast"
   },
   "detail": {
     "loading": "Lade…",
