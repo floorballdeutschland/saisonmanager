@@ -252,7 +252,7 @@
     @if (allowCancel) {
       <div class="md:hidden mb-2 col-span-5 flex gap-2">
         <div
-          (click)="handleDelete(gameEvent.event_id)"
+          (click)="handleDelete(gameEvent)"
           class="flex-1 text-center px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
         >
           Löschen
@@ -274,7 +274,7 @@
         @if (allowCancel) {
           <div class="flex flex-col gap-1">
             <div
-              (click)="handleDelete(gameEvent.event_id)"
+              (click)="handleDelete(gameEvent)"
               class="px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500 text-center"
             >
               Löschen

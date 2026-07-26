@@ -446,6 +446,18 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     );
   }
 
+  // Auswählbare Spielabschnitte des Ereignis-Formulars. Im Penalty-Schießen
+  // gibt es keine Auszeiten, deshalb steht der Abschnitt bei Time-Outs nicht
+  // zur Wahl. Der Live-Fall (laufendes Penalty-Schießen) wird zusätzlich in
+  // der Spielbericht-Ansicht über deaktivierte Buttons abgefangen.
+  public selectablePeriods(): PeriodTitles[] {
+    return this.match.period_titles.filter(
+      (period) =>
+        period.running &&
+        !(this.type === 'timeout' && period.status_id === 'penalty_shots')
+    );
+  }
+
   public periodTimeRange(): PeriodTimeRange | null {
     return getPeriodTimeRange(this.league, this.eventPeriod());
   }
@@ -962,10 +974,12 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   }
 
   public nextPeriodTitle(): PeriodTitles | null {
-    const index =
-      this.match.period_titles.findIndex(
-        (item) => this.match.ingame_status === item.status_id
-      ) || 0;
+    const index = this.match.period_titles.findIndex(
+      (item) => this.match.ingame_status === item.status_id
+    );
+    if (index < 0) {
+      return null;
+    }
     return this.match.period_titles[index + 1] || null;
   }
 
@@ -977,8 +991,17 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     );
   }
 
-  // Führt der nächste Spielabschnitt in die Pause vor dem Penalty-Schießen?
-  public advanceLeadsToShootoutPause(): boolean {
-    return this.nextPeriodTitle()?.status_id === 'pause_ps';
+  // Führt der nächste Spielabschnitt in die Verlängerung oder das
+  // Penalty-Schießen? Die gesamte Kette (Pause vor Verlängerung,
+  // Verlängerung, Pause vor Penalty-Schießen, Penalty-Schießen) ist in
+  // League#period_titles als `optional` markiert, die reguläre Spielzeit
+  // nicht. Nur so wird auch der erste Schritt (pause_et) erfasst.
+  public advanceLeadsToOvertime(): boolean {
+    return this.nextPeriodTitle()?.optional === true;
+  }
+
+  // Darf in die Verlängerung/das Penalty-Schießen gewechselt werden?
+  public advanceAllowed(): boolean {
+    return !this.advanceLeadsToOvertime() || this.scoreLevel();
   }
 }

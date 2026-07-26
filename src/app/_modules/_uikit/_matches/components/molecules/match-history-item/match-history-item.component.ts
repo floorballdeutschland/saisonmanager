@@ -11,6 +11,7 @@ import {
   Game,
   GameAdditionalFields,
   GameEvent,
+  NormalizedEvent,
   Penalty,
   PenaltyCode,
 } from '@floorball/types';
@@ -67,8 +68,23 @@ export class MatchHistoryItemComponent {
     private _cdr: ChangeDetectorRef
   ) {}
 
-  public handleDelete(id: number) {
-    this._gameService.deleteEvent(this.match.id, id).subscribe({
+  // Time-Outs sind keine Events, sondern die Spielfelder
+  // home_timeout_string/guest_timeout_string. Game#extract_timeout_information
+  // baut daraus Pseudo-Events mit den festen IDs 9001/9002 – ein Löschen über
+  // events/remove findet dort nichts und lief bisher wirkungslos ins Leere.
+  public handleDelete(gameEvent: NormalizedEvent) {
+    if (gameEvent.event_type === 'timeout') {
+      const field =
+        gameEvent.event_team === 'home'
+          ? 'home_timeout_string'
+          : 'guest_timeout_string';
+      this._gameService
+        .setGameField(this.match.id, { [field]: '' })
+        .subscribe({ next: () => this.reloadGame.emit() });
+      return;
+    }
+
+    this._gameService.deleteEvent(this.match.id, gameEvent.event_id).subscribe({
       next: () => {
         this.reloadGame.emit();
       },
