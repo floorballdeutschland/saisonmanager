@@ -279,7 +279,7 @@
             </fb-button>
           </div>
         }
-        @if (event === "timeout-home") {
+        @if (event === "timeout-home" && !isShootout()) {
           <fb-match-event-form
             class="col-span-2"
             type="timeout"
@@ -292,7 +292,7 @@
             [match]="game"
           ></fb-match-event-form>
         }
-        @if (event === "timeout-guest") {
+        @if (event === "timeout-guest" && !isShootout()) {
           <fb-match-event-form
             class="col-span-2"
             type="timeout"
