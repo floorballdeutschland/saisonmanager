@@ -210,7 +210,11 @@ const routes: Routes = [
         loadChildren: () =>
           import('@floorball/team-game-days').then((m) => m.TeamGameDaysModule),
         canActivate: [permissionGuard],
-        data: { permission: 'menu_item_team_game_days' },
+        // Rollenbasierter Schlüssel, nicht der Menü-Schlüssel: der Menüpunkt
+        // erscheint nur bei hinterlegter Spieltagscheckliste, die Seite muss
+        // aber erreichbar bleiben, wenn ein Landesverband seine erste Frage erst
+        // während der Saison anlegt (Berechtigungen stammen aus dem Login).
+        data: { permission: 'page_team_game_days' },
       },
       {
         path: '',
