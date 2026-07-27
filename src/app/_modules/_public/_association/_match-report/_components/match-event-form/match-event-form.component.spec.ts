@@ -207,7 +207,12 @@ describe('MatchEventFormComponent', () => {
       // Ereignisse in der 1. FBL). Solche Bestandsereignisse müssen weiter
       // bearbeitbar bleiben, sonst ließe sich an ihnen auch keine
       // Trikotnummer mehr korrigieren.
-      component.existingEvent = { period: 2, time: '32:12' } as GameEvent;
+      // number: ngOnInit übernimmt die Trikotnummer aus dem Ereignis.
+      component.existingEvent = {
+        period: 2,
+        time: '32:12',
+        number: 7,
+      } as GameEvent;
       component.ngOnInit();
       component.league = leagueSettings;
 
@@ -217,7 +222,12 @@ describe('MatchEventFormComponent', () => {
     });
 
     it('should block an existing event once its time is changed', () => {
-      component.existingEvent = { period: 2, time: '32:12' } as GameEvent;
+      // number: ngOnInit übernimmt die Trikotnummer aus dem Ereignis.
+      component.existingEvent = {
+        period: 2,
+        time: '32:12',
+        number: 7,
+      } as GameEvent;
       component.ngOnInit();
       component.league = leagueSettings;
 
