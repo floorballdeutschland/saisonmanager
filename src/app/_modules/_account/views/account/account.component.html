@@ -1,6 +1,72 @@
 <div class="p-4 lg:p-8 max-w-2xl">
   <h1 class="text-2xl font-bold mb-6">{{ "account.title" | transloco }}</h1>
 
+  <!-- Name (Benutzername bleibt unveränderlich) -->
+  <section class="flex flex-col gap-2 mb-10">
+    <h2 class="text-sm font-bold uppercase text-fb-gray-500">
+      {{ "account.nameSection" | transloco }}
+    </h2>
+    <p class="text-xs text-fb-gray-500">
+      {{
+        (canChangeName ? "account.nameHint" : "account.nameRefereeHint")
+          | transloco
+      }}
+    </p>
+    <p class="text-sm mt-2">
+      {{ "account.userName" | transloco }}: <strong>{{ userName }}</strong>
+    </p>
+    @if (!canChangeName) {
+      <p class="text-sm">
+        {{ "account.firstName" | transloco }}: <strong>{{ firstName }}</strong>
+      </p>
+      <p class="text-sm">
+        {{ "account.lastName" | transloco }}: <strong>{{ lastName }}</strong>
+      </p>
+    } @else {
+      <form (ngSubmit)="submitName()" class="flex flex-col gap-4 mt-2">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold" for="account-first-name">
+            {{ "account.firstName" | transloco }}
+          </label>
+          <input
+            id="account-first-name"
+            type="text"
+            [(ngModel)]="firstName"
+            name="firstName"
+            autocomplete="given-name"
+            maxlength="50"
+            required
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold" for="account-last-name">
+            {{ "account.lastName" | transloco }}
+          </label>
+          <input
+            id="account-last-name"
+            type="text"
+            [(ngModel)]="lastName"
+            name="lastName"
+            autocomplete="family-name"
+            maxlength="50"
+            required
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
+          />
+        </div>
+        <div class="flex items-center gap-3 mt-2">
+          <button
+            type="submit"
+            [disabled]="savingName"
+            class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+          >
+            {{ "account.saveName" | transloco }}
+          </button>
+        </div>
+      </form>
+    }
+  </section>
+
   <!-- Sprache -->
   <section class="flex flex-col gap-2 mb-10">
     <h2 class="text-sm font-bold uppercase text-fb-gray-500">
