@@ -102,6 +102,11 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   secondsValid = false;
   league: League | null = null;
 
+  // Zeit, mit der ein Bestandsereignis geladen wurde („<minuten>:<sekunden>").
+  // Solange sie unverändert ist, blockiert eine Zeit außerhalb des Abschnitts
+  // das Speichern nicht (siehe timeBlocksSubmit).
+  private _storedTime: string | null = null;
+
   playerSearchNumber?: number;
   playerNumber = 0;
   assistError = false;
@@ -325,6 +330,10 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
       this.seconds = timeParts?.[1] ? parseInt(timeParts[1], 10) : undefined;
       this.minutesValid = this.minutes !== undefined;
       this.secondsValid = this.seconds !== undefined;
+      this._storedTime =
+        this.minutes !== undefined && this.seconds !== undefined
+          ? `${this.minutes}:${this.seconds}`
+          : null;
 
       this.playerNumber = e.number ?? 0;
       this.assistPlayerNumber = e.assist ?? 0;
@@ -434,7 +443,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         (!this.penaltyCode || !this.penalty)) ||
       (['goal', 'penalty'].includes(this.type) && !this.playerNumber) ||
       (['goal', 'penalty', 'timeout'].includes(this.type) &&
-        (!this.minutesValid || !this.secondsValid || this.timeOutOfRange()))
+        (!this.minutesValid || !this.secondsValid || this.timeBlocksSubmit()))
     );
   }
 
@@ -470,6 +479,19 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
       this.minutes,
       this.seconds ?? 0
     );
+  }
+
+  // Eine Zeit außerhalb des Abschnitts sperrt das Speichern nur, wenn sie in
+  // diesem Formular eingegeben oder geändert wurde. Bestandsereignisse mit
+  // abweichend erfasster Zeit (in Ligen mit Abschnittslänge tragen einzelne
+  // Zeitnehmer die kumulierte Spielzeit ein) bleiben so bearbeitbar – sonst
+  // wäre an ihnen auch keine Trikotnummer mehr korrigierbar. Der Hinweis am
+  // Zeitfeld erscheint trotzdem, damit die Abweichung sichtbar bleibt.
+  public timeBlocksSubmit(): boolean {
+    if (!this.timeOutOfRange()) {
+      return false;
+    }
+    return this._storedTime !== `${this.minutes}:${this.seconds}`;
   }
 
   public timeRangeErrorText(): string {

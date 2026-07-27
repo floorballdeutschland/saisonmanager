@@ -17,6 +17,10 @@ export type LeaguePeriodSettings = Pick<
  * - Verlängerung (periods + 1): overtime_length
  * - Penalty-Schießen (> periods + 1), fehlende Liga-Einstellungen oder
  *   unbekannte Periode: keine Begrenzung (null)
+ *
+ * Das Penalty-Schießen bleibt bewusst unbegrenzt: es hat keine Spielzeit, und
+ * die etablierte Konvention trägt dort die kumulierte Gesamtspielzeit ein
+ * (Game#formatted_events im API erkennt die Entscheidung an time == "70:00").
  */
 export function getPeriodMaxSeconds(
   league: LeaguePeriodSettings | null | undefined,

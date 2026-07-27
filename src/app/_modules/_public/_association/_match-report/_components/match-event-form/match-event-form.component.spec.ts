@@ -48,6 +48,8 @@ describe('event-time-validation', () => {
       ).toBeNull();
       expect(getPeriodMaxSeconds(leagueSettings, NaN)).toBeNull();
       expect(getPeriodMaxSeconds(leagueSettings, 0)).toBeNull();
+      // Pausen tragen in League#period_titles gebrochene Perioden (1.5, 2.5 …).
+      expect(getPeriodMaxSeconds(leagueSettings, 1.5)).toBeNull();
     });
 
     it('should handle two-halves leagues', () => {
@@ -134,8 +136,10 @@ describe('MatchEventFormComponent', () => {
 
       expect(component.timeOutOfRange()).toBeTrue();
       expect(component.submitDisabled()).toBeTrue();
-      expect(component.timeRangeErrorText()).toContain('0:00');
-      expect(component.timeRangeErrorText()).toContain('20:00');
+      // Zusammenhängend prüfen: "0:00" allein wäre auch Teilstring von "20:00".
+      expect(component.timeRangeErrorText()).toContain(
+        'erlaubt: 0:00 bis 20:00'
+      );
     });
 
     it('should accept the clock reading of the selected period', () => {
@@ -196,6 +200,31 @@ describe('MatchEventFormComponent', () => {
 
       expect(component.timeOutOfRange()).toBeFalse();
       expect(component.submitDisabled()).toBeFalse();
+    });
+
+    it('should keep an existing event with a deviating time editable', () => {
+      // Einzelne Zeitnehmer tragen die kumulierte Spielzeit ein (0,8 % der
+      // Ereignisse in der 1. FBL). Solche Bestandsereignisse müssen weiter
+      // bearbeitbar bleiben, sonst ließe sich an ihnen auch keine
+      // Trikotnummer mehr korrigieren.
+      component.existingEvent = { period: 2, time: '32:12' } as GameEvent;
+      component.ngOnInit();
+      component.league = leagueSettings;
+
+      expect(component.timeOutOfRange()).toBeTrue();
+      expect(component.timeBlocksSubmit()).toBeFalse();
+      expect(component.submitDisabled()).toBeFalse();
+    });
+
+    it('should block an existing event once its time is changed', () => {
+      component.existingEvent = { period: 2, time: '32:12' } as GameEvent;
+      component.ngOnInit();
+      component.league = leagueSettings;
+
+      component.minutes = 33;
+
+      expect(component.timeBlocksSubmit()).toBeTrue();
+      expect(component.submitDisabled()).toBeTrue();
     });
 
     it('should fall back to the period of an existing event', () => {
