@@ -11,10 +11,11 @@ import {
   Game,
   GameAdditionalFields,
   GameEvent,
+  NormalizedEvent,
   Penalty,
   PenaltyCode,
 } from '@floorball/types';
-import { GameService } from '@floorball/core';
+import { GameService, NotificationService } from '@floorball/core';
 
 @Component({
   selector: 'fb-match-history-item',
@@ -64,11 +65,33 @@ export class MatchHistoryItemComponent {
 
   constructor(
     private _gameService: GameService,
+    private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef
   ) {}
 
-  public handleDelete(id: number) {
-    this._gameService.deleteEvent(this.match.id, id).subscribe({
+  // Time-Outs sind keine Events, sondern Spielfelder – sie werden über
+  // GameService#clearTimeout geleert, events/remove findet die Pseudo-Events
+  // nicht und lief bisher wirkungslos ins Leere.
+  public handleDelete(gameEvent: NormalizedEvent) {
+    if (gameEvent.event_type === 'timeout') {
+      this._gameService
+        .clearTimeout(
+          this.match.id,
+          gameEvent.event_team === 'home' ? 'home' : 'guest'
+        )
+        .subscribe({
+          next: () => {
+            this._notificationService.success('Time-Out entfernt', {
+              autoClose: true,
+              keepAfterRouteChange: true,
+            });
+            this.reloadGame.emit();
+          },
+        });
+      return;
+    }
+
+    this._gameService.deleteEvent(this.match.id, gameEvent.event_id).subscribe({
       next: () => {
         this.reloadGame.emit();
       },

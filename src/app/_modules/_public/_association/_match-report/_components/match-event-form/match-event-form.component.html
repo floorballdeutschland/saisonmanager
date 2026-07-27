@@ -445,7 +445,7 @@
           (change)="changePeriod($event)"
         >
           <option value="">Spielabschnitt auswählen...</option>
-          @for (p of match.period_titles | onlyRunning; track p) {
+          @for (p of selectablePeriods(); track p) {
             <option [value]="p.period">
               {{ p.title }}
             </option>
@@ -718,11 +718,7 @@
     <!--  <fb-button-->
     <!--    (click)="submitEvent()"-->
     <!--    [disabled]="submitDisabled()"-->
-    @if (
-      type === "next" &&
-      nextPeriodTitle() &&
-      (!advanceLeadsToShootoutPause() || scoreLevel())
-    ) {
+    @if (type === "next" && nextPeriodTitle() && advanceAllowed()) {
       <fb-button
         [fullWidth]="true"
         [size]="'large'"
@@ -733,9 +729,20 @@
         {{ nextPeriodTitle()?.title }} starten
       </fb-button>
     }
+    @if (type === "next" && nextPeriodTitle() && !advanceAllowed()) {
+      <p class="col-span-2 text-sm text-fb-gray-400">
+        Verlängerung und Penalty-Schießen sind nur bei unentschiedenem
+        Spielstand möglich. Das Spiel kann jetzt beendet werden.
+      </p>
+    }
     @if (["start", "end", "next"].includes(type)) {
+      <!-- Bei gesperrter Verlängerung muss das Spiel auch aus einer Pause heraus
+           beendet werden können (z. B. Führung in der Pause vor der
+           Verlängerung), sonst bliebe der Bericht ohne Ausweg. -->
       @if (
-        ["start", "end"].includes(type) || currentPeriodTitle()?.can_end_game
+        ["start", "end"].includes(type) ||
+        currentPeriodTitle()?.can_end_game ||
+        !advanceAllowed()
       ) {
         <fb-confirmation
           class="col-span-2"
