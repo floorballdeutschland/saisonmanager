@@ -102,10 +102,12 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   secondsValid = false;
   league: League | null = null;
 
-  // Zeit, mit der ein Bestandsereignis geladen wurde („<minuten>:<sekunden>").
-  // Solange sie unverändert ist, blockiert eine Zeit außerhalb des Abschnitts
-  // das Speichern nicht (siehe timeBlocksSubmit).
+  // Zeit und Spielabschnitt, mit denen ein Bestandsereignis geladen wurde
+  // („<minuten>:<sekunden>" bzw. die Periodennummer). Solange beide unverändert
+  // sind, blockiert eine Zeit außerhalb des Abschnitts das Speichern nicht
+  // (siehe timeBlocksSubmit).
   private _storedTime: string | null = null;
+  private _storedPeriod: number | null = null;
 
   playerSearchNumber?: number;
   playerNumber = 0;
@@ -334,6 +336,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         this.minutes !== undefined && this.seconds !== undefined
           ? `${this.minutes}:${this.seconds}`
           : null;
+      this._storedPeriod = this.eventPeriod();
 
       this.playerNumber = e.number ?? 0;
       this.assistPlayerNumber = e.assist ?? 0;
@@ -491,7 +494,15 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     if (!this.timeOutOfRange()) {
       return false;
     }
-    return this._storedTime !== `${this.minutes}:${this.seconds}`;
+    // Auch der Abschnitt zählt zum geladenen Stand: er bestimmt die Obergrenze.
+    // Ohne diese Prüfung ließe ein Abschnittswechsel bei unveränderter Zeit die
+    // Sperre umgehen – etwa bei einem Penalty-Schießen-Ereignis (Zeit dort per
+    // Konvention kumuliert, z. B. 70:00), das anschließend auf ein Drittel
+    // umgestellt wird.
+    return (
+      this._storedPeriod !== this.eventPeriod() ||
+      this._storedTime !== `${this.minutes}:${this.seconds}`
+    );
   }
 
   public timeRangeErrorText(): string {

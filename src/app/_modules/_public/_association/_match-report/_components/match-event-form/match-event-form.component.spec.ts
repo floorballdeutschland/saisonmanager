@@ -237,6 +237,43 @@ describe('MatchEventFormComponent', () => {
       expect(component.submitDisabled()).toBeTrue();
     });
 
+    it('should block an existing event once its period is changed', () => {
+      component.existingEvent = {
+        period: 2,
+        time: '32:12',
+        number: 7,
+      } as GameEvent;
+      component.ngOnInit();
+      component.league = leagueSettings;
+
+      component.changePeriod({ target: { value: '3' } } as unknown as Event);
+
+      expect(component.timeBlocksSubmit()).toBeTrue();
+      expect(component.submitDisabled()).toBeTrue();
+    });
+
+    it('should block a penalty-shootout event moved into a regular period', () => {
+      // Im Penalty-Schießen steht per Konvention die kumulierte Zeit (70:00),
+      // dort gibt es keine Obergrenze. Wird der Abschnitt nachträglich auf ein
+      // Drittel umgestellt, muss die Zeit periodenrelativ nachgezogen werden.
+      component.currentPeriod = '5';
+      component.existingEvent = {
+        period: 5,
+        time: '70:00',
+        number: 7,
+      } as GameEvent;
+      component.ngOnInit();
+      component.league = leagueSettings;
+
+      expect(component.timeOutOfRange()).toBeFalse();
+
+      component.changePeriod({ target: { value: '2' } } as unknown as Event);
+
+      expect(component.timeOutOfRange()).toBeTrue();
+      expect(component.timeBlocksSubmit()).toBeTrue();
+      expect(component.submitDisabled()).toBeTrue();
+    });
+
     it('should fall back to the period of an existing event', () => {
       component.currentPeriod = '';
       component.existingEvent = { period: 1 } as GameEvent;
