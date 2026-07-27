@@ -106,6 +106,14 @@ export class TeamComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
+  // Die Scorerliste folgt der Liga-Einstellung (League#enable_scorer, in der
+  // Altersklasse U13 und jünger per Vorgabe aus). Das API liefert dazu
+  // scorer_visible und lässt `scorer` leer; fehlt das Feld (älteres API),
+  // bleibt es beim bisherigen Verhalten.
+  scorerListVisible(): boolean {
+    return this.stats?.scorer_visible !== false;
+  }
+
   isHomeGame(game: TeamStats['recent_games'][0]): boolean {
     return game.home_team_name === this.stats?.team?.name;
   }
