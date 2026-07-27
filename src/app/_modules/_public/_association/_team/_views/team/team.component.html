@@ -265,10 +265,10 @@
         </div>
       </div>
     }
-    <!-- Scorerliste (nur, wenn die Liga sie öffentlich zeigt) -->
+    <!-- Scorerliste (nur aus Ligen, die sie öffentlich zeigen) -->
     @if (!scorerListVisible()) {
       <div class="text-fb-gray-400 text-sm py-8">
-        Die Scorerliste ist für diese Liga nicht aktiviert.
+        Die Scorerliste ist für die Ligen dieser Mannschaft nicht aktiviert.
       </div>
     } @else if (stats.scorer.length > 0) {
       <div>
