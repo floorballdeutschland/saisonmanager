@@ -130,9 +130,7 @@ export class MatchReportStepTwoComponent implements OnInit {
   }
 
   public removeTimeout(team: 'home' | 'guest'): void {
-    const field =
-      team === 'home' ? 'home_timeout_string' : 'guest_timeout_string';
-    this._gameService.setGameField(this.game.id, { [field]: '' }).subscribe({
+    this._gameService.clearTimeout(this.game.id, team).subscribe({
       next: () => {
         this._notificationService.success('Time-Out entfernt', {
           autoClose: true,

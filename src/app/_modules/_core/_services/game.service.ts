@@ -192,6 +192,16 @@ export class GameService {
     return this.http.post<GamePlayerEntry[]>(path, fields);
   }
 
+  // Time-Outs sind keine Events, sondern die Spielfelder
+  // home_timeout_string/guest_timeout_string. Game#extract_timeout_information
+  // baut daraus Pseudo-Events mit den festen IDs 9001/9002, die events/remove
+  // nie findet – gelöscht wird deshalb über das Spielfeld.
+  public clearTimeout(gameId: number, team: 'home' | 'guest') {
+    const field =
+      team === 'home' ? 'home_timeout_string' : 'guest_timeout_string';
+    return this.setGameField(gameId, { [field]: '' });
+  }
+
   public setReferee(
     gameId: number,
     refereeNumber: number,
