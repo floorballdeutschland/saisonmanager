@@ -29,9 +29,8 @@ import {
 } from '@floorball/types';
 import {
   formatSecondsAsGameTime,
-  getPeriodTimeRange,
-  isEventTimeInRange,
-  PeriodTimeRange,
+  getPeriodMaxSeconds,
+  isEventTimeValid,
 } from './event-time-validation';
 
 @Component({
@@ -458,30 +457,29 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     );
   }
 
-  public periodTimeRange(): PeriodTimeRange | null {
-    return getPeriodTimeRange(this.league, this.eventPeriod());
+  public periodMaxSeconds(): number | null {
+    return getPeriodMaxSeconds(this.league, this.eventPeriod());
   }
 
   public timeOutOfRange(): boolean {
     if (this.minutes === undefined || this.minutes === null) {
       return false;
     }
-    return !isEventTimeInRange(
-      this.periodTimeRange(),
+    return !isEventTimeValid(
+      this.periodMaxSeconds(),
       this.minutes,
       this.seconds ?? 0
     );
   }
 
   public timeRangeErrorText(): string {
-    const range = this.periodTimeRange();
-    if (!range) {
+    const maxSeconds = this.periodMaxSeconds();
+    if (maxSeconds === null) {
       return 'Ungültige Zeitangabe.';
     }
     return (
       'Die Zeit liegt außerhalb des gewählten Spielabschnitts ' +
-      `(erlaubt: ${formatSecondsAsGameTime(range.startSeconds)} bis ` +
-      `${formatSecondsAsGameTime(range.endSeconds)}).`
+      `(erlaubt: 0:00 bis ${formatSecondsAsGameTime(maxSeconds)}).`
     );
   }
 
