@@ -265,8 +265,12 @@
         </div>
       </div>
     }
-    <!-- Scorerliste -->
-    @if (stats.scorer.length > 0) {
+    <!-- Scorerliste (nur aus Ligen, die sie öffentlich zeigen) -->
+    @if (!scorerListVisible()) {
+      <div class="text-fb-gray-400 text-sm py-8">
+        Die Scorerliste ist für die Ligen dieser Mannschaft nicht aktiviert.
+      </div>
+    } @else if (stats.scorer.length > 0) {
       <div>
         <h3 class="font-bold text-lg mb-3">Scorer (Saison gesamt)</h3>
         <div class="overflow-x-auto">
@@ -312,8 +316,7 @@
           </table>
         </div>
       </div>
-    }
-    @if (stats.scorer.length === 0) {
+    } @else {
       <div class="text-fb-gray-400 text-sm py-8">
         Noch keine Spielstatistiken für diese Saison vorhanden.
       </div>
