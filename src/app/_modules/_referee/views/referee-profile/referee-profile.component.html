@@ -38,10 +38,9 @@
             }}</label>
             <input
               type="text"
-              [(ngModel)]="draft.vorname"
-              name="vorname"
-              required
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              [value]="profile.vorname || ''"
+              readonly
+              class="border border-fb-gray-700 bg-fb-gray-800 text-fb-gray-500 rounded-[5px] px-3 py-2 text-sm"
             />
           </div>
           <div class="flex flex-col gap-1">
@@ -50,11 +49,15 @@
             }}</label>
             <input
               type="text"
-              [(ngModel)]="draft.nachname"
-              name="nachname"
-              required
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              [value]="profile.nachname || ''"
+              readonly
+              class="border border-fb-gray-700 bg-fb-gray-800 text-fb-gray-500 rounded-[5px] px-3 py-2 text-sm"
             />
+          </div>
+          <div class="flex flex-col gap-1 col-span-2">
+            <p class="text-xs text-fb-gray-500">
+              {{ "refereeSelf.profile.nameReadOnlyHint" | transloco }}
+            </p>
           </div>
           <div class="flex flex-col gap-1 col-span-2">
             <label class="text-sm font-bold">{{

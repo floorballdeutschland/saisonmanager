@@ -65,18 +65,20 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
-  // E-Mail bleibt außen vor: Sie wird unter „Mein Konto" gepflegt (Double-
-  // Opt-In) und ist hier nur noch read-only sichtbar; die API ignoriert das
-  // Feld beim Speichern ohnehin.
+  // E-Mail und Name bleiben außen vor und sind nur read-only sichtbar; die API
+  // ignoriert die Felder beim Speichern ohnehin. Die E-Mail wird unter „Mein
+  // Konto" per Double-Opt-In gepflegt, der Name ausschließlich über die
+  // Schiedsrichterverwaltung, weil er auf dem Ausweis steht.
   private _toDraft(p: RefereeProfile): Partial<RefereeProfile> {
     const draft: Partial<RefereeProfile> = { ...p };
     delete draft.email;
     delete draft.account_email;
+    delete draft.vorname;
+    delete draft.nachname;
     return draft;
   }
 
   submit(): void {
-    if (!this.draft.vorname || !this.draft.nachname) return;
     this.saving = true;
     this._refereeService
       .updateProfile(this.draft)
