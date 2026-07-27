@@ -736,8 +736,13 @@
       </p>
     }
     @if (["start", "end", "next"].includes(type)) {
+      <!-- Bei gesperrter Verlängerung muss das Spiel auch aus einer Pause heraus
+           beendet werden können (z. B. Führung in der Pause vor der
+           Verlängerung), sonst bliebe der Bericht ohne Ausweg. -->
       @if (
-        ["start", "end"].includes(type) || currentPeriodTitle()?.can_end_game
+        ["start", "end"].includes(type) ||
+        currentPeriodTitle()?.can_end_game ||
+        !advanceAllowed()
       ) {
         <fb-confirmation
           class="col-span-2"

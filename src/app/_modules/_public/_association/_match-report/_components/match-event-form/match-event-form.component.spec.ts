@@ -221,4 +221,149 @@ describe('MatchEventFormComponent', () => {
       expect(component.timeOutOfRange()).toBeFalse();
     });
   });
+
+  describe('period progression', () => {
+    // Abschnittskette einer Drittel-Liga (vgl. League#period_titles): nur die
+    // Verlängerungs-/Penalty-Kette ist als optional markiert.
+    const periodTitles = [
+      {
+        period: 1,
+        short_title: '1',
+        title: '1. Drittel',
+        status_id: 'period1',
+        running: true,
+        can_end_game: false,
+        optional: false,
+      },
+      {
+        period: 1.5,
+        short_title: 'P1',
+        title: '1. Drittelpause',
+        status_id: 'pause1',
+        running: false,
+        can_end_game: false,
+        optional: false,
+      },
+      {
+        period: 3,
+        short_title: '3',
+        title: '3. Drittel',
+        status_id: 'period3',
+        running: true,
+        can_end_game: true,
+        optional: false,
+      },
+      {
+        period: 3.5,
+        short_title: 'PV',
+        title: 'Pause vor Verlängerung',
+        status_id: 'pause_et',
+        running: false,
+        can_end_game: false,
+        optional: true,
+      },
+      {
+        period: 4,
+        short_title: 'V',
+        title: 'Verlängerung',
+        status_id: 'extratime',
+        running: true,
+        can_end_game: true,
+        optional: true,
+      },
+      {
+        period: 5,
+        short_title: 'P',
+        title: 'Penalty-Schießen',
+        status_id: 'penalty_shots',
+        running: true,
+        can_end_game: true,
+        optional: true,
+      },
+    ];
+
+    function setGame(
+      ingame_status: string | null,
+      home_goals = 0,
+      guest_goals = 0
+    ) {
+      component.match = {
+        id: 1,
+        league_id: 1,
+        ingame_status,
+        period_titles: periodTitles,
+        result: { home_goals, guest_goals },
+      } as unknown as Game;
+    }
+
+    describe('nextPeriodTitle', () => {
+      it('should return the first period before kick-off', () => {
+        // Der Spielstart setzt den ingame_status aus dieser Rückgabe – ohne
+        // Treffer bliebe das gestartete Spiel ohne Spielabschnitt.
+        setGame(null);
+        expect(component.nextPeriodTitle()?.status_id).toBe('period1');
+      });
+
+      it('should return the following period of the chain', () => {
+        setGame('period1');
+        expect(component.nextPeriodTitle()?.status_id).toBe('pause1');
+      });
+
+      it('should return null after the last period', () => {
+        setGame('penalty_shots');
+        expect(component.nextPeriodTitle()).toBeNull();
+      });
+    });
+
+    describe('advanceAllowed', () => {
+      it('should block the break before overtime when a team leads', () => {
+        setGame('period3', 1, 0);
+        expect(component.advanceAllowed()).toBeFalse();
+      });
+
+      it('should allow the break before overtime on a level score', () => {
+        setGame('period3', 1, 1);
+        expect(component.advanceAllowed()).toBeTrue();
+      });
+
+      it('should block overtime itself when a team leads', () => {
+        setGame('pause_et', 2, 1);
+        expect(component.advanceAllowed()).toBeFalse();
+      });
+
+      it('should block penalty shooting when a team leads', () => {
+        setGame('extratime', 2, 1);
+        expect(component.advanceAllowed()).toBeFalse();
+      });
+
+      it('should allow regular periods regardless of the score', () => {
+        setGame('period1', 3, 0);
+        expect(component.advanceAllowed()).toBeTrue();
+      });
+    });
+
+    describe('selectablePeriods', () => {
+      it('should not offer penalty shooting for timeouts', () => {
+        component.type = 'timeout';
+        setGame('period3');
+        const ids = component
+          .selectablePeriods()
+          .map((period) => period.status_id);
+
+        expect(ids).toContain('period1');
+        expect(ids).not.toContain('penalty_shots');
+      });
+
+      it('should offer every running period for other events', () => {
+        component.type = 'goal';
+        setGame('period3');
+        const ids = component
+          .selectablePeriods()
+          .map((period) => period.status_id);
+
+        expect(ids).toContain('penalty_shots');
+        expect(ids).not.toContain('pause1');
+      });
+    });
+  });
 });
