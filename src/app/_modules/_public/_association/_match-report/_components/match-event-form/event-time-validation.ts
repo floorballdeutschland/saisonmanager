@@ -1,36 +1,31 @@
 import { League } from '@floorball/types';
 
-/**
- * Gültiger Zeitbereich (kumulierte Spielzeit in Sekunden, beide Grenzen
- * inklusive) für einen Spielabschnitt.
- */
-export interface PeriodTimeRange {
-  startSeconds: number;
-  endSeconds: number;
-}
-
 export type LeaguePeriodSettings = Pick<
   League,
   'periods' | 'period_length' | 'overtime_length'
 >;
 
 /**
- * Liefert den gültigen Zeitbereich für einen Spielabschnitt.
+ * Liefert die höchste zulässige Ereigniszeit eines Spielabschnitts in Sekunden
+ * (Grenze inklusive) oder null, wenn keine Begrenzung greift.
  *
- * Die Ereigniszeit im Spielbericht ist die kumulierte Spielzeit über das
- * gesamte Spiel (z. B. läuft bei 3 Perioden à 20 Minuten die 2. Periode
- * von 20:00 bis 40:00).
+ * Die Spieluhr startet in jedem Abschnitt neu bei 0:00 – genau so, wie die
+ * Zeitnehmer sie ablesen. Eine Ereigniszeit liegt daher unabhängig vom
+ * Abschnitt immer zwischen 0:00 und der Länge des Abschnitts.
  *
- * - Reguläre Periode p (1..periods): (p-1)*period_length bis p*period_length
- * - Verlängerung (periods+1): periods*period_length bis
- *   periods*period_length + overtime_length
- * - Penalty-Schießen (> periods+1), fehlende Liga-Einstellungen oder
+ * - Reguläre Periode (1..periods): period_length
+ * - Verlängerung (periods + 1): overtime_length
+ * - Penalty-Schießen (> periods + 1), fehlende Liga-Einstellungen oder
  *   unbekannte Periode: keine Begrenzung (null)
+ *
+ * Das Penalty-Schießen bleibt bewusst unbegrenzt: es hat keine Spielzeit, und
+ * die etablierte Konvention trägt dort die kumulierte Gesamtspielzeit ein
+ * (Game#formatted_events im API erkennt die Entscheidung an time == "70:00").
  */
-export function getPeriodTimeRange(
+export function getPeriodMaxSeconds(
   league: LeaguePeriodSettings | null | undefined,
   period: number
-): PeriodTimeRange | null {
+): number | null {
   if (!league?.periods || !league.period_length) {
     return null;
   }
@@ -38,25 +33,13 @@ export function getPeriodTimeRange(
     return null;
   }
 
-  const periodLengthSeconds = league.period_length * 60;
-
   if (period <= league.periods) {
-    return {
-      startSeconds: (period - 1) * periodLengthSeconds,
-      endSeconds: period * periodLengthSeconds,
-    };
+    return league.period_length * 60;
   }
 
   // Verlängerung
   if (period === league.periods + 1) {
-    if (!league.overtime_length) {
-      return null;
-    }
-    const regularEndSeconds = league.periods * periodLengthSeconds;
-    return {
-      startSeconds: regularEndSeconds,
-      endSeconds: regularEndSeconds + league.overtime_length * 60,
-    };
+    return league.overtime_length ? league.overtime_length * 60 : null;
   }
 
   // Penalty-Schießen o. Ä.: keine sinnvolle Zeitbegrenzung
@@ -65,22 +48,21 @@ export function getPeriodTimeRange(
 
 /**
  * Prüft, ob eine eingegebene Ereigniszeit plausibel ist: Sekunden 0–59,
- * keine negativen Werte und – sofern ein Bereich bekannt ist – innerhalb
- * des Spielabschnitts (Grenzen inklusive).
+ * keine negativen Werte und – sofern eine Obergrenze bekannt ist – nicht
+ * länger als der Spielabschnitt (Grenze inklusive).
  */
-export function isEventTimeInRange(
-  range: PeriodTimeRange | null,
+export function isEventTimeValid(
+  maxSeconds: number | null,
   minutes: number,
   seconds: number
 ): boolean {
   if (minutes < 0 || seconds < 0 || seconds > 59) {
     return false;
   }
-  if (!range) {
+  if (maxSeconds === null) {
     return true;
   }
-  const totalSeconds = minutes * 60 + seconds;
-  return totalSeconds >= range.startSeconds && totalSeconds <= range.endSeconds;
+  return minutes * 60 + seconds <= maxSeconds;
 }
 
 /** Formatiert Sekunden als Spielzeit, z. B. 1200 → "20:00". */

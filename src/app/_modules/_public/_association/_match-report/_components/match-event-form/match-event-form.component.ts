@@ -29,9 +29,8 @@ import {
 } from '@floorball/types';
 import {
   formatSecondsAsGameTime,
-  getPeriodTimeRange,
-  isEventTimeInRange,
-  PeriodTimeRange,
+  getPeriodMaxSeconds,
+  isEventTimeValid,
 } from './event-time-validation';
 
 @Component({
@@ -102,6 +101,13 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   seconds?: number;
   secondsValid = false;
   league: League | null = null;
+
+  // Zeit und Spielabschnitt, mit denen ein Bestandsereignis geladen wurde
+  // („<minuten>:<sekunden>" bzw. die Periodennummer). Solange beide unverändert
+  // sind, blockiert eine Zeit außerhalb des Abschnitts das Speichern nicht
+  // (siehe timeBlocksSubmit).
+  private _storedTime: string | null = null;
+  private _storedPeriod: number | null = null;
 
   playerSearchNumber?: number;
   playerNumber = 0;
@@ -326,6 +332,11 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
       this.seconds = timeParts?.[1] ? parseInt(timeParts[1], 10) : undefined;
       this.minutesValid = this.minutes !== undefined;
       this.secondsValid = this.seconds !== undefined;
+      this._storedTime =
+        this.minutes !== undefined && this.seconds !== undefined
+          ? `${this.minutes}:${this.seconds}`
+          : null;
+      this._storedPeriod = this.eventPeriod();
 
       this.playerNumber = e.number ?? 0;
       this.assistPlayerNumber = e.assist ?? 0;
@@ -435,7 +446,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         (!this.penaltyCode || !this.penalty)) ||
       (['goal', 'penalty'].includes(this.type) && !this.playerNumber) ||
       (['goal', 'penalty', 'timeout'].includes(this.type) &&
-        (!this.minutesValid || !this.secondsValid || this.timeOutOfRange()))
+        (!this.minutesValid || !this.secondsValid || this.timeBlocksSubmit()))
     );
   }
 
@@ -458,30 +469,50 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     );
   }
 
-  public periodTimeRange(): PeriodTimeRange | null {
-    return getPeriodTimeRange(this.league, this.eventPeriod());
+  public periodMaxSeconds(): number | null {
+    return getPeriodMaxSeconds(this.league, this.eventPeriod());
   }
 
   public timeOutOfRange(): boolean {
     if (this.minutes === undefined || this.minutes === null) {
       return false;
     }
-    return !isEventTimeInRange(
-      this.periodTimeRange(),
+    return !isEventTimeValid(
+      this.periodMaxSeconds(),
       this.minutes,
       this.seconds ?? 0
     );
   }
 
+  // Eine Zeit außerhalb des Abschnitts sperrt das Speichern nur, wenn sie in
+  // diesem Formular eingegeben oder geändert wurde. Bestandsereignisse mit
+  // abweichend erfasster Zeit (in Ligen mit Abschnittslänge tragen einzelne
+  // Zeitnehmer die kumulierte Spielzeit ein) bleiben so bearbeitbar – sonst
+  // wäre an ihnen auch keine Trikotnummer mehr korrigierbar. Der Hinweis am
+  // Zeitfeld erscheint trotzdem, damit die Abweichung sichtbar bleibt.
+  public timeBlocksSubmit(): boolean {
+    if (!this.timeOutOfRange()) {
+      return false;
+    }
+    // Auch der Abschnitt zählt zum geladenen Stand: er bestimmt die Obergrenze.
+    // Ohne diese Prüfung ließe ein Abschnittswechsel bei unveränderter Zeit die
+    // Sperre umgehen – etwa bei einem Penalty-Schießen-Ereignis (Zeit dort per
+    // Konvention kumuliert, z. B. 70:00), das anschließend auf ein Drittel
+    // umgestellt wird.
+    return (
+      this._storedPeriod !== this.eventPeriod() ||
+      this._storedTime !== `${this.minutes}:${this.seconds}`
+    );
+  }
+
   public timeRangeErrorText(): string {
-    const range = this.periodTimeRange();
-    if (!range) {
+    const maxSeconds = this.periodMaxSeconds();
+    if (maxSeconds === null) {
       return 'Ungültige Zeitangabe.';
     }
     return (
       'Die Zeit liegt außerhalb des gewählten Spielabschnitts ' +
-      `(erlaubt: ${formatSecondsAsGameTime(range.startSeconds)} bis ` +
-      `${formatSecondsAsGameTime(range.endSeconds)}).`
+      `(erlaubt: 0:00 bis ${formatSecondsAsGameTime(maxSeconds)}).`
     );
   }
 

@@ -707,7 +707,7 @@
           @if (!submitDisabled()) {
             {{ getEventString() }}
             {{ existingEvent ? "aktualisieren" : "eintragen" }}
-          } @else if (timeOutOfRange()) {
+          } @else if (timeBlocksSubmit()) {
             Zeit außerhalb des Spielabschnitts
           } @else {
             Angaben unvollständig
