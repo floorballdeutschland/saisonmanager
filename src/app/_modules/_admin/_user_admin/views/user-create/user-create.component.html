@@ -109,7 +109,7 @@
                     <option [ngValue]="null">
                       {{ "userAdmin.create.selectClub" | transloco }}
                     </option>
-                    @for (c of isVm ? vmClubs : clubs; track c) {
+                    @for (c of clubs; track c) {
                       <option [ngValue]="c.id">
                         {{ c.name }}
                       </option>

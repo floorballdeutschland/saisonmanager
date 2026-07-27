@@ -126,18 +126,28 @@ export class UserCreateComponent implements OnInit, OnDestroy {
         this._cdr.markForCheck();
       });
 
+    // Einzige Quelle für das Vereins-Dropdown, für alle Rollen. Nicht
+    // getAdminClubAll(): das liefert bewusst alle Vereine und bot SBK damit auch
+    // Vereine außerhalb des eigenen Zuständigkeitsbereichs an, die das Backend
+    // beim Speichern ablehnt (Issue #137).
     this._clubService
-      .getAdminClubAll()
+      .getRoleAssignableClubs()
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (clubs) => {
           this.clubs = [...clubs].sort((a, b) =>
             a.name.localeCompare(b.name, 'de')
           );
+          if (this.clubs.length === 1) {
+            this.selectedClubId = this.clubs[0].id;
+          }
           this._cdr.markForCheck();
         },
       });
 
+    // Nur noch für die Team-Auswahl der TM-Rolle (availableTeams), nicht mehr
+    // für das Vereins-Dropdown: die Liste ist breiter gescopt als die
+    // Rollenvergabe erlaubt.
     this._clubService
       .adminGetClubAndTeams()
       .pipe(takeUntil(this._destroy$))
@@ -146,9 +156,6 @@ export class UserCreateComponent implements OnInit, OnDestroy {
           this.clubsWithTeams = [...data].sort((a, b) =>
             a.name.localeCompare(b.name, 'de')
           );
-          if (this.isVm && this.clubsWithTeams.length === 1) {
-            this.selectedClubId = this.clubsWithTeams[0].id;
-          }
           this._cdr.markForCheck();
         },
       });
@@ -180,10 +187,6 @@ export class UserCreateComponent implements OnInit, OnDestroy {
     if (this.isAdmin) return this.allRoles;
     if (this.isVm) return this.allRoles.filter((r) => r.id === 4 || r.id === 5);
     return this.allRoles.filter((r) => r.id === 4 || r.id === 5);
-  }
-
-  get vmClubs(): Club[] {
-    return this.clubsWithTeams;
   }
 
   get availableTeams(): Team[] {

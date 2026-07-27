@@ -54,6 +54,18 @@ export class ClubService {
     return this.http.get<Club[]>(path);
   }
 
+  /**
+   * Vereine, für die der angemeldete User vereinsgebundene Rollen (VM/TM)
+   * vergeben darf – im Gegensatz zu getAdminClubAll() auf den eigenen
+   * Zuständigkeitsbereich eingegrenzt. Die API nutzt für diesen Endpunkt
+   * dieselbe Quelle wie die Prüfung beim Anlegen, es werden also nur Vereine
+   * geliefert, für die das Speichern auch durchgeht.
+   */
+  public getRoleAssignableClubs() {
+    const path = environment.apiURL + 'admin/clubs/role_assignable.json';
+    return this.http.get<Club[]>(path);
+  }
+
   public adminCreateClub(club: Club) {
     const path = environment.apiURL + 'admin/clubs.json';
     return this.http.post<Club>(path, club);
