@@ -54,6 +54,13 @@ export interface TeamInfo {
 export interface TeamStats {
   team: TeamInfo;
   scorer: TeamScorerEntry[];
+  /**
+   * false, wenn keine Liga des Teams die Scorerliste öffentlich zeigt
+   * (League#enable_scorer). Das API liefert `scorer` dann leer; zählt sonst nur
+   * Spiele aus Ligen mit öffentlicher Scorerliste.
+   * Optional, weil älteres API das Feld nicht kennt.
+   */
+  scorer_visible?: boolean;
   recent_games: TeamRecentGame[];
   upcoming_games: TeamRecentGame[];
   totals: TeamStatsTotals;

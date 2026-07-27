@@ -1,5 +1,5 @@
 <div class="p-4 lg:p-8 max-w-3xl">
-  <h1 class="text-2xl font-bold mb-2">Meine Spieltage</h1>
+  <h1 class="text-2xl font-bold mb-2">Meine Auswärtsspieltage</h1>
   <p class="text-sm text-fb-gray-500 mb-6">
     Sofern der Landesverband der Liga eine Spieltagscheckliste hinterlegt hat,
     bestätige hier für deine Gastmannschaften, dass der Spieltag ordnungsgemäß
@@ -7,6 +7,7 @@
     die Checkliste. Bestätigung ist ab Beginn des letzten Spiels möglich. Ohne
     Bestätigung innerhalb von 48 Stunden gilt ein Spieltag automatisch als
     bestätigt. Gab es mehrere Gastmannschaften, bestätigt jede eigenständig.
+    Aufgeführt sind deshalb nur Spieltage, die ein anderer Verein ausrichtet.
   </p>
 
   @if (loading) {
@@ -14,7 +15,9 @@
   }
 
   @if (!loading && gameDays.length === 0) {
-    <div class="text-fb-gray-500 text-sm py-4">Keine Spieltage gefunden.</div>
+    <div class="text-fb-gray-500 text-sm py-4">
+      Keine Auswärtsspieltage gefunden.
+    </div>
   }
 
   @if (!loading && gameDays.length > 0) {
