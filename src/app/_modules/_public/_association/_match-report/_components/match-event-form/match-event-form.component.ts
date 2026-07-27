@@ -491,9 +491,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     this._gameService
       .setGameFlags(this.match.id, {
         [gameFlag]: true,
-        ...(!startGame
-          ? { overtime: this.match.current_period_title.optional }
-          : {}),
+        ...(!startGame ? { overtime: this.decidedInOvertime() } : {}),
       })
       .subscribe({
         next: () => {
@@ -973,13 +971,13 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     );
   }
 
+  // Nächster Spielabschnitt. Vor dem Anpfiff ist `ingame_status` leer, findIndex
+  // liefert dann -1 und damit bewusst den ersten Abschnitt – darauf baut
+  // startOrEndGame() beim Spielstart auf.
   public nextPeriodTitle(): PeriodTitles | null {
     const index = this.match.period_titles.findIndex(
       (item) => this.match.ingame_status === item.status_id
     );
-    if (index < 0) {
-      return null;
-    }
     return this.match.period_titles[index + 1] || null;
   }
 
@@ -1003,5 +1001,13 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   // Darf in die Verlängerung/das Penalty-Schießen gewechselt werden?
   public advanceAllowed(): boolean {
     return !this.advanceLeadsToOvertime() || this.scoreLevel();
+  }
+
+  // Fiel die Entscheidung in Verlängerung oder Penalty-Schießen? Die Pause vor
+  // der Verlängerung zählt nicht dazu: dort ist noch keine Verlängerung
+  // gespielt, das Spiel endet in regulärer Spielzeit.
+  private decidedInOvertime(): boolean {
+    const current = this.currentPeriodTitle();
+    return current?.optional === true && current.status_id !== 'pause_et';
   }
 }
