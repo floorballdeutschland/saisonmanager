@@ -28,6 +28,10 @@ export class AccountComponent {
   firstName: string;
   lastName: string;
   savingName = false;
+  // Schiri-Konten dürfen den Namen nicht selbst ändern: Er steht auf dem
+  // digitalen Schiedsrichterausweis, über den es Vergünstigungen gibt. Die
+  // Sperre setzt das Backend durch, hier wird nur die Eingabe ausgeblendet.
+  canChangeName = !this._sessionService.currentUser?.referee_id;
 
   currentPassword = '';
   newPassword = '';

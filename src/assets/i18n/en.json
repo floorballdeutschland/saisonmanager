@@ -71,6 +71,7 @@
     "title": "My account",
     "nameSection": "Name",
     "nameHint": "Your first and last name as shown in the system. The username used for logging in cannot be changed here. Please contact your association office.",
+    "nameRefereeHint": "Your name appears on your digital referee ID card and therefore cannot be changed by yourself. Please contact your association office. The username used for logging in is also changed there.",
     "userName": "Username",
     "firstName": "First name",
     "lastName": "Last name",

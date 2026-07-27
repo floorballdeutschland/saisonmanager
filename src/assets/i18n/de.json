@@ -71,6 +71,7 @@
     "title": "Mein Konto",
     "nameSection": "Name",
     "nameHint": "Dein Vor- und Nachname, wie er im System angezeigt wird. Der Benutzername für den Login lässt sich hier nicht ändern. Wende dich dafür an deine Verbandsgeschäftsstelle.",
+    "nameRefereeHint": "Dein Name steht auf deinem digitalen Schiedsrichterausweis und kann deshalb nicht selbst geändert werden. Wende dich dafür an deine Verbandsgeschäftsstelle. Der Benutzername für den Login wird ebenfalls dort geändert.",
     "userName": "Benutzername",
     "firstName": "Vorname",
     "lastName": "Nachname",
