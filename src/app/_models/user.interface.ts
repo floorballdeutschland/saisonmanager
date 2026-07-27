@@ -5,6 +5,10 @@ export interface User {
   pending_email?: string | null;
   username: string;
   name: string;
+  // Einzelfelder zum zusammengesetzten name – belegen das Namensformular
+  // unter „Mein Konto" vor.
+  first_name?: string;
+  last_name?: string;
   permissions: { [key: string]: boolean };
   club_ids: number[];
   language?: 'de' | 'en';

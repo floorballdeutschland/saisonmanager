@@ -22,6 +22,13 @@ export class AccountComponent {
   availableLangs = AVAILABLE_LANGS;
   activeLang$ = this._transloco.langChanges$;
 
+  // Name: frei änderbar. Der Benutzername wird nur angezeigt – er ist die
+  // Login-Kennung und lässt sich ausschließlich in der Benutzerverwaltung ändern.
+  userName = this._sessionService.currentUser?.username ?? '';
+  firstName = this._sessionService.currentUser?.first_name ?? '';
+  lastName = this._sessionService.currentUser?.last_name ?? '';
+  savingName = false;
+
   currentPassword = '';
   newPassword = '';
   newPasswordConfirmation = '';
@@ -48,6 +55,39 @@ export class AccountComponent {
     private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
+
+  public submitName() {
+    const firstName = this.firstName.trim();
+    const lastName = this.lastName.trim();
+
+    if (!firstName || !lastName) {
+      this._notificationService.error(
+        this._transloco.translate('account.nameMissing')
+      );
+      return;
+    }
+
+    this.savingName = true;
+    this._sessionService.updateName(firstName, lastName).subscribe({
+      next: (answer) => {
+        this.savingName = false;
+        if (answer.success) {
+          this.firstName = answer.user.first_name ?? firstName;
+          this.lastName = answer.user.last_name ?? lastName;
+          this._notificationService.success(
+            this._transloco.translate('account.nameSaved')
+          );
+        }
+        this._cdr.markForCheck();
+      },
+      // Die Server-Meldung (422) zeigt bereits der ErrorInterceptor als
+      // Notification – hier nur aufräumen, sonst gäbe es einen zweiten Toast.
+      error: () => {
+        this.savingName = false;
+        this._cdr.markForCheck();
+      },
+    });
+  }
 
   public submitEmail() {
     const email = this.newEmail.trim();

@@ -204,6 +204,29 @@ export class SessionService {
   }
 
   /**
+   * Ändert den eigenen Vor- und Nachnamen (Self-Service unter „Mein Konto").
+   * Der Benutzername ist bewusst nicht änderbar. Aktualisiert den gespeicherten
+   * User aus der Server-Antwort, damit Kopfzeile und Menü sofort folgen.
+   * Fehler behandelt das aufrufende Component.
+   */
+  public updateName(firstName: string, lastName: string) {
+    const path = environment.apiURL + 'user/name.json';
+    return this.http
+      .patch<LoginAnswer>(path, { first_name: firstName, last_name: lastName })
+      .pipe(
+        map((answer) => {
+          if (answer.success) {
+            this.currentUser = answer.user;
+            this.currentUserSubject.next(answer.user);
+            localStorage.setItem('user', JSON.stringify(answer.user));
+          }
+
+          return answer;
+        })
+      );
+  }
+
+  /**
    * Setzt die Oberflächensprache des eingeloggten Users. Persistiert die Wahl
    * im Backend, aktualisiert den gecachten User und lädt anschließend die Seite
    * neu, damit auch der Angular-LOCALE_ID (date/number/currency-Pipes) folgt.
