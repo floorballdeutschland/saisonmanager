@@ -9,6 +9,10 @@ export interface User {
   // unter „Mein Konto" vor.
   first_name?: string;
   last_name?: string;
+  // Gesetzt, wenn das Konto mit einer Schiedsrichter-Lizenz verknüpft ist.
+  // Solche Konten dürfen ihren Namen nicht selbst ändern (er steht auf dem
+  // Schiedsrichterausweis); das Backend lehnt es ebenfalls ab.
+  referee_id?: number | null;
   permissions: { [key: string]: boolean };
   club_ids: number[];
   language?: 'de' | 'en';

@@ -95,10 +95,6 @@ export interface RefereeProfile {
   // Login-Adresse des verknüpften Benutzerkontos (read-only Anzeige; die
   // Pflege läuft über „Mein Konto" und zieht die Schiri-Adresse mit).
   account_email?: string | null;
-  // Name des verknüpften Benutzerkontos, aus demselben Grund wie
-  // account_email: Vor- und Nachname werden unter „Mein Konto" gepflegt und
-  // von dort auf den Schiri-Datensatz gespiegelt.
-  account_name?: string | null;
   telefonnummer?: string;
   lizenzstufe?: string;
   gueltigkeit?: string;

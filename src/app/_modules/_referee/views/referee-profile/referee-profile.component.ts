@@ -65,33 +65,16 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
-  /**
-   * Weicht der Schiri-Name vom Namen des Benutzerkontos ab? Bei Altbeständen
-   * möglich, weil die Spiegelung erst beim nächsten Speichern unter „Mein
-   * Konto" greift (analog zur E-Mail-Divergenz).
-   */
-  get accountNameDiverged(): boolean {
-    const accountName = this.profile?.account_name?.trim();
-    if (!accountName) return false;
-
-    const refereeName = [this.profile?.vorname, this.profile?.nachname]
-      .filter(Boolean)
-      .join(' ')
-      .trim();
-
-    return accountName !== refereeName;
-  }
-
-  // E-Mail und Name bleiben außen vor: Sie werden unter „Mein Konto" gepflegt
-  // (E-Mail per Double-Opt-In) und sind hier nur noch read-only sichtbar; die
-  // API ignoriert die Felder beim Speichern ohnehin.
+  // E-Mail und Name bleiben außen vor und sind nur read-only sichtbar; die API
+  // ignoriert die Felder beim Speichern ohnehin. Die E-Mail wird unter „Mein
+  // Konto" per Double-Opt-In gepflegt, der Name ausschließlich über die
+  // Schiedsrichterverwaltung, weil er auf dem Ausweis steht.
   private _toDraft(p: RefereeProfile): Partial<RefereeProfile> {
     const draft: Partial<RefereeProfile> = { ...p };
     delete draft.email;
     delete draft.account_email;
     delete draft.vorname;
     delete draft.nachname;
-    delete draft.account_name;
     return draft;
   }
 
