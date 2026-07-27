@@ -41,6 +41,10 @@ export class SessionService {
 
     if (stored_user) {
       const user: User = JSON.parse(stored_user);
+      // currentUser wurde bisher nur von den Update-Methoden gesetzt und war
+      // deshalb bei jedem frischen Seitenaufruf undefined – Components, die
+      // synchron darauf zugreifen (z. B. „Mein Konto"), sahen leere Werte.
+      this.currentUser = user;
       this.currentUserSubject.next(user);
       this._transloco.setActiveLang(user.language ?? DEFAULT_LANG);
     }
@@ -69,6 +73,7 @@ export class SessionService {
             this._transloco.setActiveLang(
               loginAnswer.user.language ?? DEFAULT_LANG
             );
+            this.currentUser = loginAnswer.user;
             this.currentUserSubject.next(loginAnswer.user);
             localStorage.setItem('user', JSON.stringify(loginAnswer.user));
             this._notificationService.success(
@@ -97,6 +102,7 @@ export class SessionService {
     message = '',
     redirect = false
   ) {
+    this.currentUser = undefined;
     this.currentUserSubject.next(null);
     // logout() wird beim Prerender via ErrorInterceptor (401) ausgelöst, wo
     // kein localStorage existiert – dort gibt es keine persistierte Session.

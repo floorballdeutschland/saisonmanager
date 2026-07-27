@@ -25,8 +25,8 @@ export class AccountComponent {
   // Name: frei änderbar. Der Benutzername wird nur angezeigt – er ist die
   // Login-Kennung und lässt sich ausschließlich in der Benutzerverwaltung ändern.
   userName = this._sessionService.currentUser?.username ?? '';
-  firstName = this._sessionService.currentUser?.first_name ?? '';
-  lastName = this._sessionService.currentUser?.last_name ?? '';
+  firstName: string;
+  lastName: string;
   savingName = false;
 
   currentPassword = '';
@@ -54,7 +54,18 @@ export class AccountComponent {
     private _notificationService: NotificationService,
     private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    // Konten, die schon vor dem Deploy eingeloggt waren, haben einen im
+    // localStorage abgelegten User ohne first_name/last_name. Bis zum nächsten
+    // Login den zusammengesetzten name aufteilen, damit das Formular nicht
+    // leer startet und ein Tippfehler nicht die komplette Neueingabe erzwingt.
+    const user = this._sessionService.currentUser;
+    const [fallbackFirst = '', ...fallbackRest] = (user?.name ?? '')
+      .trim()
+      .split(/\s+/);
+    this.firstName = user?.first_name ?? fallbackFirst;
+    this.lastName = user?.last_name ?? fallbackRest.join(' ');
+  }
 
   public submitName() {
     const firstName = this.firstName.trim();
