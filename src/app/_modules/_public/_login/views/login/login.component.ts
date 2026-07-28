@@ -107,7 +107,22 @@ export class LoginComponent implements OnInit, OnDestroy {
   public lostPassword(data: LoginFormValue) {
     if (!data.username) {
       this._notificationService.error(
-        'Bitte fülle das Benutzernamen Feld aus. Benutzername nicht E-Mail',
+        'Bitte gib deinen Benutzernamen ein, damit wir dir einen Link zum Zurücksetzen schicken können.',
+        {
+          autoClose: false,
+          keepAfterRouteChange: true,
+        }
+      );
+      return;
+    }
+
+    // Die E-Mail-Adresse ist keine Login-Kennung: Sie darf mehrfach vergeben
+    // sein (Vereins-Sammelpostfach, Schiri- und VM-Konto derselben Person) und
+    // taugt deshalb nicht zum Auffinden des Kontos. Der Server weist dieselbe
+    // Eingabe ebenfalls ab; hier sparen wir den Umweg.
+    if (data.username.includes('@')) {
+      this._notificationService.error(
+        'Bitte gib deinen Benutzernamen ein, nicht deine E-Mail-Adresse.',
         {
           autoClose: false,
           keepAfterRouteChange: true,

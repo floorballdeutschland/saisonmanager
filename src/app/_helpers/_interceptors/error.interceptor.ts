@@ -61,6 +61,13 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // „Passwort vergessen" meldet Fehler selbst (SessionService), inklusive
+        // der Server-Nachricht. Ohne diese Ausnahme zeigt der generische
+        // 4xx-Zweig weiter unten dieselbe Meldung ein zweites Mal (#84).
+        if (request.url.includes('lost_password')) {
+          return throwError(() => err);
+        }
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           const returnUrl = this._router.url;
           this.sessionService.logout(false, true, 'Bitte einloggen.', false);
