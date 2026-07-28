@@ -84,7 +84,10 @@
     "checklistCancel": "Abbrechen",
     "checklistNewPlaceholder": "Neue Frage eingeben…",
     "checklistAdding": "…",
-    "checklistAdd": "Hinzufügen"
+    "checklistAdd": "Hinzufügen",
+    "rskEmailLabel": "RSK-E-Mail",
+    "rskEmailPlaceholder": "rsk@landesverband.de",
+    "rskEmailHint": "Für Schiedsrichteransetzungen über den Saisonmanager."
   },
   "notifications": {
     "confirmDelete": "Landesverband \"{{ name }}\" wirklich löschen?",

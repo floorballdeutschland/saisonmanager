@@ -66,7 +66,8 @@
     "analytics": "Zugriffszahlen",
     "emailLog": "E-Mail-Log",
     "emailTemplates": "E-Mail-Vorlagen",
-    "feedbackComments": "Feedback (qualitativ)"
+    "feedbackComments": "Feedback (qualitativ)",
+    "refereeExclusions": "Vereins-Ausschlüsse"
   },
   "account": {
     "title": "Mein Konto",

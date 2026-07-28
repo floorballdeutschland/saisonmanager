@@ -50,6 +50,15 @@ const routes: Routes = [
     data: { scrollTop: true, permission: 'menu_item_referee_settings' },
   },
   {
+    // Antraege der Schiris auf Vereins-Ausschluesse; eigener Pfad, weil die
+    // Seite nicht zu einem einzelnen Schiedsrichter gehoert.
+    path: 'verwaltung/schiedsrichter-ausschluesse',
+    pathMatch: 'full',
+    component: Views.RefereeExclusionRequestsComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_exclusions' },
+  },
+  {
     path: 'verwaltung/schiedsrichter/:lizenznummer',
     pathMatch: 'full',
     component: Views.RefereeDetailComponent,

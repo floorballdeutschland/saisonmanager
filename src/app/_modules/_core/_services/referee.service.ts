@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
   AssignmentClub,
+  ExclusionClub,
   PublicLicenseList,
   RefereeAdmin,
   RefereeAdminGame,
@@ -11,6 +12,8 @@ import {
   RefereeAvailability,
   RefereeAvailabilityBulkResult,
   RefereeAvailabilityEntry,
+  RefereeClubExclusionPayload,
+  RefereeClubExclusionRequest,
   RefereeEntry,
   RefereeCourseResultSummary,
   RefereeGameDay,
@@ -59,7 +62,91 @@ export class RefereeService {
     );
   }
 
+  // Vereins-Ausschlussliste (Schiri-Selfservice). Die Liste selbst kommt mit
+  // dem Profil; hier laufen nur die Anträge und die Vereinsauswahl.
+
+  public getExclusionClubs() {
+    return this.http.get<ExclusionClub[]>(environment.apiURL + 'referee/clubs');
+  }
+
+  public createClubExclusionRequest(data: {
+    club_id: number;
+    kind: 'add' | 'remove';
+    reason: string;
+  }) {
+    return this.http.post<RefereeClubExclusionPayload>(
+      environment.apiURL + 'referee/club_exclusions/requests',
+      { exclusion_request: data }
+    );
+  }
+
+  public withdrawClubExclusionRequest(id: number) {
+    return this.http.delete<RefereeClubExclusionPayload>(
+      environment.apiURL + 'referee/club_exclusions/requests/' + id
+    );
+  }
+
   // Admin endpoints
+
+  public adminGetClubExclusionRequests(status = 'pending') {
+    return this.http.get<RefereeClubExclusionRequest[]>(
+      environment.apiURL +
+        'admin/referee_club_exclusion_requests?status=' +
+        encodeURIComponent(status)
+    );
+  }
+
+  public adminApproveClubExclusionRequest(id: number, decisionNote?: string) {
+    return this.http.post<RefereeClubExclusionRequest>(
+      environment.apiURL +
+        'admin/referee_club_exclusion_requests/' +
+        id +
+        '/approve',
+      { decision_note: decisionNote }
+    );
+  }
+
+  public adminRejectClubExclusionRequest(id: number, decisionNote: string) {
+    return this.http.post<RefereeClubExclusionRequest>(
+      environment.apiURL +
+        'admin/referee_club_exclusion_requests/' +
+        id +
+        '/reject',
+      { decision_note: decisionNote }
+    );
+  }
+
+  public adminGetExclusionClubs() {
+    return this.http.get<ExclusionClub[]>(
+      environment.apiURL + 'admin/referee_club_exclusions/clubs'
+    );
+  }
+
+  public adminGetRefereeClubExclusions(refereeId: number) {
+    return this.http.get<RefereeClubExclusionPayload>(
+      environment.apiURL + 'admin/referees/' + refereeId + '/club_exclusions'
+    );
+  }
+
+  public adminCreateRefereeClubExclusion(
+    refereeId: number,
+    data: { club_id: number; reason: string }
+  ) {
+    return this.http.post<RefereeClubExclusionPayload>(
+      environment.apiURL + 'admin/referees/' + refereeId + '/club_exclusions',
+      { exclusion: data }
+    );
+  }
+
+  public adminDeleteRefereeClubExclusion(refereeId: number, id: number) {
+    return this.http.delete<RefereeClubExclusionPayload>(
+      environment.apiURL +
+        'admin/referees/' +
+        refereeId +
+        '/club_exclusions/' +
+        id
+    );
+  }
 
   public adminGetAll(params?: {
     q?: string;

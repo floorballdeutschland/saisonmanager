@@ -84,7 +84,10 @@
     "checklistCancel": "Cancel",
     "checklistNewPlaceholder": "Enter new question…",
     "checklistAdding": "…",
-    "checklistAdd": "Add"
+    "checklistAdd": "Add",
+    "rskEmailLabel": "Referee committee email",
+    "rskEmailPlaceholder": "rsk@association.org",
+    "rskEmailHint": "For referee assignments handled in Saisonmanager."
   },
   "notifications": {
     "confirmDelete": "Really delete state association \"{{ name }}\"?",

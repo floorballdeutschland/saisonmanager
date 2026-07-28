@@ -60,7 +60,18 @@
     "colLeague": "League",
     "colResult": "Result",
     "noGames": "No games found.",
-    "notFound": "Referee not found."
+    "notFound": "Referee not found.",
+    "exclusionsHeading": "Club exclusions",
+    "exclusionsHint": "Clubs this person does not want to be assigned to. Their own club is always on the list. The list is a hint for the assigners, not a technical block.",
+    "exclusionOwnClub": "Own club",
+    "exclusionRemove": "Remove",
+    "exclusionAdd": "Add club",
+    "exclusionSave": "Save",
+    "exclusionCancel": "Cancel",
+    "exclusionClubPlaceholder": "Select a club",
+    "exclusionReasonPlaceholder": "Short reason",
+    "exclusionOpenRequests": "{{count}} open request(s).",
+    "exclusionToRequests": "Go to requests"
   },
   "edit": {
     "back": "← Back",
@@ -266,5 +277,26 @@
     "penaltyCodeDeleteError": "Deletion not possible.",
     "refereesMerged": "Referees merged successfully.",
     "mergeError": "Error while merging."
+  },
+  "exclusions": {
+    "back": "← Back to referee administration",
+    "title": "Club exclusions",
+    "hint": "Requests from referees not to be assigned to certain clubs. Approved clubs show up as a warning during assignment, nobody is blocked.",
+    "statusFilter": "Status",
+    "statusPending": "Open",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "statusWithdrawn": "Withdrawn",
+    "loading": "Loading…",
+    "empty": "No requests with this status.",
+    "kindAdd": "Add:",
+    "kindRemove": "Remove:",
+    "notePlaceholder": "Feedback for the referee (required when rejecting)",
+    "approve": "Approve",
+    "reject": "Reject",
+    "noteRequired": "Please provide a short reason for the rejection.",
+    "approved": "Request approved.",
+    "rejected": "Request rejected.",
+    "decided": "{{status}} · {{note}}"
   }
 }

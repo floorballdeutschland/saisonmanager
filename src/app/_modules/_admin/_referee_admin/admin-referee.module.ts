@@ -23,6 +23,7 @@ import * as Views from './views';
     Views.RefereeLicenseLevelsComponent,
     Views.RefereeSettingsComponent,
     Views.RefereeMergeComponent,
+    Views.RefereeExclusionRequestsComponent,
   ],
   providers: [
     {

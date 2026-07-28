@@ -30,7 +30,22 @@
     "saving": "Saving…",
     "emailReadOnlyHint": "Your email address is managed centrally in your user account. Changing it there also updates the address used for assignment and RSK emails.",
     "emailReadOnlyLink": "Go to “My account”",
-    "emailDiverged": "Note: your login currently uses {{accountEmail}}. Once you change and confirm the address under “My account”, both addresses are merged."
+    "emailDiverged": "Note: your login currently uses {{accountEmail}}. Once you change and confirm the address under “My account”, both addresses are merged.",
+    "sectionExclusions": "Club exclusions",
+    "exclusionsHint": "Clubs whose games you do not want to be assigned to. Your own club is always on the list. You can request further clubs with a short reason, as well as the removal of a requested club. The list is a hint for the assigners, not a technical block.",
+    "exclusionOwnClub": "Own club",
+    "exclusionAdd": "Request a club",
+    "exclusionRequestRemoval": "Request removal",
+    "exclusionOpenRequests": "Open requests",
+    "exclusionKindAdd": "Add",
+    "exclusionKindRemove": "Remove",
+    "exclusionWithdraw": "Withdraw",
+    "exclusionClub": "Club",
+    "exclusionClubPlaceholder": "Select a club",
+    "exclusionReason": "Reason",
+    "exclusionReasonPlaceholder": "e.g. my daughter plays there",
+    "exclusionSubmit": "Submit request",
+    "exclusionCancel": "Cancel"
   },
   "card": {
     "title": "My card",
@@ -144,6 +159,7 @@
     "availabilitiesBulkPartial": "{{ created }} saved, {{ skipped }} skipped.",
     "gameDayConfirmed": "Match day confirmed.",
     "gameDayReportSaved": "Report saved.",
-    "gameDaySaveError": "Saving failed."
+    "gameDaySaveError": "Saving failed.",
+    "exclusionRequested": "Request sent to the assigners."
   }
 }

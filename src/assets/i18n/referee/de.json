@@ -30,7 +30,22 @@
     "saving": "Speichern…",
     "emailReadOnlyHint": "Deine E-Mail-Adresse wird zentral in deinem Benutzerkonto gepflegt. Eine Änderung dort aktualisiert automatisch auch die Adresse für Ansetzungs- und RSK-Mails.",
     "emailReadOnlyLink": "Zu „Mein Konto“",
-    "emailDiverged": "Hinweis: Dein Login läuft aktuell über {{accountEmail}}. Sobald du die Adresse unter „Mein Konto“ änderst und bestätigst, werden beide Adressen zusammengeführt."
+    "emailDiverged": "Hinweis: Dein Login läuft aktuell über {{accountEmail}}. Sobald du die Adresse unter „Mein Konto“ änderst und bestätigst, werden beide Adressen zusammengeführt.",
+    "sectionExclusions": "Vereins-Ausschlüsse",
+    "exclusionsHint": "Vereine, für deren Spiele du nicht angesetzt werden möchtest. Dein eigener Verein steht immer auf der Liste. Weitere Vereine kannst du mit einer kurzen Begründung bei der Ansetzung beantragen, ebenso die Streichung eines beantragten Vereins. Die Liste ist ein Hinweis für die Ansetzung, keine technische Sperre.",
+    "exclusionOwnClub": "Eigener Verein",
+    "exclusionAdd": "Verein beantragen",
+    "exclusionRequestRemoval": "Streichung beantragen",
+    "exclusionOpenRequests": "Offene Anträge",
+    "exclusionKindAdd": "Aufnahme",
+    "exclusionKindRemove": "Streichung",
+    "exclusionWithdraw": "Zurückziehen",
+    "exclusionClub": "Verein",
+    "exclusionClubPlaceholder": "Verein auswählen",
+    "exclusionReason": "Begründung",
+    "exclusionReasonPlaceholder": "z. B. Tochter spielt dort",
+    "exclusionSubmit": "Antrag stellen",
+    "exclusionCancel": "Abbrechen"
   },
   "card": {
     "title": "Mein Ausweis",
@@ -144,6 +159,7 @@
     "availabilitiesBulkPartial": "{{ created }} gespeichert, {{ skipped }} übersprungen.",
     "gameDayConfirmed": "Spieltag bestätigt.",
     "gameDayReportSaved": "Meldung gespeichert.",
-    "gameDaySaveError": "Speichern fehlgeschlagen."
+    "gameDaySaveError": "Speichern fehlgeschlagen.",
+    "exclusionRequested": "Antrag an die Ansetzung übermittelt."
   }
 }

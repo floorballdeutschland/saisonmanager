@@ -153,6 +153,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       parent_id: this.stateAssociation.parent_id ?? null,
       vsk_email: this.hasParent ? null : this.stateAssociation.vsk_email,
       sbk_email: this.hasParent ? null : this.stateAssociation.sbk_email,
+      rsk_email: this.hasParent ? null : this.stateAssociation.rsk_email,
       express_license_enabled: this.hasParent
         ? false
         : this.stateAssociation.express_license_enabled,
