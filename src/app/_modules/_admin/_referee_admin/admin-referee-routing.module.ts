@@ -50,8 +50,8 @@ const routes: Routes = [
     data: { scrollTop: true, permission: 'menu_item_referee_settings' },
   },
   {
-    // Eigener Pfad ausserhalb von schiedsrichter/, damit die
-    // :lizenznummer-Wildcard nicht greift.
+    // Antraege der Schiris auf Vereins-Ausschluesse; eigener Pfad, weil die
+    // Seite nicht zu einem einzelnen Schiedsrichter gehoert.
     path: 'verwaltung/schiedsrichter-ausschluesse',
     pathMatch: 'full',
     component: Views.RefereeExclusionRequestsComponent,
