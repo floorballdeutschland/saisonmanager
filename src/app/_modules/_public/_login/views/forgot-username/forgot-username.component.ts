@@ -50,6 +50,16 @@ export class ForgotUsernameComponent implements OnInit, OnDestroy {
   public submit(data: ForgotUsernameFormValue) {
     const email = data.email?.trim() ?? '';
 
+    // Leeres Feld und falsche Eingabe getrennt melden: Wer nichts eingetragen
+    // hat, darf nicht lesen, er habe seinen Benutzernamen eingetippt.
+    if (!email) {
+      this._notificationService.error('Bitte gib deine E-Mail-Adresse ein.', {
+        autoClose: false,
+        keepAfterRouteChange: true,
+      });
+      return;
+    }
+
     if (!email.includes('@')) {
       this._notificationService.error(
         'Bitte gib deine E-Mail-Adresse ein, nicht deinen Benutzernamen.',

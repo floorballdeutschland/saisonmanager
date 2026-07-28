@@ -65,6 +65,21 @@ describe('ForgotUsernameComponent', () => {
     expect(successSpy.calls.mostRecent().args[0]).toContain('Wenn zu dieser');
   });
 
+  // Ein leeres Feld darf nicht mit "nicht deinen Benutzernamen" beantwortet
+  // werden, der Nutzer hat ja gar nichts eingetragen.
+  it('should report an empty field as empty, not as a username', () => {
+    const component = createComponent();
+    const sessionService = TestBed.inject(SessionService);
+    const notificationService = TestBed.inject(NotificationService);
+    const forgotSpy = spyOn(sessionService, 'forgotUsername');
+    const errorSpy = spyOn(notificationService, 'error');
+
+    component.submit({ email: '   ' });
+
+    expect(forgotSpy).not.toHaveBeenCalled();
+    expect(errorSpy.calls.mostRecent().args[0]).not.toContain('Benutzernamen');
+  });
+
   it('should reject a username instead of an email address', () => {
     const component = createComponent();
     const sessionService = TestBed.inject(SessionService);
