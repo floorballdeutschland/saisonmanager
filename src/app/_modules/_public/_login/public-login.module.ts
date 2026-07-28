@@ -6,7 +6,11 @@ import { PublicLoginRoutingModule } from './public-login-routing.module';
 import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
-  declarations: [Views.LoginComponent, Views.LostPasswordComponent],
+  declarations: [
+    Views.ForgotUsernameComponent,
+    Views.LoginComponent,
+    Views.LostPasswordComponent,
+  ],
   imports: [CommonModule, PublicLoginRoutingModule, ReactiveFormsModule],
 })
 export class PublicLoginModule {}
