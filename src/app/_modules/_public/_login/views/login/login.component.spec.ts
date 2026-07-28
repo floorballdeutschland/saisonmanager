@@ -2,7 +2,11 @@ import { TestBed } from '@angular/core/testing';
 
 import { LoginComponent } from './login.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { getTranslocoTestingModule, SessionService } from '@floorball/core';
+import {
+  getTranslocoTestingModule,
+  NotificationService,
+  SessionService,
+} from '@floorball/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
@@ -90,5 +94,43 @@ describe('LoginComponent', () => {
     );
     expect(navigateByUrlSpy).toHaveBeenCalledWith('/schiedsrichter/historie');
     expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  // Die E-Mail-Adresse darf mehrfach vergeben sein und taugt deshalb nicht zum
+  // Auffinden des Kontos. Die Anfrage geht gar nicht erst raus.
+  it('should reject an email address in the lost-password form', () => {
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const sessionService = TestBed.inject(SessionService);
+    const notificationService = TestBed.inject(NotificationService);
+    const lostPasswordSpy = spyOn(sessionService, 'lostPassword');
+    const errorSpy = spyOn(notificationService, 'error');
+
+    component.lostPassword({
+      username: 'verein@example.com',
+      password: '',
+    });
+
+    expect(lostPasswordSpy).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalled();
+    expect(errorSpy.calls.mostRecent().args[0]).toContain('Benutzernamen');
+  });
+
+  it('should send the lost-password request for a username', () => {
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const sessionService = TestBed.inject(SessionService);
+    const lostPasswordSpy = spyOn(
+      sessionService,
+      'lostPassword'
+    ).and.returnValue(of({} as unknown as LoginAnswer));
+
+    component.lostPassword({ username: 'vm.berlin', password: '' });
+
+    expect(lostPasswordSpy).toHaveBeenCalledWith('vm.berlin');
   });
 });

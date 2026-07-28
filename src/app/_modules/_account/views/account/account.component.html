@@ -138,6 +138,10 @@
         <strong>{{ pendingEmail }}</strong
         ><br />
         {{ "account.emailPendingHint" | transloco }}
+        @if (pendingEmailInUse) {
+          <br />
+          {{ "account.emailInUseHint" | transloco }}
+        }
       </div>
     }
     <form (ngSubmit)="submitEmail()" class="flex flex-col gap-4 mt-2">
