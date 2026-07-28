@@ -25,6 +25,7 @@
       "gameOperations": "Game operations",
       "referee": "Refereeing",
       "transfers": "Transfers and approvals",
+      "analysis": "Reports",
       "administration": "Administration",
       "moreLead": "Mor",
       "moreTail": "e"
@@ -47,7 +48,7 @@
     "courseResults": "Course results",
     "courseReview": "Course result approval",
     "refereesVm": "Referees",
-    "refereeFeedbackReport": "Feedback analytics",
+    "refereeFeedbackReport": "Feedback (quantitative)",
     "myCard": "My ID card",
     "myProfile": "My profile",
     "myRefereeGameDays": "My match days",
@@ -62,10 +63,11 @@
     "associationSettings": "Association settings",
     "myUsers": "My users",
     "seasonAdmin": "Season administration",
-    "analytics": "Analytics",
+    "analytics": "Page views",
     "emailLog": "Email log",
     "emailTemplates": "Email templates",
-    "feedbackComments": "Referee feedback comments"
+    "feedbackComments": "Feedback (qualitative)",
+    "refereeExclusions": "Club exclusions"
   },
   "account": {
     "title": "My account",

@@ -25,6 +25,7 @@
       "gameOperations": "Spielbetrieb",
       "referee": "Schiedsrichterwesen",
       "transfers": "Transfers und Freigaben",
+      "analysis": "Auswertungen",
       "administration": "Verwaltung",
       "moreLead": "Weitere",
       "moreTail": "s"
@@ -47,7 +48,7 @@
     "courseResults": "Kursergebnisse",
     "courseReview": "Kursergebnisse-Freigabe",
     "refereesVm": "Schiedsrichter*innen",
-    "refereeFeedbackReport": "Feedback-Auswertung",
+    "refereeFeedbackReport": "Feedback (quantitativ)",
     "myCard": "Mein Ausweis",
     "myProfile": "Mein Profil",
     "myRefereeGameDays": "Meine Spieltage",
@@ -62,10 +63,11 @@
     "associationSettings": "Verbandseinstellungen",
     "myUsers": "Meine Benutzer",
     "seasonAdmin": "Saison-Verwaltung",
-    "analytics": "Analyse",
+    "analytics": "Zugriffszahlen",
     "emailLog": "E-Mail-Log",
     "emailTemplates": "E-Mail-Vorlagen",
-    "feedbackComments": "Schiri-Feedback-Kommentare"
+    "feedbackComments": "Feedback (qualitativ)",
+    "refereeExclusions": "Vereins-Ausschlüsse"
   },
   "account": {
     "title": "Mein Konto",

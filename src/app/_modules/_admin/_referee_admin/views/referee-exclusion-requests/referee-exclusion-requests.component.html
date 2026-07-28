@@ -1,0 +1,122 @@
+<div class="p-4 lg:p-8 max-w-4xl">
+  <div class="mb-6">
+    <a
+      [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
+      class="text-fb-gray-500 hover:text-black text-sm"
+      >{{ "refereeAdmin.exclusions.back" | transloco }}</a
+    >
+    <h1 class="text-2xl font-bold mt-1">
+      {{ "refereeAdmin.exclusions.title" | transloco }}
+    </h1>
+    <p class="text-fb-gray-500 text-sm mt-1">
+      {{ "refereeAdmin.exclusions.hint" | transloco }}
+    </p>
+  </div>
+
+  <div class="flex items-center gap-2 mb-4">
+    <label class="text-sm font-bold">{{
+      "refereeAdmin.exclusions.statusFilter" | transloco
+    }}</label>
+    <select
+      [ngModel]="status"
+      (ngModelChange)="changeStatus($event)"
+      class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+    >
+      <option value="pending">
+        {{ "refereeAdmin.exclusions.statusPending" | transloco }}
+      </option>
+      <option value="approved">
+        {{ "refereeAdmin.exclusions.statusApproved" | transloco }}
+      </option>
+      <option value="rejected">
+        {{ "refereeAdmin.exclusions.statusRejected" | transloco }}
+      </option>
+      <option value="withdrawn">
+        {{ "refereeAdmin.exclusions.statusWithdrawn" | transloco }}
+      </option>
+    </select>
+  </div>
+
+  @if (loading) {
+    <p class="text-sm text-fb-gray-500">
+      {{ "refereeAdmin.exclusions.loading" | transloco }}
+    </p>
+  } @else if (requests.length === 0) {
+    <p class="text-sm text-fb-gray-500">
+      {{ "refereeAdmin.exclusions.empty" | transloco }}
+    </p>
+  } @else {
+    <div class="flex flex-col gap-3">
+      @for (request of requests; track request.id) {
+        <div
+          class="border border-fb-gray-700 rounded-[5px] p-4 flex flex-col gap-2"
+        >
+          <div class="flex flex-wrap items-baseline gap-2">
+            <a
+              [routerLink]="refereeLink(request)"
+              class="text-sm font-bold underline"
+              >{{ request.referee?.vorname }} {{ request.referee?.nachname }}</a
+            >
+            <span class="text-xs text-fb-gray-500"
+              >{{ request.referee?.lizenznummer_display }} ·
+              {{ request.referee?.club_name }}</span
+            >
+          </div>
+
+          <p class="text-sm">
+            <span class="font-bold">{{
+              (request.kind === "add"
+                ? "refereeAdmin.exclusions.kindAdd"
+                : "refereeAdmin.exclusions.kindRemove"
+              ) | transloco
+            }}</span>
+            {{ request.club_name }}
+          </p>
+          <p class="text-sm text-fb-gray-500">{{ request.reason }}</p>
+
+          @if (request.status === "pending") {
+            <input
+              type="text"
+              maxlength="200"
+              [ngModel]="note(request.id)"
+              (ngModelChange)="setNote(request.id, $event)"
+              [placeholder]="
+                'refereeAdmin.exclusions.notePlaceholder' | transloco
+              "
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                [disabled]="busyId === request.id"
+                (click)="approve(request)"
+                class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] disabled:opacity-50"
+              >
+                {{ "refereeAdmin.exclusions.approve" | transloco }}
+              </button>
+              <button
+                type="button"
+                [disabled]="busyId === request.id"
+                (click)="reject(request)"
+                class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
+              >
+                {{ "refereeAdmin.exclusions.reject" | transloco }}
+              </button>
+            </div>
+          } @else {
+            <p class="text-xs text-fb-gray-500">
+              {{
+                "refereeAdmin.exclusions.decided"
+                  | transloco
+                    : {
+                        status: request.status,
+                        note: request.decision_note || "",
+                      }
+              }}
+            </p>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

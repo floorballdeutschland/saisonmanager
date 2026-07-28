@@ -205,6 +205,148 @@
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black max-w-xs"
           />
         </div>
+        <!-- Vereins-Ausschlussliste -->
+        <div class="flex flex-col gap-2">
+          <h3 class="text-xs font-bold uppercase text-fb-gray-500">
+            {{ "refereeSelf.profile.sectionExclusions" | transloco }}
+          </h3>
+          <p class="text-xs text-fb-gray-500">
+            {{ "refereeSelf.profile.exclusionsHint" | transloco }}
+          </p>
+
+          <ul class="flex flex-col gap-2">
+            @for (entry of profile.club_exclusions || []; track entry.club_id) {
+              <li
+                class="flex flex-wrap items-center gap-2 border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm"
+              >
+                <span class="font-bold">{{ entry.club_name }}</span>
+                @if (entry.source === "own_club") {
+                  <span
+                    class="text-xs uppercase bg-fb-gray-800 text-fb-gray-500 rounded-[3px] px-2 py-[2px]"
+                    >{{
+                      "refereeSelf.profile.exclusionOwnClub" | transloco
+                    }}</span
+                  >
+                } @else {
+                  <span class="text-xs text-fb-gray-500">{{
+                    entry.reason
+                  }}</span>
+                }
+                @if (entry.can_request_removal && !pendingFor(entry.club_id)) {
+                  <button
+                    type="button"
+                    (click)="startRequest('remove', entry.club_id)"
+                    class="ml-auto text-xs underline"
+                  >
+                    {{
+                      "refereeSelf.profile.exclusionRequestRemoval" | transloco
+                    }}
+                  </button>
+                }
+              </li>
+            }
+          </ul>
+
+          @if (openRequests.length) {
+            <div class="flex flex-col gap-2 mt-2">
+              <h4 class="text-xs font-bold uppercase text-fb-gray-500">
+                {{ "refereeSelf.profile.exclusionOpenRequests" | transloco }}
+              </h4>
+              @for (req of openRequests; track req.id) {
+                <div
+                  class="flex flex-wrap items-center gap-2 text-sm bg-fb-gray-900 rounded-[5px] px-3 py-2"
+                >
+                  <span class="font-bold">{{ req.club_name }}</span>
+                  <span class="text-xs text-fb-gray-500">{{
+                    (req.kind === "add"
+                      ? "refereeSelf.profile.exclusionKindAdd"
+                      : "refereeSelf.profile.exclusionKindRemove"
+                    ) | transloco
+                  }}</span>
+                  <span class="text-xs text-fb-gray-500">{{ req.reason }}</span>
+                  <button
+                    type="button"
+                    [disabled]="exclusionBusy"
+                    (click)="withdrawRequest(req.id)"
+                    class="ml-auto text-xs underline disabled:opacity-50"
+                  >
+                    {{ "refereeSelf.profile.exclusionWithdraw" | transloco }}
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          @if (requestForm) {
+            <div
+              class="flex flex-col gap-2 border border-fb-gray-600 rounded-[5px] p-3 mt-2"
+            >
+              @if (requestForm.kind === "add") {
+                <label class="text-sm font-bold">{{
+                  "refereeSelf.profile.exclusionClub" | transloco
+                }}</label>
+                <select
+                  [(ngModel)]="requestForm.club_id"
+                  name="exclusion_club_id"
+                  [ngModelOptions]="{ standalone: true }"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm max-w-md"
+                >
+                  <option [ngValue]="null">
+                    {{
+                      "refereeSelf.profile.exclusionClubPlaceholder" | transloco
+                    }}
+                  </option>
+                  @for (club of selectableClubs; track club.id) {
+                    <option [ngValue]="club.id">{{ club.name }}</option>
+                  }
+                </select>
+              } @else {
+                <p class="text-sm font-bold">{{ requestForm.club_name }}</p>
+              }
+              <label class="text-sm font-bold">{{
+                "refereeSelf.profile.exclusionReason" | transloco
+              }}</label>
+              <input
+                type="text"
+                maxlength="120"
+                [(ngModel)]="requestForm.reason"
+                name="exclusion_reason"
+                [ngModelOptions]="{ standalone: true }"
+                [placeholder]="
+                  'refereeSelf.profile.exclusionReasonPlaceholder' | transloco
+                "
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm max-w-md"
+              />
+              <div class="flex items-center gap-3">
+                <button
+                  type="button"
+                  [disabled]="exclusionBusy || !canSubmitRequest()"
+                  (click)="submitRequest()"
+                  class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] disabled:opacity-50"
+                >
+                  {{ "refereeSelf.profile.exclusionSubmit" | transloco }}
+                </button>
+                <button
+                  type="button"
+                  (click)="cancelRequest()"
+                  class="text-sm underline"
+                >
+                  {{ "refereeSelf.profile.exclusionCancel" | transloco }}
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div>
+              <button
+                type="button"
+                (click)="startRequest('add')"
+                class="text-sm underline"
+              >
+                {{ "refereeSelf.profile.exclusionAdd" | transloco }}
+              </button>
+            </div>
+          }
+        </div>
       </div>
       <!-- Actions -->
       <div class="flex items-center gap-3 mt-2">

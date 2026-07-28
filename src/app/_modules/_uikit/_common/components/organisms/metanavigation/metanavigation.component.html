@@ -1,4 +1,11 @@
 @if (isLoggedIn$ | async) {
+  <!--
+    Die Menüpunkte sind in jedem Abschnitt alphabetisch nach ihrem deutschen
+    Label sortiert (src/assets/i18n/de.json, Schlüssel nav.*). Neue Einträge
+    bitte einsortieren statt anhängen, und nach einer Umbenennung des Labels
+    neu einsortieren. Die Reihenfolge folgt bewusst dem deutschen Label, auch
+    bei englischer Oberfläche.
+  -->
   <!-- Spielbetrieb -->
   @if (
     showItem("menu_item_league_admin") ||
@@ -16,13 +23,24 @@
       {{ "nav.section.gameOperations" | transloco }}
     </h2>
     <nav>
+      <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
       <ul>
+        @if (showItem("menu_item_document_type_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'dokumentarten']"
+              (click)="closeMenu()"
+              >{{ "nav.documentTypeAdmin" | transloco }}</a
+            >
+          </li>
+        }
         @if (showItem("menu_item_league_admin")) {
           <li class="mt-4 mb-4">
             <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'ligen']"
               (click)="closeMenu()"
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
               >{{ "nav.leagueAdmin" | transloco }}</a
             >
           </li>
@@ -57,23 +75,13 @@
             >
           </li>
         }
-        @if (showItem("menu_item_document_type_admin")) {
+        @if (showItem("menu_item_team_game_days")) {
           <li class="mt-4 mb-4">
             <a
               class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verwaltung', 'dokumentarten']"
+              [routerLink]="['/', 'verein', 'spieltage']"
               (click)="closeMenu()"
-              >{{ "nav.documentTypeAdmin" | transloco }}</a
-            >
-          </li>
-        }
-        @if (showItem("menu_item_player_admin")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verwaltung', 'spieler', 'suche']"
-              (click)="closeMenu()"
-              >{{ "nav.playerSearch" | transloco }}</a
+              >{{ "nav.myTeamGameDays" | transloco }}</a
             >
           </li>
         }
@@ -87,16 +95,6 @@
             >
           </li>
         }
-        @if (showItem("menu_item_team_game_days")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verein', 'spieltage']"
-              (click)="closeMenu()"
-              >{{ "nav.myTeamGameDays" | transloco }}</a
-            >
-          </li>
-        }
         @if (showItem("menu_item_referee_feedback")) {
           <li class="mt-4 mb-4">
             <a
@@ -104,6 +102,16 @@
               [routerLink]="['/', 'verein', 'schiri-feedback']"
               (click)="closeMenu()"
               >{{ "nav.refereeFeedback" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_player_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'spieler', 'suche']"
+              (click)="closeMenu()"
+              >{{ "nav.playerSearch" | transloco }}</a
             >
           </li>
         }
@@ -139,13 +147,14 @@
     showItem("menu_item_referee_course_review") ||
     showItem("menu_item_referee_profile") ||
     showItem("menu_item_referee_vm") ||
-    showItem("menu_item_referee_settings") ||
-    showItem("referee_feedback_view")
+    showItem("menu_item_referee_exclusions") ||
+    showItem("menu_item_referee_settings")
   ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
       {{ "nav.section.referee" | transloco }}
     </h2>
     <nav>
+      <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
       <ul>
         @if (showItem("menu_item_referee_assignments")) {
           <li class="mt-4 mb-4">
@@ -154,40 +163,6 @@
               [routerLink]="['/', 'verwaltung', 'schiedsrichter-ansetzungen']"
               (click)="closeMenu()"
               >{{ "nav.assignments" | transloco }}</a
-            >
-          </li>
-        }
-        @if (showItem("menu_item_referee_availability")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="[
-                '/',
-                'verwaltung',
-                'schiedsrichter-verfuegbarkeiten',
-              ]"
-              (click)="closeMenu()"
-              >{{ "nav.availability" | transloco }}</a
-            >
-          </li>
-        }
-        @if (showItem("menu_item_referee_admin")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
-              (click)="closeMenu()"
-              >{{ "nav.refereeLicenseAdmin" | transloco }}</a
-            >
-          </li>
-        }
-        @if (showItem("referee_feedback_view")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verwaltung', 'schiri-feedback-kommentare']"
-              (click)="closeMenu()"
-              >{{ "nav.feedbackComments" | transloco }}</a
             >
           </li>
         }
@@ -203,16 +178,6 @@
               ]"
               (click)="closeMenu()"
               >{{ "nav.refereeSettings" | transloco }}</a
-            >
-          </li>
-        }
-        @if (showItem("referee_feedback_view")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verwaltung', 'schiri-feedback-auswertung']"
-              (click)="closeMenu()"
-              >{{ "nav.refereeFeedbackReport" | transloco }}</a
             >
           </li>
         }
@@ -236,13 +201,13 @@
             >
           </li>
         }
-        @if (showItem("menu_item_referee_vm")) {
+        @if (showItem("menu_item_referee_admin")) {
           <li class="mt-4 mb-4">
             <a
               class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verwaltung', 'schiedsrichter-verein']"
+              [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
               (click)="closeMenu()"
-              >{{ "nav.refereesVm" | transloco }}</a
+              >{{ "nav.refereeLicenseAdmin" | transloco }}</a
             >
           </li>
         }
@@ -270,6 +235,16 @@
           <li class="mt-4 mb-4">
             <a
               class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'schiedsrichter', 'historie']"
+              (click)="closeMenu()"
+              >{{ "nav.myHistory" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_profile")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'schiedsrichter', 'spieltage']"
               (click)="closeMenu()"
               >{{ "nav.myRefereeGameDays" | transloco }}</a
@@ -286,13 +261,37 @@
             >
           </li>
         }
-        @if (showItem("menu_item_referee_profile")) {
+        @if (showItem("menu_item_referee_vm")) {
           <li class="mt-4 mb-4">
             <a
               class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'schiedsrichter', 'historie']"
+              [routerLink]="['/', 'verwaltung', 'schiedsrichter-verein']"
               (click)="closeMenu()"
-              >{{ "nav.myHistory" | transloco }}</a
+              >{{ "nav.refereesVm" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_exclusions")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiedsrichter-ausschluesse']"
+              (click)="closeMenu()"
+              >{{ "nav.refereeExclusions" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_availability")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="[
+                '/',
+                'verwaltung',
+                'schiedsrichter-verfuegbarkeiten',
+              ]"
+              (click)="closeMenu()"
+              >{{ "nav.availability" | transloco }}</a
             >
           </li>
         }
@@ -309,17 +308,8 @@
       {{ "nav.section.transfers" | transloco }}
     </h2>
     <nav>
+      <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
       <ul>
-        @if (showItem("menu_item_transfer_requests")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verwaltung', 'transfer-anfragen']"
-              (click)="closeMenu()"
-              >{{ "nav.transferRequests" | transloco }}</a
-            >
-          </li>
-        }
         @if (showItem("menu_item_player_change_requests")) {
           <li class="mt-4 mb-4">
             <a
@@ -327,6 +317,16 @@
               [routerLink]="['/', 'verwaltung', 'spieler-korrekturen']"
               (click)="closeMenu()"
               >{{ "nav.playerChangeRequests" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_transfer_requests")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'transfer-anfragen']"
+              (click)="closeMenu()"
+              >{{ "nav.transferRequests" | transloco }}</a
             >
           </li>
         }
@@ -343,6 +343,61 @@
       </ul>
     </nav>
   }
+  <!-- Auswertungen -->
+  @if (
+    showItem("menu_item_email_log_admin") ||
+    showItem("referee_feedback_view") ||
+    showItem("menu_item_analytics_admin")
+  ) {
+    <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
+      {{ "nav.section.analysis" | transloco }}
+    </h2>
+    <nav>
+      <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
+      <ul>
+        @if (showItem("menu_item_email_log_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'email-log']"
+              (click)="closeMenu()"
+              >{{ "nav.emailLog" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("referee_feedback_view")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiri-feedback-kommentare']"
+              (click)="closeMenu()"
+              >{{ "nav.feedbackComments" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("referee_feedback_view")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiri-feedback-auswertung']"
+              (click)="closeMenu()"
+              >{{ "nav.refereeFeedbackReport" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_analytics_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'analyse']"
+              (click)="closeMenu()"
+              >{{ "nav.analytics" | transloco }}</a
+            >
+          </li>
+        }
+      </ul>
+    </nav>
+  }
   <!-- Verwaltung -->
   @if (
     showItem("menu_item_state_association_admin") ||
@@ -350,8 +405,6 @@
     showItem("menu_item_api_key_admin") ||
     showItem("menu_item_user_admin") ||
     showItem("menu_item_season_admin") ||
-    showItem("menu_item_analytics_admin") ||
-    showItem("menu_item_email_log_admin") ||
     showItem("menu_item_email_template_admin") ||
     showItem("menu_item_user_vm")
   ) {
@@ -359,6 +412,7 @@
       {{ "nav.section.administration" | transloco }}
     </h2>
     <nav>
+      <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
       <ul>
         @if (showItem("menu_item_api_key_admin")) {
           <li class="mt-4 mb-4">
@@ -380,21 +434,29 @@
             >
           </li>
         }
-        @if (
-          showItem("menu_item_state_association_admin") ||
-          showItem("menu_item_state_association_sbk")
-        ) {
+        @if (showItem("menu_item_email_template_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'email-vorlagen']"
+              (click)="closeMenu()"
+              >{{ "nav.emailTemplates" | transloco }}</a
+            >
+          </li>
+        }
+        <!--
+          Landesverbände und Verbandseinstellungen führen auf dieselbe Route,
+          tragen aber je nach Recht ein anderes Label. Weil die beiden Labels
+          alphabetisch weit auseinanderliegen, stehen sie als zwei Blöcke im
+          Menü. Die Admin-Variante hat Vorrang, daher die Negation im zweiten.
+        -->
+        @if (showItem("menu_item_state_association_admin")) {
           <li class="mt-4 mb-4">
             <a
               class="font-bold text-fb-gray-500 hover:text-black text-base"
               [routerLink]="['/', 'verwaltung', 'landesverbaende']"
               (click)="closeMenu()"
-              >{{
-                (showItem("menu_item_state_association_admin")
-                  ? "nav.stateAssociations"
-                  : "nav.associationSettings"
-                ) | transloco
-              }}</a
+              >{{ "nav.stateAssociations" | transloco }}</a
             >
           </li>
         }
@@ -420,33 +482,16 @@
             >
           </li>
         }
-        @if (showItem("menu_item_analytics_admin")) {
+        @if (
+          showItem("menu_item_state_association_sbk") &&
+          !showItem("menu_item_state_association_admin")
+        ) {
           <li class="mt-4 mb-4">
             <a
               class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verwaltung', 'analyse']"
+              [routerLink]="['/', 'verwaltung', 'landesverbaende']"
               (click)="closeMenu()"
-              >{{ "nav.analytics" | transloco }}</a
-            >
-          </li>
-        }
-        @if (showItem("menu_item_email_log_admin")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verwaltung', 'email-log']"
-              (click)="closeMenu()"
-              >{{ "nav.emailLog" | transloco }}</a
-            >
-          </li>
-        }
-        @if (showItem("menu_item_email_template_admin")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verwaltung', 'email-vorlagen']"
-              (click)="closeMenu()"
-              >{{ "nav.emailTemplates" | transloco }}</a
+              >{{ "nav.associationSettings" | transloco }}</a
             >
           </li>
         }

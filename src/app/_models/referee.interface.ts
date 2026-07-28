@@ -107,6 +107,52 @@ export interface RefereeProfile {
   ort?: string;
   partner_lizenznummer?: number | null;
   kurzfristig_mobil?: boolean;
+  club_exclusions?: RefereeClubExclusion[];
+  club_exclusion_requests?: RefereeClubExclusionRequest[];
+}
+
+// Ein Verein, für den die Person nicht angesetzt werden möchte. „own_club" ist
+// der eigene Verein und wird serverseitig aus der Vereinszugehörigkeit
+// abgeleitet, steht also immer auf der Liste und ist nicht streichbar.
+export interface RefereeClubExclusion {
+  // null beim abgeleiteten Eintrag des eigenen Vereins (keine gespeicherte Zeile).
+  id?: number | null;
+  club_id: number;
+  club_name: string;
+  source: 'own_club' | 'assigned';
+  reason?: string | null;
+  since?: string | null;
+  can_request_removal: boolean;
+}
+
+export interface RefereeClubExclusionRequest {
+  id: number;
+  referee_id: number;
+  club_id: number;
+  club_name?: string;
+  kind: 'add' | 'remove';
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
+  decision_note?: string | null;
+  decided_at?: string | null;
+  created_at?: string;
+  referee?: {
+    id: number;
+    lizenznummer_display: string;
+    vorname: string;
+    nachname: string;
+    club_name?: string | null;
+  };
+}
+
+export interface RefereeClubExclusionPayload {
+  club_exclusions: RefereeClubExclusion[];
+  club_exclusion_requests: RefereeClubExclusionRequest[];
+}
+
+export interface ExclusionClub {
+  id: number;
+  name: string;
 }
 
 export interface RefereeAdminGame {
@@ -224,6 +270,10 @@ export interface RefereeAssignmentAvailable {
   kurzfristig_mobil?: boolean;
   partner_lizenznummer?: number | null;
   club_id?: number | null;
+  // Vereine, für die die Person nicht angesetzt werden möchte (eigener Verein
+  // plus genehmigte Ausschlüsse). Rein informativ: Die Ansetzung warnt bei der
+  // Auswahl, die Person bleibt wählbar.
+  excluded_club_ids?: number[];
   tags?: RefereeTag[];
 }
 
