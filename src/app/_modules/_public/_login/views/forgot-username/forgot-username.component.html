@@ -1,0 +1,58 @@
+<div class="container h-full mx-auto px-4 lg:px-8">
+  <div class="h-full w-full flex flex-col justify-center items-center">
+    <h1
+      class="font-bold text-center text-[32px] lg:text-[42px] font-bold my-4 lg:my-8"
+    >
+      Benutzername vergessen?
+    </h1>
+
+    <div class="max-w-[600px] mb-4 text-center text-fb-gray-500">
+      <p>
+        Trage deine E-Mail-Adresse ein, dann schicken wir dir die Benutzernamen
+        zu, die dort hinterlegt sind. Angemeldet wird sich immer mit dem
+        Benutzernamen, nicht mit der E-Mail-Adresse.
+      </p>
+      <p class="mt-2">
+        Hängen mehrere Konten an deiner Adresse, etwa ein Vereins- und ein
+        Schiedsrichterkonto, listet die E-Mail alle auf.
+      </p>
+    </div>
+
+    <form
+      [formGroup]="forgotUsernameForm"
+      (ngSubmit)="submit(forgotUsernameForm.value)"
+    >
+      <div class="flex flex-col mb-4">
+        <label for="email" class="font-medium text-base text-fb-gray-500"
+          >E-Mail-Adresse</label
+        >
+        <input
+          type="email"
+          id="email"
+          autocomplete="email"
+          class="outline-none text-fb-gray-500 box-shadow-none w-full md:w-[260px] h-11 p-2 border border-fb-gray-400 focus-visible:border-fb-gray-900 hover:border-fb-gray-900 transition rounded text-base"
+          [formControl]="forgotUsernameForm.controls.email"
+        />
+      </div>
+
+      <div class="flex flex-col mt-6">
+        <button
+          type="submit"
+          [disabled]="submitting"
+          class="w-[200px] mx-auto font-bold text-black leading-[17px] text-sm px-2.5 md:px-5 py-1.5 md:py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] disabled:opacity-50"
+        >
+          Benutzername zuschicken
+        </button>
+      </div>
+
+      <div class="flex flex-col mt-6">
+        <a
+          routerLink="/login"
+          class="text-fb-gray-500 hover:text-black text-base text-center"
+        >
+          Zurück zur Anmeldung
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
