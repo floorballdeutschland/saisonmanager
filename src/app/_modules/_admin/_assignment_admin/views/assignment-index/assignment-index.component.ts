@@ -269,6 +269,46 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Vereins-Ausschlussliste: Eine gewählte Person möchte für einen der beiden
+  // spielenden Vereine nicht angesetzt werden. Bewusst nur ein Hinweis, die
+  // Auswahl bleibt möglich – die Begründung steht im Schiedsrichterprofil.
+  exclusionConflict(row: MergedGame): string | null {
+    const state = this.rowStates.get(row.game.id);
+    if (!state) return null;
+
+    const clubIds = [
+      row.game.home_team_club_id,
+      row.game.guest_team_club_id,
+    ].filter((id): id is number => id != null);
+    if (clubIds.length === 0) return null;
+
+    const names: string[] = [];
+    const check = (
+      refId: number | null,
+      pool: RefereeAssignmentAvailable[]
+    ): void => {
+      if (refId == null) return;
+      const ref = pool.find((r) => r.id === refId);
+      const excluded = (ref?.excluded_club_ids || []).filter(
+        (id) => clubIds.includes(id) && id !== ref?.club_id
+      );
+      if (ref && excluded.length > 0) {
+        names.push(`${ref.vorname} ${ref.nachname}`);
+      }
+    };
+    check(state.selectedReferee1Id, state.availableReferees);
+    check(state.selectedReferee2Id, state.availableReferees);
+    check(state.selectedCoachId, state.availableCoaches);
+
+    if (names.length === 0) return null;
+    return this._transloco.translate(
+      'assignmentAdmin.index.exclusionConflict',
+      {
+        names: names.join(', '),
+      }
+    );
+  }
+
   private _selectedRefereeIds(gameId: number): number[] {
     const state = this.rowStates.get(gameId);
     if (!state) return [];

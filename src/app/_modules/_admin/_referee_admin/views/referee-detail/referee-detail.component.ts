@@ -15,8 +15,12 @@ import {
   SessionService,
 } from '@floorball/core';
 import {
+  ExclusionClub,
   RefereeAdmin,
   RefereeAdminGame,
+  RefereeClubExclusion,
+  RefereeClubExclusionPayload,
+  RefereeClubExclusionRequest,
   RefereeFeedbackProfileResponse,
   RefereeProfileFeedback,
 } from '@floorball/types';
@@ -39,6 +43,18 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   feedbackLoading = false;
   moderatingId: number | null = null;
 
+  // Vereins-Ausschlussliste: nur für die Ansetzung sichtbar und pflegbar.
+  canManageExclusions = false;
+  exclusions: RefereeClubExclusion[] = [];
+  exclusionRequests: RefereeClubExclusionRequest[] = [];
+  exclusionClubs: ExclusionClub[] = [];
+  newExclusion: { club_id: number | null; reason: string } = {
+    club_id: null,
+    reason: '',
+  };
+  showExclusionForm = false;
+  exclusionBusy = false;
+
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -56,7 +72,10 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (user) => {
           this.canViewFeedback = !!user?.permissions['referee_feedback_view'];
+          this.canManageExclusions =
+            !!user?.permissions['menu_item_referee_exclusions'];
           this._maybeLoadFeedback();
+          this._maybeLoadExclusions();
           this._cdr.markForCheck();
         },
       });
@@ -77,6 +96,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
             this._cdr.markForCheck();
             this.loadGames(r.id);
             this._maybeLoadFeedback();
+            this._maybeLoadExclusions();
           },
           error: () => this._handleLoadError(),
         });
@@ -98,6 +118,8 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
                     this.loading = false;
                     this._cdr.markForCheck();
                     this.loadGames(r.id);
+                    this._maybeLoadFeedback();
+                    this._maybeLoadExclusions();
                   },
                   error: () => this._handleLoadError(),
                 });
@@ -159,6 +181,94 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
       });
+  }
+
+  // Lädt die Ausschlussliste, sobald Berechtigung und Schiri-Datensatz vorliegen.
+  private _maybeLoadExclusions(): void {
+    if (!this.canManageExclusions || !this.referee) return;
+
+    this._refereeService
+      .adminGetRefereeClubExclusions(this.referee.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (payload) => this._applyExclusionPayload(payload),
+      });
+  }
+
+  get openExclusionRequests(): RefereeClubExclusionRequest[] {
+    return this.exclusionRequests.filter((r) => r.status === 'pending');
+  }
+
+  // Vereine, die noch nicht auf der Liste stehen.
+  get selectableExclusionClubs(): ExclusionClub[] {
+    const listed = new Set(this.exclusions.map((e) => e.club_id));
+    return this.exclusionClubs.filter((c) => !listed.has(c.id));
+  }
+
+  toggleExclusionForm(): void {
+    this.showExclusionForm = !this.showExclusionForm;
+    if (this.showExclusionForm && this.exclusionClubs.length === 0) {
+      this._refereeService
+        .adminGetExclusionClubs()
+        .pipe(takeUntil(this._destroy$))
+        .subscribe({
+          next: (clubs) => {
+            this.exclusionClubs = clubs;
+            this._cdr.markForCheck();
+          },
+        });
+    }
+  }
+
+  addExclusion(): void {
+    if (!this.referee || !this.newExclusion.club_id) return;
+
+    this.exclusionBusy = true;
+    this._refereeService
+      .adminCreateRefereeClubExclusion(this.referee.id, {
+        club_id: this.newExclusion.club_id,
+        reason: this.newExclusion.reason.trim(),
+      })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (payload) => {
+          this._applyExclusionPayload(payload);
+          this.newExclusion = { club_id: null, reason: '' };
+          this.showExclusionForm = false;
+          this.exclusionBusy = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.exclusionBusy = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  removeExclusion(entry: RefereeClubExclusion): void {
+    if (!this.referee || entry.id == null) return;
+
+    this.exclusionBusy = true;
+    this._refereeService
+      .adminDeleteRefereeClubExclusion(this.referee.id, entry.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (payload) => {
+          this._applyExclusionPayload(payload);
+          this.exclusionBusy = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.exclusionBusy = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  private _applyExclusionPayload(payload: RefereeClubExclusionPayload): void {
+    this.exclusions = payload.club_exclusions;
+    this.exclusionRequests = payload.club_exclusion_requests;
+    this._cdr.markForCheck();
   }
 
   moderate(item: RefereeProfileFeedback): void {

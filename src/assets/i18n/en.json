@@ -65,7 +65,8 @@
     "analytics": "Analytics",
     "emailLog": "Email log",
     "emailTemplates": "Email templates",
-    "feedbackComments": "Referee feedback comments"
+    "feedbackComments": "Referee feedback comments",
+    "refereeExclusions": "Club exclusions"
   },
   "account": {
     "title": "My account",

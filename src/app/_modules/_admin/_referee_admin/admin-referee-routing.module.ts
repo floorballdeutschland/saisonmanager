@@ -50,6 +50,15 @@ const routes: Routes = [
     data: { scrollTop: true, permission: 'menu_item_referee_settings' },
   },
   {
+    // Eigener Pfad ausserhalb von schiedsrichter/, damit die
+    // :lizenznummer-Wildcard nicht greift.
+    path: 'verwaltung/schiedsrichter-ausschluesse',
+    pathMatch: 'full',
+    component: Views.RefereeExclusionRequestsComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_exclusions' },
+  },
+  {
     path: 'verwaltung/schiedsrichter/:lizenznummer',
     pathMatch: 'full',
     component: Views.RefereeDetailComponent,

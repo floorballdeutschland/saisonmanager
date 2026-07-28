@@ -60,7 +60,18 @@
     "colLeague": "Liga",
     "colResult": "Ergebnis",
     "noGames": "Keine Spiele gefunden.",
-    "notFound": "Schiedsrichter nicht gefunden."
+    "notFound": "Schiedsrichter nicht gefunden.",
+    "exclusionsHeading": "Vereins-Ausschlüsse",
+    "exclusionsHint": "Vereine, für deren Spiele diese Person nicht angesetzt werden möchte. Der eigene Verein steht immer auf der Liste. Die Liste ist ein Hinweis für die Ansetzung, keine technische Sperre.",
+    "exclusionOwnClub": "Eigener Verein",
+    "exclusionRemove": "Streichen",
+    "exclusionAdd": "Verein hinzufügen",
+    "exclusionSave": "Speichern",
+    "exclusionCancel": "Abbrechen",
+    "exclusionClubPlaceholder": "Verein auswählen",
+    "exclusionReasonPlaceholder": "Kurze Begründung",
+    "exclusionOpenRequests": "{{count}} offene(r) Antrag/Anträge.",
+    "exclusionToRequests": "Zu den Anträgen"
   },
   "edit": {
     "back": "← Zurück",
@@ -266,5 +277,26 @@
     "penaltyCodeDeleteError": "Löschen nicht möglich.",
     "refereesMerged": "Schiedsrichter erfolgreich zusammengeführt.",
     "mergeError": "Fehler beim Zusammenführen."
+  },
+  "exclusions": {
+    "back": "← Zurück zur Schiedsrichterverwaltung",
+    "title": "Vereins-Ausschlüsse",
+    "hint": "Anträge der Schiedsrichter, für bestimmte Vereine nicht angesetzt zu werden. Genehmigte Vereine erscheinen als Warnung bei der Ansetzung, gesperrt wird niemand.",
+    "statusFilter": "Status",
+    "statusPending": "Offen",
+    "statusApproved": "Genehmigt",
+    "statusRejected": "Abgelehnt",
+    "statusWithdrawn": "Zurückgezogen",
+    "loading": "Lade…",
+    "empty": "Keine Anträge in diesem Status.",
+    "kindAdd": "Aufnahme:",
+    "kindRemove": "Streichung:",
+    "notePlaceholder": "Rückmeldung an den Schiri (bei Ablehnung Pflicht)",
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "noteRequired": "Bitte eine kurze Begründung für die Ablehnung angeben.",
+    "approved": "Antrag genehmigt.",
+    "rejected": "Antrag abgelehnt.",
+    "decided": "{{status}} · {{note}}"
   }
 }

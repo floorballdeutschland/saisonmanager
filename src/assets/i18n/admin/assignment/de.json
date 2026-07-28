@@ -52,7 +52,8 @@
     "filterLicense": "Lizenzstufe",
     "filterTags": "Tags",
     "shortNoticeBadge": "Kurzfristig mobil",
-    "updateSend": "Änderung & Benachrichtigung senden"
+    "updateSend": "Änderung & Benachrichtigung senden",
+    "exclusionConflict": "Vereins-Ausschluss: {{names}} möchte(n) für einen der beteiligten Vereine nicht angesetzt werden."
   },
   "notifications": {
     "saved": "Ansetzung gespeichert.",

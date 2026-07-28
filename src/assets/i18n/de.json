@@ -65,7 +65,8 @@
     "analytics": "Analyse",
     "emailLog": "E-Mail-Log",
     "emailTemplates": "E-Mail-Vorlagen",
-    "feedbackComments": "Schiri-Feedback-Kommentare"
+    "feedbackComments": "Schiri-Feedback-Kommentare",
+    "refereeExclusions": "Vereins-Ausschlüsse"
   },
   "account": {
     "title": "Mein Konto",

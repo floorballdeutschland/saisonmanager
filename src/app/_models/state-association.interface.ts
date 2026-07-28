@@ -18,6 +18,9 @@ export interface StateAssociation {
   parent_name?: string | null;
   vsk_email?: string | null;
   sbk_email?: string | null;
+  // Postfach der Schiedsrichteransetzung; erbt ohne eigenen Eintrag vom
+  // uebergeordneten Verband.
+  rsk_email?: string | null;
   express_license_enabled?: boolean;
   scan_required?: boolean;
   referee_license_review_enabled?: boolean;
