@@ -26,3 +26,11 @@ export interface LoginAnswer {
   success: boolean;
   user: User;
 }
+
+export interface EmailChangeAnswer extends LoginAnswer {
+  // true, wenn die neue Adresse bereits an einem anderen Konto hängt. Das ist
+  // erlaubt (Vereins-Sammelpostfach, Schiri- und VM-Konto derselben Person)
+  // und wird nur als Hinweis gezeigt, damit ein Tippfehler auf einer fremden
+  // Adresse nicht unbemerkt bleibt.
+  email_in_use?: boolean;
+}

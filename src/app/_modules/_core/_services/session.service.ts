@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslocoService } from '@jsverse/transloco';
 
-import { LoginAnswer, User } from '@floorball/types';
+import { EmailChangeAnswer, LoginAnswer, User } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { Observable, of, ReplaySubject } from 'rxjs';
 import { catchError, map, startWith, take } from 'rxjs/operators';
@@ -87,8 +87,14 @@ export class SessionService {
       catchError((error) => {
         console.error(error);
 
+        // Der ErrorInterceptor lässt 401 auf login.json bewusst unangetastet,
+        // die Meldung kommt also von hier. Eine spezifische Server-Nachricht
+        // (z. B. der Hinweis auf den Benutzernamen statt der E-Mail-Adresse
+        // oder ein archiviertes Konto) hat Vorrang vor dem generischen Text.
         this._notificationService.error(
-          this._transloco.translate('session.loginFailed')
+          error?.error?.message ||
+            this._transloco.translate('session.loginFailed'),
+          { autoClose: false, keepAfterRouteChange: false }
         );
 
         return of();
@@ -155,8 +161,11 @@ export class SessionService {
       catchError((error) => {
         console.error(error);
 
+        // Spezifische Server-Nachricht bevorzugen (etwa der Hinweis, dass die
+        // Anfrage den Benutzernamen braucht und nicht die E-Mail-Adresse).
         this._notificationService.error(
-          this._transloco.translate('session.lostPasswordError'),
+          error?.error?.message ||
+            this._transloco.translate('session.lostPasswordError'),
           {
             autoClose: false,
             keepAfterRouteChange: false,
@@ -279,12 +288,16 @@ export class SessionService {
    * Adresse wird erst aktiv, nachdem der per Mail verschickte Bestätigungslink
    * (24h gültig) geklickt wurde. Aktualisiert den gespeicherten User aus der
    * Server-Antwort (enthält pending_email). Fehler behandelt das aufrufende
-   * Component.
+   * Component. `email_in_use` in der Antwort ist ein Hinweis und kein Fehler:
+   * Die Adresse darf mehrfach vergeben sein.
    */
   public requestEmailChange(currentPassword: string, email: string) {
     const path = environment.apiURL + 'user/email.json';
     return this.http
-      .patch<LoginAnswer>(path, { current_password: currentPassword, email })
+      .patch<EmailChangeAnswer>(path, {
+        current_password: currentPassword,
+        email,
+      })
       .pipe(
         map((answer) => {
           if (answer.success) {

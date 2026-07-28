@@ -45,6 +45,11 @@ export class AccountComponent {
   newEmail = '';
   emailCurrentPassword = '';
   savingEmail = false;
+  // Nur ein Hinweis, kein Fehler: Die Adresse darf mehrfach vergeben sein
+  // (Vereins-Sammelpostfach, Schiri- und VM-Konto derselben Person). Der Wert
+  // stammt aus der Antwort des Servers und gilt für die gerade angestoßene
+  // Änderung, ist nach einem Seitenwechsel also wieder false.
+  pendingEmailInUse = false;
 
   // Info-Mail-Opt-out: nur für Teammanager sichtbar (Backend liefert das Gate).
   canManageMailPreferences =
@@ -129,16 +134,25 @@ export class AccountComponent {
           this.savingEmail = false;
           if (answer.success) {
             this.pendingEmail = answer.user.pending_email ?? email;
+            this.pendingEmailInUse = answer.email_in_use ?? false;
             this.newEmail = '';
             this.emailCurrentPassword = '';
             this._notificationService.success(
               this._transloco.translate('account.emailChangeRequested')
             );
+            // Kurzfassung als Toast, die Begründung steht im Kasten oberhalb
+            // des Formulars (emailInUseHint).
+            if (this.pendingEmailInUse) {
+              this._notificationService.warning(
+                this._transloco.translate('account.emailInUseShort'),
+                { autoClose: false, keepAfterRouteChange: false }
+              );
+            }
           }
           this._cdr.markForCheck();
         },
-        // Fehlermeldungen (falsches Passwort, Adresse vergeben, 422) zeigt
-        // bereits der ErrorInterceptor als Notification – hier nur aufräumen.
+        // Fehlermeldungen (falsches Passwort, 422) zeigt bereits der
+        // ErrorInterceptor als Notification – hier nur aufräumen.
         error: () => {
           this.savingEmail = false;
           this._cdr.markForCheck();
