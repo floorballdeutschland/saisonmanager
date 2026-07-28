@@ -1,4 +1,11 @@
 @if (isLoggedIn$ | async) {
+  <!--
+    Die Menüpunkte sind in jedem Abschnitt alphabetisch nach ihrem deutschen
+    Label sortiert (src/assets/i18n/de.json, Schlüssel nav.*). Neue Einträge
+    bitte einsortieren statt anhängen, und nach einer Umbenennung des Labels
+    neu einsortieren. Die Reihenfolge folgt bewusst dem deutschen Label, auch
+    bei englischer Oberfläche.
+  -->
   <!-- Spielbetrieb -->
   @if (
     showItem("menu_item_league_admin") ||
@@ -16,7 +23,7 @@
       {{ "nav.section.gameOperations" | transloco }}
     </h2>
     <nav>
-      <!-- Menüpunkte alphabetisch nach deutschem Label sortiert -->
+      <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
       <ul>
         @if (showItem("menu_item_document_type_admin")) {
           <li class="mt-4 mb-4">
@@ -146,7 +153,7 @@
       {{ "nav.section.referee" | transloco }}
     </h2>
     <nav>
-      <!-- Menüpunkte alphabetisch nach deutschem Label sortiert -->
+      <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
       <ul>
         @if (showItem("menu_item_referee_assignments")) {
           <li class="mt-4 mb-4">
@@ -290,7 +297,7 @@
       {{ "nav.section.transfers" | transloco }}
     </h2>
     <nav>
-      <!-- Menüpunkte alphabetisch nach deutschem Label sortiert -->
+      <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
       <ul>
         @if (showItem("menu_item_player_change_requests")) {
           <li class="mt-4 mb-4">
@@ -335,7 +342,7 @@
       {{ "nav.section.analysis" | transloco }}
     </h2>
     <nav>
-      <!-- Menüpunkte alphabetisch nach deutschem Label sortiert -->
+      <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
       <ul>
         @if (showItem("menu_item_email_log_admin")) {
           <li class="mt-4 mb-4">
@@ -394,7 +401,7 @@
       {{ "nav.section.administration" | transloco }}
     </h2>
     <nav>
-      <!-- Menüpunkte alphabetisch nach deutschem Label sortiert -->
+      <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
       <ul>
         @if (showItem("menu_item_api_key_admin")) {
           <li class="mt-4 mb-4">
@@ -426,6 +433,12 @@
             >
           </li>
         }
+        <!--
+          Landesverbände und Verbandseinstellungen führen auf dieselbe Route,
+          tragen aber je nach Recht ein anderes Label. Weil die beiden Labels
+          alphabetisch weit auseinanderliegen, stehen sie als zwei Blöcke im
+          Menü. Die Admin-Variante hat Vorrang, daher die Negation im zweiten.
+        -->
         @if (showItem("menu_item_state_association_admin")) {
           <li class="mt-4 mb-4">
             <a
