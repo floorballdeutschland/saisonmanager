@@ -335,34 +335,44 @@
 
     <!-- Schiri-Feedback der Vereine (nur Admin / FD-RSK / FD-Ansetzer) -->
     @if (canViewFeedback) {
-      <h2 class="text-lg font-bold mb-4 mt-10">Schiri-Feedback der Vereine</h2>
+      <h2 class="text-lg font-bold mb-4 mt-10">
+        {{ "refereeAdmin.detail.feedbackHeading" | transloco }}
+      </h2>
       @if (feedbackLoading) {
-        <div class="text-fb-gray-500 text-sm py-4">Lade…</div>
+        <div class="text-fb-gray-500 text-sm py-4">
+          {{ "refereeAdmin.detail.loading" | transloco }}
+        </div>
       }
       @if (!feedbackLoading && feedback) {
         @if (feedback.summary.count > 0) {
           <div class="flex flex-wrap gap-6 mb-4 text-sm">
             <div>
-              <span class="text-fb-gray-500">Ø Linie/Konstanz:</span>
+              <span class="text-fb-gray-500">
+                {{ "refereeAdmin.detail.feedbackAvgLine" | transloco }}
+              </span>
               <span class="font-bold ml-1">
                 {{ feedback.summary.avg_line_rating ?? "–" }} / 10
               </span>
             </div>
             <div>
-              <span class="text-fb-gray-500">Ø Kommunikation:</span>
+              <span class="text-fb-gray-500">
+                {{ "refereeAdmin.detail.feedbackAvgCommunication" | transloco }}
+              </span>
               <span class="font-bold ml-1">
                 {{ feedback.summary.avg_communication_rating ?? "–" }} / 10
               </span>
             </div>
             <div>
-              <span class="text-fb-gray-500">Rückmeldungen:</span>
+              <span class="text-fb-gray-500">
+                {{ "refereeAdmin.detail.feedbackCount" | transloco }}
+              </span>
               <span class="font-bold ml-1">{{ feedback.summary.count }}</span>
             </div>
           </div>
         }
         @if (feedback.feedbacks.length === 0) {
           <p class="text-fb-gray-500 text-sm">
-            Noch keine Rückmeldungen vorhanden.
+            {{ "refereeAdmin.detail.feedbackEmpty" | transloco }}
           </p>
         }
         <ul class="flex flex-col gap-3">
@@ -375,26 +385,41 @@
                 <div class="text-xs text-fb-gray-500">
                   {{ f.date | date: "dd.MM.yyyy" }}
                   @if (f.game_number) {
-                    <span> · Spiel {{ f.game_number }}</span>
+                    <span>
+                      ·
+                      {{
+                        "refereeAdmin.detail.feedbackGame"
+                          | transloco: { number: f.game_number }
+                      }}
+                    </span>
                   }
                   @if (f.league) {
                     <span> · {{ f.league }}</span>
                   }
                   @if (f.team_name) {
-                    <span> · von {{ f.team_name }}</span>
+                    <span>
+                      ·
+                      {{
+                        "refereeAdmin.detail.feedbackFromTeam"
+                          | transloco: { team: f.team_name }
+                      }}
+                    </span>
                   }
                   @if (f.submitted_via) {
                     <span>
                       ·
                       {{
-                        f.submitted_via === "invitation"
-                          ? "über Einladungslink"
-                          : "über Benutzerkonto"
+                        (f.submitted_via === "invitation"
+                          ? "refereeAdmin.detail.feedbackViaInvitation"
+                          : "refereeAdmin.detail.feedbackViaAccount"
+                        ) | transloco
                       }}
                     </span>
                   }
                   @if (f.status === "hidden") {
-                    <span class="text-red-600 font-bold"> · ausgeblendet</span>
+                    <span class="text-red-600 font-bold">
+                      · {{ "refereeAdmin.detail.feedbackHidden" | transloco }}
+                    </span>
                   }
                 </div>
                 <button
@@ -406,16 +431,28 @@
                     f.status === 'visible' ? 'text-red-600' : 'text-green-600'
                   "
                 >
-                  {{ f.status === "visible" ? "Ausblenden" : "Einblenden" }}
+                  {{
+                    (f.status === "visible"
+                      ? "refereeAdmin.detail.feedbackHide"
+                      : "refereeAdmin.detail.feedbackShow"
+                    ) | transloco
+                  }}
                 </button>
               </div>
               <div class="flex flex-wrap gap-6 mt-2">
                 <span>
-                  <span class="text-fb-gray-500">Linie/Konstanz:</span>
+                  <span class="text-fb-gray-500">
+                    {{ "refereeAdmin.detail.feedbackLineRating" | transloco }}
+                  </span>
                   <span class="font-bold ml-1">{{ f.line_rating }}/10</span>
                 </span>
                 <span>
-                  <span class="text-fb-gray-500">Kommunikation:</span>
+                  <span class="text-fb-gray-500">
+                    {{
+                      "refereeAdmin.detail.feedbackCommunicationRating"
+                        | transloco
+                    }}
+                  </span>
                   <span class="font-bold ml-1">
                     {{ f.communication_rating }}/10
                   </span>
@@ -423,19 +460,30 @@
               </div>
               @if (f.line_comment) {
                 <p class="mt-2">
-                  <span class="text-fb-gray-500">Linie:</span>
+                  <span class="text-fb-gray-500">
+                    {{ "refereeAdmin.detail.feedbackLineComment" | transloco }}
+                  </span>
                   {{ f.line_comment }}
                 </p>
               }
               @if (f.communication_comment) {
                 <p class="mt-1">
-                  <span class="text-fb-gray-500">Kommunikation:</span>
+                  <span class="text-fb-gray-500">
+                    {{
+                      "refereeAdmin.detail.feedbackCommunicationComment"
+                        | transloco
+                    }}
+                  </span>
                   {{ f.communication_comment }}
                 </p>
               }
               @if (f.general_comment) {
                 <p class="mt-1">
-                  <span class="text-fb-gray-500">Anmerkungen:</span>
+                  <span class="text-fb-gray-500">
+                    {{
+                      "refereeAdmin.detail.feedbackGeneralComment" | transloco
+                    }}
+                  </span>
                   {{ f.general_comment }}
                 </p>
               }
