@@ -303,6 +303,16 @@ const routes: Routes = [
     data: { preload: true },
   },
   {
+    // Abgabe des Schiri-Feedbacks über den persönlichen Einmal-Link aus der
+    // Einladungsmail. Bewusst ohne Guard und ohne Vorabladen: Die Seite ruft nur
+    // auf, wer den Link hat.
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/referee-feedback').then(
+        (m) => m.PublicRefereeFeedbackModule
+      ),
+  },
+  {
     path: '',
     loadChildren: () =>
       import('@floorball/public/license-list').then(

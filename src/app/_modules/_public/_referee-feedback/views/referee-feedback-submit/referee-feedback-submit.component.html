@@ -1,0 +1,87 @@
+<div class="p-4 lg:p-8 max-w-3xl mx-auto">
+  <h1 class="text-2xl font-bold mb-2">Schiri-Feedback abgeben</h1>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-4">Lade…</div>
+  }
+
+  @if (!loading && invalid) {
+    <p class="text-sm text-fb-gray-500 py-4">
+      Dieser Link ist ungültig. Vermutlich wurde er inzwischen durch einen
+      neueren ersetzt. Bitte wende dich an die Teamleitung deiner Mannschaft.
+    </p>
+  }
+
+  @if (!loading && !invalid && invitation) {
+    <!-- Kopfdaten der Begegnung, für die der Link gilt -->
+    <div class="border border-fb-gray-600 rounded-[5px] p-4 mb-6">
+      <div class="font-bold text-sm">
+        {{ invitation.team_name }}
+        <span class="text-fb-gray-500 font-normal">
+          {{ invitation.home ? "gegen" : "bei" }} {{ invitation.opponent_name }}
+        </span>
+      </div>
+      <div class="text-xs text-fb-gray-500 mt-0.5">
+        {{ formatDate(invitation.date) }}
+        @if (invitation.start_time) {
+          <span> · {{ invitation.start_time }}</span>
+        }
+        @if (invitation.game_number) {
+          <span> · Spiel {{ invitation.game_number }}</span>
+        }
+        @if (invitation.league) {
+          <span> · {{ invitation.league }}</span>
+        }
+      </div>
+      @if (invitation.referees.length) {
+        <div class="text-xs text-fb-gray-500 mt-0.5">
+          Schiedsrichter: {{ invitation.referees.join(" / ") }}
+        </div>
+      }
+    </div>
+
+    @if (done) {
+      <p class="text-sm text-green-600 font-medium py-4">
+        ✓ Vielen Dank, das Feedback ist abgegeben.
+      </p>
+      <p class="text-sm text-fb-gray-500">
+        Die Rückmeldung ist nur für die Schiedsrichterverwaltung sichtbar, nicht
+        für die Schiedsrichter selbst und nicht für den Gegner. Der Link ist
+        damit verbraucht.
+      </p>
+    } @else if (invitation.status === "submitted") {
+      <p class="text-sm text-fb-gray-500 py-4">
+        Für dieses Spiel wurde bereits ein Feedback abgegeben. Pro Spiel und
+        Mannschaft ist genau eine Rückmeldung möglich.
+      </p>
+    } @else if (invitation.status === "expired") {
+      <p class="text-sm text-fb-gray-500 py-4">
+        Dieser Link ist abgelaufen. Bitte wende dich an die Teamleitung deiner
+        Mannschaft, wenn das Feedback noch abgegeben werden soll.
+      </p>
+    } @else if (invitation.status === "disabled") {
+      <p class="text-sm text-fb-gray-500 py-4">
+        Für diese Liga ist kein Schiri-Feedback vorgesehen.
+      </p>
+    } @else {
+      <p class="text-sm text-fb-gray-500 mb-6">
+        Du gibst diese Rückmeldung für deine Mannschaft ab. Pro Spiel und
+        Mannschaft ist genau eine Abgabe möglich, eine Korrektur ist danach
+        nicht mehr vorgesehen. Bitte gib das Feedback auf sachlicher Basis;
+        unsachliche Rückmeldungen werden kommentarlos gelöscht. Sichtbar ist es
+        nur für die Schiedsrichterverwaltung, nicht für die Schiedsrichter
+        selbst und nicht für den Gegner.
+      </p>
+
+      @if (errorMessage) {
+        <p class="text-sm text-red-600 mb-4">{{ errorMessage }}</p>
+      }
+
+      <fb-referee-feedback-form
+        [submitting]="submitting"
+        [cancelable]="false"
+        (submitted)="submit($event)"
+      ></fb-referee-feedback-form>
+    }
+  }
+</div>
