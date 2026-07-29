@@ -9,6 +9,85 @@
     Rückmeldungen werden kommentarlos gelöscht.
   </p>
 
+  <!-- Wer gibt das Feedback ab? -->
+  @if (settings.length > 0) {
+    <div class="border border-fb-gray-600 rounded-[5px] p-4 mb-6">
+      <div class="font-bold text-sm mb-1">Wer gibt das Feedback ab?</div>
+      <p class="text-xs text-fb-gray-500 mb-4">
+        Gib das Feedback selbst ab oder lass es von der Spielführung abgeben.
+        Wer hier hinterlegt ist, bekommt nach Abschluss des Spielberichtsbogens
+        eine E-Mail mit einem persönlichen Link und braucht dafür kein
+        Benutzerkonto. Die Einstellung gilt für die gesamte Mannschaft: Alle
+        Teammanager dieser Mannschaft sehen und ändern denselben Eintrag. Du
+        kannst das Feedback weiterhin jederzeit selbst abgeben.
+      </p>
+
+      <div class="flex flex-col gap-4">
+        @for (setting of settings; track setting.team_id) {
+          <div
+            class="border-t border-fb-gray-600 pt-3 first:border-t-0 first:pt-0"
+          >
+            <div class="font-bold text-sm mb-2">{{ setting.team_name }}</div>
+
+            <label
+              class="block text-xs text-fb-gray-500 mb-1"
+              [for]="'feedback-contact-' + setting.team_id"
+            >
+              E-Mail-Adresse (leer lassen, wenn du selbst abgeben möchtest)
+            </label>
+            <input
+              type="email"
+              [id]="'feedback-contact-' + setting.team_id"
+              [(ngModel)]="setting.feedback_contact_email"
+              [name]="'feedback-contact-' + setting.team_id"
+              placeholder="kapitaen@verein.de"
+              class="w-full text-sm border border-fb-gray-600 rounded-[5px] p-2"
+            />
+
+            <label class="flex items-start gap-2 mt-2 text-sm">
+              <input
+                type="checkbox"
+                [(ngModel)]="setting.feedback_contact_prefer_captain"
+                [name]="'prefer-captain-' + setting.team_id"
+                class="mt-1"
+              />
+              <span>
+                Bevorzugt die Kapitän*in des jeweiligen Spiels anschreiben
+                <span class="block text-xs text-fb-gray-500">
+                  Greift nur, wenn im Spielbericht eine Kapitän*in markiert und
+                  am Spielerprofil eine E-Mail-Adresse gepflegt ist. Sonst wird
+                  die oben eingetragene Adresse verwendet.
+                </span>
+              </span>
+            </label>
+
+            <div class="flex items-center gap-3 mt-3">
+              <fb-button
+                variant="success"
+                icon="save"
+                size="small"
+                [disabled]="savingTeamId === setting.team_id"
+                (click)="saveSetting(setting)"
+              >
+                {{
+                  savingTeamId === setting.team_id ? "Speichere…" : "Speichern"
+                }}
+              </fb-button>
+              @if (setting.updated_at) {
+                <span class="text-xs text-fb-gray-500">
+                  Zuletzt geändert {{ formatDateTime(setting.updated_at) }}
+                  @if (setting.updated_by) {
+                    <span> von {{ setting.updated_by }}</span>
+                  }
+                </span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-4">Lade…</div>
   }
@@ -49,6 +128,11 @@
                   Schiedsrichter: {{ game.referees.join(" / ") }}
                 </div>
               }
+              @if (game.invited_email) {
+                <div class="text-xs text-fb-gray-500 mt-0.5">
+                  Einladung ging an {{ game.invited_email }}
+                </div>
+              }
             </div>
             <!-- Status / open button -->
             <div class="shrink-0">
@@ -77,114 +161,12 @@
 
           <!-- Feedback form -->
           @if (openKey === key(game)) {
-            <div
-              class="border-t border-fb-gray-600 pt-3 mt-3 flex flex-col gap-4"
-            >
-              <!-- Linie / Konstanz -->
-              <div>
-                <div class="text-sm font-bold mb-1">
-                  Wie wurde die Linie der Schiedsrichter*innen empfunden?
-                </div>
-                <p class="text-xs text-fb-gray-500 mb-2">
-                  1 = erwartete Linie in unter 10 % der Fälle erfüllt · 10 = in
-                  über 95 % der Fälle erfüllt
-                </p>
-                <div class="flex flex-wrap gap-1">
-                  @for (n of ratingScale; track n) {
-                    <button
-                      type="button"
-                      (click)="form.lineRating = n"
-                      class="w-8 h-8 text-xs font-bold rounded-[5px] border"
-                      [ngClass]="
-                        form.lineRating === n
-                          ? 'bg-black text-white border-black'
-                          : 'border-fb-gray-600 hover:border-black'
-                      "
-                    >
-                      {{ n }}
-                    </button>
-                  }
-                </div>
-                <textarea
-                  [(ngModel)]="form.lineComment"
-                  name="lineComment"
-                  rows="2"
-                  placeholder="Ausführungen zu Linie und Konstanz (optional)"
-                  class="w-full mt-2 text-sm border border-fb-gray-600 rounded-[5px] p-2"
-                ></textarea>
-              </div>
-
-              <!-- Kommunikation -->
-              <div>
-                <div class="text-sm font-bold mb-1">
-                  Wie wurde die Kommunikation der Schiedsrichter*innen zum Team
-                  empfunden?
-                </div>
-                <p class="text-xs text-fb-gray-500 mb-2">
-                  1 = Spieler*innen nicht beachtet · 10 = für jedes Teammitglied
-                  ansprechbar und proaktiv
-                </p>
-                <div class="flex flex-wrap gap-1">
-                  @for (n of ratingScale; track n) {
-                    <button
-                      type="button"
-                      (click)="form.communicationRating = n"
-                      class="w-8 h-8 text-xs font-bold rounded-[5px] border"
-                      [ngClass]="
-                        form.communicationRating === n
-                          ? 'bg-black text-white border-black'
-                          : 'border-fb-gray-600 hover:border-black'
-                      "
-                    >
-                      {{ n }}
-                    </button>
-                  }
-                </div>
-                <textarea
-                  [(ngModel)]="form.communicationComment"
-                  name="communicationComment"
-                  rows="2"
-                  placeholder="Ausführung zur Kommunikation (optional)"
-                  class="w-full mt-2 text-sm border border-fb-gray-600 rounded-[5px] p-2"
-                ></textarea>
-              </div>
-
-              <!-- Weitere Anmerkungen -->
-              <div>
-                <div class="text-sm font-bold mb-1">Weitere Anmerkungen</div>
-                <textarea
-                  [(ngModel)]="form.generalComment"
-                  name="generalComment"
-                  rows="2"
-                  placeholder="Weitere sachliche Anmerkungen (optional, auch zum Feedbackbogen)"
-                  class="w-full text-sm border border-fb-gray-600 rounded-[5px] p-2"
-                ></textarea>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <fb-button
-                  variant="success"
-                  icon="save"
-                  size="small"
-                  [disabled]="!canSubmit() || submittingKey === key(game)"
-                  (click)="submit(game)"
-                >
-                  {{ submittingKey === key(game) ? "Speichere…" : "Absenden" }}
-                </fb-button>
-                <button
-                  type="button"
-                  [disabled]="submittingKey === key(game)"
-                  (click)="cancel()"
-                  class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
-                >
-                  Abbrechen
-                </button>
-              </div>
-              @if (!canSubmit()) {
-                <p class="text-xs text-fb-gray-500 -mt-2">
-                  Bitte beide Bewertungen (1–10) auswählen.
-                </p>
-              }
+            <div class="border-t border-fb-gray-600 pt-3 mt-3">
+              <fb-referee-feedback-form
+                [submitting]="submittingKey === key(game)"
+                (submitted)="submit(game, $event)"
+                (cancelled)="cancel()"
+              ></fb-referee-feedback-form>
             </div>
           }
         </li>
