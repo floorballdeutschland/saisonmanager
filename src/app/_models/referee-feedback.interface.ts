@@ -120,8 +120,17 @@ export interface RefereeProfileFeedback {
   communication_comment?: string;
   general_comment?: string;
   status: 'visible' | 'hidden';
+  submitted_via?: RefereeFeedbackOrigin | null;
   created_at: string;
 }
+
+/**
+ * Abgabeweg einer Rückmeldung: aus einem angemeldeten Konto (Team- oder
+ * Vereinsmanager) oder über einen Einmal-Link ohne Konto (Spielführung bzw. der
+ * hinterlegte Feedback-Kontakt). null für Altbestand, dessen Weg nicht bekannt
+ * ist. Name und Adresse der abgebenden Person liefert die API bewusst nicht.
+ */
+export type RefereeFeedbackOrigin = 'account' | 'invitation';
 
 export interface RefereeFeedbackProfileResponse {
   summary: RefereeFeedbackSummary;

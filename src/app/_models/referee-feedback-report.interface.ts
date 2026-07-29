@@ -36,6 +36,11 @@ export interface RefereeFeedbackDistribution {
 /** Kennzahlen-Block (Gesamt oder Gruppe). */
 export interface RefereeFeedbackReportOverall {
   count: number;
+  /**
+   * Wie viele dieser Rückmeldungen über einen Einmal-Link ohne Benutzerkonto
+   * kamen (typischerweise von der Spielführung).
+   */
+  count_via_invitation: number;
   avg_line_rating: number | null;
   avg_communication_rating: number | null;
   distribution: RefereeFeedbackDistribution;

@@ -383,6 +383,16 @@
                   @if (f.team_name) {
                     <span> · von {{ f.team_name }}</span>
                   }
+                  @if (f.submitted_via) {
+                    <span>
+                      ·
+                      {{
+                        f.submitted_via === "invitation"
+                          ? "über Einladungslink"
+                          : "über Benutzerkonto"
+                      }}
+                    </span>
+                  }
                   @if (f.status === "hidden") {
                     <span class="text-red-600 font-bold"> · ausgeblendet</span>
                   }
