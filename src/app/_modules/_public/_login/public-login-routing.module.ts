@@ -13,6 +13,14 @@ const routes: Routes = [
     },
   },
   {
+    path: 'benutzername-vergessen',
+    component: Views.ForgotUsernameComponent,
+    pathMatch: 'full',
+    data: {
+      scrollTop: true,
+    },
+  },
+  {
     path: 'neues-passwort/:resetToken',
     component: Views.LostPasswordComponent,
     pathMatch: 'full',

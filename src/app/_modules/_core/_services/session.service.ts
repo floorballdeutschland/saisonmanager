@@ -177,6 +177,19 @@ export class SessionService {
     );
   }
 
+  /**
+   * Fordert eine Erinnerung an den eigenen Benutzernamen an („Benutzername
+   * vergessen"). Der Server antwortet bewusst immer mit success, auch bei
+   * unbekannter Adresse, damit sich daraus nicht ablesen lässt, welche Adressen
+   * hinterlegt sind – die Erfolgsmeldung im Component ist deshalb im Konjunktiv
+   * formuliert und wird dort gezeigt, nicht hier. Fehler (422 bei ungültiger
+   * Adresse) zeigt der ErrorInterceptor.
+   */
+  public forgotUsername(email: string) {
+    const path = environment.apiURL + 'forgot_username.json';
+    return this.http.post<{ success: boolean }>(path, { email });
+  }
+
   public resetPassword(
     resetToken: string,
     password: string,

@@ -21,7 +21,11 @@ export interface RefereeFeedbackGame {
   date: string;
   start_time?: string;
   referees: string[];
-  /** ISO-Zeitpunkt, ab dem das Feedback abgegeben werden darf (Anpfiff + 24 h). */
+  /**
+   * ISO-Zeitpunkt, ab dem das Feedback abgegeben werden darf: der Abschluss des
+   * Spielberichtsbogens. Ein Ende gibt es bewusst nicht, die erwarteten 24
+   * Stunden sind nur ein Hinweis im Text und in der Benachrichtigungsmail.
+   */
   fillable_from: string;
   done: boolean;
   submitted_at?: string | null;
