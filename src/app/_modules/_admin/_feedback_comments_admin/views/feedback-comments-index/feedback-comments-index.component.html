@@ -253,6 +253,14 @@
                 comment.team_name
               }}</span>
             }
+            @if (comment.submitted_via) {
+              <span class="text-sm text-fb-gray-500">{{
+                (comment.submitted_via === "invitation"
+                  ? "feedbackComments.card.viaInvitation"
+                  : "feedbackComments.card.viaAccount"
+                ) | transloco
+              }}</span>
+            }
           </div>
 
           @if (comment.referee_names) {

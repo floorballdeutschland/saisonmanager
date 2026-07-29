@@ -8,15 +8,11 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { NotificationService, RefereeFeedbackService } from '@floorball/core';
-import { RefereeFeedbackGame } from '@floorball/types';
-
-interface FeedbackForm {
-  lineRating: number | null;
-  lineComment: string;
-  communicationRating: number | null;
-  communicationComment: string;
-  generalComment: string;
-}
+import {
+  RefereeFeedbackAnswers,
+  RefereeFeedbackGame,
+  RefereeFeedbackTeamSettings,
+} from '@floorball/types';
 
 @Component({
   templateUrl: './referee-feedback.component.html',
@@ -28,12 +24,14 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
   games: RefereeFeedbackGame[] = [];
   loading = true;
 
-  ratingScale = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  // Einstellung je Mannschaft, wer das Feedback abgibt. Die Werte hängen an der
+  // Mannschaft, nicht am Konto: Mehrere Teammanager sehen denselben Eintrag.
+  settings: RefereeFeedbackTeamSettings[] = [];
+  savingTeamId: number | null = null;
 
-  // Aktuell geöffnetes Formular (Spiel + Team) und dessen Eingaben.
+  // Aktuell geöffnetes Formular (Spiel + Team).
   openKey: string | null = null;
   submittingKey: string | null = null;
-  form: FeedbackForm = this._emptyForm();
 
   private _destroy$ = new Subject<void>();
 
@@ -45,6 +43,7 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._load();
+    this._loadSettings();
   }
 
   ngOnDestroy(): void {
@@ -62,34 +61,19 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
 
   open(game: RefereeFeedbackGame): void {
     this.openKey = this.key(game);
-    this.form = this._emptyForm();
   }
 
   cancel(): void {
     this.openKey = null;
-    this.form = this._emptyForm();
   }
 
-  canSubmit(): boolean {
-    return (
-      this.form.lineRating !== null && this.form.communicationRating !== null
-    );
-  }
-
-  submit(game: RefereeFeedbackGame): void {
-    if (!this.canSubmit()) return;
-
+  submit(game: RefereeFeedbackGame, answers: RefereeFeedbackAnswers): void {
     this.submittingKey = this.key(game);
     this._feedbackService
       .submit({
         game_id: game.game_id,
         team_id: game.team_id,
-        line_rating: this.form.lineRating as number,
-        line_comment: this.form.lineComment.trim() || undefined,
-        communication_rating: this.form.communicationRating as number,
-        communication_comment:
-          this.form.communicationComment.trim() || undefined,
-        general_comment: this.form.generalComment.trim() || undefined,
+        ...answers,
       })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
@@ -101,7 +85,6 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
           );
           this.submittingKey = null;
           this.openKey = null;
-          this.form = this._emptyForm();
           this._cdr.markForCheck();
           this._notificationService.success(
             'Feedback abgegeben. Vielen Dank!',
@@ -117,6 +100,34 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
           this._notificationService.error('Speichern fehlgeschlagen.', {
             autoClose: false,
           });
+        },
+      });
+  }
+
+  saveSetting(setting: RefereeFeedbackTeamSettings): void {
+    this.savingTeamId = setting.team_id;
+    this._feedbackService
+      .updateSettings(setting.team_id, {
+        feedback_contact_email: (setting.feedback_contact_email ?? '').trim(),
+        feedback_contact_prefer_captain:
+          setting.feedback_contact_prefer_captain,
+      })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.settings = this.settings.map((s) =>
+            s.team_id === updated.team_id ? updated : s
+          );
+          this.savingTeamId = null;
+          this._cdr.markForCheck();
+          this._notificationService.success('Einstellung gespeichert.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+        },
+        error: () => {
+          this.savingTeamId = null;
+          this._cdr.markForCheck();
         },
       });
   }
@@ -141,16 +152,6 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
     });
   }
 
-  private _emptyForm(): FeedbackForm {
-    return {
-      lineRating: null,
-      lineComment: '',
-      communicationRating: null,
-      communicationComment: '',
-      generalComment: '',
-    };
-  }
-
   private _load(): void {
     this._feedbackService
       .getMyFeedbacks()
@@ -163,6 +164,24 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.loading = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  private _loadSettings(): void {
+    this._feedbackService
+      .getSettings()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (settings) => {
+          this.settings = settings;
+          this._cdr.markForCheck();
+        },
+        // Der ErrorInterceptor meldet den Fehler schon; ohne eigenen Handler
+        // würde RxJS ihn zusätzlich als unbehandelt weiterwerfen und daraus in
+        // Sentry ein Crash-Issue machen.
+        error: () => {
           this._cdr.markForCheck();
         },
       });

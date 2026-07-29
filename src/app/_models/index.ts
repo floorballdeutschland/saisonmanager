@@ -30,10 +30,15 @@ export {
 } from './team-game-day.interface';
 export {
   RefereeFeedbackGame,
+  RefereeFeedbackAnswers,
   RefereeFeedbackSubmit,
   RefereeFeedbackStatus,
   RefereeFeedbackSummary,
+  RefereeFeedbackTeamSettings,
+  RefereeFeedbackInvitation,
+  RefereeFeedbackInvitationStatus,
   RefereeProfileFeedback,
+  RefereeFeedbackOrigin,
   RefereeFeedbackProfileResponse,
 } from './referee-feedback.interface';
 export * from './feedback-comments.interface';

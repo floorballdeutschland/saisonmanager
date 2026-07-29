@@ -34,7 +34,8 @@
     "colGroup": "Gruppe",
     "colPartners": "Gespann-Partner",
     "inGroup": "Gruppe",
-    "lowData": "wenig Daten"
+    "lowData": "wenig Daten",
+    "kpiViaInvitation": "davon {{ count }} über Einladungslink"
   },
   "months": {
     "1": "Jan",

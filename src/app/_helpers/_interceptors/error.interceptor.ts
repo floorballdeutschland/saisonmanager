@@ -68,6 +68,16 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Die Abgabeseite für das Schiri-Feedback per Einmal-Link
+        // (/schiri-feedback/abgeben/:token) rendert jeden Fehlerzustand als
+        // eigene Ansicht. Ohne diese Ausnahme käme zusätzlich ein Toast, und
+        // schlimmer: 401 würde eine Abmeldung samt Weiterleitung auf /login
+        // auslösen und 403 auf die Startseite umleiten – für Personen, die hier
+        // bewusst ohne Benutzerkonto unterwegs sind, eine Sackgasse.
+        if (request.url.includes('referee_feedback_invitations')) {
+          return throwError(() => err);
+        }
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           const returnUrl = this._router.url;
           this.sessionService.logout(false, true, 'Bitte einloggen.', false);
