@@ -59,6 +59,9 @@ export class RefereeFeedbackSubmitComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Sonst bliebe das noindex für den Rest der Sitzung stehen, wenn die Person
+    // von hier aus weiterklickt.
+    this._meta.removeTag("name='robots'");
     this._destroy$.next();
     this._destroy$.complete();
   }

@@ -12,6 +12,10 @@ import { RefereeFeedbackAnswers } from '@floorball/types';
  * Der Fragebogen selbst (2 Bewertungen 1–10 + 3 Freitexte). Von beiden
  * Abgabewegen genutzt: angemeldet in der Team-Übersicht und ohne Anmeldung über
  * den Einmal-Link (Kapitän*in), damit die Fragen nur an einer Stelle stehen.
+ *
+ * Eine Zurücksetz-Methode gibt es bewusst nicht: Beide Aufrufer hängen das
+ * Formular in ein `@if`, sodass je Abgabe eine frische Instanz entsteht und
+ * keine Eingaben einer vorherigen Abgabe stehenbleiben können.
  */
 @Component({
   selector: 'fb-referee-feedback-form',
@@ -51,13 +55,5 @@ export class RefereeFeedbackFormComponent {
       communication_comment: this.communicationComment.trim() || undefined,
       general_comment: this.generalComment.trim() || undefined,
     });
-  }
-
-  reset(): void {
-    this.lineRating = null;
-    this.lineComment = '';
-    this.communicationRating = null;
-    this.communicationComment = '';
-    this.generalComment = '';
   }
 }

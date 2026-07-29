@@ -60,13 +60,15 @@ export class RefereeFeedbackService {
    */
   public getInvitation(token: string) {
     return this.http.get<RefereeFeedbackInvitation>(
-      environment.apiURL + `referee_feedback_invitations/${token}`
+      environment.apiURL +
+        `referee_feedback_invitations/${encodeURIComponent(token)}`
     );
   }
 
   public submitInvitation(token: string, body: RefereeFeedbackAnswers) {
     return this.http.post<RefereeFeedbackStatus>(
-      environment.apiURL + `referee_feedback_invitations/${token}`,
+      environment.apiURL +
+        `referee_feedback_invitations/${encodeURIComponent(token)}`,
       body
     );
   }

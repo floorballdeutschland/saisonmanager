@@ -178,6 +178,12 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
           this.settings = settings;
           this._cdr.markForCheck();
         },
+        // Der ErrorInterceptor meldet den Fehler schon; ohne eigenen Handler
+        // würde RxJS ihn zusätzlich als unbehandelt weiterwerfen und daraus in
+        // Sentry ein Crash-Issue machen.
+        error: () => {
+          this._cdr.markForCheck();
+        },
       });
   }
 }
