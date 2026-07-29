@@ -156,6 +156,14 @@
           </div>
           <div class="text-xs text-fb-gray-500 mt-1">
             {{ "refereeFeedbackReport.index.kpiOverall" | transloco }}
+            @if (data.overall.count_via_invitation) {
+              <span class="block">
+                {{
+                  "refereeFeedbackReport.index.kpiViaInvitation"
+                    | transloco: { count: data.overall.count_via_invitation }
+                }}
+              </span>
+            }
           </div>
         </div>
 

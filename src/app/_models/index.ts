@@ -38,6 +38,7 @@ export {
   RefereeFeedbackInvitation,
   RefereeFeedbackInvitationStatus,
   RefereeProfileFeedback,
+  RefereeFeedbackOrigin,
   RefereeFeedbackProfileResponse,
 } from './referee-feedback.interface';
 export * from './feedback-comments.interface';

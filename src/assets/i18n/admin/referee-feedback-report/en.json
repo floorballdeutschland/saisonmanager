@@ -34,7 +34,8 @@
     "colGroup": "Group",
     "colPartners": "Crew partners",
     "inGroup": "Group",
-    "lowData": "few data"
+    "lowData": "few data",
+    "kpiViaInvitation": "of which {{count}} via invitation link"
   },
   "months": {
     "1": "Jan",

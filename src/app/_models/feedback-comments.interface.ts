@@ -6,6 +6,8 @@
  * Themen-Häufigkeitsauswertung (Ranking + Zeitreihe).
  */
 
+import { RefereeFeedbackOrigin } from './referee-feedback.interface';
+
 /** Ein Thema aus dem frei pflegbaren Themen-Katalog. */
 export interface FeedbackTheme {
   id: number;
@@ -39,6 +41,8 @@ export interface FeedbackComment {
   communication_comment?: string | null;
   general_comment?: string | null;
   status?: string;
+  /** Abgabeweg, siehe RefereeFeedbackOrigin. */
+  submitted_via?: RefereeFeedbackOrigin | null;
   created_at?: string;
   themes: FeedbackCommentTheme[];
 }

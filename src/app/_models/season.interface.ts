@@ -1,5 +1,5 @@
 export interface Season {
-  id: number
-  name: string
-  current: boolean
+  id: number;
+  name: string;
+  current: boolean;
 }

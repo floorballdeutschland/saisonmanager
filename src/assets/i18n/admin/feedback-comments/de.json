@@ -30,7 +30,9 @@
     "saving": "Speichern…",
     "editThemes": "Themen bearbeiten",
     "done": "Fertig",
-    "noThemesDefined": "Noch keine Themen angelegt. Lege zuerst welche unter „Themen verwalten\" an."
+    "noThemesDefined": "Noch keine Themen angelegt. Lege zuerst welche unter „Themen verwalten\" an.",
+    "viaInvitation": "über Einladungslink",
+    "viaAccount": "über Benutzerkonto"
   },
   "stats": {
     "show": "Themen-Auswertung anzeigen",

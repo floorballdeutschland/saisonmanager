@@ -30,7 +30,9 @@
     "saving": "Saving…",
     "editThemes": "Edit themes",
     "done": "Done",
-    "noThemesDefined": "No themes defined yet. Create some first under \"Manage themes\"."
+    "noThemesDefined": "No themes defined yet. Create some first under \"Manage themes\".",
+    "viaInvitation": "via invitation link",
+    "viaAccount": "via user account"
   },
   "stats": {
     "show": "Show theme evaluation",
