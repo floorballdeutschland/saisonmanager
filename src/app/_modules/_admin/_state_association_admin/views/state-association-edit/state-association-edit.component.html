@@ -550,7 +550,7 @@
           <div>
             <input
               type="file"
-              accept="image/webp"
+              [attr.accept]="acceptImageTypes"
               #logoInput
               (change)="onLogoSelected(logoInput)"
             />
@@ -593,7 +593,7 @@
           <div>
             <input
               type="file"
-              accept="image/webp"
+              [attr.accept]="acceptImageTypes"
               #bannerInput
               (change)="onBannerSelected(bannerInput)"
             />
