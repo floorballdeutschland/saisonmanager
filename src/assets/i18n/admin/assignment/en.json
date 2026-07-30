@@ -53,7 +53,14 @@
     "filterTags": "Tags",
     "shortNoticeBadge": "Available on short notice",
     "updateSend": "Send change & notify",
-    "exclusionConflict": "Club exclusion: {{names}} asked not to be assigned to one of the clubs involved."
+    "exclusionConflict": "Club exclusion: {{names}} asked not to be assigned to one of the clubs involved.",
+    "notesButton": "Info for officials",
+    "notesLabel": "Additional game information",
+    "notesHint": "Visible only to the assigned officials and the referee coach, never to the teams. The note reaches them once the assignment is published.",
+    "notesPlaceholder": "e.g. hall entrance, contact on site, tournament format…",
+    "notesSave": "Save info",
+    "notesCancel": "Cancel",
+    "notesUpdated": "Last changed:"
   },
   "notifications": {
     "saved": "Assignment saved.",
@@ -63,6 +70,7 @@
     "notifyError": "Error while sending.",
     "published": "Assignment published.",
     "publishError": "Error while publishing.",
-    "loadError": "Data could not be loaded."
+    "loadError": "Data could not be loaded.",
+    "notesSaved": "Game information saved."
   }
 }
