@@ -120,19 +120,33 @@
                       >
                         {{ "leagueAdmin.index.editLeague" | transloco }}
                       </a>
-                      <a
-                        class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                        deactivated="true"
-                        [routerLink]="[
-                          '/',
-                          'verwaltung',
-                          'ligen',
-                          league.id,
-                          'bearbeiten',
-                        ]"
+                      <fb-confirmation
+                        [title]="
+                          'leagueAdmin.index.deleteDialogTitle' | transloco
+                        "
+                        [content]="
+                          'leagueAdmin.index.deleteDialogContent'
+                            | transloco: { name: league.name }
+                        "
+                        [submitButtonTitle]="
+                          'leagueAdmin.index.deleteDialogSubmit' | transloco
+                        "
+                        buttonVariant="error"
+                        (handleSubmit)="deleteLeague(gameOperation, league)"
                       >
-                        {{ "leagueAdmin.index.deleteLeague" | transloco }}
-                      </a>
+                        <button
+                          type="button"
+                          [disabled]="deletingLeagueId !== null"
+                          class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer disabled:opacity-50"
+                        >
+                          {{
+                            (deletingLeagueId === league.id
+                              ? "leagueAdmin.index.deletingLeague"
+                              : "leagueAdmin.index.deleteLeague"
+                            ) | transloco
+                          }}
+                        </button>
+                      </fb-confirmation>
                     </div>
                   </div>
                 }
@@ -224,7 +238,9 @@
                           (change)="toggleAllCopyTeams()"
                         />
                         <span class="text-sm font-bold">
-                          {{ "leagueAdmin.index.copySelectAllTeams" | transloco }}
+                          {{
+                            "leagueAdmin.index.copySelectAllTeams" | transloco
+                          }}
                         </span>
                       </label>
                       <div
