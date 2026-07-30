@@ -22,11 +22,16 @@ export interface RefereeFeedbackGame {
   start_time?: string;
   referees: string[];
   /**
-   * ISO-Zeitpunkt, ab dem das Feedback abgegeben werden darf: der Abschluss des
-   * Spielberichtsbogens. Ein Ende gibt es bewusst nicht, die erwarteten 24
-   * Stunden sind nur ein Hinweis im Text und in der Benachrichtigungsmail.
+   * ISO-Zeitpunkt, ab dem das Feedback abgegeben werden darf: das spätere von
+   * Spielbericht-Abschluss und Anpfiff + 24 Stunden. Ein Ende gibt es bewusst
+   * nicht, die erwarteten 24 Stunden für die Abgabe sind nur ein Hinweis im Text
+   * und in der Benachrichtigungsmail.
+   *
+   * null, wenn die API keinen Zeitpunkt ermitteln kann (Altspiel ohne
+   * gepflegtes Datum). Dann gilt allein der abgeschlossene Bericht, das Spiel ist
+   * also ausfüllbar.
    */
-  fillable_from: string;
+  fillable_from: string | null;
   done: boolean;
   submitted_at?: string | null;
   /**
