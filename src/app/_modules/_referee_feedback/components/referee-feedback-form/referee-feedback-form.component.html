@@ -2,11 +2,10 @@
   <!-- Linie / Konstanz -->
   <div>
     <div class="text-sm font-bold mb-1">
-      Wie wurde die Linie der Schiedsrichter*innen empfunden?
+      {{ "refereeFeedback.form.lineQuestion" | transloco }}
     </div>
     <p class="text-xs text-fb-gray-500 mb-2">
-      1 = erwartete Linie in unter 10 % der Fälle erfüllt · 10 = in über 95 %
-      der Fälle erfüllt
+      {{ "refereeFeedback.form.lineScale" | transloco }}
     </p>
     <div class="flex flex-wrap gap-1">
       @for (n of ratingScale; track n) {
@@ -28,7 +27,7 @@
       [(ngModel)]="lineComment"
       name="lineComment"
       rows="2"
-      placeholder="Ausführungen zu Linie und Konstanz (optional)"
+      [placeholder]="'refereeFeedback.form.lineCommentPlaceholder' | transloco"
       class="w-full mt-2 text-sm border border-fb-gray-600 rounded-[5px] p-2"
     ></textarea>
   </div>
@@ -36,11 +35,10 @@
   <!-- Kommunikation -->
   <div>
     <div class="text-sm font-bold mb-1">
-      Wie wurde die Kommunikation der Schiedsrichter*innen zum Team empfunden?
+      {{ "refereeFeedback.form.communicationQuestion" | transloco }}
     </div>
     <p class="text-xs text-fb-gray-500 mb-2">
-      1 = Spieler*innen nicht beachtet · 10 = für jedes Teammitglied ansprechbar
-      und proaktiv
+      {{ "refereeFeedback.form.communicationScale" | transloco }}
     </p>
     <div class="flex flex-wrap gap-1">
       @for (n of ratingScale; track n) {
@@ -62,19 +60,23 @@
       [(ngModel)]="communicationComment"
       name="communicationComment"
       rows="2"
-      placeholder="Ausführung zur Kommunikation (optional)"
+      [placeholder]="
+        'refereeFeedback.form.communicationCommentPlaceholder' | transloco
+      "
       class="w-full mt-2 text-sm border border-fb-gray-600 rounded-[5px] p-2"
     ></textarea>
   </div>
 
   <!-- Weitere Anmerkungen -->
   <div>
-    <div class="text-sm font-bold mb-1">Weitere Anmerkungen</div>
+    <div class="text-sm font-bold mb-1">
+      {{ "refereeFeedback.form.generalTitle" | transloco }}
+    </div>
     <textarea
       [(ngModel)]="generalComment"
       name="generalComment"
       rows="2"
-      placeholder="Weitere sachliche Anmerkungen (optional, auch zum Feedbackbogen)"
+      [placeholder]="'refereeFeedback.form.generalPlaceholder' | transloco"
       class="w-full text-sm border border-fb-gray-600 rounded-[5px] p-2"
     ></textarea>
   </div>
@@ -87,7 +89,12 @@
       [disabled]="!canSubmit() || submitting"
       (click)="submit()"
     >
-      {{ submitting ? "Speichere…" : "Absenden" }}
+      {{
+        (submitting
+          ? "refereeFeedback.form.submitting"
+          : "refereeFeedback.form.submit"
+        ) | transloco
+      }}
     </fb-button>
     @if (cancelable) {
       <button
@@ -96,13 +103,13 @@
         (click)="cancelled.emit()"
         class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
       >
-        Abbrechen
+        {{ "refereeFeedback.form.cancel" | transloco }}
       </button>
     }
   </div>
   @if (!canSubmit()) {
     <p class="text-xs text-fb-gray-500 -mt-2">
-      Bitte beide Bewertungen (1–10) auswählen.
+      {{ "refereeFeedback.form.ratingsRequired" | transloco }}
     </p>
   }
 </div>
