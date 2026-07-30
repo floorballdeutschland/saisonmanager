@@ -147,6 +147,14 @@
               <td class="py-2 pr-4">{{ roleLabel(user) }}</td>
               <td class="py-2 pr-4 text-fb-gray-500">
                 {{ assignmentLabel(user) }}
+                @if (hasMissingTeamAssignment(user)) {
+                  <span
+                    class="ml-1 text-xs font-bold text-red-600"
+                    [title]="'userAdmin.index.noTeamHint' | transloco"
+                  >
+                    {{ "userAdmin.index.noTeam" | transloco }}
+                  </span>
+                }
               </td>
               <td class="py-2 pr-4 text-fb-gray-500">
                 {{

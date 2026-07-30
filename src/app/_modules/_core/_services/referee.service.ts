@@ -218,12 +218,6 @@ export class RefereeService {
     );
   }
 
-  public adminModerateFeedback(id: number, status: 'visible' | 'hidden') {
-    return this.http.put(environment.apiURL + 'admin/referee_feedbacks/' + id, {
-      status,
-    });
-  }
-
   public adminCreateUserAccount(id: number) {
     return this.http.post<RefereeAdmin>(
       environment.apiURL + 'admin/referees/' + id + '/create_user',

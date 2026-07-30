@@ -13,6 +13,8 @@
     "colLastLogin": "Letzter Login",
     "colStatus": "Status",
     "inactiveBadge": "Inaktiv (>3 Jahre)",
+    "noTeam": "kein Team",
+    "noTeamHint": "Diesem Teammanager ist kein Team zugewiesen. Das Konto kann sich nicht anmelden, solange die Zuweisung fehlt.",
     "neverLoggedIn": "Noch nie",
     "statusActive": "Aktiv",
     "edit": "Bearbeiten",

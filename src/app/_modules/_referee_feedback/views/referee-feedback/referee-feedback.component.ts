@@ -2,10 +2,13 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  Inject,
+  LOCALE_ID,
   OnDestroy,
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { Subject, takeUntil } from 'rxjs';
 import { NotificationService, RefereeFeedbackService } from '@floorball/core';
 import {
@@ -38,7 +41,9 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
   constructor(
     private _feedbackService: RefereeFeedbackService,
     private _notificationService: NotificationService,
-    private _cdr: ChangeDetectorRef
+    private _transloco: TranslocoService,
+    private _cdr: ChangeDetectorRef,
+    @Inject(LOCALE_ID) private _locale: string
   ) {}
 
   ngOnInit(): void {
@@ -87,7 +92,9 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
           this.openKey = null;
           this._cdr.markForCheck();
           this._notificationService.success(
-            'Feedback abgegeben. Vielen Dank!',
+            this._transloco.translate(
+              'refereeFeedback.notifications.submitSuccess'
+            ),
             {
               autoClose: true,
               keepAfterRouteChange: false,
@@ -97,9 +104,14 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
         error: () => {
           this.submittingKey = null;
           this._cdr.markForCheck();
-          this._notificationService.error('Speichern fehlgeschlagen.', {
-            autoClose: false,
-          });
+          this._notificationService.error(
+            this._transloco.translate(
+              'refereeFeedback.notifications.submitError'
+            ),
+            {
+              autoClose: false,
+            }
+          );
         },
       });
   }
@@ -120,10 +132,15 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
           );
           this.savingTeamId = null;
           this._cdr.markForCheck();
-          this._notificationService.success('Einstellung gespeichert.', {
-            autoClose: true,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.success(
+            this._transloco.translate(
+              'refereeFeedback.notifications.settingSaved'
+            ),
+            {
+              autoClose: true,
+              keepAfterRouteChange: false,
+            }
+          );
         },
         error: () => {
           this.savingTeamId = null;
@@ -134,7 +151,7 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
 
   formatDate(iso: string): string {
     const d = new Date(iso + 'T00:00:00');
-    return d.toLocaleDateString('de-DE', {
+    return d.toLocaleDateString(this._locale, {
       weekday: 'short',
       day: '2-digit',
       month: '2-digit',
@@ -143,7 +160,7 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
   }
 
   formatDateTime(iso: string): string {
-    return new Date(iso).toLocaleString('de-DE', {
+    return new Date(iso).toLocaleString(this._locale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

@@ -185,4 +185,16 @@ export class UserIndexComponent implements OnInit, OnDestroy {
     const unique = Array.from(new Set(parts));
     return unique.length ? unique.join(' · ') : '–';
   }
+
+  // Ein Teammanager ohne nutzbare Team-Zuweisung kann sich nicht anmelden. In
+  // der Liste war das bisher nur an einem Strich in der Zuordnungs-Spalte
+  // erkennbar.
+  //
+  // Maßgeblich ist login_blocked aus der API (User#permissions_items): Dort
+  // hängt die Sperre an mehr als der Team-Zuweisung, weil jede weitere Rolle
+  // sie aufhebt, und `team_names` ist nicht auf die aktuelle Saison gefiltert.
+  // Eine eigene Ableitung hier würde davon abdriften.
+  hasMissingTeamAssignment(user: UserAdminEntry): boolean {
+    return !user.archived_at && !!user.login_blocked;
+  }
 }

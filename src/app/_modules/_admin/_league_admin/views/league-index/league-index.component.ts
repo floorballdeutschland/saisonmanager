@@ -46,6 +46,8 @@ export class LeagueIndexComponent implements OnInit {
   copyTeamsLoading = false;
   copying = false;
 
+  deletingLeagueId: number | null = null;
+
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
@@ -112,6 +114,38 @@ export class LeagueIndexComponent implements OnInit {
         this._notificationService.error(
           this._transloco.translate('leagueAdmin.notifications.orderSaveError')
         );
+      },
+    });
+  }
+
+  // Löschen entfernt die Liga nur aus der lokalen Liste, statt die komplette
+  // Übersicht neu zu laden – die Reihenfolge der übrigen Ligen (Drag & Drop)
+  // bleibt damit unangetastet.
+  deleteLeague(go: GameOperationWithLeagues, league: League): void {
+    if (this.deletingLeagueId !== null) return;
+
+    this.deletingLeagueId = league.id;
+    this._cdr.markForCheck();
+
+    this._leagueService.adminDeleteLeague(league.id).subscribe({
+      next: () => {
+        this.deletingLeagueId = null;
+        go.leagues = go.leagues.filter((l) => l.id !== league.id);
+        this._cdr.markForCheck();
+        this._notificationService.success(
+          this._transloco.translate('leagueAdmin.notifications.leagueDeleted', {
+            name: league.name,
+          }),
+          { autoClose: true, keepAfterRouteChange: false }
+        );
+      },
+      // Bewusst ohne eigenen Toast: Der ErrorInterceptor zeigt für 4xx (mit der
+      // Begründung des Servers), 5xx und Verbindungsfehler jeweils schon eine
+      // Meldung an – ein zweiter Toast wäre doppelt. Hier wird nur der Zustand
+      // zurückgesetzt, damit der Knopf wieder bedienbar ist.
+      error: () => {
+        this.deletingLeagueId = null;
+        this._cdr.markForCheck();
       },
     });
   }

@@ -74,6 +74,59 @@ describe('LeagueIndexComponent', () => {
     ]);
   });
 
+  it('deletes a league and removes it from the local list only', () => {
+    const fixture = TestBed.createComponent(LeagueIndexComponent);
+    const component = fixture.componentInstance;
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    const go = {
+      id: 3,
+      name: 'FVBB',
+      leagues: [
+        { id: 7, name: 'Testliga' },
+        { id: 8, name: 'Andere Liga' },
+      ],
+    } as never;
+    component.goLeagueItems = [go];
+
+    component.deleteLeague(go, { id: 7, name: 'Testliga' } as never);
+    expect(component.deletingLeagueId).toBe(7);
+
+    const req = httpMock.expectOne((r) =>
+      r.url.endsWith('admin/leagues/7.json')
+    );
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(component.deletingLeagueId).toBeNull();
+    expect(component.goLeagueItems[0].leagues.map((l) => l.id)).toEqual([8]);
+  });
+
+  it('keeps the league in the list when the server refuses the deletion', () => {
+    const fixture = TestBed.createComponent(LeagueIndexComponent);
+    const component = fixture.componentInstance;
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    const go = {
+      id: 3,
+      name: 'FVBB',
+      leagues: [{ id: 7, name: 'Testliga' }],
+    } as never;
+    component.goLeagueItems = [go];
+
+    component.deleteLeague(go, { id: 7, name: 'Testliga' } as never);
+
+    httpMock
+      .expectOne((r) => r.url.endsWith('admin/leagues/7.json'))
+      .flush(
+        { message: 'Liga kann nicht gelöscht werden: ...' },
+        { status: 422, statusText: 'Unprocessable Entity' }
+      );
+
+    expect(component.deletingLeagueId).toBeNull();
+    expect(component.goLeagueItems[0].leagues.map((l) => l.id)).toEqual([7]);
+  });
+
   it('loads the source league teams and pre-selects all of them', () => {
     const fixture = TestBed.createComponent(LeagueIndexComponent);
     const component = fixture.componentInstance;

@@ -13,6 +13,8 @@
     "colLastLogin": "Last login",
     "colStatus": "Status",
     "inactiveBadge": "Inactive (>3 years)",
+    "noTeam": "no team",
+    "noTeamHint": "This team manager has no team assigned. The account cannot log in while the assignment is missing.",
     "neverLoggedIn": "Never",
     "statusActive": "Active",
     "edit": "Edit",

@@ -1,0 +1,45 @@
+{
+  "form": {
+    "lineQuestion": "Wie wurde die Linie der Schiedsrichter*innen empfunden?",
+    "lineScale": "1 = erwartete Linie in unter 10 % der Fälle erfüllt · 10 = in über 95 % der Fälle erfüllt",
+    "lineCommentPlaceholder": "Ausführungen zu Linie und Konstanz (optional)",
+    "communicationQuestion": "Wie wurde die Kommunikation der Schiedsrichter*innen zum Team empfunden?",
+    "communicationScale": "1 = Spieler*innen nicht beachtet · 10 = für jedes Teammitglied ansprechbar und proaktiv",
+    "communicationCommentPlaceholder": "Ausführung zur Kommunikation (optional)",
+    "generalTitle": "Weitere Anmerkungen",
+    "generalPlaceholder": "Weitere sachliche Anmerkungen (optional, auch zum Feedbackbogen)",
+    "submit": "Absenden",
+    "submitting": "Speichere…",
+    "cancel": "Abbrechen",
+    "ratingsRequired": "Bitte beide Bewertungen (1–10) auswählen."
+  },
+  "team": {
+    "title": "Schiri-Feedback",
+    "intro": "Gib hier für deine Mannschaften eine Rückmeldung zum Schiedsrichtergespann ab. Das Feedback ist pro Spiel verpflichtend und kann je Mannschaft genau einmal abgegeben werden. Es ist möglich, sobald der Spielberichtsbogen abgeschlossen ist, und soll innerhalb von 24 Stunden danach abgegeben werden. Bitte gib das Feedback auf sachlicher Basis; unsachliche Rückmeldungen werden kommentarlos gelöscht.",
+    "contactTitle": "Wer gibt das Feedback ab?",
+    "contactHint": "Gib das Feedback selbst ab oder lass es von der Spielführung abgeben. Wer hier hinterlegt ist, bekommt nach Abschluss des Spielberichtsbogens eine E-Mail mit einem persönlichen Link und braucht dafür kein Benutzerkonto. Die Einstellung gilt für die gesamte Mannschaft: Alle Teammanager dieser Mannschaft sehen und ändern denselben Eintrag. Du kannst das Feedback weiterhin jederzeit selbst abgeben.",
+    "contactEmailLabel": "E-Mail-Adresse (leer lassen, wenn du selbst abgeben möchtest)",
+    "contactEmailPlaceholder": "kapitaen@verein.de",
+    "preferCaptain": "Bevorzugt die Kapitän*in des jeweiligen Spiels anschreiben",
+    "preferCaptainHint": "Greift nur, wenn im Spielbericht eine Kapitän*in markiert und am Spielerprofil eine E-Mail-Adresse gepflegt ist. Sonst wird die oben eingetragene Adresse verwendet.",
+    "save": "Speichern",
+    "saving": "Speichere…",
+    "lastChanged": "Zuletzt geändert {{ date }}",
+    "lastChangedBy": "von {{ name }}",
+    "loading": "Lade…",
+    "empty": "Aktuell sind keine Spiele für ein Schiri-Feedback vorhanden.",
+    "versusHome": "gegen",
+    "versusGuest": "bei",
+    "gamePrefix": "Spiel",
+    "refereesLabel": "Schiedsrichter",
+    "invitationSentTo": "Einladung ging an {{ email }}",
+    "submitted": "Abgegeben",
+    "fillableFrom": "Möglich ab",
+    "openForm": "Feedback abgeben"
+  },
+  "notifications": {
+    "submitSuccess": "Feedback abgegeben. Vielen Dank!",
+    "submitError": "Speichern fehlgeschlagen.",
+    "settingSaved": "Einstellung gespeichert."
+  }
+}

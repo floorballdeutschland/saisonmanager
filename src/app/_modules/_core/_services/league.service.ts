@@ -235,6 +235,11 @@ export class LeagueService {
     return this.http.patch<League>(path, { league: data });
   }
 
+  public adminDeleteLeague(leagueId: number) {
+    const path = environment.apiURL + 'admin/leagues/' + leagueId + '.json';
+    return this.http.delete<void>(path);
+  }
+
   public adminCopyLeague(sourceLeagueId: number, teamIds: number[]) {
     const path =
       environment.apiURL + 'admin/leagues/' + sourceLeagueId + '/copy.json';
