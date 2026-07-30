@@ -60,8 +60,17 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
     return `${game.game_id}:${game.team_id}`;
   }
 
+  // Die Übersicht listet ein Spiel schon, während die 24-Stunden-Frist nach dem
+  // Spiel noch läuft. Ohne verwertbaren Zeitpunkt (fillable_from null oder nicht
+  // parsebar) gilt allein der abgeschlossene Bericht, das Spiel ist dann
+  // ausfüllbar.
   notYetFillable(game: RefereeFeedbackGame): boolean {
-    return new Date(game.fillable_from).getTime() > Date.now();
+    if (!game.fillable_from) {
+      return false;
+    }
+
+    const from = new Date(game.fillable_from).getTime();
+    return !isNaN(from) && from > Date.now();
   }
 
   open(game: RefereeFeedbackGame): void {
@@ -159,7 +168,11 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
     });
   }
 
-  formatDateTime(iso: string): string {
+  formatDateTime(iso: string | null): string {
+    if (!iso) {
+      return '';
+    }
+
     return new Date(iso).toLocaleString(this._locale, {
       day: '2-digit',
       month: '2-digit',

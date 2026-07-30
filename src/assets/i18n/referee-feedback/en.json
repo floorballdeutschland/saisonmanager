@@ -15,9 +15,9 @@
   },
   "team": {
     "title": "Referee feedback",
-    "intro": "Submit your teams' feedback on the referee pair here. Feedback is mandatory for every game and can be submitted only once per team. It becomes available as soon as the game report is closed and should be submitted within 24 hours after that. Please keep your feedback factual; feedback that is not objective will be deleted without notice.",
+    "intro": "Submit your teams' feedback on the referee pair here. Feedback is mandatory for every game and can be submitted only once per team. It becomes available no earlier than 24 hours after the game and only once the game report is closed. It should then be submitted within 24 hours. Please keep your feedback factual; feedback that is not objective will be deleted without notice.",
     "contactTitle": "Who submits the feedback?",
-    "contactHint": "Submit the feedback yourself or let the team captain do it. Whoever is entered here receives an email with a personal link once the game report is closed, and needs no user account for it. The setting applies to the whole team: all team managers of this team see and edit the same entry. You can still submit the feedback yourself at any time.",
+    "contactHint": "Submit the feedback yourself or let the team captain do it. Whoever is entered here receives an email with a personal link as soon as the feedback becomes available, and needs no user account for it. The setting applies to the whole team: all team managers of this team see and edit the same entry. You can still submit the feedback yourself at any time.",
     "contactEmailLabel": "Email address (leave empty if you want to submit it yourself)",
     "contactEmailPlaceholder": "captain@club.com",
     "preferCaptain": "Prefer to contact the captain of the respective game",

@@ -15,9 +15,9 @@
   },
   "team": {
     "title": "Schiri-Feedback",
-    "intro": "Gib hier für deine Mannschaften eine Rückmeldung zum Schiedsrichtergespann ab. Das Feedback ist pro Spiel verpflichtend und kann je Mannschaft genau einmal abgegeben werden. Es ist möglich, sobald der Spielberichtsbogen abgeschlossen ist, und soll innerhalb von 24 Stunden danach abgegeben werden. Bitte gib das Feedback auf sachlicher Basis; unsachliche Rückmeldungen werden kommentarlos gelöscht.",
+    "intro": "Gib hier für deine Mannschaften eine Rückmeldung zum Schiedsrichtergespann ab. Das Feedback ist pro Spiel verpflichtend und kann je Mannschaft genau einmal abgegeben werden. Möglich ist es frühestens 24 Stunden nach dem Spiel und erst, wenn der Spielberichtsbogen abgeschlossen ist. Die Rückmeldung soll dann innerhalb von 24 Stunden erfolgen. Bitte gib das Feedback auf sachlicher Basis; unsachliche Rückmeldungen werden kommentarlos gelöscht.",
     "contactTitle": "Wer gibt das Feedback ab?",
-    "contactHint": "Gib das Feedback selbst ab oder lass es von der Spielführung abgeben. Wer hier hinterlegt ist, bekommt nach Abschluss des Spielberichtsbogens eine E-Mail mit einem persönlichen Link und braucht dafür kein Benutzerkonto. Die Einstellung gilt für die gesamte Mannschaft: Alle Teammanager dieser Mannschaft sehen und ändern denselben Eintrag. Du kannst das Feedback weiterhin jederzeit selbst abgeben.",
+    "contactHint": "Gib das Feedback selbst ab oder lass es von der Spielführung abgeben. Wer hier hinterlegt ist, bekommt eine E-Mail mit einem persönlichen Link, sobald das Feedback möglich ist, und braucht dafür kein Benutzerkonto. Die Einstellung gilt für die gesamte Mannschaft: Alle Teammanager dieser Mannschaft sehen und ändern denselben Eintrag. Du kannst das Feedback weiterhin jederzeit selbst abgeben.",
     "contactEmailLabel": "E-Mail-Adresse (leer lassen, wenn du selbst abgeben möchtest)",
     "contactEmailPlaceholder": "kapitaen@verein.de",
     "preferCaptain": "Bevorzugt die Kapitän*in des jeweiligen Spiels anschreiben",
