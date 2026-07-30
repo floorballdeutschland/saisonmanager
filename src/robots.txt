@@ -1,0 +1,66 @@
+# robots.txt für saisonmanager.de
+#
+# Erwünscht ist die Indexierung der öffentlichen Sportinhalte: Startseite,
+# Verbandsseiten und Ligaseiten mit Spielplan, Tabelle, Scorerliste, Spiel- und
+# Mannschaftsseiten. Die stehen bewusst nicht in dieser Datei, sie sind erlaubt.
+#
+# Alles unten Aufgeführte ist entweder angemeldeten Rollen vorbehalten oder für
+# eine Suchmaschine ohne Wert. Gecrawlt wurde es bisher trotzdem: Die Seite
+# antwortet immer mit der App, die anschließend Daten nachlädt, und erst danach
+# steht fest, dass hier nichts zu holen ist. Das kostet Serverzeit ohne jeden
+# Gegenwert.
+
+User-agent: *
+
+# Die Schnittstelle selbst gehört nicht in einen Suchindex.
+Disallow: /api/
+
+# Bereiche hinter der Anmeldung.
+Disallow: /verwaltung
+Disallow: /schiedsrichter
+Disallow: /spielsekretariat
+Disallow: /mein-konto
+Disallow: /verein
+
+# Einstiegs- und Bestätigungsseiten. Einmal-Links haben in einem Index nichts
+# verloren, die Formulare sind ohne Kontext wertlos.
+Disallow: /login
+Disallow: /neues-passwort
+Disallow: /benutzername-vergessen
+Disallow: /email-bestaetigen
+Disallow: /transfer-bestaetigung
+Disallow: /schiri-feedback
+
+# Lizenzabfragen: hängen an einem Parameter aus dem QR-Code bzw. an einer Rolle.
+Disallow: /lizenzcheck
+Disallow: /lizenzliste
+
+# Personenbezogene Spielerseiten. Zurückhaltung ist hier die richtige Vorgabe,
+# im Nachwuchsbereich ohnehin.
+Disallow: /spieler
+
+# Zehn Sekunden Abstand zwischen zwei Abrufen. Applebot, Bing, Yandex und Baidu
+# halten sich daran; Google ignoriert die Angabe und wird über die Search
+# Console gesteuert. Applebot lag im Juli 2026 bei rund 22 Abrufen pro Minute
+# und damit bei mehr Serverzeit als alle echten Browser zusammen.
+Crawl-delay: 10
+
+# Reine Marketing- und SEO-Analyse-Crawler. Sie tragen zur Auffindbarkeit der
+# Sportinhalte nichts bei und bekommen deshalb nichts.
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
