@@ -268,6 +268,16 @@ export class UserEditComponent implements OnInit, OnDestroy {
     return this.editableTeamIds.includes(teamId);
   }
 
+  private _teamSelectionChanged(): boolean {
+    const saved = [...(this.user?.teams ?? [])].sort((a, b) => a - b);
+    const selected = [...this.editableTeamIds].sort((a, b) => a - b);
+
+    return (
+      saved.length !== selected.length ||
+      saved.some((id, index) => id !== selected[index])
+    );
+  }
+
   toggleTeam(teamId: number): void {
     const idx = this.editableTeamIds.indexOf(teamId);
     if (idx >= 0) {
@@ -389,6 +399,16 @@ export class UserEditComponent implements OnInit, OnDestroy {
     if (this.showClubAssignment && this.selectedClubId != null) {
       payload.club_id = this.selectedClubId;
     }
+    // Gleiches gilt für die Team-Auswahl: Sie hing bisher ausschließlich am
+    // separaten "Teams speichern"-Button. Haken setzen und dann das Haupt-
+    // "Speichern" drücken verwarf die Auswahl stillschweigend.
+    //
+    // Nur bei echter Änderung mitsenden: Ein Konto, dessen Zuweisung noch an
+    // einer Mannschaft vergangener Saisons hängt, ließe sich sonst nicht mehr
+    // speichern, weil der Server nicht zuweisbare Teams jetzt ablehnt.
+    if (this.showTeamAssignment && this._teamSelectionChanged()) {
+      payload.teams = this.editableTeamIds;
+    }
 
     this._userService
       .updateUser(this.user.id, payload)
@@ -406,15 +426,12 @@ export class UserEditComponent implements OnInit, OnDestroy {
           );
           this._router.navigate(['/', 'verwaltung', 'benutzer']);
         },
+        // Kein eigener Toast: Der ErrorInterceptor zeigt für 4xx/5xx bereits die
+        // Meldung des Servers. Der frühere Pauschaltext „Fehler beim Speichern"
+        // kam zusätzlich und verdeckte die konkrete Ursache (#84).
         error: () => {
           this.saving = false;
           this._cdr.markForCheck();
-          this._notificationService.error(
-            this._transloco.translate('userAdmin.notifications.saveError'),
-            {
-              autoClose: false,
-            }
-          );
         },
       });
   }
@@ -442,12 +459,6 @@ export class UserEditComponent implements OnInit, OnDestroy {
         error: () => {
           this.savingTeams = false;
           this._cdr.markForCheck();
-          this._notificationService.error(
-            this._transloco.translate('userAdmin.notifications.saveError'),
-            {
-              autoClose: false,
-            }
-          );
         },
       });
   }
@@ -474,12 +485,6 @@ export class UserEditComponent implements OnInit, OnDestroy {
         error: () => {
           this.savingAssignment = false;
           this._cdr.markForCheck();
-          this._notificationService.error(
-            this._transloco.translate('userAdmin.notifications.saveError'),
-            {
-              autoClose: false,
-            }
-          );
         },
       });
   }
@@ -494,7 +499,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (updated) => {
           this.user = updated;
-          this.editableTeamIds = [];
+          // Die Antwort ist maßgeblich: Der Server leert die Team-Zuweisung nur
+          // beim echten Vereinswechsel. Vorher setzte die Maske sie hier immer
+          // auf leer und zeigte damit einen Zustand, den es nicht gab.
+          this.editableTeamIds = updated.teams ? [...updated.teams] : [];
           this.savingAssignment = false;
           this._notificationService.success(
             this._transloco.translate('userAdmin.notifications.clubSaved'),
@@ -507,12 +515,6 @@ export class UserEditComponent implements OnInit, OnDestroy {
         error: () => {
           this.savingAssignment = false;
           this._cdr.markForCheck();
-          this._notificationService.error(
-            this._transloco.translate('userAdmin.notifications.saveError'),
-            {
-              autoClose: false,
-            }
-          );
         },
       });
   }

@@ -185,4 +185,19 @@ export class UserIndexComponent implements OnInit, OnDestroy {
     const unique = Array.from(new Set(parts));
     return unique.length ? unique.join(' · ') : '–';
   }
+
+  // Ein Teammanager ohne Team-Zuweisung kann sich nicht anmelden. In der Liste
+  // war das bisher nur an einem Strich in der Zuordnungs-Spalte erkennbar.
+  // Admin-, SBK- und VM-Rollen verschaffen weiterhin Zugang und heben die
+  // Sperre auf (analog User#permissions_items in der API); RSK und Ansetzer
+  // bewusst nicht, die sind dort ebenfalls nicht berücksichtigt.
+  hasMissingTeamAssignment(user: UserAdminEntry): boolean {
+    if (user.archived_at) return false;
+
+    const roleIds = user.roles.map((r) => r.user_group_id);
+    if (!roleIds.includes(5)) return false;
+    if (roleIds.some((id) => [1, 2, 4].includes(id))) return false;
+
+    return !user.team_names?.length;
+  }
 }
