@@ -273,6 +273,7 @@
         } @else {
           <select
             [(ngModel)]="selectedClubId"
+            (ngModelChange)="onClubChange()"
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm w-full mb-3"
           >
             <option [ngValue]="null">
