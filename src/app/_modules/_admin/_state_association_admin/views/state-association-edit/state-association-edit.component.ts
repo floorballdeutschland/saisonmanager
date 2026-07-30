@@ -22,6 +22,11 @@ import {
   User,
 } from '@floorball/types';
 
+// Muss mit LOGO_ALLOWED_CONTENT_TYPES der API übereinstimmen (api#275). SVG ist
+// dort bewusst ausgeschlossen, weil ActiveStorage es als Attachment ausliefert
+// und ein unbereinigtes SVG bei Inline-Auslieferung ein XSS-Vektor wäre.
+const IMAGE_UPLOAD_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+
 @Component({
   templateUrl: './state-association-edit.component.html',
   encapsulation: ViewEncapsulation.None,
@@ -30,6 +35,8 @@ import {
 })
 export class StateAssociationEditComponent implements OnInit, OnDestroy {
   stateAssociation: Partial<StateAssociation> = { name: '', short_name: '' };
+  // Dateiauswahl-Filter für Logo und Banner, eine Quelle für Template und Prüfung.
+  readonly acceptImageTypes = IMAGE_UPLOAD_TYPES.join(',');
   editMode = false;
   saving = false;
   currentUser: User | null = null;
@@ -317,14 +324,14 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
 
   deletingBanner = false;
 
-  private readonly _allowedBannerType = 'image/webp';
+  private readonly _allowedBannerTypes = IMAGE_UPLOAD_TYPES;
   private readonly _maxBannerSize = 500 * 1024;
 
   onBannerSelected(input: HTMLInputElement): void {
     if (!input.files?.length || !this.stateAssociation.id) return;
     const file = input.files[0];
 
-    if (file.type !== this._allowedBannerType) {
+    if (!this._allowedBannerTypes.includes(file.type)) {
       this._notificationService.error(
         this._transloco.translate(
           'stateAssociationAdmin.notifications.bannerTypeError'
@@ -411,7 +418,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       });
   }
 
-  private readonly _allowedLogoTypes = ['image/webp'];
+  private readonly _allowedLogoTypes = IMAGE_UPLOAD_TYPES;
   private readonly _maxLogoSize = 5 * 1024 * 1024;
 
   onLogoSelected(input: HTMLInputElement): void {
