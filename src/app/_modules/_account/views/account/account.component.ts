@@ -11,6 +11,7 @@ import {
   NotificationService,
   SessionService,
 } from '@floorball/core';
+import { passwordMeetsPolicy } from 'src/app/_helpers/_utils/password-policy';
 
 @Component({
   templateUrl: './account.component.html',
@@ -204,9 +205,12 @@ export class AccountComponent {
       return;
     }
 
-    if (this.newPassword.length < 8) {
+    // Die Anforderungen stehen als Prüfliste unter dem Feld; hier bleibt nur
+    // der Abfangfall, falls trotzdem abgeschickt wird. Verbindlich prüft der
+    // Server (PasswordPolicy).
+    if (!passwordMeetsPolicy(this.newPassword)) {
       this._notificationService.error(
-        this._transloco.translate('account.passwordTooShort')
+        this._transloco.translate('account.passwordRequirementsNotMet')
       );
       return;
     }
