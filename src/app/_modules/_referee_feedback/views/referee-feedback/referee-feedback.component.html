@@ -1,25 +1,19 @@
 <div class="p-4 lg:p-8 max-w-3xl">
-  <h1 class="text-2xl font-bold mb-2">Schiri-Feedback</h1>
+  <h1 class="text-2xl font-bold mb-2">
+    {{ "refereeFeedback.team.title" | transloco }}
+  </h1>
   <p class="text-sm text-fb-gray-500 mb-6">
-    Gib hier für deine Mannschaften eine Rückmeldung zum Schiedsrichtergespann
-    ab. Das Feedback ist pro Spiel verpflichtend und kann je Mannschaft genau
-    einmal abgegeben werden. Es ist möglich, sobald der Spielberichtsbogen
-    abgeschlossen ist, und soll innerhalb von 24 Stunden danach abgegeben
-    werden. Bitte gib das Feedback auf sachlicher Basis; unsachliche
-    Rückmeldungen werden kommentarlos gelöscht.
+    {{ "refereeFeedback.team.intro" | transloco }}
   </p>
 
   <!-- Wer gibt das Feedback ab? -->
   @if (settings.length > 0) {
     <div class="border border-fb-gray-600 rounded-[5px] p-4 mb-6">
-      <div class="font-bold text-sm mb-1">Wer gibt das Feedback ab?</div>
+      <div class="font-bold text-sm mb-1">
+        {{ "refereeFeedback.team.contactTitle" | transloco }}
+      </div>
       <p class="text-xs text-fb-gray-500 mb-4">
-        Gib das Feedback selbst ab oder lass es von der Spielführung abgeben.
-        Wer hier hinterlegt ist, bekommt nach Abschluss des Spielberichtsbogens
-        eine E-Mail mit einem persönlichen Link und braucht dafür kein
-        Benutzerkonto. Die Einstellung gilt für die gesamte Mannschaft: Alle
-        Teammanager dieser Mannschaft sehen und ändern denselben Eintrag. Du
-        kannst das Feedback weiterhin jederzeit selbst abgeben.
+        {{ "refereeFeedback.team.contactHint" | transloco }}
       </p>
 
       <div class="flex flex-col gap-4">
@@ -33,14 +27,16 @@
               class="block text-xs text-fb-gray-500 mb-1"
               [for]="'feedback-contact-' + setting.team_id"
             >
-              E-Mail-Adresse (leer lassen, wenn du selbst abgeben möchtest)
+              {{ "refereeFeedback.team.contactEmailLabel" | transloco }}
             </label>
             <input
               type="email"
               [id]="'feedback-contact-' + setting.team_id"
               [(ngModel)]="setting.feedback_contact_email"
               [name]="'feedback-contact-' + setting.team_id"
-              placeholder="kapitaen@verein.de"
+              [placeholder]="
+                'refereeFeedback.team.contactEmailPlaceholder' | transloco
+              "
               class="w-full text-sm border border-fb-gray-600 rounded-[5px] p-2"
             />
 
@@ -52,11 +48,9 @@
                 class="mt-1"
               />
               <span>
-                Bevorzugt die Kapitän*in des jeweiligen Spiels anschreiben
+                {{ "refereeFeedback.team.preferCaptain" | transloco }}
                 <span class="block text-xs text-fb-gray-500">
-                  Greift nur, wenn im Spielbericht eine Kapitän*in markiert und
-                  am Spielerprofil eine E-Mail-Adresse gepflegt ist. Sonst wird
-                  die oben eingetragene Adresse verwendet.
+                  {{ "refereeFeedback.team.preferCaptainHint" | transloco }}
                 </span>
               </span>
             </label>
@@ -70,14 +64,25 @@
                 (click)="saveSetting(setting)"
               >
                 {{
-                  savingTeamId === setting.team_id ? "Speichere…" : "Speichern"
+                  (savingTeamId === setting.team_id
+                    ? "refereeFeedback.team.saving"
+                    : "refereeFeedback.team.save"
+                  ) | transloco
                 }}
               </fb-button>
               @if (setting.updated_at) {
                 <span class="text-xs text-fb-gray-500">
-                  Zuletzt geändert {{ formatDateTime(setting.updated_at) }}
+                  {{
+                    "refereeFeedback.team.lastChanged"
+                      | transloco: { date: formatDateTime(setting.updated_at) }
+                  }}
                   @if (setting.updated_by) {
-                    <span> von {{ setting.updated_by }}</span>
+                    <span>
+                      {{
+                        "refereeFeedback.team.lastChangedBy"
+                          | transloco: { name: setting.updated_by }
+                      }}
+                    </span>
                   }
                 </span>
               }
@@ -89,12 +94,14 @@
   }
 
   @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-4">Lade…</div>
+    <div class="text-fb-gray-500 text-sm py-4">
+      {{ "refereeFeedback.team.loading" | transloco }}
+    </div>
   }
 
   @if (!loading && games.length === 0) {
     <div class="text-fb-gray-500 text-sm py-4">
-      Aktuell sind keine Spiele für ein Schiri-Feedback vorhanden.
+      {{ "refereeFeedback.team.empty" | transloco }}
     </div>
   }
 
@@ -108,7 +115,13 @@
               <div class="font-bold text-sm">
                 {{ game.team_name }}
                 <span class="text-fb-gray-500 font-normal">
-                  {{ game.home ? "gegen" : "bei" }} {{ game.opponent_name }}
+                  {{
+                    (game.home
+                      ? "refereeFeedback.team.versusHome"
+                      : "refereeFeedback.team.versusGuest"
+                    ) | transloco
+                  }}
+                  {{ game.opponent_name }}
                 </span>
               </div>
               <div class="text-xs text-fb-gray-500 mt-0.5">
@@ -117,7 +130,10 @@
                   <span> · {{ game.start_time }}</span>
                 }
                 @if (game.game_number) {
-                  <span> · Spiel {{ game.game_number }}</span>
+                  <span>
+                    · {{ "refereeFeedback.team.gamePrefix" | transloco }}
+                    {{ game.game_number }}
+                  </span>
                 }
                 @if (game.league) {
                   <span> · {{ game.league }}</span>
@@ -125,12 +141,16 @@
               </div>
               @if (game.referees.length) {
                 <div class="text-xs text-fb-gray-500 mt-0.5">
-                  Schiedsrichter: {{ game.referees.join(" / ") }}
+                  {{ "refereeFeedback.team.refereesLabel" | transloco }}:
+                  {{ game.referees.join(" / ") }}
                 </div>
               }
               @if (game.invited_email) {
                 <div class="text-xs text-fb-gray-500 mt-0.5">
-                  Einladung ging an {{ game.invited_email }}
+                  {{
+                    "refereeFeedback.team.invitationSentTo"
+                      | transloco: { email: game.invited_email }
+                  }}
                 </div>
               }
             </div>
@@ -140,11 +160,15 @@
                 <span
                   class="text-xs text-green-600 font-medium text-right block"
                 >
-                  ✓ Abgegeben<br />{{ formatDateTime(game.submitted_at!) }}
+                  ✓ {{ "refereeFeedback.team.submitted" | transloco }}<br />{{
+                    formatDateTime(game.submitted_at!)
+                  }}
                 </span>
               } @else if (notYetFillable(game)) {
                 <span class="text-xs text-fb-gray-500 text-right block">
-                  Möglich ab<br />{{ formatDateTime(game.fillable_from) }}
+                  {{ "refereeFeedback.team.fillableFrom" | transloco }}<br />{{
+                    formatDateTime(game.fillable_from)
+                  }}
                 </span>
               } @else if (openKey !== key(game)) {
                 <fb-button
@@ -153,7 +177,7 @@
                   size="small"
                   (click)="open(game)"
                 >
-                  Feedback abgeben
+                  {{ "refereeFeedback.team.openForm" | transloco }}
                 </fb-button>
               }
             </div>
