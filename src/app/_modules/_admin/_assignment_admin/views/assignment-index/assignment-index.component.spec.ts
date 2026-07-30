@@ -31,13 +31,17 @@ describe('AssignmentIndexComponent – Zusätzliche Spielinformationen', () => {
   afterEach(() => httpMock.verify());
 
   // Struktur einer Zeile der Ansetzungsliste (MergedGame ist modul-intern).
-  function row(notes: string | null = null) {
+  function row(notes: string | null = null, id = 42) {
     const game: RefereeAssignableGame = {
-      id: 42,
+      id,
       date: '2026-08-01',
       referee_notes: notes,
     };
     return { game, assignment: null };
+  }
+
+  function notesUrl(id = 42) {
+    return environment.apiURL + `admin/referee_assignments/games/${id}/notes`;
   }
 
   it('öffnet den Editor mit dem hinterlegten Text', () => {
@@ -97,6 +101,31 @@ describe('AssignmentIndexComponent – Zusätzliche Spielinformationen', () => {
     req.flush({ game_id: 42, referee_notes: null });
 
     expect(r.game.referee_notes).toBeNull();
+  });
+
+  // Der Editor-Zustand gilt für die ganze Tabelle. Ohne Sperre würde die
+  // Antwort des ersten Speichervorgangs den inzwischen geöffneten Entwurf einer
+  // anderen Zeile schließen und verwerfen.
+  it('schaltet während des Speicherns nicht auf eine andere Zeile um', () => {
+    const a = row('A alt', 42);
+    const b = row('B alt', 43);
+
+    component.toggleNotes(a);
+    component.onNotesInput('A neu');
+    component.saveNotes(a);
+
+    component.toggleNotes(b);
+    expect(component.notesOpenGameId).toBe(42);
+    expect(component.notesDraft).toBe('A neu');
+
+    httpMock.expectOne(notesUrl(42)).flush({
+      game_id: 42,
+      referee_notes: 'A neu',
+    });
+
+    expect(component.notesOpenGameId).toBeNull();
+    expect(a.game.referee_notes).toBe('A neu');
+    expect(b.game.referee_notes).toBe('B alt');
   });
 
   it('wertet reine Leerzeichen nicht als Hinweis', () => {

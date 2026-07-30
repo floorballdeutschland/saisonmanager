@@ -385,8 +385,9 @@ export interface RefereeGameDay {
   partner_confirmed_at?: string | null;
   auto_confirmed: boolean;
   confirmable_from?: string | null;
-  // Nur als SR-Coach (Beobachter) angesetzt: keine Spieltagsbestätigung,
-  // kein Partner-Status.
+  // Nur als SR-Coach (Beobachter) angesetzt. Rein für die Anzeige der Rolle:
+  // Dass an so einem Spieltag nichts zu bestätigen ist, steuert das Backend
+  // über checklist_required (false) und einen leeren Partner-Status.
   coach_only?: boolean;
   checklist_required: boolean;
   checklist_items: RefereeChecklistItem[];

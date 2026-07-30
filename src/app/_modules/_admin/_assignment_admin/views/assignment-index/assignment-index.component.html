@@ -673,7 +673,8 @@
                     <button
                       type="button"
                       (click)="toggleNotes(row)"
-                      class="px-2 py-1 text-xs border rounded-[5px] hover:bg-fb-gray-100 whitespace-nowrap"
+                      [disabled]="notesSavingGameId !== null"
+                      class="px-2 py-1 text-xs border rounded-[5px] hover:bg-fb-gray-100 disabled:opacity-40 whitespace-nowrap"
                       [class.border-amber-500]="hasNotes(row)"
                       [class.text-amber-800]="hasNotes(row)"
                       [class.bg-amber-50]="hasNotes(row)"

@@ -835,6 +835,10 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   }
 
   toggleNotes(row: MergedGame): void {
+    // Solange ein Speichern läuft, nicht auf eine andere Zeile umschalten: Der
+    // Editor-Zustand ist zeilenübergreifend, ein dort begonnener Entwurf ginge
+    // beim Eintreffen der Antwort verloren.
+    if (this.notesSavingGameId != null) return;
     if (this.notesOpenGameId === row.game.id) {
       this.cancelNotes();
       return;
@@ -869,8 +873,11 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
           row.game.referee_notes_updated_by_name =
             saved.referee_notes_updated_by_name;
           this.notesSavingGameId = null;
-          this.notesOpenGameId = null;
-          this.notesDraft = '';
+          // Nur schließen, wenn noch dieselbe Zeile offen ist.
+          if (this.notesOpenGameId === row.game.id) {
+            this.notesOpenGameId = null;
+            this.notesDraft = '';
+          }
           this._cdr.markForCheck();
           this._notificationService.success(
             this._transloco.translate(
