@@ -22,8 +22,13 @@ import {
   RefereeClubExclusionPayload,
   RefereeClubExclusionRequest,
   RefereeFeedbackProfileResponse,
-  RefereeProfileFeedback,
 } from '@floorball/types';
+
+/**
+ * Erst ab dieser Anzahl sichtbarer Rückmeldungen werden die Durchschnitte am
+ * Profil gezeigt. Bei wenigen Rückmeldungen ist der Mittelwert nicht belastbar.
+ */
+const MIN_FEEDBACK_COUNT = 5;
 
 @Component({
   templateUrl: './referee-detail.component.html',
@@ -41,7 +46,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   canViewFeedback = false;
   feedback?: RefereeFeedbackProfileResponse;
   feedbackLoading = false;
-  moderatingId: number | null = null;
+  readonly minFeedbackCount = MIN_FEEDBACK_COUNT;
 
   // Vereins-Ausschlussliste: nur für die Ansetzung sichtbar und pflegbar.
   canManageExclusions = false;
@@ -269,46 +274,6 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     this.exclusions = payload.club_exclusions;
     this.exclusionRequests = payload.club_exclusion_requests;
     this._cdr.markForCheck();
-  }
-
-  moderate(item: RefereeProfileFeedback): void {
-    const next = item.status === 'visible' ? 'hidden' : 'visible';
-    this.moderatingId = item.id;
-    this._refereeService
-      .adminModerateFeedback(item.id, next)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: () => {
-          item.status = next;
-          this.moderatingId = null;
-          this._recalcFeedbackSummary();
-          this._cdr.markForCheck();
-        },
-        error: () => {
-          this.moderatingId = null;
-          this._cdr.markForCheck();
-          this._notificationService.error('Aktion fehlgeschlagen.', {
-            autoClose: false,
-          });
-        },
-      });
-  }
-
-  // Durchschnitte nach einer Moderation aus den sichtbaren Feedbacks neu berechnen.
-  private _recalcFeedbackSummary(): void {
-    if (!this.feedback) return;
-    const visible = this.feedback.feedbacks.filter(
-      (f) => f.status === 'visible'
-    );
-    const avg = (vals: number[]): number | null =>
-      vals.length
-        ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10
-        : null;
-    this.feedback.summary = {
-      count: visible.length,
-      avg_line_rating: avg(visible.map((f) => f.line_rating)),
-      avg_communication_rating: avg(visible.map((f) => f.communication_rating)),
-    };
   }
 
   get detailRouteId(): string | number {
