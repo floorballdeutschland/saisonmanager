@@ -34,6 +34,13 @@
                   <span> &middot; {{ gd.arena }}</span>
                 }
               </div>
+              @if (gd.coach_only) {
+                <div
+                  class="inline-block mt-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 text-[10px] font-bold uppercase"
+                >
+                  {{ "refereeSelf.gameDays.coachBadge" | transloco }}
+                </div>
+              }
             </div>
             <!-- Action buttons (only while not yet confirmed and a checklist exists) -->
             @if (needsAction(gd) && rejectingId !== gd.id) {
@@ -101,6 +108,25 @@
                       {{ g.result || "–" }}
                     </td>
                   </tr>
+                  <!-- Hinweis des Ansetzers, nur fürs Gespann bzw. den Coach -->
+                  @if (g.referee_notes) {
+                    <tr>
+                      <td colspan="4" class="pb-2">
+                        <div
+                          class="rounded-[5px] border border-blue-200 bg-blue-50 p-2"
+                        >
+                          <div
+                            class="text-[10px] font-bold uppercase text-blue-800 mb-0.5"
+                          >
+                            {{ "refereeSelf.gameDays.notesTitle" | transloco }}
+                          </div>
+                          <div class="whitespace-pre-line">
+                            {{ g.referee_notes }}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  }
                 }
               </tbody>
             </table>

@@ -335,6 +335,18 @@ export interface RefereeAssignableGame {
   national?: boolean;
   assignment_id?: number | null;
   assignment_status?: string | null;
+  // Freitext-Spielinformationen des Ansetzers, nur für das angesetzte Gespann
+  // und den SR-Coach sichtbar (nie für die Mannschaften).
+  referee_notes?: string | null;
+  referee_notes_updated_at?: string | null;
+  referee_notes_updated_by_name?: string | null;
+}
+
+export interface RefereeGameNotes {
+  game_id: number;
+  referee_notes?: string | null;
+  referee_notes_updated_at?: string | null;
+  referee_notes_updated_by_name?: string | null;
 }
 
 export interface RefereeGameDayGame {
@@ -344,6 +356,9 @@ export interface RefereeGameDayGame {
   home_team?: string;
   guest_team?: string;
   result?: string;
+  // Hinweis des Ansetzers an das Gespann; nur gefüllt, wenn man selbst
+  // (veröffentlicht) angesetzt ist.
+  referee_notes?: string | null;
 }
 
 export interface RefereeChecklistItem {
@@ -370,6 +385,9 @@ export interface RefereeGameDay {
   partner_confirmed_at?: string | null;
   auto_confirmed: boolean;
   confirmable_from?: string | null;
+  // Nur als SR-Coach (Beobachter) angesetzt: keine Spieltagsbestätigung,
+  // kein Partner-Status.
+  coach_only?: boolean;
   checklist_required: boolean;
   checklist_items: RefereeChecklistItem[];
   properly_conducted?: boolean | null;

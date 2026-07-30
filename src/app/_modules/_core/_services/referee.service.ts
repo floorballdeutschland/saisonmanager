@@ -17,6 +17,7 @@ import {
   RefereeEntry,
   RefereeCourseResultSummary,
   RefereeGameDay,
+  RefereeGameNotes,
   RefereeHistorySeason,
   PenaltyCode,
   RefereeLicenseLevel,
@@ -428,6 +429,19 @@ export class RefereeService {
     return this.http.put<RefereeAssignment>(
       environment.apiURL + 'admin/referee_assignments/' + id,
       { assignment: data }
+    );
+  }
+
+  // Zusätzliche Spielinformationen des Ansetzers. Leerer Text löscht den
+  // Hinweis. Sichtbar nur für die Ansetzung und – nach dem Veröffentlichen –
+  // für das angesetzte Gespann und den SR-Coach.
+  public adminUpdateGameRefereeNotes(gameId: number, notes: string) {
+    return this.http.patch<RefereeGameNotes>(
+      environment.apiURL +
+        'admin/referee_assignments/games/' +
+        gameId +
+        '/notes',
+      { game: { referee_notes: notes } }
     );
   }
 
