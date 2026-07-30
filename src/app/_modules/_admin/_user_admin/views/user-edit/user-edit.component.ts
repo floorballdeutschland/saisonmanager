@@ -142,6 +142,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
               ? parsedClubId
               : null;
 
+          this._pruneUnassignableTeamIds();
           this._cdr.markForCheck();
         },
         error: () => {
@@ -161,6 +162,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.clubsWithTeams = data;
+          this._pruneUnassignableTeamIds();
           this._cdr.markForCheck();
         },
       });
@@ -266,6 +268,30 @@ export class UserEditComponent implements OnInit, OnDestroy {
 
   isTeamSelected(teamId: number): boolean {
     return this.editableTeamIds.includes(teamId);
+  }
+
+  // Nach einem Vereinswechsel im Auswahlfeld zeigt die Teamliste die Teams des
+  // neuen Vereins. Die bisherige Auswahl gehört zum alten und wäre nicht mehr
+  // zuweisbar, würde aber weiter mitgesendet.
+  onClubChange(): void {
+    this._pruneUnassignableTeamIds();
+  }
+
+  // Zuweisungen, die nicht mehr zuweisbar sind (Mannschaft einer vergangenen
+  // Saison, anderer Verein), haben in der Liste keine Checkbox und sind damit
+  // unsichtbar. Blieben sie in der Auswahl, würde die API sie ablehnen und das
+  // Speichern wäre blockiert, ohne dass der Haken abwählbar wäre. Deshalb beim
+  // Laden der Teamliste auf das Anwählbare eindampfen: Der nächste Speichervorgang
+  // räumt die toten Zuweisungen dann mit auf, was ohnehin das Ziel ist.
+  private _pruneUnassignableTeamIds(): void {
+    // Beide Quellen (Konto und Teamliste) laden parallel; ohne sie wäre jede
+    // Auswahl scheinbar unzuweisbar und würde fälschlich verworfen.
+    if (!this.user || !this.clubsWithTeams.length) return;
+
+    const assignable = this.availableTeams.map((t) => t.id);
+    this.editableTeamIds = this.editableTeamIds.filter((id) =>
+      assignable.includes(id)
+    );
   }
 
   private _teamSelectionChanged(): boolean {
