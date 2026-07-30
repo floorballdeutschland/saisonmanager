@@ -327,18 +327,22 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           };
           this.userAccountLoading = false;
           this._cdr.markForCheck();
-          if (updated.duplicate_email) {
-            this._notificationService.error(
-              `Konto „${
-                updated.user_name ?? ''
-              }" angelegt, aber die E-Mail-Adresse ist bereits einem anderen Konto zugeordnet. Bitte E-Mail-Adresse prüfen.`,
-              { autoClose: false, keepAfterRouteChange: false }
-            );
-          } else if (updated.email_sent === false) {
+          if (updated.email_sent === false) {
             this._notificationService.error(
               `Konto „${
                 updated.user_name ?? ''
               }" angelegt, aber die E-Mail konnte nicht versendet werden. Bitte Passwort manuell zurücksetzen.`,
+              { autoClose: false, keepAfterRouteChange: false }
+            );
+          } else if (updated.duplicate_email) {
+            // Mehrfach vergebene Adressen sind ausdrücklich erlaubt: Der Login
+            // läuft über den Benutzernamen, dieselbe Person kann Schiri- und
+            // Vereinskonto haben. Das Konto steht, die Mail ist raus, es bleibt
+            // ein Hinweis. Deshalb Warnung (orange) statt Fehler (rot).
+            this._notificationService.warning(
+              `Konto „${
+                updated.user_name ?? ''
+              }" angelegt und E-Mail verschickt. Hinweis: Die E-Mail-Adresse wird bereits von einem anderen Konto genutzt. Das ist zulässig, prüfe aber bitte, ob sie richtig ist.`,
               { autoClose: false, keepAfterRouteChange: false }
             );
           } else {
