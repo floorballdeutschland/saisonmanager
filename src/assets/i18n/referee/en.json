@@ -146,7 +146,9 @@
     "autoConfirmed": "Automatically confirmed",
     "pending": "Pending",
     "reportedImproperAt": "Reported as not properly conducted on {{ date }}",
-    "partner": "Partner:"
+    "partner": "Partner:",
+    "notesTitle": "Additional game information from the assigner",
+    "coachBadge": "Assigned as referee coach"
   },
   "notifications": {
     "profileLoadError": "Profile could not be loaded.",

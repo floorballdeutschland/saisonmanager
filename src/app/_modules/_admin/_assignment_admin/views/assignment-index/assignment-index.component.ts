@@ -107,6 +107,13 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
 
   rowStates = new Map<number, RowState>();
 
+  // Zusätzliche Spielinformationen: je Zeile aufklappbares Textfeld. Es ist
+  // immer nur eine Notiz in Bearbeitung, deshalb ein einzelner Entwurf statt
+  // eines Eintrags je Zeile.
+  notesOpenGameId: number | null = null;
+  notesDraft = '';
+  notesSavingGameId: number | null = null;
+
   private _assignments: RefereeAssignment[] = [];
   private _destroy$ = new Subject<void>();
 
@@ -817,6 +824,71 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
               keepAfterRouteChange: false,
             }
           );
+        },
+      });
+  }
+
+  // Zusätzliche Spielinformationen für das Gespann
+
+  hasNotes(row: MergedGame): boolean {
+    return !!row.game.referee_notes?.trim();
+  }
+
+  toggleNotes(row: MergedGame): void {
+    // Solange ein Speichern läuft, nicht auf eine andere Zeile umschalten: Der
+    // Editor-Zustand ist zeilenübergreifend, ein dort begonnener Entwurf ginge
+    // beim Eintreffen der Antwort verloren.
+    if (this.notesSavingGameId != null) return;
+    if (this.notesOpenGameId === row.game.id) {
+      this.cancelNotes();
+      return;
+    }
+    this.notesOpenGameId = row.game.id;
+    this.notesDraft = row.game.referee_notes ?? '';
+    this._cdr.markForCheck();
+  }
+
+  cancelNotes(): void {
+    this.notesOpenGameId = null;
+    this.notesDraft = '';
+    this._cdr.markForCheck();
+  }
+
+  onNotesInput(value: string): void {
+    this.notesDraft = value;
+  }
+
+  saveNotes(row: MergedGame): void {
+    if (this.notesSavingGameId != null) return;
+    this.notesSavingGameId = row.game.id;
+    this._cdr.markForCheck();
+
+    this._refereeService
+      .adminUpdateGameRefereeNotes(row.game.id, this.notesDraft)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (saved) => {
+          row.game.referee_notes = saved.referee_notes;
+          row.game.referee_notes_updated_at = saved.referee_notes_updated_at;
+          row.game.referee_notes_updated_by_name =
+            saved.referee_notes_updated_by_name;
+          this.notesSavingGameId = null;
+          // Nur schließen, wenn noch dieselbe Zeile offen ist.
+          if (this.notesOpenGameId === row.game.id) {
+            this.notesOpenGameId = null;
+            this.notesDraft = '';
+          }
+          this._cdr.markForCheck();
+          this._notificationService.success(
+            this._transloco.translate(
+              'assignmentAdmin.notifications.notesSaved'
+            ),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+        },
+        error: () => {
+          this.notesSavingGameId = null;
+          this._cdr.markForCheck();
         },
       });
   }

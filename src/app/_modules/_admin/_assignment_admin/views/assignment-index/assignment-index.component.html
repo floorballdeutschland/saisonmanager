@@ -645,7 +645,12 @@
                       "
                       class="px-2 py-1 text-xs bg-blue-600 text-white rounded-[5px] hover:bg-blue-700 disabled:opacity-40 whitespace-nowrap"
                     >
-                      {{ state.notifying ? "Sende…" : "E-Mail versenden" }}
+                      {{
+                        (state.notifying
+                          ? "assignmentAdmin.index.sending"
+                          : "assignmentAdmin.index.sendEmail"
+                        ) | transloco
+                      }}
                     </button>
                     <button
                       type="button"
@@ -658,8 +663,31 @@
                       class="px-2 py-1 text-xs bg-green-700 text-white rounded-[5px] hover:bg-green-800 disabled:opacity-40 whitespace-nowrap"
                     >
                       {{
-                        state.publishing ? "Publizieren…" : "Veröffentlichen"
+                        (state.publishing
+                          ? "assignmentAdmin.index.publishing"
+                          : "assignmentAdmin.index.publish"
+                        ) | transloco
                       }}
+                    </button>
+                    <!-- Zusätzliche Spielinformationen: nur fürs Gespann sichtbar -->
+                    <button
+                      type="button"
+                      (click)="toggleNotes(row)"
+                      [disabled]="notesSavingGameId !== null"
+                      class="px-2 py-1 text-xs border rounded-[5px] hover:bg-fb-gray-100 disabled:opacity-40 whitespace-nowrap"
+                      [class.border-amber-500]="hasNotes(row)"
+                      [class.text-amber-800]="hasNotes(row)"
+                      [class.bg-amber-50]="hasNotes(row)"
+                      [class.border-fb-gray-400]="!hasNotes(row)"
+                      [class.text-fb-gray-600]="!hasNotes(row)"
+                      [attr.title]="
+                        'assignmentAdmin.index.notesHint' | transloco
+                      "
+                    >
+                      @if (hasNotes(row)) {
+                        <span aria-hidden="true">📝 </span>
+                      }
+                      {{ "assignmentAdmin.index.notesButton" | transloco }}
                     </button>
                   </div>
                 </td>
@@ -683,6 +711,70 @@
               <tr class="bg-amber-50 border-b border-fb-gray-600">
                 <td colspan="10" class="py-1.5 px-2 text-xs text-amber-800">
                   ⚠ {{ conflict }}
+                </td>
+              </tr>
+            }
+            <!-- Aufgeklappter Editor für die Spielinformationen des Gespanns -->
+            @if (notesOpenGameId === row.game.id) {
+              <tr class="bg-fb-gray-100 border-b border-fb-gray-600">
+                <td colspan="10" class="py-3 px-2">
+                  <label
+                    [attr.for]="'notes-' + row.game.id"
+                    class="block text-xs font-bold uppercase text-fb-gray-500 mb-1"
+                  >
+                    {{ "assignmentAdmin.index.notesLabel" | transloco }}
+                  </label>
+                  <p class="text-xs text-fb-gray-500 mb-2">
+                    {{ "assignmentAdmin.index.notesHint" | transloco }}
+                  </p>
+                  <textarea
+                    [id]="'notes-' + row.game.id"
+                    rows="3"
+                    [value]="notesDraft"
+                    (input)="onNotesInput($any($event.target).value)"
+                    [attr.placeholder]="
+                      'assignmentAdmin.index.notesPlaceholder' | transloco
+                    "
+                    class="w-full px-2 py-1.5 border border-fb-gray-600 rounded-[5px] text-sm bg-white focus:outline-none focus:border-black"
+                  ></textarea>
+                  <div class="flex flex-wrap items-center gap-2 mt-2">
+                    <button
+                      type="button"
+                      (click)="saveNotes(row)"
+                      [disabled]="notesSavingGameId === row.game.id"
+                      class="px-3 py-1 text-xs bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+                    >
+                      {{
+                        (notesSavingGameId === row.game.id
+                          ? "assignmentAdmin.index.saving"
+                          : "assignmentAdmin.index.notesSave"
+                        ) | transloco
+                      }}
+                    </button>
+                    <button
+                      type="button"
+                      (click)="cancelNotes()"
+                      [disabled]="notesSavingGameId === row.game.id"
+                      class="px-3 py-1 text-xs border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
+                    >
+                      {{ "assignmentAdmin.index.notesCancel" | transloco }}
+                    </button>
+                    @if (row.game.referee_notes_updated_at) {
+                      <span class="text-xs text-fb-gray-500">
+                        {{ "assignmentAdmin.index.notesUpdated" | transloco }}
+                        {{
+                          row.game.referee_notes_updated_at
+                            | date: "dd.MM.yyyy HH:mm"
+                        }}
+                        @if (row.game.referee_notes_updated_by_name) {
+                          <span
+                            >&middot;
+                            {{ row.game.referee_notes_updated_by_name }}</span
+                          >
+                        }
+                      </span>
+                    }
+                  </div>
                 </td>
               </tr>
             }
