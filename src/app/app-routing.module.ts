@@ -3,7 +3,9 @@ import { RouterModule, Routes } from '@angular/router';
 import { SelectivePreloadingStrategy } from './_helpers/selective-preloading.strategy';
 import { permissionGuard } from './_helpers/_guards/permission.guard';
 
-const routes: Routes = [
+// Exportiert für app-routing.spec.ts: Die Reihenfolge ist hier Logik, kein
+// Stil (siehe Kommentar an der letzten Route).
+export const routes: Routes = [
   {
     path: '',
     children: [
@@ -331,14 +333,6 @@ const routes: Routes = [
   {
     path: '',
     loadChildren: () =>
-      import('@floorball/public/association/host').then(
-        (m) => m.PublicAssociationHostModule
-      ),
-    data: { preload: true },
-  },
-  {
-    path: '',
-    loadChildren: () =>
       import('@floorball/public/transfer-confirmation').then(
         (m) => m.PublicTransferConfirmationModule
       ),
@@ -349,6 +343,19 @@ const routes: Routes = [
     loadChildren: () =>
       import('@floorball/public/email-confirmation').then(
         (m) => m.PublicEmailConfirmationModule
+      ),
+    data: { preload: true },
+  },
+  {
+    // MUSS als letzte Route stehen: Der Spielbetriebs-Host matcht mit
+    // ':association' jedes erste URL-Segment. Bleibt danach nichts übrig (also
+    // bei einer Ein-Segment-URL wie /email-bestaetigen), gilt die Route als
+    // getroffen und die Seite bleibt leer, weil nur der Host-Rahmen ohne
+    // Kind-Route rendert. Konkrete Pfade gehören deshalb alle davor.
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/association/host').then(
+        (m) => m.PublicAssociationHostModule
       ),
     data: { preload: true },
   },
