@@ -21,11 +21,10 @@ import {
   StateAssociationRelease,
   User,
 } from '@floorball/types';
-
-// Muss mit LOGO_ALLOWED_CONTENT_TYPES der API übereinstimmen (api#275). SVG ist
-// dort bewusst ausgeschlossen, weil ActiveStorage es als Attachment ausliefert
-// und ein unbereinigtes SVG bei Inline-Auslieferung ein XSS-Vektor wäre.
-const IMAGE_UPLOAD_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+import {
+  IMAGE_UPLOAD_ACCEPT,
+  isAllowedImageType,
+} from 'src/app/_helpers/_utils/image-upload';
 
 @Component({
   templateUrl: './state-association-edit.component.html',
@@ -36,7 +35,7 @@ const IMAGE_UPLOAD_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 export class StateAssociationEditComponent implements OnInit, OnDestroy {
   stateAssociation: Partial<StateAssociation> = { name: '', short_name: '' };
   // Dateiauswahl-Filter für Logo und Banner, eine Quelle für Template und Prüfung.
-  readonly acceptImageTypes = IMAGE_UPLOAD_TYPES.join(',');
+  readonly acceptImageTypes = IMAGE_UPLOAD_ACCEPT;
   editMode = false;
   saving = false;
   currentUser: User | null = null;
@@ -324,14 +323,13 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
 
   deletingBanner = false;
 
-  private readonly _allowedBannerTypes = IMAGE_UPLOAD_TYPES;
   private readonly _maxBannerSize = 500 * 1024;
 
   onBannerSelected(input: HTMLInputElement): void {
     if (!input.files?.length || !this.stateAssociation.id) return;
     const file = input.files[0];
 
-    if (!this._allowedBannerTypes.includes(file.type)) {
+    if (!isAllowedImageType(file)) {
       this._notificationService.error(
         this._transloco.translate(
           'stateAssociationAdmin.notifications.bannerTypeError'
@@ -418,14 +416,13 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       });
   }
 
-  private readonly _allowedLogoTypes = IMAGE_UPLOAD_TYPES;
   private readonly _maxLogoSize = 5 * 1024 * 1024;
 
   onLogoSelected(input: HTMLInputElement): void {
     if (!input.files?.length || !this.stateAssociation.id) return;
     const file = input.files[0];
 
-    if (!this._allowedLogoTypes.includes(file.type)) {
+    if (!isAllowedImageType(file)) {
       this._notificationService.error(
         this._transloco.translate(
           'stateAssociationAdmin.notifications.logoTypeError'
