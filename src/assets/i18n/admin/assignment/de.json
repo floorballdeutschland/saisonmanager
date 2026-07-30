@@ -53,7 +53,14 @@
     "filterTags": "Tags",
     "shortNoticeBadge": "Kurzfristig mobil",
     "updateSend": "Änderung & Benachrichtigung senden",
-    "exclusionConflict": "Vereins-Ausschluss: {{names}} möchte(n) für einen der beteiligten Vereine nicht angesetzt werden."
+    "exclusionConflict": "Vereins-Ausschluss: {{names}} möchte(n) für einen der beteiligten Vereine nicht angesetzt werden.",
+    "notesButton": "Infos fürs Gespann",
+    "notesLabel": "Zusätzliche Spielinformationen",
+    "notesHint": "Sichtbar nur für das angesetzte Gespann und den SR-Coach, nicht für die Mannschaften. Zugestellt wird der Hinweis mit dem Veröffentlichen der Ansetzung.",
+    "notesPlaceholder": "z. B. Halleneingang, Ansprechpartner vor Ort, Turniermodus…",
+    "notesSave": "Infos speichern",
+    "notesCancel": "Abbrechen",
+    "notesUpdated": "Zuletzt geändert:"
   },
   "notifications": {
     "saved": "Ansetzung gespeichert.",
@@ -63,6 +70,7 @@
     "notifyError": "Fehler beim Senden.",
     "published": "Ansetzung veröffentlicht.",
     "publishError": "Fehler beim Veröffentlichen.",
-    "loadError": "Daten konnten nicht geladen werden."
+    "loadError": "Daten konnten nicht geladen werden.",
+    "notesSaved": "Spielinformationen gespeichert."
   }
 }

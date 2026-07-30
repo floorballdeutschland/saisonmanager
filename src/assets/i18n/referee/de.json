@@ -146,7 +146,9 @@
     "autoConfirmed": "Automatisch bestätigt",
     "pending": "Ausstehend",
     "reportedImproperAt": "Als nicht ordnungsgemäß gemeldet am {{ date }}",
-    "partner": "Partner:"
+    "partner": "Partner:",
+    "notesTitle": "Zusätzliche Spielinformationen der Ansetzung",
+    "coachBadge": "Als SR-Coach angesetzt"
   },
   "notifications": {
     "profileLoadError": "Profil konnte nicht geladen werden.",
