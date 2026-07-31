@@ -272,15 +272,33 @@ export class UserCreateComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (created) => {
-          this._notificationService.success(
-            this._transloco.translate('userAdmin.notifications.userCreated', {
-              name: created.name,
-            }),
-            {
-              autoClose: true,
-              keepAfterRouteChange: true,
-            }
-          );
+          // Das Konto steht auch dann, wenn die Willkommensmail nicht rausging.
+          // Dann darf hier aber keine Erfolgsmeldung stehen, die eine
+          // verschickte Mail behauptet: Ohne den Link kommt die Person nicht an
+          // ihr Konto, das Initialpasswort ist zufällig vergeben. Wie in der
+          // Schiriverwaltung bleibt die Meldung offen stehen.
+          if (created.email_sent === false) {
+            this._notificationService.error(
+              this._transloco.translate(
+                'userAdmin.notifications.userCreatedWithoutMail',
+                { name: created.name }
+              ),
+              {
+                autoClose: false,
+                keepAfterRouteChange: true,
+              }
+            );
+          } else {
+            this._notificationService.success(
+              this._transloco.translate('userAdmin.notifications.userCreated', {
+                name: created.name,
+              }),
+              {
+                autoClose: true,
+                keepAfterRouteChange: true,
+              }
+            );
+          }
           this._router.navigate([
             '/',
             'verwaltung',

@@ -78,6 +78,14 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Der ausdrücklich angestoßene Reset-Mail-Versand meldet einen
+        // gescheiterten Versand als 502 samt Klartext-Nachricht. Der generische
+        // 5xx-Zweig weiter unten würde die verschlucken und stattdessen
+        // „Server-Fehler" zeigen, zusätzlich zum Toast des Component-Handlers.
+        if (request.url.includes('trigger_password_reset')) {
+          return throwError(() => err);
+        }
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           const returnUrl = this._router.url;
           this.sessionService.logout(false, true, 'Bitte einloggen.', false);

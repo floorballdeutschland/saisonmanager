@@ -126,6 +126,7 @@
   },
   "notifications": {
     "userCreated": "User {{ name }} created. An email to set the password has been sent.",
+    "userCreatedWithoutMail": "User {{ name }} created, but the email to set the password could not be sent. Please trigger the send again from the account.",
     "createError": "Error while creating",
     "userNotFound": "User not found.",
     "saved": "Saved.",
