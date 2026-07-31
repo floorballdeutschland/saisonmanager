@@ -11,9 +11,15 @@
 # Gegenwert.
 
 User-agent: *
+# Die Verwaltungsschnittstelle gehört nicht in einen Suchindex.
+Disallow: /api/v2/admin/
 
-# Die Schnittstelle selbst gehört nicht in einen Suchindex.
-Disallow: /api/
+# Die öffentliche Schnittstelle bleibt ausdrücklich erlaubt. Sie liegt unter
+# derselben Adresse wie die Seite, und ausser den wenigen vorgerenderten
+# Startseiten holen sich alle Ligen-, Mannschafts- und Spielseiten ihre Inhalte
+# erst im Browser von dort. Eine Sperre auf /api/ nimmt einer Suchmaschine
+# damit genau die Daten weg, die sie indexieren soll, und übrig bliebe eine
+# leere Seite.
 
 # Bereiche hinter der Anmeldung.
 Disallow: /verwaltung
