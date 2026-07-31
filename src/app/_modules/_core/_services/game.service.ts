@@ -3,6 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 
 import {
   AddLineupPlayerResponse,
+  ChecklistVeto,
+  ChecklistVetoAnswer,
   Game,
   GameAdditionalFields,
   GameEvent,
@@ -360,6 +362,30 @@ export class GameService {
     return this.http.post<{ success: boolean }>(
       environment.apiURL + 'user/games/' + gameId + '/checklist_answers.json',
       { answers }
+    );
+  }
+
+  // Einspruch des Ausrichtervereins gegen die Spieltagscheckliste. Der Token aus
+  // der Bestätigungsmail ist die einzige Berechtigung, es gibt kein Konto dazu –
+  // deshalb liegen beide Endpunkte unter `public/`-Semantik ohne Cookie-Session.
+  public getChecklistVeto(gameId: number, token: string) {
+    return this.http.get<ChecklistVeto>(
+      environment.apiURL +
+        'games/' +
+        gameId +
+        '/checklist_veto?token=' +
+        encodeURIComponent(token)
+    );
+  }
+
+  public submitChecklistVeto(
+    gameId: number,
+    token: string,
+    answers: ChecklistVetoAnswer[]
+  ) {
+    return this.http.post<{ success: boolean }>(
+      environment.apiURL + 'games/' + gameId + '/checklist_veto',
+      { token, answers }
     );
   }
 
