@@ -79,7 +79,10 @@ export class MatchComponent implements OnInit, OnDestroy {
       this._route.snapshot.queryParamMap.get('secretary_token');
     if (secretaryToken) {
       sessionStorage.setItem('secretary_token', secretaryToken);
-      this.tab = 'sbb';
+      // 'secretary', nicht 'sbb': isTabActive() vergleicht nur gegen 'public'
+      // und 'secretary'. Mit 'sbb' war keiner der beiden Bereiche aktiv, es
+      // rendete nur der Kopfbereich und die Seite blieb ohne Inhalt.
+      this.tab = 'secretary';
       this._router.navigate([], {
         relativeTo: this._route,
         queryParams: { secretary_token: null },

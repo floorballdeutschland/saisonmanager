@@ -7,7 +7,12 @@ import {
   getPeriodMaxSeconds,
   isEventTimeValid,
 } from './event-time-validation';
-import { Game, GameEvent, League } from '@floorball/types';
+import {
+  Game,
+  GameAdditionalFields,
+  GameEvent,
+  League,
+} from '@floorball/types';
 
 // 3 Perioden à 20 Minuten, 10 Minuten Verlängerung
 const leagueSettings = {
@@ -429,6 +434,113 @@ describe('MatchEventFormComponent', () => {
         expect(ids).toContain('penalty_shots');
         expect(ids).not.toContain('pause1');
       });
+    });
+  });
+  describe('coachNumbers', () => {
+    // Strafen gegen Betreuer laufen über die Pseudo-Trikotnummern 2001–2005.
+    // Angeboten wird nur, wer im Spielbericht namentlich eingetragen ist.
+    const withCoaches = (
+      home: Partial<GameAdditionalFields['home_team_coaches']>,
+      guest: Partial<GameAdditionalFields['guest_team_coaches']> = {}
+    ) =>
+      ({
+        home_team_coaches: home,
+        guest_team_coaches: guest,
+      }) as GameAdditionalFields;
+
+    it('should offer only coaches with a name, in order', () => {
+      component.team = 'home';
+      component.additionalFields = withCoaches({
+        coach1_last_name: 'Meier',
+        coach3_first_name: 'Anna',
+      });
+
+      expect(component.coachNumbers()).toEqual([1, 3]);
+    });
+
+    it('should read the coaches of the selected team', () => {
+      component.team = 'guest';
+      component.additionalFields = withCoaches(
+        { coach1_last_name: 'Meier' },
+        { coach2_last_name: 'Schulz' }
+      );
+
+      expect(component.coachNumbers()).toEqual([2]);
+    });
+
+    it('should offer nothing without additionalFields', () => {
+      component.team = 'home';
+      component.additionalFields = undefined;
+
+      expect(component.coachNumbers()).toEqual([]);
+    });
+
+    it('should offer nothing when no coach has a name', () => {
+      component.team = 'home';
+      component.additionalFields = withCoaches({ coach1_last_name: '' });
+
+      expect(component.coachNumbers()).toEqual([]);
+    });
+
+    // Die Nummer lässt sich auch von Hand ins Nr.-Feld tippen; das Dropdown ist
+    // dann umgangen und muss dieselbe Bedingung prüfen.
+    it('should accept a hand-typed number for a named coach', () => {
+      component.team = 'home';
+      component.additionalFields = withCoaches({ coach2_last_name: 'Meier' });
+
+      component.searchPlayerByNumber('home', 2002, false);
+
+      expect(component.playerNumber).toBe(2002);
+      expect(component.playerError).toBeFalse();
+    });
+
+    it('should reject a hand-typed number for an empty coach slot', () => {
+      component.team = 'home';
+      component.additionalFields = withCoaches({ coach1_last_name: 'Meier' });
+
+      component.searchPlayerByNumber('home', 2003, false);
+
+      // Sonst entstünde eine Strafe gegen einen Betreuer ohne Namen: in der
+      // Ereignisliste bliebe die Zeile namenlos und der Strafgrund unsichtbar.
+      expect(component.playerNumber).toBe(0);
+      expect(component.playerError).toBeTrue();
+    });
+
+    it('should not treat a coach number as an assist', () => {
+      component.team = 'home';
+      component.additionalFields = withCoaches({ coach1_last_name: 'Meier' });
+      component.match = {
+        players: { home: [], guest: [] },
+      } as unknown as Game;
+
+      component.searchPlayerByNumber('home', 2001, true);
+
+      expect(component.assistPlayerNumber).toBe(0);
+      expect(component.assistError).toBeTrue();
+    });
+
+    it('should restore a stored coach penalty for editing', () => {
+      component.type = 'penalty';
+      component.team = 'home';
+      component.additionalFields = withCoaches({ coach1_last_name: 'Meier' });
+      component.match = {
+        league_id: 1,
+        players: { home: [], guest: [] },
+        referees: [],
+      } as unknown as Game;
+      component.existingEvent = {
+        event_type: 'penalty',
+        number: 2001,
+        time: '5:30',
+        period: 1,
+        penalty_id: 7,
+        penalty_code_id: 12,
+      } as GameEvent;
+
+      component.ngOnInit();
+
+      expect(component.playerNumber).toBe(2001);
+      expect(component.coachNumbers()).toEqual([1]);
     });
   });
 });

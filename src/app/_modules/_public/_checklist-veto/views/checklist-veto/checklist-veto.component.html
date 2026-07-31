@@ -1,0 +1,129 @@
+<div class="p-4 lg:p-8 max-w-3xl mx-auto">
+  <h1 class="text-2xl font-bold mb-2">Einspruch Spieltagscheckliste</h1>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-4">Lade…</div>
+  }
+
+  @if (!loading && invalid) {
+    <p class="text-sm text-fb-gray-500 py-4">
+      Dieser Link ist ungültig. Möglicherweise wurde der Spielbericht nach dem
+      Versand der Mail erneut abgeschlossen, dann gilt nur noch der Link aus der
+      neuesten Bestätigungsmail. Bitte wende dich an die zuständige
+      Spielbetriebskommission.
+    </p>
+  }
+
+  @if (!loading && !invalid && veto) {
+    <!-- Kopfdaten des Spiels, für das der Link gilt -->
+    <div class="border border-fb-gray-600 rounded-[5px] p-4 mb-6">
+      <div class="font-bold text-sm">
+        {{ veto.home_team_name }}
+        <span class="text-fb-gray-500 font-normal">gegen</span>
+        {{ veto.guest_team_name }}
+      </div>
+      <div class="text-xs text-fb-gray-500 mt-0.5">
+        {{ formatDate(veto.date) }}
+        @if (veto.game_number) {
+          <span> · Spiel {{ veto.game_number }}</span>
+        }
+      </div>
+    </div>
+
+    @if (done) {
+      <p class="text-sm text-green-600 font-medium py-4">
+        ✓ Der Einspruch ist eingereicht.
+      </p>
+      <p class="text-sm text-fb-gray-500">
+        Die zuständige Spielbetriebskommission und das Schiedsrichtergespann
+        wurden informiert. Der Link ist damit verbraucht.
+      </p>
+    } @else if (veto.already_submitted) {
+      <p class="text-sm text-fb-gray-500 py-4">
+        Für dieses Spiel wurde bereits ein Einspruch eingereicht. Pro
+        Spielbericht ist genau einer möglich, der erste zählt.
+      </p>
+    } @else if (!veto.checklist_items.length) {
+      <p class="text-sm text-fb-gray-500 py-4">
+        Für diesen Spieltag ist keine Checkliste hinterlegt. Es gibt daher
+        nichts zu beanstanden.
+      </p>
+    } @else {
+      <p class="text-sm text-fb-gray-500 mb-6">
+        Als Ausrichterverein kannst du hier der Einschätzung der Spielleitung
+        widersprechen. Angezeigt ist zu jeder Frage, was die Spielleitung beim
+        Abschluss des Spielberichts angegeben hat; darunter steht deine eigene
+        Antwort, zunächst auf demselben Stand. Ändere nur, was du anders siehst.
+        <strong
+          >Nach dem Absenden ist der Link verbraucht, eine Korrektur ist nicht
+          möglich.</strong
+        >
+      </p>
+
+      @if (errorMessage) {
+        <p class="text-sm text-red-600 mb-4">{{ errorMessage }}</p>
+      }
+
+      <div class="flex flex-col gap-4 mb-6">
+        @for (item of veto.checklist_items; track item.id) {
+          <div class="border border-fb-gray-600 rounded-[5px] p-4">
+            <div class="font-medium text-sm mb-2">{{ item.question }}</div>
+
+            <div class="text-xs text-fb-gray-500 mb-3">
+              Spielleitung:
+              @if (originalAnswer(item.id) === true) {
+                <span class="text-green-700">Ja</span>
+              } @else if (originalAnswer(item.id) === false) {
+                <span class="text-red-600">Nein</span>
+              } @else {
+                <span>nicht beantwortet</span>
+              }
+            </div>
+
+            <div class="flex gap-4 text-sm">
+              <label class="inline-flex items-center gap-2">
+                <input
+                  type="radio"
+                  [name]="'item-' + item.id"
+                  [checked]="answers[item.id] === true"
+                  (change)="setAnswer(item.id, true)"
+                />
+                <span>Ja</span>
+              </label>
+              <label class="inline-flex items-center gap-2">
+                <input
+                  type="radio"
+                  [name]="'item-' + item.id"
+                  [checked]="answers[item.id] === false"
+                  (change)="setAnswer(item.id, false)"
+                />
+                <span>Nein</span>
+              </label>
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (!complete()) {
+        <p class="text-sm text-fb-gray-500 mb-3">
+          Bitte beantworte jede Frage, bevor du den Einspruch absendest.
+        </p>
+      } @else if (!changed()) {
+        <p class="text-sm text-fb-gray-500 mb-3">
+          Deine Antworten stimmen mit denen der Spielleitung überein. Ein
+          Einspruch ist dann nicht nötig; du kannst die Seite einfach schließen.
+        </p>
+      }
+
+      <fb-button
+        variant="success"
+        size="large"
+        [fullWidth]="true"
+        [disabled]="!complete() || submitting"
+        (handleClick)="submit()"
+      >
+        {{ submitting ? "Wird gesendet…" : "Einspruch absenden" }}
+      </fb-button>
+    }
+  }
+</div>

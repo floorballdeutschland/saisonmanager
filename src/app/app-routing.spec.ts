@@ -27,5 +27,6 @@ describe('App-Routing', () => {
 
     expect(names).toContain('PublicEmailConfirmationModule');
     expect(names).toContain('PublicTransferConfirmationModule');
+    expect(names).toContain('PublicChecklistVetoModule');
   });
 });

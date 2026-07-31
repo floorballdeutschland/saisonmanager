@@ -347,6 +347,16 @@ export const routes: Routes = [
     data: { preload: true },
   },
   {
+    // Einspruch des Ausrichtervereins gegen die Spieltagscheckliste, über den
+    // Einmal-Link aus der Bestätigungsmail. Bewusst ohne Guard und ohne
+    // Vorabladen: Die Seite ruft nur auf, wer den Link hat.
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/checklist-veto').then(
+        (m) => m.PublicChecklistVetoModule
+      ),
+  },
+  {
     // MUSS als letzte Route stehen: Der Spielbetriebs-Host matcht mit
     // ':association' jedes erste URL-Segment. Bleibt danach nichts übrig (also
     // bei einer Ein-Segment-URL wie /email-bestaetigen), gilt die Route als
