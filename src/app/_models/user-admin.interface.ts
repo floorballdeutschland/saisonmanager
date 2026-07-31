@@ -27,4 +27,9 @@ export interface UserAdminEntry {
   // aus der API (User#permissions_items), weil dort mehr einfließt als die
   // Team-Zuweisung und team_names nicht auf die aktuelle Saison gefiltert ist.
   login_blocked?: boolean;
+  // Nur in der Antwort auf das Anlegen: Ging die Willkommensmail raus? Das
+  // Anlegen gilt auch dann als erfolgreich, wenn sie scheitert, denn das Konto
+  // steht bereits. Ohne die Mail kommt die Person aber nicht an ihr Konto, das
+  // Initialpasswort ist zufällig und kennt niemand.
+  email_sent?: boolean;
 }

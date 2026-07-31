@@ -124,6 +124,7 @@
   },
   "notifications": {
     "userCreated": "Benutzer {{ name }} angelegt. Eine E-Mail zum Passwort setzen wurde versandt.",
+    "userCreatedWithoutMail": "Benutzer {{ name }} angelegt, aber die E-Mail zum Passwort setzen konnte nicht versandt werden. Bitte den Versand am Konto erneut anstoßen.",
     "createError": "Fehler beim Anlegen",
     "userNotFound": "Benutzer nicht gefunden.",
     "saved": "Gespeichert.",
