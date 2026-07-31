@@ -37,7 +37,12 @@
     </div>
   </div>
   <fb-match-header [game]="game"></fb-match-header>
-  @if ((isLoggedIn$ | async) && canEdit(game)) {
+  <!--
+    Auch für das Spielsekretariat, das per Einmal-Link ohne Benutzerkonto kommt:
+    sonst rendert unten der Spielbericht, es gäbe aber keine Möglichkeit, zur
+    öffentlichen Ansicht zu wechseln.
+  -->
+  @if (((isLoggedIn$ | async) || hasSecretaryToken) && canEdit(game)) {
     @if (selectedAssociation$ | async; as selectedAssociation) {
       <div class="container mx-auto px-4 lg:px-8">
         <div class="h-[80px] flex items-center gap-[25px]">

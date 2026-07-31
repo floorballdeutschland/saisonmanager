@@ -13,6 +13,7 @@ interface SecretaryGameDay {
     id: number;
     date: string;
     league: string;
+    league_id?: number;
     arena?: string;
     game_operation_slug?: string;
   };
@@ -87,15 +88,21 @@ export class SpielSekretariatComponent implements OnInit {
     });
   }
 
-  matchReportUrl(gameId: number): string {
+  // Spielseite: /:association/:leagueId/spiel/:matchId. Verbands-Slug und
+  // league_id liefert der Spieltags-Payload; fehlt eines von beiden, gibt es
+  // keinen sinnvollen Pfad, und der Eintrag bleibt bewusst unverlinkt. Ein
+  // Teilpfad würde auf der Verbandsroute stumm als leere Seite landen, weil
+  // :association/:leagueId zwei beliebige Segmente schluckt.
+  matchReportUrl(gameId: number): string | null {
     const slug = this.data?.game_day.game_operation_slug;
-    return slug
-      ? `/${slug}/spielbericht/${gameId}?secretary_token=${encodeURIComponent(
-          this.token
-        )}`
-      : `/spielbericht/${gameId}?secretary_token=${encodeURIComponent(
-          this.token
-        )}`;
+    const leagueId = this.data?.game_day.league_id;
+    if (!slug || !leagueId) {
+      return null;
+    }
+
+    return `/${slug}/${leagueId}/spiel/${gameId}?secretary_token=${encodeURIComponent(
+      this.token
+    )}`;
   }
 
   licenseEntries(): {
