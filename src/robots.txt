@@ -4,51 +4,30 @@
 # Verbandsseiten und Ligaseiten mit Spielplan, Tabelle, Scorerliste, Spiel- und
 # Mannschaftsseiten. Die stehen bewusst nicht in dieser Datei, sie sind erlaubt.
 #
-# Alles unten Aufgeführte ist entweder angemeldeten Rollen vorbehalten oder für
-# eine Suchmaschine ohne Wert. Gecrawlt wurde es bisher trotzdem: Die Seite
-# antwortet immer mit der App, die anschließend Daten nachlädt, und erst danach
-# steht fest, dass hier nichts zu holen ist. Das kostet Serverzeit ohne jeden
-# Gegenwert.
+# Begründung der einzelnen Regeln: Pull Request fe#184 im Repository
+# floorballdeutschland/saisonmanager.
 
 User-agent: *
-# Die Verwaltungsschnittstelle gehört nicht in einen Suchindex.
 Disallow: /api/v2/admin/
-
-# Die öffentliche Schnittstelle bleibt ausdrücklich erlaubt. Sie liegt unter
-# derselben Adresse wie die Seite, und ausser den wenigen vorgerenderten
-# Startseiten holen sich alle Ligen-, Mannschafts- und Spielseiten ihre Inhalte
-# erst im Browser von dort. Eine Sperre auf /api/ nimmt einer Suchmaschine
-# damit genau die Daten weg, die sie indexieren soll, und übrig bliebe eine
-# leere Seite.
-
-# Bereiche hinter der Anmeldung.
 Disallow: /verwaltung
 Disallow: /schiedsrichter
 Disallow: /spielsekretariat
 Disallow: /mein-konto
 Disallow: /verein
-
-# Einstiegs- und Bestätigungsseiten. Einmal-Links haben in einem Index nichts
-# verloren, die Formulare sind ohne Kontext wertlos.
 Disallow: /login
 Disallow: /neues-passwort
 Disallow: /benutzername-vergessen
 Disallow: /email-bestaetigen
 Disallow: /transfer-bestaetigung
 Disallow: /schiri-feedback
-
-# Lizenzabfragen: hängen an einem Parameter aus dem QR-Code bzw. an einer Rolle.
 Disallow: /lizenzcheck
 Disallow: /lizenzliste
-
-# Personenbezogene Spielerseiten. Zurückhaltung ist hier die richtige Vorgabe,
-# im Nachwuchsbereich ohnehin.
 Disallow: /spieler
 
-# Zehn Sekunden Abstand zwischen zwei Abrufen. Applebot, Bing, Yandex und Baidu
-# halten sich daran; Google ignoriert die Angabe und wird über die Search
-# Console gesteuert. Applebot lag im Juli 2026 bei rund 22 Abrufen pro Minute
-# und damit bei mehr Serverzeit als alle echten Browser zusammen.
+# Zehn Sekunden Abstand zwischen zwei Abrufen. Applebot und Bing halten sich
+# daran. Google ignoriert die Angabe und wird über die Search Console
+# gesteuert, Yandex seit 2018 über den eigenen Webmaster-Dienst, Baidu
+# unterstützt die Angabe nicht.
 Crawl-delay: 10
 
 # Reine Marketing- und SEO-Analyse-Crawler. Sie tragen zur Auffindbarkeit der
