@@ -704,11 +704,17 @@ export class UserEditComponent implements OnInit, OnDestroy {
           );
           this._cdr.markForCheck();
         },
-        error: () => {
+        error: (err) => {
           this.sendingReset = false;
           this._cdr.markForCheck();
+          // Die API unterscheidet den gescheiterten Versand (502 mit Klartext)
+          // von sonstigen Fehlern. Ist eine Nachricht dabei, ist sie genauer
+          // als der allgemeine Text.
           this._notificationService.error(
-            this._transloco.translate('userAdmin.notifications.resetMailError'),
+            err?.error?.message ||
+              this._transloco.translate(
+                'userAdmin.notifications.resetMailError'
+              ),
             {
               autoClose: false,
             }
