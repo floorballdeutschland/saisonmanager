@@ -73,9 +73,15 @@
         }
         <div class="flex flex-col gap-3">
           @for (game of data.games; track game) {
+            <!--
+              Ohne Verbands-Slug oder league_id liefert matchReportUrl null und
+              das href-Attribut entfällt. Der Hover-Effekt darf dann keine
+              Klickbarkeit vortäuschen.
+            -->
             <a
               [href]="matchReportUrl(game.id)"
-              class="block border border-fb-gray-600 rounded-[5px] p-4 hover:bg-fb-gray-100 text-sm"
+              class="block border border-fb-gray-600 rounded-[5px] p-4 text-sm"
+              [class.hover:bg-fb-gray-100]="matchReportUrl(game.id)"
             >
               <div class="flex items-center justify-between gap-4">
                 <div>
