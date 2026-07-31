@@ -40,11 +40,23 @@ interface RoleOption {
 export class UserCreateComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   saving = false;
+  userNameTaken = false;
 
   userName = '';
   firstName = '';
   lastName = '';
   email = '';
+
+  // Spiegelt User::USER_NAME_FORMAT der API (app/models/user.rb): Buchstaben,
+  // Ziffern, Punkt, Bindestrich und Unterstrich. Umlaute und ß sind nicht
+  // erlaubt und müssen aufgelöst werden (ae, oe, ue, ss).
+  //
+  // Der Server schreibt den Namen NICHT klein (nur `strip`), der Login
+  // vergleicht kleinschreibungsneutral. Großbuchstaben sind also erlaubt und
+  // bleiben erhalten – hier deshalb bewusst gegen den ungeänderten Wert
+  // geprüft und nicht gegen eine kleingeschriebene Fassung. Bestandskonten mit
+  // Unterstrich (sbk_ost, tm_berlin1) wären sonst nicht anlegbar.
+  readonly usernamePattern = /^[a-zA-Z0-9._-]+$/;
   selectedRoleId: number = 4;
   selectedClubId: number | null = null;
   selectedGoId: number | null = null;
@@ -193,6 +205,14 @@ export class UserCreateComponent implements OnInit, OnDestroy {
     return this.allRoles.find((r) => r.id === this.selectedRoleId);
   }
 
+  // Leere Eingabe gilt hier als gültig, damit die Fehlermeldung erst erscheint,
+  // wenn wirklich etwas Falsches getippt wurde. Dass der Name überhaupt gesetzt
+  // sein muss, prüft isValid separat.
+  get userNameFormatValid(): boolean {
+    const name = this.userName.trim();
+    return name.length === 0 || this.usernamePattern.test(name);
+  }
+
   get isValid(): boolean {
     if (
       !this.userName.trim() ||
@@ -201,6 +221,7 @@ export class UserCreateComponent implements OnInit, OnDestroy {
       !this.email.trim()
     )
       return false;
+    if (!this.usernamePattern.test(this.userName.trim())) return false;
     if (this.selectedRole?.needsClub && !this.selectedClubId) return false;
     if (this.selectedRole?.needsGo && !this.selectedGoId) return false;
     return true;
@@ -227,6 +248,7 @@ export class UserCreateComponent implements OnInit, OnDestroy {
     if (!this.isValid || this.saving) return;
 
     this.saving = true;
+    this.userNameTaken = false;
     const teams =
       this.selectedRoleId === 5 && this.selectedTeamIds.length > 0
         ? this.selectedTeamIds
@@ -287,10 +309,27 @@ export class UserCreateComponent implements OnInit, OnDestroy {
             'bearbeiten',
           ]);
         },
-        error: () => {
+        error: (err) => {
           this.saving = false;
+          this.userNameTaken = this._isUserNameTakenError(err);
           this._cdr.markForCheck();
         },
       });
+  }
+
+  // Der einzige Uniqueness-Validator am User ist user_name (users.email hat
+  // bewusst keinen Unique-Constraint), daher genügt bei einer 422 das Erkennen
+  // der Rails-Standardmeldung, um den Namenskonflikt vom generischen Fehler
+  // abzugrenzen. Die Meldung ist englisch, weil für Validierungsfehler
+  // absichtlich keine deutsche Übersetzung hinterlegt ist; die deutsche
+  // Variante steht nur als Rückfall drin, falls das später nachgezogen wird.
+  private _isUserNameTakenError(err: unknown): boolean {
+    const httpErr = err as { status?: number; error?: { errors?: string[] } };
+    if (httpErr?.status !== 422) return false;
+    const messages = httpErr.error?.errors;
+    return (
+      Array.isArray(messages) &&
+      messages.some((m) => /already been taken|bereits vergeben/i.test(m))
+    );
   }
 }
