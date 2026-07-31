@@ -1,0 +1,51 @@
+# robots.txt für saisonmanager.de
+#
+# Erwünscht ist die Indexierung der öffentlichen Sportinhalte: Startseite,
+# Verbandsseiten und Ligaseiten mit Spielplan, Tabelle, Scorerliste, Spiel- und
+# Mannschaftsseiten. Die stehen bewusst nicht in dieser Datei, sie sind erlaubt.
+#
+# Begründung der einzelnen Regeln: Pull Request fe#184 im Repository
+# floorballdeutschland/saisonmanager.
+
+User-agent: *
+Disallow: /api/v2/admin/
+Disallow: /verwaltung
+Disallow: /schiedsrichter
+Disallow: /spielsekretariat
+Disallow: /mein-konto
+Disallow: /verein
+Disallow: /login
+Disallow: /neues-passwort
+Disallow: /benutzername-vergessen
+Disallow: /email-bestaetigen
+Disallow: /transfer-bestaetigung
+Disallow: /schiri-feedback
+Disallow: /lizenzcheck
+Disallow: /lizenzliste
+Disallow: /spieler
+
+# Zehn Sekunden Abstand zwischen zwei Abrufen. Applebot und Bing halten sich
+# daran. Google ignoriert die Angabe und wird über die Search Console
+# gesteuert, Yandex seit 2018 über den eigenen Webmaster-Dienst, Baidu
+# unterstützt die Angabe nicht.
+Crawl-delay: 10
+
+# Reine Marketing- und SEO-Analyse-Crawler. Sie tragen zur Auffindbarkeit der
+# Sportinhalte nichts bei und bekommen deshalb nichts.
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
