@@ -388,6 +388,18 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     );
   }
 
+  // Betreuer-Plätze mit hinterlegtem Namen. Nur diese sind als Strafenempfänger
+  // wählbar: Betreuer haben keine Trikotnummer, sie werden über die
+  // Pseudo-Nummern 2001–2005 geführt (2000 + Platz), die NormalizeEventPipe
+  // wieder in den Namen auflöst. Ein leerer Platz hat keinen Namen, das Ereignis
+  // wäre in der Ereignisliste und öffentlich nicht zuordenbar – und weil die
+  // Anzeige des Strafgrundes am aufgelösten Namen hängt, verschwindet dann auch
+  // dieser. Deshalb prüft die Handeingabe (searchPlayerByNumber) dieselbe
+  // Bedingung.
+  public coachNumbers(): number[] {
+    return [1, 2, 3, 4, 5].filter((num) => this.hasCoach(num));
+  }
+
   public coachName(index: number): string {
     const coaches =
       this.team === 'home'
@@ -402,9 +414,13 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   }
 
   public searchPlayerByNumber(side: string, number: number, isAssist: boolean) {
+    // Betreuer-Pseudo-Nummern: nur belegte Plätze zulassen, sonst entstünde ein
+    // Ereignis ohne auflösbaren Namen (siehe coachNumbers). Das Dropdown bietet
+    // leere Plätze nicht an, hier von Hand eingetippt kamen sie bisher durch.
     if (number >= 2001 && number <= 2005 && !isAssist) {
-      this.playerNumber = number;
-      this.playerError = false;
+      const named = this.hasCoach(number - 2000);
+      this.playerNumber = named ? number : 0;
+      this.playerError = !named;
       return;
     }
 
