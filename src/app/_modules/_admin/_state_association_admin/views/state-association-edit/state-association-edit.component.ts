@@ -21,6 +21,10 @@ import {
   StateAssociationRelease,
   User,
 } from '@floorball/types';
+import {
+  IMAGE_UPLOAD_ACCEPT,
+  isAllowedImageType,
+} from 'src/app/_helpers/_utils/image-upload';
 
 @Component({
   templateUrl: './state-association-edit.component.html',
@@ -30,6 +34,8 @@ import {
 })
 export class StateAssociationEditComponent implements OnInit, OnDestroy {
   stateAssociation: Partial<StateAssociation> = { name: '', short_name: '' };
+  // Dateiauswahl-Filter für Logo und Banner, eine Quelle für Template und Prüfung.
+  readonly acceptImageTypes = IMAGE_UPLOAD_ACCEPT;
   editMode = false;
   saving = false;
   currentUser: User | null = null;
@@ -317,14 +323,13 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
 
   deletingBanner = false;
 
-  private readonly _allowedBannerType = 'image/webp';
   private readonly _maxBannerSize = 500 * 1024;
 
   onBannerSelected(input: HTMLInputElement): void {
     if (!input.files?.length || !this.stateAssociation.id) return;
     const file = input.files[0];
 
-    if (file.type !== this._allowedBannerType) {
+    if (!isAllowedImageType(file)) {
       this._notificationService.error(
         this._transloco.translate(
           'stateAssociationAdmin.notifications.bannerTypeError'
@@ -411,14 +416,13 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       });
   }
 
-  private readonly _allowedLogoTypes = ['image/webp'];
   private readonly _maxLogoSize = 5 * 1024 * 1024;
 
   onLogoSelected(input: HTMLInputElement): void {
     if (!input.files?.length || !this.stateAssociation.id) return;
     const file = input.files[0];
 
-    if (!this._allowedLogoTypes.includes(file.type)) {
+    if (!isAllowedImageType(file)) {
       this._notificationService.error(
         this._transloco.translate(
           'stateAssociationAdmin.notifications.logoTypeError'

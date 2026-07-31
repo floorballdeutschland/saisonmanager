@@ -10,6 +10,10 @@ import { Validators } from '@angular/forms';
 import { NotificationService, SessionService } from '@floorball/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
+import {
+  PASSWORD_MIN_LENGTH,
+  passwordMeetsPolicy,
+} from 'src/app/_helpers/_utils/password-policy';
 
 export interface LostPasswordFormValue {
   new_password: string;
@@ -62,11 +66,17 @@ export class LostPasswordComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (data.new_password.length < 12) {
-      this._notificationService.error('Mindestens 12 Zeichen.', {
-        autoClose: true,
-        keepAfterRouteChange: false,
-      });
+    // Die Anforderungen stehen als Prüfliste unter dem Feld; hier bleibt nur
+    // der Abfangfall, falls trotzdem abgeschickt wird. Verbindlich prüft der
+    // Server (PasswordPolicy).
+    if (!passwordMeetsPolicy(data.new_password)) {
+      this._notificationService.error(
+        `Mindestens ${PASSWORD_MIN_LENGTH} Zeichen, ein Großbuchstabe und eine Ziffer.`,
+        {
+          autoClose: true,
+          keepAfterRouteChange: false,
+        }
+      );
 
       return;
     }

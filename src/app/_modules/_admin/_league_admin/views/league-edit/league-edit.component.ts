@@ -20,6 +20,10 @@ import {
   LeagueQualification,
   LeagueQualificationType,
 } from '@floorball/types';
+import {
+  IMAGE_UPLOAD_ACCEPT,
+  isAllowedImageType,
+} from 'src/app/_helpers/_utils/image-upload';
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -47,16 +51,17 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
 
   deletingBanner = false;
 
-  private readonly _allowedBannerType = 'image/webp';
+  // Dateiauswahl-Filter fuers Template, eine Quelle mit der Pruefung unten.
+  readonly acceptImageTypes = IMAGE_UPLOAD_ACCEPT;
   private readonly _maxBannerSize = 500 * 1024;
 
   onBannerSelected(league: League, input: HTMLInputElement): void {
     if (!input.files?.length || !league.id) return;
     const file = input.files[0];
 
-    if (file.type !== this._allowedBannerType) {
+    if (!isAllowedImageType(file)) {
       this._notificationService.error(
-        this._transloco.translate('leagueAdmin.notifications.onlyWebp'),
+        this._transloco.translate('leagueAdmin.notifications.invalidImageType'),
         {
           autoClose: false,
         }

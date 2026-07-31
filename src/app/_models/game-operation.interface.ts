@@ -6,8 +6,9 @@ export interface GameOperation {
   name: string;
   short_name: string;
   path: string;
+  // Kommt ausschließlich aus dem Logo-Upload des Landesverbands und ist ohne
+  // hinterlegtes Logo nicht gesetzt (siehe saisonmanager-api#276).
   logo_url?: string;
-  logo_quad_url?: string;
   banner_url?: string | null;
   banner_link_url?: string | null;
   top_leagues: League[];

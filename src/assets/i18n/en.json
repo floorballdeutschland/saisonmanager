@@ -89,7 +89,7 @@
     "changePassword": "Change password",
     "passwordChanged": "Password changed successfully.",
     "passwordMismatch": "The new passwords do not match.",
-    "passwordTooShort": "The new password must be at least 8 characters long.",
+    "passwordRequirementsNotMet": "The new password does not meet the requirements yet.",
     "passwordError": "The password could not be changed.",
     "languageError": "The language could not be changed.",
     "mailSection": "Notifications",
@@ -119,6 +119,12 @@
     "lostPasswordError": "Error while resetting.",
     "passwordSet": "Password set successfully.",
     "passwordResetError": "Error while resetting."
+  },
+  "passwordRequirements": {
+    "title": "Password requirements:",
+    "minLength": "at least {{ minLength }} characters",
+    "uppercase": "at least one capital letter",
+    "digit": "at least one digit"
   },
   "emailConfirmation": {
     "loading": "Confirming your email address …",

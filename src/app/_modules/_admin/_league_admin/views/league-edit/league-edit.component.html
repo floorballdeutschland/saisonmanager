@@ -748,7 +748,7 @@
                   <div>
                     <input
                       type="file"
-                      accept="image/webp"
+                      [attr.accept]="acceptImageTypes"
                       #bannerInput
                       (change)="onBannerSelected(league, bannerInput)"
                     />

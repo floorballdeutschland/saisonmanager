@@ -89,7 +89,7 @@
     "changePassword": "Passwort ändern",
     "passwordChanged": "Passwort erfolgreich geändert.",
     "passwordMismatch": "Die neuen Passwörter stimmen nicht überein.",
-    "passwordTooShort": "Das neue Passwort muss mindestens 8 Zeichen lang sein.",
+    "passwordRequirementsNotMet": "Das neue Passwort erfüllt die Anforderungen noch nicht.",
     "passwordError": "Passwort konnte nicht geändert werden.",
     "languageError": "Sprache konnte nicht geändert werden.",
     "mailSection": "Benachrichtigungen",
@@ -119,6 +119,12 @@
     "lostPasswordError": "Fehler beim Zurücksetzen.",
     "passwordSet": "Passwort erfolgreich gesetzt.",
     "passwordResetError": "Fehler beim Zurücksetzen."
+  },
+  "passwordRequirements": {
+    "title": "Anforderungen an das Passwort:",
+    "minLength": "mindestens {{ minLength }} Zeichen",
+    "uppercase": "mindestens ein Großbuchstabe",
+    "digit": "mindestens eine Ziffer"
   },
   "emailConfirmation": {
     "loading": "Deine E-Mail-Adresse wird bestätigt …",

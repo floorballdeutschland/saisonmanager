@@ -91,6 +91,291 @@
       }
     </div>
 
+    <div
+      class="border-t border-fb-gray-200 pt-4"
+      [class.opacity-40]="hasParent"
+    >
+      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+        {{ "stateAssociationAdmin.edit.emailHeading" | transloco }}
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">{{
+            "stateAssociationAdmin.edit.vskEmailLabel" | transloco
+          }}</label>
+          <input
+            type="email"
+            [(ngModel)]="stateAssociation.vsk_email"
+            name="vsk_email"
+            [disabled]="hasParent"
+            [placeholder]="
+              hasParent
+                ? parent?.vsk_email ||
+                  ('stateAssociationAdmin.edit.inheritedPlaceholder'
+                    | transloco)
+                : ('stateAssociationAdmin.edit.vskEmailPlaceholder' | transloco)
+            "
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
+          />
+          @if (!hasParent) {
+            <span class="text-xs text-fb-gray-400">{{
+              "stateAssociationAdmin.edit.vskEmailHint" | transloco
+            }}</span>
+          }
+          @if (hasParent) {
+            <span class="text-xs text-fb-gray-400 italic">
+              {{
+                "stateAssociationAdmin.edit.inheritedFrom"
+                  | transloco
+                    : {
+                        name: parent?.name,
+                        value:
+                          parent?.vsk_email ||
+                          ("stateAssociationAdmin.edit.emptyValue" | transloco),
+                      }
+              }}
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">{{
+            "stateAssociationAdmin.edit.sbkEmailLabel" | transloco
+          }}</label>
+          <input
+            type="email"
+            [(ngModel)]="stateAssociation.sbk_email"
+            name="sbk_email"
+            [disabled]="hasParent"
+            [placeholder]="
+              hasParent
+                ? parent?.sbk_email ||
+                  ('stateAssociationAdmin.edit.inheritedPlaceholder'
+                    | transloco)
+                : ('stateAssociationAdmin.edit.sbkEmailPlaceholder' | transloco)
+            "
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
+          />
+          @if (!hasParent) {
+            <span class="text-xs text-fb-gray-400">{{
+              "stateAssociationAdmin.edit.sbkEmailHint" | transloco
+            }}</span>
+          }
+          @if (hasParent) {
+            <span class="text-xs text-fb-gray-400 italic">
+              {{
+                "stateAssociationAdmin.edit.inheritedFrom"
+                  | transloco
+                    : {
+                        name: parent?.name,
+                        value:
+                          parent?.sbk_email ||
+                          ("stateAssociationAdmin.edit.emptyValue" | transloco),
+                      }
+              }}
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">{{
+            "stateAssociationAdmin.edit.rskEmailLabel" | transloco
+          }}</label>
+          <input
+            type="email"
+            [(ngModel)]="stateAssociation.rsk_email"
+            name="rsk_email"
+            [disabled]="hasParent"
+            [placeholder]="
+              hasParent
+                ? parent?.rsk_email ||
+                  ('stateAssociationAdmin.edit.inheritedPlaceholder'
+                    | transloco)
+                : ('stateAssociationAdmin.edit.rskEmailPlaceholder' | transloco)
+            "
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
+          />
+          @if (!hasParent) {
+            <span class="text-xs text-fb-gray-400">{{
+              "stateAssociationAdmin.edit.rskEmailHint" | transloco
+            }}</span>
+          }
+          @if (hasParent) {
+            <span class="text-xs text-fb-gray-400 italic">
+              {{
+                "stateAssociationAdmin.edit.inheritedFrom"
+                  | transloco
+                    : {
+                        name: parent?.name,
+                        value:
+                          parent?.rsk_email ||
+                          ("stateAssociationAdmin.edit.emptyValue" | transloco),
+                      }
+              }}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Freigaben (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
+    @if (editMode && !hasParent) {
+      <div class="border-t border-fb-gray-200 pt-6 mb-6">
+        <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
+          {{ "stateAssociationAdmin.edit.releasesHeading" | transloco }}
+        </div>
+        <p class="text-xs text-fb-gray-400 mb-4">
+          {{ "stateAssociationAdmin.edit.releasesDescription" | transloco }}
+        </p>
+        @if (releases.length === 0) {
+          <div class="text-sm text-fb-gray-400 mb-4">
+            {{ "stateAssociationAdmin.edit.releasesEmpty" | transloco }}
+          </div>
+        }
+        <div class="flex flex-col gap-2 mb-4">
+          @for (release of releases; track release) {
+            <div
+              class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
+            >
+              <span class="flex-1 text-sm">{{
+                release.recipient_game_operation_name
+              }}</span>
+              <button
+                type="button"
+                (click)="deleteRelease(release.id)"
+                class="text-xs text-red-500 hover:text-red-700 px-2"
+              >
+                {{ "stateAssociationAdmin.edit.releaseRevoke" | transloco }}
+              </button>
+            </div>
+          }
+        </div>
+        <div class="flex gap-2">
+          <select
+            [(ngModel)]="selectedGameOperationId"
+            name="new_release_go"
+            [ngModelOptions]="{ standalone: true }"
+            class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          >
+            <option [ngValue]="null">
+              {{
+                "stateAssociationAdmin.edit.releaseSelectPlaceholder"
+                  | transloco
+              }}
+            </option>
+            @for (go of availableGameOperations; track go) {
+              <option [ngValue]="go.id">
+                {{ go.name }}
+              </option>
+            }
+          </select>
+          <button
+            type="button"
+            (click)="addRelease()"
+            [disabled]="addingRelease || !selectedGameOperationId"
+            class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+          >
+            {{
+              (addingRelease
+                ? "stateAssociationAdmin.edit.releaseAdding"
+                : "stateAssociationAdmin.edit.releaseGrant"
+              ) | transloco
+            }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Spieltagscheckliste (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
+    @if (editMode && !hasParent) {
+      <div class="border-t border-fb-gray-200 pt-6 mb-6">
+        <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
+          {{ "stateAssociationAdmin.edit.checklistHeading" | transloco }}
+        </div>
+        <p class="text-xs text-fb-gray-400 mb-4">
+          {{ "stateAssociationAdmin.edit.checklistDescription" | transloco }}
+        </p>
+        @if (checklistItems.length === 0) {
+          <div class="text-sm text-fb-gray-400 mb-4">
+            {{ "stateAssociationAdmin.edit.checklistEmpty" | transloco }}
+          </div>
+        }
+        <div class="flex flex-col gap-2 mb-4">
+          @for (item of checklistItems; track item) {
+            <div
+              class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
+            >
+              @if (editingItemId !== item.id) {
+                <span class="flex-1 text-sm">{{ item.question }}</span>
+                <button
+                  type="button"
+                  (click)="startEdit(item)"
+                  class="text-xs text-fb-gray-400 hover:text-black px-2"
+                >
+                  {{ "stateAssociationAdmin.edit.checklistEdit" | transloco }}
+                </button>
+                <button
+                  type="button"
+                  (click)="deleteChecklistItem(item.id)"
+                  class="text-xs text-red-500 hover:text-red-700 px-2"
+                >
+                  {{ "stateAssociationAdmin.edit.checklistDelete" | transloco }}
+                </button>
+              }
+              @if (editingItemId === item.id) {
+                <input
+                  type="text"
+                  [(ngModel)]="editingQuestion"
+                  [ngModelOptions]="{ standalone: true }"
+                  class="flex-1 border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
+                />
+                <button
+                  type="button"
+                  (click)="saveEdit(item)"
+                  class="text-xs font-bold px-2 py-1 bg-black text-white rounded-[5px]"
+                >
+                  {{ "stateAssociationAdmin.edit.checklistOk" | transloco }}
+                </button>
+                <button
+                  type="button"
+                  (click)="cancelEdit()"
+                  class="text-xs px-2 py-1 border border-fb-gray-600 rounded-[5px]"
+                >
+                  {{ "stateAssociationAdmin.edit.checklistCancel" | transloco }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+        <div class="flex gap-2">
+          <input
+            type="text"
+            [(ngModel)]="newQuestion"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="
+              'stateAssociationAdmin.edit.checklistNewPlaceholder' | transloco
+            "
+            class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            (keydown.enter)="$event.preventDefault(); addChecklistItem()"
+          />
+          <button
+            type="button"
+            (click)="addChecklistItem()"
+            [disabled]="addingItem || !newQuestion.trim()"
+            class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+          >
+            {{
+              (addingItem
+                ? "stateAssociationAdmin.edit.checklistAdding"
+                : "stateAssociationAdmin.edit.checklistAdd"
+              ) | transloco
+            }}
+          </button>
+        </div>
+      </div>
+    }
+
     <div class="border-t border-fb-gray-200 pt-4">
       <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
         {{ "stateAssociationAdmin.edit.settingsHeading" | transloco }}
@@ -235,133 +520,125 @@
       </div>
     </div>
 
-    <div
-      class="border-t border-fb-gray-200 pt-4"
-      [class.opacity-40]="hasParent"
-    >
-      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-        {{ "stateAssociationAdmin.edit.emailHeading" | transloco }}
-      </div>
-
-      <div class="flex flex-col gap-3">
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-bold">{{
-            "stateAssociationAdmin.edit.vskEmailLabel" | transloco
-          }}</label>
-          <input
-            type="email"
-            [(ngModel)]="stateAssociation.vsk_email"
-            name="vsk_email"
-            [disabled]="hasParent"
-            [placeholder]="
-              hasParent
-                ? parent?.vsk_email ||
-                  ('stateAssociationAdmin.edit.inheritedPlaceholder'
-                    | transloco)
-                : ('stateAssociationAdmin.edit.vskEmailPlaceholder' | transloco)
-            "
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
-          />
-          @if (!hasParent) {
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.vskEmailHint" | transloco
-            }}</span>
-          }
-          @if (hasParent) {
-            <span class="text-xs text-fb-gray-400 italic">
-              {{
-                "stateAssociationAdmin.edit.inheritedFrom"
-                  | transloco
-                    : {
-                        name: parent?.name,
-                        value:
-                          parent?.vsk_email ||
-                          ("stateAssociationAdmin.edit.emptyValue" | transloco),
-                      }
-              }}
-            </span>
-          }
+    <!-- Logo (nur im Bearbeitungsmodus) -->
+    @if (editMode) {
+      <div class="border-t border-fb-gray-200 pt-6 mb-6">
+        <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+          {{ "stateAssociationAdmin.edit.logoHeading" | transloco }}
         </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-bold">{{
-            "stateAssociationAdmin.edit.sbkEmailLabel" | transloco
-          }}</label>
-          <input
-            type="email"
-            [(ngModel)]="stateAssociation.sbk_email"
-            name="sbk_email"
-            [disabled]="hasParent"
-            [placeholder]="
-              hasParent
-                ? parent?.sbk_email ||
-                  ('stateAssociationAdmin.edit.inheritedPlaceholder'
-                    | transloco)
-                : ('stateAssociationAdmin.edit.sbkEmailPlaceholder' | transloco)
-            "
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
-          />
-          @if (!hasParent) {
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.sbkEmailHint" | transloco
-            }}</span>
-          }
-          @if (hasParent) {
-            <span class="text-xs text-fb-gray-400 italic">
-              {{
-                "stateAssociationAdmin.edit.inheritedFrom"
-                  | transloco
-                    : {
-                        name: parent?.name,
-                        value:
-                          parent?.sbk_email ||
-                          ("stateAssociationAdmin.edit.emptyValue" | transloco),
-                      }
-              }}
-            </span>
-          }
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-bold">{{
-            "stateAssociationAdmin.edit.rskEmailLabel" | transloco
-          }}</label>
-          <input
-            type="email"
-            [(ngModel)]="stateAssociation.rsk_email"
-            name="rsk_email"
-            [disabled]="hasParent"
-            [placeholder]="
-              hasParent
-                ? parent?.rsk_email ||
-                  ('stateAssociationAdmin.edit.inheritedPlaceholder'
-                    | transloco)
-                : ('stateAssociationAdmin.edit.rskEmailPlaceholder' | transloco)
-            "
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
-          />
-          @if (!hasParent) {
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.rskEmailHint" | transloco
-            }}</span>
-          }
-          @if (hasParent) {
-            <span class="text-xs text-fb-gray-400 italic">
-              {{
-                "stateAssociationAdmin.edit.inheritedFrom"
-                  | transloco
-                    : {
-                        name: parent?.name,
-                        value:
-                          parent?.rsk_email ||
-                          ("stateAssociationAdmin.edit.emptyValue" | transloco),
-                      }
-              }}
-            </span>
-          }
+        <div class="grid grid-cols-2 gap-4 items-center">
+          <div class="font-bold text-sm">
+            {{ "stateAssociationAdmin.edit.currentLogo" | transloco }}
+          </div>
+          <div>
+            @if (stateAssociation.logo_url) {
+              <img
+                [src]="stateAssociation.logo_url"
+                [alt]="'stateAssociationAdmin.edit.logoAlt' | transloco"
+                class="h-16 object-contain"
+              />
+            }
+            @if (!stateAssociation.logo_url) {
+              <span class="text-sm text-fb-gray-400">{{
+                "stateAssociationAdmin.edit.noLogo" | transloco
+              }}</span>
+            }
+          </div>
+          <div class="font-bold text-sm">
+            {{ "stateAssociationAdmin.edit.uploadLogo" | transloco }}
+          </div>
+          <div>
+            <input
+              type="file"
+              [attr.accept]="acceptImageTypes"
+              #logoInput
+              (change)="onLogoSelected(logoInput)"
+            />
+            <small class="block text-fb-gray-400 mt-1">{{
+              "stateAssociationAdmin.edit.logoHint" | transloco
+            }}</small>
+          </div>
         </div>
       </div>
-    </div>
+    }
+
+    <!-- Werbebanner (nur im Bearbeitungsmodus) -->
+    @if (editMode) {
+      <div class="border-t border-fb-gray-200 pt-6 mb-6">
+        <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+          {{ "stateAssociationAdmin.edit.bannerHeading" | transloco }}
+        </div>
+        <div class="grid grid-cols-2 gap-4 items-center">
+          <div class="font-bold text-sm">
+            {{ "stateAssociationAdmin.edit.currentBanner" | transloco }}
+          </div>
+          <div>
+            @if (stateAssociation.banner_url) {
+              <img
+                [src]="stateAssociation.banner_url"
+                [alt]="'stateAssociationAdmin.edit.bannerAlt' | transloco"
+                class="w-full max-w-xs object-contain"
+                style="aspect-ratio: 6/1"
+              />
+            }
+            @if (!stateAssociation.banner_url) {
+              <span class="text-sm text-fb-gray-400">{{
+                "stateAssociationAdmin.edit.noBanner" | transloco
+              }}</span>
+            }
+          </div>
+          <div class="font-bold text-sm">
+            {{ "stateAssociationAdmin.edit.uploadBanner" | transloco }}
+          </div>
+          <div>
+            <input
+              type="file"
+              [attr.accept]="acceptImageTypes"
+              #bannerInput
+              (change)="onBannerSelected(bannerInput)"
+            />
+            <small class="block text-fb-gray-400 mt-1">{{
+              "stateAssociationAdmin.edit.bannerHint" | transloco
+            }}</small>
+          </div>
+          <div class="font-bold text-sm">
+            {{ "stateAssociationAdmin.edit.linkUrlLabel" | transloco }}
+          </div>
+          <div>
+            <input
+              type="url"
+              [(ngModel)]="stateAssociation.banner_link_url"
+              [ngModelOptions]="{ standalone: true }"
+              [placeholder]="
+                'stateAssociationAdmin.edit.linkUrlPlaceholder' | transloco
+              "
+              class="border border-fb-gray-300 rounded px-3 py-1.5 text-sm w-full"
+            />
+            <small class="block text-fb-gray-400 mt-1">{{
+              "stateAssociationAdmin.edit.linkUrlHint" | transloco
+            }}</small>
+          </div>
+          <div></div>
+          <div>
+            @if (stateAssociation.banner_url) {
+              <button
+                type="button"
+                (click)="deleteBanner()"
+                [disabled]="deletingBanner"
+                class="text-sm text-red-500 underline disabled:opacity-50"
+              >
+                {{
+                  (deletingBanner
+                    ? "stateAssociationAdmin.edit.removingBanner"
+                    : "stateAssociationAdmin.edit.removeBanner"
+                  ) | transloco
+                }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
 
     <div class="flex items-center gap-3 mt-2">
       <button
@@ -384,276 +661,4 @@
       </a>
     </div>
   </form>
-
-  <!-- Logo (nur im Bearbeitungsmodus) -->
-  @if (editMode) {
-    <div class="border-t border-fb-gray-200 pt-6 mb-6">
-      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-        {{ "stateAssociationAdmin.edit.logoHeading" | transloco }}
-      </div>
-      <div class="grid grid-cols-2 gap-4 items-center">
-        <div class="font-bold text-sm">
-          {{ "stateAssociationAdmin.edit.currentLogo" | transloco }}
-        </div>
-        <div>
-          @if (stateAssociation.logo_url) {
-            <img
-              [src]="stateAssociation.logo_url"
-              [alt]="'stateAssociationAdmin.edit.logoAlt' | transloco"
-              class="h-16 object-contain"
-            />
-          }
-          @if (!stateAssociation.logo_url) {
-            <span class="text-sm text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.noLogo" | transloco
-            }}</span>
-          }
-        </div>
-        <div class="font-bold text-sm">
-          {{ "stateAssociationAdmin.edit.uploadLogo" | transloco }}
-        </div>
-        <div>
-          <input
-            type="file"
-            accept="image/webp"
-            #logoInput
-            (change)="onLogoSelected(logoInput)"
-          />
-          <small class="block text-fb-gray-400 mt-1">{{
-            "stateAssociationAdmin.edit.logoHint" | transloco
-          }}</small>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Werbebanner (nur im Bearbeitungsmodus) -->
-  @if (editMode) {
-    <div class="border-t border-fb-gray-200 pt-6 mb-6">
-      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-        {{ "stateAssociationAdmin.edit.bannerHeading" | transloco }}
-      </div>
-      <div class="grid grid-cols-2 gap-4 items-center">
-        <div class="font-bold text-sm">
-          {{ "stateAssociationAdmin.edit.currentBanner" | transloco }}
-        </div>
-        <div>
-          @if (stateAssociation.banner_url) {
-            <img
-              [src]="stateAssociation.banner_url"
-              [alt]="'stateAssociationAdmin.edit.bannerAlt' | transloco"
-              class="w-full max-w-xs object-contain"
-              style="aspect-ratio: 6/1"
-            />
-          }
-          @if (!stateAssociation.banner_url) {
-            <span class="text-sm text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.noBanner" | transloco
-            }}</span>
-          }
-        </div>
-        <div class="font-bold text-sm">
-          {{ "stateAssociationAdmin.edit.uploadBanner" | transloco }}
-        </div>
-        <div>
-          <input
-            type="file"
-            accept="image/webp"
-            #bannerInput
-            (change)="onBannerSelected(bannerInput)"
-          />
-          <small class="block text-fb-gray-400 mt-1">{{
-            "stateAssociationAdmin.edit.bannerHint" | transloco
-          }}</small>
-        </div>
-        <div class="font-bold text-sm">
-          {{ "stateAssociationAdmin.edit.linkUrlLabel" | transloco }}
-        </div>
-        <div>
-          <input
-            type="url"
-            [(ngModel)]="stateAssociation.banner_link_url"
-            [placeholder]="
-              'stateAssociationAdmin.edit.linkUrlPlaceholder' | transloco
-            "
-            class="border border-fb-gray-300 rounded px-3 py-1.5 text-sm w-full"
-          />
-          <small class="block text-fb-gray-400 mt-1">{{
-            "stateAssociationAdmin.edit.linkUrlHint" | transloco
-          }}</small>
-        </div>
-        <div></div>
-        <div>
-          @if (stateAssociation.banner_url) {
-            <button
-              type="button"
-              (click)="deleteBanner()"
-              [disabled]="deletingBanner"
-              class="text-sm text-red-500 underline disabled:opacity-50"
-            >
-              {{
-                (deletingBanner
-                  ? "stateAssociationAdmin.edit.removingBanner"
-                  : "stateAssociationAdmin.edit.removeBanner"
-                ) | transloco
-              }}
-            </button>
-          }
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Freigaben (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
-  @if (editMode && !hasParent) {
-    <div class="border-t border-fb-gray-200 pt-6 mb-6">
-      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
-        {{ "stateAssociationAdmin.edit.releasesHeading" | transloco }}
-      </div>
-      <p class="text-xs text-fb-gray-400 mb-4">
-        {{ "stateAssociationAdmin.edit.releasesDescription" | transloco }}
-      </p>
-      @if (releases.length === 0) {
-        <div class="text-sm text-fb-gray-400 mb-4">
-          {{ "stateAssociationAdmin.edit.releasesEmpty" | transloco }}
-        </div>
-      }
-      <div class="flex flex-col gap-2 mb-4">
-        @for (release of releases; track release) {
-          <div
-            class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
-          >
-            <span class="flex-1 text-sm">{{
-              release.recipient_game_operation_name
-            }}</span>
-            <button
-              type="button"
-              (click)="deleteRelease(release.id)"
-              class="text-xs text-red-500 hover:text-red-700 px-2"
-            >
-              {{ "stateAssociationAdmin.edit.releaseRevoke" | transloco }}
-            </button>
-          </div>
-        }
-      </div>
-      <div class="flex gap-2">
-        <select
-          [(ngModel)]="selectedGameOperationId"
-          name="new_release_go"
-          class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-        >
-          <option [ngValue]="null">
-            {{
-              "stateAssociationAdmin.edit.releaseSelectPlaceholder" | transloco
-            }}
-          </option>
-          @for (go of availableGameOperations; track go) {
-            <option [ngValue]="go.id">
-              {{ go.name }}
-            </option>
-          }
-        </select>
-        <button
-          type="button"
-          (click)="addRelease()"
-          [disabled]="addingRelease || !selectedGameOperationId"
-          class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
-        >
-          {{
-            (addingRelease
-              ? "stateAssociationAdmin.edit.releaseAdding"
-              : "stateAssociationAdmin.edit.releaseGrant"
-            ) | transloco
-          }}
-        </button>
-      </div>
-    </div>
-  }
-
-  <!-- Spieltagscheckliste (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
-  @if (editMode && !hasParent) {
-    <div class="border-t border-fb-gray-200 pt-6">
-      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
-        {{ "stateAssociationAdmin.edit.checklistHeading" | transloco }}
-      </div>
-      <p class="text-xs text-fb-gray-400 mb-4">
-        {{ "stateAssociationAdmin.edit.checklistDescription" | transloco }}
-      </p>
-      @if (checklistItems.length === 0) {
-        <div class="text-sm text-fb-gray-400 mb-4">
-          {{ "stateAssociationAdmin.edit.checklistEmpty" | transloco }}
-        </div>
-      }
-      <div class="flex flex-col gap-2 mb-4">
-        @for (item of checklistItems; track item) {
-          <div
-            class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
-          >
-            @if (editingItemId !== item.id) {
-              <span class="flex-1 text-sm">{{ item.question }}</span>
-              <button
-                type="button"
-                (click)="startEdit(item)"
-                class="text-xs text-fb-gray-400 hover:text-black px-2"
-              >
-                {{ "stateAssociationAdmin.edit.checklistEdit" | transloco }}
-              </button>
-              <button
-                type="button"
-                (click)="deleteChecklistItem(item.id)"
-                class="text-xs text-red-500 hover:text-red-700 px-2"
-              >
-                {{ "stateAssociationAdmin.edit.checklistDelete" | transloco }}
-              </button>
-            }
-            @if (editingItemId === item.id) {
-              <input
-                type="text"
-                [(ngModel)]="editingQuestion"
-                class="flex-1 border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
-              />
-              <button
-                type="button"
-                (click)="saveEdit(item)"
-                class="text-xs font-bold px-2 py-1 bg-black text-white rounded-[5px]"
-              >
-                {{ "stateAssociationAdmin.edit.checklistOk" | transloco }}
-              </button>
-              <button
-                type="button"
-                (click)="cancelEdit()"
-                class="text-xs px-2 py-1 border border-fb-gray-600 rounded-[5px]"
-              >
-                {{ "stateAssociationAdmin.edit.checklistCancel" | transloco }}
-              </button>
-            }
-          </div>
-        }
-      </div>
-      <div class="flex gap-2">
-        <input
-          type="text"
-          [(ngModel)]="newQuestion"
-          [placeholder]="
-            'stateAssociationAdmin.edit.checklistNewPlaceholder' | transloco
-          "
-          class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          (keydown.enter)="$event.preventDefault(); addChecklistItem()"
-        />
-        <button
-          type="button"
-          (click)="addChecklistItem()"
-          [disabled]="addingItem || !newQuestion.trim()"
-          class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
-        >
-          {{
-            (addingItem
-              ? "stateAssociationAdmin.edit.checklistAdding"
-              : "stateAssociationAdmin.edit.checklistAdd"
-            ) | transloco
-          }}
-        </button>
-      </div>
-    </div>
-  }
 </div>
