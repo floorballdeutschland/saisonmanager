@@ -388,6 +388,14 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     );
   }
 
+  // Betreuer-Plätze mit hinterlegtem Namen. Nur diese kommen als Strafenempfänger
+  // ins Dropdown: ein leerer Platz wäre im Spielbericht nicht zuordenbar. Die
+  // Auswahl setzt playerNumber auf 2000 + index (siehe searchPlayerByNumber und
+  // NormalizeEventPipe), Betreuer haben keine Trikotnummer.
+  public coachNumbers(): number[] {
+    return [1, 2, 3, 4, 5].filter((num) => this.hasCoach(num));
+  }
+
   public coachName(index: number): string {
     const coaches =
       this.team === 'home'

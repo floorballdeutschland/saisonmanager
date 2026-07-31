@@ -7,7 +7,12 @@ import {
   getPeriodMaxSeconds,
   isEventTimeValid,
 } from './event-time-validation';
-import { Game, GameEvent, League } from '@floorball/types';
+import {
+  Game,
+  GameAdditionalFields,
+  GameEvent,
+  League,
+} from '@floorball/types';
 
 // 3 Perioden à 20 Minuten, 10 Minuten Verlängerung
 const leagueSettings = {
@@ -429,6 +434,52 @@ describe('MatchEventFormComponent', () => {
         expect(ids).toContain('penalty_shots');
         expect(ids).not.toContain('pause1');
       });
+    });
+  });
+  describe('coachNumbers', () => {
+    // Strafen gegen Betreuer laufen über die Pseudo-Trikotnummern 2001–2005.
+    // Angeboten wird nur, wer im Spielbericht namentlich eingetragen ist.
+    const withCoaches = (
+      home: Partial<GameAdditionalFields['home_team_coaches']>,
+      guest: Partial<GameAdditionalFields['guest_team_coaches']> = {}
+    ) =>
+      ({
+        home_team_coaches: home,
+        guest_team_coaches: guest,
+      }) as GameAdditionalFields;
+
+    it('should offer only coaches with a name, in order', () => {
+      component.team = 'home';
+      component.additionalFields = withCoaches({
+        coach1_last_name: 'Meier',
+        coach3_first_name: 'Anna',
+      });
+
+      expect(component.coachNumbers()).toEqual([1, 3]);
+    });
+
+    it('should read the coaches of the selected team', () => {
+      component.team = 'guest';
+      component.additionalFields = withCoaches(
+        { coach1_last_name: 'Meier' },
+        { coach2_last_name: 'Schulz' }
+      );
+
+      expect(component.coachNumbers()).toEqual([2]);
+    });
+
+    it('should offer nothing without additionalFields', () => {
+      component.team = 'home';
+      component.additionalFields = undefined;
+
+      expect(component.coachNumbers()).toEqual([]);
+    });
+
+    it('should offer nothing when no coach has a name', () => {
+      component.team = 'home';
+      component.additionalFields = withCoaches({ coach1_last_name: '' });
+
+      expect(component.coachNumbers()).toEqual([]);
     });
   });
 });

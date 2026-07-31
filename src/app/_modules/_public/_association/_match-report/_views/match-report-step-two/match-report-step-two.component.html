@@ -195,6 +195,12 @@
           [team_name]="game.guest_team_name"
           (setEvent)="setEvent($event)"
         ></fb-match-event-button>
+        <!--
+          additionalFields ist für Strafen zwingend: Die Auswahl „Betreuer 1–5"
+          erscheint nur, wenn dort ein Name hinterlegt ist (hasCoach). Ohne das
+          Binding blieben alle fünf Optionen ausgeblendet und Strafen gegen
+          Betreuer waren über das Dropdown nicht erfassbar.
+        -->
         @if (event === "penalty-home") {
           <fb-match-event-form
             class="col-span-2"
@@ -206,6 +212,7 @@
             [penalties]="penalties"
             [penaltyCodes]="penaltyCodes"
             [match]="game"
+            [additionalFields]="additionalFields"
           ></fb-match-event-form>
         }
         @if (event === "penalty-guest") {
@@ -219,6 +226,7 @@
             [penalties]="penalties"
             [penaltyCodes]="penaltyCodes"
             [match]="game"
+            [additionalFields]="additionalFields"
           ></fb-match-event-form>
         }
         <fb-match-event-button
