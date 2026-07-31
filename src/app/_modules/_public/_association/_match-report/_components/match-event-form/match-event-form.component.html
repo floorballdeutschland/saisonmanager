@@ -547,8 +547,8 @@
                 <option value="2000">Nicht angegeben</option>
               }
               @if (type === "penalty") {
-                @for (num of [1, 2, 3, 4, 5]; track num) {
-                  <option [value]="2000 + num" [hidden]="!hasCoach(num)">
+                @for (num of coachNumbers(); track num) {
+                  <option [value]="2000 + num">
                     Betreuer {{ num }} – {{ coachName(num) }}
                   </option>
                 }
