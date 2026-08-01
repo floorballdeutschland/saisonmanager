@@ -21,12 +21,19 @@ npm run start-local          # ng serve --host 0.0.0.0 (for network access)
 npm run build                # production build → dist/saisonmanager/browser/
 ./build-deploy.sh            # build + scp to saisonmanager.org
 
-# Tests
-ng test                      # Karma unit tests
+# Tests (102 spec files, Karma/Jasmine)
+ng test                      # watch mode
+ng test --no-watch --browsers=ChromeHeadlessCI          # headless, as CI runs it
+ng test --no-watch --include='**/foo.component.spec.ts' # single spec file
 
-# Lint (runs automatically as pre-commit hook via Husky)
-npm run lint                 # Prettier on staged files only
+# Lint — the pre-commit hook runs BOTH of these
+npm run lint                 # Prettier on staged files only (NOT eslint)
+ng lint                      # ESLint (flat config, eslint.config.js) — what CI checks
 ```
+
+`ChromeHeadlessCI` is a custom launcher in `karma.conf.js` (`ChromeHeadless` + `--no-sandbox --disable-gpu`); the default `browsers` entry is plain `Chrome`.
+
+**Tests need a Chrome binary that this WSL2 box does not have.** Any `ng test` variant aborts with `No binary for ChromeHeadless browser on your platform. Please, set "CHROME_BIN" env variable.` The `chrome-headless-shell/` directories in the repo root are **empty leftovers**, not a usable browser. CI works because the GitHub runner ships Chrome. To run tests locally, install Chrome/Chromium and export `CHROME_BIN=/path/to/chrome` first — otherwise rely on CI for test results and do not report a red local run as a code failure.
 
 **`build-deploy.sh` caveat:** The script calls `ng` directly, which requires nvm to be in PATH. Running `./build-deploy.sh` in a fresh shell will fail with `ng: command not found`. Always invoke it as:
 
@@ -101,10 +108,13 @@ The API runs at **http://localhost:3001** (port 3000 is taken by another service
 
 **Module structure** under `src/app/`:
 
-- `_modules/_admin/` – Protected admin views: `_league_admin`, `_schedule_admin`, `_license_admin`, `_player_admin`, `_club_admin`, `_team_admin`, `_referee_admin`, `_referee_vm`, `_assignment_admin`, `_transfer_request_admin`, `_state_association_admin`, `_api_key_admin`
+- `_modules/_admin/` – Protected admin views, one lazy-loaded module per area (~26; `ls src/app/_modules/_admin/` for the current set — the list goes stale fast)
 - `_modules/_referee/` – Referee self-service portal (`/schiedsrichter/profil`, `/schiedsrichter/sperrtermine`)
+- `_modules/_referee_feedback/` – Feedback questionnaire shared between the public/club entry point and the admin report views (holds the shared Transloco scope)
+- `_modules/_account/` – Self-service account settings (name, e-mail, password)
+- `_modules/_team_game_days/` – Team-facing game day views
 - `_modules/_public/` – Public-facing views (schedule, scores, login)
-- `_modules/_core/_services/` – Shared services (session, API calls)
+- `_modules/_core/_services/` – Shared services (session, API calls); `_core/_i18n/` holds the Transloco setup
 - `_modules/_uikit/` – Shared UI components
 - `_helpers/_interceptors/` – HTTP interceptors: `ApiKeyInterceptor` (adds `X-Api-Key` header) and `ErrorInterceptor` (handles 401/403/404)
 - `_helpers/_pipes/` – Domain-specific pipes (sorting, filtering, license display, game timeline) re-exported by `UikitCommonModule`
@@ -119,6 +129,7 @@ The API runs at **http://localhost:3001** (port 3000 is taken by another service
 5. Add lazy-loaded route to `app-routing.module.ts`
 6. Add menu item to `metanavigation.component.html` gated by `showItem('menu_item_foo_admin')`
 7. Add `menu_item_foo_admin` to `User#permissions_items` in the API (`app/models/user.rb`)
+8. Provide a `TRANSLOCO_SCOPE` (`{ scope: 'admin/foo', alias: 'fooAdmin' }`, `multi: true`) in the module and create both `src/assets/i18n/admin/foo/de.json` and `en.json`
 
 **UIKit components** (`UikitCommonModule` re-exports everything; import the module, not individual components):
 
@@ -140,6 +151,29 @@ The API runs at **http://localhost:3001** (port 3000 is taken by another service
 - `_referee_vm` – Vereinsmanager view of their club's referees (`/verwaltung/schiedsrichter-verein`)
 - `_assignment_admin` – SBK assigns referees to games (`/verwaltung/schiedsrichter-ansetzungen`)
 - `_transfer_request_admin` – Player transfer request workflow (`/verwaltung/transfer-anfragen`). Status machine: `pending_club` → `pending_lv` → `approved` / `rejected_by_club` / `rejected_by_lv` / `scheduled`. VM initiates or approves; LV (Landesverband) gives final approval.
+
+**i18n (Transloco, DE/EN)** — setup lives in `_modules/_core/_i18n/`:
+
+- **One scope per module.** A feature module provides its own scope instead of dumping keys into the global file:
+  ```ts
+  providers: [
+    {
+      provide: TRANSLOCO_SCOPE,
+      useValue: { scope: "admin/player", alias: "playerAdmin" },
+      multi: true,
+    },
+  ];
+  ```
+  Always `multi: true` — a module can carry several scopes.
+- **Scope name = asset path.** Transloco asks the loader for `<scope>/<lang>`, which resolves to `src/assets/i18n/<scope>/<lang>.json` (e.g. `admin/player` → `src/assets/i18n/admin/player/de.json` + `en.json`). Global keys live in `src/assets/i18n/{de,en}.json`. A new scope needs both language files or the HTTP load 404s.
+- **Missing EN keys fall back to German**, not to the raw key (`useFallbackTranslation: true`), so partial translations are safe to ship. Missing keys are logged in dev only.
+- **A component shared across modules needs its own shared module** that provides the scope — otherwise the scope resolves only in whichever module happens to declare it. See `_modules/_referee_feedback/referee-feedback-shared.module.ts` (`scope: 'referee-feedback'`).
+- **In specs**, add `getTranslocoTestingModule()` from `_core/_i18n/transloco-testing` to TestBed `imports`. Pass scope keys when the template needs real strings: `getTranslocoTestingModule({ 'admin/league': { ... } })`.
+- An `APP_INITIALIZER` in `provideTranslocoRoot()` loads the active language before the first render, so keys never flash.
+
+**Error tracking:** Sentry (`@sentry/angular`) is wired in `app.module.ts` via `Sentry.createErrorHandler()` + `Sentry.TraceService`. The commented-out `Sentry.init` block in `main.ts` is dead legacy code — ignore it.
+
+**Three environment files:** `environment.ts` (dev), `environment.prod.ts`, `environment.staging.ts`. Besides `production`, there is a separate `staging: true` flag, read as `isStaging` to render the test-system banner in `app.component.html` and the sidebar. `angular.json` defines four build configurations: `production`, `staging`, `prerender`, `development`.
 
 **Auth flow:** `SessionService` handles login/logout. On login, the user object (including permissions hash) is stored in `localStorage`. An `ErrorInterceptor` auto-logs out on 401 and redirects on 403. After backend permission changes, users must log out and back in to pick up new `permissions` from localStorage.
 
@@ -202,7 +236,7 @@ before_action :authenticate_public_request, only: %i[show index]
 
 ## Deployment
 
-No CI/CD. Manual deploy. There are two environments on the **same server**, sharing one nginx container: **production** (`saisonmanager.org`) and **staging** (`saisonmanager.dev`).
+**CI yes, CD no.** `.github/workflows/ci.yml` gates every PR to `main` (and pushes to `main`): `npx ng lint` → headless Karma with coverage → `npm run build`. Deployment itself is fully manual. There are two environments on the **same server**, sharing one nginx container: **production** (`saisonmanager.org`) and **staging** (`saisonmanager.dev`).
 
 ### Promotion workflow
 
