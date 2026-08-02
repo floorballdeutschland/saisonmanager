@@ -118,6 +118,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   penalty = 0;
   penaltyCode = 0;
   with_ps?: boolean;
+  technicalGoal?: boolean;
 
   coach1 = { firstname: '', lastname: '' };
   coach2 = { firstname: '', lastname: '' };
@@ -347,6 +348,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
       } else if (e.event_type === 'goal') {
         this.penaltyCode = e.penalty_code_id ?? 0;
         this.with_ps = e.goal_type === 'penalty_shot';
+        this.technicalGoal = e.goal_type === 'technical';
       }
     }
   }
@@ -452,6 +454,33 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
       ) {
         this.assistSearchFieldElement.nativeElement.focus();
       }
+    }
+  }
+
+  // Strafschuss und technisches Tor schließen sich aus: ein Tor ist entweder
+  // erzielt oder zugesprochen.
+  //
+  // „Eigentor" (1000) und „Nicht angegeben" (2000) stehen anstelle eines
+  // Schützen und verschwinden am technischen Tor aus der Auswahl. War einer der
+  // beiden vorher gewählt, muss er auch aus dem Modell fallen, sonst ginge er
+  // mit, obwohl das Feld leer aussieht; submitDisabled() verlangt dann eine
+  // Nummer, bevor gespeichert werden kann.
+  public onTechnicalGoalChange(): void {
+    if (this.technicalGoal) {
+      this.with_ps = false;
+      if (this.playerNumber >= 1000) {
+        this.playerNumber = 0;
+        this.playerSearchNumber = undefined;
+      }
+    }
+  }
+
+  // Gegenstück zu onTechnicalGoalChange, hält dieselbe Bedingung von der
+  // anderen Seite. Beide werden aus dem Template heraus aufgerufen; ohne die
+  // (ngModelChange)-Bindung am jeweiligen Haken greift der Ausschluss nicht.
+  public onWithPsChange(): void {
+    if (this.with_ps) {
+      this.technicalGoal = false;
     }
   }
 
@@ -641,6 +670,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
             guest_number?: number;
             guest_assist?: number;
             penalty_code_id?: number;
+            goal_type?: string;
           } =
             this.team === 'home'
               ? {
@@ -655,7 +685,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
                   ),
                 };
 
-          if (this.with_ps) {
+          if (this.technicalGoal) {
+            goal.goal_type = 'technical';
+          } else if (this.with_ps) {
             goal.penalty_code_id = 23;
           }
 
