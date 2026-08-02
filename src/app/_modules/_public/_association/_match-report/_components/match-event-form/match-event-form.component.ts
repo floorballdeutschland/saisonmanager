@@ -118,6 +118,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   penalty = 0;
   penaltyCode = 0;
   with_ps?: boolean;
+  technicalGoal?: boolean;
 
   coach1 = { firstname: '', lastname: '' };
   coach2 = { firstname: '', lastname: '' };
@@ -347,6 +348,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
       } else if (e.event_type === 'goal') {
         this.penaltyCode = e.penalty_code_id ?? 0;
         this.with_ps = e.goal_type === 'penalty_shot';
+        this.technicalGoal = e.goal_type === 'technical';
       }
     }
   }
@@ -452,6 +454,29 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
       ) {
         this.assistSearchFieldElement.nativeElement.focus();
       }
+    }
+  }
+
+  // Ein technisches Tor wird zugesprochen, nicht herausgespielt, es kann daher
+  // keine Vorlage haben. Die Assist-Felder sind dann ausgeblendet; eine zuvor
+  // eingetragene Vorlage darf beim Umstellen eines bestehenden Tores nicht
+  // stehen bleiben, deshalb geht sie hier auf 0 (die API verwirft sie zusätzlich
+  // serverseitig).
+  public assistAsSubmitted(): number {
+    return this.technicalGoal ? 0 : this.assistPlayerNumber;
+  }
+
+  // Strafschuss und technisches Tor schließen sich aus: ein Tor ist entweder
+  // erzielt oder zugesprochen.
+  public onTechnicalGoalChange(): void {
+    if (this.technicalGoal) {
+      this.with_ps = false;
+    }
+  }
+
+  public onWithPsChange(): void {
+    if (this.with_ps) {
+      this.technicalGoal = false;
     }
   }
 
@@ -641,21 +666,27 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
             guest_number?: number;
             guest_assist?: number;
             penalty_code_id?: number;
+            goal_type?: string;
           } =
             this.team === 'home'
               ? {
                   home_number: parseInt(this.playerNumber.toString(), 10),
-                  home_assist: parseInt(this.assistPlayerNumber.toString(), 10),
+                  home_assist: parseInt(
+                    this.assistAsSubmitted().toString(),
+                    10
+                  ),
                 }
               : {
                   guest_number: parseInt(this.playerNumber.toString(), 10),
                   guest_assist: parseInt(
-                    this.assistPlayerNumber.toString(),
+                    this.assistAsSubmitted().toString(),
                     10
                   ),
                 };
 
-          if (this.with_ps) {
+          if (this.technicalGoal) {
+            goal.goal_type = 'technical';
+          } else if (this.with_ps) {
             goal.penalty_code_id = 23;
           }
 

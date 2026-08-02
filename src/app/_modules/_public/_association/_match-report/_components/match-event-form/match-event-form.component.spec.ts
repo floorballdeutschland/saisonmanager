@@ -13,6 +13,8 @@ import {
   GameEvent,
   League,
 } from '@floorball/types';
+import { GameService } from '@floorball/core';
+import { of } from 'rxjs';
 
 // 3 Perioden à 20 Minuten, 10 Minuten Verlängerung
 const leagueSettings = {
@@ -541,6 +543,108 @@ describe('MatchEventFormComponent', () => {
 
       expect(component.playerNumber).toBe(2001);
       expect(component.coachNumbers()).toEqual([1]);
+    });
+  });
+
+  describe('technisches Tor', () => {
+    let gameService: GameService;
+
+    beforeEach(() => {
+      gameService = TestBed.inject(GameService);
+      component.type = 'goal';
+      component.team = 'home';
+      component.currentPeriod = '1';
+      component.minutes = 12;
+      component.seconds = 34;
+      component.playerNumber = 7;
+      component.match = {
+        id: 1,
+        league_id: 1,
+        players: { home: [], guest: [] },
+        referees: [],
+        result: { home_goals: 0, guest_goals: 0 },
+      } as unknown as Game;
+    });
+
+    it('should send goal_type technical without an assist', () => {
+      const addEvent = spyOn(gameService, 'addEvent').and.returnValue(of([]));
+      // Eine vorher eingetragene Vorlage darf nicht mitgehen: ein technisches
+      // Tor wird zugesprochen, nicht herausgespielt.
+      component.assistPlayerNumber = 9;
+      component.technicalGoal = true;
+
+      component.submitEvent();
+
+      const payload = addEvent.calls.mostRecent().args[1];
+      expect(payload.goal_type).toBe('technical');
+      expect(payload.home_assist).toBe(0);
+      expect(payload.penalty_code_id).toBeUndefined();
+    });
+
+    it('should keep sending the assist for a regular goal', () => {
+      const addEvent = spyOn(gameService, 'addEvent').and.returnValue(of([]));
+      component.assistPlayerNumber = 9;
+
+      component.submitEvent();
+
+      const payload = addEvent.calls.mostRecent().args[1];
+      expect(payload.goal_type).toBeUndefined();
+      expect(payload.home_assist).toBe(9);
+    });
+
+    it('should send the penalty-shot marker instead when that is selected', () => {
+      const addEvent = spyOn(gameService, 'addEvent').and.returnValue(of([]));
+      component.with_ps = true;
+
+      component.submitEvent();
+
+      const payload = addEvent.calls.mostRecent().args[1];
+      expect(payload.penalty_code_id).toBe(23);
+      expect(payload.goal_type).toBeUndefined();
+    });
+
+    // Ein Tor ist entweder erzielt oder zugesprochen, beides zusammen gibt es
+    // nicht. Ohne die Kopplung ließen sich beide Haken setzen und nur einer
+    // von beiden käme im Ereignis an.
+    it('should keep penalty shot and technical goal mutually exclusive', () => {
+      component.with_ps = true;
+      component.technicalGoal = true;
+      component.onTechnicalGoalChange();
+      expect(component.with_ps).toBeFalse();
+
+      component.with_ps = true;
+      component.onWithPsChange();
+      expect(component.technicalGoal).toBeFalse();
+    });
+
+    it('should pre-fill the marker when editing a technical goal', () => {
+      component.existingEvent = {
+        event_type: 'goal',
+        goal_type: 'technical',
+        number: 7,
+        time: '12:34',
+        period: 1,
+      } as GameEvent;
+
+      component.ngOnInit();
+
+      expect(component.technicalGoal).toBeTrue();
+      expect(component.with_ps).toBeFalse();
+    });
+
+    it('should not mark a penalty shot as a technical goal when editing', () => {
+      component.existingEvent = {
+        event_type: 'goal',
+        goal_type: 'penalty_shot',
+        number: 7,
+        time: '12:34',
+        period: 1,
+      } as GameEvent;
+
+      component.ngOnInit();
+
+      expect(component.with_ps).toBeTrue();
+      expect(component.technicalGoal).toBeFalse();
     });
   });
 });
