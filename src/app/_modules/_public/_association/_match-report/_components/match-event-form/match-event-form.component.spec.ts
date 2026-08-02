@@ -723,19 +723,42 @@ describe('MatchEventFormComponent', () => {
       expect(component.with_ps).toBeTrue();
       expect(component.technicalGoal).toBeFalse();
     });
+  });
 
-    // Die Entscheidung im Penalty-Schießen ist dasselbe gespeicherte Ereignis
-    // wie der Strafschuss, die API unterscheidet beide am Spielabschnitt und
-    // liefert dafür „penalty_shots". Ohne diesen Wert bliebe der Haken beim
-    // Bearbeiten aus und das Speichern machte ein gewöhnliches Tor daraus.
+  // Die Entscheidung im Penalty-Schießen ist dasselbe gespeicherte Ereignis wie
+  // der Strafschuss (Tor mit penalty_code_id 23), die API unterscheidet beide am
+  // Spielabschnitt und liefert dafür „penalty_shots".
+  describe('Entscheidung im Penalty-Schießen', () => {
+    let gameService: GameService;
+
+    // Wie beim Bearbeiten: die Elternkomponente bindet currentPeriod an den
+    // Abschnitt des Ereignisses, nicht an den laufenden Abschnitt des Spiels
+    // (siehe match-history-item.component.html).
+    const shootoutGoal = {
+      event_id: 5,
+      event_type: 'goal',
+      goal_type: 'penalty_shots',
+      number: 7,
+      time: '0:30',
+      period: 5,
+    } as GameEvent;
+
+    beforeEach(() => {
+      gameService = TestBed.inject(GameService);
+      component.type = 'goal';
+      component.team = 'home';
+      component.currentPeriod = '5';
+      component.match = {
+        id: 1,
+        league_id: 1,
+        players: { home: [], guest: [] },
+        referees: [],
+        result: { home_goals: 0, guest_goals: 0 },
+      } as unknown as Game;
+    });
+
     it('should pre-fill the marker when editing a shootout decision', () => {
-      component.existingEvent = {
-        event_type: 'goal',
-        goal_type: 'penalty_shots',
-        number: 7,
-        time: '70:00',
-        period: 5,
-      } as GameEvent;
+      component.existingEvent = shootoutGoal;
 
       component.ngOnInit();
 
@@ -743,39 +766,31 @@ describe('MatchEventFormComponent', () => {
       expect(component.technicalGoal).toBeFalse();
     });
 
-    it('should keep the shootout decision when saving it unchanged', () => {
-      const updateEvent = spyOn(gameService, 'updateEvent').and.returnValue(
-        of([])
-      );
-      component.existingEvent = {
-        event_id: 5,
-        event_type: 'goal',
-        goal_type: 'penalty_shots',
-        number: 7,
-        time: '70:00',
-        period: 5,
-      } as GameEvent;
-      component.ngOnInit();
-
-      component.submitEvent();
-
-      // Die Torart selbst wird nicht übertragen, sie leitet sich in der API aus
-      // Strafcode und Abschnitt ab; entscheidend ist, dass der Code mitgeht.
-      expect(updateEvent.calls.mostRecent().args[2].penalty_code_id).toBe(23);
-    });
-
     it('should not mark a regular goal as a penalty shot when editing', () => {
-      component.existingEvent = {
-        event_type: 'goal',
-        goal_type: 'regular',
-        number: 7,
-        time: '12:34',
-        period: 1,
-      } as GameEvent;
+      component.existingEvent = { ...shootoutGoal, goal_type: 'regular' };
 
       component.ngOnInit();
 
       expect(component.with_ps).toBeFalse();
+    });
+
+    // Der eigentliche Fehler: ohne die Vorbelegung ging der Strafcode beim
+    // Speichern verloren und aus der Entscheidung wurde ein gewöhnliches Tor.
+    it('should still send the penalty code when updating a shootout decision', () => {
+      const updateEvent = spyOn(gameService, 'updateEvent').and.returnValue(
+        of([])
+      );
+      component.existingEvent = shootoutGoal;
+      component.ngOnInit();
+
+      component.submitEvent();
+
+      const payload = updateEvent.calls.mostRecent().args[2];
+      // Die Torart selbst wird nicht übertragen, die API leitet sie aus
+      // Strafcode und Abschnitt ab. Beides muss also unverändert mitgehen:
+      // ohne den Abschnitt wäre die Entscheidung wieder ein Strafschuss.
+      expect(payload.penalty_code_id).toBe(23);
+      expect(payload.period).toBe(5);
     });
   });
 
