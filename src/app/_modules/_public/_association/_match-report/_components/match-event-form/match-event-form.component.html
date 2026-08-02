@@ -528,7 +528,13 @@
               (change)="playerSearchNumber = undefined"
             >
               <option value="0">Bitte wählen...</option>
-              @if (type === "goal") {
+              <!--
+                „Eigentor" und „Nicht angegeben" stehen anstelle eines Schützen
+                (Pseudo-Nummern 1000/2000). Ein technisches Tor hat immer einen
+                benannten Schützen, und die Ereignisliste zeigt zu 1000/2000 das
+                Label statt eines Namens: die Zeile bliebe leer.
+              -->
+              @if (type === "goal" && !technicalGoal) {
                 <option [value]="1000">Eigentor</option>
               }
               @for (
@@ -543,7 +549,8 @@
                   {{ player.player_firstname }}
                 </option>
               }
-              @if (type === "goal") {
+              <!-- Am technischen Tor ausgeblendet, siehe „Eigentor" oben. -->
+              @if (type === "goal" && !technicalGoal) {
                 <option value="2000">Nicht angegeben</option>
               }
               @if (type === "penalty") {
@@ -625,11 +632,26 @@
               id="with_ps"
               name="with_ps"
               [(ngModel)]="with_ps"
+              (ngModelChange)="onWithPsChange()"
             />
             <label
               for="with_ps"
               class="font-medium text-base text-fb-gray-500 p-2"
               >durch Strafstoß?</label
+            >
+          </div>
+          <div class="col-span-2">
+            <input
+              type="checkbox"
+              id="technical_goal"
+              name="technical_goal"
+              [(ngModel)]="technicalGoal"
+              (ngModelChange)="onTechnicalGoalChange()"
+            />
+            <label
+              for="technical_goal"
+              class="font-medium text-base text-fb-gray-500 p-2"
+              >Technisches Tor?</label
             >
           </div>
         }

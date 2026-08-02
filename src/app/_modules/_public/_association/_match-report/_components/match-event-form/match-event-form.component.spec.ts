@@ -1,4 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 
 import { MatchEventFormComponent } from './match-event-form.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -13,6 +18,11 @@ import {
   GameEvent,
   League,
 } from '@floorball/types';
+import { GameService } from '@floorball/core';
+import { SortTrikotnumbersPipe } from 'src/app/_helpers/_pipes';
+import { FormsModule } from '@angular/forms';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { of } from 'rxjs';
 
 // 3 Perioden à 20 Minuten, 10 Minuten Verlängerung
 const leagueSettings = {
@@ -541,6 +551,375 @@ describe('MatchEventFormComponent', () => {
 
       expect(component.playerNumber).toBe(2001);
       expect(component.coachNumbers()).toEqual([1]);
+    });
+  });
+
+  describe('technisches Tor', () => {
+    let gameService: GameService;
+
+    beforeEach(() => {
+      gameService = TestBed.inject(GameService);
+      component.type = 'goal';
+      component.team = 'home';
+      component.currentPeriod = '1';
+      component.minutes = 12;
+      component.seconds = 34;
+      component.minutesValid = true;
+      component.secondsValid = true;
+      component.playerNumber = 7;
+      component.match = {
+        id: 1,
+        league_id: 1,
+        players: { home: [], guest: [] },
+        referees: [],
+        result: { home_goals: 0, guest_goals: 0 },
+      } as unknown as Game;
+    });
+
+    // Auch ein zugesprochenes Tor kann vorbereitet worden sein: die Vorlage
+    // bleibt erfassbar und geht unverändert mit.
+    it('should send goal_type technical along with the assist', () => {
+      const addEvent = spyOn(gameService, 'addEvent').and.returnValue(of([]));
+      component.assistPlayerNumber = 9;
+      component.technicalGoal = true;
+
+      component.submitEvent();
+
+      const payload = addEvent.calls.mostRecent().args[1];
+      expect(payload.goal_type).toBe('technical');
+      expect(payload.home_assist).toBe(9);
+      expect(payload.penalty_code_id).toBeUndefined();
+    });
+
+    // Umstellen eines bestehenden Tores läuft über updateEvent statt addEvent,
+    // also über den anderen Zweig von submitEvent.
+    it('should keep the assist when converting an existing goal', () => {
+      const updateEvent = spyOn(gameService, 'updateEvent').and.returnValue(
+        of([])
+      );
+      component.existingEvent = {
+        event_id: 5,
+        event_type: 'goal',
+        number: 7,
+        assist: 9,
+        time: '12:34',
+        period: 1,
+      } as GameEvent;
+      component.ngOnInit();
+      component.technicalGoal = true;
+
+      component.submitEvent();
+
+      const payload = updateEvent.calls.mostRecent().args[2];
+      expect(payload.goal_type).toBe('technical');
+      expect(payload.home_assist).toBe(9);
+    });
+
+    // „Eigentor" (1000) und „Nicht angegeben" (2000) verschwinden am
+    // technischen Tor aus der Auswahl. Bliebe die Nummer im Modell stehen, ginge
+    // sie mit, obwohl das Feld leer aussieht, und die Ereignisliste zeigte eine
+    // Zeile ohne Namen und ohne Hinweis.
+    // Die Nummer kommt aus einem <select> und liegt deshalb als String im
+    // Modell, obwohl sie als number deklariert ist: Angulars NgSelectOption
+    // registriert nur `[ngValue]` im Options-Map, bei `value`/`[value]` fällt
+    // der Rohstring durch. Der Vergleich in onTechnicalGoalChange muss damit
+    // umgehen (`>=` konvertiert numerisch, anders als ein Stringvergleich).
+    it('should clear a pseudo scorer number when marking a technical goal', () => {
+      component.playerNumber = '2000' as unknown as number;
+      component.playerSearchNumber = 2000;
+      component.technicalGoal = true;
+
+      component.onTechnicalGoalChange();
+
+      expect(component.playerNumber).toBe(0);
+      // Auch das Suchfeld, sonst stünde dort weiter die verworfene Nummer.
+      expect(component.playerSearchNumber).toBeUndefined();
+      // Ohne Nummer ist das Speichern gesperrt, die Eingabe wird also erzwungen.
+      expect(component.submitDisabled()).toBeTrue();
+    });
+
+    it('should keep a two-digit scorer number when marking a technical goal', () => {
+      // Stringvergleich hätte hier zugeschlagen: '10' >= '1000' ist zwar
+      // falsch, aber '99' >= '1000' wäre wahr.
+      component.playerNumber = '99' as unknown as number;
+      component.technicalGoal = true;
+
+      component.onTechnicalGoalChange();
+
+      expect(component.playerNumber).toBe('99' as unknown as number);
+    });
+
+    it('should keep a regular scorer number when marking a technical goal', () => {
+      component.playerNumber = 7;
+      component.technicalGoal = true;
+
+      component.onTechnicalGoalChange();
+
+      expect(component.playerNumber).toBe(7);
+    });
+
+    it('should keep sending the assist for a regular goal', () => {
+      const addEvent = spyOn(gameService, 'addEvent').and.returnValue(of([]));
+      component.assistPlayerNumber = 9;
+
+      component.submitEvent();
+
+      const payload = addEvent.calls.mostRecent().args[1];
+      expect(payload.goal_type).toBeUndefined();
+      expect(payload.home_assist).toBe(9);
+    });
+
+    it('should send the penalty-shot marker instead when that is selected', () => {
+      const addEvent = spyOn(gameService, 'addEvent').and.returnValue(of([]));
+      component.with_ps = true;
+
+      component.submitEvent();
+
+      const payload = addEvent.calls.mostRecent().args[1];
+      expect(payload.penalty_code_id).toBe(23);
+      expect(payload.goal_type).toBeUndefined();
+    });
+
+    // Ein Tor ist entweder erzielt oder zugesprochen, beides zusammen gibt es
+    // nicht. Ohne die Kopplung ließen sich beide Haken setzen und nur einer
+    // von beiden käme im Ereignis an.
+    it('should keep penalty shot and technical goal mutually exclusive', () => {
+      component.with_ps = true;
+      component.technicalGoal = true;
+      component.onTechnicalGoalChange();
+      expect(component.with_ps).toBeFalse();
+
+      component.with_ps = true;
+      component.onWithPsChange();
+      expect(component.technicalGoal).toBeFalse();
+    });
+
+    it('should pre-fill the marker when editing a technical goal', () => {
+      component.existingEvent = {
+        event_type: 'goal',
+        goal_type: 'technical',
+        number: 7,
+        time: '12:34',
+        period: 1,
+      } as GameEvent;
+
+      component.ngOnInit();
+
+      expect(component.technicalGoal).toBeTrue();
+      expect(component.with_ps).toBeFalse();
+    });
+
+    it('should not mark a penalty shot as a technical goal when editing', () => {
+      component.existingEvent = {
+        event_type: 'goal',
+        goal_type: 'penalty_shot',
+        number: 7,
+        time: '12:34',
+        period: 1,
+      } as GameEvent;
+
+      component.ngOnInit();
+
+      expect(component.with_ps).toBeTrue();
+      expect(component.technicalGoal).toBeFalse();
+    });
+  });
+
+  // Die Entscheidung im Penalty-Schießen ist dasselbe gespeicherte Ereignis wie
+  // der Strafschuss (Tor mit penalty_code_id 23), die API unterscheidet beide am
+  // Spielabschnitt und liefert dafür „penalty_shots".
+  describe('Entscheidung im Penalty-Schießen', () => {
+    let gameService: GameService;
+
+    // Wie beim Bearbeiten: die Elternkomponente bindet currentPeriod an den
+    // Abschnitt des Ereignisses, nicht an den laufenden Abschnitt des Spiels
+    // (siehe match-history-item.component.html).
+    const shootoutGoal = {
+      event_id: 5,
+      event_type: 'goal',
+      goal_type: 'penalty_shots',
+      number: 7,
+      time: '0:30',
+      period: 5,
+    } as GameEvent;
+
+    beforeEach(() => {
+      gameService = TestBed.inject(GameService);
+      component.type = 'goal';
+      component.team = 'home';
+      component.currentPeriod = '5';
+      component.match = {
+        id: 1,
+        league_id: 1,
+        players: { home: [], guest: [] },
+        referees: [],
+        result: { home_goals: 0, guest_goals: 0 },
+      } as unknown as Game;
+    });
+
+    it('should pre-fill the marker when editing a shootout decision', () => {
+      component.existingEvent = shootoutGoal;
+
+      component.ngOnInit();
+
+      expect(component.with_ps).toBeTrue();
+      expect(component.technicalGoal).toBeFalse();
+    });
+
+    it('should not mark a regular goal as a penalty shot when editing', () => {
+      component.existingEvent = { ...shootoutGoal, goal_type: 'regular' };
+
+      component.ngOnInit();
+
+      expect(component.with_ps).toBeFalse();
+    });
+
+    // Der eigentliche Fehler: ohne die Vorbelegung ging der Strafcode beim
+    // Speichern verloren und aus der Entscheidung wurde ein gewöhnliches Tor.
+    it('should still send the penalty code when updating a shootout decision', () => {
+      const updateEvent = spyOn(gameService, 'updateEvent').and.returnValue(
+        of([])
+      );
+      component.existingEvent = shootoutGoal;
+      component.ngOnInit();
+
+      component.submitEvent();
+
+      const payload = updateEvent.calls.mostRecent().args[2];
+      // Die Torart selbst wird nicht übertragen, die API leitet sie aus
+      // Strafcode und Abschnitt ab. Beides muss also unverändert mitgehen:
+      // ohne den Abschnitt wäre die Entscheidung wieder ein Strafschuss.
+      expect(payload.penalty_code_id).toBe(23);
+      expect(payload.period).toBe(5);
+    });
+  });
+
+  // Die Verdrahtung im Template, nicht die Methoden dahinter: ohne diese Tests
+  // ließe sich die (ngModelChange)-Bindung oder die @if-Bedingung an den
+  // Pseudo-Nummern entfernen, ohne dass irgendetwas rot wird. Beide Regeln
+  // existieren aber nur in der Vorlage.
+  //
+  // Eigene TestBed, weil das Tor-Formular FormsModule und den
+  // sortTrikotNumber-Pipe braucht; die übrigen Bausteine des Formulars fängt
+  // NO_ERRORS_SCHEMA ab.
+  describe('technisches Tor: Template', () => {
+    let domFixture: ComponentFixture<MatchEventFormComponent>;
+    let dom: MatchEventFormComponent;
+
+    beforeEach(async () => {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [HttpClientTestingModule, FormsModule],
+        declarations: [MatchEventFormComponent, SortTrikotnumbersPipe],
+        schemas: [NO_ERRORS_SCHEMA],
+      }).compileComponents();
+
+      domFixture = TestBed.createComponent(MatchEventFormComponent);
+      dom = domFixture.componentInstance;
+      dom.type = 'goal';
+      dom.team = 'home';
+      dom.currentPeriod = '1';
+      dom.match = {
+        id: 1,
+        league_id: 1,
+        players: { home: [], guest: [] },
+        referees: [],
+        period_titles: [],
+        result: { home_goals: 0, guest_goals: 0 },
+      } as unknown as Game;
+      domFixture.detectChanges();
+    });
+
+    function checkbox(id: string): HTMLInputElement {
+      return domFixture.nativeElement.querySelector(`#${id}`);
+    }
+
+    function optionTexts(select: HTMLSelectElement): string[] {
+      return Array.from(
+        select.querySelectorAll('option'),
+        (option) => (option as HTMLOptionElement).textContent?.trim() ?? ''
+      );
+    }
+
+    // Das Formular hat drei Auswahlfelder (Spielabschnitt, Schütze, Assist).
+    // Über den ersten Eintrag statt über die Position, sonst hinge der Test an
+    // der Reihenfolge im Template.
+    function selectStartingWith(firstOption: string): HTMLSelectElement {
+      const selects = Array.from(
+        domFixture.nativeElement.querySelectorAll('select')
+      ) as HTMLSelectElement[];
+      const match = selects.find(
+        (select) => optionTexts(select)[0] === firstOption
+      );
+      expect(match).withContext(`select "${firstOption}"`).toBeTruthy();
+      return match as HTMLSelectElement;
+    }
+
+    function scorerOptionValues(): string[] {
+      return Array.from(
+        selectStartingWith('Bitte wählen...').querySelectorAll('option'),
+        (option) => (option as HTMLOptionElement).value
+      );
+    }
+
+    it('should offer both markers for a goal', () => {
+      expect(checkbox('with_ps')).toBeTruthy();
+      expect(checkbox('technical_goal')).toBeTruthy();
+    });
+
+    // Den Haken zurückzunehmen ist der zweite Schritt: ngModel schreibt den
+    // Wert erst im nächsten Microtask in die Ansicht, ein detectChanges()
+    // allein lässt die Checkbox noch gesetzt aussehen. Deshalb fakeAsync/tick,
+    // sonst prüfte der Test nur das Modell und nicht, was der Nutzer sieht.
+    it('should uncheck the penalty shot when the technical marker is ticked', fakeAsync(() => {
+      const ps = checkbox('with_ps');
+      ps.click();
+      domFixture.detectChanges();
+      expect(dom.with_ps).toBeTrue();
+
+      checkbox('technical_goal').click();
+      tick();
+      domFixture.detectChanges();
+
+      expect(dom.technicalGoal).toBeTrue();
+      expect(dom.with_ps).toBeFalse();
+      expect(ps.checked).toBeFalse();
+    }));
+
+    it('should uncheck the technical marker when the penalty shot is ticked', fakeAsync(() => {
+      const technical = checkbox('technical_goal');
+      technical.click();
+      domFixture.detectChanges();
+
+      checkbox('with_ps').click();
+      tick();
+      domFixture.detectChanges();
+
+      expect(dom.with_ps).toBeTrue();
+      expect(dom.technicalGoal).toBeFalse();
+      expect(technical.checked).toBeFalse();
+    }));
+
+    it('should hide the pseudo scorer numbers for a technical goal', () => {
+      expect(scorerOptionValues()).toContain('1000');
+      expect(scorerOptionValues()).toContain('2000');
+
+      checkbox('technical_goal').click();
+      domFixture.detectChanges();
+
+      // Ohne Namen dahinter bliebe die Ereigniszeile leer, siehe
+      // formatted_events in der API.
+      expect(scorerOptionValues()).not.toContain('1000');
+      expect(scorerOptionValues()).not.toContain('2000');
+    });
+
+    it('should keep the assist fields for a technical goal', () => {
+      checkbox('technical_goal').click();
+      domFixture.detectChanges();
+
+      // Auch ein zugesprochenes Tor kann vorbereitet worden sein. Die erste
+      // Fassung blendete die Vorlage hier aus, das war falsch.
+      expect(selectStartingWith('Kein Assist')).toBeTruthy();
     });
   });
 });
