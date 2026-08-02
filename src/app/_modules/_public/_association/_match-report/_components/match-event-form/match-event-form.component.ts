@@ -347,7 +347,14 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         this.penaltyCode = e.penalty_code_id ?? 0;
       } else if (e.event_type === 'goal') {
         this.penaltyCode = e.penalty_code_id ?? 0;
-        this.with_ps = e.goal_type === 'penalty_shot';
+        // Strafschuss („penalty_shot") und die Entscheidung im Penalty-Schießen
+        // („penalty_shots") sind dasselbe gespeicherte Ereignis, die API leitet
+        // die Unterscheidung aus dem Spielabschnitt ab. Ohne den zweiten Wert
+        // bliebe der Haken beim Bearbeiten einer Penalty-Entscheidung aus, und
+        // das Speichern machte daraus ein gewöhnliches Tor.
+        this.with_ps = ['penalty_shot', 'penalty_shots'].includes(
+          e.goal_type ?? ''
+        );
         this.technicalGoal = e.goal_type === 'technical';
       }
     }

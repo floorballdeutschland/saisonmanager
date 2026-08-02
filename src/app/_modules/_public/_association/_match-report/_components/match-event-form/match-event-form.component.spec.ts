@@ -723,6 +723,60 @@ describe('MatchEventFormComponent', () => {
       expect(component.with_ps).toBeTrue();
       expect(component.technicalGoal).toBeFalse();
     });
+
+    // Die Entscheidung im Penalty-Schießen ist dasselbe gespeicherte Ereignis
+    // wie der Strafschuss, die API unterscheidet beide am Spielabschnitt und
+    // liefert dafür „penalty_shots". Ohne diesen Wert bliebe der Haken beim
+    // Bearbeiten aus und das Speichern machte ein gewöhnliches Tor daraus.
+    it('should pre-fill the marker when editing a shootout decision', () => {
+      component.existingEvent = {
+        event_type: 'goal',
+        goal_type: 'penalty_shots',
+        number: 7,
+        time: '70:00',
+        period: 5,
+      } as GameEvent;
+
+      component.ngOnInit();
+
+      expect(component.with_ps).toBeTrue();
+      expect(component.technicalGoal).toBeFalse();
+    });
+
+    it('should keep the shootout decision when saving it unchanged', () => {
+      const updateEvent = spyOn(gameService, 'updateEvent').and.returnValue(
+        of([])
+      );
+      component.existingEvent = {
+        event_id: 5,
+        event_type: 'goal',
+        goal_type: 'penalty_shots',
+        number: 7,
+        time: '70:00',
+        period: 5,
+      } as GameEvent;
+      component.ngOnInit();
+
+      component.submitEvent();
+
+      // Die Torart selbst wird nicht übertragen, sie leitet sich in der API aus
+      // Strafcode und Abschnitt ab; entscheidend ist, dass der Code mitgeht.
+      expect(updateEvent.calls.mostRecent().args[2].penalty_code_id).toBe(23);
+    });
+
+    it('should not mark a regular goal as a penalty shot when editing', () => {
+      component.existingEvent = {
+        event_type: 'goal',
+        goal_type: 'regular',
+        number: 7,
+        time: '12:34',
+        period: 1,
+      } as GameEvent;
+
+      component.ngOnInit();
+
+      expect(component.with_ps).toBeFalse();
+    });
   });
 
   // Die Verdrahtung im Template, nicht die Methoden dahinter: ohne diese Tests
