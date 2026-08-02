@@ -528,7 +528,13 @@
               (change)="playerSearchNumber = undefined"
             >
               <option value="0">Bitte wählen...</option>
-              @if (type === "goal") {
+              <!--
+                „Eigentor" und „Nicht angegeben" stehen anstelle eines Schützen
+                (Pseudo-Nummern 1000/2000). Ein technisches Tor hat immer einen
+                benannten Schützen, und die Ereignisliste zeigt zu 1000/2000 das
+                Label statt eines Namens: die Zeile bliebe leer.
+              -->
+              @if (type === "goal" && !technicalGoal) {
                 <option [value]="1000">Eigentor</option>
               }
               @for (
@@ -543,7 +549,7 @@
                   {{ player.player_firstname }}
                 </option>
               }
-              @if (type === "goal") {
+              @if (type === "goal" && !technicalGoal) {
                 <option value="2000">Nicht angegeben</option>
               }
               @if (type === "penalty") {

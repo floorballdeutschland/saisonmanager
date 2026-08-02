@@ -556,6 +556,8 @@ describe('MatchEventFormComponent', () => {
       component.currentPeriod = '1';
       component.minutes = 12;
       component.seconds = 34;
+      component.minutesValid = true;
+      component.secondsValid = true;
       component.playerNumber = 7;
       component.match = {
         id: 1,
@@ -579,6 +581,55 @@ describe('MatchEventFormComponent', () => {
       expect(payload.goal_type).toBe('technical');
       expect(payload.home_assist).toBe(0);
       expect(payload.penalty_code_id).toBeUndefined();
+    });
+
+    // Der eigentliche Anwendungsfall der Bereinigung: ein bestehendes Tor mit
+    // Vorlage wird nachträglich umgestellt. Läuft über updateEvent statt
+    // addEvent, also über den anderen Zweig von submitEvent.
+    it('should drop the assist when converting an existing goal', () => {
+      const updateEvent = spyOn(gameService, 'updateEvent').and.returnValue(
+        of([])
+      );
+      component.existingEvent = {
+        event_id: 5,
+        event_type: 'goal',
+        number: 7,
+        assist: 9,
+        time: '12:34',
+        period: 1,
+      } as GameEvent;
+      component.ngOnInit();
+      component.technicalGoal = true;
+
+      component.submitEvent();
+
+      const payload = updateEvent.calls.mostRecent().args[2];
+      expect(payload.goal_type).toBe('technical');
+      expect(payload.home_assist).toBe(0);
+    });
+
+    // „Eigentor" (1000) und „Nicht angegeben" (2000) verschwinden am
+    // technischen Tor aus der Auswahl. Bliebe die Nummer im Modell stehen, ginge
+    // sie mit, obwohl das Feld leer aussieht, und die Ereignisliste zeigte eine
+    // Zeile ohne Namen und ohne Hinweis.
+    it('should clear a pseudo scorer number when marking a technical goal', () => {
+      component.playerNumber = 1000;
+      component.technicalGoal = true;
+
+      component.onTechnicalGoalChange();
+
+      expect(component.playerNumber).toBe(0);
+      // Ohne Nummer ist das Speichern gesperrt, die Eingabe wird also erzwungen.
+      expect(component.submitDisabled()).toBeTrue();
+    });
+
+    it('should keep a regular scorer number when marking a technical goal', () => {
+      component.playerNumber = 7;
+      component.technicalGoal = true;
+
+      component.onTechnicalGoalChange();
+
+      expect(component.playerNumber).toBe(7);
     });
 
     it('should keep sending the assist for a regular goal', () => {

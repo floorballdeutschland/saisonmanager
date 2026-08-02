@@ -468,9 +468,19 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
 
   // Strafschuss und technisches Tor schließen sich aus: ein Tor ist entweder
   // erzielt oder zugesprochen.
+  //
+  // „Eigentor" (1000) und „Nicht angegeben" (2000) stehen anstelle eines
+  // Schützen und verschwinden am technischen Tor aus der Auswahl. War einer der
+  // beiden vorher gewählt, muss er auch aus dem Modell fallen, sonst ginge er
+  // mit, obwohl das Feld leer aussieht; submitDisabled() verlangt dann eine
+  // Nummer, bevor gespeichert werden kann.
   public onTechnicalGoalChange(): void {
     if (this.technicalGoal) {
       this.with_ps = false;
+      if (this.playerNumber >= 1000) {
+        this.playerNumber = 0;
+        this.playerSearchNumber = undefined;
+      }
     }
   }
 
