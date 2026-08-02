@@ -1,4 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 
 import { MatchEventFormComponent } from './match-event-form.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -14,6 +19,9 @@ import {
   League,
 } from '@floorball/types';
 import { GameService } from '@floorball/core';
+import { SortTrikotnumbersPipe } from 'src/app/_helpers/_pipes';
+import { FormsModule } from '@angular/forms';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
 
 // 3 Perioden à 20 Minuten, 10 Minuten Verlängerung
@@ -611,15 +619,34 @@ describe('MatchEventFormComponent', () => {
     // technischen Tor aus der Auswahl. Bliebe die Nummer im Modell stehen, ginge
     // sie mit, obwohl das Feld leer aussieht, und die Ereignisliste zeigte eine
     // Zeile ohne Namen und ohne Hinweis.
+    // Die Nummer kommt aus einem <select> und liegt deshalb als String im
+    // Modell, obwohl sie als number deklariert ist: Angulars NgSelectOption
+    // registriert nur `[ngValue]` im Options-Map, bei `value`/`[value]` fällt
+    // der Rohstring durch. Der Vergleich in onTechnicalGoalChange muss damit
+    // umgehen (`>=` konvertiert numerisch, anders als ein Stringvergleich).
     it('should clear a pseudo scorer number when marking a technical goal', () => {
-      component.playerNumber = 1000;
+      component.playerNumber = '2000' as unknown as number;
+      component.playerSearchNumber = 2000;
       component.technicalGoal = true;
 
       component.onTechnicalGoalChange();
 
       expect(component.playerNumber).toBe(0);
+      // Auch das Suchfeld, sonst stünde dort weiter die verworfene Nummer.
+      expect(component.playerSearchNumber).toBeUndefined();
       // Ohne Nummer ist das Speichern gesperrt, die Eingabe wird also erzwungen.
       expect(component.submitDisabled()).toBeTrue();
+    });
+
+    it('should keep a two-digit scorer number when marking a technical goal', () => {
+      // Stringvergleich hätte hier zugeschlagen: '10' >= '1000' ist zwar
+      // falsch, aber '99' >= '1000' wäre wahr.
+      component.playerNumber = '99' as unknown as number;
+      component.technicalGoal = true;
+
+      component.onTechnicalGoalChange();
+
+      expect(component.playerNumber).toBe('99' as unknown as number);
     });
 
     it('should keep a regular scorer number when marking a technical goal', () => {
@@ -695,6 +722,135 @@ describe('MatchEventFormComponent', () => {
 
       expect(component.with_ps).toBeTrue();
       expect(component.technicalGoal).toBeFalse();
+    });
+  });
+
+  // Die Verdrahtung im Template, nicht die Methoden dahinter: ohne diese Tests
+  // ließe sich die (ngModelChange)-Bindung oder die @if-Bedingung an den
+  // Pseudo-Nummern entfernen, ohne dass irgendetwas rot wird. Beide Regeln
+  // existieren aber nur in der Vorlage.
+  //
+  // Eigene TestBed, weil das Tor-Formular FormsModule und den
+  // sortTrikotNumber-Pipe braucht; die übrigen Bausteine des Formulars fängt
+  // NO_ERRORS_SCHEMA ab.
+  describe('technisches Tor: Template', () => {
+    let domFixture: ComponentFixture<MatchEventFormComponent>;
+    let dom: MatchEventFormComponent;
+
+    beforeEach(async () => {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [HttpClientTestingModule, FormsModule],
+        declarations: [MatchEventFormComponent, SortTrikotnumbersPipe],
+        schemas: [NO_ERRORS_SCHEMA],
+      }).compileComponents();
+
+      domFixture = TestBed.createComponent(MatchEventFormComponent);
+      dom = domFixture.componentInstance;
+      dom.type = 'goal';
+      dom.team = 'home';
+      dom.currentPeriod = '1';
+      dom.match = {
+        id: 1,
+        league_id: 1,
+        players: { home: [], guest: [] },
+        referees: [],
+        period_titles: [],
+        result: { home_goals: 0, guest_goals: 0 },
+      } as unknown as Game;
+      domFixture.detectChanges();
+    });
+
+    function checkbox(id: string): HTMLInputElement {
+      return domFixture.nativeElement.querySelector(`#${id}`);
+    }
+
+    function optionTexts(select: HTMLSelectElement): string[] {
+      return Array.from(
+        select.querySelectorAll('option'),
+        (option) => (option as HTMLOptionElement).textContent?.trim() ?? ''
+      );
+    }
+
+    // Das Formular hat drei Auswahlfelder (Spielabschnitt, Schütze, Assist).
+    // Über den ersten Eintrag statt über die Position, sonst hinge der Test an
+    // der Reihenfolge im Template.
+    function selectStartingWith(firstOption: string): HTMLSelectElement {
+      const selects = Array.from(
+        domFixture.nativeElement.querySelectorAll('select')
+      ) as HTMLSelectElement[];
+      const match = selects.find(
+        (select) => optionTexts(select)[0] === firstOption
+      );
+      expect(match).withContext(`select "${firstOption}"`).toBeTruthy();
+      return match as HTMLSelectElement;
+    }
+
+    function scorerOptionValues(): string[] {
+      return Array.from(
+        selectStartingWith('Bitte wählen...').querySelectorAll('option'),
+        (option) => (option as HTMLOptionElement).value
+      );
+    }
+
+    it('should offer both markers for a goal', () => {
+      expect(checkbox('with_ps')).toBeTruthy();
+      expect(checkbox('technical_goal')).toBeTruthy();
+    });
+
+    // Den Haken zurückzunehmen ist der zweite Schritt: ngModel schreibt den
+    // Wert erst im nächsten Microtask in die Ansicht, ein detectChanges()
+    // allein lässt die Checkbox noch gesetzt aussehen. Deshalb fakeAsync/tick,
+    // sonst prüfte der Test nur das Modell und nicht, was der Nutzer sieht.
+    it('should uncheck the penalty shot when the technical marker is ticked', fakeAsync(() => {
+      const ps = checkbox('with_ps');
+      ps.click();
+      domFixture.detectChanges();
+      expect(dom.with_ps).toBeTrue();
+
+      checkbox('technical_goal').click();
+      tick();
+      domFixture.detectChanges();
+
+      expect(dom.technicalGoal).toBeTrue();
+      expect(dom.with_ps).toBeFalse();
+      expect(ps.checked).toBeFalse();
+    }));
+
+    it('should uncheck the technical marker when the penalty shot is ticked', fakeAsync(() => {
+      const technical = checkbox('technical_goal');
+      technical.click();
+      domFixture.detectChanges();
+
+      checkbox('with_ps').click();
+      tick();
+      domFixture.detectChanges();
+
+      expect(dom.with_ps).toBeTrue();
+      expect(dom.technicalGoal).toBeFalse();
+      expect(technical.checked).toBeFalse();
+    }));
+
+    it('should hide the pseudo scorer numbers for a technical goal', () => {
+      expect(scorerOptionValues()).toContain('1000');
+      expect(scorerOptionValues()).toContain('2000');
+
+      checkbox('technical_goal').click();
+      domFixture.detectChanges();
+
+      // Ohne Namen dahinter bliebe die Ereigniszeile leer, siehe
+      // formatted_events in der API.
+      expect(scorerOptionValues()).not.toContain('1000');
+      expect(scorerOptionValues()).not.toContain('2000');
+    });
+
+    it('should keep the assist fields for a technical goal', () => {
+      checkbox('technical_goal').click();
+      domFixture.detectChanges();
+
+      // Auch ein zugesprochenes Tor kann vorbereitet worden sein. Die erste
+      // Fassung blendete die Vorlage hier aus, das war falsch.
+      expect(selectStartingWith('Kein Assist')).toBeTruthy();
     });
   });
 });

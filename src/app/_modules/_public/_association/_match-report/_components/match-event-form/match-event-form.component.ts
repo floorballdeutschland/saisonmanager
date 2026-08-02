@@ -475,6 +475,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // Gegenstück zu onTechnicalGoalChange, hält dieselbe Bedingung von der
+  // anderen Seite. Beide werden aus dem Template heraus aufgerufen; ohne die
+  // (ngModelChange)-Bindung am jeweiligen Haken greift der Ausschluss nicht.
   public onWithPsChange(): void {
     if (this.with_ps) {
       this.technicalGoal = false;

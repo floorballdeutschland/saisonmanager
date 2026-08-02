@@ -549,6 +549,7 @@
                   {{ player.player_firstname }}
                 </option>
               }
+              <!-- Am technischen Tor ausgeblendet, siehe „Eigentor" oben. -->
               @if (type === "goal" && !technicalGoal) {
                 <option value="2000">Nicht angegeben</option>
               }
