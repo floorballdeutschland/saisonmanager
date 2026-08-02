@@ -568,10 +568,10 @@ describe('MatchEventFormComponent', () => {
       } as unknown as Game;
     });
 
-    it('should send goal_type technical without an assist', () => {
+    // Auch ein zugesprochenes Tor kann vorbereitet worden sein: die Vorlage
+    // bleibt erfassbar und geht unverändert mit.
+    it('should send goal_type technical along with the assist', () => {
       const addEvent = spyOn(gameService, 'addEvent').and.returnValue(of([]));
-      // Eine vorher eingetragene Vorlage darf nicht mitgehen: ein technisches
-      // Tor wird zugesprochen, nicht herausgespielt.
       component.assistPlayerNumber = 9;
       component.technicalGoal = true;
 
@@ -579,14 +579,13 @@ describe('MatchEventFormComponent', () => {
 
       const payload = addEvent.calls.mostRecent().args[1];
       expect(payload.goal_type).toBe('technical');
-      expect(payload.home_assist).toBe(0);
+      expect(payload.home_assist).toBe(9);
       expect(payload.penalty_code_id).toBeUndefined();
     });
 
-    // Der eigentliche Anwendungsfall der Bereinigung: ein bestehendes Tor mit
-    // Vorlage wird nachträglich umgestellt. Läuft über updateEvent statt
-    // addEvent, also über den anderen Zweig von submitEvent.
-    it('should drop the assist when converting an existing goal', () => {
+    // Umstellen eines bestehenden Tores läuft über updateEvent statt addEvent,
+    // also über den anderen Zweig von submitEvent.
+    it('should keep the assist when converting an existing goal', () => {
       const updateEvent = spyOn(gameService, 'updateEvent').and.returnValue(
         of([])
       );
@@ -605,7 +604,7 @@ describe('MatchEventFormComponent', () => {
 
       const payload = updateEvent.calls.mostRecent().args[2];
       expect(payload.goal_type).toBe('technical');
-      expect(payload.home_assist).toBe(0);
+      expect(payload.home_assist).toBe(9);
     });
 
     // „Eigentor" (1000) und „Nicht angegeben" (2000) verschwinden am

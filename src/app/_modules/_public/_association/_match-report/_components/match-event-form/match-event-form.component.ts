@@ -457,15 +457,6 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // Ein technisches Tor wird zugesprochen, nicht herausgespielt, es kann daher
-  // keine Vorlage haben. Die Assist-Felder sind dann ausgeblendet; eine zuvor
-  // eingetragene Vorlage darf beim Umstellen eines bestehenden Tores nicht
-  // stehen bleiben, deshalb geht sie hier auf 0 (die API verwirft sie zusätzlich
-  // serverseitig).
-  public assistAsSubmitted(): number {
-    return this.technicalGoal ? 0 : this.assistPlayerNumber;
-  }
-
   // Strafschuss und technisches Tor schließen sich aus: ein Tor ist entweder
   // erzielt oder zugesprochen.
   //
@@ -681,15 +672,12 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
             this.team === 'home'
               ? {
                   home_number: parseInt(this.playerNumber.toString(), 10),
-                  home_assist: parseInt(
-                    this.assistAsSubmitted().toString(),
-                    10
-                  ),
+                  home_assist: parseInt(this.assistPlayerNumber.toString(), 10),
                 }
               : {
                   guest_number: parseInt(this.playerNumber.toString(), 10),
                   guest_assist: parseInt(
-                    this.assistAsSubmitted().toString(),
+                    this.assistPlayerNumber.toString(),
                     10
                   ),
                 };

@@ -563,71 +563,68 @@
           </div>
         </div>
         @if (type === "goal") {
-          <!-- Ein technisches Tor wird zugesprochen und hat daher keine Vorlage. -->
-          @if (!technicalGoal) {
-            <div class="col-span-2">
-              <div class="grid grid-cols-[80px_1fr] gap-x-2">
-                <label class="col-span-2 font-medium text-base text-fb-gray-500"
-                  >Assist</label
-                >
-                <div
-                  class="flex w-full bg-white border border-fb-gray-600 rounded-[5px] focus:ring-0 overflow-hidden"
-                >
-                  <label class="flex items-center pl-2 text-fb-gray-500">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="block w-5 h-5"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                      />
-                    </svg>
-                  </label>
-                  <input
-                    #assistSearchField
-                    [(ngModel)]="assistPlayerSearchNumber"
-                    (ngModelChange)="
-                      searchPlayerByNumber(
-                        team,
-                        assistPlayerSearchNumber || 0,
-                        true
-                      )
-                    "
-                    type="number"
-                    inputmode="numeric"
-                    placeholder="Nr."
-                    class="inline w-full p-2 border-0 focus:ring-0"
-                  />
-                </div>
-                <select
-                  class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
-                  tabindex="-1"
-                  [(ngModel)]="assistPlayerNumber"
-                  (change)="assistPlayerSearchNumber = undefined"
-                >
-                  <option value="0">Kein Assist</option>
-                  @for (
-                    player of (team === "home"
-                      ? match.players.home || []
-                      : match.players.guest || []
-                    ) | sortTrikotNumber;
-                    track player
-                  ) {
-                    <option [value]="player.trikot_number">
-                      {{ player.trikot_number }} - {{ player.player_name }},
-                      {{ player.player_firstname }}
-                    </option>
-                  }
-                </select>
+          <div class="col-span-2">
+            <div class="grid grid-cols-[80px_1fr] gap-x-2">
+              <label class="col-span-2 font-medium text-base text-fb-gray-500"
+                >Assist</label
+              >
+              <div
+                class="flex w-full bg-white border border-fb-gray-600 rounded-[5px] focus:ring-0 overflow-hidden"
+              >
+                <label class="flex items-center pl-2 text-fb-gray-500">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="block w-5 h-5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                    />
+                  </svg>
+                </label>
+                <input
+                  #assistSearchField
+                  [(ngModel)]="assistPlayerSearchNumber"
+                  (ngModelChange)="
+                    searchPlayerByNumber(
+                      team,
+                      assistPlayerSearchNumber || 0,
+                      true
+                    )
+                  "
+                  type="number"
+                  inputmode="numeric"
+                  placeholder="Nr."
+                  class="inline w-full p-2 border-0 focus:ring-0"
+                />
               </div>
+              <select
+                class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+                tabindex="-1"
+                [(ngModel)]="assistPlayerNumber"
+                (change)="assistPlayerSearchNumber = undefined"
+              >
+                <option value="0">Kein Assist</option>
+                @for (
+                  player of (team === "home"
+                    ? match.players.home || []
+                    : match.players.guest || []
+                  ) | sortTrikotNumber;
+                  track player
+                ) {
+                  <option [value]="player.trikot_number">
+                    {{ player.trikot_number }} - {{ player.player_name }},
+                    {{ player.player_firstname }}
+                  </option>
+                }
+              </select>
             </div>
-          }
+          </div>
           <div class="col-span-2">
             <input
               type="checkbox"
