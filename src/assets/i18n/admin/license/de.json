@@ -164,7 +164,7 @@
     "metaTitle": "Floorball Saisonmanager Meine Lizenzen"
   },
   "teamDetail": {
-    "title": "Lizenzverwaltung",
+    "title": "Meine Lizenzen",
     "backToClubs": "← Zurück zur Vereinsübersicht",
     "requests": "Anträge",
     "withdrawTitleFree": "Lizenzantrag kostenfrei löschen",
@@ -204,7 +204,7 @@
     "noRequests": "noch keine Lizenzanträge hinterlegt",
     "loadingData": "Daten werden geladen...",
     "docLabelIdCopy": "Ausweis",
-    "metaTitle": "Floorball Saisonmanager Lizenzverwaltung (Team: )"
+    "metaTitle": "Floorball Saisonmanager Meine Lizenzen"
   },
   "userLeagueDetail": {
     "title": "Lizenzlisten",
