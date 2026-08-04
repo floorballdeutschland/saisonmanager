@@ -53,7 +53,12 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   allClubs: Club[] = [];
   club_id?: number;
 
-  additionalClubId?: string = '0';
+  // Vereine, für die eine neue Freigabe möglich ist: alles außer aktiven
+  // Zweitmitgliedschaften und dem Heimatverein. Als Feld statt als Getter, weil
+  // das Suchfeld sonst bei jeder Change-Detection eine neue Liste bekäme.
+  assignableClubs: Club[] = [];
+
+  additionalClubId: number | null = null;
 
   editMode = true;
   confirmDeactivate = false;
@@ -153,6 +158,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         this.player = result;
         this.loadSuspensions();
         this.loadLicenseDocuments();
+        this._refreshAssignableClubs();
 
         this._cdr.markForCheck();
       },
@@ -257,10 +263,18 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
           return 0;
         });
+        this._refreshAssignableClubs();
 
         this._cdr.markForCheck();
       },
     });
+  }
+
+  private _refreshAssignableClubs(): void {
+    this.assignableClubs = this.allClubs.filter(
+      (club) =>
+        !this.isAdditionalClubActive(club.id) && !this.isHomeClub(club.id)
+    );
   }
 
   public isAdditionalClubActive(clubId: number | undefined): boolean {
@@ -397,10 +411,10 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   public addAdditionalClub(
     player: Player | undefined,
-    clubId: string | undefined
+    clubId: number | string | null | undefined
   ) {
     this._playerService
-      .adminAddAdditionalClub(player?.id || 0, clubId || '0')
+      .adminAddAdditionalClub(player?.id || 0, String(clubId ?? '0'))
       .subscribe({
         next: () => {
           const message = 'Spieler wurde erfolgreich freigegeben.';

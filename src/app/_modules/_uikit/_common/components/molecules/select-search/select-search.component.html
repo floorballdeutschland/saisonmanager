@@ -1,0 +1,105 @@
+<div class="relative">
+  <div
+    class="flex items-center border rounded-[5px] bg-white overflow-hidden"
+    [class.border-fb-gray-600]="!highlightSelection || !hasSelection"
+    [class.border-green-500]="highlightSelection && hasSelection"
+    [class.opacity-50]="disabled"
+  >
+    <input
+      #input
+      type="text"
+      role="combobox"
+      autocomplete="off"
+      class="flex-1 w-full px-3 py-2 border-0 focus:ring-0 focus:outline-none text-sm bg-transparent"
+      [attr.id]="inputId"
+      [attr.aria-controls]="listboxId"
+      [attr.aria-expanded]="open"
+      [attr.aria-activedescendant]="
+        open
+          ? highlighted >= 0
+            ? listboxId + '-' + highlighted
+            : resetVisible
+              ? listboxId + '-reset'
+              : null
+          : null
+      "
+      aria-autocomplete="list"
+      [value]="open ? query : selectedLabel"
+      [placeholder]="open && selectedLabel ? selectedLabel : placeholder"
+      [disabled]="disabled"
+      (focus)="openList()"
+      (input)="onInput($any($event.target).value)"
+      (keydown)="onKeydown($event)"
+      (blur)="onBlur()"
+    />
+    <button
+      type="button"
+      class="px-2 text-fb-gray-400 hover:text-fb-gray-900 disabled:hover:text-fb-gray-400"
+      [disabled]="disabled"
+      [attr.aria-label]="placeholder"
+      tabindex="-1"
+      (mousedown)="$event.preventDefault(); toggleList()"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-4 h-4"
+        [class.rotate-180]="open"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="m19.5 8.25-7.5 7.5-7.5-7.5"
+        />
+      </svg>
+    </button>
+  </div>
+
+  @if (open) {
+    <ul
+      #list
+      role="listbox"
+      [id]="listboxId"
+      class="absolute z-50 w-full bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-60 overflow-y-auto"
+    >
+      @if (resetVisible) {
+        <li
+          role="option"
+          [id]="listboxId + '-reset'"
+          attr.data-index="-1"
+          [attr.aria-selected]="!hasSelection"
+          class="px-3 py-2 text-sm text-fb-gray-500 hover:bg-fb-gray-200 cursor-pointer"
+          [class.bg-fb-gray-200]="highlighted === -1"
+          (mousedown)="$event.preventDefault(); reset()"
+        >
+          {{ resetLabel }}
+        </li>
+      }
+      @for (item of filteredItems; track $index) {
+        <li
+          role="option"
+          [id]="listboxId + '-' + $index"
+          [attr.data-index]="$index"
+          [attr.aria-selected]="isSelected(item)"
+          class="px-3 py-2 text-sm cursor-pointer hover:bg-fb-gray-200"
+          [class.bg-fb-gray-200]="$index === highlighted"
+          [class.font-bold]="isSelected(item)"
+          (mousedown)="$event.preventDefault(); select(item)"
+        >
+          {{ label(item) }}
+          @if (hint(item)) {
+            <span class="text-fb-gray-400 ml-2">{{ hint(item) }}</span>
+          }
+        </li>
+      }
+      @if (filteredItems.length === 0) {
+        <li class="px-3 py-2 text-sm text-fb-gray-400">
+          {{ "common.noResults" | transloco }}
+        </li>
+      }
+    </ul>
+  }
+</div>
