@@ -17,6 +17,7 @@ import {
   GameOperationService,
 } from '@floorball/core';
 import {
+  Club,
   ClubWithTeams,
   Team,
   UserAdminEntry,
@@ -40,6 +41,13 @@ export class UserEditComponent implements OnInit, OnDestroy {
   deleting = false;
   archiving = false;
 
+  // Quelle der Vereins-Dropdowns: auf den eigenen Zuständigkeitsbereich
+  // eingegrenzt. Nicht clubsWithTeams verwenden, das ist breiter gescopt als die
+  // Rollenvergabe erlaubt – ein regionaler SBK bekam dort Vereine angeboten, die
+  // apply_club_change in der API mit 403 ablehnt (analog Issue #137 in der
+  // Benutzeranlage).
+  clubs: Club[] = [];
+  // Nur noch für die Team-Auswahl (availableTeams) und deren Bereinigung.
   clubsWithTeams: ClubWithTeams[] = [];
   editableTeamIds: number[] = [];
   savingTeams = false;
@@ -158,15 +166,23 @@ export class UserEditComponent implements OnInit, OnDestroy {
       });
 
     this._clubService
+      .getRoleAssignableClubs()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (clubs) => {
+          this.clubs = [...clubs].sort((a, b) =>
+            a.name.localeCompare(b.name, 'de')
+          );
+          this._cdr.markForCheck();
+        },
+      });
+
+    this._clubService
       .adminGetClubAndTeams()
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (data) => {
-          // Sortiert, weil die Liste direkt die Vereins-Dropdowns der
-          // Rollenvergabe und der Vereinszuordnung füllt.
-          this.clubsWithTeams = [...data].sort((a, b) =>
-            a.name.localeCompare(b.name, 'de')
-          );
+          this.clubsWithTeams = data;
           this._pruneUnassignableTeamIds();
           this._cdr.markForCheck();
         },
@@ -254,11 +270,15 @@ export class UserEditComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Anzeigename auch dann, wenn der zugewiesene Verein nicht in der
+  // zuweisbaren Liste steht (etwa ein deaktivierter Verein): dann greift die
+  // breitere Liste als Rückfall.
   get selectedClubName(): string {
     if (this.selectedClubId == null) return '–';
-    return (
-      this.clubsWithTeams.find((c) => c.id === this.selectedClubId)?.name ?? '–'
-    );
+    const match =
+      this.clubs.find((c) => c.id === this.selectedClubId) ??
+      this.clubsWithTeams.find((c) => c.id === this.selectedClubId);
+    return match?.name ?? '–';
   }
 
   get availableTeams(): Team[] {

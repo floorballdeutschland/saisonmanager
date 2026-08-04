@@ -201,7 +201,7 @@
           @if (newRoleNeedsClub) {
             <fb-select-search
               [(ngModel)]="newRoleClubId"
-              [items]="clubsWithTeams"
+              [items]="clubs"
               [placeholder]="'userAdmin.edit.selectClub' | transloco"
               [resetLabel]="'userAdmin.edit.selectClub' | transloco"
               class="min-w-64"
@@ -270,7 +270,7 @@
           <fb-select-search
             [(ngModel)]="selectedClubId"
             (ngModelChange)="onClubChange()"
-            [items]="clubsWithTeams"
+            [items]="clubs"
             [placeholder]="'userAdmin.edit.selectClub' | transloco"
             [resetLabel]="'userAdmin.edit.selectClub' | transloco"
             class="mb-3"
