@@ -9,7 +9,8 @@
     "close": "Close",
     "loading": "Loading …",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "noResults": "No matches"
   },
   "language": {
     "label": "Language",

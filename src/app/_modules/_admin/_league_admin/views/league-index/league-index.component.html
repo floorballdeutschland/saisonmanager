@@ -201,21 +201,20 @@
                         | transloco: { season: previousSeason.name }
                     }}
                   </label>
-                  <select
-                    id="copy-source-league-{{ gameOperation.id }}"
-                    class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 mb-4 bg-white"
+                  <fb-select-search
+                    [inputId]="'copy-source-league-' + gameOperation.id"
+                    class="mb-4"
                     [(ngModel)]="copySourceLeagueId"
                     (ngModelChange)="onCopySourceLeagueChange()"
-                  >
-                    <option [ngValue]="null">
-                      {{ "leagueAdmin.index.copyPleaseSelect" | transloco }}
-                    </option>
-                    @for (league of copySourceLeagues; track league.id) {
-                      <option [ngValue]="league.id">
-                        {{ league.name }} ({{ league.id }})
-                      </option>
-                    }
-                  </select>
+                    [items]="copySourceLeagues"
+                    hintKey="id"
+                    [placeholder]="
+                      'leagueAdmin.index.copyPleaseSelect' | transloco
+                    "
+                    [resetLabel]="
+                      'leagueAdmin.index.copyPleaseSelect' | transloco
+                    "
+                  />
                   @if (copySourceLeagueId) {
                     @if (copyTeamsLoading) {
                       <p class="text-sm text-fb-gray-500 mb-4">

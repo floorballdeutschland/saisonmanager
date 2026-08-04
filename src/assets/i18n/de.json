@@ -9,7 +9,8 @@
     "close": "Schließen",
     "loading": "Laden …",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "noResults": "Keine Treffer"
   },
   "language": {
     "label": "Sprache",

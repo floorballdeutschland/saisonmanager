@@ -19,18 +19,14 @@
       <label class="text-sm font-bold">{{
         "transferRequestAdmin.direct.requestingClub" | transloco
       }}</label>
-      <select
+      <fb-select-search
         name="club"
         [(ngModel)]="selectedClubId"
-        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-      >
-        <option [ngValue]="0">
-          {{ "transferRequestAdmin.direct.chooseClub" | transloco }}
-        </option>
-        @for (c of clubs; track c) {
-          <option [ngValue]="c.id">{{ c.name }}</option>
-        }
-      </select>
+        [items]="clubs"
+        [placeholder]="'transferRequestAdmin.direct.chooseClub' | transloco"
+        [resetLabel]="'transferRequestAdmin.direct.chooseClub' | transloco"
+        [resetValue]="0"
+      />
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">

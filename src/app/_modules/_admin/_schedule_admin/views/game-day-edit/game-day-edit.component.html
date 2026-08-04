@@ -70,34 +70,27 @@
                   {{ "scheduleAdmin.gameDayEdit.venue" | transloco }}
                 </div>
                 <div>
-                  <select
-                    class="w-full"
-                    required
+                  <fb-select-search
                     [(ngModel)]="gameday.arena_id"
-                  >
-                    @for (arena of areans; track arena) {
-                      <option [value]="arena.id">
-                        {{ arena.schedule_item || arena.name }}
-                      </option>
-                    }
-                  </select>
+                    [items]="arenaOptions"
+                    labelKey="label"
+                    [placeholder]="
+                      'scheduleAdmin.gameDayEdit.venuePlaceholder' | transloco
+                    "
+                  />
                 </div>
                 <div class="font-bold">
                   {{ "scheduleAdmin.gameDayEdit.host" | transloco }}
                 </div>
                 <div>
                   @if (!useAllClubs) {
-                    <select
-                      class="w-full"
-                      required
+                    <fb-select-search
                       [(ngModel)]="gameday.club_id"
-                    >
-                      @for (club of clubs; track club) {
-                        <option [value]="club.id">
-                          {{ club.name }}
-                        </option>
-                      }
-                    </select>
+                      [items]="clubs"
+                      [placeholder]="
+                        'scheduleAdmin.gameDayEdit.hostPlaceholder' | transloco
+                      "
+                    />
                     <a
                       class="text-xs text-fb-gray-600 hover:underline cursor-pointer mt-1 inline-block"
                       (click)="enableAllClubs()"

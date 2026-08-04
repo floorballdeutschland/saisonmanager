@@ -54,17 +54,15 @@
           }
         </select>
 
-        <select
-          class="rounded border-gray-300 text-sm"
+        <fb-select-search
           [(ngModel)]="filterLeagueId"
           (ngModelChange)="applyFilters()"
-        >
-          @for (opt of leagueOptions; track opt) {
-            <option [ngValue]="opt.value">
-              {{ opt.label }}
-            </option>
-          }
-        </select>
+          [items]="leagueOptions"
+          labelKey="label"
+          valueKey="value"
+          [placeholder]="'licenseAdmin.globalList.filterAllLeagues' | transloco"
+          [resetLabel]="'licenseAdmin.globalList.filterAllLeagues' | transloco"
+        />
 
         <select
           class="rounded border-gray-300 text-sm"

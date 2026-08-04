@@ -400,22 +400,18 @@
                       }
                     </div>
                   } @else {
-                    <select
-                      class="w-full px-2 py-1 border rounded-[5px] text-xs bg-white"
-                      [class.border-fb-gray-400]="!state.selectedClubId"
-                      [class.border-green-500]="!!state.selectedClubId"
+                    <fb-select-search
                       [(ngModel)]="state.selectedClubId"
                       (ngModelChange)="onClubChange()"
-                    >
-                      <option [ngValue]="null">
-                        {{
-                          "assignmentAdmin.index.clubPlaceholder" | transloco
-                        }}
-                      </option>
-                      @for (c of clubs; track c.id) {
-                        <option [ngValue]="c.id">{{ c.name }}</option>
-                      }
-                    </select>
+                      [items]="clubs"
+                      [placeholder]="
+                        'assignmentAdmin.index.clubPlaceholder' | transloco
+                      "
+                      [resetLabel]="
+                        'assignmentAdmin.index.clubPlaceholder' | transloco
+                      "
+                      [highlightSelection]="true"
+                    />
                   }
                 </td>
                 <!-- Schiri 2 -->
