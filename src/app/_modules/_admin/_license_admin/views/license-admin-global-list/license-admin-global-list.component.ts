@@ -437,17 +437,12 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
         leagueMap.set(e.league_id, e.league_name);
       }
     }
-    this.leagueOptions = [
-      {
-        value: null,
-        label: this._transloco.translate(
-          'licenseAdmin.globalList.filterAllLeagues'
-        ),
-      },
-      ...Array.from(leagueMap.entries()).map(([id, name]) => ({
-        value: id,
-        label: name,
-      })),
-    ];
+    // Kein Pseudo-Eintrag für „Alle Ligen": den leeren Zustand bildet das
+    // Suchfeld über resetLabel ab. Ein Eintrag mit value null liesse sich nie
+    // als gewählt anzeigen, weil ein leerer Wert dort „nichts gewählt" heisst.
+    this.leagueOptions = Array.from(leagueMap.entries()).map(([id, name]) => ({
+      value: id,
+      label: name,
+    }));
   }
 }

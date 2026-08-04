@@ -57,13 +57,20 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   permissions: { [key: string]: boolean } = {};
   confirmDeactivate = false;
 
-  get leafStateAssociations(): StateAssociation[] {
+  // Auswahlliste des Suchfelds: einmal beim Laden gebildet, nicht als Getter.
+  // Ein neues Array pro Change-Detection wuerde die Trefferliste des Suchfelds
+  // bei jedem Durchlauf neu aufbauen.
+  leafStateAssociations: StateAssociation[] = [];
+
+  private _refreshLeafStateAssociations(): void {
     const parentIds = new Set(
       this.stateAssociations
         .filter((sa) => sa.parent_id)
         .map((sa) => sa.parent_id as number)
     );
-    return this.stateAssociations.filter((sa) => !parentIds.has(sa.id));
+    this.leafStateAssociations = this.stateAssociations.filter(
+      (sa) => !parentIds.has(sa.id)
+    );
   }
 
   private _destroy$ = new Subject<boolean>();
@@ -98,6 +105,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           this.stateAssociations = result;
+          this._refreshLeafStateAssociations();
           this._cdr.markForCheck();
         },
       });

@@ -287,28 +287,22 @@
                           ) | transloco
                         }}</label>
                         @if (changeRequestType === "merge") {
-                          <select
+                          <fb-select-search
                             [(ngModel)]="mergeSecondaryId"
-                            class="w-full"
                             [disabled]="mergeLoadingPlayers"
-                          >
-                            <option [ngValue]="''">
-                              {{
-                                mergeLoadingPlayers
-                                  ? ("playerAdmin.edit.mergeLoading"
-                                    | transloco)
-                                  : ("playerAdmin.edit.pleaseSelectEllipsis"
-                                    | transloco)
-                              }}
-                            </option>
-                            @for (p of mergeClubPlayers; track p.id) {
-                              <option [ngValue]="p.id">
-                                {{ p.last_name }}, {{ p.first_name }} ({{
-                                  p.birthdate | date: "dd.MM.yyyy"
-                                }})
-                              </option>
-                            }
-                          </select>
+                            [items]="mergePlayerOptions"
+                            labelKey="label"
+                            [placeholder]="
+                              (mergeLoadingPlayers
+                                ? 'playerAdmin.edit.mergeLoading'
+                                : 'playerAdmin.edit.pleaseSelectEllipsis'
+                              ) | transloco
+                            "
+                            [resetLabel]="
+                              'playerAdmin.edit.pleaseSelectEllipsis'
+                                | transloco
+                            "
+                          />
                         }
                         @if (changeRequestType === "birthdate") {
                           <input
