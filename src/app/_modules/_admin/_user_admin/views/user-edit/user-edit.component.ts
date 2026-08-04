@@ -161,7 +161,11 @@ export class UserEditComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (data) => {
-          this.clubsWithTeams = data;
+          // Sortiert, weil die Liste direkt die Vereins-Dropdowns der
+          // Rollenvergabe und der Vereinszuordnung füllt.
+          this.clubsWithTeams = [...data].sort((a, b) =>
+            a.name.localeCompare(b.name, 'de')
+          );
           this._pruneUnassignableTeamIds();
           this._cdr.markForCheck();
         },
