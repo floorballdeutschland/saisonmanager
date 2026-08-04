@@ -1,8 +1,8 @@
 <div class="relative">
   <div
     class="flex items-center border rounded-[5px] bg-white overflow-hidden"
-    [class.border-fb-gray-600]="!highlightSelection || value === null"
-    [class.border-green-500]="highlightSelection && value !== null"
+    [class.border-fb-gray-600]="!highlightSelection || !hasSelection"
+    [class.border-green-500]="highlightSelection && hasSelection"
     [class.opacity-50]="disabled"
   >
     <input
@@ -15,7 +15,13 @@
       [attr.aria-controls]="listboxId"
       [attr.aria-expanded]="open"
       [attr.aria-activedescendant]="
-        open && highlighted >= 0 ? listboxId + '-' + highlighted : null
+        open
+          ? highlighted >= 0
+            ? listboxId + '-' + highlighted
+            : resetVisible
+              ? listboxId + '-reset'
+              : null
+          : null
       "
       aria-autocomplete="list"
       [value]="open ? query : selectedLabel"
@@ -59,11 +65,14 @@
       [id]="listboxId"
       class="absolute z-50 w-full bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-60 overflow-y-auto"
     >
-      @if (resetLabel !== null && !query) {
+      @if (resetVisible) {
         <li
           role="option"
-          [attr.aria-selected]="value === null"
+          [id]="listboxId + '-reset'"
+          attr.data-index="-1"
+          [attr.aria-selected]="!hasSelection"
           class="px-3 py-2 text-sm text-fb-gray-500 hover:bg-fb-gray-200 cursor-pointer"
+          [class.bg-fb-gray-200]="highlighted === -1"
           (mousedown)="$event.preventDefault(); reset()"
         >
           {{ resetLabel }}
