@@ -47,40 +47,22 @@
       />
     </div>
     <div>
-      <select
+      <fb-select-search
         [(ngModel)]="game.home_team_id"
         [disabled]="processing || existingGame?.started || false"
-        class="w-full bg-transparent border-gray-300"
         name="homeTeamId"
-        type="text"
-      >
-        <option [ngValue]="0">
-          {{ "scheduleAdmin.gameEdit.notSelected" | transloco }}
-        </option>
-        @for (team of teams; track team) {
-          <option [value]="team.id">
-            {{ team.name }}
-          </option>
-        }
-      </select>
+        [items]="teams"
+        [placeholder]="'scheduleAdmin.gameEdit.notSelected' | transloco"
+      />
     </div>
     <div>
-      <select
+      <fb-select-search
         [(ngModel)]="game.guest_team_id"
         [disabled]="processing || existingGame?.started || false"
-        class="w-full bg-transparent border-gray-300"
         name="guestTeamId"
-        type="text"
-      >
-        <option [ngValue]="0">
-          {{ "scheduleAdmin.gameEdit.notSelected" | transloco }}
-        </option>
-        @for (team of teams; track team) {
-          <option [value]="team.id">
-            {{ team.name }}
-          </option>
-        }
-      </select>
+        [items]="teams"
+        [placeholder]="'scheduleAdmin.gameEdit.notSelected' | transloco"
+      />
     </div>
     <div class="col-span-2 md:col-span-1">
       <input
@@ -528,69 +510,59 @@
         </select>
       </div>
       <div>
-        <select
-          class="w-full bg-transparent border-gray-300"
-          [disabled]="!game.home_team_filling_rule"
-          [(ngModel)]="game.home_team_filling_parameter"
-          [ngModelOptions]="{ standalone: true }"
-        >
-          @if (game.home_team_filling_rule?.startsWith("place")) {
-            <option [ngValue]="null">
-              {{ "scheduleAdmin.gameEdit.choosePlace" | transloco }}
-            </option>
-            <option [ngValue]="1">
-              {{ "scheduleAdmin.gameEdit.place1" | transloco }}
-            </option>
-            <option [ngValue]="2">
-              {{ "scheduleAdmin.gameEdit.place2" | transloco }}
-            </option>
-            <option [ngValue]="3">
-              {{ "scheduleAdmin.gameEdit.place3" | transloco }}
-            </option>
-            <option [ngValue]="4">
-              {{ "scheduleAdmin.gameEdit.place4" | transloco }}
-            </option>
-            <option [ngValue]="5">
-              {{ "scheduleAdmin.gameEdit.place5" | transloco }}
-            </option>
-            <option [ngValue]="6">
-              {{ "scheduleAdmin.gameEdit.place6" | transloco }}
-            </option>
-            <option [ngValue]="7">
-              {{ "scheduleAdmin.gameEdit.place7" | transloco }}
-            </option>
-            <option [ngValue]="8">
-              {{ "scheduleAdmin.gameEdit.place8" | transloco }}
-            </option>
-            <option [ngValue]="9">
-              {{ "scheduleAdmin.gameEdit.place9" | transloco }}
-            </option>
-            <option [ngValue]="10">
-              {{ "scheduleAdmin.gameEdit.place10" | transloco }}
-            </option>
-          }
-          @if (game.home_team_filling_rule?.startsWith("game")) {
-            <option [ngValue]="null">
-              {{ "scheduleAdmin.gameEdit.chooseGame" | transloco }}
-            </option>
-            @for (gameDay of allGameDays; track gameDay) {
-              @for (g of gameDay.games; track g) {
-                @if (g.id !== game.id) {
-                  <option [ngValue]="g.id">
-                    {{ g.series_title || "Spiel" }}
-                    {{
-                      g.series_title && g.series_number
-                        ? " " + g.series_number
-                        : ""
-                    }}
-                    Nr.{{ g.game_number }}, ({{ g.home_team_name }} -
-                    {{ g.guest_team_name }}), #{{ g.id }}
-                  </option>
-                }
-              }
+        @if (game.home_team_filling_rule?.startsWith("game")) {
+          <fb-select-search
+            [(ngModel)]="game.home_team_filling_parameter"
+            [ngModelOptions]="{ standalone: true }"
+            [items]="dependencyGameOptions"
+            labelKey="label"
+            [placeholder]="'scheduleAdmin.gameEdit.chooseGame' | transloco"
+            [resetLabel]="'scheduleAdmin.gameEdit.chooseGame' | transloco"
+          />
+        } @else {
+          <select
+            class="w-full bg-transparent border-gray-300"
+            [disabled]="!game.home_team_filling_rule"
+            [(ngModel)]="game.home_team_filling_parameter"
+            [ngModelOptions]="{ standalone: true }"
+          >
+            @if (game.home_team_filling_rule?.startsWith("place")) {
+              <option [ngValue]="null">
+                {{ "scheduleAdmin.gameEdit.choosePlace" | transloco }}
+              </option>
+              <option [ngValue]="1">
+                {{ "scheduleAdmin.gameEdit.place1" | transloco }}
+              </option>
+              <option [ngValue]="2">
+                {{ "scheduleAdmin.gameEdit.place2" | transloco }}
+              </option>
+              <option [ngValue]="3">
+                {{ "scheduleAdmin.gameEdit.place3" | transloco }}
+              </option>
+              <option [ngValue]="4">
+                {{ "scheduleAdmin.gameEdit.place4" | transloco }}
+              </option>
+              <option [ngValue]="5">
+                {{ "scheduleAdmin.gameEdit.place5" | transloco }}
+              </option>
+              <option [ngValue]="6">
+                {{ "scheduleAdmin.gameEdit.place6" | transloco }}
+              </option>
+              <option [ngValue]="7">
+                {{ "scheduleAdmin.gameEdit.place7" | transloco }}
+              </option>
+              <option [ngValue]="8">
+                {{ "scheduleAdmin.gameEdit.place8" | transloco }}
+              </option>
+              <option [ngValue]="9">
+                {{ "scheduleAdmin.gameEdit.place9" | transloco }}
+              </option>
+              <option [ngValue]="10">
+                {{ "scheduleAdmin.gameEdit.place10" | transloco }}
+              </option>
             }
-          }
-        </select>
+          </select>
+        }
       </div>
       <div class="col-span-3"></div>
       <div class="hidden w-7 overflow-hidden md:inline-block">
@@ -631,69 +603,59 @@
         </select>
       </div>
       <div>
-        <select
-          class="w-full bg-transparent border-gray-300"
-          [disabled]="!game.guest_team_filling_rule"
-          [(ngModel)]="game.guest_team_filling_parameter"
-          [ngModelOptions]="{ standalone: true }"
-        >
-          @if (game.guest_team_filling_rule?.startsWith("place")) {
-            <option [ngValue]="null">
-              {{ "scheduleAdmin.gameEdit.choosePlace" | transloco }}
-            </option>
-            <option [ngValue]="1">
-              {{ "scheduleAdmin.gameEdit.place1" | transloco }}
-            </option>
-            <option [ngValue]="2">
-              {{ "scheduleAdmin.gameEdit.place2" | transloco }}
-            </option>
-            <option [ngValue]="3">
-              {{ "scheduleAdmin.gameEdit.place3" | transloco }}
-            </option>
-            <option [ngValue]="4">
-              {{ "scheduleAdmin.gameEdit.place4" | transloco }}
-            </option>
-            <option [ngValue]="5">
-              {{ "scheduleAdmin.gameEdit.place5" | transloco }}
-            </option>
-            <option [ngValue]="6">
-              {{ "scheduleAdmin.gameEdit.place6" | transloco }}
-            </option>
-            <option [ngValue]="7">
-              {{ "scheduleAdmin.gameEdit.place7" | transloco }}
-            </option>
-            <option [ngValue]="8">
-              {{ "scheduleAdmin.gameEdit.place8" | transloco }}
-            </option>
-            <option [ngValue]="9">
-              {{ "scheduleAdmin.gameEdit.place9" | transloco }}
-            </option>
-            <option [ngValue]="10">
-              {{ "scheduleAdmin.gameEdit.place10" | transloco }}
-            </option>
-          }
-          @if (game.guest_team_filling_rule?.startsWith("game")) {
-            <option [ngValue]="null">
-              {{ "scheduleAdmin.gameEdit.chooseGame" | transloco }}
-            </option>
-            @for (gameDay of allGameDays; track gameDay) {
-              @for (g of gameDay.games; track g) {
-                @if (g.id !== game.id) {
-                  <option [ngValue]="g.id">
-                    {{ g.series_title || "Spiel" }}
-                    {{
-                      g.series_title && g.series_number
-                        ? " " + g.series_number
-                        : ""
-                    }}
-                    Nr.{{ g.game_number }}, ({{ g.home_team_name }} -
-                    {{ g.guest_team_name }}), #{{ g.id }}
-                  </option>
-                }
-              }
+        @if (game.guest_team_filling_rule?.startsWith("game")) {
+          <fb-select-search
+            [(ngModel)]="game.guest_team_filling_parameter"
+            [ngModelOptions]="{ standalone: true }"
+            [items]="dependencyGameOptions"
+            labelKey="label"
+            [placeholder]="'scheduleAdmin.gameEdit.chooseGame' | transloco"
+            [resetLabel]="'scheduleAdmin.gameEdit.chooseGame' | transloco"
+          />
+        } @else {
+          <select
+            class="w-full bg-transparent border-gray-300"
+            [disabled]="!game.guest_team_filling_rule"
+            [(ngModel)]="game.guest_team_filling_parameter"
+            [ngModelOptions]="{ standalone: true }"
+          >
+            @if (game.guest_team_filling_rule?.startsWith("place")) {
+              <option [ngValue]="null">
+                {{ "scheduleAdmin.gameEdit.choosePlace" | transloco }}
+              </option>
+              <option [ngValue]="1">
+                {{ "scheduleAdmin.gameEdit.place1" | transloco }}
+              </option>
+              <option [ngValue]="2">
+                {{ "scheduleAdmin.gameEdit.place2" | transloco }}
+              </option>
+              <option [ngValue]="3">
+                {{ "scheduleAdmin.gameEdit.place3" | transloco }}
+              </option>
+              <option [ngValue]="4">
+                {{ "scheduleAdmin.gameEdit.place4" | transloco }}
+              </option>
+              <option [ngValue]="5">
+                {{ "scheduleAdmin.gameEdit.place5" | transloco }}
+              </option>
+              <option [ngValue]="6">
+                {{ "scheduleAdmin.gameEdit.place6" | transloco }}
+              </option>
+              <option [ngValue]="7">
+                {{ "scheduleAdmin.gameEdit.place7" | transloco }}
+              </option>
+              <option [ngValue]="8">
+                {{ "scheduleAdmin.gameEdit.place8" | transloco }}
+              </option>
+              <option [ngValue]="9">
+                {{ "scheduleAdmin.gameEdit.place9" | transloco }}
+              </option>
+              <option [ngValue]="10">
+                {{ "scheduleAdmin.gameEdit.place10" | transloco }}
+              </option>
             }
-          }
-        </select>
+          </select>
+        }
       </div>
       <div class="col-span-3"></div>
     }
@@ -705,21 +667,14 @@
         <span>{{ "scheduleAdmin.gameEdit.gameDay" | transloco }}</span>
       </div>
       <div class="col-span-2">
-        <select
-          class="w-full bg-transparent border-gray-300"
+        <fb-select-search
           [(ngModel)]="game.game_day_id"
-          (change)="checkConflicts()"
+          (ngModelChange)="checkConflicts()"
           [ngModelOptions]="{ standalone: true }"
-        >
-          @for (day of allGameDays; track day) {
-            <option [ngValue]="day.id">
-              Spieltag {{ day.number }}
-              @if (day.date) {
-                – {{ day.date }}
-              }
-            </option>
-          }
-        </select>
+          [items]="gameDayOptions"
+          labelKey="label"
+          [placeholder]="'scheduleAdmin.gameEdit.gameDay' | transloco"
+        />
       </div>
       <div class="col-span-4"></div>
     }

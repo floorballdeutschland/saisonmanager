@@ -73,7 +73,10 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   // Duplikat-Auswahl für Merge-Anträge (correction_type 'merge'): aktive
   // Spieler des eigenen Vereins ohne das gerade geöffnete Profil.
   mergeClubPlayers: Player[] = [];
-  mergeSecondaryId: number | '' = '';
+  // Beschriftung „Nachname, Vorname (Geburtsdatum)" fuer das Suchfeld; wird
+  // beim Laden gebildet, damit die Liste eine stabile Referenz behaelt.
+  mergePlayerOptions: { id: number; label: string }[] = [];
+  mergeSecondaryId: number | null = null;
   mergeLoadingPlayers = false;
 
   // Lizenz-Dokumente des Spielers (saisonübergreifend). Die Sichtbarkeit
@@ -670,12 +673,18 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   public onChangeRequestTypeChange(): void {
     this.changeRequestValue = '';
-    this.mergeSecondaryId = '';
+    this.mergeSecondaryId = null;
     if (this.changeRequestType === 'merge') this.loadMergeClubPlayers();
   }
 
   public get selectedMergePlayer(): Player | undefined {
-    return this.mergeClubPlayers.find((p) => p.id === +this.mergeSecondaryId);
+    return this.mergeClubPlayers.find((p) => p.id === this.mergeSecondaryId);
+  }
+
+  private _formatBirthdate(birthdate: string | undefined): string {
+    if (!birthdate) return '';
+    const [year, month, day] = birthdate.split('-');
+    return day ? `${day}.${month}.${year}` : birthdate;
   }
 
   private loadMergeClubPlayers(): void {
@@ -690,6 +699,12 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           this.mergeClubPlayers = players.filter(
             (p) => p.id !== this.player?.id && !p.deactivated_at
           );
+          this.mergePlayerOptions = this.mergeClubPlayers.map((p) => ({
+            id: p.id,
+            label: `${p.last_name}, ${p.first_name} (${this._formatBirthdate(
+              p.birthdate
+            )})`,
+          }));
           this.mergeLoadingPlayers = false;
           this._cdr.markForCheck();
         },
@@ -710,7 +725,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       : this.changeRequestValue;
     const secondaryId =
       this.changeRequestType === 'merge' && this.mergeSecondaryId
-        ? +this.mergeSecondaryId
+        ? this.mergeSecondaryId
         : undefined;
 
     this.changeRequestSubmitting = true;
@@ -728,7 +743,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           this.changeRequestSent = true;
           this.changeRequestType = '';
           this.changeRequestValue = '';
-          this.mergeSecondaryId = '';
+          this.mergeSecondaryId = null;
           this._cdr.markForCheck();
         },
         error: () => {
