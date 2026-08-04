@@ -7,6 +7,8 @@ import {
   ChecklistVetoAnswer,
   Game,
   GameAdditionalFields,
+  GameDayReportFilter,
+  GameDayReportOverview,
   GameEvent,
   GameEventInput,
   GameFields,
@@ -280,6 +282,18 @@ export class GameService {
   public reopenGame(gameId: number) {
     const path = environment.apiURL + 'user/games/' + gameId + '/reopen.json';
     return this.http.post<{ success: boolean }>(path, {});
+  }
+
+  // SBK-Übersicht „Spieltage": alle Spielberichte im eigenen Spielbetriebs-Scope.
+  public getGameDayReportOverview(filter?: GameDayReportFilter) {
+    let params = new HttpParams();
+    for (const [key, value] of Object.entries(filter ?? {})) {
+      if (value) params = params.set(key, value);
+    }
+    return this.http.get<GameDayReportOverview>(
+      environment.apiURL + 'admin/game_days/report_overview.json',
+      { params }
+    );
   }
 
   public getGameScan(gameId: number) {

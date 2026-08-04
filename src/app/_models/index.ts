@@ -50,6 +50,7 @@ export * from './game.interface';
 export { GamePlayers } from './game.interface';
 export { GamePlayerEntry } from './game.interface';
 export { GameAdditionalFields } from './game-additional-fields.interface';
+export * from './game-day-report.interface';
 export { GameFlags } from './game-flags.interface';
 export { RefereeEntry } from './referee-entry.interface';
 export { GameOperationWithClubs } from './game-operation.interface';

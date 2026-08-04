@@ -225,6 +225,8 @@ export interface GameScan {
   filename: string;
   content_type: string;
   byte_size: number;
+  uploaded_at: string;
+  uploaded_by_name: string | null;
   expires_at: string;
   url: string;
 }
