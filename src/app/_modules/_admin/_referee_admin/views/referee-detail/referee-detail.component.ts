@@ -204,11 +204,23 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     return this.exclusionRequests.filter((r) => r.status === 'pending');
   }
 
-  // Vereine, die noch nicht auf der Liste stehen.
+  // Vereine, die noch nicht auf der Liste stehen. Die Referenz bleibt bei
+  // unveränderter Auswahl gleich, sonst würde das Suchfeld seine Trefferliste
+  // bei jeder Change-Detection neu aufbauen.
   get selectableExclusionClubs(): ExclusionClub[] {
     const listed = new Set(this.exclusions.map((e) => e.club_id));
-    return this.exclusionClubs.filter((c) => !listed.has(c.id));
+    const next = this.exclusionClubs.filter((c) => !listed.has(c.id));
+    const cache = this._selectableExclusionClubsCache;
+    if (
+      next.length !== cache.length ||
+      next.some((c, i) => c.id !== cache[i].id)
+    ) {
+      this._selectableExclusionClubsCache = next;
+    }
+    return this._selectableExclusionClubsCache;
   }
+
+  private _selectableExclusionClubsCache: ExclusionClub[] = [];
 
   toggleExclusionForm(): void {
     this.showExclusionForm = !this.showExclusionForm;

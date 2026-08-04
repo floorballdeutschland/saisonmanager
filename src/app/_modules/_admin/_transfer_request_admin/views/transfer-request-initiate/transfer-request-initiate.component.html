@@ -22,19 +22,13 @@
           <label class="block text-xs font-bold text-fb-gray-500 mb-1">{{
             "transferRequestAdmin.initiate.requestingClub" | transloco
           }}</label>
-          <select
+          <fb-select-search
             [(ngModel)]="selectedClubId"
-            class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-black"
-          >
-            <option [ngValue]="0">
-              {{ "transferRequestAdmin.initiate.chooseClub" | transloco }}
-            </option>
-            @for (club of managedClubs; track club) {
-              <option [ngValue]="club.id">
-                {{ club.name }}
-              </option>
-            }
-          </select>
+            [items]="managedClubs"
+            [placeholder]="
+              'transferRequestAdmin.initiate.chooseClub' | transloco
+            "
+          />
         </div>
       }
 

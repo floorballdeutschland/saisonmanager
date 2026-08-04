@@ -285,21 +285,16 @@
                 <label class="text-sm font-bold">{{
                   "refereeSelf.profile.exclusionClub" | transloco
                 }}</label>
-                <select
+                <fb-select-search
                   [(ngModel)]="requestForm.club_id"
                   name="exclusion_club_id"
                   [ngModelOptions]="{ standalone: true }"
-                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm max-w-md"
-                >
-                  <option [ngValue]="null">
-                    {{
-                      "refereeSelf.profile.exclusionClubPlaceholder" | transloco
-                    }}
-                  </option>
-                  @for (club of selectableClubs; track club.id) {
-                    <option [ngValue]="club.id">{{ club.name }}</option>
-                  }
-                </select>
+                  [items]="selectableClubs"
+                  [placeholder]="
+                    'refereeSelf.profile.exclusionClubPlaceholder' | transloco
+                  "
+                  class="max-w-md"
+                />
               } @else {
                 <p class="text-sm font-bold">{{ requestForm.club_name }}</p>
               }
