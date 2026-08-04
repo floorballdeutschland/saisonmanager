@@ -48,12 +48,12 @@ const CLOSED_STATUSES: GameReportStatus[] = [
 ];
 
 @Component({
-  templateUrl: './game-day-index.component.html',
+  templateUrl: './match-report-index.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
-export class GameDayIndexComponent implements OnInit, OnDestroy {
+export class MatchReportIndexComponent implements OnInit, OnDestroy {
   rows: GameDayReportRow[] = [];
   groups: GameDayGroup[] = [];
   gameOperations: GameOperation[] = [];
@@ -184,7 +184,7 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
 
   statusLabel(status: GameReportStatus | null): string {
     return this._transloco.translate(
-      `gameDayAdmin.status.${status ?? 'notStarted'}`
+      `matchReportAdmin.status.${status ?? 'notStarted'}`
     );
   }
 
@@ -273,7 +273,7 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
             tab?.close();
             this._notificationService.error(
               this._transloco.translate(
-                'gameDayAdmin.notifications.scanMissing'
+                'matchReportAdmin.notifications.scanMissing'
               )
             );
           }
@@ -283,7 +283,9 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
           tab?.close();
           this.scanLoadingGameId = null;
           this._notificationService.error(
-            this._transloco.translate('gameDayAdmin.notifications.scanError')
+            this._transloco.translate(
+              'matchReportAdmin.notifications.scanError'
+            )
           );
           this._cdr.markForCheck();
         },
@@ -306,7 +308,9 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
           row.game_status = 'finalized';
           this._applyFilterAndGroup();
           this._notificationService.success(
-            this._transloco.translate('gameDayAdmin.notifications.finalized')
+            this._transloco.translate(
+              'matchReportAdmin.notifications.finalized'
+            )
           );
           this._cdr.markForCheck();
         },
@@ -323,18 +327,18 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
     if (this.rows.length === 0) return;
     const t = (key: string) => this._transloco.translate(key);
     const headers = [
-      t('gameDayAdmin.index.colDate'),
-      t('gameDayAdmin.index.colTime'),
-      t('gameDayAdmin.index.colLeague'),
-      t('gameDayAdmin.index.colGameNumber'),
-      t('gameDayAdmin.index.colTeams'),
-      t('gameDayAdmin.index.colHost'),
-      t('gameDayAdmin.index.colStatus'),
-      t('gameDayAdmin.index.colClosedAt'),
-      t('gameDayAdmin.index.colUpdatedAt'),
-      t('gameDayAdmin.index.colUpdatedBy'),
-      t('gameDayAdmin.index.colComment'),
-      t('gameDayAdmin.index.colScanUploadedAt'),
+      t('matchReportAdmin.index.colDate'),
+      t('matchReportAdmin.index.colTime'),
+      t('matchReportAdmin.index.colLeague'),
+      t('matchReportAdmin.index.colGameNumber'),
+      t('matchReportAdmin.index.colTeams'),
+      t('matchReportAdmin.index.colHost'),
+      t('matchReportAdmin.index.colStatus'),
+      t('matchReportAdmin.index.colClosedAt'),
+      t('matchReportAdmin.index.colUpdatedAt'),
+      t('matchReportAdmin.index.colUpdatedBy'),
+      t('matchReportAdmin.index.colComment'),
+      t('matchReportAdmin.index.colScanUploadedAt'),
     ];
     const rows = this.rows.map((r) => [
       r.date ?? '',
@@ -377,7 +381,9 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
         error: () => {
           this.loading = false;
           this._notificationService.error(
-            this._transloco.translate('gameDayAdmin.notifications.loadError'),
+            this._transloco.translate(
+              'matchReportAdmin.notifications.loadError'
+            ),
             { autoClose: false }
           );
           this._cdr.markForCheck();

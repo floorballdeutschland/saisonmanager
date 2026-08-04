@@ -1,10 +1,10 @@
 <div class="p-4 lg:p-8">
   <div class="mb-6">
     <h1 class="text-2xl font-bold">
-      {{ "gameDayAdmin.index.title" | transloco }}
+      {{ "matchReportAdmin.index.title" | transloco }}
     </h1>
     <p class="text-sm text-fb-gray-500 mt-1">
-      {{ "gameDayAdmin.index.subtitle" | transloco }}
+      {{ "matchReportAdmin.index.subtitle" | transloco }}
     </p>
   </div>
 
@@ -12,14 +12,14 @@
   <div class="flex flex-wrap gap-4 mb-6 items-end">
     <div class="flex flex-col gap-1">
       <label class="text-xs font-bold uppercase text-fb-gray-500">{{
-        "gameDayAdmin.index.filterGameOperation" | transloco
+        "matchReportAdmin.index.filterGameOperation" | transloco
       }}</label>
       <select
         [(ngModel)]="filterGameOperationId"
         class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
       >
         <option value="">
-          {{ "gameDayAdmin.index.filterGameOperationAll" | transloco }}
+          {{ "matchReportAdmin.index.filterGameOperationAll" | transloco }}
         </option>
         @for (go of gameOperations; track go.id) {
           <option [value]="go.id.toString()">{{ go.name }}</option>
@@ -28,7 +28,7 @@
     </div>
     <div class="flex flex-col gap-1">
       <label class="text-xs font-bold uppercase text-fb-gray-500">{{
-        "gameDayAdmin.index.filterFrom" | transloco
+        "matchReportAdmin.index.filterFrom" | transloco
       }}</label>
       <input
         type="date"
@@ -38,7 +38,7 @@
     </div>
     <div class="flex flex-col gap-1">
       <label class="text-xs font-bold uppercase text-fb-gray-500">{{
-        "gameDayAdmin.index.filterTo" | transloco
+        "matchReportAdmin.index.filterTo" | transloco
       }}</label>
       <input
         type="date"
@@ -48,26 +48,26 @@
     </div>
     <div class="flex flex-col gap-1">
       <label class="text-xs font-bold uppercase text-fb-gray-500">{{
-        "gameDayAdmin.index.filterStatus" | transloco
+        "matchReportAdmin.index.filterStatus" | transloco
       }}</label>
       <select
         [(ngModel)]="filterStatus"
         class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
       >
         <option value="">
-          {{ "gameDayAdmin.index.filterStatusAll" | transloco }}
+          {{ "matchReportAdmin.index.filterStatusAll" | transloco }}
         </option>
         <option value="open">
-          {{ "gameDayAdmin.index.filterStatusOpen" | transloco }}
+          {{ "matchReportAdmin.index.filterStatusOpen" | transloco }}
         </option>
         <option value="match_record_closed">
-          {{ "gameDayAdmin.status.match_record_closed" | transloco }}
+          {{ "matchReportAdmin.status.match_record_closed" | transloco }}
         </option>
         <option value="finalized">
-          {{ "gameDayAdmin.status.finalized" | transloco }}
+          {{ "matchReportAdmin.status.finalized" | transloco }}
         </option>
         <option value="withComment">
-          {{ "gameDayAdmin.index.filterStatusWithComment" | transloco }}
+          {{ "matchReportAdmin.index.filterStatusWithComment" | transloco }}
         </option>
       </select>
     </div>
@@ -76,7 +76,7 @@
       (click)="applyFilter()"
       class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
     >
-      {{ "gameDayAdmin.index.filterApply" | transloco }}
+      {{ "matchReportAdmin.index.filterApply" | transloco }}
     </button>
     <button
       type="button"
@@ -84,7 +84,7 @@
       [disabled]="rows.length === 0"
       class="px-4 py-2 border border-black text-sm font-bold rounded-[5px] hover:bg-fb-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
     >
-      {{ "gameDayAdmin.index.export" | transloco }}
+      {{ "matchReportAdmin.index.export" | transloco }}
     </button>
   </div>
 
@@ -98,7 +98,7 @@
       [class.border-transparent]="viewMode !== 'gameDays'"
       [class.text-fb-gray-500]="viewMode !== 'gameDays'"
     >
-      {{ "gameDayAdmin.index.viewGameDays" | transloco }}
+      {{ "matchReportAdmin.index.viewGameDays" | transloco }}
     </button>
     <button
       type="button"
@@ -108,7 +108,7 @@
       [class.border-transparent]="viewMode !== 'games'"
       [class.text-fb-gray-500]="viewMode !== 'games'"
     >
-      {{ "gameDayAdmin.index.viewGames" | transloco }}
+      {{ "matchReportAdmin.index.viewGames" | transloco }}
     </button>
   </div>
 
@@ -116,13 +116,13 @@
     <div
       class="mb-4 px-4 py-3 bg-yellow-100 text-yellow-800 text-sm rounded-[5px]"
     >
-      {{ "gameDayAdmin.index.truncated" | transloco }}
+      {{ "matchReportAdmin.index.truncated" | transloco }}
     </div>
   }
 
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-8">
-      {{ "gameDayAdmin.index.loading" | transloco }}
+      {{ "matchReportAdmin.index.loading" | transloco }}
     </div>
   }
 
@@ -130,8 +130,8 @@
     <div class="text-fb-gray-500 py-8">
       {{
         (truncated
-          ? "gameDayAdmin.index.emptyTruncated"
-          : "gameDayAdmin.index.empty"
+          ? "matchReportAdmin.index.emptyTruncated"
+          : "matchReportAdmin.index.empty"
         ) | transloco
       }}
     </div>
@@ -152,7 +152,7 @@
             }}</span>
             @if (group.gameDayNumber !== null) {
               <span class="text-sm text-fb-gray-500">{{
-                "gameDayAdmin.index.gameDayNumber"
+                "matchReportAdmin.index.gameDayNumber"
                   | transloco: { number: group.gameDayNumber }
               }}</span>
             }
@@ -164,7 +164,7 @@
             }
             @if (group.hostingClubName) {
               <span class="text-sm text-fb-gray-500">{{
-                "gameDayAdmin.index.host"
+                "matchReportAdmin.index.host"
                   | transloco: { name: group.hostingClubName }
               }}</span>
             }
@@ -177,7 +177,7 @@
                 [class.text-gray-500]="group.closedCount !== group.totalCount"
               >
                 {{
-                  "gameDayAdmin.index.closedRatio"
+                  "matchReportAdmin.index.closedRatio"
                     | transloco
                       : { closed: group.closedCount, total: group.totalCount }
                 }}
@@ -187,7 +187,7 @@
                   class="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800"
                 >
                   {{
-                    "gameDayAdmin.index.commentBadgeCount"
+                    "matchReportAdmin.index.commentBadgeCount"
                       | transloco: { count: group.commentCount }
                   }}
                 </span>
@@ -201,7 +201,7 @@
                   [class.text-gray-500]="group.scanCount !== group.totalCount"
                 >
                   {{
-                    "gameDayAdmin.index.scanRatio"
+                    "matchReportAdmin.index.scanRatio"
                       | transloco
                         : { done: group.scanCount, total: group.totalCount }
                   }}
@@ -212,7 +212,7 @@
                   class="px-2 py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-800"
                 >
                   {{
-                    "gameDayAdmin.index.flagBadgeCount"
+                    "matchReportAdmin.index.flagBadgeCount"
                       | transloco: { count: group.flaggedCount }
                   }}
                 </span>
@@ -290,7 +290,7 @@
           class="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800"
           [title]="row.record_comment"
         >
-          {{ "gameDayAdmin.index.commentBadge" | transloco }}
+          {{ "matchReportAdmin.index.commentBadge" | transloco }}
         </span>
       }
       @if (row.scan_required) {
@@ -303,8 +303,8 @@
         >
           {{
             (row.scan
-              ? "gameDayAdmin.index.scanPresent"
-              : "gameDayAdmin.index.scanPending"
+              ? "matchReportAdmin.index.scanPresent"
+              : "matchReportAdmin.index.scanPending"
             ) | transloco
           }}
         </span>
@@ -313,14 +313,14 @@
         <span
           class="px-2 py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-800"
         >
-          {{ "gameDayAdmin.index.flagBadge" | transloco }}
+          {{ "matchReportAdmin.index.flagBadge" | transloco }}
         </span>
       }
       @if (hasLinkedRecords(row)) {
         <span
           class="px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-800"
         >
-          {{ "gameDayAdmin.index.linkedBadge" | transloco }}
+          {{ "matchReportAdmin.index.linkedBadge" | transloco }}
         </span>
       }
     </button>
@@ -331,7 +331,7 @@
         <div class="grid gap-1 md:grid-cols-3">
           <div>
             <span class="text-xs font-bold uppercase text-fb-gray-500">{{
-              "gameDayAdmin.index.colCreatedAt" | transloco
+              "matchReportAdmin.index.colCreatedAt" | transloco
             }}</span
             ><br />
             {{
@@ -342,7 +342,7 @@
           </div>
           <div>
             <span class="text-xs font-bold uppercase text-fb-gray-500">{{
-              "gameDayAdmin.index.colUpdatedAt" | transloco
+              "matchReportAdmin.index.colUpdatedAt" | transloco
             }}</span
             ><br />
             {{
@@ -358,7 +358,7 @@
           </div>
           <div>
             <span class="text-xs font-bold uppercase text-fb-gray-500">{{
-              "gameDayAdmin.index.colClosedAt" | transloco
+              "matchReportAdmin.index.colClosedAt" | transloco
             }}</span
             ><br />
             {{
@@ -373,7 +373,7 @@
         @if (row.record_comment) {
           <div class="bg-blue-50 border border-blue-200 rounded-[5px] p-3">
             <div class="text-xs font-bold uppercase text-blue-800 mb-1">
-              {{ "gameDayAdmin.index.commentTitle" | transloco }}
+              {{ "matchReportAdmin.index.commentTitle" | transloco }}
             </div>
             <div class="whitespace-pre-line">{{ row.record_comment }}</div>
           </div>
@@ -383,12 +383,12 @@
         @if (row.scan_required) {
           <div class="flex flex-wrap items-center gap-3">
             <span class="text-xs font-bold uppercase text-fb-gray-500">{{
-              "gameDayAdmin.index.scanTitle" | transloco
+              "matchReportAdmin.index.scanTitle" | transloco
             }}</span>
             @if (row.scan) {
               <span>
                 {{
-                  "gameDayAdmin.index.scanUploaded"
+                  "matchReportAdmin.index.scanUploaded"
                     | transloco
                       : {
                           date:
@@ -399,7 +399,7 @@
                 @if (row.scan.days_after_game_day !== null) {
                   <span class="text-fb-gray-500">
                     ({{
-                      "gameDayAdmin.index.scanDaysAfter"
+                      "matchReportAdmin.index.scanDaysAfter"
                         | transloco: { days: row.scan.days_after_game_day }
                     }})
                   </span>
@@ -413,14 +413,14 @@
               >
                 {{
                   (scanLoadingGameId === row.id
-                    ? "gameDayAdmin.index.scanOpening"
-                    : "gameDayAdmin.index.scanDownload"
+                    ? "matchReportAdmin.index.scanOpening"
+                    : "matchReportAdmin.index.scanDownload"
                   ) | transloco
                 }}
               </button>
             } @else {
               <span class="text-fb-gray-500">{{
-                "gameDayAdmin.index.scanMissing" | transloco
+                "matchReportAdmin.index.scanMissing" | transloco
               }}</span>
             }
           </div>
@@ -430,38 +430,42 @@
         @if (hasFlags(row)) {
           <div>
             <div class="text-xs font-bold uppercase text-fb-gray-500 mb-1">
-              {{ "gameDayAdmin.index.flagsTitle" | transloco }}
+              {{ "matchReportAdmin.index.flagsTitle" | transloco }}
             </div>
             <ul class="list-disc list-inside">
               @if (row.flags.protest) {
-                <li>{{ "gameDayAdmin.flags.protest" | transloco }}</li>
+                <li>{{ "matchReportAdmin.flags.protest" | transloco }}</li>
               }
               @if (row.flags.forfait) {
-                <li>{{ "gameDayAdmin.flags.forfait" | transloco }}</li>
+                <li>{{ "matchReportAdmin.flags.forfait" | transloco }}</li>
               }
               @if (row.flags.severe_penalty_count > 0) {
                 <li>
                   {{
-                    "gameDayAdmin.flags.severePenalties"
+                    "matchReportAdmin.flags.severePenalties"
                       | transloco: { count: row.flags.severe_penalty_count }
                   }}
                 </li>
               }
               @if (row.flags.special_event_string) {
                 <li>
-                  {{ "gameDayAdmin.flags.specialEvent" | transloco }}:
+                  {{ "matchReportAdmin.flags.specialEvent" | transloco }}:
                   {{ row.flags.special_event_string }}
                 </li>
               }
               @if (row.flags.missing_referee2) {
-                <li>{{ "gameDayAdmin.flags.missingReferee2" | transloco }}</li>
+                <li>
+                  {{ "matchReportAdmin.flags.missingReferee2" | transloco }}
+                </li>
               }
               @if (row.flags.missing_audience) {
-                <li>{{ "gameDayAdmin.flags.missingAudience" | transloco }}</li>
+                <li>
+                  {{ "matchReportAdmin.flags.missingAudience" | transloco }}
+                </li>
               }
               @if (row.flags.missing_signatures) {
                 <li>
-                  {{ "gameDayAdmin.flags.missingSignatures" | transloco }}
+                  {{ "matchReportAdmin.flags.missingSignatures" | transloco }}
                 </li>
               }
             </ul>
@@ -472,13 +476,13 @@
         @if (hasLinkedRecords(row)) {
           <div>
             <div class="text-xs font-bold uppercase text-fb-gray-500 mb-1">
-              {{ "gameDayAdmin.index.linkedTitle" | transloco }}
+              {{ "matchReportAdmin.index.linkedTitle" | transloco }}
             </div>
             <ul class="list-disc list-inside">
               @if (row.referee_report) {
                 <li>
                   {{
-                    "gameDayAdmin.linked.refereeReport"
+                    "matchReportAdmin.linked.refereeReport"
                       | transloco
                         : {
                             date:
@@ -490,22 +494,26 @@
               }
               @if (row.proceeding_proposal) {
                 <li>
-                  {{ "gameDayAdmin.linked.proceedingProposal" | transloco }}:
                   {{
-                    "gameDayAdmin.proposalStatus." +
+                    "matchReportAdmin.linked.proceedingProposal" | transloco
+                  }}:
+                  {{
+                    "matchReportAdmin.proposalStatus." +
                       row.proceeding_proposal.status | transloco
                   }}
                   <a
                     class="underline"
                     [routerLink]="['/', 'verwaltung', 'verfahrensvorschlaege']"
-                    >{{ "gameDayAdmin.linked.openProposals" | transloco }}</a
+                    >{{
+                      "matchReportAdmin.linked.openProposals" | transloco
+                    }}</a
                   >
                 </li>
               }
               @if (row.checklist_negative_count > 0) {
                 <li>
                   {{
-                    "gameDayAdmin.linked.checklistNegative"
+                    "matchReportAdmin.linked.checklistNegative"
                       | transloco: { count: row.checklist_negative_count }
                   }}
                 </li>
@@ -513,7 +521,7 @@
               @if (row.checklist_veto_submitted_at) {
                 <li>
                   {{
-                    "gameDayAdmin.linked.checklistVeto"
+                    "matchReportAdmin.linked.checklistVeto"
                       | transloco
                         : {
                             date:
@@ -535,15 +543,15 @@
               [routerLink]="link"
               class="px-3 py-1.5 border border-black text-xs font-bold rounded-[5px] hover:bg-fb-gray-200"
             >
-              {{ "gameDayAdmin.index.openGame" | transloco }}
+              {{ "matchReportAdmin.index.openGame" | transloco }}
             </a>
           }
           @if (canFinalize(row)) {
             <fb-confirmation
-              [title]="'gameDayAdmin.finalize.dialogTitle' | transloco"
-              [content]="'gameDayAdmin.finalize.dialogContent' | transloco"
+              [title]="'matchReportAdmin.finalize.dialogTitle' | transloco"
+              [content]="'matchReportAdmin.finalize.dialogContent' | transloco"
               [submitButtonTitle]="
-                'gameDayAdmin.finalize.dialogSubmit' | transloco
+                'matchReportAdmin.finalize.dialogSubmit' | transloco
               "
               buttonVariant="success"
               (handleSubmit)="finalizeGame(row)"
@@ -555,8 +563,8 @@
               >
                 {{
                   (finalizingGameId === row.id
-                    ? "gameDayAdmin.finalize.running"
-                    : "gameDayAdmin.finalize.button"
+                    ? "matchReportAdmin.finalize.running"
+                    : "matchReportAdmin.finalize.button"
                   ) | transloco
                 }}
               </button>

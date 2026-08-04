@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { UikitCommonModule } from '@floorball/uikit/common';
-import { AdminGameDayRoutingModule } from './admin-game-day-routing.module';
+import { AdminMatchReportRoutingModule } from './admin-match-report-routing.module';
 
 import * as Views from './views';
 
@@ -11,16 +11,16 @@ import * as Views from './views';
   imports: [
     CommonModule,
     FormsModule,
-    AdminGameDayRoutingModule,
+    AdminMatchReportRoutingModule,
     UikitCommonModule,
   ],
-  declarations: [Views.GameDayIndexComponent],
+  declarations: [Views.MatchReportIndexComponent],
   providers: [
     {
       provide: TRANSLOCO_SCOPE,
-      useValue: { scope: 'admin/game-day', alias: 'gameDayAdmin' },
+      useValue: { scope: 'admin/match-report', alias: 'matchReportAdmin' },
       multi: true,
     },
   ],
 })
-export class AdminGameDayModule {}
+export class AdminMatchReportModule {}

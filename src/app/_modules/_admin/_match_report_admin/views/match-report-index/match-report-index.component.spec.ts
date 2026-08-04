@@ -6,10 +6,10 @@ import {
 } from '@angular/common/http/testing';
 import { GameDayReportRow, GameReportStatus } from '@floorball/types';
 import { environment } from 'src/environments/environment';
-import { GameDayIndexComponent } from './game-day-index.component';
+import { MatchReportIndexComponent } from './match-report-index.component';
 
-describe('GameDayIndexComponent', () => {
-  let component: GameDayIndexComponent;
+describe('MatchReportIndexComponent', () => {
+  let component: MatchReportIndexComponent;
   let httpMock: HttpTestingController;
 
   // Ohne detectChanges läuft ngOnInit nicht: Die Tests prüfen Gruppierung,
@@ -17,13 +17,13 @@ describe('GameDayIndexComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [getTranslocoTestingModule(), HttpClientTestingModule],
-      declarations: [GameDayIndexComponent],
+      declarations: [MatchReportIndexComponent],
     })
-      .overrideTemplate(GameDayIndexComponent, '')
+      .overrideTemplate(MatchReportIndexComponent, '')
       .compileComponents();
 
     component = TestBed.createComponent(
-      GameDayIndexComponent
+      MatchReportIndexComponent
     ).componentInstance;
     httpMock = TestBed.inject(HttpTestingController);
   });

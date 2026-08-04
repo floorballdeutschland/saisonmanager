@@ -123,9 +123,11 @@ export const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
-          import('@floorball/admin/game-day').then((m) => m.AdminGameDayModule),
+          import('@floorball/admin/match-report').then(
+            (m) => m.AdminMatchReportModule
+          ),
         canActivate: [permissionGuard],
-        data: { permission: 'menu_item_game_day_admin' },
+        data: { permission: 'menu_item_match_report_admin' },
       },
       {
         path: '',

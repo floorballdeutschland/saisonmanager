@@ -6,9 +6,9 @@ const routes: Routes = [
   {
     // `verwaltung/`-Präfix zwingend: /verein/spieltage (TM/VM) und
     // /schiedsrichter/spieltage sind bereits belegt.
-    path: 'verwaltung/spieltage',
+    path: 'verwaltung/spielberichte',
     pathMatch: 'full',
-    component: Views.GameDayIndexComponent,
+    component: Views.MatchReportIndexComponent,
     data: { scrollTop: true },
   },
 ];
@@ -17,4 +17,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class AdminGameDayRoutingModule {}
+export class AdminMatchReportRoutingModule {}
