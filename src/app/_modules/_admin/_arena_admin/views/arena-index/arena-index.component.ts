@@ -10,6 +10,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { ArenaService, SessionService } from '@floorball/core';
 import { Arena, User } from '@floorball/types';
+import { arenaMatchesTerm } from '../../arena-search';
 
 @Component({
   templateUrl: './arena-index.component.html',
@@ -34,11 +35,7 @@ export class ArenaIndexComponent implements OnInit, OnDestroy {
   get filteredArenas(): Arena[] {
     const term = this.searchTerm.toLowerCase().trim();
     if (!term) return this.arenas;
-    return this.arenas.filter(
-      (a) =>
-        a.name.toLowerCase().includes(term) ||
-        (a.city ?? '').toLowerCase().includes(term)
-    );
+    return this.arenas.filter((a) => arenaMatchesTerm(a, term));
   }
 
   private _destroy$ = new Subject<void>();
