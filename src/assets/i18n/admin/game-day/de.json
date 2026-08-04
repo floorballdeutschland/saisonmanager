@@ -1,8 +1,7 @@
 {
   "index": {
     "title": "Spieltage",
-    "subtitle": "Übersicht der abgegebenen Spielberichte mit Status, Bearbeitungszeitpunkt und Hinweisen an die SBK.",
-    "filterSeason": "Saison",
+    "subtitle": "Übersicht der abgegebenen Spielberichte der laufenden Saison, mit Status, Bearbeitungszeitpunkt und Hinweisen an die SBK.",
     "filterGameOperation": "Spielbetrieb",
     "filterGameOperationAll": "Alle",
     "filterFrom": "Von",

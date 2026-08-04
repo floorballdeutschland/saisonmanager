@@ -71,8 +71,9 @@ export interface GameDayReportOverview {
   games: GameDayReportRow[];
 }
 
+// Die Saison ist serverseitig fest auf die laufende gebunden und bewusst kein
+// Filter: Spieltage abgeschlossener Saisons erscheinen in dieser Ansicht nicht.
 export interface GameDayReportFilter {
-  season_id?: string;
   game_operation_id?: string;
   league_id?: string;
   date_from?: string;

@@ -12,8 +12,6 @@ import {
   GameOperationService,
   GameService,
   NotificationService,
-  SeasonInfo,
-  SettingsService,
 } from '@floorball/core';
 import {
   GameDayReportRow,
@@ -58,15 +56,12 @@ const CLOSED_STATUSES: GameReportStatus[] = [
 export class GameDayIndexComponent implements OnInit, OnDestroy {
   rows: GameDayReportRow[] = [];
   groups: GameDayGroup[] = [];
-  seasons: SeasonInfo[] = [];
   gameOperations: GameOperation[] = [];
 
   viewMode: ViewMode = 'gameDays';
   loading = false;
-  seasonsLoading = true;
   truncated = false;
 
-  filterSeasonId = '';
   filterGameOperationId = '';
   filterDateFrom = '';
   filterDateTo = '';
@@ -93,7 +88,6 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
   constructor(
     private _gameService: GameService,
     private _gameOperationService: GameOperationService,
-    private _settingsService: SettingsService,
     private _notificationService: NotificationService,
     private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
@@ -116,23 +110,9 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
         },
       });
 
-    this._settingsService
-      .getSeasons()
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (data) => {
-          this.seasons = data.seasons;
-          this.filterSeasonId = data.current_season_id.toString();
-          this.seasonsLoading = false;
-          this._cdr.markForCheck();
-          this._load();
-        },
-        error: () => {
-          this.seasonsLoading = false;
-          this._cdr.markForCheck();
-          this._load();
-        },
-      });
+    // Die Saison ist serverseitig fest auf die laufende gebunden, es gibt hier
+    // also nichts vorzubelegen und nichts abzuwarten.
+    this._load();
   }
 
   ngOnDestroy(): void {
@@ -156,7 +136,6 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
 
   private _serverFilterKey(): string {
     return [
-      this.filterSeasonId,
       this.filterGameOperationId,
       this.filterDateFrom,
       this.filterDateTo,
@@ -381,7 +360,6 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
     const key = this._serverFilterKey();
     this._gameService
       .getGameDayReportOverview({
-        season_id: this.filterSeasonId || undefined,
         game_operation_id: this.filterGameOperationId || undefined,
         date_from: this.filterDateFrom || undefined,
         date_to: this.filterDateTo || undefined,

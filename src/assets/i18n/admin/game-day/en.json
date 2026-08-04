@@ -1,8 +1,7 @@
 {
   "index": {
     "title": "Game days",
-    "subtitle": "Overview of submitted match reports with status, editing time and notes for the game operations committee.",
-    "filterSeason": "Season",
+    "subtitle": "Overview of submitted match reports for the current season, with status, editing time and notes for the game operations committee.",
     "filterGameOperation": "Game operation",
     "filterGameOperationAll": "All",
     "filterFrom": "From",

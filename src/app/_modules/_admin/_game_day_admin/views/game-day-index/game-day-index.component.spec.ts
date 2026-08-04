@@ -212,6 +212,18 @@ describe('GameDayIndexComponent', () => {
     ).toBeNull();
   });
 
+  it('fragt ohne Saison-Parameter ab', () => {
+    // Die Saison ist serverseitig fest auf die laufende gebunden; ein Parameter
+    // hier würde nur vortäuschen, Altsaisons wären erreichbar.
+    component['_load']();
+    const req = httpMock.expectOne(
+      (r) =>
+        r.url === environment.apiURL + 'admin/game_days/report_overview.json'
+    );
+    expect(req.request.params.has('season_id')).toBeFalse();
+    req.flush({ truncated: false, games: [] });
+  });
+
   it('merkt sich die Kürzung der Serverantwort', () => {
     loadWith([row()], true);
     expect(component.truncated).toBeTrue();
@@ -243,7 +255,6 @@ describe('GameDayIndexComponent', () => {
   });
 
   it('lädt bei reiner Statusänderung nicht neu', () => {
-    component.filterSeasonId = '18';
     loadWith([
       row({ id: 1, game_status: 'finalized' }),
       row({ id: 2, game_status: 'aftergame' }),
