@@ -63,8 +63,9 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
               return;
             }
             this.arena = found;
-            this.name = found.name;
-            this.city = found.city;
+            // Altbestand ohne Namen/Stadt: leeres Feld statt „null" im Input.
+            this.name = found.name ?? '';
+            this.city = found.city ?? '';
             this.street = found.street ?? '';
             this.housenumber = found.housenumber ?? '';
             this.postcode = found.postcode ?? '';
