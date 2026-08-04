@@ -52,7 +52,11 @@ export class LicenseClubIndexComponent implements OnInit {
         )
       );
 
-    this._clubService.adminGetClubAndTeams().subscribe({
+    // Bewusst NICHT adminGetClubAndTeams(): das liefert alle Vereine, auf die
+    // irgendeine Rolle Zugriff gibt. Wer zusätzlich SBK ist, bekam damit alle
+    // Vereine des Spielbetriebs in diese Vereinssicht – und damit fremde
+    // Vereine in einer Ansicht, die den eigenen Beantragungsprozess meint.
+    this._clubService.vmGetClubAndTeams().subscribe({
       next: (result) => {
         this.clubAndTeams = result;
 

@@ -156,15 +156,15 @@
     "metaTitle": "Floorball Saisonmanager License Management"
   },
   "clubIndex": {
-    "title": "License management",
+    "title": "My licenses",
     "loadingData": "Loading data...",
     "teams": "Teams",
     "manageLicenseRequests": "Manage license requests",
     "noTeams": "no teams added yet",
-    "metaTitle": "Floorball Saisonmanager License Management (Club)"
+    "metaTitle": "Floorball Saisonmanager My Licenses"
   },
   "teamDetail": {
-    "title": "License management",
+    "title": "My licenses",
     "backToClubs": "← Back to club overview",
     "requests": "Requests",
     "withdrawTitleFree": "Delete license request free of charge",
@@ -204,7 +204,7 @@
     "noRequests": "no license requests added yet",
     "loadingData": "Loading data...",
     "docLabelIdCopy": "ID card",
-    "metaTitle": "Floorball Saisonmanager License Management (Team: )"
+    "metaTitle": "Floorball Saisonmanager My Licenses"
   },
   "userLeagueDetail": {
     "title": "License lists",

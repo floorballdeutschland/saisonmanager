@@ -71,10 +71,14 @@ export class GameDayEditComponent implements OnInit {
                 a.name.localeCompare(b.name, 'de')
               );
               this.areans = result.arenas;
+              // `?? ''` ist Pflicht, nicht Kosmetik: Altbestand ohne Namen und
+              // ohne schedule_item hätte hier ein null-Label erzeugt und den
+              // localeCompare-Vergleich geworfen – damit wäre die komplette
+              // Spielort-Auswahl leer geblieben.
               this.arenaOptions = result.arenas
                 .map((arena) => ({
                   id: arena.id,
-                  label: arena.schedule_item || arena.name,
+                  label: arena.schedule_item || arena.name || '',
                 }))
                 .sort((a, b) => a.label.localeCompare(b.label, 'de'));
               if (this.clubs.length === 0) {
