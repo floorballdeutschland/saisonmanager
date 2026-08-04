@@ -98,6 +98,14 @@ export class ClubService {
     return this.http.get<ClubWithTeams[]>(path);
   }
 
+  // Nur die Vereine, für die man VM oder TM ist – ohne die Vereine, die eine
+  // zusätzliche Admin-/SBK-Rolle beisteuern würde. Für die Vereinssicht
+  // („Meine Spieler*innen"), die genau diesen Bestand meint.
+  public vmGetClubAndTeams() {
+    const path = environment.apiURL + 'vm/clubs_and_teams.json';
+    return this.http.get<ClubWithTeams[]>(path);
+  }
+
   public userGetTeamLicenses(teamId: number) {
     const path = environment.apiURL + 'user/team/' + teamId + '/licenses.json';
     return this.http.get<LicenseHash>(path);

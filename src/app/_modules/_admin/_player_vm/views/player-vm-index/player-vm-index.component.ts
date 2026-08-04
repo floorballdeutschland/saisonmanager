@@ -59,8 +59,14 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
       });
 
     this.loading = true;
+    // Bewusst NICHT adminGetClubAndTeams(): das liefert alle Vereine, auf die
+    // irgendeine Rolle Zugriff gibt. Wer zusätzlich SBK ist, bekam damit alle
+    // Vereine des Spielbetriebs in diese Vereinssicht – und weil für jeden
+    // davon die Spielerliste geladen wird, quittierten die Vereine fremder
+    // Landesverbände das mit 403, was über den ErrorInterceptor die komplette
+    // Seite abbrach.
     this._clubService
-      .adminGetClubAndTeams()
+      .vmGetClubAndTeams()
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (clubs) => {
