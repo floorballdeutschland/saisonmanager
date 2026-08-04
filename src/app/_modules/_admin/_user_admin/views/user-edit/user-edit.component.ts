@@ -24,6 +24,10 @@ import {
   User,
   GameOperation,
 } from '@floorball/types';
+import {
+  ROLE_PERMISSION_FLAG,
+  hasAssignRoleFlags,
+} from '../../role-permission-flags';
 
 @Component({
   templateUrl: './user-edit.component.html',
@@ -331,13 +335,15 @@ export class UserEditComponent implements OnInit, OnDestroy {
   }
 
   get canManageRoles(): boolean {
-    return (
-      !!this.currentUser?.permissions['manage_user_roles'] &&
-      !this.isSelf &&
-      // Ein Schiedsrichter-Konto ist nicht mit weiteren Rollen kombinierbar,
-      // der Server lehnt jede zusätzliche Rolle ab (User#permissions).
-      !this.isRefereeAccount
-    );
+    return !!this.currentUser?.permissions['manage_user_roles'] && !this.isSelf;
+  }
+
+  // Weitere Rollen kann ein Schiedsrichter-Konto nicht bekommen, der Server
+  // lehnt sie ab (User#referee_role_not_combined). Nur das Hinzufügen entfällt:
+  // Die Rollenliste mit ihren Entfernen-Schaltflächen bleibt sichtbar, weil ein
+  // Altkonto mit dieser Kombination genau darüber in Ordnung gebracht wird.
+  get canAddRole(): boolean {
+    return this.canManageRoles && !this.isRefereeAccount;
   }
 
   // Konto der Schiedsrichter-Selbstverwaltung (Rolle 6).
@@ -353,18 +359,11 @@ export class UserEditComponent implements OnInit, OnDestroy {
   get availableRoleOptions(): typeof this.roleOptions {
     const permissions = this.currentUser?.permissions;
     if (!permissions) return [];
+    if (!hasAssignRoleFlags(permissions)) return this.roleOptions;
 
-    const flags: Record<number, string> = {
-      2: 'assign_role_sbk',
-      3: 'assign_role_rsk',
-      4: 'assign_role_vm',
-      5: 'assign_role_tm',
-      7: 'assign_role_ansetzer',
-    };
-    const hasFlags = Object.values(flags).some((flag) => flag in permissions);
-    if (!hasFlags) return this.roleOptions;
-
-    return this.roleOptions.filter((opt) => !!permissions[flags[opt.id]]);
+    return this.roleOptions.filter(
+      (opt) => !!permissions[ROLE_PERMISSION_FLAG[opt.id]]
+    );
   }
 
   get newRoleNeedsGo(): boolean {

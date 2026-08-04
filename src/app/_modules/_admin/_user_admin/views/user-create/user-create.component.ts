@@ -24,25 +24,17 @@ import {
   User,
 } from '@floorball/types';
 
+import {
+  ROLE_PERMISSION_FLAG,
+  hasAssignRoleFlags,
+} from '../../role-permission-flags';
+
 interface RoleOption {
   id: number;
   labelKey: string;
   needsClub: boolean;
   needsGo: boolean;
 }
-
-// Welche Rolle das angemeldete Konto vergeben darf, sagt die API
-// (User#permissions_items, Quelle: User::ASSIGNABLE_ROLE_IDS). Hier steht
-// bewusst keine eigene Rollenlogik: SBK darf SBK/RSK/Ansetzer/VM/TM vergeben,
-// RSK nur RSK/Ansetzer, und das entscheidet ohnehin der Server.
-const ROLE_PERMISSION_FLAG: Record<number, string> = {
-  1: 'assign_role_admin',
-  2: 'assign_role_sbk',
-  3: 'assign_role_rsk',
-  4: 'assign_role_vm',
-  5: 'assign_role_tm',
-  7: 'assign_role_ansetzer',
-};
 
 @Component({
   templateUrl: './user-create.component.html',
@@ -230,20 +222,12 @@ export class UserCreateComponent implements OnInit, OnDestroy {
     // assign_role_*-Flags nicht im localStorage (die Berechtigungen werden dort
     // beim Login abgelegt). Ohne diesen Rückfall wäre die Rollenauswahl für alle
     // leer, bis sich jede Person einmal neu anmeldet.
-    if (!this._hasAssignRoleFlags) {
+    if (!hasAssignRoleFlags(permissions)) {
       return this.isAdmin || roleId === 4 || roleId === 5;
     }
 
     const flag = ROLE_PERMISSION_FLAG[roleId];
     return !!flag && !!permissions[flag];
-  }
-
-  private get _hasAssignRoleFlags(): boolean {
-    const permissions = this.currentUser?.permissions;
-    return (
-      !!permissions &&
-      Object.values(ROLE_PERMISSION_FLAG).some((flag) => flag in permissions)
-    );
   }
 
   get availableTeams(): Team[] {

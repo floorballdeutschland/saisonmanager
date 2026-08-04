@@ -173,53 +173,57 @@
             </li>
           }
         </ul>
-        <div class="flex flex-wrap items-end gap-2">
-          <select
-            [(ngModel)]="newRoleId"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
-          >
-            <option [ngValue]="null">
-              {{ "userAdmin.edit.selectRole" | transloco }}
-            </option>
-            @for (opt of availableRoleOptions; track opt.id) {
-              <option [ngValue]="opt.id">{{ opt.labelKey | transloco }}</option>
+        @if (canAddRole) {
+          <div class="flex flex-wrap items-end gap-2">
+            <select
+              [(ngModel)]="newRoleId"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+            >
+              <option [ngValue]="null">
+                {{ "userAdmin.edit.selectRole" | transloco }}
+              </option>
+              @for (opt of availableRoleOptions; track opt.id) {
+                <option [ngValue]="opt.id">
+                  {{ opt.labelKey | transloco }}
+                </option>
+              }
+            </select>
+            @if (newRoleNeedsGo) {
+              <select
+                [(ngModel)]="newRoleGoId"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+              >
+                <option [ngValue]="null">
+                  {{ "userAdmin.edit.selectGameOperation" | transloco }}
+                </option>
+                @for (go of gameOperations; track go) {
+                  <option [ngValue]="go.id">{{ go.name }}</option>
+                }
+              </select>
             }
-          </select>
-          @if (newRoleNeedsGo) {
-            <select
-              [(ngModel)]="newRoleGoId"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+            @if (newRoleNeedsClub) {
+              <select
+                [(ngModel)]="newRoleClubId"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+              >
+                <option [ngValue]="null">
+                  {{ "userAdmin.edit.selectClub" | transloco }}
+                </option>
+                @for (c of clubsWithTeams; track c) {
+                  <option [ngValue]="c.id">{{ c.name }}</option>
+                }
+              </select>
+            }
+            <button
+              type="button"
+              (click)="addRole()"
+              [disabled]="!canSubmitNewRole"
+              class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
             >
-              <option [ngValue]="null">
-                {{ "userAdmin.edit.selectGameOperation" | transloco }}
-              </option>
-              @for (go of gameOperations; track go) {
-                <option [ngValue]="go.id">{{ go.name }}</option>
-              }
-            </select>
-          }
-          @if (newRoleNeedsClub) {
-            <select
-              [(ngModel)]="newRoleClubId"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
-            >
-              <option [ngValue]="null">
-                {{ "userAdmin.edit.selectClub" | transloco }}
-              </option>
-              @for (c of clubsWithTeams; track c) {
-                <option [ngValue]="c.id">{{ c.name }}</option>
-              }
-            </select>
-          }
-          <button
-            type="button"
-            (click)="addRole()"
-            [disabled]="!canSubmitNewRole"
-            class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
-          >
-            {{ "userAdmin.edit.addRole" | transloco }}
-          </button>
-        </div>
+              {{ "userAdmin.edit.addRole" | transloco }}
+            </button>
+          </div>
+        }
       </div>
     }
     <!-- Verbund-Zuweisung (für SBK/RSK-Nutzer) -->
