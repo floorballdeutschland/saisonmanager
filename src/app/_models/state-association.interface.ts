@@ -25,6 +25,13 @@ export interface StateAssociation {
   scan_required?: boolean;
   referee_license_review_enabled?: boolean;
   effective_referee_license_review_enabled?: boolean;
+  // Tatsaechlich greifende Werte inklusive Vererbung vom uebergeordneten
+  // Verbund. Nur im Detail-Endpunkt enthalten, nicht in der Liste (short_hash),
+  // deshalb optional.
+  effective_express_license_enabled?: boolean;
+  effective_vsk_email?: string | null;
+  effective_sbk_email?: string | null;
+  effective_rsk_email?: string | null;
   manual_proceeding_creation?: boolean;
   referee_assignment_enabled?: boolean;
   report_form_email_enabled?: boolean;
