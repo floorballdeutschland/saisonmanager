@@ -142,7 +142,12 @@
 
   @if (!loading && rows.length === 0) {
     <div class="text-fb-gray-500 py-8">
-      {{ "gameDayAdmin.index.empty" | transloco }}
+      {{
+        (truncated
+          ? "gameDayAdmin.index.emptyTruncated"
+          : "gameDayAdmin.index.empty"
+        ) | transloco
+      }}
     </div>
   }
 
@@ -180,17 +185,15 @@
             <span class="ml-auto flex flex-wrap items-center gap-2">
               <span
                 class="px-2 py-0.5 rounded text-xs font-bold"
-                [class.bg-green-100]="group.closedCount === group.games.length"
-                [class.text-green-800]="
-                  group.closedCount === group.games.length
-                "
-                [class.bg-gray-100]="group.closedCount !== group.games.length"
-                [class.text-gray-500]="group.closedCount !== group.games.length"
+                [class.bg-green-100]="group.closedCount === group.totalCount"
+                [class.text-green-800]="group.closedCount === group.totalCount"
+                [class.bg-gray-100]="group.closedCount !== group.totalCount"
+                [class.text-gray-500]="group.closedCount !== group.totalCount"
               >
                 {{
                   "gameDayAdmin.index.closedRatio"
                     | transloco
-                      : { closed: group.closedCount, total: group.games.length }
+                      : { closed: group.closedCount, total: group.totalCount }
                 }}
               </span>
               @if (group.commentCount > 0) {
@@ -206,17 +209,15 @@
               @if (group.scanRequired) {
                 <span
                   class="px-2 py-0.5 rounded text-xs font-bold"
-                  [class.bg-green-100]="group.scanCount === group.games.length"
-                  [class.text-green-800]="
-                    group.scanCount === group.games.length
-                  "
-                  [class.bg-gray-100]="group.scanCount !== group.games.length"
-                  [class.text-gray-500]="group.scanCount !== group.games.length"
+                  [class.bg-green-100]="group.scanCount === group.totalCount"
+                  [class.text-green-800]="group.scanCount === group.totalCount"
+                  [class.bg-gray-100]="group.scanCount !== group.totalCount"
+                  [class.text-gray-500]="group.scanCount !== group.totalCount"
                 >
                   {{
                     "gameDayAdmin.index.scanRatio"
                       | transloco
-                        : { done: group.scanCount, total: group.games.length }
+                        : { done: group.scanCount, total: group.totalCount }
                   }}
                 </span>
               }

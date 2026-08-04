@@ -17,6 +17,7 @@
     "viewGames": "Nach Spielen",
     "loading": "Spielberichte werden geladen …",
     "empty": "Keine Spiele für diese Auswahl.",
+    "emptyTruncated": "Keine Spiele für diese Auswahl. Die Liste wurde gekürzt, es kann also weitere Spiele außerhalb der angezeigten Menge geben – bitte den Zeitraum eingrenzen.",
     "truncated": "Es wurden sehr viele Spiele gefunden und die Liste gekürzt. Bitte den Zeitraum oder den Spielbetrieb eingrenzen.",
     "gameDayNumber": "Spieltag {{number}}",
     "host": "Ausrichter: {{name}}",

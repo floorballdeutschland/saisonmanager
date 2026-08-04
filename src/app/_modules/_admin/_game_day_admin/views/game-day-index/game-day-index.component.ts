@@ -33,7 +33,10 @@ interface GameDayGroup {
   leagueName: string | null;
   arenaName: string | null;
   hostingClubName: string | null;
+  // `games` sind die zum Filter passenden Zeilen, die Zähler beziehen sich auf
+  // den vollständigen Spieltag.
   games: GameDayReportRow[];
+  totalCount: number;
   closedCount: number;
   scanRequired: boolean;
   scanCount: number;
@@ -79,6 +82,12 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
   readonly pageSize = 25;
   currentPage = 1;
 
+  // Ungefilterte Serverantwort. Der Statusfilter wirkt clientseitig darauf,
+  // damit die Spieltags-Kennzahlen den echten Spieltag abbilden.
+  private _allRows: GameDayReportRow[] = [];
+  // Serverseitige Filter der zuletzt geholten Antwort – nur wenn sich einer davon
+  // ändert, muss neu geladen werden.
+  private _loadedKey: string | null = null;
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -133,7 +142,25 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
 
   applyFilter(): void {
     this.currentPage = 1;
+    // Der Status wird clientseitig ausgewertet: Wenn sich nur er geändert hat,
+    // genügt ein Neugruppieren der bereits geladenen Daten.
+    if (
+      this._loadedKey !== null &&
+      this._loadedKey === this._serverFilterKey()
+    ) {
+      this._applyFilterAndGroup();
+      return;
+    }
     this._load();
+  }
+
+  private _serverFilterKey(): string {
+    return [
+      this.filterSeasonId,
+      this.filterGameOperationId,
+      this.filterDateFrom,
+      this.filterDateTo,
+    ].join('|');
   }
 
   setViewMode(mode: ViewMode): void {
@@ -208,7 +235,12 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
   }
 
   hasFlags(row: GameDayReportRow): boolean {
+    // Defensiv: Diese Methode läuft beim Gruppieren über jede Zeile. Wirft sie,
+    // bricht der Ladevorgang stumm ab und die Seite bleibt auf „lädt" stehen –
+    // dieselbe Falle wie beim Spielorte-Suchfeld. Zeilen, die der Server als
+    // fehlerhaft markiert, tragen kein `flags`-Objekt.
     const f = row.flags;
+    if (!f) return false;
     return (
       f.protest ||
       f.forfait ||
@@ -241,6 +273,10 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
   openScan(row: GameDayReportRow): void {
     if (this.scanLoadingGameId !== null) return;
     this.scanLoadingGameId = row.id;
+    // Das Fenster muss synchron im Klick-Handler geöffnet werden. Erst im
+    // HTTP-Callback zu öffnen, kostet die Nutzerinteraktion – der Popup-Blocker
+    // schluckt den Aufruf dann kommentarlos, und der Knopf tut scheinbar nichts.
+    const tab = window.open('', '_blank', 'noopener');
     this._gameService
       .getGameScan(row.id)
       .pipe(takeUntil(this._destroy$))
@@ -248,8 +284,14 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
         next: (scan) => {
           this.scanLoadingGameId = null;
           if (scan?.url) {
-            window.open(scan.url, '_blank', 'noopener');
+            if (tab) {
+              tab.location.href = scan.url;
+            } else {
+              // Popup-Blocker war schneller: im selben Tab öffnen.
+              window.location.href = scan.url;
+            }
           } else {
+            tab?.close();
             this._notificationService.error(
               this._transloco.translate(
                 'gameDayAdmin.notifications.scanMissing'
@@ -259,6 +301,7 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: () => {
+          tab?.close();
           this.scanLoadingGameId = null;
           this._notificationService.error(
             this._transloco.translate('gameDayAdmin.notifications.scanError')
@@ -278,9 +321,11 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
         next: () => {
           this.finalizingGameId = null;
           // Lokal aktualisieren statt neu zu laden, damit Filter, Seite und
-          // aufgeklappte Zeilen erhalten bleiben.
+          // aufgeklappte Zeilen erhalten bleiben. Neu filtern und gruppieren,
+          // damit die Zeile unter „Noch nicht abgeschlossen" verschwindet, statt
+          // dem aktiven Filter zu widersprechen.
           row.game_status = 'finalized';
-          this._regroup();
+          this._applyFilterAndGroup();
           this._notificationService.success(
             this._transloco.translate('gameDayAdmin.notifications.finalized')
           );
@@ -333,6 +378,7 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
 
   private _load(): void {
     this.loading = true;
+    const key = this._serverFilterKey();
     this._gameService
       .getGameDayReportOverview({
         season_id: this.filterSeasonId || undefined,
@@ -344,8 +390,9 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           this.truncated = result.truncated;
-          this.rows = this._applyStatusFilter(result.games);
-          this._regroup();
+          this._allRows = result.games ?? [];
+          this._loadedKey = key;
+          this._applyFilterAndGroup();
           this.loading = false;
           this._cdr.markForCheck();
         },
@@ -362,23 +409,26 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
 
   // Der Status wird clientseitig gefiltert: Die Serverantwort ist ohnehin schon
   // auf Saison und Zeitraum eingegrenzt, und beide Sichten teilen sich die Daten.
-  private _applyStatusFilter(games: GameDayReportRow[]): GameDayReportRow[] {
-    if (!this.filterStatus) return games;
+  private _matchesStatus(row: GameDayReportRow): boolean {
+    if (!this.filterStatus) return true;
     if (this.filterStatus === 'open') {
-      return games.filter(
-        (g) =>
-          g.game_status === null || !CLOSED_STATUSES.includes(g.game_status)
+      return (
+        row.game_status === null || !CLOSED_STATUSES.includes(row.game_status)
       );
     }
-    if (this.filterStatus === 'withComment') {
-      return games.filter((g) => !!g.record_comment);
-    }
-    return games.filter((g) => g.game_status === this.filterStatus);
+    if (this.filterStatus === 'withComment') return !!row.record_comment;
+    return row.game_status === this.filterStatus;
   }
 
-  private _regroup(): void {
+  // Der Statusfilter wirkt auf die angezeigten Zeilen, NICHT auf die Kennzahlen
+  // des Spieltags: „3/4 Berichte abgeschlossen" muss den echten Spieltag zählen.
+  // Würde über die gefilterte Menge gruppiert, meldete ein Spieltag unter dem
+  // Filter „Noch nicht abgeschlossen" stets „0/n abgeschlossen".
+  private _applyFilterAndGroup(): void {
+    this.rows = this._allRows.filter((row) => this._matchesStatus(row));
+
     const byGameDay = new Map<number, GameDayReportRow[]>();
-    for (const row of this.rows) {
+    for (const row of this._allRows) {
       const bucket = byGameDay.get(row.game_day_id);
       if (bucket) {
         bucket.push(row);
@@ -387,22 +437,27 @@ export class GameDayIndexComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.groups = [...byGameDay.entries()].map(([gameDayId, games]) => {
-      const first = games[0];
-      return {
-        gameDayId,
-        gameDayNumber: first.game_day_number,
-        date: first.date,
-        leagueName: first.league_name,
-        arenaName: first.arena_name,
-        hostingClubName: first.hosting_club_name,
-        games,
-        closedCount: games.filter((g) => this.isClosed(g)).length,
-        scanRequired: games.some((g) => g.scan_required),
-        scanCount: games.filter((g) => !!g.scan).length,
-        commentCount: games.filter((g) => !!g.record_comment).length,
-        flaggedCount: games.filter((g) => this.hasFlags(g)).length,
-      };
-    });
+    this.groups = [...byGameDay.entries()]
+      .map(([gameDayId, all]) => {
+        const first = all[0];
+        return {
+          gameDayId,
+          gameDayNumber: first.game_day_number,
+          date: first.date,
+          leagueName: first.league_name,
+          arenaName: first.arena_name,
+          hostingClubName: first.hosting_club_name,
+          // Aufgelistet werden nur die zum Filter passenden Spiele …
+          games: all.filter((row) => this._matchesStatus(row)),
+          // … gezählt wird über den vollständigen Spieltag.
+          totalCount: all.length,
+          closedCount: all.filter((g) => this.isClosed(g)).length,
+          scanRequired: all.some((g) => g.scan_required),
+          scanCount: all.filter((g) => !!g.scan).length,
+          commentCount: all.filter((g) => !!g.record_comment).length,
+          flaggedCount: all.filter((g) => this.hasFlags(g)).length,
+        };
+      })
+      .filter((group) => group.games.length > 0);
   }
 }

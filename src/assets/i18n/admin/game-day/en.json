@@ -17,6 +17,7 @@
     "viewGames": "By game",
     "loading": "Loading match reports …",
     "empty": "No games for this selection.",
+    "emptyTruncated": "No games for this selection. The list was truncated, so there may be further games outside the returned set — please narrow down the period.",
     "truncated": "A large number of games was found and the list was truncated. Please narrow down the period or the game operation.",
     "gameDayNumber": "Game day {{number}}",
     "host": "Host: {{name}}",

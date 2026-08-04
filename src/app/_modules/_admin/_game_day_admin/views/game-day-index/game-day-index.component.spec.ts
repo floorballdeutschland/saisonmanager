@@ -4,7 +4,7 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { GameDayReportRow } from '@floorball/types';
+import { GameDayReportRow, GameReportStatus } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { GameDayIndexComponent } from './game-day-index.component';
 
@@ -166,19 +166,36 @@ describe('GameDayIndexComponent', () => {
     expect(component.finalizingGameId).toBeNull();
   });
 
-  it('holt die Scan-URL erst beim Öffnen', () => {
-    const openSpy = spyOn(window, 'open');
+  it('öffnet den Tab synchron und füllt die Scan-URL nach', () => {
+    // Der Tab muss im Klick-Handler aufgehen, sonst greift der Popup-Blocker.
+    // Die URL steht erst nach dem Request fest und wird nachgereicht.
+    const tab = { location: { href: '' }, close: jasmine.createSpy('close') };
+    const openSpy = spyOn(window, 'open').and.returnValue(
+      tab as unknown as Window
+    );
+
     component.openScan(row({ id: 42 }));
+    expect(openSpy).toHaveBeenCalledWith('', '_blank', 'noopener');
 
     httpMock
       .expectOne(environment.apiURL + 'user/games/42/scan.json')
       .flush({ url: 'https://example.test/scan.pdf' });
 
-    expect(openSpy).toHaveBeenCalledWith(
-      'https://example.test/scan.pdf',
-      '_blank',
-      'noopener'
-    );
+    expect(tab.location.href).toBe('https://example.test/scan.pdf');
+    expect(tab.close).not.toHaveBeenCalled();
+    expect(component.scanLoadingGameId).toBeNull();
+  });
+
+  it('schließt den leeren Tab, wenn kein Scan vorliegt', () => {
+    const tab = { location: { href: '' }, close: jasmine.createSpy('close') };
+    spyOn(window, 'open').and.returnValue(tab as unknown as Window);
+
+    component.openScan(row({ id: 42 }));
+    httpMock
+      .expectOne(environment.apiURL + 'user/games/42/scan.json')
+      .flush(null);
+
+    expect(tab.close).toHaveBeenCalled();
     expect(component.scanLoadingGameId).toBeNull();
   });
 
@@ -198,5 +215,128 @@ describe('GameDayIndexComponent', () => {
   it('merkt sich die Kürzung der Serverantwort', () => {
     loadWith([row()], true);
     expect(component.truncated).toBeTrue();
+  });
+
+  it('zählt den vollständigen Spieltag, auch wenn der Statusfilter greift', () => {
+    // Sonst meldete ein Spieltag unter „Noch nicht abgeschlossen" stets 0/n.
+    component.filterStatus = 'open';
+    loadWith([
+      row({ id: 1, game_day_id: 100, game_status: 'finalized' }),
+      row({ id: 2, game_day_id: 100, game_status: 'finalized' }),
+      row({ id: 3, game_day_id: 100, game_status: 'aftergame' }),
+    ]);
+
+    const group = component.groups[0];
+    expect(group.totalCount).toBe(3);
+    expect(group.closedCount).toBe(2);
+    expect(group.games.map((g) => g.id)).toEqual([3]);
+  });
+
+  it('blendet Spieltage ohne passende Spiele aus', () => {
+    component.filterStatus = 'withComment';
+    loadWith([
+      row({ id: 1, game_day_id: 100, record_comment: 'Hinweis' }),
+      row({ id: 2, game_day_id: 200, record_comment: null }),
+    ]);
+
+    expect(component.groups.map((g) => g.gameDayId)).toEqual([100]);
+  });
+
+  it('lädt bei reiner Statusänderung nicht neu', () => {
+    component.filterSeasonId = '18';
+    loadWith([
+      row({ id: 1, game_status: 'finalized' }),
+      row({ id: 2, game_status: 'aftergame' }),
+    ]);
+
+    component.filterStatus = 'open';
+    component.applyFilter();
+    // httpMock.verify() in afterEach schlägt fehl, wenn doch ein Request rausging.
+    expect(component.rows.map((r) => r.id)).toEqual([2]);
+  });
+
+  it('entfernt die Zeile nach dem Abschließen aus dem Offen-Filter', () => {
+    component.filterStatus = 'open';
+    loadWith([row({ id: 1, game_status: 'match_record_closed' })]);
+    expect(component.rows.length).toBe(0);
+
+    component.filterStatus = '';
+    component.applyFilter();
+    const target = component.rows[0];
+    component.filterStatus = 'open';
+    component.applyFilter();
+    component.filterStatus = '';
+    component.applyFilter();
+
+    component.finalizeGame(target);
+    httpMock
+      .expectOne(environment.apiURL + 'user/games/1/game_status.json')
+      .flush({});
+
+    component.filterStatus = 'open';
+    component.applyFilter();
+    expect(component.rows.length).toBe(0);
+  });
+
+  it('setzt die Sperre nach einem Fehler beim Abschließen zurück', () => {
+    // Sonst blieben ALLE Abschließen-Knöpfe der Liste dauerhaft deaktiviert.
+    loadWith([row({ id: 1, game_status: 'match_record_closed' })]);
+
+    component.finalizeGame(component.rows[0]);
+    httpMock
+      .expectOne(environment.apiURL + 'user/games/1/game_status.json')
+      .flush(
+        { message: 'Schiedsrichter fehlt' },
+        { status: 422, statusText: 'Unprocessable' }
+      );
+
+    expect(component.finalizingGameId).toBeNull();
+    expect(component.rows[0].game_status).toBe('match_record_closed');
+  });
+
+  it('gibt den Scan-Knopf nach einem Fehler wieder frei', () => {
+    const tab = { location: { href: '' }, close: jasmine.createSpy('close') };
+    spyOn(window, 'open').and.returnValue(tab as unknown as Window);
+    component.openScan(row({ id: 42 }));
+    httpMock
+      .expectOne(environment.apiURL + 'user/games/42/scan.json')
+      .flush(null, { status: 500, statusText: 'Server Error' });
+
+    expect(component.scanLoadingGameId).toBeNull();
+  });
+
+  it('überlebt eine Zeile ohne flags-Objekt', () => {
+    // Der Server markiert nicht ladbare Zeilen ohne `flags`; ein Wurf hier würde
+    // den Ladevorgang stumm abbrechen und die Seite auf „lädt" stehen lassen.
+    const broken = { id: 9, game_day_id: 100 } as unknown as GameDayReportRow;
+    loadWith([broken]);
+
+    expect(component.loading).toBeFalse();
+    expect(component.hasFlags(broken)).toBeFalse();
+  });
+
+  it('kennt für jeden Status ein Label', () => {
+    for (const status of [
+      null,
+      'pregame',
+      'ingame',
+      'aftergame',
+      'match_record_closed',
+      'finalized',
+    ] as (GameReportStatus | null)[]) {
+      expect(component.statusLabel(status)).toBeTruthy();
+      expect(component.statusClass(status)).toContain('bg-');
+    }
+  });
+
+  it('paginiert über die gefilterten Zeilen', () => {
+    loadWith(
+      Array.from({ length: 26 }, (_, i) => row({ id: i + 1, game_day_id: i }))
+    );
+
+    expect(component.numberOfPages).toBe(2);
+    expect(component.pagedRows.length).toBe(25);
+    component.changePage(2);
+    expect(component.pagedRows.length).toBe(1);
   });
 });
