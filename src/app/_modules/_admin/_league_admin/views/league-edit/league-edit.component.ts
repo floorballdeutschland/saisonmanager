@@ -45,6 +45,10 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   loading$?: Observable<boolean>;
   permittedGameOperations: GameOperationWithLeagues[] = [];
   allLeagues: League[] = [];
+  // Auswahlliste der Referenzligen: alphabetisch und ohne die Liga, die gerade
+  // bearbeitet wird (die konnte man vorher zwar sehen, aber nicht wählen).
+  otherLeagues: League[] = [];
+  private _currentLeagueId: number | null = null;
   isBuliPermitted = false;
 
   private _destroy$ = new Subject<boolean>();
@@ -213,6 +217,7 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
         this.allLeagues = this.permittedGameOperations.flatMap(
           (go) => go.leagues ?? []
         );
+        this._refreshOtherLeagues();
 
         this._route.params.subscribe((params) => {
           if (params['leagueId']) {
@@ -239,6 +244,12 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  private _refreshOtherLeagues(): void {
+    this.otherLeagues = this.allLeagues
+      .filter((l) => l.id !== this._currentLeagueId)
+      .sort((a, b) => a.name.localeCompare(b.name, 'de'));
+  }
+
   public getLeague(id: string) {
     this.league$ = this._leagueService
       .getSingleLeague(parseInt(id))
@@ -250,6 +261,8 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           if (!league) {
             return;
           }
+          this._currentLeagueId = league.id ?? null;
+          this._refreshOtherLeagues();
         }),
         take(1),
         takeUntil(this._destroy$)

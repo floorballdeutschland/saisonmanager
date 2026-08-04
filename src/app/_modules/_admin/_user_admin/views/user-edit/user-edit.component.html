@@ -199,17 +199,13 @@
             </select>
           }
           @if (newRoleNeedsClub) {
-            <select
+            <fb-select-search
               [(ngModel)]="newRoleClubId"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
-            >
-              <option [ngValue]="null">
-                {{ "userAdmin.edit.selectClub" | transloco }}
-              </option>
-              @for (c of clubsWithTeams; track c) {
-                <option [ngValue]="c.id">{{ c.name }}</option>
-              }
-            </select>
+              [items]="clubs"
+              [placeholder]="'userAdmin.edit.selectClub' | transloco"
+              [resetLabel]="'userAdmin.edit.selectClub' | transloco"
+              class="min-w-64"
+            />
           }
           <button
             type="button"
@@ -271,20 +267,14 @@
         @if (isVm) {
           <span class="text-sm">{{ selectedClubName }}</span>
         } @else {
-          <select
+          <fb-select-search
             [(ngModel)]="selectedClubId"
             (ngModelChange)="onClubChange()"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm w-full mb-3"
-          >
-            <option [ngValue]="null">
-              {{ "userAdmin.edit.selectClub" | transloco }}
-            </option>
-            @for (c of clubsWithTeams; track c) {
-              <option [ngValue]="c.id">
-                {{ c.name }}
-              </option>
-            }
-          </select>
+            [items]="clubs"
+            [placeholder]="'userAdmin.edit.selectClub' | transloco"
+            [resetLabel]="'userAdmin.edit.selectClub' | transloco"
+            class="mb-3"
+          />
           <button
             type="button"
             (click)="saveClubAssignment()"

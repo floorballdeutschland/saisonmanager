@@ -90,14 +90,28 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
   }
 
   // Vereine, die noch nicht auf der Liste stehen und für die kein Antrag offen
-  // ist – nur die sind sinnvoll beantragbar.
+  // ist – nur die sind sinnvoll beantragbar. Bei unveränderter Auswahl wird die
+  // bisherige Liste zurückgegeben, damit das Suchfeld nicht bei jeder
+  // Change-Detection eine neue Referenz sieht.
   get selectableClubs(): ExclusionClub[] {
     const listed = new Set(
       (this.profile?.club_exclusions || []).map((e) => e.club_id)
     );
     const pending = new Set(this.openRequests.map((r) => r.club_id));
-    return this.clubs.filter((c) => !listed.has(c.id) && !pending.has(c.id));
+    const next = this.clubs.filter(
+      (c) => !listed.has(c.id) && !pending.has(c.id)
+    );
+    const cache = this._selectableClubsCache;
+    if (
+      next.length !== cache.length ||
+      next.some((c, i) => c.id !== cache[i].id)
+    ) {
+      this._selectableClubsCache = next;
+    }
+    return this._selectableClubsCache;
   }
+
+  private _selectableClubsCache: ExclusionClub[] = [];
 
   pendingFor(clubId: number): boolean {
     return this.openRequests.some((r) => r.club_id === clubId);

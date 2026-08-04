@@ -99,22 +99,17 @@
                       <label class="block text-sm font-bold mb-1">{{
                         "teamAdmin.index.sourceLeague" | transloco
                       }}</label>
-                      <select
+                      <fb-select-search
                         [(ngModel)]="importSourceLeagueId"
-                        class="w-full border border-fb-gray-600 rounded px-3 py-2 text-sm"
-                      >
-                        <option [ngValue]="null">
-                          {{ "teamAdmin.index.selectPlaceholder" | transloco }}
-                        </option>
-                        @for (l of allLeagues; track l) {
-                          <option [ngValue]="l.id">
-                            {{
-                              "teamAdmin.index.leagueOption"
-                                | transloco: { goName: l.goName, name: l.name }
-                            }}
-                          </option>
-                        }
-                      </select>
+                        [items]="allLeagues"
+                        hintKey="goName"
+                        [placeholder]="
+                          'teamAdmin.index.selectPlaceholder' | transloco
+                        "
+                        [resetLabel]="
+                          'teamAdmin.index.selectPlaceholder' | transloco
+                        "
+                      />
                     </div>
                     <div>
                       <label class="block text-sm font-bold mb-1">{{

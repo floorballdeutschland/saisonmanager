@@ -17,6 +17,7 @@ import {
   GameOperationService,
 } from '@floorball/core';
 import {
+  Club,
   ClubWithTeams,
   Team,
   UserAdminEntry,
@@ -40,6 +41,13 @@ export class UserEditComponent implements OnInit, OnDestroy {
   deleting = false;
   archiving = false;
 
+  // Quelle der Vereins-Dropdowns: auf den eigenen Zuständigkeitsbereich
+  // eingegrenzt. Nicht clubsWithTeams verwenden, das ist breiter gescopt als die
+  // Rollenvergabe erlaubt – ein regionaler SBK bekam dort Vereine angeboten, die
+  // apply_club_change in der API mit 403 ablehnt (analog Issue #137 in der
+  // Benutzeranlage).
+  clubs: Club[] = [];
+  // Nur noch für die Team-Auswahl (availableTeams) und deren Bereinigung.
   clubsWithTeams: ClubWithTeams[] = [];
   editableTeamIds: number[] = [];
   savingTeams = false;
@@ -127,8 +135,9 @@ export class UserEditComponent implements OnInit, OnDestroy {
           // Verein-Vorbelegung aus der Rollen-Berechtigung (VM/TM) statt aus der
           // ggf. abweichenden Spalte user.club_id – die Berechtigung ist die
           // Quelle der Wahrheit für den Verein. club_id kann dort als String
-          // vorliegen, daher auf number normalisieren, damit die Dropdown-Option
-          // (number) matcht und der Verein nicht fälschlich als "leer" erscheint.
+          // vorliegen, daher auf number normalisieren: das Suchfeld selbst
+          // vergleicht locker, die strikten Vergleiche in selectedClubName und
+          // availableTeams brauchen aber eine Zahl.
           const clubScopedRole = user.roles?.find((r) =>
             [4, 5].includes(r.user_group_id)
           );
@@ -153,6 +162,18 @@ export class UserEditComponent implements OnInit, OnDestroy {
             }
           );
           this._router.navigate(['/', 'verwaltung', 'benutzer']);
+        },
+      });
+
+    this._clubService
+      .getRoleAssignableClubs()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (clubs) => {
+          this.clubs = [...clubs].sort((a, b) =>
+            a.name.localeCompare(b.name, 'de')
+          );
+          this._cdr.markForCheck();
         },
       });
 
@@ -249,11 +270,15 @@ export class UserEditComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Anzeigename auch dann, wenn der zugewiesene Verein nicht in der
+  // zuweisbaren Liste steht (etwa ein deaktivierter Verein): dann greift die
+  // breitere Liste als Rückfall.
   get selectedClubName(): string {
     if (this.selectedClubId == null) return '–';
-    return (
-      this.clubsWithTeams.find((c) => c.id === this.selectedClubId)?.name ?? '–'
-    );
+    const match =
+      this.clubs.find((c) => c.id === this.selectedClubId) ??
+      this.clubsWithTeams.find((c) => c.id === this.selectedClubId);
+    return match?.name ?? '–';
   }
 
   get availableTeams(): Team[] {

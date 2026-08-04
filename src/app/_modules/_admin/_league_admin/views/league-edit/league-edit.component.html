@@ -435,20 +435,14 @@
                   {{ "leagueAdmin.edit.preroundLeague" | transloco }}
                 </div>
                 <div>
-                  <select
-                    class="w-full"
+                  <fb-select-search
                     name="league_id_preround"
                     [(ngModel)]="league.league_id_preround"
-                  >
-                    <option [ngValue]="null">
-                      {{ "leagueAdmin.edit.noPreround" | transloco }}
-                    </option>
-                    @for (l of allLeagues; track l) {
-                      <option [ngValue]="l.id" [disabled]="l.id === league.id">
-                        {{ l.name }}
-                      </option>
-                    }
-                  </select>
+                    [items]="otherLeagues"
+                    hintKey="game_operation_name"
+                    [placeholder]="'leagueAdmin.edit.noPreround' | transloco"
+                    [resetLabel]="'leagueAdmin.edit.noPreround' | transloco"
+                  />
                   <p class="text-xs text-gray-500 mt-1">
                     {{ "leagueAdmin.edit.preroundLeagueHint" | transloco }}
                   </p>
@@ -487,20 +481,14 @@
                   {{ "leagueAdmin.edit.directEncountersTransfer" | transloco }}
                 </div>
                 <div>
-                  <select
-                    class="w-full"
+                  <fb-select-search
                     name="league_id_direct_encounters"
                     [(ngModel)]="league.league_id_direct_encounters"
-                  >
-                    <option [ngValue]="null">
-                      {{ "leagueAdmin.edit.none" | transloco }}
-                    </option>
-                    @for (l of allLeagues; track l) {
-                      <option [ngValue]="l.id" [disabled]="l.id === league.id">
-                        {{ l.name }}
-                      </option>
-                    }
-                  </select>
+                    [items]="otherLeagues"
+                    hintKey="game_operation_name"
+                    [placeholder]="'leagueAdmin.edit.none' | transloco"
+                    [resetLabel]="'leagueAdmin.edit.none' | transloco"
+                  />
                   <p class="text-xs text-gray-500 mt-1">
                     {{ "leagueAdmin.edit.directEncountersHint" | transloco }}
                   </p>
@@ -631,22 +619,13 @@
                       }}</span>
                     </div>
                     <div>
-                      <select
-                        class="w-full"
+                      <fb-select-search
                         [(ngModel)]="newQual.target_league_id"
-                      >
-                        <option [ngValue]="null">
-                          {{ "leagueAdmin.edit.none" | transloco }}
-                        </option>
-                        @for (l of allLeagues; track l) {
-                          <option
-                            [ngValue]="l.id"
-                            [disabled]="l.id === league.id"
-                          >
-                            {{ l.name }}
-                          </option>
-                        }
-                      </select>
+                        [items]="otherLeagues"
+                        hintKey="game_operation_name"
+                        [placeholder]="'leagueAdmin.edit.none' | transloco"
+                        [resetLabel]="'leagueAdmin.edit.none' | transloco"
+                      />
                     </div>
                     <div></div>
                     <div>

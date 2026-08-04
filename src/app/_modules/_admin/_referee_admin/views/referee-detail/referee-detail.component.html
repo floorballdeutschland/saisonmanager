@@ -283,17 +283,13 @@
           <div
             class="flex flex-col gap-2 border border-fb-gray-600 rounded-[5px] p-3"
           >
-            <select
+            <fb-select-search
               [(ngModel)]="newExclusion.club_id"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
-            >
-              <option [ngValue]="null">
-                {{ "refereeAdmin.detail.exclusionClubPlaceholder" | transloco }}
-              </option>
-              @for (club of selectableExclusionClubs; track club.id) {
-                <option [ngValue]="club.id">{{ club.name }}</option>
-              }
-            </select>
+              [items]="selectableExclusionClubs"
+              [placeholder]="
+                'refereeAdmin.detail.exclusionClubPlaceholder' | transloco
+              "
+            />
             <input
               type="text"
               maxlength="120"

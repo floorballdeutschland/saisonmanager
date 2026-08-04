@@ -3,6 +3,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnInit,
   Output,
   ChangeDetectionStrategy,
@@ -20,6 +21,7 @@ import {
   GameService,
   NotificationService,
 } from '@floorball/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { switchMap } from 'rxjs/operators';
 
 @Component({
@@ -29,7 +31,7 @@ import { switchMap } from 'rxjs/operators';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
-export class GameEditComponent implements OnInit {
+export class GameEditComponent implements OnInit, OnChanges {
   @Input()
   first!: boolean;
 
@@ -41,6 +43,9 @@ export class GameEditComponent implements OnInit {
 
   @Input()
   teams!: Team[];
+
+  gameDayOptions: { id: number | undefined; label: string }[] = [];
+  dependencyGameOptions: { id: number | undefined; label: string }[] = [];
 
   @Input()
   gameDayId!: number;
@@ -84,6 +89,7 @@ export class GameEditComponent implements OnInit {
   constructor(
     private _gameService: GameService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {
     this.newGame();
@@ -93,6 +99,45 @@ export class GameEditComponent implements OnInit {
     if (this.existingGame) {
       this.resetGame();
     }
+    this._refreshSelectOptions();
+  }
+
+  ngOnChanges(): void {
+    this._refreshSelectOptions();
+  }
+
+  // Spieltage und Bezugsspiele tragen zusammengesetzte Beschriftungen, die das
+  // Suchfeld nicht selbst bilden kann. Einmal je Eingabe-Aenderung berechnet,
+  // nicht als Getter: ein neues Array pro Change-Detection wuerde die
+  // Trefferliste bei jedem Durchlauf neu aufbauen.
+  private _refreshSelectOptions(): void {
+    const dayLabel = this._transloco.translate(
+      'scheduleAdmin.gameEdit.gameDay'
+    );
+    this.gameDayOptions = (this.allGameDays ?? []).map((day) => ({
+      id: day.id,
+      label: day.date
+        ? `${dayLabel} ${day.number} – ${day.date}`
+        : `${dayLabel} ${day.number}`,
+    }));
+
+    const gameLabel = this._transloco.translate(
+      'scheduleAdmin.gameEdit.gameFallback'
+    );
+    this.dependencyGameOptions = (this.allGameDays ?? [])
+      .flatMap((day) => day.games ?? [])
+      .filter((g) => g.id !== this.game.id)
+      .map((g) => {
+        const series = g.series_title || gameLabel;
+        const number =
+          g.series_title && g.series_number ? ` ${g.series_number}` : '';
+        return {
+          id: g.id,
+          label:
+            `${series}${number} Nr.${g.game_number}, ` +
+            `(${g.home_team_name} - ${g.guest_team_name}), #${g.id}`,
+        };
+      });
   }
 
   public resetGame() {
