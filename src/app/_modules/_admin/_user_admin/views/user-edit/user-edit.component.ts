@@ -17,6 +17,7 @@ import {
   GameOperationService,
 } from '@floorball/core';
 import {
+  Club,
   ClubWithTeams,
   Team,
   UserAdminEntry,
@@ -24,6 +25,10 @@ import {
   User,
   GameOperation,
 } from '@floorball/types';
+import {
+  ROLE_PERMISSION_FLAG,
+  hasAssignRoleFlags,
+} from '../../role-permission-flags';
 
 @Component({
   templateUrl: './user-edit.component.html',
@@ -40,6 +45,13 @@ export class UserEditComponent implements OnInit, OnDestroy {
   deleting = false;
   archiving = false;
 
+  // Quelle der Vereins-Dropdowns: auf den eigenen Zuständigkeitsbereich
+  // eingegrenzt. Nicht clubsWithTeams verwenden, das ist breiter gescopt als die
+  // Rollenvergabe erlaubt – ein regionaler SBK bekam dort Vereine angeboten, die
+  // apply_club_change in der API mit 403 ablehnt (analog Issue #137 in der
+  // Benutzeranlage).
+  clubs: Club[] = [];
+  // Nur noch für die Team-Auswahl (availableTeams) und deren Bereinigung.
   clubsWithTeams: ClubWithTeams[] = [];
   editableTeamIds: number[] = [];
   savingTeams = false;
@@ -49,7 +61,9 @@ export class UserEditComponent implements OnInit, OnDestroy {
   selectedClubId: number | null = null;
   savingAssignment = false;
 
-  // Mehrfachrollen-Verwaltung (nur Admin). Admin-Rolle (1) wird hier bewusst nicht angeboten.
+  // Mehrfachrollen-Verwaltung (Admin, SBK und RSK im Rahmen ihres Scopes,
+  // siehe availableRoleOptions). Die Admin-Rolle (1) wird hier bewusst nie
+  // angeboten.
   readonly roleOptions = [
     {
       id: 2,
@@ -127,8 +141,9 @@ export class UserEditComponent implements OnInit, OnDestroy {
           // Verein-Vorbelegung aus der Rollen-Berechtigung (VM/TM) statt aus der
           // ggf. abweichenden Spalte user.club_id – die Berechtigung ist die
           // Quelle der Wahrheit für den Verein. club_id kann dort als String
-          // vorliegen, daher auf number normalisieren, damit die Dropdown-Option
-          // (number) matcht und der Verein nicht fälschlich als "leer" erscheint.
+          // vorliegen, daher auf number normalisieren: das Suchfeld selbst
+          // vergleicht locker, die strikten Vergleiche in selectedClubName und
+          // availableTeams brauchen aber eine Zahl.
           const clubScopedRole = user.roles?.find((r) =>
             [4, 5].includes(r.user_group_id)
           );
@@ -153,6 +168,18 @@ export class UserEditComponent implements OnInit, OnDestroy {
             }
           );
           this._router.navigate(['/', 'verwaltung', 'benutzer']);
+        },
+      });
+
+    this._clubService
+      .getRoleAssignableClubs()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (clubs) => {
+          this.clubs = [...clubs].sort((a, b) =>
+            a.name.localeCompare(b.name, 'de')
+          );
+          this._cdr.markForCheck();
         },
       });
 
@@ -183,8 +210,23 @@ export class UserEditComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  // Zugang zur Benutzerverwaltung: Admin, SBK und (seit der eigenen
+  // Rollenvergabe) RSK. Was davon jemand tatsächlich zuweisen darf, sagen die
+  // assign_role_*-Flags, nicht dieser Schalter.
   get isAdminOrSbk(): boolean {
     return !!this.currentUser?.permissions['menu_item_user_admin'];
+  }
+
+  // Vereinsgebundene Zuweisungen (Vereinswechsel, Tausch VM ↔ TM) darf nur, wer
+  // diese Rollen auch vergeben darf: Eine reine RSK sieht die VM-/TM-Konten
+  // ihres Verbands, der Server lehnt Änderungen daran aber ab.
+  get canAssignClubRoles(): boolean {
+    const permissions = this.currentUser?.permissions;
+    if (!permissions) return false;
+    // Sitzung von vor dem Rollout: Flags fehlen im localStorage, dann wie bisher.
+    if (!('assign_role_vm' in permissions)) return this.isAdminOrSbk;
+
+    return !!permissions['assign_role_vm'] && !!permissions['assign_role_tm'];
   }
 
   get canDelete(): boolean {
@@ -230,7 +272,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
     return (
       !this.isSelf &&
       this.currentRoleId !== null &&
-      (this.isAdminOrSbk || this.isVm)
+      (this.canAssignClubRoles || this.isVm)
     );
   }
 
@@ -242,18 +284,22 @@ export class UserEditComponent implements OnInit, OnDestroy {
   get showClubAssignment(): boolean {
     const roleId = this.userPrimaryRoleId;
     return (
-      (this.isAdminOrSbk || this.isVm) &&
+      (this.canAssignClubRoles || this.isVm) &&
       !this.isSelf &&
       roleId !== null &&
       [4, 5].includes(roleId)
     );
   }
 
+  // Anzeigename auch dann, wenn der zugewiesene Verein nicht in der
+  // zuweisbaren Liste steht (etwa ein deaktivierter Verein): dann greift die
+  // breitere Liste als Rückfall.
   get selectedClubName(): string {
     if (this.selectedClubId == null) return '–';
-    return (
-      this.clubsWithTeams.find((c) => c.id === this.selectedClubId)?.name ?? '–'
-    );
+    const match =
+      this.clubs.find((c) => c.id === this.selectedClubId) ??
+      this.clubsWithTeams.find((c) => c.id === this.selectedClubId);
+    return match?.name ?? '–';
   }
 
   get availableTeams(): Team[] {
@@ -315,6 +361,34 @@ export class UserEditComponent implements OnInit, OnDestroy {
 
   get canManageRoles(): boolean {
     return !!this.currentUser?.permissions['manage_user_roles'] && !this.isSelf;
+  }
+
+  // Weitere Rollen kann ein Schiedsrichter-Konto nicht bekommen, der Server
+  // lehnt sie ab (User#referee_role_not_combined). Nur das Hinzufügen entfällt:
+  // Die Rollenliste mit ihren Entfernen-Schaltflächen bleibt sichtbar, weil ein
+  // Altkonto mit dieser Kombination genau darüber in Ordnung gebracht wird.
+  get canAddRole(): boolean {
+    return this.canManageRoles && !this.isRefereeAccount;
+  }
+
+  // Konto der Schiedsrichter-Selbstverwaltung (Rolle 6).
+  get isRefereeAccount(): boolean {
+    return !!this.user?.roles?.some((r) => r.user_group_id === 6);
+  }
+
+  // Rollen, die das angemeldete Konto vergeben darf. Quelle sind die
+  // assign_role_*-Flags der API (User::ASSIGNABLE_ROLE_IDS), nicht eine eigene
+  // Rollenlogik; der Server prüft dieselbe Tabelle beim Speichern. Sitzungen von
+  // vor diesem Rollout tragen die Flags nicht im localStorage – dort bleibt es
+  // beim bisherigen Verhalten (Admin sieht alles), bis zur nächsten Anmeldung.
+  get availableRoleOptions(): typeof this.roleOptions {
+    const permissions = this.currentUser?.permissions;
+    if (!permissions) return [];
+    if (!hasAssignRoleFlags(permissions)) return this.roleOptions;
+
+    return this.roleOptions.filter(
+      (opt) => !!permissions[ROLE_PERMISSION_FLAG[opt.id]]
+    );
   }
 
   get newRoleNeedsGo(): boolean {

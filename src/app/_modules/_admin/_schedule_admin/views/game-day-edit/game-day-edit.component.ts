@@ -31,6 +31,12 @@ export class GameDayEditComponent implements OnInit {
   public areans: Arena[] = [];
   public clubs: Club[] = [];
 
+  // Hallen tragen ihren Anzeigenamen in schedule_item oder name; für das
+  // Suchfeld werden beide zu einem Label verschmolzen. Einmal beim Laden
+  // gefüllt, nicht als Getter: ein neues Array pro Change-Detection würde die
+  // Trefferliste des Suchfelds bei jedem Durchlauf neu aufbauen.
+  public arenaOptions: { id: number; label: string }[] = [];
+
   public useAllClubs = false;
   public allClubs: Club[] = [];
   public allClubsLoading = false;
@@ -61,8 +67,20 @@ export class GameDayEditComponent implements OnInit {
           .getAdminLeagueAdditionalReferences(params['leagueId'])
           .subscribe({
             next: (result) => {
-              this.clubs = result.clubs;
+              this.clubs = [...result.clubs].sort((a, b) =>
+                a.name.localeCompare(b.name, 'de')
+              );
               this.areans = result.arenas;
+              // `?? ''` ist Pflicht, nicht Kosmetik: Altbestand ohne Namen und
+              // ohne schedule_item hätte hier ein null-Label erzeugt und den
+              // localeCompare-Vergleich geworfen – damit wäre die komplette
+              // Spielort-Auswahl leer geblieben.
+              this.arenaOptions = result.arenas
+                .map((arena) => ({
+                  id: arena.id,
+                  label: arena.schedule_item || arena.name || '',
+                }))
+                .sort((a, b) => a.label.localeCompare(b.label, 'de'));
               if (this.clubs.length === 0) {
                 this.enableAllClubs();
               } else {

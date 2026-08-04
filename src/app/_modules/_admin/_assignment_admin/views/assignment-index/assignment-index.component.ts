@@ -131,7 +131,9 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (clubs) => {
-          this.clubs = clubs;
+          this.clubs = [...clubs].sort((a, b) =>
+            a.name.localeCompare(b.name, 'de')
+          );
           this._cdr.markForCheck();
         },
         error: () => {

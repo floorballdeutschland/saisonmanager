@@ -101,20 +101,13 @@
                   {{ "clubAdmin.edit.stateAssociation" | transloco }}
                 </div>
                 <div>
-                  <select
+                  <fb-select-search
                     name="state_association_id"
                     [(ngModel)]="club.state_association_id"
-                    class="w-full"
-                  >
-                    <option [ngValue]="null">
-                      {{ "clubAdmin.edit.pleaseSelect" | transloco }}
-                    </option>
-                    @for (sa of leafStateAssociations; track sa) {
-                      <option [ngValue]="sa.id">
-                        {{ sa.name }}
-                      </option>
-                    }
-                  </select>
+                    [items]="leafStateAssociations"
+                    [placeholder]="'clubAdmin.edit.pleaseSelect' | transloco"
+                    [resetLabel]="'clubAdmin.edit.pleaseSelect' | transloco"
+                  />
                 </div>
                 <div class="font-bold">
                   {{ "clubAdmin.edit.contactEmail" | transloco }}

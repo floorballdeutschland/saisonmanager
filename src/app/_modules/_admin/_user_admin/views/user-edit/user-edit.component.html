@@ -137,7 +137,7 @@
         </div>
       </div>
     }
-    <!-- Mehrfachrollen verwalten (nur Admin) -->
+    <!-- Mehrfachrollen verwalten (Admin, SBK und RSK im eigenen Scope) -->
     @if (canManageRoles) {
       <div class="border-t border-fb-gray-200 pt-6 mb-6">
         <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
@@ -173,53 +173,53 @@
             </li>
           }
         </ul>
-        <div class="flex flex-wrap items-end gap-2">
-          <select
-            [(ngModel)]="newRoleId"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
-          >
-            <option [ngValue]="null">
-              {{ "userAdmin.edit.selectRole" | transloco }}
-            </option>
-            @for (opt of roleOptions; track opt.id) {
-              <option [ngValue]="opt.id">{{ opt.labelKey | transloco }}</option>
+        @if (canAddRole) {
+          <div class="flex flex-wrap items-end gap-2">
+            <select
+              [(ngModel)]="newRoleId"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+            >
+              <option [ngValue]="null">
+                {{ "userAdmin.edit.selectRole" | transloco }}
+              </option>
+              @for (opt of availableRoleOptions; track opt.id) {
+                <option [ngValue]="opt.id">
+                  {{ opt.labelKey | transloco }}
+                </option>
+              }
+            </select>
+            @if (newRoleNeedsGo) {
+              <select
+                [(ngModel)]="newRoleGoId"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+              >
+                <option [ngValue]="null">
+                  {{ "userAdmin.edit.selectGameOperation" | transloco }}
+                </option>
+                @for (go of gameOperations; track go) {
+                  <option [ngValue]="go.id">{{ go.name }}</option>
+                }
+              </select>
             }
-          </select>
-          @if (newRoleNeedsGo) {
-            <select
-              [(ngModel)]="newRoleGoId"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+            @if (newRoleNeedsClub) {
+              <fb-select-search
+                [(ngModel)]="newRoleClubId"
+                [items]="clubs"
+                [placeholder]="'userAdmin.edit.selectClub' | transloco"
+                [resetLabel]="'userAdmin.edit.selectClub' | transloco"
+                class="min-w-64"
+              />
+            }
+            <button
+              type="button"
+              (click)="addRole()"
+              [disabled]="!canSubmitNewRole"
+              class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
             >
-              <option [ngValue]="null">
-                {{ "userAdmin.edit.selectGameOperation" | transloco }}
-              </option>
-              @for (go of gameOperations; track go) {
-                <option [ngValue]="go.id">{{ go.name }}</option>
-              }
-            </select>
-          }
-          @if (newRoleNeedsClub) {
-            <select
-              [(ngModel)]="newRoleClubId"
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
-            >
-              <option [ngValue]="null">
-                {{ "userAdmin.edit.selectClub" | transloco }}
-              </option>
-              @for (c of clubsWithTeams; track c) {
-                <option [ngValue]="c.id">{{ c.name }}</option>
-              }
-            </select>
-          }
-          <button
-            type="button"
-            (click)="addRole()"
-            [disabled]="!canSubmitNewRole"
-            class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
-          >
-            {{ "userAdmin.edit.addRole" | transloco }}
-          </button>
-        </div>
+              {{ "userAdmin.edit.addRole" | transloco }}
+            </button>
+          </div>
+        }
       </div>
     }
     <!-- Verbund-Zuweisung (für SBK/RSK-Nutzer) -->
@@ -271,20 +271,14 @@
         @if (isVm) {
           <span class="text-sm">{{ selectedClubName }}</span>
         } @else {
-          <select
+          <fb-select-search
             [(ngModel)]="selectedClubId"
             (ngModelChange)="onClubChange()"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm w-full mb-3"
-          >
-            <option [ngValue]="null">
-              {{ "userAdmin.edit.selectClub" | transloco }}
-            </option>
-            @for (c of clubsWithTeams; track c) {
-              <option [ngValue]="c.id">
-                {{ c.name }}
-              </option>
-            }
-          </select>
+            [items]="clubs"
+            [placeholder]="'userAdmin.edit.selectClub' | transloco"
+            [resetLabel]="'userAdmin.edit.selectClub' | transloco"
+            class="mb-3"
+          />
           <button
             type="button"
             (click)="saveClubAssignment()"

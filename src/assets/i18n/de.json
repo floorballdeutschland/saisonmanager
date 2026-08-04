@@ -9,7 +9,8 @@
     "close": "Schließen",
     "loading": "Laden …",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "noResults": "Keine Treffer"
   },
   "language": {
     "label": "Sprache",
@@ -33,8 +34,9 @@
     "leagueAdmin": "Ligaverwaltung",
     "licenseLists": "Lizenzlisten",
     "licenseAdmin": "Lizenzverwaltung",
-    "licenseClubAdmin": "Lizenzverwaltung",
+    "licenseClubAdmin": "Meine Lizenzen",
     "documentTypeAdmin": "Dokumentarten",
+    "matchReportAdmin": "Spielberichte",
     "playerSearch": "Spielersuche",
     "myPlayers": "Meine Spieler*innen",
     "myTeamGameDays": "Meine Auswärtsspieltage",

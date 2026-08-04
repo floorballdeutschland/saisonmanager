@@ -123,6 +123,15 @@ export const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/match-report').then(
+            (m) => m.AdminMatchReportModule
+          ),
+        canActivate: [permissionGuard],
+        data: { permission: 'menu_item_match_report_admin' },
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/availability').then(
             (m) => m.AdminAvailabilityModule
           ),

@@ -287,28 +287,22 @@
                           ) | transloco
                         }}</label>
                         @if (changeRequestType === "merge") {
-                          <select
+                          <fb-select-search
                             [(ngModel)]="mergeSecondaryId"
-                            class="w-full"
                             [disabled]="mergeLoadingPlayers"
-                          >
-                            <option [ngValue]="''">
-                              {{
-                                mergeLoadingPlayers
-                                  ? ("playerAdmin.edit.mergeLoading"
-                                    | transloco)
-                                  : ("playerAdmin.edit.pleaseSelectEllipsis"
-                                    | transloco)
-                              }}
-                            </option>
-                            @for (p of mergeClubPlayers; track p.id) {
-                              <option [ngValue]="p.id">
-                                {{ p.last_name }}, {{ p.first_name }} ({{
-                                  p.birthdate | date: "dd.MM.yyyy"
-                                }})
-                              </option>
-                            }
-                          </select>
+                            [items]="mergePlayerOptions"
+                            labelKey="label"
+                            [placeholder]="
+                              (mergeLoadingPlayers
+                                ? 'playerAdmin.edit.mergeLoading'
+                                : 'playerAdmin.edit.pleaseSelectEllipsis'
+                              ) | transloco
+                            "
+                            [resetLabel]="
+                              'playerAdmin.edit.pleaseSelectEllipsis'
+                                | transloco
+                            "
+                          />
                         }
                         @if (changeRequestType === "birthdate") {
                           <input
@@ -758,20 +752,12 @@
                   {{ "playerAdmin.edit.newRelease" | transloco }}
                 </div>
                 <div class="grid grid-cols-1 gap-4">
-                  <select [(ngModel)]="additionalClubId">
-                    <option value="0">
-                      {{ "playerAdmin.edit.selectClub" | transloco }}
-                    </option>
-                    @for (club of allClubs; track club) {
-                      @if (
-                        !isAdditionalClubActive(club.id) && !isHomeClub(club.id)
-                      ) {
-                        <option [value]="club.id">
-                          {{ club.name }}
-                        </option>
-                      }
-                    }
-                  </select>
+                  <fb-select-search
+                    [(ngModel)]="additionalClubId"
+                    [items]="assignableClubs"
+                    [placeholder]="'playerAdmin.edit.selectClub' | transloco"
+                    [resetLabel]="'playerAdmin.edit.selectClub' | transloco"
+                  />
                   <div>
                     <a
                       class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"

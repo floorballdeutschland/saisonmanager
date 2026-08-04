@@ -11,6 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { ArenaService, NotificationService } from '@floorball/core';
 import { Arena } from '@floorball/types';
+import { arenaMatchesTerm } from '../../arena-search';
 
 @Component({
   templateUrl: './arena-merge.component.html',
@@ -71,12 +72,7 @@ export class ArenaMergeComponent implements OnInit, OnDestroy {
     const term = this.searchTerm.toLowerCase().trim();
     return this.arenas
       .filter((a) => a.id !== this.master?.id)
-      .filter(
-        (a) =>
-          !term ||
-          a.name.toLowerCase().includes(term) ||
-          (a.city ?? '').toLowerCase().includes(term)
-      );
+      .filter((a) => arenaMatchesTerm(a, term));
   }
 
   selectSecondary(arena: Arena): void {

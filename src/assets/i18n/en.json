@@ -9,7 +9,8 @@
     "close": "Close",
     "loading": "Loading …",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "noResults": "No matches"
   },
   "language": {
     "label": "Language",
@@ -33,8 +34,9 @@
     "leagueAdmin": "League administration",
     "licenseLists": "License lists",
     "licenseAdmin": "License administration",
-    "licenseClubAdmin": "License administration",
+    "licenseClubAdmin": "My licenses",
     "documentTypeAdmin": "Document types",
+    "matchReportAdmin": "Match reports",
     "playerSearch": "Player search",
     "myPlayers": "My players",
     "myTeamGameDays": "My away match days",

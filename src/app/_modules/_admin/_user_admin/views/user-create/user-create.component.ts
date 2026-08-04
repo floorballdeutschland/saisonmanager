@@ -11,7 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
   ClubService,
-  AssociationService,
+  GameOperationService,
   UserManagementService,
   NotificationService,
   SessionService,
@@ -23,6 +23,11 @@ import {
   Team,
   User,
 } from '@floorball/types';
+
+import {
+  ROLE_PERMISSION_FLAG,
+  hasAssignRoleFlags,
+} from '../../role-permission-flags';
 
 interface RoleOption {
   id: number;
@@ -113,7 +118,7 @@ export class UserCreateComponent implements OnInit, OnDestroy {
   constructor(
     private _userService: UserManagementService,
     private _clubService: ClubService,
-    private _associationService: AssociationService,
+    private _gameOperationService: GameOperationService,
     private _notificationService: NotificationService,
     private _sessionService: SessionService,
     private _transloco: TranslocoService,
@@ -128,6 +133,12 @@ export class UserCreateComponent implements OnInit, OnDestroy {
         this.currentUser = user;
         if (this.isVm) {
           this.selectedRoleId = 5;
+        } else if (!this.canAssignRole(this.selectedRoleId)) {
+          // Die Vorauswahl (VM) darf nicht jede Rolle vergeben: Eine RSK sähe
+          // sonst eine Rolle vorausgewählt, die das Auswahlfeld nicht anbietet
+          // und die der Server ablehnt.
+          this.selectedRoleId =
+            this.availableRoles[0]?.id ?? this.selectedRoleId;
         }
         this._cdr.markForCheck();
       });
@@ -166,10 +177,20 @@ export class UserCreateComponent implements OnInit, OnDestroy {
         },
       });
 
-    this._associationService.associations$
+    // Verbunds-Dropdown aus derselben Quelle wie die Berechtigungsprüfung des
+    // Servers (eigene Spielbetriebe, für global gescopte Konten alle). Die
+    // öffentliche Verbandsliste aus init.json bot jedem alle Verbände an, auch
+    // die, für die das Speichern scheitert.
+    this._gameOperationService
+      .getAdminGameOperations()
       .pipe(takeUntil(this._destroy$))
       .subscribe((gos) => {
-        this.gameOperations = gos;
+        this.gameOperations = [...gos].sort((a, b) =>
+          a.name.localeCompare(b.name, 'de')
+        );
+        if (this.gameOperations.length === 1) {
+          this.selectedGoId = this.gameOperations[0].id;
+        }
         this._cdr.markForCheck();
       });
   }
@@ -190,9 +211,23 @@ export class UserCreateComponent implements OnInit, OnDestroy {
   }
 
   get availableRoles(): RoleOption[] {
-    if (this.isAdmin) return this.allRoles;
-    if (this.isVm) return this.allRoles.filter((r) => r.id === 4 || r.id === 5);
-    return this.allRoles.filter((r) => r.id === 4 || r.id === 5);
+    return this.allRoles.filter((r) => this.canAssignRole(r.id));
+  }
+
+  canAssignRole(roleId: number): boolean {
+    const permissions = this.currentUser?.permissions;
+    if (!permissions) return false;
+
+    // Sitzungen, die vor diesem Rollout angemeldet wurden, tragen die
+    // assign_role_*-Flags nicht im localStorage (die Berechtigungen werden dort
+    // beim Login abgelegt). Ohne diesen Rückfall wäre die Rollenauswahl für alle
+    // leer, bis sich jede Person einmal neu anmeldet.
+    if (!hasAssignRoleFlags(permissions)) {
+      return this.isAdmin || roleId === 4 || roleId === 5;
+    }
+
+    const flag = ROLE_PERMISSION_FLAG[roleId];
+    return !!flag && !!permissions[flag];
   }
 
   get availableTeams(): Team[] {

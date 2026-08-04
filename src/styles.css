@@ -24,6 +24,12 @@ body {
   @apply font-helvetica;
 }
 
+/* Damit sich <fb-select-search> in Formularen wie das ersetzte <select>
+   verhält (Breite des Containers statt inline). */
+fb-select-search {
+  @apply block;
+}
+
 .ranking-table {
   @apply relative;
 
