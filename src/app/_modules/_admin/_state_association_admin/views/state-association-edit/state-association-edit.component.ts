@@ -49,6 +49,9 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
   editingQuestion = '';
 
   releases: StateAssociationRelease[] = [];
+
+  // Gespeicherter Stand von parent_id, Referenz für showInheritedValues.
+  private _persistedParentId: number | null | undefined;
   // Mögliche Empfänger-Sportverbünde (alle außer den eigenen des LV) – vom
   // dedizierten releases#candidates-Endpoint, erst im Bearbeitungsmodus geladen.
   releaseCandidates: GameOperation[] = [];
@@ -104,6 +107,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (sa) => {
             this.stateAssociation = { ...sa };
+            this._persistedParentId = sa.parent_id ?? null;
             this.checklistItems = sa.checklist_items ?? [];
             this.releases = sa.releases ?? [];
             this._cdr.markForCheck();
@@ -136,12 +140,56 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     return !!this.stateAssociation.children?.length;
   }
 
-  get parent(): StateAssociation | undefined {
-    return this.allStateAssociations.find(
-      (sa) => sa.id === this.stateAssociation.parent_id
+  // Die effective_*-Werte berechnet der Server aus dem *gespeicherten*
+  // parent_id. Das Dropdown lässt sich aber sofort umstellen, deshalb geerbte
+  // Werte nur zeigen, solange die Auswahl dem gespeicherten Stand entspricht.
+  // Sonst stünde der Wert des alten Verbunds unter dem Namen des neuen, beim
+  // Neuanlegen gar keiner.
+  get showInheritedValues(): boolean {
+    return (
+      this.hasParent &&
+      this.stateAssociation.parent_id === this._persistedParentId
     );
   }
 
+  get inheritedPending(): boolean {
+    return this.hasParent && !this.showInheritedValues;
+  }
+
+  // Platzhalter der drei Postfach-Felder: eigener Hinweistext ohne Verbund,
+  // sonst der geerbte Wert. Solange die Verbundsauswahl noch nicht gespeichert
+  // ist, bleibt er leer statt „nicht gesetzt" zu behaupten.
+  mailboxPlaceholder(field: 'vsk' | 'sbk' | 'rsk'): string {
+    if (!this.hasParent) {
+      return this._transloco.translate(
+        `stateAssociationAdmin.edit.${field}EmailPlaceholder`
+      );
+    }
+    if (!this.showInheritedValues) return '';
+
+    return (
+      this._effectiveMailbox(field) ||
+      this._transloco.translate(
+        'stateAssociationAdmin.edit.inheritedPlaceholder'
+      )
+    );
+  }
+
+  private _effectiveMailbox(field: 'vsk' | 'sbk' | 'rsk'): string | null {
+    switch (field) {
+      case 'vsk':
+        return this.stateAssociation.effective_vsk_email ?? null;
+      case 'sbk':
+        return this.stateAssociation.effective_sbk_email ?? null;
+      default:
+        return this.stateAssociation.effective_rsk_email ?? null;
+    }
+  }
+
+  // Kein parent-Getter mehr: Der Listen-Endpunkt liefert nur short_hash (ohne
+  // Postfächer und Flags) und für einen regionalen SBK ohnehin nur die eigenen
+  // Landesverbände, nicht den übergeordneten Verbund. Name und geerbte Werte
+  // kommen deshalb aus dem Detail-Datensatz (parent_name, effective_*).
   get rootStateAssociations(): StateAssociation[] {
     return this.allStateAssociations.filter(
       (sa) => !sa.parent_id && sa.id !== this.stateAssociation.id
@@ -160,9 +208,12 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       vsk_email: this.hasParent ? null : this.stateAssociation.vsk_email,
       sbk_email: this.hasParent ? null : this.stateAssociation.sbk_email,
       rsk_email: this.hasParent ? null : this.stateAssociation.rsk_email,
-      express_license_enabled: this.hasParent
-        ? false
-        : this.stateAssociation.express_license_enabled,
+      // Nicht für Kind-LVs auf false zwingen: effective_express_license_enabled
+      // ist `eigener Wert ODER Parent`, der eigene Wert bleibt also wirksam. Das
+      // Feld ist bei gesetztem Verbund gesperrt, gesendet wird der geladene
+      // Wert, damit ein Speichern ihn nicht stillschweigend löscht.
+      express_license_enabled:
+        this.stateAssociation.express_license_enabled ?? false,
       // Pro-Spielbetrieb wirksam (Game#state_association liest den LV des
       // Spielbetriebs, nicht den des Vereins) → auch ein Kind-LV muss den Wert
       // für seine eigenen Spielbetriebe setzen können.

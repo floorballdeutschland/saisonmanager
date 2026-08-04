@@ -84,7 +84,7 @@
           class="text-xs text-fb-gray-400"
           [innerHTML]="
             'stateAssociationAdmin.edit.parentInheritedHint'
-              | transloco: { name: parent?.name }
+              | transloco: { name: stateAssociation.parent_name }
           "
         >
         </span>
@@ -109,13 +109,7 @@
             [(ngModel)]="stateAssociation.vsk_email"
             name="vsk_email"
             [disabled]="hasParent"
-            [placeholder]="
-              hasParent
-                ? stateAssociation.effective_vsk_email ||
-                  ('stateAssociationAdmin.edit.inheritedPlaceholder'
-                    | transloco)
-                : ('stateAssociationAdmin.edit.vskEmailPlaceholder' | transloco)
-            "
+            [placeholder]="mailboxPlaceholder('vsk')"
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
           />
           @if (!hasParent) {
@@ -123,19 +117,24 @@
               "stateAssociationAdmin.edit.vskEmailHint" | transloco
             }}</span>
           }
-          @if (hasParent) {
+          @if (showInheritedValues) {
             <span class="text-xs text-fb-gray-400 italic">
               {{
                 "stateAssociationAdmin.edit.inheritedFrom"
                   | transloco
                     : {
-                        name: parent?.name,
+                        name: stateAssociation.parent_name,
                         value:
                           stateAssociation.effective_vsk_email ||
                           ("stateAssociationAdmin.edit.emptyValue" | transloco),
                       }
               }}
             </span>
+          }
+          @if (inheritedPending) {
+            <span class="text-xs text-fb-gray-400 italic">{{
+              "stateAssociationAdmin.edit.inheritedAfterSaveHint" | transloco
+            }}</span>
           }
         </div>
 
@@ -148,13 +147,7 @@
             [(ngModel)]="stateAssociation.sbk_email"
             name="sbk_email"
             [disabled]="hasParent"
-            [placeholder]="
-              hasParent
-                ? stateAssociation.effective_sbk_email ||
-                  ('stateAssociationAdmin.edit.inheritedPlaceholder'
-                    | transloco)
-                : ('stateAssociationAdmin.edit.sbkEmailPlaceholder' | transloco)
-            "
+            [placeholder]="mailboxPlaceholder('sbk')"
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
           />
           @if (!hasParent) {
@@ -162,19 +155,24 @@
               "stateAssociationAdmin.edit.sbkEmailHint" | transloco
             }}</span>
           }
-          @if (hasParent) {
+          @if (showInheritedValues) {
             <span class="text-xs text-fb-gray-400 italic">
               {{
                 "stateAssociationAdmin.edit.inheritedFrom"
                   | transloco
                     : {
-                        name: parent?.name,
+                        name: stateAssociation.parent_name,
                         value:
                           stateAssociation.effective_sbk_email ||
                           ("stateAssociationAdmin.edit.emptyValue" | transloco),
                       }
               }}
             </span>
+          }
+          @if (inheritedPending) {
+            <span class="text-xs text-fb-gray-400 italic">{{
+              "stateAssociationAdmin.edit.inheritedAfterSaveHint" | transloco
+            }}</span>
           }
         </div>
 
@@ -187,13 +185,7 @@
             [(ngModel)]="stateAssociation.rsk_email"
             name="rsk_email"
             [disabled]="hasParent"
-            [placeholder]="
-              hasParent
-                ? stateAssociation.effective_rsk_email ||
-                  ('stateAssociationAdmin.edit.inheritedPlaceholder'
-                    | transloco)
-                : ('stateAssociationAdmin.edit.rskEmailPlaceholder' | transloco)
-            "
+            [placeholder]="mailboxPlaceholder('rsk')"
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
           />
           @if (!hasParent) {
@@ -201,19 +193,24 @@
               "stateAssociationAdmin.edit.rskEmailHint" | transloco
             }}</span>
           }
-          @if (hasParent) {
+          @if (showInheritedValues) {
             <span class="text-xs text-fb-gray-400 italic">
               {{
                 "stateAssociationAdmin.edit.inheritedFrom"
                   | transloco
                     : {
-                        name: parent?.name,
+                        name: stateAssociation.parent_name,
                         value:
                           stateAssociation.effective_rsk_email ||
                           ("stateAssociationAdmin.edit.emptyValue" | transloco),
                       }
               }}
             </span>
+          }
+          @if (inheritedPending) {
+            <span class="text-xs text-fb-gray-400 italic">{{
+              "stateAssociationAdmin.edit.inheritedAfterSaveHint" | transloco
+            }}</span>
           }
         </div>
       </div>
@@ -400,7 +397,7 @@
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.expressLicenseHint" | transloco
             }}</span>
-            @if (hasParent) {
+            @if (showInheritedValues) {
               <span class="text-xs text-fb-gray-400 italic">
                 {{
                   (stateAssociation.effective_express_license_enabled
@@ -409,6 +406,11 @@
                   ) | transloco
                 }}
               </span>
+            }
+            @if (inheritedPending) {
+              <span class="text-xs text-fb-gray-400 italic">{{
+                "stateAssociationAdmin.edit.inheritedAfterSaveHint" | transloco
+              }}</span>
             }
           </span>
         </label>
@@ -431,7 +433,7 @@
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.refereeReviewHint" | transloco
             }}</span>
-            @if (hasParent) {
+            @if (showInheritedValues) {
               <span class="text-xs text-fb-gray-400 italic">
                 {{
                   (stateAssociation.effective_referee_license_review_enabled
@@ -440,6 +442,11 @@
                   ) | transloco
                 }}
               </span>
+            }
+            @if (inheritedPending) {
+              <span class="text-xs text-fb-gray-400 italic">{{
+                "stateAssociationAdmin.edit.inheritedAfterSaveHint" | transloco
+              }}</span>
             }
           </span>
         </label>
@@ -461,7 +468,7 @@
               <span class="text-xs text-fb-gray-400 italic">
                 {{
                   "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
-                    | transloco: { name: parent?.name }
+                    | transloco: { name: stateAssociation.parent_name }
                 }}
               </span>
             }
@@ -485,7 +492,7 @@
               <span class="text-xs text-fb-gray-400 italic">
                 {{
                   "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
-                    | transloco: { name: parent?.name }
+                    | transloco: { name: stateAssociation.parent_name }
                 }}
               </span>
             }
@@ -509,7 +516,7 @@
               <span class="text-xs text-fb-gray-400 italic">
                 {{
                   "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
-                    | transloco: { name: parent?.name }
+                    | transloco: { name: stateAssociation.parent_name }
                 }}
               </span>
             }
@@ -543,7 +550,7 @@
               <span class="text-xs text-fb-gray-400 italic">
                 {{
                   "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
-                    | transloco: { name: parent?.name }
+                    | transloco: { name: stateAssociation.parent_name }
                 }}
               </span>
             }
