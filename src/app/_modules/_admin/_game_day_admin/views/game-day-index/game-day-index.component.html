@@ -1,0 +1,582 @@
+<div class="p-4 lg:p-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold">
+      {{ "gameDayAdmin.index.title" | transloco }}
+    </h1>
+    <p class="text-sm text-fb-gray-500 mt-1">
+      {{ "gameDayAdmin.index.subtitle" | transloco }}
+    </p>
+  </div>
+
+  <!-- Filter -->
+  <div class="flex flex-wrap gap-4 mb-6 items-end">
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "gameDayAdmin.index.filterSeason" | transloco
+      }}</label>
+      <select
+        [(ngModel)]="filterSeasonId"
+        [disabled]="seasonsLoading"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      >
+        @for (s of seasons; track s.id) {
+          <option [value]="s.id.toString()">{{ s.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "gameDayAdmin.index.filterGameOperation" | transloco
+      }}</label>
+      <select
+        [(ngModel)]="filterGameOperationId"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      >
+        <option value="">
+          {{ "gameDayAdmin.index.filterGameOperationAll" | transloco }}
+        </option>
+        @for (go of gameOperations; track go.id) {
+          <option [value]="go.id.toString()">{{ go.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "gameDayAdmin.index.filterFrom" | transloco
+      }}</label>
+      <input
+        type="date"
+        [(ngModel)]="filterDateFrom"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "gameDayAdmin.index.filterTo" | transloco
+      }}</label>
+      <input
+        type="date"
+        [(ngModel)]="filterDateTo"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "gameDayAdmin.index.filterStatus" | transloco
+      }}</label>
+      <select
+        [(ngModel)]="filterStatus"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      >
+        <option value="">
+          {{ "gameDayAdmin.index.filterStatusAll" | transloco }}
+        </option>
+        <option value="open">
+          {{ "gameDayAdmin.index.filterStatusOpen" | transloco }}
+        </option>
+        <option value="match_record_closed">
+          {{ "gameDayAdmin.status.match_record_closed" | transloco }}
+        </option>
+        <option value="finalized">
+          {{ "gameDayAdmin.status.finalized" | transloco }}
+        </option>
+        <option value="withComment">
+          {{ "gameDayAdmin.index.filterStatusWithComment" | transloco }}
+        </option>
+      </select>
+    </div>
+    <button
+      type="button"
+      (click)="applyFilter()"
+      class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+    >
+      {{ "gameDayAdmin.index.filterApply" | transloco }}
+    </button>
+    <button
+      type="button"
+      (click)="exportCsv()"
+      [disabled]="rows.length === 0"
+      class="px-4 py-2 border border-black text-sm font-bold rounded-[5px] hover:bg-fb-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+    >
+      {{ "gameDayAdmin.index.export" | transloco }}
+    </button>
+  </div>
+
+  <!-- Umschalter Spieltags- / Spielsicht -->
+  <div class="flex gap-1 mb-6 border-b border-fb-gray-600">
+    <button
+      type="button"
+      (click)="setViewMode('gameDays')"
+      class="px-4 py-2 text-sm font-bold border-b-2 -mb-px"
+      [class.border-black]="viewMode === 'gameDays'"
+      [class.border-transparent]="viewMode !== 'gameDays'"
+      [class.text-fb-gray-500]="viewMode !== 'gameDays'"
+    >
+      {{ "gameDayAdmin.index.viewGameDays" | transloco }}
+    </button>
+    <button
+      type="button"
+      (click)="setViewMode('games')"
+      class="px-4 py-2 text-sm font-bold border-b-2 -mb-px"
+      [class.border-black]="viewMode === 'games'"
+      [class.border-transparent]="viewMode !== 'games'"
+      [class.text-fb-gray-500]="viewMode !== 'games'"
+    >
+      {{ "gameDayAdmin.index.viewGames" | transloco }}
+    </button>
+  </div>
+
+  @if (truncated) {
+    <div
+      class="mb-4 px-4 py-3 bg-yellow-100 text-yellow-800 text-sm rounded-[5px]"
+    >
+      {{ "gameDayAdmin.index.truncated" | transloco }}
+    </div>
+  }
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "gameDayAdmin.index.loading" | transloco }}
+    </div>
+  }
+
+  @if (!loading && rows.length === 0) {
+    <div class="text-fb-gray-500 py-8">
+      {{ "gameDayAdmin.index.empty" | transloco }}
+    </div>
+  }
+
+  <!-- Spieltagssicht -->
+  @if (!loading && rows.length > 0 && viewMode === "gameDays") {
+    <div class="flex flex-col gap-2">
+      @for (group of groups; track group.gameDayId) {
+        <div class="border border-fb-gray-300 rounded-[5px] bg-white">
+          <button
+            type="button"
+            (click)="toggleGameDay(group.gameDayId)"
+            class="w-full flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-left hover:bg-fb-gray-100"
+          >
+            <span class="font-bold text-sm">{{
+              group.date | date: "dd.MM.yyyy"
+            }}</span>
+            @if (group.gameDayNumber !== null) {
+              <span class="text-sm text-fb-gray-500">{{
+                "gameDayAdmin.index.gameDayNumber"
+                  | transloco: { number: group.gameDayNumber }
+              }}</span>
+            }
+            <span class="text-sm">{{ group.leagueName }}</span>
+            @if (group.arenaName) {
+              <span class="text-sm text-fb-gray-500">{{
+                group.arenaName
+              }}</span>
+            }
+            @if (group.hostingClubName) {
+              <span class="text-sm text-fb-gray-500">{{
+                "gameDayAdmin.index.host"
+                  | transloco: { name: group.hostingClubName }
+              }}</span>
+            }
+            <span class="ml-auto flex flex-wrap items-center gap-2">
+              <span
+                class="px-2 py-0.5 rounded text-xs font-bold"
+                [class.bg-green-100]="group.closedCount === group.games.length"
+                [class.text-green-800]="
+                  group.closedCount === group.games.length
+                "
+                [class.bg-gray-100]="group.closedCount !== group.games.length"
+                [class.text-gray-500]="group.closedCount !== group.games.length"
+              >
+                {{
+                  "gameDayAdmin.index.closedRatio"
+                    | transloco
+                      : { closed: group.closedCount, total: group.games.length }
+                }}
+              </span>
+              @if (group.commentCount > 0) {
+                <span
+                  class="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800"
+                >
+                  {{
+                    "gameDayAdmin.index.commentBadgeCount"
+                      | transloco: { count: group.commentCount }
+                  }}
+                </span>
+              }
+              @if (group.scanRequired) {
+                <span
+                  class="px-2 py-0.5 rounded text-xs font-bold"
+                  [class.bg-green-100]="group.scanCount === group.games.length"
+                  [class.text-green-800]="
+                    group.scanCount === group.games.length
+                  "
+                  [class.bg-gray-100]="group.scanCount !== group.games.length"
+                  [class.text-gray-500]="group.scanCount !== group.games.length"
+                >
+                  {{
+                    "gameDayAdmin.index.scanRatio"
+                      | transloco
+                        : { done: group.scanCount, total: group.games.length }
+                  }}
+                </span>
+              }
+              @if (group.flaggedCount > 0) {
+                <span
+                  class="px-2 py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-800"
+                >
+                  {{
+                    "gameDayAdmin.index.flagBadgeCount"
+                      | transloco: { count: group.flaggedCount }
+                  }}
+                </span>
+              }
+            </span>
+          </button>
+          @if (expandedGameDayIds.has(group.gameDayId)) {
+            <div class="border-t border-fb-gray-300">
+              @for (row of group.games; track row.id) {
+                <ng-container
+                  *ngTemplateOutlet="gameRow; context: { $implicit: row }"
+                ></ng-container>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Spielsicht -->
+  @if (!loading && rows.length > 0 && viewMode === "games") {
+    <div class="border border-fb-gray-300 rounded-[5px] bg-white">
+      @for (row of pagedRows; track row.id) {
+        <ng-container
+          *ngTemplateOutlet="gameRow; context: { $implicit: row }"
+        ></ng-container>
+      }
+    </div>
+    @if (numberOfPages > 1) {
+      <div class="mt-4">
+        <fb-pagination
+          [numberOfPages]="numberOfPages"
+          [currentPage]="currentPage"
+          (changePage)="changePage($event)"
+        ></fb-pagination>
+      </div>
+    }
+  }
+</div>
+
+<!-- Eine Spielzeile, geteilt von beiden Sichten -->
+<ng-template #gameRow let-row>
+  <div class="border-b border-fb-gray-200 last:border-b-0">
+    <button
+      type="button"
+      (click)="toggleGame(row.id)"
+      class="w-full flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-left hover:bg-fb-gray-100"
+    >
+      @if (viewMode === "games") {
+        <span class="text-sm text-fb-gray-500 w-24 shrink-0">{{
+          row.date | date: "dd.MM.yyyy"
+        }}</span>
+      }
+      <span class="text-sm text-fb-gray-500 w-12 shrink-0">{{
+        row.start_time
+      }}</span>
+      <span class="text-sm text-fb-gray-500 w-14 shrink-0"
+        >#{{ row.game_number }}</span
+      >
+      <span class="text-sm font-bold grow min-w-[14rem]"
+        >{{ row.home_team }} : {{ row.guest_team }}</span
+      >
+      @if (row.result_string) {
+        <span class="text-sm font-bold">{{ row.result_string }}</span>
+      }
+      <span
+        class="px-2 py-0.5 rounded text-xs font-bold"
+        [ngClass]="statusClass(row.game_status)"
+      >
+        {{ statusLabel(row.game_status) }}
+      </span>
+      @if (row.record_comment) {
+        <span
+          class="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800"
+          [title]="row.record_comment"
+        >
+          {{ "gameDayAdmin.index.commentBadge" | transloco }}
+        </span>
+      }
+      @if (row.scan_required) {
+        <span
+          class="px-2 py-0.5 rounded text-xs font-bold"
+          [class.bg-green-100]="row.scan"
+          [class.text-green-800]="row.scan"
+          [class.bg-gray-100]="!row.scan"
+          [class.text-gray-500]="!row.scan"
+        >
+          {{
+            (row.scan
+              ? "gameDayAdmin.index.scanPresent"
+              : "gameDayAdmin.index.scanPending"
+            ) | transloco
+          }}
+        </span>
+      }
+      @if (hasFlags(row)) {
+        <span
+          class="px-2 py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-800"
+        >
+          {{ "gameDayAdmin.index.flagBadge" | transloco }}
+        </span>
+      }
+      @if (hasLinkedRecords(row)) {
+        <span
+          class="px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-800"
+        >
+          {{ "gameDayAdmin.index.linkedBadge" | transloco }}
+        </span>
+      }
+    </button>
+
+    @if (expandedGameIds.has(row.id)) {
+      <div class="px-4 pb-4 pt-1 bg-fb-gray-100 text-sm flex flex-col gap-4">
+        <!-- Zeitstempel -->
+        <div class="grid gap-1 md:grid-cols-3">
+          <div>
+            <span class="text-xs font-bold uppercase text-fb-gray-500">{{
+              "gameDayAdmin.index.colCreatedAt" | transloco
+            }}</span
+            ><br />
+            {{
+              row.record_created_at
+                ? (row.record_created_at | date: "dd.MM.yyyy, HH:mm")
+                : "–"
+            }}
+          </div>
+          <div>
+            <span class="text-xs font-bold uppercase text-fb-gray-500">{{
+              "gameDayAdmin.index.colUpdatedAt" | transloco
+            }}</span
+            ><br />
+            {{
+              row.record_updated_at
+                ? (row.record_updated_at | date: "dd.MM.yyyy, HH:mm")
+                : "–"
+            }}
+            @if (row.record_updated_by_name) {
+              <span class="text-fb-gray-500">
+                ({{ row.record_updated_by_name }})</span
+              >
+            }
+          </div>
+          <div>
+            <span class="text-xs font-bold uppercase text-fb-gray-500">{{
+              "gameDayAdmin.index.colClosedAt" | transloco
+            }}</span
+            ><br />
+            {{
+              row.match_record_closed_at
+                ? (row.match_record_closed_at | date: "dd.MM.yyyy, HH:mm")
+                : "–"
+            }}
+          </div>
+        </div>
+
+        <!-- Hinweis an die SBK -->
+        @if (row.record_comment) {
+          <div class="bg-blue-50 border border-blue-200 rounded-[5px] p-3">
+            <div class="text-xs font-bold uppercase text-blue-800 mb-1">
+              {{ "gameDayAdmin.index.commentTitle" | transloco }}
+            </div>
+            <div class="whitespace-pre-line">{{ row.record_comment }}</div>
+          </div>
+        }
+
+        <!-- Papierspielberichtsbogen -->
+        @if (row.scan_required) {
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="text-xs font-bold uppercase text-fb-gray-500">{{
+              "gameDayAdmin.index.scanTitle" | transloco
+            }}</span>
+            @if (row.scan) {
+              <span>
+                {{
+                  "gameDayAdmin.index.scanUploaded"
+                    | transloco
+                      : {
+                          date:
+                            row.scan.uploaded_at | date: "dd.MM.yyyy, HH:mm",
+                          name: row.scan.uploaded_by_name || "–",
+                        }
+                }}
+                @if (row.scan.days_after_game_day !== null) {
+                  <span class="text-fb-gray-500">
+                    ({{
+                      "gameDayAdmin.index.scanDaysAfter"
+                        | transloco: { days: row.scan.days_after_game_day }
+                    }})
+                  </span>
+                }
+              </span>
+              <button
+                type="button"
+                (click)="openScan(row)"
+                [disabled]="scanLoadingGameId !== null"
+                class="px-3 py-1.5 border border-black text-xs font-bold rounded-[5px] hover:bg-fb-gray-200 disabled:opacity-40"
+              >
+                {{
+                  (scanLoadingGameId === row.id
+                    ? "gameDayAdmin.index.scanOpening"
+                    : "gameDayAdmin.index.scanDownload"
+                  ) | transloco
+                }}
+              </button>
+            } @else {
+              <span class="text-fb-gray-500">{{
+                "gameDayAdmin.index.scanMissing" | transloco
+              }}</span>
+            }
+          </div>
+        }
+
+        <!-- Auffälligkeiten -->
+        @if (hasFlags(row)) {
+          <div>
+            <div class="text-xs font-bold uppercase text-fb-gray-500 mb-1">
+              {{ "gameDayAdmin.index.flagsTitle" | transloco }}
+            </div>
+            <ul class="list-disc list-inside">
+              @if (row.flags.protest) {
+                <li>{{ "gameDayAdmin.flags.protest" | transloco }}</li>
+              }
+              @if (row.flags.forfait) {
+                <li>{{ "gameDayAdmin.flags.forfait" | transloco }}</li>
+              }
+              @if (row.flags.severe_penalty_count > 0) {
+                <li>
+                  {{
+                    "gameDayAdmin.flags.severePenalties"
+                      | transloco: { count: row.flags.severe_penalty_count }
+                  }}
+                </li>
+              }
+              @if (row.flags.special_event_string) {
+                <li>
+                  {{ "gameDayAdmin.flags.specialEvent" | transloco }}:
+                  {{ row.flags.special_event_string }}
+                </li>
+              }
+              @if (row.flags.missing_referee2) {
+                <li>{{ "gameDayAdmin.flags.missingReferee2" | transloco }}</li>
+              }
+              @if (row.flags.missing_audience) {
+                <li>{{ "gameDayAdmin.flags.missingAudience" | transloco }}</li>
+              }
+              @if (row.flags.missing_signatures) {
+                <li>
+                  {{ "gameDayAdmin.flags.missingSignatures" | transloco }}
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        <!-- Verknüpfte Vorgänge -->
+        @if (hasLinkedRecords(row)) {
+          <div>
+            <div class="text-xs font-bold uppercase text-fb-gray-500 mb-1">
+              {{ "gameDayAdmin.index.linkedTitle" | transloco }}
+            </div>
+            <ul class="list-disc list-inside">
+              @if (row.referee_report) {
+                <li>
+                  {{
+                    "gameDayAdmin.linked.refereeReport"
+                      | transloco
+                        : {
+                            date:
+                              row.referee_report.uploaded_at
+                              | date: "dd.MM.yyyy, HH:mm",
+                          }
+                  }}
+                </li>
+              }
+              @if (row.proceeding_proposal) {
+                <li>
+                  {{ "gameDayAdmin.linked.proceedingProposal" | transloco }}:
+                  {{
+                    "gameDayAdmin.proposalStatus." +
+                      row.proceeding_proposal.status | transloco
+                  }}
+                  <a
+                    class="underline"
+                    [routerLink]="['/', 'verwaltung', 'verfahrensvorschlaege']"
+                    >{{ "gameDayAdmin.linked.openProposals" | transloco }}</a
+                  >
+                </li>
+              }
+              @if (row.checklist_negative_count > 0) {
+                <li>
+                  {{
+                    "gameDayAdmin.linked.checklistNegative"
+                      | transloco: { count: row.checklist_negative_count }
+                  }}
+                </li>
+              }
+              @if (row.checklist_veto_submitted_at) {
+                <li>
+                  {{
+                    "gameDayAdmin.linked.checklistVeto"
+                      | transloco
+                        : {
+                            date:
+                              row.checklist_veto_submitted_at
+                              | date: "dd.MM.yyyy, HH:mm",
+                            count: row.checklist_veto_negative_count,
+                          }
+                  }}
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        <!-- Aktionen -->
+        <div class="flex flex-wrap items-center gap-3">
+          @if (gameRouterLink(row); as link) {
+            <a
+              [routerLink]="link"
+              class="px-3 py-1.5 border border-black text-xs font-bold rounded-[5px] hover:bg-fb-gray-200"
+            >
+              {{ "gameDayAdmin.index.openGame" | transloco }}
+            </a>
+          }
+          @if (canFinalize(row)) {
+            <fb-confirmation
+              [title]="'gameDayAdmin.finalize.dialogTitle' | transloco"
+              [content]="'gameDayAdmin.finalize.dialogContent' | transloco"
+              [submitButtonTitle]="
+                'gameDayAdmin.finalize.dialogSubmit' | transloco
+              "
+              buttonVariant="success"
+              (handleSubmit)="finalizeGame(row)"
+            >
+              <button
+                type="button"
+                [disabled]="finalizingGameId !== null"
+                class="px-3 py-1.5 bg-black text-white text-xs font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+              >
+                {{
+                  (finalizingGameId === row.id
+                    ? "gameDayAdmin.finalize.running"
+                    : "gameDayAdmin.finalize.button"
+                  ) | transloco
+                }}
+              </button>
+            </fb-confirmation>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</ng-template>
