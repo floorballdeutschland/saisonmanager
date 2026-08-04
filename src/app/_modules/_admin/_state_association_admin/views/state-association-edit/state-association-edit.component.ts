@@ -163,18 +163,20 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       express_license_enabled: this.hasParent
         ? false
         : this.stateAssociation.express_license_enabled,
-      scan_required: this.hasParent
-        ? false
-        : this.stateAssociation.scan_required,
+      // Pro-Spielbetrieb wirksam (Game#state_association liest den LV des
+      // Spielbetriebs, nicht den des Vereins) → auch ein Kind-LV muss den Wert
+      // für seine eigenen Spielbetriebe setzen können.
+      scan_required: this.stateAssociation.scan_required ?? false,
       referee_license_review_enabled: this.hasParent
         ? false
         : (this.stateAssociation.referee_license_review_enabled ?? false),
-      // Pro-LV (Backend vererbt dieses Flag nicht vom Parent) → auch für
-      // Kind-LVs editierbar.
+      // Pro-LV (keine Parent-Vererbung) und wirksam über den LV des
+      // Spielbetriebs → auch für Kind-LVs editierbar, dort aber nur für deren
+      // eigene Spielbetriebe wirksam (Hinweis im Template).
       manual_proceeding_creation:
         this.stateAssociation.manual_proceeding_creation ?? false,
       // Pro-LV (keine Parent-Vererbung); steuert, ob die Ansetzungslogik für
-      // diesen Landesverband nutzbar ist.
+      // die Ligen der Spielbetriebe dieses Landesverbands nutzbar ist.
       referee_assignment_enabled:
         this.stateAssociation.referee_assignment_enabled ?? false,
       // Pro-LV (keine Parent-Vererbung); steuert, ob das Berichtsformular des

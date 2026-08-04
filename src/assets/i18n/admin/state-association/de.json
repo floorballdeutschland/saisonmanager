@@ -38,6 +38,7 @@
     "manualProceedingHint": "Die SBK kann Verfahrensvorschläge prüfen und Sportgerichtsverfahren manuell eröffnen oder ablehnen. Wirkt nur, wenn der Berichtsworkflow für rote Karten und bes. Ereignisse aktiv ist – sonst geht der hochgeladene Bericht automatisch per E-Mail an die VSK.",
     "inheritedValueYes": "Wert: Ja (geerbt)",
     "inheritedValueNo": "Wert: Nein (geerbt)",
+    "ownGameOperationsOnlyHint": "Wirkt nur für eigene Spielbetriebe dieses Landesverbands. Für die Ligen von {{ name }} gilt die Einstellung des Verbunds.",
     "emailHeading": "E-Mail-Adressen",
     "vskEmailLabel": "VSK-E-Mail",
     "vskEmailPlaceholder": "vsk@beispiel.de",

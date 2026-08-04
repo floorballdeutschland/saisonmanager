@@ -111,7 +111,7 @@
             [disabled]="hasParent"
             [placeholder]="
               hasParent
-                ? parent?.vsk_email ||
+                ? stateAssociation.effective_vsk_email ||
                   ('stateAssociationAdmin.edit.inheritedPlaceholder'
                     | transloco)
                 : ('stateAssociationAdmin.edit.vskEmailPlaceholder' | transloco)
@@ -131,7 +131,7 @@
                     : {
                         name: parent?.name,
                         value:
-                          parent?.vsk_email ||
+                          stateAssociation.effective_vsk_email ||
                           ("stateAssociationAdmin.edit.emptyValue" | transloco),
                       }
               }}
@@ -150,7 +150,7 @@
             [disabled]="hasParent"
             [placeholder]="
               hasParent
-                ? parent?.sbk_email ||
+                ? stateAssociation.effective_sbk_email ||
                   ('stateAssociationAdmin.edit.inheritedPlaceholder'
                     | transloco)
                 : ('stateAssociationAdmin.edit.sbkEmailPlaceholder' | transloco)
@@ -170,7 +170,7 @@
                     : {
                         name: parent?.name,
                         value:
-                          parent?.sbk_email ||
+                          stateAssociation.effective_sbk_email ||
                           ("stateAssociationAdmin.edit.emptyValue" | transloco),
                       }
               }}
@@ -189,7 +189,7 @@
             [disabled]="hasParent"
             [placeholder]="
               hasParent
-                ? parent?.rsk_email ||
+                ? stateAssociation.effective_rsk_email ||
                   ('stateAssociationAdmin.edit.inheritedPlaceholder'
                     | transloco)
                 : ('stateAssociationAdmin.edit.rskEmailPlaceholder' | transloco)
@@ -209,7 +209,7 @@
                     : {
                         name: parent?.name,
                         value:
-                          parent?.rsk_email ||
+                          stateAssociation.effective_rsk_email ||
                           ("stateAssociationAdmin.edit.emptyValue" | transloco),
                       }
               }}
@@ -380,7 +380,7 @@
       <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
         {{ "stateAssociationAdmin.edit.settingsHeading" | transloco }}
       </div>
-      <div class="flex flex-col gap-3" [class.opacity-40]="hasParent">
+      <div class="flex flex-col gap-3">
         <label
           class="flex items-start gap-3"
           [class.cursor-not-allowed]="hasParent"
@@ -393,7 +393,7 @@
             [disabled]="hasParent"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
-          <span class="flex flex-col gap-0.5">
+          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
             <span class="text-sm font-bold">{{
               "stateAssociationAdmin.edit.expressLicenseLabel" | transloco
             }}</span>
@@ -403,7 +403,7 @@
             @if (hasParent) {
               <span class="text-xs text-fb-gray-400 italic">
                 {{
-                  (parent?.express_license_enabled
+                  (stateAssociation.effective_express_license_enabled
                     ? "stateAssociationAdmin.edit.inheritedValueYes"
                     : "stateAssociationAdmin.edit.inheritedValueNo"
                   ) | transloco
@@ -424,7 +424,7 @@
             [disabled]="hasParent"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
-          <span class="flex flex-col gap-0.5">
+          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
             <span class="text-sm font-bold">{{
               "stateAssociationAdmin.edit.refereeReviewLabel" | transloco
             }}</span>
@@ -434,7 +434,7 @@
             @if (hasParent) {
               <span class="text-xs text-fb-gray-400 italic">
                 {{
-                  (parent?.referee_license_review_enabled
+                  (stateAssociation.effective_referee_license_review_enabled
                     ? "stateAssociationAdmin.edit.inheritedValueYes"
                     : "stateAssociationAdmin.edit.inheritedValueNo"
                   ) | transloco
@@ -457,6 +457,14 @@
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.scanRequiredHint" | transloco
             }}</span>
+            @if (hasParent) {
+              <span class="text-xs text-fb-gray-400 italic">
+                {{
+                  "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
+                    | transloco: { name: parent?.name }
+                }}
+              </span>
+            }
           </span>
         </label>
         <label class="flex items-start gap-3 cursor-pointer">
@@ -473,6 +481,14 @@
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.refereeAssignmentHint" | transloco
             }}</span>
+            @if (hasParent) {
+              <span class="text-xs text-fb-gray-400 italic">
+                {{
+                  "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
+                    | transloco: { name: parent?.name }
+                }}
+              </span>
+            }
           </span>
         </label>
         <label class="flex items-start gap-3 cursor-pointer">
@@ -489,6 +505,14 @@
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.reportFormEmailHint" | transloco
             }}</span>
+            @if (hasParent) {
+              <span class="text-xs text-fb-gray-400 italic">
+                {{
+                  "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
+                    | transloco: { name: parent?.name }
+                }}
+              </span>
+            }
           </span>
         </label>
         <label
@@ -515,6 +539,14 @@
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.manualProceedingHint" | transloco
             }}</span>
+            @if (hasParent) {
+              <span class="text-xs text-fb-gray-400 italic">
+                {{
+                  "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
+                    | transloco: { name: parent?.name }
+                }}
+              </span>
+            }
           </span>
         </label>
       </div>

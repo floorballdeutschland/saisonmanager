@@ -38,6 +38,7 @@
     "manualProceedingHint": "The SBK can review proceeding proposals and manually open or reject sports-court proceedings. Only takes effect when the report workflow for red cards and special incidents is active – otherwise the uploaded report is emailed automatically to the VSK.",
     "inheritedValueYes": "Value: Yes (inherited)",
     "inheritedValueNo": "Value: No (inherited)",
+    "ownGameOperationsOnlyHint": "Only takes effect for this state association's own game operations. Leagues run by {{ name }} follow the parent association's setting.",
     "emailHeading": "Email addresses",
     "vskEmailLabel": "VSK email",
     "vskEmailPlaceholder": "vsk@example.com",
