@@ -127,8 +127,9 @@ export class UserEditComponent implements OnInit, OnDestroy {
           // Verein-Vorbelegung aus der Rollen-Berechtigung (VM/TM) statt aus der
           // ggf. abweichenden Spalte user.club_id – die Berechtigung ist die
           // Quelle der Wahrheit für den Verein. club_id kann dort als String
-          // vorliegen, daher auf number normalisieren, damit die Dropdown-Option
-          // (number) matcht und der Verein nicht fälschlich als "leer" erscheint.
+          // vorliegen, daher auf number normalisieren: das Suchfeld selbst
+          // vergleicht locker, die strikten Vergleiche in selectedClubName und
+          // availableTeams brauchen aber eine Zahl.
           const clubScopedRole = user.roles?.find((r) =>
             [4, 5].includes(r.user_group_id)
           );

@@ -52,6 +52,13 @@ export class SelectSearchComponent implements ControlValueAccessor, OnChanges {
   @Input() placeholder = '';
   /** Ist er gesetzt, kann die Auswahl über diesen Listeneintrag geleert werden. */
   @Input() resetLabel: string | null = null;
+  /**
+   * Wert, den der Reset-Eintrag schreibt. Standard ist `null`; Felder, deren
+   * „nicht gewählt“ historisch die 0 ist (Team am Spiel, Zielverein im
+   * Transfer), übergeben hier eine 0, damit sich am gespeicherten Wert nichts
+   * ändert.
+   */
+  @Input() resetValue: SelectSearchValue = null;
   @Input() disabled = false;
   @Input() inputId: string | null = null;
   /** Grüner Rahmen bei getroffener Auswahl, wie im Ansetzungs-Filter. */
@@ -90,6 +97,19 @@ export class SelectSearchComponent implements ControlValueAccessor, OnChanges {
   get selectedLabel(): string {
     const selected = this.items.find((item) => this._sameValue(item));
     return selected ? this._label(selected) : '';
+  }
+
+  get hasSelection(): boolean {
+    return this.selectedLabel !== '';
+  }
+
+  /**
+   * Der Reset-Eintrag steht nur bei leerer Sucheingabe in der Liste und trägt
+   * den Index -1, damit er sich wie ein normaler Eintrag markieren und mit
+   * Enter auswählen lässt.
+   */
+  get resetVisible(): boolean {
+    return this.resetLabel !== null && !this.query;
   }
 
   writeValue(value: SelectSearchValue): void {
@@ -161,6 +181,7 @@ export class SelectSearchComponent implements ControlValueAccessor, OnChanges {
     // auf den ersten Treffer setzen.
     this.highlighted = this.filteredItems.length > 0 ? 0 : -1;
     this._cdr.markForCheck();
+    this._scrollHighlightedIntoView();
   }
 
   onBlur(): void {
@@ -173,7 +194,7 @@ export class SelectSearchComponent implements ControlValueAccessor, OnChanges {
   }
 
   reset(): void {
-    this._commit(null);
+    this._commit(this.resetValue);
   }
 
   onKeydown(event: KeyboardEvent): void {
@@ -198,7 +219,9 @@ export class SelectSearchComponent implements ControlValueAccessor, OnChanges {
         // Formular nicht mehr per Enter abschicken.
         event.preventDefault();
         const items = this.filteredItems;
-        if (this.highlighted >= 0 && this.highlighted < items.length) {
+        if (this.highlighted === -1) {
+          if (this.resetVisible) this.reset();
+        } else if (this.highlighted < items.length) {
           this.select(items[this.highlighted]);
         }
         break;
@@ -236,12 +259,14 @@ export class SelectSearchComponent implements ControlValueAccessor, OnChanges {
 
   private _move(offset: number): void {
     const max = this.filteredItems.length - 1;
+    // Untergrenze -1: das ist der Reset-Eintrag, solange er sichtbar ist.
+    const min = this.resetVisible ? -1 : 0;
     if (max < 0) {
-      this.highlighted = -1;
+      this.highlighted = min;
       return;
     }
     const next = this.highlighted + offset;
-    this.highlighted = Math.min(Math.max(next, 0), max);
+    this.highlighted = Math.min(Math.max(next, min), max);
     this._cdr.markForCheck();
     this._scrollHighlightedIntoView();
   }
@@ -249,7 +274,7 @@ export class SelectSearchComponent implements ControlValueAccessor, OnChanges {
   // Ohne das läuft die Markierung bei langen Listen (Vereine, Ligen) aus dem
   // sichtbaren Bereich heraus.
   private _scrollHighlightedIntoView(): void {
-    if (this.highlighted < 0) return;
+    if (this.highlighted < 0 && !this.resetVisible) return;
     setTimeout(() => {
       const option = this.listEl?.nativeElement.querySelector(
         `[data-index="${this.highlighted}"]`

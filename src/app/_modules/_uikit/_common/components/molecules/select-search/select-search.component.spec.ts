@@ -15,6 +15,7 @@ import { SelectSearchComponent } from './select-search.component';
       [(ngModel)]="clubId"
       [items]="clubs"
       [resetLabel]="resetLabel"
+      [resetValue]="resetValue"
       placeholder="Verein wählen"
     />
   `,
@@ -31,6 +32,7 @@ class HostComponent {
   ];
   clubId: number | null = null;
   resetLabel: string | null = 'Bitte wählen';
+  resetValue: number | null = null;
 
   constructor(readonly cdr: ChangeDetectorRef) {}
 }
@@ -192,6 +194,54 @@ describe('SelectSearchComponent', () => {
     expect(host.clubId).toBe(1);
     expect(input().value).toBe('Zehlendorfer Wespen');
     expect(options().length).toBe(0);
+  });
+
+  it('erreicht den Reset-Eintrag mit der Tastatur', async () => {
+    await setClubId(2);
+
+    focus();
+    // Der gewählte Eintrag ist markiert; von dort nach oben bis zum
+    // Reset-Eintrag oberhalb des ersten Vereins.
+    keydown('ArrowUp');
+    keydown('ArrowUp');
+    keydown('Enter');
+
+    expect(host.clubId).toBeNull();
+  });
+
+  it('bleibt beim Reset-Eintrag stehen, statt darüber hinaus zu laufen', () => {
+    focus();
+    keydown('ArrowUp');
+    keydown('ArrowUp');
+    keydown('ArrowUp');
+    keydown('Enter');
+
+    expect(host.clubId).toBeNull();
+  });
+
+  it('schreibt beim Reset den konfigurierten Leerwert', async () => {
+    host.resetValue = 0;
+    applyHostChanges();
+    await setClubId(3);
+
+    focus();
+    options()[0].dispatchEvent(new MouseEvent('mousedown'));
+    fixture.detectChanges();
+
+    expect(host.clubId).toBe(0);
+    expect(input().value).toBe('');
+  });
+
+  it('wählt ohne sichtbaren Reset-Eintrag per Enter nichts aus', () => {
+    host.resetLabel = null;
+    applyHostChanges();
+
+    focus();
+    keydown('ArrowUp');
+    keydown('Enter');
+
+    // Markierung steht auf dem ersten Verein, nicht auf einem Leer-Eintrag.
+    expect(host.clubId).toBe(1);
   });
 
   it('bietet ohne resetLabel keinen Leer-Eintrag an', () => {
