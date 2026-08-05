@@ -1184,7 +1184,7 @@
         <div class="brand">
           <div class="wordmark">Saison<em>manager</em></div>
           <div class="doc-title">Rollenhandbuch</div>
-          <span class="edition">Stand · Juli 2026</span>
+          <span class="edition">Stand · August 2026</span>
         </div>
         <nav class="nav">
           <div class="nav-group-label">Einstieg</div>
@@ -4499,6 +4499,40 @@
                 </li>
               </ul>
             </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">📋</div>
+                <div>
+                  <h3>Spielberichte</h3>
+                  <div class="cap-sub">
+                    <code>Verwaltung &rarr; Spielberichte</code>, laufende
+                    Saison
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  Übersicht aller abgegebenen Spielberichte, nach Spieltag
+                  gruppiert: wie viele Spiele abgeschlossen sind, wann der
+                  Bericht erfasst und zuletzt bearbeitet wurde und von wem
+                </li>
+                <li>
+                  Auffälligkeiten auf einen Blick: fehlende Zuschauerzahlen,
+                  Matchstrafen und große Strafen, nachträglich geänderte
+                  Berichte
+                </li>
+                <li>
+                  Hinweise der Mannschaften aus dem Kommentarfeld des
+                  Spielberichts sind hier lesbar. Vorher landeten sie nirgends,
+                  wurden also nie gesehen
+                </li>
+                <li>
+                  Papierspielberichtsbogen: ob ein Scan hochgeladen wurde, von
+                  wem und wie lange der Spieltag her ist. Eine Frist dafür gibt
+                  es nicht, die Bewertung liegt bei der SBK
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div class="sec">
@@ -4851,6 +4885,41 @@
                 <li>
                   Vereinsfreigaben: andere Spielverbände freigeben oder
                   entziehen
+                </li>
+              </ul>
+            </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">📋</div>
+                <div>
+                  <h3>Spielberichte</h3>
+                  <div class="cap-sub">
+                    <code>Verwaltung &rarr; Spielberichte</code>, laufende
+                    Saison
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  Übersicht aller abgegebenen Spielberichte des eigenen
+                  Spielbetriebs, nach Spieltag gruppiert: wie viele Spiele
+                  abgeschlossen sind, wann der Bericht erfasst und zuletzt
+                  bearbeitet wurde und von wem
+                </li>
+                <li>
+                  Auffälligkeiten auf einen Blick: fehlende Zuschauerzahlen,
+                  Matchstrafen und große Strafen, nachträglich geänderte
+                  Berichte
+                </li>
+                <li>
+                  Hinweise der Mannschaften aus dem Kommentarfeld des
+                  Spielberichts sind hier lesbar. Vorher landeten sie nirgends,
+                  wurden also nie gesehen
+                </li>
+                <li>
+                  Papierspielberichtsbogen: ob ein Scan hochgeladen wurde, von
+                  wem und wie lange der Spieltag her ist. Eine Frist dafür gibt
+                  es nicht, die Bewertung liegt bei der SBK
                 </li>
               </ul>
             </div>
@@ -6637,30 +6706,69 @@
               Entwickler von Vereins-Websites, Apps und sonstigen Integrationen.
             </p>
             <div class="hero-scope">
-              🔑 Zugriff per <code>X-Api-Key</code>-Header – Nutzung nur nach
-              Zustimmung zu den Nutzungsbedingungen
+              🔑 Zugriff per <code>X-Api-Key</code>-Header, Zugang wird
+              beantragt
             </div>
           </div>
 
           <div class="sec">
             <span class="num">01</span>
-            <h2>Zugang &amp; Nutzungsbedingungen</h2>
+            <h2>Zugang beantragen</h2>
           </div>
           <div class="note">
             <strong
-              >Für die Nutzung der API sind die Nutzungsbedingungen von
-              Floorball Deutschland zu akzeptieren.</strong
+              >Den Zugang beantragst du selbst unter
+              <a href="https://saisonmanager.de/api-zugang">/api-zugang</a
+              >.</strong
             >
-            Diese sowie ein persönlicher API-Schlüssel können unter
-            <code>office@floorball.de</code> angefragt werden. Der ausgegebene
-            Schlüssel wird bei jeder Anfrage im HTTP-Header
-            <code>X-Api-Key</code> mitgesendet.
+            Dort beschreibst du dein Vorhaben (Organisation, Ansprechpartner,
+            Kontakt, Projektbeschreibung, Verwendungszweck und, falls vorhanden,
+            die Adresse des Projekts) und stimmst der
+            <a href="https://saisonmanager.de/api-zugang/nutzungsbedingungen"
+              >Nutzungsvereinbarung</a
+            >
+            zu. Wir sichten jeden Antrag; die Entscheidung kommt per E-Mail an
+            die angegebene Adresse.
+          </div>
+          <div class="note">
+            <strong
+              >Kommerzielle Vorhaben laufen nicht über das Formular.</strong
+            >
+            Die Vereinbarung schließt die kommerzielle Verwertung aus. Wenn dein
+            Angebot Geld verdient, schreib uns an
+            <code>it@floorball.de</code>, dann schauen wir uns den Einzelfall
+            an.
+          </div>
+          <div class="note">
+            <strong>Der Schlüssel wird genau einmal angezeigt.</strong> Nach der
+            Freigabe bekommst du einen Link, über den du ihn abholst. Danach
+            liegt bei uns nur noch sein Prüfwert, wir können ihn also nicht
+            erneut anzeigen und auch nicht auslesen. Bewahre ihn sicher auf. Der
+            Link gilt 14 Tage; ist er abgelaufen oder nicht angekommen, stellen
+            wir einen neuen aus.
           </div>
           <div class="note">
             Ohne gültigen Schlüssel (oder aktive Login-Session) antworten die
-            unten gelisteten Endpunkte mit <code>401 Unauthorized</code>. Bitte
-            beachten: Schlüssel sind personen-/projektgebunden und nicht für die
-            Weitergabe an Dritte bestimmt.
+            unten gelisteten Endpunkte mit <code>401 Unauthorized</code>. Ein
+            Schlüssel gilt für genau ein Projekt und ist nicht zur Weitergabe
+            bestimmt: Du haftest für jede Anfrage, die darüber läuft. Für ein
+            weiteres Projekt stell einfach einen weiteren Antrag.
+          </div>
+          <div class="note">
+            <strong>Was ein neuer Zugang mitbringt.</strong> Die Daten kommen
+            mit zehn Minuten Verzögerung zum Echtbestand, Ergebnisse laufender
+            Spiele bleiben in dieser Zeit ausgeblendet. Ein Anfragelimit setzen
+            wir zunächst nicht: Wir sehen pro Schlüssel, welche Endpunkte wie
+            oft abgefragt werden, und sprechen ein Limit erst an, wenn die
+            Zahlen dafür sprechen. Sinnvolles Zwischenspeichern auf deiner Seite
+            ist Teil der Vereinbarung, ebenso der Verzicht darauf, den
+            Gesamtbestand ohne Absprache zu spiegeln.
+          </div>
+          <div class="note">
+            <strong>Bitte nenne die Quelle.</strong> „Daten: Saisonmanager /
+            Floorball Verband Deutschland e.&nbsp;V." genügt. Kennzeichne dein
+            Angebot außerdem als inoffizielles Community-Projekt, damit nicht
+            der Eindruck einer offiziellen Partnerschaft entsteht.
           </div>
 
           <div class="sec">
@@ -6681,8 +6789,10 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
             Antworten sind UTF-8-kodiertes JSON. Einige Endpunkte werden
             serverseitig zwischengespeichert (z. B. <code>/init</code> und
             <code>/transfers/public</code> ca. 30&nbsp;Min., Spielpläne/Tabellen
-            wenige Minuten). Live-Spielstände können bei Nicht-Realtime-Keys
-            leicht verzögert ausgeliefert werden.
+            wenige Minuten). Beantragte Schlüssel liefern die Daten mit zehn
+            Minuten Verzögerung zum Echtbestand: Bei laufenden Spielen bleibt
+            das Ergebnis in dieser Zeit leer, statt einen veralteten Stand
+            auszugeben.
           </div>
 
           <div class="sec">
