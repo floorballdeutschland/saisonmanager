@@ -29,6 +29,7 @@
     "registerName": "Club register name",
     "state": "State (club location)",
     "pleaseSelect": "– Please select –",
+    "gameOperation": "Competition",
     "sportverbund": "Sport association",
     "stateAssociation": "State federation",
     "contactEmail": "Contact email",
@@ -67,6 +68,8 @@
     "saveSuccess": "Club {{ name }}({{ id }}) changed successfully.",
     "nameRequired": "A club name must be set",
     "longNameRequired": "A club name (from the register) must be set",
-    "shortNameRequired": "A short club name must be set"
+    "shortNameRequired": "A short club name must be set",
+    "gameOperationRequired": "Please select a competition.",
+    "gameOperationLoadError": "Could not load the competitions."
   }
 }

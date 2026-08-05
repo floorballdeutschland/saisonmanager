@@ -29,6 +29,7 @@
     "registerName": "Name Vereinsregister",
     "state": "Bundesland (Vereinssitz)",
     "pleaseSelect": "– Bitte auswählen –",
+    "gameOperation": "Spielbetrieb",
     "sportverbund": "Spielverbund",
     "stateAssociation": "Landesverband",
     "contactEmail": "Kontakt-E-Mail",
@@ -67,6 +68,8 @@
     "saveSuccess": "Verein {{ name }}({{ id }}) erfolgreich geändert.",
     "nameRequired": "Es muss ein Vereinsname gesetzt werden",
     "longNameRequired": "Es muss ein Vereinsname (aus dem Register) gesetzt werden",
-    "shortNameRequired": "Es muss ein kurzer Vereinsname gesetzt werden"
+    "shortNameRequired": "Es muss ein kurzer Vereinsname gesetzt werden",
+    "gameOperationRequired": "Bitte einen Spielbetrieb auswählen.",
+    "gameOperationLoadError": "Die Spielbetriebe konnten nicht geladen werden."
   }
 }

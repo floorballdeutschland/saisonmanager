@@ -93,6 +93,30 @@
                     }
                   </select>
                 </div>
+                <!-- Spielbetrieb nur beim Anlegen wählbar: er entscheidet, wer
+                     den Verein verwaltet, und soll sich beim Bearbeiten nicht
+                     versehentlich ändern. Ohne ihn lehnt die API das Speichern
+                     ab, weil der Verein sonst in keiner Vereinsliste auftaucht. -->
+                @if (!editMode) {
+                  <div class="font-bold">
+                    {{ "clubAdmin.edit.gameOperation" | transloco }}
+                  </div>
+                  <div>
+                    <select
+                      name="game_operation_id"
+                      [(ngModel)]="club.game_operation_id"
+                      class="w-full"
+                      required
+                    >
+                      <option [ngValue]="0">
+                        {{ "clubAdmin.edit.pleaseSelect" | transloco }}
+                      </option>
+                      @for (go of gameOperations; track go.id) {
+                        <option [ngValue]="go.id">{{ go.name }}</option>
+                      }
+                    </select>
+                  </div>
+                }
                 <div class="font-bold">
                   {{ "clubAdmin.edit.sportverbund" | transloco }}
                 </div>
