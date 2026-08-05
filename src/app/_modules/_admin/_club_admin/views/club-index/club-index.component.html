@@ -45,26 +45,30 @@
           </div>
         </ng-template>
 
-        @for (gameOperation of goClubItems$ | async; track gameOperation) {
+        @for (
+          stateAssociation of lvClubItems$ | async;
+          track stateAssociation
+        ) {
           <div>
             <div class="bg-white flex items-center justify-center">
               <div
                 class="h-[65px] my-2.5 lg:my-5 flex-1 px-[20px] flex justify-center items-center gap-2"
               >
-                @if (gameOperation.logo_url) {
+                <!-- Der Name steht immer da: seit die Gruppen Landesverbände
+                     statt Spielbetriebe sind, muss z. B. Sachsen von
+                     Sachsen-Anhalt unterscheidbar sein – und nur ein Teil der
+                     Landesverbände hat überhaupt ein Logo hinterlegt. -->
+                @if (stateAssociation.logo_url) {
                   <img
                     class="h-full max-w-full object-contain px-2"
-                    [src]="gameOperation.logo_url"
-                    [alt]="gameOperation.name"
+                    [src]="stateAssociation.logo_url"
+                    [alt]="stateAssociation.name"
                   />
                 }
-                @if (!gameOperation.logo_url) {
-                  <span
-                    class="self-center text-sm font-bold text-fb-gray-400"
-                    >{{ gameOperation.name }}</span
-                  >
-                }
-                @if (gameOperation.released) {
+                <span class="self-center text-sm font-bold text-fb-gray-400">{{
+                  stateAssociation.name
+                }}</span>
+                @if (stateAssociation.released) {
                   <span
                     class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-700 whitespace-nowrap"
                     >{{ "clubAdmin.index.released" | transloco }}</span
@@ -76,13 +80,13 @@
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
                 {{ "clubAdmin.index.clubs" | transloco }}
               </div>
-              @if (gameOperation.released) {
+              @if (stateAssociation.released) {
                 <p class="text-xs text-fb-gray-400 mb-4">
                   {{ "clubAdmin.index.releasedHint" | transloco }}
                 </p>
               }
               <div class="flex flex-col gap-2">
-                @for (club of gameOperation.clubs; track club) {
+                @for (club of stateAssociation.clubs; track club) {
                   <div [class.opacity-50]="club.deactivated_at">
                     <a
                       class="font-bold text-base truncate text-fb-gray-500 hover:text-black"
@@ -95,7 +99,7 @@
                         >
                       }
                     </a>
-                    @if (!gameOperation.released) {
+                    @if (!stateAssociation.released) {
                       <a
                         class="font-bold text-black leading-[17px] text-sm px-2 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                         [routerLink]="[
@@ -109,7 +113,7 @@
                         {{ "clubAdmin.index.edit" | transloco }}
                       </a>
                     }
-                    @if (!gameOperation.released) {
+                    @if (!stateAssociation.released) {
                       <a
                         class="font-bold text-black leading-[17px] text-sm px-2 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                         [routerLink]="[
@@ -124,7 +128,7 @@
                       </a>
                     }
                     @if (
-                      !gameOperation.released &&
+                      !stateAssociation.released &&
                       club.deactivated_at &&
                       canDeleteClubs
                     ) {
@@ -150,7 +154,7 @@
                     }
                   </div>
                 }
-                @if (gameOperation.clubs.length === 0) {
+                @if (stateAssociation.clubs.length === 0) {
                   <p
                     class="block font-bold text-base truncate text-fb-gray-500 hover:text-black"
                   >
@@ -159,7 +163,7 @@
                 }
               </div>
             </div>
-            @if (!gameOperation.released) {
+            @if (!stateAssociation.released) {
               <div class="bg-white h-[57px] flex items-center justify-center">
                 <a
                   class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"

@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import {
   GameOperation,
-  GameOperationWithClubs,
   LicenseDocument,
   LicenseHash,
   Player,
@@ -32,8 +31,6 @@ import { TranslocoService } from '@jsverse/transloco';
 })
 export class LicenseTeamDetailComponent implements OnInit {
   associations$: Observable<GameOperation[]>;
-
-  goClubItems$?: Observable<GameOperationWithClubs[]>;
 
   licenseHash!: LicenseHash;
   teamId = 0;

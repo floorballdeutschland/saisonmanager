@@ -20,7 +20,18 @@ export interface GameOperationWithLeagues extends GameOperation {
   leagues: League[];
 }
 
-export interface GameOperationWithClubs extends GameOperation {
-  clubs: Club[];
+// Gruppe der Vereinsverwaltung: ein Landesverband mit seinen Vereinen.
+// Die Gruppierung folgt dem am Verein eingestellten Landesverband
+// (clubs.state_association_id), nicht mehr dem Spielbetrieb. Welche Vereine ein
+// Nutzer sieht, richtet sich unverändert nach seinen Spielbetriebs-Rechten –
+// siehe Club.admin_user_clubs in der API. `released` markiert Gruppen, die nur
+// über eine LV-Freigabe lesend sichtbar sind.
+export interface StateAssociationWithClubs {
+  id: null;
+  name: string;
+  short_name: string | null;
+  logo_url?: string | null;
+  state_association_id: number | null;
   released?: boolean;
+  clubs: Club[];
 }
