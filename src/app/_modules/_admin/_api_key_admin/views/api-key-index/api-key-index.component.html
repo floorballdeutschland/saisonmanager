@@ -3,6 +3,27 @@
     <h1 class="text-2xl font-bold">{{ "apiKeys.title" | transloco }}</h1>
   </div>
 
+  <!-- Umschaltung Keys / Anträge -->
+  <div class="flex gap-6 border-b border-fb-gray-800 mb-6">
+    <span class="pb-2 text-sm font-bold border-b-2 border-black">
+      {{ "apiKeys.tabs.keys" | transloco }}
+    </span>
+    <a
+      class="pb-2 text-sm font-bold text-fb-gray-500 hover:text-black"
+      [routerLink]="['/', 'verwaltung', 'api-keys', 'antraege']"
+    >
+      {{ "apiKeys.tabs.applications" | transloco }}
+    </a>
+  </div>
+
+  <!-- Öffentlicher Antragsweg, damit Admins ihn weitergeben können -->
+  <p class="text-sm text-fb-gray-500 mb-6">
+    {{ "apiKeys.publicLinkHint" | transloco }}
+    <a class="underline" routerLink="/api-zugang" target="_blank" rel="noopener"
+      >/api-zugang</a
+    >
+  </p>
+
   <!-- Neu erstellter Key -->
   @if (createdKey) {
     <div class="mb-6 p-4 bg-green-50 border border-green-300 rounded-[5px]">
@@ -61,6 +82,15 @@
               {{ "apiKeys.colName" | transloco }}
             </th>
             <th class="py-2 pr-4 font-bold">
+              {{ "apiKeys.colApplicant" | transloco }}
+            </th>
+            <th
+              class="py-2 pr-4 font-bold text-right"
+              [title]="'apiKeys.colUsageTitle' | transloco"
+            >
+              {{ "apiKeys.colUsage" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
               {{ "apiKeys.colCreated" | transloco }}
             </th>
             <th class="py-2 pr-4 font-bold">
@@ -85,6 +115,31 @@
           @for (key of apiKeys; track key) {
             <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
               <td class="py-2 pr-4 font-medium">{{ key.name }}</td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                @if (key.application) {
+                  {{ key.application.organisation }}
+                  <span class="block text-xs">{{
+                    key.application.contact_name
+                  }}</span>
+                } @else {
+                  <span class="text-xs">{{
+                    "apiKeys.manuallyCreated" | transloco
+                  }}</span>
+                }
+              </td>
+              <td class="py-2 pr-4 text-right">
+                <a
+                  class="underline"
+                  [routerLink]="[
+                    '/',
+                    'verwaltung',
+                    'api-keys',
+                    key.id,
+                    'nutzung',
+                  ]"
+                  >{{ key.usage_30_days | number }}</a
+                >
+              </td>
               <td class="py-2 pr-4 text-fb-gray-500">
                 {{ key.created_at | date: "dd.MM.yyyy" }}
               </td>
@@ -155,7 +210,7 @@
           }
           @if (apiKeys.length === 0) {
             <tr>
-              <td colspan="6" class="py-8 text-center text-fb-gray-500">
+              <td colspan="8" class="py-8 text-center text-fb-gray-500">
                 {{ "apiKeys.empty" | transloco }}
               </td>
             </tr>

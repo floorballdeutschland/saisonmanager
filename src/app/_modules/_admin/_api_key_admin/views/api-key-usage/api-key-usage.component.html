@@ -1,0 +1,154 @@
+<div class="p-4 lg:p-8">
+  <p class="mb-4">
+    <a
+      class="text-sm underline text-fb-gray-500 hover:text-black"
+      [routerLink]="['/', 'verwaltung', 'api-keys']"
+      >{{ "apiKeys.usage.back" | transloco }}</a
+    >
+  </p>
+
+  <h1 class="text-2xl font-bold mb-1">
+    {{ "apiKeys.usage.title" | transloco }}
+  </h1>
+  @if (data) {
+    <p class="text-sm text-fb-gray-500 mb-6">
+      {{ data.name }} ·
+      @if (data.rate_limit) {
+        {{ "apiKeys.usage.rateLimit" | transloco: { limit: data.rate_limit } }}
+      } @else {
+        {{ "apiKeys.usage.noRateLimit" | transloco }}
+      }
+    </p>
+  }
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      {{ "apiKeys.usage.loading" | transloco }}
+    </div>
+  }
+
+  @if (loadError) {
+    <p class="text-sm text-red-600 py-8 text-center">{{ loadError }}</p>
+  }
+
+  @if (!loading && data) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+      <div class="border border-fb-gray-800 rounded-[5px] p-5">
+        <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+          {{ "apiKeys.usage.summary.last30Days" | transloco }}
+        </div>
+        <div class="text-3xl font-bold">{{ total30Days | number }}</div>
+      </div>
+      <div class="border border-fb-gray-800 rounded-[5px] p-5">
+        <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+          {{ "apiKeys.usage.summary.currentMonth" | transloco }}
+        </div>
+        <div class="text-3xl font-bold">{{ currentMonthTotal | number }}</div>
+      </div>
+      <div class="border border-fb-gray-800 rounded-[5px] p-5">
+        <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+          {{ "apiKeys.usage.summary.peakDay" | transloco }}
+        </div>
+        <div class="text-3xl font-bold">{{ peakDay | number }}</div>
+      </div>
+    </div>
+
+    @if (total30Days === 0 && endpointTotal === 0) {
+      <p class="py-8 text-center text-fb-gray-500 text-sm">
+        {{ "apiKeys.usage.empty" | transloco }}
+      </p>
+    }
+
+    <h2 class="text-base font-bold mb-4">
+      {{ "apiKeys.usage.dailyHeading" | transloco }}
+    </h2>
+    <div class="aku-chart mb-10" aria-hidden="true">
+      @for (day of last30Days; track day.date) {
+        <div
+          class="aku-bar-col"
+          [title]="formatDay(day.date) + ': ' + day.count"
+        >
+          <span class="aku-bar-value text-xs text-fb-gray-500">{{
+            day.count || ""
+          }}</span>
+          <div class="aku-bar" [style.height.%]="dailyHeight(day.count)"></div>
+          <span class="aku-bar-label">{{ formatDay(day.date) }}</span>
+        </div>
+      }
+    </div>
+
+    <h2 class="text-base font-bold mb-4">
+      {{ "apiKeys.usage.monthlyHeading" | transloco }}
+    </h2>
+    <div class="aku-chart aku-chart--monthly mb-10" aria-hidden="true">
+      @for (month of lastYear; track month.month) {
+        <div
+          class="aku-bar-col"
+          [title]="formatMonth(month.month) + ': ' + month.count"
+        >
+          <span class="aku-bar-value text-xs text-fb-gray-500">{{
+            month.count || ""
+          }}</span>
+          <div
+            class="aku-bar"
+            [style.height.%]="monthlyHeight(month.count)"
+          ></div>
+          <span class="aku-bar-label">{{ formatMonth(month.month) }}</span>
+        </div>
+      }
+    </div>
+
+    <h2 class="text-base font-bold mb-4">
+      {{ "apiKeys.usage.endpointHeading" | transloco }}
+    </h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-fb-gray-700 text-left">
+            <th class="py-2 pr-4 font-bold">
+              <button (click)="setSort('endpoint')">
+                {{ "apiKeys.usage.colEndpoint" | transloco }}
+                @if (sortKey === "endpoint") {
+                  <span>▾</span>
+                }
+              </button>
+            </th>
+            <th class="py-2 pr-4 font-bold text-right">
+              <button (click)="setSort('count')">
+                {{ "apiKeys.usage.colCount" | transloco }}
+                @if (sortKey === "count") {
+                  <span>▾</span>
+                }
+              </button>
+            </th>
+            <th class="py-2 font-bold text-right">
+              {{ "apiKeys.usage.colShare" | transloco }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of endpoints; track entry.endpoint) {
+            <tr class="border-b border-fb-gray-800">
+              <td class="py-2 pr-4 font-mono">{{ entry.endpoint }}</td>
+              <td class="py-2 pr-4 text-right">{{ entry.count | number }}</td>
+              <td class="py-2 text-right text-fb-gray-500">
+                {{ share(entry.count) | number: "1.0-1" }} %
+              </td>
+            </tr>
+          }
+          @if (endpoints.length === 0) {
+            <tr>
+              <td colspan="3" class="py-8 text-center text-fb-gray-500">
+                {{ "apiKeys.usage.noEndpoints" | transloco }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-xs text-fb-gray-500 mt-3">
+      {{ "apiKeys.usage.footnote" | transloco }}
+    </p>
+  }
+</div>

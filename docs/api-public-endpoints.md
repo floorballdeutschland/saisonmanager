@@ -3,6 +3,28 @@
 **Base URL:** `https://saisonmanager.de`
 (nginx leitet `/api/v2/` an den Rails-Backend weiter; Frontend und API teilen sich die Domain)
 
+## Zugang beantragen
+
+Die Endpunkte unten brauchen einen API-Key im Kopffeld `X-Api-Key`. Drittanbieter beantragen ihn
+selbst unter **[/api-zugang](https://saisonmanager.de/api-zugang)** und stimmen dabei der
+Nutzungsvereinbarung zu ([Volltext](https://saisonmanager.de/api-zugang/nutzungsbedingungen)).
+
+Was dabei zu wissen ist:
+
+- Kommerzielle Vorhaben laufen nicht über das Formular, sondern über eine individuelle Absprache
+  per E-Mail an it@floorball.de.
+- Ein genehmigter Zugang liefert die Daten mit **zehn Minuten Verzögerung** zum Echtbestand;
+  Ergebnisse laufender Spiele bleiben in dieser Zeit ausgeblendet.
+- Neue Keys starten **ohne Rate-Limit**. Die Nutzung wird pro Endpunkt ausgewertet, ein Limit kommt
+  erst, wenn die Zahlen dafür sprechen. Sinnvolles Caching ist Teil der Vereinbarung.
+- Der Key wird nach der Freigabe genau einmal angezeigt, über einen Einmal-Link. Im System liegt nur
+  sein Prüfwert, ein nachträgliches Auslesen ist also auch uns nicht möglich.
+
+| Methode | Pfad                           | Beschreibung                                    |
+| ------- | ------------------------------ | ----------------------------------------------- |
+| `GET`   | `/api/v2/api_terms_version`    | Gültige Fassung der Nutzungsvereinbarung        |
+| `POST`  | `/api/v2/api_key_applications` | Antrag absenden (10 Anfragen pro Stunde und IP) |
+
 ## Initialisierung
 
 | Methode | Pfad           | Beschreibung                                           |
