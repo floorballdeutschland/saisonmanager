@@ -1,8 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { Club, ClubWithTeams, LicenseHash, Team } from '@floorball/types';
-import { GameOperationWithClubs } from 'src/app/_models/game-operation.interface';
+import {
+  Club,
+  ClubWithTeams,
+  LicenseHash,
+  StateAssociationWithClubs,
+  Team,
+} from '@floorball/types';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +23,7 @@ export class ClubService {
       environment.apiURL +
       'admin/clubs.json' +
       (includeDeactivated ? '?include_deactivated=true' : '');
-    return this.http.get<GameOperationWithClubs[]>(path);
+    return this.http.get<StateAssociationWithClubs[]>(path);
   }
 
   public deactivateClub(clubId: number) {

@@ -6,11 +6,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { AssociationService, ClubService } from '@floorball/core';
-import {
-  ClubWithTeams,
-  GameOperation,
-  GameOperationWithClubs,
-} from '@floorball/types';
+import { ClubWithTeams, GameOperation } from '@floorball/types';
 import { Observable, take } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { TranslocoService } from '@jsverse/transloco';
@@ -23,8 +19,6 @@ import { TranslocoService } from '@jsverse/transloco';
 })
 export class LicenseClubIndexComponent implements OnInit {
   associations$: Observable<GameOperation[]>;
-
-  goClubItems$?: Observable<GameOperationWithClubs[]>;
 
   clubAndTeams: ClubWithTeams[] = [];
 
