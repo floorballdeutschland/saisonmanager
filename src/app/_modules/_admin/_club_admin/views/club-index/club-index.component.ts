@@ -10,7 +10,7 @@ import {
   NotificationService,
   SessionService,
 } from '@floorball/core';
-import { GameOperation, GameOperationWithClubs } from '@floorball/types';
+import { GameOperation, StateAssociationWithClubs } from '@floorball/types';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
@@ -24,7 +24,8 @@ import { TranslocoService } from '@jsverse/transloco';
 })
 export class ClubIndexComponent implements OnInit {
   associations$: Observable<GameOperation[]>;
-  goClubItems$?: Observable<GameOperationWithClubs[]>;
+  // Gruppen der Vereinsverwaltung – je Landesverband, nicht je Spielbetrieb.
+  lvClubItems$?: Observable<StateAssociationWithClubs[]>;
   includeDeactivated = false;
   canDeleteClubs = false;
 
@@ -50,7 +51,7 @@ export class ClubIndexComponent implements OnInit {
   }
 
   public loadClubs(): void {
-    this.goClubItems$ = this._clubService.getAdminClubs(
+    this.lvClubItems$ = this._clubService.getAdminClubs(
       this.includeDeactivated
     );
   }

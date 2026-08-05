@@ -53,7 +53,7 @@ export { GameAdditionalFields } from './game-additional-fields.interface';
 export * from './game-day-report.interface';
 export { GameFlags } from './game-flags.interface';
 export { RefereeEntry } from './referee-entry.interface';
-export { GameOperationWithClubs } from './game-operation.interface';
+export { StateAssociationWithClubs } from './game-operation.interface';
 export { GameEvent } from './game.interface';
 export { League } from './league.interface';
 export { Association } from './association.interface';
