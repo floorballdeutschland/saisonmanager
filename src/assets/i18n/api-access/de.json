@@ -1,0 +1,77 @@
+{
+  "title": "API-Zugang beantragen",
+  "intro": "Über die Saisonmanager-API stellen wir Ligen, Spielpläne, Ergebnisse, Tabellen und Statistiken bereit. Wer damit ein Projekt für den Floorballsport bauen möchte, kann hier einen Zugang beantragen.",
+  "intent": {
+    "heading": "Ist dein Vorhaben kommerziell?",
+    "hint": "Kommerziell heißt: Verkauf oder Weitergabe der Daten, Bezahl-Angebote und Paywalls oder Werbefinanzierung, die über die Deckung der Betriebskosten hinaus Gewinn erzielt.",
+    "nonCommercial": "Nicht-kommerzielles Vorhaben",
+    "nonCommercialHint": "Zum Beispiel Vereins-Website, Widget, Statistik-Auswertung, Forschung oder Open Source.",
+    "commercial": "Kommerzielles Vorhaben",
+    "commercialHint": "Der Antragsweg im System deckt das nicht ab, es braucht eine individuelle Absprache."
+  },
+  "commercialNotice": {
+    "heading": "Für kommerzielle Vorhaben sprechen wir individuell",
+    "text": "Die Nutzungsvereinbarung schließt die kommerzielle Verwertung aus, deshalb endet der Antrag im System an dieser Stelle. Schreib uns stattdessen kurz, was du vorhast: Wir schauen uns den Einzelfall an.",
+    "includeHeading": "Das hilft uns beim Einordnen:",
+    "include1": "Organisation und Ansprechpartner",
+    "include2": "was das Angebot tut und für wen",
+    "include3": "wie es finanziert wird",
+    "include4": "welche Daten du brauchst und wie oft",
+    "mailButton": "E-Mail an it@floorball.de"
+  },
+  "summary": {
+    "heading": "Das Wichtigste in Kurzform",
+    "item1": "Keine kommerzielle Verwertung: kein Verkauf der Daten, keine Paywall, keine Werbefinanzierung mit Gewinn (§ 4.1).",
+    "item2": "Keine Anwendungen, die Kernfunktionen des Saisonmanagers nachbilden, also Spielbetriebsverwaltung, Lizenz- oder Transferwesen (§ 4.2).",
+    "item3": "Die Daten kommen mit zehn Minuten Verzögerung, einen Echtzeit-Zugriff gibt es nicht (§ 6.3).",
+    "item4": "Rate-Limits beachten, sinnvoll cachen, den Gesamtbestand nicht ohne Absprache spiegeln (§ 6.1, § 6.2).",
+    "item5": "Quelle nennen („Daten: Saisonmanager / Floorball Verband Deutschland e. V.“) und das eigene Angebot als inoffiziell kennzeichnen (§ 7).",
+    "item6": "Kontaktdaten von Spieler:innen, Schiedsrichter:innen und Funktionär:innen nicht veröffentlichen, keine Personenprofile, besonderer Schutz für Daten Minderjähriger (§ 5).",
+    "item7": "Ein Key pro Projekt, nicht weitergeben: Du haftest für jede Nutzung darüber (§ 2.3).",
+    "item8": "Bereitstellung ohne Gewähr, der Zugang ist jederzeit widerruflich (§ 9, § 11).",
+    "footnote": "Die Kurzfassung ersetzt die Vereinbarung nicht. Verbindlich ist der Volltext."
+  },
+  "form": {
+    "organisation": "Name / Organisation",
+    "contactName": "Vertreten durch",
+    "email": "E-Mail für den Kontakt",
+    "address": "Anschrift",
+    "projectUrl": "URL oder Repository (falls vorhanden)",
+    "projectDescription": "Projektbeschreibung",
+    "purpose": "Verwendungszweck",
+    "acceptTerms": "Ich habe die Nutzungsvereinbarung gelesen und erkenne sie an.",
+    "termsLink": "Vereinbarung im Volltext lesen",
+    "version": "Fassung {{version}}",
+    "submit": "Antrag absenden",
+    "submitHint": "Bitte fülle die Pflichtfelder aus und bestätige die Vereinbarung.",
+    "termsUnavailable": "Die Vereinbarung ist gerade nicht abrufbar. Bitte lade die Seite später neu.",
+    "genericError": "Der Antrag konnte nicht abgeschickt werden. Bitte versuche es später erneut.",
+    "doneHeading": "Antrag eingegangen",
+    "doneText": "Wir haben deinen Antrag erhalten und schauen ihn uns an. Die Entscheidung kommt per E-Mail an die angegebene Adresse."
+  },
+  "terms": {
+    "version": "Fassung vom {{version}}",
+    "languageNotice": "This agreement is legally binding in German only. If you need help understanding it, please contact it@floorball.de.",
+    "backToForm": "Zurück zum Antrag"
+  },
+  "reveal": {
+    "title": "API-Key abholen",
+    "loading": "Link wird geprüft …",
+    "ready": "Dein Zugang ist freigegeben.",
+    "readyFor": "Der Zugang für {{organisation}} ist freigegeben.",
+    "onceHint": "Der Schlüssel wird genau einmal angezeigt und lässt sich danach nicht erneut aufrufen, auch nicht von uns. Halte eine Stelle zum Speichern bereit.",
+    "validUntil": "Der Link gilt bis zum {{date}}.",
+    "button": "Schlüssel jetzt anzeigen",
+    "successHeading": "Das ist dein API-Key",
+    "copy": "In die Zwischenablage kopieren",
+    "copied": "Kopiert",
+    "onceWarning": "Speichere den Schlüssel jetzt. Er wird nicht wieder angezeigt.",
+    "nextStepsHeading": "So geht es weiter",
+    "nextStep1": "Schicke den Schlüssel als Kopfzeile X-Api-Key mit jeder Anfrage.",
+    "nextStep2": "Die Dokumentation der Endpunkte findest du unter doku.saisonmanager.org.",
+    "nextStep3": "Melde dich bei uns, wenn der Schlüssel abhandenkommt oder du ein zweites Projekt planst.",
+    "alreadyRevealed": "Über diesen Link wurde der Schlüssel bereits abgeholt. Aus Sicherheitsgründen liegt bei uns nur sein Prüfwert, wir können ihn also nicht erneut anzeigen. Melde dich unter it@floorball.de, wenn du einen neuen Zugang brauchst.",
+    "expired": "Dieser Link ist abgelaufen. Melde dich unter it@floorball.de, dann stellen wir einen neuen aus.",
+    "invalid": "Dieser Link ist ungültig."
+  }
+}

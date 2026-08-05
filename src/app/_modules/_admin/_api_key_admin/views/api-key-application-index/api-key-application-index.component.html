@@ -1,0 +1,281 @@
+<div class="p-4 lg:p-8">
+  <h1 class="text-2xl font-bold mb-6">{{ "apiKeys.title" | transloco }}</h1>
+
+  <!-- Umschaltung Keys / Anträge -->
+  <div class="flex gap-6 border-b border-fb-gray-800 mb-6">
+    <a
+      class="pb-2 text-sm font-bold text-fb-gray-500 hover:text-black"
+      [routerLink]="['/', 'verwaltung', 'api-keys']"
+    >
+      {{ "apiKeys.tabs.keys" | transloco }}
+    </a>
+    <span class="pb-2 text-sm font-bold border-b-2 border-black">
+      {{ "apiKeys.tabs.applications" | transloco }}
+      @if (pendingCount > 0) {
+        <span
+          class="ml-1 px-1.5 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded-[5px]"
+          >{{ pendingCount }}</span
+        >
+      }
+    </span>
+  </div>
+
+  <!-- Statusfilter -->
+  <div class="flex gap-2 mb-6">
+    @for (option of ["pending", "approved", "rejected", ""]; track option) {
+      <button
+        (click)="setStatusFilter($any(option))"
+        class="px-3 py-1 text-sm rounded-[5px] border"
+        [class]="
+          statusFilter === option
+            ? 'bg-black text-white border-black'
+            : 'border-fb-gray-700 hover:bg-fb-gray-900'
+        "
+      >
+        {{ "apiKeys.applications.filter." + (option || "all") | transloco }}
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      {{ "apiKeys.applications.loading" | transloco }}
+    </div>
+  }
+
+  @if (!loading) {
+    @if (applications.length === 0) {
+      <p class="py-8 text-center text-fb-gray-500 text-sm">
+        {{ "apiKeys.applications.empty" | transloco }}
+      </p>
+    }
+
+    @for (application of applications; track application.id) {
+      <div class="border border-fb-gray-800 rounded-[5px] p-4 mb-4">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p class="font-bold">{{ application.organisation }}</p>
+            <p class="text-sm text-fb-gray-500">
+              {{ application.contact_name }} ·
+              <a class="underline" [href]="'mailto:' + application.email">{{
+                application.email
+              }}</a>
+            </p>
+            <p class="text-xs text-fb-gray-500 mt-1">
+              {{ "apiKeys.applications.submittedAt" | transloco }}:
+              {{ application.created_at | date: "dd.MM.yyyy HH:mm" }}
+            </p>
+          </div>
+
+          <div class="text-right">
+            @switch (application.status) {
+              @case ("pending") {
+                <span class="text-sm font-medium text-yellow-600">{{
+                  "apiKeys.applications.status.pending" | transloco
+                }}</span>
+              }
+              @case ("approved") {
+                <span class="text-sm font-medium text-green-600">{{
+                  "apiKeys.applications.status.approved" | transloco
+                }}</span>
+              }
+              @case ("rejected") {
+                <span class="text-sm font-medium text-red-600">{{
+                  "apiKeys.applications.status.rejected" | transloco
+                }}</span>
+              }
+            }
+
+            <!-- Abholstatus des genehmigten Zugangs -->
+            @if (application.status === "approved") {
+              <p class="text-xs text-fb-gray-500 mt-1">
+                @if (application.key_revealed_at) {
+                  {{
+                    "apiKeys.applications.revealed"
+                      | transloco
+                        : {
+                            date:
+                              application.key_revealed_at
+                              | date: "dd.MM.yyyy HH:mm",
+                          }
+                  }}
+                } @else if (application.reveal_state === "expired") {
+                  <span class="text-red-600">{{
+                    "apiKeys.applications.revealExpired" | transloco
+                  }}</span>
+                } @else {
+                  {{
+                    "apiKeys.applications.revealPending"
+                      | transloco
+                        : {
+                            date:
+                              application.reveal_token_expires_at
+                              | date: "dd.MM.yyyy",
+                          }
+                  }}
+                }
+              </p>
+            }
+          </div>
+        </div>
+
+        <!-- Lange Freitexte erst auf Wunsch -->
+        <button
+          (click)="toggleDetails(application)"
+          class="mt-3 text-sm underline text-fb-gray-500 hover:text-black"
+        >
+          {{
+            (expandedIds.has(application.id)
+              ? "apiKeys.applications.hideDetails"
+              : "apiKeys.applications.showDetails"
+            ) | transloco
+          }}
+        </button>
+
+        @if (expandedIds.has(application.id)) {
+          <div class="mt-3 text-sm space-y-3">
+            <div>
+              <p class="font-bold">
+                {{ "apiKeys.applications.projectDescription" | transloco }}
+              </p>
+              <p class="whitespace-pre-line">
+                {{ application.project_description }}
+              </p>
+            </div>
+            <div>
+              <p class="font-bold">
+                {{ "apiKeys.applications.purpose" | transloco }}
+              </p>
+              <p class="whitespace-pre-line">{{ application.purpose }}</p>
+            </div>
+            @if (application.project_url) {
+              <div>
+                <p class="font-bold">
+                  {{ "apiKeys.applications.projectUrl" | transloco }}
+                </p>
+                <a
+                  class="underline break-all"
+                  [href]="application.project_url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >{{ application.project_url }}</a
+                >
+              </div>
+            }
+            @if (application.address) {
+              <div>
+                <p class="font-bold">
+                  {{ "apiKeys.applications.address" | transloco }}
+                </p>
+                <p class="whitespace-pre-line">{{ application.address }}</p>
+              </div>
+            }
+            <p class="text-xs text-fb-gray-500">
+              {{
+                "apiKeys.applications.termsAccepted"
+                  | transloco
+                    : {
+                        version: application.terms_version,
+                        date:
+                          application.accepted_terms_at
+                          | date: "dd.MM.yyyy HH:mm",
+                      }
+              }}
+            </p>
+          </div>
+        }
+
+        @if (application.decision_note) {
+          <p class="mt-3 text-sm">
+            <span class="font-bold"
+              >{{ "apiKeys.applications.decisionNote" | transloco }}:</span
+            >
+            {{ application.decision_note }}
+          </p>
+        }
+
+        <!-- Entscheidung -->
+        @if (application.status === "pending") {
+          @if (rejectingId === application.id) {
+            <div class="mt-4">
+              <label class="block text-sm font-bold mb-1">{{
+                "apiKeys.applications.rejectReasonLabel" | transloco
+              }}</label>
+              <textarea
+                rows="2"
+                [(ngModel)]="rejectionReason"
+                class="w-full border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              ></textarea>
+              <div class="flex gap-3 mt-2">
+                <fb-button
+                  variant="error"
+                  size="small"
+                  [disabled]="
+                    !rejectionReason.trim() || busyIds.has(application.id)
+                  "
+                  (click)="confirmReject(application)"
+                  >{{
+                    "apiKeys.applications.confirmReject" | transloco
+                  }}</fb-button
+                >
+                <fb-button
+                  size="small"
+                  icon="cancel"
+                  (click)="cancelReject()"
+                  >{{ "apiKeys.applications.cancel" | transloco }}</fb-button
+                >
+              </div>
+            </div>
+          } @else {
+            <div class="flex gap-3 mt-4">
+              <fb-button
+                variant="success"
+                size="small"
+                [disabled]="busyIds.has(application.id)"
+                (click)="approve(application)"
+                >{{ "apiKeys.applications.approve" | transloco }}</fb-button
+              >
+              <fb-button
+                variant="error"
+                size="small"
+                [disabled]="busyIds.has(application.id)"
+                (click)="startReject(application)"
+                >{{ "apiKeys.applications.reject" | transloco }}</fb-button
+              >
+            </div>
+            <p class="mt-2 text-xs text-fb-gray-500">
+              {{ "apiKeys.applications.approveHint" | transloco }}
+            </p>
+          }
+        }
+
+        @if (canResendReveal(application)) {
+          <div class="mt-4">
+            <fb-button
+              size="small"
+              [disabled]="busyIds.has(application.id)"
+              (click)="resendReveal(application)"
+              >{{ "apiKeys.applications.resendReveal" | transloco }}</fb-button
+            >
+          </div>
+        }
+
+        @if (application.api_key_id) {
+          <p class="mt-3 text-sm">
+            <a
+              class="underline"
+              [routerLink]="[
+                '/',
+                'verwaltung',
+                'api-keys',
+                application.api_key_id,
+                'nutzung',
+              ]"
+              >{{ "apiKeys.applications.showUsage" | transloco }}</a
+            >
+          </p>
+        }
+      </div>
+    }
+  }
+</div>
