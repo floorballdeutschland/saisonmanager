@@ -9,6 +9,7 @@ import {
 import {
   AssociationService,
   ClubService,
+  GameOperationService,
   NotificationService,
   SessionService,
 } from '@floorball/core';
@@ -57,6 +58,12 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   permissions: { [key: string]: boolean } = {};
   confirmDeactivate = false;
 
+  // Spielbetriebe, in denen der/die Nutzer*in Vereine anlegen darf. Nur beim
+  // Anlegen relevant: der Heimat-Spielbetrieb entscheidet, wer den Verein
+  // verwaltet, und beim Bearbeiten soll er sich nicht versehentlich ändern
+  // (dort steht er weiter als Spielverbund read-only).
+  gameOperations: GameOperation[] = [];
+
   // Auswahlliste des Suchfelds: einmal beim Laden gebildet, nicht als Getter.
   // Ein neues Array pro Change-Detection wuerde die Trefferliste des Suchfelds
   // bei jedem Durchlauf neu aufbauen.
@@ -78,6 +85,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   constructor(
     private _associationService: AssociationService,
     private _clubService: ClubService,
+    private _gameOperationService: GameOperationService,
     private _sessionService: SessionService,
     private _router: Router,
     private _notificationService: NotificationService,
@@ -115,6 +123,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
         this.getClub(params['clubId']);
       } else {
         this.editMode = false;
+        this.loadGameOperations();
         this.newClub();
       }
     });
@@ -140,6 +149,26 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       )
       .subscribe();
     this._cdr.markForCheck();
+  }
+
+  private loadGameOperations(): void {
+    this._gameOperationService
+      .getAdminGameOperations()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.gameOperations = result;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this._notificationService.error(
+            this._transloco.translate(
+              'clubAdmin.notifications.gameOperationLoadError'
+            ),
+            { autoClose: false }
+          );
+        },
+      });
   }
 
   public newClub() {
@@ -191,6 +220,16 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     if (!club.short_name?.length) {
       msg.push(
         this._transloco.translate('clubAdmin.notifications.shortNameRequired')
+      );
+    }
+
+    // Nur beim Anlegen: der Spielbetrieb wird danach nicht mehr über dieses
+    // Formular geändert. Ohne ihn lehnt die API das Speichern ab.
+    if (!this.editMode && !club.game_operation_id) {
+      msg.push(
+        this._transloco.translate(
+          'clubAdmin.notifications.gameOperationRequired'
+        )
       );
     }
 
