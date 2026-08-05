@@ -1,8 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { Club, ClubWithTeams, LicenseHash, Team } from '@floorball/types';
-import { StateAssociationWithClubs } from 'src/app/_models/game-operation.interface';
+import {
+  Club,
+  ClubWithTeams,
+  LicenseHash,
+  StateAssociationWithClubs,
+  Team,
+} from '@floorball/types';
 
 @Injectable({
   providedIn: 'root',

@@ -26,8 +26,14 @@ export interface GameOperationWithLeagues extends GameOperation {
 // Nutzer sieht, richtet sich unverändert nach seinen Spielbetriebs-Rechten –
 // siehe Club.admin_user_clubs in der API. `released` markiert Gruppen, die nur
 // über eine LV-Freigabe lesend sichtbar sind.
+// Kein `id`: der Endpunkt sendet für diese zusammengesetzten Gruppen `id: null`.
+// Als Feld deklariert wäre es ein Fallstrick – `track group.id` im @for würde
+// sauber typprüfen und dann bei mehr als einer Gruppe an Angulars
+// Duplicate-Key-Fehler laufen. `state_association_id` taugt aus demselben Grund
+// nicht als Schlüssel: null für „Eigene Vereine" und „Ohne Landesverband", und
+// eine Freigabe-Gruppe teilt den Wert mit der regulären Gruppe desselben
+// Landesverbands.
 export interface StateAssociationWithClubs {
-  id: null;
   name: string;
   short_name: string | null;
   logo_url?: string | null;
