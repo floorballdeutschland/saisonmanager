@@ -97,7 +97,7 @@ export class ApiKeyApplicationIndexComponent implements OnInit, OnDestroy {
 
   approve(application: ApiKeyApplication): void {
     if (this.busyIds.has(application.id)) return;
-    this.busyIds.add(application.id);
+    this._markBusy(application.id);
 
     this._applicationService
       .approve(application.id)
@@ -136,7 +136,7 @@ export class ApiKeyApplicationIndexComponent implements OnInit, OnDestroy {
     const reason = this.rejectionReason.trim();
     if (!reason || this.busyIds.has(application.id)) return;
 
-    this.busyIds.add(application.id);
+    this._markBusy(application.id);
     this._applicationService
       .reject(application.id, reason)
       .pipe(takeUntil(this._destroy$))
@@ -155,7 +155,7 @@ export class ApiKeyApplicationIndexComponent implements OnInit, OnDestroy {
 
   resendReveal(application: ApiKeyApplication): void {
     if (this.busyIds.has(application.id)) return;
-    this.busyIds.add(application.id);
+    this._markBusy(application.id);
 
     this._applicationService
       .resendReveal(application.id)
@@ -181,5 +181,13 @@ export class ApiKeyApplicationIndexComponent implements OnInit, OnDestroy {
   /** Ein neuer Abhol-Link hilft nur, solange der Key nicht abgeholt wurde. */
   canResendReveal(application: ApiKeyApplication): boolean {
     return application.status === 'approved' && !application.key_revealed_at;
+  }
+
+  // Ein Set zu verändern macht die Ansicht bei OnPush nicht dirty. Ohne das
+  // markForCheck bliebe der Knopf während des laufenden Aufrufs sichtbar aktiv,
+  // obwohl busyIds ihn längst sperrt.
+  private _markBusy(id: number): void {
+    this.busyIds.add(id);
+    this._cdr.markForCheck();
   }
 }
