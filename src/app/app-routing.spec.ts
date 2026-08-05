@@ -29,4 +29,12 @@ describe('App-Routing', () => {
     expect(names).toContain('PublicTransferConfirmationModule');
     expect(names).toContain('PublicChecklistVetoModule');
   });
+
+  it('registriert den API-Zugang vor dem Spielbetriebs-Host', async () => {
+    const names = await Promise.all(
+      routes.slice(0, -1).map((_, index) => moduleNameOf(index).catch(() => ''))
+    );
+
+    expect(names).toContain('PublicApiAccessModule');
+  });
 });

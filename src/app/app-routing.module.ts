@@ -366,6 +366,16 @@ export const routes: Routes = [
       ),
   },
   {
+    // Öffentlicher Antrag auf einen API-Zugang, dazu der Volltext der
+    // Nutzungsvereinbarung und die Abholseite für den genehmigten Key. Bewusst
+    // ohne Guard: Antragsteller haben kein Benutzerkonto.
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/api-access').then(
+        (m) => m.PublicApiAccessModule
+      ),
+  },
+  {
     // MUSS als letzte Route stehen: Der Spielbetriebs-Host matcht mit
     // ':association' jedes erste URL-Segment. Bleibt danach nichts übrig (also
     // bei einer Ein-Segment-URL wie /email-bestaetigen), gilt die Route als

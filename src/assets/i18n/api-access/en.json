@@ -1,0 +1,77 @@
+{
+  "title": "Request API access",
+  "intro": "The Saisonmanager API provides leagues, schedules, results, tables and statistics. If you want to build something for floorball with it, you can request access here.",
+  "intent": {
+    "heading": "Is your project commercial?",
+    "hint": "Commercial means: selling or passing on the data, paid offerings and paywalls, or ad funding that earns a profit beyond covering running costs.",
+    "nonCommercial": "Non-commercial project",
+    "nonCommercialHint": "For example a club website, a widget, a statistics tool, research or open source.",
+    "commercial": "Commercial project",
+    "commercialHint": "The application process in the system does not cover this, it needs an individual arrangement."
+  },
+  "commercialNotice": {
+    "heading": "Commercial projects are arranged individually",
+    "text": "The terms of use exclude commercial exploitation, so the application ends here. Instead, drop us a short note about your plans and we will look at your case.",
+    "includeHeading": "This helps us assess it:",
+    "include1": "organisation and contact person",
+    "include2": "what the offering does and for whom",
+    "include3": "how it is funded",
+    "include4": "which data you need and how often",
+    "mailButton": "Email it@floorball.de"
+  },
+  "summary": {
+    "heading": "The essentials at a glance",
+    "item1": "No commercial exploitation: no selling the data, no paywall, no ad funding for profit (§ 4.1).",
+    "item2": "No applications that replicate core Saisonmanager functions, meaning competition management, licensing or transfers (§ 4.2).",
+    "item3": "Data is delivered with a ten-minute delay; there is no real-time access (§ 6.3).",
+    "item4": "Respect rate limits, cache sensibly, do not mirror the full dataset without prior arrangement (§ 6.1, § 6.2).",
+    "item5": "Credit the source (“Daten: Saisonmanager / Floorball Verband Deutschland e. V.”) and mark your own offering as unofficial (§ 7).",
+    "item6": "Do not publish contact details of players, referees or officials, do not build personal profiles, and treat data on minors with particular care (§ 5).",
+    "item7": "One key per project, never shared: you are liable for every request made with it (§ 2.3).",
+    "item8": "Provided as is, and access can be revoked at any time (§ 9, § 11).",
+    "footnote": "This summary does not replace the agreement. Only the full text is binding."
+  },
+  "form": {
+    "organisation": "Name / organisation",
+    "contactName": "Represented by",
+    "email": "Contact email",
+    "address": "Postal address",
+    "projectUrl": "URL or repository (if available)",
+    "projectDescription": "Project description",
+    "purpose": "Intended use",
+    "acceptTerms": "I have read the terms of use and accept them.",
+    "termsLink": "Read the full agreement",
+    "version": "version {{version}}",
+    "submit": "Submit request",
+    "submitHint": "Please fill in the required fields and confirm the agreement.",
+    "termsUnavailable": "The agreement cannot be loaded right now. Please reload the page later.",
+    "genericError": "The request could not be submitted. Please try again later.",
+    "doneHeading": "Request received",
+    "doneText": "We have received your request and will review it. You will hear from us by email at the address you provided."
+  },
+  "terms": {
+    "version": "Version of {{version}}",
+    "languageNotice": "This agreement is legally binding in German only. If you need help understanding it, please contact it@floorball.de.",
+    "backToForm": "Back to the request form"
+  },
+  "reveal": {
+    "title": "Collect your API key",
+    "loading": "Checking the link …",
+    "ready": "Your access has been approved.",
+    "readyFor": "Access for {{organisation}} has been approved.",
+    "onceHint": "The key is shown exactly once and cannot be retrieved afterwards, not even by us. Have somewhere ready to store it.",
+    "validUntil": "The link is valid until {{date}}.",
+    "button": "Show the key now",
+    "successHeading": "This is your API key",
+    "copy": "Copy to clipboard",
+    "copied": "Copied",
+    "onceWarning": "Store the key now. It will not be shown again.",
+    "nextStepsHeading": "What comes next",
+    "nextStep1": "Send the key as an X-Api-Key header with every request.",
+    "nextStep2": "The endpoint documentation is at doku.saisonmanager.org.",
+    "nextStep3": "Get in touch if the key is lost or if you are planning a second project.",
+    "alreadyRevealed": "The key has already been collected through this link. For security reasons we only store its check value, so we cannot show it again. Contact it@floorball.de if you need new access.",
+    "expired": "This link has expired. Contact it@floorball.de and we will issue a new one.",
+    "invalid": "This link is not valid."
+  }
+}

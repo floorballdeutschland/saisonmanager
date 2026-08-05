@@ -89,6 +89,7 @@ export * from './gameday.interface';
 export * from './arena.interface';
 export * from './state-association.interface';
 export * from './api-key.interface';
+export * from './api-key-application.interface';
 export * from './player-change-request.interface';
 export * from './transfer-request.interface';
 export * from './admin-license.interface';
