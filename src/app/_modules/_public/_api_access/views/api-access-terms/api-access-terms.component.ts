@@ -3,7 +3,11 @@ import {
   Component,
   ViewEncapsulation,
 } from '@angular/core';
-import { API_TERMS_VERSION } from '../../api-terms-version';
+import {
+  API_DAILY_REQUEST_GUIDELINE,
+  API_RATE_LIMIT_PER_MINUTE,
+  API_TERMS_VERSION,
+} from '../../api-terms-version';
 
 /**
  * Volltext der Nutzungsvereinbarung für die Saisonmanager-API.
@@ -24,4 +28,8 @@ import { API_TERMS_VERSION } from '../../api-terms-version';
 })
 export class ApiAccessTermsComponent {
   readonly version = API_TERMS_VERSION;
+  readonly rateLimitPerMinute = API_RATE_LIMIT_PER_MINUTE;
+  /** Tausenderpunkt wie im Fließtext, nicht als Zahl aus der Locale. */
+  readonly dailyRequestGuideline =
+    API_DAILY_REQUEST_GUIDELINE.toLocaleString('de-DE');
 }

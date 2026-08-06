@@ -208,12 +208,22 @@
       <ol class="list-decimal list-outside ml-5 space-y-1">
         <li>
           Der Nutzer beachtet die vom Anbieter festgelegten Rate-Limits und
-          umgeht sie nicht (z.&nbsp;B. durch mehrere Keys oder IP-Rotation).
+          umgeht sie nicht (z.&nbsp;B. durch mehrere Keys oder IP-Rotation). Für
+          Zugänge aus diesem Antragsverfahren gilt ohne abweichende Absprache
+          eine Grenze von {{ rateLimitPerMinute }} Anfragen pro Minute je Key.
+          Wird sie überschritten, beantwortet die API weitere Anfragen mit dem
+          Status 429 und nennt in der Kopfzeile <code>Retry-After</code> die
+          Wartezeit in Sekunden; der Nutzer wartet sie ab. Der Anbieter kann die
+          Grenze für einen Zugang anheben oder absenken und teilt eine Absenkung
+          in Textform mit.
         </li>
         <li>
           Der Nutzer nutzt sinnvolles Caching und verzichtet auf redundante
           Abfragen sowie auf massenhaftes Spiegeln des Gesamtbestands ohne
-          Absprache.
+          Absprache. Als Richtwert für ein angemessenes Tagesvolumen gelten
+          {{ dailyRequestGuideline }} Abrufe je Key. Der Richtwert wird nicht
+          technisch erzwungen; wer dauerhaft mehr benötigt, stimmt dies vorab
+          mit dem Anbieter ab.
         </li>
         <li>
           Der Nutzer akzeptiert die Bereitstellung der Daten für inoffizielle

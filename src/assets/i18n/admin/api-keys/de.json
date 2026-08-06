@@ -58,7 +58,7 @@
     "termsAccepted": "Vereinbarung in der Fassung {{ version }} bestätigt am {{ date }}",
     "decisionNote": "Notiz",
     "approve": "Annehmen",
-    "approveHint": "Beim Annehmen entsteht noch kein Key: Der Antragsteller bekommt einen Abhol-Link, über den der Key genau einmal angezeigt wird. Der Zugang läuft ohne Rate-Limit und ohne Echtzeit-Zugriff.",
+    "approveHint": "Beim Annehmen entsteht noch kein Key: Der Antragsteller bekommt einen Abhol-Link, über den der Key genau einmal angezeigt wird. Der Zugang startet mit dem Standard-Limit für beantragte Zugänge und ohne Echtzeit-Zugriff; das Limit lässt sich in der Key-Liste jederzeit ändern.",
     "reject": "Ablehnen",
     "rejectReasonLabel": "Begründung für die Ablehnung (geht per Mail an den Antragsteller)",
     "confirmReject": "Ablehnung abschicken",

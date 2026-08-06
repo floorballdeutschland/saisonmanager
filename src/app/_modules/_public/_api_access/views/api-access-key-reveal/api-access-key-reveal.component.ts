@@ -11,6 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ApiKeyApplicationService } from '@floorball/core';
 import { ApiKeyRevealState } from '@floorball/types';
+import { API_RATE_LIMIT_PER_MINUTE } from '../../api-terms-version';
 
 /**
  * Abholen des genehmigten API-Keys über den Einmal-Link aus der
@@ -28,6 +29,9 @@ import { ApiKeyRevealState } from '@floorball/types';
   standalone: false,
 })
 export class ApiAccessKeyRevealComponent implements OnInit, OnDestroy {
+  /** Grenze, mit der der frisch abgeholte Key startet (§ 6.1). */
+  readonly rateLimitPerMinute = API_RATE_LIMIT_PER_MINUTE;
+
   loading = true;
   revealing = false;
   state: ApiKeyRevealState = 'invalid';

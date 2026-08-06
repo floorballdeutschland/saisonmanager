@@ -45,6 +45,12 @@
         </p>
         <ul class="list-disc list-inside space-y-1">
           <li>{{ "apiAccess.reveal.nextStep1" | transloco }}</li>
+          <li>
+            {{
+              "apiAccess.reveal.rateLimit"
+                | transloco: { limit: rateLimitPerMinute }
+            }}
+          </li>
           <li>{{ "apiAccess.reveal.nextStep2" | transloco }}</li>
           <li>{{ "apiAccess.reveal.nextStep3" | transloco }}</li>
         </ul>
