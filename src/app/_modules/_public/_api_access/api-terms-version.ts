@@ -1,10 +1,13 @@
 /**
  * Fassung der Nutzungsvereinbarung, wie sie auf der Volltext-Seite steht.
  *
- * Nur zur Anzeige („Fassung vom …"). Maßgeblich für den Antrag ist die Fassung,
- * die die API über GET api_terms_version liefert (ApiTerms::VERSION); stimmen
- * beide nicht überein, weist der Server die Zustimmung mit der Bitte um einen
- * Neuladen der Seite ab. Bei einer Textänderung sind beide Stellen zu ändern.
+ * Nur zur Anzeige („Fassung vom …"). Was der Antrag festhält, ist die Fassung,
+ * die das Formular beim Laden über GET api_terms_version geholt hat
+ * (ApiTerms::VERSION); der Server weist die Zustimmung ab, wenn sie
+ * zwischenzeitlich veraltet ist, etwa bei einem lange offenen Tab.
+ *
+ * Diese Konstante sieht der Server nie. Weicht sie vom Text daneben ab, fällt
+ * das nirgends auf, deshalb bei einer Textänderung immer beide Stellen ziehen.
  */
 export const API_TERMS_VERSION = '2026-08-06';
 

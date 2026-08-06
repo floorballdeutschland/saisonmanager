@@ -6757,12 +6757,17 @@
           <div class="note">
             <strong>Was ein neuer Zugang mitbringt.</strong> Die Daten kommen
             mit zehn Minuten Verzögerung zum Echtbestand, Ergebnisse laufender
-            Spiele bleiben in dieser Zeit ausgeblendet. Ein Anfragelimit setzen
-            wir zunächst nicht: Wir sehen pro Schlüssel, welche Endpunkte wie
-            oft abgefragt werden, und sprechen ein Limit erst an, wenn die
-            Zahlen dafür sprechen. Sinnvolles Zwischenspeichern auf deiner Seite
-            ist Teil der Vereinbarung, ebenso der Verzicht darauf, den
-            Gesamtbestand ohne Absprache zu spiegeln.
+            Spiele bleiben in dieser Zeit ausgeblendet. Der Schlüssel startet
+            mit 60 Anfragen pro Minute. Wird das überschritten, antworten wir
+            mit <code>429 Too Many Requests</code> und nennen in der Kopfzeile
+            <code>Retry-After</code> die Wartezeit in Sekunden; warte sie ab,
+            statt es sofort erneut zu versuchen. Als Tagesvolumen gilt ein
+            Richtwert von 10.000 Abrufen. Brauchst du dauerhaft mehr, melde dich
+            bei uns: Wir sehen pro Schlüssel, welche Endpunkte wie oft abgefragt
+            werden, und heben das Limit an, wenn das Vorhaben es rechtfertigt.
+            Sinnvolles Zwischenspeichern auf deiner Seite ist Teil der
+            Vereinbarung, ebenso der Verzicht darauf, den Gesamtbestand ohne
+            Absprache zu spiegeln.
           </div>
           <div class="note">
             <strong>Bitte nenne die Quelle.</strong> „Daten: Saisonmanager /
