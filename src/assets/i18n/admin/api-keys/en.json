@@ -58,7 +58,7 @@
     "termsAccepted": "Agreement version {{ version }} accepted on {{ date }}",
     "decisionNote": "Note",
     "approve": "Approve",
-    "approveHint": "Approving does not create a key yet: the applicant receives a collection link that shows the key exactly once. Access is granted without a rate limit and without real-time data.",
+    "approveHint": "Approving does not create a key yet: the applicant receives a collection link that shows the key exactly once. Access starts with the default limit for requested access and without real-time data; the limit can be changed at any time in the key list.",
     "reject": "Reject",
     "rejectReasonLabel": "Reason for rejection (sent to the applicant by email)",
     "confirmReject": "Send rejection",
