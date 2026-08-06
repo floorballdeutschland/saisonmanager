@@ -108,7 +108,12 @@
           <li>{{ "apiAccess.summary.item1" | transloco }}</li>
           <li>{{ "apiAccess.summary.item2" | transloco }}</li>
           <li>{{ "apiAccess.summary.item3" | transloco }}</li>
-          <li>{{ "apiAccess.summary.item4" | transloco }}</li>
+          <li>
+            {{
+              "apiAccess.summary.item4"
+                | transloco: { limit: rateLimitPerMinute }
+            }}
+          </li>
           <li>{{ "apiAccess.summary.item5" | transloco }}</li>
           <li>{{ "apiAccess.summary.item6" | transloco }}</li>
           <li>{{ "apiAccess.summary.item7" | transloco }}</li>

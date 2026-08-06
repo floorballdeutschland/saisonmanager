@@ -9,6 +9,7 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { ApiKeyApplicationService } from '@floorball/core';
+import { API_RATE_LIMIT_PER_MINUTE } from '../../api-terms-version';
 
 /** Kommerziell oder nicht: Die Antwort entscheidet, ob es überhaupt weitergeht. */
 type Intent = 'non_commercial' | 'commercial';
@@ -30,6 +31,9 @@ type Intent = 'non_commercial' | 'commercial';
 })
 export class ApiAccessRequestComponent implements OnInit, OnDestroy {
   intent: Intent | null = null;
+
+  /** Standardgrenze, die die Kurzfassung nennt (§ 6.1). */
+  readonly rateLimitPerMinute = API_RATE_LIMIT_PER_MINUTE;
 
   organisation = '';
   contactName = '';

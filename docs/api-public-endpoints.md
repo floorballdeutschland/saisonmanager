@@ -15,8 +15,11 @@ Was dabei zu wissen ist:
   per E-Mail an it@floorball.de.
 - Ein genehmigter Zugang liefert die Daten mit **zehn Minuten Verzögerung** zum Echtbestand;
   Ergebnisse laufender Spiele bleiben in dieser Zeit ausgeblendet.
-- Neue Keys starten **ohne Rate-Limit**. Die Nutzung wird pro Endpunkt ausgewertet, ein Limit kommt
-  erst, wenn die Zahlen dafür sprechen. Sinnvolles Caching ist Teil der Vereinbarung.
+- Ein beantragter Zugang startet mit **60 Anfragen pro Minute**. Darüber antwortet die API mit
+  `429` und nennt in `Retry-After` die Wartezeit in Sekunden. Als Tagesvolumen gilt ein Richtwert
+  von 10.000 Abrufen, der nicht erzwungen wird; wer dauerhaft mehr braucht, spricht das vorher ab.
+  Sinnvolles Caching ist Teil der Vereinbarung, und häufiger als alle zehn Minuten zu fragen bringt
+  wegen der Verzögerung ohnehin nichts.
 - Der Key wird nach der Freigabe genau einmal angezeigt, über einen Einmal-Link. Im System liegt nur
   sein Prüfwert, ein nachträgliches Auslesen ist also auch uns nicht möglich.
 
