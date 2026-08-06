@@ -28,7 +28,8 @@ export interface PlayerStatsTotals {
 
 export interface PlayerStats {
   // Geburtsdatum und Geschlecht liefert die öffentliche Statistik bewusst
-  // nicht mehr: Der Endpunkt hängt nur am X-Api-Key.
+  // nicht mehr: Der Endpunkt ist ohne Anmeldung allein mit einem X-Api-Key
+  // abrufbar.
   player: {
     id: number;
     first_name: string;
