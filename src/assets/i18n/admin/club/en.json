@@ -41,6 +41,7 @@
     "noLogo": "no logo set",
     "uploadLogo": "Upload logo",
     "logoHint": "PNG, JPG or WebP · resized to 100×100 pixels",
+    "logoTransparencyHint": "Ideally upload a cut-out image, i.e. a PNG with a transparent background. The logo also appears on dark backgrounds, for example in livestream overlays, where a white box is clearly visible.",
     "clubStatus": "Club status",
     "deactivatedOn": "Deactivated on {{ date }}",
     "deactivateClub": "Deactivate club",

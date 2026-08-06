@@ -41,6 +41,7 @@
     "noLogo": "kein Logo hinterlegt",
     "uploadLogo": "Logo hochladen",
     "logoHint": "PNG, JPG oder WebP · wird auf 100×100 Pixel verkleinert",
+    "logoTransparencyHint": "Am besten freigestellt hochladen, also ein PNG mit transparentem Hintergrund. Das Logo erscheint auch auf dunklem Grund, etwa in Livestream-Einblendungen; ein weißer Kasten ist dort deutlich zu sehen.",
     "clubStatus": "Vereinsstatus",
     "deactivatedOn": "Deaktiviert am {{ date }}",
     "deactivateClub": "Verein deaktivieren",
