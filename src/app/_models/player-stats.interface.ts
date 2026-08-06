@@ -27,12 +27,12 @@ export interface PlayerStatsTotals {
 }
 
 export interface PlayerStats {
+  // Geburtsdatum und Geschlecht liefert die öffentliche Statistik bewusst
+  // nicht mehr: Der Endpunkt hängt nur am X-Api-Key.
   player: {
     id: number;
     first_name: string;
     last_name: string;
-    birthdate: string;
-    gender: string;
     deactivated_at?: string;
   };
   seasons: PlayerStatsSeason[];
