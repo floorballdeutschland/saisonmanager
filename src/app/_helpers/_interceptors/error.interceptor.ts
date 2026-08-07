@@ -86,6 +86,16 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Das Spielsekretariat per Einmal-Link (/spielsekretariat?token=…)
+        // rendert jeden Fehlerzustand als eigene Ansicht, genau wie das
+        // Schiri-Feedback oben. Ohne diese Ausnahme käme zum abgelaufenen Link
+        // (410) ein zweiter, nicht selbstschließender Toast mit demselben Text,
+        // und ein 401 würde jemanden abmelden und auf /login schicken, der hier
+        // bewusst ohne Benutzerkonto arbeitet.
+        if (request.url.includes('public/secretary')) {
+          return throwError(() => err);
+        }
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           const returnUrl = this._router.url;
           this.sessionService.logout(false, true, 'Bitte einloggen.', false);

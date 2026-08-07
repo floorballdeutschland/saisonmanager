@@ -51,9 +51,15 @@ export class SpielSekretariatComponent implements OnInit {
         this.loading = false;
         this._cdr.markForCheck();
       },
+      // err.message stammt aus normalizeSecretaryPayload und meldet eine
+      // unbrauchbare Antwort. Diesen Fall nicht als abgelaufenen Link ausgeben:
+      // Das Sekretariat ließe sich sonst einen neuen Link geben, der genauso
+      // scheitert.
       error: (err) => {
         this.error =
-          err?.error?.message ?? 'Der Link ist ungültig oder abgelaufen.';
+          err?.error?.message ??
+          (err instanceof Error ? err.message : null) ??
+          'Der Link ist ungültig oder abgelaufen.';
         this.loading = false;
         this._cdr.markForCheck();
       },

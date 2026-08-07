@@ -60,6 +60,7 @@ describe('SecretaryLinksComponent', () => {
     notificationService = jasmine.createSpyObj('NotificationService', [
       'error',
       'success',
+      'warning',
     ]);
     gameService.getSecretaryGameDays.and.returnValue(of([hallDay()]));
 
@@ -114,7 +115,9 @@ describe('SecretaryLinksComponent', () => {
     expect(component.linkFor(group)?.expires_at).toBe('2026-01-13T12:00:00Z');
   });
 
-  it('meldet die Servermeldung beim Erzeugen und blockiert nicht dauerhaft', () => {
+  // Den Toast setzt der ErrorInterceptor mit der Servermeldung. Ein zweiter aus
+  // der Komponente trüge dieselbe ID und verdeckte die genauere Meldung (fe#229).
+  it('blockiert nach einem Fehler nicht dauerhaft und toastet nicht selbst', () => {
     gameService.createSecretaryLink.and.returnValue(
       throwError(() => ({ error: { error: 'Nicht berechtigt.' } }))
     );
@@ -122,19 +125,45 @@ describe('SecretaryLinksComponent', () => {
 
     component.generate(component.hallDays[0]);
 
-    expect(notificationService.error).toHaveBeenCalledWith('Nicht berechtigt.');
     expect(component.generatingKey).toBeNull();
+    expect(notificationService.error).not.toHaveBeenCalled();
   });
 
-  it('meldet einen Fehler beim Laden', () => {
+  // Ohne loadFailed behauptete die Seite „Keine Spieltage gefunden" – eine
+  // Tatsachenbehauptung, die sie nach einem Fehler gar nicht treffen kann.
+  it('unterscheidet einen Ladefehler von einer leeren Liste', () => {
     gameService.getSecretaryGameDays.and.returnValue(
       throwError(() => new Error('boom'))
     );
 
     component.ngOnInit();
+    fixture.detectChanges();
 
     expect(component.loading).toBe(false);
-    expect(notificationService.error).toHaveBeenCalled();
+    expect(component.loadFailed).toBe(true);
+    const text: string = fixture.nativeElement.textContent;
+    expect(text).toContain('konnten nicht geladen werden');
+    expect(text).not.toContain('Keine Spieltage gefunden');
+  });
+
+  it('warnt, wenn der Link weniger abdeckt als angezeigt', () => {
+    gameService.createSecretaryLink.and.returnValue(
+      of({ ...createResponse, game_day_ids: [1] })
+    );
+    component.ngOnInit();
+
+    component.generate(component.hallDays[0]);
+
+    expect(notificationService.warning).toHaveBeenCalled();
+  });
+
+  it('warnt nicht, wenn der Link alles abdeckt', () => {
+    gameService.createSecretaryLink.and.returnValue(of(createResponse));
+    component.ngOnInit();
+
+    component.generate(component.hallDays[0]);
+
+    expect(notificationService.warning).not.toHaveBeenCalled();
   });
 
   // Ohne Halle bildet ein Spieltag eine eigene Gruppe – der Schlüssel darf sich

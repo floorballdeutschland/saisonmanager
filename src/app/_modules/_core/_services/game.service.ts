@@ -60,7 +60,11 @@ interface SecretaryPayloadWire {
   created_by?: string;
 }
 
-/** Begradigte Form für die Ansicht: Spieltagsliste immer gefüllt. */
+/**
+ * Begradigte Form für die Ansicht. Zwei Zusagen, auf die sie sich verlässt:
+ * `game_days` ist nie leer, und jedes Spiel kennt seinen Spieltag – Letzteres
+ * ist die Grundlage dafür, dass `matchReportUrl` die richtige Liga trifft.
+ */
 export interface SecretaryPayload {
   game_days: NonEmptyArray<SecretaryTokenGameDay>;
   games: (SecretaryGameWire & { game_day_id: number })[];
@@ -69,19 +73,39 @@ export interface SecretaryPayload {
   created_by?: string;
 }
 
+/**
+ * Bringt die Antwort auf die Form, die `SecretaryPayload` zusagt. Hier liegt
+ * auch die Verträglichkeit mit der alten API, die `game_days` noch nicht kennt.
+ *
+ * Eine unbrauchbare Antwort wird ausdrücklich abgewiesen statt weitergereicht:
+ * Sonst schlüge weiter unten ein TypeError zu, den die Ansicht als „Link
+ * abgelaufen" deutete. Das Sekretariat ließe sich dann einen neuen Link geben,
+ * der genauso scheitert.
+ */
 export function normalizeSecretaryPayload(
   wire: SecretaryPayloadWire
 ): SecretaryPayload {
-  const days = wire.game_days?.length ? wire.game_days : [wire.game_day];
-  const fallbackDayId = days[0].id;
+  const days = wire.game_days?.length
+    ? wire.game_days
+    : wire.game_day
+      ? [wire.game_day]
+      : [];
+
+  if (!days.length || !Array.isArray(wire.games)) {
+    console.error('Unerwartete Antwort für das Spielsekretariat', wire);
+    throw new Error(
+      'Die Antwort des Servers war unvollständig. Bitte lade die Seite neu.'
+    );
+  }
 
   return {
     ...wire,
     game_days: days as NonEmptyArray<SecretaryTokenGameDay>,
-    // Ohne game_days gibt es genau einen Spieltag, also gehört jedes Spiel dazu.
+    // Nur der Altfall braucht den Rückfall, dort gibt es genau einen Spieltag.
+    // Bei mehreren Spieltagen liefert die API game_day_id immer mit.
     games: wire.games.map((game) => ({
       ...game,
-      game_day_id: game.game_day_id ?? fallbackDayId,
+      game_day_id: game.game_day_id ?? days[0].id,
     })),
   };
 }

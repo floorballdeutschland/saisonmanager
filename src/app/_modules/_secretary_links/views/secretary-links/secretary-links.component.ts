@@ -27,6 +27,7 @@ import { SecretaryHallDay, SecretaryLinkInfo } from '@floorball/types';
 export class SecretaryLinksComponent implements OnInit, OnDestroy {
   hallDays: SecretaryHallDay[] = [];
   loading = true;
+  loadFailed = false;
 
   /** Zuletzt erzeugte URL je Gruppe – der Rohtoken kommt nur genau einmal. */
   urlByKey: Record<string, string> = {};
@@ -86,6 +87,14 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
       .join(' · ');
   }
 
+  /** Ligen derselben Halle, für die die Berechtigung fehlt. */
+  otherLeagueNames(hallDay: SecretaryHallDay): string {
+    return hallDay.other_game_days_in_hall
+      .map((gd) => gd.league)
+      .filter((name): name is string => !!name)
+      .join(', ');
+  }
+
   gamesCount(hallDay: SecretaryHallDay): number {
     return hallDay.game_days.reduce((sum, gd) => sum + gd.games_count, 0);
   }
@@ -113,13 +122,14 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
             game_day_ids: result.game_day_ids,
           };
           this.generatingKey = null;
+          this._warnOnCoverageMismatch(hallDay, result.game_day_ids);
           this._cdr.markForCheck();
         },
-        error: (err) => {
+        // Die Fehlermeldung kommt vom ErrorInterceptor, der die Servernachricht
+        // bereits ausliest. Ein eigener Toast hätte dieselbe ID und würde die
+        // genauere Meldung nur verdecken (fe#229).
+        error: () => {
           this.generatingKey = null;
-          this._notificationService.error(
-            err?.error?.error ?? 'Der Link konnte nicht erzeugt werden.'
-          );
           this._cdr.markForCheck();
         },
       });
@@ -155,6 +165,25 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
+  /**
+   * Die Liste kann veraltet sein: Wurde ein Spieltag inzwischen in eine andere
+   * Halle verlegt, deckt der Link weniger ab, als hier steht. Ohne Hinweis ginge
+   * der Link so hinaus und am Tisch fehlten Spiele.
+   */
+  private _warnOnCoverageMismatch(
+    hallDay: SecretaryHallDay,
+    issuedIds: number[]
+  ): void {
+    const shown = hallDay.game_days.map((gd) => gd.id);
+    const missing = shown.filter((id) => !issuedIds.includes(id));
+    if (missing.length === 0) return;
+
+    this._notificationService.warning(
+      'Der Link deckt weniger Spieltage ab als hier angezeigt. ' +
+        'Bitte lade die Seite neu und prüfe, welche Spiele enthalten sind.'
+    );
+  }
+
   private _load(): void {
     this._gameService
       .getSecretaryGameDays()
@@ -162,14 +191,16 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (hallDays) => {
           this.hallDays = hallDays;
+          this.loadFailed = false;
           this.loading = false;
           this._cdr.markForCheck();
         },
+        // Den Toast übernimmt der ErrorInterceptor. Hier wird nur der Zustand
+        // festgehalten: ohne ihn zeigte die Seite „Keine Spieltage gefunden" und
+        // behauptete damit als Tatsache, was sie gar nicht wissen kann.
         error: () => {
+          this.loadFailed = true;
           this.loading = false;
-          this._notificationService.error(
-            'Die Spieltage konnten nicht geladen werden.'
-          );
           this._cdr.markForCheck();
         },
       });

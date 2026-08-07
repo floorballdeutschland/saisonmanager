@@ -64,4 +64,27 @@ describe('normalizeSecretaryPayload', () => {
 
     expect(result.game_days.map((d) => d.id)).toEqual([1]);
   });
+
+  // Ohne diese Abweisung schlüge weiter unten ein TypeError zu, den die Ansicht
+  // als „Link abgelaufen" ausgäbe. Das Sekretariat ließe sich dann einen neuen
+  // Link geben, der genauso scheitert.
+  it('weist eine Antwort ohne jeden Spieltag ab, statt sie durchzureichen', () => {
+    expect(() =>
+      normalizeSecretaryPayload({
+        ...base,
+        game_day: null,
+        game_days: [],
+        games: [],
+      } as unknown as Parameters<typeof normalizeSecretaryPayload>[0])
+    ).toThrowError(/unvollständig/);
+  });
+
+  it('weist eine Antwort ohne Spieleliste ab', () => {
+    expect(() =>
+      normalizeSecretaryPayload({
+        ...base,
+        game_day: day(1, 'U15'),
+      } as unknown as Parameters<typeof normalizeSecretaryPayload>[0])
+    ).toThrowError(/unvollständig/);
+  });
 });
