@@ -101,3 +101,4 @@ export * from './email-log.interface';
 export * from './proceeding-proposal.interface';
 export * from './email-template.interface';
 export * from './checklist-veto.interface';
+export * from './secretary-hall-day.interface';

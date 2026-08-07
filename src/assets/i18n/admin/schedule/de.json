@@ -13,13 +13,14 @@
     "linkActiveUntil": "Link aktiv bis {{ date }}",
     "copyLinkTitle": "Link kopieren",
     "copyLink": "Link kopieren",
-    "secretaryLinkTitle": "Spielsekretariats-Link generieren – Link für Schiedsrichter/Spielsekretariat zum Abrufen der Lizenzen und Spielberichte",
+    "secretaryLinkTitle": "Spielsekretariats-Link erzeugen. Der Link gilt 72 Stunden und deckt alle Spieltage ab, die an diesem Tag in derselben Halle stattfinden.",
     "secretaryLinkGenerating": "Wird generiert…",
     "secretaryLink": "Spielsek-Link",
     "editGameDayTitle": "Spieltag bearbeiten",
     "editGameDay": "Spieltag bearbeiten",
     "gamesHeading": "Spiele",
-    "addNewGame": "Neues Spiel hinzufügen"
+    "addNewGame": "Neues Spiel hinzufügen",
+    "linkCovers": "Der Link deckt ab: {{leagues}}"
   },
   "gameDayEdit": {
     "title": "Spielplanverwaltung",

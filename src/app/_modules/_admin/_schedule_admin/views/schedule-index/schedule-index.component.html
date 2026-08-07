@@ -168,6 +168,15 @@
                                 date: (link.expires_at | date: "dd.MM. HH:mm"),
                               }
                       }}</span>
+                      <!-- Der Link kann mehrere Ligen derselben Halle
+                           mitnehmen. Das muss vor dem Weitergeben sichtbar
+                           sein. -->
+                      @if (link.leagues.length > 1) {
+                        <span class="hidden lg:inline">{{
+                          "scheduleAdmin.index.linkCovers"
+                            | transloco: { leagues: link.leagues.join(", ") }
+                        }}</span>
+                      }
                       <button
                         type="button"
                         (click)="copyToClipboard(link.url)"
