@@ -187,6 +187,33 @@ body {
   font-weight: 500;
 }
 
+/* Spielzeit. Eigene Spalte zwischen Stand und Abschnitt, in derselben
+   schmalen Grotesk wie die Ziffern. Tabellenziffern, damit die Breite beim
+   Weiterlaufen nicht zappelt. */
+.ov-clock {
+  display: flex;
+  align-items: center;
+  padding: 18px 24px;
+  border-left: 1px solid rgb(255 255 255 / 10%);
+  font-family: var(--ov-display);
+  font-weight: 500;
+  font-size: 38px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ohne Dock gibt es keine Uhr. Dann verschwindet die Spalte ganz, statt eine
+   leere Fläche in der Anzeigetafel zu hinterlassen. */
+.ov-clock.ov-hidden {
+  display: none;
+}
+
+/* Angehaltene Uhr sichtbar machen: In der Drittelpause soll niemand denken,
+   die Zeit laufe weiter. */
+.ov-clock--stopped {
+  color: var(--ov-text-muted);
+}
+
 /* Abschnitt und Live-Punkt rechts, als eigene Spalte. */
 .ov-meta {
   display: flex;
@@ -254,6 +281,82 @@ body {
 .ov-league-mark img {
   height: 54px;
   width: auto;
+}
+
+/* ══ Bauchbinde ════════════════════════════════════════════════════════════
+   Links unten, oberhalb der Anzeigetafel. Fährt von links ein, damit das
+   Auge sie mitnimmt, statt dass sie einfach da ist. */
+
+.ov-lower-third {
+  position: absolute;
+  left: 60px;
+  bottom: 190px;
+  min-width: 620px;
+  max-width: 1100px;
+  padding: 20px 34px 22px;
+  border-radius: 10px;
+  background: var(--ov-grad-dark);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 45%);
+  transition:
+    opacity 0.3s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ov-lower-third::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  border-radius: 10px 0 0 10px;
+  background: var(--ov-grad-accent);
+}
+
+/* Eigener Zustand statt .ov-hidden: Die Bauchbinde soll seitlich wegfahren
+   und keinen Platz mehr beanspruchen, nicht nur durchsichtig werden. */
+.ov-lt-hidden {
+  opacity: 0;
+  transform: translateX(-40px);
+  pointer-events: none;
+}
+
+.ov-lt-kicker {
+  font-family: var(--ov-body);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ov-accent);
+  margin-bottom: 4px;
+  min-height: 20px;
+}
+
+.ov-lt-main {
+  font-family: var(--ov-display);
+  font-weight: 600;
+  font-size: 46px;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.ov-lt-sub {
+  font-size: 20px;
+  color: var(--ov-text-muted);
+  margin-top: 6px;
+}
+
+/* Die Bauchbinde blendet aus, sobald der Text leer ist: `display: none` würde
+   die Bewegung überspringen, deshalb nur die Höhe wegnehmen. */
+.ov-lt-sub.ov-hidden {
+  margin-top: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ov-lower-third {
+    transition: none;
+  }
 }
 
 /* Reduzierte Bewegung respektieren. In OBS ohne Wirkung, aber die Seite lässt

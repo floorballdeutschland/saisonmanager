@@ -1,0 +1,205 @@
+/*
+ * Bedienfeld der Livestream-Overlays.
+ *
+ * Anders als die Bühne ist das hier keine Sendegrafik, sondern eine
+ * Bedienoberfläche, die in einem schmalen OBS-Dock neben dem Programmbild
+ * sitzt. Dunkel, damit sie sich in die OBS-Oberfläche einfügt, mit großen
+ * Flächen: Bedient wird sie zwischen zwei Spielzügen und oft in Eile.
+ *
+ * Eigene Datei, nicht overlay.css: Die Bühne muss transparent sein und darf
+ * keine Bedienelemente kennen.
+ */
+
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/inter-latin-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --dk-bg: #0f0f23;
+  --dk-card: #1a1a2e;
+  --dk-card-hover: #1e1e3f;
+  --dk-line: #2a2a4a;
+  --dk-accent: #e94560;
+  --dk-success: #28a745;
+  --dk-text: #f1f1f1;
+  --dk-muted: #a0a0a0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--dk-bg);
+  color: var(--dk-text);
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  font-size: 14px;
+  padding: 12px;
+  min-width: 260px;
+}
+
+.dk {
+  display: grid;
+  gap: 10px;
+}
+
+.dk-status {
+  font-size: 12px;
+  color: var(--dk-muted);
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--dk-card);
+}
+
+.dk-status--error {
+  color: var(--dk-accent);
+}
+
+.dk-card {
+  background: var(--dk-card);
+  border: 1px solid var(--dk-line);
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.dk-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dk-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dk-muted);
+}
+
+.dk-select,
+.dk-input {
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--dk-line);
+  background: var(--dk-bg);
+  color: var(--dk-text);
+  font: inherit;
+}
+
+.dk-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.dk-btn,
+.dk-toggle {
+  flex: 1 1 auto;
+  min-width: 74px;
+  /* Große Trefferfläche: Bedient wird zwischen zwei Spielzügen. */
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--dk-line);
+  background: var(--dk-card-hover);
+  color: var(--dk-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dk-btn:hover,
+.dk-toggle:hover {
+  border-color: var(--dk-muted);
+}
+
+.dk-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dk-toggle {
+  flex: 0 0 auto;
+  min-width: 106px;
+}
+
+/* Eingeschaltet heißt grün. Der Zustand muss auf einen Blick erkennbar sein,
+   ohne den Text zu lesen. */
+.dk-toggle--on {
+  background: rgb(40 167 69 / 22%);
+  border-color: var(--dk-success);
+  color: #7ee2a0;
+}
+
+.dk-btn--primary {
+  background: rgb(233 69 96 / 20%);
+  border-color: var(--dk-accent);
+}
+
+.dk-btn--off {
+  color: var(--dk-muted);
+}
+
+.dk-clock {
+  font-size: 34px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.dk-score {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dk-muted);
+}
+
+.dk-override {
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.dk-freetext {
+  display: grid;
+  gap: 6px;
+}
+
+.dk-hint {
+  font-size: 12px;
+  color: var(--dk-muted);
+  line-height: 1.4;
+}
+
+/* Eine vergessene Übersteuerung geht falsch auf Sendung. Deshalb bleibt sie
+   sichtbar, solange sie aktiv ist. */
+.dk-warn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff9b9b;
+  background: rgb(233 69 96 / 15%);
+  border: 1px solid var(--dk-accent);
+  border-radius: 6px;
+  padding: 8px 10px;
+  line-height: 1.4;
+}
+
+.dk-hidden {
+  display: none;
+}

@@ -39,6 +39,10 @@
           <span class="ov-team-name" id="guest-name"></span>
         </div>
 
+        <!-- Die Uhr wird ausschließlich vom Dock gestellt. Ohne geöffnetes
+             Dock bleibt sie leer und die Spalte fällt weg. -->
+        <div class="ov-clock ov-hidden" id="clock"></div>
+
         <div class="ov-meta">
           <span class="ov-period" id="period"></span>
           <span class="ov-live" id="live">
@@ -55,6 +59,15 @@
             height="563"
           />
         </div>
+      </section>
+
+      <!-- Bauchbinde. Eine einzige Fläche für alle Arten (Tor, Strafe,
+           Freitext, Ort): Es ist immer höchstens eine zu sehen, und so
+           wechselt der Inhalt, ohne dass Elemente übereinander liegen. -->
+      <section class="ov-lower-third ov-lt-hidden" id="lower-third">
+        <div class="ov-lt-kicker" id="lt-kicker"></div>
+        <div class="ov-lt-main" id="lt-main"></div>
+        <div class="ov-lt-sub ov-hidden" id="lt-sub"></div>
       </section>
 
       <div class="ov-debug ov-hidden" id="debug"></div>
