@@ -50,6 +50,10 @@ Thumbs.db
 
 # Secrets (never commit)
 src/environments/.api-key
+# Der Sentry-DSN eines Browser-SDK ist zwangsläufig öffentlich (er steht im
+# ausgelieferten Bundle) und damit kein Geheimnis. Er bleibt trotzdem ungetrackt,
+# damit Prod und Staging demselben Ablauf wie beim API-Key folgen.
+src/environments/.sentry-dsn
 src/environments/environment.prod.ts.bak
 src/environments/environment.staging.ts.bak
 .claude/

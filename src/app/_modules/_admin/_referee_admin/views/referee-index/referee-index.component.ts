@@ -13,7 +13,11 @@ import {
   RefereeService,
   SessionService,
 } from '@floorball/core';
-import { RefereeAdmin, StateAssociation } from '@floorball/types';
+import {
+  RefereeAdmin,
+  RefereeStatusFilter,
+  StateAssociation,
+} from '@floorball/types';
 import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 
 @Component({
@@ -32,7 +36,18 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
   searchQuery = '';
   filterLandesverband = '';
   filterLizenzstufe = '';
-  filterActive = false;
+  // Leer = Standard der API: alles außer Karriere beendet. Die Beendeten sind
+  // das Register alter Lizenznummern und im Alltag nur Rauschen; über diese
+  // Auswahl und über die Suche nach der Lizenznummer bleiben sie erreichbar.
+  filterStatus: RefereeStatusFilter = '';
+  readonly statusOptions: RefereeStatusFilter[] = [
+    '',
+    'aktiv',
+    'abgelaufen',
+    'beendet',
+    'ohne_nachweis',
+    'alle',
+  ];
   sortBy: 'name' | 'lizenznummer' = 'name';
   sortDir: 'asc' | 'desc' = 'asc';
 
@@ -90,7 +105,7 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
         q: this.searchQuery || undefined,
         landesverband: this.filterLandesverband || undefined,
         lizenzstufe: this.filterLizenzstufe || undefined,
-        active: this.filterActive ? true : undefined,
+        status: this.filterStatus || undefined,
         sort: this.sortBy,
         sort_dir: this.sortDir,
       })
@@ -137,11 +152,7 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
       r.lizenzstufe,
       r.landesverband,
       r.gueltigkeit,
-      r.guest
-        ? t('refereeAdmin.index.csvGuest')
-        : r.active
-          ? t('refereeAdmin.index.csvActive')
-          : t('refereeAdmin.index.csvExpired'),
+      r.guest ? t('refereeAdmin.index.csvGuest') : t(this.statusLabelKey(r)),
       r.club_name,
       r.email,
       r.season_game_count ?? 0,
@@ -150,11 +161,32 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     downloadCsv('schiedsrichter', headers, rows);
   }
 
+  // Fällt die API-Angabe aus (ältere Antwort), bleibt das alte active-Flag die
+  // Grundlage, damit die Spalte nie leer bleibt.
+  statusLabelKey(referee: RefereeAdmin): string {
+    const status =
+      referee.license_status ?? (referee.active ? 'active' : 'lapsed');
+    return `refereeAdmin.index.status.${status}`;
+  }
+
+  statusClass(referee: RefereeAdmin): string {
+    switch (referee.license_status ?? (referee.active ? 'active' : 'lapsed')) {
+      case 'active':
+        return 'text-green-600 font-medium';
+      case 'career_ended':
+        return 'text-fb-gray-500';
+      case 'unknown':
+        return 'text-fb-gray-500';
+      default:
+        return 'text-red-500';
+    }
+  }
+
   clearFilters(): void {
     this.searchQuery = '';
     this.filterLandesverband = '';
     this.filterLizenzstufe = '';
-    this.filterActive = false;
+    this.filterStatus = '';
     this.sortBy = 'name';
     this.sortDir = 'asc';
     this.load();
