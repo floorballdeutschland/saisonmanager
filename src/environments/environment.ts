@@ -7,6 +7,9 @@ export const environment = {
   staging: false,
   apiURL: 'http://localhost:3001/api/v2/',
   frontendApiKey: '',
+  // Lokal bewusst leer: ohne DSN bleibt Sentry aus, damit Fehler beim
+  // Entwickeln nicht im Dashboard des Produktivsystems landen.
+  sentryDsn: '',
 };
 
 /*
