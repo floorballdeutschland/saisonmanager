@@ -215,8 +215,11 @@
                   <span class="text-fb-gray-500">–</span>
                 }
                 @if (r.license_status === "career_ended") {
+                  <!-- Die fb-gray-Palette ist keine Helligkeitsskala: fb-gray-700
+                       (#E5E5E5) ist nahezu so hell wie fb-gray-200 (#E7E7E7).
+                       Dunkel sind 500 (#616161) und 900 (#666666). -->
                   <span
-                    class="ml-2 inline-block px-2 py-0.5 rounded-[3px] bg-fb-gray-200 text-fb-gray-700 text-xs whitespace-nowrap"
+                    class="ml-2 inline-block px-2 py-0.5 rounded-[3px] bg-fb-gray-200 text-fb-gray-500 text-xs whitespace-nowrap"
                     [attr.title]="
                       'refereeAdmin.index.careerEndedHint' | transloco
                     "
