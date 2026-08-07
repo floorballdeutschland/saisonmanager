@@ -1,0 +1,290 @@
+/*
+ * Broadcast-Overlays im Design der Floorball Bundesliga.
+ *
+ * Bewusst außerhalb der Angular-App und ohne Tailwind: Die App bringt eine
+ * feste Hülle mit Sidebar mit, ein helles Sky-Theme und Helvetica, und sie
+ * rendert erst, wenn ihre Initialdaten geladen sind. Eine transparente, dunkle
+ * 1920x1080-Fläche müsste das alles wieder aushebeln.
+ *
+ * Die Farb- und Schriftwerte stammen aus dem Theme der Bundesliga-Website
+ * (floorballliga.de). Nur hier ändern, nicht in den einzelnen Bausteinen.
+ */
+
+/* Schriften liegen im Repo, nicht bei Google: In der Halle ist das Netz
+   unzuverlässig, und ein Rückfall auf Impact mitten in der Übertragung ist ein
+   sichtbarer Fehler. Beide sind variabel, eine Datei deckt alle Schnitte ab. */
+@font-face {
+  font-family: "Oswald";
+  src: url("fonts/oswald-latin-var.woff2") format("woff2");
+  font-weight: 200 700;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/inter-latin-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: block;
+}
+
+:root {
+  --ov-primary: #1a1a2e;
+  --ov-secondary: #16213e;
+  --ov-surface: #0f0f23;
+  --ov-surface-elev: #1e1e3f;
+  --ov-accent: #e94560;
+  --ov-accent-alt: #ff6b35;
+  --ov-live: #ff0000;
+  --ov-success: #28a745;
+  --ov-text: #f1f1f1;
+  --ov-text-muted: #a0a0a0;
+
+  --ov-grad-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  --ov-grad-accent: linear-gradient(135deg, #e94560 0%, #ff6b35 100%);
+
+  --ov-display: "Oswald", Impact, "Arial Black", sans-serif;
+  --ov-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Skalierung der gesamten Bühne, gesetzt aus ?scale= (Standard 1). So kann
+     eine 720p-Produktion dieselbe Quelle nutzen. */
+  --ov-scale: 1;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  /* Durchsichtig: In OBS liegt darunter das Kamerabild. */
+  background: transparent;
+  font-family: var(--ov-body);
+  color: var(--ov-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.ov-stage {
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  transform: scale(var(--ov-scale));
+  transform-origin: top left;
+}
+
+/* Alles, was das Dock ein- und ausblendet, hängt an dieser Klasse. Nicht
+   display:none, damit die Bewegung sichtbar bleibt. */
+.ov-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ══ Anzeigetafel ══════════════════════════════════════════════════════════
+   Unten links, wo bei Hallensport üblicherweise wenig passiert. Zahlen in
+   Oswald, weil die schmale Grotesk auch bei zweistelligen Ständen ruhig
+   bleibt. */
+
+.ov-scoreboard {
+  position: absolute;
+  left: 60px;
+  bottom: 60px;
+  display: flex;
+  align-items: stretch;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--ov-grad-dark);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 45%);
+  transition: opacity 0.35s ease;
+}
+
+/* Akzentkante als Markenzeichen der Liga. */
+.ov-scoreboard::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  background: var(--ov-grad-accent);
+}
+
+.ov-team {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 26px;
+  min-width: 300px;
+  /* Beide Mannschaftsblöcke schieben ihren Inhalt zum Spielstand hin: links
+     ans rechte Ende, rechts (row-reverse, main-end liegt dort links) ans
+     linke. Ohne das kleben die Namen an den Außenkanten und zwischen Name und
+     Ziffern klafft eine Lücke, sobald ein Verein kein Logo hinterlegt hat. */
+  justify-content: flex-end;
+}
+
+.ov-team--home {
+  padding-left: 32px;
+}
+
+.ov-team--guest {
+  flex-direction: row-reverse;
+}
+
+/* Vereinslogos liegen in ganz unterschiedlicher Qualität vor, viele mit weißem
+   Kasten statt transparentem Hintergrund. Der helle Chip fängt das auf: Ein
+   Logo mit weißem Rand fällt darin nicht auf, ein freigestelltes sieht
+   ebenfalls sauber aus. */
+.ov-logo-chip {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.ov-logo-chip img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Ohne brauchbares Logo verschwindet der Chip ganz, samt seiner Lücke im
+   Flex-Layout. Ein Kürzel als Ersatzgrafik stünde sonst als zweite, kleinere
+   Fassung direkt neben dem Mannschaftsnamen. */
+.ov-logo-chip.ov-hidden {
+  display: none;
+}
+
+.ov-team-name {
+  font-family: var(--ov-display);
+  font-weight: 600;
+  font-size: 34px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ov-score {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 30px;
+  background: rgb(0 0 0 / 28%);
+  font-family: var(--ov-display);
+  font-weight: 700;
+  font-size: 54px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ov-score-sep {
+  color: var(--ov-text-muted);
+  font-weight: 500;
+}
+
+/* Abschnitt und Live-Punkt rechts, als eigene Spalte. */
+.ov-meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 18px 26px;
+  min-width: 190px;
+  border-left: 1px solid rgb(255 255 255 / 10%);
+}
+
+.ov-period {
+  font-family: var(--ov-display);
+  font-weight: 500;
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.ov-live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ov-text-muted);
+}
+
+.ov-live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ov-live);
+  animation: ov-pulse 2s ease-in-out infinite;
+}
+
+/* Kein Puls, solange nicht gespielt wird: Ein blinkender Punkt in der
+   Drittelpause behauptet etwas Falsches. */
+.ov-live--idle .ov-live-dot {
+  background: var(--ov-text-muted);
+  animation: none;
+}
+
+@keyframes ov-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.ov-league-mark {
+  display: flex;
+  align-items: center;
+  padding: 18px 24px;
+  border-left: 1px solid rgb(255 255 255 / 10%);
+}
+
+.ov-league-mark img {
+  height: 54px;
+  width: auto;
+}
+
+/* Reduzierte Bewegung respektieren. In OBS ohne Wirkung, aber die Seite lässt
+   sich auch im Browser prüfen. */
+@media (prefers-reduced-motion: reduce) {
+  .ov-live-dot {
+    animation: none;
+  }
+
+  .ov-scoreboard {
+    transition: none;
+  }
+}
+
+/* ══ Statusfläche ══════════════════════════════════════════════════════════
+   Nur zur Einrichtung sichtbar (?debug=1). Geht nie auf Sendung, deshalb darf
+   sie schlicht sein. */
+
+.ov-debug {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: rgb(0 0 0 / 75%);
+  font-size: 13px;
+  font-family: ui-monospace, monospace;
+  color: var(--ov-text-muted);
+  white-space: pre-line;
+}
+
+.ov-debug--error {
+  color: var(--ov-accent);
+}
