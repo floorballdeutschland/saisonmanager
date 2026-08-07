@@ -230,6 +230,17 @@ export const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/secretary-links').then(
+            (m) => m.SecretaryLinksModule
+          ),
+        canActivate: [permissionGuard],
+        // Rollenbasiert wie page_team_game_days: ob für einen konkreten
+        // Spieltag ein Link erzeugt werden darf, entscheidet der Endpunkt.
+        data: { permission: 'page_secretary_links' },
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/referee-feedback').then(
             (m) => m.RefereeFeedbackModule
           ),

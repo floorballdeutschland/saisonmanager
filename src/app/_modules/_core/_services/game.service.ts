@@ -16,6 +16,8 @@ import {
   GameInput,
   GamePlayerEntry,
   GameScan,
+  SecretaryGameDayStub,
+  SecretaryHallDay,
   StartingPlayerPosition,
   StartingPlayer,
   AwardDefinitions,
@@ -313,12 +315,20 @@ export class GameService {
     return this.http.delete<{ success: boolean }>(path);
   }
 
+  /**
+   * Erzeugt den Link für einen Spieltag. Der Server nimmt dabei alle Spieltage
+   * derselben Halle am selben Tag mit auf, für die man berechtigt ist –
+   * `game_day_ids` nennt, welche das geworden sind.
+   */
   public createSecretaryLink(gameDayId: number) {
     return this.http.post<{
       url: string;
       token: string;
       expires_at: string;
       created_by: string;
+      game_day_id: number;
+      game_day_ids: number[];
+      game_days: SecretaryGameDayStub[];
     }>(
       environment.apiURL + 'user/game_days/' + gameDayId + '/secretary_link',
       {}
@@ -329,19 +339,38 @@ export class GameService {
     return this.http.get<{
       expires_at?: string;
       created_by?: string;
+      game_day_ids?: number[];
       active?: boolean;
     }>(environment.apiURL + 'user/game_days/' + gameDayId + '/secretary_link');
   }
 
+  /** Spieltage, für die man als VM/TM einen Link erzeugen darf, nach Halle und Tag. */
+  public getSecretaryGameDays() {
+    return this.http.get<SecretaryHallDay[]>(
+      environment.apiURL + 'user/secretary_game_days'
+    );
+  }
+
   public getSecretaryGameDay(token: string) {
     return this.http.get<{
+      // Erster abgedeckter Spieltag. Der Link kann seit der hallenweiten
+      // Ausgabe mehrere umfassen – die vollständige Liste steht in game_days.
       game_day: {
         id: number;
         date: string;
         league: string;
+        league_id?: number;
         arena?: string;
         game_operation_slug?: string;
       };
+      game_days: {
+        id: number;
+        date: string;
+        league: string;
+        league_id?: number;
+        arena?: string;
+        game_operation_slug?: string;
+      }[];
       games: {
         id: number;
         game_number?: string;
@@ -349,6 +378,8 @@ export class GameService {
         home_team?: string;
         guest_team?: string;
         game_status?: string;
+        game_day_id?: number;
+        league?: string;
       }[];
       license_lists: Record<
         string,

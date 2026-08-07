@@ -17,7 +17,7 @@
     <!-- Header -->
     <div class="border border-fb-gray-600 rounded-[5px] p-4 mb-4 text-sm">
       <div class="font-bold text-base mb-1">
-        {{ data.game_day.league }} –
+        {{ headerTitle() }} –
         {{ data.game_day.date | date: "dd.MM.yyyy" }}
       </div>
       @if (data.game_day.arena) {
@@ -82,7 +82,7 @@
               laden. [attr.href] entfernt das Attribut wirklich. Der Hover-Effekt
               darf ebenfalls keine Klickbarkeit vortäuschen.
             -->
-            @let matchUrl = matchReportUrl(game.id);
+            @let matchUrl = matchReportUrl(game);
             <a
               [attr.href]="matchUrl"
               class="block border border-fb-gray-600 rounded-[5px] p-4 text-sm"
@@ -99,6 +99,11 @@
                     }
                     @if (game.start_time) {
                       <span> · {{ game.start_time }}</span>
+                    }
+                    <!-- Deckt der Link mehrere Ligen ab, ist die Zuordnung
+                         sonst nicht erkennbar. -->
+                    @if (multipleLeagues && game.league) {
+                      <span> · {{ game.league }}</span>
                     }
                   </div>
                 </div>

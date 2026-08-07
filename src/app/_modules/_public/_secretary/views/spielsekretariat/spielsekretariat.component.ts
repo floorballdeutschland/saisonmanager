@@ -8,15 +8,21 @@ import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { GameService } from '@floorball/core';
 
+interface SecretaryDay {
+  id: number;
+  date: string;
+  league: string;
+  league_id?: number;
+  arena?: string;
+  game_operation_slug?: string;
+}
+
 interface SecretaryGameDay {
-  game_day: {
-    id: number;
-    date: string;
-    league: string;
-    league_id?: number;
-    arena?: string;
-    game_operation_slug?: string;
-  };
+  // Erster abgedeckter Spieltag – bleibt für den Kopf der Seite maßgeblich.
+  game_day: SecretaryDay;
+  // Alle abgedeckten Spieltage. Ein Link umfasst die ganze Halle an diesem Tag,
+  // laufen dort mehrere Ligen nacheinander, sind es mehrere.
+  game_days?: SecretaryDay[];
   games: {
     id: number;
     game_number?: string;
@@ -24,6 +30,8 @@ interface SecretaryGameDay {
     home_team?: string;
     guest_team?: string;
     game_status?: string;
+    game_day_id?: number;
+    league?: string;
   }[];
   license_lists: Record<
     string,
@@ -88,21 +96,47 @@ export class SpielSekretariatComponent implements OnInit {
     });
   }
 
+  /** Alle abgedeckten Spieltage; ältere Antworten kennen nur den einen. */
+  gameDays(): SecretaryDay[] {
+    if (!this.data) return [];
+    return this.data.game_days?.length
+      ? this.data.game_days
+      : [this.data.game_day];
+  }
+
+  /** Mehrere Ligen im selben Link: dann gehört die Liga an jedes Spiel. */
+  get multipleLeagues(): boolean {
+    return this.gameDays().length > 1;
+  }
+
+  headerTitle(): string {
+    const leagues = this.gameDays()
+      .map((gd) => gd.league)
+      .filter((name) => !!name);
+    return leagues.join(' · ');
+  }
+
   // Spielseite: /:association/:leagueId/spiel/:matchId. Verbands-Slug und
   // league_id liefert der Spieltags-Payload; fehlt eines von beiden, gibt es
   // keinen sinnvollen Pfad, und der Eintrag bleibt bewusst unverlinkt. Ein
   // Teilpfad würde auf der Verbandsroute stumm als leere Seite landen, weil
   // :association/:leagueId zwei beliebige Segmente schluckt.
-  matchReportUrl(gameId: number): string | null {
-    const slug = this.data?.game_day.game_operation_slug;
-    const leagueId = this.data?.game_day.league_id;
-    if (!slug || !leagueId) {
+  //
+  // Der Link kann mehrere Ligen abdecken, deshalb wird der Spieltag des Spiels
+  // gesucht statt pauschal der erste genommen – sonst landete ein Spiel der
+  // zweiten Liga unter der leagueId der ersten.
+  matchReportUrl(game: { id: number; game_day_id?: number }): string | null {
+    const days = this.gameDays();
+    const day =
+      days.find((gd) => gd.id === game.game_day_id) ??
+      (days.length === 1 ? days[0] : undefined);
+    if (!day?.game_operation_slug || !day.league_id) {
       return null;
     }
 
-    return `/${slug}/${leagueId}/spiel/${gameId}?secretary_token=${encodeURIComponent(
-      this.token
-    )}`;
+    return `/${day.game_operation_slug}/${day.league_id}/spiel/${
+      game.id
+    }?secretary_token=${encodeURIComponent(this.token)}`;
   }
 
   licenseEntries(): {
