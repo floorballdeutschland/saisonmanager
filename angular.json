@@ -42,6 +42,11 @@
                 "glob": "rollenhandbuch.html",
                 "input": "docs",
                 "output": "doku"
+              },
+              {
+                "glob": "**/*",
+                "input": "overlay",
+                "output": "overlay"
               }
             ],
             "styles": ["src/styles.css"],

@@ -270,6 +270,26 @@ describe('SecretaryLinksComponent', () => {
       expect(text).toContain('im Link nicht enthalten');
     });
 
+    // Ein Spieltag ausserhalb des Fensters fehlt kommentarlos in der Liste. Der
+    // Zeitraum muss deshalb dranstehen, sonst liest sich das Fehlen als Fehler.
+    it('nennt den gezeigten Zeitraum', () => {
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain(
+        'der nächsten 60 Tage'
+      );
+    });
+
+    it('nennt den Zeitraum auch, wenn nichts gefunden wurde', () => {
+      gameService.getSecretaryGameDays.and.returnValue(of([]));
+
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain(
+        'In den nächsten 60 Tagen gibt es keinen Spieltag'
+      );
+    });
+
     it('zeigt den Kopieren-Button erst nach dem Erzeugen', () => {
       gameService.createSecretaryLink.and.returnValue(of(createResponse));
       fixture.detectChanges();

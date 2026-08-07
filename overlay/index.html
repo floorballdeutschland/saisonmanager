@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Overlay | Floorball Bundesliga</title>
+    <link rel="stylesheet" href="overlay.css" />
+  </head>
+  <body>
+    <!--
+      Die Bühne für OBS. Als Browser-Quelle mit 1920x1080 einbinden:
+
+        https://saisonmanager.de/overlay/index.html?token=…
+
+      Die Endung .html gehört in die URL: nginx liefert nur bei exakter
+      Übereinstimmung die Datei aus, sonst landet der Aufruf im Angular-Router
+      und dort in der Auffangroute des Spielbetriebs.
+
+      Parameter:
+        token=…       Pflicht, aus dem Spielbericht
+        game_id=…     bestimmtes Spiel statt des vom Dock gewählten
+        scale=0.667   für eine 720p-Produktion
+        debug=1       Statusfläche oben links, geht nie auf Sendung
+    -->
+    <div class="ov-stage" id="stage">
+      <section class="ov-scoreboard ov-hidden" id="scoreboard">
+        <div class="ov-team ov-team--home">
+          <div class="ov-logo-chip ov-hidden" id="home-logo"></div>
+          <span class="ov-team-name" id="home-name"></span>
+        </div>
+
+        <div class="ov-score">
+          <span id="home-goals">0</span>
+          <span class="ov-score-sep">:</span>
+          <span id="guest-goals">0</span>
+        </div>
+
+        <div class="ov-team ov-team--guest">
+          <div class="ov-logo-chip ov-hidden" id="guest-logo"></div>
+          <span class="ov-team-name" id="guest-name"></span>
+        </div>
+
+        <div class="ov-meta">
+          <span class="ov-period" id="period"></span>
+          <span class="ov-live" id="live">
+            <span class="ov-live-dot"></span>
+            <span id="live-label">Live</span>
+          </span>
+        </div>
+
+        <div class="ov-league-mark">
+          <img
+            src="img/floorball-bundesliga-weiss.png"
+            alt=""
+            width="600"
+            height="563"
+          />
+        </div>
+      </section>
+
+      <div class="ov-debug ov-hidden" id="debug"></div>
+    </div>
+
+    <script src="overlay.js"></script>
+  </body>
+</html>
