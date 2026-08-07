@@ -54,10 +54,14 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<boolean>();
 
   deletingBanner = false;
+  deletingLogo = false;
 
   // Dateiauswahl-Filter fuers Template, eine Quelle mit der Pruefung unten.
   readonly acceptImageTypes = IMAGE_UPLOAD_ACCEPT;
   private readonly _maxBannerSize = 500 * 1024;
+  // Grosszuegiger als das Banner, wie serverseitig auch (LOGO_MAX_SIZE):
+  // Ein Ligazeichen wird gross eingeblendet, etwa im Livestream.
+  private readonly _maxLogoSize = 3 * 1024 * 1024;
 
   onBannerSelected(league: League, input: HTMLInputElement): void {
     if (!input.files?.length || !league.id) return;
@@ -109,6 +113,91 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
               'leagueAdmin.notifications.bannerUploadFailed'
             );
           this._notificationService.error(msg, { autoClose: false });
+        },
+      });
+  }
+
+  onLogoSelected(league: League, input: HTMLInputElement): void {
+    if (!input.files?.length || !league.id) return;
+    const file = input.files[0];
+
+    if (!isAllowedImageType(file)) {
+      this._notificationService.error(
+        this._transloco.translate('leagueAdmin.notifications.invalidImageType'),
+        { autoClose: false }
+      );
+      input.value = '';
+      return;
+    }
+    if (file.size > this._maxLogoSize) {
+      this._notificationService.error(
+        this._transloco.translate('leagueAdmin.notifications.logoTooLarge'),
+        { autoClose: false }
+      );
+      input.value = '';
+      return;
+    }
+
+    this._leagueService
+      .adminUploadLogo(league.id, file)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          input.value = '';
+          league.logo_url = result.logo_url;
+          // Ab jetzt ist es das eigene Zeichen der Liga, nicht mehr das
+          // geerbte des Verbands.
+          league.logo_source = 'league';
+          this._notificationService.success(
+            this._transloco.translate('leagueAdmin.notifications.logoUploaded'),
+            { autoClose: true }
+          );
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          input.value = '';
+          const msg: string =
+            err?.error?.message ??
+            this._transloco.translate(
+              'leagueAdmin.notifications.logoUploadFailed'
+            );
+          this._notificationService.error(msg, { autoClose: false });
+        },
+      });
+  }
+
+  deleteLogo(league: League): void {
+    if (!league.id || this.deletingLogo) return;
+    if (
+      !confirm(
+        this._transloco.translate('leagueAdmin.notifications.confirmDeleteLogo')
+      )
+    )
+      return;
+
+    this.deletingLogo = true;
+    this._leagueService
+      .adminDeleteLogo(league.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (resolved) => {
+          // Die Antwort nennt, was jetzt gilt: in aller Regel das Logo des
+          // Landesverbands. Deshalb nicht einfach auf null setzen.
+          league.logo_url = resolved?.logo_url ?? null;
+          league.logo_source =
+            (resolved?.logo_source as League['logo_source']) ?? null;
+          this.deletingLogo = false;
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          this.deletingLogo = false;
+          const msg: string =
+            err?.error?.message ??
+            this._transloco.translate(
+              'leagueAdmin.notifications.logoDeleteFailed'
+            );
+          this._notificationService.error(msg, { autoClose: false });
+          this._cdr.markForCheck();
         },
       });
   }

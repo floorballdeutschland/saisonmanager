@@ -400,4 +400,25 @@ export class LeagueService {
       `${environment.apiURL}admin/leagues/${leagueId}/banner.json`
     );
   }
+
+  // Logo der Liga, nicht zu verwechseln mit dem Banner darüber: Das ist eine
+  // Werbefläche im Format 6:1 mit Ziellink, dies hier das Erkennungszeichen
+  // des Wettbewerbs.
+  public adminUploadLogo(leagueId: number, file: File) {
+    const formData = new FormData();
+    formData.append('logo', file);
+    return this.http.post<{ logo_url: string }>(
+      `${environment.apiURL}admin/leagues/${leagueId}/upload_logo.json`,
+      formData
+    );
+  }
+
+  // Antwortet mit der aufgelösten Herkunft: Nach dem Löschen greift der
+  // Rückfall auf das Verbandslogo, die Liga steht also nicht ohne Zeichen da.
+  public adminDeleteLogo(leagueId: number) {
+    return this.http.delete<{
+      logo_url: string | null;
+      logo_source: string | null;
+    }>(`${environment.apiURL}admin/leagues/${leagueId}/logo.json`);
+  }
 }

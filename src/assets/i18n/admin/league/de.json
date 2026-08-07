@@ -152,7 +152,18 @@
       "men": "Herren",
       "women": "Damen"
     },
-    "docTypesLoadError": "Dokumentarten-Katalog konnte nicht geladen werden."
+    "docTypesLoadError": "Dokumentarten-Katalog konnte nicht geladen werden.",
+    "logo": "Logo der Liga",
+    "logoDescription": "Das Erkennungszeichen des Wettbewerbs, etwa in Livestream-Einblendungen. Nicht zu verwechseln mit dem Werbebanner darunter. Ohne eigenes Logo wird das des Landesverbands angezeigt.",
+    "currentLogo": "Aktuelles Logo",
+    "logoAlt": "Logo der Liga",
+    "noLogo": "kein Logo hinterlegt",
+    "logoFromAssociation": "Vom Landesverband übernommen, diese Liga hat kein eigenes Logo.",
+    "uploadLogo": "Logo hochladen",
+    "logoUploadHint": "PNG, JPG oder WebP · max. 3 MB · Querformat möglich",
+    "logoTransparencyHint": "Am besten freigestellt hochladen, also ein PNG mit transparentem Hintergrund. Das Logo wird künftig auch auf dunklem Grund erscheinen, etwa in Livestream-Einblendungen.",
+    "removingLogo": "Wird entfernt…",
+    "removeLogo": "Logo entfernen"
   },
   "notifications": {
     "orderSaved": "Reihenfolge gespeichert.",
@@ -181,6 +192,11 @@
     "errOvertimeLength": "Die Verlängerungsdauer muss eine Zahl >= 0 sein",
     "errAgeGroup": "Es muss eine Altersklasse gesetzt werden",
     "errLeagueClass": "Es muss eine Ligaklasse gesetzt werden",
-    "errLegacy": "Eine alte Liga kann hier nicht geändert werden."
+    "errLegacy": "Eine alte Liga kann hier nicht geändert werden.",
+    "logoTooLarge": "Datei zu groß (max. 3 MB).",
+    "logoUploaded": "Logo erfolgreich hochgeladen.",
+    "logoUploadFailed": "Logo-Upload fehlgeschlagen.",
+    "confirmDeleteLogo": "Logo wirklich entfernen? Danach wird das Logo des Landesverbands angezeigt.",
+    "logoDeleteFailed": "Logo konnte nicht gelöscht werden."
   }
 }

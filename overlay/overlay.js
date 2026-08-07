@@ -64,6 +64,7 @@
     clock: document.getElementById("clock"),
     live: document.getElementById("live"),
     liveLabel: document.getElementById("live-label"),
+    leagueMark: document.getElementById("league-mark"),
     lowerThird: document.getElementById("lower-third"),
     ltKicker: document.getElementById("lt-kicker"),
     ltMain: document.getElementById("lt-main"),
@@ -168,6 +169,7 @@
   function renderGame(game) {
     setTeam("home", game.home);
     setTeam("guest", game.guest);
+    setLeagueMark(game.league);
 
     renderScore(game);
 
@@ -212,6 +214,26 @@
 
     el.homeGoals.textContent = numberOr(home, 0);
     el.guestGoals.textContent = numberOr(guest, 0);
+  }
+
+  // Eigenes Ligazeichen, falls hinterlegt. Der Server liefert hier nur ein
+  // echtes Liga-Logo; hat die Liga keines, kommt gar nichts, und das
+  // mitgelieferte Bundesliga-Zeichen bleibt stehen. Ein Landesverbandslogo
+  // stünde an dieser Stelle für den falschen Zusammenhang.
+  function setLeagueMark(league) {
+    var url = league && league.logo_url;
+    if (!url || el.leagueMark.getAttribute("src") === url) return;
+
+    // Lädt das Logo nicht, zurück auf das mitgelieferte Zeichen, statt eine
+    // Lücke in der Anzeigetafel zu hinterlassen.
+    el.leagueMark.addEventListener(
+      "error",
+      function () {
+        el.leagueMark.src = "img/floorball-bundesliga-weiss.png";
+      },
+      { once: true }
+    );
+    el.leagueMark.src = url;
   }
 
   function setTeam(side, team) {
