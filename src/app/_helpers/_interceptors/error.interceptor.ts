@@ -104,7 +104,12 @@ export class ErrorInterceptor implements HttpInterceptor {
         }
 
         if (err.status === 404 && !request.url.includes('/user/referees/')) {
-          console.error(err);
+          // Nur Status und Pfad, nicht das ganze Fehlerobjekt: Sentry legt
+          // console-Aufrufe als Wegmarken ab und serialisiert deren Argumente
+          // mehrere Ebenen tief. Ein HttpErrorResponse trägt in .error den
+          // geparsten Antwortkörper, bei Verwaltungsabrufen also Spieler- und
+          // Schiedsrichter-Datensätze (#230).
+          console.error(`HTTP 404: ${request.method} ${request.url}`);
           this._notificationService.error(
             'Nicht gefunden: ' +
               (this.errorDetail(err) || 'Ressource nicht gefunden'),
@@ -140,6 +145,25 @@ export class ErrorInterceptor implements HttpInterceptor {
         if (err.status === 0) {
           this._notificationService.error(
             'Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
+        }
+
+        // Fehler mit einem Erfolgsstatus erreichen keinen der Zweige oben:
+        // Angular baut eine HttpErrorResponse mit unverändertem Status, wenn
+        // der Body einer 2xx-Antwort kein gültiges JSON ist – etwa eine
+        // Captive-Portal- oder Wartungsseite, die mit 200 ausgeliefert wird.
+        // Ohne diesen Zweig bleibt so ein Fehlschlag völlig stumm, seit
+        // Komponenten sich auf den Interceptor verlassen statt auf einen
+        // eigenen Toast (#228).
+        if (err.status > 0 && err.status < 400) {
+          // Wie oben: kein ganzes Fehlerobjekt in die Konsole, sonst landet der
+          // Antwortkörper über die Sentry-Wegmarken im Monitoring (#230).
+          console.error(
+            `Unlesbare Antwort (${err.status}): ${request.method} ${request.url}`
+          );
+          this._notificationService.error(
+            'Die Antwort des Servers war unlesbar. Bitte versuche es erneut.',
             { autoClose: false, keepAfterRouteChange: false }
           );
         }

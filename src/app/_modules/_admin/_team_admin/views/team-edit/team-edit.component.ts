@@ -265,15 +265,12 @@ export class TeamEditComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: () => {
+          // Kein eigener Toast: Die Fehlermeldung zeigt der globale
+          // ErrorInterceptor. Bei einem abgelehnten Logo ist das die
+          // Begründung des Servers, und eine zweite, generische Meldung hat
+          // genau die überdeckt (#84, #228). Hier nur die Dateiauswahl
+          // zurücksetzen, damit dieselbe Datei erneut gewählt werden kann.
           input.value = '';
-          this._notificationService.error(
-            this._transloco.translate(
-              'teamAdmin.notifications.logoUploadFailed'
-            ),
-            {
-              autoClose: false,
-            }
-          );
         },
       });
   }

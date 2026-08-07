@@ -8,7 +8,6 @@
     "searchPlaceholder": "Name or license number",
     "allAssociations": "All state associations",
     "licenseLevelPlaceholder": "License level (e.g. A, B, N1)",
-    "onlyActive": "Active licenses only",
     "search": "Search",
     "resetFilters": "Reset filters",
     "loading": "Loading referees…",
@@ -28,9 +27,23 @@
     "csvFirstName": "First name",
     "csvStatus": "Status",
     "csvEmail": "Email",
-    "csvActive": "active",
-    "csvExpired": "expired",
-    "csvGuest": "guest"
+    "csvGuest": "guest",
+    "statusFilter": "License status",
+    "statusFilterOption": {
+      "default": "Excluding ended careers",
+      "aktiv": "Valid licenses only",
+      "abgelaufen": "Expired only",
+      "beendet": "Ended careers only",
+      "ohne_nachweis": "Without license record only",
+      "alle": "All"
+    },
+    "status": {
+      "active": "Valid",
+      "lapsed": "Expired",
+      "career_ended": "Career ended",
+      "unknown": "No license record"
+    },
+    "careerEndedHint": "Four license years without a license – returning requires the basic course again."
   },
   "detail": {
     "loading": "Loading…",

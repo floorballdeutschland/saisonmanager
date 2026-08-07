@@ -52,7 +52,7 @@
     "logoAlt": "Team logo",
     "noLogo": "no logo set (club logo is used)",
     "uploadLogo": "Upload logo",
-    "logoHint": "PNG, JPG or WebP · will be resized to 100×100 pixels",
+    "logoHint": "PNG, JPG or WebP · square (width = height) · max. 3 MB · will be resized to 100×100 pixels",
     "logoTransparencyHint": "Ideally upload a cut-out image, i.e. a PNG with a transparent background. The logo will also appear on dark backgrounds, for example in livestream overlays, where a white box is clearly visible.",
     "saveImpossible": "Saving not possible",
     "saveChanges": "Save changes",
@@ -79,7 +79,6 @@
     "logoTypeInvalid": "Only PNG, JPG or WebP allowed.",
     "logoTooLarge": "File too large (max. 3 MB).",
     "logoUploaded": "Logo uploaded successfully.",
-    "logoUploadFailed": "Logo upload failed.",
     "teamSaved": "Team {{ name }}({{ id }}) changed successfully.",
     "teamDeleted": "Team {{ name }} has been deleted.",
     "deleteError": "Team could not be deleted."

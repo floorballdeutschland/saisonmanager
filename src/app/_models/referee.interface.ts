@@ -40,6 +40,28 @@ export interface RefereeTag {
   usage_count?: number;
 }
 
+/**
+ * Zustand der Schiedsrichter-Lizenz, berechnet von der API.
+ *
+ * `career_ended` heißt vier Lizenzjahre ohne Lizenz: Die Karriere gilt als
+ * beendet, für eine Rückkehr ist der Grundkurs fällig, nicht die Fortbildung.
+ * `unknown` sind Datensätze ohne Ablaufdatum, etwa frisch angelegte.
+ */
+export type RefereeLicenseStatus =
+  | 'active'
+  | 'lapsed'
+  | 'career_ended'
+  | 'unknown';
+
+/** Filterwerte der Verwaltungsliste. Leer = Standard, also ohne Beendete. */
+export type RefereeStatusFilter =
+  | ''
+  | 'alle'
+  | 'aktiv'
+  | 'abgelaufen'
+  | 'beendet'
+  | 'ohne_nachweis';
+
 export interface RefereeAdmin {
   id: number;
   lizenznummer: number | null;
@@ -56,6 +78,7 @@ export interface RefereeAdmin {
   lizenzstufe?: string;
   gueltigkeit?: string;
   active?: boolean;
+  license_status?: RefereeLicenseStatus;
   qualifications?: RefereeQualificationEntry[];
   season_game_count?: number;
   user_id?: number | null;

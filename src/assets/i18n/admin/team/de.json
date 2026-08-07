@@ -52,7 +52,7 @@
     "logoAlt": "Teamlogo",
     "noLogo": "kein Logo hinterlegt (Vereinslogo wird verwendet)",
     "uploadLogo": "Logo hochladen",
-    "logoHint": "PNG, JPG oder WebP · wird auf 100×100 Pixel verkleinert",
+    "logoHint": "PNG, JPG oder WebP · quadratisch (Breite = Höhe) · max. 3 MB · wird auf 100×100 Pixel verkleinert",
     "logoTransparencyHint": "Am besten freigestellt hochladen, also ein PNG mit transparentem Hintergrund. Das Logo wird künftig auch auf dunklem Grund erscheinen, etwa in Livestream-Einblendungen; ein weißer Kasten ist dort deutlich zu sehen.",
     "saveImpossible": "Speichern nicht möglich",
     "saveChanges": "Änderungen speichern",
@@ -79,7 +79,6 @@
     "logoTypeInvalid": "Nur PNG, JPG oder WebP erlaubt.",
     "logoTooLarge": "Datei zu groß (max. 3 MB).",
     "logoUploaded": "Logo erfolgreich hochgeladen.",
-    "logoUploadFailed": "Logo-Upload fehlgeschlagen.",
     "teamSaved": "Team {{ name }}({{ id }}) erfolgreich geändert.",
     "teamDeleted": "Team {{ name }} wurde gelöscht.",
     "deleteError": "Team konnte nicht gelöscht werden."
