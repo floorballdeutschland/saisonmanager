@@ -26,6 +26,14 @@
   // zusätzlich belastet. Steigt bis ERROR_BACKOFF_MAX_MS.
   var ERROR_BACKOFF_START_MS = 2000;
   var ERROR_BACKOFF_MAX_MS = 30000;
+  // Ein Abruf, der nie zurueckkommt, plant auch keinen naechsten ein. Genau das
+  // passiert nach einem WLAN-Wechsel in der Halle: Die Verbindung bleibt halb
+  // offen, fetch wartet ewig, und das Overlay friert fuer den Rest der
+  // Uebertragung ein. Deshalb harte Frist statt Vertrauen.
+  var REQUEST_TIMEOUT_MS = 4000;
+  // Ab wann die Anzeige zugibt, dass sie nichts Neues mehr weiss. Der Live-Punkt
+  // geht dann aus, statt einen alten Stand als aktuell auszugeben.
+  var STALE_AFTER_MS = 20000;
 
   var state = {
     lastVersion: null, // game.updated_at der zuletzt geholten Spieldaten
@@ -33,6 +41,14 @@
     control: {}, // Steuerzustand aus dem Dock
     errorDelay: ERROR_BACKOFF_START_MS,
     lastOkAt: null,
+    // Abweichung der lokalen Rechneruhr von der Serverzeit, in Millisekunden.
+    // Ohne diesen Ausgleich zeigt ein Regie-Laptop mit verstellter Uhr eine
+    // falsche Spielzeit. Gleitend gemittelt, damit ein einzelner langsamer
+    // Abruf die Uhr nicht springen lässt.
+    clockOffset: null,
+    // Endgueltig abgewiesen (kein oder abgelaufenes Token). Dann hoert das
+    // Nachfragen auf.
+    terminal: false,
   };
 
   var el = {
@@ -45,8 +61,13 @@
     homeGoals: document.getElementById("home-goals"),
     guestGoals: document.getElementById("guest-goals"),
     period: document.getElementById("period"),
+    clock: document.getElementById("clock"),
     live: document.getElementById("live"),
     liveLabel: document.getElementById("live-label"),
+    lowerThird: document.getElementById("lower-third"),
+    ltKicker: document.getElementById("lt-kicker"),
+    ltMain: document.getElementById("lt-main"),
+    ltSub: document.getElementById("lt-sub"),
     debug: document.getElementById("debug"),
   };
 
@@ -84,8 +105,26 @@
   }
 
   function poll() {
-    fetch(buildUrl(), { credentials: "omit", cache: "no-store" })
+    var controller =
+      typeof AbortController === "function" ? new AbortController() : null;
+    var timer = window.setTimeout(function () {
+      if (controller) controller.abort();
+    }, REQUEST_TIMEOUT_MS);
+
+    fetch(buildUrl(), {
+      credentials: "omit",
+      cache: "no-store",
+      signal: controller ? controller.signal : undefined,
+    })
       .then(function (response) {
+        window.clearTimeout(timer);
+        // 400 und 410 sind endgueltig: kein Token, abgelaufen oder
+        // zurueckgezogen. Weiter zu fragen bringt nichts, und die Anzeige darf
+        // den alten Stand nicht als aktuell stehen lassen.
+        if (response.status === 400 || response.status === 410) {
+          state.terminal = true;
+          throw new Error("HTTP " + response.status);
+        }
         if (!response.ok) throw new Error("HTTP " + response.status);
         return response.json();
       })
@@ -97,8 +136,11 @@
         window.setTimeout(poll, POLL_MS);
       })
       .catch(function (error) {
+        window.clearTimeout(timer);
         // Bewusst nichts zurücksetzen: Die Anzeige behält ihren letzten Stand.
         showDebug("Kein Abruf: " + error.message + "\n" + debugText(), true);
+        if (state.terminal) return;
+
         window.setTimeout(poll, state.errorDelay);
         state.errorDelay = Math.min(state.errorDelay * 2, ERROR_BACKOFF_MAX_MS);
       });
@@ -106,6 +148,7 @@
 
   function apply(body) {
     state.control = body.state || {};
+    trackClockOffset(body.server_time);
 
     if (body.game) {
       state.game = body.game;
@@ -126,20 +169,49 @@
     setTeam("home", game.home);
     setTeam("guest", game.guest);
 
-    var result = game.result || {};
-    el.homeGoals.textContent = numberOr(result.home_goals, 0);
-    el.guestGoals.textContent = numberOr(result.guest_goals, 0);
+    renderScore(game);
 
     var period = game.current_period_title || {};
     el.period.textContent = period.title || "";
 
+    renderLiveState(game);
+  }
+
+  // Der Live-Punkt behauptet, die Anzeige sei aktuell. Kommt seit einer Weile
+  // nichts mehr durch (totes Token, Netz weg), waere das eine Falschaussage:
+  // Dann geht der Punkt aus, und der Regie faellt es auf.
+  function renderLiveState(game) {
+    game = game || state.game;
+    if (!game) return;
+
+    var fresh =
+      !state.terminal &&
+      state.lastOkAt !== null &&
+      Date.now() - state.lastOkAt < STALE_AFTER_MS;
     var running = Boolean(game.started) && !game.ended;
-    el.live.classList.toggle("ov-live--idle", !running);
-    el.liveLabel.textContent = game.ended
-      ? "Ende"
-      : running
-        ? "Live"
-        : "Gleich";
+
+    el.live.classList.toggle("ov-live--idle", !running || !fresh);
+    el.liveLabel.textContent = !fresh
+      ? "Pause"
+      : game.ended
+        ? "Ende"
+        : running
+          ? "Live"
+          : "Gleich";
+  }
+
+  // Der Spielstand kommt aus dem Spielbericht, es sei denn, das Dock hat ihn
+  // ausdrücklich übersteuert. Das ist der Notausgang, wenn das Sekretariat
+  // hinterherhinkt; er bleibt aktiv, bis er im Dock zurückgesetzt wird, und
+  // ist dort deutlich als aktiv gekennzeichnet.
+  function renderScore(game) {
+    var override = state.control.score_override;
+    var result = (game && game.result) || {};
+    var home = override ? override.home_goals : result.home_goals;
+    var guest = override ? override.guest_goals : result.guest_goals;
+
+    el.homeGoals.textContent = numberOr(home, 0);
+    el.guestGoals.textContent = numberOr(guest, 0);
   }
 
   function setTeam(side, team) {
@@ -191,6 +263,173 @@
         : Boolean(state.control.scoreboard_visible);
 
     el.scoreboard.classList.toggle("ov-hidden", !visible);
+    // Auch ohne neue Spieldaten: Die Übersteuerung steckt allein im
+    // Steuerzustand, sonst wirkte ein Druck im Dock erst beim nächsten
+    // Eintrag im Spielbericht.
+    if (state.game) renderScore(state.game);
+    renderLowerThird();
+  }
+
+  // ── Uhr ─────────────────────────────────────────────────────────────────
+  // Es gibt keine Serveruhr. Das Dock setzt sie, hier wird nur angezeigt.
+
+  function trackClockOffset(serverTime) {
+    if (typeof serverTime !== "number") return;
+
+    var sample = serverTime - Date.now();
+    // Erster Wert direkt übernehmen, danach gleitend mitteln: Ein einzelner
+    // langsamer Abruf soll die Anzeige nicht springen lassen.
+    state.clockOffset =
+      state.clockOffset === null
+        ? sample
+        : state.clockOffset * 0.8 + sample * 0.2;
+  }
+
+  function serverNow() {
+    return Date.now() + (state.clockOffset || 0);
+  }
+
+  // Wird bei JEDEM Tick neu aus dem Ankerzeitpunkt gerechnet, nie
+  // hochgezählt: OBS drosselt versteckte Quellen, ein Zähler liefe weg.
+  function renderClock() {
+    var clock = state.control.clock;
+
+    if (!clock || clock.visible === false) {
+      el.clock.classList.add("ov-hidden");
+      return;
+    }
+
+    var anchored = typeof clock.anchor_ms === "number";
+    var elapsed = Number(clock.elapsed_ms) || 0;
+    if (clock.running && anchored) {
+      elapsed += Math.max(0, serverNow() - Number(clock.anchor_ms));
+    }
+
+    el.clock.classList.remove("ov-hidden");
+    // „läuft" ohne Anker wäre eine stehende Uhr, die sich als laufend gibt.
+    el.clock.classList.toggle("ov-clock--stopped", !clock.running || !anchored);
+    el.clock.textContent = formatClock(elapsed);
+  }
+
+  function formatClock(ms) {
+    var total = Math.floor(Math.max(0, ms) / 1000);
+    var minutes = Math.floor(total / 60);
+    var seconds = total % 60;
+    return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+  }
+
+  // ── Bauchbinde ──────────────────────────────────────────────────────────
+
+  function renderLowerThird() {
+    var lt = state.control.lower_third;
+    var content = lt && lt.kind ? lowerThirdContent(lt) : null;
+
+    if (!content) {
+      el.lowerThird.classList.add("ov-lt-hidden");
+      return;
+    }
+
+    // textContent, nicht innerHTML: Namen und Freitext kommen aus der
+    // Datenbank beziehungsweise aus dem Dock.
+    el.ltKicker.textContent = content.kicker || "";
+    el.ltMain.textContent = content.main || "";
+    el.ltSub.textContent = content.sub || "";
+    el.ltSub.classList.toggle("ov-hidden", !content.sub);
+    el.lowerThird.classList.remove("ov-lt-hidden");
+  }
+
+  function lowerThirdContent(lt) {
+    switch (lt.kind) {
+      case "goal":
+        return goalContent(lt);
+      case "penalty":
+        return penaltyContent(lt);
+      case "text":
+        // Freitext aus dem Dock, etwa für Kommentatorin oder Gast.
+        return lt.main
+          ? { kicker: lt.kicker || "", main: lt.main, sub: lt.sub || "" }
+          : null;
+      case "venue":
+        return venueContent();
+      default:
+        return null;
+    }
+  }
+
+  function goalContent(lt) {
+    // Kein Ausweichen auf das zuletzt gefallene Tor: Ist das gemeinte Ereignis
+    // weg (nachträglich geändert oder gelöscht), ginge sonst ein anderes,
+    // plausibel aussehendes Tor auf Sendung. Lieber gar keine Bauchbinde.
+    var event = findEvent(lt.event_id);
+    if (!event) return null;
+
+    var team = teamName(event.event_team);
+    var assist = event.assist_name ? "Vorlage: " + event.assist_name : "";
+    // Ohne auflösbaren Schützen steht das Label aus dem Spielbericht da
+    // (Eigentor, nicht angegeben), sonst bliebe die Zeile leer.
+    var scorer = event.scorer_name || event.goal_type_string || "Tor";
+
+    return {
+      kicker: "Tor " + (team ? team : ""),
+      main: scorer,
+      sub: [assist, scoreAt(event)].filter(Boolean).join("   ·   "),
+    };
+  }
+
+  function penaltyContent(lt) {
+    var event = findEvent(lt.event_id);
+    if (!event) return null;
+
+    var team = teamName(event.event_team);
+    return {
+      kicker: "Strafe " + (team ? team : ""),
+      main: event.scorer_name || "Mannschaftsstrafe",
+      sub: [event.penalty_type_string, event.penalty_reason_string]
+        .filter(Boolean)
+        .join("   ·   "),
+    };
+  }
+
+  function venueContent() {
+    if (!state.game) return null;
+
+    var league = state.game.league || {};
+    var arena = state.game.arena || {};
+    var home = teamLabel(state.game.home);
+    var guest = teamLabel(state.game.guest);
+    if (!home && !guest) return null;
+
+    return {
+      kicker: league.name || "",
+      main: home + " gegen " + guest,
+      sub: arena.name || "",
+    };
+  }
+
+  function findEvent(eventId) {
+    if (!state.game || !state.game.events || eventId === undefined) return null;
+
+    for (var i = 0; i < state.game.events.length; i++) {
+      if (state.game.events[i].event_id === eventId)
+        return state.game.events[i];
+    }
+    return null;
+  }
+
+  function teamName(side) {
+    if (!state.game || !side) return "";
+    return teamLabel(side === "home" ? state.game.home : state.game.guest);
+  }
+
+  // Ohne Mannschaft bleibt es leer statt „null": OverlayPayload liefert das
+  // Objekt auch für ein noch nicht gesetztes Team.
+  function teamLabel(team) {
+    return (team && (team.short_name || team.name)) || "";
+  }
+
+  function scoreAt(event) {
+    if (typeof event.home_goals !== "number") return "";
+    return event.home_goals + ":" + event.guest_goals;
   }
 
   function numberOr(value, fallback) {
@@ -209,4 +448,16 @@
   }
 
   poll();
+
+  // Die Uhr läuft in ihrem eigenen Takt, unabhängig vom Abruf: Sonst zuckte
+  // die Sekundenanzeige im Sekundenraster der Antworten. 10 Hz reicht für eine
+  // Anzeige, die nur Minuten und Sekunden zeigt, und übersteht das Drosseln
+  // versteckter Quellen, weil jeder Tick neu aus dem Anker rechnet.
+  window.setInterval(renderClock, 100);
+
+  // Getrennt vom Abruf: Ob die Anzeige veraltet ist, muss auch dann auffallen,
+  // wenn gar keine Antwort mehr kommt.
+  window.setInterval(function () {
+    renderLiveState();
+  }, 1000);
 })();
