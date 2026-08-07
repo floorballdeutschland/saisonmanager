@@ -17,6 +17,13 @@ import { SecretaryHallDay, SecretaryLinkInfo } from '@floorball/types';
  * Gelistet wird pro Halle und Tag, nicht pro Liga – so sitzt das Sekretariat
  * auch am Tisch. Laufen dort mehrere Ligen nacheinander, deckt ein Link sie
  * alle ab.
+ *
+ * Der Server liefert nur Spieltage eines Zeitfensters
+ * (`LIST_PAST_DAYS`/`LIST_FUTURE_DAYS` im GameDaySecretaryLinksController,
+ * derzeit 3 Tage zurück und 60 voraus). Die 60 stehen im Einleitungstext der
+ * Vorlage: Ohne diese Angabe sucht man einen weiter entfernten Spieltag
+ * vergeblich in der Liste und hält es für einen Fehler. Wird die Konstante
+ * geändert, gehört der Text mit angepasst.
  */
 @Component({
   templateUrl: './secretary-links.component.html',
