@@ -26,6 +26,14 @@
   // zusätzlich belastet. Steigt bis ERROR_BACKOFF_MAX_MS.
   var ERROR_BACKOFF_START_MS = 2000;
   var ERROR_BACKOFF_MAX_MS = 30000;
+  // Ein Abruf, der nie zurueckkommt, plant auch keinen naechsten ein. Genau das
+  // passiert nach einem WLAN-Wechsel in der Halle: Die Verbindung bleibt halb
+  // offen, fetch wartet ewig, und das Overlay friert fuer den Rest der
+  // Uebertragung ein. Deshalb harte Frist statt Vertrauen.
+  var REQUEST_TIMEOUT_MS = 4000;
+  // Ab wann die Anzeige zugibt, dass sie nichts Neues mehr weiss. Der Live-Punkt
+  // geht dann aus, statt einen alten Stand als aktuell auszugeben.
+  var STALE_AFTER_MS = 20000;
 
   var state = {
     lastVersion: null, // game.updated_at der zuletzt geholten Spieldaten
@@ -38,6 +46,9 @@
     // falsche Spielzeit. Gleitend gemittelt, damit ein einzelner langsamer
     // Abruf die Uhr nicht springen lässt.
     clockOffset: null,
+    // Endgueltig abgewiesen (kein oder abgelaufenes Token). Dann hoert das
+    // Nachfragen auf.
+    terminal: false,
   };
 
   var el = {
@@ -94,8 +105,26 @@
   }
 
   function poll() {
-    fetch(buildUrl(), { credentials: "omit", cache: "no-store" })
+    var controller =
+      typeof AbortController === "function" ? new AbortController() : null;
+    var timer = window.setTimeout(function () {
+      if (controller) controller.abort();
+    }, REQUEST_TIMEOUT_MS);
+
+    fetch(buildUrl(), {
+      credentials: "omit",
+      cache: "no-store",
+      signal: controller ? controller.signal : undefined,
+    })
       .then(function (response) {
+        window.clearTimeout(timer);
+        // 400 und 410 sind endgueltig: kein Token, abgelaufen oder
+        // zurueckgezogen. Weiter zu fragen bringt nichts, und die Anzeige darf
+        // den alten Stand nicht als aktuell stehen lassen.
+        if (response.status === 400 || response.status === 410) {
+          state.terminal = true;
+          throw new Error("HTTP " + response.status);
+        }
         if (!response.ok) throw new Error("HTTP " + response.status);
         return response.json();
       })
@@ -107,8 +136,11 @@
         window.setTimeout(poll, POLL_MS);
       })
       .catch(function (error) {
+        window.clearTimeout(timer);
         // Bewusst nichts zurücksetzen: Die Anzeige behält ihren letzten Stand.
         showDebug("Kein Abruf: " + error.message + "\n" + debugText(), true);
+        if (state.terminal) return;
+
         window.setTimeout(poll, state.errorDelay);
         state.errorDelay = Math.min(state.errorDelay * 2, ERROR_BACKOFF_MAX_MS);
       });
@@ -142,13 +174,30 @@
     var period = game.current_period_title || {};
     el.period.textContent = period.title || "";
 
+    renderLiveState(game);
+  }
+
+  // Der Live-Punkt behauptet, die Anzeige sei aktuell. Kommt seit einer Weile
+  // nichts mehr durch (totes Token, Netz weg), waere das eine Falschaussage:
+  // Dann geht der Punkt aus, und der Regie faellt es auf.
+  function renderLiveState(game) {
+    game = game || state.game;
+    if (!game) return;
+
+    var fresh =
+      !state.terminal &&
+      state.lastOkAt !== null &&
+      Date.now() - state.lastOkAt < STALE_AFTER_MS;
     var running = Boolean(game.started) && !game.ended;
-    el.live.classList.toggle("ov-live--idle", !running);
-    el.liveLabel.textContent = game.ended
-      ? "Ende"
-      : running
-        ? "Live"
-        : "Gleich";
+
+    el.live.classList.toggle("ov-live--idle", !running || !fresh);
+    el.liveLabel.textContent = !fresh
+      ? "Pause"
+      : game.ended
+        ? "Ende"
+        : running
+          ? "Live"
+          : "Gleich";
   }
 
   // Der Spielstand kommt aus dem Spielbericht, es sei denn, das Dock hat ihn
@@ -391,4 +440,10 @@
   // Anzeige, die nur Minuten und Sekunden zeigt, und übersteht das Drosseln
   // versteckter Quellen, weil jeder Tick neu aus dem Anker rechnet.
   window.setInterval(renderClock, 100);
+
+  // Getrennt vom Abruf: Ob die Anzeige veraltet ist, muss auch dann auffallen,
+  // wenn gar keine Antwort mehr kommt.
+  window.setInterval(function () {
+    renderLiveState();
+  }, 1000);
 })();
