@@ -171,7 +171,11 @@ The API runs at **http://localhost:3001** (port 3000 is taken by another service
 - **In specs**, add `getTranslocoTestingModule()` from `_core/_i18n/transloco-testing` to TestBed `imports`. Pass scope keys when the template needs real strings: `getTranslocoTestingModule({ 'admin/league': { ... } })`.
 - An `APP_INITIALIZER` in `provideTranslocoRoot()` loads the active language before the first render, so keys never flash.
 
-**Error tracking:** Sentry (`@sentry/angular`) is wired in `app.module.ts` via `Sentry.createErrorHandler()` + `Sentry.TraceService`. The commented-out `Sentry.init` block in `main.ts` is dead legacy code — ignore it.
+**Error tracking:** Sentry (`@sentry/angular`) needs BOTH halves to work: the providers in `app.module.ts` (`Sentry.createErrorHandler()` + `Sentry.TraceService`) **and** a `Sentry.init` call. `createErrorHandler` alone is a no-op — it calls `captureException` against a client that does not exist. Until #230 the `init` was missing, so no frontend error ever reached Sentry.
+
+`initSentry()` (`_helpers/_utils/sentry-init.ts`) runs in `main.ts` before the bootstrap and starts Sentry only if `environment.sentryDsn` holds a real DSN. **No DSN, no reporting** — that is the intended local default. The deploy scripts substitute `SENTRY_DSN_PLACEHOLDER` from the gitignored `src/environments/.sentry-dsn`, same pattern as the API key but optional: if the file is missing the placeholder survives and `initSentry()` bails out instead of using a broken address. Staging and production share the DSN and are told apart by `environment: 'staging' | 'production'`. A browser DSN is inherently public (it ships in the bundle); that is expected, not a leak.
+
+Note `createErrorHandler` only sees errors that reach Angular's `ErrorHandler`, i.e. **unhandled** ones. A component with its own `error` callback consumes the rejection first, so those never show up in Sentry.
 
 **Three environment files:** `environment.ts` (dev), `environment.prod.ts`, `environment.staging.ts`. Besides `production`, there is a separate `staging: true` flag, read as `isStaging` to render the test-system banner in `app.component.html` and the sidebar. `angular.json` defines four build configurations: `production`, `staging`, `prerender`, `development`.
 

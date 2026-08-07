@@ -69,7 +69,8 @@
     "emailLog": "Email log",
     "emailTemplates": "Email templates",
     "feedbackComments": "Feedback (qualitative)",
-    "refereeExclusions": "Club exclusions"
+    "refereeExclusions": "Club exclusions",
+    "secretaryLinks": "Match secretariat"
   },
   "account": {
     "title": "My account",

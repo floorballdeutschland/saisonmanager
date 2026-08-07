@@ -86,6 +86,16 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Das Spielsekretariat per Einmal-Link (/spielsekretariat?token=…)
+        // rendert jeden Fehlerzustand als eigene Ansicht, genau wie das
+        // Schiri-Feedback oben. Ohne diese Ausnahme käme zum abgelaufenen Link
+        // (410) ein zweiter, nicht selbstschließender Toast mit demselben Text,
+        // und ein 401 würde jemanden abmelden und auf /login schicken, der hier
+        // bewusst ohne Benutzerkonto arbeitet.
+        if (request.url.includes('public/secretary')) {
+          return throwError(() => err);
+        }
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           const returnUrl = this._router.url;
           this.sessionService.logout(false, true, 'Bitte einloggen.', false);
@@ -104,7 +114,12 @@ export class ErrorInterceptor implements HttpInterceptor {
         }
 
         if (err.status === 404 && !request.url.includes('/user/referees/')) {
-          console.error(err);
+          // Nur Status und Pfad, nicht das ganze Fehlerobjekt: Sentry legt
+          // console-Aufrufe als Wegmarken ab und serialisiert deren Argumente
+          // mehrere Ebenen tief. Ein HttpErrorResponse trägt in .error den
+          // geparsten Antwortkörper, bei Verwaltungsabrufen also Spieler- und
+          // Schiedsrichter-Datensätze (#230).
+          console.error(`HTTP 404: ${request.method} ${request.url}`);
           this._notificationService.error(
             'Nicht gefunden: ' +
               (this.errorDetail(err) || 'Ressource nicht gefunden'),
@@ -152,7 +167,11 @@ export class ErrorInterceptor implements HttpInterceptor {
         // Komponenten sich auf den Interceptor verlassen statt auf einen
         // eigenen Toast (#228).
         if (err.status > 0 && err.status < 400) {
-          console.error(err);
+          // Wie oben: kein ganzes Fehlerobjekt in die Konsole, sonst landet der
+          // Antwortkörper über die Sentry-Wegmarken im Monitoring (#230).
+          console.error(
+            `Unlesbare Antwort (${err.status}): ${request.method} ${request.url}`
+          );
           this._notificationService.error(
             'Die Antwort des Servers war unlesbar. Bitte versuche es erneut.',
             { autoClose: false, keepAfterRouteChange: false }
