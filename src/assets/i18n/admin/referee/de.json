@@ -8,7 +8,6 @@
     "searchPlaceholder": "Name oder Lizenznummer",
     "allAssociations": "Alle Landesverbände",
     "licenseLevelPlaceholder": "Lizenzstufe (z.B. A, B, N1)",
-    "onlyActive": "Nur aktive Lizenzen",
     "search": "Suchen",
     "resetFilters": "Filter zurücksetzen",
     "loading": "Lade Schiedsrichter…",
@@ -28,9 +27,23 @@
     "csvFirstName": "Vorname",
     "csvStatus": "Status",
     "csvEmail": "E-Mail",
-    "csvActive": "aktiv",
-    "csvExpired": "abgelaufen",
-    "csvGuest": "Gast"
+    "csvGuest": "Gast",
+    "statusFilter": "Lizenzstatus",
+    "statusFilterOption": {
+      "default": "Ohne beendete Karrieren",
+      "aktiv": "Nur gültige Lizenzen",
+      "abgelaufen": "Nur abgelaufene",
+      "beendet": "Nur beendete Karrieren",
+      "ohne_nachweis": "Nur ohne Lizenznachweis",
+      "alle": "Alle"
+    },
+    "status": {
+      "active": "Gültig",
+      "lapsed": "Abgelaufen",
+      "career_ended": "Karriere beendet",
+      "unknown": "Kein Lizenznachweis"
+    },
+    "careerEndedHint": "Vier Lizenzjahre ohne Lizenz – für eine Rückkehr ist der Grundkurs erforderlich."
   },
   "detail": {
     "loading": "Lade…",

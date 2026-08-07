@@ -84,10 +84,21 @@
       "
       class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-48"
     />
-    <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
-      <input type="checkbox" [(ngModel)]="filterActive" (change)="onSearch()" />
-      {{ "refereeAdmin.index.onlyActive" | transloco }}
-    </label>
+    <select
+      [(ngModel)]="filterStatus"
+      (change)="onSearch()"
+      [attr.aria-label]="'refereeAdmin.index.statusFilter' | transloco"
+      class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+    >
+      @for (option of statusOptions; track option) {
+        <option [ngValue]="option">
+          {{
+            "refereeAdmin.index.statusFilterOption." + (option || "default")
+              | transloco
+          }}
+        </option>
+      }
+    </select>
     <button
       (click)="onSearch()"
       class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
@@ -198,16 +209,20 @@
               <td class="py-2 pr-4">{{ r.landesverband || "–" }}</td>
               <td class="py-2 pr-4">
                 @if (r.gueltigkeit) {
-                  <span
-                    [class]="
-                      r.active ? 'text-green-600 font-medium' : 'text-red-500'
-                    "
-                  >
-                    {{ r.gueltigkeit }}
-                  </span>
+                  <span [class]="statusClass(r)">{{ r.gueltigkeit }}</span>
                 }
                 @if (!r.gueltigkeit) {
                   <span class="text-fb-gray-500">–</span>
+                }
+                @if (r.license_status === "career_ended") {
+                  <span
+                    class="ml-2 inline-block px-2 py-0.5 rounded-[3px] bg-fb-gray-200 text-fb-gray-700 text-xs whitespace-nowrap"
+                    [attr.title]="
+                      'refereeAdmin.index.careerEndedHint' | transloco
+                    "
+                  >
+                    {{ "refereeAdmin.index.status.career_ended" | transloco }}
+                  </span>
                 }
               </td>
               <td class="py-2 pr-4 text-fb-gray-500">
