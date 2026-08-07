@@ -110,6 +110,14 @@ export interface Game {
   ingame_status: string;
   start_time: string;
   date: Date;
+  // Für Vorgänge, die am Spieltag hängen und nicht am einzelnen Spiel, etwa
+  // den Zugang zu den Livestream-Overlays.
+  //
+  // Optional, weil Frontend und API getrennt ausgerollt werden: Zwischen einem
+  // Frontend-Deploy und dem passenden API-Deploy liefert der Spielabruf das
+  // Feld noch nicht. Die Oberfläche blendet den Overlay-Abschnitt dann aus,
+  // statt mit einem toten Knopf dazustehen.
+  game_day_id?: number;
   audience: number;
   home_team_id: number;
   home_team_name: string;

@@ -333,6 +333,39 @@ export class GameService {
     }>(environment.apiURL + 'user/game_days/' + gameDayId + '/secretary_link');
   }
 
+  // Zugang für die Livestream-Overlays. Wie beim Sekretariatslink gilt er für
+  // den ganzen Spieltag, und der Klartext des Tokens kommt ausschließlich in
+  // dieser einen Antwort zurück; danach liegt serverseitig nur noch sein
+  // Digest. Wer ihn verliert, erzeugt einen neuen und entwertet damit den
+  // alten.
+  public createOverlayLink(gameDayId: number) {
+    return this.http.post<{
+      token: string;
+      overlay_url: string;
+      dock_url: string;
+      expires_at: string;
+      created_by: string;
+      game_day_id: number;
+    }>(
+      environment.apiURL + 'user/game_days/' + gameDayId + '/overlay_link',
+      {}
+    );
+  }
+
+  public getOverlayLink(gameDayId: number) {
+    return this.http.get<{
+      active: boolean;
+      expires_at?: string;
+      created_by?: string;
+    }>(environment.apiURL + 'user/game_days/' + gameDayId + '/overlay_link');
+  }
+
+  public revokeOverlayLink(gameDayId: number) {
+    return this.http.delete<{ active: boolean }>(
+      environment.apiURL + 'user/game_days/' + gameDayId + '/overlay_link'
+    );
+  }
+
   public getSecretaryGameDay(token: string) {
     return this.http.get<{
       game_day: {
