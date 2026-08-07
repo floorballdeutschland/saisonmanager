@@ -299,18 +299,20 @@
       return;
     }
 
+    var anchored = typeof clock.anchor_ms === "number";
     var elapsed = Number(clock.elapsed_ms) || 0;
-    if (clock.running && clock.anchor_ms) {
+    if (clock.running && anchored) {
       elapsed += Math.max(0, serverNow() - Number(clock.anchor_ms));
     }
 
     el.clock.classList.remove("ov-hidden");
-    el.clock.classList.toggle("ov-clock--stopped", !clock.running);
+    // „läuft" ohne Anker wäre eine stehende Uhr, die sich als laufend gibt.
+    el.clock.classList.toggle("ov-clock--stopped", !clock.running || !anchored);
     el.clock.textContent = formatClock(elapsed);
   }
 
   function formatClock(ms) {
-    var total = Math.floor(ms / 1000);
+    var total = Math.floor(Math.max(0, ms) / 1000);
     var minutes = Math.floor(total / 60);
     var seconds = total % 60;
     return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
@@ -355,7 +357,10 @@
   }
 
   function goalContent(lt) {
-    var event = findEvent(lt.event_id) || (state.game && state.game.last_goal);
+    // Kein Ausweichen auf das zuletzt gefallene Tor: Ist das gemeinte Ereignis
+    // weg (nachträglich geändert oder gelöscht), ginge sonst ein anderes,
+    // plausibel aussehendes Tor auf Sendung. Lieber gar keine Bauchbinde.
+    var event = findEvent(lt.event_id);
     if (!event) return null;
 
     var team = teamName(event.event_team);
@@ -390,9 +395,13 @@
 
     var league = state.game.league || {};
     var arena = state.game.arena || {};
+    var home = teamLabel(state.game.home);
+    var guest = teamLabel(state.game.guest);
+    if (!home && !guest) return null;
+
     return {
       kicker: league.name || "",
-      main: state.game.home.name + " gegen " + state.game.guest.name,
+      main: home + " gegen " + guest,
       sub: arena.name || "",
     };
   }
@@ -409,7 +418,12 @@
 
   function teamName(side) {
     if (!state.game || !side) return "";
-    var team = side === "home" ? state.game.home : state.game.guest;
+    return teamLabel(side === "home" ? state.game.home : state.game.guest);
+  }
+
+  // Ohne Mannschaft bleibt es leer statt „null": OverlayPayload liefert das
+  // Objekt auch für ein noch nicht gesetztes Team.
+  function teamLabel(team) {
     return (team && (team.short_name || team.name)) || "";
   }
 

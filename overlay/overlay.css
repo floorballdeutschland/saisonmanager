@@ -353,12 +353,6 @@ body {
   overflow: hidden;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ov-lower-third {
-    transition: none;
-  }
-}
-
 /* Reduzierte Bewegung respektieren. In OBS ohne Wirkung, aber die Seite lässt
    sich auch im Browser prüfen. */
 @media (prefers-reduced-motion: reduce) {
@@ -366,7 +360,8 @@ body {
     animation: none;
   }
 
-  .ov-scoreboard {
+  .ov-scoreboard,
+  .ov-lower-third {
     transition: none;
   }
 }

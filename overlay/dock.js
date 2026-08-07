@@ -17,6 +17,7 @@
 
   var POLL_MS = 2000;
   var ERROR_BACKOFF_MAX_MS = 30000;
+  var REQUEST_TIMEOUT_MS = 4000;
 
   var state = {
     control: {},
@@ -29,10 +30,17 @@
     lastVersion: null,
     clockOffset: null,
     errorDelay: 2000,
-    // Solange ein eigener Schreibvorgang läuft, wird der Zustand aus der
-    // Antwort nicht in die Bedienelemente zurückgespielt: Sonst springt ein
-    // gerade gedrückter Knopf kurz in den alten Zustand zurück.
-    writing: false,
+    // Solange ein eigener Schreibvorgang läuft, wird der Zustand aus einer
+    // Abfrage nicht zurückgespielt: Sonst springt ein gerade gedrückter Knopf
+    // kurz in den alten Zustand.
+    writeInFlight: false,
+    // Drücke, die während eines laufenden Schreibvorgangs anfielen.
+    pendingChanges: null,
+    // Bleibt stehen, bis der nächste Schreibvorgang gelingt. Eine verlorene
+    // Änderung darf nicht nach zwei Sekunden hinter „Verbunden" verschwinden.
+    writeError: null,
+    // Endgültig abgewiesen (Token fehlt oder abgelaufen).
+    terminal: false,
   };
 
   var el = {};
@@ -79,25 +87,68 @@
 
   // ── Abruf ───────────────────────────────────────────────────────────────
 
+  // Wie auf der Bühne: Ein Abruf, der nie zurückkommt, plant auch keinen
+  // nächsten ein. Beim Bedienfeld wäre das noch schlimmer, weil ein hängender
+  // Schreibvorgang zusätzlich die Übernahme fremder Änderungen dauerhaft
+  // blockierte, während oben weiter „Verbunden" steht.
+  function fetchWithTimeout(url, options) {
+    var controller =
+      typeof AbortController === "function" ? new AbortController() : null;
+    var opts = Object.assign(
+      { credentials: "omit", cache: "no-store" },
+      options || {}
+    );
+    if (controller) opts.signal = controller.signal;
+
+    var timer = window.setTimeout(function () {
+      if (controller) controller.abort();
+    }, REQUEST_TIMEOUT_MS);
+
+    return fetch(url, opts).then(
+      function (res) {
+        window.clearTimeout(timer);
+        return res;
+      },
+      function (err) {
+        window.clearTimeout(timer);
+        throw err;
+      }
+    );
+  }
+
   function poll() {
     var url = "/api/v2/public/overlay/live?token=" + encodeURIComponent(token);
     if (state.lastVersion !== null) {
       url += "&v=" + encodeURIComponent(state.lastVersion);
     }
 
-    fetch(url, { credentials: "omit", cache: "no-store" })
+    fetchWithTimeout(url)
       .then(function (res) {
+        // Kein oder abgelaufenes Token: Weiterfragen bringt nichts, und
+        // „HTTP 410" sagt niemandem, was zu tun ist.
+        if (res.status === 400 || res.status === 410) {
+          state.terminal = true;
+          throw new Error(
+            "Der Overlay-Zugang ist abgelaufen oder wurde zurückgezogen."
+          );
+        }
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.json();
       })
       .then(function (body) {
         apply(body);
         state.errorDelay = 2000;
-        setStatus("Verbunden", false);
+        // Ein gescheiterter Schreibvorgang darf nicht von der nächsten
+        // erfolgreichen Abfrage überschrieben werden: Sonst blinkt der Hinweis
+        // zwei Sekunden und danach steht wieder „Verbunden", obwohl der Druck
+        // verloren ist.
+        if (!state.writeError) setStatus("Verbunden", false);
         window.setTimeout(poll, POLL_MS);
       })
       .catch(function (err) {
-        setStatus("Kein Abruf: " + err.message, true);
+        setStatus(err.message, true);
+        if (state.terminal) return;
+
         window.setTimeout(poll, state.errorDelay);
         state.errorDelay = Math.min(state.errorDelay * 2, ERROR_BACKOFF_MAX_MS);
       });
@@ -106,9 +157,18 @@
   function apply(body) {
     trackClockOffset(body.server_time);
 
-    if (!state.writing) {
+    // Nur übernehmen, wenn die Antwort NEUER ist als der eigene Stand. Eine
+    // Abfrage, die vor dem letzten Schreibvorgang losgeschickt wurde, trüge
+    // sonst den alten Zeitstempel zurück, und der nächste Druck käme vom
+    // Server als veraltet zurück.
+    var incoming = body.state_updated_at || null;
+    var newer =
+      state.stateUpdatedAt === null ||
+      (incoming !== null && incoming >= state.stateUpdatedAt);
+
+    if (!state.writeInFlight && newer) {
       state.control = body.state || {};
-      state.stateUpdatedAt = body.state_updated_at || null;
+      state.stateUpdatedAt = incoming;
     }
 
     if (body.game) {
@@ -138,44 +198,78 @@
 
   // Immer der ganze Zustand: Die Einblendungen hängen voneinander ab, ein
   // Teilupdate müsste diese Regeln ein zweites Mal kennen.
+  //
+  // Es läuft immer nur EIN Schreibvorgang. Wer währenddessen weiterdrückt,
+  // sammelt sich in `pendingChanges` und wird danach nachgeschickt. Ohne das
+  // läsen zwei schnell aufeinanderfolgende Drücke denselben Zeitstempel, der
+  // zweite käme als veraltet zurück und wäre verloren, gemeldet als fremdes
+  // Bedienfeld. Betroffen wären ausgerechnet die Knöpfe, die man mehrfach
+  // hintereinander drückt: die Zehn-Sekunden-Schritte und die Übersteuerung.
   function writeState(changes) {
-    var next = Object.assign({}, state.control, changes);
-    state.control = next;
-    state.writing = true;
+    state.control = Object.assign({}, state.control, changes);
     render();
 
-    fetch("/api/v2/public/overlay/state?token=" + encodeURIComponent(token), {
-      method: "POST",
-      credentials: "omit",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        state: next,
-        state_updated_at: state.stateUpdatedAt,
-      }),
-    })
+    if (state.writeInFlight) {
+      state.pendingChanges = Object.assign(state.pendingChanges || {}, changes);
+      return;
+    }
+
+    flushWrite();
+  }
+
+  function flushWrite() {
+    state.writeInFlight = true;
+
+    fetchWithTimeout(
+      "/api/v2/public/overlay/state?token=" + encodeURIComponent(token),
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          state: state.control,
+          state_updated_at: state.stateUpdatedAt,
+        }),
+      }
+    )
       .then(function (res) {
-        if (res.status === 409) {
-          // Ein zweites Dock war schneller. Dessen Stand gewinnt, damit nicht
-          // zwei Bedienfelder gegeneinander schreiben.
-          return res.json().then(function (body) {
-            state.control = body.state || {};
-            state.stateUpdatedAt = body.state_updated_at || null;
-            setStatus("Ein anderes Bedienfeld hat den Zustand geändert.", true);
-          });
-        }
-        if (!res.ok) throw new Error("HTTP " + res.status);
         return res.json().then(function (body) {
-          state.control = body.state || {};
-          state.stateUpdatedAt = body.state_updated_at || null;
-          setStatus("Verbunden", false);
+          return { status: res.status, body: body || {} };
         });
       })
+      .then(function (res) {
+        if (res.status === 409) {
+          // Ein zweites Bedienfeld war schneller. Dessen Stand gewinnt, damit
+          // nicht zwei Regien gegeneinander schreiben.
+          state.control = res.body.state || {};
+          state.stateUpdatedAt = res.body.state_updated_at || null;
+          state.pendingChanges = null;
+          state.writeError = "Ein anderes Bedienfeld hat den Zustand geändert.";
+          setStatus(state.writeError, true);
+          return;
+        }
+        if (res.status < 200 || res.status >= 300) {
+          throw new Error(res.body.message || "HTTP " + res.status);
+        }
+
+        state.control = res.body.state || {};
+        state.stateUpdatedAt = res.body.state_updated_at || null;
+        state.writeError = null;
+        setStatus("Verbunden", false);
+      })
       .catch(function (err) {
-        setStatus("Nicht gespeichert: " + err.message, true);
+        state.writeError = "Nicht gespeichert: " + err.message;
+        setStatus(state.writeError, true);
       })
       .then(function () {
-        state.writing = false;
-        render();
+        state.writeInFlight = false;
+
+        if (state.pendingChanges) {
+          // Der eigene Zustand trägt die Änderung schon, nur der Server nicht.
+          state.pendingChanges = null;
+          flushWrite();
+        } else {
+          render();
+        }
       });
   }
 
@@ -229,8 +323,21 @@
   }
 
   function renderGameSelect() {
-    if (!state.gameDay || el["game-select"].dataset.filled === "1") return;
+    if (!state.gameDay) return;
 
+    if (el["game-select"].dataset.filled !== "1") fillGameSelect();
+
+    // Abgleich bei JEDEM Rendern, nicht nur beim Füllen: Sonst zeigt die
+    // Auswahl dauerhaft ein anderes Spiel als der Server, etwa wenn der
+    // Spieltag vor der ersten Abfrage geladen war, ein zweites Bedienfeld
+    // umschaltet oder ein 409 den eigenen Wechsel zurücknimmt.
+    var active = state.control.active_game_id || (state.game && state.game.id);
+    if (active && el["game-select"].value !== String(active)) {
+      el["game-select"].value = String(active);
+    }
+  }
+
+  function fillGameSelect() {
     state.gameDay.games.forEach(function (g) {
       var opt = document.createElement("option");
       opt.value = String(g.id);
@@ -243,12 +350,6 @@
       el["game-select"].appendChild(opt);
     });
     el["game-select"].dataset.filled = "1";
-
-    if (state.control.active_game_id) {
-      el["game-select"].value = String(state.control.active_game_id);
-    } else if (state.game) {
-      el["game-select"].value = String(state.game.id);
-    }
   }
 
   function renderScoreboard() {
@@ -257,11 +358,11 @@
     el["scoreboard-toggle"].classList.toggle("dk-toggle--on", on);
 
     el["score-line"].textContent = state.game
-      ? state.game.home.short_name +
+      ? teamLabel(state.game.home) +
         " " +
         (state.game.result_string || "0:0") +
         " " +
-        state.game.guest.short_name
+        teamLabel(state.game.guest)
       : "–";
   }
 
@@ -282,8 +383,14 @@
     renderDrift(ms);
   }
 
+  // Ohne Mannschaft bleibt das Feld leer statt „null": OverlayPayload liefert
+  // das Objekt auch für ein noch nicht gesetztes Team.
+  function teamLabel(team) {
+    return (team && (team.short_name || team.name)) || "";
+  }
+
   function formatClock(ms) {
-    var total = Math.floor(ms / 1000);
+    var total = Math.floor(Math.max(0, ms) / 1000);
     var minutes = Math.floor(total / 60);
     var seconds = total % 60;
     return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
