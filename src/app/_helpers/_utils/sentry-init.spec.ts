@@ -1,5 +1,12 @@
+import type { Breadcrumb, ErrorEvent } from '@sentry/angular';
 import { environment } from 'src/environments/environment';
-import { buildSentryOptions } from './sentry-init';
+import {
+  buildSentryOptions,
+  isValidDsn,
+  scrubBreadcrumbUrl,
+  scrubEventUrls,
+  scrubUrl,
+} from './sentry-init';
 
 // Der Kern dieses Moduls ist eine Weiche: senden oder eben nicht. Genau die hat
 // gefehlt (#230), und ein versehentlich fehlender DSN sähe im Betrieb wieder
@@ -36,7 +43,7 @@ describe('buildSentryOptions', () => {
 
     expect(options?.dsn).toBe(dsn);
     expect(options?.environment).toBe('production');
-    expect(options?.sendDefaultPii).toBeFalse();
+    expect(options?.dataCollection?.userInfo).toBeFalse();
   });
 
   // Ohne diese Trennung mischen sich die Ereignisse des Testsystems unter die
@@ -48,16 +55,140 @@ describe('buildSentryOptions', () => {
     expect(buildSentryOptions()?.environment).toBe('staging');
   });
 
-  it('filters deploy-related chunk errors and browser extension frames', () => {
+  it('filters browser extension frames', () => {
     environment.sentryDsn = dsn;
 
     const options = buildSentryOptions();
 
-    expect(options?.ignoreErrors).toContain('ChunkLoadError');
     expect(
       options?.denyUrls?.some((pattern) =>
         (pattern as RegExp).test('chrome-extension://abc/content.js')
       )
     ).toBeTrue();
+  });
+
+  // Chunk-Ladefehler entstehen auch bei einem abgebrochenen scp-Deploy und sind
+  // dann das wichtigste Warnsignal. Sie dürfen nicht stillschweigend wegfallen.
+  it('does not filter chunk load errors', () => {
+    environment.sentryDsn = dsn;
+
+    expect(buildSentryOptions()?.ignoreErrors).not.toContain('ChunkLoadError');
+  });
+
+  // Ohne diese Angaben schickt Sentry Nutzerdaten, Cookies, Kopfzeilen,
+  // Query-Parameter und Nachrichtenrümpfe mit — bei uns durchweg mit
+  // personenbezogenem Inhalt.
+  it('switches off every data category that could carry personal data', () => {
+    environment.sentryDsn = dsn;
+
+    const collection = buildSentryOptions()?.dataCollection;
+
+    expect(collection?.userInfo).toBeFalse();
+    expect(collection?.cookies).toBeFalse();
+    expect(collection?.queryParams).toBeFalse();
+    expect(collection?.httpBodies).toEqual([]);
+  });
+
+  it('leaves tracePropagationTargets unset so the same-origin default applies', () => {
+    environment.sentryDsn = dsn;
+
+    expect(buildSentryOptions()?.tracePropagationTargets).toBeUndefined();
+  });
+});
+
+// Ein Passwort-Reset-Token ist ein lebendes Zugangsmittel, und ausgerechnet auf
+// dieser Seite entstehen Fehler (Link abgelaufen, Passwort abgelehnt).
+// dataCollection deckt die URL nicht ab, auch nicht mit queryParams: false.
+describe('scrubUrl', () => {
+  it('removes a password reset token from the path', () => {
+    expect(
+      scrubUrl('https://saisonmanager.de/neues-passwort/abc123def?x=1')
+    ).toBe('https://saisonmanager.de/neues-passwort/[gefiltert]?x=1');
+  });
+
+  it('removes the one-time token of a referee feedback link', () => {
+    expect(
+      scrubUrl('https://saisonmanager.de/schiri-feedback/abgeben/tok99')
+    ).toBe('https://saisonmanager.de/schiri-feedback/abgeben/[gefiltert]');
+  });
+
+  it('removes token and licence query parameters', () => {
+    expect(
+      scrubUrl('https://saisonmanager.de/email-bestaetigen?token=xy&a=1')
+    ).toBe('https://saisonmanager.de/email-bestaetigen?token=[gefiltert]&a=1');
+    expect(scrubUrl('https://saisonmanager.de/lizenzcheck?q=12345')).toBe(
+      'https://saisonmanager.de/lizenzcheck?q=[gefiltert]'
+    );
+  });
+
+  it('leaves harmless urls untouched', () => {
+    const url = 'https://saisonmanager.de/verwaltung/teams/9885/bearbeiten';
+    expect(scrubUrl(url)).toBe(url);
+  });
+});
+
+describe('scrubEventUrls', () => {
+  it('cleans the request url and the breadcrumbs of an event', () => {
+    const event = {
+      request: { url: 'https://saisonmanager.de/neues-passwort/secret' },
+      breadcrumbs: [
+        {
+          data: {
+            from: '/neues-passwort/secret',
+            to: '/lizenzcheck?q=999',
+            url: 'https://saisonmanager.de/email-bestaetigen?token=abc',
+          },
+        },
+      ],
+    } as unknown as ErrorEvent;
+
+    const cleaned = scrubEventUrls(event);
+
+    expect(cleaned.request?.url).toBe(
+      'https://saisonmanager.de/neues-passwort/[gefiltert]'
+    );
+    const data = cleaned.breadcrumbs?.[0].data;
+    expect(data?.['from']).toBe('/neues-passwort/[gefiltert]');
+    expect(data?.['to']).toBe('/lizenzcheck?q=[gefiltert]');
+    expect(data?.['url']).toBe(
+      'https://saisonmanager.de/email-bestaetigen?token=[gefiltert]'
+    );
+  });
+
+  it('copes with an event without request or breadcrumbs', () => {
+    expect(() => scrubEventUrls({} as ErrorEvent)).not.toThrow();
+  });
+});
+
+describe('scrubBreadcrumbUrl', () => {
+  it('passes a breadcrumb without data through unchanged', () => {
+    const crumb = { category: 'ui.click' } as Breadcrumb;
+    expect(scrubBreadcrumbUrl(crumb)).toBe(crumb);
+  });
+});
+
+// Ein DSN, den Sentry nicht lesen kann, erzeugt genau den Zustand, den dieser
+// Fix behebt: init läuft, aber es wird nie etwas gesendet.
+describe('isValidDsn', () => {
+  it('accepts a well-formed dsn', () => {
+    expect(isValidDsn('https://key123@o1.ingest.de.sentry.io/456')).toBeTrue();
+  });
+
+  it('rejects a dashboard url, a truncated dsn and a wrong scheme', () => {
+    expect(
+      isValidDsn('https://sentry.io/organizations/foo/projects/bar')
+    ).toBeFalse();
+    expect(isValidDsn('https://key123@o1.ingest.de.sentry.io')).toBeFalse();
+    expect(isValidDsn('http://key123@o1.ingest.de.sentry.io/456')).toBeFalse();
+  });
+
+  // tr -d '[:space:]' über eine Datei mit zwei Zeilen ergab genau das, und der
+  // Regex des SDK lässt es durch: gültige Form, aber falsches Projekt.
+  it('rejects two concatenated dsns', () => {
+    expect(
+      isValidDsn(
+        'https://a@o1.ingest.de.sentry.io/2https://b@o1.ingest.de.sentry.io/3'
+      )
+    ).toBeFalse();
   });
 });

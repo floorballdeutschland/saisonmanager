@@ -32,7 +32,24 @@ sed -i "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment
 # startet Sentry dann nicht (statt eine kaputte Adresse zu verwenden). Der DSN
 # eines Browser-SDK ist zwangsläufig öffentlich, er landet im Bundle.
 if [ -f "src/environments/.sentry-dsn" ]; then
-  SENTRY_DSN=$(tr -d '[:space:]' < src/environments/.sentry-dsn)
+  # Nur die erste Zeile: tr -d würde einen Kommentar oder einen zweiten DSN
+  # sonst zu einer scheinbar gültigen Adresse zusammenkleben.
+  SENTRY_DSN=$(head -n1 src/environments/.sentry-dsn | tr -d '[:space:]')
+  # Leere Datei wie beim API-Key abbrechen, statt einen Build ohne Monitoring
+  # als Erfolg zu melden.
+  if [ -z "$SENTRY_DSN" ]; then
+    echo "Fehler: src/environments/.sentry-dsn ist leer." >&2
+    exit 1
+  fi
+  if ! echo "$SENTRY_DSN" | grep -qE '^https://[A-Za-z0-9]+@[A-Za-z0-9.-]+/[0-9]+$'; then
+    echo "Fehler: Inhalt von .sentry-dsn sieht nicht wie ein DSN aus." >&2
+    echo "Erwartet: https://<key>@<host>/<projekt-id>" >&2
+    exit 1
+  fi
+  if ! grep -q "SENTRY_DSN_PLACEHOLDER" src/environments/environment.prod.ts; then
+    echo "Fehler: SENTRY_DSN_PLACEHOLDER nicht in environment.prod.ts gefunden." >&2
+    exit 1
+  fi
   # @ und / im DSN kollidieren mit gängigen sed-Delimitern, | kommt darin nicht vor.
   sed -i "s|SENTRY_DSN_PLACEHOLDER|${SENTRY_DSN}|" src/environments/environment.prod.ts
   echo "Sentry-DSN eingesetzt."

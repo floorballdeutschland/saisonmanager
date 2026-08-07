@@ -40,7 +40,21 @@ sed -i "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment
 # Sentry-DSN einsetzen, sofern hinterlegt (optional, siehe build-deploy.sh).
 # Derselbe DSN wie Prod; getrennt werden die Ereignisse über environment: 'staging'.
 if [ -f "src/environments/.sentry-dsn" ]; then
-  SENTRY_DSN=$(tr -d '[:space:]' < src/environments/.sentry-dsn)
+  # Prüfungen wie in build-deploy.sh: leere Datei und unbrauchbarer DSN brechen
+  # ab, statt einen Build ohne Monitoring als Erfolg zu melden.
+  SENTRY_DSN=$(head -n1 src/environments/.sentry-dsn | tr -d '[:space:]')
+  if [ -z "$SENTRY_DSN" ]; then
+    echo "Fehler: src/environments/.sentry-dsn ist leer." >&2
+    exit 1
+  fi
+  if ! echo "$SENTRY_DSN" | grep -qE '^https://[A-Za-z0-9]+@[A-Za-z0-9.-]+/[0-9]+$'; then
+    echo "Fehler: Inhalt von .sentry-dsn sieht nicht wie ein DSN aus." >&2
+    exit 1
+  fi
+  if ! grep -q "SENTRY_DSN_PLACEHOLDER" src/environments/environment.staging.ts; then
+    echo "Fehler: SENTRY_DSN_PLACEHOLDER nicht in environment.staging.ts gefunden." >&2
+    exit 1
+  fi
   sed -i "s|SENTRY_DSN_PLACEHOLDER|${SENTRY_DSN}|" src/environments/environment.staging.ts
   echo "Sentry-DSN eingesetzt."
 else
