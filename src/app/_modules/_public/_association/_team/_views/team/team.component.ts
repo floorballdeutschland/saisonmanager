@@ -13,6 +13,7 @@ import {
   TeamService,
 } from '@floorball/core';
 import { leagueRouteSegment } from '@floorball/uikit/common';
+import { calendarUrl } from 'src/app/_helpers/_utils/calendar-url';
 import { FavoriteTeam, TeamRecentGame, TeamStats } from '@floorball/types';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -33,6 +34,11 @@ export class TeamComponent implements OnInit, OnDestroy {
   private _operationPath = '';
   private _leaguePath = '';
   private _destroy$ = new Subject<boolean>();
+
+  /** Adresse des Kalender-Abos; leer, solange keine Mannschaft geladen ist. */
+  public get calendarUrl(): string {
+    return this.teamId ? calendarUrl('teams', this.teamId) : '';
+  }
 
   constructor(
     private _associationService: AssociationService,
