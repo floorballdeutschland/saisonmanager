@@ -6,41 +6,13 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { GameService } from '@floorball/core';
+import { GameService, SecretaryPayload } from '@floorball/core';
+import { SecretaryTokenGameDay } from '@floorball/types';
 
-interface SecretaryGameDay {
-  game_day: {
-    id: number;
-    date: string;
-    league: string;
-    league_id?: number;
-    arena?: string;
-    game_operation_slug?: string;
-  };
-  games: {
-    id: number;
-    game_number?: string;
-    start_time?: string;
-    home_team?: string;
-    guest_team?: string;
-    game_status?: string;
-  }[];
-  license_lists: Record<
-    string,
-    {
-      team_name: string;
-      players: {
-        name: string;
-        birthdate?: string;
-        license_status: string;
-        approved_at?: string;
-        valid_until?: string;
-      }[];
-    }
-  >;
-  expires_at: string;
-  created_by?: string;
-}
+// Die Antwort wird im GameService begradigt: game_days ist dort immer gefüllt
+// (auch bei einer älteren API, die nur game_day kennt) und jedes Spiel trägt
+// seinen Spieltag. Diese Ansicht muss den Altfall deshalb nicht mehr kennen.
+type SecretaryGameDay = SecretaryPayload;
 
 @Component({
   templateUrl: './spielsekretariat.component.html',
@@ -79,13 +51,44 @@ export class SpielSekretariatComponent implements OnInit {
         this.loading = false;
         this._cdr.markForCheck();
       },
+      // err.message stammt aus normalizeSecretaryPayload und meldet eine
+      // unbrauchbare Antwort. Diesen Fall nicht als abgelaufenen Link ausgeben:
+      // Das Sekretariat ließe sich sonst einen neuen Link geben, der genauso
+      // scheitert.
       error: (err) => {
         this.error =
-          err?.error?.message ?? 'Der Link ist ungültig oder abgelaufen.';
+          err?.error?.message ??
+          (err instanceof Error ? err.message : null) ??
+          'Der Link ist ungültig oder abgelaufen.';
         this.loading = false;
         this._cdr.markForCheck();
       },
     });
+  }
+
+  gameDays(): SecretaryTokenGameDay[] {
+    return this.data?.game_days ?? [];
+  }
+
+  /** Mehrere Ligen im selben Link: dann gehört die Liga an jedes Spiel. */
+  get multipleLeagues(): boolean {
+    return this.gameDays().length > 1;
+  }
+
+  headerTitle(): string {
+    return this.gameDays()
+      .map((gd) => gd.league)
+      .filter((name) => !!name)
+      .join(' · ');
+  }
+
+  /** Halle des Links. Alle abgedeckten Spieltage teilen sie sich. */
+  arena(): string | null {
+    return this.gameDays()[0]?.arena ?? null;
+  }
+
+  date(): string | null {
+    return this.gameDays()[0]?.date ?? null;
   }
 
   // Spielseite: /:association/:leagueId/spiel/:matchId. Verbands-Slug und
@@ -93,16 +96,19 @@ export class SpielSekretariatComponent implements OnInit {
   // keinen sinnvollen Pfad, und der Eintrag bleibt bewusst unverlinkt. Ein
   // Teilpfad würde auf der Verbandsroute stumm als leere Seite landen, weil
   // :association/:leagueId zwei beliebige Segmente schluckt.
-  matchReportUrl(gameId: number): string | null {
-    const slug = this.data?.game_day.game_operation_slug;
-    const leagueId = this.data?.game_day.league_id;
-    if (!slug || !leagueId) {
+  //
+  // Der Link kann mehrere Ligen abdecken, deshalb wird der Spieltag des Spiels
+  // gesucht statt pauschal der erste genommen – sonst landete ein Spiel der
+  // zweiten Liga unter der leagueId der ersten.
+  matchReportUrl(game: { id: number; game_day_id: number }): string | null {
+    const day = this.gameDays().find((gd) => gd.id === game.game_day_id);
+    if (!day?.game_operation_slug || !day.league_id) {
       return null;
     }
 
-    return `/${slug}/${leagueId}/spiel/${gameId}?secretary_token=${encodeURIComponent(
-      this.token
-    )}`;
+    return `/${day.game_operation_slug}/${day.league_id}/spiel/${
+      game.id
+    }?secretary_token=${encodeURIComponent(this.token)}`;
   }
 
   licenseEntries(): {

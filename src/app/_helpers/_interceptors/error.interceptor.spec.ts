@@ -1,0 +1,206 @@
+import { TestBed } from '@angular/core/testing';
+import {
+  HTTP_INTERCEPTORS,
+  HttpClient,
+  HttpErrorResponse,
+  HttpHandler,
+  HttpRequest,
+} from '@angular/common/http';
+import { throwError } from 'rxjs';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import {
+  getTranslocoTestingModule,
+  NotificationService,
+} from '@floorball/core';
+import { environment } from 'src/environments/environment';
+import { ErrorInterceptor } from './error.interceptor';
+
+// Diese Specs sichern den Vertrag ab, auf den sich Komponenten stützen, die
+// bewusst keinen eigenen Fehler-Toast mehr zeigen (#84, #228): Wer den lokalen
+// Toast weglässt, verlässt sich darauf, dass hier einer entsteht. Ohne diese
+// Tests würde ein weiterer Ausnahme-Eintrag in der Liste oben im Interceptor
+// ganze Formulare stumm schalten, ohne dass ein Test rot wird.
+describe('ErrorInterceptor', () => {
+  let http: HttpClient;
+  let httpMock: HttpTestingController;
+  let errorSpy: jasmine.Spy;
+
+  // Ein Endpunkt, dessen Komponenten auf einen eigenen Toast verzichten.
+  const uploadUrl = `${environment.apiURL}admin/teams/42/upload_logo.json`;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule,
+        getTranslocoTestingModule(),
+      ],
+      providers: [
+        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+        // Zusaetzlich unter dem eigenen Token, damit ein Test intercept()
+        // direkt aufrufen kann. Das multi-Provider-Token allein ist dafuer
+        // nicht injizierbar.
+        ErrorInterceptor,
+      ],
+    });
+
+    http = TestBed.inject(HttpClient);
+    httpMock = TestBed.inject(HttpTestingController);
+    errorSpy = spyOn(TestBed.inject(NotificationService), 'error');
+  });
+
+  afterEach(() => {
+    httpMock.verify();
+  });
+
+  function failWith(body: object, status: number, url = uploadUrl): void {
+    http.post(url, {}).subscribe({
+      next: () => fail('expected the request to fail'),
+      error: () => undefined,
+    });
+    httpMock.expectOne(url).flush(body, { status, statusText: 'Error' });
+  }
+
+  it('shows the server message for a 422 so a component needs no own toast', () => {
+    failWith(
+      { message: 'Das Logo muss quadratisch sein (gleiche Breite und Höhe).' },
+      422
+    );
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Das Logo muss quadratisch sein (gleiche Breite und Höhe).',
+      { autoClose: false, keepAfterRouteChange: false }
+    );
+  });
+
+  it('reads the error key as well, not only message', () => {
+    failWith({ error: 'Kein Bild angefügt' }, 422);
+
+    expect(errorSpy.calls.mostRecent().args[0]).toBe('Kein Bild angefügt');
+  });
+
+  it('joins an errors array into one message', () => {
+    failWith({ errors: ['Name fehlt', 'Verein fehlt'] }, 422);
+
+    expect(errorSpy.calls.mostRecent().args[0]).toBe(
+      'Name fehlt, Verein fehlt'
+    );
+  });
+
+  it('falls back to a generic message when the body carries no detail', () => {
+    failWith({}, 409);
+
+    expect(errorSpy.calls.mostRecent().args[0]).toBe(
+      'Die Eingabe konnte nicht verarbeitet werden.'
+    );
+  });
+
+  // Der Interceptor nimmt einzelne Pfade per URL-Match aus. Ein Upload-Endpunkt
+  // darf dort nicht landen, sonst verliert die Logo-Ablehnung jede Rückmeldung.
+  it('does not exempt the logo upload endpoints from the notification', () => {
+    failWith({ message: 'Datei zu groß.' }, 422);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+
+    failWith(
+      { message: 'Datei zu groß.' },
+      422,
+      `${environment.apiURL}admin/clubs/42/upload_logo.json`
+    );
+    expect(errorSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows a generic message for 5xx instead of the server body', () => {
+    failWith({ message: 'PG::Error' }, 500);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Server-Fehler. Bitte versuche es später erneut.',
+      { autoClose: false, keepAfterRouteChange: false }
+    );
+  });
+
+  it('reports a missing connection for status 0', () => {
+    http.post(uploadUrl, {}).subscribe({
+      next: () => fail('expected the request to fail'),
+      error: () => undefined,
+    });
+    httpMock.expectOne(uploadUrl).error(new ProgressEvent('error'), {
+      status: 0,
+      statusText: 'Unknown Error',
+    });
+
+    expect(errorSpy.calls.mostRecent().args[0]).toBe(
+      'Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.'
+    );
+  });
+
+  it('prefixes a 403 and keeps it across the forced navigation', () => {
+    failWith({ message: 'Keine Berechtigung' }, 403);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Berechtigungsfehler: Keine Berechtigung',
+      { autoClose: false, keepAfterRouteChange: true }
+    );
+  });
+
+  // Angular liefert eine HttpErrorResponse mit unveraendertem 2xx-Status, wenn
+  // der Body einer Erfolgsantwort kein gueltiges JSON ist (Wartungs- oder
+  // Portalseite mit Status 200). Vor diesem Zweig fiel so ein Fehlschlag durch
+  // jede Statusabfrage und blieb voellig stumm. HttpTestingController kann
+  // diesen Fall nicht erzeugen — ein 2xx gilt dort immer als Erfolg — deshalb
+  // hier der direkte Weg ueber intercept() mit einem fehlschlagenden Handler.
+  it('reports a success response whose body is not parsable JSON', () => {
+    const interceptor = TestBed.inject(ErrorInterceptor);
+    const failing = {
+      handle: () =>
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 200,
+              statusText: 'OK',
+              url: uploadUrl,
+              error: {
+                error: new Error('parse'),
+                text: '<html>Wartung</html>',
+              },
+            })
+        ),
+    } as unknown as HttpHandler;
+
+    interceptor
+      .intercept(new HttpRequest('POST', uploadUrl, {}), failing)
+      .subscribe({
+        next: () => fail('expected the request to fail'),
+        error: () => undefined,
+      });
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy.calls.mostRecent().args[0]).toBe(
+      'Die Antwort des Servers war unlesbar. Bitte versuche es erneut.'
+    );
+  });
+
+  it('leaves a normal 4xx to the branch above without doubling the toast', () => {
+    failWith({ message: 'Datei zu groß.' }, 422);
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes the original HttpErrorResponse on so handlers can read status', () => {
+    let caught: { status?: number; error?: { message?: string } } | undefined;
+    http.post(uploadUrl, {}).subscribe({
+      next: () => fail('expected the request to fail'),
+      error: (err) => (caught = err),
+    });
+    httpMock
+      .expectOne(uploadUrl)
+      .flush({ message: 'Datei zu groß.' }, { status: 422, statusText: 'x' });
+
+    expect(caught?.status).toBe(422);
+    expect(caught?.error?.message).toBe('Datei zu groß.');
+  });
+});

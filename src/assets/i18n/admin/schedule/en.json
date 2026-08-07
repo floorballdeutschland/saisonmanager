@@ -13,13 +13,14 @@
     "linkActiveUntil": "Link active until {{ date }}",
     "copyLinkTitle": "Copy link",
     "copyLink": "Copy link",
-    "secretaryLinkTitle": "Generate game-secretariat link – link for referees/game secretariat to retrieve licenses and game reports",
+    "secretaryLinkTitle": "Create match secretariat link. The link is valid for 72 hours and covers every game day taking place in the same arena on that date.",
     "secretaryLinkGenerating": "Generating…",
     "secretaryLink": "Secretariat link",
     "editGameDayTitle": "Edit game day",
     "editGameDay": "Edit game day",
     "gamesHeading": "Games",
-    "addNewGame": "Add new game"
+    "addNewGame": "Add new game",
+    "linkCovers": "The link covers: {{leagues}}"
   },
   "gameDayEdit": {
     "title": "Schedule management",

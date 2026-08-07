@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 
 import {
   AddLineupPlayerResponse,
@@ -16,12 +17,98 @@ import {
   GameInput,
   GamePlayerEntry,
   GameScan,
+  NonEmptyArray,
+  SecretaryGameDayStub,
+  SecretaryHallDay,
+  SecretaryTokenGameDay,
   StartingPlayerPosition,
   StartingPlayer,
   AwardDefinitions,
   AwardPlayer,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
+
+interface SecretaryLicenseList {
+  team_name: string;
+  players: {
+    name: string;
+    birthdate?: string;
+    license_status: string;
+    approved_at?: string;
+    valid_until?: string;
+  }[];
+}
+
+interface SecretaryGameWire {
+  id: number;
+  game_number?: string;
+  start_time?: string;
+  home_team?: string;
+  guest_team?: string;
+  game_status?: string;
+  game_day_id?: number;
+  league?: string;
+}
+
+/** Rohform vom Server, inklusive der alten Antwort ohne `game_days`. */
+interface SecretaryPayloadWire {
+  game_day: SecretaryTokenGameDay;
+  game_days?: SecretaryTokenGameDay[];
+  games: SecretaryGameWire[];
+  license_lists: Record<string, SecretaryLicenseList>;
+  expires_at: string;
+  created_by?: string;
+}
+
+/**
+ * Begradigte Form für die Ansicht. Zwei Zusagen, auf die sie sich verlässt:
+ * `game_days` ist nie leer, und jedes Spiel kennt seinen Spieltag – Letzteres
+ * ist die Grundlage dafür, dass `matchReportUrl` die richtige Liga trifft.
+ */
+export interface SecretaryPayload {
+  game_days: NonEmptyArray<SecretaryTokenGameDay>;
+  games: (SecretaryGameWire & { game_day_id: number })[];
+  license_lists: Record<string, SecretaryLicenseList>;
+  expires_at: string;
+  created_by?: string;
+}
+
+/**
+ * Bringt die Antwort auf die Form, die `SecretaryPayload` zusagt. Hier liegt
+ * auch die Verträglichkeit mit der alten API, die `game_days` noch nicht kennt.
+ *
+ * Eine unbrauchbare Antwort wird ausdrücklich abgewiesen statt weitergereicht:
+ * Sonst schlüge weiter unten ein TypeError zu, den die Ansicht als „Link
+ * abgelaufen" deutete. Das Sekretariat ließe sich dann einen neuen Link geben,
+ * der genauso scheitert.
+ */
+export function normalizeSecretaryPayload(
+  wire: SecretaryPayloadWire
+): SecretaryPayload {
+  const days = wire.game_days?.length
+    ? wire.game_days
+    : wire.game_day
+      ? [wire.game_day]
+      : [];
+
+  if (!days.length || !Array.isArray(wire.games)) {
+    console.error('Unerwartete Antwort für das Spielsekretariat', wire);
+    throw new Error(
+      'Die Antwort des Servers war unvollständig. Bitte lade die Seite neu.'
+    );
+  }
+
+  return {
+    ...wire,
+    game_days: days as NonEmptyArray<SecretaryTokenGameDay>,
+    // Nur der Altfall braucht den Rückfall, dort gibt es genau einen Spieltag.
+    // Bei mehreren Spieltagen liefert die API game_day_id immer mit.
+    games: wire.games.map((game) => ({
+      ...game,
+      game_day_id: game.game_day_id ?? days[0].id,
+    })),
+  };
+}
 
 export interface GameSchedulingConflict {
   id: number;
@@ -313,12 +400,20 @@ export class GameService {
     return this.http.delete<{ success: boolean }>(path);
   }
 
+  /**
+   * Erzeugt den Link für einen Spieltag. Der Server nimmt dabei alle Spieltage
+   * derselben Halle am selben Tag mit auf, für die man berechtigt ist –
+   * `game_day_ids` nennt, welche das geworden sind.
+   */
   public createSecretaryLink(gameDayId: number) {
     return this.http.post<{
       url: string;
       token: string;
       expires_at: string;
       created_by: string;
+      game_day_id: number;
+      game_day_ids: number[];
+      game_days: SecretaryGameDayStub[];
     }>(
       environment.apiURL + 'user/game_days/' + gameDayId + '/secretary_link',
       {}
@@ -329,6 +424,7 @@ export class GameService {
     return this.http.get<{
       expires_at?: string;
       created_by?: string;
+      game_day_ids?: number[];
       active?: boolean;
     }>(environment.apiURL + 'user/game_days/' + gameDayId + '/secretary_link');
   }
@@ -366,40 +462,31 @@ export class GameService {
     );
   }
 
-  public getSecretaryGameDay(token: string) {
-    return this.http.get<{
-      game_day: {
-        id: number;
-        date: string;
-        league: string;
-        arena?: string;
-        game_operation_slug?: string;
-      };
-      games: {
-        id: number;
-        game_number?: string;
-        start_time?: string;
-        home_team?: string;
-        guest_team?: string;
-        game_status?: string;
-      }[];
-      license_lists: Record<
-        string,
-        {
-          team_name: string;
-          players: {
-            name: string;
-            birthdate?: string;
-            license_status: string;
-            approved_at?: string;
-          }[];
-        }
-      >;
-      expires_at: string;
-      created_by?: string;
-    }>(
-      environment.apiURL + 'public/secretary?token=' + encodeURIComponent(token)
+  /** Spieltage, für die man als VM/TM einen Link erzeugen darf, nach Halle und Tag. */
+  public getSecretaryGameDays() {
+    return this.http.get<SecretaryHallDay[]>(
+      environment.apiURL + 'user/secretary_game_days'
     );
+  }
+
+  /**
+   * Spieltagsdaten zum Sekretariats-Token.
+   *
+   * Die Antwort wird hier einmal begradigt: Eine ältere API kennt `game_days`
+   * noch nicht und liefert nur den einen `game_day`, und `game_day_id` fehlt
+   * dann an den Spielen. Frontend und API werden getrennt ausgerollt, also muss
+   * beides gehen – aber nur an dieser Stelle. Die Ansicht bekommt eine Form, in
+   * der die Spieltagsliste immer gefüllt und jedem Spiel sein Spieltag bekannt
+   * ist.
+   */
+  public getSecretaryGameDay(token: string) {
+    return this.http
+      .get<SecretaryPayloadWire>(
+        environment.apiURL +
+          'public/secretary?token=' +
+          encodeURIComponent(token)
+      )
+      .pipe(map((wire) => normalizeSecretaryPayload(wire)));
   }
 
   public setChecklistAnswers(

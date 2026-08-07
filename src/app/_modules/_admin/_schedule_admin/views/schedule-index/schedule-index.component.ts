@@ -9,6 +9,7 @@ import {
   AssociationService,
   GameService,
   LeagueService,
+  NotificationService,
 } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -36,7 +37,7 @@ export class ScheduleIndexComponent implements OnInit {
 
   secretaryLinkByGameDay: Record<
     number,
-    { url: string; expires_at: string } | null
+    { url: string; expires_at: string; leagues: string[] } | null
   > = {};
   secretaryLinkGenerating: Record<number, boolean> = {};
 
@@ -44,6 +45,7 @@ export class ScheduleIndexComponent implements OnInit {
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
     private _gameService: GameService,
+    private _notificationService: NotificationService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title
@@ -135,6 +137,13 @@ export class ScheduleIndexComponent implements OnInit {
         this.secretaryLinkByGameDay[gameDayId] = {
           url: result.url,
           expires_at: result.expires_at,
+          // Ein Link deckt alle Spieltage derselben Halle am selben Tag ab, für
+          // die man berechtigt ist. Admin und SBK sind das meist für alle –
+          // welche Ligen der Link also mitnimmt, gehört sichtbar gemacht, bevor
+          // er weitergegeben wird.
+          leagues: (result.game_days ?? [])
+            .map((gd) => gd.league)
+            .filter((name): name is string => !!name),
         };
         this.secretaryLinkGenerating[gameDayId] = false;
         this._cdr.markForCheck();
@@ -146,8 +155,18 @@ export class ScheduleIndexComponent implements OnInit {
     });
   }
 
-  public copyToClipboard(text: string): void {
-    navigator.clipboard?.writeText(text);
+  // Wie im Sekretariats-Portal: ohne HTTPS gibt es navigator.clipboard nicht,
+  // und der Browser kann die Freigabe verweigern. Stillschweigend nichts zu tun
+  // hieße, dass jemand eine leere Zwischenablage weiterschickt.
+  public async copyToClipboard(text: string): Promise<void> {
+    try {
+      if (!navigator.clipboard) throw new Error('clipboard unavailable');
+      await navigator.clipboard.writeText(text);
+    } catch {
+      this._notificationService.error(
+        'Kopieren war nicht möglich. Bitte markiere den Link und kopiere ihn von Hand.'
+      );
+    }
   }
 
   private _syncOpenGameDays() {
