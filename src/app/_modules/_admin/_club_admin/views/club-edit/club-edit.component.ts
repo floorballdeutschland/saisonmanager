@@ -287,15 +287,12 @@ export class ClubEditComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: () => {
+          // Kein eigener Toast: Der ErrorInterceptor zeigt bei 4xx/5xx bereits
+          // die Servermeldung (bei einem abgelehnten Logo z. B. "Das Logo muss
+          // quadratisch sein"). Eine zweite, generische Meldung hat die
+          // erklaerende ueberdeckt (#84, #228). Hier nur die Dateiauswahl
+          // zuruecksetzen, damit dieselbe Datei erneut gewaehlt werden kann.
           input.value = '';
-          this._notificationService.error(
-            this._transloco.translate(
-              'clubAdmin.notifications.logoUploadError'
-            ),
-            {
-              autoClose: false,
-            }
-          );
         },
       });
   }
