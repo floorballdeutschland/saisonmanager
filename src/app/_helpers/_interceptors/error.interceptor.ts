@@ -144,6 +144,21 @@ export class ErrorInterceptor implements HttpInterceptor {
           );
         }
 
+        // Fehler mit einem Erfolgsstatus erreichen keinen der Zweige oben:
+        // Angular baut eine HttpErrorResponse mit unverändertem Status, wenn
+        // der Body einer 2xx-Antwort kein gültiges JSON ist – etwa eine
+        // Captive-Portal- oder Wartungsseite, die mit 200 ausgeliefert wird.
+        // Ohne diesen Zweig bleibt so ein Fehlschlag völlig stumm, seit
+        // Komponenten sich auf den Interceptor verlassen statt auf einen
+        // eigenen Toast (#228).
+        if (err.status > 0 && err.status < 400) {
+          console.error(err);
+          this._notificationService.error(
+            'Die Antwort des Servers war unlesbar. Bitte versuche es erneut.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
+        }
+
         // Die ursprüngliche HttpErrorResponse weiterreichen (statt eines bloßen
         // Strings): aufrufende error-Handler können so auf .status, .message und
         // den .error-Body (inkl. errors[]) zugreifen.

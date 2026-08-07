@@ -13,6 +13,15 @@ import { environment } from 'src/environments/environment';
 import { Team } from 'src/app/_models';
 import { TeamEditComponent } from './team-edit.component';
 
+// Ein echter File-Input braucht DataTransfer; ein Stub mit den beiden Feldern,
+// die onLogoSelected liest und schreibt, genügt hier. PNG, damit die
+// clientseitige Typ- und Dateigrößenprüfung passiert und der Upload rausgeht.
+// Die Quadrat-Regel prüft nur der Server, hier ist sie ohne Belang.
+function pngInput(): HTMLInputElement {
+  const file = new File(['x'], 'logo.png', { type: 'image/png' });
+  return { files: [file], value: 'logo.png' } as unknown as HTMLInputElement;
+}
+
 describe('TeamEditComponent', () => {
   let httpMock: HttpTestingController;
 
@@ -111,6 +120,97 @@ describe('TeamEditComponent', () => {
       'Team kann nicht gelöscht werden: Es sind noch Spiele zugeordnet.',
       { autoClose: false }
     );
+  });
+
+  it('onLogoSelected adds no own notification when the upload is rejected', () => {
+    const fixture = TestBed.createComponent(TeamEditComponent);
+    const component = fixture.componentInstance;
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = spyOn(notificationService, 'error');
+
+    const team = { id: 42, name: 'Testteam', league_id: 7 } as Team;
+    const input = pngInput();
+    component.onLogoSelected(team, input);
+
+    const req = httpMock.expectOne(
+      `${environment.apiURL}admin/teams/42/upload_logo.json`
+    );
+    expect(req.request.method).toBe('POST');
+    req.flush(
+      { message: 'Das Logo muss quadratisch sein (gleiche Breite und Höhe).' },
+      { status: 422, statusText: 'Unprocessable Entity' }
+    );
+
+    // In der App zeigt der ErrorInterceptor die Servermeldung (abgesichert in
+    // error.interceptor.spec.ts). Hier wird nur geprüft, dass die Komponente
+    // keinen zweiten Toast ergänzt, der die erste überdeckt (#228).
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(input.value).toBe('');
+  });
+
+  it('onLogoSelected posts the file as FormData and applies both returned urls', () => {
+    const fixture = TestBed.createComponent(TeamEditComponent);
+    const component = fixture.componentInstance;
+    const team = { id: 42, name: 'Testteam', league_id: 7 } as Team;
+    const input = pngInput();
+
+    component.onLogoSelected(team, input);
+
+    const req = httpMock.expectOne(
+      `${environment.apiURL}admin/teams/42/upload_logo.json`
+    );
+    // Der Feldname muss 'logo' bleiben, sonst weist die API jeden Upload ab.
+    expect((req.request.body as FormData).get('logo')).toBeTruthy();
+    req.flush({ logo_url: '/l.png', logo_small_url: '/s.png' });
+
+    // Team traegt das kleine Logo in logo_small, Club in logo_small_url — beide
+    // folgen ihrem Interface, die Asymmetrie ist gewollt.
+    expect(team.logo_url).toBe('/l.png');
+    expect(team.logo_small).toBe('/s.png');
+    expect(input.value).toBe('');
+  });
+
+  it('onLogoSelected rejects a file above the 3 MB limit before any request', () => {
+    const fixture = TestBed.createComponent(TeamEditComponent);
+    const component = fixture.componentInstance;
+    const errorSpy = spyOn(TestBed.inject(NotificationService), 'error');
+
+    const file = new File([new ArrayBuffer(3 * 1024 * 1024 + 1)], 'big.png', {
+      type: 'image/png',
+    });
+    const input = {
+      files: [file],
+      value: 'big.png',
+    } as unknown as HTMLInputElement;
+
+    component.onLogoSelected(
+      { id: 42, name: 'Testteam', league_id: 7 } as Team,
+      input
+    );
+
+    httpMock.expectNone(`${environment.apiURL}admin/teams/42/upload_logo.json`);
+    expect(errorSpy).toHaveBeenCalled();
+  });
+
+  it('onLogoSelected rejects a non-image before any request goes out', () => {
+    const fixture = TestBed.createComponent(TeamEditComponent);
+    const component = fixture.componentInstance;
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = spyOn(notificationService, 'error');
+
+    const file = new File(['x'], 'logo.gif', { type: 'image/gif' });
+    const input = {
+      files: [file],
+      value: 'logo.gif',
+    } as unknown as HTMLInputElement;
+
+    component.onLogoSelected(
+      { id: 42, name: 'Testteam', league_id: 7 } as Team,
+      input
+    );
+
+    httpMock.expectNone(`${environment.apiURL}admin/teams/42/upload_logo.json`);
+    expect(errorSpy).toHaveBeenCalled();
   });
 
   it('deleteTeam does nothing when the user lacks permission', () => {
