@@ -24,6 +24,7 @@ import {
   RefereeProfile,
   RefereePublicLicense,
   RefereeQualificationType,
+  RefereeStatusFilter,
   RefereeTag,
   RefereeVm,
   RefereeFeedbackProfileResponse,
@@ -149,11 +150,17 @@ export class RefereeService {
     );
   }
 
+  /**
+   * Ohne `status` liefert die API alles außer den Schiedsrichtern mit beendeter
+   * Karriere. Eine reine Zahl in `q` durchsticht diesen Standard, damit sich
+   * eine alte Lizenznummer gezielt prüfen lässt.
+   */
   public adminGetAll(params?: {
     q?: string;
     landesverband?: string;
     lizenzstufe?: string;
     active?: boolean;
+    status?: RefereeStatusFilter;
     sort?: 'name' | 'lizenznummer';
     sort_dir?: 'asc' | 'desc';
   }) {
@@ -166,6 +173,7 @@ export class RefereeService {
       if (params.lizenzstufe)
         parts.push(`lizenzstufe=${encodeURIComponent(params.lizenzstufe)}`);
       if (params.active) parts.push('active=true');
+      if (params.status) parts.push(`status=${params.status}`);
       if (params.sort) parts.push(`sort=${params.sort}`);
       if (params.sort_dir) parts.push(`sort_dir=${params.sort_dir}`);
       if (parts.length) query = '?' + parts.join('&');
