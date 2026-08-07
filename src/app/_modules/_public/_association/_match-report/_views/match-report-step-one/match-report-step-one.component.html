@@ -147,10 +147,14 @@
         <!-- Livestream-Overlays: steht direkt beim Stream-Link, weil hier
              ohnehin sitzt, wer die Übertragung einrichtet.
 
-             Die Spieltags-Kennung gibt es erst seit dem passenden API-Stand.
-             Fehlt sie, bleibt der Abschnitt aus, statt einen Knopf anzubieten,
-             der nichts tun kann. -->
-        @if (game.game_day_id) {
+             Nur für Angemeldete: Der Spielbericht rendert auch für das
+             Spielsekretariat, das allein einen Einmal-Token hat. Die
+             Overlay-Endpunkte verlangen aber eine Anmeldung, und ein 401
+             würde das Sekretariat mitten im Spiel abmelden.
+
+             Die Spieltags-Kennung gibt es zudem erst seit dem passenden
+             API-Stand. Fehlt eines von beidem, bleibt der Abschnitt aus. -->
+        @if (canManageOverlay) {
           <div class="md:col-span-2">
             <div
               class="border border-fb-gray-200 rounded-[5px] p-4 bg-fb-gray-300"

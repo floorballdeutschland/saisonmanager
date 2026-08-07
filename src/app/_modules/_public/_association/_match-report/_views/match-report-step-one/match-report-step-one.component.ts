@@ -4,12 +4,13 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { GameService, LeagueService } from '@floorball/core';
+import { GameService, LeagueService, SessionService } from '@floorball/core';
 import { Game, GameAdditionalFields } from '@floorball/types';
 import { tap } from 'rxjs';
 
@@ -19,7 +20,9 @@ import { tap } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
-export class MatchReportStepOneComponent implements OnInit, OnChanges {
+export class MatchReportStepOneComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   fieldSize!: string;
 
   homeCoachNums: number[] = [1];
@@ -58,10 +61,14 @@ export class MatchReportStepOneComponent implements OnInit, OnChanges {
   public overlayBusy = false;
   public overlayError = '';
   public overlayCopied = '';
+  // Aufgeräumt beim Zerstören der Komponente: Ein Timer, der danach noch
+  // markForCheck aufruft, arbeitet auf einer View, die es nicht mehr gibt.
+  private _copyResetTimer = 0;
 
   constructor(
     private _leagueService: LeagueService,
     private _gameService: GameService,
+    private _sessionService: SessionService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -87,10 +94,20 @@ export class MatchReportStepOneComponent implements OnInit, OnChanges {
 
   // ── Livestream-Overlays ───────────────────────────────────────────────
 
-  public loadOverlayLink(): void {
-    if (!this.game?.game_day_id) return;
+  // Nur für angemeldete Nutzer. Der Spielbericht rendert auch für das
+  // Spielsekretariat, das allein einen Einmal-Token hat und keine Sitzung; die
+  // Overlay-Endpunkte verlangen aber eine Anmeldung. Ohne diese Prüfung
+  // antwortete der Abruf mit 401, und der ErrorInterceptor meldet daraufhin ab
+  // und leitet auf die Anmeldeseite um. Das Sekretariat flöge also mitten im
+  // Spiel aus dem Spielbericht.
+  public get canManageOverlay(): boolean {
+    return Boolean(this._sessionService.currentUser && this.game?.game_day_id);
+  }
 
-    this._gameService.getOverlayLink(this.game.game_day_id).subscribe({
+  public loadOverlayLink(): void {
+    if (!this.canManageOverlay) return;
+
+    this._gameService.getOverlayLink(this.game.game_day_id!).subscribe({
       next: (link) => {
         this.overlayLink = link;
         this._cdr.markForCheck();
@@ -105,11 +122,11 @@ export class MatchReportStepOneComponent implements OnInit, OnChanges {
   }
 
   public generateOverlayLink(): void {
-    if (!this.game?.game_day_id || this.overlayBusy) return;
+    if (!this.canManageOverlay || this.overlayBusy) return;
 
     this.overlayBusy = true;
     this.overlayError = '';
-    this._gameService.createOverlayLink(this.game.game_day_id).subscribe({
+    this._gameService.createOverlayLink(this.game.game_day_id!).subscribe({
       next: (res) => {
         this.overlayUrls = {
           overlay_url: res.overlay_url,
@@ -136,11 +153,11 @@ export class MatchReportStepOneComponent implements OnInit, OnChanges {
   }
 
   public revokeOverlayLink(): void {
-    if (!this.game?.game_day_id || this.overlayBusy) return;
+    if (!this.canManageOverlay || this.overlayBusy) return;
 
     this.overlayBusy = true;
     this.overlayError = '';
-    this._gameService.revokeOverlayLink(this.game.game_day_id).subscribe({
+    this._gameService.revokeOverlayLink(this.game.game_day_id!).subscribe({
       next: () => {
         this.overlayLink = { active: false };
         this.overlayUrls = null;
@@ -156,15 +173,33 @@ export class MatchReportStepOneComponent implements OnInit, OnChanges {
     });
   }
 
-  public copyOverlayUrl(kind: 'overlay' | 'dock', url: string): void {
-    navigator.clipboard?.writeText(url);
-    // Kurze Rückmeldung am Knopf, damit erkennbar ist, welcher der beiden
-    // Links gerade in der Zwischenablage liegt.
-    this.overlayCopied = kind;
-    setTimeout(() => {
+  // Fehlschläge müssen auffallen: Der Klartext des Tokens wird genau einmal
+  // angezeigt. Wer „Kopiert" liest, obwohl nichts in der Zwischenablage liegt,
+  // fügt in OBS etwas Altes ein und muss den Zugang neu erzeugen. Ohne
+  // Zwischenablage (unsicherer Kontext) tut der optionale Aufruf nichts und
+  // meldete das früher nicht.
+  public async copyOverlayUrl(
+    kind: 'overlay' | 'dock',
+    url: string
+  ): Promise<void> {
+    try {
+      if (!navigator.clipboard) throw new Error('clipboard unavailable');
+      await navigator.clipboard.writeText(url);
+
+      // Kurze Rückmeldung am Knopf, damit erkennbar ist, welcher der beiden
+      // Links gerade in der Zwischenablage liegt.
+      this.overlayCopied = kind;
+      window.clearTimeout(this._copyResetTimer);
+      this._copyResetTimer = window.setTimeout(() => {
+        this.overlayCopied = '';
+        this._cdr.markForCheck();
+      }, 2000);
+    } catch {
       this.overlayCopied = '';
-      this._cdr.markForCheck();
-    }, 2000);
+      this.overlayError =
+        'Kopieren war nicht möglich. Bitte markiere den Link und kopiere ihn von Hand.';
+    }
+    this._cdr.markForCheck();
   }
 
   private initCoachCount(
@@ -209,6 +244,10 @@ export class MatchReportStepOneComponent implements OnInit, OnChanges {
       .subscribe();
 
     this.loadOverlayLink();
+  }
+
+  ngOnDestroy(): void {
+    window.clearTimeout(this._copyResetTimer);
   }
 
   reloadGame() {
