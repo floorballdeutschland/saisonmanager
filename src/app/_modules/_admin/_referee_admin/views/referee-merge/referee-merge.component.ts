@@ -119,7 +119,11 @@ export class RefereeMergeComponent implements OnInit, OnDestroy {
     if (!this.searchQuery.trim() || !this.master) return;
     const masterId = this.master.id;
     this._refereeService
-      .adminGetAll({ q: this.searchQuery })
+      // Hier bewusst über den Standardfilter hinweg: Zusammenführen betrifft
+      // gerade die Karriere-Beendeten, etwa wenn jemand versehentlich neu
+      // angelegt wurde, statt seine alte Lizenznummer zu reaktivieren. Ohne
+      // status=alle fände die Suche sie nur über die exakte Lizenznummer.
+      .adminGetAll({ q: this.searchQuery, status: 'alle' })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (results) => {
