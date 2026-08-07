@@ -265,11 +265,11 @@ export class TeamEditComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: () => {
-          // Kein eigener Toast: Der ErrorInterceptor zeigt bei 4xx/5xx bereits
-          // die Servermeldung (bei einem abgelehnten Logo z. B. "Das Logo muss
-          // quadratisch sein"). Eine zweite, generische Meldung hat die
-          // erklaerende ueberdeckt (#84, #228). Hier nur die Dateiauswahl
-          // zuruecksetzen, damit dieselbe Datei erneut gewaehlt werden kann.
+          // Kein eigener Toast: Die Fehlermeldung zeigt der globale
+          // ErrorInterceptor. Bei einem abgelehnten Logo ist das die
+          // Begründung des Servers, und eine zweite, generische Meldung hat
+          // genau die überdeckt (#84, #228). Hier nur die Dateiauswahl
+          // zurücksetzen, damit dieselbe Datei erneut gewählt werden kann.
           input.value = '';
         },
       });
