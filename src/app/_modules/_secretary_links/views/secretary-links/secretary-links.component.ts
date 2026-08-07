@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { GameService, NotificationService } from '@floorball/core';
-import { SecretaryHallDay } from '@floorball/types';
+import { SecretaryHallDay, SecretaryLinkInfo } from '@floorball/types';
 
 /**
  * „Spielsekretariat“ für Vereins- und Teammanager:innen: der Einmal-Link für
@@ -30,6 +30,12 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
 
   /** Zuletzt erzeugte URL je Gruppe – der Rohtoken kommt nur genau einmal. */
   urlByKey: Record<string, string> = {};
+  /**
+   * Gerade erzeugte Links. Getrennt von `hallDay.link` gehalten, damit die
+   * Serverantwort unverändert bleibt und lokale Optimismen davon unterscheidbar
+   * sind.
+   */
+  linkByKey: Record<string, SecretaryLinkInfo> = {};
   generatingKey: string | null = null;
   copiedKey: string | null = null;
 
@@ -50,11 +56,15 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
-  /** Halle + Tag identifizieren eine Gruppe; ohne Halle der erste Spieltag. */
+  /**
+   * Halle und Tag identifizieren eine Gruppe. Ohne Halle lässt sich nichts
+   * zusammenfassen, dann steht der Spieltag selbst für die Gruppe – zwei
+   * hallenlose Spieltage am selben Tag bekämen sonst denselben Schlüssel.
+   */
   key(hallDay: SecretaryHallDay): string {
-    return `${hallDay.arena_id ?? 'ohne'}:${hallDay.date}:${
-      hallDay.game_days[0]?.id ?? 0
-    }`;
+    return hallDay.arena_id === null
+      ? `ohne:${hallDay.date}:${hallDay.game_days[0].id}`
+      : `${hallDay.arena_id}:${hallDay.date}`;
   }
 
   formatDate(date: string): string {
@@ -86,18 +96,18 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
    * Datum und Berechtigung.
    */
   generate(hallDay: SecretaryHallDay): void {
-    const gameDayId = hallDay.game_days[0]?.id;
-    if (!gameDayId) return;
-
     const key = this.key(hallDay);
     this.generatingKey = key;
+    // Ein neuer Link entwertet den alten; die Erfolgsmeldung von vorhin darf
+    // nicht stehen bleiben und auf die inzwischen veraltete URL zeigen.
+    this.copiedKey = null;
     this._gameService
-      .createSecretaryLink(gameDayId)
+      .createSecretaryLink(hallDay.game_days[0].id)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
           this.urlByKey[key] = result.url;
-          hallDay.link = {
+          this.linkByKey[key] = {
             expires_at: result.expires_at,
             created_by: result.created_by,
             game_day_ids: result.game_day_ids,
@@ -105,23 +115,43 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
           this.generatingKey = null;
           this._cdr.markForCheck();
         },
-        error: () => {
+        error: (err) => {
           this.generatingKey = null;
           this._notificationService.error(
-            'Der Link konnte nicht erzeugt werden.'
+            err?.error?.error ?? 'Der Link konnte nicht erzeugt werden.'
           );
           this._cdr.markForCheck();
         },
       });
   }
 
-  copy(hallDay: SecretaryHallDay): void {
+  /** Serverstand, überlagert vom gerade erzeugten Link. */
+  linkFor(hallDay: SecretaryHallDay): SecretaryLinkInfo | null {
+    return this.linkByKey[this.key(hallDay)] ?? hallDay.link;
+  }
+
+  /**
+   * „Kopiert" wird erst gemeldet, wenn die Zwischenablage den Text angenommen
+   * hat. Ohne HTTPS gibt es `navigator.clipboard` gar nicht, und auch mit kann
+   * der Browser die Freigabe verweigern – eine Erfolgsmeldung auf Verdacht
+   * hieße, dass jemand einen leeren Einfügen-Versuch macht und den Link für
+   * verschickt hält.
+   */
+  async copy(hallDay: SecretaryHallDay): Promise<void> {
     const key = this.key(hallDay);
     const url = this.urlByKey[key];
     if (!url) return;
 
-    navigator.clipboard?.writeText(url);
-    this.copiedKey = key;
+    try {
+      if (!navigator.clipboard) throw new Error('clipboard unavailable');
+      await navigator.clipboard.writeText(url);
+      this.copiedKey = key;
+    } catch {
+      this.copiedKey = null;
+      this._notificationService.error(
+        'Kopieren war nicht möglich. Bitte markiere den Link und kopiere ihn von Hand.'
+      );
+    }
     this._cdr.markForCheck();
   }
 

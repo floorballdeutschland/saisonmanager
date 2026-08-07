@@ -18,11 +18,11 @@
     <div class="border border-fb-gray-600 rounded-[5px] p-4 mb-4 text-sm">
       <div class="font-bold text-base mb-1">
         {{ headerTitle() }} –
-        {{ data.game_day.date | date: "dd.MM.yyyy" }}
+        {{ date() | date: "dd.MM.yyyy" }}
       </div>
-      @if (data.game_day.arena) {
+      @if (arena(); as arenaName) {
         <div class="text-fb-gray-400">
-          {{ data.game_day.arena }}
+          {{ arenaName }}
         </div>
       }
     </div>

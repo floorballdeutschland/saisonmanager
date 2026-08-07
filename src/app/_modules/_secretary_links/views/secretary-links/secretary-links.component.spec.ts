@@ -17,15 +17,40 @@ describe('SecretaryLinksComponent', () => {
     ({
       arena_id: 5,
       arena: 'Sporthalle Nord',
+      arena_city: 'Teststadt',
       date: '2026-01-10',
       game_days: [
-        { id: 1, date: '2026-01-10', league: 'U15', games_count: 3 },
-        { id: 2, date: '2026-01-10', league: 'U17', games_count: 2 },
+        {
+          id: 1,
+          number: 1,
+          date: '2026-01-10',
+          league: 'U15',
+          league_id: 10,
+          games_count: 3,
+        },
+        {
+          id: 2,
+          number: 1,
+          date: '2026-01-10',
+          league: 'U17',
+          league_id: 20,
+          games_count: 2,
+        },
       ],
       other_game_days_in_hall: [],
       link: null,
       ...overrides,
     }) as SecretaryHallDay;
+
+  const createResponse = {
+    url: 'https://example.test/spielsekretariat?token=abc',
+    token: 'abc',
+    expires_at: '2026-01-13T12:00:00Z',
+    created_by: 'Max Mustermann',
+    game_day_id: 1,
+    game_day_ids: [1, 2],
+    game_days: [],
+  };
 
   beforeEach(async () => {
     gameService = jasmine.createSpyObj('GameService', [
@@ -64,17 +89,7 @@ describe('SecretaryLinksComponent', () => {
   // Der Link wird immer für den ersten Spieltag angefordert; welche weiteren er
   // abdeckt, entscheidet der Server anhand Halle, Datum und Berechtigung.
   it('fordert den Link für den ersten Spieltag der Gruppe an', () => {
-    gameService.createSecretaryLink.and.returnValue(
-      of({
-        url: 'https://example.test/spielsekretariat?token=abc',
-        token: 'abc',
-        expires_at: '2026-01-13T12:00:00Z',
-        created_by: 'Max Mustermann',
-        game_day_id: 1,
-        game_day_ids: [1, 2],
-        game_days: [],
-      })
-    );
+    gameService.createSecretaryLink.and.returnValue(of(createResponse));
     component.ngOnInit();
     const group = component.hallDays[0];
 
@@ -84,19 +99,30 @@ describe('SecretaryLinksComponent', () => {
     expect(component.urlByKey[component.key(group)]).toBe(
       'https://example.test/spielsekretariat?token=abc'
     );
-    expect(group.link?.game_day_ids).toEqual([1, 2]);
+    expect(component.linkFor(group)?.game_day_ids).toEqual([1, 2]);
     expect(component.generatingKey).toBeNull();
   });
 
-  it('meldet einen Fehler beim Erzeugen und blockiert nicht dauerhaft', () => {
+  it('lässt die Serverantwort unangetastet und überlagert sie nur lokal', () => {
+    gameService.createSecretaryLink.and.returnValue(of(createResponse));
+    component.ngOnInit();
+    const group = component.hallDays[0];
+
+    component.generate(group);
+
+    expect(group.link).toBeNull();
+    expect(component.linkFor(group)?.expires_at).toBe('2026-01-13T12:00:00Z');
+  });
+
+  it('meldet die Servermeldung beim Erzeugen und blockiert nicht dauerhaft', () => {
     gameService.createSecretaryLink.and.returnValue(
-      throwError(() => new Error('boom'))
+      throwError(() => ({ error: { error: 'Nicht berechtigt.' } }))
     );
     component.ngOnInit();
 
     component.generate(component.hallDays[0]);
 
-    expect(notificationService.error).toHaveBeenCalled();
+    expect(notificationService.error).toHaveBeenCalledWith('Nicht berechtigt.');
     expect(component.generatingKey).toBeNull();
   });
 
@@ -116,15 +142,114 @@ describe('SecretaryLinksComponent', () => {
   it('unterscheidet hallenlose Gruppen am selben Tag', () => {
     const a = hallDay({
       arena_id: null,
-      arena: undefined,
-      game_days: [{ id: 8, date: '2026-01-10', league: 'U9', games_count: 1 }],
-    });
+      arena: null,
+      arena_city: null,
+      game_days: [
+        {
+          id: 8,
+          number: 1,
+          date: '2026-01-10',
+          league: 'U9',
+          league_id: 1,
+          games_count: 1,
+        },
+      ],
+    } as Partial<SecretaryHallDay>);
     const b = hallDay({
       arena_id: null,
-      arena: undefined,
-      game_days: [{ id: 9, date: '2026-01-10', league: 'U11', games_count: 1 }],
-    });
+      arena: null,
+      arena_city: null,
+      game_days: [
+        {
+          id: 9,
+          number: 1,
+          date: '2026-01-10',
+          league: 'U11',
+          league_id: 2,
+          games_count: 1,
+        },
+      ],
+    } as Partial<SecretaryHallDay>);
 
     expect(component.key(a)).not.toBe(component.key(b));
+  });
+
+  describe('copy', () => {
+    beforeEach(() => {
+      gameService.createSecretaryLink.and.returnValue(of(createResponse));
+      component.ngOnInit();
+      component.generate(component.hallDays[0]);
+    });
+
+    it('meldet Kopiert, wenn die Zwischenablage den Text angenommen hat', async () => {
+      spyOn(navigator.clipboard, 'writeText').and.resolveTo();
+
+      await component.copy(component.hallDays[0]);
+
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        'https://example.test/spielsekretariat?token=abc'
+      );
+      expect(component.copiedKey).toBe(component.key(component.hallDays[0]));
+    });
+
+    // Sonst liest der Button "Kopiert", während die Zwischenablage leer blieb,
+    // und der Link gilt als verschickt.
+    it('meldet nicht Kopiert, wenn die Zwischenablage ablehnt', async () => {
+      spyOn(navigator.clipboard, 'writeText').and.rejectWith(
+        new Error('denied')
+      );
+
+      await component.copy(component.hallDays[0]);
+
+      expect(component.copiedKey).toBeNull();
+      expect(notificationService.error).toHaveBeenCalled();
+    });
+
+    it('eine Neuausgabe setzt die Kopiert-Meldung zurück', async () => {
+      spyOn(navigator.clipboard, 'writeText').and.resolveTo();
+      await component.copy(component.hallDays[0]);
+
+      component.generate(component.hallDays[0]);
+
+      expect(component.copiedKey).toBeNull();
+    });
+  });
+
+  describe('Darstellung', () => {
+    it('nennt die fremde Belegung der Halle beim Namen', () => {
+      gameService.getSecretaryGameDays.and.returnValue(
+        of([
+          hallDay({
+            other_game_days_in_hall: [
+              {
+                id: 7,
+                number: 1,
+                date: '2026-01-10',
+                league: 'Bezirksliga',
+                league_id: 30,
+                games_count: 2,
+              },
+            ],
+          }),
+        ])
+      );
+
+      fixture.detectChanges();
+
+      const text: string = fixture.nativeElement.textContent;
+      expect(text).toContain('Bezirksliga');
+      expect(text).toContain('im Link nicht enthalten');
+    });
+
+    it('zeigt den Kopieren-Button erst nach dem Erzeugen', () => {
+      gameService.createSecretaryLink.and.returnValue(of(createResponse));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).not.toContain('Link kopieren');
+
+      component.generate(component.hallDays[0]);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('Link kopieren');
+    });
   });
 });

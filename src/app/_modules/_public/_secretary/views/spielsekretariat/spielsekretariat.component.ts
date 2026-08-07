@@ -6,49 +6,13 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { GameService } from '@floorball/core';
+import { GameService, SecretaryPayload } from '@floorball/core';
+import { SecretaryTokenGameDay } from '@floorball/types';
 
-interface SecretaryDay {
-  id: number;
-  date: string;
-  league: string;
-  league_id?: number;
-  arena?: string;
-  game_operation_slug?: string;
-}
-
-interface SecretaryGameDay {
-  // Erster abgedeckter Spieltag – bleibt für den Kopf der Seite maßgeblich.
-  game_day: SecretaryDay;
-  // Alle abgedeckten Spieltage. Ein Link umfasst die ganze Halle an diesem Tag,
-  // laufen dort mehrere Ligen nacheinander, sind es mehrere.
-  game_days?: SecretaryDay[];
-  games: {
-    id: number;
-    game_number?: string;
-    start_time?: string;
-    home_team?: string;
-    guest_team?: string;
-    game_status?: string;
-    game_day_id?: number;
-    league?: string;
-  }[];
-  license_lists: Record<
-    string,
-    {
-      team_name: string;
-      players: {
-        name: string;
-        birthdate?: string;
-        license_status: string;
-        approved_at?: string;
-        valid_until?: string;
-      }[];
-    }
-  >;
-  expires_at: string;
-  created_by?: string;
-}
+// Die Antwort wird im GameService begradigt: game_days ist dort immer gefüllt
+// (auch bei einer älteren API, die nur game_day kennt) und jedes Spiel trägt
+// seinen Spieltag. Diese Ansicht muss den Altfall deshalb nicht mehr kennen.
+type SecretaryGameDay = SecretaryPayload;
 
 @Component({
   templateUrl: './spielsekretariat.component.html',
@@ -96,12 +60,8 @@ export class SpielSekretariatComponent implements OnInit {
     });
   }
 
-  /** Alle abgedeckten Spieltage; ältere Antworten kennen nur den einen. */
-  gameDays(): SecretaryDay[] {
-    if (!this.data) return [];
-    return this.data.game_days?.length
-      ? this.data.game_days
-      : [this.data.game_day];
+  gameDays(): SecretaryTokenGameDay[] {
+    return this.data?.game_days ?? [];
   }
 
   /** Mehrere Ligen im selben Link: dann gehört die Liga an jedes Spiel. */
@@ -110,10 +70,19 @@ export class SpielSekretariatComponent implements OnInit {
   }
 
   headerTitle(): string {
-    const leagues = this.gameDays()
+    return this.gameDays()
       .map((gd) => gd.league)
-      .filter((name) => !!name);
-    return leagues.join(' · ');
+      .filter((name) => !!name)
+      .join(' · ');
+  }
+
+  /** Halle des Links. Alle abgedeckten Spieltage teilen sie sich. */
+  arena(): string | null {
+    return this.gameDays()[0]?.arena ?? null;
+  }
+
+  date(): string | null {
+    return this.gameDays()[0]?.date ?? null;
   }
 
   // Spielseite: /:association/:leagueId/spiel/:matchId. Verbands-Slug und
@@ -125,11 +94,8 @@ export class SpielSekretariatComponent implements OnInit {
   // Der Link kann mehrere Ligen abdecken, deshalb wird der Spieltag des Spiels
   // gesucht statt pauschal der erste genommen – sonst landete ein Spiel der
   // zweiten Liga unter der leagueId der ersten.
-  matchReportUrl(game: { id: number; game_day_id?: number }): string | null {
-    const days = this.gameDays();
-    const day =
-      days.find((gd) => gd.id === game.game_day_id) ??
-      (days.length === 1 ? days[0] : undefined);
+  matchReportUrl(game: { id: number; game_day_id: number }): string | null {
+    const day = this.gameDays().find((gd) => gd.id === game.game_day_id);
     if (!day?.game_operation_slug || !day.league_id) {
       return null;
     }

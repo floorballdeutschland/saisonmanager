@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 
 import {
   AddLineupPlayerResponse,
@@ -16,14 +17,74 @@ import {
   GameInput,
   GamePlayerEntry,
   GameScan,
+  NonEmptyArray,
   SecretaryGameDayStub,
   SecretaryHallDay,
+  SecretaryTokenGameDay,
   StartingPlayerPosition,
   StartingPlayer,
   AwardDefinitions,
   AwardPlayer,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
+
+interface SecretaryLicenseList {
+  team_name: string;
+  players: {
+    name: string;
+    birthdate?: string;
+    license_status: string;
+    approved_at?: string;
+    valid_until?: string;
+  }[];
+}
+
+interface SecretaryGameWire {
+  id: number;
+  game_number?: string;
+  start_time?: string;
+  home_team?: string;
+  guest_team?: string;
+  game_status?: string;
+  game_day_id?: number;
+  league?: string;
+}
+
+/** Rohform vom Server, inklusive der alten Antwort ohne `game_days`. */
+interface SecretaryPayloadWire {
+  game_day: SecretaryTokenGameDay;
+  game_days?: SecretaryTokenGameDay[];
+  games: SecretaryGameWire[];
+  license_lists: Record<string, SecretaryLicenseList>;
+  expires_at: string;
+  created_by?: string;
+}
+
+/** Begradigte Form für die Ansicht: Spieltagsliste immer gefüllt. */
+export interface SecretaryPayload {
+  game_days: NonEmptyArray<SecretaryTokenGameDay>;
+  games: (SecretaryGameWire & { game_day_id: number })[];
+  license_lists: Record<string, SecretaryLicenseList>;
+  expires_at: string;
+  created_by?: string;
+}
+
+export function normalizeSecretaryPayload(
+  wire: SecretaryPayloadWire
+): SecretaryPayload {
+  const days = wire.game_days?.length ? wire.game_days : [wire.game_day];
+  const fallbackDayId = days[0].id;
+
+  return {
+    ...wire,
+    game_days: days as NonEmptyArray<SecretaryTokenGameDay>,
+    // Ohne game_days gibt es genau einen Spieltag, also gehört jedes Spiel dazu.
+    games: wire.games.map((game) => ({
+      ...game,
+      game_day_id: game.game_day_id ?? fallbackDayId,
+    })),
+  };
+}
 
 export interface GameSchedulingConflict {
   id: number;
@@ -351,53 +412,24 @@ export class GameService {
     );
   }
 
+  /**
+   * Spieltagsdaten zum Sekretariats-Token.
+   *
+   * Die Antwort wird hier einmal begradigt: Eine ältere API kennt `game_days`
+   * noch nicht und liefert nur den einen `game_day`, und `game_day_id` fehlt
+   * dann an den Spielen. Frontend und API werden getrennt ausgerollt, also muss
+   * beides gehen – aber nur an dieser Stelle. Die Ansicht bekommt eine Form, in
+   * der die Spieltagsliste immer gefüllt und jedem Spiel sein Spieltag bekannt
+   * ist.
+   */
   public getSecretaryGameDay(token: string) {
-    return this.http.get<{
-      // Erster abgedeckter Spieltag. Der Link kann seit der hallenweiten
-      // Ausgabe mehrere umfassen – die vollständige Liste steht in game_days.
-      game_day: {
-        id: number;
-        date: string;
-        league: string;
-        league_id?: number;
-        arena?: string;
-        game_operation_slug?: string;
-      };
-      game_days: {
-        id: number;
-        date: string;
-        league: string;
-        league_id?: number;
-        arena?: string;
-        game_operation_slug?: string;
-      }[];
-      games: {
-        id: number;
-        game_number?: string;
-        start_time?: string;
-        home_team?: string;
-        guest_team?: string;
-        game_status?: string;
-        game_day_id?: number;
-        league?: string;
-      }[];
-      license_lists: Record<
-        string,
-        {
-          team_name: string;
-          players: {
-            name: string;
-            birthdate?: string;
-            license_status: string;
-            approved_at?: string;
-          }[];
-        }
-      >;
-      expires_at: string;
-      created_by?: string;
-    }>(
-      environment.apiURL + 'public/secretary?token=' + encodeURIComponent(token)
-    );
+    return this.http
+      .get<SecretaryPayloadWire>(
+        environment.apiURL +
+          'public/secretary?token=' +
+          encodeURIComponent(token)
+      )
+      .pipe(map((wire) => normalizeSecretaryPayload(wire)));
   }
 
   public setChecklistAnswers(
