@@ -27,6 +27,19 @@ fi
 # Platzhalter durch echten Key ersetzen (| als Delimiter, sicher für Hex-Keys)
 sed -i "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment.prod.ts
 
+# Sentry-DSN einsetzen, sofern hinterlegt. Anders als beim API-Key ist das
+# optional: Ohne die Datei bleibt der Platzhalter stehen, und initSentry()
+# startet Sentry dann nicht (statt eine kaputte Adresse zu verwenden). Der DSN
+# eines Browser-SDK ist zwangsläufig öffentlich, er landet im Bundle.
+if [ -f "src/environments/.sentry-dsn" ]; then
+  SENTRY_DSN=$(tr -d '[:space:]' < src/environments/.sentry-dsn)
+  # @ und / im DSN kollidieren mit gängigen sed-Delimitern, | kommt darin nicht vor.
+  sed -i "s|SENTRY_DSN_PLACEHOLDER|${SENTRY_DSN}|" src/environments/environment.prod.ts
+  echo "Sentry-DSN eingesetzt."
+else
+  echo "Hinweis: src/environments/.sentry-dsn fehlt – Frontend-Sentry bleibt aus."
+fi
+
 # Build + Deploy
 export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
 

@@ -37,6 +37,16 @@ fi
 # Platzhalter durch echten Key ersetzen (| als Delimiter, sicher für Hex-Keys)
 sed -i "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment.staging.ts
 
+# Sentry-DSN einsetzen, sofern hinterlegt (optional, siehe build-deploy.sh).
+# Derselbe DSN wie Prod; getrennt werden die Ereignisse über environment: 'staging'.
+if [ -f "src/environments/.sentry-dsn" ]; then
+  SENTRY_DSN=$(tr -d '[:space:]' < src/environments/.sentry-dsn)
+  sed -i "s|SENTRY_DSN_PLACEHOLDER|${SENTRY_DSN}|" src/environments/environment.staging.ts
+  echo "Sentry-DSN eingesetzt."
+else
+  echo "Hinweis: src/environments/.sentry-dsn fehlt – Frontend-Sentry bleibt aus."
+fi
+
 # Build + Deploy
 export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
 
