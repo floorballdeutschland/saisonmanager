@@ -1,7 +1,9 @@
-import type { Breadcrumb, ErrorEvent } from '@sentry/angular';
+import type { Breadcrumb, ErrorEvent, EventHint } from '@sentry/angular';
+import { HttpErrorResponse } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import {
   buildSentryOptions,
+  isHandledHttpNoise,
   isValidDsn,
   scrubBreadcrumbUrl,
   scrubEventUrls,
@@ -93,6 +95,89 @@ describe('buildSentryOptions', () => {
     environment.sentryDsn = dsn;
 
     expect(buildSentryOptions()?.tracePropagationTargets).toBeUndefined();
+  });
+});
+
+// Netzabbrüche und „nicht angemeldet" erzeugen bereits eine sichtbare Meldung
+// über den ErrorInterceptor. Was in Sentry ankommt, ist die Dublette dazu — in
+// den ersten Stunden nach Scharfschalten des DSN mit Abstand der häufigste
+// Eintrag (SAISONMANAGER-2A: 27 Ereignisse, fast nur Mobilfunk und Bots).
+describe('isHandledHttpNoise', () => {
+  const httpError = (status: number) =>
+    ({
+      originalException: new HttpErrorResponse({
+        status,
+        url: 'https://saisonmanager.de/api/v2/init.json',
+      }),
+    }) as EventHint;
+
+  it('verwirft einen abgebrochenen Request (Status 0)', () => {
+    expect(isHandledHttpNoise(httpError(0))).toBeTrue();
+  });
+
+  it('verwirft „nicht angemeldet" (401)', () => {
+    expect(isHandledHttpNoise(httpError(401))).toBeTrue();
+  });
+
+  // Ein 404 kann eine falsche Annahme im Frontend sein, ein 502 sieht nur der
+  // Browser — die API meldet ihn nicht selbst, weil sie ihn nicht erzeugt hat.
+  it('behält 404 und 5xx', () => {
+    expect(isHandledHttpNoise(httpError(404))).toBeFalse();
+    expect(isHandledHttpNoise(httpError(500))).toBeFalse();
+    expect(isHandledHttpNoise(httpError(502))).toBeFalse();
+  });
+
+  // Der Filter darf an der Ausnahme hängen, nicht am Meldungstext: Ein
+  // gewöhnlicher Fehler, der zufällig eine status-Eigenschaft mit 0 trägt, ist
+  // kein Netzabbruch.
+  it('greift nur bei einer HttpErrorResponse', () => {
+    const fremd = { originalException: { status: 0 } } as EventHint;
+    expect(isHandledHttpNoise(fremd)).toBeFalse();
+    expect(
+      isHandledHttpNoise({ originalException: new Error('x') } as EventHint)
+    ).toBeFalse();
+    expect(isHandledHttpNoise(undefined)).toBeFalse();
+  });
+
+  it('hängt am Status, nicht am Wortlaut der Angular-Meldung', () => {
+    // Genau daran ging die vorhandene ignoreErrors-Liste vorbei: Angular baut
+    // daraus „Http failure response for <url>: 0 Unknown Error", und keiner der
+    // dortigen Einträge (Failed to fetch, NetworkError) passt darauf.
+    const options = buildSentryOptions();
+    expect(options?.ignoreErrors).not.toContain('Http failure response');
+    expect(isHandledHttpNoise(httpError(0))).toBeTrue();
+  });
+});
+
+describe('beforeSend', () => {
+  const dsn = 'https://abc123@o1.ingest.de.sentry.io/456';
+
+  beforeEach(() => {
+    environment.sentryDsn = dsn;
+  });
+
+  it('verwirft das Ereignis eines Netzabbruchs', () => {
+    const beforeSend = buildSentryOptions()?.beforeSend;
+    const hint = {
+      originalException: new HttpErrorResponse({ status: 0 }),
+    } as EventHint;
+
+    expect(beforeSend?.({} as ErrorEvent, hint)).toBeNull();
+  });
+
+  // Der Filter darf die Bereinigung nicht verdrängen: Ein Reset-Token im Pfad
+  // ist ein lebendes Zugangsmittel und muss weiterhin herausfallen (#230).
+  it('bereinigt weiterhin die URL eines gemeldeten Ereignisses', () => {
+    const beforeSend = buildSentryOptions()?.beforeSend;
+    const event = {
+      request: { url: 'https://saisonmanager.de/neues-passwort/GEHEIM' },
+    } as ErrorEvent;
+
+    const result = beforeSend?.(event, {} as EventHint) as ErrorEvent;
+
+    expect(result.request?.url).toBe(
+      'https://saisonmanager.de/neues-passwort/[gefiltert]'
+    );
   });
 });
 

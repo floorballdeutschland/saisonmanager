@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/angular';
+import { HttpErrorResponse } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 
 /**
@@ -108,6 +109,43 @@ export function scrubBreadcrumbUrl(
 }
 
 /**
+ * HTTP-Antwortstatus, die nichts über den Code aussagen.
+ *
+ * `0` heißt: Die Anfrage kam nie an oder wurde abgebrochen – Funkloch, Wechsel
+ * des Netzes, oder die Seite wurde während des Ladens verlassen. `401` ist der
+ * erwartbare Zustand „nicht angemeldet", den vor allem Suchmaschinen auslösen,
+ * wenn sie eine geschützte Adresse anfassen.
+ *
+ * Beide erzeugen bereits eine sichtbare Meldung: Der ErrorInterceptor behandelt
+ * `0` mit einem eigenen Hinweis und meldet bei `401` ab. Was hier ankommt, ist
+ * die Dublette dazu – Komponenten ohne eigenen `error`-Zweig lassen den Fehler
+ * zusätzlich in Angulars ErrorHandler laufen.
+ *
+ * Bewusst NICHT gefiltert: 404 und die übrigen 4xx sowie 5xx. Ein 404 kann eine
+ * falsche Annahme im Frontend sein, und ein 502 sieht nur der Browser – die API
+ * meldet ihn nicht selbst, weil sie ihn gar nicht erzeugt hat.
+ */
+const IGNORED_HTTP_STATUS = [0, 401];
+
+/**
+ * Entscheidet, ob ein Fehler ein bereits behandelter Netz- bzw. Anmeldezustand
+ * ist und deshalb nicht gemeldet werden soll.
+ *
+ * Geprüft wird die ursprüngliche Ausnahme, nicht der Meldungstext: Angular
+ * schreibt daraus `Http failure response for <url>: 0 Unknown Error`, und ein
+ * Textvergleich darauf bräche, sobald sich der Wortlaut ändert. Genau daran ging
+ * die vorhandene `ignoreErrors`-Liste vorbei, die auf `Failed to fetch` und
+ * `NetworkError` sieht.
+ */
+export function isHandledHttpNoise(hint?: Sentry.EventHint): boolean {
+  const error = hint?.originalException;
+  return (
+    error instanceof HttpErrorResponse &&
+    IGNORED_HTTP_STATUS.includes(error.status)
+  );
+}
+
+/**
  * Ein DSN, den Sentry nicht lesen kann, ist genau der Fehler, den dieser PR
  * behebt: `init` läuft, es entsteht ein Client, aber es wird nie etwas
  * gesendet. Der SDK-Regex ist dabei nachlässig — zwei aneinandergehängte DSNs
@@ -171,8 +209,12 @@ export function buildSentryOptions(): Sentry.BrowserOptions | null {
       queryParams: false,
     },
     // Ergänzt die Filter oben: Zugangsdaten stecken auch im Pfad, wo weder
-    // queryParams noch denyUrls greifen.
-    beforeSend: scrubEventUrls,
+    // queryParams noch denyUrls greifen. Zusätzlich fallen hier die bereits
+    // behandelten Netz- und Anmeldezustände heraus (siehe isHandledHttpNoise) –
+    // sie brauchen die Ausnahme selbst, nicht ihren Meldungstext, und lassen
+    // sich deshalb nicht über ignoreErrors erledigen.
+    beforeSend: (event, hint) =>
+      isHandledHttpNoise(hint) ? null : scrubEventUrls(event),
     beforeBreadcrumb: scrubBreadcrumbUrl,
   };
 }
