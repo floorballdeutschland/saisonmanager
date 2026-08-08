@@ -74,6 +74,7 @@
     "homeClub": "Home club",
     "documents": "Documents",
     "noDocuments": "no documents available",
+    "documentsLoadError": "Documents could not be loaded. You may not have permission to view them.",
     "documentsNationwide": "Nationwide",
     "viewDocument": "View",
     "untilToday": "until today",

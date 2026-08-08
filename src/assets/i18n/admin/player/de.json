@@ -74,6 +74,7 @@
     "homeClub": "Hauptverein",
     "documents": "Dokumente",
     "noDocuments": "keine Dokumente vorhanden",
+    "documentsLoadError": "Dokumente konnten nicht geladen werden. Möglicherweise fehlt dir die Berechtigung dafür.",
     "documentsNationwide": "Bundesweit",
     "viewDocument": "Anzeigen",
     "untilToday": "bis heute",
