@@ -98,9 +98,6 @@ describe('buildSentryOptions', () => {
   });
 });
 
-// Ein Passwort-Reset-Token ist ein lebendes Zugangsmittel, und ausgerechnet auf
-// dieser Seite entstehen Fehler (Link abgelaufen, Passwort abgelehnt).
-// dataCollection deckt die URL nicht ab, auch nicht mit queryParams: false.
 // Netzabbrüche und „nicht angemeldet" erzeugen bereits eine sichtbare Meldung
 // über den ErrorInterceptor. Was in Sentry ankommt, ist die Dublette dazu — in
 // den ersten Stunden nach Scharfschalten des DSN mit Abstand der häufigste
@@ -184,6 +181,9 @@ describe('beforeSend', () => {
   });
 });
 
+// Ein Passwort-Reset-Token ist ein lebendes Zugangsmittel, und ausgerechnet auf
+// dieser Seite entstehen Fehler (Link abgelaufen, Passwort abgelehnt).
+// dataCollection deckt die URL nicht ab, auch nicht mit queryParams: false.
 describe('scrubUrl', () => {
   it('removes a password reset token from the path', () => {
     expect(
