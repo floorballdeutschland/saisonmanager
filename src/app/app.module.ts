@@ -15,6 +15,7 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { Router } from '@angular/router';
 import * as Sentry from '@sentry/angular';
+import { FilteringErrorHandler } from './_helpers/_utils/filtering-error-handler';
 
 import { TranslocoModule } from '@jsverse/transloco';
 
@@ -37,10 +38,13 @@ import { CsrfInterceptor } from './_helpers/_interceptors/csrf.interceptor';
   imports: [BrowserModule, AppRoutingModule, UikitShellModule, TranslocoModule],
   providers: [
     {
+      // Sentrys Handler, aber mit einem Filter davor: Netzabbrüche und
+      // „nicht angemeldet" sind bereits behandelt und brauchen keine Meldung.
+      // Der Filter kann nicht in beforeSend sitzen, dort ist die
+      // HttpErrorResponse schon zu einer Zeichenkette geworden – Begründung an
+      // FilteringErrorHandler.
       provide: ErrorHandler,
-      useValue: Sentry.createErrorHandler({
-        showDialog: false,
-      }),
+      useValue: new FilteringErrorHandler(),
     },
     {
       provide: Sentry.TraceService,
