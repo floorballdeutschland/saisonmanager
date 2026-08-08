@@ -34,6 +34,7 @@
         --c-vm: #2563eb;
         --c-tm: #0891b2;
         --c-schiri: #db2777;
+        --c-streamer: #0d9488;
         --c-entwickler: #475569;
         --c-player: #b45309;
         --c-auto: #64748b;
@@ -1249,6 +1250,15 @@
             <span class="dot"></span> Schiedsrichter
             <span class="abbr">SR</span>
           </a>
+          <div class="nav-group-label">Streaming</div>
+          <a
+            class="navlink"
+            href="#panel-streamer"
+            style="--dot: var(--c-streamer)"
+          >
+            <span class="dot"></span> Für Streamer:innen
+            <span class="abbr">OBS</span>
+          </a>
           <div class="nav-group-label">Schnittstelle</div>
           <a
             class="navlink"
@@ -1429,6 +1439,16 @@
             erlaubt, auch wenn zusätzlich eine engere Rolle am Konto hängt.
             Vereine, die nur über die VM-Rolle erreichbar sind, stehen in
             Auswahllisten unter <em>Eigene Vereine</em>.
+          </div>
+
+          <div class="note">
+            <strong>Eine Ausnahme:</strong> Die Rolle
+            <span class="rb schiri">Schiedsrichter</span> lässt sich
+            <strong>nicht</strong> mit anderen Rollen kombinieren. Sie steht für
+            das persönliche Selfservice-Konto eines Schiedsrichters. Das
+            Speichern wird abgelehnt, sobald eine weitere Rolle am selben Konto
+            hängt. Wer daneben eine Verbands- oder Vereinsfunktion ausübt,
+            braucht dafür ein zweites Konto.
           </div>
 
           <div class="sec">
@@ -2300,6 +2320,26 @@
                 <strong>Regeljahren</strong> (alle vier Jahre) laufen Lizenzen
                 am 31. Juli ab, sonst am 30. September.
               </p>
+              <p class="proc-text">
+                <strong>Karriere beendet:</strong> Wer vier Lizenzjahre keine
+                Lizenz hatte, gilt als Karriere beendet und braucht für eine
+                Rückkehr wieder den Grundkurs. Die Verwaltung weist diesen
+                Zustand aus und lässt danach filtern. Der Stichtag wandert mit
+                dem Saisonwechsel, ein vorgezogener Wechsel wirkt also sofort.
+              </p>
+              <p class="proc-text">
+                Schiedsrichter ohne gültige Lizenz stehen standardmäßig nicht in
+                den Listen, sind über die Suche nach der Lizenznummer aber
+                gezielt auffindbar. Die Historie reicht bis 2007 zurück, auch
+                für Personen, die beim Datenabgleich 2025 zunächst nicht
+                übernommen wurden.
+              </p>
+              <div class="note">
+                Der <strong>öffentliche Lizenzcheck</strong> deckt nur die
+                letzten fünf Kursjahre ab. Eine ältere Nummer zu prüfen ist
+                damit Verbandssache, nicht mehr über die öffentliche Seite
+                möglich.
+              </div>
               <div class="roles-inline">
                 <span class="rb admin">Admin</span>
                 <span class="rb rsk">RSK FD</span>
@@ -2330,6 +2370,13 @@
                 zur Freigabe vor, bevor sie wirksam werden. Beim Anwenden leitet
                 das System das Ablaufdatum aus Kursjahr, Gültigkeitsdauer der
                 Stufe und Regeljahr-Stichtag ab.
+              </p>
+              <p class="proc-text">
+                Trifft ein Kursergebnis auf eine Lizenznummer, deren Karriere
+                als beendet gilt, weist die Prüfansicht darauf hin und nennt das
+                Ablaufdatum der alten Lizenz. Vorher sah ein solcher Fall wie
+                ein gewöhnlicher Treffer aus. Damit ist eine
+                <strong>Reaktivierung</strong> als solche erkennbar.
               </p>
               <div class="flow">
                 <div class="st start">CSV hochladen</div>
@@ -2975,6 +3022,24 @@
                 angeboten. Auszeiten lassen sich im Spielverlauf löschen, im
                 Penalty-Schießen sind sie nicht eintragbar.
               </div>
+              <p class="proc-text">
+                <strong>Technisches Tor:</strong> Wird ein Tor regelbedingt
+                zuerkannt, ohne dass der Ball im Netz war, wird es als
+                technisches Tor erfasst. Es braucht immer eine benannte
+                Torschützin oder einen benannten Torschützen, Eigentor und
+                „nicht angegeben" stehen dafür nicht zur Auswahl, und es
+                schließt sich mit dem Strafschuss aus. Für Spielstand und
+                Scorerliste zählt es wie ein gewöhnliches Tor.
+              </p>
+              <p class="proc-text">
+                <strong>Livestream und Aufzeichnung:</strong> In Schritt 1 und 3
+                lassen sich die Adressen der Übertragung und später der
+                Aufzeichnung hinterlegen. Auf der öffentlichen Spielseite
+                erscheint während des Spiels der Livestream-Link; sobald das
+                Spiel beendet ist, tritt die Aufzeichnung an seine Stelle. Aus
+                denselben Angaben speisen sich die
+                <a href="#panel-streamer">Livestream-Overlays</a> für OBS.
+              </p>
             </div>
           </details>
 
@@ -2997,8 +3062,10 @@
                 <strong>Spieltagscheckliste</strong> aus Ja/Nein-Fragen
                 definieren, die vor dem Abschluss eines Spielberichts zu
                 beantworten sind. Werden Punkte verneint, geht eine E-Mail als
-                BCC an die hinterlegte SBK-Adresse. Für das Kampfgericht vor Ort
-                gibt es <strong>Sekretariats-Links</strong> und eine öffentliche
+                BCC an die hinterlegte SBK-Adresse. Maßgeblich ist dabei der
+                Landesverband <strong>des Spielbetriebs</strong>, nicht der des
+                ausrichtenden Vereins. Für das Kampfgericht vor Ort gibt es den
+                Sekretariats-Link (eigene Karte unten) und eine öffentliche
                 <strong>Lizenzliste</strong> über einen signierten Link, der die
                 lizenzierten und beantragten Spieler beider Teams zeigt.
               </p>
@@ -3014,6 +3081,55 @@
               <div class="roles-inline">
                 <span class="rb sbk">SBK / LV</span>
                 <span class="rb tm">TM / VM</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🔗</span>
+              <div>
+                <div class="proc-title">Sekretariats-Link</div>
+                <div class="proc-sub">
+                  Zugang fürs Kampfgericht ohne eigenes Benutzerkonto
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Am Kampfgericht sitzen oft Helfer ohne Benutzerkonto. Für sie
+                gibt es einen Link, der genau das freischaltet, was vor Ort
+                gebraucht wird: Aufstellung und Spielbericht. Erzeugen können
+                ihn Vereins- und Teammanager selbst unter
+                <strong>Verein › Spielsekretariat</strong>, außerdem Admin und
+                SBK über die Spielplanverwaltung.
+              </p>
+              <p class="proc-text">
+                Der Link gilt für einen <strong>ganzen Spieltag</strong> und
+                deckt alle Spieltage derselben Halle am selben Tag ab, für die
+                der Erzeugende berechtigt ist. Bei einer gemeinsam genutzten
+                Halle reicht also ein Link, ohne dass er fremde Ligen öffnet. Er
+                ist <strong>72 Stunden</strong> gültig.
+              </p>
+              <div class="note">
+                <strong>Ein neuer Link entwertet den alten.</strong> Wer ihn
+                verliert, erzeugt einfach einen neuen; der vorherige
+                funktioniert dann nicht mehr. Im System liegt nur eine
+                Prüfsumme, der Link selbst lässt sich also nicht nachträglich
+                anzeigen. Wird ein Spielplan überschrieben, verfallen bestehende
+                Links mit.
+              </div>
+              <p class="proc-text">
+                Was der Link <strong>nicht</strong> kann: den Spielbericht
+                abschließen oder freigeben, Ligen verwalten oder Schiedsrichter
+                nominieren. Das bleibt an den angemeldeten Rollen.
+              </p>
+              <div class="roles-inline">
+                <span class="rb vm">VM</span>
+                <span class="rb tm">TM</span>
+                <span class="rb sbk">SBK</span>
+                <span class="rb admin">ADM</span>
               </div>
             </div>
           </details>
@@ -3684,21 +3800,37 @@
             </summary>
             <div class="proc-body">
               <p class="proc-text">
-                <strong>Werbebanner</strong> gibt es auf drei Ebenen, jeweils
-                WebP und max. 500 KB: Liga, Sportverbund und Landesverband. Auf
+                <strong>Werbebanner</strong> sind Anzeigenflächen mit Ziellink,
+                empfohlenes Format 1200 × 200 px (6:1), max. 500 KB. Es gibt sie
+                auf drei Ebenen: Liga, Sportverbund und Landesverband. Auf
                 öffentlichen Seiten gewinnt das speziellste Banner, ein
                 Liga-Banner hat also Vorrang vor dem Verbandsbanner. Banner
                 pflegt die zuständige Admin- oder SBK-Rolle, nicht die Vereine.
               </p>
               <p class="proc-text">
-                <strong>Logos</strong> laufen getrennt: Das Verbandslogo (WebP,
-                max. 5 MB) pflegt Admin oder SBK. Das
-                <strong>Vereinslogo</strong> pflegt der Verein selbst über den
-                Vereinsmanager (PNG, JPG oder SVG, wird auf 100 × 100
-                verkleinert), ebenso das Teamlogo über den Teammanager. So
-                halten die Vereine ihre Logos ohne Umweg über die
-                Geschäftsstelle aktuell.
+                <strong>Logos</strong> laufen getrennt und sind
+                Erkennungszeichen, keine Werbung. Das
+                <strong>Verbandslogo</strong> (max. 5 MB) pflegt Admin oder SBK
+                in den Verbandseinstellungen; es ist zugleich die einzige
+                Logoquelle eines Spielbetriebs, der selbst keines besitzt. Das
+                <strong>Liga-Logo</strong> (max. 3 MB) pflegt, wer die Liga
+                bearbeiten darf; fehlt es, wird das Logo des Landesverbands
+                angezeigt. Das <strong>Vereinslogo</strong> pflegt der Verein
+                selbst über den Vereinsmanager (wird auf 100 × 100 verkleinert),
+                ebenso das Teamlogo über den Teammanager. So halten die Vereine
+                ihre Logos ohne Umweg über die Geschäftsstelle aktuell.
               </p>
+              <div class="note">
+                <strong>Bildformate:</strong> Erlaubt sind überall
+                <strong>PNG, JPG und WebP</strong>.
+                <strong>SVG wird abgewiesen</strong>, weil eine solche Datei
+                Skripte enthalten kann. Quadratisch müssen nur Vereins- und
+                Teamlogos sein; Logos auf Verbands- und Ligaebene dürfen
+                Querformat haben, das sind meist Wortmarken. Am besten
+                freigestellt hochladen, also mit transparentem Hintergrund: Die
+                Logos erscheinen unter anderem in Livestream-Einblendungen auf
+                dunklem Grund.
+              </div>
               <div class="roles-inline">
                 <span class="rb admin">Admin</span>
                 <span class="rb sbk">SBK</span>
@@ -4446,13 +4578,21 @@
                 <div class="cap-icon">👥</div>
                 <div>
                   <h3>Benutzerverwaltung</h3>
-                  <div class="cap-sub">VM und TM für alle Vereine</div>
+                  <div class="cap-sub">
+                    Verbands- und Vereinsrollen im eigenen Bereich
+                  </div>
                 </div>
               </div>
               <ul>
                 <li>
                   Vereinsmanager und Teammanager anlegen und bearbeiten; zur
                   Auswahl stehen nur Vereine des eigenen Zuständigkeitsbereichs
+                </li>
+                <li>
+                  Ebenso <span class="rb sbk">SBK</span>,
+                  <span class="rb rsk">RSK</span> und
+                  <span class="rb ansetzer">Ansetzer</span> im eigenen
+                  Zuständigkeitsbereich anlegen und bearbeiten
                 </li>
                 <li>
                   Teams zuordnen – ein Teammanager ohne Team-Zuweisung kann sich
@@ -4832,7 +4972,7 @@
                 <div>
                   <h3>Benutzerverwaltung</h3>
                   <div class="cap-sub">
-                    VM und TM für Vereine des eigenen Landesverbands
+                    Verbands- und Vereinsrollen des eigenen Landesverbands
                   </div>
                 </div>
               </div>
@@ -4840,6 +4980,12 @@
                 <li>
                   Vereinsmanager und Teammanager anlegen und bearbeiten; zur
                   Auswahl stehen nur Vereine des eigenen Zuständigkeitsbereichs
+                </li>
+                <li>
+                  Ebenso <span class="rb sbk">SBK</span>,
+                  <span class="rb rsk">RSK</span> und
+                  <span class="rb ansetzer">Ansetzer</span> im eigenen
+                  Zuständigkeitsbereich anlegen und bearbeiten
                 </li>
                 <li>
                   Teams zuordnen – ein Teammanager ohne Team-Zuweisung kann sich
@@ -5200,6 +5346,25 @@
             </div>
             <div class="cap">
               <div class="cap-head">
+                <div class="cap-icon">👥</div>
+                <div>
+                  <h3>Benutzerverwaltung</h3>
+                  <div class="cap-sub">
+                    RSK und Ansetzer im bundesweiten Bereich
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  <span class="rb rsk">RSK</span> und
+                  <span class="rb ansetzer">Ansetzer</span> anlegen und
+                  bearbeiten
+                </li>
+                <li>Konten archivieren und reaktivieren</li>
+              </ul>
+            </div>
+            <div class="cap">
+              <div class="cap-head">
                 <div class="cap-icon">💬</div>
                 <div>
                   <h3>Schiri-Feedback</h3>
@@ -5319,6 +5484,25 @@
                   und Auswertung sind den bundesweiten Rollen (RSK FD, Ansetzer
                   FD, Admin) vorbehalten
                 </li>
+              </ul>
+            </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">👥</div>
+                <div>
+                  <h3>Benutzerverwaltung</h3>
+                  <div class="cap-sub">
+                    RSK und Ansetzer des eigenen Landesverbands
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  <span class="rb rsk">RSK</span> und
+                  <span class="rb ansetzer">Ansetzer</span> anlegen und
+                  bearbeiten
+                </li>
+                <li>Konten archivieren und reaktivieren</li>
               </ul>
             </div>
             <div class="cap">
@@ -6692,6 +6876,170 @@
         <!-- ═══════════ ENTWICKLER & API ═══════════ -->
         <section
           class="panel"
+          id="panel-streamer"
+          style="--rc: var(--c-streamer)"
+        >
+          <div class="hero">
+            <span class="hero-mark">▶</span>
+            <div class="hero-badge">Streaming</div>
+            <h1>Für Streamer:innen</h1>
+            <p>
+              Der Saisonmanager stellt fertige Grafiken für OBS Studio bereit:
+              eine Anzeigetafel mit Spielstand und Abschnitt, Bauchbinden für
+              Torschützen und Strafen sowie ein Bedienfeld. Alles speist sich
+              aus dem digitalen Spielbericht, niemand muss also nebenher Zahlen
+              pflegen. Du brauchst weder ein Zusatzprogramm noch eine
+              Installation, nur zwei Adressen aus dem Spielbericht.
+            </p>
+            <div class="hero-scope">
+              🎥 Für alle, die ein Spiel übertragen. Voraussetzung ist ein Konto
+              mit Zugriff auf den Spielbericht.
+            </div>
+          </div>
+
+          <div class="sec">
+            <span class="num">01</span>
+            <h2>Adressen holen</h2>
+          </div>
+          <p class="proc-text">
+            Öffne den Spielbericht des Spiels und dort <em>Schritt 1</em>. Unter
+            den Spielinformationen steht der Abschnitt
+            <strong>Livestream-Overlays</strong>. Ein Druck auf
+            <em>Overlay-Links erzeugen</em> liefert zwei Adressen: eine für die
+            Anzeigetafel und eine für das Bedienfeld.
+          </p>
+          <div class="note">
+            <strong>Beide Adressen sofort kopieren.</strong> Sie werden aus
+            Sicherheitsgründen nur dieses eine Mal angezeigt. Wer sie verliert,
+            erzeugt neue; die alten gelten dann nicht mehr. Der Zugang läuft
+            nach 36 Stunden ab und gilt für
+            <strong>alle Spiele des Spieltags</strong>, nicht nur für das gerade
+            geöffnete. Bei einem Doppelspieltag reicht also ein Satz Adressen.
+          </div>
+          <p class="proc-text">
+            Erzeugen darf, wer den Spielbericht führen darf: Admin, der SBK des
+            Spielbetriebs, der Vereinsmanager des ausrichtenden oder eines
+            beteiligten Vereins und der Teammanager einer beteiligten
+            Mannschaft. Ist eine Adresse versehentlich im Vereinschat gelandet,
+            zieht <em>Zugang zurückziehen</em> sie sofort zurück.
+          </p>
+
+          <div class="sec">
+            <span class="num">02</span>
+            <h2>In OBS einrichten</h2>
+          </div>
+          <p class="proc-text">
+            <strong>Anzeigetafel:</strong> In der Szene
+            <em>Quelle hinzufügen › Browser</em> wählen, die erste Adresse
+            einfügen und Breite <code>1920</code>, Höhe
+            <code>1080</code> eintragen. Die Grafik hat einen durchsichtigen
+            Hintergrund, sie legt sich also über das Kamerabild. Die Quelle
+            gehört in der Ebenenliste nach oben.
+          </p>
+          <p class="proc-text">
+            <strong>Bedienfeld:</strong> Unter
+            <em
+              >Ansicht › Andockbare Dialoge › Benutzerdefinierte
+              Browser-Docks</em
+            >
+            einen Eintrag anlegen, einen Namen vergeben und die zweite Adresse
+            einfügen. Das Bedienfeld erscheint als schmale Spalte neben dem
+            Programmbild. Es läuft genauso in einem normalen Browserfenster,
+            etwa auf einem zweiten Rechner in der Regie.
+          </p>
+          <div class="note">
+            Für eine Produktion in 720p hänge
+            <code>&amp;scale=0.667</code> an die Adresse der Anzeigetafel.
+          </div>
+
+          <div class="sec">
+            <span class="num">03</span>
+            <h2>Während des Spiels</h2>
+          </div>
+          <p class="proc-text">
+            Spielstand, Abschnitt und Torschützen kommen automatisch aus dem
+            Spielbericht, sobald das Spielsekretariat sie einträgt. Die
+            Anzeigetafel zieht binnen weniger Sekunden nach. Damit das
+            funktioniert, muss vor Ort <strong>während</strong> des Spiels
+            erfasst werden, nicht erst danach.
+          </p>
+          <p class="proc-text">
+            Über das Bedienfeld steuerst du alles, was nicht aus den Daten
+            folgt: die <strong>Spielzeit</strong> starten, anhalten und
+            korrigieren, <strong>Bauchbinden</strong> für das letzte Tor, die
+            letzte Strafe, die Paarung oder einen Freitext ein- und ausblenden
+            und bei einem Doppelspieltag das <strong>Spiel wechseln</strong>.
+          </p>
+          <div class="note">
+            <strong
+              >Die Spielzeit ist eine Anzeige, keine offizielle
+              Zeitmessung.</strong
+            >
+            Der Saisonmanager kennt die Hallenuhr nicht, deshalb stellst du sie
+            im Bedienfeld selbst. Weicht sie von der vom Sekretariat
+            eingetragenen Ereigniszeit ab, weist das Bedienfeld darauf hin,
+            korrigiert aber nichts von allein: Was stimmt, entscheidest du.
+          </div>
+          <p class="proc-text">
+            Hinkt das Sekretariat einmal hinterher, lässt sich der Spielstand im
+            Bedienfeld übersteuern. Diese Übersteuerung bleibt bestehen, bis du
+            sie ausdrücklich zurücknimmst, und ist währenddessen im Bedienfeld
+            rot gekennzeichnet. Denk daran, sie wieder auszuschalten, sonst geht
+            ein falscher Stand auf Sendung.
+          </p>
+
+          <div class="sec">
+            <span class="num">04</span>
+            <h2>Wenn etwas nicht erscheint</h2>
+          </div>
+          <ul>
+            <li>
+              <strong>Die Anzeigetafel bleibt leer:</strong> In der Regel ist
+              das Spiel noch nicht angepfiffen. Die Tafel erscheint, sobald das
+              Sekretariat das Spiel gestartet hat.
+            </li>
+            <li>
+              <strong>Der Live-Punkt geht aus:</strong> Dann kam längere Zeit
+              nichts Neues durch, meist ein Netzproblem in der Halle. Die
+              Anzeige behält bewusst ihren letzten Stand, statt leer zu werden.
+            </li>
+            <li>
+              <strong>Nichts geht mehr:</strong> Prüfe, ob der Zugang abgelaufen
+              ist. Er gilt 36 Stunden; danach erzeugst du im Spielbericht neue
+              Adressen und trägst sie in OBS ein.
+            </li>
+            <li>
+              <strong
+                >Statt der Grafik erscheint die Saisonmanager-Seite:</strong
+              >
+              Dann fehlt in der Adresse das <code>.html</code> oder das Token.
+              Kopiere die Adresse noch einmal aus dem Spielbericht.
+            </li>
+            <li>
+              <strong>Zur Fehlersuche</strong> hänge <code>&amp;debug=1</code>
+              an die Adresse der Anzeigetafel. Oben links erscheint dann eine
+              Statusfläche mit Spiel, Stand und letztem Abruf. Vor der Sendung
+              wieder entfernen.
+            </li>
+          </ul>
+
+          <div class="sec">
+            <span class="num">05</span>
+            <h2>Logos</h2>
+          </div>
+          <p class="proc-text">
+            Die Anzeigetafel zeigt die Vereinslogos beider Mannschaften und das
+            Zeichen der Liga. Vereins- und Teamlogos pflegen die Vereine selbst,
+            das Liga-Logo pflegt der zuständige Verband. Weil die Grafik dunkel
+            ist, sehen <strong>freigestellte PNG</strong> mit transparentem
+            Hintergrund am besten aus; ein Logo mit weißem Kasten fällt darin
+            auf. Fehlt ein Logo, steht der Mannschaftsname allein, die Anzeige
+            bleibt also brauchbar.
+          </p>
+        </section>
+
+        <section
+          class="panel"
           id="panel-entwickler"
           style="--rc: var(--c-entwickler)"
         >
@@ -7039,7 +7387,7 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
 
         <footer class="page-foot">
           <span>Saisonmanager · Rollenhandbuch</span>
-          <span>Stand: Juli 2026</span>
+          <span>Stand: August 2026</span>
         </footer>
       </div>
     </div>
