@@ -808,7 +808,11 @@
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
                 {{ "playerAdmin.edit.documents" | transloco }}
               </div>
-              @if (!licenseDocuments.length) {
+              @if (documentsFailed) {
+                <p class="block text-base text-red-600">
+                  {{ "playerAdmin.edit.documentsLoadError" | transloco }}
+                </p>
+              } @else if (!licenseDocuments.length) {
                 <p class="block text-base text-fb-gray-500">
                   {{ "playerAdmin.edit.noDocuments" | transloco }}
                 </p>

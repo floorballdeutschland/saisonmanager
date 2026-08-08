@@ -83,6 +83,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   // (bundesweit vs. verbandsspezifisch) filtert bereits die API abhängig vom
   // Verbands-Scope des angemeldeten Nutzers.
   licenseDocuments: LicenseDocument[] = [];
+  /** Abruf der Dokumente gescheitert (meist 403) – von „keine vorhanden" zu unterscheiden. */
+  documentsFailed = false;
 
   seasons: Season[] = [];
   currentSeasonId?: number;
@@ -171,9 +173,19 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   public loadLicenseDocuments(): void {
     if (!this.player?.id) return;
 
+    this.documentsFailed = false;
     this._playerService.getLicenseDocuments(this.player.id).subscribe({
       next: (result) => {
         this.licenseDocuments = result;
+        this._cdr.markForCheck();
+      },
+      // Ohne diesen Zweig bliebe die Liste leer und die Ansicht meldete „keine
+      // Dokumente vorhanden" – also eine Tatsachenbehauptung, wo in Wahrheit
+      // nur der Abruf gescheitert ist. Häufigster Fall ist ein 403: Der Spieler
+      // ist sichtbar, seine Unterlagen aber nicht.
+      error: () => {
+        this.licenseDocuments = [];
+        this.documentsFailed = true;
         this._cdr.markForCheck();
       },
     });
