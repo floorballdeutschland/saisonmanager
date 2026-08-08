@@ -4,7 +4,9 @@
     @if (leagueId) {
       <a
         class="mt-4 sm:mt-0 text-fb-gray-400"
-        href="/calendar/leagues/{{ leagueId }}.ics"
+        [href]="calendarUrl"
+        target="_blank"
+        rel="noopener"
         >(als ics)</a
       >
     }
