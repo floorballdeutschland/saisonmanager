@@ -3087,6 +3087,48 @@
 
           <details class="proc">
             <summary>
+              <span class="proc-icon">✋</span>
+              <div>
+                <div class="proc-title">
+                  Einspruch gegen die Spieltagscheckliste
+                </div>
+                <div class="proc-sub">
+                  Wenn der Ausrichter die Bewertung anders sieht
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Die Spielleitung beantwortet die Checklistenfragen. Sieht der
+                ausrichtende Verein das anders, kann er widersprechen. Der Weg
+                dorthin führt
+                <strong
+                  >ausschließlich über den Link in der Bestätigungsmail</strong
+                >, ein Benutzerkonto braucht es nicht.
+              </p>
+              <p class="proc-text">
+                Die Seite zeigt die Antworten der Spielleitung und lässt daneben
+                eine eigene Bewertung eintragen. Beantwortet werden muss
+                <strong>jede</strong> Frage, nicht nur die strittige: Der
+                Einspruch ersetzt den Antwortsatz vollständig, eine Teilmenge
+                würde die übrigen Fragen stillschweigend unterschlagen.
+              </p>
+              <div class="note">
+                <strong>Nur ein Einspruch je Spiel.</strong> Der erste zählt,
+                jeder weitere wird abgelehnt. Danach gehen Spielleitung, Verein
+                und Gespann eine Benachrichtigung zu, die beide Bewertungen
+                nebeneinanderstellt, sodass die Abweichung sichtbar wird.
+              </div>
+              <div class="roles-inline">
+                <span class="rb vm">Ausrichtender Verein</span>
+                <span class="rb sbk">SBK</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
               <span class="proc-icon">🔗</span>
               <div>
                 <div class="proc-title">Sekretariats-Link</div>
@@ -3456,6 +3498,13 @@
                 </dd>
                 <dt>Optional (nur Hinweis)</dt>
                 <dd>Halle und Ausrichter, dürfen zunächst leer bleiben.</dd>
+                <dt>Optional (K.-o.-Runden)</dt>
+                <dd>
+                  <strong>Serien-Titel</strong> (etwa „Viertelfinale") und
+                  <strong>Nummer in Serie</strong>. Die Nummer bezeichnet die
+                  parallele Paarung innerhalb der Runde. Die Liga-Vorlage
+                  enthält dafür ein eigenes Beispielblatt.
+                </dd>
                 <dt>Wiederholbar</dt>
                 <dd>Beliebig oft, bis das erste Spiel begonnen hat.</dd>
               </dl>
@@ -3504,6 +3553,13 @@
                 <strong>unbestätigt</strong> angelegt. Am Ende siehst du, wie
                 viele Teams übernommen, übersprungen oder fehlgeschlagen sind.
               </p>
+              <div class="note">
+                <strong>Passwörter</strong> brauchen überall dort, wo ein Mensch
+                eines setzt, mindestens <strong>12 Zeichen</strong> mit
+                mindestens einem Großbuchstaben und einer Ziffer. Das gilt beim
+                Anlegen durch die Verwaltung ebenso wie beim Zurücksetzen durch
+                die Nutzerin selbst.
+              </div>
               <div class="roles-inline">
                 <span class="rb admin">Admin</span>
                 <span class="rb sbk">SBK</span>
@@ -3856,16 +3912,19 @@
                 Admin und SBK legen Benutzer an und geben ihnen ihre Rolle plus
                 einen
                 <strong>Scope</strong>: verbandsweit oder auf bestimmte Vereine
-                begrenzt. Nach Rechteänderungen müssen sich Nutzer einmal neu
-                anmelden, damit die neuen Berechtigungen greifen. Angemeldet
-                wird sich immer mit dem Benutzernamen, nicht mit der
-                E-Mail-Adresse: Dieselbe Adresse hängt oft an mehreren Konten,
-                etwa am Sammelpostfach eines Vereins oder wenn eine Person neben
-                ihrem Vereinskonto ein Schiedsrichterkonto hat. Wer seinen
-                Benutzernamen nicht mehr weiß, lässt sich ihn über
-                <em>Benutzername vergessen</em> auf der Anmeldeseite an die
-                hinterlegte E-Mail-Adresse schicken; hängen mehrere Konten an
-                der Adresse, nennt die Mail alle.
+                begrenzt. Wer welche Rolle vergeben darf, hängt an der eigenen:
+                Admin alle, SBK die Rollen SBK, RSK, Ansetzer, VM und TM im
+                eigenen Bereich, RSK die Rollen RSK und Ansetzer, ein
+                Vereinsmanager VM und TM des eigenen Vereins. Nach
+                Rechteänderungen müssen sich Nutzer einmal neu anmelden, damit
+                die neuen Berechtigungen greifen. Angemeldet wird sich immer mit
+                dem Benutzernamen, nicht mit der E-Mail-Adresse: Dieselbe
+                Adresse hängt oft an mehreren Konten, etwa am Sammelpostfach
+                eines Vereins oder wenn eine Person neben ihrem Vereinskonto ein
+                Schiedsrichterkonto hat. Wer seinen Benutzernamen nicht mehr
+                weiß, lässt sich ihn über <em>Benutzername vergessen</em> auf
+                der Anmeldeseite an die hinterlegte E-Mail-Adresse schicken;
+                hängen mehrere Konten an der Adresse, nennt die Mail alle.
               </p>
               <p class="proc-text">
                 Beim Anlegen gilt für den Benutzernamen die Empfehlung
@@ -3956,7 +4015,23 @@
                 <li>Teams aus Quell-Liga importieren (Top-N aus Tabelle)</li>
                 <li>Hallen anlegen und verwalten</li>
                 <li>Landesverbände verwalten</li>
+                <li>
+                  Zwei Vereinseinträge zusammenlegen, für Dubletten und echte
+                  Fusionen; derzeit ein Wartungsbefehl, kein Menüpunkt
+                </li>
               </ul>
+              <div class="note">
+                Die Vereinsverwaltung ist nach <strong>Landesverband</strong>
+                gegliedert, nicht nach Spielbetrieb. In der eigenen Liste stehen
+                nur Vereine, für die man zuständig ist; Gastvereine erscheinen
+                über ihre tatsächliche Ligazugehörigkeit der laufenden Saison,
+                lassen sich aber nicht bearbeiten. Beim
+                <strong>Zusammenlegen</strong> bleibt die Historie des
+                aufgelösten Vereins erhalten: Mannschaften, Spieltage,
+                Mitgliedschaften, Transfers, Schiedsrichter und Rollen hängen
+                danach am verbleibenden Verein, dessen Stammdaten unverändert
+                bleiben.
+              </div>
             </div>
             <div class="cap">
               <div class="cap-head">
@@ -7310,7 +7385,10 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
                 <tr>
                   <td><span class="method get">GET</span></td>
                   <td class="path">/api/v2/players/:id/stats</td>
-                  <td>Spielerstatistik über alle Saisons</td>
+                  <td>
+                    Spielerstatistik über alle Saisons. Ohne Geburtsdatum und
+                    Geschlecht; Scorerlisten enthalten kein Spielerfoto.
+                  </td>
                 </tr>
                 <tr>
                   <td><span class="method get">GET</span></td>
