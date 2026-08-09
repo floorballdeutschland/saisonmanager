@@ -144,10 +144,13 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           input.value = '';
+          // Die Antwort nennt Adresse und Herkunft, genau wie beim Löschen.
+          // Die Herkunft hier selbst zu setzen hieße, dieselbe Regel ein
+          // zweites Mal zu behaupten, an einer Stelle, an der sie niemand
+          // nachpflegen würde.
           league.logo_url = result.logo_url;
-          // Ab jetzt ist es das eigene Zeichen der Liga, nicht mehr das
-          // geerbte des Verbands.
-          league.logo_source = 'league';
+          league.logo_source =
+            (result.logo_source as League['logo_source']) ?? 'league';
           this._notificationService.success(
             this._transloco.translate('leagueAdmin.notifications.logoUploaded'),
             { autoClose: true }

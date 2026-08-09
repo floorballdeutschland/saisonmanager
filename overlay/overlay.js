@@ -241,20 +241,21 @@
     if (url === state.failedLeagueMark) url = DEFAULT_LEAGUE_MARK;
     if (el.leagueMark.getAttribute("src") === url) return;
 
-    // Lädt das Logo nicht, zurück auf das mitgelieferte Zeichen, statt eine
-    // Lücke in der Anzeigetafel zu hinterlassen.
-    if (url !== DEFAULT_LEAGUE_MARK) {
-      el.leagueMark.addEventListener(
-        "error",
-        function () {
-          state.failedLeagueMark = url;
-          el.leagueMark.src = DEFAULT_LEAGUE_MARK;
-        },
-        { once: true }
-      );
-    }
     el.leagueMark.src = url;
   }
+
+  // Lädt das Ligazeichen nicht, zurück auf das mitgelieferte, statt eine Lücke
+  // in der Anzeigetafel zu hinterlassen. Ein einziger, dauerhafter Zuhörer
+  // statt eines neuen je Quellwechsel: Ein Zuhörer mit `once` verschwindet nur,
+  // wenn er auch feuert, und über eine lange Übertragung sammelten sich sonst
+  // die der erfolgreichen Wechsel an.
+  el.leagueMark.addEventListener("error", function () {
+    var failed = el.leagueMark.getAttribute("src");
+    if (failed === DEFAULT_LEAGUE_MARK) return;
+
+    state.failedLeagueMark = failed;
+    el.leagueMark.src = DEFAULT_LEAGUE_MARK;
+  });
 
   function setTeam(side, team) {
     team = team || {};

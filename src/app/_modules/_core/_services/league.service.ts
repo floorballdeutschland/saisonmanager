@@ -407,7 +407,9 @@ export class LeagueService {
   public adminUploadLogo(leagueId: number, file: File) {
     const formData = new FormData();
     formData.append('logo', file);
-    return this.http.post<{ logo_url: string }>(
+    // Gleiche Form wie beim Löschen: Adresse und Herkunft, damit die Ansicht
+    // die Herkunft nicht selbst erschließen muss.
+    return this.http.post<{ logo_url: string; logo_source: string | null }>(
       `${environment.apiURL}admin/leagues/${leagueId}/upload_logo.json`,
       formData
     );
