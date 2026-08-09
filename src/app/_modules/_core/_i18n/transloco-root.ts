@@ -1,6 +1,10 @@
 import { APP_INITIALIZER, EnvironmentProviders, Provider } from '@angular/core';
-import { provideTransloco, TranslocoService } from '@jsverse/transloco';
-import { firstValueFrom } from 'rxjs';
+import {
+  provideTransloco,
+  Translation,
+  TranslocoService,
+} from '@jsverse/transloco';
+import { catchError, firstValueFrom, of } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 import { AVAILABLE_LANGS, DEFAULT_LANG, readInitialLang } from './lang';
@@ -34,11 +38,40 @@ export function provideTranslocoRoot(): (Provider | EnvironmentProviders)[] {
       provide: APP_INITIALIZER,
       multi: true,
       deps: [TranslocoService],
-      useFactory: (transloco: TranslocoService) => () => {
-        const lang = readInitialLang();
-        transloco.setActiveLang(lang);
-        return firstValueFrom(transloco.load(lang));
-      },
+      useFactory: loadInitialTranslations,
     },
   ];
+}
+
+/**
+ * Lädt die globalen Übersetzungen, bevor die App rendert.
+ *
+ * Scheitert der Abruf, startet die Anwendung trotzdem. Ein APP_INITIALIZER, der
+ * ablehnt, bricht den Bootstrap ab, und dann steht eine leere Seite da. Eine
+ * kurz gestörte Leitung darf das nicht auslösen: Eine Oberfläche mit fehlenden
+ * Übersetzungen ist immer noch besser als gar keine, und Transloco lädt die
+ * Datei beim nächsten Zugriff ohnehin erneut.
+ *
+ * Abgesichert sind beide Wege, auf denen der Abruf enden kann, denn sie
+ * verhalten sich verschieden:
+ *
+ * - Der Stream **bricht ab**: Das fängt `catchError`.
+ * - Der Stream **schließt ohne Wert ab**: Dagegen hilft `catchError` nicht, nur
+ *   der `defaultValue`. Ohne ihn wirft `firstValueFrom` einen
+ *   `EmptyError: no elements in sequence` — genau der Fall, der in Produktion
+ *   auftrat (Sentry SAISONMANAGER-2K, sechs Vorfälle an einem Tag, während die
+ *   Sprachdateien selbst durchgehend mit HTTP 200 auslieferbar waren).
+ */
+export function loadInitialTranslations(
+  transloco: TranslocoService
+): () => Promise<Translation | null> {
+  return () => {
+    const lang = readInitialLang();
+    transloco.setActiveLang(lang);
+
+    return firstValueFrom(
+      transloco.load(lang).pipe(catchError(() => of(null))),
+      { defaultValue: null }
+    );
+  };
 }
