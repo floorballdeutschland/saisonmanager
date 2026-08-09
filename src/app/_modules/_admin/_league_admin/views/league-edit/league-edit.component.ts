@@ -154,14 +154,12 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           );
           this._cdr.markForCheck();
         },
-        error: (err) => {
+        // Keine eigene Fehlermeldung: Der ErrorInterceptor zeigt die
+        // Server-Nachricht bereits an. Ein zweiter Toast mit demselben Text
+        // stünde nur daneben und schließt sich, wie der erste, nicht von
+        // selbst.
+        error: () => {
           input.value = '';
-          const msg: string =
-            err?.error?.message ??
-            this._transloco.translate(
-              'leagueAdmin.notifications.logoUploadFailed'
-            );
-          this._notificationService.error(msg, { autoClose: false });
         },
       });
   }
@@ -189,14 +187,9 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           this.deletingLogo = false;
           this._cdr.markForCheck();
         },
-        error: (err) => {
+        // Wie beim Hochladen: Die Meldung kommt vom ErrorInterceptor.
+        error: () => {
           this.deletingLogo = false;
-          const msg: string =
-            err?.error?.message ??
-            this._transloco.translate(
-              'leagueAdmin.notifications.logoDeleteFailed'
-            );
-          this._notificationService.error(msg, { autoClose: false });
           this._cdr.markForCheck();
         },
       });

@@ -154,7 +154,7 @@
     },
     "docTypesLoadError": "Dokumentarten-Katalog konnte nicht geladen werden.",
     "logo": "Logo der Liga",
-    "logoDescription": "Das Erkennungszeichen des Wettbewerbs, etwa in Livestream-Einblendungen. Nicht zu verwechseln mit dem Werbebanner darunter. Ohne eigenes Logo wird das des Landesverbands angezeigt.",
+    "logoDescription": "Das Erkennungszeichen des Wettbewerbs, etwa in Livestream-Einblendungen. Nicht zu verwechseln mit dem Werbebanner darunter. Ohne eigenes Logo wird das des Landesverbands angezeigt, sofern dieser eines hinterlegt hat.",
     "currentLogo": "Aktuelles Logo",
     "logoAlt": "Logo der Liga",
     "noLogo": "kein Logo hinterlegt",
@@ -195,8 +195,6 @@
     "errLegacy": "Eine alte Liga kann hier nicht geändert werden.",
     "logoTooLarge": "Datei zu groß (max. 3 MB).",
     "logoUploaded": "Logo erfolgreich hochgeladen.",
-    "logoUploadFailed": "Logo-Upload fehlgeschlagen.",
-    "confirmDeleteLogo": "Logo wirklich entfernen? Danach wird das Logo des Landesverbands angezeigt.",
-    "logoDeleteFailed": "Logo konnte nicht gelöscht werden."
+    "confirmDeleteLogo": "Logo wirklich entfernen? Danach wird das Logo des Landesverbands angezeigt, sofern dieser eines hinterlegt hat. Sonst bleibt die Liga ohne Logo."
   }
 }

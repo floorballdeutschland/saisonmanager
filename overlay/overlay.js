@@ -34,6 +34,10 @@
   // Ab wann die Anzeige zugibt, dass sie nichts Neues mehr weiss. Der Live-Punkt
   // geht dann aus, statt einen alten Stand als aktuell auszugeben.
   var STALE_AFTER_MS = 20000;
+  // Das mitgelieferte Ligazeichen. Es steht da, solange die Liga kein eigenes
+  // hinterlegt hat, und es steht auch wieder da, sobald das Dock auf ein Spiel
+  // ohne eigenes Ligazeichen wechselt.
+  var DEFAULT_LEAGUE_MARK = "img/floorball-bundesliga-weiss.png";
 
   var state = {
     lastVersion: null, // game.updated_at der zuletzt geholten Spieldaten
@@ -49,6 +53,9 @@
     // Endgueltig abgewiesen (kein oder abgelaufenes Token). Dann hoert das
     // Nachfragen auf.
     terminal: false,
+    // Adresse eines Ligazeichens, das nicht geladen hat. Wird nicht erneut
+    // versucht, siehe setLeagueMark.
+    failedLeagueMark: null,
   };
 
   var el = {
@@ -217,22 +224,35 @@
   }
 
   // Eigenes Ligazeichen, falls hinterlegt. Der Server liefert hier nur ein
-  // echtes Liga-Logo; hat die Liga keines, kommt gar nichts, und das
-  // mitgelieferte Bundesliga-Zeichen bleibt stehen. Ein Landesverbandslogo
-  // stünde an dieser Stelle für den falschen Zusammenhang.
+  // echtes Liga-Logo; hat die Liga keines, kommt gar nichts, und es steht das
+  // mitgelieferte Bundesliga-Zeichen da. Ein Landesverbandslogo stünde an
+  // dieser Stelle für den falschen Zusammenhang.
+  //
+  // Der Rückweg zählt genauso wie der Hinweg: Wechselt das Dock von einem
+  // Spiel mit eigenem Ligazeichen auf eines ohne, muss das erste wieder
+  // verschwinden, sonst sendet der Verein das Zeichen des falschen
+  // Wettbewerbs.
   function setLeagueMark(league) {
-    var url = league && league.logo_url;
-    if (!url || el.leagueMark.getAttribute("src") === url) return;
+    var url = (league && league.logo_url) || DEFAULT_LEAGUE_MARK;
+
+    // Eine Adresse, die schon einmal nicht geladen hat, wird nicht erneut
+    // versucht. Sonst fordert sie jede Spielaktualisierung wieder an und das
+    // Zeichen flackert auf Sendung zwischen Fehlversuch und Rückfall.
+    if (url === state.failedLeagueMark) url = DEFAULT_LEAGUE_MARK;
+    if (el.leagueMark.getAttribute("src") === url) return;
 
     // Lädt das Logo nicht, zurück auf das mitgelieferte Zeichen, statt eine
     // Lücke in der Anzeigetafel zu hinterlassen.
-    el.leagueMark.addEventListener(
-      "error",
-      function () {
-        el.leagueMark.src = "img/floorball-bundesliga-weiss.png";
-      },
-      { once: true }
-    );
+    if (url !== DEFAULT_LEAGUE_MARK) {
+      el.leagueMark.addEventListener(
+        "error",
+        function () {
+          state.failedLeagueMark = url;
+          el.leagueMark.src = DEFAULT_LEAGUE_MARK;
+        },
+        { once: true }
+      );
+    }
     el.leagueMark.src = url;
   }
 

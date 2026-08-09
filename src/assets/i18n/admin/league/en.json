@@ -154,7 +154,7 @@
     },
     "docTypesLoadError": "Failed to load the document type catalog.",
     "logo": "League logo",
-    "logoDescription": "The competition's identifying mark, used for example in livestream overlays. Not to be confused with the advertising banner below. Without its own logo, the state association's logo is shown.",
+    "logoDescription": "The competition's identifying mark, used for example in livestream overlays. Not to be confused with the advertising banner below. Without its own logo, the state association's logo is shown, provided the association has one.",
     "currentLogo": "Current logo",
     "logoAlt": "League logo",
     "noLogo": "no logo set",
@@ -195,8 +195,6 @@
     "errLegacy": "An old league cannot be edited here.",
     "logoTooLarge": "File too large (max. 3 MB).",
     "logoUploaded": "Logo uploaded successfully.",
-    "logoUploadFailed": "Logo upload failed.",
-    "confirmDeleteLogo": "Really remove the logo? The state association's logo will be shown instead.",
-    "logoDeleteFailed": "Logo could not be deleted."
+    "confirmDeleteLogo": "Really remove the logo? The state association's logo will be shown instead, provided the association has one. Otherwise the league is left without a logo."
   }
 }

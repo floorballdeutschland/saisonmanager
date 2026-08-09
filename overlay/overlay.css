@@ -278,9 +278,14 @@ body {
   border-left: 1px solid rgb(255 255 255 / 10%);
 }
 
+/* Feste Höhe, aber gedeckelte Breite: Die Ligaverwaltung lässt Querformat
+   ausdrücklich zu, und ein breiter Schriftzug würde die Anzeigetafel sonst
+   auseinanderziehen. `contain` sorgt dafür, dass er dabei nicht verzerrt. */
 .ov-league-mark img {
   height: 54px;
   width: auto;
+  max-width: 220px;
+  object-fit: contain;
 }
 
 /* ══ Bauchbinde ════════════════════════════════════════════════════════════

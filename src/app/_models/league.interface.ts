@@ -48,7 +48,7 @@ export interface League {
   banner_url?: string | null;
   banner_link_url?: string | null;
   // Erkennungszeichen der Liga. `logo_source` sagt, woher es stammt: Bei
-  // „state_association" hat die Liga kein eigenes und es steht das Logo des
+  // `state_association` hat die Liga kein eigenes und es steht das Logo des
   // Landesverbands da.
   logo_url?: string | null;
   logo_source?: 'league' | 'state_association' | null;
