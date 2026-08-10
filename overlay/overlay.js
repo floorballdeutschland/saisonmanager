@@ -184,8 +184,48 @@
       state.lastVersion = null;
     }
 
+    applyCompetitionTheme();
     renderControl();
     renderFullscreen();
+  }
+
+  // ── Erscheinungsbild je Wettbewerb ──────────────────────────────────────
+
+  // Ligaklassen ohne eigene Bildmarke teilen sich eine Farbwelt.
+  var LOWER_CLASSES = { rl: true, vl: true, ll: true };
+
+  // Setzt `data-competition`, worauf overlay.css die Akzentfarben umstellt.
+  // Bewusst nicht über die league_id: Ligen sind Zeilen je Saison, eine
+  // Liga-Kopie zur neuen Saison bekommt eine neue id. Über die id zugeordnet
+  // fiele jedes Erscheinungsbild zum Saisonwechsel still auf den Standard
+  // zurück, und es fiele erst auf Sendung auf.
+  function applyCompetitionTheme() {
+    var league =
+      (state.game && state.game.league) ||
+      (state.league && state.league.league) ||
+      null;
+    var key = competitionKey(league);
+
+    if (key) {
+      document.documentElement.setAttribute("data-competition", key);
+    } else {
+      document.documentElement.removeAttribute("data-competition");
+    }
+  }
+
+  function competitionKey(league) {
+    if (!league) return "";
+
+    // Pokalwettbewerbe zuerst: Sie haben keine eigene Ligaklasse und laufen in
+    // der Regel unter der der Bundesliga. Am Namen zu erkennen ist nicht
+    // schön, aber es ist das einzige Merkmal, das der Datenbestand hergibt.
+    if (/pokal/i.test(String(league.name || ""))) return "pokal";
+
+    var klasse = league.league_class_id || "";
+    if (!klasse) return "";
+    if (LOWER_CLASSES[klasse]) return "regional";
+
+    return klasse + (league.female ? "-w" : "-m");
   }
 
   function renderGame(game) {
@@ -598,6 +638,10 @@
       })
       .then(function (body) {
         state.league = body;
+        // Auch von hier aus: Ein Tabellen-Vollbild bekommt seine Ligadaten
+        // unter Umständen vor dem ersten Spiel-Abruf, und bis dahin stünde es
+        // im Standardaussehen.
+        applyCompetitionTheme();
         renderFullscreen();
         window.setTimeout(pollLeague, LEAGUE_POLL_MS);
       })
