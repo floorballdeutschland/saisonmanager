@@ -297,6 +297,56 @@
       }
     </div>
   </div>
+  <!-- Ergebniskachel fuer die sozialen Netze. Steht hier, weil an dieser Stelle
+       ohnehin steht, wer gerade nachbereitet. -->
+  <div class="border-b-4 border-fb-gray-200">
+    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+      <h2 class="font-bold text-xl lg:text-2xl mb-2">Ergebnisbild</h2>
+      <p class="text-sm text-fb-gray-500 mb-4">
+        Fertige Kachel mit Paarung, Vereinslogos, Endstand und
+        Drittelergebnissen, im Erscheinungsbild der Livestream-Overlays. Zum
+        Teilen in den sozialen Netzen.
+      </p>
+
+      <label class="flex items-center gap-2 text-sm mb-2">
+        <input type="checkbox" [(ngModel)]="tileShowScorers" />
+        Torschützinnen und Torschützen mit Namen nennen
+      </label>
+
+      @if (tileShowScorers && youthLeagueWarning) {
+        <p class="text-sm text-fb-gray-500 mb-4 max-w-2xl">
+          Das sieht nach einer Jugendliga aus. Namen Minderjähriger gehören nur
+          auf ein Bild für die sozialen Netze, wenn das für deinen Verband und
+          deinen Verein geklärt ist. Im Zweifel den Haken entfernen — das
+          Ergebnis steht auch ohne Namen auf der Kachel.
+        </p>
+      }
+
+      <div class="flex flex-wrap gap-3">
+        <fb-button
+          size="small"
+          [disabled]="tileBusy !== null"
+          (handleClick)="downloadResultTile('story')"
+          >{{
+            tileBusy === "story" ? "Wird erzeugt …" : "Hochformat (Story)"
+          }}</fb-button
+        >
+        <fb-button
+          size="small"
+          [disabled]="tileBusy !== null"
+          (handleClick)="downloadResultTile('square')"
+          >{{
+            tileBusy === "square" ? "Wird erzeugt …" : "Quadrat (Feed)"
+          }}</fb-button
+        >
+      </div>
+
+      @if (tileError) {
+        <p class="text-sm text-red-600 mt-2">{{ tileError }}</p>
+      }
+    </div>
+  </div>
+
   <div class="border-b-4 border-fb-gray-200">
     <div class="container mx-auto px-4 pb-16 lg:px-8 mt-4 lg:mt-8">
       <h2 class="font-bold text-xl lg:text-2xl mb-6">Eingabe abschließen</h2>
