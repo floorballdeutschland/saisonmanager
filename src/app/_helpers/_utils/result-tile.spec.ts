@@ -1,5 +1,9 @@
 import { Game } from '@floorball/types';
-import { looksLikeYouthLeague, renderResultTile } from './result-tile';
+import {
+  looksLikeYouthLeague,
+  renderResultTile,
+  scorerEntriesForTest,
+} from './result-tile';
 
 describe('looksLikeYouthLeague', () => {
   // Grundlage der Voreinstellung, nicht der Absicherung: Eine umbenannte Liga
@@ -47,13 +51,38 @@ describe('renderResultTile', () => {
         home_goals_period: [2, 1, 0, 0],
         guest_goals_period: [1, 0, 0, 0],
       },
+      // Genau die Form, die der Spielbericht liefert: Trikotnummer in `number`,
+      // KEIN aufgelöster Name. Genau daran wäre der Torschützenblock lautlos
+      // leer geblieben.
       events: [
+        { event_type: 'goal', event_team: 'home', time: '05:00', number: 17 },
+        { event_type: 'goal', event_team: 'guest', time: '09:30', number: 9 },
+        // Eigentor: Pseudonummer 1000, darf keinem Spieler zugeschrieben werden.
         {
           event_type: 'goal',
-          time: '05:00',
-          scorer_name: 'M. Mustermann',
+          event_team: 'home',
+          time: '11:00',
+          number: 1000,
+          goal_type_string: 'Eigentor',
         },
       ],
+      players: {
+        home: [
+          {
+            trikot_number: 17,
+            player_firstname: 'Max',
+            player_name: 'Mustermann',
+          },
+          {
+            trikot_number: null,
+            player_firstname: 'Ohne',
+            player_name: 'Nummer',
+          },
+        ],
+        guest: [
+          { trikot_number: 9, player_firstname: 'Lena', player_name: 'Gast' },
+        ],
+      },
       ...overrides,
     } as unknown as Game;
   }
@@ -95,6 +124,55 @@ describe('renderResultTile', () => {
     });
 
     expect(blob).toBeTruthy();
+  });
+
+  // Der Spielbericht liefert Trikotnummern, keine Namen — aufgelöste Namen
+  // hängt nur OverlayPayload an, und der bedient die Overlays. Ohne eigene
+  // Auflösung bliebe der Torschützenblock leer, und zwar ohne Fehlermeldung.
+  it('loest Trikotnummern ueber die Aufstellung zu Namen auf', () => {
+    const entries = scorerEntriesForTest(game());
+
+    expect(entries.map((e) => e.label)).toEqual([
+      'M. Mustermann',
+      'L. Gast',
+      'Eigentor',
+    ]);
+  });
+
+  it('schreibt ein Eigentor keinem Spieler zu', () => {
+    // Pseudonummer 1000 darf nicht in der Aufstellung nachgeschlagen werden.
+    const entries = scorerEntriesForTest(
+      game({
+        events: [
+          {
+            event_type: 'goal',
+            event_team: 'home',
+            time: '11:00',
+            number: 1000,
+          },
+        ],
+      } as unknown as Partial<Game>)
+    );
+
+    expect(entries[0].label).toBe('Tor');
+  });
+
+  it('nimmt einen bereits aufgeloesten Namen, wenn einer mitkommt', () => {
+    const entries = scorerEntriesForTest(
+      game({
+        events: [
+          {
+            event_type: 'goal',
+            event_team: 'home',
+            time: '05:00',
+            number: 17,
+            scorer_name: 'Aus dem Overlay',
+          },
+        ],
+      } as unknown as Partial<Game>)
+    );
+
+    expect(entries[0].label).toBe('Aus dem Overlay');
   });
 
   function imageSize(blob: Blob): Promise<{ width: number; height: number }> {

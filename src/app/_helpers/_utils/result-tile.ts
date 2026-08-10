@@ -220,27 +220,101 @@ interface ScorerEntry {
   label: string;
 }
 
+/**
+ * Pseudo-Trikotnummern aus dem Spielbericht. Sie stehen anstelle eines
+ * Schützen, nicht für einen Spieler (Eigentor bzw. nicht angegeben). Ein
+ * Namensnachschlag muss sie überspringen, sonst bekäme ein Tor mit der Nummer
+ * 1000 einen beliebigen Spieler zugeschrieben.
+ */
+const PSEUDO_NUMBERS = [1000, 2000];
+
+interface LineupPlayer {
+  trikot_number?: number | string | null;
+  player_firstname?: string | null;
+  player_name?: string | null;
+}
+
+/**
+ * Trikotnummer -> Spieler, je Mannschaft.
+ *
+ * DAS IST DER PUNKT, AN DEM DIESE KACHEL FAST STILL LEER GEBLIEBEN WÄRE:
+ * `Game#formatted_events` liefert in `number` eine TRIKOTNUMMER und keinen
+ * Namen. Aufgelöste Namen (`scorer_name`) hängt allein `OverlayPayload` an, und
+ * der bedient die Overlays — nicht den Spielbericht, aus dem diese Kachel
+ * gebaut wird. Wer hier nur `scorer_name` liest, bekommt keine Fehlermeldung,
+ * sondern eine Kachel ohne Torschützenblock.
+ *
+ * Die Zuordnung läuft deshalb über `players` (die Aufstellung im Spielbericht),
+ * genau wie serverseitig in OverlayPayload. `scorer_name` bleibt trotzdem die
+ * erste Wahl, damit dieselbe Funktion auch mit einem Overlay-Datensatz
+ * funktioniert.
+ */
+function rosterFor(game: Game, side: string): Map<number, LineupPlayer> {
+  const players = (game.players ?? {}) as Record<string, LineupPlayer[]>;
+  const map = new Map<number, LineupPlayer>();
+
+  for (const player of players[side] ?? []) {
+    // Ohne Trikotnummer aussortieren: `Number(null)` ergibt 0, und ein Tor mit
+    // der Nummer 0 bekäme sonst einen beliebigen nummernlosen Spieler.
+    if (
+      player.trikot_number === null ||
+      player.trikot_number === undefined ||
+      player.trikot_number === ''
+    ) {
+      continue;
+    }
+    map.set(Number(player.trikot_number), player);
+  }
+  return map;
+}
+
+/** Vorname abgekürzt, wie in den Bauchbinden: „M. Mustermann". */
+function displayName(player: LineupPlayer | undefined): string {
+  if (!player) return '';
+
+  const first = String(player.player_firstname ?? '').trim();
+  const last = String(player.player_name ?? '').trim();
+  if (!last) return first;
+  if (!first) return last;
+  return `${first[0]}. ${last}`;
+}
+
 function scorerEntries(game: Game): ScorerEntry[] {
   const events = (game.events ?? []) as {
     event_type?: string;
+    event_team?: string;
     time?: string;
-    scorer_name?: string;
-    player_name?: string;
-    player_firstname?: string;
-    goal_type_string?: string;
+    number?: number | string | null;
+    scorer_name?: string | null;
+    goal_type_string?: string | null;
   }[];
+
+  const rosters: Record<string, Map<number, LineupPlayer>> = {
+    home: rosterFor(game, 'home'),
+    guest: rosterFor(game, 'guest'),
+  };
 
   return events
     .filter((event) => event.event_type === 'goal')
-    .map((event) => ({
-      time: event.time ?? '',
-      label:
-        event.scorer_name ??
-        [event.player_firstname, event.player_name].filter(Boolean).join(' ') ??
-        event.goal_type_string ??
-        'Tor',
-    }))
-    .filter((entry) => Boolean(entry.label));
+    .map((event) => {
+      const side = String(event.event_team ?? '');
+      const number = Number(event.number);
+      const resolved =
+        Number.isFinite(number) && !PSEUDO_NUMBERS.includes(number)
+          ? rosters[side]?.get(number)
+          : undefined;
+
+      return {
+        time: String(event.time ?? ''),
+        // Ohne auflösbaren Schützen das Label aus dem Spielbericht (Eigentor,
+        // nicht angegeben), sonst bliebe die Zeile leer.
+        label:
+          event.scorer_name?.trim() ||
+          displayName(resolved) ||
+          event.goal_type_string?.trim() ||
+          'Tor',
+      };
+    });
 }
 
 /**
@@ -450,6 +524,17 @@ export function looksLikeYouthLeague(
 ): boolean {
   const name = String(leagueName ?? '');
   return /\bU\s?\d{1,2}\b|junior|jugend|sch(ü|ue)ler|mini/i.test(name);
+}
+
+/**
+ * Nur für Tests: Die Auflösung Trikotnummer -> Name ist der Teil, der still
+ * kaputtgehen kann, und aus einem PNG lässt sich nicht zurücklesen, was darauf
+ * steht.
+ */
+export function scorerEntriesForTest(
+  game: Game
+): { time: string; label: string }[] {
+  return scorerEntries(game);
 }
 
 export function downloadBlob(blob: Blob, fileName: string): void {
