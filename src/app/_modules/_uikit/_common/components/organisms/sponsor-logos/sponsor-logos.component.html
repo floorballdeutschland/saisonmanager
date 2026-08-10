@@ -1,0 +1,66 @@
+<div class="mt-6">
+  <h4 class="text-sm font-bold uppercase tracking-wide text-gray-500">
+    {{ "sponsorLogos.title" | transloco }}
+  </h4>
+  <p class="mt-1 text-sm text-gray-500">
+    {{ "sponsorLogos.hint" | transloco }}
+  </p>
+
+  @if (logos.length) {
+    <ul class="mt-4 flex flex-wrap gap-3">
+      @for (logo of logos; track logo.id) {
+        <li
+          class="flex items-center gap-3 rounded-md border border-gray-200 bg-white p-2"
+        >
+          <!-- Heller Grund wie in der Bühne: Viele Partnerlogos sind für
+               weißen Hintergrund gebaut. Auf dunklem Grund fiele ein weißer
+               Kasten sofort auf, und genau das soll hier schon bei der Pflege
+               auffallen. -->
+          <img
+            [src]="logo.url"
+            [alt]="logo.filename"
+            class="h-10 w-auto max-w-[160px] object-contain"
+          />
+          <fb-button
+            variant="error"
+            size="small"
+            icon="remove"
+            [disabled]="busy"
+            (click)="onRemove(logo)"
+          >
+            {{ "sponsorLogos.remove" | transloco }}
+          </fb-button>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="mt-4 text-sm text-gray-400">
+      {{ "sponsorLogos.empty" | transloco }}
+    </p>
+  }
+
+  @if (limitReached) {
+    <p class="mt-4 text-sm text-gray-500">
+      {{ "sponsorLogos.limitReached" | transloco: { max: maxLogos } }}
+    </p>
+  } @else {
+    <label class="mt-4 block">
+      <span class="sr-only">{{ "sponsorLogos.add" | transloco }}</span>
+      <input
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        class="block text-sm"
+        #sponsorInput
+        [disabled]="busy"
+        (change)="onFileSelected(sponsorInput)"
+      />
+    </label>
+    <p class="mt-1 text-sm text-gray-400">
+      {{ "sponsorLogos.uploadHint" | transloco }}
+    </p>
+  }
+
+  @if (error) {
+    <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+  }
+</div>

@@ -58,6 +58,12 @@
     // Antwort des ligaweiten Abrufs (Tabelle, Torschuetzen oder Spielplan),
     // je nach Szene. Nur im Vollbild belegt.
     league: null,
+    // Welcher Partner gerade in der Sponsorenflaeche steht.
+    sponsorIndex: 0,
+    // Ob gerade eine Bauchbinde sichtbar ist. Die Sponsorenflaeche weicht
+    // dann; Anzeigetafel, Bauchbinde und Sponsorenflaeche gleichzeitig sind zu
+    // viel Bild.
+    lowerThirdVisible: false,
   };
 
   var el = {
@@ -77,6 +83,9 @@
     ltKicker: document.getElementById("lt-kicker"),
     ltMain: document.getElementById("lt-main"),
     ltSub: document.getElementById("lt-sub"),
+    sponsors: document.getElementById("sponsors"),
+    sponsorsLabel: document.getElementById("sponsors-label"),
+    sponsorsPlate: document.getElementById("sponsors-plate"),
     fullscreen: document.getElementById("fullscreen"),
     fsLeague: document.getElementById("fs-league"),
     fsTitle: document.getElementById("fs-title"),
@@ -331,6 +340,7 @@
     // Eintrag im Spielbericht.
     if (state.game) renderScore(state.game);
     renderLowerThird();
+    renderSponsors();
   }
 
   // ── Uhr ─────────────────────────────────────────────────────────────────
@@ -387,6 +397,8 @@
     var lt = state.control.lower_third;
     var content = lt && lt.kind ? lowerThirdContent(lt) : null;
 
+    state.lowerThirdVisible = Boolean(content);
+
     if (!content) {
       el.lowerThird.classList.add("ov-lt-hidden");
       return;
@@ -414,9 +426,28 @@
           : null;
       case "venue":
         return venueContent();
+      case "presented_by":
+        return presentedByContent();
       default:
         return null;
     }
+  }
+
+  // „Präsentiert von" als eigene Bauchbinden-Art. Nennt den Partner beim
+  // Namen, statt nur ein Logo zu zeigen: In der Bauchbinde steht Text, und ein
+  // Logo darin wäre eine zweite, kleinere Sponsorenfläche.
+  //
+  // Der Name kommt aus dem Dock und nicht aus dem Dateinamen des Logos: Wer
+  // „partner-logo-final-2.png" hochlädt, will das nicht auf Sendung lesen.
+  function presentedByContent() {
+    var lt = state.control.lower_third || {};
+    if (!lt.main) return null;
+
+    return {
+      kicker: "Präsentiert von",
+      main: lt.main,
+      sub: lt.sub || "",
+    };
   }
 
   function goalContent(lt) {
@@ -508,6 +539,84 @@
       "Stand: " + (state.game ? state.game.result_string || "0:0" : "-"),
       "letzter Abruf: " + (age === null ? "noch keiner" : "vor " + age + " s"),
     ].join("\n");
+  }
+
+  // ── Sponsorenfläche ─────────────────────────────────────────────────────
+  //
+  // Zwei Ebenen, beide vom Server getrennt geliefert: Der Verband pflegt die
+  // Partner der Liga, der Verein die seines Vereins. Hier laufen sie reihum
+  // durch dieselbe Fläche und werden dabei unterschiedlich beschriftet —
+  // deshalb kommen sie getrennt an und werden nicht einfach aneinandergehängt.
+
+  // Feste Standzeit je Partner. Lang genug, um gelesen zu werden, kurz genug,
+  // dass acht Partner in einem Drittel durchlaufen.
+  var SPONSOR_ROTATE_MS = 6000;
+
+  function sponsorEntries() {
+    var sponsors = (state.game && state.game.sponsors) || {};
+    var entries = [];
+
+    (sponsors.league || []).forEach(function (url) {
+      if (url) entries.push({ url: url, label: "Partner der Liga" });
+    });
+    // „Ausrichter" und nicht „Heimverein": Maßgeblich ist, wer den Spieltag
+    // ausrichtet — bei einem Turnierspieltag in fremder Halle wirbt der
+    // Ausrichter, nicht wer gerade als Heimteam geführt wird.
+    (sponsors.club || []).forEach(function (url) {
+      if (url) entries.push({ url: url, label: "Partner des Ausrichters" });
+    });
+
+    return entries;
+  }
+
+  function renderSponsors() {
+    var entries = sponsorEntries();
+    // Die Fläche weicht, solange eine Bauchbinde steht. Anzeigetafel,
+    // Bauchbinde und Sponsorenfläche gleichzeitig sind zu viel Bild — und die
+    // Bauchbinde ist die Einblendung mit der kürzeren Halbwertszeit.
+    var visible =
+      Boolean(state.control.sponsors_visible) &&
+      entries.length > 0 &&
+      !state.lowerThirdVisible;
+
+    el.sponsors.classList.toggle("ov-hidden", !visible);
+    if (!visible) return;
+
+    // Beim Wechsel des Spiels oder nach dem Entfernen eines Logos kann der
+    // Index hinter der Liste liegen. Ohne das Zurücksetzen bliebe die Fläche
+    // dann leer, obwohl Partner hinterlegt sind.
+    if (state.sponsorIndex >= entries.length) state.sponsorIndex = 0;
+
+    var entry = entries[state.sponsorIndex];
+    el.sponsorsLabel.textContent = entry.label;
+
+    // Nur neu setzen, wenn sich die Quelle geändert hat: Ein erneutes Zuweisen
+    // derselben URL lässt das Bild in CEF kurz flackern.
+    var img = el.sponsorsPlate.querySelector("img");
+    if (img && img.getAttribute("src") === entry.url) return;
+
+    el.sponsorsPlate.innerHTML = "";
+    img = document.createElement("img");
+    // Lädt das Logo nicht, bleibt die Platte leer statt ein kaputtes
+    // Bildsymbol auf Sendung zu zeigen. Der nächste Wechsel holt den nächsten
+    // Partner.
+    img.addEventListener("error", function () {
+      el.sponsorsPlate.innerHTML = "";
+    });
+    img.src = entry.url;
+    img.alt = "";
+    el.sponsorsPlate.appendChild(img);
+  }
+
+  function rotateSponsor() {
+    var entries = sponsorEntries();
+    if (entries.length < 2) return;
+    // Nicht weiterdrehen, während die Fläche gar nicht zu sehen ist: Sonst
+    // stünde beim Einblenden ein zufälliger Partner statt des ersten.
+    if (el.sponsors.classList.contains("ov-hidden")) return;
+
+    state.sponsorIndex = (state.sponsorIndex + 1) % entries.length;
+    renderSponsors();
   }
 
   // ── Vollbilder ──────────────────────────────────────────────────────────
@@ -1286,4 +1395,8 @@
   window.setInterval(function () {
     renderLiveState();
   }, 1000);
+
+  // Der Partnerwechsel läuft in eigenem Takt: Er hängt an der Standzeit und
+  // nicht daran, wann eine Antwort kommt.
+  window.setInterval(rotateSponsor, SPONSOR_ROTATE_MS);
 })();

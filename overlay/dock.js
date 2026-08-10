@@ -62,8 +62,11 @@
     "lt-venue",
     "lt-off",
     "lt-text",
+    "lt-presented",
     "lt-text-kicker",
     "lt-text-main",
+    "sponsors-toggle",
+    "sponsors-hint",
     "override-toggle",
     "override-controls",
     "override-display",
@@ -318,6 +321,7 @@
   function render() {
     renderGameSelect();
     renderScoreboard();
+    renderSponsorsUi();
     renderClockUi();
     renderOverride();
   }
@@ -364,6 +368,29 @@
         " " +
         teamLabel(state.game.guest)
       : "–";
+  }
+
+  // Der Schalter zeigt den Zustand, der Hinweis darunter, ob es ueberhaupt
+  // etwas einzublenden gibt: Ein Schalter, der auf „Sichtbar" steht und nichts
+  // bewirkt, weil kein Partner hinterlegt ist, kostet auf Sendung Zeit.
+  function renderSponsorsUi() {
+    var on = Boolean(state.control.sponsors_visible);
+    el["sponsors-toggle"].textContent = on ? "Sichtbar" : "Ausgeblendet";
+    el["sponsors-toggle"].classList.toggle("dk-toggle--on", on);
+
+    var sponsors = (state.game && state.game.sponsors) || {};
+    var count = (sponsors.league || []).length + (sponsors.club || []).length;
+
+    if (!count) {
+      el["sponsors-hint"].textContent =
+        "Keine Partner hinterlegt. Zu pflegen in der Liga- bzw. Vereinsverwaltung.";
+      return;
+    }
+
+    el["sponsors-hint"].textContent =
+      count === 1
+        ? "Ein Partnerlogo hinterlegt."
+        : count + " Partnerlogos, im Wechsel.";
   }
 
   function renderClockUi() {
@@ -472,6 +499,24 @@
     writeState({
       scoreboard_visible: state.control.scoreboard_visible === false,
     });
+  });
+
+  el["sponsors-toggle"].addEventListener("click", function () {
+    writeState({ sponsors_visible: !state.control.sponsors_visible });
+  });
+
+  el["lt-presented"].addEventListener("click", function () {
+    var main = el["lt-text-main"].value.trim();
+    if (!main) {
+      setStatus(
+        "Für die Zeile \u201ePräsentiert von\u201c fehlt der Name.",
+        true
+      );
+      return;
+    }
+    // Nutzt dasselbe Namensfeld wie der Freitext: Es ist dieselbe Eingabe, nur
+    // mit fester Zeile darueber.
+    writeState({ lower_third: { kind: "presented_by", main: main } });
   });
 
   el["clock-visible"].addEventListener("click", function () {

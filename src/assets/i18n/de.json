@@ -136,5 +136,14 @@
     "errorTitle": "Link ungültig",
     "errorMessage": "Der Bestätigungslink ist ungültig oder abgelaufen. Du kannst die Änderung unter „Mein Konto“ erneut anstoßen.",
     "toHome": "Zur Startseite"
+  },
+  "sponsorLogos": {
+    "title": "Partnerlogos für Livestream-Overlays",
+    "hint": "Diese Logos werden im Stream in der Sponsorenfläche eingeblendet. Verbandspartner der Liga und Partner des Vereins laufen dort abwechselnd durch.",
+    "empty": "Noch keine Partnerlogos hinterlegt.",
+    "add": "Partnerlogo hinzufügen",
+    "remove": "Entfernen",
+    "uploadHint": "PNG, JPG oder WebP bis 1 MB. Freigestellte Dateien mit durchsichtigem Hintergrund verwenden — auf dunklem Grund fällt ein weißer Kasten sofort auf.",
+    "limitReached": "Es sind höchstens {{max}} Partnerlogos möglich. Entferne eines, um ein weiteres hinzuzufügen."
   }
 }

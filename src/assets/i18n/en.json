@@ -136,5 +136,14 @@
     "errorTitle": "Invalid link",
     "errorMessage": "The confirmation link is invalid or has expired. You can restart the change under “My account”.",
     "toHome": "Go to home page"
+  },
+  "sponsorLogos": {
+    "title": "Partner logos for livestream overlays",
+    "hint": "These logos appear in the sponsor area during the stream. League partners and club partners alternate there.",
+    "empty": "No partner logos yet.",
+    "add": "Add partner logo",
+    "remove": "Remove",
+    "uploadHint": "PNG, JPG or WebP up to 1 MB. Use files with a transparent background — a white box stands out on a dark background.",
+    "limitReached": "At most {{max}} partner logos are possible. Remove one to add another."
   }
 }

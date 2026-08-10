@@ -450,6 +450,52 @@ body {
   }
 }
 
+/* ══ Sponsorenfläche ═══════════════════════════════════════════════════════
+   Rechts unten, gegenüber der Anzeigetafel. Bei mehreren Partnern reihum mit
+   fester Standzeit; die Fläche weicht, solange eine Bauchbinde steht. */
+
+.ov-sponsors {
+  position: absolute;
+  right: 60px;
+  bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  transition: opacity 0.35s ease;
+}
+
+.ov-sponsors-label {
+  font-family: var(--ov-body);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ov-text-muted);
+  text-shadow: 0 2px 8px rgb(0 0 0 / 70%);
+}
+
+/* Heller Grund wie beim Logo-Chip der Anzeigetafel: Partnerlogos liegen in
+   ganz unterschiedlicher Qualität vor, viele mit weißem Kasten statt
+   durchsichtigem Hintergrund. Auf der Platte fällt beides nicht auf. */
+.ov-sponsors-plate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 260px;
+  height: 110px;
+  padding: 14px 26px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 45%);
+}
+
+.ov-sponsors-plate img {
+  max-width: 320px;
+  max-height: 100%;
+  object-fit: contain;
+}
+
 /* ══ Vollbilder ════════════════════════════════════════════════════════════
    Eigene OBS-Szenen, kein Teil der laufenden Bühne. Deshalb undurchsichtig
    über die ganze Fläche: Ein Vollbild ersetzt das Kamerabild, es liegt nicht

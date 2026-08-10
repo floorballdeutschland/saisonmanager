@@ -196,6 +196,13 @@
                   </div>
                 </div>
               }
+
+              <!-- Partnerlogos: der Verein pflegt die seines Vereins, der
+                   Verband die der Liga. Erst nach dem Speichern, vorher gibt es
+                   keine id, an die ein Anhang gehen könnte. -->
+              @if (club.id) {
+                <fb-sponsor-logos scope="clubs" [ownerId]="club.id" />
+              }
             </div>
             <!-- Deaktivierung -->
             @if (

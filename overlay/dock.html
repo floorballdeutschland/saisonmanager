@@ -33,6 +33,19 @@
         <div class="dk-score" id="score-line">–</div>
       </section>
 
+      <!-- Sponsorenflaeche. Weicht von selbst, solange eine Bauchbinde steht;
+           der Schalter hier bleibt trotzdem an, damit die Flaeche danach von
+           allein zurueckkommt. -->
+      <section class="dk-card">
+        <div class="dk-row">
+          <span class="dk-label">Sponsorenfläche</span>
+          <button class="dk-toggle" id="sponsors-toggle" type="button">
+            Einblenden
+          </button>
+        </div>
+        <div class="dk-hint" id="sponsors-hint">Keine Partner hinterlegt.</div>
+      </section>
+
       <section class="dk-card">
         <div class="dk-row">
           <span class="dk-label">Spielzeit</span>
@@ -88,6 +101,9 @@
             placeholder="Name"
             maxlength="60"
           />
+          <button class="dk-btn" id="lt-presented" type="button">
+            Präsentiert von
+          </button>
           <button class="dk-btn" id="lt-text" type="button">
             Freitext einblenden
           </button>
