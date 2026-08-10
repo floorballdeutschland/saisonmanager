@@ -12,6 +12,10 @@ import {
 } from '@angular/core';
 import { GameService, LeagueService, SessionService } from '@floorball/core';
 import { Game, GameAdditionalFields } from '@floorball/types';
+import {
+  buildObsSceneCollection,
+  downloadObsSceneCollection,
+} from 'src/app/_helpers/_utils/obs-scene-collection';
 import { tap } from 'rxjs';
 
 @Component({
@@ -171,6 +175,28 @@ export class MatchReportStepOneComponent
         this._cdr.markForCheck();
       },
     });
+  }
+
+  // Fertige OBS-Szenensammlung zum Herunterladen.
+  //
+  // Nur direkt nach dem Erzeugen erreichbar, und das ist keine Nachlässigkeit:
+  // Der Klartext des Tokens existiert genau einmal, in der Antwort auf
+  // #generate!. Serverseitig liegt danach nur der Digest, eine Sammlung ließe
+  // sich später also nicht mehr bauen.
+  public downloadSceneCollection(): void {
+    if (!this.overlayUrls) return;
+
+    const label = this.game?.game_number
+      ? `Spiel ${this.game.game_number}`
+      : 'Spieltag';
+
+    downloadObsSceneCollection(
+      buildObsSceneCollection({
+        overlayUrl: this.overlayUrls.overlay_url,
+        collectionName: `Saisonmanager – ${label}`,
+      }),
+      `saisonmanager-obs-szenen-${this.game?.game_day_id ?? 'spieltag'}.json`
+    );
   }
 
   // Fehlschläge müssen auffallen: Der Klartext des Tokens wird genau einmal
