@@ -1,0 +1,15 @@
+{
+  "pageTitle": "Live today",
+  "intro": "These games are being broadcast today. Games in progress first, followed by upcoming ones and those already finished, with recordings.",
+  "loading": "Loading …",
+  "failed": "The broadcasts could not be loaded. Please try again later.",
+  "empty": "No broadcast scheduled for today.",
+  "running": "In progress",
+  "upcoming": "Later today",
+  "ended": "Finished",
+  "liveNow": "Live",
+  "openStream": "Watch live stream",
+  "watchStream": "Watch stream",
+  "watchVod": "Watch recording",
+  "navLink": "Live today"
+}

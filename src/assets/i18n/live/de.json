@@ -1,0 +1,15 @@
+{
+  "pageTitle": "Heute live",
+  "intro": "Diese Spiele werden heute übertragen. Laufende Partien zuerst, darunter die anstehenden und die bereits beendeten mit Aufzeichnung.",
+  "loading": "Wird geladen …",
+  "failed": "Die Übertragungen konnten nicht geladen werden. Bitte später erneut versuchen.",
+  "empty": "Heute ist keine Übertragung hinterlegt.",
+  "running": "Läuft gerade",
+  "upcoming": "Heute noch",
+  "ended": "Beendet",
+  "liveNow": "Live",
+  "openStream": "Zum Livestream",
+  "watchStream": "Zum Stream",
+  "watchVod": "Aufzeichnung ansehen",
+  "navLink": "Heute live"
+}
