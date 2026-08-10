@@ -17,11 +17,17 @@
   var token = params.get("token");
   var gameId = params.get("game_id");
   var debug = params.get("debug") === "1";
+  // Vollbild statt Bühne. Beides zugleich gibt es nicht: Ein Vollbild ist eine
+  // eigene OBS-Szene und ersetzt das Kamerabild, die Bühne liegt darin.
+  var onlyFullscreen = params.get("only") === "fullscreen";
+  var scene = params.get("scene") || "";
 
   // Der Poll-Takt bestimmt, wie schnell ein Tor auf Sendung geht. Eine Sekunde
   // ist mit dem Versionsabgleich (siehe `v` unten) günstig: Ohne Änderung am
   // Spiel antwortet der Server mit ein paar hundert Byte.
   var POLL_MS = 1000;
+  // Vollbilder stehen still; sie brauchen den Sekundentakt nicht.
+  var FULLSCREEN_POLL_MS = 5000;
   // Nach einem Fehler langsamer nachfragen, damit ein Ausfall die API nicht
   // zusätzlich belastet. Steigt bis ERROR_BACKOFF_MAX_MS.
   var ERROR_BACKOFF_START_MS = 2000;
@@ -49,6 +55,9 @@
     // Endgueltig abgewiesen (kein oder abgelaufenes Token). Dann hoert das
     // Nachfragen auf.
     terminal: false,
+    // Antwort des ligaweiten Abrufs (Tabelle, Torschuetzen oder Spielplan),
+    // je nach Szene. Nur im Vollbild belegt.
+    league: null,
   };
 
   var el = {
@@ -68,6 +77,12 @@
     ltKicker: document.getElementById("lt-kicker"),
     ltMain: document.getElementById("lt-main"),
     ltSub: document.getElementById("lt-sub"),
+    fullscreen: document.getElementById("fullscreen"),
+    fsLeague: document.getElementById("fs-league"),
+    fsTitle: document.getElementById("fs-title"),
+    fsSub: document.getElementById("fs-sub"),
+    fsBody: document.getElementById("fs-body"),
+    fsNote: document.getElementById("fs-note"),
     debug: document.getElementById("debug"),
   };
 
@@ -93,6 +108,13 @@
 
     el.debug.textContent = text;
     el.debug.classList.toggle("ov-debug--error", Boolean(isError));
+  }
+
+  // Der Sekundentakt gilt der Anzeigetafel: Ein Tor soll sofort auf Sendung
+  // gehen. Ein Vollbild steht still, dort genügt ein ruhigerer Takt — und in
+  // einer Halle laufen davon gleich mehrere Browser-Quellen nebeneinander.
+  function pollInterval() {
+    return onlyFullscreen ? FULLSCREEN_POLL_MS : POLL_MS;
   }
 
   function buildUrl() {
@@ -133,7 +155,7 @@
         state.errorDelay = ERROR_BACKOFF_START_MS;
         state.lastOkAt = Date.now();
         showDebug(debugText(), false);
-        window.setTimeout(poll, POLL_MS);
+        window.setTimeout(poll, pollInterval());
       })
       .catch(function (error) {
         window.clearTimeout(timer);
@@ -163,6 +185,7 @@
     }
 
     renderControl();
+    renderFullscreen();
   }
 
   function renderGame(game) {
@@ -447,7 +470,766 @@
     ].join("\n");
   }
 
+  // ── Vollbilder ──────────────────────────────────────────────────────────
+  //
+  // Jedes Vollbild ist eine eigene OBS-Szene mit derselben Seite und einem
+  // anderen `scene`. Die Namen sind Teil der Schnittstelle: Die
+  // Szenensammlung, die der Spielbericht zum Herunterladen anbietet, setzt
+  // genau diese Werte ein. Wer hier umbenennt, macht jede bereits verteilte
+  // Sammlung kaputt.
+  //
+  // `source` benennt den ligaweiten Abruf, den die Szene braucht (oder null,
+  // wenn die Spieldaten des laufenden Abrufs reichen).
+  var FS_SCENES = {
+    startbild: { source: null, render: fsStartbild },
+    "aufstellung-heim": { source: null, render: fsLineupHome },
+    "aufstellung-gast": { source: null, render: fsLineupGuest },
+    drittelpause: { source: null, render: fsIntermission },
+    endstand: { source: null, render: fsFinal },
+    tabelle: { source: "table", render: fsTable },
+    topscorer: { source: "scorer", render: fsScorer },
+    "naechste-spiele": { source: "schedule", render: fsSchedule },
+  };
+
+  // Tabelle und Torschützenliste ändern sich nur, wenn ein Spiel endet. Der
+  // Server hält sie 30 s vor, schneller zu fragen bringt also nichts.
+  var LEAGUE_POLL_MS = 30000;
+  var LEAGUE_ERROR_MS = 10000;
+
+  // Stufen, mit denen ein zu hoher Inhalt enger gesetzt wird. Gemessen statt
+  // geraten: Eine Tabelle hat je nach Liga zehn bis zwanzig Zeilen, und eine
+  // Aufstellung mal zwölf und mal zweiundzwanzig Namen. Was oben abgeschnitten
+  // wird, fällt in der Regie nicht auf, steht aber auf Sendung.
+  var FS_DENSITY = ["", "ov-fs-dense", "ov-fs-denser", "ov-fs-densest"];
+  // Eine Torschützenliste ist eine Bestenliste, keine Gesamtaufstellung. Zehn
+  // Namen sind die übliche Länge; mehr wäre nicht abgeschnitten, sondern eine
+  // andere Grafik.
+  var FS_SCORER_LIMIT = 10;
+
+  var PENALTY_MINUTES = {
+    penalty_2: 2,
+    penalty_2and2: 4,
+    penalty_5: 5,
+    penalty_10: 10,
+  };
+
+  function fsDefinition() {
+    return Object.prototype.hasOwnProperty.call(FS_SCENES, scene)
+      ? FS_SCENES[scene]
+      : null;
+  }
+
+  // Baut das Vollbild neu auf. Bewusst kein Diffing: Die Seite wird bei jedem
+  // Szenenwechsel frisch geladen (OBS schaltet die Quelle beim Ausblenden ab),
+  // und ein Bild, das einmal steht, ändert sich höchstens alle 30 Sekunden.
+  function renderFullscreen() {
+    if (!onlyFullscreen) return;
+
+    var def = fsDefinition();
+    if (!def) return;
+
+    var content = def.render();
+    // Solange die Daten fehlen, bleibt das Vollbild unsichtbar. Ein leeres
+    // Gerüst mit Überschrift und ohne Inhalt sähe auf Sendung nach Fehler aus,
+    // und der Schnitt kommt ohnehin erst, wenn die Regie umschaltet.
+    if (!content) return;
+
+    el.fsLeague.textContent = content.league || "";
+    el.fsTitle.textContent = content.title || "";
+    el.fsSub.textContent = content.sub || "";
+
+    el.fsBody.innerHTML = "";
+    if (content.body) el.fsBody.appendChild(content.body);
+
+    el.fsNote.textContent = content.note || "";
+    el.fsNote.classList.toggle("ov-hidden", !content.note);
+
+    el.fullscreen.classList.remove("ov-fs-hidden");
+    fitBody(content.center ? "ov-fs-body ov-fs-body--center" : "ov-fs-body");
+  }
+
+  // Setzt den Inhalt so weit enger, bis er in die Fläche passt. Der Bereich
+  // schneidet ab (`overflow: hidden`), und was abgeschnitten ist, sieht in der
+  // Regie nach einer vollständigen Tabelle aus. Deshalb messen statt schätzen:
+  // Die Anzahl der Zeilen sagt nichts über ihre Höhe, sobald Logos, lange
+  // Mannschaftsnamen oder ein zweizeiliger Titel dazukommen.
+  function fitBody(baseClass) {
+    for (var i = 0; i < FS_DENSITY.length; i++) {
+      el.fsBody.className =
+        baseClass + (FS_DENSITY[i] ? " " + FS_DENSITY[i] : "");
+      if (el.fsBody.scrollHeight <= el.fsBody.clientHeight) return;
+    }
+    // Auch die engste Stufe reicht nicht. Dann steht die letzte, dichteste
+    // Fassung — mehr als abschneiden lässt sich hier nicht mehr tun, und die
+    // Statusfläche sagt es beim Einrichten.
+    showDebug("Vollbild zu voll für die Fläche\n" + debugText(), true);
+  }
+
+  // Der ligaweite Abruf. Läuft getrennt vom Spiel-Abruf und in eigenem Takt.
+  function pollLeague() {
+    var def = fsDefinition();
+    if (!def || !def.source || state.terminal) return;
+
+    var controller =
+      typeof AbortController === "function" ? new AbortController() : null;
+    var timer = window.setTimeout(function () {
+      if (controller) controller.abort();
+    }, REQUEST_TIMEOUT_MS);
+
+    fetch(
+      "/api/v2/public/overlay/" +
+        def.source +
+        "?token=" +
+        encodeURIComponent(token),
+      {
+        credentials: "omit",
+        cache: "no-store",
+        signal: controller ? controller.signal : undefined,
+      }
+    )
+      .then(function (response) {
+        window.clearTimeout(timer);
+        if (response.status === 400 || response.status === 410) {
+          state.terminal = true;
+          throw new Error("HTTP " + response.status);
+        }
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.json();
+      })
+      .then(function (body) {
+        state.league = body;
+        renderFullscreen();
+        window.setTimeout(pollLeague, LEAGUE_POLL_MS);
+      })
+      .catch(function () {
+        window.clearTimeout(timer);
+        // Wie beim Spiel-Abruf: stehen lassen, was zuletzt richtig war.
+        if (state.terminal) return;
+        window.setTimeout(pollLeague, LEAGUE_ERROR_MS);
+      });
+  }
+
+  // ── Bausteine ───────────────────────────────────────────────────────────
+
+  function node(tag, className, text) {
+    var element = document.createElement(tag);
+    if (className) element.className = className;
+    // textContent, nie innerHTML: Mannschafts- und Personennamen kommen aus
+    // der Datenbank.
+    if (text !== undefined && text !== null) element.textContent = String(text);
+    return element;
+  }
+
+  function fragment(children) {
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < children.length; i++) {
+      if (children[i]) frag.appendChild(children[i]);
+    }
+    return frag;
+  }
+
+  function crest(logo, size) {
+    var box = node("div", size === "small" ? "ov-fs-cell-logo" : "ov-fs-crest");
+    if (!logo) {
+      box.classList.add("ov-hidden");
+      return box;
+    }
+
+    var img = document.createElement("img");
+    // Lädt das Logo nicht, verschwindet der Kasten, statt dass ein kaputtes
+    // Bildsymbol auf Sendung geht.
+    img.addEventListener("error", function () {
+      box.classList.add("ov-hidden");
+      box.innerHTML = "";
+    });
+    img.src = logo;
+    img.alt = "";
+    box.appendChild(img);
+    return box;
+  }
+
+  // Paarung mit Logos und einer Mitte: „gegen" beim Startbild, der Endstand
+  // beim Schlussbild.
+  function matchGrid(middle, middleSmall) {
+    var game = state.game;
+    var grid = node("div", "ov-fs-match");
+
+    grid.appendChild(matchSide(game.home));
+    grid.appendChild(
+      node(
+        "div",
+        middleSmall ? "ov-fs-versus ov-fs-versus--small" : "ov-fs-versus",
+        middle
+      )
+    );
+    grid.appendChild(matchSide(game.guest));
+    return grid;
+  }
+
+  function matchSide(team) {
+    team = team || {};
+    var box = node("div", "ov-fs-side");
+    box.appendChild(crest(team.logo || team.logo_small));
+    box.appendChild(
+      node("div", "ov-fs-side-name", team.name || team.short_name || "")
+    );
+    return box;
+  }
+
+  function factRow(facts) {
+    var row = node("div", "ov-fs-facts");
+    for (var i = 0; i < facts.length; i++) {
+      if (!facts[i].value) continue;
+
+      var box = node("div", "ov-fs-fact");
+      box.appendChild(node("span", "ov-fs-fact-label", facts[i].label));
+      box.appendChild(node("span", "ov-fs-fact-value", facts[i].value));
+      row.appendChild(box);
+    }
+    return row.childNodes.length ? row : null;
+  }
+
+  // Tabelle mit Kopfzeile. `columns` beschreibt jede Spalte einmal, `rows`
+  // liefert die Werte.
+  function dataTable(columns, rows, extraClass) {
+    var table = node(
+      "table",
+      extraClass ? "ov-fs-table " + extraClass : "ov-fs-table"
+    );
+
+    var head = node("tr");
+    for (var c = 0; c < columns.length; c++) {
+      head.appendChild(
+        node("th", columns[c].numeric ? "ov-fs-num" : null, columns[c].label)
+      );
+    }
+    var thead = node("thead");
+    thead.appendChild(head);
+    table.appendChild(thead);
+
+    var body = node("tbody");
+    for (var r = 0; r < rows.length; r++) {
+      var tr = node("tr", rows[r].own ? "ov-fs-own" : null);
+      for (var i = 0; i < columns.length; i++) {
+        var value = rows[r].cells[i];
+        var td = node("td");
+        if (columns[i].numeric) td.classList.add("ov-fs-num");
+        if (columns[i].strong) td.classList.add("ov-fs-strong");
+        if (value instanceof Node) {
+          td.appendChild(value);
+        } else {
+          td.textContent = value === undefined || value === null ? "" : value;
+        }
+        tr.appendChild(td);
+      }
+      body.appendChild(tr);
+    }
+    table.appendChild(body);
+    return table;
+  }
+
+  function teamCell(name, logo) {
+    var cell = node("div", "ov-fs-cell-team");
+    cell.appendChild(crest(logo, "small"));
+    cell.appendChild(node("span", null, name || ""));
+    return cell;
+  }
+
+  function leagueName() {
+    var league = (state.league && state.league.league) || {};
+    if (league.name) return league.name;
+    return (state.game && state.game.league && state.game.league.name) || "";
+  }
+
+  // „Spiele laufen noch". Tabelle und Torschützenliste zählen nur beendete
+  // Partien; solange gespielt wird, sind sie nicht falsch, sondern
+  // unvollständig. Das muss im Bild stehen.
+  function runningNote() {
+    var running = (state.league && state.league.running_games) || [];
+    if (!running.length) return "";
+
+    return running.length === 1
+      ? "Ein Spiel läuft noch und ist hier noch nicht enthalten."
+      : running.length +
+          " Spiele laufen noch und sind hier noch nicht enthalten.";
+  }
+
+  function ownTeamIds() {
+    var game = state.game;
+    if (!game) return [];
+    return [game.home && game.home.id, game.guest && game.guest.id].filter(
+      function (id) {
+        return typeof id === "number";
+      }
+    );
+  }
+
+  function germanDate(iso) {
+    if (!iso) return "";
+    var parts = String(iso).split("-");
+    if (parts.length !== 3) return String(iso);
+    return parts[2] + "." + parts[1] + "." + parts[0];
+  }
+
+  // ── Die einzelnen Bilder ────────────────────────────────────────────────
+
+  function fsStartbild() {
+    var game = state.game;
+    if (!game) return null;
+
+    var league = game.league || {};
+    var arena = game.arena || {};
+    var referees = (game.referees || [])
+      .map(function (ref) {
+        return [ref.first_name, ref.last_name].filter(Boolean).join(" ");
+      })
+      .filter(Boolean)
+      .join(" / ");
+
+    return {
+      // Startbild und Endstand sind Hero-Bilder mit wenig Inhalt: senkrecht
+      // mittig statt oben klebend, sonst steht die untere Bildhälfte leer.
+      center: true,
+      league: league.name || "",
+      title: league.game_day ? "Spieltag " + league.game_day : "",
+      sub: germanDate(game.date),
+      body: fragment([
+        matchGrid("gegen", true),
+        factRow([
+          {
+            label: "Anwurf",
+            value: game.start_time ? game.start_time + " Uhr" : "",
+          },
+          { label: "Halle", value: arena.name || "" },
+          { label: "Schiedsrichter", value: referees },
+        ]),
+      ]),
+    };
+  }
+
+  function fsLineupHome() {
+    return lineupContent("home");
+  }
+
+  function fsLineupGuest() {
+    return lineupContent("guest");
+  }
+
+  function lineupContent(side) {
+    var game = state.game;
+    if (!game) return null;
+
+    var squad = (game.players && game.players[side]) || [];
+    var team = (side === "home" ? game.home : game.guest) || {};
+
+    // Wer in der Startaufstellung steht, wird hervorgehoben. `starting_players`
+    // liefert immer sechs Positionen, auch unbesetzte; die leeren haben eine
+    // leere player_id und dürfen nichts markieren.
+    var startingIds = (
+      (game.starting_players && game.starting_players[side]) ||
+      []
+    )
+      .map(function (entry) {
+        return entry && entry.player_id;
+      })
+      .filter(Boolean);
+
+    var groups = [
+      { title: "Tor", players: [] },
+      { title: "Feld", players: [] },
+    ];
+    for (var i = 0; i < squad.length; i++) {
+      var player = squad[i];
+      (player.position === "Tor" ? groups[0] : groups[1]).players.push(player);
+    }
+
+    var body;
+    if (!squad.length) {
+      body = node("p", "ov-fs-empty", "Noch keine Aufstellung erfasst.");
+    } else {
+      body = node("div", "ov-fs-columns");
+      for (var g = 0; g < groups.length; g++) {
+        if (!groups[g].players.length) continue;
+
+        var block = node("div", "ov-fs-group");
+        block.appendChild(node("div", "ov-fs-group-title", groups[g].title));
+        for (var p = 0; p < groups[g].players.length; p++) {
+          block.appendChild(playerRow(groups[g].players[p], startingIds));
+        }
+        body.appendChild(block);
+      }
+    }
+
+    return {
+      league: (game.league && game.league.name) || "",
+      title: team.name || team.short_name || "",
+      sub: "Aufstellung",
+      body: body,
+    };
+  }
+
+  function playerRow(player, startingIds) {
+    var starting = startingIds.indexOf(player.player_id) !== -1;
+    var row = node(
+      "div",
+      "ov-fs-player" + (starting ? " ov-fs-player--starting" : "")
+    );
+    row.appendChild(
+      node(
+        "span",
+        "ov-fs-player-number",
+        player.trikot_number === undefined || player.trikot_number === null
+          ? ""
+          : player.trikot_number
+      )
+    );
+    row.appendChild(
+      node(
+        "span",
+        null,
+        [player.player_firstname, player.player_name].filter(Boolean).join(" ")
+      )
+    );
+    return row;
+  }
+
+  function fsIntermission() {
+    var game = state.game;
+    if (!game) return null;
+
+    var period = game.current_period_title || {};
+
+    return {
+      league: (game.league && game.league.name) || "",
+      title: period.title || "Drittelpause",
+      sub: teamLabel(game.home) + " gegen " + teamLabel(game.guest),
+      body: fragment([periodTable(game), goalList(game), penaltyBalance(game)]),
+    };
+  }
+
+  // Ergebnisse je Abschnitt. Nur Abschnitte, in denen gespielt wird: Die
+  // Pausen stehen ebenfalls in `period_titles` (mit halben Nummern), haben
+  // aber kein Ergebnis.
+  function periodTable(game) {
+    var result = game.result || {};
+    var home = result.home_goals_period || [];
+    var guest = result.guest_goals_period || [];
+    var period = game.current_period_title || {};
+    // Nur bis zum laufenden Abschnitt. Ohne diese Grenze stünde in der ersten
+    // Drittelpause „3. Drittel 0:0" im Bild — ein Ergebnis für einen
+    // Abschnitt, der noch gar nicht gespielt wurde.
+    var current =
+      typeof period.period === "number" ? Math.floor(period.period) : null;
+
+    var titles = (game.period_titles || []).filter(function (entry) {
+      if (entry.running !== true || entry.period !== Math.floor(entry.period)) {
+        return false;
+      }
+      var index = entry.period - 1;
+      if (index < 0 || index >= Math.max(home.length, guest.length))
+        return false;
+      if (current !== null) return entry.period <= current;
+
+      // Beendetes Spiel ohne laufenden Abschnitt: die regulären Abschnitte
+      // immer, Verlängerung und Penalty-Schießen nur, wenn dort Tore fielen.
+      return (
+        entry.optional === false ||
+        Boolean(home[index]) ||
+        Boolean(guest[index])
+      );
+    });
+    if (!titles.length) return null;
+
+    var columns = [{ label: "" }];
+    var homeCells = [teamLabel(game.home)];
+    var guestCells = [teamLabel(game.guest)];
+
+    for (var i = 0; i < titles.length; i++) {
+      var index = titles[i].period - 1;
+      columns.push({ label: titles[i].short_title, numeric: true });
+      homeCells.push(home[index] || 0);
+      guestCells.push(guest[index] || 0);
+    }
+    if (columns.length === 1) return null;
+
+    columns.push({ label: "Gesamt", numeric: true, strong: true });
+    homeCells.push(numberOr(result.home_goals, 0));
+    guestCells.push(numberOr(result.guest_goals, 0));
+
+    // Schmal statt über die ganze Breite: Zwei Zeilen mit vier Zahlen sähen
+    // auf 1920 Pixeln auseinandergerissen aus.
+    return dataTable(
+      columns,
+      [{ cells: homeCells }, { cells: guestCells }],
+      "ov-fs-table--narrow"
+    );
+  }
+
+  function goalList(game) {
+    var goals = (game.events || []).filter(function (event) {
+      return event.event_type === "goal";
+    });
+    if (!goals.length) return null;
+
+    // Zweispaltig wie die Aufstellung: Ein torreiches Drittel passt
+    // untereinander nicht auf die Fläche, und abgeschnittene Tore wären
+    // schlimmer als eine zweite Spalte.
+    var columns = node("div", "ov-fs-columns");
+    var block = node("div", "ov-fs-group");
+    block.appendChild(node("div", "ov-fs-group-title", "Tore"));
+    for (var i = 0; i < goals.length; i++) {
+      var goal = goals[i];
+      var row = node("div", "ov-fs-player");
+      row.appendChild(node("span", "ov-fs-player-number", goal.time || ""));
+      row.appendChild(
+        node(
+          "span",
+          null,
+          [
+            scoreAt(goal),
+            goal.scorer_full_name ||
+              goal.scorer_name ||
+              goal.goal_type_string ||
+              "Tor",
+            teamName(goal.event_team),
+          ]
+            .filter(Boolean)
+            .join("   ·   ")
+        )
+      );
+      block.appendChild(row);
+    }
+    columns.appendChild(block);
+    return columns;
+  }
+
+  // Strafenbilanz je Mannschaft. Die Minuten kommen aus `penalty_type` und
+  // nicht aus dem Anzeigetext: Der ist frei gepflegt und ändert sich, die Art
+  // nicht. Matchstrafen haben keine Minutenzahl und werden gesondert gezählt.
+  function penaltyBalance(game) {
+    var sums = {
+      home: { minutes: 0, count: 0, match: 0 },
+      guest: { minutes: 0, count: 0, match: 0 },
+    };
+    var events = game.events || [];
+    var any = false;
+
+    for (var i = 0; i < events.length; i++) {
+      var event = events[i];
+      if (event.event_type !== "penalty") continue;
+
+      var target = sums[event.event_team];
+      if (!target) continue;
+
+      any = true;
+      target.count += 1;
+      if (PENALTY_MINUTES[event.penalty_type]) {
+        target.minutes += PENALTY_MINUTES[event.penalty_type];
+      } else {
+        target.match += 1;
+      }
+    }
+    if (!any) return null;
+
+    // Als Block wie die Tore, nicht als zentrierte Faktenzeile: Beide gehören
+    // zur selben Bilanz und sollen auf derselben Kante stehen.
+    var block = node("div", "ov-fs-group ov-fs-group--wide-label");
+    block.appendChild(node("div", "ov-fs-group-title", "Strafen"));
+    ["home", "guest"].forEach(function (side) {
+      var row = node("div", "ov-fs-player");
+      row.appendChild(
+        node(
+          "span",
+          "ov-fs-player-number",
+          teamLabel(side === "home" ? game.home : game.guest)
+        )
+      );
+      row.appendChild(node("span", null, penaltyLabel(sums[side])));
+      block.appendChild(row);
+    });
+    return block;
+  }
+
+  function penaltyLabel(sum) {
+    var parts = [
+      sum.minutes + (sum.minutes === 1 ? " Strafminute" : " Strafminuten"),
+    ];
+    if (sum.match) {
+      parts.push(
+        sum.match + (sum.match === 1 ? " Matchstrafe" : " Matchstrafen")
+      );
+    }
+    return parts.join("   ·   ");
+  }
+
+  function fsFinal() {
+    var game = state.game;
+    if (!game) return null;
+
+    var result = game.result || {};
+    var score =
+      numberOr(result.home_goals, 0) + " : " + numberOr(result.guest_goals, 0);
+
+    return {
+      center: true,
+      league: (game.league && game.league.name) || "",
+      title: game.ended ? "Endstand" : "Zwischenstand",
+      sub: (result.postfix && result.postfix.long) || "",
+      body: fragment([matchGrid(score, false), awardsBlock(game)]),
+    };
+  }
+
+  // Auszeichnungen. `awards` liegt immer in beiden Mannschaften vor, auch ohne
+  // vergebene Auszeichnung; dann steht dort eine leere player_id und der
+  // Eintrag fällt weg.
+  function awardsBlock(game) {
+    var awards = game.awards || {};
+    var row = node("div", "ov-fs-awards");
+
+    ["home", "guest"].forEach(function (side) {
+      var entries = awards[side] || [];
+      for (var i = 0; i < entries.length; i++) {
+        var entry = entries[i];
+        var name = [entry.player_firstname, entry.player_name]
+          .filter(Boolean)
+          .join(" ");
+        if (!name) continue;
+
+        var box = node("div", "ov-fs-award");
+        box.appendChild(
+          node(
+            "span",
+            "ov-fs-award-label",
+            entry.award === "mvp" ? "Wertvollste Person" : entry.award
+          )
+        );
+        box.appendChild(node("span", "ov-fs-award-name", name));
+        box.appendChild(node("span", "ov-fs-award-team", entry.team || ""));
+        row.appendChild(box);
+      }
+    });
+
+    return row.childNodes.length ? row : null;
+  }
+
+  function fsTable() {
+    var rows = (state.league && state.league.table) || null;
+    if (!rows) return null;
+
+    var own = ownTeamIds();
+    var columns = [
+      { label: "#", numeric: true },
+      { label: "Mannschaft" },
+      { label: "Sp", numeric: true },
+      { label: "Tore", numeric: true },
+      { label: "Diff", numeric: true },
+      { label: "Pkt", numeric: true, strong: true },
+    ];
+
+    return {
+      league: leagueName(),
+      title: "Tabelle",
+      body: dataTable(
+        columns,
+        rows.map(function (row) {
+          return {
+            own: own.indexOf(row.team_id) !== -1,
+            cells: [
+              row.position,
+              teamCell(row.team_name, row.team_logo_small || row.team_logo),
+              row.games,
+              row.goals_scored + " : " + row.goals_received,
+              row.goals_diff > 0 ? "+" + row.goals_diff : row.goals_diff,
+              row.points,
+            ],
+          };
+        })
+      ),
+      note: runningNote(),
+    };
+  }
+
+  function fsScorer() {
+    var rows = (state.league && state.league.scorer) || null;
+    if (!rows) return null;
+
+    var columns = [
+      { label: "#", numeric: true },
+      { label: "Name" },
+      { label: "Mannschaft" },
+      { label: "Sp", numeric: true },
+      { label: "T", numeric: true },
+      { label: "V", numeric: true },
+      { label: "Pkt", numeric: true, strong: true },
+    ];
+
+    return {
+      league: leagueName(),
+      title: "Torschützen",
+      body: dataTable(
+        columns,
+        rows.slice(0, FS_SCORER_LIMIT).map(function (row) {
+          return {
+            cells: [
+              row.position,
+              [row.first_name, row.last_name].filter(Boolean).join(" "),
+              row.team_name,
+              row.games,
+              row.goals,
+              row.assists,
+              row.goals + row.assists,
+            ],
+          };
+        })
+      ),
+      note: runningNote(),
+    };
+  }
+
+  function fsSchedule() {
+    var rows = (state.league && state.league.schedule) || null;
+    if (!rows) return null;
+
+    var currentId = state.game && state.game.id;
+    var columns = [
+      { label: "Zeit", numeric: true },
+      { label: "Begegnung" },
+      { label: "Stand", numeric: true, strong: true },
+    ];
+
+    return {
+      league: leagueName(),
+      title: "Weitere Spiele",
+      body: dataTable(
+        columns,
+        rows.map(function (row) {
+          return {
+            own: row.game_id === currentId,
+            cells: [
+              row.time || "",
+              (row.home_team_name || "") + " – " + (row.guest_team_name || ""),
+              scheduleScore(row),
+            ],
+          };
+        })
+      ),
+    };
+  }
+
+  // Parallel laufende Partien kommen ohne Zwischenstand: Das Token hebt die
+  // Verzögerung nur für den eigenen Spieltag auf. „läuft" ist dann die
+  // ehrliche Auskunft, ein 0:0 wäre eine falsche.
+  function scheduleScore(row) {
+    if (row.result_string) return row.result_string;
+    if (row.started && !row.ended) return "läuft";
+    return row.ended ? "—" : "";
+  }
+
   poll();
+  if (onlyFullscreen) {
+    document.body.classList.add("ov-only-fullscreen");
+    pollLeague();
+  }
 
   // Die Uhr läuft in ihrem eigenen Takt, unabhängig vom Abruf: Sonst zuckte
   // die Sekundenanzeige im Sekundenraster der Antworten. 10 Hz reicht für eine
