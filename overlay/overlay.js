@@ -200,6 +200,19 @@
   // Ligaklassen ohne eigene Bildmarke teilen sich eine Farbwelt.
   var LOWER_CLASSES = { rl: true, vl: true, ll: true };
 
+  // Die Schlüssel, für die overlay.css eine Farbwelt hinterlegt hat. Gebraucht,
+  // um zu erkennen, wann ein berechneter Schlüssel INS LEERE zeigt: dann greift
+  // keine Regel und es bleibt beim Standard, also beim Bild der 1. Herren. Für
+  // eine Damen-Liga ist das die eine Verwechslung, die nicht passieren darf.
+  var KNOWN_THEMES = {
+    "1fbl-w": true,
+    "2fbl-m": true,
+    "2fbl-w": true,
+    damen: true,
+    pokal: true,
+    regional: true,
+  };
+
   // Setzt `data-competition`, worauf overlay.css die Akzentfarben umstellt.
   // Bewusst nicht über die league_id: Ligen sind Zeilen je Saison, eine
   // Liga-Kopie zur neuen Saison bekommt eine neue id. Über die id zugeordnet
@@ -228,10 +241,30 @@
     if (/pokal/i.test(String(league.name || ""))) return "pokal";
 
     var klasse = league.league_class_id || "";
-    if (!klasse) return "";
-    if (LOWER_CLASSES[klasse]) return "regional";
+    var key = "";
+    if (LOWER_CLASSES[klasse]) {
+      key = "regional";
+    } else if (klasse) {
+      key = klasse + (league.female ? "-w" : "-m");
+    }
 
-    return klasse + (league.female ? "-w" : "-m");
+    // Zeigt der Schlüssel ins Leere, greift keine Regel und es bleibt beim
+    // Standard -- dem Bild der 1. Herren. Bei einer DAMEN-Liga ist das falsch,
+    // und zwar sichtbar falsch. Zwei Wege dorthin, beide nachgestellt:
+    //
+    //   league_class_id leer      -> gar kein Schlüssel   (die Validierung an
+    //                                League erlaubt blank ausdrücklich)
+    //   league_class_id "10"      -> "10-w", ohne Regel   (Altwert; die API
+    //                                sendet die rohe Spalte, nicht
+    //                                League.normalize_class_id)
+    //
+    // Genau die stille Rückkehr zum Standardaussehen, die dieser Entwurf mit dem
+    // Verzicht auf die league_id vermeiden wollte -- nur auf einem anderen Weg.
+    // Deshalb: unbekannt UND Damen -> allgemeine Damen-Farbwelt. Für Herren ist
+    // der Standard zufällig das Richtige, dort genügt der Rückfall.
+    if (!KNOWN_THEMES[key] && league.female) return "damen";
+
+    return key;
   }
 
   function renderGame(game) {

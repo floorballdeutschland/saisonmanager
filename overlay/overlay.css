@@ -82,7 +82,14 @@
    Bildschirm gerade noch geht, verschwindet nach der Kompression. */
 
 /* 1. Bundesliga Damen */
-:root[data-competition="1fbl-w"] {
+/* `damen` teilt sich die Farbwelt der 1. Damen und ist der Rückfall für eine
+   Damen-Liga, deren Ligaklasse sich nicht zuordnen lässt: leere Spalte (die
+   Validierung an League erlaubt blank) oder ein Altwert wie "10", den die API
+   unnormalisiert weitergibt. Ohne diesen Rückfall griffe keine Regel, und eine
+   Damen-Partie liefe im Bild der 1. Herren -- genau die stille Rückkehr zum
+   Standard, die der Verzicht auf die league_id vermeiden soll. */
+:root[data-competition="1fbl-w"],
+:root[data-competition="damen"] {
   --ov-accent: #c86dd7;
   --ov-accent-alt: #8e7bff;
   --ov-grad-accent: linear-gradient(135deg, #c86dd7 0%, #8e7bff 100%);
