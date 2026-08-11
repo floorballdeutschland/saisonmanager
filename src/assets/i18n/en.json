@@ -144,6 +144,9 @@
     "add": "Add partner logo",
     "remove": "Remove",
     "uploadHint": "PNG, JPG or WebP up to 1 MB. Use files with a transparent background — a white box stands out on a dark background.",
-    "limitReached": "At most {{max}} partner logos are possible. Remove one to add another."
+    "limitReached": "At most {{max}} partner logos are possible. Remove one to add another.",
+    "errTooLarge": "The file is too large. 1 MB maximum.",
+    "errUpload": "The partner logo could not be uploaded.",
+    "errRemove": "The partner logo could not be removed."
   }
 }

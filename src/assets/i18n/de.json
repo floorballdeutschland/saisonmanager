@@ -144,6 +144,9 @@
     "add": "Partnerlogo hinzufügen",
     "remove": "Entfernen",
     "uploadHint": "PNG, JPG oder WebP bis 1 MB. Freigestellte Dateien mit durchsichtigem Hintergrund verwenden — auf dunklem Grund fällt ein weißer Kasten sofort auf.",
-    "limitReached": "Es sind höchstens {{max}} Partnerlogos möglich. Entferne eines, um ein weiteres hinzuzufügen."
+    "limitReached": "Es sind höchstens {{max}} Partnerlogos möglich. Entferne eines, um ein weiteres hinzuzufügen.",
+    "errTooLarge": "Die Datei ist zu groß. Maximal 1 MB erlaubt.",
+    "errUpload": "Das Partnerlogo konnte nicht hochgeladen werden.",
+    "errRemove": "Das Partnerlogo konnte nicht entfernt werden."
   }
 }

@@ -5,6 +5,7 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   SponsorLogo,
   SponsorLogoScope,
@@ -22,6 +23,11 @@ import {
  * Die Übersetzungen liegen im globalen Sprachpaket und nicht in einem eigenen
  * Scope: Die Komponente wird aus zwei Feature-Modulen heraus benutzt, und ein
  * Scope löste nur in dem Modul auf, das ihn zufällig bereitstellt.
+ *
+ * Das gilt auch für die Fehlermeldungen. Sie standen zunächst als deutsche
+ * Zeichenketten im Code, während das Sprachpaket nur die Beschriftungen kannte —
+ * ein englischsprachiger Nutzer bekam die Oberfläche auf Englisch und die
+ * Fehlermeldung darunter auf Deutsch.
  */
 @Component({
   selector: 'fb-sponsor-logos',
@@ -45,7 +51,8 @@ export class SponsorLogosComponent implements OnInit {
 
   constructor(
     private _sponsorLogoService: SponsorLogoService,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private _transloco: TranslocoService
   ) {}
 
   ngOnInit(): void {
@@ -76,7 +83,7 @@ export class SponsorLogosComponent implements OnInit {
     // Vor dem Hochladen abfangen, was der Server ohnehin abweisen würde: Eine
     // Absage nach dem Übertragen einer zu großen Datei dauert unnötig lange.
     if (file.size > this._maxSize) {
-      this.error = 'Die Datei ist zu groß. Maximal 1 MB erlaubt.';
+      this.error = this._transloco.translate('sponsorLogos.errTooLarge');
       input.value = '';
       return;
     }
@@ -95,7 +102,7 @@ export class SponsorLogosComponent implements OnInit {
       error: (err) => {
         this.error =
           err?.error?.message ??
-          'Das Partnerlogo konnte nicht hochgeladen werden.';
+          this._transloco.translate('sponsorLogos.errUpload');
         this.busy = false;
         input.value = '';
         this._cdr.markForCheck();
@@ -117,7 +124,7 @@ export class SponsorLogosComponent implements OnInit {
           this._cdr.markForCheck();
         },
         error: () => {
-          this.error = 'Das Partnerlogo konnte nicht entfernt werden.';
+          this.error = this._transloco.translate('sponsorLogos.errRemove');
           this.busy = false;
           this._cdr.markForCheck();
         },
