@@ -17,6 +17,7 @@ import {
 import {
   Club,
   CorrectionType,
+  DocumentType,
   GenderKey,
   GfRole,
   LicenseDocument,
@@ -47,6 +48,9 @@ export interface LicenseSeasonGroup {
   standalone: false,
 })
 export class PlayerEditComponent implements OnInit, OnDestroy {
+  /** Serverseitige Obergrenze für Dokument-Uploads (LicenseDocument::MAX_FILE_SIZE). */
+  static readonly MAX_DOCUMENT_SIZE = 10 * 1024 * 1024;
+
   permissions: { [key: string]: boolean } = {};
   player?: Player;
   nations?: Nation[] = [];
@@ -85,6 +89,21 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   licenseDocuments: LicenseDocument[] = [];
   /** Abruf der Dokumente gescheitert (meist 403) – von „keine vorhanden" zu unterscheiden. */
   documentsFailed = false;
+
+  // Dokumentarten, die für diesen Spieler hochgeladen werden können: global
+  // gültige plus die seines Heimat-Spielbetriebs, ohne die altersmäßig
+  // erledigten. Die Auswahl kommt vom Server, nicht aus dem Katalog-Abruf, der
+  // nur Admin und SBK offensteht.
+  availableDocumentTypes: DocumentType[] = [];
+  documentTypesFailed = false;
+  uploadDocumentType = '';
+  uploading = false;
+  /** Meldungen der API (422) – bereits benutzerlesbar, daher unübersetzt. */
+  uploadErrors: string[] = [];
+  /** Eigener Fehler als Übersetzungsschlüssel (Datei zu groß, Abruf gescheitert). */
+  uploadErrorKey: string | null = null;
+  /** Dokument, für das die Löschbestätigung offen ist. */
+  confirmDeleteDocumentId: number | null = null;
 
   seasons: Season[] = [];
   currentSeasonId?: number;
@@ -163,6 +182,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         this.player = result;
         this.loadSuspensions();
         this.loadLicenseDocuments();
+        this.loadAvailableDocumentTypes();
         this._refreshAssignableClubs();
 
         this._cdr.markForCheck();
@@ -234,6 +254,109 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   public documentLabel(doc: LicenseDocument): string {
     return doc.document_type_name || doc.document_type;
+  }
+
+  public loadAvailableDocumentTypes(): void {
+    if (!this.player?.id) return;
+
+    this.documentTypesFailed = false;
+    this._playerService
+      .getAvailableDocumentTypes(this.player.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.availableDocumentTypes = result;
+          this._cdr.markForCheck();
+        },
+        // Ohne Auswahlliste kein Upload. Das muss dastehen, sonst sieht der
+        // Bereich aus wie einer, in dem es nichts hochzuladen gibt.
+        error: () => {
+          this.availableDocumentTypes = [];
+          this.documentTypesFailed = true;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  // Vorhandenes Dokument der gewählten Art: Ein neuer Upload ersetzt es (die API
+  // löscht die Vorgänger derselben Art), das muss vorher sichtbar sein.
+  public get documentToBeReplaced(): LicenseDocument | undefined {
+    if (!this.uploadDocumentType) return undefined;
+
+    return this.licenseDocuments.find(
+      (doc) => doc.document_type === this.uploadDocumentType
+    );
+  }
+
+  public onDocumentFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.player?.id || !this.uploadDocumentType) return;
+
+    this.uploadErrors = [];
+    this.uploadErrorKey = null;
+
+    // Gleiche Grenze wie serverseitig (LicenseDocument::MAX_FILE_SIZE), damit
+    // eine zu große Datei nicht erst nach dem Hochladen abgewiesen wird.
+    if (file.size > PlayerEditComponent.MAX_DOCUMENT_SIZE) {
+      this.uploadErrorKey = 'playerAdmin.edit.documentTooLarge';
+      input.value = '';
+      this._cdr.markForCheck();
+      return;
+    }
+
+    this.uploading = true;
+    this._playerService
+      .uploadLicenseDocument(this.player.id, this.uploadDocumentType, file)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          input.value = '';
+          this.uploading = false;
+          this.uploadDocumentType = '';
+          this.loadLicenseDocuments();
+          this._notificationService.success('Dokument wurde hochgeladen.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          input.value = '';
+          this.uploading = false;
+          this.uploadErrors = err?.error?.errors ?? [];
+          if (!this.uploadErrors.length) {
+            this.uploadErrorKey = 'playerAdmin.edit.documentUploadFailed';
+          }
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  public deleteDocument(documentId: number): void {
+    if (!this.player?.id) return;
+
+    this.uploadErrors = [];
+    this.uploadErrorKey = null;
+    this._playerService
+      .deleteLicenseDocument(this.player.id, documentId)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.confirmDeleteDocumentId = null;
+          this.loadLicenseDocuments();
+          this._notificationService.success('Dokument wurde gelöscht.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.confirmDeleteDocumentId = null;
+          this.uploadErrorKey = 'playerAdmin.edit.documentDeleteFailed';
+          this._cdr.markForCheck();
+        },
+      });
   }
 
   public loadSuspensions(): void {
