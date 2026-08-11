@@ -14,6 +14,9 @@ export interface DocumentType {
   validity: 'once' | 'per_season';
   required_below_age: number | null;
   template_url: string | null;
+  // Nur in der spielerbezogenen Auswahlliste enthalten
+  // (admin/players/:id/document_types):
+  game_operation_name?: string | null;
   // Nur im Index-Endpoint enthalten:
   usage_count?: number;
   league_count?: number;
