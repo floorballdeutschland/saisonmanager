@@ -174,8 +174,14 @@
 
     if (body.game) {
       state.game = body.game;
-      state.lastVersion = body.game_version;
       renderGame(state.game);
+      // Die Version erst NACH dem Aufbau merken. Stand sie vorher, war ein
+      // Aufbaufehler nicht mehr behebbar: Der Server lässt den Spielblock bei
+      // bekannter Version weg, der nächste Abruf brachte also keine Daten zum
+      // erneuten Versuch mit, und dieselbe Ausnahme fiel wieder. Bis zum Neuladen
+      // der Quelle blieb es schwarz. Merken wir sie erst danach, holt der nächste
+      // Abruf die vollen Daten und der Versuch kann gelingen.
+      state.lastVersion = body.game_version;
     } else if (body.game_version !== state.lastVersion) {
       // Der Spielblock fehlt normalerweise, weil sich nichts geändert hat.
       // Weicht die Version trotzdem ab, hat das Dock ein anderes Spiel
@@ -459,6 +465,21 @@
     return typeof value === "number" ? value : fallback;
   }
 
+  // Meldet ein Problem so, dass es hinterher noch auffindbar ist.
+  //
+  // `showDebug` allein genügt dafür nicht: Es schreibt in eine Fläche, die es nur
+  // mit `debug=1` gibt, und die Fläche ist weg, sobald die Quelle neu lädt. Ruft
+  // der Produzent später an, dass "die Tabelle im zweiten Drittel leer war", gibt
+  // es dann keinen einzigen Anhaltspunkt: Diese Seite liegt außerhalb der
+  // Angular-Anwendung, Sentry sieht sie also nicht, und `console` wurde hier
+  // bisher nirgends benutzt. Die OBS-Protokolldatei hält die Zeile fest.
+  function logProblem(message) {
+    if (window.console && window.console.warn) {
+      window.console.warn("[overlay] " + message);
+    }
+    showDebug(message, true);
+  }
+
   function debugText() {
     var age = state.lastOkAt
       ? Math.round((Date.now() - state.lastOkAt) / 1000)
@@ -513,6 +534,22 @@
     penalty_10: 10,
   };
 
+  // Die Matchstrafen ausdrücklich benennen, statt "alles außer Zeitstrafe" als
+  // Matchstrafe zu zählen. `Game#penalty_mapping` liefert nichts, wenn der
+  // Strafcode nicht im Katalog steht oder sein Eintrag kein `mapping` hat -- beides
+  // gibt es im Bestand. Ein unbekannter Wert landete damit im else-Zweig, und die
+  // Drittelpause behauptete eine Matchstrafe, die es nicht gab. Nachgestellt: eine
+  // 2-Minuten-Strafe plus eine ohne Zuordnung ergab "2 Strafminuten · 1
+  // Matchstrafe". Eine falsche Aussage über eine Mannschaft ist schlimmer als eine
+  // fehlende Zahl.
+  var PENALTY_MATCH_TYPES = {
+    penalty_ms1: true,
+    penalty_ms2: true,
+    penalty_ms3: true,
+    penalty_ms_tech: true,
+    penalty_ms_full: true,
+  };
+
   function fsDefinition() {
     return Object.prototype.hasOwnProperty.call(FS_SCENES, scene)
       ? FS_SCENES[scene]
@@ -526,9 +563,34 @@
     if (!onlyFullscreen) return;
 
     var def = fsDefinition();
-    if (!def) return;
+    if (!def) {
+      // Vorher stumm. Ein Tippfehler im `scene`-Wert einer verteilten
+      // OBS-Sammlung ergab damit eine Quelle, die nie etwas malt -- und selbst
+      // mit `debug=1` kein Wort dazu sagte. Die Regie schneidet dann auf Schwarz.
+      logProblem(
+        "Unbekannte Szene: " +
+          (scene || "(leer)") +
+          ". Erlaubt: " +
+          Object.keys(FS_SCENES).join(", ")
+      );
+      return;
+    }
 
-    var content = def.render();
+    // Ein Fehler im Aufbau darf nicht als Abrufproblem durchgehen und das Bild
+    // nicht dauerhaft schwarz lassen. Ohne dieses try flog eine Ausnahme aus
+    // `apply()` in den poll-catch, dort stand dann "Kein Abruf: TypeError..." --
+    // die Regie liest ein Netzproblem. Und sie war nicht behebbar: `apply` merkt
+    // sich die Version VOR dem Aufbau, der naechste Abruf liefert den Spielblock
+    // deshalb nicht mehr mit, und derselbe Aufbau warf erneut. Bis zum Neuladen
+    // der Quelle blieb es schwarz. Die Grundregel dieser Datei ist "stehen lassen,
+    // was zuletzt richtig war" -- genau die galt hier nicht.
+    var content;
+    try {
+      content = def.render();
+    } catch (error) {
+      logProblem("Vollbild " + scene + " nicht aufgebaut: " + error.message);
+      return;
+    }
     // Solange die Daten fehlen, bleibt das Vollbild unsichtbar. Ein leeres
     // Gerüst mit Überschrift und ohne Inhalt sähe auf Sendung nach Fehler aus,
     // und der Schnitt kommt ohnehin erst, wenn die Regie umschaltet.
@@ -557,12 +619,22 @@
     for (var i = 0; i < FS_DENSITY.length; i++) {
       el.fsBody.className =
         baseClass + (FS_DENSITY[i] ? " " + FS_DENSITY[i] : "");
-      if (el.fsBody.scrollHeight <= el.fsBody.clientHeight) return;
+      // Breite mitpruefen, nicht nur Hoehe: Waagerechtes Ueberlaufen schnitt
+      // vorher lautlos ab, ohne eine Dichtestufe auszuloesen und ohne Hinweis.
+      if (
+        el.fsBody.scrollHeight <= el.fsBody.clientHeight &&
+        el.fsBody.scrollWidth <= el.fsBody.clientWidth
+      ) {
+        return;
+      }
     }
     // Auch die engste Stufe reicht nicht. Dann steht die letzte, dichteste
     // Fassung — mehr als abschneiden lässt sich hier nicht mehr tun, und die
     // Statusfläche sagt es beim Einrichten.
-    showDebug("Vollbild zu voll für die Fläche\n" + debugText(), true);
+    // Auch als Logzeile, nicht nur in der Statusfläche: Genau der Fall, den die
+    // Dichtestufen verhindern sollen, lief sonst ohne jede Spur -- eine
+    // abgeschnittene Tabelle sieht auf Sendung vollständig aus.
+    logProblem("Vollbild " + scene + " zu voll für die Fläche");
   }
 
   // Der ligaweite Abruf. Läuft getrennt vom Spiel-Abruf und in eigenem Takt.
@@ -601,9 +673,16 @@
         renderFullscreen();
         window.setTimeout(pollLeague, LEAGUE_POLL_MS);
       })
-      .catch(function () {
+      .catch(function (error) {
         window.clearTimeout(timer);
-        // Wie beim Spiel-Abruf: stehen lassen, was zuletzt richtig war.
+        // Wie beim Spiel-Abruf: stehen lassen, was zuletzt richtig war -- aber
+        // nicht schweigend. Vorher war das der stillste Block der Seite: kein
+        // Fehler gebunden, keine Meldung. Beim Einrichten meldete die
+        // Statusfläche einen gesunden Spiel-Abruf, während der Liga-Abruf bei
+        // jedem Versuch scheiterte und das Vollbild leer blieb -- ohne ein
+        // einziges Zeichen. Fängt außerdem einen JSON-Parsefehler mit, also eine
+        // HTML-Fehlerseite statt der erwarteten Antwort.
+        logProblem("Kein Liga-Abruf (" + scene + "): " + error.message);
         if (state.terminal) return;
         window.setTimeout(pollLeague, LEAGUE_ERROR_MS);
       });
@@ -947,14 +1026,18 @@
     for (var i = 0; i < titles.length; i++) {
       var index = titles[i].period - 1;
       columns.push({ label: titles[i].short_title, numeric: true });
-      homeCells.push(home[index] || 0);
-      guestCells.push(guest[index] || 0);
+      // Kein `|| 0`: Der Filter oben lässt einen Abschnitt schon durch, wenn NUR
+      // eine Seite einen Wert hat. Die kürzere Seite hätte dann eine 0 gezeigt,
+      // also einen Abschnittsstand behauptet, den niemand erfasst hat. Ein
+      // Gedankenstrich sagt "unbekannt", die 0 sagt "keine Tore".
+      homeCells.push(numberOr(home[index], "—"));
+      guestCells.push(numberOr(guest[index], "—"));
     }
     if (columns.length === 1) return null;
 
     columns.push({ label: "Gesamt", numeric: true, strong: true });
-    homeCells.push(numberOr(result.home_goals, 0));
-    guestCells.push(numberOr(result.guest_goals, 0));
+    homeCells.push(numberOr(result.home_goals, "—"));
+    guestCells.push(numberOr(result.guest_goals, "—"));
 
     // Schmal statt über die ganze Breite: Zwei Zeilen mit vier Zahlen sähen
     // auf 1920 Pixeln auseinandergerissen aus.
@@ -1025,8 +1108,14 @@
       target.count += 1;
       if (PENALTY_MINUTES[event.penalty_type]) {
         target.minutes += PENALTY_MINUTES[event.penalty_type];
-      } else {
+      } else if (PENALTY_MATCH_TYPES[event.penalty_type]) {
         target.match += 1;
+      } else {
+        // Weder Zeit- noch Matchstrafe zuzuordnen: in der Zahl der Strafen
+        // mitzählen, aber keine Minuten und keine Matchstrafe behaupten.
+        logProblem(
+          "Strafe ohne bekannte Zuordnung: " + String(event.penalty_type)
+        );
       }
     }
     if (!any) return null;
@@ -1067,8 +1156,22 @@
     if (!game) return null;
 
     var result = game.result || {};
-    var score =
-      numberOr(result.home_goals, 0) + " : " + numberOr(result.guest_goals, 0);
+    // KEIN Rückfall auf 0. Fehlt der Stand, ist er unbekannt, und "0 : 0" wäre
+    // keine Lücke, sondern eine Falschaussage — im größten Bild, das diese Seite
+    // kennt, und in dem, das hinterher herumgeschickt wird. Nachgestellt: ohne
+    // `result` stand hier "Endstand 0 : 0". Lieber gar nichts senden.
+    if (
+      typeof result.home_goals !== "number" ||
+      typeof result.guest_goals !== "number"
+    ) {
+      logProblem(
+        "Endstand ohne Spielstand, Vollbild bleibt aus (game " +
+          (game.game_id || "?") +
+          ")"
+      );
+      return null;
+    }
+    var score = result.home_goals + " : " + result.guest_goals;
 
     return {
       center: true,
@@ -1114,7 +1217,26 @@
 
   function fsTable() {
     var rows = (state.league && state.league.table) || null;
+    // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
     if (!rows) return null;
+    // Abruf da, aber leer: DAS ist ein eigener Zustand und muss dastehen. Die
+    // Pruefung oben faengt ihn nicht, weil `[]` wahr ist -- uebrig blieben die
+    // Spaltenkoepfe ueber einer leeren Flaeche. Auf Sendung liest sich das als
+    // Aussage ("diese Liga hat keine Mannschaften") statt als "noch nichts
+    // gespielt". Nachgestellt mit leerer Liste: genau diese Kopfzeile ging raus.
+    // `lineupContent` behandelt den Fall schon richtig, hier fehlte er.
+    if (!rows.length) {
+      return {
+        league: leagueName(),
+        title: "Tabelle",
+        body: node(
+          "p",
+          "ov-fs-empty",
+          "Noch keine Tabelle: an diesem Spieltag ist keine Partie beendet."
+        ),
+        note: runningNote(),
+      };
+    }
 
     var own = ownTeamIds();
     var columns = [
@@ -1151,7 +1273,26 @@
 
   function fsScorer() {
     var rows = (state.league && state.league.scorer) || null;
+    // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
     if (!rows) return null;
+    // Abruf da, aber leer: DAS ist ein eigener Zustand und muss dastehen. Die
+    // Pruefung oben faengt ihn nicht, weil `[]` wahr ist -- uebrig blieben die
+    // Spaltenkoepfe ueber einer leeren Flaeche. Auf Sendung liest sich das als
+    // Aussage ("diese Liga hat keine Mannschaften") statt als "noch nichts
+    // gespielt". Nachgestellt mit leerer Liste: genau diese Kopfzeile ging raus.
+    // `lineupContent` behandelt den Fall schon richtig, hier fehlte er.
+    if (!rows.length) {
+      return {
+        league: leagueName(),
+        title: "Torschützen",
+        body: node(
+          "p",
+          "ov-fs-empty",
+          "Noch keine Torschützen: an diesem Spieltag ist keine Partie beendet."
+        ),
+        note: runningNote(),
+      };
+    }
 
     var columns = [
       { label: "#", numeric: true },
@@ -1188,7 +1329,26 @@
 
   function fsSchedule() {
     var rows = (state.league && state.league.schedule) || null;
+    // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
     if (!rows) return null;
+    // Abruf da, aber leer: DAS ist ein eigener Zustand und muss dastehen. Die
+    // Pruefung oben faengt ihn nicht, weil `[]` wahr ist -- uebrig blieben die
+    // Spaltenkoepfe ueber einer leeren Flaeche. Auf Sendung liest sich das als
+    // Aussage ("diese Liga hat keine Mannschaften") statt als "noch nichts
+    // gespielt". Nachgestellt mit leerer Liste: genau diese Kopfzeile ging raus.
+    // `lineupContent` behandelt den Fall schon richtig, hier fehlte er.
+    if (!rows.length) {
+      return {
+        league: leagueName(),
+        title: "Weitere Spiele",
+        body: node(
+          "p",
+          "ov-fs-empty",
+          "Keine weiteren Partien an diesem Spieltag."
+        ),
+        note: runningNote(),
+      };
+    }
 
     var currentId = state.game && state.game.id;
     var columns = [
@@ -1222,7 +1382,18 @@
   function scheduleScore(row) {
     if (row.result_string) return row.result_string;
     if (row.started && !row.ended) return "läuft";
-    return row.ended ? "—" : "";
+    // `ended` ohne Stand heißt: beendet, Ergebnis kennen wir nicht. Der
+    // Gedankenstrich sagt das. Leer bleibt nur, was noch nicht angepfiffen ist --
+    // und dafür MUSS `started` auch vorhanden sein. Fehlte das Feld, landete ein
+    // laufendes Spiel vorher stumm im Korb "hat noch nicht begonnen".
+    if (row.ended) return "—";
+    if (typeof row.started !== "boolean") {
+      logProblem(
+        "Spielplan-Zeile ohne started (game " + (row.game_id || "?") + ")"
+      );
+      return "—";
+    }
+    return "";
   }
 
   poll();

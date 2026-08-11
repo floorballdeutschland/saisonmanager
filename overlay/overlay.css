@@ -533,15 +533,24 @@ body {
   color: var(--ov-text-muted);
 }
 
+/* `flex-wrap` und `min-width: 0` sind hier nicht Zierde. Ohne sie koennen die
+   Eintraege nicht unter ihre Mindestbreite schrumpfen (Vorgabe `min-width: auto`),
+   die Zeile waechst ueber die Inhaltsbreite hinaus, und `.ov-fs-body` mit
+   `overflow: hidden` schneidet sie ab -- zentriert, also an BEIDEN Enden.
+   Realistischer Fall: eine lange Hallenbezeichnung neben einem Doppelnamen im
+   Gespann, bei 34 Pixeln Schriftgroesse. `fitBody` faellt das nicht auf, es
+   vergleicht nur Hoehen. */
 .ov-fs-facts {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 80px;
+  gap: 40px 80px;
   margin-top: 70px;
 }
 
 .ov-fs-fact {
   text-align: center;
+  min-width: 0;
 }
 
 .ov-fs-fact-label {
