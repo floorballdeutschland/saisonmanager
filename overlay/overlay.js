@@ -64,6 +64,9 @@
     // dann; Anzeigetafel, Bauchbinde und Sponsorenflaeche gleichzeitig sind zu
     // viel Bild.
     lowerThirdVisible: false,
+    // Adressen, die sich nicht laden liessen. Sie werden uebersprungen statt
+    // jede Sekunde neu versucht.
+    sponsorFailed: {},
   };
 
   var el = {
@@ -557,13 +560,17 @@
     var entries = [];
 
     (sponsors.league || []).forEach(function (url) {
-      if (url) entries.push({ url: url, label: "Partner der Liga" });
+      if (url && !state.sponsorFailed[url]) {
+        entries.push({ url: url, label: "Partner der Liga" });
+      }
     });
     // „Ausrichter" und nicht „Heimverein": Maßgeblich ist, wer den Spieltag
     // ausrichtet — bei einem Turnierspieltag in fremder Halle wirbt der
     // Ausrichter, nicht wer gerade als Heimteam geführt wird.
     (sponsors.club || []).forEach(function (url) {
-      if (url) entries.push({ url: url, label: "Partner des Ausrichters" });
+      if (url && !state.sponsorFailed[url]) {
+        entries.push({ url: url, label: "Partner des Ausrichters" });
+      }
     });
 
     return entries;
@@ -597,11 +604,22 @@
 
     el.sponsorsPlate.innerHTML = "";
     img = document.createElement("img");
-    // Lädt das Logo nicht, bleibt die Platte leer statt ein kaputtes
-    // Bildsymbol auf Sendung zu zeigen. Der nächste Wechsel holt den nächsten
-    // Partner.
+    // Laedt das Logo nicht, wird die Adresse GEMERKT und uebersprungen. Nur die
+    // Platte zu leeren genuegte nicht, gleich zweimal:
+    //
+    // Erstens ist eine leere Platte nicht "nichts", sondern ein weisses
+    // Rechteck von 260 x 110 unter der Beschriftung "Partner der Liga" -- auf
+    // Sendung. Bei nur einem hinterlegten Partner dreht `rotateSponsor` nicht
+    // weiter (`entries.length < 2`), es blieb also stehen.
+    //
+    // Zweitens lief die Anfrage danach jede Sekunde neu: `renderControl` ruft
+    // diese Funktion bei JEDER Antwort, der Flacker-Schutz oben sucht ein
+    // vorhandenes img, und genau das hatte der Fehlerzweig entfernt.
     img.addEventListener("error", function () {
-      el.sponsorsPlate.innerHTML = "";
+      state.sponsorFailed[entry.url] = true;
+      logProblem("Partnerlogo nicht ladbar, wird uebersprungen: " + entry.url);
+      state.sponsorIndex = 0;
+      renderSponsors();
     });
     img.src = entry.url;
     img.alt = "";

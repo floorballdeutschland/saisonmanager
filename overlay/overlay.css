@@ -520,8 +520,14 @@ body {
 /* Solange die Bühne läuft, gibt es kein Vollbild und umgekehrt. Mit
    `display: none` statt der Deckkraft, damit eine unsichtbare Anzeigetafel im
    Vollbild nicht doch noch Platz beansprucht oder durchscheint. */
+/* `.ov-sponsors` gehoert mit in diese Liste. Ohne sie stand die Flaeche in der
+   Vollbild-Quelle im RUHEZUSTAND im Bild: Ist kein Vollbild ausgewaehlt, traegt
+   `.ov-fs` display:none, es deckt also nichts ab, und `.ov-hidden` ist nur
+   opacity. Nachgestellt, Bildschirmfoto: "PARTNER DER LIGA" samt weisser Platte
+   unten rechts, in einer Quelle, die gar keine Buehne zeigen soll. */
 .ov-only-fullscreen .ov-scoreboard,
-.ov-only-fullscreen .ov-lower-third {
+.ov-only-fullscreen .ov-lower-third,
+.ov-only-fullscreen .ov-sponsors {
   display: none;
 }
 
