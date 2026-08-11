@@ -176,6 +176,11 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   public getPlayer(id: string): void {
+    // Der Wechsel von einem Profil zum naechsten laeuft ueber dieselbe Instanz
+    // (route.params), sonst stuende die Auswahl oder Fehlermeldung des vorigen
+    // Spielers noch da.
+    this._resetDocumentUploadState();
+
     // Im Profil die vollständige, saisonübergreifende Lizenzhistorie laden.
     this._playerService.getPlayer(parseInt(id), true).subscribe({
       next: (result) => {
@@ -254,6 +259,14 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   public documentLabel(doc: LicenseDocument): string {
     return doc.document_type_name || doc.document_type;
+  }
+
+  private _resetDocumentUploadState(): void {
+    this.uploadDocumentType = '';
+    this.uploading = false;
+    this.uploadErrors = [];
+    this.uploadErrorKey = null;
+    this.confirmDeleteDocumentId = null;
   }
 
   public loadAvailableDocumentTypes(): void {
