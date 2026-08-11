@@ -367,10 +367,20 @@ body {
    die 1. und 2. Liga. Auf einem Pokal- oder Regionalliga-Bild wäre sie schlicht
    falsch, deshalb fällt sie dort weg statt eine fremde Liga auszuweisen. Ein
    eigenes Logo je Liga (api#366) ersetzt beides, sobald es da ist. */
+/* `damen` und `neutral` sind die Rueckfaelle fuer einen Wettbewerb, der sich
+   nicht zuordnen laesst (Meisterschaft, oder keine pflegbare Ligaklasse). Die
+   Wortmarke ist eine Tatsachenbehauptung -- ohne diese Regel liefe eine
+   DM-Endrunde mit dem Zeichen der Floorball Bundesliga im Bild. `1fbl-w` teilt
+   sich die Farben mit `damen`, steht hier aber ABSICHTLICH nicht: das ist eine
+   echte Bundesliga, die Wortmarke gehoert dort hin. */
 :root[data-competition="pokal"] .ov-league-mark,
 :root[data-competition="regional"] .ov-league-mark,
+:root[data-competition="damen"] .ov-league-mark,
+:root[data-competition="neutral"] .ov-league-mark,
 :root[data-competition="pokal"] .ov-fs-mark,
-:root[data-competition="regional"] .ov-fs-mark {
+:root[data-competition="regional"] .ov-fs-mark,
+:root[data-competition="damen"] .ov-fs-mark,
+:root[data-competition="neutral"] .ov-fs-mark {
   display: none;
 }
 

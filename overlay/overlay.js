@@ -200,15 +200,19 @@
   // Ligaklassen ohne eigene Bildmarke teilen sich eine Farbwelt.
   var LOWER_CLASSES = { rl: true, vl: true, ll: true };
 
-  // Die Schlüssel, für die overlay.css eine Farbwelt hinterlegt hat. Gebraucht,
-  // um zu erkennen, wann ein berechneter Schlüssel INS LEERE zeigt: dann greift
-  // keine Regel und es bleibt beim Standard, also beim Bild der 1. Herren. Für
-  // eine Damen-Liga ist das die eine Verwechslung, die nicht passieren darf.
+  // Die Schlüssel, die einen ERKANNTEN Wettbewerb bezeichnen. Gebraucht, um zu
+  // trennen, ob ein berechneter Schlüssel wirklich etwas bedeutet oder ins Leere
+  // zeigt -- vorher war beides derselbe Zustand ("Attribut fehlt"), und ein
+  // unerkannter Wettbewerb lief damit im Bild der 1. Herren.
+  //
+  // `1fbl-m` steht mit drin, obwohl overlay.css dafür keinen eigenen Block hat:
+  // Das IST das Standardaussehen, samt Bundesliga-Wortmarke, und zwar zu Recht.
+  // Der Unterschied zu "unerkannt" ist gerade der Punkt.
   var KNOWN_THEMES = {
+    "1fbl-m": true,
     "1fbl-w": true,
     "2fbl-m": true,
     "2fbl-w": true,
-    damen: true,
     pokal: true,
     regional: true,
   };
@@ -235,10 +239,30 @@
   function competitionKey(league) {
     if (!league) return "";
 
-    // Pokalwettbewerbe zuerst: Sie haben keine eigene Ligaklasse und laufen in
-    // der Regel unter der der Bundesliga. Am Namen zu erkennen ist nicht
-    // schön, aber es ist das einzige Merkmal, das der Datenbestand hergibt.
-    if (/pokal/i.test(String(league.name || ""))) return "pokal";
+    // Pokalwettbewerbe zuerst. Maßgeblich ist `league_type`, nicht der Name:
+    // Dahinter steht `league_modus`, ein Pflicht-Auswahlfeld im Ligaformular mit
+    // den Werten league / cup / champ. Und die Formularprüfung verlangt eine
+    // Ligaklasse NUR bei `league_modus == 'league'` -- Pokale und Meisterschaften
+    // haben also planmäßig keine, sie können unten gar nicht zugeordnet werden.
+    //
+    // Der Name allein trug nicht: `league.rb` nennt die klassenlosen Wettbewerbe
+    // selbst "DM, Pokal, Trophy", und auf Prod heißen mehrere "Floorball
+    // Deutschland Cup". Keines davon enthält "Pokal", alle wären im Bild der
+    // 1. Bundesliga gelaufen. Das Feld kommt aus api#375.
+    if (league.league_type === "cup") return "pokal";
+    // Eine Meisterschaft ist keine Bundesliga-Partie. Eigene Farben hat sie
+    // nicht, aber die Wortmarke gehoert nicht in ihr Bild.
+    if (league.league_type === "champ")
+      return league.female ? "damen" : "neutral";
+
+    // Der Name bleibt als Rückfall, für den Fall, dass `league_type` fehlt
+    // (ältere API) -- dann aber mit allen drei üblichen Schreibweisen.
+    if (
+      !league.league_type &&
+      /pokal|cup|trophy/i.test(String(league.name || ""))
+    ) {
+      return "pokal";
+    }
 
     var klasse = league.league_class_id || "";
     var key = "";
@@ -260,11 +284,20 @@
     //
     // Genau die stille Rückkehr zum Standardaussehen, die dieser Entwurf mit dem
     // Verzicht auf die league_id vermeiden wollte -- nur auf einem anderen Weg.
-    // Deshalb: unbekannt UND Damen -> allgemeine Damen-Farbwelt. Für Herren ist
-    // der Standard zufällig das Richtige, dort genügt der Rückfall.
-    if (!KNOWN_THEMES[key] && league.female) return "damen";
+    if (KNOWN_THEMES[key]) return key;
 
-    return key;
+    // Ab hier ist der Wettbewerb NICHT zuzuordnen. Der Standard wäre dann das
+    // Bild der 1. Bundesliga Herren, und das ist mehr als eine Farbfrage: Die
+    // Wortmarke im Bild ist eine Tatsachenbehauptung. Eine Meisterschaft
+    // (`champ`, etwa eine DM-Endrunde) oder eine Liga ohne pflegbare Klasse ist
+    // eben keine Bundesliga-Partie.
+    //
+    // Deshalb zwei eigene Schlüssel statt "kein Attribut": `damen` trägt die
+    // Farbwelt der 1. Damen (besser als Markenrot für eine Damen-Partie),
+    // `neutral` bleibt bei den Standardfarben. Bei beiden bleibt die
+    // Bundesliga-Wortmarke aus, so wie schon bei Pokal und Regional.
+    if (league.female) return "damen";
+    return "neutral";
   }
 
   function renderGame(game) {
