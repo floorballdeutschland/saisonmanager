@@ -1,4 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  discardPeriodicTasks,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { LiveStreamService } from '@floorball/core';
@@ -124,4 +130,69 @@ describe('LiveComponent', () => {
     expect(component.score(game({ result_string: null }))).toBe('');
     expect(component.score(game({ result_string: '3:1' }))).toBe('3:1');
   });
+
+  // `current_period_title` ist serverseitig ein HASH und kein Text: Die API gibt
+  // den ganzen Eintrag aus `League#period_titles` zurueck. Wer das Feld direkt
+  // ausgibt, schreibt "[object Object]" auf eine oeffentliche Seite. Vorher fiel
+  // das keinem Test auf.
+  it('nennt vom Spielabschnitt nur den Titel, nicht das ganze Objekt', () => {
+    serviceSpy.getToday.and.returnValue(of({ date: '2026-08-10', games: [] }));
+    create();
+
+    // Die Schnittstelle deklariert bewusst nur `title` -- die API schickt aber den
+    // ganzen Eintrag. Deshalb hier die volle Form untergeschoben: Nur so faellt
+    // auf, wenn jemand das Objekt statt des Titels ausgibt.
+    const mitAbschnitt = game({
+      current_period_title: {
+        period: 2,
+        short_title: '2',
+        title: '2. Drittel',
+        status_id: 'period2',
+        running: true,
+      } as LiveStreamGame['current_period_title'],
+    });
+
+    expect(component.period(mitAbschnitt)).toBe('2. Drittel');
+    expect(component.period(mitAbschnitt)).not.toContain('object');
+    expect(component.period(game({ current_period_title: null }))).toBe('');
+  });
+
+  // Nach einem gescheiterten ERSTEN Abruf ist die Liste leer -- aber das ist kein
+  // leerer Tag. Ohne die Unterscheidung stuende "Heute ist keine Uebertragung
+  // hinterlegt" da, obwohl niemand weiss, ob welche hinterlegt sind.
+  it('haelt einen Fehlschlag nicht fuer einen leeren Tag', () => {
+    serviceSpy.getToday.and.returnValue(throwError(() => new Error('kaputt')));
+    create();
+
+    expect(component.failed).toBeTrue();
+    expect(component.isEmpty).toBeFalse();
+  });
+
+  // Der Timer laedt jede Minute nach. Bleibt er nach dem Verlassen der Seite
+  // stehen, ruft er markForCheck auf einer View, die es nicht mehr gibt -- und er
+  // fragt weiter ab, solange die Anwendung offen ist.
+  it('raeumt den Nachlade-Timer beim Verlassen der Seite auf', () => {
+    serviceSpy.getToday.and.returnValue(of({ date: '2026-08-10', games: [] }));
+    create();
+
+    const clearSpy = spyOn(window, 'clearInterval').and.callThrough();
+    fixture.destroy();
+
+    expect(clearSpy).toHaveBeenCalled();
+  });
+
+  // Gegenprobe zum Timer: Nach einer Minute wird wirklich nachgeladen, nicht nur
+  // einmal beim Aufbau.
+  it('laedt nach einer Minute erneut', fakeAsync(() => {
+    serviceSpy.getToday.and.returnValue(of({ date: '2026-08-10', games: [] }));
+    create();
+    expect(serviceSpy.getToday).toHaveBeenCalledTimes(1);
+
+    tick(60_000);
+    expect(serviceSpy.getToday).toHaveBeenCalledTimes(2);
+
+    // Ohne discardPeriodicTasks beschwert sich fakeAsync ueber den offenen Timer.
+    fixture.destroy();
+    discardPeriodicTasks();
+  }));
 });
