@@ -284,6 +284,7 @@
                       : {
                           team: otherGfLicense()?.team_name,
                           league: otherGfLicense()?.league_name,
+                          status: otherGfLicenseStatusKey() | transloco,
                           role:
                             (otherGfLicense()?.gf_role === "erstlizenz"
                               ? "licenseAdmin.detail.gfRoleErstlizenz"
@@ -294,10 +295,7 @@
                         }
                 }}
               </p>
-              @if (
-                gfRoles[player.team_license.license.id] === "erstlizenz" &&
-                otherGfLicense()?.gf_role !== "zweitlizenz"
-              ) {
+              @if (gfRoleDemotesPartners(player.team_license.license.id)) {
                 <p class="text-[11px] font-semibold text-indigo-900 mt-1">
                   {{ "licenseAdmin.detail.gfRoleDemoteHint" | transloco }}
                 </p>
