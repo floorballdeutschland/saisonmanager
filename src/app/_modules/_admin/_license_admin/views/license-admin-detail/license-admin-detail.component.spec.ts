@@ -79,7 +79,7 @@ describe('LicenseAdminDetailComponent', () => {
 
   describe('gf role default on init', () => {
     function setup(
-      other: Partial<PlayerOtherLicense> | null
+      others: Partial<PlayerOtherLicense>[]
     ): LicenseAdminDetailComponent {
       const fixture = TestBed.createComponent(LicenseAdminDetailComponent);
       const component = fixture.componentInstance;
@@ -90,47 +90,86 @@ describe('LicenseAdminDetailComponent', () => {
       } as League;
       component.player = {
         team_license: { license: { id: 'new' } },
-        other_licenses: other
-          ? [{ gf_adult: true, female: false, ...other } as PlayerOtherLicense]
-          : [],
+        other_licenses: others.map(
+          (o) => ({ gf_adult: true, female: false, ...o }) as PlayerOtherLicense
+        ),
       } as unknown as PlayerWithLicense;
       component.ngOnInit();
       return component;
     }
 
-    it('proposes Erstlizenz when the other GF license has no assignment yet', () => {
-      // Der häufigste Fall: die andere Lizenz ist selbst nur beantragt.
-      const component = setup({ last_status_id: 2, gf_role: null });
+    it('proposes Erstlizenz when the other GF license is only applied for', () => {
+      // Der gemeldete Fall: die andere Lizenz ist selbst noch nicht erteilt,
+      // diese hier wird also die erste erteilte.
+      const component = setup([{ last_status_id: 2, gf_role: null }]);
 
       expect(component.gfRoles['new']).toBe('erstlizenz');
     });
 
-    it('proposes Zweitlizenz only when the other GF license is the Erstlizenz', () => {
-      const component = setup({ last_status_id: 1, gf_role: 'erstlizenz' });
+    it('proposes Zweitlizenz when an unassigned other GF license is already granted', () => {
+      // Der Regelfall der zweiten Lizenz: die erteilte Lizenz ist die
+      // naheliegende Erstlizenz und darf nicht herabgestuft werden.
+      const component = setup([{ last_status_id: 1, gf_role: null }]);
+
+      expect(component.gfRoles['new']).toBe('zweitlizenz');
+    });
+
+    it('proposes Zweitlizenz when the other GF license is the Erstlizenz', () => {
+      const component = setup([{ last_status_id: 1, gf_role: 'erstlizenz' }]);
 
       expect(component.gfRoles['new']).toBe('zweitlizenz');
     });
 
     it('proposes Erstlizenz when the other GF license is the Zweitlizenz', () => {
-      const component = setup({ last_status_id: 1, gf_role: 'zweitlizenz' });
+      const component = setup([{ last_status_id: 1, gf_role: 'zweitlizenz' }]);
 
       expect(component.gfRoles['new']).toBe('erstlizenz');
     });
 
+    it('weighs every partner, not just the first one listed', () => {
+      // apply_gf_role bucht auf der API-Seite jede Partner-Lizenz gegen, die
+      // Vorbelegung muss also alle betrachten.
+      const component = setup([
+        { last_status_id: 2, gf_role: null },
+        { last_status_id: 1, gf_role: 'erstlizenz' },
+      ]);
+
+      expect(component.gfRoles['new']).toBe('zweitlizenz');
+    });
+
     it('makes no proposal without another GF license in the competition', () => {
-      const component = setup(null);
+      const component = setup([]);
 
       expect(component.gfRoles['new']).toBeUndefined();
+      expect(component.gfRoleSelectable()).toBe(false);
+    });
+
+    it('ignores licenses of the other competition', () => {
+      const component = setup([{ last_status_id: 1, female: true }]);
+
+      expect(component.gfRoleSelectable()).toBe(false);
+    });
+
+    it('warns about the demotion whenever a partner is not yet the Zweitlizenz', () => {
+      const granted = setup([{ last_status_id: 1, gf_role: null }]);
+      granted.gfRoles['new'] = 'erstlizenz';
+      expect(granted.gfRoleDemotesPartners('new')).toBe(true);
+
+      const alreadySecond = setup([
+        { last_status_id: 1, gf_role: 'zweitlizenz' },
+      ]);
+      expect(alreadySecond.gfRoles['new']).toBe('erstlizenz');
+      expect(alreadySecond.gfRoleDemotesPartners('new')).toBe(false);
     });
 
     it('names the status of the other license so a mere application is visible', () => {
-      expect(setup({ last_status_id: 2 }).otherGfLicenseStatusKey()).toBe(
+      expect(setup([{ last_status_id: 2 }]).otherGfLicenseStatusKey()).toBe(
         'licenseAdmin.detail.gfRoleOtherRequested'
       );
-      expect(setup({ last_status_id: 1 }).otherGfLicenseStatusKey()).toBe(
+      expect(setup([{ last_status_id: 1 }]).otherGfLicenseStatusKey()).toBe(
         'licenseAdmin.detail.gfRoleOtherApproved'
       );
-      expect(setup({}).otherGfLicenseStatusKey()).toBe(
+      expect(setup([{}]).otherGfLicenseStatusKey()).toBe(
         'licenseAdmin.detail.gfRoleOtherUnknown'
       );
     });

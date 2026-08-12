@@ -37,7 +37,7 @@
     "gfRoleOtherApproved": "granted",
     "gfRoleOtherRequested": "only applied for, not yet granted",
     "gfRoleOtherUnknown": "status unknown",
-    "gfRoleDemoteHint": "The other large-field license will automatically become the second license upon approval."
+    "gfRoleDemoteHint": "Existing large-field licenses in this competition will automatically become the second license upon approval."
   },
   "globalList": {
     "title": "License management",
