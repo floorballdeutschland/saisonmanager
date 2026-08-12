@@ -34,6 +34,13 @@
   --ov-surface-elev: #1e1e3f;
   --ov-accent: #e94560;
   --ov-accent-alt: #ff6b35;
+  /* Derselbe Akzent als Flaeche, fuer die hervorgehobene Zeile der eigenen
+     Mannschaft. Als eigener Wert und nicht per color-mix aus --ov-accent
+     gerechnet: Die Browser-Quelle in OBS ist ein eingebettetes Chromium, und
+     dessen Fassung haengt an der OBS-Version. Ein nicht unterstuetzter
+     Farbwert liesse die Zeile ohne Hinterlegung stehen, und das faellt erst
+     auf Sendung auf. */
+  --ov-accent-soft: rgb(233 69 96 / 16%);
   --ov-live: #ff0000;
   --ov-success: #28a745;
   --ov-text: #f1f1f1;
@@ -48,6 +55,79 @@
   /* Skalierung der gesamten Bühne, gesetzt aus ?scale= (Standard 1). So kann
      eine 720p-Produktion dieselbe Quelle nutzen. */
   --ov-scale: 1;
+}
+
+/* ══ Erscheinungsbild je Wettbewerb ════════════════════════════════════════
+   Bis hierher galt für jede Liga das Bild der 1. Bundesliga Herren. Damen,
+   2. Bundesliga und Pokal sahen damit aus wie die 1. Herren.
+
+   Überschrieben werden nur die beiden Akzentfarben und der Verlauf daraus.
+   Flächen, Schrift und Aufbau bleiben gleich: Das ist eine Farbwelt je
+   Wettbewerb, keine zweite Gestaltung.
+
+   Die Werte liegen hier und nicht an der Liga. Das war die Wahl aus dem Issue:
+   solange es um eine Handvoll Wettbewerbe geht, ist nichts zu pflegen — und
+   niemand kann Farben wählen, die nach der Videokompression eines Streams
+   verschwinden.
+
+   `overlay.js` setzt `data-competition` aus Ligaklasse und Wettbewerbs-
+   geschlecht. NICHT aus der league_id: Ligen sind Zeilen je Saison, eine
+   Liga-Kopie zur neuen Saison bekommt eine neue id, und die Zuordnung fiele
+   zu jedem Saisonwechsel still auf das Standardaussehen zurück.
+
+   KONTRAST: Der Akzent trägt kleine Versalien (Kicker, Spaltentitel) auf
+   dunklem Grund. Gemessen gegen beide Enden des Hintergrundverlaufs, alle
+   Werte über 4.8:1 — und damit über dem Bestandswert der 1. Herren (4.15:1
+   am dunklen Ende), der als Markenfarbe unverändert bleibt. Was auf dem
+   Bildschirm gerade noch geht, verschwindet nach der Kompression. */
+
+/* 1. Bundesliga Damen */
+/* `damen` teilt sich die Farbwelt der 1. Damen und ist der Rückfall für eine
+   Damen-Liga, deren Ligaklasse sich nicht zuordnen lässt: leere Spalte (die
+   Validierung an League erlaubt blank) oder ein Altwert wie "10", den die API
+   unnormalisiert weitergibt. Ohne diesen Rückfall griffe keine Regel, und eine
+   Damen-Partie liefe im Bild der 1. Herren -- genau die stille Rückkehr zum
+   Standard, die der Verzicht auf die league_id vermeiden soll. */
+:root[data-competition="1fbl-w"],
+:root[data-competition="damen"] {
+  --ov-accent: #c86dd7;
+  --ov-accent-alt: #8e7bff;
+  --ov-grad-accent: linear-gradient(135deg, #c86dd7 0%, #8e7bff 100%);
+  --ov-accent-soft: rgb(200 109 215 / 16%);
+}
+
+/* 2. Bundesliga Herren */
+:root[data-competition="2fbl-m"] {
+  --ov-accent: #2ec4b6;
+  --ov-accent-alt: #2b9bd8;
+  --ov-grad-accent: linear-gradient(135deg, #2ec4b6 0%, #2b9bd8 100%);
+  --ov-accent-soft: rgb(46 196 182 / 16%);
+}
+
+/* 2. Bundesliga Damen */
+:root[data-competition="2fbl-w"] {
+  --ov-accent: #4fc46a;
+  --ov-accent-alt: #a5d63f;
+  --ov-grad-accent: linear-gradient(135deg, #4fc46a 0%, #a5d63f 100%);
+  --ov-accent-soft: rgb(79 196 106 / 16%);
+}
+
+/* Pokalwettbewerbe */
+:root[data-competition="pokal"] {
+  --ov-accent: #f2c14e;
+  --ov-accent-alt: #f9a03f;
+  --ov-grad-accent: linear-gradient(135deg, #f2c14e 0%, #f9a03f 100%);
+  --ov-accent-soft: rgb(242 193 78 / 16%);
+}
+
+/* Regional-, Verbands- und Landesliga teilen sich eine Farbwelt: Für die
+   Unterklassen gibt es keine eigene Bildmarke, nach der sie sich unterscheiden
+   müssten. */
+:root[data-competition="regional"] {
+  --ov-accent: #7fb3ff;
+  --ov-accent-alt: #5b8def;
+  --ov-grad-accent: linear-gradient(135deg, #7fb3ff 0%, #5b8def 100%);
+  --ov-accent-soft: rgb(127 179 255 / 16%);
 }
 
 * {
@@ -281,6 +361,27 @@ body {
 .ov-league-mark img {
   height: 54px;
   width: auto;
+}
+
+/* Die mitgelieferte Bildmarke ist die der Floorball Bundesliga und gilt für
+   die 1. und 2. Liga. Auf einem Pokal- oder Regionalliga-Bild wäre sie schlicht
+   falsch, deshalb fällt sie dort weg statt eine fremde Liga auszuweisen. Ein
+   eigenes Logo je Liga (api#366) ersetzt beides, sobald es da ist. */
+/* `damen` und `neutral` sind die Rueckfaelle fuer einen Wettbewerb, der sich
+   nicht zuordnen laesst (Meisterschaft, oder keine pflegbare Ligaklasse). Die
+   Wortmarke ist eine Tatsachenbehauptung -- ohne diese Regel liefe eine
+   DM-Endrunde mit dem Zeichen der Floorball Bundesliga im Bild. `1fbl-w` teilt
+   sich die Farben mit `damen`, steht hier aber ABSICHTLICH nicht: das ist eine
+   echte Bundesliga, die Wortmarke gehoert dort hin. */
+:root[data-competition="pokal"] .ov-league-mark,
+:root[data-competition="regional"] .ov-league-mark,
+:root[data-competition="damen"] .ov-league-mark,
+:root[data-competition="neutral"] .ov-league-mark,
+:root[data-competition="pokal"] .ov-fs-mark,
+:root[data-competition="regional"] .ov-fs-mark,
+:root[data-competition="damen"] .ov-fs-mark,
+:root[data-competition="neutral"] .ov-fs-mark {
+  display: none;
 }
 
 /* ══ Bauchbinde ════════════════════════════════════════════════════════════
@@ -617,7 +718,7 @@ body {
 /* Die Mannschaft der Übertragung heraushebeln: In einer Tabelle mit vierzehn
    Zeilen findet das Auge sie sonst nicht in der Zeit, die das Bild steht. */
 .ov-fs-table tr.ov-fs-own td {
-  background: rgb(233 69 96 / 16%);
+  background: var(--ov-accent-soft);
 }
 
 .ov-fs-cell-team {

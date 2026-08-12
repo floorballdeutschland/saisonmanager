@@ -190,8 +190,114 @@
       state.lastVersion = null;
     }
 
+    applyCompetitionTheme();
     renderControl();
     renderFullscreen();
+  }
+
+  // ── Erscheinungsbild je Wettbewerb ──────────────────────────────────────
+
+  // Ligaklassen ohne eigene Bildmarke teilen sich eine Farbwelt.
+  var LOWER_CLASSES = { rl: true, vl: true, ll: true };
+
+  // Die Schlüssel, die einen ERKANNTEN Wettbewerb bezeichnen. Gebraucht, um zu
+  // trennen, ob ein berechneter Schlüssel wirklich etwas bedeutet oder ins Leere
+  // zeigt -- vorher war beides derselbe Zustand ("Attribut fehlt"), und ein
+  // unerkannter Wettbewerb lief damit im Bild der 1. Herren.
+  //
+  // `1fbl-m` steht mit drin, obwohl overlay.css dafür keinen eigenen Block hat:
+  // Das IST das Standardaussehen, samt Bundesliga-Wortmarke, und zwar zu Recht.
+  // Der Unterschied zu "unerkannt" ist gerade der Punkt.
+  var KNOWN_THEMES = {
+    "1fbl-m": true,
+    "1fbl-w": true,
+    "2fbl-m": true,
+    "2fbl-w": true,
+    pokal: true,
+    regional: true,
+  };
+
+  // Setzt `data-competition`, worauf overlay.css die Akzentfarben umstellt.
+  // Bewusst nicht über die league_id: Ligen sind Zeilen je Saison, eine
+  // Liga-Kopie zur neuen Saison bekommt eine neue id. Über die id zugeordnet
+  // fiele jedes Erscheinungsbild zum Saisonwechsel still auf den Standard
+  // zurück, und es fiele erst auf Sendung auf.
+  function applyCompetitionTheme() {
+    var league =
+      (state.game && state.game.league) ||
+      (state.league && state.league.league) ||
+      null;
+    var key = competitionKey(league);
+
+    if (key) {
+      document.documentElement.setAttribute("data-competition", key);
+    } else {
+      document.documentElement.removeAttribute("data-competition");
+    }
+  }
+
+  function competitionKey(league) {
+    if (!league) return "";
+
+    // Pokalwettbewerbe zuerst. Maßgeblich ist `league_type`, nicht der Name:
+    // Dahinter steht `league_modus`, ein Pflicht-Auswahlfeld im Ligaformular mit
+    // den Werten league / cup / champ. Und die Formularprüfung verlangt eine
+    // Ligaklasse NUR bei `league_modus == 'league'` -- Pokale und Meisterschaften
+    // haben also planmäßig keine, sie können unten gar nicht zugeordnet werden.
+    //
+    // Der Name allein trug nicht: `league.rb` nennt die klassenlosen Wettbewerbe
+    // selbst "DM, Pokal, Trophy", und auf Prod heißen mehrere "Floorball
+    // Deutschland Cup". Keines davon enthält "Pokal", alle wären im Bild der
+    // 1. Bundesliga gelaufen. Das Feld kommt aus api#375.
+    if (league.league_type === "cup") return "pokal";
+    // Eine Meisterschaft ist keine Bundesliga-Partie. Eigene Farben hat sie
+    // nicht, aber die Wortmarke gehoert nicht in ihr Bild.
+    if (league.league_type === "champ")
+      return league.female ? "damen" : "neutral";
+
+    // Der Name bleibt als Rückfall, für den Fall, dass `league_type` fehlt
+    // (ältere API) -- dann aber mit allen drei üblichen Schreibweisen.
+    if (
+      !league.league_type &&
+      /pokal|cup|trophy/i.test(String(league.name || ""))
+    ) {
+      return "pokal";
+    }
+
+    var klasse = league.league_class_id || "";
+    var key = "";
+    if (LOWER_CLASSES[klasse]) {
+      key = "regional";
+    } else if (klasse) {
+      key = klasse + (league.female ? "-w" : "-m");
+    }
+
+    // Zeigt der Schlüssel ins Leere, greift keine Regel und es bleibt beim
+    // Standard -- dem Bild der 1. Herren. Bei einer DAMEN-Liga ist das falsch,
+    // und zwar sichtbar falsch. Zwei Wege dorthin, beide nachgestellt:
+    //
+    //   league_class_id leer      -> gar kein Schlüssel   (die Validierung an
+    //                                League erlaubt blank ausdrücklich)
+    //   league_class_id "10"      -> "10-w", ohne Regel   (Altwert; die API
+    //                                sendet die rohe Spalte, nicht
+    //                                League.normalize_class_id)
+    //
+    // Genau die stille Rückkehr zum Standardaussehen, die dieser Entwurf mit dem
+    // Verzicht auf die league_id vermeiden wollte -- nur auf einem anderen Weg.
+    if (KNOWN_THEMES[key]) return key;
+
+    // Ab hier ist der Wettbewerb NICHT zuzuordnen. Der Standard wäre dann das
+    // Bild der 1. Bundesliga Herren, und das ist mehr als eine Farbfrage: Die
+    // Wortmarke im Bild ist eine Tatsachenbehauptung. Eine Meisterschaft
+    // (`champ`, etwa eine DM-Endrunde) oder eine Liga ohne pflegbare Klasse ist
+    // eben keine Bundesliga-Partie.
+    //
+    // Deshalb zwei eigene Schlüssel statt "kein Attribut": `damen` trägt die
+    // Farbwelt der 1. Damen (besser als Markenrot für eine Damen-Partie),
+    // `neutral` bleibt bei den Standardfarben. Bei beiden bleibt die
+    // Bundesliga-Wortmarke aus, so wie schon bei Pokal und Regional.
+    if (league.female) return "damen";
+    return "neutral";
   }
 
   function renderGame(game) {
@@ -670,6 +776,10 @@
       })
       .then(function (body) {
         state.league = body;
+        // Auch von hier aus: Ein Tabellen-Vollbild bekommt seine Ligadaten
+        // unter Umständen vor dem ersten Spiel-Abruf, und bis dahin stünde es
+        // im Standardaussehen.
+        applyCompetitionTheme();
         renderFullscreen();
         window.setTimeout(pollLeague, LEAGUE_POLL_MS);
       })
