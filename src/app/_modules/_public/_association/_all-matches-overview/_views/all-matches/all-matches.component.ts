@@ -8,6 +8,7 @@ import {
 import { Observable, Subject, takeUntil, tap } from 'rxjs';
 import { GameScheduleEntry } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
+import { calendarUrl } from 'src/app/_helpers/_utils/calendar-url';
 
 @Component({
   selector: 'fb-all-matches',
@@ -21,6 +22,11 @@ export class AllMatchesComponent implements OnInit, OnDestroy {
   public leagueId?: number;
 
   private _destroy$ = new Subject<boolean>();
+
+  /** Adresse des Kalender-Abos; leer, solange keine Liga geladen ist. */
+  public get calendarUrl(): string {
+    return this.leagueId ? calendarUrl('leagues', this.leagueId) : '';
+  }
 
   constructor(private _leagueService: LeagueService) {}
 

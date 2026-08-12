@@ -172,6 +172,13 @@ export function buildSentryOptions(): Sentry.BrowserOptions | null {
     },
     // Ergänzt die Filter oben: Zugangsdaten stecken auch im Pfad, wo weder
     // queryParams noch denyUrls greifen.
+    //
+    // Hier stand der Filter für behandelte Netz- und Anmeldezustände, wie er
+    // mit fe#239 kam. Er war wirkungslos: Sentrys ErrorHandler übergibt
+    // `captureException` nicht die HttpErrorResponse, sondern das Ergebnis
+    // seines Extractors, also eine Zeichenkette – `hint.originalException` ist
+    // hier nie das ursprüngliche Objekt. Der Filter sitzt jetzt in
+    // FilteringErrorHandler, wo die Ausnahme noch vorliegt.
     beforeSend: scrubEventUrls,
     beforeBreadcrumb: scrubBreadcrumbUrl,
   };

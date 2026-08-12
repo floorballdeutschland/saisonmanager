@@ -30,7 +30,19 @@
           >
         </li>
       }
+      <!-- „Heute live": Welche Spiele heute uebertragen werden, ligauebergreifend.
+           Steht ueber dem Spielbetriebswechsel, weil es zum Zuschauen gehoert
+           und nicht zur Navigation. -->
       <li class="mt-10">
+        <a
+          [routerLink]="['/live']"
+          class="flex items-center justify-center gap-2 font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-800 border-fb-gray-600 rounded-[5px] cursor-pointer w-full"
+        >
+          <span class="inline-block h-2 w-2 rounded-full bg-red-600"></span>
+          {{ "nav.liveToday" | transloco }}
+        </a>
+      </li>
+      <li class="mt-4">
         <a
           [routerLink]="['/']"
           class="block text-center font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-800 border-fb-gray-600 rounded-[5px] cursor-pointer w-full"

@@ -62,6 +62,9 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   loading = true;
   loadError = false;
 
+  readonly pageSize = 50;
+  currentPage = 1;
+
   gameOperationOptions: FilterOption[] = [];
   leagueOptions: FilterOption[] = [];
   ageGroupOptions: FilterOption[] = [];
@@ -252,6 +255,28 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       if (this.filterExpressOnly && !e.express) return false;
       return true;
     });
+    // Nach jeder Filteränderung wieder auf Seite 1: die alte Seitenzahl liegt
+    // sonst oft hinter dem Ende der neuen Treffermenge und die Tabelle wirkt leer.
+    this.currentPage = 1;
+  }
+
+  // ---- Pagination ----------------------------------------------------------
+  // Rein clientseitig, wie in den übrigen Admin-Listen. Die Ladezeit hängt nicht
+  // an der Menge der Zeilen, sondern am Aufbau der Liste in der Schnittstelle;
+  // hier geht es allein darum, nicht mehrere hundert Zeilen auf einmal zu rendern.
+
+  get numberOfPages(): number {
+    return Math.max(1, Math.ceil(this.filteredEntries.length / this.pageSize));
+  }
+
+  get pagedEntries(): AdminLicenseEntry[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredEntries.slice(start, start + this.pageSize);
+  }
+
+  public changePage(page: number): void {
+    this.currentPage = page;
+    this._cdr.markForCheck();
   }
 
   public resetFilters(): void {

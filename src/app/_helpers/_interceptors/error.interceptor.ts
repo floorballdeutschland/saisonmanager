@@ -96,6 +96,31 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Lizenzdokumente sind ein Nachschlag zu einer bereits geöffneten
+        // Seite, keine eigene Ansicht. Ein 403 darauf heißt „diese Unterlagen
+        // nicht", nicht „diese Seite nicht" – der generische 403-Zweig weiter
+        // unten warf die Nutzerin bzw. den Nutzer aber auf die Startseite,
+        // mitten aus der Spielerbearbeitung heraus. Beobachtet am 08.08. an
+        // drei Spielern in Folge (Sentry SAISONMANAGER-2D): öffnen,
+        // rausfliegen, zurücknavigieren, wieder rausfliegen.
+        //
+        // Die aufrufenden Ansichten melden den Fehlschlag selbst an Ort und
+        // Stelle (player-edit über documentsFailed, license-team-detail über
+        // uploadError), es geht also nichts still verloren.
+        //
+        // Die Auswahlliste der Dokumentarten am Spielerprofil gehört dazu: Sie
+        // hängt an derselben Rechteprüfung wie die Dokumente selbst, kommt also
+        // im selben Fall mit 403 zurück. Ohne diese Ausnahme wäre der Fix von
+        // #240 durch die Hintertür wieder aufgehoben. Gemeint ist nur der
+        // spielerbezogene Abruf, nicht der Katalog unter admin/document_types,
+        // der eine eigene Ansicht hat.
+        if (
+          request.url.includes('license_documents') ||
+          /\/players\/\d+\/document_types/.test(request.url)
+        ) {
+          return throwError(() => err);
+        }
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           const returnUrl = this._router.url;
           this.sessionService.logout(false, true, 'Bitte einloggen.', false);
