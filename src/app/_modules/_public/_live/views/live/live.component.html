@@ -1,0 +1,122 @@
+<div class="px-4 py-8 lg:px-10">
+  <h1 class="text-2xl font-bold uppercase">
+    {{ "live.pageTitle" | transloco }}
+  </h1>
+  <p class="mt-2 text-fb-gray-500">
+    {{ "live.intro" | transloco }}
+  </p>
+
+  @if (loading) {
+    <p class="mt-8 text-fb-gray-500">{{ "live.loading" | transloco }}</p>
+  }
+
+  @if (failed) {
+    <p class="mt-8 text-red-600">{{ "live.failed" | transloco }}</p>
+  }
+
+  @if (isEmpty) {
+    <p class="mt-8 text-fb-gray-500">{{ "live.empty" | transloco }}</p>
+  }
+
+  <!-- Drei Blöcke in der Reihenfolge, in der sie interessieren: was gerade
+       läuft, was noch kommt, was vorbei ist. Die Sortierung innerhalb der
+       Blöcke kommt vom Server. -->
+  @for (
+    block of [
+      { title: "live.running", games: running, live: true },
+      { title: "live.upcoming", games: upcoming, live: false },
+      { title: "live.ended", games: ended, live: false },
+    ];
+    track block.title
+  ) {
+    @if (block.games.length) {
+      <h2
+        class="mt-10 mb-4 text-sm font-bold uppercase tracking-wide text-fb-gray-500"
+      >
+        {{ block.title | transloco }}
+      </h2>
+
+      <ul class="flex flex-col gap-3">
+        @for (game of block.games; track game.game_id) {
+          <li class="bg-white rounded-[5px] border border-fb-gray-600 p-4">
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+              @if (block.live) {
+                <span
+                  class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-red-600"
+                >
+                  <span
+                    class="inline-block h-2 w-2 rounded-full bg-red-600"
+                  ></span>
+                  {{ "live.liveNow" | transloco }}
+                </span>
+              }
+
+              <span class="text-sm font-bold text-fb-gray-500">
+                {{ game.time }}
+              </span>
+
+              @if (game.league) {
+                <a
+                  class="text-sm font-bold text-fb-gray-500 hover:text-black"
+                  [routerLink]="['/spiel', game.game_id]"
+                  >{{ game.league.name }}</a
+                >
+              }
+            </div>
+
+            <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <a
+                class="text-lg font-bold hover:underline"
+                [routerLink]="['/spiel', game.game_id]"
+              >
+                {{ game.home_team_name }} – {{ game.guest_team_name }}
+              </a>
+
+              @if (score(game)) {
+                <span class="text-lg font-bold tabular-nums">{{
+                  score(game)
+                }}</span>
+              }
+
+              @if (block.live && period(game)) {
+                <span class="text-sm text-fb-gray-500">{{ period(game) }}</span>
+              }
+            </div>
+
+            @if (game.arena_name) {
+              <p class="mt-1 text-sm text-fb-gray-500">{{ game.arena_name }}</p>
+            }
+
+            <div class="mt-4 flex flex-wrap gap-3">
+              <!-- Fremde Adressen: rel="noopener" gehört dazu, target="_blank"
+                   gäbe der geöffneten Seite sonst Zugriff auf window.opener. -->
+              @if (game.live_stream_link) {
+                <a
+                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-800 border-fb-gray-600 rounded-[5px]"
+                  [href]="game.live_stream_link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{
+                    (game.ended ? "live.watchStream" : "live.openStream")
+                      | transloco
+                  }}
+                </a>
+              }
+              @if (game.vod_link) {
+                <a
+                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-800 border-fb-gray-600 rounded-[5px]"
+                  [href]="game.vod_link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{ "live.watchVod" | transloco }}
+                </a>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>

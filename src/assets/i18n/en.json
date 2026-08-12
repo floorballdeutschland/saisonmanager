@@ -70,7 +70,8 @@
     "emailTemplates": "Email templates",
     "feedbackComments": "Feedback (qualitative)",
     "refereeExclusions": "Club exclusions",
-    "secretaryLinks": "Match secretariat"
+    "secretaryLinks": "Match secretariat",
+    "liveToday": "Live today"
   },
   "account": {
     "title": "My account",
