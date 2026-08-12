@@ -168,6 +168,41 @@ describe('ErrorInterceptor', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
+  // Die Auswahlliste der Dokumentarten am Spielerprofil hängt an derselben
+  // Rechteprüfung wie die Dokumente selbst, kommt also im selben Fall mit 403
+  // zurück. Ohne diese Ausnahme wäre der Rauswurf aus der Spielerbearbeitung
+  // durch die Hintertür zurück.
+  it('leaves the page alone when the player document types are forbidden', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung.' },
+      403,
+      `${environment.apiURL}admin/players/19827/document_types.json`
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  // Gegenprobe zur Ausnahme oben: Der Katalog der Dokumentarten ist eine eigene
+  // Ansicht, kein Nachschlag zu einer offenen Seite. Ein 403 darauf muss weiter
+  // melden und umleiten.
+  it('still redirects on a 403 for the document type catalogue', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Nicht berechtigt' },
+      403,
+      `${environment.apiURL}admin/document_types`
+    );
+
+    expect(errorSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/']);
+  });
+
   // Gegenprobe: Die Ausnahme gilt nur den Dokumenten. Ein 403 auf einem
   // anderen Verwaltungsendpunkt muss weiterhin melden und umleiten, sonst
   // hätte die Ausnahme still den allgemeinen Schutz ausgehebelt.
