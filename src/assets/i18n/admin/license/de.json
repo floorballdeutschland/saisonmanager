@@ -33,8 +33,11 @@
     "gfRoleErstlizenz": "Erstlizenz",
     "gfRoleZweitlizenz": "Zweitlizenz",
     "gfRoleNone": "ohne Zuordnung",
-    "gfRoleExisting": "Bestehende GF-Lizenz: {{team}} ({{league}}) – aktuell {{role}}.",
-    "gfRoleDemoteHint": "Die bestehende GF-Lizenz wird bei der Genehmigung automatisch zur Zweitlizenz."
+    "gfRoleExisting": "Weitere GF-Lizenz: {{team}} ({{league}}) – {{status}}, aktuell {{role}}.",
+    "gfRoleOtherApproved": "erteilt",
+    "gfRoleOtherRequested": "erst beantragt, noch nicht erteilt",
+    "gfRoleOtherUnknown": "Status unbekannt",
+    "gfRoleDemoteHint": "Die andere GF-Lizenz wird bei der Genehmigung automatisch zur Zweitlizenz."
   },
   "globalList": {
     "title": "Lizenzverwaltung",

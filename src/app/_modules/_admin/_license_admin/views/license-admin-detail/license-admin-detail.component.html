@@ -284,6 +284,7 @@
                       : {
                           team: otherGfLicense()?.team_name,
                           league: otherGfLicense()?.league_name,
+                          status: otherGfLicenseStatusKey() | transloco,
                           role:
                             (otherGfLicense()?.gf_role === "erstlizenz"
                               ? "licenseAdmin.detail.gfRoleErstlizenz"

@@ -69,10 +69,18 @@ export class LicenseAdminDetailComponent implements OnInit {
     if (licenseId) {
       this.validUntilDates[licenseId] = this.defaultValidUntil();
       if (this.gfRoleSelectable()) {
-        // Sinnvolle Vorbelegung: Komplement zur bestehenden GF-Lizenz.
-        const other = this.otherGfLicense();
+        // Vorbelegung: Zweitlizenz nur dann, wenn die andere GF-Lizenz bereits
+        // als Erstlizenz festgelegt ist. Ist sie noch ohne Zuordnung – etwa
+        // weil sie selbst nur beantragt und noch nicht erteilt ist – wird die
+        // hier zu genehmigende Lizenz zur Erstlizenz. Die alte Bedingung
+        // prüfte auf 'zweitlizenz' und schlug damit im häufigsten Fall
+        // (Partner ohne Zuordnung) 'zweitlizenz' vor; die Genehmigung buchte
+        // dann per Gegenbuchung die noch nicht erteilte Partner-Lizenz zur
+        // Erstlizenz – genau verkehrt.
         this.gfRoles[licenseId] =
-          other?.gf_role === 'zweitlizenz' ? 'erstlizenz' : 'zweitlizenz';
+          this.otherGfLicense()?.gf_role === 'erstlizenz'
+            ? 'zweitlizenz'
+            : 'erstlizenz';
       }
     }
   }
@@ -90,6 +98,16 @@ export class LicenseAdminDetailComponent implements OnInit {
     return (this.player?.other_licenses ?? []).find(
       (o) => o.gf_adult && o.female === this.league?.female
     );
+  }
+
+  // Übersetzungsschlüssel für den Status der anderen GF-Lizenz. Ohne diesen
+  // Hinweis las sich eine bloß beantragte Lizenz wie eine bereits erteilte
+  // ("Bestehende GF-Lizenz …") und die Zuordnung wirkte unbegründet.
+  public otherGfLicenseStatusKey(): string {
+    const statusId = this.otherGfLicense()?.last_status_id;
+    if (statusId === 1) return 'licenseAdmin.detail.gfRoleOtherApproved';
+    if (statusId === 2) return 'licenseAdmin.detail.gfRoleOtherRequested';
+    return 'licenseAdmin.detail.gfRoleOtherUnknown';
   }
 
   // Nur die Lizenzen der Saison anzeigen, in der diese Liga läuft. Ältere
