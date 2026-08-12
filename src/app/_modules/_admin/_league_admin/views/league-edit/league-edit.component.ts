@@ -29,6 +29,10 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 
+// Ligaklassen, die der bundesweiten Zustaendigkeit vorbehalten sind. Gleiche
+// Liste wie BUNDESLIGA_CLASSES in leagues_controller.rb.
+const BUNDESLIGA_CLASSES = ['1fbl', '2fbl'];
+
 @Component({
   templateUrl: './league-edit.component.html',
   encapsulation: ViewEncapsulation.None,
@@ -115,6 +119,16 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           this._notificationService.error(msg, { autoClose: false });
         },
       });
+  }
+
+  // Bundesligen darf nur pflegen, wer bundesweit zustaendig ist. Die API prueft
+  // dasselbe (`buli_ok?` in leagues_controller.rb) und antwortet sonst mit 403 --
+  // der schickt ueber den ErrorInterceptor auf die Startseite und nimmt die
+  // ungespeicherten Formulareingaben mit. Deshalb hier gar nicht erst anbieten.
+  canManageLogo(league: League): boolean {
+    if (!BUNDESLIGA_CLASSES.includes(league.league_class_id ?? '')) return true;
+
+    return this.isBuliPermitted;
   }
 
   onLogoSelected(league: League, input: HTMLInputElement): void {

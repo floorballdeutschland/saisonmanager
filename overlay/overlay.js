@@ -81,6 +81,7 @@
     live: document.getElementById("live"),
     liveLabel: document.getElementById("live-label"),
     leagueMark: document.getElementById("league-mark"),
+    fsMark: document.getElementById("fs-mark"),
     lowerThird: document.getElementById("lower-third"),
     ltKicker: document.getElementById("lt-kicker"),
     ltMain: document.getElementById("lt-main"),
@@ -367,6 +368,15 @@
   // Spiel mit eigenem Ligazeichen auf eines ohne, muss das erste wieder
   // verschwinden, sonst sendet der Verein das Zeichen des falschen
   // Wettbewerbs.
+  // Setzt das Ligazeichen an BEIDEN Stellen: Anzeigetafel und Vollbild. Sie
+  // zeigen dasselbe Zeichen derselben Übertragung; ohne das Vollbild lief dort
+  // weiter die mitgelieferte Wortmarke, während die Anzeigetafel schon das
+  // eigene Zeichen zeigte.
+  //
+  // `data-own-mark` sagt der CSS, dass ein GEPFLEGTES Zeichen vorliegt. Sie
+  // blendet die mitgelieferte Wortmarke bei Pokal, Regionalliga und
+  // Meisterschaft aus, weil sie dort eine Falschaussage wäre — ein eigenes
+  // Zeichen ist keine, und genau für diese Wettbewerbe wird es hochgeladen.
   function setLeagueMark(league) {
     var url = (league && league.logo_url) || DEFAULT_LEAGUE_MARK;
 
@@ -374,22 +384,45 @@
     // versucht. Sonst fordert sie jede Spielaktualisierung wieder an und das
     // Zeichen flackert auf Sendung zwischen Fehlversuch und Rückfall.
     if (url === state.failedLeagueMark) url = DEFAULT_LEAGUE_MARK;
-    if (el.leagueMark.getAttribute("src") === url) return;
 
-    el.leagueMark.src = url;
+    if (url === DEFAULT_LEAGUE_MARK) {
+      document.documentElement.removeAttribute("data-own-mark");
+    } else {
+      document.documentElement.setAttribute("data-own-mark", "");
+    }
+
+    [el.leagueMark, el.fsMark].forEach(function (img) {
+      if (!img || img.getAttribute("src") === url) return;
+      img.src = url;
+    });
   }
 
   // Lädt das Ligazeichen nicht, zurück auf das mitgelieferte, statt eine Lücke
-  // in der Anzeigetafel zu hinterlassen. Ein einziger, dauerhafter Zuhörer
-  // statt eines neuen je Quellwechsel: Ein Zuhörer mit `once` verschwindet nur,
-  // wenn er auch feuert, und über eine lange Übertragung sammelten sich sonst
-  // die der erfolgreichen Wechsel an.
-  el.leagueMark.addEventListener("error", function () {
-    var failed = el.leagueMark.getAttribute("src");
-    if (failed === DEFAULT_LEAGUE_MARK) return;
+  // im Bild zu hinterlassen. Ein einziger, dauerhafter Zuhörer je Element statt
+  // eines neuen je Quellwechsel: Ein Zuhörer mit `once` verschwindet nur, wenn
+  // er auch feuert, und über eine lange Übertragung sammelten sich sonst die der
+  // erfolgreichen Wechsel an.
+  //
+  // Die gescheiterte Adresse kommt aus dem Ereignis (`event.target.src`), nicht
+  // aus einem späteren Blick auf das Element: Hat der Abruf zwischenzeitlich auf
+  // ein anderes Spiel umgestellt, stünde dort längst eine andere — und die
+  // funktionierende Adresse landete auf der Sperrliste.
+  function handleLeagueMarkError(event) {
+    var failed = (event.target && event.target.getAttribute("src")) || "";
+    if (!failed || failed === DEFAULT_LEAGUE_MARK) return;
 
     state.failedLeagueMark = failed;
-    el.leagueMark.src = DEFAULT_LEAGUE_MARK;
+    document.documentElement.removeAttribute("data-own-mark");
+    [el.leagueMark, el.fsMark].forEach(function (img) {
+      if (img) img.src = DEFAULT_LEAGUE_MARK;
+    });
+  }
+
+  // Defensiv, weil diese Zeilen beim Laden laufen: Fehlt ein Element (alter
+  // Zwischenspeicher im Streaming-Programm, angepasstes index.html), darf das
+  // nicht den Aufbau des ganzen Overlays verhindern.
+  [el.leagueMark, el.fsMark].forEach(function (img) {
+    if (img) img.addEventListener("error", handleLeagueMarkError);
   });
 
   function setTeam(side, team) {

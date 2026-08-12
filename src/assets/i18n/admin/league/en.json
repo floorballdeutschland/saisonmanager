@@ -162,6 +162,7 @@
     "uploadLogo": "Upload logo",
     "logoUploadHint": "PNG, JPG or WebP · max. 3 MB · landscape is fine",
     "logoTransparencyHint": "Ideally upload a cut-out image, i.e. a PNG with a transparent background. The logo will also appear on dark backgrounds, for example in livestream overlays.",
+    "logoBuliOnly": "The mark of a national league is maintained by Floorball Deutschland.",
     "removingLogo": "Removing…",
     "removeLogo": "Remove logo"
   },

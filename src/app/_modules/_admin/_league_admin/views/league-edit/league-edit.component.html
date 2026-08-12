@@ -737,22 +737,35 @@
                     {{ "leagueAdmin.edit.uploadLogo" | transloco }}
                   </div>
                   <div>
-                    <input
-                      type="file"
-                      [attr.accept]="acceptImageTypes"
-                      #logoInput
-                      (change)="onLogoSelected(league, logoInput)"
-                    />
-                    <small class="block text-fb-gray-400 mt-1">{{
-                      "leagueAdmin.edit.logoUploadHint" | transloco
-                    }}</small>
-                    <small class="block text-fb-gray-400 mt-1">{{
-                      "leagueAdmin.edit.logoTransparencyHint" | transloco
-                    }}</small>
+                    <!-- Bundesligen sind der bundesweiten Zuständigkeit
+                         vorbehalten; die API weist einen Upload sonst mit 403
+                         ab, und der schickt über den ErrorInterceptor auf die
+                         Startseite — die ungespeicherten Eingaben im Formular
+                         wären damit weg. -->
+                    @if (!canManageLogo(league)) {
+                      <span class="text-sm text-fb-gray-400">{{
+                        "leagueAdmin.edit.logoBuliOnly" | transloco
+                      }}</span>
+                    } @else {
+                      <input
+                        type="file"
+                        [attr.accept]="acceptImageTypes"
+                        #logoInput
+                        (change)="onLogoSelected(league, logoInput)"
+                      />
+                      <small class="block text-fb-gray-400 mt-1">{{
+                        "leagueAdmin.edit.logoUploadHint" | transloco
+                      }}</small>
+                      <small class="block text-fb-gray-400 mt-1">{{
+                        "leagueAdmin.edit.logoTransparencyHint" | transloco
+                      }}</small>
+                    }
                   </div>
                   <div></div>
                   <div>
-                    @if (league.logo_source === "league") {
+                    @if (
+                      league.logo_source === "league" && canManageLogo(league)
+                    ) {
                       <button
                         type="button"
                         (click)="deleteLogo(league)"

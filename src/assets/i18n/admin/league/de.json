@@ -162,6 +162,7 @@
     "uploadLogo": "Logo hochladen",
     "logoUploadHint": "PNG, JPG oder WebP · max. 3 MB · Querformat möglich",
     "logoTransparencyHint": "Am besten freigestellt hochladen, also ein PNG mit transparentem Hintergrund. Das Logo wird künftig auch auf dunklem Grund erscheinen, etwa in Livestream-Einblendungen.",
+    "logoBuliOnly": "Das Zeichen einer Bundesliga pflegt Floorball Deutschland.",
     "removingLogo": "Wird entfernt…",
     "removeLogo": "Logo entfernen"
   },
