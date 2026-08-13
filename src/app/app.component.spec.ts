@@ -197,6 +197,23 @@ describe('AppComponent', () => {
 
     // Der Streifen ist ein Zusatz. Ein gescheiterter Abruf darf keine Meldung
     // ueber jede Seite legen.
+    // currentUser$ ist ein ReplaySubject und feuert auch bei einer Namens- oder
+    // E-Mail-Aenderung. Der Streifen darf deshalb nicht an jeder Meldung haengen,
+    // sondern nur am Recht selbst.
+    it('fragt bei einer unveraenderten Berechtigung nicht erneut ab', () => {
+      currentUser$.next(userWith({ menu_item_system_health: true }));
+      systemHealth.getSummary.and.returnValue(of(summary()));
+
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.detectChanges(); // ngOnInit
+      fixture.componentInstance.criticalDiskPercent$.subscribe();
+
+      // Zweite Meldung desselben Nutzers, etwa nach einer Namensaenderung.
+      currentUser$.next(userWith({ menu_item_system_health: true }));
+
+      expect(systemHealth.getSummary).toHaveBeenCalledTimes(1);
+    });
+
     it('bleibt bei einem gescheiterten Abruf still', () => {
       currentUser$.next(userWith({ menu_item_system_health: true }));
       systemHealth.getSummary.and.returnValue(

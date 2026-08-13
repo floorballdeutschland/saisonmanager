@@ -31,6 +31,7 @@ import {
   BehaviorSubject,
   catchError,
   combineLatest,
+  distinctUntilChanged,
   filter,
   map,
   Observable,
@@ -142,9 +143,16 @@ export class AppComponent implements OnInit {
     this.selectedSeasonId$ = this._associationService.currentSeasonId$;
     this.favoriteLeagues$ = this._favoriteService.favoriteLeagues$;
     this.favoriteTeams$ = this._favoriteService.favoriteTeams$;
+    // Nur das eine Recht auswerten und Wiederholungen abschneiden:
+    // currentUser$ ist ein ReplaySubject und feuert auch bei einer Namens- oder
+    // E-Mail-Änderung. Ohne distinctUntilChanged würde jede dieser Meldungen den
+    // Abruf erneut anstoßen, und ein spät hinzukommender Abnehmer bekäme den
+    // gepufferten Verlauf nachgespielt.
     this.criticalDiskPercent$ = this._sessionService.currentUser$.pipe(
-      switchMap((user) => {
-        if (!user?.permissions?.['menu_item_system_health']) return of(null);
+      map((user) => !!user?.permissions?.['menu_item_system_health']),
+      distinctUntilChanged(),
+      switchMap((maySeeSystemHealth) => {
+        if (!maySeeSystemHealth) return of(null);
         return this._systemHealthService.getSummary().pipe(
           map((summary) =>
             summary.status === 'critical' ? summary.used_percent : null
