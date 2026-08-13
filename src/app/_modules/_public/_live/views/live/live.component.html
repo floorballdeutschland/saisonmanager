@@ -6,6 +6,19 @@
     {{ "live.intro" | transloco }}
   </p>
 
+  <!-- Der Rückblick unten endet nach sieben Tagen, der Kanal nicht: Dort lädt
+       Floorball Deutschland die Übertragungen nachträglich hoch. -->
+  <p class="mt-2 text-fb-gray-500">
+    {{ "live.channelHint" | transloco }}
+    <a
+      class="font-bold text-black hover:underline"
+      [href]="channelUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+      >{{ "live.channelLink" | transloco }}</a
+    >
+  </p>
+
   @if (loading) {
     <p class="mt-8 text-fb-gray-500">{{ "live.loading" | transloco }}</p>
   }
@@ -19,13 +32,14 @@
   }
 
   <!-- Drei Blöcke in der Reihenfolge, in der sie interessieren: was gerade
-       läuft, was noch kommt, was vorbei ist. Die Sortierung innerhalb der
-       Blöcke kommt vom Server. -->
+       läuft, was heute noch kommt, was zuletzt lief. Die Sortierung innerhalb
+       der Blöcke kommt vom Server. Nur der Rückblick reicht über den Tag
+       hinaus, deshalb steht das Datum auch nur dort. -->
   @for (
     block of [
-      { title: "live.running", games: running, live: true },
-      { title: "live.upcoming", games: upcoming, live: false },
-      { title: "live.ended", games: ended, live: false },
+      { title: "live.running", games: running, live: true, showDate: false },
+      { title: "live.upcoming", games: upcoming, live: false, showDate: false },
+      { title: "live.recent", games: recent, live: false, showDate: true },
     ];
     track block.title
   ) {
@@ -48,6 +62,12 @@
                     class="inline-block h-2 w-2 rounded-full bg-red-600"
                   ></span>
                   {{ "live.liveNow" | transloco }}
+                </span>
+              }
+
+              @if (block.showDate && !isFromToday(game)) {
+                <span class="text-sm font-bold text-fb-gray-500">
+                  {{ game.date | date: "EEEE, dd.MM." }}
                 </span>
               }
 

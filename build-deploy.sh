@@ -25,7 +25,13 @@ if ! grep -q "FRONTEND_API_KEY_PLACEHOLDER" src/environments/environment.prod.ts
 fi
 
 # Platzhalter durch echten Key ersetzen (| als Delimiter, sicher für Hex-Keys)
-sed -i "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment.prod.ts
+#
+# `sed -i.bak` statt `sed -i`: BSD-sed (macOS) verlangt hinter -i zwingend eine
+# Endung und nimmt sonst den Ausdruck dafür, danach die Datei als Ausdruck. Das
+# bricht mit "bad flag in substitute command" ab, bevor irgendetwas ersetzt ist.
+# Mit Endung verhalten sich BSD und GNU gleich, die Sicherung raeumen wir weg.
+sed -i.bak "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment.prod.ts
+rm -f src/environments/environment.prod.ts.bak
 
 # Sentry-DSN einsetzen, sofern hinterlegt. Anders als beim API-Key ist das
 # optional: Ohne die Datei bleibt der Platzhalter stehen, und initSentry()
@@ -51,7 +57,8 @@ if [ -f "src/environments/.sentry-dsn" ]; then
     exit 1
   fi
   # @ und / im DSN kollidieren mit gängigen sed-Delimitern, | kommt darin nicht vor.
-  sed -i "s|SENTRY_DSN_PLACEHOLDER|${SENTRY_DSN}|" src/environments/environment.prod.ts
+  sed -i.bak "s|SENTRY_DSN_PLACEHOLDER|${SENTRY_DSN}|" src/environments/environment.prod.ts
+  rm -f src/environments/environment.prod.ts.bak
   echo "Sentry-DSN eingesetzt."
 else
   echo "Hinweis: src/environments/.sentry-dsn fehlt – Frontend-Sentry bleibt aus."

@@ -63,7 +63,7 @@ describe('LiveComponent', () => {
     fixture.detectChanges();
   }
 
-  it('teilt die Spiele in laufende, anstehende und beendete auf', () => {
+  it('teilt die Spiele in laufende, anstehende und zuletzt uebertragene auf', () => {
     serviceSpy.getToday.and.returnValue(
       of({
         date: '2026-08-10',
@@ -79,8 +79,55 @@ describe('LiveComponent', () => {
 
     expect(component.running.map((g) => g.game_id)).toEqual([1]);
     expect(component.upcoming.map((g) => g.game_id)).toEqual([2]);
-    expect(component.ended.map((g) => g.game_id)).toEqual([3]);
+    expect(component.recent.map((g) => g.game_id)).toEqual([3]);
     expect(component.isEmpty).toBeFalse();
+  });
+
+  // Der Rueckblick umfasst nicht nur den heutigen Tag. Die Reihenfolge kommt
+  // vom Server und darf hier nicht verloren gehen: Das zuletzt beendete Spiel
+  // steht oben.
+  it('behaelt im Rueckblick die Reihenfolge des Servers', () => {
+    serviceSpy.getToday.and.returnValue(
+      of({
+        date: '2026-08-10',
+        games: [
+          game({
+            game_id: 3,
+            status: 'ended',
+            date: '2026-08-10',
+            ended: true,
+          }),
+          game({
+            game_id: 2,
+            status: 'ended',
+            date: '2026-08-09',
+            ended: true,
+          }),
+          game({
+            game_id: 1,
+            status: 'ended',
+            date: '2026-08-04',
+            ended: true,
+          }),
+        ],
+      })
+    );
+
+    create();
+
+    expect(component.recent.map((g) => g.game_id)).toEqual([3, 2, 1]);
+  });
+
+  // Im Rueckblick steht das Datum nur an den Eintraegen frueherer Tage.
+  // Maszgeblich ist dabei das Datum aus der Antwort und nicht die Uhr im
+  // Browser: Ein Geraet in einer anderen Zeitzone haette sonst nachts einen
+  // anderen „heute" als die Liste, die es gerade anzeigt.
+  it('erkennt einen Eintrag von heute am Datum der Antwort', () => {
+    serviceSpy.getToday.and.returnValue(of({ date: '2026-08-10', games: [] }));
+    create();
+
+    expect(component.isFromToday(game({ date: '2026-08-10' }))).toBeTrue();
+    expect(component.isFromToday(game({ date: '2026-08-09' }))).toBeFalse();
   });
 
   it('meldet einen leeren Tag als leer und nicht als Fehler', () => {
@@ -90,6 +137,29 @@ describe('LiveComponent', () => {
 
     expect(component.isEmpty).toBeTrue();
     expect(component.failed).toBeFalse();
+  });
+
+  // Ein Tag ohne laufende und ohne anstehende Uebertragung ist nicht leer,
+  // solange der Rueckblick etwas hergibt. Sonst stuende „keine Uebertragung
+  // hinterlegt" ueber einer Liste mit Eintraegen.
+  it('gilt nicht als leer, wenn nur der Rueckblick gefuellt ist', () => {
+    serviceSpy.getToday.and.returnValue(
+      of({
+        date: '2026-08-10',
+        games: [
+          game({
+            game_id: 7,
+            status: 'ended',
+            date: '2026-08-08',
+            ended: true,
+          }),
+        ],
+      })
+    );
+
+    create();
+
+    expect(component.isEmpty).toBeFalse();
   });
 
   it('zeigt beim ersten Fehlversuch einen Hinweis', () => {

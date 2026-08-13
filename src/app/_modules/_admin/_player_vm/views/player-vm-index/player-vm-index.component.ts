@@ -170,14 +170,11 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   deactivate(list: ClubPlayerList, player: Player): void {
     this.confirmDeactivateId = null;
     this.actionError = null;
+    // Der Grund geht wörtlich an die API, die nur das deutsche Präfix
+    // akzeptiert – deshalb bewusst nicht übersetzt.
     const reason =
       this.deactivateReason === 'Sonstiges'
-        ? this._transloco.translate(
-            'playerVm.notifications.reasonOtherPrefix',
-            {
-              detail: this.deactivateReasonOther,
-            }
-          )
+        ? `Sonstiges: ${this.deactivateReasonOther}`
         : this.deactivateReason;
     this._playerService
       .deactivatePlayer(player.id, reason)

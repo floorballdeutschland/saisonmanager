@@ -36,7 +36,6 @@
   },
   "notifications": {
     "deactivateError": "Deaktivierung fehlgeschlagen.",
-    "reactivateError": "Reaktivierung fehlgeschlagen.",
-    "reasonOtherPrefix": "Sonstiges: {{ detail }}"
+    "reactivateError": "Reaktivierung fehlgeschlagen."
   }
 }
