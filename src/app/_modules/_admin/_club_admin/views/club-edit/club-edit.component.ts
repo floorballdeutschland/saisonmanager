@@ -179,7 +179,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       long_name: '',
       state: 'de-sh',
       game_operation_id: 0,
-      additional_game_operation_ids: [],
     };
 
     this.club$ = of(club);
