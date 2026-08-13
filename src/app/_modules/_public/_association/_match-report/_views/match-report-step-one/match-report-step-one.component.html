@@ -266,9 +266,36 @@
                     </div>
                   </div>
 
+                  <div class="border-t border-fb-gray-200 pt-3">
+                    <div class="text-sm font-bold">
+                      Fertige Szenensammlung für OBS
+                    </div>
+                    <p class="text-xs text-fb-gray-500 mb-2">
+                      Enthält die Bühne und alle acht Vollbilder als eigene
+                      Szenen, fertig eingerichtet und mit eingesetztem Token. In
+                      OBS über Szenensammlung, Importieren einlesen. Der Import
+                      <strong>ersetzt die bestehende Sammlung nicht</strong>, er
+                      legt eine neue an — die eigene bleibt also, wie sie ist.
+                    </p>
+                    <fb-button
+                      size="small"
+                      (handleClick)="downloadSceneCollection()"
+                      >Szenensammlung herunterladen</fb-button
+                    >
+                    <p class="text-xs text-fb-gray-500 mt-2">
+                      Zwei Dinge dazu: Das Token steht in der Datei, wer sie
+                      weitergibt, gibt den Zugang weiter — nach Ablauf ist sie
+                      wertlos. Und das Bedienfeld ist nicht enthalten: OBS
+                      speichert Docks im Profil und nicht in der Szenensammlung,
+                      es bleibt der Handgriff mit dem Link oben.
+                    </p>
+                  </div>
+
                   <p class="text-xs text-fb-gray-500">
-                    Jetzt kopieren und in OBS eintragen: Die Links werden nach
-                    dem Verlassen dieser Seite nicht mehr angezeigt. Gültig bis
+                    Jetzt kopieren oder herunterladen: Die Links werden nach dem
+                    Verlassen dieser Seite nicht mehr angezeigt, und ohne sie
+                    lässt sich auch keine Szenensammlung mehr erzeugen. Gültig
+                    bis
                     {{ overlayLink?.expires_at | date: "dd.MM.yyyy HH:mm" }}.
                   </p>
                 </div>
