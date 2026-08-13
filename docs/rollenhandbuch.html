@@ -571,10 +571,12 @@
         font-family: var(--mono);
         font-size: 0.6rem;
         font-weight: 600;
-        padding: 2px 8px;
+        line-height: 1.3;
+        padding: 1px 9px;
         border-radius: 999px;
         white-space: nowrap;
-        margin-bottom: 4px;
+        margin-bottom: 3px;
+        vertical-align: 1px;
         background: color-mix(in srgb, var(--bc, #64748b) 13%, white);
         color: var(--bc, #64748b);
         border: 1px solid color-mix(in srgb, var(--bc, #64748b) 30%, white);
@@ -1166,6 +1168,16 @@
       .flags td strong {
         color: var(--ink-2);
       }
+      .branches + .proc-text {
+        margin-top: 14px;
+      }
+      .flags .sub-flag {
+        display: block;
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        color: var(--muted);
+        margin-top: 2px;
+      }
       .flags .def {
         font-family: var(--mono);
         font-size: 0.78rem;
@@ -1355,7 +1367,11 @@
             >
               <span class="rc-abbr">RSK · LV</span>
               <h3>Schiedsrichterkommission LV</h3>
-              <p>Schiedsrichterverwaltung für den eigenen Landesverband.</p>
+              <p>
+                Schiedsrichterverwaltung für den eigenen Landesverband, dazu die
+                reduzierte Ansetzung, wenn der Verband keine Personenebene
+                nutzt.
+              </p>
               <span class="rc-scope">📍 Ein Landesverband</span>
               <span class="rc-link">Details ansehen →</span>
             </a>
@@ -1429,7 +1445,8 @@
             Funktionen ausübt. Üblich sind zum Beispiel
             <span class="rb rsk">RSK</span> +
             <span class="rb ansetzer">Ansetzer</span> (Schiridaten und Ansetzung
-            in einer Hand, sofern nicht getrennt organisiert) oder
+            in einer Hand, sofern nicht getrennt organisiert; bei der Ansetzung
+            gewinnt dann kontoweit die Personenebene) oder
             <span class="rb sbk">SBK</span> +
             <span class="rb rsk">RSK</span> (Spielbetrieb und
             Schiedsrichterwesen desselben Landesverbands). Verbands- bzw.
@@ -1761,7 +1778,13 @@
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
                   <td><span class="sym none">—</span></td>
-                  <td><span class="sym none">—</span></td>
+                  <td>
+                    <span
+                      class="sym part"
+                      title="Reduziert: Verein oder Freitext je Spiel, wenn der Landesverband die Personenebene nicht nutzt"
+                      >◐</span
+                    >
+                  </td>
                   <td>
                     <span
                       class="sym full"
@@ -1939,6 +1962,10 @@
               <div class="qp-chain">
                 <span class="rb ansetzer">Ansetzer / Admin</span> setzt an &amp;
                 veröffentlicht → <span class="rb schiri">Schiri</span> bestätigt
+                <br />
+                <em>ohne Personenebene:</em>
+                <span class="rb rsk">RSK LV</span> trägt Verein oder Freitext
+                ein (sofort öffentlich)
               </div>
             </div>
             <div class="quick-proc">
@@ -2403,24 +2430,100 @@
               <div>
                 <div class="proc-title">Schiedsrichter ansetzen</div>
                 <div class="proc-sub">
-                  Von der vorläufigen Ansetzung bis zur Veröffentlichung
+                  Drei Wege, gesteuert über die Einstellungen des Landesverbands
                 </div>
               </div>
               <span class="proc-chev">▾</span>
             </summary>
             <div class="proc-body">
               <p class="proc-text">
-                Ist am Landesverband die
-                <strong>Ansetzung durch die RSK</strong> aktiv, setzt der
-                Ansetzer bzw. Admin Schiedsrichter zu Spielen an. In der Auswahl
-                erscheinen nur Schiedsrichter, die den Spieltag als verfügbar
-                markiert haben und nicht schon am selben Tag angesetzt sind.
-                Zuerst kannst du <strong>vorläufig benachrichtigen</strong> (die
-                Schiris bekommen eine E-Mail, der Status bleibt vorläufig),
-                danach <strong>veröffentlichen</strong>. Beim Veröffentlichen
-                erhalten die Schiris eine E-Mail mit einem Lizenzkarten-Link (72
-                Stunden gültig), und die Schiedsrichterbezeichnung am Spiel wird
+                Schiedsrichter-Ansetzungen entstehen in der Praxis auf drei
+                Wegen. Welcher davon gilt, entscheidet der
+                <strong>Landesverband</strong> über drei gestaffelte Optionen in
+                seinen Verbandseinstellungen. Jede setzt die darüberliegende
+                voraus, und je Spielbetrieb ist immer genau ein Weg aktiv.
+              </p>
+              <div class="flags-wrap">
+                <table class="flags">
+                  <thead>
+                    <tr>
+                      <th>Weg</th>
+                      <th>Wer trägt ein</th>
+                      <th>Aktiv, wenn</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>1 · Freitext durch die SBK</strong></td>
+                      <td>
+                        Die SBK trägt beim Anlegen des Spielplans einen Freitext
+                        am Spiel ein. Kein eigener Menüpunkt.
+                      </td>
+                      <td>
+                        <em>Ansetzungen außerhalb der SBK ermöglichen</em> ist
+                        aus
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>2 · Personenscharf</strong></td>
+                      <td>
+                        Die Rolle <span class="rb ansetzer">Ansetzer</span>
+                        wählt einzelne Schiedsrichter aus, benachrichtigt und
+                        veröffentlicht.
+                      </td>
+                      <td>
+                        beide Optionen an
+                        <em>(außerhalb der SBK + Personenebene)</em>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <strong>3 · Verein oder Freitext durch die RSK</strong>
+                      </td>
+                      <td>
+                        Die <span class="rb rsk">RSK LV</span> trägt je Spiel
+                        entweder den Verein ein, der das Gespann stellt, oder
+                        die Namen als Freitext.
+                      </td>
+                      <td>
+                        nur <em>Ansetzungen außerhalb der SBK ermöglichen</em>
+                        ist an
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="note">
+                <strong>Der Bundesspielbetrieb bleibt außen vor:</strong> Ligen
+                von Floorball Deutschland arbeiten immer personenscharf,
+                unabhängig davon, was ein Landesverband eingestellt hat.
+              </div>
+
+              <div class="proc-h">
+                Weg 2: personenscharf durch die Ansetzung
+              </div>
+              <p class="proc-text">
+                Der Ansetzer bzw. Admin setzt Schiedsrichter zu Spielen an. In
+                der Auswahl erscheinen nur Schiedsrichter, die den Spieltag als
+                verfügbar markiert haben und nicht schon am selben Tag angesetzt
+                sind. Zuerst kannst du
+                <strong>vorläufig benachrichtigen</strong> (die Schiris bekommen
+                eine E-Mail, der Status bleibt vorläufig), danach
+                <strong>veröffentlichen</strong>. Beim Veröffentlichen erhalten
+                die Schiris eine E-Mail mit einem Lizenzkarten-Link (72 Stunden
+                gültig), und die Schiedsrichterbezeichnung am Spiel wird
                 gesetzt.
+              </p>
+              <p class="proc-text">
+                Welche Spiele in dieser Liste stehen, steuert die SBK je Spiel
+                über die Markierung <strong>durch Ansetzer*in</strong> im
+                Spiel-Editor. Steht am Verband
+                <em>Standardmäßig durch Ansetzer*in</em>, tragen neue Spiele und
+                Spielplan-Importe die Markierung von selbst. Solange kein
+                Freitext eingetragen ist, zeigt der öffentliche Spielplan bei
+                einem markierten Spiel den Hinweis
+                <em>Ansetzung durch Ansetzer*in</em>. Das Freitextfeld daneben
+                bleibt trotzdem benutzbar, beides schließt sich nicht mehr aus.
               </p>
               <div class="flow">
                 <div class="st start">Spiel offen</div>
@@ -2443,6 +2546,51 @@
                 </div>
                 <div class="st success">Veröffentlicht</div>
               </div>
+
+              <div class="proc-h">
+                Weg 3: Verein oder Freitext durch die RSK
+              </div>
+              <p class="proc-text">
+                Hat der Landesverband die Ansetzung freigeschaltet, aber nicht
+                die Personenebene, findet die
+                <span class="rb rsk">RSK LV</span> unter demselben Menüpunkt
+                <em>Ansetzungen</em> eine reduzierte Ansicht:
+                <strong>Schiedsrichter eintragen</strong>. Dort steht dieselbe
+                Spieleliste, filterbar nach Saison und Zeitraum, aber statt
+                einzelner Personen trägst du je Spiel entweder den
+                <strong>Verein ein, der das Gespann stellt</strong>, oder die
+                <strong>Namen als Freitext</strong>. Beides schließt sich aus,
+                die Auswahl eines Vereins leert den Freitext und umgekehrt.
+              </p>
+              <p class="proc-text">
+                Der Eintrag steht
+                <strong>sofort im öffentlichen Spielplan</strong>, es gibt
+                keinen Zwischenschritt zum Veröffentlichen und
+                <strong>keine E-Mail</strong> an den eingetragenen Verein. Zur
+                Auswahl stehen nur die Vereine, die in der jeweiligen Liga eine
+                Mannschaft stellen. Ein Verein wird als Verknüpfung gespeichert
+                und nicht bloß als Name, damit Vereine ihre Schiedsrichter
+                später selbst benennen können.
+              </p>
+              <div class="flow">
+                <div class="st start">Spiel ohne Eintrag</div>
+                <div class="cn act">
+                  <span class="cl">Verein oder Freitext speichern</span
+                  ><span class="rb rsk">RSK LV</span><span class="ar">→</span>
+                </div>
+                <div class="st success">Steht im Spielplan</div>
+              </div>
+              <div class="note">
+                <strong>Gesperrte Zeilen:</strong> Ist ein Spiel für die
+                personenscharfe Ansetzung markiert, für ein Gespann bereits
+                angesetzt oder schon angepfiffen, bleiben die Felder gesperrt.
+                Statt der Eingabe steht dann der Hinweis, dass die Ansetzung
+                personenscharf läuft. So bearbeiten nie zwei Wege dasselbe
+                Spiel. Ist ein Konto zugleich RSK und Ansetzer*in, gewinnt
+                kontoweit die Personenebene. Verfügbarkeiten, Benachrichtigungen
+                und die Infos fürs Gespann bleiben dem Personen-Weg vorbehalten.
+              </div>
+
               <div class="proc-h">Infos fürs Gespann</div>
               <p class="proc-text">
                 Zu jedem Spiel lässt sich über
@@ -3786,11 +3934,44 @@
                       <td class="def">aus</td>
                     </tr>
                     <tr>
-                      <td><strong>Ansetzung durch die RSK</strong></td>
                       <td>
-                        Schaltet das Ansetzungs-Modul frei (Menüpunkte
-                        Ansetzungen und Verfügbarkeiten, Auswahl im
-                        Spiel-Editor).
+                        <strong
+                          >Ansetzungen außerhalb der SBK ermöglichen</strong
+                        >
+                      </td>
+                      <td>
+                        Schaltet den Menüpunkt <em>Ansetzungen</em> überhaupt
+                        frei. Ohne diese Option trägt allein die SBK bei der
+                        Spielplanerstellung ein.
+                      </td>
+                      <td class="def">aus</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <strong>Ansetzungen auf Personenebene</strong>
+                        <span class="sub-flag"
+                          >setzt „außerhalb der SBK" voraus</span
+                        >
+                      </td>
+                      <td>
+                        Gibt die Ansetzung an die Rolle Ansetzer*in weiter
+                        (personenscharfe Auswahl, Verfügbarkeiten,
+                        Benachrichtigen und Veröffentlichen). Ohne diese Option
+                        bleibt es beim reduzierten Modus der RSK.
+                      </td>
+                      <td class="def">aus</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <strong>Standardmäßig durch Ansetzer*in</strong>
+                        <span class="sub-flag"
+                          >setzt „auf Personenebene" voraus</span
+                        >
+                      </td>
+                      <td>
+                        Neue Spiele sind von vornherein für die personenscharfe
+                        Ansetzung markiert. Die SBK muss das dann nicht mehr je
+                        Spieltag anklicken.
                       </td>
                       <td class="def">aus</td>
                     </tr>
@@ -3838,7 +4019,8 @@
                 <dt>Vereinsfreigaben</dt>
                 <dd>
                   Andere Sportverbünde saisonweise für die Vereine dieses
-                  Verbands freigeben.
+                  Verbands freigeben. Rein lesend, damit der Empfänger Ligen mit
+                  Mannschaften dieser Vereine bilden kann.
                 </dd>
               </dl>
               <div class="roles-inline">
@@ -4123,8 +4305,14 @@
                   Pflicht-Scan
                 </li>
                 <li>
-                  Vereinsfreigaben verwalten (andere Verbände
-                  freigeben/entziehen)
+                  Ansetzungs-Optionen: <em>außerhalb der SBK ermöglichen</em>,
+                  <em>auf Personenebene</em> und
+                  <em>standardmäßig durch Ansetzer*in</em> (gestaffelt, jede
+                  setzt die darüberliegende voraus)
+                </li>
+                <li>
+                  Vereinsfreigaben verwalten (andere Verbände freigeben oder
+                  entziehen, rein lesend und saisonweise)
                 </li>
                 <li>
                   Spieltagscheckliste: Fragen anlegen, bearbeiten, löschen
@@ -4148,6 +4336,12 @@
                   (quantitativ) und Feedback (qualitativ)
                 </li>
                 <li>E-Mail-Protokoll und E-Mail-Vorlagen</li>
+                <li>
+                  <code>Verwaltung &rarr; System</code>: Systemzustand mit
+                  Speicherplatz, gemessenem Verlauf, Wachstum der Uploads samt
+                  Prognose und den größten Einzeldateien. Wird der Datenträger
+                  knapp, erscheint zusätzlich ein Banner in der Verwaltung
+                </li>
                 <li>Globale Einstellungen und Stammlisten pflegen</li>
               </ul>
             </div>
@@ -4581,10 +4775,30 @@
                   ><span class="chip neutral">Freigabe aufgehoben</span>
                 </div>
               </div>
+              <p class="proc-text">
+                <strong>Die Freigabe ist rein lesend.</strong> Sie existiert für
+                genau einen Zweck: Ein Spielverbund soll Ligen bilden können, in
+                denen Mannschaften aus anderen Landesverbänden mitspielen. Dafür
+                erscheinen die freigegebenen Vereine in der Vereinsverwaltung
+                des Empfängers unter <em>freigegeben</em> und in der
+                Auswahlliste beim Anlegen einer Mannschaft. Nicht enthalten sind
+                Schreibrechte auf die Vereine: Vereinsstammdaten,
+                Spielerstammdaten, Spielersperren sowie das Vergeben der
+                Vereinsrollen Vereins- und Teammanager bleiben beim
+                <strong>Heimatverband</strong>. Die Freigabe gilt
+                <strong>je Saison</strong> und muss zur neuen Saison neu erteilt
+                werden.
+              </p>
               <div class="note">
                 Die Freigabe-Auswahl zeigt nur Verbände, die nicht bereits
                 Zugriff haben und nicht zum eigenen LV gehören. Nur bei
-                Root-Verbänden (ohne übergeordneten LV) verfügbar.
+                Root-Verbänden (ohne übergeordneten LV) verfügbar. ·
+                <strong>Zwei Randfälle:</strong> Lizenzdokumente von Spielern
+                freigegebener Vereine kann die SBK des Empfängers hochladen und
+                löschen, und RSK bzw. Ansetzung des Empfängers dürfen an
+                Schiedsrichtern dieser Vereine die Kontaktdaten pflegen und
+                Doppeleinträge zusammenführen. Lizenznummer, Lizenzstufe und
+                Vereinszuordnung der Schiedsrichter bleiben davon unberührt.
               </div>
             </div>
           </details>
@@ -4709,8 +4923,8 @@
                   und RSK-Postfach für die Ansetzung
                 </li>
                 <li>
-                  Vereinsfreigaben verwalten (andere Verbände
-                  freigeben/entziehen)
+                  Vereinsfreigaben verwalten (andere Verbände freigeben oder
+                  entziehen, rein lesend und saisonweise)
                 </li>
                 <li>
                   Spieltagscheckliste: Fragen anlegen, bearbeiten, löschen
@@ -4959,7 +5173,7 @@
               <div>
                 <div class="proc-title">Vereinsfreigabe verwalten</div>
                 <div class="proc-sub">
-                  Anderen Spielverbänden Zugriff auf LV-Vereine gewähren
+                  Anderen Spielverbänden Lesezugriff auf LV-Vereine gewähren
                 </div>
               </div>
               <span class="proc-chev">▾</span>
@@ -4981,6 +5195,14 @@
                   ><span class="chip neutral">Freigabe aufgehoben</span>
                 </div>
               </div>
+              <p class="proc-text">
+                <strong>Rein lesend:</strong> Der freigegebene Spielverbund
+                sieht die Vereine des Landesverbands und kann sie in eigene
+                Ligen aufnehmen. Genau dafür ist die Freigabe da. Vereins- und
+                Spielerstammdaten, Spielersperren und die Vergabe der
+                Vereinsrollen bleiben beim Heimatverband. Die Freigabe gilt je
+                Saison. Details siehe <a href="#panel-admin">Administrator</a>.
+              </p>
             </div>
           </details>
         </section>
@@ -5104,11 +5326,23 @@
                   automatisch per E-Mail an die VSK übermittelt werden.
                 </li>
                 <li>
+                  Schiedsrichter-Ansetzung: drei gestaffelte Optionen, jede
+                  setzt die darüberliegende voraus.
+                  <em>Ansetzungen außerhalb der SBK ermöglichen</em> schaltet
+                  den Menüpunkt <em>Ansetzungen</em> überhaupt frei,
+                  <em>Ansetzungen auf Personenebene</em> gibt die Ansetzung an
+                  die Rolle Ansetzer*in weiter, und
+                  <em>Standardmäßig durch Ansetzer*in</em> markiert neue Spiele
+                  gleich beim Anlegen. Bleibt es bei der ersten Option, trägt
+                  die RSK Verein oder Freitext ein.
+                </li>
+                <li>
                   Spieltagscheckliste: Fragen anlegen, bearbeiten, löschen
                 </li>
                 <li>
-                  Vereinsfreigaben: andere Spielverbände freigeben oder
-                  entziehen
+                  Vereinsfreigaben: andere Spielverbände saisonweise freigeben
+                  oder entziehen. Die Freigabe ist rein lesend und dient dazu,
+                  Ligen mit Mannschaften aus anderen Landesverbänden zu bilden
                 </li>
               </ul>
             </div>
@@ -5350,7 +5584,7 @@
               <div>
                 <div class="proc-title">Vereinsfreigabe verwalten</div>
                 <div class="proc-sub">
-                  Anderen Spielverbänden Zugriff auf die Vereine dieses LV
+                  Anderen Spielverbänden Lesezugriff auf die Vereine dieses LV
                   gewähren
                 </div>
               </div>
@@ -5373,6 +5607,16 @@
                   ><span class="chip neutral">Freigabe aufgehoben</span>
                 </div>
               </div>
+              <p class="proc-text">
+                <strong>Rein lesend.</strong> Der Empfänger sieht die Vereine
+                deines Landesverbands und kann sie in eigene Ligen aufnehmen,
+                also Mannschaften aus deinem Verband in seinen Ligen führen.
+                Schreibrechte kommen damit nicht mit: Vereins- und
+                Spielerstammdaten, Spielersperren und die Vergabe der Rollen
+                Vereins- und Teammanager bleiben bei dir. Die Freigabe gilt
+                <strong>je Saison</strong> und muss zur neuen Saison neu erteilt
+                werden.
+              </p>
               <div class="note">
                 In der Auswahl erscheinen nur Verbände, die noch keinen Zugriff
                 haben und nicht Teil des eigenen LV sind. Die
@@ -5482,6 +5726,10 @@
             <span class="rb ansetzer">Ansetzer</span> (oder Admin), siehe
             <a href="#panel-ansetzer-fd">Ansetzer*in Floorball Deutschland</a>.
             Eine All-in-One-Person erhält dafür zusätzlich die Ansetzer-Rolle.
+            Auch der reduzierte Weg über die RSK (<a href="#panel-rsk-lv"
+              >RSK Landesverband</a
+            >) steht hier nicht zur Verfügung: Der Bundesspielbetrieb arbeitet
+            immer personenscharf.
           </div>
 
           <details class="proc" open>
@@ -5598,6 +5846,39 @@
                 </li>
               </ul>
             </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">📅</div>
+                <div>
+                  <h3>Ansetzungen (reduziert)</h3>
+                  <div class="cap-sub">
+                    Nur wenn der Verband die Personenebene nicht nutzt
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  <code>Verwaltung &rarr; Ansetzungen</code> zeigt die Ansicht
+                  <em>Schiedsrichter eintragen</em>
+                </li>
+                <li>
+                  Je Spiel den Verein hinterlegen, der das Gespann stellt, oder
+                  die Namen als Freitext
+                </li>
+                <li>
+                  Der Eintrag ist sofort im öffentlichen Spielplan zu sehen,
+                  ohne Veröffentlichen-Schritt und ohne E-Mail
+                </li>
+                <li>
+                  Keine Verfügbarkeiten, keine personenscharfe Auswahl, keine
+                  Benachrichtigungen
+                </li>
+                <li>
+                  Nach der Umstellung müssen sich RSK-Konten einmal neu
+                  anmelden, damit der Menüpunkt erscheint
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div class="sec">
@@ -5606,15 +5887,72 @@
           </div>
 
           <div class="note">
-            <strong
-              >Schiedsrichter-Ansetzung ist keine RSK-Aufgabe mehr:</strong
-            >
-            Das Ansetzen zu Spielen des eigenen Landesverbands, die
-            Verfügbarkeitsprüfung und das Veröffentlichen liegen bei der Rolle
-            <span class="rb ansetzer">Ansetzer</span> (oder Admin), siehe
-            <a href="#panel-ansetzer-lv">Ansetzer*in Landesverband</a>. Eine
-            All-in-One-Person erhält dafür zusätzlich die Ansetzer-Rolle.
+            <strong>Was die RSK ansetzen darf, hängt am Verband:</strong>
+            Die <strong>personenscharfe</strong> Ansetzung samt
+            Verfügbarkeitsprüfung, Benachrichtigen und Veröffentlichen liegt bei
+            der Rolle <span class="rb ansetzer">Ansetzer</span> (oder Admin),
+            siehe <a href="#panel-ansetzer-lv">Ansetzer*in Landesverband</a>.
+            Eine All-in-One-Person erhält dafür zusätzlich die Ansetzer-Rolle.
+            Hat der Landesverband die Ansetzung freigeschaltet, aber
+            <em>nicht</em> die Personenebene, arbeitet die RSK stattdessen im
+            reduzierten Modus (unten). Ist ein Konto beides, gewinnt die
+            Personenebene.
           </div>
+
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">📅</span>
+              <div>
+                <div class="proc-title">Schiedsrichter eintragen</div>
+                <div class="proc-sub">
+                  Reduzierte Ansetzung: Verein oder Freitext je Spiel
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Steht dein Landesverband auf
+                <em>Ansetzungen außerhalb der SBK ermöglichen</em>, ohne dass
+                die <em>Personenebene</em> aktiv ist, findest du unter
+                <code>Verwaltung &rarr; Ansetzungen</code> die Ansicht
+                <strong>Schiedsrichter eintragen</strong>. Sie zeigt die
+                anstehenden Spiele deiner Spielbetriebe, filterbar nach Saison
+                und Zeitraum. Je Spiel trägst du entweder den
+                <strong>Verein</strong> ein, der das Gespann stellt, oder die
+                <strong>Namen als Freitext</strong>. Beides zusammen geht nicht,
+                das jeweils andere Feld wird geleert.
+              </p>
+              <div class="flow">
+                <div class="st start">Spiel ohne Eintrag</div>
+                <div class="cn act">
+                  <span class="cl">Verein oder Freitext speichern</span
+                  ><span class="rb rsk">RSK LV</span><span class="ar">→</span>
+                </div>
+                <div class="st success">Steht im Spielplan</div>
+              </div>
+              <p class="proc-text">
+                Der Eintrag ist
+                <strong>sofort öffentlich sichtbar</strong>, ein Schritt zum
+                Veröffentlichen entfällt, und es geht
+                <strong>keine E-Mail</strong> an den eingetragenen Verein. Zur
+                Auswahl stehen nur Vereine, die in der jeweiligen Liga eine
+                Mannschaft stellen.
+              </p>
+              <div class="note">
+                <strong>Gesperrt bleiben Zeilen,</strong> deren Spiel für die
+                personenscharfe Ansetzung markiert ist, für die bereits ein
+                Gespann angesetzt wurde oder deren Anpfiff schon war. Nicht
+                dabei sind Verfügbarkeiten, Benachrichtigungen, das
+                Veröffentlichen und die Infos fürs Gespann, die gehören zum
+                Personen-Weg. Betreust du mehrere Verbände, kannst du nur in
+                jene eintragen, die auf dem reduzierten Weg stehen.
+              </div>
+              <div class="roles-inline">
+                <span class="rb rsk">RSK LV</span>
+              </div>
+            </div>
+          </details>
         </section>
 
         <!-- ═══════════ ANSETZER FD ═══════════ -->
@@ -5959,6 +6297,18 @@
               </div>
             </div>
           </details>
+
+          <div class="note">
+            <strong>Voraussetzung am Landesverband:</strong> Die Rolle greift
+            erst, wenn der Verband
+            <em>Ansetzungen außerhalb der SBK ermöglichen</em>
+            <strong>und</strong> <em>Ansetzungen auf Personenebene</em>
+            aktiviert hat. Fehlt die zweite Option, läuft die Ansetzung
+            stattdessen reduziert über die
+            <a href="#panel-rsk-lv">RSK des Landesverbands</a>. Trägt ein Konto
+            beide Rollen, gewinnt kontoweit die Personenebene, damit nie zwei
+            Wege dasselbe Spiel bearbeiten.
+          </div>
         </section>
 
         <!-- ═══════════ VM ═══════════ -->
