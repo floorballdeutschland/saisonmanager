@@ -696,6 +696,93 @@
                 </div>
               </div>
             </div>
+            <!-- Logo der Liga. Getrennt vom Werbebanner darunter: Das ist eine
+                 Anzeigefläche mit Ziellink, dies hier das Erkennungszeichen
+                 des Wettbewerbs. Wie beim Banner erst nach dem Speichern, weil
+                 der Upload eine Liga-ID braucht. -->
+            @if (editMode && league.id) {
+              <div class="bg-white my-[5px] py-[15px] px-[30px]">
+                <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+                  {{ "leagueAdmin.edit.logo" | transloco }}
+                </div>
+                <p class="text-sm text-fb-gray-500 mb-3 max-w-2xl">
+                  {{ "leagueAdmin.edit.logoDescription" | transloco }}
+                </p>
+                <div class="grid grid-cols-2 gap-4 items-center">
+                  <div class="font-bold text-sm">
+                    {{ "leagueAdmin.edit.currentLogo" | transloco }}
+                  </div>
+                  <div>
+                    @if (league.logo_url) {
+                      <img
+                        [src]="league.logo_url"
+                        [alt]="'leagueAdmin.edit.logoAlt' | transloco"
+                        class="h-16 max-w-xs object-contain"
+                      />
+                      <!-- Ohne diesen Hinweis sieht es so aus, als haette die
+                           Liga schon ein eigenes Zeichen. -->
+                      @if (league.logo_source === "state_association") {
+                        <small class="block text-fb-gray-400 mt-1">{{
+                          "leagueAdmin.edit.logoFromAssociation" | transloco
+                        }}</small>
+                      }
+                    }
+                    @if (!league.logo_url) {
+                      <span class="text-sm text-fb-gray-400">{{
+                        "leagueAdmin.edit.noLogo" | transloco
+                      }}</span>
+                    }
+                  </div>
+                  <div class="font-bold text-sm">
+                    {{ "leagueAdmin.edit.uploadLogo" | transloco }}
+                  </div>
+                  <div>
+                    <!-- Bundesligen sind der bundesweiten Zuständigkeit
+                         vorbehalten; die API weist einen Upload sonst mit 403
+                         ab, und der schickt über den ErrorInterceptor auf die
+                         Startseite — die ungespeicherten Eingaben im Formular
+                         wären damit weg. -->
+                    @if (!canManageLogo()) {
+                      <span class="text-sm text-fb-gray-400">{{
+                        "leagueAdmin.edit.logoBuliOnly" | transloco
+                      }}</span>
+                    } @else {
+                      <input
+                        type="file"
+                        [attr.accept]="acceptImageTypes"
+                        #logoInput
+                        (change)="onLogoSelected(league, logoInput)"
+                      />
+                      <small class="block text-fb-gray-400 mt-1">{{
+                        "leagueAdmin.edit.logoUploadHint" | transloco
+                      }}</small>
+                      <small class="block text-fb-gray-400 mt-1">{{
+                        "leagueAdmin.edit.logoTransparencyHint" | transloco
+                      }}</small>
+                    }
+                  </div>
+                  <div></div>
+                  <div>
+                    @if (league.logo_source === "league" && canManageLogo()) {
+                      <button
+                        type="button"
+                        (click)="deleteLogo(league)"
+                        [disabled]="deletingLogo"
+                        class="text-sm text-red-500 underline disabled:opacity-50"
+                      >
+                        {{
+                          (deletingLogo
+                            ? "leagueAdmin.edit.removingLogo"
+                            : "leagueAdmin.edit.removeLogo"
+                          ) | transloco
+                        }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
             <!-- Werbebanner (nur im Bearbeitungsmodus bestehender Liga) -->
             @if (editMode && league.id) {
               <div class="bg-white my-[5px] py-[15px] px-[30px]">

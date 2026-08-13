@@ -808,7 +808,11 @@
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
                 {{ "playerAdmin.edit.documents" | transloco }}
               </div>
-              @if (!licenseDocuments.length) {
+              @if (documentsFailed) {
+                <p class="block text-base text-red-600">
+                  {{ "playerAdmin.edit.documentsLoadError" | transloco }}
+                </p>
+              } @else if (!licenseDocuments.length) {
                 <p class="block text-base text-fb-gray-500">
                   {{ "playerAdmin.edit.noDocuments" | transloco }}
                 </p>
@@ -841,12 +845,110 @@
                           >
                             {{ "playerAdmin.edit.viewDocument" | transloco }}
                           </a>
+                          @if (confirmDeleteDocumentId === doc.id) {
+                            <button
+                              type="button"
+                              (click)="deleteDocument(doc.id)"
+                              class="font-bold text-white leading-[17px] text-xs px-3 py-1.5 mr-2 border bg-red-600 hover:bg-red-700 border-red-700 rounded-[5px] cursor-pointer"
+                            >
+                              {{
+                                "playerAdmin.edit.confirmDeleteDocument"
+                                  | transloco
+                              }}
+                            </button>
+                            <button
+                              type="button"
+                              (click)="confirmDeleteDocumentId = null"
+                              class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                            >
+                              {{ "playerAdmin.edit.cancel" | transloco }}
+                            </button>
+                          } @else {
+                            <button
+                              type="button"
+                              (click)="confirmDeleteDocumentId = doc.id"
+                              class="font-bold text-red-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                            >
+                              {{
+                                "playerAdmin.edit.deleteDocument" | transloco
+                              }}
+                            </button>
+                          }
                         </div>
                       </div>
                     }
                   </div>
                 </div>
               }
+
+              <!-- Upload: Dokumentart wählen, dann Datei. Ein neuer Upload
+                   ersetzt serverseitig das vorhandene Dokument derselben Art. -->
+              <div class="border-t border-fb-gray-300 pt-4 mt-2">
+                <p class="font-bold mb-2">
+                  {{ "playerAdmin.edit.addDocument" | transloco }}
+                </p>
+                @if (documentTypesFailed) {
+                  <p class="block text-base text-red-600">
+                    {{ "playerAdmin.edit.documentTypesLoadError" | transloco }}
+                  </p>
+                } @else if (!availableDocumentTypes.length) {
+                  <p class="block text-base text-fb-gray-500">
+                    {{ "playerAdmin.edit.noDocumentTypes" | transloco }}
+                  </p>
+                } @else {
+                  <div class="flex flex-col gap-2 max-w-xl">
+                    <select
+                      [(ngModel)]="uploadDocumentType"
+                      [disabled]="uploading"
+                      class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm bg-white"
+                    >
+                      <option value="">
+                        {{
+                          "playerAdmin.edit.pleaseSelectEllipsis" | transloco
+                        }}
+                      </option>
+                      @for (type of availableDocumentTypes; track type.key) {
+                        <option [value]="type.key">
+                          {{ type.name }}
+                          @if (type.game_operation_name) {
+                            ({{ type.game_operation_name }})
+                          }
+                        </option>
+                      }
+                    </select>
+                    @if (documentToBeReplaced) {
+                      <p class="text-sm text-amber-700">
+                        {{ "playerAdmin.edit.documentReplaceHint" | transloco }}
+                        {{ documentToBeReplaced.filename }}
+                      </p>
+                    }
+                    <input
+                      type="file"
+                      accept="application/pdf,image/png,image/jpeg"
+                      [disabled]="!uploadDocumentType || uploading"
+                      (change)="onDocumentFileSelected($event)"
+                      class="text-sm"
+                    />
+                    <p class="text-sm text-fb-gray-500">
+                      {{ "playerAdmin.edit.documentUploadHint" | transloco }}
+                    </p>
+                    @if (uploading) {
+                      <p class="text-sm text-fb-gray-500">
+                        {{ "playerAdmin.edit.documentUploading" | transloco }}
+                      </p>
+                    }
+                  </div>
+                }
+                @if (uploadErrors.length) {
+                  <p class="block text-base text-red-600 mt-2">
+                    {{ uploadErrors.join(", ") }}
+                  </p>
+                } @else if (uploadErrorKey) {
+                  <p class="block text-base text-red-600 mt-2">
+                    {{ uploadErrorKey | transloco }}
+                  </p>
+                }
+              </div>
             </div>
           </div>
         }
@@ -921,6 +1023,9 @@
                     </option>
                     <option value="Temporäre Pause">
                       {{ "playerAdmin.edit.reasonTemporaryBreak" | transloco }}
+                    </option>
+                    <option value="Wechsel ins Ausland">
+                      {{ "playerAdmin.edit.reasonMoveAbroad" | transloco }}
                     </option>
                     <option value="Sonstiges">
                       {{ "playerAdmin.edit.reasonOther" | transloco }}

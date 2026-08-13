@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bedienfeld | Floorball Bundesliga</title>
+    <link rel="stylesheet" href="dock.css" />
+  </head>
+  <body>
+    <!--
+      Bedienfeld für die Livestream-Overlays.
+
+      In OBS unter Ansicht, Docks, Benutzerdefiniertes Browser-Dock eintragen:
+        https://saisonmanager.de/overlay/dock.html?token=…
+
+      Läuft genauso im normalen Browser, etwa auf einem zweiten Rechner in der
+      Regie. Der Steuerzustand liegt auf dem Server, beide sehen dasselbe.
+    -->
+    <div class="dk" id="dock">
+      <div class="dk-status" id="status">Verbinde…</div>
+
+      <section class="dk-card">
+        <label class="dk-label" for="game-select">Spiel</label>
+        <select class="dk-select" id="game-select"></select>
+      </section>
+
+      <section class="dk-card">
+        <div class="dk-row">
+          <span class="dk-label">Anzeigetafel</span>
+          <button class="dk-toggle" id="scoreboard-toggle" type="button">
+            Einblenden
+          </button>
+        </div>
+        <div class="dk-score" id="score-line">–</div>
+      </section>
+
+      <section class="dk-card">
+        <div class="dk-row">
+          <span class="dk-label">Spielzeit</span>
+          <button class="dk-toggle" id="clock-visible" type="button">
+            Einblenden
+          </button>
+        </div>
+
+        <div class="dk-clock" id="clock-display">0:00</div>
+
+        <div class="dk-buttons">
+          <button class="dk-btn dk-btn--primary" id="clock-start" type="button">
+            Start
+          </button>
+          <button class="dk-btn" id="clock-minus" type="button">−10 s</button>
+          <button class="dk-btn" id="clock-plus" type="button">+10 s</button>
+          <button class="dk-btn" id="clock-reset" type="button">
+            Zurücksetzen
+          </button>
+        </div>
+
+        <!-- Das Sekretariat tippt die Ereigniszeit von Hand. Weicht sie ab,
+             entscheidet ein Mensch, welche stimmt. Automatisch nachstellen
+             wäre falsch. -->
+        <div class="dk-hint dk-hidden" id="clock-drift"></div>
+      </section>
+
+      <section class="dk-card">
+        <div class="dk-label">Bauchbinde</div>
+        <div class="dk-buttons">
+          <button class="dk-btn" id="lt-goal" type="button">Letztes Tor</button>
+          <button class="dk-btn" id="lt-penalty" type="button">
+            Letzte Strafe
+          </button>
+          <button class="dk-btn" id="lt-venue" type="button">Paarung</button>
+          <button class="dk-btn dk-btn--off" id="lt-off" type="button">
+            Ausblenden
+          </button>
+        </div>
+
+        <div class="dk-freetext">
+          <input
+            class="dk-input"
+            id="lt-text-kicker"
+            type="text"
+            placeholder="Zeile darüber, etwa: Am Mikrofon"
+            maxlength="60"
+          />
+          <input
+            class="dk-input"
+            id="lt-text-main"
+            type="text"
+            placeholder="Name"
+            maxlength="60"
+          />
+          <button class="dk-btn" id="lt-text" type="button">
+            Freitext einblenden
+          </button>
+        </div>
+      </section>
+
+      <section class="dk-card">
+        <div class="dk-row">
+          <span class="dk-label">Spielstand übersteuern</span>
+          <button class="dk-toggle" id="override-toggle" type="button">
+            Aus
+          </button>
+        </div>
+        <div class="dk-buttons dk-hidden" id="override-controls">
+          <button class="dk-btn" data-ov="home-1" type="button">Heim −</button>
+          <span class="dk-override" id="override-display">0 : 0</span>
+          <button class="dk-btn" data-ov="home+1" type="button">Heim +</button>
+          <button class="dk-btn" data-ov="guest-1" type="button">Gast −</button>
+          <button class="dk-btn" data-ov="guest+1" type="button">Gast +</button>
+        </div>
+        <div class="dk-warn dk-hidden" id="override-warn">
+          Der angezeigte Stand kommt nicht aus dem Spielbericht.
+        </div>
+      </section>
+    </div>
+
+    <script src="dock.js"></script>
+  </body>
+</html>

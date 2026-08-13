@@ -334,7 +334,7 @@
                 </td>
               </tr>
             }
-            @for (e of filteredEntries; track e) {
+            @for (e of pagedEntries; track e) {
               <tr class="hover:bg-fb-gray-100 transition-colors">
                 <!-- Spieler -->
                 <td class="px-4 py-3 whitespace-nowrap">
@@ -625,6 +625,15 @@
           </tbody>
         </table>
       </div>
+      @if (numberOfPages > 1) {
+        <div class="mt-6">
+          <fb-pagination
+            [numberOfPages]="numberOfPages"
+            [currentPage]="currentPage"
+            (changePage)="changePage($event)"
+          ></fb-pagination>
+        </div>
+      }
     }
   </div>
 </div>

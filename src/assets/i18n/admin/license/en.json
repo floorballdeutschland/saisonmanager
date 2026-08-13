@@ -33,8 +33,11 @@
     "gfRoleErstlizenz": "First license",
     "gfRoleZweitlizenz": "Second license",
     "gfRoleNone": "not assigned",
-    "gfRoleExisting": "Existing large-field license: {{team}} ({{league}}) – currently {{role}}.",
-    "gfRoleDemoteHint": "The existing large-field license will automatically become the second license upon approval."
+    "gfRoleExisting": "Further large-field license: {{team}} ({{league}}) – {{status}}, currently {{role}}.",
+    "gfRoleOtherApproved": "granted",
+    "gfRoleOtherRequested": "only applied for, not yet granted",
+    "gfRoleOtherUnknown": "status unknown",
+    "gfRoleDemoteHint": "Existing large-field licenses in this competition will automatically become the second license upon approval."
   },
   "globalList": {
     "title": "License management",

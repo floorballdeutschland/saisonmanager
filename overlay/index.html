@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Overlay | Floorball Bundesliga</title>
+    <link rel="stylesheet" href="overlay.css" />
+  </head>
+  <body>
+    <!--
+      Die Bühne für OBS. Als Browser-Quelle mit 1920x1080 einbinden:
+
+        https://saisonmanager.de/overlay/index.html?token=…
+
+      Die Endung .html gehört in die URL: nginx liefert nur bei exakter
+      Übereinstimmung die Datei aus, sonst landet der Aufruf im Angular-Router
+      und dort in der Auffangroute des Spielbetriebs.
+
+      Parameter:
+        token=…       Pflicht, aus dem Spielbericht
+        game_id=…     bestimmtes Spiel statt des vom Dock gewählten
+        scale=0.667   für eine 720p-Produktion
+        debug=1       Statusfläche oben links, geht nie auf Sendung
+
+        only=fullscreen&scene=…   Vollbild statt Bühne
+
+      Vollbilder sind EIGENE OBS-Szenen, nicht Teil der laufenden Bühne. Das
+      Bedienfeld schaltet nur, was innerhalb der Bühne passiert; ein Vollbild
+      ist ein harter Schnitt und muss sofort sitzen, nicht nach einer
+      Poll-Runde. Deshalb je Szene eine eigene Browser-Quelle mit derselben
+      Seite und einem anderen `scene`.
+
+      Bei diesen Quellen gehört in OBS „Quelle beim Ausblenden abschalten"
+      gesetzt, sonst fragen inaktive Szenen die ganze Zeit mit.
+
+      Gültige Werte für scene (die Szenensammlung aus dem Spielbericht setzt
+      genau diese, also nicht umbenennen):
+
+        startbild          Paarung, Anwurf, Halle, Gespann
+        aufstellung-heim   Aufstellung der Heimmannschaft
+        aufstellung-gast   Aufstellung der Gastmannschaft
+        drittelpause       Drittelergebnisse, Tore, Strafenbilanz
+        endstand           Ergebnis und Auszeichnungen
+        tabelle            Tabelle der Liga
+        topscorer          Torschützenliste der Liga
+        naechste-spiele    weitere Partien des Spieltags
+    -->
+    <div class="ov-stage" id="stage">
+      <section class="ov-scoreboard ov-hidden" id="scoreboard">
+        <div class="ov-team ov-team--home">
+          <div class="ov-logo-chip ov-hidden" id="home-logo"></div>
+          <span class="ov-team-name" id="home-name"></span>
+        </div>
+
+        <div class="ov-score">
+          <span id="home-goals">0</span>
+          <span class="ov-score-sep">:</span>
+          <span id="guest-goals">0</span>
+        </div>
+
+        <div class="ov-team ov-team--guest">
+          <div class="ov-logo-chip ov-hidden" id="guest-logo"></div>
+          <span class="ov-team-name" id="guest-name"></span>
+        </div>
+
+        <!-- Die Uhr wird ausschließlich vom Dock gestellt. Ohne geöffnetes
+             Dock bleibt sie leer und die Spalte fällt weg. -->
+        <div class="ov-clock ov-hidden" id="clock"></div>
+
+        <div class="ov-meta">
+          <span class="ov-period" id="period"></span>
+          <span class="ov-live" id="live">
+            <span class="ov-live-dot"></span>
+            <span id="live-label">Live</span>
+          </span>
+        </div>
+
+        <!-- Zeichen des Wettbewerbs. Hat die Liga ein eigenes Logo
+             hinterlegt, ersetzt overlay.js die Quelle; sonst bleibt das
+             mitgelieferte Bundesliga-Zeichen stehen. Ein Landesverbandslogo
+             kommt hier bewusst nicht in Frage, es stünde für den falschen
+             Zusammenhang. -->
+        <div class="ov-league-mark">
+          <img
+            id="league-mark"
+            src="img/floorball-bundesliga-weiss.png"
+            alt=""
+            width="600"
+            height="563"
+          />
+        </div>
+      </section>
+
+      <!-- Bauchbinde. Eine einzige Fläche für alle Arten (Tor, Strafe,
+           Freitext, Ort): Es ist immer höchstens eine zu sehen, und so
+           wechselt der Inhalt, ohne dass Elemente übereinander liegen. -->
+      <section class="ov-lower-third ov-lt-hidden" id="lower-third">
+        <div class="ov-lt-kicker" id="lt-kicker"></div>
+        <div class="ov-lt-main" id="lt-main"></div>
+        <div class="ov-lt-sub ov-hidden" id="lt-sub"></div>
+      </section>
+
+      <!-- Vollbild. Deckt die ganze Fläche und ist deshalb undurchsichtig: In
+           OBS liegt es als eigene Szene über dem Kamerabild, nicht darin.
+           Bleibt leer und unsichtbar, solange kein `only=fullscreen` gesetzt
+           ist. -->
+      <section class="ov-fs ov-fs-hidden" id="fullscreen">
+        <header class="ov-fs-head">
+          <span class="ov-fs-league" id="fs-league"></span>
+          <h1 class="ov-fs-title" id="fs-title"></h1>
+          <span class="ov-fs-sub" id="fs-sub"></span>
+        </header>
+
+        <div class="ov-fs-body" id="fs-body"></div>
+
+        <!-- „Spiele laufen noch". Tabelle und Torschützenliste zählen nur
+             beendete Partien, sind während des Spieltags also unvollständig.
+             Ohne diesen Hinweis sieht das auf Sendung wie ein Fehler aus. -->
+        <p class="ov-fs-note ov-hidden" id="fs-note"></p>
+
+        <div class="ov-fs-mark">
+          <img
+            id="fs-mark"
+            src="img/floorball-bundesliga-weiss.png"
+            alt=""
+            width="600"
+            height="563"
+          />
+        </div>
+      </section>
+
+      <div class="ov-debug ov-hidden" id="debug"></div>
+    </div>
+
+    <script src="overlay.js"></script>
+  </body>
+</html>

@@ -2,9 +2,14 @@ import { TestBed } from '@angular/core/testing';
 
 import { PlayerEditComponent } from './player-edit.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { getTranslocoTestingModule } from '@floorball/core';
+import { getTranslocoTestingModule, PlayerService } from '@floorball/core';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Player, PlayerLicense, Season } from '@floorball/models';
+import {
+  LicenseDocument,
+  Player,
+  PlayerLicense,
+  Season,
+} from '@floorball/models';
 
 describe('PlayerEditComponent', () => {
   beforeEach(async () => {
@@ -92,5 +97,65 @@ describe('PlayerEditComponent', () => {
         false
       );
     });
+  });
+
+  describe('Dokument-Upload', () => {
+    function build(): PlayerEditComponent {
+      const component =
+        TestBed.createComponent(PlayerEditComponent).componentInstance;
+      component.player = { id: 7 } as Player;
+      component.licenseDocuments = [
+        { id: 1, document_type: 'use' } as LicenseDocument,
+      ];
+      return component;
+    }
+
+    it('names the document a new upload of the same type would replace', () => {
+      const component = build();
+
+      expect(component.documentToBeReplaced).toBeUndefined();
+
+      component.uploadDocumentType = 'use';
+      expect(component.documentToBeReplaced?.id).toBe(1);
+
+      component.uploadDocumentType = 'id_copy';
+      expect(component.documentToBeReplaced).toBeUndefined();
+    });
+
+    // Die Grenze steht auch serverseitig (LicenseDocument::MAX_FILE_SIZE). Ohne
+    // die Vorprüfung liefe die Datei erst durch die Leitung und käme als 422
+    // zurück.
+    it('rejects a file above 10 MB without calling the API', () => {
+      const component = build();
+      const playerService = TestBed.inject(PlayerService);
+      const upload = spyOn(playerService, 'uploadLicenseDocument');
+      component.uploadDocumentType = 'id_copy';
+
+      component.onDocumentFileSelected(
+        fileEvent({ size: 11 * 1024 * 1024 } as File)
+      );
+
+      expect(upload).not.toHaveBeenCalled();
+      expect(component.uploadErrorKey).toBe(
+        'playerAdmin.edit.documentTooLarge'
+      );
+    });
+
+    it('does nothing while no document type is selected', () => {
+      const component = build();
+      const playerService = TestBed.inject(PlayerService);
+      const upload = spyOn(playerService, 'uploadLicenseDocument');
+
+      component.onDocumentFileSelected(fileEvent({ size: 1024 } as File));
+
+      expect(upload).not.toHaveBeenCalled();
+      expect(component.uploadErrorKey).toBeNull();
+    });
+
+    function fileEvent(file: File): Event {
+      return {
+        target: { files: [file], value: 'c:\\fake' },
+      } as unknown as Event;
+    }
   });
 });

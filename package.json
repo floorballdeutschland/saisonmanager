@@ -9,6 +9,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "check:overlay": "node --check overlay/overlay.js && node --check overlay/dock.js",
     "lint": "git-format-staged --formatter \"prettier --stdin-filepath \"{}\"\"  \"*.ts\" \"*.js\" \"*.json\" \"*.html\" \"*.md\" \"*.yml\" \"*.yaml\" \"*.css\" \"*.scss\""
   },
   "private": true,

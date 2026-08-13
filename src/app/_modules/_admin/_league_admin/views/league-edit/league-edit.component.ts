@@ -29,6 +29,10 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 
+// Ligaklassen, die der bundesweiten Zustaendigkeit vorbehalten sind. Gleiche
+// Liste wie BUNDESLIGA_CLASSES in leagues_controller.rb.
+const BUNDESLIGA_CLASSES = ['1fbl', '2fbl'];
+
 @Component({
   templateUrl: './league-edit.component.html',
   encapsulation: ViewEncapsulation.None,
@@ -49,15 +53,23 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   // bearbeitet wird (die konnte man vorher zwar sehen, aber nicht wählen).
   otherLeagues: League[] = [];
   private _currentLeagueId: number | null = null;
+  // Die gespeicherte Ligaklasse, nicht die im Formular. Die API prueft die
+  // gespeicherte Spalte; wer im Formular die Klasse umstellt, ohne zu speichern,
+  // bekaeme sonst Hochladen angeboten und darauf den 403.
+  private _persistedLeagueClassId = '';
   isBuliPermitted = false;
 
   private _destroy$ = new Subject<boolean>();
 
   deletingBanner = false;
+  deletingLogo = false;
 
   // Dateiauswahl-Filter fuers Template, eine Quelle mit der Pruefung unten.
   readonly acceptImageTypes = IMAGE_UPLOAD_ACCEPT;
   private readonly _maxBannerSize = 500 * 1024;
+  // Grosszuegiger als das Banner, wie serverseitig auch (LOGO_MAX_SIZE):
+  // Ein Ligazeichen wird gross eingeblendet, etwa im Livestream.
+  private readonly _maxLogoSize = 3 * 1024 * 1024;
 
   onBannerSelected(league: League, input: HTMLInputElement): void {
     if (!input.files?.length || !league.id) return;
@@ -109,6 +121,102 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
               'leagueAdmin.notifications.bannerUploadFailed'
             );
           this._notificationService.error(msg, { autoClose: false });
+        },
+      });
+  }
+
+  // Bundesligen darf nur pflegen, wer bundesweit zustaendig ist. Die API prueft
+  // dasselbe (`buli_ok?` in leagues_controller.rb) und antwortet sonst mit 403 --
+  // der schickt ueber den ErrorInterceptor auf die Startseite und nimmt die
+  // ungespeicherten Formulareingaben mit. Deshalb hier gar nicht erst anbieten.
+  //
+  // Massgeblich ist die GESPEICHERTE Ligaklasse, nicht die im Formular: Das
+  // Auswahlfeld haengt am selben `league`-Objekt, und wer die Klasse einer
+  // Bundesliga umstellt, ohne zu speichern, bekaeme das Hochladen sonst wieder
+  // angeboten -- und liefe genau in den 403, der dieses Formular leert.
+  canManageLogo(): boolean {
+    if (!BUNDESLIGA_CLASSES.includes(this._persistedLeagueClassId)) return true;
+
+    return this.isBuliPermitted;
+  }
+
+  onLogoSelected(league: League, input: HTMLInputElement): void {
+    if (!input.files?.length || !league.id) return;
+    const file = input.files[0];
+
+    if (!isAllowedImageType(file)) {
+      this._notificationService.error(
+        this._transloco.translate('leagueAdmin.notifications.invalidImageType'),
+        { autoClose: false }
+      );
+      input.value = '';
+      return;
+    }
+    if (file.size > this._maxLogoSize) {
+      this._notificationService.error(
+        this._transloco.translate('leagueAdmin.notifications.logoTooLarge'),
+        { autoClose: false }
+      );
+      input.value = '';
+      return;
+    }
+
+    this._leagueService
+      .adminUploadLogo(league.id, file)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          input.value = '';
+          // Die Antwort nennt Adresse und Herkunft, genau wie beim Löschen.
+          // Die Herkunft hier selbst zu setzen hieße, dieselbe Regel ein
+          // zweites Mal zu behaupten, an einer Stelle, an der sie niemand
+          // nachpflegen würde.
+          league.logo_url = result.logo_url;
+          league.logo_source =
+            (result.logo_source as League['logo_source']) ?? 'league';
+          this._notificationService.success(
+            this._transloco.translate('leagueAdmin.notifications.logoUploaded'),
+            { autoClose: true }
+          );
+          this._cdr.markForCheck();
+        },
+        // Keine eigene Fehlermeldung: Der ErrorInterceptor zeigt die
+        // Server-Nachricht bereits an. Ein zweiter Toast mit demselben Text
+        // stünde nur daneben und schließt sich, wie der erste, nicht von
+        // selbst.
+        error: () => {
+          input.value = '';
+        },
+      });
+  }
+
+  deleteLogo(league: League): void {
+    if (!league.id || this.deletingLogo) return;
+    if (
+      !confirm(
+        this._transloco.translate('leagueAdmin.notifications.confirmDeleteLogo')
+      )
+    )
+      return;
+
+    this.deletingLogo = true;
+    this._leagueService
+      .adminDeleteLogo(league.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (resolved) => {
+          // Die Antwort nennt, was jetzt gilt: in aller Regel das Logo des
+          // Landesverbands. Deshalb nicht einfach auf null setzen.
+          league.logo_url = resolved?.logo_url ?? null;
+          league.logo_source =
+            (resolved?.logo_source as League['logo_source']) ?? null;
+          this.deletingLogo = false;
+          this._cdr.markForCheck();
+        },
+        // Wie beim Hochladen: Die Meldung kommt vom ErrorInterceptor.
+        error: () => {
+          this.deletingLogo = false;
+          this._cdr.markForCheck();
         },
       });
   }
@@ -262,6 +370,7 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
             return;
           }
           this._currentLeagueId = league.id ?? null;
+          this._persistedLeagueClassId = league.league_class_id ?? '';
           this._refreshOtherLeagues();
         }),
         take(1),

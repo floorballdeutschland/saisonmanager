@@ -24,6 +24,14 @@ jobs:
       - name: Lint
         run: npx ng lint
 
+      # `ng lint` prüft nur `src/**` (siehe lintFilePatterns in angular.json), und
+      # `overlay/` wird vom Build bloß als Asset kopiert. Ein Syntaxfehler dort kam
+      # deshalb bisher durch die komplette CI und wäre erst in der Halle
+      # aufgefallen — nachgestellt und bestätigt. Diese Dateien gehen live auf
+      # Sendung und sind dort nicht reparierbar.
+      - name: Overlay-Syntax
+        run: npm run check:overlay
+
       - name: Test
         run: npx ng test --no-watch --no-progress --browsers=ChromeHeadlessCI --code-coverage
 
