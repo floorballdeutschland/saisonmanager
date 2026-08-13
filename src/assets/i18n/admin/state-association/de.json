@@ -92,7 +92,7 @@
     "rskEmailPlaceholder": "rsk@landesverband.de",
     "rskEmailHint": "Für Schiedsrichteransetzungen über den Saisonmanager.",
     "refereeAssignmentExternalLabel": "Ansetzungen außerhalb der SBK ermöglichen",
-    "refereeAssignmentExternalHint": "Wenn aktiv, kann die RSK die Schiedsrichter zu den Spielen eintragen, entweder einen Verein, der das Gespann stellt, oder Personen und Paare als Freitext. Ohne diese Option trägt allein die SBK bei der Spielplanerstellung ein.",
+    "refereeAssignmentExternalHint": "Wenn aktiv, kann die RSK die Schiedsrichter zu den Spielen eintragen, entweder einen Verein, der die Schiedsrichter stellt, oder Personen und Paare als Freitext. Ohne diese Option trägt allein die SBK bei der Spielplanerstellung ein.",
     "personLevelDefaultLabel": "Standardmäßig durch Ansetzer*in",
     "personLevelDefaultHint": "Neue Spiele sind von vornherein für die personenscharfe Ansetzung markiert. Die SBK muss das dann nicht mehr je Spieltag anklicken."
   },
