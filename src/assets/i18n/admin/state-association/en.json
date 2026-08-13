@@ -72,7 +72,7 @@
     "removingBanner": "Removing…",
     "removeBanner": "Remove banner",
     "releasesHeading": "Releases for sports associations",
-    "releasesDescription": "Sports associations with a release can view and edit the clubs of this state association in the club administration.",
+    "releasesDescription": "Sports associations with a release can view the clubs of this state association and add them to their own leagues. The release is read-only, club and player master data stay with the home association. It applies to the current season.",
     "releasesEmpty": "No releases granted yet.",
     "releaseRevoke": "Revoke",
     "releaseSelectPlaceholder": "– Select game operation –",
