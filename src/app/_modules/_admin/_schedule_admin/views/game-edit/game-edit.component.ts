@@ -85,8 +85,13 @@ export class GameEditComponent implements OnInit, OnChanges {
 
   togglePersonLevelAssignment(): void {
     this.game.person_level_assignment = !this.isPersonLevelAssignment;
+    this._personLevelTouched = true;
     this._cdr.markForCheck();
   }
+
+  // Sobald die Markierung von Hand gesetzt wurde, darf die Verbands-
+  // Voreinstellung sie nicht mehr überschreiben.
+  private _personLevelTouched = false;
 
   constructor(
     private _gameService: GameService,
@@ -106,6 +111,22 @@ export class GameEditComponent implements OnInit, OnChanges {
 
   ngOnChanges(): void {
     this._refreshSelectOptions();
+    this._applyPersonLevelDefault();
+  }
+
+  // Die Verbandsoption „Standardmäßig durch Ansetzer*in" kann erst greifen, wenn
+  // der Input da ist: newGame() läuft im Konstruktor, die Ligadaten kommen
+  // asynchron aus additional_references. Ohne diesen Nachzug bliebe die
+  // Markierung an einem neuen Spiel immer aus – und weil die Maske das Feld
+  // beim Speichern trotzdem mitschickt, käme auch die serverseitige
+  // Voreinstellung nicht mehr zum Zug.
+  //
+  // Nur für ein noch nicht angelegtes Spiel und nur, solange niemand den Knopf
+  // angefasst hat: eine bewusst entfernte Markierung darf nicht zurückkehren.
+  private _applyPersonLevelDefault(): void {
+    if (this.existingGame || this._personLevelTouched) return;
+
+    this.game.person_level_assignment = this.personLevelAssignmentDefault;
   }
 
   // Spieltage und Bezugsspiele tragen zusammengesetzte Beschriftungen, die das
@@ -193,6 +214,8 @@ export class GameEditComponent implements OnInit, OnChanges {
   }
 
   public newGame() {
+    // Frisches Formular: die Verbands-Voreinstellung darf wieder greifen.
+    this._personLevelTouched = false;
     this.game = {
       game_day_id: this.gameDayId,
       game_number: '',

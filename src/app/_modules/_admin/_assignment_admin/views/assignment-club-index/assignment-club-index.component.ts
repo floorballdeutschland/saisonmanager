@@ -39,8 +39,9 @@ export class AssignmentClubIndexComponent implements OnInit {
   dateTo = '';
 
   rowStates: Record<number, ClubRowState> = {};
-  // Vereine je Liga, erst beim Aufklappen einer Zeile geladen: die Auswahl sind
-  // die Vereine der Mannschaften dieser Liga, das ist pro Liga verschieden.
+  // Vereine je Liga: die Auswahl sind die Vereine der Mannschaften dieser Liga,
+  // also pro Liga verschieden. Einmal je vorkommender Liga geladen (nicht je
+  // Spiel) – ein Spieltag bringt meist mehrere Spiele derselben Liga mit.
   clubsByLeague: Record<number, AssignmentClub[]> = {};
   private _clubsLoading = new Set<number>();
 
