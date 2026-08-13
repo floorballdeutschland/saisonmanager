@@ -9,7 +9,6 @@ export interface Club {
   state: string;
   state_association_id?: number;
   game_operation_id: number;
-  additional_game_operation_ids: number[];
   contact_email?: string;
   players?: Player[];
   logo?: string;
