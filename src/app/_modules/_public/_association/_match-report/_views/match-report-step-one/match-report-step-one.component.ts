@@ -10,6 +10,7 @@ import {
   SimpleChanges,
   ChangeDetectionStrategy,
 } from '@angular/core';
+import * as Sentry from '@sentry/angular';
 import { GameService, LeagueService, SessionService } from '@floorball/core';
 import { Game, GameAdditionalFields } from '@floorball/types';
 import {
@@ -190,13 +191,24 @@ export class MatchReportStepOneComponent
       ? `Spiel ${this.game.game_number}`
       : 'Spieltag';
 
-    downloadObsSceneCollection(
-      buildObsSceneCollection({
-        overlayUrl: this.overlayUrls.overlay_url,
-        collectionName: `Saisonmanager – ${label}`,
-      }),
-      `saisonmanager-obs-szenen-${this.game?.game_day_id ?? 'spieltag'}.json`
-    );
+    // Genau deshalb darf ein Fehlschlag hier nicht stumm bleiben: Wer nichts im
+    // Download-Ordner findet und keine Meldung sieht, klickt weiter und muss am
+    // Ende den ganzen Zugang neu erzeugen -- mitten im Spieltag, womit die
+    // bereits in OBS eingetragenen Adressen ungueltig werden.
+    try {
+      downloadObsSceneCollection(
+        buildObsSceneCollection({
+          overlayUrl: this.overlayUrls.overlay_url,
+          collectionName: `Saisonmanager – ${label}`,
+        }),
+        `saisonmanager-obs-szenen-${this.game?.game_day_id ?? 'spieltag'}.json`
+      );
+    } catch (error) {
+      Sentry.captureException(error);
+      this.overlayError =
+        'Die Szenensammlung konnte nicht erzeugt werden. Bitte kopiere stattdessen die Links oben.';
+      this._cdr.markForCheck();
+    }
   }
 
   // Fehlschläge müssen auffallen: Der Klartext des Tokens wird genau einmal

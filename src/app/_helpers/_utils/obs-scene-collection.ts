@@ -221,8 +221,15 @@ export function downloadObsSceneCollection(
   link.download = fileName;
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
 
-  // Ohne das Freigeben bleibt der Blob bis zum Neuladen der Seite im Speicher.
-  URL.revokeObjectURL(url);
+  // Freigeben muss sein, sonst bleibt der Blob bis zum Neuladen der Seite im
+  // Speicher -- aber erst im naechsten Durchlauf: `click()` stellt den Download
+  // nur in die Warteschlange, und wer die Adresse sofort zurueckzieht, bekommt
+  // in Safari wortlos keine Datei. Hier waere das besonders teuer, weil der
+  // Zugangsschluessel im Klartext nur dieses eine Mal zu haben ist. `csv-export.ts`
+  // macht es aus demselben Grund genauso.
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    link.remove();
+  }, 0);
 }

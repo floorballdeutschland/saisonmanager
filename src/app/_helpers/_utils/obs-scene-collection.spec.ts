@@ -107,6 +107,33 @@ describe('buildObsSceneCollection', () => {
   it('ueberlebt JSON.stringify ohne Zyklen', () => {
     expect(() => JSON.stringify(build())).not.toThrow();
   });
+
+  // Der Name der Quelle steht an zwei Stellen und wird an beiden aus derselben
+  // Vorlage gebaut, aber getrennt. Laeuft eine der beiden auseinander -- ein
+  // umbenanntes Label, ein Halbgeviertstrich, der zum Bindestrich wird --,
+  // enthaelt die Datei weiter neun Quellen und neun Szenen, und trotzdem sind
+  // beim Verein alle Szenen leer. Das faellt erst auf Sendung auf.
+  it('verweist jede Szene auf eine Quelle, die es gibt', () => {
+    const collection = build();
+    const sourceNames = collection.sources
+      .filter((s) => s.id === 'browser_source')
+      .map((s) => s.name);
+    const referenced = collection.sources
+      .filter((s) => s.id === 'scene')
+      .flatMap((s) => (s.settings['items'] as { name: string }[]) ?? [])
+      .map((item) => item.name);
+
+    expect(referenced.length).toBe(9);
+    expect(referenced.slice().sort()).toEqual(sourceNames.slice().sort());
+  });
+
+  // Bei doppelten Namen loest OBS die Kollision beim Import still auf, und die
+  // Sammlung kommt anders wieder heraus, als sie hineingegangen ist.
+  it('vergibt jeden Quell- und Szenennamen nur einmal', () => {
+    const names = build().sources.map((s) => s.name);
+
+    expect(new Set(names).size).toBe(names.length);
+  });
 });
 
 describe('fullscreenUrl', () => {
