@@ -385,45 +385,57 @@
     // Zeichen flackert auf Sendung zwischen Fehlversuch und Rückfall.
     if (url === state.failedLeagueMark) url = DEFAULT_LEAGUE_MARK;
 
+    applyLeagueMark(url);
+  }
+
+  // Defensiv, weil das Overlay auch mit einem angepassten oder zwischen-
+  // gespeicherten index.html laufen kann: Fehlt eines der beiden Elemente,
+  // darf das den Aufbau nicht verhindern.
+  function leagueMarks() {
+    return [el.leagueMark, el.fsMark].filter(Boolean);
+  }
+
+  // Beide Zeichen tragen immer dieselbe Adresse, deshalb genügt ein Zuhörer je
+  // Wechsel für beide.
+  var leagueMarkErrorHandler = null;
+
+  function applyLeagueMark(url) {
     if (url === DEFAULT_LEAGUE_MARK) {
       document.documentElement.removeAttribute("data-own-mark");
     } else {
       document.documentElement.setAttribute("data-own-mark", "");
     }
 
-    [el.leagueMark, el.fsMark].forEach(function (img) {
-      if (!img || img.getAttribute("src") === url) return;
-      img.src = url;
+    // Der Zuhörer des vorigen Wechsels gehört zu einer Adresse, die nicht mehr
+    // auf Sendung ist. Abmelden statt `once`: Ein Zuhörer mit `once`
+    // verschwindet nur, wenn er auch feuert, und über eine lange Übertragung
+    // sammelten sich sonst die aller erfolgreichen Wechsel an.
+    if (leagueMarkErrorHandler) {
+      leagueMarks().forEach(function (img) {
+        img.removeEventListener("error", leagueMarkErrorHandler);
+      });
+      leagueMarkErrorHandler = null;
+    }
+
+    if (url !== DEFAULT_LEAGUE_MARK) {
+      // Die Adresse steckt in der Closure, nicht im Element: Hat der Abruf
+      // zwischenzeitlich auf ein anderes Spiel umgestellt, stünde im Element
+      // längst eine andere -- und die funktionierende landete auf der
+      // Sperrliste, für die Lebensdauer der Seite.
+      leagueMarkErrorHandler = function () {
+        state.failedLeagueMark = url;
+        applyLeagueMark(DEFAULT_LEAGUE_MARK);
+      };
+
+      leagueMarks().forEach(function (img) {
+        img.addEventListener("error", leagueMarkErrorHandler);
+      });
+    }
+
+    leagueMarks().forEach(function (img) {
+      if (img.getAttribute("src") !== url) img.src = url;
     });
   }
-
-  // Lädt das Ligazeichen nicht, zurück auf das mitgelieferte, statt eine Lücke
-  // im Bild zu hinterlassen. Ein einziger, dauerhafter Zuhörer je Element statt
-  // eines neuen je Quellwechsel: Ein Zuhörer mit `once` verschwindet nur, wenn
-  // er auch feuert, und über eine lange Übertragung sammelten sich sonst die der
-  // erfolgreichen Wechsel an.
-  //
-  // Die gescheiterte Adresse kommt aus dem Ereignis (`event.target.src`), nicht
-  // aus einem späteren Blick auf das Element: Hat der Abruf zwischenzeitlich auf
-  // ein anderes Spiel umgestellt, stünde dort längst eine andere — und die
-  // funktionierende Adresse landete auf der Sperrliste.
-  function handleLeagueMarkError(event) {
-    var failed = (event.target && event.target.getAttribute("src")) || "";
-    if (!failed || failed === DEFAULT_LEAGUE_MARK) return;
-
-    state.failedLeagueMark = failed;
-    document.documentElement.removeAttribute("data-own-mark");
-    [el.leagueMark, el.fsMark].forEach(function (img) {
-      if (img) img.src = DEFAULT_LEAGUE_MARK;
-    });
-  }
-
-  // Defensiv, weil diese Zeilen beim Laden laufen: Fehlt ein Element (alter
-  // Zwischenspeicher im Streaming-Programm, angepasstes index.html), darf das
-  // nicht den Aufbau des ganzen Overlays verhindern.
-  [el.leagueMark, el.fsMark].forEach(function (img) {
-    if (img) img.addEventListener("error", handleLeagueMarkError);
-  });
 
   function setTeam(side, team) {
     team = team || {};

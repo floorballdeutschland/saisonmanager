@@ -742,7 +742,7 @@
                          ab, und der schickt über den ErrorInterceptor auf die
                          Startseite — die ungespeicherten Eingaben im Formular
                          wären damit weg. -->
-                    @if (!canManageLogo(league)) {
+                    @if (!canManageLogo()) {
                       <span class="text-sm text-fb-gray-400">{{
                         "leagueAdmin.edit.logoBuliOnly" | transloco
                       }}</span>
@@ -763,9 +763,7 @@
                   </div>
                   <div></div>
                   <div>
-                    @if (
-                      league.logo_source === "league" && canManageLogo(league)
-                    ) {
+                    @if (league.logo_source === "league" && canManageLogo()) {
                       <button
                         type="button"
                         (click)="deleteLogo(league)"

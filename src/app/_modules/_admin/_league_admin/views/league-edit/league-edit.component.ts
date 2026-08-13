@@ -53,6 +53,10 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   // bearbeitet wird (die konnte man vorher zwar sehen, aber nicht wählen).
   otherLeagues: League[] = [];
   private _currentLeagueId: number | null = null;
+  // Die gespeicherte Ligaklasse, nicht die im Formular. Die API prueft die
+  // gespeicherte Spalte; wer im Formular die Klasse umstellt, ohne zu speichern,
+  // bekaeme sonst Hochladen angeboten und darauf den 403.
+  private _persistedLeagueClassId = '';
   isBuliPermitted = false;
 
   private _destroy$ = new Subject<boolean>();
@@ -125,8 +129,13 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   // dasselbe (`buli_ok?` in leagues_controller.rb) und antwortet sonst mit 403 --
   // der schickt ueber den ErrorInterceptor auf die Startseite und nimmt die
   // ungespeicherten Formulareingaben mit. Deshalb hier gar nicht erst anbieten.
-  canManageLogo(league: League): boolean {
-    if (!BUNDESLIGA_CLASSES.includes(league.league_class_id ?? '')) return true;
+  //
+  // Massgeblich ist die GESPEICHERTE Ligaklasse, nicht die im Formular: Das
+  // Auswahlfeld haengt am selben `league`-Objekt, und wer die Klasse einer
+  // Bundesliga umstellt, ohne zu speichern, bekaeme das Hochladen sonst wieder
+  // angeboten -- und liefe genau in den 403, der dieses Formular leert.
+  canManageLogo(): boolean {
+    if (!BUNDESLIGA_CLASSES.includes(this._persistedLeagueClassId)) return true;
 
     return this.isBuliPermitted;
   }
@@ -361,6 +370,7 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
             return;
           }
           this._currentLeagueId = league.id ?? null;
+          this._persistedLeagueClassId = league.league_class_id ?? '';
           this._refreshOtherLeagues();
         }),
         take(1),

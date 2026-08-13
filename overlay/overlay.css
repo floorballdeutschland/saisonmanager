@@ -378,7 +378,7 @@ body {
    DM-Endrunde mit dem Zeichen der Floorball Bundesliga im Bild. `1fbl-w` teilt
    sich die Farben mit `damen`, steht hier aber ABSICHTLICH nicht: das ist eine
    echte Bundesliga, die Wortmarke gehoert dort hin. */
-Ausgeblendet wird nur die MITGELIEFERTE Wortmarke. Liegt ein eigenes
+/* Ausgeblendet wird nur die MITGELIEFERTE Wortmarke. Liegt ein eigenes
    Ligazeichen vor, setzt overlay.js `data-own-mark` und die Regel greift nicht
    mehr: Ein gepflegtes Zeichen ist keine Behauptung, sondern genau das Zeichen
    dieses Wettbewerbs -- und Pokal, Regionalliga und DM sind die Faelle, fuer die
