@@ -74,8 +74,14 @@
           </span>
         </div>
 
+        <!-- Zeichen des Wettbewerbs. Hat die Liga ein eigenes Logo
+             hinterlegt, ersetzt overlay.js die Quelle; sonst bleibt das
+             mitgelieferte Bundesliga-Zeichen stehen. Ein Landesverbandslogo
+             kommt hier bewusst nicht in Frage, es stünde für den falschen
+             Zusammenhang. -->
         <div class="ov-league-mark">
           <img
+            id="league-mark"
             src="img/floorball-bundesliga-weiss.png"
             alt=""
             width="600"
@@ -113,6 +119,7 @@
 
         <div class="ov-fs-mark">
           <img
+            id="fs-mark"
             src="img/floorball-bundesliga-weiss.png"
             alt=""
             width="600"

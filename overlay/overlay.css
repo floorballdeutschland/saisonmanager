@@ -358,9 +358,14 @@ body {
   border-left: 1px solid rgb(255 255 255 / 10%);
 }
 
+/* Feste Höhe, aber gedeckelte Breite: Die Ligaverwaltung lässt Querformat
+   ausdrücklich zu, und ein breiter Schriftzug würde die Anzeigetafel sonst
+   auseinanderziehen. `contain` sorgt dafür, dass er dabei nicht verzerrt. */
 .ov-league-mark img {
   height: 54px;
   width: auto;
+  max-width: 220px;
+  object-fit: contain;
 }
 
 /* Die mitgelieferte Bildmarke ist die der Floorball Bundesliga und gilt für
@@ -373,14 +378,18 @@ body {
    DM-Endrunde mit dem Zeichen der Floorball Bundesliga im Bild. `1fbl-w` teilt
    sich die Farben mit `damen`, steht hier aber ABSICHTLICH nicht: das ist eine
    echte Bundesliga, die Wortmarke gehoert dort hin. */
-:root[data-competition="pokal"] .ov-league-mark,
-:root[data-competition="regional"] .ov-league-mark,
-:root[data-competition="damen"] .ov-league-mark,
-:root[data-competition="neutral"] .ov-league-mark,
-:root[data-competition="pokal"] .ov-fs-mark,
-:root[data-competition="regional"] .ov-fs-mark,
-:root[data-competition="damen"] .ov-fs-mark,
-:root[data-competition="neutral"] .ov-fs-mark {
+/* Ausgeblendet wird nur die MITGELIEFERTE Wortmarke. Liegt ein eigenes
+   Ligazeichen vor, setzt overlay.js `data-own-mark` und die Regel greift nicht
+   mehr: Ein gepflegtes Zeichen ist keine Behauptung, sondern genau das Zeichen
+   dieses Wettbewerbs -- und Pokal, Regionalliga und DM sind die Faelle, fuer die
+   es hochgeladen wird. */
+:root:not([data-own-mark]):is(
+    [data-competition="pokal"],
+    [data-competition="regional"],
+    [data-competition="damen"],
+    [data-competition="neutral"]
+  )
+  :is(.ov-league-mark, .ov-fs-mark) {
   display: none;
 }
 
@@ -567,9 +576,14 @@ body {
   top: 84px;
 }
 
+/* Breite gedeckelt wie in der Anzeigetafel: Querformat ist in der
+   Ligaverwaltung ausdrücklich erlaubt, und ein breiter Schriftzug liefe hier
+   sonst in den Titel des Vollbilds. */
 .ov-fs-mark img {
   height: 96px;
   width: auto;
+  max-width: 380px;
+  object-fit: contain;
 }
 
 /* ── Paarung: Startbild und Endstand ──────────────────────────────────────── */

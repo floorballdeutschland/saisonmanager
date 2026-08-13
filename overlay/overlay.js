@@ -40,6 +40,10 @@
   // Ab wann die Anzeige zugibt, dass sie nichts Neues mehr weiss. Der Live-Punkt
   // geht dann aus, statt einen alten Stand als aktuell auszugeben.
   var STALE_AFTER_MS = 20000;
+  // Das mitgelieferte Ligazeichen. Es steht da, solange die Liga kein eigenes
+  // hinterlegt hat, und es steht auch wieder da, sobald das Dock auf ein Spiel
+  // ohne eigenes Ligazeichen wechselt.
+  var DEFAULT_LEAGUE_MARK = "img/floorball-bundesliga-weiss.png";
 
   var state = {
     lastVersion: null, // game.updated_at der zuletzt geholten Spieldaten
@@ -55,6 +59,9 @@
     // Endgueltig abgewiesen (kein oder abgelaufenes Token). Dann hoert das
     // Nachfragen auf.
     terminal: false,
+    // Adresse eines Ligazeichens, das nicht geladen hat. Wird nicht erneut
+    // versucht, siehe setLeagueMark.
+    failedLeagueMark: null,
     // Antwort des ligaweiten Abrufs (Tabelle, Torschuetzen oder Spielplan),
     // je nach Szene. Nur im Vollbild belegt.
     league: null,
@@ -73,6 +80,8 @@
     clock: document.getElementById("clock"),
     live: document.getElementById("live"),
     liveLabel: document.getElementById("live-label"),
+    leagueMark: document.getElementById("league-mark"),
+    fsMark: document.getElementById("fs-mark"),
     lowerThird: document.getElementById("lower-third"),
     ltKicker: document.getElementById("lt-kicker"),
     ltMain: document.getElementById("lt-main"),
@@ -303,6 +312,7 @@
   function renderGame(game) {
     setTeam("home", game.home);
     setTeam("guest", game.guest);
+    setLeagueMark(game.league);
 
     renderScore(game);
 
@@ -347,6 +357,84 @@
 
     el.homeGoals.textContent = numberOr(home, 0);
     el.guestGoals.textContent = numberOr(guest, 0);
+  }
+
+  // Eigenes Ligazeichen, falls hinterlegt. Der Server liefert hier nur ein
+  // echtes Liga-Logo; hat die Liga keines, kommt gar nichts, und es steht das
+  // mitgelieferte Bundesliga-Zeichen da. Ein Landesverbandslogo stünde an
+  // dieser Stelle für den falschen Zusammenhang.
+  //
+  // Der Rückweg zählt genauso wie der Hinweg: Wechselt das Dock von einem
+  // Spiel mit eigenem Ligazeichen auf eines ohne, muss das erste wieder
+  // verschwinden, sonst sendet der Verein das Zeichen des falschen
+  // Wettbewerbs.
+  // Setzt das Ligazeichen an BEIDEN Stellen: Anzeigetafel und Vollbild. Sie
+  // zeigen dasselbe Zeichen derselben Übertragung; ohne das Vollbild lief dort
+  // weiter die mitgelieferte Wortmarke, während die Anzeigetafel schon das
+  // eigene Zeichen zeigte.
+  //
+  // `data-own-mark` sagt der CSS, dass ein GEPFLEGTES Zeichen vorliegt. Sie
+  // blendet die mitgelieferte Wortmarke bei Pokal, Regionalliga und
+  // Meisterschaft aus, weil sie dort eine Falschaussage wäre — ein eigenes
+  // Zeichen ist keine, und genau für diese Wettbewerbe wird es hochgeladen.
+  function setLeagueMark(league) {
+    var url = (league && league.logo_url) || DEFAULT_LEAGUE_MARK;
+
+    // Eine Adresse, die schon einmal nicht geladen hat, wird nicht erneut
+    // versucht. Sonst fordert sie jede Spielaktualisierung wieder an und das
+    // Zeichen flackert auf Sendung zwischen Fehlversuch und Rückfall.
+    if (url === state.failedLeagueMark) url = DEFAULT_LEAGUE_MARK;
+
+    applyLeagueMark(url);
+  }
+
+  // Defensiv, weil das Overlay auch mit einem angepassten oder zwischen-
+  // gespeicherten index.html laufen kann: Fehlt eines der beiden Elemente,
+  // darf das den Aufbau nicht verhindern.
+  function leagueMarks() {
+    return [el.leagueMark, el.fsMark].filter(Boolean);
+  }
+
+  // Beide Zeichen tragen immer dieselbe Adresse, deshalb genügt ein Zuhörer je
+  // Wechsel für beide.
+  var leagueMarkErrorHandler = null;
+
+  function applyLeagueMark(url) {
+    if (url === DEFAULT_LEAGUE_MARK) {
+      document.documentElement.removeAttribute("data-own-mark");
+    } else {
+      document.documentElement.setAttribute("data-own-mark", "");
+    }
+
+    // Der Zuhörer des vorigen Wechsels gehört zu einer Adresse, die nicht mehr
+    // auf Sendung ist. Abmelden statt `once`: Ein Zuhörer mit `once`
+    // verschwindet nur, wenn er auch feuert, und über eine lange Übertragung
+    // sammelten sich sonst die aller erfolgreichen Wechsel an.
+    if (leagueMarkErrorHandler) {
+      leagueMarks().forEach(function (img) {
+        img.removeEventListener("error", leagueMarkErrorHandler);
+      });
+      leagueMarkErrorHandler = null;
+    }
+
+    if (url !== DEFAULT_LEAGUE_MARK) {
+      // Die Adresse steckt in der Closure, nicht im Element: Hat der Abruf
+      // zwischenzeitlich auf ein anderes Spiel umgestellt, stünde im Element
+      // längst eine andere -- und die funktionierende landete auf der
+      // Sperrliste, für die Lebensdauer der Seite.
+      leagueMarkErrorHandler = function () {
+        state.failedLeagueMark = url;
+        applyLeagueMark(DEFAULT_LEAGUE_MARK);
+      };
+
+      leagueMarks().forEach(function (img) {
+        img.addEventListener("error", leagueMarkErrorHandler);
+      });
+    }
+
+    leagueMarks().forEach(function (img) {
+      if (img.getAttribute("src") !== url) img.src = url;
+    });
   }
 
   function setTeam(side, team) {
