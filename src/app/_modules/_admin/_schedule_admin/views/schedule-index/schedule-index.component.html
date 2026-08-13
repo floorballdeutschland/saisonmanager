@@ -294,6 +294,9 @@
                         [arenas]="arenas"
                         [allGameDays]="gameDays"
                         [refereeAssignmentEnabled]="refereeAssignmentEnabled"
+                        [personLevelAssignmentDefault]="
+                          personLevelAssignmentDefault
+                        "
                         (refreshSchedule)="getSchdule(leagueId)"
                       ></fb-game-edit>
                     }
@@ -366,6 +369,9 @@
                     [clubs]="clubs"
                     [arenas]="arenas"
                     [refereeAssignmentEnabled]="refereeAssignmentEnabled"
+                    [personLevelAssignmentDefault]="
+                      personLevelAssignmentDefault
+                    "
                     (refreshSchedule)="getSchdule(leagueId)"
                   ></fb-game-edit>
                 }

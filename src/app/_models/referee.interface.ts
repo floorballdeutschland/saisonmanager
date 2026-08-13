@@ -351,6 +351,7 @@ export interface RefereeAssignableGame {
   home_team_club_id?: number | null;
   guest_team_club_id?: number | null;
   league?: string;
+  league_id?: number | null;
   arena?: string;
   arena_postcode?: string;
   arena_city?: string;
@@ -358,11 +359,26 @@ export interface RefereeAssignableGame {
   national?: boolean;
   assignment_id?: number | null;
   assignment_status?: string | null;
+  // Markierung „wird personenscharf angesetzt". Im reduzierten Modus (Weg 3)
+  // sperrt sie die Zeile, damit nicht zwei Wege dasselbe Spiel bearbeiten.
+  person_level_assignment?: boolean;
+  locked?: boolean;
+  // Aktueller Freitext im Spielplan – im reduzierten Modus das Eingabefeld.
+  nominated_referee_string?: string | null;
+  assignment_club_id?: number | null;
   // Freitext-Spielinformationen des Ansetzers, nur für das angesetzte Gespann
   // und den SR-Coach sichtbar (nie für die Mannschaften).
   referee_notes?: string | null;
   referee_notes_updated_at?: string | null;
   referee_notes_updated_by_name?: string | null;
+}
+
+// Antwort des reduzierten Modus (Weg 3) nach dem Speichern von Verein bzw. Freitext.
+export interface ClubAssignmentResult {
+  game_id: number;
+  nominated_referee_string: string | null;
+  assignment_club_id?: number | null;
+  assignment_id?: number | null;
 }
 
 export interface RefereeGameNotes {

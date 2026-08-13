@@ -12,6 +12,7 @@ import {
   NotificationService,
   RefereeService,
   SeasonInfo,
+  SessionService,
   SettingsService,
 } from '@floorball/core';
 import {
@@ -117,15 +118,30 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   private _assignments: RefereeAssignment[] = [];
   private _destroy$ = new Subject<void>();
 
+  // Reduzierter Modus (Weg 3, #403): Wo ein Verband die Ansetzung außerhalb der
+  // SBK erlaubt, aber nicht auf Personenebene, zeigt derselbe Menüpunkt die
+  // schmale RSK-Ansicht. Der Server entscheidet das je Spielbetrieb und liefert
+  // das Ergebnis als Berechtigung mit.
+  clubMode = false;
+
   constructor(
     private _refereeService: RefereeService,
     private _notificationService: NotificationService,
     private _settingsService: SettingsService,
+    private _sessionService: SessionService,
     private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.clubMode =
+      this._sessionService.currentUserValue?.permissions?.[
+        'referee_assignment_club_mode'
+      ] === true;
+    // Im reduzierten Modus sind die Personen-Endpunkte gesperrt (403) – gar nicht
+    // erst laden, sonst rauschen Fehlermeldungen durch, bevor die Ansicht steht.
+    if (this.clubMode) return;
+
     this._refereeService
       .adminGetAssignmentClubs()
       .pipe(takeUntil(this._destroy$))

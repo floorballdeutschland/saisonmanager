@@ -56,15 +56,18 @@ export class GameEditComponent implements OnInit, OnChanges {
   @Input()
   arenas!: Arena[];
 
-  // Steuert, ob die Option „Ansetzung durch RSK" angeboten wird (LV-Flag bzw.
-  // national/FD immer aktiv). Default aus, damit ohne Kontext nichts angeboten wird.
+  // Steuert, ob die Option „durch Ansetzer*in" angeboten wird (Personenebene des
+  // LV bzw. national/FD immer aktiv). Default aus, damit ohne Kontext nichts
+  // angeboten wird.
   @Input()
   refereeAssignmentEnabled = false;
 
+  // Verbandsoption „Standardmäßig durch Ansetzer*in" – Vorbelegung für neue Spiele.
+  @Input()
+  personLevelAssignmentDefault = false;
+
   @Output()
   refreshSchedule = new EventEmitter<void>();
-
-  static readonly RSK_ASSIGNMENT = 'Ansetzung durch RSK';
 
   game!: GameInput;
   hasNotice = false;
@@ -73,18 +76,22 @@ export class GameEditComponent implements OnInit, OnChanges {
   processing = false;
   conflicts: GameSchedulingConflict[] = [];
 
-  get isRskAssignment(): boolean {
-    return (
-      this.game?.nominated_referee_string === GameEditComponent.RSK_ASSIGNMENT
-    );
+  // Die Markierung stand bis August 2026 als fester Text im Freitextfeld und
+  // schloss damit einen echten Freitext aus. Seit #403 ist sie ein eigenes Feld,
+  // beide Angaben stehen nebeneinander.
+  get isPersonLevelAssignment(): boolean {
+    return this.game?.person_level_assignment ?? false;
   }
 
-  toggleRskAssignment(): void {
-    this.game.nominated_referee_string = this.isRskAssignment
-      ? ''
-      : GameEditComponent.RSK_ASSIGNMENT;
+  togglePersonLevelAssignment(): void {
+    this.game.person_level_assignment = !this.isPersonLevelAssignment;
+    this._personLevelTouched = true;
     this._cdr.markForCheck();
   }
+
+  // Sobald die Markierung von Hand gesetzt wurde, darf die Verbands-
+  // Voreinstellung sie nicht mehr überschreiben.
+  private _personLevelTouched = false;
 
   constructor(
     private _gameService: GameService,
@@ -104,6 +111,22 @@ export class GameEditComponent implements OnInit, OnChanges {
 
   ngOnChanges(): void {
     this._refreshSelectOptions();
+    this._applyPersonLevelDefault();
+  }
+
+  // Die Verbandsoption „Standardmäßig durch Ansetzer*in" kann erst greifen, wenn
+  // der Input da ist: newGame() läuft im Konstruktor, die Ligadaten kommen
+  // asynchron aus additional_references. Ohne diesen Nachzug bliebe die
+  // Markierung an einem neuen Spiel immer aus – und weil die Maske das Feld
+  // beim Speichern trotzdem mitschickt, käme auch die serverseitige
+  // Voreinstellung nicht mehr zum Zug.
+  //
+  // Nur für ein noch nicht angelegtes Spiel und nur, solange niemand den Knopf
+  // angefasst hat: eine bewusst entfernte Markierung darf nicht zurückkehren.
+  private _applyPersonLevelDefault(): void {
+    if (this.existingGame || this._personLevelTouched) return;
+
+    this.game.person_level_assignment = this.personLevelAssignmentDefault;
   }
 
   // Spieltage und Bezugsspiele tragen zusammengesetzte Beschriftungen, die das
@@ -150,6 +173,8 @@ export class GameEditComponent implements OnInit, OnChanges {
       this.game.home_team_id = this.existingGame.home_team_id;
       this.game.guest_team_id = this.existingGame.guest_team_id;
       this.game.nominated_referee_string = this.existingGame.nominated_referees;
+      this.game.person_level_assignment =
+        this.existingGame.person_level_assignment ?? false;
       this.game.notice_type = this.existingGame.notice_type;
       this.game.notice_string = this.existingGame.notice_string;
 
@@ -189,6 +214,8 @@ export class GameEditComponent implements OnInit, OnChanges {
   }
 
   public newGame() {
+    // Frisches Formular: die Verbands-Voreinstellung darf wieder greifen.
+    this._personLevelTouched = false;
     this.game = {
       game_day_id: this.gameDayId,
       game_number: '',
@@ -197,6 +224,11 @@ export class GameEditComponent implements OnInit, OnChanges {
       guest_team_id: 0,
       forfait: 0,
       nominated_referee_string: '',
+      // Verbandsoption „Standardmäßig durch Ansetzer*in": neue Spiele kommen
+      // bereits markiert in die Maske, damit sichtbar ist, was gespeichert wird.
+      // Der Server setzt dieselbe Voreinstellung noch einmal für Wege, die das
+      // Feld gar nicht mitschicken (Spielplan-Import).
+      person_level_assignment: this.personLevelAssignmentDefault,
       notice_type: '',
       notice_string: '',
       group_identifier: null,
@@ -227,6 +259,8 @@ export class GameEditComponent implements OnInit, OnChanges {
       this.game.notice_string !== this.existingGame.notice_string ||
       this.game.nominated_referee_string !==
         this.existingGame.nominated_referees ||
+      this.game.person_level_assignment !==
+        (this.existingGame.person_level_assignment ?? false) ||
       this.game.group_identifier !== this.existingGame.group_identifier ||
       this.game.series_title !== this.existingGame.series_title ||
       this.game.series_number !== this.existingGame.series_number ||
@@ -290,6 +324,7 @@ export class GameEditComponent implements OnInit, OnChanges {
             home_team_id: this.game.home_team_id,
             guest_team_id: this.game.guest_team_id,
             nominated_referees: this.game.nominated_referee_string,
+            person_level_assignment: this.game.person_level_assignment,
             notice_type: this.game.notice_type,
             notice_string: this.game.notice_string,
             group_identifier: this.game.group_identifier,

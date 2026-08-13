@@ -30,8 +30,10 @@ export class ScheduleIndexComponent implements OnInit {
   newGameOpen: number[] = [];
   openGameDays: number[] = [];
   leagueId = 0;
-  // Ob die Liga die Ansetzung durch die RSK nutzen darf (LV-Flag / FD immer aktiv).
+  // Ob die Liga auf der Personenebene angesetzt wird (LV-Flag / FD immer aktiv).
   refereeAssignmentEnabled = false;
+  // Verbandsoption „Standardmäßig durch Ansetzer*in" – Vorbelegung neuer Spiele.
+  personLevelAssignmentDefault = false;
 
   loading = true;
 
@@ -66,6 +68,8 @@ export class ScheduleIndexComponent implements OnInit {
               this.arenas = result.arenas;
               this.refereeAssignmentEnabled =
                 result.referee_assignment_enabled ?? false;
+              this.personLevelAssignmentDefault =
+                result.person_level_assignment_default ?? false;
               this._cdr.markForCheck();
             },
           });

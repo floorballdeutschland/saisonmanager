@@ -302,7 +302,13 @@ export class LeagueService {
       arenas: Arena[];
       teams: Team[];
       clubs: Club[];
+      // Personenebene aktiv (Weg 2). Heisst weiterhin so, damit ein noch nicht
+      // ausgerolltes Frontend weiterarbeitet.
       referee_assignment_enabled: boolean;
+      // Ansetzungsmodus der Liga: 'none' nur SBK, 'club' reduzierter RSK-Modus,
+      // 'person' personenscharf durch die Rolle Ansetzer*in.
+      referee_assignment_mode?: 'none' | 'club' | 'person';
+      person_level_assignment_default?: boolean;
     }>(path);
   }
 

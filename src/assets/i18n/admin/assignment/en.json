@@ -72,5 +72,20 @@
     "publishError": "Error while publishing.",
     "loadError": "Data could not be loaded.",
     "notesSaved": "Game information saved."
+  },
+  "club": {
+    "title": "Enter referees",
+    "intro": "For each game, enter either the club providing the pair, or the referees as free text. The entry appears in the public schedule right away.",
+    "loading": "Loading games …",
+    "empty": "No upcoming games in this period.",
+    "game": "Game",
+    "teams": "Teams",
+    "clubColumn": "Club provides the pair",
+    "freeTextColumn": "Or free text",
+    "freeTextPlaceholder": "Enter names or pair",
+    "noClub": "No club",
+    "save": "Save",
+    "saved": "Entry saved.",
+    "lockedHint": "Assigned at person level by the assigner."
   }
 }

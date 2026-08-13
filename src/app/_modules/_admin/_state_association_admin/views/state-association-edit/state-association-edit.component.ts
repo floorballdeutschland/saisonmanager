@@ -196,6 +196,46 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Die drei Ansetzungs-Optionen sind gestaffelt: die Personenebene setzt den
+  // Hauptschalter voraus, die Voreinstellung die Personenebene. Statt nur das
+  // Eingabefeld auszugrauen, wird der Wert selbst durchgereicht – sonst bliebe
+  // eine abgehakte untere Option im Modell stehen und tauchte beim erneuten
+  // Einschalten der oberen unerwartet aktiv wieder auf.
+  get refereeAssignmentExternal(): boolean {
+    return this.stateAssociation.referee_assignment_external_enabled ?? false;
+  }
+
+  set refereeAssignmentExternal(value: boolean) {
+    this.stateAssociation.referee_assignment_external_enabled = value;
+    if (!value) {
+      this.stateAssociation.referee_assignment_enabled = false;
+      this.stateAssociation.person_level_assignment_default = false;
+    }
+  }
+
+  get refereeAssignmentPersonLevel(): boolean {
+    return (
+      this.refereeAssignmentExternal &&
+      (this.stateAssociation.referee_assignment_enabled ?? false)
+    );
+  }
+
+  set refereeAssignmentPersonLevel(value: boolean) {
+    this.stateAssociation.referee_assignment_enabled = value;
+    if (!value) this.stateAssociation.person_level_assignment_default = false;
+  }
+
+  get personLevelAssignmentDefault(): boolean {
+    return (
+      this.refereeAssignmentPersonLevel &&
+      (this.stateAssociation.person_level_assignment_default ?? false)
+    );
+  }
+
+  set personLevelAssignmentDefault(value: boolean) {
+    this.stateAssociation.person_level_assignment_default = value;
+  }
+
   submit(): void {
     if (!this.stateAssociation.name?.trim()) return;
 
@@ -226,10 +266,12 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       // eigene Spielbetriebe wirksam (Hinweis im Template).
       manual_proceeding_creation:
         this.stateAssociation.manual_proceeding_creation ?? false,
-      // Pro-LV (keine Parent-Vererbung); steuert, ob die Ansetzungslogik für
-      // die Ligen der Spielbetriebe dieses Landesverbands nutzbar ist.
-      referee_assignment_enabled:
-        this.stateAssociation.referee_assignment_enabled ?? false,
+      // Pro-LV (keine Parent-Vererbung); drei gestaffelte Optionen, jede setzt
+      // die darüberliegende voraus. Die Maske graut die untergeordneten aus,
+      // der Server räumt widersprüchliche Kombinationen zusätzlich auf.
+      referee_assignment_external_enabled: this.refereeAssignmentExternal,
+      referee_assignment_enabled: this.refereeAssignmentPersonLevel,
+      person_level_assignment_default: this.personLevelAssignmentDefault,
       // Pro-LV (keine Parent-Vererbung); steuert, ob das Berichtsformular des
       // Schiris per E-Mail an die VSK versendet wird.
       report_form_email_enabled:
