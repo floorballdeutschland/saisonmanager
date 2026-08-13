@@ -309,7 +309,11 @@
       </p>
 
       <label class="flex items-center gap-2 text-sm mb-2">
-        <input type="checkbox" [(ngModel)]="tileShowScorers" />
+        <input
+          type="checkbox"
+          [(ngModel)]="tileShowScorers"
+          (ngModelChange)="onShowScorersToggled()"
+        />
         Torschützinnen und Torschützen mit Namen nennen
       </label>
 

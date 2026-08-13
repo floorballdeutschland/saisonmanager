@@ -157,6 +157,75 @@ describe('renderResultTile', () => {
     expect(entries[0].label).toBe('Tor');
   });
 
+  // Dieselbe Rueckennummer auf beiden Seiten ist der Normalfall, nicht die
+  // Ausnahme. Eine Aufloesung ueber einen gemeinsamen Topf benennt dann die
+  // gegnerische Person als Torschuetzin, und zwar auf einem Bild, das direkt in
+  // die sozialen Netze geht.
+  it('haelt dieselbe Trikotnummer auf beiden Seiten auseinander', () => {
+    const entries = scorerEntriesForTest(
+      game({
+        events: [
+          { event_type: 'goal', event_team: 'home', time: '05:00', number: 7 },
+          { event_type: 'goal', event_team: 'guest', time: '09:30', number: 7 },
+        ],
+        players: {
+          home: [
+            {
+              trikot_number: 7,
+              player_firstname: 'Heimische',
+              player_name: 'Person',
+            },
+          ],
+          guest: [
+            {
+              trikot_number: 7,
+              player_firstname: 'Gaestische',
+              player_name: 'Person',
+            },
+          ],
+        },
+      } as unknown as Partial<Game>)
+    );
+
+    expect(entries.map((e) => e.label)).toEqual(['H. Person', 'G. Person']);
+  });
+
+  it('faellt auf die Torart zurueck, wenn die Nummer nicht in der Aufstellung steht', () => {
+    const entries = scorerEntriesForTest(
+      game({
+        events: [
+          {
+            event_type: 'goal',
+            event_team: 'home',
+            time: '05:00',
+            number: 88,
+            goal_type_string: 'Tor',
+          },
+        ],
+      } as unknown as Partial<Game>)
+    );
+
+    expect(entries[0].label).toBe('Tor');
+  });
+
+  it('zaehlt nur Tore, keine Strafen', () => {
+    const entries = scorerEntriesForTest(
+      game({
+        events: [
+          { event_type: 'goal', event_team: 'home', time: '05:00', number: 17 },
+          {
+            event_type: 'penalty_2',
+            event_team: 'guest',
+            time: '07:00',
+            number: 9,
+          },
+        ],
+      } as unknown as Partial<Game>)
+    );
+
+    expect(entries.map((e) => e.label)).toEqual(['M. Mustermann']);
+  });
+
   it('nimmt einen bereits aufgeloesten Namen, wenn einer mitkommt', () => {
     const entries = scorerEntriesForTest(
       game({

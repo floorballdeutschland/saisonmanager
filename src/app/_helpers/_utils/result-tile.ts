@@ -1,4 +1,4 @@
-import { Game } from '@floorball/types';
+import { Game, GameResult } from '@floorball/types';
 
 /**
  * Ergebniskachel für die sozialen Netze.
@@ -396,9 +396,8 @@ export async function renderResultTile(
     );
   }
 
-  const score = game.result
-    ? `${(game.result as { home_goals: number }).home_goals} : ${(game.result as { guest_goals: number }).guest_goals}`
-    : '–:–';
+  const result = game.result as GameResult | undefined;
+  const score = result ? `${result.home_goals} : ${result.guest_goals}` : '–:–';
   centeredText(
     ctx,
     score,
@@ -407,6 +406,27 @@ export async function renderResultTile(
     `700 120px ${DISPLAY_FONT}, sans-serif`,
     COLORS.text
   );
+
+  // Der Zusatz gehoert zum Ergebnis, nicht zur Verzierung: Ein Sieg nach
+  // Verlaengerung oder Penaltyschiessen ist ohne "n.V."/"n.P." schlicht falsch
+  // wiedergegeben, und eine am gruenen Tisch gewertete Partie als glattes
+  // Resultat auszugeben behauptet ein Spiel, das so nicht stattgefunden hat.
+  // Die Kachel geht in die sozialen Netze, dort steht sie ohne Tabelle daneben.
+  const postfix = result?.forfait
+    ? 'am grünen Tisch gewertet'
+    : result?.postfix?.long || result?.postfix?.short || '';
+
+  if (postfix) {
+    y += 30;
+    centeredText(
+      ctx,
+      postfix,
+      centerX,
+      y + crestSize / 2 + (hasCrest ? 40 : 120),
+      `400 34px ${BODY_FONT}, sans-serif`,
+      COLORS.muted
+    );
+  }
   // Ohne Wappen muss der Abstand zu den Mannschaftsnamen von Hand kommen: Die
   // Ziffern sind 120 Pixel hoch, und ohne Luft darunter stiessen sie an die
   // Namen.
@@ -456,9 +476,20 @@ export async function renderResultTile(
 
       // Nur so viele Zeilen, wie das Format trägt, und den Rest offen
       // benennen: Eine abgeschnittene Liste sähe nach einer vollständigen aus.
+      //
+      // Die Zeile "und N weitere" kostet selbst Platz, deshalb bleibt eine
+      // Zeile frei -- aber nur, wenn wirklich gekürzt wird. Sonst zeigte die
+      // Kachel bei zwölf Toren und zwölf freien Zeilen elf davon und meldete
+      // "und 1 weitere" für eine Liste, die vollständig gepasst hätte.
       const lineHeight = 44;
-      const available = Math.floor((height - 120 - y) / lineHeight);
-      const shown = entries.slice(0, Math.max(0, available - 1));
+      const available = Math.max(
+        0,
+        Math.floor((height - 120 - y) / lineHeight)
+      );
+      const shown =
+        entries.length <= available
+          ? entries
+          : entries.slice(0, Math.max(0, available - 1));
 
       shown.forEach((entry) => {
         centeredText(
@@ -544,6 +575,13 @@ export function downloadBlob(blob: Blob, fileName: string): void {
   link.download = fileName;
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+
+  // `click()` stellt den Download nur in die Warteschlange. Wird die Adresse
+  // im selben Durchlauf wieder freigegeben, bricht Safari ihn wortlos ab: kein
+  // Fehler, keine Datei. Genauso macht es `csv-export.ts` seit dem gleichen
+  // Befund.
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    link.remove();
+  }, 0);
 }
