@@ -226,6 +226,80 @@ describe('renderResultTile', () => {
     expect(entries.map((e) => e.label)).toEqual(['M. Mustermann']);
   });
 
+  // `event.time` ist abschnittsrelativ, die Uhr startet je Drittel wieder bei
+  // 0:00. Untereinander gesetzt lief die Zeit auf der Kachel deshalb sichtbar
+  // rueckwaerts, ohne dass etwas den Abschnitt genannt haette.
+  it('stellt der Zeit den Abschnitt voran', () => {
+    const entries = scorerEntriesForTest(
+      game({
+        events: [
+          {
+            event_type: 'goal',
+            event_team: 'home',
+            period: 1,
+            time: '09:30',
+            home_goals: 1,
+            guest_goals: 0,
+            number: 17,
+          },
+          {
+            event_type: 'goal',
+            event_team: 'guest',
+            period: 2,
+            time: '05:00',
+            home_goals: 1,
+            guest_goals: 1,
+            number: 9,
+          },
+        ],
+      } as unknown as Partial<Game>)
+    );
+
+    expect(entries.map((e) => e.time)).toEqual(['1. 09:30', '2. 05:00']);
+  });
+
+  it('bleibt bei der blanken Zeit, wenn kein Abschnitt am Ereignis steht', () => {
+    const entries = scorerEntriesForTest(game());
+
+    expect(entries[0].time).toBe('05:00');
+  });
+
+  // Der mitwachsende Stand sagt, fuer WEN das Tor fiel: `event_team` wird nur
+  // fuer den Namensnachschlag gelesen, und einen kurzen Mannschaftsnamen gibt
+  // der Spielabruf nicht her.
+  it('nennt den Spielstand nach dem Tor', () => {
+    const entries = scorerEntriesForTest(
+      game({
+        events: [
+          {
+            event_type: 'goal',
+            event_team: 'home',
+            time: '05:00',
+            home_goals: 1,
+            guest_goals: 0,
+            number: 17,
+          },
+          {
+            event_type: 'goal',
+            event_team: 'guest',
+            time: '09:30',
+            home_goals: 1,
+            guest_goals: 1,
+            number: 9,
+          },
+        ],
+      } as unknown as Partial<Game>)
+    );
+
+    expect(entries.map((e) => e.score)).toEqual(['1:0', '1:1']);
+  });
+
+  it('laesst den Stand weg, wenn das Ereignis keinen mitbringt', () => {
+    const entries = scorerEntriesForTest(game());
+
+    expect(entries[0].score).toBe('');
+  });
+
   it('nimmt einen bereits aufgeloesten Namen, wenn einer mitkommt', () => {
     const entries = scorerEntriesForTest(
       game({

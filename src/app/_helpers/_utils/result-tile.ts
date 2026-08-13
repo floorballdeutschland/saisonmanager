@@ -216,6 +216,7 @@ function periodLine(game: Game): string {
 }
 
 interface ScorerEntry {
+  score: string;
   time: string;
   label: string;
 }
@@ -283,7 +284,10 @@ function scorerEntries(game: Game): ScorerEntry[] {
   const events = (game.events ?? []) as {
     event_type?: string;
     event_team?: string;
+    period?: number | null;
     time?: string;
+    home_goals?: number | null;
+    guest_goals?: number | null;
     number?: number | string | null;
     scorer_name?: string | null;
     goal_type_string?: string | null;
@@ -305,7 +309,8 @@ function scorerEntries(game: Game): ScorerEntry[] {
           : undefined;
 
       return {
-        time: String(event.time ?? ''),
+        score: scoreAt(event),
+        time: goalTime(event),
         // Ohne auflösbaren Schützen das Label aus dem Spielbericht (Eigentor,
         // nicht angegeben), sonst bliebe die Zeile leer.
         label:
@@ -315,6 +320,46 @@ function scorerEntries(game: Game): ScorerEntry[] {
           'Tor',
       };
     });
+}
+
+/**
+ * Der Spielstand nach diesem Tor, wie ihn auch die Overlays in `goalList`
+ * ausgeben.
+ *
+ * Er ist auf der Kachel die Angabe, die sagt, für WEN das Tor fiel: `event_team`
+ * wird nur für den Namensnachschlag gelesen, und einen kurzen Mannschaftsnamen
+ * liefert der Spielabruf nicht, der volle wäre in der Zeile zu lang. Am
+ * mitwachsenden Stand liest man die Seite unmittelbar ab, und die Reihenfolge
+ * ist dabei zusätzlich monoton.
+ */
+function scoreAt(event: {
+  home_goals?: number | null;
+  guest_goals?: number | null;
+}): string {
+  if (typeof event.home_goals !== 'number') return '';
+  return `${event.home_goals}:${event.guest_goals ?? 0}`;
+}
+
+/**
+ * Abschnitt und Zeit, etwa `2. 05:00`.
+ *
+ * `event.time` ist ABSCHNITTSRELATIV, die Uhr startet je Drittel wieder bei
+ * 0:00. Untereinander gesetzt lief die Zeit auf der Kachel deshalb sichtbar
+ * rückwärts. Die übrige Oberfläche umgeht das, indem sie die Ereignisse nach
+ * Abschnitten gruppiert; auf einer Kachel kostet je Abschnitt eine
+ * Überschriftszeile zu viel Platz, deshalb steht die Nummer in der Zeile.
+ *
+ * Ohne Abschnitt am Ereignis bleibt es bei der blanken Zeit, statt eine Nummer
+ * zu erfinden.
+ */
+function goalTime(event: {
+  period?: number | null;
+  time?: string | null;
+}): string {
+  const time = String(event.time ?? '');
+  if (!time) return '';
+
+  return typeof event.period === 'number' ? `${event.period}. ${time}` : time;
 }
 
 /**
@@ -494,7 +539,7 @@ export async function renderResultTile(
       shown.forEach((entry) => {
         centeredText(
           ctx,
-          `${entry.time}   ${entry.label}`,
+          [entry.score, entry.time, entry.label].filter(Boolean).join('   '),
           centerX,
           y,
           `400 32px ${BODY_FONT}, sans-serif`,
@@ -562,9 +607,7 @@ export function looksLikeYouthLeague(
  * kaputtgehen kann, und aus einem PNG lässt sich nicht zurücklesen, was darauf
  * steht.
  */
-export function scorerEntriesForTest(
-  game: Game
-): { time: string; label: string }[] {
+export function scorerEntriesForTest(game: Game): ScorerEntry[] {
   return scorerEntries(game);
 }
 
