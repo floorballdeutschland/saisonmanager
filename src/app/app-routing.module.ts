@@ -293,6 +293,13 @@ export const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/system').then((m) => m.AdminSystemModule),
+        canActivate: [permissionGuard],
+        data: { permission: 'menu_item_system_health' },
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/email-log').then(
             (m) => m.AdminEmailLogModule
           ),

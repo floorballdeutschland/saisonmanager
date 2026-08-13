@@ -71,7 +71,8 @@
     "feedbackComments": "Feedback (qualitativ)",
     "refereeExclusions": "Vereins-Ausschlüsse",
     "secretaryLinks": "Spielsekretariat",
-    "liveToday": "Heute live"
+    "liveToday": "Heute live",
+    "systemHealth": "System"
   },
   "account": {
     "title": "Mein Konto",
@@ -137,5 +138,9 @@
     "errorTitle": "Link ungültig",
     "errorMessage": "Der Bestätigungslink ist ungültig oder abgelaufen. Du kannst die Änderung unter „Mein Konto“ erneut anstoßen.",
     "toHome": "Zur Startseite"
+  },
+  "systemHealth": {
+    "bannerCritical": "Der Speicherplatz auf dem Server ist zu {{percent}} % belegt.",
+    "bannerLink": "Systemzustand ansehen"
   }
 }
