@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import {
   GameOperation,
+  INFO_LINK_MINOR_PRIVACY_BUNDESLIGA,
   LicenseDocument,
   LicenseHash,
   Player,
@@ -44,6 +45,9 @@ export class LicenseTeamDetailComponent implements OnInit {
   documents: Record<number, LicenseDocument[]> = {};
   currentSeasonId: number | null = null;
   uploadError: string | null = null;
+  // Adresse des Datenschutz-Informationsblattes für minderjährige
+  // Bundesligaspieler*innen, gepflegt unter /verwaltung/dokumentarten.
+  minorPrivacyInfoUrl: string | null = null;
 
   constructor(
     private _associationService: AssociationService,
@@ -76,6 +80,14 @@ export class LicenseTeamDetailComponent implements OnInit {
       this.currentSeasonId = seasonId;
       this._cdr.markForCheck();
     });
+
+    this._associationService
+      .infoLinkUrl$(INFO_LINK_MINOR_PRIVACY_BUNDESLIGA)
+      .pipe(take(1))
+      .subscribe((url) => {
+        this.minorPrivacyInfoUrl = url;
+        this._cdr.markForCheck();
+      });
 
     this._route.params.subscribe((params) => {
       if (params['teamId']) {

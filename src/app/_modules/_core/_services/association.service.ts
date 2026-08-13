@@ -32,6 +32,7 @@ export class AssociationService {
   currentSeasonId$: Observable<number>;
   selectedSeason$: Observable<Season | null>;
   seasons$: Observable<Season[]>;
+  infoLinks$: Observable<Record<string, string>>;
 
   displayAssociationHeader$ = new BehaviorSubject(true);
 
@@ -52,6 +53,8 @@ export class AssociationService {
     this.stateAssociations$ = initData$.pipe(
       map((_result) => _result.state_associations ?? [])
     );
+
+    this.infoLinks$ = initData$.pipe(map((_result) => _result.info_links ?? {}));
 
     // Seed the BehaviorSubject with the current season from init
     initData$
@@ -119,6 +122,12 @@ export class AssociationService {
     if (this._selectedSeasonId$.value !== seasonId) {
       this._selectedSeasonId$.next(seasonId);
     }
+  }
+
+  // Adresse eines gepflegten Informationsblattes, null solange keine hinterlegt
+  // ist. Aufrufer blenden den Link dann aus, statt eine tote Adresse anzubieten.
+  public infoLinkUrl$(key: string): Observable<string | null> {
+    return this.infoLinks$.pipe(map((links) => links[key] ?? null));
   }
 
   public getInit() {
