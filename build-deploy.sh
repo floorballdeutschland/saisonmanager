@@ -14,9 +14,34 @@ if [ -z "$API_KEY" ]; then
   exit 1
 fi
 
-# Backup anlegen; trap stellt die Datei nach dem Build immer wieder her
+DEPLOY_HOST="saisonmanager"
+DEPLOY_PATH="/opt/saisonmanager/saisonmanager-frontend/"
+
+# Eine geteilte SSH-Verbindung für den ganzen Lauf.
+#
+# Der Hardware-Schlüssel unterschreibt pro Freigabe nur EINMAL. Ohne das hier
+# baut `scp` am Ende eine eigene Verbindung auf, braucht dafür eine zweite
+# Unterschrift und scheitert mit "agent refused operation" -- nach dem Build,
+# also genau dann, wenn die Arbeit schon getan ist.
+SSH_CONTROL_PATH="/tmp/sm-deploy-prod-%C"
+SSH_SHARED=(-o ControlMaster=auto -o "ControlPath=${SSH_CONTROL_PATH}" -o ControlPersist=10m)
+
+# Backup anlegen; das Aufräumen stellt die Datei nach dem Build immer wieder her
 cp src/environments/environment.prod.ts src/environments/environment.prod.ts.bak
-trap 'mv src/environments/environment.prod.ts.bak src/environments/environment.prod.ts' EXIT
+
+# EIN trap für beides: Ein zweiter `trap ... EXIT` würde den ersten ersetzen,
+# und die Datei bliebe mit dem echten Schlüssel darin liegen.
+cleanup() {
+  mv src/environments/environment.prod.ts.bak src/environments/environment.prod.ts
+  ssh -o "ControlPath=${SSH_CONTROL_PATH}" -O exit "$DEPLOY_HOST" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+# Die Verbindung VOR dem Build aufbauen, nicht danach: Zu diesem Zeitpunkt steht
+# die Person noch am Rechner und der Schlüssel ist frisch freigegeben. Schlägt es
+# fehl, endet der Lauf hier statt nach dem Build.
+echo "SSH-Verbindung aufbauen (ggf. Hardware-Schlüssel berühren) …"
+ssh "${SSH_SHARED[@]}" -N -f "$DEPLOY_HOST"
 
 # Sicherstellen dass der Platzhalter noch vorhanden ist
 if ! grep -q "FRONTEND_API_KEY_PLACEHOLDER" src/environments/environment.prod.ts; then
@@ -80,4 +105,4 @@ FRONTEND_API_KEY="${API_KEY}" node scripts/generate-prerender-routes.mjs
 # Routenliste vor. Die CI baut bewusst ohne Prerender (Config "production"),
 # da ihr beides fehlt und der Render sonst an 401ern hängenbliebe.
 ./node_modules/.bin/ng build --configuration production,prerender
-scp -r dist/saisonmanager/browser/* saisonmanager:/opt/saisonmanager/saisonmanager-frontend/
+scp "${SSH_SHARED[@]}" -r dist/saisonmanager/browser/* "${DEPLOY_HOST}:${DEPLOY_PATH}"

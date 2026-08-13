@@ -24,9 +24,26 @@ if [ -z "$API_KEY" ]; then
   exit 1
 fi
 
-# Backup anlegen; trap stellt die Datei nach dem Build immer wieder her
+DEPLOY_HOST="saisonmanager"
+DEPLOY_PATH="/opt/saisonmanager/saisonmanager-frontend-staging/"
+
+# Geteilte SSH-Verbindung für den ganzen Lauf, Begründung steht in
+# build-deploy.sh: Der Hardware-Schlüssel unterschreibt pro Freigabe nur einmal.
+SSH_CONTROL_PATH="/tmp/sm-deploy-stg-%C"
+SSH_SHARED=(-o ControlMaster=auto -o "ControlPath=${SSH_CONTROL_PATH}" -o ControlPersist=10m)
+
+# Backup anlegen; das Aufräumen stellt die Datei nach dem Build immer wieder her
 cp src/environments/environment.staging.ts src/environments/environment.staging.ts.bak
-trap 'mv src/environments/environment.staging.ts.bak src/environments/environment.staging.ts' EXIT
+
+# EIN trap für beides, ein zweiter würde den ersten ersetzen.
+cleanup() {
+  mv src/environments/environment.staging.ts.bak src/environments/environment.staging.ts
+  ssh -o "ControlPath=${SSH_CONTROL_PATH}" -O exit "$DEPLOY_HOST" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+echo "SSH-Verbindung aufbauen (ggf. Hardware-Schlüssel berühren) …"
+ssh "${SSH_SHARED[@]}" -N -f "$DEPLOY_HOST"
 
 # Sicherstellen dass der Platzhalter noch vorhanden ist
 if ! grep -q "FRONTEND_API_KEY_PLACEHOLDER" src/environments/environment.staging.ts; then
@@ -72,4 +89,4 @@ export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
 # Die staging-Config baut nach dist/saisonmanager-staging/ (eigener outputPath),
 # damit ein paralleler Prod-build-deploy.sh (dist/saisonmanager/) nicht kollidiert.
 ./node_modules/.bin/ng build --configuration staging
-scp -r dist/saisonmanager-staging/browser/* saisonmanager:/opt/saisonmanager/saisonmanager-frontend-staging/
+scp "${SSH_SHARED[@]}" -r dist/saisonmanager-staging/browser/* "${DEPLOY_HOST}:${DEPLOY_PATH}"
