@@ -70,7 +70,8 @@
     "emailTemplates": "E-Mail-Vorlagen",
     "feedbackComments": "Feedback (qualitativ)",
     "refereeExclusions": "Vereins-Ausschlüsse",
-    "secretaryLinks": "Spielsekretariat"
+    "secretaryLinks": "Spielsekretariat",
+    "liveToday": "Heute live"
   },
   "account": {
     "title": "Mein Konto",

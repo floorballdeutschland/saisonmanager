@@ -387,6 +387,15 @@ export const routes: Routes = [
       ),
   },
   {
+    // Öffentliche Seite „Heute live". MUSS vor der Auffangroute stehen: Die
+    // fängt mit ':association' jedes erste URL-Segment ab, und /live landete
+    // sonst beim Spielbetrieb statt hier.
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/live').then((m) => m.PublicLiveModule),
+    data: { preload: true },
+  },
+  {
     // MUSS als letzte Route stehen: Der Spielbetriebs-Host matcht mit
     // ':association' jedes erste URL-Segment. Bleibt danach nichts übrig (also
     // bei einer Ein-Segment-URL wie /email-bestaetigen), gilt die Route als

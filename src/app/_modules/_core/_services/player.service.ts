@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 import {
   Club,
+  DocumentType,
   GfRole,
   LicenseDocument,
   Nation,
@@ -207,6 +208,17 @@ export class PlayerService {
       playerId +
       '/license_documents.json';
     return this.http.get<LicenseDocument[]>(path);
+  }
+
+  // Dokumentarten, die für DIESEN Spieler hochgeladen werden können: global
+  // gültige plus die des Heimat-Spielbetriebs seiner aktuellen Vereine, ohne
+  // die, denen er altersmäßig entwachsen ist. Der Katalog-Abruf
+  // (DocumentTypeService) ist Admin und SBK vorbehalten und gibt einem
+  // Vereinsmanager 403.
+  public getAvailableDocumentTypes(playerId: number) {
+    const path =
+      environment.apiURL + 'admin/players/' + playerId + '/document_types.json';
+    return this.http.get<DocumentType[]>(path);
   }
 
   public uploadLicenseDocument(
