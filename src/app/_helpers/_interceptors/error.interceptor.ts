@@ -107,7 +107,17 @@ export class ErrorInterceptor implements HttpInterceptor {
         // Die aufrufenden Ansichten melden den Fehlschlag selbst an Ort und
         // Stelle (player-edit über documentsFailed, license-team-detail über
         // uploadError), es geht also nichts still verloren.
-        if (request.url.includes('license_documents')) {
+        //
+        // Die Auswahlliste der Dokumentarten am Spielerprofil gehört dazu: Sie
+        // hängt an derselben Rechteprüfung wie die Dokumente selbst, kommt also
+        // im selben Fall mit 403 zurück. Ohne diese Ausnahme wäre der Fix von
+        // #240 durch die Hintertür wieder aufgehoben. Gemeint ist nur der
+        // spielerbezogene Abruf, nicht der Katalog unter admin/document_types,
+        // der eine eigene Ansicht hat.
+        if (
+          request.url.includes('license_documents') ||
+          /\/players\/\d+\/document_types/.test(request.url)
+        ) {
           return throwError(() => err);
         }
 
