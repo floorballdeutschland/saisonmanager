@@ -1,0 +1,88 @@
+{
+  "title": "System health",
+  "refresh": "Refresh",
+  "loading": "Collecting system metrics…",
+  "loadErrorReload": "Please reload the page.",
+  "unknown": "unknown",
+  "status": {
+    "ok": "healthy",
+    "warning": "warning",
+    "critical": "critical",
+    "unknown": "not measurable"
+  },
+  "disk": {
+    "heading": "Disk space",
+    "usedOfTotal": "{{used}} of {{total}} used",
+    "free": "{{free}} free",
+    "path": "Upload directory: {{path}}",
+    "thresholds": "Warning from {{warning}} %, critical from {{critical}} %",
+    "unavailable": "Disk usage could not be determined."
+  },
+  "history": {
+    "heading": "Measured history",
+    "footnote": "One bar per day on which the daily run recorded disk usage."
+  },
+  "growth": {
+    "heading": "Upload growth",
+    "perMonth": "Growth per month",
+    "forecast": "Estimated to be full in",
+    "forecastMonths": "{{months}} months",
+    "forecastYears": "more than {{years}} years",
+    "forecastUnknown": "no estimate possible",
+    "fileCount": "{{count}} files",
+    "footnote": "Growth per month is the average of the last six months. The forecast is an order of magnitude, not a date."
+  },
+  "uploads": {
+    "heading": "Uploads",
+    "total": "Used by uploads",
+    "count": "Number of files",
+    "unattached": "Without a record",
+    "unattachedHint": "Still take up space but no longer belong to any record.",
+    "kind": "Type",
+    "files": "Files",
+    "size": "Size",
+    "none": "There are no uploads.",
+    "largestHeading": "Largest single files",
+    "kinds": {
+      "Player_license_documents": "License documents (players)",
+      "Club_logo": "Club logos",
+      "StateAssociation_logo": "State association logos",
+      "GameOperation_logo": "Game operation logos",
+      "League_logo": "League logos",
+      "League_banner": "League banners",
+      "Game_scan": "Match report scans"
+    }
+  },
+  "database": {
+    "heading": "Database",
+    "size": "Database size",
+    "footnote": "The database storage area is separate from the uploads and cannot be measured as a disk from within the application. Shown instead is the size of the database itself, and below the largest tables including their indexes.",
+    "largestHeading": "Largest tables"
+  },
+  "operations": {
+    "heading": "Operations",
+    "version": "Version",
+    "environment": "Environment",
+    "migrations": "Database migrations",
+    "migrationsPending": "migrations are pending",
+    "migrationsNone": "fully applied"
+  },
+  "warningFootnote": "A daily run records disk usage and sends an e-mail as soon as a threshold is newly crossed. If usage stays at the same level, no second mail follows.",
+  "months": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mar",
+    "4": "Apr",
+    "5": "May",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Oct",
+    "11": "Nov",
+    "12": "Dec"
+  },
+  "notifications": {
+    "loadError": "System metrics could not be loaded."
+  }
+}

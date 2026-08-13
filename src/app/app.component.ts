@@ -17,6 +17,7 @@ import {
   NotificationService,
   SessionService,
   StorageService,
+  SystemHealthService,
 } from '@floorball/core';
 import {
   FavoriteTeam,
@@ -28,11 +29,14 @@ import {
 } from '@floorball/types';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   filter,
   map,
   Observable,
+  of,
   startWith,
+  switchMap,
 } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -74,6 +78,12 @@ export class AppComponent implements OnInit {
   // verwechselt werden. Wird über die Build-Konfiguration gesetzt.
   readonly isStaging = environment.staging;
 
+  // Belegung des Servers, sobald sie kritisch ist. Nur Admins fragen sie ab
+  // (Recht menu_item_system_health), und nur im kritischen Zustand entsteht ein
+  // Streifen. Absichtlich der schlanke summary-Aufruf: Die Aufschlüsselungen der
+  // Systemseite werden dafür nicht gebraucht.
+  criticalDiskPercent$!: Observable<number | null>;
+
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
@@ -82,6 +92,7 @@ export class AppComponent implements OnInit {
     private _router: Router,
     private _notificationService: NotificationService,
     private _sessionService: SessionService,
+    private _systemHealthService: SystemHealthService,
     @Inject(PLATFORM_ID) private _platformId: object
   ) {}
 
@@ -131,6 +142,19 @@ export class AppComponent implements OnInit {
     this.selectedSeasonId$ = this._associationService.currentSeasonId$;
     this.favoriteLeagues$ = this._favoriteService.favoriteLeagues$;
     this.favoriteTeams$ = this._favoriteService.favoriteTeams$;
+    this.criticalDiskPercent$ = this._sessionService.currentUser$.pipe(
+      switchMap((user) => {
+        if (!user?.permissions?.['menu_item_system_health']) return of(null);
+        return this._systemHealthService.getSummary().pipe(
+          map((summary) =>
+            summary.status === 'critical' ? summary.used_percent : null
+          ),
+          // Der Streifen ist ein Zusatz. Scheitert der Abruf, bleibt die App
+          // still statt eine Fehlermeldung über jede Seite zu legen.
+          catchError(() => of(null))
+        );
+      })
+    );
   }
 
   private _isHomeUrl(url: string): boolean {

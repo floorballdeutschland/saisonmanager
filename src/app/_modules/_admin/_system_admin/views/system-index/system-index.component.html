@@ -1,0 +1,322 @@
+<div class="p-4 lg:p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">{{ "system.title" | transloco }}</h1>
+    <button
+      class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+      (click)="load()"
+    >
+      {{ "system.refresh" | transloco }}
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      {{ "system.loading" | transloco }}
+    </div>
+  }
+
+  @if (!loading && loadError) {
+    <div class="text-red-600 text-sm py-8 text-center">
+      {{ loadError }} {{ "system.loadErrorReload" | transloco }}
+    </div>
+  }
+
+  @if (!loading && data) {
+    <!-- Speicherplatz -->
+    <div
+      class="border rounded-[5px] p-5 mb-10"
+      [ngClass]="statusClass(data.disk.status)"
+    >
+      <div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+        <h2 class="text-base font-bold">
+          {{ "system.disk.heading" | transloco }}
+        </h2>
+        <span class="text-xs font-bold uppercase">{{
+          statusLabel(data.disk.status)
+        }}</span>
+      </div>
+
+      @if (data.disk.used_percent !== undefined) {
+        <div class="text-3xl font-bold mb-1">
+          {{ data.disk.used_percent }}&nbsp;%
+        </div>
+        <div class="text-sm mb-3">
+          {{
+            "system.disk.usedOfTotal"
+              | transloco
+                : {
+                    used: formatBytes(data.disk.used_bytes),
+                    total: formatBytes(data.disk.total_bytes),
+                  }
+          }}
+          &middot;
+          {{
+            "system.disk.free"
+              | transloco: { free: formatBytes(data.disk.free_bytes) }
+          }}
+        </div>
+        <div class="h-3 w-full rounded-full bg-white/60 overflow-hidden">
+          <div
+            class="h-3 rounded-full"
+            [ngClass]="barClass(data.disk.status)"
+            [style.width.%]="data.disk.used_percent"
+          ></div>
+        </div>
+        <p class="text-xs mt-3">
+          {{ "system.disk.path" | transloco: { path: data.disk.path } }}
+          &middot;
+          {{
+            "system.disk.thresholds"
+              | transloco
+                : {
+                    warning: data.thresholds.warning_percent,
+                    critical: data.thresholds.critical_percent,
+                  }
+          }}
+        </p>
+      } @else {
+        <p class="text-sm">
+          {{ "system.disk.unavailable" | transloco }}
+          @if (data.disk.reason) {
+            <span class="text-xs">({{ data.disk.reason }})</span>
+          }
+        </p>
+      }
+    </div>
+
+    <!-- Gemessener Verlauf. Erst vorhanden, wenn der taegliche Lauf Werte
+         geschrieben hat, deshalb nur dann eingeblendet. -->
+    @if (data.disk.history?.length) {
+      <h2 class="text-base font-bold mb-2">
+        {{ "system.history.heading" | transloco }}
+      </h2>
+      <div
+        class="flex items-end gap-px h-24 mb-2 border-b border-fb-gray-600"
+        aria-hidden="true"
+      >
+        @for (point of data.disk.history; track point.date) {
+          <div
+            class="flex-1 min-w-px"
+            [ngClass]="barClass(statusForPercent(point.used_percent))"
+            [style.height.%]="point.used_percent"
+            [title]="point.date + ': ' + point.used_percent + ' %'"
+          ></div>
+        }
+      </div>
+      <p class="text-xs text-fb-gray-500 mb-10">
+        {{ "system.history.footnote" | transloco }}
+      </p>
+    }
+
+    <!-- Wachstum und Prognose -->
+    <h2 class="text-base font-bold mb-4">
+      {{ "system.growth.heading" | transloco }}
+    </h2>
+    <div class="grid gap-4 md:grid-cols-2 mb-4">
+      <div class="border border-fb-gray-800 rounded-[5px] p-5">
+        <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+          {{ "system.growth.perMonth" | transloco }}
+        </div>
+        <div class="text-2xl font-bold">
+          {{ formatBytes(data.growth.avg_bytes_per_month) }}
+        </div>
+      </div>
+      <div class="border border-fb-gray-800 rounded-[5px] p-5">
+        <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+          {{ "system.growth.forecast" | transloco }}
+        </div>
+        <div class="text-2xl font-bold">{{ forecastLabel }}</div>
+      </div>
+    </div>
+    <table class="w-full text-sm mb-2">
+      <tbody>
+        @for (month of data.growth.months; track month.month) {
+          <tr class="border-b border-fb-gray-800">
+            <td class="py-1 pr-3 whitespace-nowrap w-24">
+              {{ formatMonth(month.month) }}
+            </td>
+            <td class="py-1 pr-3 w-full">
+              <div class="h-2 rounded-full bg-fb-gray-800 overflow-hidden">
+                <div
+                  class="h-2 rounded-full bg-black"
+                  [style.width.%]="monthlyWidth(month.total_bytes)"
+                ></div>
+              </div>
+            </td>
+            <td class="py-1 text-right whitespace-nowrap">
+              {{ formatBytes(month.total_bytes) }}
+            </td>
+            <td class="py-1 pl-3 text-right whitespace-nowrap text-fb-gray-500">
+              {{
+                "system.growth.fileCount" | transloco: { count: month.count }
+              }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <p class="text-xs text-fb-gray-500 mb-10">
+      {{ "system.growth.footnote" | transloco }}
+    </p>
+
+    <!-- Uploads -->
+    <h2 class="text-base font-bold mb-4">
+      {{ "system.uploads.heading" | transloco }}
+    </h2>
+    <div class="grid gap-4 md:grid-cols-3 mb-4">
+      <div class="border border-fb-gray-800 rounded-[5px] p-5">
+        <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+          {{ "system.uploads.total" | transloco }}
+        </div>
+        <div class="text-2xl font-bold">
+          {{ formatBytes(data.uploads.total_bytes) }}
+        </div>
+      </div>
+      <div class="border border-fb-gray-800 rounded-[5px] p-5">
+        <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+          {{ "system.uploads.count" | transloco }}
+        </div>
+        <div class="text-2xl font-bold">{{ data.uploads.blob_count }}</div>
+      </div>
+      <div class="border border-fb-gray-800 rounded-[5px] p-5">
+        <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+          {{ "system.uploads.unattached" | transloco }}
+        </div>
+        <div class="text-2xl font-bold">
+          {{ data.uploads.unattached_count }}
+        </div>
+        <div class="text-xs text-fb-gray-500 mt-1">
+          {{ "system.uploads.unattachedHint" | transloco }}
+        </div>
+      </div>
+    </div>
+
+    <table class="w-full text-sm mb-8">
+      <thead>
+        <tr class="border-b border-fb-gray-600 text-left">
+          <th class="py-1 font-bold">
+            {{ "system.uploads.kind" | transloco }}
+          </th>
+          <th class="py-1 font-bold text-right">
+            {{ "system.uploads.files" | transloco }}
+          </th>
+          <th class="py-1 font-bold text-right">
+            {{ "system.uploads.size" | transloco }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (kind of data.uploads.by_kind; track kind) {
+          <tr class="border-b border-fb-gray-800">
+            <td class="py-1">{{ kindLabel(kind.record_type, kind.name) }}</td>
+            <td class="py-1 text-right">{{ kind.count }}</td>
+            <td class="py-1 text-right">{{ formatBytes(kind.total_bytes) }}</td>
+          </tr>
+        }
+        @if (!data.uploads.by_kind.length) {
+          <tr>
+            <td class="py-2 text-fb-gray-500" colspan="3">
+              {{ "system.uploads.none" | transloco }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <h3 class="text-sm font-bold mb-2">
+      {{ "system.uploads.largestHeading" | transloco }}
+    </h3>
+    <table class="w-full text-sm mb-10">
+      <tbody>
+        @for (blob of data.uploads.largest; track blob) {
+          <tr class="border-b border-fb-gray-800">
+            <td class="py-1 break-all">{{ blob.filename }}</td>
+            <td class="py-1 text-right whitespace-nowrap text-fb-gray-500">
+              {{ blob.content_type }}
+            </td>
+            <td class="py-1 pl-3 text-right whitespace-nowrap">
+              {{ formatBytes(blob.byte_size) }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- Datenbank -->
+    <h2 class="text-base font-bold mb-4">
+      {{ "system.database.heading" | transloco }}
+    </h2>
+    <div class="border border-fb-gray-800 rounded-[5px] p-5 mb-4">
+      <div class="text-xs text-fb-gray-500 font-bold uppercase mb-1">
+        {{ "system.database.size" | transloco }}
+      </div>
+      <div class="text-2xl font-bold">
+        {{ formatBytes(data.database.size_bytes) }}
+      </div>
+      <div class="text-xs text-fb-gray-500 mt-1">
+        {{ "system.database.footnote" | transloco }}
+      </div>
+    </div>
+    <table class="w-full text-sm mb-10">
+      <tbody>
+        @for (table of data.database.largest_tables; track table.name) {
+          <tr class="border-b border-fb-gray-800">
+            <td class="py-1">{{ table.name }}</td>
+            <td class="py-1 text-right whitespace-nowrap">
+              {{ formatBytes(table.total_bytes) }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- Betrieb -->
+    <h2 class="text-base font-bold mb-4">
+      {{ "system.operations.heading" | transloco }}
+    </h2>
+    <table class="w-full text-sm mb-6">
+      <tbody>
+        <tr class="border-b border-fb-gray-800">
+          <td class="py-1 text-fb-gray-500">
+            {{ "system.operations.version" | transloco }}
+          </td>
+          <td class="py-1 text-right font-bold">
+            {{ data.operations.version }}
+          </td>
+        </tr>
+        <tr class="border-b border-fb-gray-800">
+          <td class="py-1 text-fb-gray-500">
+            {{ "system.operations.environment" | transloco }}
+          </td>
+          <td class="py-1 text-right font-bold">
+            {{ data.operations.environment }}
+          </td>
+        </tr>
+        <tr class="border-b border-fb-gray-800">
+          <td class="py-1 text-fb-gray-500">
+            {{ "system.operations.migrations" | transloco }}
+          </td>
+          <td class="py-1 text-right font-bold">
+            @switch (data.operations.pending_migrations) {
+              @case (true) {
+                <span class="text-red-700">{{
+                  "system.operations.migrationsPending" | transloco
+                }}</span>
+              }
+              @case (false) {
+                {{ "system.operations.migrationsNone" | transloco }}
+              }
+              @default {
+                {{ "system.unknown" | transloco }}
+              }
+            }
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="text-xs text-fb-gray-500">
+      {{ "system.warningFootnote" | transloco }}
+    </p>
+  }
+</div>

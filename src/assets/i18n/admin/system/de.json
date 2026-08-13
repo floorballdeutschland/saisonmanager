@@ -1,0 +1,88 @@
+{
+  "title": "Systemzustand",
+  "refresh": "Aktualisieren",
+  "loading": "Erhebe Systemkennzahlen…",
+  "loadErrorReload": "Bitte Seite neu laden.",
+  "unknown": "unbekannt",
+  "status": {
+    "ok": "unauffällig",
+    "warning": "Warnung",
+    "critical": "kritisch",
+    "unknown": "nicht messbar"
+  },
+  "disk": {
+    "heading": "Speicherplatz",
+    "usedOfTotal": "{{used}} von {{total}} belegt",
+    "free": "{{free}} frei",
+    "path": "Verzeichnis der Uploads: {{path}}",
+    "thresholds": "Warnung ab {{warning}} %, kritisch ab {{critical}} %",
+    "unavailable": "Die Belegung des Datenträgers konnte nicht ermittelt werden."
+  },
+  "history": {
+    "heading": "Gemessener Verlauf",
+    "footnote": "Ein Balken je Tag, an dem der tägliche Lauf die Belegung erfasst hat."
+  },
+  "growth": {
+    "heading": "Wachstum der Uploads",
+    "perMonth": "Zuwachs pro Monat",
+    "forecast": "Voraussichtlich voll in",
+    "forecastMonths": "{{months}} Monaten",
+    "forecastYears": "über {{years}} Jahren",
+    "forecastUnknown": "keine Aussage möglich",
+    "fileCount": "{{count}} Dateien",
+    "footnote": "Der Zuwachs pro Monat ist der Mittelwert der letzten sechs Monate. Die Prognose ist eine Größenordnung, kein Datum."
+  },
+  "uploads": {
+    "heading": "Uploads",
+    "total": "Belegt durch Uploads",
+    "count": "Anzahl Dateien",
+    "unattached": "Ohne Zuordnung",
+    "unattachedHint": "Belegen Platz, gehören aber zu keinem Datensatz mehr.",
+    "kind": "Art",
+    "files": "Dateien",
+    "size": "Größe",
+    "none": "Es sind keine Uploads vorhanden.",
+    "largestHeading": "Größte Einzeldateien",
+    "kinds": {
+      "Player_license_documents": "Lizenzdokumente (Spieler*innen)",
+      "Club_logo": "Vereinslogos",
+      "StateAssociation_logo": "Verbandslogos",
+      "GameOperation_logo": "Spielbetriebslogos",
+      "League_logo": "Ligalogos",
+      "League_banner": "Ligabanner",
+      "Game_scan": "Spielberichts-Scans"
+    }
+  },
+  "database": {
+    "heading": "Datenbank",
+    "size": "Größe der Datenbank",
+    "footnote": "Der Ablagebereich der Datenbank liegt getrennt von den Uploads und ist von der Anwendung aus nicht als Datenträger messbar. Angegeben ist deshalb die Größe der Datenbank selbst, unten die größten Tabellen einschließlich ihrer Indizes.",
+    "largestHeading": "Größte Tabellen"
+  },
+  "operations": {
+    "heading": "Betrieb",
+    "version": "Version",
+    "environment": "Umgebung",
+    "migrations": "Datenbank-Migrationen",
+    "migrationsPending": "es stehen Migrationen aus",
+    "migrationsNone": "vollständig eingespielt"
+  },
+  "warningFootnote": "Ein täglicher Lauf erfasst die Belegung und meldet sich per E-Mail, sobald eine Schwelle neu überschritten wird. Bleibt die Belegung auf demselben Stand, folgt keine zweite Mail.",
+  "months": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mär",
+    "4": "Apr",
+    "5": "Mai",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Okt",
+    "11": "Nov",
+    "12": "Dez"
+  },
+  "notifications": {
+    "loadError": "Die Systemkennzahlen konnten nicht geladen werden."
+  }
+}
