@@ -26,12 +26,17 @@ fi
 
 # Platzhalter durch echten Key ersetzen (| als Delimiter, sicher für Hex-Keys)
 #
-# `sed -i.bak` statt `sed -i`: BSD-sed (macOS) verlangt hinter -i zwingend eine
-# Endung und nimmt sonst den Ausdruck dafür, danach die Datei als Ausdruck. Das
-# bricht mit "bad flag in substitute command" ab, bevor irgendetwas ersetzt ist.
-# Mit Endung verhalten sich BSD und GNU gleich, die Sicherung raeumen wir weg.
-sed -i.bak "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment.prod.ts
-rm -f src/environments/environment.prod.ts.bak
+# `sed -i.sedbak` statt `sed -i`: BSD-sed (macOS) verlangt hinter -i zwingend
+# eine Endung und nimmt sonst den Ausdruck dafür, danach die Datei als Ausdruck.
+# Das bricht mit "bad flag in substitute command" ab, bevor irgendetwas ersetzt
+# ist. Mit Endung verhalten sich BSD und GNU gleich.
+#
+# NICHT `.bak`: Diese Endung gehoert der Sicherung oben, die der trap nach dem
+# Build zurueckspielt. sed wuerde sie ueberschreiben und das anschliessende
+# Aufraeumen sie loeschen -- der trap fände dann nichts mehr vor und liesse den
+# echten Schluessel in der Arbeitskopie stehen.
+sed -i.sedbak "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment.prod.ts
+rm -f src/environments/environment.prod.ts.sedbak
 
 # Sentry-DSN einsetzen, sofern hinterlegt. Anders als beim API-Key ist das
 # optional: Ohne die Datei bleibt der Platzhalter stehen, und initSentry()
@@ -57,8 +62,8 @@ if [ -f "src/environments/.sentry-dsn" ]; then
     exit 1
   fi
   # @ und / im DSN kollidieren mit gängigen sed-Delimitern, | kommt darin nicht vor.
-  sed -i.bak "s|SENTRY_DSN_PLACEHOLDER|${SENTRY_DSN}|" src/environments/environment.prod.ts
-  rm -f src/environments/environment.prod.ts.bak
+  sed -i.sedbak "s|SENTRY_DSN_PLACEHOLDER|${SENTRY_DSN}|" src/environments/environment.prod.ts
+  rm -f src/environments/environment.prod.ts.sedbak
   echo "Sentry-DSN eingesetzt."
 else
   echo "Hinweis: src/environments/.sentry-dsn fehlt – Frontend-Sentry bleibt aus."
