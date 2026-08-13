@@ -36,7 +36,6 @@
   },
   "notifications": {
     "deactivateError": "Deactivation failed.",
-    "reactivateError": "Reactivation failed.",
-    "reasonOtherPrefix": "Other: {{ detail }}"
+    "reactivateError": "Reactivation failed."
   }
 }
