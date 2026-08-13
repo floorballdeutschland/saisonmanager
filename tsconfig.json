@@ -125,6 +125,7 @@
       "@floorball/admin/analytics": [
         "src/app/_modules/_admin/_analytics_admin"
       ],
+      "@floorball/admin/system": ["src/app/_modules/_admin/_system_admin"],
       "@floorball/admin/email-log": [
         "src/app/_modules/_admin/_email_log_admin"
       ],

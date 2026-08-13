@@ -71,7 +71,8 @@
     "feedbackComments": "Feedback (qualitative)",
     "refereeExclusions": "Club exclusions",
     "secretaryLinks": "Match secretariat",
-    "liveToday": "Live today"
+    "liveToday": "Live today",
+    "systemHealth": "System"
   },
   "account": {
     "title": "My account",
@@ -137,5 +138,9 @@
     "errorTitle": "Invalid link",
     "errorMessage": "The confirmation link is invalid or has expired. You can restart the change under “My account”.",
     "toHome": "Go to home page"
+  },
+  "systemHealth": {
+    "bannerCritical": "Server disk space is {{percent}} % full.",
+    "bannerLink": "View system health"
   }
 }
