@@ -11,15 +11,16 @@ import { LiveStreamService } from '@floorball/core';
 import { LiveStreamGame } from '@floorball/types';
 
 /**
- * „Heute live": Welche Spiele des Tages übertragen werden.
+ * „Heute live": Welche Spiele übertragen werden, und was zuletzt lief.
  *
  * Die Bundesliga-Vereine haben Streaming-Pflicht, die Adressen stehen im
  * Spielbericht — bisher gab es aber keine Stelle, an der jemand nachsieht, was
  * gerade läuft.
  *
  * Sortiert und in drei Blöcke geteilt kommt die Liste bereits vom Server
- * (laufende zuerst, dann anstehende, darunter die beendeten). Hier wird sie nur
- * aufgeteilt, damit jeder Block seine Überschrift bekommt.
+ * (laufende zuerst, dann die heute anstehenden, darunter der Rückblick auf die
+ * letzten sieben Tage). Hier wird sie nur aufgeteilt, damit jeder Block seine
+ * Überschrift bekommt.
  */
 @Component({
   templateUrl: './live.component.html',
@@ -29,10 +30,19 @@ import { LiveStreamGame } from '@floorball/types';
 export class LiveComponent implements OnInit, OnDestroy {
   public running: LiveStreamGame[] = [];
   public upcoming: LiveStreamGame[] = [];
-  public ended: LiveStreamGame[] = [];
+
+  // Der Rückblick. Trägt den Status `ended`, umfasst aber nicht nur den
+  // heutigen Tag: Die beendeten Übertragungen der letzten sieben Tage stehen
+  // mit darin, das zuletzt beendete Spiel oben.
+  public recent: LiveStreamGame[] = [];
+
   public loading = true;
   public failed = false;
   public date = '';
+
+  // Dort lädt Floorball Deutschland die Übertragungen nachträglich hoch. Der
+  // Rückblick oben endet nach sieben Tagen, der Kanal nicht.
+  public readonly channelUrl = 'https://www.youtube.com/floorballdeutschland';
 
   // Die Seite bleibt auf einem Hallenmonitor oder einem zweiten Bildschirm
   // stundenlang offen. Ohne Nachladen stünde dort abends noch der Stand vom
@@ -67,7 +77,7 @@ export class LiveComponent implements OnInit, OnDestroy {
       !this.failed &&
       !this.running.length &&
       !this.upcoming.length &&
-      !this.ended.length
+      !this.recent.length
     );
   }
 
@@ -77,7 +87,7 @@ export class LiveComponent implements OnInit, OnDestroy {
         this.date = day.date;
         this.running = day.games.filter((g) => g.status === 'running');
         this.upcoming = day.games.filter((g) => g.status === 'upcoming');
-        this.ended = day.games.filter((g) => g.status === 'ended');
+        this.recent = day.games.filter((g) => g.status === 'ended');
         this.loading = false;
         this.failed = false;
         this._cdr.markForCheck();
@@ -100,5 +110,19 @@ export class LiveComponent implements OnInit, OnDestroy {
 
   public period(game: LiveStreamGame): string {
     return game.current_period_title?.title ?? '';
+  }
+
+  /**
+   * Ob das Spiel vom heutigen Tag ist. Im Rückblick steht das Datum nur an den
+   * Einträgen früherer Tage: An einem Spiel von heute wäre es überflüssig, und
+   * es stünde an jeder Zeile derselbe Tag.
+   *
+   * Maßgeblich ist das Datum aus der Antwort und nicht die Uhr im Browser. Der
+   * Server rechnet mit dem Kalender des Spielbetriebs; ein Gerät in einer
+   * anderen Zeitzone hätte sonst nachts einen anderen „heute" als die Liste,
+   * die es gerade anzeigt.
+   */
+  public isFromToday(game: LiveStreamGame): boolean {
+    return game.date === this.date;
   }
 }
