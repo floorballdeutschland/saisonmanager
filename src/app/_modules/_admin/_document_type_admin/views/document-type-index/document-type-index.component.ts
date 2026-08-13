@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import {
+  AssociationService,
   DocumentTypeService,
   InfoLinkService,
   LeagueService,
@@ -62,6 +63,7 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<void>();
 
   constructor(
+    private _associationService: AssociationService,
     private _documentTypeService: DocumentTypeService,
     private _infoLinkService: InfoLinkService,
     private _leagueService: LeagueService,
@@ -184,6 +186,10 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
           this.infoLinks = this.infoLinks.map((l) =>
             l.key === updated.key ? updated : l
           );
+          // init wird nur beim Seitenaufbau geladen. Ohne das hier zeigte der
+          // Lizenzantrag nach dem Korrigieren weiter die alte Adresse – also
+          // genau dann, wenn jemand die Korrektur nachprüfen will.
+          this._associationService.setInfoLink(updated.key, updated.url);
           this.cancelEditInfoLink();
           this.savingInfoLink = false;
           this._notificationService.success(

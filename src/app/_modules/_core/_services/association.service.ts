@@ -38,6 +38,11 @@ export class AssociationService {
 
   private _route$ = new BehaviorSubject<ActivatedRoute | null>(null);
   private _selectedSeasonId$ = new BehaviorSubject<number | null>(null);
+  // Nach dem Pflegen einer Adresse gilt der neue Wert sofort, ohne Neuladen der
+  // Seite. null = Link entfernt. Wird über init gelegt, nicht daneben.
+  private _infoLinkOverrides$ = new BehaviorSubject<
+    Record<string, string | null>
+  >({});
 
   constructor(private http: HttpClient) {
     this.associationsIsLoading$.next(true);
@@ -54,7 +59,29 @@ export class AssociationService {
       map((_result) => _result.state_associations ?? [])
     );
 
-    this.infoLinks$ = initData$.pipe(map((_result) => _result.info_links ?? {}));
+    // init wird genau einmal geladen (shareReplay). Ohne die Overrides bliebe
+    // eine gerade gepflegte Adresse bis zum nächsten vollständigen Seitenaufbau
+    // unsichtbar – wer den Link korrigiert und ihn danach im Lizenzantrag
+    // nachsieht, bekäme weiter die alte, tote Adresse zu sehen.
+    // combineLatest emittiert erst, wenn init da ist; ein take(1) beim Aufrufer
+    // greift also nie einen leeren Zwischenstand ab.
+    this.infoLinks$ = combineLatest([
+      initData$.pipe(map((_result) => _result.info_links ?? {})),
+      this._infoLinkOverrides$,
+    ]).pipe(
+      map(([links, overrides]) => {
+        const merged: Record<string, string> = { ...links };
+        Object.entries(overrides).forEach(([key, url]) => {
+          if (url) {
+            merged[key] = url;
+          } else {
+            delete merged[key];
+          }
+        });
+        return merged;
+      }),
+      shareReplay(1)
+    );
 
     // Seed the BehaviorSubject with the current season from init
     initData$
@@ -128,6 +155,15 @@ export class AssociationService {
   // ist. Aufrufer blenden den Link dann aus, statt eine tote Adresse anzubieten.
   public infoLinkUrl$(key: string): Observable<string | null> {
     return this.infoLinks$.pipe(map((links) => links[key] ?? null));
+  }
+
+  // Von der Pflege-Ansicht nach erfolgreichem Speichern aufzurufen, damit die
+  // neue Adresse ohne Neuladen gilt. url = null entfernt den Link.
+  public setInfoLink(key: string, url: string | null): void {
+    this._infoLinkOverrides$.next({
+      ...this._infoLinkOverrides$.value,
+      [key]: url,
+    });
   }
 
   public getInit() {

@@ -4,7 +4,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { getTranslocoTestingModule } from '@floorball/core';
+import { AssociationService, getTranslocoTestingModule } from '@floorball/core';
 import { InfoLink } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { DocumentTypeIndexComponent } from './document-type-index.component';
@@ -83,6 +83,26 @@ describe('DocumentTypeIndexComponent', () => {
       expect(component.infoLinks[0].url).toBe('https://floorball.de/neu.pdf');
       expect(component.editingInfoLinkKey).toBeNull();
       expect(component.savingInfoLink).toBeFalse();
+    });
+
+    // init wird nur beim Seitenaufbau geladen. Ohne das Nachziehen zeigte der
+    // Lizenzantrag nach dem Korrigieren weiter die alte, tote Adresse.
+    it('zieht die neue Adresse im AssociationService nach', () => {
+      const associationService = TestBed.inject(AssociationService);
+      const setInfoLink = spyOn(associationService, 'setInfoLink');
+
+      httpMock.expectOne(infoLinksUrl).flush([link]);
+      component.startEditInfoLink(link);
+      component.infoLinkBuffer = 'https://floorball.de/neu.pdf';
+      component.saveInfoLink();
+      httpMock
+        .expectOne(`${infoLinksUrl}/${link.key}`)
+        .flush({ key: link.key, url: 'https://floorball.de/neu.pdf' });
+
+      expect(setInfoLink).toHaveBeenCalledWith(
+        link.key,
+        'https://floorball.de/neu.pdf'
+      );
     });
 
     it('bleibt nach einem Fehler in der Bearbeitung', () => {
