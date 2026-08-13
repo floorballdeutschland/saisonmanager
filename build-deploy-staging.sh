@@ -35,9 +35,10 @@ if ! grep -q "FRONTEND_API_KEY_PLACEHOLDER" src/environments/environment.staging
 fi
 
 # Platzhalter durch echten Key ersetzen (| als Delimiter, sicher für Hex-Keys)
-# `sed -i.bak` wegen BSD-sed auf macOS, Begründung steht in build-deploy.sh.
-sed -i.bak "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment.staging.ts
-rm -f src/environments/environment.staging.ts.bak
+# `sed -i.sedbak` wegen BSD-sed auf macOS, und NICHT `.bak`, weil die Endung
+# der Sicherung des traps gehoert. Begruendung steht in build-deploy.sh.
+sed -i.sedbak "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment.staging.ts
+rm -f src/environments/environment.staging.ts.sedbak
 
 # Sentry-DSN einsetzen, sofern hinterlegt (optional, siehe build-deploy.sh).
 # Derselbe DSN wie Prod; getrennt werden die Ereignisse über environment: 'staging'.
@@ -57,8 +58,8 @@ if [ -f "src/environments/.sentry-dsn" ]; then
     echo "Fehler: SENTRY_DSN_PLACEHOLDER nicht in environment.staging.ts gefunden." >&2
     exit 1
   fi
-  sed -i.bak "s|SENTRY_DSN_PLACEHOLDER|${SENTRY_DSN}|" src/environments/environment.staging.ts
-  rm -f src/environments/environment.staging.ts.bak
+  sed -i.sedbak "s|SENTRY_DSN_PLACEHOLDER|${SENTRY_DSN}|" src/environments/environment.staging.ts
+  rm -f src/environments/environment.staging.ts.sedbak
   echo "Sentry-DSN eingesetzt."
 else
   echo "Hinweis: src/environments/.sentry-dsn fehlt – Frontend-Sentry bleibt aus."

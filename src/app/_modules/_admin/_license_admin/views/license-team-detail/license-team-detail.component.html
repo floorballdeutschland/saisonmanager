@@ -501,16 +501,21 @@
                         {{
                           "licenseAdmin.teamDetail.minorPrivacyText" | transloco
                         }}
-                        <a
-                          href="https://www.floorball.de/datenschutz-informationsblatt-bundesliga"
-                          target="_blank"
-                          rel="noopener"
-                          class="underline"
-                          >{{
-                            "licenseAdmin.teamDetail.downloadInfoSheet"
-                              | transloco
-                          }}</a
-                        >
+                        <!-- Adresse wird unter /verwaltung/dokumentarten gepflegt.
+                             Fehlt sie, bleibt der Hinweis stehen und der Link
+                             entfällt – besser als eine tote Adresse. -->
+                        @if (minorPrivacyInfoUrl) {
+                          <a
+                            [href]="minorPrivacyInfoUrl"
+                            target="_blank"
+                            rel="noopener"
+                            class="underline"
+                            >{{
+                              "licenseAdmin.teamDetail.downloadInfoSheet"
+                                | transloco
+                            }}</a
+                          >
+                        }
                       </p>
                       <div class="mb-3">
                         <label

@@ -45,6 +45,17 @@
     "createError": "Error while creating.",
     "saveError": "Error while saving.",
     "deleteError": "Deletion not possible.",
-    "loadError": "Failed to load document types."
+    "loadError": "Failed to load document types.",
+    "infoLinksTitle": "Links to information sheets",
+    "infoLinksHint": "Addresses of information sheets on floorball.de that the Saisonmanager links to in fixed places. If a file is moved there, change the address here.",
+    "infoLinksColName": "Information sheet",
+    "infoLinksColUrl": "Address",
+    "infoLinksEmpty": "No address stored – the link is not shown.",
+    "infoLinksUrlPlaceholder": "https://floorball.de/…",
+    "infoLinksUrlHint": "Full address including https://. Leave empty to hide the link.",
+    "infoLinksLoadError": "Failed to load links.",
+    "infoLinks": {
+      "minor_privacy_bundesliga": "Data protection for underage Bundesliga players"
+    }
   }
 }
