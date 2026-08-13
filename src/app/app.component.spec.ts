@@ -1,27 +1,42 @@
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NavigationEnd, NavigationError, Router } from '@angular/router';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 import { AppComponent } from './app.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import {
   LeagueService,
   NotificationService,
   SessionService,
+  SystemHealthService,
+  SystemHealthSummary,
 } from '@floorball/core';
+import { User } from '@floorball/types';
 
 describe('AppComponent', () => {
   // SessionService wird gestubbt: sein echter TranslocoService-Abhängigkeitsbaum
   // ist im TestBed nicht bereitgestellt (NG0201 TRANSLOCO_TRANSPILER). Der Stub
-  // liefert nur das im Bauteil genutzte isLoggedIn$.
+  // liefert nur die im Bauteil genutzten isLoggedIn$ und currentUser$.
   let isLoggedIn$: BehaviorSubject<boolean>;
+  let currentUser$: BehaviorSubject<User | null>;
+  let systemHealth: jasmine.SpyObj<SystemHealthService>;
+
+  // Nur die Rechte, die AppComponent liest. `as unknown as User` statt eines
+  // vollen Nutzerobjekts: alles andere ist für den Streifen belanglos.
+  const userWith = (permissions: Record<string, boolean>) =>
+    ({ permissions }) as unknown as User;
 
   beforeEach(async () => {
     isLoggedIn$ = new BehaviorSubject<boolean>(false);
+    currentUser$ = new BehaviorSubject<User | null>(null);
+    systemHealth = jasmine.createSpyObj('SystemHealthService', ['getSummary']);
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [AppComponent],
-      providers: [{ provide: SessionService, useValue: { isLoggedIn$ } }],
+      providers: [
+        { provide: SessionService, useValue: { isLoggedIn$, currentUser$ } },
+        { provide: SystemHealthService, useValue: systemHealth },
+      ],
     })
       .overrideTemplate(AppComponent, '')
       .compileComponents();
@@ -133,6 +148,62 @@ describe('AppComponent', () => {
       );
 
       expect(errorSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Hinweisstreifen Speicherplatz', () => {
+    const summary = (
+      overrides: Partial<SystemHealthSummary> = {}
+    ): SystemHealthSummary => ({
+      status: 'critical',
+      used_percent: 93,
+      free_bytes: 1024,
+      ...overrides,
+    });
+
+    function percentAfterInit(): number | null | undefined {
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.detectChanges(); // ngOnInit
+
+      let seen: number | null | undefined;
+      fixture.componentInstance.criticalDiskPercent$.subscribe(
+        (v) => (seen = v)
+      );
+      return seen;
+    }
+
+    it('fragt ohne das Recht nichts ab', () => {
+      currentUser$.next(userWith({ menu_item_league_admin: true }));
+
+      expect(percentAfterInit()).toBeNull();
+      expect(systemHealth.getSummary).not.toHaveBeenCalled();
+    });
+
+    it('zeigt den Streifen erst im kritischen Zustand', () => {
+      currentUser$.next(userWith({ menu_item_system_health: true }));
+      systemHealth.getSummary.and.returnValue(
+        of(summary({ status: 'warning', used_percent: 85 }))
+      );
+
+      expect(percentAfterInit()).toBeNull();
+    });
+
+    it('nennt im kritischen Zustand die Belegung', () => {
+      currentUser$.next(userWith({ menu_item_system_health: true }));
+      systemHealth.getSummary.and.returnValue(of(summary()));
+
+      expect(percentAfterInit()).toBe(93);
+    });
+
+    // Der Streifen ist ein Zusatz. Ein gescheiterter Abruf darf keine Meldung
+    // ueber jede Seite legen.
+    it('bleibt bei einem gescheiterten Abruf still', () => {
+      currentUser$.next(userWith({ menu_item_system_health: true }));
+      systemHealth.getSummary.and.returnValue(
+        throwError(() => new Error('503'))
+      );
+
+      expect(percentAfterInit()).toBeNull();
     });
   });
 });
