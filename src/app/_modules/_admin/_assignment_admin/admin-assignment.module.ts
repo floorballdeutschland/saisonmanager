@@ -14,7 +14,10 @@ import * as Views from './views';
     AdminAssignmentRoutingModule,
     UikitCommonModule,
   ],
-  declarations: [Views.AssignmentIndexComponent],
+  declarations: [
+    Views.AssignmentIndexComponent,
+    Views.AssignmentClubIndexComponent,
+  ],
   providers: [
     {
       provide: TRANSLOCO_SCOPE,

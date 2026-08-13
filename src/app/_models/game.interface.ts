@@ -157,6 +157,10 @@ export interface Game {
   hosting_club?: string;
   referees: Referee[];
   nominated_referees: string;
+  // Markierung „wird personenscharf angesetzt". Nur in der Verwaltungsansicht
+  // (meta_hash) enthalten; die oeffentliche Ausgabe leitet daraus einen Hinweis
+  // in nominated_referees ab, statt das Flag mitzuliefern.
+  person_level_assignment?: boolean;
   period_titles: PeriodTitles[];
   current_period_title: PeriodTitles;
   live_stream_link?: string | null;
@@ -204,6 +208,7 @@ export interface GameInput {
   game_number: string;
   start_time: string;
   nominated_referee_string: string;
+  person_level_assignment: boolean;
   notice_type?: string | null;
   notice_string?: string | null;
   home_team_id: number;

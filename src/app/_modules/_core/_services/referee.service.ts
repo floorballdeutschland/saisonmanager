@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
   AssignmentClub,
+  ClubAssignmentResult,
   ExclusionClub,
   PublicLicenseList,
   RefereeAdmin,
@@ -458,6 +459,31 @@ export class RefereeService {
   public adminGetAssignmentClubs() {
     return this.http.get<AssignmentClub[]>(
       environment.apiURL + 'admin/referee_assignments/clubs'
+    );
+  }
+
+  // Reduzierter Modus (Weg 3): Vereine der Mannschaften dieser Liga. Die
+  // LV-weite Liste aus adminGetAssignmentClubs wäre hier ein Heuhaufen.
+  public adminGetLeagueAssignmentClubs(leagueId: number) {
+    return this.http.get<AssignmentClub[]>(
+      environment.apiURL +
+        'admin/referee_assignments/league_clubs?league_id=' +
+        leagueId
+    );
+  }
+
+  // Reduzierter Modus (Weg 3): entweder einen Verein benennen, der das Gespann
+  // stellt, oder Personen/Paare als Freitext. Beides steht sofort im Spielplan.
+  public adminUpdateClubAssignment(
+    gameId: number,
+    data: { club_id?: number | null; nominated_referee_string?: string }
+  ) {
+    return this.http.patch<ClubAssignmentResult>(
+      environment.apiURL +
+        'admin/referee_assignments/games/' +
+        gameId +
+        '/club_assignment',
+      data
     );
   }
 

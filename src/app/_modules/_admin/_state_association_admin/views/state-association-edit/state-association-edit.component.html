@@ -474,10 +474,43 @@
             }
           </span>
         </label>
+        <!-- Drei gestaffelte Ansetzungs-Optionen: jede ist nur wählbar, solange
+             die darüberliegende aktiv ist (sonst ausgegraut). -->
         <label class="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
-            [(ngModel)]="stateAssociation.referee_assignment_enabled"
+            [(ngModel)]="refereeAssignmentExternal"
+            name="referee_assignment_external_enabled"
+            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+          />
+          <span class="flex flex-col gap-0.5">
+            <span class="text-sm font-bold">{{
+              "stateAssociationAdmin.edit.refereeAssignmentExternalLabel"
+                | transloco
+            }}</span>
+            <span class="text-xs text-fb-gray-400">{{
+              "stateAssociationAdmin.edit.refereeAssignmentExternalHint"
+                | transloco
+            }}</span>
+            @if (hasParent) {
+              <span class="text-xs text-fb-gray-400 italic">
+                {{
+                  "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
+                    | transloco: { name: stateAssociation.parent_name }
+                }}
+              </span>
+            }
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-3 ml-7"
+          [class.cursor-pointer]="refereeAssignmentExternal"
+          [class.opacity-50]="!refereeAssignmentExternal"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="refereeAssignmentPersonLevel"
+            [disabled]="!refereeAssignmentExternal"
             name="referee_assignment_enabled"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
@@ -488,14 +521,27 @@
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.refereeAssignmentHint" | transloco
             }}</span>
-            @if (hasParent) {
-              <span class="text-xs text-fb-gray-400 italic">
-                {{
-                  "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
-                    | transloco: { name: stateAssociation.parent_name }
-                }}
-              </span>
-            }
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-3 ml-14"
+          [class.cursor-pointer]="refereeAssignmentPersonLevel"
+          [class.opacity-50]="!refereeAssignmentPersonLevel"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="personLevelAssignmentDefault"
+            [disabled]="!refereeAssignmentPersonLevel"
+            name="person_level_assignment_default"
+            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+          />
+          <span class="flex flex-col gap-0.5">
+            <span class="text-sm font-bold">{{
+              "stateAssociationAdmin.edit.personLevelDefaultLabel" | transloco
+            }}</span>
+            <span class="text-xs text-fb-gray-400">{{
+              "stateAssociationAdmin.edit.personLevelDefaultHint" | transloco
+            }}</span>
           </span>
         </label>
         <label class="flex items-start gap-3 cursor-pointer">
