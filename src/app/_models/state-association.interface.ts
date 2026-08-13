@@ -33,7 +33,13 @@ export interface StateAssociation {
   effective_sbk_email?: string | null;
   effective_rsk_email?: string | null;
   manual_proceeding_creation?: boolean;
+  // Drei gestaffelte Ansetzungs-Optionen: der Hauptschalter erlaubt die
+  // Ansetzung ausserhalb der SBK, referee_assignment_enabled hebt sie auf die
+  // Personenebene (Rolle Ansetzer*in), die Voreinstellung markiert neue Spiele
+  // gleich dafuer. Jede setzt die darueberliegende voraus.
+  referee_assignment_external_enabled?: boolean;
   referee_assignment_enabled?: boolean;
+  person_level_assignment_default?: boolean;
   report_form_email_enabled?: boolean;
   logo_url?: string | null;
   banner_url?: string | null;

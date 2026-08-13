@@ -4,6 +4,7 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 import { RefereeAssignableGame } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { AssignmentIndexComponent } from './assignment-index.component';
@@ -18,6 +19,9 @@ describe('AssignmentIndexComponent – Zusätzliche Spielinformationen', () => {
     await TestBed.configureTestingModule({
       imports: [getTranslocoTestingModule(), HttpClientTestingModule],
       declarations: [AssignmentIndexComponent],
+      // Die Komponente liest über den SessionService, ob der reduzierte Modus
+      // (Weg 3) gilt. SessionService hängt am Router, der sonst hier fehlt.
+      providers: [provideRouter([])],
     })
       .overrideTemplate(AssignmentIndexComponent, '')
       .compileComponents();

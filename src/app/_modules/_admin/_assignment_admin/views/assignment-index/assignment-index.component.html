@@ -1,798 +1,190 @@
-<div class="p-4 lg:p-8">
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold">
-      {{ "assignmentAdmin.index.title" | transloco }}
-    </h1>
-  </div>
+<!-- Ein Menuepunkt, zwei Ansichten (#403): die personenscharfe Ansetzung
+     (Weg 2) und der reduzierte Modus der RSK (Weg 3). Welche greift, sagt
+     die Berechtigung referee_assignment_club_mode. -->
+@if (clubMode) {
+  <fb-assignment-club-index />
+} @else {
+  <div class="p-4 lg:p-8">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold">
+        {{ "assignmentAdmin.index.title" | transloco }}
+      </h1>
+    </div>
 
-  <!-- Filter -->
-  <div class="flex flex-wrap gap-4 mb-6 items-end">
-    <div class="flex flex-col gap-1">
-      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
-        "assignmentAdmin.index.filterSeason" | transloco
-      }}</label>
-      <select
-        [(ngModel)]="filterSeasonId"
-        [disabled]="seasonsLoading"
-        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-      >
-        <option value="">
-          {{ "assignmentAdmin.index.filterSeasonAll" | transloco }}
-        </option>
-        @for (s of seasons; track s) {
-          <option [value]="s.id.toString()">
-            {{ s.name }}
+    <!-- Filter -->
+    <div class="flex flex-wrap gap-4 mb-6 items-end">
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+          "assignmentAdmin.index.filterSeason" | transloco
+        }}</label>
+        <select
+          [(ngModel)]="filterSeasonId"
+          [disabled]="seasonsLoading"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        >
+          <option value="">
+            {{ "assignmentAdmin.index.filterSeasonAll" | transloco }}
           </option>
-        }
-      </select>
-    </div>
-    <div class="flex flex-col gap-1">
-      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
-        "assignmentAdmin.index.filterFrom" | transloco
-      }}</label>
-      <input
-        type="date"
-        [(ngModel)]="filterDateFrom"
-        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-      />
-    </div>
-    <div class="flex flex-col gap-1">
-      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
-        "assignmentAdmin.index.filterTo" | transloco
-      }}</label>
-      <input
-        type="date"
-        [(ngModel)]="filterDateTo"
-        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-      />
-    </div>
-    <button
-      type="button"
-      (click)="applyFilter()"
-      class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
-    >
-      {{ "assignmentAdmin.index.filterApply" | transloco }}
-    </button>
-    @if (activeTab === "open") {
-      <button
-        type="button"
-        (click)="exportCsv()"
-        [disabled]="rows.length === 0"
-        class="px-4 py-2 border border-black text-sm font-bold rounded-[5px] hover:bg-fb-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        {{ "assignmentAdmin.index.export" | transloco }}
-      </button>
-    } @else {
-      <button
-        type="button"
-        (click)="exportHistoryCsv()"
-        [disabled]="historyRows.length === 0"
-        class="px-4 py-2 border border-black text-sm font-bold rounded-[5px] hover:bg-fb-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        {{ "assignmentAdmin.index.export" | transloco }}
-      </button>
-    }
-  </div>
-
-  <!-- Tabs: offene (ansetzbare) Spiele vs. Verlauf erfolgter Ansetzungen -->
-  <div class="flex gap-1 mb-6 border-b border-fb-gray-600">
-    <button
-      type="button"
-      (click)="setTab('open')"
-      class="px-4 py-2 text-sm font-bold border-b-2 -mb-px"
-      [class.border-black]="activeTab === 'open'"
-      [class.border-transparent]="activeTab !== 'open'"
-      [class.text-fb-gray-500]="activeTab !== 'open'"
-    >
-      {{ "assignmentAdmin.index.tabOpen" | transloco }}
-    </button>
-    <button
-      type="button"
-      (click)="setTab('history')"
-      class="px-4 py-2 text-sm font-bold border-b-2 -mb-px"
-      [class.border-black]="activeTab === 'history'"
-      [class.border-transparent]="activeTab !== 'history'"
-      [class.text-fb-gray-500]="activeTab !== 'history'"
-    >
-      {{ "assignmentAdmin.index.tabHistory" | transloco }}
-    </button>
-  </div>
-
-  @if (loading) {
-    <div class="text-fb-gray-500 text-sm py-8">
-      {{ "assignmentAdmin.index.loading" | transloco }}
-    </div>
-  }
-
-  @if (!loading && activeTab === "open" && rows.length === 0) {
-    <div class="text-fb-gray-500 py-8">
-      {{ "assignmentAdmin.index.empty" | transloco }}
-    </div>
-  }
-
-  @if (!loading && activeTab === "open" && rows.length > 0) {
-    <!-- Auswahl-Vorfilter für die Schiri-Dropdowns (rein clientseitig) -->
-    <div class="flex flex-wrap items-center gap-3 mb-4 text-sm">
-      <span class="text-xs font-bold uppercase text-fb-gray-500">{{
-        "assignmentAdmin.index.prefilterLabel" | transloco
-      }}</span>
-      <label class="flex items-center gap-1.5 cursor-pointer">
-        <input
-          type="checkbox"
-          [checked]="filterShortNotice"
-          (change)="toggleShortNotice()"
-        />
-        <span>{{ "assignmentAdmin.index.filterShortNotice" | transloco }}</span>
-      </label>
-      @if (licenseLevelOptions().length > 0) {
-        <span class="text-fb-gray-500"
-          >{{ "assignmentAdmin.index.filterLicense" | transloco }}:</span
-        >
-        <div class="flex flex-wrap gap-1">
-          @for (lvl of licenseLevelOptions(); track lvl) {
-            <button
-              type="button"
-              (click)="toggleLicenseLevel(lvl)"
-              class="px-2 py-0.5 rounded-full border text-xs"
-              [class.bg-black]="selectedLicenseLevels.has(lvl)"
-              [class.text-white]="selectedLicenseLevels.has(lvl)"
-              [class.border-black]="selectedLicenseLevels.has(lvl)"
-              [class.border-fb-gray-400]="!selectedLicenseLevels.has(lvl)"
-              [class.text-fb-gray-600]="!selectedLicenseLevels.has(lvl)"
-            >
-              {{ lvl }}
-            </button>
+          @for (s of seasons; track s) {
+            <option [value]="s.id.toString()">
+              {{ s.name }}
+            </option>
           }
-        </div>
-      }
-      @if (tagFilterOptions().length > 0) {
-        <span class="text-fb-gray-500"
-          >{{ "assignmentAdmin.index.filterTags" | transloco }}:</span
-        >
-        <div class="flex flex-wrap gap-1">
-          @for (tag of tagFilterOptions(); track tag.id) {
-            <button
-              type="button"
-              (click)="toggleTag(tag.id)"
-              class="px-2 py-0.5 rounded-full border text-xs inline-flex items-center gap-1"
-              [class.bg-black]="selectedTagIds.has(tag.id)"
-              [class.text-white]="selectedTagIds.has(tag.id)"
-              [class.border-black]="selectedTagIds.has(tag.id)"
-              [class.border-fb-gray-400]="!selectedTagIds.has(tag.id)"
-              [class.text-fb-gray-600]="!selectedTagIds.has(tag.id)"
-            >
-              @if (tag.color) {
-                <span
-                  class="inline-block w-2 h-2 rounded-full"
-                  [style.backgroundColor]="tag.color"
-                ></span>
-              }
-              {{ tag.name }}
-            </button>
-          }
-        </div>
-      }
-    </div>
-    <div class="overflow-x-auto">
-      <table
-        class="text-sm border-collapse"
-        style="min-width: 1240px; width: 100%"
-      >
-        <thead>
-          <tr
-            class="text-left text-xs uppercase text-fb-gray-500 border-b border-fb-gray-600"
-          >
-            <th class="py-2 pr-3 whitespace-nowrap">
-              {{ "assignmentAdmin.index.colDate" | transloco }}
-            </th>
-            <th class="py-2 pr-3 whitespace-nowrap">
-              {{ "assignmentAdmin.index.colTime" | transloco }}
-            </th>
-            <th class="py-2 pr-3">
-              {{ "assignmentAdmin.index.colLocation" | transloco }}
-            </th>
-            <th class="py-2 pr-3">
-              {{ "assignmentAdmin.index.colGame" | transloco }}
-            </th>
-            <th class="py-2 pr-3">
-              {{ "assignmentAdmin.index.colLeague" | transloco }}
-            </th>
-            <th class="py-2 pr-3 whitespace-nowrap">
-              {{ "assignmentAdmin.index.colStatus" | transloco }}
-            </th>
-            <th class="py-2 pr-3" style="min-width: 150px">
-              {{ "assignmentAdmin.index.colReferee1" | transloco }}
-            </th>
-            <th class="py-2 pr-3" style="min-width: 150px">
-              {{ "assignmentAdmin.index.colReferee2" | transloco }}
-            </th>
-            <th class="py-2 pr-3" style="min-width: 150px">
-              {{ "assignmentAdmin.index.colCoach" | transloco }}
-            </th>
-            <th class="py-2">
-              {{ "assignmentAdmin.index.colActions" | transloco }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of rows; track row) {
-            <tr class="border-b border-fb-gray-600 hover:bg-fb-gray-100">
-              @if (getState(row.game.id); as state) {
-                <td class="py-2 pr-3 whitespace-nowrap align-top text-sm">
-                  {{ row.game.date }}
-                </td>
-                <td
-                  class="py-2 pr-3 whitespace-nowrap align-top text-fb-gray-500 text-sm"
-                >
-                  {{ row.game.start_time || "–" }}
-                </td>
-                <td
-                  class="py-2 pr-3 align-top text-xs text-fb-gray-500 whitespace-nowrap"
-                >
-                  @if (arenaLocation(row.game); as loc) {
-                    @if (loc) {
-                      <span>{{ loc }}</span>
-                    }
-                    @if (!loc) {
-                      <span class="text-fb-gray-400">–</span>
-                    }
-                  }
-                </td>
-                <td class="py-2 pr-3 align-top">
-                  {{ row.game.home_team }}
-                  {{ "assignmentAdmin.index.vs" | transloco }}
-                  {{ row.game.guest_team }}
-                  @if (row.game.game_number) {
-                    <span class="text-fb-gray-500 text-xs ml-1"
-                      >#{{ row.game.game_number }}</span
-                    >
-                  }
-                </td>
-                <td class="py-2 pr-3 align-top text-xs text-fb-gray-500">
-                  {{ row.game.league }}
-                </td>
-                <td class="py-2 pr-3 align-top whitespace-nowrap">
-                  <span
-                    class="px-2 py-0.5 rounded text-xs font-bold"
-                    [ngClass]="
-                      assignmentStatusClass(row.game.assignment_status)
-                    "
-                  >
-                    {{ assignmentStatusLabel(row.game.assignment_status) }}
-                  </span>
-                </td>
-                <!-- Schiri 1 / Verein -->
-                <td class="py-1.5 pr-3 align-top" style="min-width: 150px">
-                  <div class="flex gap-1 mb-1.5">
-                    <button
-                      type="button"
-                      (click)="setMode(row.game.id, 'referees')"
-                      class="px-1.5 py-0.5 text-[10px] rounded border"
-                      [class.bg-black]="state.mode === 'referees'"
-                      [class.text-white]="state.mode === 'referees'"
-                      [class.border-black]="state.mode === 'referees'"
-                      [class.border-fb-gray-400]="state.mode !== 'referees'"
-                      [class.text-fb-gray-600]="state.mode !== 'referees'"
-                    >
-                      {{ "assignmentAdmin.index.modeReferees" | transloco }}
-                    </button>
-                    <button
-                      type="button"
-                      (click)="setMode(row.game.id, 'club')"
-                      class="px-1.5 py-0.5 text-[10px] rounded border"
-                      [class.bg-black]="state.mode === 'club'"
-                      [class.text-white]="state.mode === 'club'"
-                      [class.border-black]="state.mode === 'club'"
-                      [class.border-fb-gray-400]="state.mode !== 'club'"
-                      [class.text-fb-gray-600]="state.mode !== 'club'"
-                    >
-                      {{ "assignmentAdmin.index.modeClub" | transloco }}
-                    </button>
-                  </div>
-                  @if (state.mode === "referees") {
-                    <div class="relative">
-                      <div
-                        class="flex items-center border rounded-[5px] bg-white"
-                        [class.border-fb-gray-400]="!state.selectedReferee1Id"
-                        [class.border-green-500]="!!state.selectedReferee1Id"
-                      >
-                        <input
-                          type="text"
-                          autocomplete="off"
-                          [attr.placeholder]="
-                            'assignmentAdmin.index.namePlaceholder' | transloco
-                          "
-                          [value]="state.referee1Query"
-                          class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-xs min-w-0"
-                          (focus)="onReferee1Focus(row.game.id)"
-                          (input)="
-                            onReferee1Input(
-                              row.game.id,
-                              $any($event.target).value
-                            )
-                          "
-                          (blur)="onReferee1Blur(row.game.id)"
-                        />
-                        @if (state.referee1Query) {
-                          <button
-                            type="button"
-                            class="flex-shrink-0 px-1.5 text-fb-gray-400 hover:text-fb-gray-900"
-                            (mousedown)="
-                              $event.preventDefault();
-                              clearReferee1(row.game.id)
-                            "
-                            tabindex="-1"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="w-3 h-3"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke-width="2"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        }
-                      </div>
-                      @if (
-                        state.showReferee1Dropdown &&
-                        filteredReferees(row.game.id, state.referee1Query)
-                          .length > 0
-                      ) {
-                        <ul
-                          class="absolute z-50 left-0 bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-40 overflow-y-auto"
-                          style="min-width: 200px"
-                        >
-                          @for (
-                            r of filteredReferees(
-                              row.game.id,
-                              state.referee1Query
-                            );
-                            track r
-                          ) {
-                            <li
-                              (mousedown)="
-                                $event.preventDefault();
-                                selectReferee1(row.game.id, r)
-                              "
-                              class="px-2 py-1.5 hover:bg-fb-gray-200 cursor-pointer text-xs"
-                            >
-                              <span class="font-medium"
-                                >{{ r.nachname }}, {{ r.vorname }}</span
-                              >
-                              @if (r.lizenzstufe) {
-                                <span class="text-fb-gray-400 ml-1"
-                                  >({{ r.lizenzstufe }})</span
-                                >
-                              }
-                              @if (r.kurzfristig_mobil) {
-                                <span
-                                  class="text-amber-600 ml-1"
-                                  [title]="
-                                    'assignmentAdmin.index.shortNoticeBadge'
-                                      | transloco
-                                  "
-                                  >⚡</span
-                                >
-                              }
-                              @for (t of r.tags; track t.id) {
-                                <span
-                                  class="ml-1 inline-flex items-center gap-0.5 text-[10px] text-fb-gray-500"
-                                >
-                                  <span
-                                    class="inline-block w-1.5 h-1.5 rounded-full"
-                                    [style.backgroundColor]="
-                                      t.color || '#9ca3af'
-                                    "
-                                  ></span
-                                  >{{ t.name }}</span
-                                >
-                              }
-                            </li>
-                          }
-                        </ul>
-                      }
-                    </div>
-                  } @else {
-                    <fb-select-search
-                      [(ngModel)]="state.selectedClubId"
-                      (ngModelChange)="onClubChange()"
-                      [items]="clubs"
-                      [placeholder]="
-                        'assignmentAdmin.index.clubPlaceholder' | transloco
-                      "
-                      [resetLabel]="
-                        'assignmentAdmin.index.clubPlaceholder' | transloco
-                      "
-                      [highlightSelection]="true"
-                    />
-                  }
-                </td>
-                <!-- Schiri 2 -->
-                <td class="py-1.5 pr-3 align-top" style="min-width: 150px">
-                  @if (state.mode === "referees") {
-                    <div class="relative">
-                      <div
-                        class="flex items-center border rounded-[5px] bg-white"
-                        [class.border-fb-gray-400]="!state.selectedReferee2Id"
-                        [class.border-green-500]="!!state.selectedReferee2Id"
-                      >
-                        <input
-                          type="text"
-                          autocomplete="off"
-                          [attr.placeholder]="
-                            'assignmentAdmin.index.namePlaceholder' | transloco
-                          "
-                          [value]="state.referee2Query"
-                          class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-xs min-w-0"
-                          (focus)="onReferee2Focus(row.game.id)"
-                          (input)="
-                            onReferee2Input(
-                              row.game.id,
-                              $any($event.target).value
-                            )
-                          "
-                          (blur)="onReferee2Blur(row.game.id)"
-                        />
-                        @if (state.referee2Query) {
-                          <button
-                            type="button"
-                            class="flex-shrink-0 px-1.5 text-fb-gray-400 hover:text-fb-gray-900"
-                            (mousedown)="
-                              $event.preventDefault();
-                              clearReferee2(row.game.id)
-                            "
-                            tabindex="-1"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="w-3 h-3"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke-width="2"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        }
-                      </div>
-                      @if (
-                        state.showReferee2Dropdown &&
-                        filteredReferees(row.game.id, state.referee2Query)
-                          .length > 0
-                      ) {
-                        <ul
-                          class="absolute z-50 left-0 bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-40 overflow-y-auto"
-                          style="min-width: 200px"
-                        >
-                          @for (
-                            r of filteredReferees(
-                              row.game.id,
-                              state.referee2Query
-                            );
-                            track r
-                          ) {
-                            <li
-                              (mousedown)="
-                                $event.preventDefault();
-                                selectReferee2(row.game.id, r)
-                              "
-                              class="px-2 py-1.5 hover:bg-fb-gray-200 cursor-pointer text-xs"
-                            >
-                              <span class="font-medium"
-                                >{{ r.nachname }}, {{ r.vorname }}</span
-                              >
-                              @if (r.lizenzstufe) {
-                                <span class="text-fb-gray-400 ml-1"
-                                  >({{ r.lizenzstufe }})</span
-                                >
-                              }
-                              @if (r.kurzfristig_mobil) {
-                                <span
-                                  class="text-amber-600 ml-1"
-                                  [title]="
-                                    'assignmentAdmin.index.shortNoticeBadge'
-                                      | transloco
-                                  "
-                                  >⚡</span
-                                >
-                              }
-                              @for (t of r.tags; track t.id) {
-                                <span
-                                  class="ml-1 inline-flex items-center gap-0.5 text-[10px] text-fb-gray-500"
-                                >
-                                  <span
-                                    class="inline-block w-1.5 h-1.5 rounded-full"
-                                    [style.backgroundColor]="
-                                      t.color || '#9ca3af'
-                                    "
-                                  ></span
-                                  >{{ t.name }}</span
-                                >
-                              }
-                            </li>
-                          }
-                        </ul>
-                      }
-                    </div>
-                  } @else {
-                    <span class="text-fb-gray-400 text-xs">{{
-                      "assignmentAdmin.index.clubCoversBoth" | transloco
-                    }}</span>
-                  }
-                </td>
-                <!-- SR-Coach -->
-                <td class="py-1.5 pr-3 align-top" style="min-width: 150px">
-                  <div class="relative">
-                    <div
-                      class="flex items-center border rounded-[5px] bg-white"
-                      [class.border-fb-gray-400]="!state.selectedCoachId"
-                      [class.border-blue-500]="!!state.selectedCoachId"
-                    >
-                      <input
-                        type="text"
-                        autocomplete="off"
-                        [attr.placeholder]="
-                          'assignmentAdmin.index.namePlaceholder' | transloco
-                        "
-                        [value]="state.coachQuery"
-                        class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-xs min-w-0"
-                        (focus)="onCoachFocus(row.game.id)"
-                        (input)="
-                          onCoachInput(row.game.id, $any($event.target).value)
-                        "
-                        (blur)="onCoachBlur(row.game.id)"
-                      />
-                      @if (state.coachQuery) {
-                        <button
-                          type="button"
-                          class="flex-shrink-0 px-1.5 text-fb-gray-400 hover:text-fb-gray-900"
-                          (mousedown)="
-                            $event.preventDefault(); clearCoach(row.game.id)
-                          "
-                          tabindex="-1"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="w-3 h-3"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="2"
-                            stroke="currentColor"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      }
-                    </div>
-                    @if (
-                      state.showCoachDropdown &&
-                      filteredCoaches(row.game.id, state.coachQuery).length > 0
-                    ) {
-                      <ul
-                        class="absolute z-50 left-0 bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-40 overflow-y-auto"
-                        style="min-width: 200px"
-                      >
-                        @for (
-                          r of filteredCoaches(row.game.id, state.coachQuery);
-                          track r
-                        ) {
-                          <li
-                            (mousedown)="
-                              $event.preventDefault();
-                              selectCoach(row.game.id, r)
-                            "
-                            class="px-2 py-1.5 hover:bg-fb-gray-200 cursor-pointer text-xs"
-                          >
-                            <span class="font-medium"
-                              >{{ r.nachname }}, {{ r.vorname }}</span
-                            >
-                            @if (r.lizenzstufe) {
-                              <span class="text-fb-gray-400 ml-1"
-                                >({{ r.lizenzstufe }})</span
-                              >
-                            }
-                          </li>
-                        }
-                      </ul>
-                    }
-                  </div>
-                </td>
-                <!-- Aktionen -->
-                <td class="py-1.5 align-top">
-                  <div class="flex flex-col gap-1">
-                    <button
-                      type="button"
-                      (click)="save(row)"
-                      [disabled]="state.saving"
-                      class="px-2 py-1 text-xs bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40 whitespace-nowrap"
-                    >
-                      {{
-                        (state.saving
-                          ? "assignmentAdmin.index.saving"
-                          : row.assignment?.status === "published"
-                            ? "assignmentAdmin.index.updateSend"
-                            : "assignmentAdmin.index.saveDraft"
-                        ) | transloco
-                      }}
-                    </button>
-                    <button
-                      type="button"
-                      (click)="notify(row)"
-                      [disabled]="
-                        !row.assignment ||
-                        row.assignment.status === 'published' ||
-                        state.notifying
-                      "
-                      class="px-2 py-1 text-xs bg-blue-600 text-white rounded-[5px] hover:bg-blue-700 disabled:opacity-40 whitespace-nowrap"
-                    >
-                      {{
-                        (state.notifying
-                          ? "assignmentAdmin.index.sending"
-                          : "assignmentAdmin.index.sendEmail"
-                        ) | transloco
-                      }}
-                    </button>
-                    <button
-                      type="button"
-                      (click)="publish(row)"
-                      [disabled]="
-                        !row.assignment ||
-                        row.assignment.status === 'published' ||
-                        state.publishing
-                      "
-                      class="px-2 py-1 text-xs bg-green-700 text-white rounded-[5px] hover:bg-green-800 disabled:opacity-40 whitespace-nowrap"
-                    >
-                      {{
-                        (state.publishing
-                          ? "assignmentAdmin.index.publishing"
-                          : "assignmentAdmin.index.publish"
-                        ) | transloco
-                      }}
-                    </button>
-                    <!-- Zusätzliche Spielinformationen: nur fürs Gespann sichtbar -->
-                    <button
-                      type="button"
-                      (click)="toggleNotes(row)"
-                      [disabled]="notesSavingGameId !== null"
-                      class="px-2 py-1 text-xs border rounded-[5px] hover:bg-fb-gray-100 disabled:opacity-40 whitespace-nowrap"
-                      [class.border-amber-500]="hasNotes(row)"
-                      [class.text-amber-800]="hasNotes(row)"
-                      [class.bg-amber-50]="hasNotes(row)"
-                      [class.border-fb-gray-400]="!hasNotes(row)"
-                      [class.text-fb-gray-600]="!hasNotes(row)"
-                      [attr.title]="
-                        'assignmentAdmin.index.notesHint' | transloco
-                      "
-                    >
-                      @if (hasNotes(row)) {
-                        <span aria-hidden="true">📝 </span>
-                      }
-                      {{ "assignmentAdmin.index.notesButton" | transloco }}
-                    </button>
-                  </div>
-                </td>
-              }
-            </tr>
-            @if (refereeConflict(row); as conflict) {
-              <tr class="bg-amber-50 border-b border-fb-gray-600">
-                <td colspan="10" class="py-1.5 px-2 text-xs text-amber-800">
-                  ⚠ {{ conflict }}
-                </td>
-              </tr>
-            }
-            @if (clubConflict(row); as conflict) {
-              <tr class="bg-amber-50 border-b border-fb-gray-600">
-                <td colspan="10" class="py-1.5 px-2 text-xs text-amber-800">
-                  ⚠ {{ conflict }}
-                </td>
-              </tr>
-            }
-            @if (exclusionConflict(row); as conflict) {
-              <tr class="bg-amber-50 border-b border-fb-gray-600">
-                <td colspan="10" class="py-1.5 px-2 text-xs text-amber-800">
-                  ⚠ {{ conflict }}
-                </td>
-              </tr>
-            }
-            <!-- Aufgeklappter Editor für die Spielinformationen des Gespanns -->
-            @if (notesOpenGameId === row.game.id) {
-              <tr class="bg-fb-gray-100 border-b border-fb-gray-600">
-                <td colspan="10" class="py-3 px-2">
-                  <label
-                    [attr.for]="'notes-' + row.game.id"
-                    class="block text-xs font-bold uppercase text-fb-gray-500 mb-1"
-                  >
-                    {{ "assignmentAdmin.index.notesLabel" | transloco }}
-                  </label>
-                  <p class="text-xs text-fb-gray-500 mb-2">
-                    {{ "assignmentAdmin.index.notesHint" | transloco }}
-                  </p>
-                  <textarea
-                    [id]="'notes-' + row.game.id"
-                    rows="3"
-                    [value]="notesDraft"
-                    (input)="onNotesInput($any($event.target).value)"
-                    [attr.placeholder]="
-                      'assignmentAdmin.index.notesPlaceholder' | transloco
-                    "
-                    class="w-full px-2 py-1.5 border border-fb-gray-600 rounded-[5px] text-sm bg-white focus:outline-none focus:border-black"
-                  ></textarea>
-                  <div class="flex flex-wrap items-center gap-2 mt-2">
-                    <button
-                      type="button"
-                      (click)="saveNotes(row)"
-                      [disabled]="notesSavingGameId === row.game.id"
-                      class="px-3 py-1 text-xs bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
-                    >
-                      {{
-                        (notesSavingGameId === row.game.id
-                          ? "assignmentAdmin.index.saving"
-                          : "assignmentAdmin.index.notesSave"
-                        ) | transloco
-                      }}
-                    </button>
-                    <button
-                      type="button"
-                      (click)="cancelNotes()"
-                      [disabled]="notesSavingGameId === row.game.id"
-                      class="px-3 py-1 text-xs border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
-                    >
-                      {{ "assignmentAdmin.index.notesCancel" | transloco }}
-                    </button>
-                    @if (row.game.referee_notes_updated_at) {
-                      <span class="text-xs text-fb-gray-500">
-                        {{ "assignmentAdmin.index.notesUpdated" | transloco }}
-                        {{
-                          row.game.referee_notes_updated_at
-                            | date: "dd.MM.yyyy HH:mm"
-                        }}
-                        @if (row.game.referee_notes_updated_by_name) {
-                          <span
-                            >&middot;
-                            {{ row.game.referee_notes_updated_by_name }}</span
-                          >
-                        }
-                      </span>
-                    }
-                  </div>
-                </td>
-              </tr>
-            }
-          }
-        </tbody>
-      </table>
-    </div>
-  }
-
-  @if (!loading && activeTab === "history") {
-    @if (historyRows.length === 0) {
-      <div class="text-fb-gray-500 py-8">
-        {{ "assignmentAdmin.index.historyEmpty" | transloco }}
+        </select>
       </div>
-    } @else {
-      <div class="text-sm text-fb-gray-500 mb-4">
-        {{ "assignmentAdmin.index.historyHint" | transloco }}
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+          "assignmentAdmin.index.filterFrom" | transloco
+        }}</label>
+        <input
+          type="date"
+          [(ngModel)]="filterDateFrom"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+          "assignmentAdmin.index.filterTo" | transloco
+        }}</label>
+        <input
+          type="date"
+          [(ngModel)]="filterDateTo"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+        />
+      </div>
+      <button
+        type="button"
+        (click)="applyFilter()"
+        class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+      >
+        {{ "assignmentAdmin.index.filterApply" | transloco }}
+      </button>
+      @if (activeTab === "open") {
+        <button
+          type="button"
+          (click)="exportCsv()"
+          [disabled]="rows.length === 0"
+          class="px-4 py-2 border border-black text-sm font-bold rounded-[5px] hover:bg-fb-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {{ "assignmentAdmin.index.export" | transloco }}
+        </button>
+      } @else {
+        <button
+          type="button"
+          (click)="exportHistoryCsv()"
+          [disabled]="historyRows.length === 0"
+          class="px-4 py-2 border border-black text-sm font-bold rounded-[5px] hover:bg-fb-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {{ "assignmentAdmin.index.export" | transloco }}
+        </button>
+      }
+    </div>
+
+    <!-- Tabs: offene (ansetzbare) Spiele vs. Verlauf erfolgter Ansetzungen -->
+    <div class="flex gap-1 mb-6 border-b border-fb-gray-600">
+      <button
+        type="button"
+        (click)="setTab('open')"
+        class="px-4 py-2 text-sm font-bold border-b-2 -mb-px"
+        [class.border-black]="activeTab === 'open'"
+        [class.border-transparent]="activeTab !== 'open'"
+        [class.text-fb-gray-500]="activeTab !== 'open'"
+      >
+        {{ "assignmentAdmin.index.tabOpen" | transloco }}
+      </button>
+      <button
+        type="button"
+        (click)="setTab('history')"
+        class="px-4 py-2 text-sm font-bold border-b-2 -mb-px"
+        [class.border-black]="activeTab === 'history'"
+        [class.border-transparent]="activeTab !== 'history'"
+        [class.text-fb-gray-500]="activeTab !== 'history'"
+      >
+        {{ "assignmentAdmin.index.tabHistory" | transloco }}
+      </button>
+    </div>
+
+    @if (loading) {
+      <div class="text-fb-gray-500 text-sm py-8">
+        {{ "assignmentAdmin.index.loading" | transloco }}
+      </div>
+    }
+
+    @if (!loading && activeTab === "open" && rows.length === 0) {
+      <div class="text-fb-gray-500 py-8">
+        {{ "assignmentAdmin.index.empty" | transloco }}
+      </div>
+    }
+
+    @if (!loading && activeTab === "open" && rows.length > 0) {
+      <!-- Auswahl-Vorfilter für die Schiri-Dropdowns (rein clientseitig) -->
+      <div class="flex flex-wrap items-center gap-3 mb-4 text-sm">
+        <span class="text-xs font-bold uppercase text-fb-gray-500">{{
+          "assignmentAdmin.index.prefilterLabel" | transloco
+        }}</span>
+        <label class="flex items-center gap-1.5 cursor-pointer">
+          <input
+            type="checkbox"
+            [checked]="filterShortNotice"
+            (change)="toggleShortNotice()"
+          />
+          <span>{{
+            "assignmentAdmin.index.filterShortNotice" | transloco
+          }}</span>
+        </label>
+        @if (licenseLevelOptions().length > 0) {
+          <span class="text-fb-gray-500"
+            >{{ "assignmentAdmin.index.filterLicense" | transloco }}:</span
+          >
+          <div class="flex flex-wrap gap-1">
+            @for (lvl of licenseLevelOptions(); track lvl) {
+              <button
+                type="button"
+                (click)="toggleLicenseLevel(lvl)"
+                class="px-2 py-0.5 rounded-full border text-xs"
+                [class.bg-black]="selectedLicenseLevels.has(lvl)"
+                [class.text-white]="selectedLicenseLevels.has(lvl)"
+                [class.border-black]="selectedLicenseLevels.has(lvl)"
+                [class.border-fb-gray-400]="!selectedLicenseLevels.has(lvl)"
+                [class.text-fb-gray-600]="!selectedLicenseLevels.has(lvl)"
+              >
+                {{ lvl }}
+              </button>
+            }
+          </div>
+        }
+        @if (tagFilterOptions().length > 0) {
+          <span class="text-fb-gray-500"
+            >{{ "assignmentAdmin.index.filterTags" | transloco }}:</span
+          >
+          <div class="flex flex-wrap gap-1">
+            @for (tag of tagFilterOptions(); track tag.id) {
+              <button
+                type="button"
+                (click)="toggleTag(tag.id)"
+                class="px-2 py-0.5 rounded-full border text-xs inline-flex items-center gap-1"
+                [class.bg-black]="selectedTagIds.has(tag.id)"
+                [class.text-white]="selectedTagIds.has(tag.id)"
+                [class.border-black]="selectedTagIds.has(tag.id)"
+                [class.border-fb-gray-400]="!selectedTagIds.has(tag.id)"
+                [class.text-fb-gray-600]="!selectedTagIds.has(tag.id)"
+              >
+                @if (tag.color) {
+                  <span
+                    class="inline-block w-2 h-2 rounded-full"
+                    [style.backgroundColor]="tag.color"
+                  ></span>
+                }
+                {{ tag.name }}
+              </button>
+            }
+          </div>
+        }
       </div>
       <div class="overflow-x-auto">
         <table
           class="text-sm border-collapse"
-          style="min-width: 900px; width: 100%"
+          style="min-width: 1240px; width: 100%"
         >
           <thead>
             <tr
@@ -801,67 +193,691 @@
               <th class="py-2 pr-3 whitespace-nowrap">
                 {{ "assignmentAdmin.index.colDate" | transloco }}
               </th>
+              <th class="py-2 pr-3 whitespace-nowrap">
+                {{ "assignmentAdmin.index.colTime" | transloco }}
+              </th>
+              <th class="py-2 pr-3">
+                {{ "assignmentAdmin.index.colLocation" | transloco }}
+              </th>
               <th class="py-2 pr-3">
                 {{ "assignmentAdmin.index.colGame" | transloco }}
               </th>
               <th class="py-2 pr-3">
                 {{ "assignmentAdmin.index.colLeague" | transloco }}
               </th>
-              <th class="py-2 pr-3">
+              <th class="py-2 pr-3 whitespace-nowrap">
+                {{ "assignmentAdmin.index.colStatus" | transloco }}
+              </th>
+              <th class="py-2 pr-3" style="min-width: 150px">
                 {{ "assignmentAdmin.index.colReferee1" | transloco }}
               </th>
-              <th class="py-2 pr-3">
+              <th class="py-2 pr-3" style="min-width: 150px">
                 {{ "assignmentAdmin.index.colReferee2" | transloco }}
               </th>
-              <th class="py-2 pr-3">
+              <th class="py-2 pr-3" style="min-width: 150px">
                 {{ "assignmentAdmin.index.colCoach" | transloco }}
               </th>
-              <th class="py-2 pr-3 whitespace-nowrap">
-                {{ "assignmentAdmin.index.colResult" | transloco }}
+              <th class="py-2">
+                {{ "assignmentAdmin.index.colActions" | transloco }}
               </th>
             </tr>
           </thead>
           <tbody>
-            @for (a of historyRows; track a.id) {
-              <tr class="border-b border-fb-gray-600">
-                <td class="py-2 pr-3 whitespace-nowrap">{{ a.game?.date }}</td>
-                <td class="py-2 pr-3">
-                  {{ a.game?.home_team }}
-                  <span class="text-fb-gray-500">{{
-                    "assignmentAdmin.index.vs" | transloco
-                  }}</span>
-                  {{ a.game?.guest_team }}
-                </td>
-                <td class="py-2 pr-3">{{ a.game?.league }}</td>
-                @for (slot of [0, 1]; track slot) {
-                  <td class="py-2 pr-3">
-                    @let official = historyOfficial(a, slot);
-                    @if (official) {
-                      {{ official.name }}
-                      @if (official.source !== "report") {
-                        <span class="text-fb-gray-500 whitespace-nowrap"
-                          >({{
-                            (official.source === "club"
-                              ? "assignmentAdmin.index.historySourceClub"
-                              : "assignmentAdmin.index.historySourceAssignment"
-                            ) | transloco
-                          }})</span
-                        >
+            @for (row of rows; track row) {
+              <tr class="border-b border-fb-gray-600 hover:bg-fb-gray-100">
+                @if (getState(row.game.id); as state) {
+                  <td class="py-2 pr-3 whitespace-nowrap align-top text-sm">
+                    {{ row.game.date }}
+                  </td>
+                  <td
+                    class="py-2 pr-3 whitespace-nowrap align-top text-fb-gray-500 text-sm"
+                  >
+                    {{ row.game.start_time || "–" }}
+                  </td>
+                  <td
+                    class="py-2 pr-3 align-top text-xs text-fb-gray-500 whitespace-nowrap"
+                  >
+                    @if (arenaLocation(row.game); as loc) {
+                      @if (loc) {
+                        <span>{{ loc }}</span>
                       }
-                    } @else {
-                      –
+                      @if (!loc) {
+                        <span class="text-fb-gray-400">–</span>
+                      }
                     }
                   </td>
+                  <td class="py-2 pr-3 align-top">
+                    {{ row.game.home_team }}
+                    {{ "assignmentAdmin.index.vs" | transloco }}
+                    {{ row.game.guest_team }}
+                    @if (row.game.game_number) {
+                      <span class="text-fb-gray-500 text-xs ml-1"
+                        >#{{ row.game.game_number }}</span
+                      >
+                    }
+                  </td>
+                  <td class="py-2 pr-3 align-top text-xs text-fb-gray-500">
+                    {{ row.game.league }}
+                  </td>
+                  <td class="py-2 pr-3 align-top whitespace-nowrap">
+                    <span
+                      class="px-2 py-0.5 rounded text-xs font-bold"
+                      [ngClass]="
+                        assignmentStatusClass(row.game.assignment_status)
+                      "
+                    >
+                      {{ assignmentStatusLabel(row.game.assignment_status) }}
+                    </span>
+                  </td>
+                  <!-- Schiri 1 / Verein -->
+                  <td class="py-1.5 pr-3 align-top" style="min-width: 150px">
+                    <div class="flex gap-1 mb-1.5">
+                      <button
+                        type="button"
+                        (click)="setMode(row.game.id, 'referees')"
+                        class="px-1.5 py-0.5 text-[10px] rounded border"
+                        [class.bg-black]="state.mode === 'referees'"
+                        [class.text-white]="state.mode === 'referees'"
+                        [class.border-black]="state.mode === 'referees'"
+                        [class.border-fb-gray-400]="state.mode !== 'referees'"
+                        [class.text-fb-gray-600]="state.mode !== 'referees'"
+                      >
+                        {{ "assignmentAdmin.index.modeReferees" | transloco }}
+                      </button>
+                      <button
+                        type="button"
+                        (click)="setMode(row.game.id, 'club')"
+                        class="px-1.5 py-0.5 text-[10px] rounded border"
+                        [class.bg-black]="state.mode === 'club'"
+                        [class.text-white]="state.mode === 'club'"
+                        [class.border-black]="state.mode === 'club'"
+                        [class.border-fb-gray-400]="state.mode !== 'club'"
+                        [class.text-fb-gray-600]="state.mode !== 'club'"
+                      >
+                        {{ "assignmentAdmin.index.modeClub" | transloco }}
+                      </button>
+                    </div>
+                    @if (state.mode === "referees") {
+                      <div class="relative">
+                        <div
+                          class="flex items-center border rounded-[5px] bg-white"
+                          [class.border-fb-gray-400]="!state.selectedReferee1Id"
+                          [class.border-green-500]="!!state.selectedReferee1Id"
+                        >
+                          <input
+                            type="text"
+                            autocomplete="off"
+                            [attr.placeholder]="
+                              'assignmentAdmin.index.namePlaceholder'
+                                | transloco
+                            "
+                            [value]="state.referee1Query"
+                            class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-xs min-w-0"
+                            (focus)="onReferee1Focus(row.game.id)"
+                            (input)="
+                              onReferee1Input(
+                                row.game.id,
+                                $any($event.target).value
+                              )
+                            "
+                            (blur)="onReferee1Blur(row.game.id)"
+                          />
+                          @if (state.referee1Query) {
+                            <button
+                              type="button"
+                              class="flex-shrink-0 px-1.5 text-fb-gray-400 hover:text-fb-gray-900"
+                              (mousedown)="
+                                $event.preventDefault();
+                                clearReferee1(row.game.id)
+                              "
+                              tabindex="-1"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="w-3 h-3"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          }
+                        </div>
+                        @if (
+                          state.showReferee1Dropdown &&
+                          filteredReferees(row.game.id, state.referee1Query)
+                            .length > 0
+                        ) {
+                          <ul
+                            class="absolute z-50 left-0 bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-40 overflow-y-auto"
+                            style="min-width: 200px"
+                          >
+                            @for (
+                              r of filteredReferees(
+                                row.game.id,
+                                state.referee1Query
+                              );
+                              track r
+                            ) {
+                              <li
+                                (mousedown)="
+                                  $event.preventDefault();
+                                  selectReferee1(row.game.id, r)
+                                "
+                                class="px-2 py-1.5 hover:bg-fb-gray-200 cursor-pointer text-xs"
+                              >
+                                <span class="font-medium"
+                                  >{{ r.nachname }}, {{ r.vorname }}</span
+                                >
+                                @if (r.lizenzstufe) {
+                                  <span class="text-fb-gray-400 ml-1"
+                                    >({{ r.lizenzstufe }})</span
+                                  >
+                                }
+                                @if (r.kurzfristig_mobil) {
+                                  <span
+                                    class="text-amber-600 ml-1"
+                                    [title]="
+                                      'assignmentAdmin.index.shortNoticeBadge'
+                                        | transloco
+                                    "
+                                    >⚡</span
+                                  >
+                                }
+                                @for (t of r.tags; track t.id) {
+                                  <span
+                                    class="ml-1 inline-flex items-center gap-0.5 text-[10px] text-fb-gray-500"
+                                  >
+                                    <span
+                                      class="inline-block w-1.5 h-1.5 rounded-full"
+                                      [style.backgroundColor]="
+                                        t.color || '#9ca3af'
+                                      "
+                                    ></span
+                                    >{{ t.name }}</span
+                                  >
+                                }
+                              </li>
+                            }
+                          </ul>
+                        }
+                      </div>
+                    } @else {
+                      <fb-select-search
+                        [(ngModel)]="state.selectedClubId"
+                        (ngModelChange)="onClubChange()"
+                        [items]="clubs"
+                        [placeholder]="
+                          'assignmentAdmin.index.clubPlaceholder' | transloco
+                        "
+                        [resetLabel]="
+                          'assignmentAdmin.index.clubPlaceholder' | transloco
+                        "
+                        [highlightSelection]="true"
+                      />
+                    }
+                  </td>
+                  <!-- Schiri 2 -->
+                  <td class="py-1.5 pr-3 align-top" style="min-width: 150px">
+                    @if (state.mode === "referees") {
+                      <div class="relative">
+                        <div
+                          class="flex items-center border rounded-[5px] bg-white"
+                          [class.border-fb-gray-400]="!state.selectedReferee2Id"
+                          [class.border-green-500]="!!state.selectedReferee2Id"
+                        >
+                          <input
+                            type="text"
+                            autocomplete="off"
+                            [attr.placeholder]="
+                              'assignmentAdmin.index.namePlaceholder'
+                                | transloco
+                            "
+                            [value]="state.referee2Query"
+                            class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-xs min-w-0"
+                            (focus)="onReferee2Focus(row.game.id)"
+                            (input)="
+                              onReferee2Input(
+                                row.game.id,
+                                $any($event.target).value
+                              )
+                            "
+                            (blur)="onReferee2Blur(row.game.id)"
+                          />
+                          @if (state.referee2Query) {
+                            <button
+                              type="button"
+                              class="flex-shrink-0 px-1.5 text-fb-gray-400 hover:text-fb-gray-900"
+                              (mousedown)="
+                                $event.preventDefault();
+                                clearReferee2(row.game.id)
+                              "
+                              tabindex="-1"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="w-3 h-3"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          }
+                        </div>
+                        @if (
+                          state.showReferee2Dropdown &&
+                          filteredReferees(row.game.id, state.referee2Query)
+                            .length > 0
+                        ) {
+                          <ul
+                            class="absolute z-50 left-0 bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-40 overflow-y-auto"
+                            style="min-width: 200px"
+                          >
+                            @for (
+                              r of filteredReferees(
+                                row.game.id,
+                                state.referee2Query
+                              );
+                              track r
+                            ) {
+                              <li
+                                (mousedown)="
+                                  $event.preventDefault();
+                                  selectReferee2(row.game.id, r)
+                                "
+                                class="px-2 py-1.5 hover:bg-fb-gray-200 cursor-pointer text-xs"
+                              >
+                                <span class="font-medium"
+                                  >{{ r.nachname }}, {{ r.vorname }}</span
+                                >
+                                @if (r.lizenzstufe) {
+                                  <span class="text-fb-gray-400 ml-1"
+                                    >({{ r.lizenzstufe }})</span
+                                  >
+                                }
+                                @if (r.kurzfristig_mobil) {
+                                  <span
+                                    class="text-amber-600 ml-1"
+                                    [title]="
+                                      'assignmentAdmin.index.shortNoticeBadge'
+                                        | transloco
+                                    "
+                                    >⚡</span
+                                  >
+                                }
+                                @for (t of r.tags; track t.id) {
+                                  <span
+                                    class="ml-1 inline-flex items-center gap-0.5 text-[10px] text-fb-gray-500"
+                                  >
+                                    <span
+                                      class="inline-block w-1.5 h-1.5 rounded-full"
+                                      [style.backgroundColor]="
+                                        t.color || '#9ca3af'
+                                      "
+                                    ></span
+                                    >{{ t.name }}</span
+                                  >
+                                }
+                              </li>
+                            }
+                          </ul>
+                        }
+                      </div>
+                    } @else {
+                      <span class="text-fb-gray-400 text-xs">{{
+                        "assignmentAdmin.index.clubCoversBoth" | transloco
+                      }}</span>
+                    }
+                  </td>
+                  <!-- SR-Coach -->
+                  <td class="py-1.5 pr-3 align-top" style="min-width: 150px">
+                    <div class="relative">
+                      <div
+                        class="flex items-center border rounded-[5px] bg-white"
+                        [class.border-fb-gray-400]="!state.selectedCoachId"
+                        [class.border-blue-500]="!!state.selectedCoachId"
+                      >
+                        <input
+                          type="text"
+                          autocomplete="off"
+                          [attr.placeholder]="
+                            'assignmentAdmin.index.namePlaceholder' | transloco
+                          "
+                          [value]="state.coachQuery"
+                          class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-xs min-w-0"
+                          (focus)="onCoachFocus(row.game.id)"
+                          (input)="
+                            onCoachInput(row.game.id, $any($event.target).value)
+                          "
+                          (blur)="onCoachBlur(row.game.id)"
+                        />
+                        @if (state.coachQuery) {
+                          <button
+                            type="button"
+                            class="flex-shrink-0 px-1.5 text-fb-gray-400 hover:text-fb-gray-900"
+                            (mousedown)="
+                              $event.preventDefault(); clearCoach(row.game.id)
+                            "
+                            tabindex="-1"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="w-3 h-3"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="2"
+                              stroke="currentColor"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        }
+                      </div>
+                      @if (
+                        state.showCoachDropdown &&
+                        filteredCoaches(row.game.id, state.coachQuery).length >
+                          0
+                      ) {
+                        <ul
+                          class="absolute z-50 left-0 bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-40 overflow-y-auto"
+                          style="min-width: 200px"
+                        >
+                          @for (
+                            r of filteredCoaches(row.game.id, state.coachQuery);
+                            track r
+                          ) {
+                            <li
+                              (mousedown)="
+                                $event.preventDefault();
+                                selectCoach(row.game.id, r)
+                              "
+                              class="px-2 py-1.5 hover:bg-fb-gray-200 cursor-pointer text-xs"
+                            >
+                              <span class="font-medium"
+                                >{{ r.nachname }}, {{ r.vorname }}</span
+                              >
+                              @if (r.lizenzstufe) {
+                                <span class="text-fb-gray-400 ml-1"
+                                  >({{ r.lizenzstufe }})</span
+                                >
+                              }
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                  </td>
+                  <!-- Aktionen -->
+                  <td class="py-1.5 align-top">
+                    <div class="flex flex-col gap-1">
+                      <button
+                        type="button"
+                        (click)="save(row)"
+                        [disabled]="state.saving"
+                        class="px-2 py-1 text-xs bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40 whitespace-nowrap"
+                      >
+                        {{
+                          (state.saving
+                            ? "assignmentAdmin.index.saving"
+                            : row.assignment?.status === "published"
+                              ? "assignmentAdmin.index.updateSend"
+                              : "assignmentAdmin.index.saveDraft"
+                          ) | transloco
+                        }}
+                      </button>
+                      <button
+                        type="button"
+                        (click)="notify(row)"
+                        [disabled]="
+                          !row.assignment ||
+                          row.assignment.status === 'published' ||
+                          state.notifying
+                        "
+                        class="px-2 py-1 text-xs bg-blue-600 text-white rounded-[5px] hover:bg-blue-700 disabled:opacity-40 whitespace-nowrap"
+                      >
+                        {{
+                          (state.notifying
+                            ? "assignmentAdmin.index.sending"
+                            : "assignmentAdmin.index.sendEmail"
+                          ) | transloco
+                        }}
+                      </button>
+                      <button
+                        type="button"
+                        (click)="publish(row)"
+                        [disabled]="
+                          !row.assignment ||
+                          row.assignment.status === 'published' ||
+                          state.publishing
+                        "
+                        class="px-2 py-1 text-xs bg-green-700 text-white rounded-[5px] hover:bg-green-800 disabled:opacity-40 whitespace-nowrap"
+                      >
+                        {{
+                          (state.publishing
+                            ? "assignmentAdmin.index.publishing"
+                            : "assignmentAdmin.index.publish"
+                          ) | transloco
+                        }}
+                      </button>
+                      <!-- Zusätzliche Spielinformationen: nur fürs Gespann sichtbar -->
+                      <button
+                        type="button"
+                        (click)="toggleNotes(row)"
+                        [disabled]="notesSavingGameId !== null"
+                        class="px-2 py-1 text-xs border rounded-[5px] hover:bg-fb-gray-100 disabled:opacity-40 whitespace-nowrap"
+                        [class.border-amber-500]="hasNotes(row)"
+                        [class.text-amber-800]="hasNotes(row)"
+                        [class.bg-amber-50]="hasNotes(row)"
+                        [class.border-fb-gray-400]="!hasNotes(row)"
+                        [class.text-fb-gray-600]="!hasNotes(row)"
+                        [attr.title]="
+                          'assignmentAdmin.index.notesHint' | transloco
+                        "
+                      >
+                        @if (hasNotes(row)) {
+                          <span aria-hidden="true">📝 </span>
+                        }
+                        {{ "assignmentAdmin.index.notesButton" | transloco }}
+                      </button>
+                    </div>
+                  </td>
                 }
-                <td class="py-2 pr-3">{{ assignmentRefereeName(a.coach) }}</td>
-                <td class="py-2 pr-3 whitespace-nowrap font-medium">
-                  {{ a.game?.result }}
-                </td>
               </tr>
+              @if (refereeConflict(row); as conflict) {
+                <tr class="bg-amber-50 border-b border-fb-gray-600">
+                  <td colspan="10" class="py-1.5 px-2 text-xs text-amber-800">
+                    ⚠ {{ conflict }}
+                  </td>
+                </tr>
+              }
+              @if (clubConflict(row); as conflict) {
+                <tr class="bg-amber-50 border-b border-fb-gray-600">
+                  <td colspan="10" class="py-1.5 px-2 text-xs text-amber-800">
+                    ⚠ {{ conflict }}
+                  </td>
+                </tr>
+              }
+              @if (exclusionConflict(row); as conflict) {
+                <tr class="bg-amber-50 border-b border-fb-gray-600">
+                  <td colspan="10" class="py-1.5 px-2 text-xs text-amber-800">
+                    ⚠ {{ conflict }}
+                  </td>
+                </tr>
+              }
+              <!-- Aufgeklappter Editor für die Spielinformationen des Gespanns -->
+              @if (notesOpenGameId === row.game.id) {
+                <tr class="bg-fb-gray-100 border-b border-fb-gray-600">
+                  <td colspan="10" class="py-3 px-2">
+                    <label
+                      [attr.for]="'notes-' + row.game.id"
+                      class="block text-xs font-bold uppercase text-fb-gray-500 mb-1"
+                    >
+                      {{ "assignmentAdmin.index.notesLabel" | transloco }}
+                    </label>
+                    <p class="text-xs text-fb-gray-500 mb-2">
+                      {{ "assignmentAdmin.index.notesHint" | transloco }}
+                    </p>
+                    <textarea
+                      [id]="'notes-' + row.game.id"
+                      rows="3"
+                      [value]="notesDraft"
+                      (input)="onNotesInput($any($event.target).value)"
+                      [attr.placeholder]="
+                        'assignmentAdmin.index.notesPlaceholder' | transloco
+                      "
+                      class="w-full px-2 py-1.5 border border-fb-gray-600 rounded-[5px] text-sm bg-white focus:outline-none focus:border-black"
+                    ></textarea>
+                    <div class="flex flex-wrap items-center gap-2 mt-2">
+                      <button
+                        type="button"
+                        (click)="saveNotes(row)"
+                        [disabled]="notesSavingGameId === row.game.id"
+                        class="px-3 py-1 text-xs bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+                      >
+                        {{
+                          (notesSavingGameId === row.game.id
+                            ? "assignmentAdmin.index.saving"
+                            : "assignmentAdmin.index.notesSave"
+                          ) | transloco
+                        }}
+                      </button>
+                      <button
+                        type="button"
+                        (click)="cancelNotes()"
+                        [disabled]="notesSavingGameId === row.game.id"
+                        class="px-3 py-1 text-xs border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40"
+                      >
+                        {{ "assignmentAdmin.index.notesCancel" | transloco }}
+                      </button>
+                      @if (row.game.referee_notes_updated_at) {
+                        <span class="text-xs text-fb-gray-500">
+                          {{ "assignmentAdmin.index.notesUpdated" | transloco }}
+                          {{
+                            row.game.referee_notes_updated_at
+                              | date: "dd.MM.yyyy HH:mm"
+                          }}
+                          @if (row.game.referee_notes_updated_by_name) {
+                            <span
+                              >&middot;
+                              {{ row.game.referee_notes_updated_by_name }}</span
+                            >
+                          }
+                        </span>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
       </div>
     }
-  }
-</div>
+
+    @if (!loading && activeTab === "history") {
+      @if (historyRows.length === 0) {
+        <div class="text-fb-gray-500 py-8">
+          {{ "assignmentAdmin.index.historyEmpty" | transloco }}
+        </div>
+      } @else {
+        <div class="text-sm text-fb-gray-500 mb-4">
+          {{ "assignmentAdmin.index.historyHint" | transloco }}
+        </div>
+        <div class="overflow-x-auto">
+          <table
+            class="text-sm border-collapse"
+            style="min-width: 900px; width: 100%"
+          >
+            <thead>
+              <tr
+                class="text-left text-xs uppercase text-fb-gray-500 border-b border-fb-gray-600"
+              >
+                <th class="py-2 pr-3 whitespace-nowrap">
+                  {{ "assignmentAdmin.index.colDate" | transloco }}
+                </th>
+                <th class="py-2 pr-3">
+                  {{ "assignmentAdmin.index.colGame" | transloco }}
+                </th>
+                <th class="py-2 pr-3">
+                  {{ "assignmentAdmin.index.colLeague" | transloco }}
+                </th>
+                <th class="py-2 pr-3">
+                  {{ "assignmentAdmin.index.colReferee1" | transloco }}
+                </th>
+                <th class="py-2 pr-3">
+                  {{ "assignmentAdmin.index.colReferee2" | transloco }}
+                </th>
+                <th class="py-2 pr-3">
+                  {{ "assignmentAdmin.index.colCoach" | transloco }}
+                </th>
+                <th class="py-2 pr-3 whitespace-nowrap">
+                  {{ "assignmentAdmin.index.colResult" | transloco }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of historyRows; track a.id) {
+                <tr class="border-b border-fb-gray-600">
+                  <td class="py-2 pr-3 whitespace-nowrap">
+                    {{ a.game?.date }}
+                  </td>
+                  <td class="py-2 pr-3">
+                    {{ a.game?.home_team }}
+                    <span class="text-fb-gray-500">{{
+                      "assignmentAdmin.index.vs" | transloco
+                    }}</span>
+                    {{ a.game?.guest_team }}
+                  </td>
+                  <td class="py-2 pr-3">{{ a.game?.league }}</td>
+                  @for (slot of [0, 1]; track slot) {
+                    <td class="py-2 pr-3">
+                      @let official = historyOfficial(a, slot);
+                      @if (official) {
+                        {{ official.name }}
+                        @if (official.source !== "report") {
+                          <span class="text-fb-gray-500 whitespace-nowrap"
+                            >({{
+                              (official.source === "club"
+                                ? "assignmentAdmin.index.historySourceClub"
+                                : "assignmentAdmin.index.historySourceAssignment"
+                              ) | transloco
+                            }})</span
+                          >
+                        }
+                      } @else {
+                        –
+                      }
+                    </td>
+                  }
+                  <td class="py-2 pr-3">
+                    {{ assignmentRefereeName(a.coach) }}
+                  </td>
+                  <td class="py-2 pr-3 whitespace-nowrap font-medium">
+                    {{ a.game?.result }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </div>
+}

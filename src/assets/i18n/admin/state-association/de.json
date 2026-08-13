@@ -30,8 +30,8 @@
     "refereeReviewHint": "Beim CSV-Import von Kursergebnissen werden Datensätze mit Stammdaten-Korrekturen oder Neuanlagen dem RSK dieses Landesverbands zur Kontrolle und Freigabe vorgelegt, bevor sie in den Stammdatensatz übernommen werden.",
     "scanRequiredLabel": "Papierspielberichtsbogen hochladen",
     "scanRequiredHint": "Teilnehmer müssen nach dem Spiel den physischen Spielberichtsbogen hochladen. Der Ausrichter erhält nach Spieltagsabschluss eine E-Mail-Erinnerung.",
-    "refereeAssignmentLabel": "Schiedsrichter-Ansetzung durch die RSK ermöglichen",
-    "refereeAssignmentHint": "Nur wenn aktiv, kann im Spiel-Editor „Ansetzung durch RSK\" gewählt werden und die Rolle Ansetzer sieht die Menüpunkte „Ansetzungen\" und „Verfügbarkeiten\".",
+    "refereeAssignmentLabel": "Ansetzungen auf Personenebene",
+    "refereeAssignmentHint": "Setzt die separate Rolle Ansetzer*in voraus. Angesetzt werden können nur Schiedsrichter*innen, die für den Tag aktiv eine Verfügbarkeit gemeldet haben. Ersetzt für diesen Verband die Eintragung durch die RSK.",
     "reportFormEmailLabel": "Berichtsworkflow für rote Karten und bes. Ereignisse",
     "reportFormEmailHint": "Ersetzt bei roten Karten oder besonderen Ereignissen den analogen Papierbericht vor Ort durch einen digitalen Formular-Upload durch die Schiedsrichter. Ist der Workflow aus, bleibt es beim Papierbericht vor Ort.",
     "manualProceedingLabel": "Manuelle Erstellung von Protesten durch die SBK",
@@ -90,7 +90,11 @@
     "checklistAdd": "Hinzufügen",
     "rskEmailLabel": "RSK-E-Mail",
     "rskEmailPlaceholder": "rsk@landesverband.de",
-    "rskEmailHint": "Für Schiedsrichteransetzungen über den Saisonmanager."
+    "rskEmailHint": "Für Schiedsrichteransetzungen über den Saisonmanager.",
+    "refereeAssignmentExternalLabel": "Ansetzungen außerhalb der SBK ermöglichen",
+    "refereeAssignmentExternalHint": "Wenn aktiv, kann die RSK die Schiedsrichter zu den Spielen eintragen, entweder einen Verein, der das Gespann stellt, oder Personen und Paare als Freitext. Ohne diese Option trägt allein die SBK bei der Spielplanerstellung ein.",
+    "personLevelDefaultLabel": "Standardmäßig durch Ansetzer*in",
+    "personLevelDefaultHint": "Neue Spiele sind von vornherein für die personenscharfe Ansetzung markiert. Die SBK muss das dann nicht mehr je Spieltag anklicken."
   },
   "notifications": {
     "confirmDelete": "Landesverband \"{{ name }}\" wirklich löschen?",

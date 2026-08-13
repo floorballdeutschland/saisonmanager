@@ -72,5 +72,20 @@
     "publishError": "Fehler beim Veröffentlichen.",
     "loadError": "Daten konnten nicht geladen werden.",
     "notesSaved": "Spielinformationen gespeichert."
+  },
+  "club": {
+    "title": "Schiedsrichter eintragen",
+    "intro": "Trage je Spiel entweder den Verein ein, der das Gespann stellt, oder die Schiedsrichter*innen als Freitext. Der Eintrag steht sofort im öffentlichen Spielplan.",
+    "loading": "Spiele werden geladen …",
+    "empty": "Keine anstehenden Spiele im Zeitraum.",
+    "game": "Spiel",
+    "teams": "Mannschaften",
+    "clubColumn": "Verein stellt das Gespann",
+    "freeTextColumn": "Oder Freitext",
+    "freeTextPlaceholder": "Namen oder Paar eintragen",
+    "noClub": "Kein Verein",
+    "save": "Speichern",
+    "saved": "Eintrag gespeichert.",
+    "lockedHint": "Wird durch die Ansetzer*in personenscharf angesetzt."
   }
 }
