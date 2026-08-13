@@ -4,26 +4,56 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Saisonmanager – Rollenhandbuch</title>
+    <meta
+      name="description"
+      content="Zuständigkeiten, Rechte und Abläufe aller Benutzerrollen des Saisonmanagers."
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Spline+Sans+Mono:wght@500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
       rel="stylesheet"
     />
     <style>
+      /* ═══════════════════════════════════════════════════════════════
+         Rollenhandbuch · Gestaltung „Hallenbuch"
+
+         Grundsatz: Das Dokument selbst ist unbunt. Tinte, Papier,
+         Haarlinie. Jedes Panel traegt genau eine Farbe, naemlich die
+         seiner Rolle, ausgelesen aus --rc. Farbe ist hier Wegweiser,
+         nicht Dekoration.
+
+         Ein einziges kraeftiges Element pro Panel: die Rollenkarte,
+         hinter der als Strichzeichnung ein Floorballfeld liegt.
+
+         Listen-Regel, bitte nicht brechen: Ein Aufzaehlungspunkt wird
+         ueber Einrueckung plus positioniertes ::before markiert, nie
+         ueber display:flex. Ein Flex-Container macht jeden Inline-Knoten
+         (Rollen-Badges, <em>, einzelne Textstuecke) zu einem eigenen
+         Flex-Item mit Gap und reisst den Satz auseinander.
+      ═══════════════════════════════════════════════════════════════ */
+
       :root {
-        --ink: #10141f;
-        --ink-2: #1a2030;
-        --paper: #f6f5f1;
+        --ink: #0f1723;
+        --ink-2: #1b2536;
+        --paper: #ebeef2;
         --card: #ffffff;
-        --line: #e5e3da;
-        --text: #1c2130;
-        --muted: #6c7077;
-        --radius: 14px;
-        --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-        --body: "Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
-        --mono: "Spline Sans Mono", ui-monospace, monospace;
-        /* Rollenfarben */
+        --line: #d8dde4;
+        --line-strong: #c3cad4;
+        --text: #202634;
+        --muted: #626b7a;
+        --radius: 10px;
+        --radius-rink: 34px;
+        --display: "Archivo", "Segoe UI", system-ui, sans-serif;
+        --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+        --sidebar-w: 276px;
+
+        --rink: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Cg fill='none' stroke='%23000' stroke-width='2.4'%3E%3Crect x='4' y='4' width='392' height='192' rx='46'/%3E%3Cpath d='M200 4V196'/%3E%3Ccircle cx='200' cy='100' r='17'/%3E%3Crect x='28' y='92' width='7' height='16'/%3E%3Crect x='365' y='92' width='7' height='16'/%3E%3C/g%3E%3C/svg%3E");
+
+        /* Rollenfarben: semantisch tragend, unveraendert uebernommen.
+           Sie stecken in 234 Rollen-Badges, in der Rechtematrix und in
+           der Navigation. */
         --c-admin: #7c3aed;
         --c-sbkfd: #047857;
         --c-sbklv: #2c9e5a;
@@ -38,7 +68,29 @@
         --c-entwickler: #475569;
         --c-player: #b45309;
         --c-auto: #64748b;
+
+        /* Zustandsfarben der Ablaufdiagramme, kuehl gestimmt, damit sie
+           auf dem graublauen Papier nicht stumpf werden. */
+        --s-pending-bg: #fdf3d1;
+        --s-pending-bd: #e8c65c;
+        --s-pending-fg: #6b4a08;
+        --s-info-bg: #dbe9fe;
+        --s-info-bd: #8db4f4;
+        --s-info-fg: #1a3f8f;
+        --s-success-bg: #d3f0e0;
+        --s-success-bd: #6cc79a;
+        --s-success-fg: #0a5137;
+        --s-error-bg: #fde0e0;
+        --s-error-bd: #f09a9a;
+        --s-error-fg: #7d1a1a;
+        --s-warning-bg: #fde6d2;
+        --s-warning-bd: #f0ad70;
+        --s-warning-fg: #7a3410;
+        --s-neutral-bg: #e8ebef;
+        --s-neutral-bd: #c8ced8;
+        --s-neutral-fg: #454d5c;
       }
+
       * {
         box-sizing: border-box;
         margin: 0;
@@ -53,103 +105,330 @@
         color: var(--text);
         min-height: 100vh;
         font-size: 15px;
-        line-height: 1.55;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: inherit;
+      }
+      /* Sichtbarer Tastaturfokus ueberall, ohne Maus-Klicks zu markieren. */
+      :focus-visible {
+        outline: 2px solid var(--rc, #2563eb);
+        outline-offset: 2px;
+        border-radius: 3px;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
       }
 
-      /* ════════ Shell ════════ */
+      /* ════════════════ Schale ════════════════ */
       .shell {
         display: grid;
-        grid-template-columns: 264px minmax(0, 1fr);
+        grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
         min-height: 100vh;
       }
 
-      /* ════════ Sidebar ════════ */
+      /* ════════════════ Seitenleiste ════════════════ */
       .sidebar {
         background: var(--ink);
-        color: #e6e8ee;
-        padding: 28px 0 20px;
+        color: #dfe4ec;
+        padding: 24px 0 18px;
         position: sticky;
         top: 0;
         height: 100vh;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
+        scrollbar-width: thin;
+        scrollbar-color: #3a4557 transparent;
       }
       .brand {
-        padding: 0 24px 22px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+        padding: 0 20px 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
       .brand .wordmark {
         font-family: var(--display);
         font-weight: 800;
-        font-size: 1.3rem;
-        letter-spacing: -0.02em;
+        font-stretch: 112%;
+        font-size: 1.24rem;
+        letter-spacing: -0.015em;
         color: #fff;
       }
       .brand .wordmark em {
         font-style: normal;
-        color: #9ec5ff;
+        color: #7fa9f5;
       }
       .brand .doc-title {
-        font-family: var(--display);
-        font-weight: 600;
-        font-size: 0.86rem;
-        color: #aeb4c2;
-        margin-top: 4px;
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 0.68rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #8f99ab;
+        margin-top: 7px;
       }
       .brand .edition {
         display: inline-block;
-        margin-top: 10px;
+        margin-top: 11px;
         font-family: var(--mono);
         font-size: 0.62rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #8b93a5;
+        letter-spacing: 0.06em;
+        color: #8f99ab;
         border: 1px solid rgba(255, 255, 255, 0.16);
-        border-radius: 4px;
+        border-radius: 3px;
         padding: 3px 8px;
       }
+
+      /* ════════════════ Suche ════════════════
+         Progressive Enhancement: Das Feld erscheint erst, wenn das
+         Skript die Klasse .js gesetzt hat. Ohne JavaScript bleibt die
+         vollstaendige :target-Navigation, aber kein totes Eingabefeld. */
+      .search-wrap {
+        display: none;
+        padding: 14px 14px 0;
+      }
+      .js .search-wrap {
+        display: block;
+      }
+      .search {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .search::before {
+        content: "";
+        position: absolute;
+        left: 11px;
+        width: 13px;
+        height: 13px;
+        border: 1.7px solid #7d879a;
+        border-radius: 50%;
+        pointer-events: none;
+      }
+      .search::after {
+        content: "";
+        position: absolute;
+        left: 22px;
+        top: 21px;
+        width: 6px;
+        height: 1.7px;
+        background: #7d879a;
+        transform: rotate(45deg);
+        pointer-events: none;
+      }
+      .search-input {
+        width: 100%;
+        font-family: var(--body);
+        font-size: 0.84rem;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 8px;
+        padding: 9px 34px 9px 34px;
+        appearance: none;
+      }
+      .search-input::placeholder {
+        color: #808b9e;
+      }
+      .search-input:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.12);
+        border-color: #7fa9f5;
+      }
+      .search-input::-webkit-search-cancel-button {
+        appearance: none;
+      }
+      .search-hint {
+        position: absolute;
+        right: 9px;
+        font-family: var(--mono);
+        font-size: 0.66rem;
+        color: #808b9e;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 4px;
+        padding: 1px 5px;
+        pointer-events: none;
+      }
+      .search-input:not(:placeholder-shown) ~ .search-hint {
+        display: none;
+      }
+
+      /* Trefferliste: fest positioniert, damit sie nicht am
+         overflow-y:auto der Seitenleiste abgeschnitten wird. */
+      .results {
+        position: fixed;
+        left: calc(var(--sidebar-w) + 14px);
+        top: 176px;
+        z-index: 60;
+        width: min(600px, calc(100vw - var(--sidebar-w) - 40px));
+        max-height: min(68vh, 620px);
+        overflow-y: auto;
+        background: var(--card);
+        border: 1px solid var(--line-strong);
+        border-radius: 12px;
+        box-shadow: 0 20px 50px rgba(15, 23, 35, 0.22);
+        padding: 6px;
+      }
+      .results[hidden] {
+        display: none;
+      }
+      .results-meta {
+        font-family: var(--mono);
+        font-size: 0.63rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 8px 10px 6px;
+      }
+      .hit {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: none;
+        font-family: var(--body);
+        color: inherit;
+        padding: 8px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .hit:hover,
+      .hit.on {
+        background: #eef2f8;
+      }
+      .hit-crumb {
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .hit-crumb i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--hc, var(--muted));
+        flex-shrink: 0;
+      }
+      .hit-title {
+        font-weight: 600;
+        font-size: 0.88rem;
+        margin-top: 2px;
+        line-height: 1.35;
+      }
+      .hit-snip {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-top: 1px;
+        line-height: 1.45;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .hit mark {
+        background: #fde68a;
+        color: inherit;
+        border-radius: 2px;
+        padding: 0 1px;
+      }
+      .results-empty {
+        padding: 16px 12px;
+        font-size: 0.84rem;
+        color: var(--muted);
+      }
+      /* Ziel eines Suchtreffers kurz aufleuchten lassen. */
+      @keyframes flash {
+        from {
+          background: #fde68a;
+        }
+        to {
+          background: transparent;
+        }
+      }
+      .search-flash {
+        animation: flash 1.6s ease-out both;
+        border-radius: 4px;
+      }
+
+      /* ════════════════ Navigation ════════════════ */
       .nav {
-        padding: 14px 12px 0;
+        padding: 12px 10px 0;
         flex: 1;
       }
       .nav-group-label {
         font-family: var(--mono);
         font-size: 0.6rem;
-        letter-spacing: 0.14em;
+        letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: #767e91;
-        padding: 16px 14px 6px;
+        color: #737e91;
+        padding: 18px 12px 5px;
+      }
+      .nav-group-label:first-child {
+        padding-top: 6px;
       }
       .navlink {
         display: flex;
         align-items: center;
         gap: 10px;
         width: 100%;
-        padding: 8px 14px;
-        border: none;
-        background: transparent;
-        color: #c2c7d3;
+        padding: 7px 12px;
+        color: #b8c1d0;
         text-decoration: none;
-        font-family: var(--body);
-        font-size: 0.88rem;
-        font-weight: 500;
-        border-radius: 9px;
-        cursor: pointer;
-        text-align: left;
+        font-size: 0.855rem;
+        font-weight: 450;
+        border-radius: 7px;
         transition:
-          background 0.15s,
-          color 0.15s;
+          background 0.14s,
+          color 0.14s;
       }
       .navlink:hover {
-        background: rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.07);
         color: #fff;
       }
-      /* Aktiver Navigationslink: per :has aus dem getargeteten Panel abgeleitet;
-         Standard = Überblick, solange kein Panel per Anker aktiv ist. */
+      .navlink .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--dot, #7d879a);
+        flex-shrink: 0;
+        transition: box-shadow 0.14s;
+      }
+      .navlink .abbr {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 0.6rem;
+        color: #6b7588;
+        letter-spacing: 0.04em;
+        flex-shrink: 0;
+      }
+      /* Der aktive Link wird per :has aus dem getargeteten Panel
+         abgeleitet. Standard ist der Ueberblick, solange kein Anker
+         gesetzt ist. Diese Liste wird aus der Panel-Liste erzeugt,
+         damit kein Kapitel vergessen wird. */
       body:not(:has(.panel:target)) .navlink[href="#panel-ueberblick"],
       body:has(#panel-ueberblick:target) .navlink[href="#panel-ueberblick"],
+      body:has(#panel-rechtematrix:target) .navlink[href="#panel-rechtematrix"],
+      body:has(#panel-testsystem:target) .navlink[href="#panel-testsystem"],
       body:has(#panel-prozesse:target) .navlink[href="#panel-prozesse"],
+      body:has(#panel-fn-oeffentlich:target) .navlink[href="#panel-fn-oeffentlich"],
+      body:has(#panel-fn-spielerdaten:target) .navlink[href="#panel-fn-spielerdaten"],
+      body:has(#panel-fn-schiri:target) .navlink[href="#panel-fn-schiri"],
+      body:has(#panel-fn-lizenzen:target) .navlink[href="#panel-fn-lizenzen"],
+      body:has(#panel-fn-transfers:target) .navlink[href="#panel-fn-transfers"],
+      body:has(#panel-fn-spieltag:target) .navlink[href="#panel-fn-spieltag"],
+      body:has(#panel-fn-spielbetrieb:target) .navlink[href="#panel-fn-spielbetrieb"],
+      body:has(#panel-fn-system:target) .navlink[href="#panel-fn-system"],
       body:has(#panel-admin:target) .navlink[href="#panel-admin"],
       body:has(#panel-sbk-fd:target) .navlink[href="#panel-sbk-fd"],
       body:has(#panel-sbk-lv:target) .navlink[href="#panel-sbk-lv"],
@@ -160,78 +439,120 @@
       body:has(#panel-vm:target) .navlink[href="#panel-vm"],
       body:has(#panel-tm:target) .navlink[href="#panel-tm"],
       body:has(#panel-schiri:target) .navlink[href="#panel-schiri"],
+      body:has(#panel-streamer:target) .navlink[href="#panel-streamer"],
       body:has(#panel-entwickler:target) .navlink[href="#panel-entwickler"] {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.11);
         color: #fff;
-        font-weight: 700;
+        font-weight: 600;
       }
-      .navlink .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--dot, #8b93a5);
-        flex-shrink: 0;
-      }
-      body:not(:has(.panel:target)) .navlink[href="#panel-ueberblick"] .dot,
+      body:not(:has(.panel:target))
+        .navlink[href="#panel-ueberblick"]
+        .dot,
       body:has(#panel-ueberblick:target)
         .navlink[href="#panel-ueberblick"]
         .dot,
-      body:has(#panel-prozesse:target) .navlink[href="#panel-prozesse"] .dot,
-      body:has(#panel-admin:target) .navlink[href="#panel-admin"] .dot,
-      body:has(#panel-sbk-fd:target) .navlink[href="#panel-sbk-fd"] .dot,
-      body:has(#panel-sbk-lv:target) .navlink[href="#panel-sbk-lv"] .dot,
-      body:has(#panel-rsk-fd:target) .navlink[href="#panel-rsk-fd"] .dot,
-      body:has(#panel-rsk-lv:target) .navlink[href="#panel-rsk-lv"] .dot,
+      body:has(#panel-rechtematrix:target)
+        .navlink[href="#panel-rechtematrix"]
+        .dot,
+      body:has(#panel-testsystem:target)
+        .navlink[href="#panel-testsystem"]
+        .dot,
+      body:has(#panel-prozesse:target)
+        .navlink[href="#panel-prozesse"]
+        .dot,
+      body:has(#panel-fn-oeffentlich:target)
+        .navlink[href="#panel-fn-oeffentlich"]
+        .dot,
+      body:has(#panel-fn-spielerdaten:target)
+        .navlink[href="#panel-fn-spielerdaten"]
+        .dot,
+      body:has(#panel-fn-schiri:target)
+        .navlink[href="#panel-fn-schiri"]
+        .dot,
+      body:has(#panel-fn-lizenzen:target)
+        .navlink[href="#panel-fn-lizenzen"]
+        .dot,
+      body:has(#panel-fn-transfers:target)
+        .navlink[href="#panel-fn-transfers"]
+        .dot,
+      body:has(#panel-fn-spieltag:target)
+        .navlink[href="#panel-fn-spieltag"]
+        .dot,
+      body:has(#panel-fn-spielbetrieb:target)
+        .navlink[href="#panel-fn-spielbetrieb"]
+        .dot,
+      body:has(#panel-fn-system:target)
+        .navlink[href="#panel-fn-system"]
+        .dot,
+      body:has(#panel-admin:target)
+        .navlink[href="#panel-admin"]
+        .dot,
+      body:has(#panel-sbk-fd:target)
+        .navlink[href="#panel-sbk-fd"]
+        .dot,
+      body:has(#panel-sbk-lv:target)
+        .navlink[href="#panel-sbk-lv"]
+        .dot,
+      body:has(#panel-rsk-fd:target)
+        .navlink[href="#panel-rsk-fd"]
+        .dot,
+      body:has(#panel-rsk-lv:target)
+        .navlink[href="#panel-rsk-lv"]
+        .dot,
       body:has(#panel-ansetzer-fd:target)
         .navlink[href="#panel-ansetzer-fd"]
         .dot,
       body:has(#panel-ansetzer-lv:target)
         .navlink[href="#panel-ansetzer-lv"]
         .dot,
-      body:has(#panel-vm:target) .navlink[href="#panel-vm"] .dot,
-      body:has(#panel-tm:target) .navlink[href="#panel-tm"] .dot,
-      body:has(#panel-schiri:target) .navlink[href="#panel-schiri"] .dot,
+      body:has(#panel-vm:target)
+        .navlink[href="#panel-vm"]
+        .dot,
+      body:has(#panel-tm:target)
+        .navlink[href="#panel-tm"]
+        .dot,
+      body:has(#panel-schiri:target)
+        .navlink[href="#panel-schiri"]
+        .dot,
+      body:has(#panel-streamer:target)
+        .navlink[href="#panel-streamer"]
+        .dot,
       body:has(#panel-entwickler:target)
         .navlink[href="#panel-entwickler"]
         .dot {
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot) 30%, transparent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot) 32%, transparent);
       }
-      .navlink .abbr {
-        margin-left: auto;
-        font-family: var(--mono);
-        font-size: 0.6rem;
-        color: #6e7689;
-        letter-spacing: 0.05em;
-      }
+
       .sidebar-foot {
-        padding: 16px 24px 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.09);
+        padding: 16px 20px 0;
+        margin-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
         font-size: 0.7rem;
-        color: #767e91;
+        color: #737e91;
         line-height: 1.7;
       }
 
-      /* ════════ Content ════════ */
+      /* ════════════════ Inhalt ════════════════ */
       .content {
-        padding: 36px 44px 80px;
-        max-width: 1140px;
+        padding: 34px 44px 80px;
+        max-width: 1180px;
+        min-width: 0;
       }
       .panel {
         display: none;
       }
       .panel:target {
         display: block;
-        animation: rise 0.35s ease both;
+        animation: rise 0.3s ease both;
       }
-      /* Standard-Ansicht (Überblick), solange kein Panel per Anker aktiv ist */
       body:not(:has(.panel:target)) #panel-ueberblick {
         display: block;
-        animation: rise 0.35s ease both;
+        animation: rise 0.3s ease both;
       }
       @keyframes rise {
         from {
           opacity: 0;
-          transform: translateY(10px);
+          transform: translateY(8px);
         }
         to {
           opacity: 1;
@@ -239,91 +560,143 @@
         }
       }
 
-      /* ════════ Hero ════════ */
+      /* ════════════════ Rollenkarte (Signature) ════════════════
+         Eine amtliche Akkreditierung, also genau das, was die
+         Plattform selbst ausstellt. Dahinter als Strichzeichnung ein
+         Floorballfeld: Banden mit ihren grossen Eckradien, Mittellinie,
+         Mittelkreis, zwei Tore. Der grosse Radius der Karte nimmt die
+         Silhouette der Spielflaeche auf und bricht bewusst mit den
+         10px-Karten darunter. */
       .hero {
+        /* Auf der Tintenkarte liegende Elemente brauchen eine aufgehellte
+           Rollenfarbe, sonst verschwinden dunkle Toene wie der Slate-Ton
+           der Entwicklerrolle im Hintergrund. */
+        --rc-on-ink: color-mix(in srgb, var(--rc) 74%, white);
         position: relative;
-        background:
-          radial-gradient(
-            600px 280px at 85% -40%,
-            color-mix(in srgb, var(--rc) 38%, transparent),
-            transparent 70%
-          ),
-          linear-gradient(160deg, var(--ink-2), var(--ink));
-        color: #fff;
-        border-radius: 20px;
-        padding: 34px 38px 30px;
+        isolation: isolate;
         overflow: hidden;
-        margin-bottom: 34px;
+        background: var(--ink);
+        color: #fff;
+        border-radius: var(--radius-rink);
+        padding: 32px 38px 26px;
+        margin-bottom: 36px;
+        border: 1px solid #26324a;
       }
-      .hero-mark {
+      /* Band in der Rollenfarbe an der Oberkante. */
+      .hero::before {
+        content: "";
         position: absolute;
-        right: 22px;
-        bottom: -28px;
-        font-family: var(--display);
-        font-weight: 800;
-        font-size: 7.5rem;
-        line-height: 1;
-        color: transparent;
-        -webkit-text-stroke: 1.5px
-          color-mix(in srgb, var(--rc) 65%, transparent);
+        inset: 0 0 auto 0;
+        height: 5px;
+        background: var(--rc);
+        z-index: 2;
+      }
+      /* Das Feld. Als Maske gezeichnet, damit es die Rollenfarbe
+         automatisch annimmt. */
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: 34px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 372px;
+        height: 186px;
+        background-color: var(--rc-on-ink);
+        opacity: 0.55;
+        z-index: -1;
         pointer-events: none;
-        user-select: none;
+        -webkit-mask-image: var(--rink);
+        mask-image: var(--rink);
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: contain;
+        mask-size: contain;
       }
       .hero-badge {
         display: inline-flex;
         align-items: center;
         gap: 7px;
-        background: color-mix(in srgb, var(--rc) 26%, transparent);
-        border: 1px solid color-mix(in srgb, var(--rc) 55%, transparent);
-        border-radius: 999px;
-        padding: 4px 13px;
         font-family: var(--mono);
-        font-size: 0.66rem;
-        font-weight: 600;
-        letter-spacing: 0.1em;
+        font-size: 0.63rem;
+        font-weight: 500;
+        letter-spacing: 0.15em;
         text-transform: uppercase;
-        margin-bottom: 14px;
+        color: #aab4c6;
+        margin-bottom: 13px;
       }
       .hero-badge::before {
         content: "";
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--rc);
+        width: 20px;
+        height: 2px;
+        background: var(--rc-on-ink);
       }
       .hero h1 {
         font-family: var(--display);
         font-weight: 800;
-        font-size: clamp(1.6rem, 3.2vw, 2.3rem);
-        letter-spacing: -0.025em;
-        line-height: 1.1;
-        margin-bottom: 8px;
-        max-width: 700px;
+        font-stretch: 112%;
+        font-size: clamp(1.65rem, 3.3vw, 2.5rem);
+        letter-spacing: -0.02em;
+        line-height: 1.05;
+        margin-bottom: 10px;
+        max-width: 24ch;
+        text-wrap: balance;
       }
       .hero p {
-        font-size: 0.97rem;
-        color: #c4c9d6;
-        max-width: 620px;
+        font-size: 0.95rem;
+        color: #b6bfcf;
+        max-width: 58ch;
       }
+      /* Das Kuerzel als Feld der Akkreditierung, oben rechts. */
+      .hero-mark {
+        position: absolute;
+        top: 26px;
+        right: 32px;
+        z-index: 2;
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 0.78rem;
+        letter-spacing: 0.1em;
+        color: var(--rc-on-ink);
+        border: 1px solid color-mix(in srgb, var(--rc-on-ink) 50%, transparent);
+        background: color-mix(in srgb, var(--rc-on-ink) 13%, transparent);
+        border-radius: 6px;
+        padding: 5px 11px;
+        user-select: none;
+      }
+      /* Zustaendigkeit als beschriftete Zeile am Kartenfuss. */
       .hero-scope {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 18px;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        border-radius: 8px;
-        padding: 6px 13px;
-        font-size: 0.82rem;
-        color: #dfe3ec;
+        position: relative;
+        margin-top: 20px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+        font-size: 0.85rem;
+        color: #d3dae6;
+        max-width: 62ch;
+      }
+      .hero-scope::before {
+        content: var(--scope-label, "Zuständigkeit");
+        display: block;
+        font-family: var(--mono);
+        font-size: 0.6rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #7d879a;
+        margin-bottom: 5px;
+      }
+      .hero-scope code {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        background: rgba(255, 255, 255, 0.12);
+        padding: 1px 5px;
+        border-radius: 4px;
       }
 
-      /* ════════ Section labels ════════ */
+      /* ════════════════ Kapitelmarken ════════════════ */
       .sec {
         display: flex;
         align-items: baseline;
-        gap: 12px;
-        margin: 36px 0 16px;
+        gap: 13px;
+        margin: 40px 0 16px;
       }
       .sec .num {
         font-family: var(--mono);
@@ -331,67 +704,64 @@
         font-weight: 600;
         color: var(--rc, var(--muted));
         letter-spacing: 0.08em;
+        flex-shrink: 0;
       }
       .sec h2 {
         font-family: var(--display);
         font-weight: 700;
-        font-size: 1.12rem;
-        letter-spacing: -0.01em;
+        font-stretch: 108%;
+        font-size: 1.16rem;
+        letter-spacing: -0.005em;
       }
       .sec::after {
         content: "";
         flex: 1;
         height: 1px;
         background: var(--line);
-        transform: translateY(-4px);
+        transform: translateY(-5px);
       }
 
-      /* ════════ Capability cards ════════ */
+      /* ════════════════ Bereichskarten ════════════════ */
       .caps {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 14px;
+        grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+        gap: 12px;
       }
       .cap {
         background: var(--card);
         border: 1px solid var(--line);
         border-radius: var(--radius);
-        padding: 18px 20px;
-        transition:
-          transform 0.15s,
-          box-shadow 0.15s;
-      }
-      .cap:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(16, 20, 31, 0.07);
+        padding: 17px 19px;
       }
       .cap-head {
         display: flex;
         align-items: flex-start;
-        gap: 12px;
+        gap: 11px;
       }
       .cap-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         flex-shrink: 0;
-        background: color-mix(in srgb, var(--rc) 11%, white);
-        border: 1px solid color-mix(in srgb, var(--rc) 22%, white);
+        background: color-mix(in srgb, var(--rc) 9%, white);
+        border: 1px solid color-mix(in srgb, var(--rc) 20%, white);
       }
       .cap h3 {
         font-family: var(--display);
-        font-size: 0.98rem;
+        font-size: 0.97rem;
         font-weight: 700;
+        font-stretch: 105%;
         line-height: 1.25;
       }
       .cap .cap-sub {
-        font-size: 0.8rem;
+        font-size: 0.79rem;
         color: var(--muted);
         margin-top: 2px;
+        line-height: 1.4;
       }
       .cap ul {
         list-style: none;
@@ -399,35 +769,37 @@
         border-top: 1px solid var(--line);
         padding-top: 10px;
       }
+      /* Marker per Einrueckung, nicht per Flex. Siehe Listen-Regel oben. */
       .cap li {
         font-size: 0.83rem;
-        color: #3a4050;
-        padding: 3px 0;
-        display: flex;
-        gap: 8px;
-        line-height: 1.45;
+        color: #39404f;
+        padding: 3px 0 3px 15px;
+        position: relative;
+        line-height: 1.5;
       }
       .cap li::before {
         content: "›";
+        position: absolute;
+        left: 0;
+        top: 3px;
         color: var(--rc);
         font-weight: 700;
-        flex-shrink: 0;
       }
 
-      /* ════════ Process cards (collapsible) ════════ */
+      /* ════════════════ Prozesskarten ════════════════ */
       .proc {
         background: var(--card);
         border: 1px solid var(--line);
         border-radius: var(--radius);
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         overflow: hidden;
       }
       .proc summary {
         list-style: none;
         display: flex;
         align-items: center;
-        gap: 14px;
-        padding: 16px 20px;
+        gap: 13px;
+        padding: 15px 19px;
         cursor: pointer;
         user-select: none;
       }
@@ -435,33 +807,36 @@
         display: none;
       }
       .proc summary:hover {
-        background: color-mix(in srgb, var(--rc) 3%, white);
+        background: #f5f7fa;
       }
       .proc-icon {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
         flex-shrink: 0;
       }
       .proc-title {
         font-family: var(--display);
         font-weight: 700;
-        font-size: 0.97rem;
+        font-stretch: 105%;
+        font-size: 0.96rem;
+        line-height: 1.3;
       }
       .proc-sub {
         font-size: 0.78rem;
         color: var(--muted);
         margin-top: 1px;
+        line-height: 1.4;
       }
       .proc-chev {
         margin-left: auto;
         flex-shrink: 0;
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
         border: 1px solid var(--line);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.7rem;
+        font-size: 0.82rem;
         color: var(--muted);
         transition: transform 0.2s;
       }
@@ -471,115 +846,82 @@
         color: #fff;
         border-color: var(--ink);
       }
+      .proc[open] summary {
+        background: #f5f7fa;
+      }
       .proc-body {
-        padding: 4px 20px 20px;
+        padding: 6px 19px 20px;
         border-top: 1px solid var(--line);
       }
-      .proc[open] summary {
-        border-bottom: 0;
+      .proc-text {
+        max-width: 74ch;
+        margin: 0 0 12px;
       }
-
-      /* ════════ Flow diagram ════════ */
-      .flow {
-        display: flex;
-        align-items: center;
-        overflow-x: auto;
-        padding: 16px 2px 8px;
+      .proc-text + .proc-text {
+        margin-top: 12px;
       }
-      .st {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 10px 14px;
-        border-radius: 10px;
-        border: 1.5px solid;
-        min-width: 96px;
-        text-align: center;
-        flex-shrink: 0;
-        font-size: 0.78rem;
-        font-weight: 700;
-        line-height: 1.3;
-      }
-      .st.start {
-        background: #fbfaf7;
-        border-color: #cfccc0;
-        color: #6c7077;
-        border-style: dashed;
+      .proc-text strong {
+        color: var(--ink-2);
         font-weight: 600;
       }
-      .st.pending {
-        background: #fef9c3;
-        border-color: #fde047;
-        color: #713f12;
+      .proc-h {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 0.66rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 22px 0 8px;
       }
-      .st.info {
-        background: #dbeafe;
-        border-color: #93c5fd;
-        color: #1e40af;
+      .kv {
+        display: grid;
+        grid-template-columns: max-content minmax(0, 1fr);
+        gap: 6px 20px;
+        max-width: 74ch;
+        margin: 4px 0 16px;
+        font-size: 0.9rem;
       }
-      .st.success {
-        background: #d1fae5;
-        border-color: #6ee7b7;
-        color: #065f46;
+      .kv dt {
+        font-weight: 600;
+        color: var(--ink-2);
       }
-      .st.error {
-        background: #fee2e2;
-        border-color: #fca5a5;
-        color: #7f1d1d;
+      .kv dd {
+        color: var(--text);
       }
-      .st.neutral {
-        background: #f1f0eb;
-        border-color: #d4d1c6;
-        color: #4b5160;
+      /* Aufzaehlungen ohne eigene Klasse: Der globale Reset nimmt ihnen
+         den Einzug, sonst haengen die Punkte am Textrand. :where haelt die
+         Spezifitaet bei null, damit .cap ul und .checklist unberuehrt
+         bleiben. */
+      :where(.proc-body ul:not([class]), .panel > ul:not([class])) {
+        padding-left: 20px;
+        margin: 4px 0 12px;
+        max-width: 74ch;
       }
-      .st.warning {
-        background: #ffedd5;
-        border-color: #fdba74;
-        color: #7c2d12;
-      }
-      .cn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 0 7px;
-        min-width: 76px;
-        flex-shrink: 0;
-      }
-      .cn .cl {
-        font-size: 0.68rem;
-        color: #6c7077;
-        white-space: nowrap;
-        margin-bottom: 3px;
-        text-align: center;
-      }
-      .cn .ar {
-        font-size: 1.2rem;
-        color: #b3b0a4;
-        line-height: 1;
-      }
-      .cn.act .cl {
-        color: var(--rc);
-        font-weight: 700;
-      }
-      .cn.act .ar {
-        color: var(--rc);
+      :where(.proc-body ul:not([class]) li, .panel > ul:not([class]) li) {
+        padding: 2px 0;
       }
 
-      /* Rollen-Badges */
+      .roles-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 2px 0 14px;
+      }
+
+      /* ════════════════ Rollen-Badges ════════════════ */
       .rb {
         display: inline-block;
         font-family: var(--mono);
-        font-size: 0.6rem;
-        font-weight: 600;
-        line-height: 1.3;
-        padding: 1px 9px;
-        border-radius: 999px;
+        font-size: 0.63rem;
+        font-weight: 500;
+        line-height: 1.35;
+        padding: 1px 8px;
+        border-radius: 4px;
         white-space: nowrap;
-        margin-bottom: 3px;
         vertical-align: 1px;
-        background: color-mix(in srgb, var(--bc, #64748b) 13%, white);
-        color: var(--bc, #64748b);
-        border: 1px solid color-mix(in srgb, var(--bc, #64748b) 30%, white);
+        background: color-mix(in srgb, var(--bc, #64748b) 11%, white);
+        color: color-mix(in srgb, var(--bc, #64748b) 88%, black);
+        border: 1px solid color-mix(in srgb, var(--bc, #64748b) 32%, white);
       }
       .rb.admin {
         --bc: var(--c-admin);
@@ -609,19 +951,107 @@
         --bc: var(--c-auto);
       }
 
-      /* Sub-Pfad */
+      /* ════════════════ Ablaufdiagramme ════════════════ */
+      .flow {
+        display: flex;
+        align-items: center;
+        overflow-x: auto;
+        padding: 16px 2px 8px;
+      }
+      .st {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 9px 13px;
+        border-radius: 7px;
+        border: 1.5px solid;
+        min-width: 96px;
+        text-align: center;
+        flex-shrink: 0;
+        font-size: 0.77rem;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+      .st.start {
+        background: #f3f5f8;
+        border-color: var(--line-strong);
+        color: var(--muted);
+        border-style: dashed;
+        font-weight: 500;
+      }
+      .st.pending {
+        background: var(--s-pending-bg);
+        border-color: var(--s-pending-bd);
+        color: var(--s-pending-fg);
+      }
+      .st.info {
+        background: var(--s-info-bg);
+        border-color: var(--s-info-bd);
+        color: var(--s-info-fg);
+      }
+      .st.success {
+        background: var(--s-success-bg);
+        border-color: var(--s-success-bd);
+        color: var(--s-success-fg);
+      }
+      .st.error {
+        background: var(--s-error-bg);
+        border-color: var(--s-error-bd);
+        color: var(--s-error-fg);
+      }
+      .st.neutral {
+        background: var(--s-neutral-bg);
+        border-color: var(--s-neutral-bd);
+        color: var(--s-neutral-fg);
+      }
+      .st.warning {
+        background: var(--s-warning-bg);
+        border-color: var(--s-warning-bd);
+        color: var(--s-warning-fg);
+      }
+      /* Verbinder zwischen zwei Zustaenden. Hier ist Flex richtig: die
+         Kinder sind eigene Bausteine, kein fortlaufender Satz. */
+      .cn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 7px;
+        min-width: 78px;
+        flex-shrink: 0;
+      }
+      .cn .cl {
+        font-size: 0.68rem;
+        color: var(--muted);
+        white-space: nowrap;
+        margin-bottom: 3px;
+        text-align: center;
+      }
+      .cn .ar {
+        font-size: 1.15rem;
+        color: var(--line-strong);
+        line-height: 1;
+      }
+      .cn.act .cl {
+        color: var(--rc);
+        font-weight: 600;
+      }
+      .cn.act .ar {
+        color: var(--rc);
+      }
       .subflow {
         display: flex;
         align-items: center;
         margin-top: 8px;
         padding: 10px 14px;
-        background: #faf9f5;
+        background: #f5f7fa;
         border: 1px solid var(--line);
-        border-radius: 10px;
+        border-radius: 8px;
         overflow-x: auto;
       }
       .subflow-label {
-        font-size: 0.68rem;
+        font-family: var(--mono);
+        font-size: 0.64rem;
+        letter-spacing: 0.06em;
         color: var(--muted);
         margin-right: 12px;
         white-space: nowrap;
@@ -629,13 +1059,14 @@
       }
       .subflow .st {
         min-width: 84px;
-        padding: 8px 12px;
-        font-size: 0.74rem;
+        padding: 7px 11px;
+        font-size: 0.73rem;
       }
 
-      /* Verzweigungen */
+      /* Verzweigungen: eine Reihe eigenstaendiger Bausteine, Flex ist
+         hier gewollt. */
       .branches {
-        border-top: 1px dashed var(--line);
+        border-top: 1px dashed var(--line-strong);
         padding-top: 14px;
         margin-top: 14px;
         display: flex;
@@ -648,9 +1079,9 @@
         flex-wrap: wrap;
         gap: 6px;
         padding: 6px 11px;
-        background: #faf9f5;
+        background: #f5f7fa;
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 7px;
         font-size: 0.76rem;
       }
       .branch .from {
@@ -659,53 +1090,51 @@
       }
       .branch .act {
         font-weight: 600;
-        color: #3a4050;
+        color: #39404f;
       }
       .branch .ar {
-        color: #b3b0a4;
-      }
-      .branch .rb {
-        margin-bottom: 0;
+        color: var(--line-strong);
       }
       .chip {
         padding: 2px 9px;
-        border-radius: 6px;
+        border-radius: 5px;
         font-size: 0.72rem;
-        font-weight: 700;
+        font-weight: 600;
         border: 1px solid;
+        white-space: nowrap;
       }
       .chip.pending {
-        background: #fef9c3;
-        border-color: #fde047;
-        color: #713f12;
+        background: var(--s-pending-bg);
+        border-color: var(--s-pending-bd);
+        color: var(--s-pending-fg);
       }
       .chip.info {
-        background: #dbeafe;
-        border-color: #93c5fd;
-        color: #1e40af;
+        background: var(--s-info-bg);
+        border-color: var(--s-info-bd);
+        color: var(--s-info-fg);
       }
       .chip.success {
-        background: #d1fae5;
-        border-color: #6ee7b7;
-        color: #065f46;
+        background: var(--s-success-bg);
+        border-color: var(--s-success-bd);
+        color: var(--s-success-fg);
       }
       .chip.error {
-        background: #fee2e2;
-        border-color: #fca5a5;
-        color: #7f1d1d;
+        background: var(--s-error-bg);
+        border-color: var(--s-error-bd);
+        color: var(--s-error-fg);
       }
       .chip.neutral {
-        background: #f1f0eb;
-        border-color: #d4d1c6;
-        color: #4b5160;
+        background: var(--s-neutral-bg);
+        border-color: var(--s-neutral-bd);
+        color: var(--s-neutral-fg);
       }
       .chip.warning {
-        background: #ffedd5;
-        border-color: #fdba74;
-        color: #7c2d12;
+        background: var(--s-warning-bg);
+        border-color: var(--s-warning-bd);
+        color: var(--s-warning-fg);
       }
 
-      /* Varianten & Hinweise */
+      /* ════════════════ Varianten und Hinweise ════════════════ */
       .variant {
         border-top: 1px solid var(--line);
         padding-top: 14px;
@@ -713,49 +1142,54 @@
       }
       .variant-label {
         font-family: var(--mono);
-        font-size: 0.62rem;
+        font-size: 0.63rem;
         font-weight: 600;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.13em;
         text-transform: uppercase;
         color: var(--muted);
         margin: 6px 0 4px;
       }
       .note {
-        background: color-mix(in srgb, var(--rc) 4%, #faf9f5);
+        background: #f5f7fa;
         border-left: 3px solid var(--rc);
-        border-radius: 0 8px 8px 0;
-        padding: 10px 14px;
-        font-size: 0.79rem;
-        color: #474d5c;
+        border-radius: 0 7px 7px 0;
+        padding: 11px 15px;
+        font-size: 0.8rem;
+        color: #454c5b;
         margin-top: 14px;
-        line-height: 1.65;
+        line-height: 1.7;
+      }
+      .note strong {
+        color: var(--ink-2);
+        font-weight: 600;
       }
       .note code {
         font-family: var(--mono);
-        font-size: 0.72rem;
-        background: rgba(16, 20, 31, 0.06);
+        font-size: 0.73rem;
+        background: rgba(15, 23, 35, 0.07);
         padding: 1px 5px;
         border-radius: 4px;
       }
 
-      /* ════════ Do/Don't checklist ════════ */
+      /* ════════════════ Ja/Nein-Liste ════════════════ */
       .checklist {
         list-style: none;
         margin-top: 14px;
         display: grid;
-        gap: 6px;
+        gap: 5px;
       }
       .checklist li {
         font-size: 0.82rem;
-        color: #3a4050;
-        padding: 3px 0;
-        display: flex;
-        gap: 9px;
-        line-height: 1.5;
+        color: #39404f;
+        padding: 3px 0 3px 21px;
+        position: relative;
+        line-height: 1.55;
       }
       .checklist li::before {
-        flex-shrink: 0;
-        font-weight: 800;
+        position: absolute;
+        left: 0;
+        top: 3px;
+        font-weight: 700;
         width: 1.1em;
         text-align: center;
       }
@@ -765,35 +1199,37 @@
       }
       .checklist li.bad::before {
         content: "✗";
-        color: #dc2626;
+        color: #c62828;
       }
 
-      /* ════════ Überblick: Rollen-Karten ════════ */
+      /* ════════════════ Rollen- und Kapitelkarten ════════════════ */
       .role-cards {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
-        gap: 14px;
+        grid-template-columns: repeat(auto-fill, minmax(min(248px, 100%), 1fr));
+        gap: 12px;
       }
       .role-card {
         background: var(--card);
         border: 1px solid var(--line);
-        border-top: 3px solid var(--rcc);
+        border-left: 3px solid var(--rcc);
         border-radius: var(--radius);
-        padding: 18px 20px 16px;
-        cursor: pointer;
-        transition:
-          transform 0.15s,
-          box-shadow 0.15s;
+        padding: 16px 18px 15px;
         display: flex;
         flex-direction: column;
         text-align: left;
         font-family: var(--body);
         color: inherit;
         text-decoration: none;
+        transition:
+          border-color 0.14s,
+          background 0.14s;
       }
+      /* Nur wirklich anklickbare Flaechen antworten, und zwar ueber
+         Farbe statt ueber Schattenwurf. */
       .role-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 28px rgba(16, 20, 31, 0.09);
+        background: #fbfcfe;
+        border-color: color-mix(in srgb, var(--rcc) 45%, var(--line));
+        border-left-color: var(--rcc);
       }
       .role-card .rc-abbr {
         font-family: var(--mono);
@@ -806,31 +1242,35 @@
       .role-card h3 {
         font-family: var(--display);
         font-weight: 700;
-        font-size: 1.02rem;
+        font-stretch: 105%;
+        font-size: 1rem;
         margin: 6px 0 4px;
-        letter-spacing: -0.01em;
+        letter-spacing: -0.005em;
+        line-height: 1.25;
       }
       .role-card p {
         font-size: 0.8rem;
         color: var(--muted);
         flex: 1;
-        line-height: 1.5;
+        line-height: 1.55;
       }
       .role-card .rc-scope {
         font-size: 0.74rem;
-        color: #474d5c;
+        color: #454c5b;
         margin-top: 10px;
         padding-top: 10px;
         border-top: 1px solid var(--line);
       }
       .role-card .rc-link {
-        font-size: 0.78rem;
-        font-weight: 700;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
         color: var(--rcc);
-        margin-top: 8px;
+        margin-top: 9px;
       }
 
-      /* ════════ Überblick: Matrix ════════ */
+      /* ════════════════ Tabellen ════════════════ */
       .matrix-wrap {
         background: var(--card);
         border: 1px solid var(--line);
@@ -844,7 +1284,7 @@
       }
       .matrix th,
       .matrix td {
-        padding: 9px 10px;
+        padding: 9px 11px;
         font-size: 0.8rem;
         border-bottom: 1px solid var(--line);
       }
@@ -852,12 +1292,15 @@
         font-family: var(--mono);
         font-size: 0.62rem;
         font-weight: 600;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.07em;
         text-transform: uppercase;
         color: var(--muted);
         text-align: center;
-        background: #faf9f5;
+        background: #f5f7fa;
         white-space: nowrap;
+        position: sticky;
+        top: 0;
+        z-index: 1;
       }
       .matrix thead th:first-child {
         text-align: left;
@@ -888,7 +1331,7 @@
       }
       .matrix tbody tr:hover td,
       .matrix tbody tr:hover th {
-        background: #faf9f5;
+        background: #f5f7fa;
       }
       .sym {
         font-size: 0.92rem;
@@ -904,7 +1347,7 @@
         color: #2563eb;
       }
       .sym.none {
-        color: #cfccc0;
+        color: #c3cad4;
       }
       .matrix-legend {
         display: flex;
@@ -919,16 +1362,60 @@
         align-items: center;
         gap: 6px;
       }
+      .flags {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 16px;
+        font-size: 0.88rem;
+      }
+      .flags th,
+      .flags td {
+        text-align: left;
+        padding: 9px 11px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      .flags th {
+        font-family: var(--mono);
+        font-size: 0.63rem;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .flags td strong {
+        color: var(--ink-2);
+        font-weight: 600;
+      }
+      .flags .sub-flag {
+        display: block;
+        font-family: var(--mono);
+        font-size: 0.63rem;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .flags .def {
+        font-family: var(--mono);
+        font-size: 0.77rem;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .flags-wrap {
+        overflow-x: auto;
+        margin: 8px 0 16px;
+      }
+      .branches + .proc-text {
+        margin-top: 14px;
+      }
 
-      /* ════════ Endpoint-Tabelle (Entwickler) ════════ */
+      /* ════════════════ Schnittstelle ════════════════ */
       .matrix.endpoints {
         min-width: 720px;
       }
       .matrix.endpoints td {
         text-align: left;
         vertical-align: top;
-        color: #3a4050;
-        line-height: 1.5;
+        color: #39404f;
+        line-height: 1.55;
       }
       .matrix.endpoints td.path {
         font-family: var(--mono);
@@ -940,10 +1427,10 @@
         display: inline-block;
         font-family: var(--mono);
         font-size: 0.62rem;
-        font-weight: 700;
+        font-weight: 600;
         letter-spacing: 0.04em;
         padding: 2px 7px;
-        border-radius: 5px;
+        border-radius: 4px;
         color: #fff;
       }
       .method.get {
@@ -953,32 +1440,33 @@
         background: #b45309;
       }
       pre.code {
-        background: #10141f;
-        color: #e6e9f0;
-        border-radius: 10px;
+        background: var(--ink);
+        color: #dfe4ec;
+        border-radius: 8px;
         padding: 14px 16px;
         overflow-x: auto;
         font-family: var(--mono);
         font-size: 0.72rem;
-        line-height: 1.6;
+        line-height: 1.65;
         margin-top: 14px;
       }
 
-      /* ════════ Überblick: Prozess-Schnellübersicht ════════ */
+      /* ════════════════ Prozess-Schnelluebersicht ════════════════ */
       .quick-procs {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr));
+        gap: 10px;
       }
       .quick-proc {
         background: var(--card);
         border: 1px solid var(--line);
         border-radius: var(--radius);
-        padding: 14px 18px;
+        padding: 14px 17px;
       }
       .quick-proc .qp-name {
         font-family: var(--display);
         font-weight: 700;
+        font-stretch: 105%;
         font-size: 0.9rem;
         margin-bottom: 8px;
       }
@@ -990,11 +1478,8 @@
         font-size: 0.74rem;
         color: var(--muted);
       }
-      .quick-proc .qp-chain .rb {
-        margin-bottom: 0;
-      }
 
-      /* ════════ Footer ════════ */
+      /* ════════════════ Fuss ════════════════ */
       .page-foot {
         margin-top: 56px;
         padding-top: 18px;
@@ -1007,10 +1492,10 @@
         gap: 8px;
       }
 
-      /* ════════ Responsive ════════ */
-      @media (max-width: 920px) {
+      /* ════════════════ Schmale Ansicht ════════════════ */
+      @media (max-width: 980px) {
         .shell {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
         .sidebar {
           position: static;
@@ -1020,10 +1505,20 @@
         .brand {
           padding-bottom: 14px;
         }
+        .search-wrap {
+          padding: 14px 16px 0;
+        }
+        .results {
+          left: 12px;
+          right: 12px;
+          top: auto;
+          width: auto;
+          max-height: 60vh;
+        }
         .nav {
           display: flex;
           overflow-x: auto;
-          padding: 10px 14px 14px;
+          padding: 12px 14px 14px;
           gap: 4px;
         }
         .nav-group-label {
@@ -1043,20 +1538,43 @@
           padding: 22px 18px 60px;
         }
         .hero {
-          padding: 24px 22px;
+          border-radius: 22px;
+          padding: 26px 22px 22px;
+        }
+        .hero::after {
+          display: none;
         }
         .hero-mark {
-          display: none;
+          position: static;
+          display: inline-block;
+          margin-bottom: 12px;
+        }
+        .hero-badge {
+          margin-left: 12px;
         }
       }
 
-      /* ════════ Print ════════ */
+      /* ════════════════ Bewegung sparsam ════════════════ */
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          transition-duration: 0.001ms !important;
+        }
+      }
+
+      /* ════════════════ Druck ════════════════ */
       @media print {
-        .sidebar {
+        .sidebar,
+        .results {
           display: none;
         }
         .shell {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
         .panel {
           display: block !important;
@@ -1070,143 +1588,69 @@
           print-color-adjust: exact;
         }
       }
-
-      /* ════════ Prozesse & Funktionen (rollenübergreifend) ════════ */
-      .cat {
-        display: flex;
-        align-items: baseline;
-        gap: 12px;
-        margin: 54px 0 4px;
-        padding-top: 22px;
-        border-top: 2px solid var(--line);
-      }
-      .cat:first-of-type {
-        border-top: none;
-        padding-top: 0;
-        margin-top: 34px;
-      }
-      .cat .code {
-        font-family: var(--mono);
-        font-size: 0.68rem;
-        font-weight: 600;
-        color: var(--rc);
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-      }
-      .cat h2 {
-        font-family: var(--display);
-        font-weight: 700;
-        font-size: 1.4rem;
-        letter-spacing: -0.015em;
-      }
-      .cat + .cat-lead {
-        color: var(--muted);
-        max-width: 70ch;
-        margin: 0 0 18px;
-        font-size: 0.95rem;
-      }
-      .proc-text {
-        max-width: 72ch;
-        margin: 0 0 12px;
-      }
-      .proc-text + .proc-text {
-        margin-top: 12px;
-      }
-      .proc-text strong {
-        color: var(--ink-2);
-      }
-      .proc-h {
-        font-family: var(--display);
-        font-weight: 700;
-        font-size: 0.9rem;
-        letter-spacing: 0.02em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin: 20px 0 8px;
-      }
-      .kv {
-        display: grid;
-        grid-template-columns: max-content 1fr;
-        gap: 6px 18px;
-        max-width: 72ch;
-        margin: 4px 0 16px;
-        font-size: 0.92rem;
-      }
-      .kv dt {
-        font-weight: 600;
-        color: var(--ink-2);
-      }
-      .kv dd {
-        color: var(--text);
-      }
-      .roles-inline {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin: 2px 0 14px;
-      }
-      .flags {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 8px 0 16px;
-        font-size: 0.9rem;
-      }
-      .flags th,
-      .flags td {
-        text-align: left;
-        padding: 8px 10px;
-        border-bottom: 1px solid var(--line);
-        vertical-align: top;
-      }
-      .flags th {
-        font-family: var(--mono);
-        font-size: 0.66rem;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--muted);
-      }
-      .flags td strong {
-        color: var(--ink-2);
-      }
-      .branches + .proc-text {
-        margin-top: 14px;
-      }
-      .flags .sub-flag {
-        display: block;
-        font-family: var(--mono);
-        font-size: 0.62rem;
-        color: var(--muted);
-        margin-top: 2px;
-      }
-      .flags .def {
-        font-family: var(--mono);
-        font-size: 0.78rem;
-        color: var(--muted);
-        white-space: nowrap;
-      }
-      .flags-wrap {
-        overflow-x: auto;
-        margin: 8px 0 16px;
-      }
     </style>
   </head>
   <body>
     <div class="shell">
-      <!-- ════════════ SIDEBAR ════════════ -->
+      <!-- ════════════ SEITENLEISTE ════════════ -->
       <aside class="sidebar">
         <div class="brand">
           <div class="wordmark">Saison<em>manager</em></div>
           <div class="doc-title">Rollenhandbuch</div>
           <span class="edition">Stand · August 2026</span>
         </div>
+        <div class="search-wrap">
+          <form class="search" role="search" autocomplete="off">
+            <label class="sr-only" for="q">Handbuch durchsuchen</label>
+            <input
+              id="q"
+              class="search-input"
+              type="search"
+              placeholder="Handbuch durchsuchen"
+              spellcheck="false"
+              aria-controls="results"
+            />
+            <kbd class="search-hint">/</kbd>
+          </form>
+        </div>
         <nav class="nav">
           <div class="nav-group-label">Einstieg</div>
-          <a class="navlink" href="#panel-ueberblick" style="--dot: #9ec5ff">
+          <a class="navlink" href="#panel-ueberblick" style="--dot: #3b82f6">
             <span class="dot"></span> Überblick
           </a>
-          <a class="navlink" href="#panel-prozesse" style="--dot: #6366f1">
-            <span class="dot"></span> Prozesse &amp; Funktionen
-            <span class="abbr">PRZ</span>
+          <a class="navlink" href="#panel-rechtematrix" style="--dot: #3b82f6">
+            <span class="dot"></span> Rechtematrix
+          </a>
+          <a class="navlink" href="#panel-testsystem" style="--dot: #3b82f6">
+            <span class="dot"></span> Testsystem
+          </a>
+          <div class="nav-group-label">Funktionen</div>
+          <a class="navlink" href="#panel-prozesse" style="--dot: #4f46e5">
+            <span class="dot"></span> Alle Funktionen
+          </a>
+          <a class="navlink" href="#panel-fn-oeffentlich" style="--dot: #4f46e5">
+            <span class="dot"></span> Öffentliche Ansichten
+          </a>
+          <a class="navlink" href="#panel-fn-spielerdaten" style="--dot: #4f46e5">
+            <span class="dot"></span> Spieler-Stammdaten
+          </a>
+          <a class="navlink" href="#panel-fn-schiri" style="--dot: #4f46e5">
+            <span class="dot"></span> Schiedsrichterwesen
+          </a>
+          <a class="navlink" href="#panel-fn-lizenzen" style="--dot: #4f46e5">
+            <span class="dot"></span> Spielerlizenzen
+          </a>
+          <a class="navlink" href="#panel-fn-transfers" style="--dot: #4f46e5">
+            <span class="dot"></span> Transfers &amp; Freigaben
+          </a>
+          <a class="navlink" href="#panel-fn-spieltag" style="--dot: #4f46e5">
+            <span class="dot"></span> Spieltag &amp; Spielbericht
+          </a>
+          <a class="navlink" href="#panel-fn-spielbetrieb" style="--dot: #4f46e5">
+            <span class="dot"></span> Spielbetrieb &amp; Saison
+          </a>
+          <a class="navlink" href="#panel-fn-system" style="--dot: #4f46e5">
+            <span class="dot"></span> System &amp; Verwaltung
           </a>
           <div class="nav-group-label">Verbandsrollen</div>
           <a class="navlink" href="#panel-admin" style="--dot: var(--c-admin)">
@@ -1229,19 +1673,11 @@
             <span class="dot"></span> RSK Landesverband
             <span class="abbr">RSK·LV</span>
           </a>
-          <a
-            class="navlink"
-            href="#panel-ansetzer-fd"
-            style="--dot: var(--c-ansetzerfd)"
-          >
+          <a class="navlink" href="#panel-ansetzer-fd" style="--dot: var(--c-ansetzerfd)">
             <span class="dot"></span> Ansetzer*in Floorball Deutschland
             <span class="abbr">ANS·FD</span>
           </a>
-          <a
-            class="navlink"
-            href="#panel-ansetzer-lv"
-            style="--dot: var(--c-ansetzerlv)"
-          >
+          <a class="navlink" href="#panel-ansetzer-lv" style="--dot: var(--c-ansetzerlv)">
             <span class="dot"></span> Ansetzer*in Landesverband
             <span class="abbr">ANS·LV</span>
           </a>
@@ -1251,32 +1687,20 @@
             <span class="abbr">VM</span>
           </a>
           <a class="navlink" href="#panel-tm" style="--dot: var(--c-tm)">
-            <span class="dot"></span> Teammanager <span class="abbr">TM</span>
+            <span class="dot"></span> Teammanager
+            <span class="abbr">TM</span>
           </a>
           <div class="nav-group-label">Self-Service</div>
-          <a
-            class="navlink"
-            href="#panel-schiri"
-            style="--dot: var(--c-schiri)"
-          >
+          <a class="navlink" href="#panel-schiri" style="--dot: var(--c-schiri)">
             <span class="dot"></span> Schiedsrichter
             <span class="abbr">SR</span>
           </a>
-          <div class="nav-group-label">Streaming</div>
-          <a
-            class="navlink"
-            href="#panel-streamer"
-            style="--dot: var(--c-streamer)"
-          >
+          <div class="nav-group-label">Anbindung</div>
+          <a class="navlink" href="#panel-streamer" style="--dot: var(--c-streamer)">
             <span class="dot"></span> Für Streamer:innen
             <span class="abbr">OBS</span>
           </a>
-          <div class="nav-group-label">Schnittstelle</div>
-          <a
-            class="navlink"
-            href="#panel-entwickler"
-            style="--dot: var(--c-entwickler)"
-          >
+          <a class="navlink" href="#panel-entwickler" style="--dot: var(--c-entwickler)">
             <span class="dot"></span> Entwickler &amp; API
             <span class="abbr">API</span>
           </a>
@@ -1286,10 +1710,10 @@
           Plattform saisonmanager.de.
         </div>
       </aside>
+      <div class="results" id="results" role="listbox" aria-label="Suchtreffer" hidden></div>
 
-      <!-- ════════════ CONTENT ════════════ -->
+      <!-- ════════════ INHALT ════════════ -->
       <div class="content">
-        <!-- ═══════════ ÜBERBLICK ═══════════ -->
         <section class="panel" id="panel-ueberblick" style="--rc: #3b82f6">
           <div class="hero">
             <span class="hero-mark">§</span>
@@ -1303,7 +1727,6 @@
               Zuständigkeiten auf einen Blick.
             </p>
           </div>
-
           <div class="sec">
             <span class="num">01</span>
             <h2>Die Rollen</h2>
@@ -1467,10 +1890,82 @@
             hängt. Wer daneben eine Verbands- oder Vereinsfunktion ausübt,
             braucht dafür ein zweites Konto.
           </div>
-
           <div class="sec">
             <span class="num">02</span>
-            <h2>Rechtematrix</h2>
+            <h2>Prozesse auf einen Blick</h2>
+          </div>
+          <div class="quick-procs">
+            <div class="quick-proc">
+              <div class="qp-name">🔄 Transfer &amp; Freigabe</div>
+              <div class="qp-chain">
+                <span class="rb vm">VM aufnehmend</span> →
+                <span class="rb vm">VM abgebend</span> →
+                <span class="rb player">Spieler</span> →
+                <span class="rb sbk">SBK / Admin</span>
+              </div>
+            </div>
+            <div class="quick-proc">
+              <div class="qp-name">📄 Spielerlizenz</div>
+              <div class="qp-chain">
+                <span class="rb tm">TM</span> /
+                <span class="rb vm">VM</span> beantragt →
+                <span class="rb sbk">SBK / Admin</span> erteilt
+              </div>
+            </div>
+            <div class="quick-proc">
+              <div class="qp-name">📝 Spielbericht</div>
+              <div class="qp-chain">
+                <span class="rb tm">TM</span> /
+                <span class="rb vm">VM</span> erfasst &amp; reicht ein →
+                <span class="rb sbk">SBK / Admin</span> finalisiert
+              </div>
+            </div>
+            <div class="quick-proc">
+              <div class="qp-name">📅 Schiri-Ansetzung</div>
+              <div class="qp-chain">
+                <span class="rb ansetzer">Ansetzer / Admin</span> setzt an &amp;
+                veröffentlicht → <span class="rb schiri">Schiri</span> bestätigt
+                <br />
+                <em>ohne Personenebene:</em>
+                <span class="rb rsk">RSK LV</span> trägt Verein oder Freitext
+                ein (sofort öffentlich)
+              </div>
+            </div>
+            <div class="quick-proc">
+              <div class="qp-name">📋 Spielerdaten-Korrektur</div>
+              <div class="qp-chain">
+                <span class="rb vm">VM</span> beantragt →
+                <span class="rb sbk">SBK / Admin</span> entscheidet
+              </div>
+            </div>
+            <div class="quick-proc">
+              <div class="qp-name">☑️ Spieltagscheckliste</div>
+              <div class="qp-chain">
+                <span class="rb sbk">SBK / Admin</span> konfiguriert →
+                <span class="rb tm">TM</span> /
+                <span class="rb vm">VM</span> beantwortet beim Einreichen
+              </div>
+            </div>
+            <div class="quick-proc">
+              <div class="qp-name">💬 Schiri-Feedback</div>
+              <div class="qp-chain">
+                <span class="rb sbk">SBK / Admin</span> schaltet Liga frei →
+                <span class="rb tm">TM</span> oder
+                <span class="rb player">Spielführung</span> gibt ab (ab 24 h
+                nach dem Spiel) → <span class="rb rsk">RSK FD</span> /
+                <span class="rb ansetzer">Ansetzer FD</span> wertet aus
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-rechtematrix" style="--rc: #3b82f6">
+          <div class="hero">
+            <span class="hero-mark">MTX</span>
+            <div class="hero-badge">Einstieg</div>
+            <h1>Rechtematrix</h1>
+            <p>Alle Rollen gegen alle Bereiche, in einer Tabelle. Wer wo vollen Zugriff hat, wer nur einen Teil, wer nur lesen, beantragen oder bestätigen darf.</p>
+            <div class="hero-scope" style="--scope-label: 'Gilt für'">🔎 Alle Rollen und Bereiche im Vergleich</div>
           </div>
           <div class="matrix-wrap">
             <table class="matrix">
@@ -1926,78 +2421,15 @@
               >Details per Maus-Hover auf das Symbol</span
             >
           </div>
+        </section>
 
-          <div class="sec">
-            <span class="num">03</span>
-            <h2>Prozesse auf einen Blick</h2>
-          </div>
-          <div class="quick-procs">
-            <div class="quick-proc">
-              <div class="qp-name">🔄 Transfer &amp; Freigabe</div>
-              <div class="qp-chain">
-                <span class="rb vm">VM aufnehmend</span> →
-                <span class="rb vm">VM abgebend</span> →
-                <span class="rb player">Spieler</span> →
-                <span class="rb sbk">SBK / Admin</span>
-              </div>
-            </div>
-            <div class="quick-proc">
-              <div class="qp-name">📄 Spielerlizenz</div>
-              <div class="qp-chain">
-                <span class="rb tm">TM</span> /
-                <span class="rb vm">VM</span> beantragt →
-                <span class="rb sbk">SBK / Admin</span> erteilt
-              </div>
-            </div>
-            <div class="quick-proc">
-              <div class="qp-name">📝 Spielbericht</div>
-              <div class="qp-chain">
-                <span class="rb tm">TM</span> /
-                <span class="rb vm">VM</span> erfasst &amp; reicht ein →
-                <span class="rb sbk">SBK / Admin</span> finalisiert
-              </div>
-            </div>
-            <div class="quick-proc">
-              <div class="qp-name">📅 Schiri-Ansetzung</div>
-              <div class="qp-chain">
-                <span class="rb ansetzer">Ansetzer / Admin</span> setzt an &amp;
-                veröffentlicht → <span class="rb schiri">Schiri</span> bestätigt
-                <br />
-                <em>ohne Personenebene:</em>
-                <span class="rb rsk">RSK LV</span> trägt Verein oder Freitext
-                ein (sofort öffentlich)
-              </div>
-            </div>
-            <div class="quick-proc">
-              <div class="qp-name">📋 Spielerdaten-Korrektur</div>
-              <div class="qp-chain">
-                <span class="rb vm">VM</span> beantragt →
-                <span class="rb sbk">SBK / Admin</span> entscheidet
-              </div>
-            </div>
-            <div class="quick-proc">
-              <div class="qp-name">☑️ Spieltagscheckliste</div>
-              <div class="qp-chain">
-                <span class="rb sbk">SBK / Admin</span> konfiguriert →
-                <span class="rb tm">TM</span> /
-                <span class="rb vm">VM</span> beantwortet beim Einreichen
-              </div>
-            </div>
-            <div class="quick-proc">
-              <div class="qp-name">💬 Schiri-Feedback</div>
-              <div class="qp-chain">
-                <span class="rb sbk">SBK / Admin</span> schaltet Liga frei →
-                <span class="rb tm">TM</span> oder
-                <span class="rb player">Spielführung</span> gibt ab (ab 24 h
-                nach dem Spiel) → <span class="rb rsk">RSK FD</span> /
-                <span class="rb ansetzer">Ansetzer FD</span> wertet aus
-              </div>
-            </div>
-          </div>
-
-          <div class="sec">
-            <span class="num">04</span>
-            <h2>Testsystem</h2>
+        <section class="panel" id="panel-testsystem" style="--rc: #3b82f6">
+          <div class="hero">
+            <span class="hero-mark">DEV</span>
+            <div class="hero-badge">Einstieg</div>
+            <h1>Testsystem</h1>
+            <p>Unter <code>saisonmanager.dev</code> lässt sich alles gefahrlos ausprobieren, bevor es im Produktivsystem live geht. Ausgehende E-Mails verlassen das Testsystem nie.</p>
+            <div class="hero-scope" style="--scope-label: 'Gilt für'">🧪 Vor allem für SBK-Nutzer:innen der Landesverbände</div>
           </div>
           <div class="note">
             <strong
@@ -2025,7 +2457,6 @@
           </div>
         </section>
 
-        <!-- ═══════════ PROZESSE & FUNKTIONEN ═══════════ -->
         <section class="panel" id="panel-prozesse" style="--rc: #4f46e5">
           <div class="hero">
             <span class="hero-mark">PRZ</span>
@@ -2038,19 +2469,74 @@
               Auslösung über jeden Zwischenschritt bis zu allen möglichen
               Ergebnissen, samt Sonderfällen und Regeln.
             </p>
-            <div class="hero-scope">
+            <div class="hero-scope" style="--scope-label: 'Gilt für'">
               🧭 Nachschlagewerk nach Themenbereichen
             </div>
           </div>
-
-          <div class="cat">
-            <span class="code">Öffentlich</span>
-            <h2>Öffentliche Ansichten</h2>
+          <div class="sec">
+            <span class="num">01</span>
+            <h2>Die acht Funktionskapitel</h2>
           </div>
-          <p class="cat-lead">
-            Alles, was Fans, Vereine und Medien ohne Login sehen: Spielplan,
-            Tabelle, Scorer, Statistiken und der Lizenzcheck.
-          </p>
+          <div class="role-cards">
+            <a class="role-card" href="#panel-fn-oeffentlich" style="--rcc: #4f46e5">
+              <span class="rc-abbr">Öffentlich</span>
+              <h3>Öffentliche Ansichten</h3>
+              <p>Alles, was Fans, Vereine und Medien ohne Login sehen: Spielplan, Tabelle, Scorer, Statistiken und der Lizenzcheck.</p>
+              <span class="rc-link">Kapitel öffnen →</span>
+            </a>
+            <a class="role-card" href="#panel-fn-spielerdaten" style="--rcc: #4f46e5">
+              <span class="rc-abbr">Spieler</span>
+              <h3>Spieler-Stammdaten</h3>
+              <p>Anlegen, pflegen und bereinigen von Spielerprofilen samt ihrer Vereinshistorie.</p>
+              <span class="rc-link">Kapitel öffnen →</span>
+            </a>
+            <a class="role-card" href="#panel-fn-schiri" style="--rcc: #4f46e5">
+              <span class="rc-abbr">Schiri</span>
+              <h3>Schiedsrichterwesen</h3>
+              <p>Von der Lizenzstufe über den Kurs-Import bis zur Ansetzung am Spieltag und dem digitalen Ausweis.</p>
+              <span class="rc-link">Kapitel öffnen →</span>
+            </a>
+            <a class="role-card" href="#panel-fn-lizenzen" style="--rcc: #4f46e5">
+              <span class="rc-abbr">Lizenzen</span>
+              <h3>Spielerlizenzen</h3>
+              <p>Die Spielberechtigung eines Spielers für ein Team: beantragen, genehmigen, mit den nötigen Dokumenten belegen, plus die Sonderregeln des Großfeld-Erwachsenenbereichs.</p>
+              <span class="rc-link">Kapitel öffnen →</span>
+            </a>
+            <a class="role-card" href="#panel-fn-transfers" style="--rcc: #4f46e5">
+              <span class="rc-abbr">Transfers</span>
+              <h3>Transfers &amp; Freigaben</h3>
+              <p>Vereinswechsel und vorübergehende Freigaben, mit Bestätigung durch den Spieler selbst und Endkontrolle durch den Landesverband.</p>
+              <span class="rc-link">Kapitel öffnen →</span>
+            </a>
+            <a class="role-card" href="#panel-fn-spieltag" style="--rcc: #4f46e5">
+              <span class="rc-abbr">Spieltag</span>
+              <h3>Spieltag &amp; Spielbericht</h3>
+              <p>Was am Spieltag passiert: Bericht erfassen, Checkliste beantworten, einreichen und finalisieren, plus der Sonderweg für rote Karten.</p>
+              <span class="rc-link">Kapitel öffnen →</span>
+            </a>
+            <a class="role-card" href="#panel-fn-spielbetrieb" style="--rcc: #4f46e5">
+              <span class="rc-abbr">Spielbetrieb</span>
+              <h3>Spielbetrieb &amp; Saison</h3>
+              <p>So baust du ein Spieljahr auf: Ligen aus der Vorsaison übernehmen, Teams melden, den Spielplan einspielen und festlegen, wie Ergebnisse und Platzierungen zwischen Ligen zusammenspielen.</p>
+              <span class="rc-link">Kapitel öffnen →</span>
+            </a>
+            <a class="role-card" href="#panel-fn-system" style="--rcc: #4f46e5">
+              <span class="rc-abbr">System</span>
+              <h3>System &amp; Verwaltung</h3>
+              <p>Die Konfigurationsebene: Benutzer und Rollen, alle Verbandseinstellungen, Banner, Logos und die zentralen Kataloge.</p>
+              <span class="rc-link">Kapitel öffnen →</span>
+            </a>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-fn-oeffentlich" style="--rc: #4f46e5">
+          <div class="hero">
+            <span class="hero-mark">Öffentlich</span>
+            <div class="hero-badge">Funktion</div>
+            <h1>Öffentliche Ansichten</h1>
+            <p>Alles, was Fans, Vereine und Medien ohne Login sehen: Spielplan, Tabelle, Scorer, Statistiken und der Lizenzcheck.</p>
+            <div class="hero-scope" style="--scope-label: 'Gilt für'">🧭 Rollenübergreifend: Ablauf, Regeln und Sonderfälle</div>
+          </div>
 
           <details class="proc" open>
             <summary>
@@ -2086,7 +2572,7 @@
             </div>
           </details>
 
-          <details class="proc" open>
+          <details class="proc">
             <summary>
               <span class="proc-icon">📊</span>
               <div>
@@ -2131,7 +2617,7 @@
             </div>
           </details>
 
-          <details class="proc" open>
+          <details class="proc">
             <summary>
               <span class="proc-icon">👟</span>
               <div>
@@ -2163,7 +2649,7 @@
             </div>
           </details>
 
-          <details class="proc" open>
+          <details class="proc">
             <summary>
               <span class="proc-icon">✅</span>
               <div>
@@ -2192,19 +2678,16 @@
               </div>
             </div>
           </details>
+        </section>
 
-          <!-- ═══════════════════════════════════════════════════
-               8 · SYSTEM & VERWALTUNG
-          ═══════════════════════════════════════════════════ -->
-
-          <div class="cat">
-            <span class="code">Spieler</span>
-            <h2>Spieler-Stammdaten</h2>
+        <section class="panel" id="panel-fn-spielerdaten" style="--rc: #4f46e5">
+          <div class="hero">
+            <span class="hero-mark">Spieler</span>
+            <div class="hero-badge">Funktion</div>
+            <h1>Spieler-Stammdaten</h1>
+            <p>Anlegen, pflegen und bereinigen von Spielerprofilen samt ihrer Vereinshistorie.</p>
+            <div class="hero-scope" style="--scope-label: 'Gilt für'">🧭 Rollenübergreifend: Ablauf, Regeln und Sonderfälle</div>
           </div>
-          <p class="cat-lead">
-            Anlegen, pflegen und bereinigen von Spielerprofilen samt ihrer
-            Vereinshistorie.
-          </p>
 
           <details class="proc" open>
             <summary>
@@ -2241,7 +2724,7 @@
             </div>
           </details>
 
-          <details class="proc" open>
+          <details class="proc">
             <summary>
               <span class="proc-icon">🧬</span>
               <div>
@@ -2276,7 +2759,7 @@
             </div>
           </details>
 
-          <details class="proc" open>
+          <details class="proc">
             <summary>
               <span class="proc-icon">✏️</span>
               <div>
@@ -2310,19 +2793,16 @@
               </div>
             </div>
           </details>
+        </section>
 
-          <!-- ═══════════════════════════════════════════════════
-               5 · SCHIEDSRICHTERWESEN
-          ═══════════════════════════════════════════════════ -->
-
-          <div class="cat">
-            <span class="code">Schiri</span>
-            <h2>Schiedsrichterwesen</h2>
+        <section class="panel" id="panel-fn-schiri" style="--rc: #4f46e5">
+          <div class="hero">
+            <span class="hero-mark">Schiri</span>
+            <div class="hero-badge">Funktion</div>
+            <h1>Schiedsrichterwesen</h1>
+            <p>Von der Lizenzstufe über den Kurs-Import bis zur Ansetzung am Spieltag und dem digitalen Ausweis.</p>
+            <div class="hero-scope" style="--scope-label: 'Gilt für'">🧭 Rollenübergreifend: Ablauf, Regeln und Sonderfälle</div>
           </div>
-          <p class="cat-lead">
-            Von der Lizenzstufe über den Kurs-Import bis zur Ansetzung am
-            Spieltag und dem digitalen Ausweis.
-          </p>
 
           <details class="proc" open>
             <summary>
@@ -2378,7 +2858,7 @@
             </div>
           </details>
 
-          <details class="proc" open>
+          <details class="proc">
             <summary>
               <span class="proc-icon">📇</span>
               <div>
@@ -2424,7 +2904,7 @@
             </div>
           </details>
 
-          <details class="proc" open>
+          <details class="proc">
             <summary>
               <span class="proc-icon">📅</span>
               <div>
@@ -2482,8 +2962,8 @@
                       </td>
                       <td>
                         Die <span class="rb rsk">RSK LV</span> trägt je Spiel
-                        entweder den Verein ein, der das Gespann stellt, oder
-                        die Namen als Freitext.
+                        entweder den Verein ein, der die Schiedsrichter
+                        stellt, oder die Namen als Freitext.
                       </td>
                       <td>
                         nur <em>Ansetzungen außerhalb der SBK ermöglichen</em>
@@ -2558,7 +3038,7 @@
                 <strong>Schiedsrichter eintragen</strong>. Dort steht dieselbe
                 Spieleliste, filterbar nach Saison und Zeitraum, aber statt
                 einzelner Personen trägst du je Spiel entweder den
-                <strong>Verein ein, der das Gespann stellt</strong>, oder die
+                <strong>Verein ein, der die Schiedsrichter stellt</strong>, oder die
                 <strong>Namen als Freitext</strong>. Beides schließt sich aus,
                 die Auswahl eines Vereins leert den Freitext und umgekehrt.
               </p>
@@ -2582,23 +3062,25 @@
               </div>
               <div class="note">
                 <strong>Gesperrte Zeilen:</strong> Ist ein Spiel für die
-                personenscharfe Ansetzung markiert, für ein Gespann bereits
-                angesetzt oder schon angepfiffen, bleiben die Felder gesperrt.
+                personenscharfe Ansetzung markiert, schon namentlich besetzt
+                oder bereits angepfiffen, bleiben die Felder gesperrt.
                 Statt der Eingabe steht dann der Hinweis, dass die Ansetzung
                 personenscharf läuft. So bearbeiten nie zwei Wege dasselbe
                 Spiel. Ist ein Konto zugleich RSK und Ansetzer*in, gewinnt
                 kontoweit die Personenebene. Verfügbarkeiten, Benachrichtigungen
-                und die Infos fürs Gespann bleiben dem Personen-Weg vorbehalten.
+                und die Infos für die Schiedsrichter bleiben dem Personen-Weg
+                vorbehalten.
               </div>
 
-              <div class="proc-h">Infos fürs Gespann</div>
+              <div class="proc-h">Infos für die Schiedsrichter</div>
               <p class="proc-text">
                 Zu jedem Spiel lässt sich über
-                <strong>Infos fürs Gespann</strong> ein Freitext hinterlegen:
+                <strong>Infos für die Schiedsrichter</strong> ein Freitext
+                hinterlegen:
                 Sonderhinweise, Turniermodus, Halleneingang und Anfahrt,
                 Ansprechpartner vor Ort. Diese
                 <strong>zusätzlichen Spielinformationen</strong> sehen
-                ausschließlich das angesetzte Gespann und der
+                ausschließlich die angesetzten Schiedsrichter und der
                 Schiedsrichtercoach – nicht die Mannschaften, nicht der
                 Spielberichtsbogen und nicht die öffentlichen Ansichten.
                 Zugestellt wird der Hinweis erst mit dem
@@ -2613,13 +3095,13 @@
                 pro Verband gescopt, globale Tags legt nur der Admin an. ·
                 <strong>Änderungen nach der Veröffentlichung:</strong> Ändern
                 sich Anpfiff, Spieltagsdatum, Halle oder der Absage-Status,
-                gehen automatisch Änderungs-Benachrichtigungen an das Gespann,
-                den Schiedsrichtercoach und den Ausrichter.
+                gehen automatisch Änderungs-Benachrichtigungen an die
+                Schiedsrichter, den Schiedsrichtercoach und den Ausrichter.
               </div>
             </div>
           </details>
 
-          <details class="proc" open>
+          <details class="proc">
             <summary>
               <span class="proc-icon">🚫</span>
               <div>
@@ -2675,7 +3157,7 @@
             </div>
           </details>
 
-          <details class="proc" open>
+          <details class="proc">
             <summary>
               <span class="proc-icon">🎫</span>
               <div>
@@ -2700,7 +3182,7 @@
             </div>
           </details>
 
-          <details class="proc" open>
+          <details class="proc">
             <summary>
               <span class="proc-icon">💬</span>
               <div>
@@ -2715,7 +3197,7 @@
               <p class="proc-text">
                 In Ligen, für die der Spielbetrieb das Feedback freigeschaltet
                 hat, geben die Mannschaften nach jedem Spiel eine Rückmeldung
-                zum Gespann ab: eine Note von 1 bis 10 für
+                zum Schiedsrichterpaar ab: eine Note von 1 bis 10 für
                 <strong>Linie und Konstanz</strong> sowie für die
                 <strong>Kommunikation</strong>, dazu optionale Kommentare. Die
                 Abgabe ist pro Spiel verpflichtend und je Mannschaft genau
@@ -2729,7 +3211,7 @@
               <p class="proc-text">
                 Das Formular öffnet, sobald <strong>beide</strong> Bedingungen
                 erfüllt sind: Der Spielberichtsbogen ist abgeschlossen, weil
-                erst dann das eingesetzte Gespann feststeht, und der
+                erst dann feststeht, wer gepfiffen hat, und der
                 <strong>Anpfiff liegt mindestens 24 Stunden zurück</strong>. Die
                 Rückmeldung soll mit Abstand zum Spiel entstehen, nicht in der
                 Emotion direkt danach. Solange die Frist läuft, steht das Spiel
@@ -2824,22 +3306,18 @@
               </div>
             </div>
           </details>
+        </section>
 
-          <!-- ═══════════════════════════════════════════════════
-               6 · SPIELTAG & SPIELBERICHT
-          ═══════════════════════════════════════════════════ -->
-
-          <div class="cat">
-            <span class="code">Lizenzen</span>
-            <h2>Spielerlizenzen</h2>
+        <section class="panel" id="panel-fn-lizenzen" style="--rc: #4f46e5">
+          <div class="hero">
+            <span class="hero-mark">Lizenzen</span>
+            <div class="hero-badge">Funktion</div>
+            <h1>Spielerlizenzen</h1>
+            <p>Die Spielberechtigung eines Spielers für ein Team: beantragen, genehmigen, mit den nötigen Dokumenten belegen, plus die Sonderregeln des Großfeld-Erwachsenenbereichs.</p>
+            <div class="hero-scope" style="--scope-label: 'Gilt für'">🧭 Rollenübergreifend: Ablauf, Regeln und Sonderfälle</div>
           </div>
-          <p class="cat-lead">
-            Die Spielberechtigung eines Spielers für ein Team: beantragen,
-            genehmigen, mit den nötigen Dokumenten belegen, plus die
-            Sonderregeln des Großfeld-Erwachsenenbereichs.
-          </p>
 
-          <details class="proc">
+          <details class="proc" open>
             <summary>
               <span class="proc-icon">📄</span>
               <div>
@@ -3004,21 +3482,18 @@
               </div>
             </div>
           </details>
+        </section>
 
-          <!-- ═══════════════════════════════════════════════════
-               3 · TRANSFERS & FREIGABEN
-          ═══════════════════════════════════════════════════ -->
-
-          <div class="cat">
-            <span class="code">Transfers</span>
-            <h2>Transfers &amp; Freigaben</h2>
+        <section class="panel" id="panel-fn-transfers" style="--rc: #4f46e5">
+          <div class="hero">
+            <span class="hero-mark">Transfers</span>
+            <div class="hero-badge">Funktion</div>
+            <h1>Transfers &amp; Freigaben</h1>
+            <p>Vereinswechsel und vorübergehende Freigaben, mit Bestätigung durch den Spieler selbst und Endkontrolle durch den Landesverband.</p>
+            <div class="hero-scope" style="--scope-label: 'Gilt für'">🧭 Rollenübergreifend: Ablauf, Regeln und Sonderfälle</div>
           </div>
-          <p class="cat-lead">
-            Vereinswechsel und vorübergehende Freigaben, mit Bestätigung durch
-            den Spieler selbst und Endkontrolle durch den Landesverband.
-          </p>
 
-          <details class="proc">
+          <details class="proc" open>
             <summary>
               <span class="proc-icon">🔄</span>
               <div>
@@ -3103,21 +3578,18 @@
               </div>
             </div>
           </details>
+        </section>
 
-          <!-- ═══════════════════════════════════════════════════
-               4 · SPIELER-STAMMDATEN
-          ═══════════════════════════════════════════════════ -->
-
-          <div class="cat">
-            <span class="code">Spieltag</span>
-            <h2>Spieltag &amp; Spielbericht</h2>
+        <section class="panel" id="panel-fn-spieltag" style="--rc: #4f46e5">
+          <div class="hero">
+            <span class="hero-mark">Spieltag</span>
+            <div class="hero-badge">Funktion</div>
+            <h1>Spieltag &amp; Spielbericht</h1>
+            <p>Was am Spieltag passiert: Bericht erfassen, Checkliste beantworten, einreichen und finalisieren, plus der Sonderweg für rote Karten.</p>
+            <div class="hero-scope" style="--scope-label: 'Gilt für'">🧭 Rollenübergreifend: Ablauf, Regeln und Sonderfälle</div>
           </div>
-          <p class="cat-lead">
-            Was am Spieltag passiert: Bericht erfassen, Checkliste beantworten,
-            einreichen und finalisieren, plus der Sonderweg für rote Karten.
-          </p>
 
-          <details class="proc">
+          <details class="proc" open>
             <summary>
               <span class="proc-icon">📝</span>
               <div>
@@ -3268,7 +3740,7 @@
               <div class="note">
                 <strong>Nur ein Einspruch je Spiel.</strong> Der erste zählt,
                 jeder weitere wird abgelehnt. Danach gehen Spielleitung, Verein
-                und Gespann eine Benachrichtigung zu, die beide Bewertungen
+                und Schiedsrichterpaar eine Benachrichtigung zu, die beide Bewertungen
                 nebeneinanderstellt, sodass die Abweichung sichtbar wird.
               </div>
               <div class="roles-inline">
@@ -3383,23 +3855,19 @@
               </div>
             </div>
           </details>
+        </section>
 
-          <!-- ═══════════════════════════════════════════════════
-               7 · ÖFFENTLICHE ANSICHTEN
-          ═══════════════════════════════════════════════════ -->
-
-          <div class="cat">
-            <span class="code">Spielbetrieb</span>
-            <h2>Spielbetrieb &amp; Saison</h2>
+        <section class="panel" id="panel-fn-spielbetrieb" style="--rc: #4f46e5">
+          <div class="hero">
+            <span class="hero-mark">Spielbetrieb</span>
+            <div class="hero-badge">Funktion</div>
+            <h1>Spielbetrieb &amp; Saison</h1>
+            <p>So baust du ein Spieljahr auf: Ligen aus der Vorsaison übernehmen, Teams melden, den Spielplan einspielen und festlegen, wie Ergebnisse und Platzierungen zwischen Ligen zusammenspielen.</p>
+            <div class="hero-scope" style="--scope-label: 'Gilt für'">🧭 Rollenübergreifend: Ablauf, Regeln und Sonderfälle</div>
           </div>
-          <p class="cat-lead">
-            So baust du ein Spieljahr auf: Ligen aus der Vorsaison übernehmen,
-            Teams melden, den Spielplan einspielen und festlegen, wie Ergebnisse
-            und Platzierungen zwischen Ligen zusammenspielen.
-          </p>
 
           <!-- Liga kopieren -->
-          <details class="proc">
+          <details class="proc" open>
             <summary>
               <span class="proc-icon">🗂️</span>
               <div>
@@ -3858,21 +4326,18 @@
               </div>
             </div>
           </details>
+        </section>
 
-          <!-- ═══════════════════════════════════════════════════
-               2 · SPIELERLIZENZEN
-          ═══════════════════════════════════════════════════ -->
-
-          <div class="cat">
-            <span class="code">System</span>
-            <h2>System &amp; Verwaltung</h2>
+        <section class="panel" id="panel-fn-system" style="--rc: #4f46e5">
+          <div class="hero">
+            <span class="hero-mark">System</span>
+            <div class="hero-badge">Funktion</div>
+            <h1>System &amp; Verwaltung</h1>
+            <p>Die Konfigurationsebene: Benutzer und Rollen, alle Verbandseinstellungen, Banner, Logos und die zentralen Kataloge.</p>
+            <div class="hero-scope" style="--scope-label: 'Gilt für'">🧭 Rollenübergreifend: Ablauf, Regeln und Sonderfälle</div>
           </div>
-          <p class="cat-lead">
-            Die Konfigurationsebene: Benutzer und Rollen, alle
-            Verbandseinstellungen, Banner, Logos und die zentralen Kataloge.
-          </p>
 
-          <details class="proc">
+          <details class="proc" open>
             <summary>
               <span class="proc-icon">⚙️</span>
               <div>
@@ -4146,7 +4611,6 @@
           </details>
         </section>
 
-        <!-- ═══════════ ADMIN ═══════════ -->
         <section class="panel" id="panel-admin" style="--rc: var(--c-admin)">
           <div class="hero">
             <span class="hero-mark">ADM</span>
@@ -4266,7 +4730,8 @@
                 <li>Kursergebnisse importieren und freigeben</li>
                 <li>
                   Ansetzungen erstellen und veröffentlichen, inklusive „Infos
-                  fürs Gespann“ (nur für Gespann und SR-Coach sichtbar)
+                  für die Schiedsrichter“ (nur für die Schiedsrichter und den
+                  SR-Coach sichtbar)
                 </li>
                 <li>Vereins-Ausschlüsse entscheiden und pflegen</li>
                 <li>Schiedsrichter-Benutzerkonto anlegen (erfordert E-Mail)</li>
@@ -4804,7 +5269,6 @@
           </details>
         </section>
 
-        <!-- ═══════════ SBK FD ═══════════ -->
         <section class="panel" id="panel-sbk-fd" style="--rc: var(--c-sbkfd)">
           <div class="hero">
             <span class="hero-mark">SBK</span>
@@ -5207,7 +5671,6 @@
           </details>
         </section>
 
-        <!-- ═══════════ SBK LV ═══════════ -->
         <section class="panel" id="panel-sbk-lv" style="--rc: var(--c-sbklv)">
           <div class="hero">
             <span class="hero-mark">SBK</span>
@@ -5626,7 +6089,6 @@
           </details>
         </section>
 
-        <!-- ═══════════ RSK FD ═══════════ -->
         <section class="panel" id="panel-rsk-fd" style="--rc: var(--c-rskfd)">
           <div class="hero">
             <span class="hero-mark">RSK</span>
@@ -5764,7 +6226,6 @@
           </details>
         </section>
 
-        <!-- ═══════════ RSK LV ═══════════ -->
         <section class="panel" id="panel-rsk-lv" style="--rc: var(--c-rsklv)">
           <div class="hero">
             <span class="hero-mark">RSK</span>
@@ -5862,8 +6323,8 @@
                   <em>Schiedsrichter eintragen</em>
                 </li>
                 <li>
-                  Je Spiel den Verein hinterlegen, der das Gespann stellt, oder
-                  die Namen als Freitext
+                  Je Spiel den Verein hinterlegen, der die Schiedsrichter stellt,
+                  oder die Namen als Freitext
                 </li>
                 <li>
                   Der Eintrag ist sofort im öffentlichen Spielplan zu sehen,
@@ -5872,10 +6333,6 @@
                 <li>
                   Keine Verfügbarkeiten, keine personenscharfe Auswahl, keine
                   Benachrichtigungen
-                </li>
-                <li>
-                  Nach der Umstellung müssen sich RSK-Konten einmal neu
-                  anmelden, damit der Menüpunkt erscheint
                 </li>
               </ul>
             </div>
@@ -5919,7 +6376,7 @@
                 <strong>Schiedsrichter eintragen</strong>. Sie zeigt die
                 anstehenden Spiele deiner Spielbetriebe, filterbar nach Saison
                 und Zeitraum. Je Spiel trägst du entweder den
-                <strong>Verein</strong> ein, der das Gespann stellt, oder die
+                <strong>Verein</strong> ein, der die Schiedsrichter stellt, oder die
                 <strong>Namen als Freitext</strong>. Beides zusammen geht nicht,
                 das jeweils andere Feld wird geleert.
               </p>
@@ -5941,10 +6398,10 @@
               </p>
               <div class="note">
                 <strong>Gesperrt bleiben Zeilen,</strong> deren Spiel für die
-                personenscharfe Ansetzung markiert ist, für die bereits ein
-                Gespann angesetzt wurde oder deren Anpfiff schon war. Nicht
+                personenscharfe Ansetzung markiert ist, die schon namentlich
+                besetzt sind oder deren Anpfiff schon war. Nicht
                 dabei sind Verfügbarkeiten, Benachrichtigungen, das
-                Veröffentlichen und die Infos fürs Gespann, die gehören zum
+                Veröffentlichen und die Infos für die Schiedsrichter, die gehören zum
                 Personen-Weg. Betreust du mehrere Verbände, kannst du nur in
                 jene eintragen, die auf dem reduzierten Weg stehen.
               </div>
@@ -5955,12 +6412,7 @@
           </details>
         </section>
 
-        <!-- ═══════════ ANSETZER FD ═══════════ -->
-        <section
-          class="panel"
-          id="panel-ansetzer-fd"
-          style="--rc: var(--c-ansetzerfd)"
-        >
+        <section class="panel" id="panel-ansetzer-fd" style="--rc: var(--c-ansetzerfd)">
           <div class="hero">
             <span class="hero-mark">ANS</span>
             <div class="hero-badge">Ansetzer FD</div>
@@ -6000,8 +6452,9 @@
                   kurzfristig/mobil beim Ansetzen
                 </li>
                 <li>
-                  „Infos fürs Gespann“ am Spiel hinterlegen – Freitext, den nur
-                  das Gespann und der SR-Coach sehen, zugestellt mit der
+                  „Infos für die Schiedsrichter“ am Spiel hinterlegen, ein Freitext,
+                  den nur die Schiedsrichter und der SR-Coach sehen, zugestellt
+                  mit der
                   Veröffentlichung
                 </li>
                 <li>
@@ -6129,10 +6582,11 @@
                 anderweitig angesetzt ist (bei Pokalspielen entfällt diese
                 Zusatzprüfung). · <strong>Änderungen danach:</strong> Ändern
                 sich Anpfiff, Spieltagsdatum, Halle oder der Absage-Status,
-                gehen automatisch Änderungs-Benachrichtigungen an Gespann,
-                SR-Coach und Ausrichter. ·
-                <strong>Infos fürs Gespann:</strong> Der Freitext am Spiel
-                erreicht Gespann und SR-Coach erst mit der Veröffentlichung;
+                gehen automatisch Änderungs-Benachrichtigungen an die Schiedsrichter,
+                den SR-Coach und den Ausrichter. ·
+                <strong>Infos für die Schiedsrichter:</strong> Der Freitext am Spiel
+                erreicht die Schiedsrichter und den SR-Coach erst mit der
+                Veröffentlichung;
                 Mannschaften und Öffentlichkeit sehen ihn nie.
               </div>
             </div>
@@ -6147,12 +6601,7 @@
           </div>
         </section>
 
-        <!-- ═══════════ ANSETZER LV ═══════════ -->
-        <section
-          class="panel"
-          id="panel-ansetzer-lv"
-          style="--rc: var(--c-ansetzerlv)"
-        >
+        <section class="panel" id="panel-ansetzer-lv" style="--rc: var(--c-ansetzerlv)">
           <div class="hero">
             <span class="hero-mark">ANS</span>
             <div class="hero-badge">Ansetzer LV</div>
@@ -6185,8 +6634,9 @@
                   kurzfristig/mobil beim Ansetzen
                 </li>
                 <li>
-                  „Infos fürs Gespann“ am Spiel hinterlegen – Freitext, den nur
-                  das Gespann und der SR-Coach sehen, zugestellt mit der
+                  „Infos für die Schiedsrichter“ am Spiel hinterlegen, ein Freitext,
+                  den nur die Schiedsrichter und der SR-Coach sehen, zugestellt
+                  mit der
                   Veröffentlichung
                 </li>
                 <li>
@@ -6290,9 +6740,9 @@
                 angesetzt ist (bei Pokalspielen entfällt diese Zusatzprüfung). ·
                 <strong>Änderungen danach:</strong> Ändern sich Anpfiff,
                 Spieltagsdatum, Halle oder der Absage-Status, gehen automatisch
-                Änderungs-Benachrichtigungen an Gespann, SR-Coach und
-                Ausrichter. · <strong>Infos fürs Gespann:</strong> Der Freitext
-                am Spiel erreicht Gespann und SR-Coach erst mit der
+                Änderungs-Benachrichtigungen an die Schiedsrichter, den SR-Coach
+                und den Ausrichter. · <strong>Infos für die Schiedsrichter:</strong> Der Freitext am Spiel
+                erreicht die Schiedsrichter und den SR-Coach erst mit der
                 Veröffentlichung; Mannschaften und Öffentlichkeit sehen ihn nie.
               </div>
             </div>
@@ -6311,7 +6761,6 @@
           </div>
         </section>
 
-        <!-- ═══════════ VM ═══════════ -->
         <section class="panel" id="panel-vm" style="--rc: var(--c-vm)">
           <div class="hero">
             <span class="hero-mark">VM</span>
@@ -6669,7 +7118,6 @@
           </details>
         </section>
 
-        <!-- ═══════════ TM ═══════════ -->
         <section class="panel" id="panel-tm" style="--rc: var(--c-tm)">
           <div class="hero">
             <span class="hero-mark">TM</span>
@@ -6728,7 +7176,7 @@
               </div>
               <ul>
                 <li>
-                  Feedback zum eingesetzten Gespann abgeben – Noten für Linie
+                  Feedback zum eingesetzten Schiedsrichterpaar abgeben – Noten für Linie
                   und Kommunikation plus optionale Kommentare
                 </li>
                 <li>
@@ -6912,7 +7360,6 @@
           </details>
         </section>
 
-        <!-- ═══════════ SCHIEDSRICHTER ═══════════ -->
         <section class="panel" id="panel-schiri" style="--rc: var(--c-schiri)">
           <div class="hero">
             <span class="hero-mark">SR</span>
@@ -6982,13 +7429,13 @@
                 <li>Lizenzliste/Lizenzkarte über den E-Mail-Link abrufen</li>
                 <li>
                   Zusätzliche Spielinformationen der Ansetzung lesen (Freitext
-                  des Ansetzers, nur für Gespann und SR-Coach)
+                  des Ansetzers, nur für die Schiedsrichter und den SR-Coach)
                 </li>
                 <li>
                   Als <strong>SR-Coach</strong> angesetzte Spieltage erscheinen
                   ebenfalls hier, gekennzeichnet mit „Als SR-Coach angesetzt“ –
                   ohne Bestätigungs-Checkliste und ohne Partner-Status, denn die
-                  Spieltagsbestätigung bleibt Sache des Gespanns
+                  Spieltagsbestätigung bleibt Sache des Schiedsrichterpaars
                 </li>
               </ul>
             </div>
@@ -7093,7 +7540,7 @@
                   Partnerin eintragen
                 </li>
                 <li>
-                  Vereinfacht die Ansetzung als Gespann, die Ansetzer sehen die
+                  Vereinfacht die Ansetzung als Paar, die Ansetzer sehen die
                   Angabe bei der Auswahl
                 </li>
               </ul>
@@ -7256,7 +7703,7 @@
                 Änderungs-Benachrichtigung. Hat die Ansetzung
                 <strong>zusätzliche Spielinformationen</strong> hinterlegt,
                 stehen sie ab der Veröffentlichung am Spieltag – sie sind nur
-                für das Gespann und den SR-Coach sichtbar.
+                für die Schiedsrichter und den SR-Coach sichtbar.
               </div>
             </div>
           </details>
@@ -7301,12 +7748,7 @@
           </details>
         </section>
 
-        <!-- ═══════════ ENTWICKLER & API ═══════════ -->
-        <section
-          class="panel"
-          id="panel-streamer"
-          style="--rc: var(--c-streamer)"
-        >
+        <section class="panel" id="panel-streamer" style="--rc: var(--c-streamer)">
           <div class="hero">
             <span class="hero-mark">▶</span>
             <div class="hero-badge">Streaming</div>
@@ -7463,11 +7905,7 @@
           </p>
         </section>
 
-        <section
-          class="panel"
-          id="panel-entwickler"
-          style="--rc: var(--c-entwickler)"
-        >
+        <section class="panel" id="panel-entwickler" style="--rc: var(--c-entwickler)">
           <div class="hero">
             <span class="hero-mark">&lt;/&gt;</span>
             <div class="hero-badge">Entwickler</div>
@@ -7819,5 +8257,281 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
         </footer>
       </div>
     </div>
+    <script>
+      /* Suche im Rollenhandbuch.
+
+         Progressive Enhancement: Das Handbuch funktioniert ohne dieses
+         Skript vollstaendig, die Kapitel haengen an :target. Das Skript
+         blendet lediglich das Suchfeld ein und baut den Index aus dem
+         bereits geladenen Dokument auf. Keine Netzwerkabfrage, damit die
+         Seite auch von der Festplatte laeuft. */
+      (function () {
+        "use strict";
+        document.documentElement.classList.add("js");
+
+        var input = document.getElementById("q");
+        var box = document.getElementById("results");
+        if (!input || !box) return;
+
+        /* Umlaute falten, damit „Schiedsrichter" auch „schiri" findet und
+           „Verbaende" auf „Verbände" passt. */
+        function fold(s) {
+          return s
+            .toLowerCase()
+            .replace(/ä/g, "a")
+            .replace(/ö/g, "o")
+            .replace(/ü/g, "u")
+            .replace(/ß/g, "ss")
+            .replace(/\s+/g, " ");
+        }
+
+        var HEADINGS = "h1,h2,h3,.proc-title,.qp-name";
+        /* .branch und .qp-chain als Ganzes indizieren: Die einzelnen
+           Zustandspillen darin sind zu kurz, zusammen ergeben sie den
+           lesbaren Uebergang ("Admin widerruft Widerrufen"). */
+        var BLOCKS =
+          ".proc-text,.cap li,.checklist li,.note,.cap-sub,.kv dd,.flags td," +
+          ".matrix td,.rc-scope,.branch,.qp-chain,.subflow";
+
+        /* Index aufbauen: je Eintrag das Kapitel, die naechstliegende
+           Ueberschrift als Brotkrume und der Text selbst. */
+        var index = [];
+        Array.prototype.forEach.call(
+          document.querySelectorAll(".panel"),
+          function (panel) {
+            var link = document.querySelector(
+              '.navlink[href="#' + panel.id + '"]'
+            );
+            /* Das Kuerzel aus der Navigation gehoert nicht in die
+               Brotkrume, es doppelt nur den Kapitelnamen. */
+            var label = link ? link.cloneNode(true) : null;
+            if (label) {
+              var abbr = label.querySelector(".abbr");
+              if (abbr) abbr.parentNode.removeChild(abbr);
+            }
+            var chapter = label ? label.textContent.trim() : panel.id;
+            var dot = link ? link.style.getPropertyValue("--dot") : "";
+            var crumb = chapter;
+
+            var nodes = panel.querySelectorAll(HEADINGS + "," + BLOCKS);
+            Array.prototype.forEach.call(nodes, function (el) {
+              var text = el.textContent.replace(/\s+/g, " ").trim();
+              if (!text || text.length < 3) return;
+              var isHeading = el.matches(HEADINGS);
+              if (isHeading) crumb = text;
+              index.push({
+                el: el,
+                panel: panel.id,
+                /* Brotkrume ist immer das Kapitel, Titel die naechstliegende
+                   Ueberschrift. Beides gleich zu setzen doppelt nur. */
+                chapter: chapter,
+                dot: dot,
+                title: isHeading ? text : crumb,
+                text: text,
+                weight: isHeading ? 0 : 1,
+                hay: fold(text),
+              });
+            });
+          }
+        );
+
+        var hits = [];
+        var cursor = -1;
+
+        function esc(s) {
+          return s.replace(/[&<>]/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c];
+          });
+        }
+
+        /* Trefferstelle im Ausschnitt hervorheben. */
+        function snippet(text, term) {
+          var at = fold(text).indexOf(term);
+          if (at < 0) return esc(text.slice(0, 150));
+          var from = Math.max(0, at - 45);
+          var cut = text.slice(from, at + term.length + 105);
+          var rel = at - from;
+          return (
+            (from > 0 ? "… " : "") +
+            esc(cut.slice(0, rel)) +
+            "<mark>" +
+            esc(cut.slice(rel, rel + term.length)) +
+            "</mark>" +
+            esc(cut.slice(rel + term.length))
+          );
+        }
+
+        function search(raw) {
+          var terms = fold(raw.trim()).split(" ").filter(Boolean);
+          if (!terms.length) return [];
+          var found = [];
+          for (var i = 0; i < index.length; i++) {
+            var entry = index[i];
+            var all = true;
+            for (var t = 0; t < terms.length; t++) {
+              if (entry.hay.indexOf(terms[t]) < 0) {
+                all = false;
+                break;
+              }
+            }
+            if (all) found.push(entry);
+          }
+          var first = terms[0];
+          found.sort(function (a, b) {
+            if (a.weight !== b.weight) return a.weight - b.weight;
+            return a.hay.indexOf(first) - b.hay.indexOf(first);
+          });
+          return found.slice(0, 40);
+        }
+
+        function place() {
+          if (window.matchMedia("(max-width: 980px)").matches) {
+            box.style.top = "";
+            return;
+          }
+          box.style.top = input.getBoundingClientRect().bottom + 10 + "px";
+        }
+
+        function render(raw) {
+          var term = fold(raw.trim()).split(" ")[0] || "";
+          if (!hits.length) {
+            box.innerHTML =
+              '<div class="results-empty">Nichts gefunden zu „' +
+              esc(raw.trim()) +
+              "“.</div>";
+            return;
+          }
+          var html =
+            '<div class="results-meta">' +
+            (hits.length === 40 ? "40+ Treffer" : hits.length + " Treffer") +
+            "</div>";
+          hits.forEach(function (h, i) {
+            html +=
+              '<button type="button" class="hit" data-i="' +
+              i +
+              '" role="option"><span class="hit-crumb"' +
+              (h.dot ? ' style="--hc: ' + h.dot + '"' : "") +
+              "><i></i>" +
+              esc(h.chapter) +
+              '</span><span class="hit-title">' +
+              esc(h.title) +
+              "</span>" +
+              (h.weight
+                ? '<span class="hit-snip">' + snippet(h.text, term) + "</span>"
+                : "") +
+              "</button>";
+          });
+          box.innerHTML = html;
+        }
+
+        function open() {
+          place();
+          box.hidden = false;
+        }
+
+        function close() {
+          box.hidden = true;
+          cursor = -1;
+        }
+
+        function mark(next) {
+          var buttons = box.querySelectorAll(".hit");
+          if (!buttons.length) return;
+          if (cursor >= 0 && buttons[cursor]) buttons[cursor].classList.remove("on");
+          cursor = (next + buttons.length) % buttons.length;
+          buttons[cursor].classList.add("on");
+          buttons[cursor].scrollIntoView({ block: "nearest" });
+        }
+
+        /* Zum Treffer springen: erst das Kapitel sichtbar machen, dann in
+           der aufgeklappten Prozesskarte scrollen. Vorher ist das Ziel
+           nicht gerendert, weil .panel ohne :target display:none traegt. */
+        function go(hit) {
+          var details = hit.el.closest("details");
+          if (details) details.open = true;
+          if (location.hash !== "#" + hit.panel) location.hash = hit.panel;
+          close();
+          input.blur();
+          window.setTimeout(function () {
+            hit.el.scrollIntoView({ block: "center", behavior: "smooth" });
+            hit.el.classList.add("search-flash");
+            window.setTimeout(function () {
+              hit.el.classList.remove("search-flash");
+            }, 1800);
+          }, 40);
+        }
+
+        input.addEventListener("input", function () {
+          var raw = input.value;
+          if (!raw.trim()) {
+            close();
+            return;
+          }
+          hits = search(raw);
+          render(raw);
+          open();
+        });
+
+        input.addEventListener("keydown", function (e) {
+          if (e.key === "Escape") {
+            input.value = "";
+            close();
+            input.blur();
+          } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            mark(cursor + 1);
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            mark(cursor - 1);
+          } else if (e.key === "Enter") {
+            e.preventDefault();
+            if (hits.length) go(hits[cursor < 0 ? 0 : cursor]);
+          }
+        });
+
+        box.addEventListener("click", function (e) {
+          var button = e.target.closest(".hit");
+          if (button) go(hits[+button.dataset.i]);
+        });
+
+        document.addEventListener("keydown", function (e) {
+          var inField = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
+          if ((e.key === "/" && !inField) || ((e.metaKey || e.ctrlKey) && e.key === "k")) {
+            e.preventDefault();
+            input.focus();
+            input.select();
+          }
+        });
+
+        document.addEventListener("click", function (e) {
+          if (!box.hidden && !box.contains(e.target) && e.target !== input) close();
+        });
+
+        /* Beim Drucken alle Prozesskarten aufklappen. Eine geschlossene
+           <details> laesst sich per CSS nicht oeffnen, das muss das Skript
+           machen. Danach wird der vorherige Zustand wiederhergestellt. */
+        var wasOpen = null;
+        window.addEventListener("beforeprint", function () {
+          var all = document.querySelectorAll("details");
+          wasOpen = [];
+          Array.prototype.forEach.call(all, function (d, i) {
+            wasOpen[i] = d.open;
+            d.open = true;
+          });
+        });
+        window.addEventListener("afterprint", function () {
+          if (!wasOpen) return;
+          var all = document.querySelectorAll("details");
+          Array.prototype.forEach.call(all, function (d, i) {
+            d.open = wasOpen[i];
+          });
+          wasOpen = null;
+        });
+
+        window.addEventListener("resize", place);
+        /* Das Suchfeld ueberlebt den Kapitelwechsel nicht sichtbar. */
+        window.addEventListener("hashchange", close);
+      })();
+    </script>
   </body>
 </html>
