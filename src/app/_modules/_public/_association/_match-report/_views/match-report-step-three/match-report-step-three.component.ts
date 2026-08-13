@@ -24,25 +24,7 @@ import {
 })
 export class MatchReportStepThreeComponent {
   @Input()
-  set game(value: Game) {
-    this._game = value;
-
-    // Die Voreinstellung haengt am Liganamen, der erst mit dem Spiel
-    // hereinkommt: Ein Klassenfeld kann sie nicht setzen, ein Konstruktor auch
-    // nicht. Sobald jemand den Schalter selbst angefasst hat, bleibt seine
-    // Wahl stehen -- der Spielbericht laedt das Spiel nach dem Speichern neu,
-    // und ohne das Merken kippte der Schalter hinter dem Ruecken zurueck.
-    if (!this._showScorersTouched) {
-      this.tileShowScorers = !looksLikeYouthLeague(value?.league_name);
-    }
-  }
-
-  get game(): Game {
-    return this._game;
-  }
-
-  private _game!: Game;
-  private _showScorersTouched = false;
+  game!: Game;
 
   @Input()
   additionalFields!: GameAdditionalFields;
@@ -73,22 +55,21 @@ export class MatchReportStepThreeComponent {
   /**
    * Namen der Torschützinnen und Torschützen auf der Kachel.
    *
-   * Voreingestellt aus, sobald der Liganame auf eine Jugendliga hindeutet. Bei
-   * den Overlays war das unkritisch, weil in der Bundesliga Erwachsene spielen;
-   * eine Ergebniskachel ist aber für jede Liga verlockend. Ob Namen
-   * Minderjähriger dort erscheinen dürfen, ist keine technische Frage, deshalb
-   * ist es ein Schalter und keine Automatik — die Voreinstellung nimmt nur die
-   * vorsichtige Seite.
+   * Voreingestellt AN, auch in Jugendligen, und das ist eine bewusste
+   * Entscheidung des Verbandes (13.08.2026): Bei einer Jugendliga steht ein
+   * Warnhinweis darunter, gesperrt wird nichts. Es ist dieselbe Linie wie bei
+   * der Scorerliste, wo der Verband für U13 und jünger ebenfalls mit einer
+   * Empfehlung arbeitet und nicht mit einer technischen Sperre.
    *
-   * Gesetzt wird sie im `game`-Setter, weil der Liganame erst dort vorliegt.
+   * Ob Namen Minderjähriger auf ein Bild für die sozialen Netze dürfen, ist
+   * keine technische Frage. Die Erkennung könnte sie auch gar nicht
+   * beantworten: Sie hängt am Liganamen, weil der Spielabruf die Altersklasse
+   * nicht mitliefert (`leagues.age_group` ist durch einen Backfill von 2026
+   * flächendeckend auf Herren/Damen gesetzt und damit unbrauchbar). Eine
+   * umbenannte Liga rutscht also durch. Ein Automatismus auf dieser Grundlage
+   * wäre eine Sicherheit, die es nicht gibt.
    */
   public tileShowScorers = true;
-
-  // Ab der ersten Handeingabe zaehlt die Wahl der Bedienung, nicht mehr die
-  // Voreinstellung.
-  public onShowScorersToggled(): void {
-    this._showScorersTouched = true;
-  }
 
   constructor(
     private _leagueService: LeagueService,
