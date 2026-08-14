@@ -283,8 +283,8 @@
                                     }
                                   }
                                 }
-                                <!-- Einverständnis (nur für Minderjährige) -->
-                                @if (isMinor(p.birthdate)) {
+                                <!-- Einverständnis (nur wenn die Liga sie verlangt) -->
+                                @if (needsParentalConsent(p)) {
                                   @if (
                                     p.team_license.documents
                                       .parental_consent_url

@@ -462,8 +462,8 @@
                 <!-- Dokumentenstatus -->
                 <td class="px-4 py-3 whitespace-nowrap">
                   <div class="flex gap-1.5 items-center">
-                    <!-- Elternzustimmung (nur für Minderjährige) -->
-                    @if (isMinor(e.player_birthdate)) {
+                    <!-- Elternzustimmung (nur wenn die Liga sie verlangt) -->
+                    @if (needsParentalConsent(e)) {
                       @if (e.documents?.parental_consent_url) {
                         <a
                           [href]="e.documents!.parental_consent_url"
