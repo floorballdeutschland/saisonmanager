@@ -121,10 +121,26 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Anfragen im Spielsekretariats-Modus tragen den Einmal-Token als
+        // Kopfzeile (SecretaryTokenInterceptor, der in der Kette vor diesem
+        // steht). Für sie gibt es keine Sitzung, die man abmelden könnte, und
+        // keine Startseite, auf die man sinnvoll zurückfällt: Wer den
+        // Spielbericht an einem solchen Link führt, hat kein Benutzerkonto und
+        // findet nach einer Weiterleitung auf /login nicht zurück. Gemeldet wird
+        // trotzdem, nur eben ohne Rauswurf.
+        const secretaryMode = request.headers.has('X-Secretary-Token');
+
         if (err.status === 401 && !request.url.includes('login.json')) {
-          const returnUrl = this._router.url;
-          this.sessionService.logout(false, true, 'Bitte einloggen.', false);
-          this._router.navigate(['/login'], { queryParams: { returnUrl } });
+          if (secretaryMode) {
+            this._notificationService.error(
+              'Der Spielsekretariats-Link gilt nicht mehr. Bitte einen neuen Link anfordern.',
+              { autoClose: false, keepAfterRouteChange: false }
+            );
+          } else {
+            const returnUrl = this._router.url;
+            this.sessionService.logout(false, true, 'Bitte einloggen.', false);
+            this._router.navigate(['/login'], { queryParams: { returnUrl } });
+          }
         }
 
         if (err.status === 403) {
@@ -135,7 +151,9 @@ export class ErrorInterceptor implements HttpInterceptor {
               keepAfterRouteChange: true,
             }
           );
-          this._router.navigate(['/']);
+          if (!secretaryMode) {
+            this._router.navigate(['/']);
+          }
         }
 
         if (err.status === 404 && !request.url.includes('/user/referees/')) {
