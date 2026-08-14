@@ -43,6 +43,57 @@ describe('ClubEditComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
+  // Bundesland, Spielverbund und Landesverband ordnen den Verein ein und
+  // bleiben dem Verband vorbehalten. Das Backend verwirft die Felder für
+  // Vereinsmanager ohnehin (restricted_club_params); das Formular soll sie
+  // deshalb gar nicht erst als änderbar anbieten.
+  it('isRestricted folgt dem Benutzer-Flag, solange kein Verein geladen ist', () => {
+    const component = TestBed.createComponent(ClubEditComponent)
+      .componentInstance;
+
+    component.permissions = {};
+    expect(component.isRestricted).toBeFalse();
+
+    component.permissions = { club_edit_restricted: true };
+    expect(component.isRestricted).toBeTrue();
+  });
+
+  // Die Berechtigung gilt pro Verein: Wer eine Spielbetriebsrolle fuer einen
+  // Verband UND eine Vereinsrolle fuer einen Verein aus einem anderen Verband
+  // hat, darf beim einen alles und beim anderen nur die Stammdaten. Vorher zeigte
+  // das Formular ihm die aenderbaren Felder, und das Speichern verwarf sie
+  // stillschweigend.
+  it('der geladene Verein schlaegt das Benutzer-Flag', () => {
+    const component = TestBed.createComponent(ClubEditComponent)
+      .componentInstance;
+    component.permissions = { club_edit_restricted: false };
+
+    component.clubEditRestricted = true;
+    expect(component.isRestricted).toBeTrue();
+
+    component.clubEditRestricted = false;
+    component.permissions = { club_edit_restricted: true };
+    expect(component.isRestricted).toBeFalse();
+  });
+
+  it('zeigt Bundesland und Landesverband als Klartext an', () => {
+    const component = TestBed.createComponent(ClubEditComponent)
+      .componentInstance;
+    component.stateAssociations = [
+      { id: 7, name: 'Floorball Verband NRW' },
+    ] as never;
+
+    const club = { state: 'de-nw', state_association_id: 7 } as Club;
+    expect(component.getStateName(club)).toBe('Nordrhein-Westfalen');
+    expect(component.getStateAssociationName(club)).toBe(
+      'Floorball Verband NRW'
+    );
+
+    const leer = {} as Club;
+    expect(component.getStateName(leer)).toBe('–');
+    expect(component.getStateAssociationName(leer)).toBe('–');
+  });
+
   it('onLogoSelected posts the file as FormData and applies both returned urls', () => {
     const fixture = TestBed.createComponent(ClubEditComponent);
     const component = fixture.componentInstance;
