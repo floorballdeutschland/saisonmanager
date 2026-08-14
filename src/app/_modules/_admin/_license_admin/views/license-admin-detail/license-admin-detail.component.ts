@@ -284,28 +284,52 @@ export class LicenseAdminDetailComponent implements OnInit {
   public requiredDocs(): string[] {
     return (
       this.player?.team_license?.required_documents ??
-      this.league?.required_documents ??
-      []
+      this.requiredDocsFromLeague(this.player)
     );
+  }
+
+  // Elternzustimmung verlangt die Liga, nicht das Geburtsdatum allein: Vorher
+  // meldete die Ansicht sie bundesweit bei jeder minderjährigen Person als
+  // fehlend, auch in Ligen ohne diese Pflicht.
+  public needsParentalConsent(): boolean {
+    return this.requiredDocs().includes('parental_consent');
   }
 
   public isDocumentsComplete(player: PlayerWithLicense): boolean {
     const docs = player.team_license?.documents;
-    // Alle für den Spieler geforderten Dokumente (außer Einverständnis, das
-    // nur Minderjährige betrifft) müssen hochgeladen sein.
-    const filesMissing = (
+    // Serverseitig aufgelöste Liste (Alter am Tag der Beantragung). Der
+    // Fallback greift nur, wenn sie ausnahmsweise fehlt; er darf die
+    // Elternzustimmung nicht verlieren, sonst genehmigt die SBK eine Lizenz
+    // als „vollständig", der die Zustimmung fehlt.
+    const requiredDocs: string[] =
       player.team_license?.required_documents ??
-      this.league?.required_documents ??
-      []
-    )
+      this.requiredDocsFromLeague(player);
+    // Alle geforderten Dokumente außer der Einverständniserklärung müssen als
+    // Datei vorliegen; für die gibt es unten den eigenen Nachweis.
+    const filesMissing = requiredDocs
       .filter((docType) => docType !== 'parental_consent')
       .some((docType) => !docs?.[docType + '_url']);
     if (filesMissing) return false;
     if (docs?.['id_copy'] === false) return false;
-    const isMinor = player.birthdate
+    if (!requiredDocs.includes('parental_consent')) return true;
+    return !!docs?.parental_consent;
+  }
+
+  // Elternzustimmung kommt aus dem Liga-Flag oder aus den Pflichtdokumenten der
+  // Liga; ohne serverseitige Auflösung bleibt nur das Alter von heute.
+  private requiredDocsFromLeague(player?: PlayerWithLicense): string[] {
+    const keys = [...(this.league?.required_documents ?? [])];
+    const isMinor = player?.birthdate
       ? this.calculateAge(player.birthdate) < 18
       : false;
-    return !isMinor || !!docs?.parental_consent;
+    if (
+      this.league?.parental_consent_required &&
+      isMinor &&
+      !keys.includes('parental_consent')
+    ) {
+      keys.push('parental_consent');
+    }
+    return keys;
   }
 
   public resetLicenseToPending(player: PlayerWithLicense) {

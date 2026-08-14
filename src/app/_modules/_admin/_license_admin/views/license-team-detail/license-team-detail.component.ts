@@ -145,12 +145,18 @@ export class LicenseTeamDetailComponent implements OnInit {
     return docs.find((d) => d.document_type === type);
   }
 
-  // Elternzustimmung anzeigen, wenn die API sie für diesen Antrag fordert
-  // (altersaufgelöst zum Antragsdatum) – Fallback: Minderjährig nach Alter
-  // heute (Flag-basierter Ablauf ohne Katalog-Eintrag).
+  // Elternzustimmung anzeigen, wenn die Liga sie fordert: Die API löst Liga-Flag
+  // und eingetragene Dokumentarten zum Antragsdatum auf. Ohne aufgelöste Liste
+  // bleibt das Liga-Flag zusammen mit dem Alter von heute. Vorher genügte die
+  // Minderjährigkeit allein, weshalb der Upload auch in Ligen ohne diese Pflicht
+  // eingefordert wurde.
   public needsConsentFor(p: PlayerWithLicense): boolean {
-    if (p.required_documents?.includes('parental_consent')) return true;
-    return this.isMinor(p.birthdate);
+    if (p.required_documents) {
+      return p.required_documents.includes('parental_consent');
+    }
+    return (
+      !!this.licenseHash?.parental_consent_required && this.isMinor(p.birthdate)
+    );
   }
 
   // Für diesen Spieler tatsächlich erforderliche Dokumentarten (serverseitig

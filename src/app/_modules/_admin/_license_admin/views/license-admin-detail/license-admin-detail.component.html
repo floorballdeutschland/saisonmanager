@@ -211,8 +211,8 @@
                   }
                 }
               }
-              <!-- Einverständnis (nur für Minderjährige) -->
-              @if (calculateAge(player.birthdate) < 18) {
+              <!-- Einverständnis (nur wenn die Liga sie verlangt) -->
+              @if (needsParentalConsent()) {
                 @if (player.team_license.documents?.parental_consent_url) {
                   <a
                     [href]="player.team_license.documents!.parental_consent_url"
@@ -240,9 +240,7 @@
                   >
                 }
               }
-              @if (
-                !requiredDocs().length && calculateAge(player.birthdate) >= 18
-              ) {
+              @if (!requiredDocs().length) {
                 <span class="text-[12px] text-gray-400">–</span>
               }
             </div>

@@ -373,18 +373,13 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     return labels[docType] ?? docType;
   }
 
-  public isMinor(birthdate: string): boolean {
-    if (!birthdate) return false;
-    const dob = new Date(birthdate);
-    const today = new Date();
-    let age = today.getFullYear() - dob.getFullYear();
-    if (
-      today.getMonth() < dob.getMonth() ||
-      (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())
-    ) {
-      age--;
-    }
-    return age < 18;
+  // Elternzustimmung verlangt die Liga, nicht das Geburtsdatum allein: Die API
+  // löst beides auf (Liga-Flag bzw. eingetragene Dokumentart, Alter am Tag der
+  // Beantragung) und liefert das Ergebnis in required_documents. Vorher prüfte
+  // die Liste nur „minderjährig heute" und meldete die Zustimmung deshalb
+  // bundesweit als fehlend, auch in Ligen ohne diese Pflicht.
+  public needsParentalConsent(entry: AdminLicenseEntry): boolean {
+    return !!entry.required_documents?.includes('parental_consent');
   }
 
   private _formatDate(dateStr: string): string {

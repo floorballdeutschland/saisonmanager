@@ -94,4 +94,38 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(component.pagedEntries.length).toBe(50);
     });
   });
+
+  // Vorher hing das Einverständnis-Kennzeichen allein am Geburtsdatum und stand
+  // deshalb bundesweit bei jeder minderjährigen Person, auch in Ligen ohne
+  // diese Pflicht. Maßgeblich ist die serverseitig aufgelöste Liste.
+  describe('Elternzustimmung', () => {
+    function entryWithDocs(required: string[] | undefined): AdminLicenseEntry {
+      return {
+        ...entry('Minderjaehrig'),
+        player_birthdate: '2012-05-04',
+        required_documents: required,
+      } as AdminLicenseEntry;
+    }
+
+    it('fordert die Zustimmung, wenn die Liga sie verlangt', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+
+      expect(
+        component.needsParentalConsent(entryWithDocs(['parental_consent']))
+      ).toBeTrue();
+    });
+
+    it('fordert sie nicht ohne Liga-Pflicht, auch bei Minderjährigen', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+
+      expect(component.needsParentalConsent(entryWithDocs([]))).toBeFalse();
+      expect(
+        component.needsParentalConsent(entryWithDocs(undefined))
+      ).toBeFalse();
+    });
+  });
 });

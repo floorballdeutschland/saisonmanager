@@ -174,4 +174,50 @@ describe('LicenseAdminDetailComponent', () => {
       );
     });
   });
+
+  // Die Elternzustimmung hängt an der Liga, nicht am Geburtsdatum allein:
+  // vorher galt eine Lizenz einer minderjährigen Person bundesweit als
+  // unvollständig, auch in Ligen ohne diese Pflicht.
+  describe('Elternzustimmung', () => {
+    function setup(
+      requiredDocuments: string[] | undefined,
+      league: Partial<League>
+    ): LicenseAdminDetailComponent {
+      const fixture = TestBed.createComponent(LicenseAdminDetailComponent);
+      const component = fixture.componentInstance;
+      component.league = league as League;
+      component.player = {
+        birthdate: '2012-05-04',
+        team_license: {
+          license: { id: 'l1' },
+          required_documents: requiredDocuments,
+          documents: { parental_consent: false },
+        },
+      } as unknown as PlayerWithLicense;
+      return component;
+    }
+
+    it('verlangt sie, wenn die Liga sie fordert', () => {
+      const component = setup(['parental_consent'], {});
+
+      expect(component.needsParentalConsent()).toBe(true);
+      expect(component.isDocumentsComplete(component.player)).toBe(false);
+    });
+
+    it('verlangt sie nicht ohne Liga-Pflicht, auch bei Minderjährigen', () => {
+      const component = setup([], {});
+
+      expect(component.needsParentalConsent()).toBe(false);
+      expect(component.isDocumentsComplete(component.player)).toBe(true);
+    });
+
+    // Ohne serverseitig aufgelöste Liste darf die Prüfung die Zustimmung nicht
+    // verlieren, sonst gilt eine unvollständige Lizenz als genehmigungsreif.
+    it('greift ohne aufgelöste Liste auf das Liga-Flag zurück', () => {
+      const component = setup(undefined, { parental_consent_required: true });
+
+      expect(component.needsParentalConsent()).toBe(true);
+      expect(component.isDocumentsComplete(component.player)).toBe(false);
+    });
+  });
 });

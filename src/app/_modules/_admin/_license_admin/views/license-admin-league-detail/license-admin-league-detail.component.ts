@@ -5,7 +5,12 @@ import {
   OnInit,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { Club, League, TeamWithPlayers } from '@floorball/types';
+import {
+  Club,
+  League,
+  PlayerWithLicense,
+  TeamWithPlayers,
+} from '@floorball/types';
 import { ClubService, LeagueService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
@@ -142,17 +147,14 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
     return labels[docType] ?? docType;
   }
 
-  public isMinor(birthdate?: string): boolean {
-    if (!birthdate) return false;
-    const dob = new Date(birthdate);
-    const today = new Date();
-    let age = today.getFullYear() - dob.getFullYear();
-    if (
-      today.getMonth() < dob.getMonth() ||
-      (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())
-    ) {
-      age--;
-    }
-    return age < 18;
+  // Elternzustimmung verlangt die Liga, nicht das Geburtsdatum allein: Die API
+  // löst beides auf (Liga-Flag bzw. eingetragene Dokumentart, Alter am Tag der
+  // Beantragung) und liefert das Ergebnis in required_documents. Vorher prüfte
+  // die Ansicht nur „minderjährig heute" und meldete die Zustimmung deshalb
+  // bundesweit als fehlend, auch in Ligen ohne diese Pflicht.
+  public needsParentalConsent(player: PlayerWithLicense): boolean {
+    return !!player.team_license?.required_documents?.includes(
+      'parental_consent'
+    );
   }
 }
