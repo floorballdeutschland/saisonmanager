@@ -63,8 +63,12 @@
                     type="text"
                     id="short_name"
                     class="w-full"
+                    maxlength="4"
                     required
                   />
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ "clubAdmin.edit.shortNameHint" | transloco }}
+                  </p>
                 </div>
                 <div class="font-bold">
                   {{ "clubAdmin.edit.registerName" | transloco }}
@@ -82,16 +86,20 @@
                   {{ "clubAdmin.edit.state" | transloco }}
                 </div>
                 <div>
-                  <select name="state" [(ngModel)]="club.state" class="w-full">
-                    <option [ngValue]="null">
-                      {{ "clubAdmin.edit.pleaseSelect" | transloco }}
-                    </option>
-                    @for (s of states; track s) {
-                      <option [ngValue]="s.isocode">
-                        {{ s.name }}
+                  @if (isRestricted) {
+                    <span class="text-gray-700">{{ getStateName(club) }}</span>
+                  } @else {
+                    <select name="state" [(ngModel)]="club.state" class="w-full">
+                      <option [ngValue]="null">
+                        {{ "clubAdmin.edit.pleaseSelect" | transloco }}
                       </option>
-                    }
-                  </select>
+                      @for (s of states; track s) {
+                        <option [ngValue]="s.isocode">
+                          {{ s.name }}
+                        </option>
+                      }
+                    </select>
+                  }
                 </div>
                 <!-- Spielbetrieb nur beim Anlegen wählbar: er entscheidet, wer
                      den Verein verwaltet, und soll sich beim Bearbeiten nicht
@@ -125,13 +133,19 @@
                   {{ "clubAdmin.edit.stateAssociation" | transloco }}
                 </div>
                 <div>
-                  <fb-select-search
-                    name="state_association_id"
-                    [(ngModel)]="club.state_association_id"
-                    [items]="leafStateAssociations"
-                    [placeholder]="'clubAdmin.edit.pleaseSelect' | transloco"
-                    [resetLabel]="'clubAdmin.edit.pleaseSelect' | transloco"
-                  />
+                  @if (isRestricted) {
+                    <span class="text-gray-700">{{
+                      getStateAssociationName(club)
+                    }}</span>
+                  } @else {
+                    <fb-select-search
+                      name="state_association_id"
+                      [(ngModel)]="club.state_association_id"
+                      [items]="leafStateAssociations"
+                      [placeholder]="'clubAdmin.edit.pleaseSelect' | transloco"
+                      [resetLabel]="'clubAdmin.edit.pleaseSelect' | transloco"
+                    />
+                  }
                 </div>
                 <div class="font-bold">
                   {{ "clubAdmin.edit.contactEmail" | transloco }}
@@ -146,7 +160,49 @@
                       'clubAdmin.edit.contactEmailPlaceholder' | transloco
                     "
                   />
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ "clubAdmin.edit.contactEmailHint" | transloco }}
+                  </p>
                 </div>
+                @if (editMode) {
+                  <div class="font-bold">
+                    {{ "clubAdmin.edit.notifyManagers" | transloco }}
+                  </div>
+                  <div>
+                    @if (clubManagers.length) {
+                      <p class="text-sm text-gray-500 mb-2">
+                        {{ "clubAdmin.edit.notifyManagersHint" | transloco }}
+                      </p>
+                      @for (manager of clubManagers; track manager.id) {
+                        <label class="block mb-1">
+                          <input
+                            type="checkbox"
+                            class="mr-2 align-middle"
+                            [checked]="isNotifyUser(manager.id)"
+                            (change)="toggleNotifyUser(manager.id)"
+                          />
+                          <span class="align-middle">{{ manager.name }}</span>
+                          @if (manager.email) {
+                            <span class="align-middle text-gray-500"
+                              >&nbsp;({{ manager.email }})</span
+                            >
+                          } @else {
+                            <span class="align-middle text-gray-500"
+                              >&nbsp;{{
+                                "clubAdmin.edit.notifyManagerNoEmail"
+                                  | transloco
+                              }}</span
+                            >
+                          }
+                        </label>
+                      }
+                    } @else {
+                      <p class="text-sm text-gray-500">
+                        {{ "clubAdmin.edit.notifyManagersEmpty" | transloco }}
+                      </p>
+                    }
+                  </div>
+                }
               </div>
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
@@ -288,18 +344,26 @@
                     >
                       {{ "clubAdmin.edit.saveChanges" | transloco }}
                     </a>
-                    <a
-                      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                      [routerLink]="[
-                        '/',
-                        'verwaltung',
-                        'vereine',
-                        club.id,
-                        'spieler',
-                      ]"
-                    >
-                      {{ "clubAdmin.edit.editPlayers" | transloco }}
-                    </a>
+                    <!-- Die Spielerliste des Vereins liegt hinter
+                         menu_item_player_admin. Ohne diese Klammer landete ein
+                         Vereinsmanager beim Klick ohne Meldung auf der
+                         Startseite (permissionGuard leitet stumm um). Seine
+                         eigene Spielerliste erreicht er über „Meine
+                         Spieler*innen". -->
+                    @if (canEditPlayers) {
+                      <a
+                        class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                        [routerLink]="[
+                          '/',
+                          'verwaltung',
+                          'vereine',
+                          club.id,
+                          'spieler',
+                        ]"
+                      >
+                        {{ "clubAdmin.edit.editPlayers" | transloco }}
+                      </a>
+                    }
                     <a
                       class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       deactivated="true"
