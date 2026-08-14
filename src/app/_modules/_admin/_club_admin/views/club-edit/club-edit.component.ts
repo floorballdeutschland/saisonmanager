@@ -139,10 +139,12 @@ export class ClubEditComponent implements OnInit, OnDestroy {
 
     this.club$
       .pipe(
-        tap((league) => {
-          if (!league) {
+        tap((club) => {
+          if (!club) {
             return;
           }
+          this.clubEditRestricted = club.edit_restricted;
+          this._cdr.markForCheck();
         }),
         take(1),
         takeUntil(this._destroy$)
@@ -188,10 +190,17 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   // Vereinsmanager sehen Bundesland, Spielverbund und Landesverband, ändern
   // können sie sie nicht: Die drei ordnen den Verein ein und entscheiden mit
   // darüber, wer ihn verwaltet. Gegenstück zu
-  // ClubsController#restricted_club_params — das Backend verwirft die Felder
-  // ohnehin, die Anzeige soll das nur nicht verschweigen.
+  // ClubsController#restricted_club_params.
+  //
+  // `edit_restricted` kommt aus der Antwort zum geladenen Verein, weil die
+  // Berechtigung pro Verein gilt: Wer eine Spielbetriebsrolle für einen Verband
+  // UND eine Vereinsrolle für einen Verein aus einem anderen Verband hat, darf
+  // beim einen alles und beim anderen nur die Stammdaten. Das Benutzer-Flag
+  // greift nur beim Anlegen, wo es noch keinen Verein gibt.
+  public clubEditRestricted?: boolean;
+
   public get isRestricted(): boolean {
-    return !!this.permissions['club_edit_restricted'];
+    return this.clubEditRestricted ?? !!this.permissions['club_edit_restricted'];
   }
 
   public getStateName(club: Club): string {

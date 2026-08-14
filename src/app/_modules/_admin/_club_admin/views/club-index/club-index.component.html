@@ -119,7 +119,10 @@
                         {{ "clubAdmin.index.edit" | transloco }}
                       </a>
                     }
-                    @if (!stateAssociation.released) {
+                    <!-- Die Spielerliste liegt hinter menu_item_player_admin;
+                         ohne die Klammer leitet der permissionGuard einen
+                         Vereinsmanager stumm auf die Startseite um. -->
+                    @if (!stateAssociation.released && canEditPlayers) {
                       <a
                         class="font-bold text-black leading-[17px] text-sm px-2 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                         [routerLink]="[

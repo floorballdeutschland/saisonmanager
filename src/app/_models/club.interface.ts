@@ -10,6 +10,13 @@ export interface Club {
   state_association_id?: number;
   game_operation_id: number;
   contact_email?: string;
+  /**
+   * Nur in der Antwort zu einem einzelnen Verein (`admin/clubs/:id`): Darf der
+   * angemeldete Benutzer bei DIESEM Verein die einordnenden Felder
+   * (Bundesland, Landesverband, Spielbetrieb) ändern? Die Berechtigung gilt pro
+   * Verein, ein Flag am Benutzer kann Mehrfachrollen nicht abbilden.
+   */
+  edit_restricted?: boolean;
   players?: Player[];
   logo?: string;
   logo_url?: string;
