@@ -13,7 +13,12 @@ import {
   NotificationService,
   SessionService,
 } from '@floorball/core';
-import { Club, GameOperation, StateAssociation } from '@floorball/types';
+import {
+  Club,
+  ClubManager,
+  GameOperation,
+  StateAssociation,
+} from '@floorball/types';
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -56,6 +61,13 @@ export class ClubEditComponent implements OnInit, OnDestroy {
 
   stateAssociations: StateAssociation[] = [];
   permissions: { [key: string]: boolean } = {};
+
+  // Vereinsmanager des Vereins und die aktuelle Auswahl. Kommt aus einem
+  // eigenen Endpunkt und nicht aus dem Vereins-Datensatz: Der reist
+  // serverseitig durch jede Spieltags-Antwort, dort haben Benutzerdaten
+  // nichts zu suchen.
+  clubManagers: ClubManager[] = [];
+  notifyUserIds: number[] = [];
   confirmDeactivate = false;
 
   // Spielbetriebe, in denen der/die Nutzer*in Vereine anlegen darf. Nur beim
@@ -136,6 +148,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
 
   public getClub(id: string) {
     this.club$ = this._clubService.getAdminClub(parseInt(id)).pipe(share());
+    this.loadClubManagers(parseInt(id));
 
     this.club$
       .pipe(
@@ -149,6 +162,36 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       )
       .subscribe();
     this._cdr.markForCheck();
+  }
+
+  private loadClubManagers(clubId: number): void {
+    this._clubService
+      .getClubManagers(clubId)
+      .pipe(take(1), takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.clubManagers = result.managers ?? [];
+          this.notifyUserIds = result.notify_user_ids ?? [];
+          this._cdr.markForCheck();
+        },
+        // Bewusst still: Die Empfängerliste ist eine Zusatzangabe. Ein Fehler
+        // beim Laden darf das Bearbeiten der Stammdaten nicht mit einem Toast
+        // überlagern, den niemand einordnen kann.
+        error: () => {
+          this.clubManagers = [];
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  public isNotifyUser(userId: number): boolean {
+    return this.notifyUserIds.includes(userId);
+  }
+
+  public toggleNotifyUser(userId: number): void {
+    this.notifyUserIds = this.isNotifyUser(userId)
+      ? this.notifyUserIds.filter((id) => id !== userId)
+      : [...this.notifyUserIds, userId];
   }
 
   private loadGameOperations(): void {
@@ -239,6 +282,19 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     if (!club.short_name?.length) {
       msg.push(
         this._transloco.translate('clubAdmin.notifications.shortNameRequired')
+      );
+    }
+
+    // Eine Adresse, nicht mehrere. Auf Produktion trug ein Verein zwei
+    // Adressen mit Semikolon getrennt im Feld, und beide bekamen nie etwas:
+    // Das Feld wird als eine einzige Adresse verschickt. Wer mehrere
+    // Empfaenger braucht, waehlt sie darunter als Vereinsmanager aus.
+    if (
+      club.contact_email?.length &&
+      !/^[^@\s;,]+@[^@\s;,]+\.[^@\s;,]+$/.test(club.contact_email.trim())
+    ) {
+      msg.push(
+        this._transloco.translate('clubAdmin.notifications.contactEmailInvalid')
       );
     }
 
@@ -384,6 +440,10 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   }
 
   public submit(club: Club) {
+    // Die Auswahl haengt am Formular, nicht am geladenen Vereins-Datensatz.
+    // Beim Anlegen gibt es noch keine Vereinsmanager, dann bleibt sie leer.
+    club.notify_user_ids = this.notifyUserIds;
+
     this._clubService.adminCreateClub(club).subscribe({
       next: (result) => {
         const message = this._transloco.translate(

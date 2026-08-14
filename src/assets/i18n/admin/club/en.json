@@ -34,6 +34,11 @@
     "stateAssociation": "State federation",
     "contactEmail": "Contact email",
     "contactEmailPlaceholder": "e.g. info@club.com",
+    "contactEmailHint": "This address receives: the match report scan reminder, game day checklist confirmations and objections, published and changed referee assignments, and all transfer and player release messages. Please enter exactly one address.",
+    "notifyManagers": "Also notify",
+    "notifyManagersHint": "These club managers receive the same messages as the contact email.",
+    "notifyManagersEmpty": "No club manager is assigned to this club.",
+    "notifyManagerNoEmail": "– no email address on file",
     "logo": "Club logo",
     "logoUploadAfterSave": "Logo can only be uploaded after saving",
     "currentLogo": "Current logo",
@@ -69,6 +74,7 @@
     "nameRequired": "A club name must be set",
     "longNameRequired": "A club name (from the register) must be set",
     "shortNameRequired": "A short club name must be set",
+    "contactEmailInvalid": "The contact email must be exactly one valid address",
     "gameOperationRequired": "Please select a competition.",
     "gameOperationLoadError": "Could not load the competitions."
   }
