@@ -20,6 +20,11 @@ export class ErrorInterceptor implements HttpInterceptor {
     @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
+  // Ein abgelaufener Spielsekretariats-Link wird nur einmal gemeldet, siehe
+  // 401-Zweig. Der Interceptor ist ein Singleton, der Merker hält also für die
+  // Lebensdauer der Registerkarte.
+  private secretaryLinkRejected = false;
+
   // Fehlerdetails aus dem Response-Body ziehen. Rails-Endpunkte liefern
   // wahlweise { message }, { error } oder { errors: [...] } (z. B. bei 422
   // aus ActiveModel-Validierungen) — alle drei Formen auswerten, damit der
@@ -128,14 +133,31 @@ export class ErrorInterceptor implements HttpInterceptor {
         // Spielbericht an einem solchen Link führt, hat kein Benutzerkonto und
         // findet nach einer Weiterleitung auf /login nicht zurück. Gemeldet wird
         // trotzdem, nur eben ohne Rauswurf.
-        const secretaryMode = request.headers.has('X-Secretary-Token');
+        //
+        // Der fehlende Login gehört zur Bedingung: Der Token wird nirgends
+        // gelöscht, eine Registerkarte, in der einmal ein Sekretariats-Link
+        // offen war, schickt ihn also dauerhaft mit. Ohne diese zweite Hälfte
+        // verlöre eine Person, die sich danach in derselben Registerkarte
+        // anmeldet, bei abgelaufener Sitzung die Abmeldung samt Weiterleitung
+        // und bekäme stattdessen einen Hinweis auf einen Link, mit dem sie nicht
+        // arbeitet.
+        const secretaryMode =
+          request.headers.has('X-Secretary-Token') &&
+          !this.sessionService.currentUserValue;
 
         if (err.status === 401 && !request.url.includes('login.json')) {
           if (secretaryMode) {
-            this._notificationService.error(
-              'Der Spielsekretariats-Link gilt nicht mehr. Bitte einen neuen Link anfordern.',
-              { autoClose: false, keepAfterRouteChange: false }
-            );
+            // Nur einmal je Sitzung: Die Spielansicht fragt die internen Felder
+            // alle 30 Sekunden neu ab (match.component.ts). Ohne die Sperre
+            // stapelt ein abgelaufener Link zwei Meldungen pro Minute
+            // übereinander, die sich nicht von selbst schließen.
+            if (!this.secretaryLinkRejected) {
+              this.secretaryLinkRejected = true;
+              this._notificationService.error(
+                'Der Spielsekretariats-Link gilt nicht mehr. Bitte einen neuen Link anfordern.',
+                { autoClose: false, keepAfterRouteChange: true }
+              );
+            }
           } else {
             const returnUrl = this._router.url;
             this.sessionService.logout(false, true, 'Bitte einloggen.', false);

@@ -53,9 +53,15 @@ describe('ErrorInterceptor', () => {
     http = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
     errorSpy = spyOn(TestBed.inject(NotificationService), 'error');
+    // Der Sekretariats-Zweig fragt SessionService#currentUserValue, und das liest
+    // aus dem localStorage. Der ueberlebt im Karma-Browser jeden Spec, also hier
+    // und nach jedem Lauf ausdruecklich raeumen: Ein Rest aus einem fremden Spec
+    // wuerde die Faelle unten still ins Gegenteil drehen.
+    localStorage.removeItem('user');
   });
 
   afterEach(() => {
+    localStorage.removeItem('user');
     httpMock.verify();
   });
 
@@ -226,15 +232,17 @@ describe('ErrorInterceptor', () => {
   // kein Weg zurueck von /login. Der Kader-Dialog im Spielbericht lief genau
   // dort hinein (api#396). Gemeldet werden muss der Fehlschlag trotzdem, sonst
   // steht die Liste ohne Grund leer da.
+  //
+  // Der Serverkoerper traegt hier bewusst einen anderen Wortlaut: So belegt die
+  // Erwartung, dass der eigene Hinweis gezeigt wird, und nicht die durchgereichte
+  // Rails-Meldung.
   it('keeps the secretary in the game report on a 401', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigate');
     const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
 
     failWith(
-      {
-        message: 'Nicht angemeldet, und kein gültiger Spielsekretariats-Link.',
-      },
+      { message: 'Not authenticated' },
       401,
       `${environment.apiURL}user/team/42/licenses.json`,
       { 'X-Secretary-Token': 'irgendwas' }
@@ -242,9 +250,22 @@ describe('ErrorInterceptor', () => {
 
     expect(logoutSpy).not.toHaveBeenCalled();
     expect(navigateSpy).not.toHaveBeenCalled();
-    expect(errorSpy.calls.mostRecent().args[0]).toContain(
-      'Spielsekretariats-Link'
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Der Spielsekretariats-Link gilt nicht mehr. Bitte einen neuen Link anfordern.',
+      { autoClose: false, keepAfterRouteChange: true }
     );
+  });
+
+  // Die Spielansicht fragt die internen Felder alle 30 Sekunden neu ab. Ohne
+  // Sperre stapelt ein abgelaufener Link zwei nicht selbstschliessende Meldungen
+  // pro Minute uebereinander.
+  it('reports an expired secretary link only once', () => {
+    const url = `${environment.apiURL}user/games/42/additional_fields.json`;
+
+    failWith({}, 401, url, { 'X-Secretary-Token': 'irgendwas' });
+    failWith({}, 401, url, { 'X-Secretary-Token': 'irgendwas' });
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the secretary in the game report on a 403', () => {
@@ -262,6 +283,30 @@ describe('ErrorInterceptor', () => {
 
     expect(errorSpy).toHaveBeenCalled();
     expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  // Der Token wird nirgends aus dem sessionStorage geloescht. Wer sich in
+  // derselben Registerkarte danach anmeldet, schickt ihn weiter mit, arbeitet
+  // aber mit einer Sitzung: Dann muss eine abgelaufene Sitzung wieder abmelden
+  // und weiterleiten, sonst bleibt die Person scheinbar angemeldet, waehrend
+  // jede Anfrage fehlschlaegt.
+  it('still logs out a signed-in user who carries a secretary token', () => {
+    localStorage.setItem('user', JSON.stringify({ id: 1, permissions: {} }));
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+    failWith(
+      { message: 'Not authenticated' },
+      401,
+      `${environment.apiURL}user/team/42/licenses.json`,
+      { 'X-Secretary-Token': 'irgendwas' }
+    );
+
+    expect(logoutSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/login'], {
+      queryParams: { returnUrl: router.url },
+    });
   });
 
   // Gegenprobe: Ohne Token bleibt es beim Abmelden samt Weiterleitung, sonst
