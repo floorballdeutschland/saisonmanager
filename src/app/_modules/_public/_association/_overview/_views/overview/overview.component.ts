@@ -50,6 +50,12 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
   private _destroy$ = new Subject<boolean>();
 
+  // Der per zurück/weiter gewählte Spieltag. Solange nichts gewählt ist, sucht
+  // die API den Spieltag aus (game_days/current). Ohne diese Merkung holte das
+  // 30-Sekunden-Polling immer wieder den aktuellen Spieltag und warf die
+  // Auswahl damit spätestens nach 30 Sekunden weg.
+  private _pinnedMatchDayNumber?: number;
+
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
@@ -71,6 +77,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
             }
 
             this.getSingleLeague(league.id);
+
+            // Neue Liga, neue Ansicht: Die Auswahl der vorigen Liga gilt hier
+            // nicht, deren Spieltagsnummer meint einen anderen Spieltag.
+            this._pinnedMatchDayNumber = undefined;
 
             if (league.league_type !== 'cup') {
               this.getTeamRanking(league.id);
@@ -133,9 +143,18 @@ export class OverviewComponent implements OnInit, OnDestroy {
   }
 
   getMatches(league: League) {
-    this.matches$ = this._leagueService
-      .getGameScheduleForCurrentGameDay(league.id)
-      .pipe(shareReplay());
+    // Ohne eigene Auswahl bestimmt die API den Spieltag, mit Auswahl wird genau
+    // dieser nachgeladen. Beide Fälle laufen durch dieselbe Auswertung, damit
+    // das Polling die Ansicht aktuell hält, ohne sie zu verschieben.
+    const games$ =
+      this._pinnedMatchDayNumber === undefined
+        ? this._leagueService.getGameScheduleForCurrentGameDay(league.id)
+        : this._leagueService.getGameScheduleForGameDay(
+            league.id,
+            this._pinnedMatchDayNumber
+          );
+
+    this.matches$ = games$.pipe(shareReplay());
 
     this.matches$
       .pipe(
@@ -156,6 +175,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
           if (this.selectedMatchDay) {
             this.currentMatchDayNumber = this.selectedMatchDay.game_day_number;
           }
+
+          this._cdr.markForCheck();
         }),
         takeUntil(this._destroy$)
       )
@@ -167,24 +188,15 @@ export class OverviewComponent implements OnInit, OnDestroy {
   }
 
   selectMatchDay(matchDay: number, league: League) {
+    this._pinnedMatchDayNumber = matchDay;
+
+    // Auch schon vor der Antwort setzen: Ein Spieltag ganz ohne Spiele liefert
+    // keine Zeile, aus der sich der Titel ableiten ließe.
     this.selectedMatchDay =
       league.game_day_titles.find(
         (_item) => _item.game_day_number === matchDay
       ) ?? null;
 
-    this.matches$ = this._leagueService
-      .getGameScheduleForGameDay(league.id, matchDay)
-      .pipe(shareReplay())
-      .pipe(
-        take(1),
-        tap((games) => {
-          if (!games) {
-            return;
-          }
-
-          this.getDateRange(games);
-        }),
-        takeUntil(this._destroy$)
-      );
+    this.getMatches(league);
   }
 }
