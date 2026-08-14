@@ -35,6 +35,11 @@
     "stateAssociation": "Landesverband",
     "contactEmail": "Kontakt-E-Mail",
     "contactEmailPlaceholder": "z.B. info@verein.de",
+    "contactEmailHint": "An diese Adresse gehen: Erinnerung an den Spielberichts-Scan, Bestätigung und Einspruch zur Spieltags-Checkliste, veröffentlichte und geänderte Schiedsrichter-Ansetzungen sowie alle Nachrichten zu Transfers und Spielerfreigaben. Bitte genau eine Adresse eintragen.",
+    "notifyManagers": "Zusätzlich informieren",
+    "notifyManagersHint": "Diese Vereinsmanager bekommen dieselben Nachrichten wie die Kontakt-E-Mail.",
+    "notifyManagersEmpty": "Für diesen Verein ist kein Vereinsmanager hinterlegt.",
+    "notifyManagerNoEmail": "– keine E-Mail-Adresse hinterlegt",
     "logo": "Vereinslogo",
     "logoUploadAfterSave": "Logo kann erst nach dem Speichern hochgeladen werden",
     "currentLogo": "Aktuelles Logo",
@@ -71,6 +76,7 @@
     "longNameRequired": "Es muss ein Vereinsname (aus dem Register) gesetzt werden",
     "shortNameRequired": "Es muss ein Kürzel gesetzt werden",
     "shortNameTooLong": "Das Kürzel darf höchstens 4 Zeichen lang sein",
+    "contactEmailInvalid": "Die Kontakt-E-Mail muss genau eine gültige Adresse sein",
     "gameOperationRequired": "Bitte einen Spielbetrieb auswählen.",
     "gameOperationLoadError": "Die Spielbetriebe konnten nicht geladen werden."
   }

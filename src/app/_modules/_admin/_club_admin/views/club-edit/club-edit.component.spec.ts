@@ -94,6 +94,45 @@ describe('ClubEditComponent', () => {
     expect(component.getStateAssociationName(leer)).toBe('–');
   });
 
+
+
+  it('toggleNotifyUser nimmt Vereinsmanager auf und wieder heraus', () => {
+    const component = TestBed.createComponent(ClubEditComponent)
+      .componentInstance;
+
+    expect(component.isNotifyUser(7)).toBeFalse();
+
+    component.toggleNotifyUser(7);
+    component.toggleNotifyUser(9);
+    expect(component.notifyUserIds).toEqual([7, 9]);
+
+    component.toggleNotifyUser(7);
+    expect(component.notifyUserIds).toEqual([9]);
+    expect(component.isNotifyUser(7)).toBeFalse();
+  });
+
+  // Auf Produktion trug ein Verein zwei Adressen mit Semikolon getrennt im
+  // Feld. Beide bekamen nie etwas, weil das Feld als eine Adresse verschickt
+  // wird.
+  it('errorMsg weist zwei Adressen im Kontaktfeld ab', () => {
+    const component = TestBed.createComponent(ClubEditComponent)
+      .componentInstance;
+    const club = {
+      name: 'Verein',
+      long_name: 'Verein e.V.',
+      short_name: 'VER',
+      contact_email: 'a@example.org; b@example.org',
+    } as Club;
+
+    expect(component.errorMsg(club).length).toBe(1);
+
+    club.contact_email = 'a@example.org';
+    expect(component.errorMsg(club)).toEqual([]);
+
+    club.contact_email = '';
+    expect(component.errorMsg(club)).toEqual([]);
+  });
+
   it('onLogoSelected posts the file as FormData and applies both returned urls', () => {
     const fixture = TestBed.createComponent(ClubEditComponent);
     const component = fixture.componentInstance;
