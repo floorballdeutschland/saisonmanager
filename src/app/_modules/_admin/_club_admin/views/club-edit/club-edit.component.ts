@@ -62,6 +62,13 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   stateAssociations: StateAssociation[] = [];
   permissions: { [key: string]: boolean } = {};
 
+  // Die Spielerliste des Vereins liegt hinter menu_item_player_admin. Ohne
+  // diese Klammer landete ein Vereinsmanager beim Klick ohne Meldung auf der
+  // Startseite, weil der permissionGuard stumm umleitet.
+  public get canEditPlayers(): boolean {
+    return !!this.permissions['menu_item_player_admin'];
+  }
+
   // Vereinsmanager des Vereins und die aktuelle Auswahl. Kommt aus einem
   // eigenen Endpunkt und nicht aus dem Vereins-Datensatz: Der reist
   // serverseitig durch jede Spieltags-Antwort, dort haben Benutzerdaten
@@ -291,6 +298,16 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     if (!club.short_name?.length) {
       msg.push(
         this._transloco.translate('clubAdmin.notifications.shortNameRequired')
+      );
+    }
+
+    // maxlength im Formular deckelt die Neueingabe. Diese Prüfung fängt die
+    // Bestandswerte ab, die vor der Begrenzung eingetragen wurden: Sonst
+    // scheitert das Speichern erst am Server, und zwar auch dann, wenn der
+    // Verein nur seine Kontaktadresse ändern wollte.
+    if ((club.short_name?.length ?? 0) > 4) {
+      msg.push(
+        this._transloco.translate('clubAdmin.notifications.shortNameTooLong')
       );
     }
 

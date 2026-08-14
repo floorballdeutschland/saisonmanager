@@ -176,8 +176,12 @@ export class TeamEditComponent implements OnInit, OnDestroy {
       msg.push(this._transloco.translate('teamAdmin.edit.errName'));
     }
 
-    if (team.short_name.length < 1) {
-      msg.push(this._transloco.translate('teamAdmin.edit.errShortName'));
+    // Kein Pflichtfeld mehr: Bleibt es leer, nimmt die Anzeigetafel das Kürzel
+    // des Vereins (Team#ticker_short_name). Die Obergrenze deckelt schon
+    // maxlength im Formular; die Prüfung fängt Bestandswerte ab, die vor der
+    // Begrenzung eingetragen wurden.
+    if ((team.short_name?.length ?? 0) > 8) {
+      msg.push(this._transloco.translate('teamAdmin.edit.errShortNameTooLong'));
     }
 
     if (team.league_id < 1) {

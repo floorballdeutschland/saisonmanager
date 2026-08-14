@@ -94,6 +94,8 @@ describe('ClubEditComponent', () => {
     expect(component.getStateAssociationName(leer)).toBe('–');
   });
 
+
+
   it('toggleNotifyUser nimmt Vereinsmanager auf und wieder heraus', () => {
     const component = TestBed.createComponent(ClubEditComponent)
       .componentInstance;

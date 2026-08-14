@@ -62,9 +62,12 @@
                   <input
                     [(ngModel)]="team.short_name"
                     type="text"
-                    id="name"
-                    required
+                    id="short_name"
+                    maxlength="8"
                   />
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ "teamAdmin.edit.shortNameHint" | transloco }}
+                  </p>
                 </div>
                 <div class="font-bold">
                   {{ "teamAdmin.edit.leagueId" | transloco }}

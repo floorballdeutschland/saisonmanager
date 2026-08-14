@@ -63,8 +63,12 @@
                     type="text"
                     id="short_name"
                     class="w-full"
+                    maxlength="4"
                     required
                   />
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ "clubAdmin.edit.shortNameHint" | transloco }}
+                  </p>
                 </div>
                 <div class="font-bold">
                   {{ "clubAdmin.edit.registerName" | transloco }}
@@ -346,7 +350,7 @@
                          Startseite (permissionGuard leitet stumm um). Seine
                          eigene Spielerliste erreicht er über „Meine
                          Spieler*innen". -->
-                    @if (showItem("menu_item_player_admin")) {
+                    @if (canEditPlayers) {
                       <a
                         class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                         [routerLink]="[

@@ -11,6 +11,8 @@ export interface Club {
   game_operation_id: number;
   contact_email?: string;
   /**
+
+
    * Vereinsmanager, die die Vereinspost zusätzlich zur Kontakt-E-Mail
    * bekommen. Kommt nicht aus dem Vereins-Datensatz, sondern aus
    * `admin/clubs/:id/managers` – der volle Vereins-Hash reist serverseitig
