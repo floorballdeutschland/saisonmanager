@@ -63,8 +63,12 @@
                     type="text"
                     id="short_name"
                     class="w-full"
+                    maxlength="4"
                     required
                   />
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ "clubAdmin.edit.shortNameHint" | transloco }}
+                  </p>
                 </div>
                 <div class="font-bold">
                   {{ "clubAdmin.edit.registerName" | transloco }}
