@@ -180,7 +180,7 @@ export class TeamEditComponent implements OnInit, OnDestroy {
     // des Vereins (Team#ticker_short_name). Die Obergrenze deckelt schon
     // maxlength im Formular; die Prüfung fängt Bestandswerte ab, die vor der
     // Begrenzung eingetragen wurden.
-    if ((team.short_name?.length ?? 0) > 7) {
+    if ((team.short_name?.length ?? 0) > 8) {
       msg.push(this._transloco.translate('teamAdmin.edit.errShortNameTooLong'));
     }
 
