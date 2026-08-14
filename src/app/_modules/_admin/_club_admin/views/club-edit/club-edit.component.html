@@ -160,7 +160,49 @@
                       'clubAdmin.edit.contactEmailPlaceholder' | transloco
                     "
                   />
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ "clubAdmin.edit.contactEmailHint" | transloco }}
+                  </p>
                 </div>
+                @if (editMode) {
+                  <div class="font-bold">
+                    {{ "clubAdmin.edit.notifyManagers" | transloco }}
+                  </div>
+                  <div>
+                    @if (clubManagers.length) {
+                      <p class="text-sm text-gray-500 mb-2">
+                        {{ "clubAdmin.edit.notifyManagersHint" | transloco }}
+                      </p>
+                      @for (manager of clubManagers; track manager.id) {
+                        <label class="block mb-1">
+                          <input
+                            type="checkbox"
+                            class="mr-2 align-middle"
+                            [checked]="isNotifyUser(manager.id)"
+                            (change)="toggleNotifyUser(manager.id)"
+                          />
+                          <span class="align-middle">{{ manager.name }}</span>
+                          @if (manager.email) {
+                            <span class="align-middle text-gray-500"
+                              >&nbsp;({{ manager.email }})</span
+                            >
+                          } @else {
+                            <span class="align-middle text-gray-500"
+                              >&nbsp;{{
+                                "clubAdmin.edit.notifyManagerNoEmail"
+                                  | transloco
+                              }}</span
+                            >
+                          }
+                        </label>
+                      }
+                    } @else {
+                      <p class="text-sm text-gray-500">
+                        {{ "clubAdmin.edit.notifyManagersEmpty" | transloco }}
+                      </p>
+                    }
+                  </div>
+                }
               </div>
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">

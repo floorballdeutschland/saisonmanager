@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import {
   Club,
+  ClubManagerList,
   ClubWithTeams,
   LicenseHash,
   StateAssociationWithClubs,
@@ -47,6 +48,16 @@ export class ClubService {
   public getAdminClub(clubId: number) {
     const path = environment.apiURL + 'admin/clubs/' + clubId + '.json';
     return this.http.get<Club>(path);
+  }
+
+  /**
+   * Vereinsmanager des Vereins samt aktueller Auswahl. Eigener Endpunkt, weil
+   * der Vereins-Datensatz serverseitig in jeder Spieltags-Antwort mitreist.
+   */
+  public getClubManagers(clubId: number) {
+    const path =
+      environment.apiURL + 'admin/clubs/' + clubId + '/managers.json';
+    return this.http.get<ClubManagerList>(path);
   }
 
   public getAdminTeam(teamId: number) {
