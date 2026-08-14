@@ -56,6 +56,13 @@ export class ClubEditComponent implements OnInit, OnDestroy {
 
   stateAssociations: StateAssociation[] = [];
   permissions: { [key: string]: boolean } = {};
+
+  // Die Spielerliste des Vereins liegt hinter menu_item_player_admin. Ohne
+  // diese Klammer landete ein Vereinsmanager beim Klick ohne Meldung auf der
+  // Startseite, weil der permissionGuard stumm umleitet.
+  public get canEditPlayers(): boolean {
+    return !!this.permissions['menu_item_player_admin'];
+  }
   confirmDeactivate = false;
 
   // Spielbetriebe, in denen der/die Nutzer*in Vereine anlegen darf. Nur beim
