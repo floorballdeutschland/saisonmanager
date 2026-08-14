@@ -20,6 +20,11 @@ export class ErrorInterceptor implements HttpInterceptor {
     @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
+  // Ein abgelaufener Spielsekretariats-Link wird nur einmal gemeldet, siehe
+  // 401-Zweig. Der Interceptor ist ein Singleton, der Merker hält also für die
+  // Lebensdauer der Registerkarte.
+  private secretaryLinkRejected = false;
+
   // Fehlerdetails aus dem Response-Body ziehen. Rails-Endpunkte liefern
   // wahlweise { message }, { error } oder { errors: [...] } (z. B. bei 422
   // aus ActiveModel-Validierungen) — alle drei Formen auswerten, damit der
@@ -121,10 +126,43 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Anfragen im Spielsekretariats-Modus tragen den Einmal-Token als
+        // Kopfzeile (SecretaryTokenInterceptor, der in der Kette vor diesem
+        // steht). Für sie gibt es keine Sitzung, die man abmelden könnte, und
+        // keine Startseite, auf die man sinnvoll zurückfällt: Wer den
+        // Spielbericht an einem solchen Link führt, hat kein Benutzerkonto und
+        // findet nach einer Weiterleitung auf /login nicht zurück. Gemeldet wird
+        // trotzdem, nur eben ohne Rauswurf.
+        //
+        // Der fehlende Login gehört zur Bedingung: Der Token wird nirgends
+        // gelöscht, eine Registerkarte, in der einmal ein Sekretariats-Link
+        // offen war, schickt ihn also dauerhaft mit. Ohne diese zweite Hälfte
+        // verlöre eine Person, die sich danach in derselben Registerkarte
+        // anmeldet, bei abgelaufener Sitzung die Abmeldung samt Weiterleitung
+        // und bekäme stattdessen einen Hinweis auf einen Link, mit dem sie nicht
+        // arbeitet.
+        const secretaryMode =
+          request.headers.has('X-Secretary-Token') &&
+          !this.sessionService.currentUserValue;
+
         if (err.status === 401 && !request.url.includes('login.json')) {
-          const returnUrl = this._router.url;
-          this.sessionService.logout(false, true, 'Bitte einloggen.', false);
-          this._router.navigate(['/login'], { queryParams: { returnUrl } });
+          if (secretaryMode) {
+            // Nur einmal je Sitzung: Die Spielansicht fragt die internen Felder
+            // alle 30 Sekunden neu ab (match.component.ts). Ohne die Sperre
+            // stapelt ein abgelaufener Link zwei Meldungen pro Minute
+            // übereinander, die sich nicht von selbst schließen.
+            if (!this.secretaryLinkRejected) {
+              this.secretaryLinkRejected = true;
+              this._notificationService.error(
+                'Der Spielsekretariats-Link gilt nicht mehr. Bitte einen neuen Link anfordern.',
+                { autoClose: false, keepAfterRouteChange: true }
+              );
+            }
+          } else {
+            const returnUrl = this._router.url;
+            this.sessionService.logout(false, true, 'Bitte einloggen.', false);
+            this._router.navigate(['/login'], { queryParams: { returnUrl } });
+          }
         }
 
         if (err.status === 403) {
@@ -135,7 +173,9 @@ export class ErrorInterceptor implements HttpInterceptor {
               keepAfterRouteChange: true,
             }
           );
-          this._router.navigate(['/']);
+          if (!secretaryMode) {
+            this._router.navigate(['/']);
+          }
         }
 
         if (err.status === 404 && !request.url.includes('/user/referees/')) {
