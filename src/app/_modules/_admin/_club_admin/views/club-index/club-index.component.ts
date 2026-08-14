@@ -29,6 +29,7 @@ export class ClubIndexComponent implements OnInit {
   includeDeactivated = false;
   canDeleteClubs = false;
   canCreateClubs = false;
+  canEditPlayers = false;
 
   constructor(
     private _associationService: AssociationService,
@@ -52,6 +53,10 @@ export class ClubIndexComponent implements OnInit {
       this.canCreateClubs = !!(
         user?.permissions['club_create'] || user?.permissions['admin']
       );
+      // Die Spielerliste des Vereins liegt hinter menu_item_player_admin. Ohne
+      // diese Klammer landete ein Vereinsmanager beim Klick ohne Meldung auf
+      // der Startseite, weil der permissionGuard stumm umleitet.
+      this.canEditPlayers = !!user?.permissions['menu_item_player_admin'];
     });
     this.loadClubs();
   }

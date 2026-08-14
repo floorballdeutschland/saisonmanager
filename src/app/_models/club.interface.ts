@@ -17,6 +17,13 @@ export interface Club {
    * durch jede Spieltags-Antwort, dort haben Benutzerdaten nichts zu suchen.
    */
   notify_user_ids?: number[];
+  /**
+   * Nur in der Antwort zu einem einzelnen Verein (`admin/clubs/:id`): Darf der
+   * angemeldete Benutzer bei DIESEM Verein die einordnenden Felder
+   * (Bundesland, Landesverband, Spielbetrieb) ändern? Die Berechtigung gilt pro
+   * Verein, ein Flag am Benutzer kann Mehrfachrollen nicht abbilden.
+   */
+  edit_restricted?: boolean;
   players?: Player[];
   logo?: string;
   logo_url?: string;
