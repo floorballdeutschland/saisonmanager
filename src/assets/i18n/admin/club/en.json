@@ -25,7 +25,8 @@
     "clubId": "Club ID",
     "clubIdAfterCreate": "Set after creation",
     "name": "Name",
-    "shortName": "Name (short)",
+    "shortName": "Abbreviation",
+    "shortNameHint": "Maximum 4 characters, e.g. for the livestream.",
     "registerName": "Club register name",
     "state": "State (club location)",
     "pleaseSelect": "– Please select –",
@@ -68,7 +69,8 @@
     "saveSuccess": "Club {{ name }}({{ id }}) changed successfully.",
     "nameRequired": "A club name must be set",
     "longNameRequired": "A club name (from the register) must be set",
-    "shortNameRequired": "A short club name must be set",
+    "shortNameRequired": "An abbreviation must be set",
+    "shortNameTooLong": "The abbreviation must not exceed 4 characters",
     "gameOperationRequired": "Please select a competition.",
     "gameOperationLoadError": "Could not load the competitions."
   }

@@ -258,6 +258,16 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       );
     }
 
+    // maxlength im Formular deckelt die Neueingabe. Diese Prüfung fängt die
+    // Bestandswerte ab, die vor der Begrenzung eingetragen wurden: Sonst
+    // scheitert das Speichern erst am Server, und zwar auch dann, wenn der
+    // Verein nur seine Kontaktadresse ändern wollte.
+    if ((club.short_name?.length ?? 0) > 4) {
+      msg.push(
+        this._transloco.translate('clubAdmin.notifications.shortNameTooLong')
+      );
+    }
+
     // Nur beim Anlegen: der Spielbetrieb wird danach nicht mehr über dieses
     // Formular geändert. Ohne ihn lehnt die API das Speichern ab.
     if (!this.editMode && !club.game_operation_id) {
