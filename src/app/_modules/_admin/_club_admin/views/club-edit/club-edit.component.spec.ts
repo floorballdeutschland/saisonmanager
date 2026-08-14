@@ -43,6 +43,39 @@ describe('ClubEditComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
+  // Bundesland, Spielverbund und Landesverband ordnen den Verein ein und
+  // bleiben dem Verband vorbehalten. Das Backend verwirft die Felder für
+  // Vereinsmanager ohnehin (restricted_club_params); das Formular soll sie
+  // deshalb gar nicht erst als änderbar anbieten.
+  it('isRestricted folgt club_edit_restricted aus den Permissions', () => {
+    const component = TestBed.createComponent(ClubEditComponent)
+      .componentInstance;
+
+    component.permissions = {};
+    expect(component.isRestricted).toBeFalse();
+
+    component.permissions = { club_edit_restricted: true };
+    expect(component.isRestricted).toBeTrue();
+  });
+
+  it('zeigt Bundesland und Landesverband als Klartext an', () => {
+    const component = TestBed.createComponent(ClubEditComponent)
+      .componentInstance;
+    component.stateAssociations = [
+      { id: 7, name: 'Floorball Verband NRW' },
+    ] as never;
+
+    const club = { state: 'de-nw', state_association_id: 7 } as Club;
+    expect(component.getStateName(club)).toBe('Nordrhein-Westfalen');
+    expect(component.getStateAssociationName(club)).toBe(
+      'Floorball Verband NRW'
+    );
+
+    const leer = {} as Club;
+    expect(component.getStateName(leer)).toBe('–');
+    expect(component.getStateAssociationName(leer)).toBe('–');
+  });
+
   it('onLogoSelected posts the file as FormData and applies both returned urls', () => {
     const fixture = TestBed.createComponent(ClubEditComponent);
     const component = fixture.componentInstance;

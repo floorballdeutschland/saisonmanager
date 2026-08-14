@@ -185,6 +185,26 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
+  // Vereinsmanager sehen Bundesland, Spielverbund und Landesverband, ändern
+  // können sie sie nicht: Die drei ordnen den Verein ein und entscheiden mit
+  // darüber, wer ihn verwaltet. Gegenstück zu
+  // ClubsController#restricted_club_params — das Backend verwirft die Felder
+  // ohnehin, die Anzeige soll das nur nicht verschweigen.
+  public get isRestricted(): boolean {
+    return !!this.permissions['club_edit_restricted'];
+  }
+
+  public getStateName(club: Club): string {
+    return this.states.find((s) => s.isocode === club.state)?.name ?? '–';
+  }
+
+  public getStateAssociationName(club: Club): string {
+    return (
+      this.stateAssociations.find((s) => s.id === club.state_association_id)
+        ?.name ?? '–'
+    );
+  }
+
   public getSportverbund(club: Club): string {
     const sa = this.stateAssociations.find(
       (s) => s.id === club.state_association_id

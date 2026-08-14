@@ -28,6 +28,7 @@ export class ClubIndexComponent implements OnInit {
   lvClubItems$?: Observable<StateAssociationWithClubs[]>;
   includeDeactivated = false;
   canDeleteClubs = false;
+  canCreateClubs = false;
 
   constructor(
     private _associationService: AssociationService,
@@ -45,6 +46,11 @@ export class ClubIndexComponent implements OnInit {
     this._sessionService.currentUser$.pipe(take(1)).subscribe((user) => {
       this.canDeleteClubs = !!(
         user?.permissions['club_deactivate'] || user?.permissions['admin']
+      );
+      // Vereinsanlage bleibt beim Verband: Der Heimat-Spielbetrieb entscheidet,
+      // wer den Verein verwaltet, und den kann ein Vereinsmanager nicht setzen.
+      this.canCreateClubs = !!(
+        user?.permissions['club_create'] || user?.permissions['admin']
       );
     });
     this.loadClubs();
