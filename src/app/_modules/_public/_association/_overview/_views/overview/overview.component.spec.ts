@@ -39,15 +39,27 @@ class LeagueServiceStub {
   // Der von der API bestimmte Spieltag, den der Erstaufruf liefert.
   currentGameDayCalls = 0;
   requestedGameDays: number[] = [];
+  requestedLeagueIds: number[] = [];
 
-  getGameScheduleForCurrentGameDay() {
+  // Spieltage, die es zwar in der Liste gibt, an denen aber nichts angesetzt
+  // ist. Die API antwortet dort mit einer leeren Liste, nicht mit einem Fehler.
+  emptyGameDays: number[] = [];
+
+  getGameScheduleForCurrentGameDay(leagueId: number) {
     this.currentGameDayCalls += 1;
+    this.requestedLeagueIds.push(leagueId);
     return of(scheduleFor(2));
   }
 
-  getGameScheduleForGameDay(_leagueId: number, gameDayNumber: number) {
+  getGameScheduleForGameDay(leagueId: number, gameDayNumber: number) {
     this.requestedGameDays.push(gameDayNumber);
-    return of(scheduleFor(gameDayNumber));
+    this.requestedLeagueIds.push(leagueId);
+
+    return of(
+      this.emptyGameDays.includes(gameDayNumber)
+        ? []
+        : scheduleFor(gameDayNumber)
+    );
   }
 
   getSingleLeague() {
@@ -118,6 +130,47 @@ describe('OverviewComponent', () => {
     tick(30000);
 
     expect(leagueService.requestedGameDays).toEqual([4, 4]);
+    expect(leagueService.currentGameDayCalls).toBe(1);
+    expect(leagueService.requestedLeagueIds).toEqual([1, 1, 1]);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  // Ein Spieltag ohne Spiele wäre als Auswahl eine Sackgasse: Die Weiter-
+  // Zurück-Leiste rechnet mit der Spieltagsnummer der ersten Zeile, die es dort
+  // nicht gibt. Das Nachladen muss deshalb wieder beim aktuellen Spieltag
+  // landen, statt den leeren festzuhalten.
+  it('hält einen Spieltag ohne Spiele nicht fest', fakeAsync(() => {
+    leagueService.emptyGameDays = [3];
+    const league = leagueWith(1);
+    const fixture = startWith(league);
+
+    fixture.componentInstance.selectMatchDay(3, league);
+    expect(leagueService.requestedGameDays).toEqual([3]);
+
+    tick(30000);
+
+    expect(leagueService.requestedGameDays).toEqual([3]);
+    expect(leagueService.currentGameDayCalls).toBe(2);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  // selectedLeague$ meldet dieselbe Liga mehrfach, etwa wenn der Saison-
+  // Switcher bei einem Deep-Link in eine alte Saison nachzieht. Das ist kein
+  // Ligawechsel und darf die Auswahl nicht verwerfen.
+  it('behält die Auswahl, wenn dieselbe Liga erneut gemeldet wird', fakeAsync(() => {
+    const league = leagueWith(1);
+    const fixture = startWith(league);
+
+    fixture.componentInstance.selectMatchDay(4, league);
+    leagueService.selectedLeague$.next(leagueWith(1));
+
+    tick(30000);
+
+    expect(leagueService.requestedGameDays).toEqual([4, 4, 4]);
     expect(leagueService.currentGameDayCalls).toBe(1);
 
     fixture.componentInstance.ngOnDestroy();

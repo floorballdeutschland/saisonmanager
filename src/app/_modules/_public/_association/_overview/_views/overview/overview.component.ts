@@ -41,7 +41,6 @@ export class OverviewComponent implements OnInit, OnDestroy {
   playerRankings$?: Observable<ScorerEntry[] | null>;
   matches$?: Observable<GameScheduleEntry[] | null>;
 
-  currentMatchDayNumber?: number;
   selectedMatchDay: { game_day_number: number; title: string } | null = null;
   selectedMatchDayMinDate?: Date;
   selectedMatchDayMaxDate?: Date;
@@ -55,6 +54,12 @@ export class OverviewComponent implements OnInit, OnDestroy {
   // 30-Sekunden-Polling immer wieder den aktuellen Spieltag und warf die
   // Auswahl damit spätestens nach 30 Sekunden weg.
   private _pinnedMatchDayNumber?: number;
+
+  // Die Liga, für die zuletzt geladen wurde. selectedLeague$ meldet dieselbe
+  // Liga mehrfach (leagues$ hängt an Verband und Saison, und der
+  // Saison-Switcher zieht bei einem Deep-Link in eine alte Saison nach), ein
+  // Ligawechsel ist das nur, wenn sich die Kennung ändert.
+  private _loadedLeagueId?: number;
 
   constructor(
     private _associationService: AssociationService,
@@ -80,7 +85,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
             // Neue Liga, neue Ansicht: Die Auswahl der vorigen Liga gilt hier
             // nicht, deren Spieltagsnummer meint einen anderen Spieltag.
-            this._pinnedMatchDayNumber = undefined;
+            if (league.id !== this._loadedLeagueId) {
+              this._loadedLeagueId = league.id;
+              this._pinnedMatchDayNumber = undefined;
+            }
 
             if (league.league_type !== 'cup') {
               this.getTeamRanking(league.id);
@@ -146,12 +154,14 @@ export class OverviewComponent implements OnInit, OnDestroy {
     // Ohne eigene Auswahl bestimmt die API den Spieltag, mit Auswahl wird genau
     // dieser nachgeladen. Beide Fälle laufen durch dieselbe Auswertung, damit
     // das Polling die Ansicht aktuell hält, ohne sie zu verschieben.
+    const requestedMatchDay = this._pinnedMatchDayNumber;
+
     const games$ =
-      this._pinnedMatchDayNumber === undefined
+      requestedMatchDay === undefined
         ? this._leagueService.getGameScheduleForCurrentGameDay(league.id)
         : this._leagueService.getGameScheduleForGameDay(
             league.id,
-            this._pinnedMatchDayNumber
+            requestedMatchDay
           );
 
     this.matches$ = games$.pipe(shareReplay());
@@ -160,9 +170,23 @@ export class OverviewComponent implements OnInit, OnDestroy {
       .pipe(
         take(1),
         tap((games) => {
-          if (!games || !games.length) {
+          // Eine überholte Antwort darf die Anzeige nicht mehr verändern: Wer
+          // während eines laufenden Nachladens weiterklickt, bekäme sonst den
+          // Datumsbereich des vorigen Spieltags unter die neue Liste.
+          if (requestedMatchDay !== this._pinnedMatchDayNumber) {
             return;
           }
+
+          // Ein Spieltag ohne Spiele ist eine Sackgasse: Die Weiter-Zurück-
+          // Leiste rechnet mit der Spieltagsnummer der ersten Zeile, die es
+          // hier nicht gibt. Die Auswahl deshalb wieder aufgeben, damit das
+          // nächste Nachladen zum aktuellen Spieltag zurückfindet.
+          if (!games || !games.length) {
+            this._pinnedMatchDayNumber = undefined;
+            this._cdr.markForCheck();
+            return;
+          }
+
           this.selectedMatchDay =
             league.game_day_titles.find(
               (_item) => _item.game_day_number === games[0].game_day
@@ -171,10 +195,6 @@ export class OverviewComponent implements OnInit, OnDestroy {
             null;
 
           this.getDateRange(games);
-
-          if (this.selectedMatchDay) {
-            this.currentMatchDayNumber = this.selectedMatchDay.game_day_number;
-          }
 
           this._cdr.markForCheck();
         }),
@@ -190,8 +210,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
   selectMatchDay(matchDay: number, league: League) {
     this._pinnedMatchDayNumber = matchDay;
 
-    // Auch schon vor der Antwort setzen: Ein Spieltag ganz ohne Spiele liefert
-    // keine Zeile, aus der sich der Titel ableiten ließe.
+    // Schon vor der Antwort setzen, damit der Titel zur Auswahl passt und nicht
+    // zum zuletzt geladenen Spieltag.
     this.selectedMatchDay =
       league.game_day_titles.find(
         (_item) => _item.game_day_number === matchDay
