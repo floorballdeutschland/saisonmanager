@@ -56,6 +56,13 @@ export class ClubEditComponent implements OnInit, OnDestroy {
 
   stateAssociations: StateAssociation[] = [];
   permissions: { [key: string]: boolean } = {};
+
+  // Die Spielerliste des Vereins liegt hinter menu_item_player_admin. Ohne
+  // diese Klammer landete ein Vereinsmanager beim Klick ohne Meldung auf der
+  // Startseite, weil der permissionGuard stumm umleitet.
+  public get canEditPlayers(): boolean {
+    return !!this.permissions['menu_item_player_admin'];
+  }
   confirmDeactivate = false;
 
   // Spielbetriebe, in denen der/die Nutzer*in Vereine anlegen darf. Nur beim
@@ -139,10 +146,12 @@ export class ClubEditComponent implements OnInit, OnDestroy {
 
     this.club$
       .pipe(
-        tap((league) => {
-          if (!league) {
+        tap((club) => {
+          if (!club) {
             return;
           }
+          this.clubEditRestricted = club.edit_restricted;
+          this._cdr.markForCheck();
         }),
         take(1),
         takeUntil(this._destroy$)
@@ -183,6 +192,33 @@ export class ClubEditComponent implements OnInit, OnDestroy {
 
     this.club$ = of(club);
     this._cdr.markForCheck();
+  }
+
+  // Vereinsmanager sehen Bundesland, Spielverbund und Landesverband, ändern
+  // können sie sie nicht: Die drei ordnen den Verein ein und entscheiden mit
+  // darüber, wer ihn verwaltet. Gegenstück zu
+  // ClubsController#restricted_club_params.
+  //
+  // `edit_restricted` kommt aus der Antwort zum geladenen Verein, weil die
+  // Berechtigung pro Verein gilt: Wer eine Spielbetriebsrolle für einen Verband
+  // UND eine Vereinsrolle für einen Verein aus einem anderen Verband hat, darf
+  // beim einen alles und beim anderen nur die Stammdaten. Das Benutzer-Flag
+  // greift nur beim Anlegen, wo es noch keinen Verein gibt.
+  public clubEditRestricted?: boolean;
+
+  public get isRestricted(): boolean {
+    return this.clubEditRestricted ?? !!this.permissions['club_edit_restricted'];
+  }
+
+  public getStateName(club: Club): string {
+    return this.states.find((s) => s.isocode === club.state)?.name ?? '–';
+  }
+
+  public getStateAssociationName(club: Club): string {
+    return (
+      this.stateAssociations.find((s) => s.id === club.state_association_id)
+        ?.name ?? '–'
+    );
   }
 
   public getSportverbund(club: Club): string {

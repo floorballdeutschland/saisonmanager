@@ -9,6 +9,7 @@
   <!-- Spielbetrieb -->
   @if (
     showItem("menu_item_league_admin") ||
+    showItem("menu_item_club_admin") ||
     showItem("menu_item_player_admin") ||
     showItem("menu_item_player_vm") ||
     showItem("menu_item_arena_admin") ||
@@ -147,7 +148,7 @@
             >
           </li>
         }
-        @if (showItem("menu_item_league_admin")) {
+        @if (showItem("menu_item_club_admin")) {
           <li class="mt-4 mb-4">
             <a
               class="font-bold text-fb-gray-500 hover:text-black text-base"

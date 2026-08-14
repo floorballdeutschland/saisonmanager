@@ -34,7 +34,10 @@ export const routes: Routes = [
         loadChildren: () =>
           import('@floorball/admin/club').then((m) => m.AdminClubModule),
         canActivate: [permissionGuard],
-        data: { permission: 'menu_item_league_admin' },
+        // Eigener Schlüssel statt menu_item_league_admin: Vereinsmanager
+        // pflegen hier ihren eigenen Verein, ohne Zugriff auf die
+        // Ligaverwaltung. Was sie ändern dürfen, regelt club_edit_restricted.
+        data: { permission: 'menu_item_club_admin' },
       },
       {
         // Die Spieler-Verwaltung bündelt admin-/SBK-eigene Ansichten
