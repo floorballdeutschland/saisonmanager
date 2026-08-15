@@ -23,6 +23,22 @@ interface ClubRowState {
   saving: boolean;
 }
 
+interface LeagueOption {
+  id: number;
+  name: string;
+}
+
+// Anzeige-Einheit ist der Spieltag, nicht das einzelne Spiel: die RSK arbeitet
+// eine Liga Spieltag für Spieltag ab.
+interface GameDayGroup {
+  key: string;
+  number: number | null;
+  date: string;
+  arena: string;
+  arenaCity: string;
+  games: RefereeAssignableGame[];
+}
+
 @Component({
   selector: 'fb-assignment-club-index',
   templateUrl: './assignment-club-index.component.html',
@@ -38,10 +54,17 @@ export class AssignmentClubIndexComponent implements OnInit {
   dateFrom = '';
   dateTo = '';
 
+  // Ligen aus der geladenen Spieleliste. Ein eigener Endpunkt wäre eine zweite
+  // Wahrheit: hier soll genau das zur Auswahl stehen, was auch Spiele hat.
+  leagues: LeagueOption[] = [];
+  // null bedeutet „alle Ligen“.
+  selectedLeagueId: number | null = null;
+  groups: GameDayGroup[] = [];
+  openGameDays: string[] = [];
+
   rowStates: Record<number, ClubRowState> = {};
   // Vereine je Liga: die Auswahl sind die Vereine der Mannschaften dieser Liga,
-  // also pro Liga verschieden. Einmal je vorkommender Liga geladen (nicht je
-  // Spiel) – ein Spieltag bringt meist mehrere Spiele derselben Liga mit.
+  // also pro Liga verschieden. Geladen wird nur, was gerade angezeigt wird.
   clubsByLeague: Record<number, AssignmentClub[]> = {};
   private _clubsLoading = new Set<number>();
 
@@ -88,8 +111,9 @@ export class AssignmentClubIndexComponent implements OnInit {
               : (game.nominated_referee_string ?? ''),
             saving: false,
           };
-          this._loadClubs(game.league_id);
         });
+        this._buildLeagues();
+        this._buildGroups();
         this.loading = false;
         this._cdr.markForCheck();
       },
@@ -100,8 +124,50 @@ export class AssignmentClubIndexComponent implements OnInit {
     });
   }
 
+  onLeagueChange(): void {
+    // Die Spieltage der neuen Liga starten aufgeklappt, wie beim Wechsel auf
+    // eine andere Liga im Spielplan.
+    this.openGameDays = [];
+    this._buildGroups();
+    this._cdr.markForCheck();
+  }
+
   clubsFor(game: RefereeAssignableGame): AssignmentClub[] {
     return game.league_id ? (this.clubsByLeague[game.league_id] ?? []) : [];
+  }
+
+  toggleGameDay(key: string): void {
+    this.openGameDays = this.openGameDays.includes(key)
+      ? this.openGameDays.filter((item) => item !== key)
+      : [...this.openGameDays, key];
+  }
+
+  get allExpanded(): boolean {
+    return (
+      this.groups.length > 0 && this.openGameDays.length === this.groups.length
+    );
+  }
+
+  toggleAllGameDays(): void {
+    this.openGameDays = this.allExpanded
+      ? []
+      : this.groups.map((group) => group.key);
+  }
+
+  // Zähler über *alle* Spiele des Spieltags, nicht über eine gefilterte Auswahl:
+  // sonst meldet der Kopf „0 von 1“, wo „7 von 8“ richtig wäre (vgl. fe#210).
+  // Gesperrte Spiele zählen nicht mit, die pflegt die Ansetzer*in personenscharf.
+  assignableCount(group: GameDayGroup): number {
+    return group.games.filter((game) => !game.locked).length;
+  }
+
+  assignedCount(group: GameDayGroup): number {
+    return group.games.filter(
+      (game) =>
+        !game.locked &&
+        (game.assignment_club_id != null ||
+          !!game.nominated_referee_string?.trim())
+    ).length;
   }
 
   // Verein und Freitext schließen einander aus: der Server speichert entweder
@@ -147,10 +213,95 @@ export class AssignmentClubIndexComponent implements OnInit {
     });
   }
 
-  private _loadClubs(leagueId: number | null | undefined): void {
-    if (!leagueId) return;
-    if (this.clubsByLeague[leagueId] || this._clubsLoading.has(leagueId))
+  private _buildLeagues(): void {
+    const byId = new Map<number, LeagueOption>();
+    this.games.forEach((game) => {
+      if (game.league_id == null || byId.has(game.league_id)) return;
+      byId.set(game.league_id, {
+        id: game.league_id,
+        name: game.league ?? '',
+      });
+    });
+    this.leagues = [...byId.values()].sort((a, b) =>
+      a.name.localeCompare(b.name, 'de')
+    );
+
+    // Die zuletzt gewählte Liga überlebt einen Filterwechsel, solange sie noch
+    // Spiele hat; sonst die erste. Ohne Vorauswahl stünde die Ansicht wieder
+    // ligaübergreifend da, und genau das war der Rückschritt.
+    const stillThere = this.leagues.some(
+      (league) => league.id === this.selectedLeagueId
+    );
+    if (!stillThere) {
+      this.selectedLeagueId = this.leagues.length ? this.leagues[0].id : null;
+      this.openGameDays = [];
+    }
+  }
+
+  private _buildGroups(): void {
+    const visible =
+      this.selectedLeagueId == null
+        ? this.games
+        : this.games.filter((game) => game.league_id === this.selectedLeagueId);
+
+    // Die Reihenfolge kommt aus der API (Liga, Spieltagsnummer, Datum, Anwurf);
+    // die Map hält sie fest.
+    const byGameDay = new Map<string, GameDayGroup>();
+    visible.forEach((game) => {
+      const key = this._groupKey(game);
+      let group = byGameDay.get(key);
+      if (!group) {
+        group = {
+          key,
+          number: game.game_day_number ?? null,
+          date: game.date,
+          arena: game.arena ?? '',
+          arenaCity: game.arena_city ?? '',
+          games: [],
+        };
+        byGameDay.set(key, group);
+      }
+      group.games.push(game);
+    });
+
+    this.groups = [...byGameDay.values()];
+    this._syncOpenGameDays();
+    this._loadClubsForVisibleLeagues(visible);
+  }
+
+  // Der Spieltag ist die Gruppe. Fehlt die Kennung (ältere API), fällt die
+  // Gruppierung auf Liga und Datum zurück – gröber, aber nie eine Liste, in der
+  // alles zu einem Klumpen zusammenfällt.
+  private _groupKey(game: RefereeAssignableGame): string {
+    return game.game_day_id != null
+      ? `gd-${game.game_day_id}`
+      : `d-${game.league_id}-${game.date}`;
+  }
+
+  private _syncOpenGameDays(): void {
+    const currentKeys = this.groups.map((group) => group.key);
+    if (this.openGameDays.length === 0) {
+      this.openGameDays = currentKeys;
       return;
+    }
+    const known = new Set(this.openGameDays);
+    const current = new Set(currentKeys);
+    this.openGameDays = [
+      ...this.openGameDays.filter((key) => current.has(key)),
+      ...currentKeys.filter((key) => !known.has(key)),
+    ];
+  }
+
+  private _loadClubsForVisibleLeagues(visible: RefereeAssignableGame[]): void {
+    new Set(
+      visible
+        .map((game) => game.league_id)
+        .filter((id): id is number => id != null)
+    ).forEach((leagueId) => this._loadClubs(leagueId));
+  }
+
+  private _loadClubs(leagueId: number): void {
+    if (this.clubsByLeague[leagueId] || this._clubsLoading.has(leagueId)) return;
 
     this._clubsLoading.add(leagueId);
     this._refereeService

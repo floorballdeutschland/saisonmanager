@@ -4,6 +4,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { environment } from 'src/environments/environment';
@@ -18,7 +19,7 @@ describe('AssignmentClubIndexComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [AssignmentClubIndexComponent],
-      imports: [FormsModule, getTranslocoTestingModule()],
+      imports: [CommonModule, FormsModule, getTranslocoTestingModule()],
       providers: [provideHttpClient(), provideHttpClientTesting()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -125,6 +126,126 @@ describe('AssignmentClubIndexComponent', () => {
     });
 
     expect(component.games[0].assignment_club_id).toBeNull();
+  });
+
+  // Die RSK arbeitet eine Liga Spieltag für Spieltag ab. Ohne Vorauswahl und
+  // Gruppierung stünde sie wieder vor einer ligaübergreifenden Datumsliste.
+  it('waehlt die erste Liga vor und gruppiert deren Spiele nach Spieltag', () => {
+    flushInit([
+      {
+        id: 1,
+        league_id: 5,
+        league: 'A-Liga',
+        game_day_id: 11,
+        game_day_number: 1,
+        date: '2026-09-12',
+      },
+      {
+        id: 2,
+        league_id: 5,
+        league: 'A-Liga',
+        game_day_id: 11,
+        game_day_number: 1,
+        date: '2026-09-12',
+      },
+      {
+        id: 3,
+        league_id: 5,
+        league: 'A-Liga',
+        game_day_id: 12,
+        game_day_number: 2,
+        date: '2026-09-26',
+      },
+      {
+        id: 4,
+        league_id: 6,
+        league: 'B-Liga',
+        game_day_id: 21,
+        game_day_number: 1,
+        date: '2026-09-05',
+      },
+    ]);
+    // Vereine werden nur für die angezeigte Liga geholt, nicht für jede geladene.
+    const clubRequests = httpMock.match((r) => r.url.includes('league_clubs'));
+    expect(clubRequests.length).toBe(1);
+    clubRequests[0].flush([]);
+
+    expect(component.selectedLeagueId).toBe(5);
+    expect(component.leagues.map((l) => l.name)).toEqual(['A-Liga', 'B-Liga']);
+    expect(component.groups.map((g) => g.key)).toEqual(['gd-11', 'gd-12']);
+    expect(component.groups[0].games.map((g) => g.id)).toEqual([1, 2]);
+    // Erster Aufbau: alle Spieltage offen.
+    expect(component.openGameDays).toEqual(['gd-11', 'gd-12']);
+
+    // Einmal mit Daten rendern: die Gruppierung steckt im Template, ein Fehler
+    // dort fiele sonst erst im Browser auf.
+    fixture.detectChanges();
+    const headers: HTMLElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('button[aria-expanded]')
+    );
+    expect(headers.length).toBe(2);
+    expect(headers[0].textContent).toContain('12.09.2026');
+  });
+
+  it('zeigt nach dem Ligawechsel nur die Spieltage der neuen Liga', () => {
+    flushInit([
+      { id: 1, league_id: 5, league: 'A-Liga', game_day_id: 11 },
+      { id: 2, league_id: 6, league: 'B-Liga', game_day_id: 21 },
+    ]);
+    httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+
+    component.selectedLeagueId = 6;
+    component.onLeagueChange();
+    httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+
+    expect(component.groups.map((g) => g.key)).toEqual(['gd-21']);
+    expect(component.groups[0].games.map((g) => g.id)).toEqual([2]);
+  });
+
+  // Gesperrte Spiele pflegt die Ansetzer*in personenscharf. Zählten sie mit,
+  // bliebe der Spieltag im Kopf ewig unvollständig.
+  it('zaehlt gesperrte Spiele nicht in den Spieltags-Fortschritt', () => {
+    flushInit([
+      { id: 1, league_id: 5, game_day_id: 11, assignment_club_id: 7 },
+      { id: 2, league_id: 5, game_day_id: 11, nominated_referee_string: '' },
+      {
+        id: 3,
+        league_id: 5,
+        game_day_id: 11,
+        locked: true,
+        nominated_referee_string: 'Meier / Krause',
+      },
+    ]);
+    httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+
+    const group = component.groups[0];
+    expect(group.games.length).toBe(3);
+    expect(component.assignableCount(group)).toBe(2);
+    expect(component.assignedCount(group)).toBe(1);
+  });
+
+  // Zwei Spieltage derselben Liga können auf denselben Tag fallen – über das
+  // Datum gruppiert wären sie ein Block.
+  it('trennt zwei Spieltage am selben Datum', () => {
+    flushInit([
+      {
+        id: 1,
+        league_id: 5,
+        game_day_id: 11,
+        game_day_number: 1,
+        date: '2026-09-12',
+      },
+      {
+        id: 2,
+        league_id: 5,
+        game_day_id: 12,
+        game_day_number: 2,
+        date: '2026-09-12',
+      },
+    ]);
+    httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+
+    expect(component.groups.length).toBe(2);
   });
 
   afterEach(() => httpMock.verify());

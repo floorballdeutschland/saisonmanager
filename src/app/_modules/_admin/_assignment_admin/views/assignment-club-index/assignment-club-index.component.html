@@ -27,6 +27,24 @@
         </label>
         <label class="flex flex-col gap-1">
           <span class="text-xs uppercase font-bold text-fb-gray-400">{{
+            "assignmentAdmin.club.filterLeague" | transloco
+          }}</span>
+          <select
+            [(ngModel)]="selectedLeagueId"
+            (change)="onLeagueChange()"
+            [disabled]="!leagues.length"
+            class="border border-fb-gray-600 rounded px-2 py-1 text-sm min-w-[14rem]"
+          >
+            @for (league of leagues; track league.id) {
+              <option [ngValue]="league.id">{{ league.name }}</option>
+            }
+            <option [ngValue]="null">
+              {{ "assignmentAdmin.club.filterLeagueAll" | transloco }}
+            </option>
+          </select>
+        </label>
+        <label class="flex flex-col gap-1">
+          <span class="text-xs uppercase font-bold text-fb-gray-400">{{
             "assignmentAdmin.index.filterFrom" | transloco
           }}</span>
           <input
@@ -47,6 +65,19 @@
             class="border border-fb-gray-600 rounded px-2 py-1 text-sm"
           />
         </label>
+        @if (!loading && groups.length) {
+          <button
+            type="button"
+            (click)="toggleAllGameDays()"
+            class="text-sm text-fb-gray-500 hover:text-black underline ml-auto"
+          >
+            {{
+              allExpanded
+                ? ("assignmentAdmin.club.collapseAll" | transloco)
+                : ("assignmentAdmin.club.expandAll" | transloco)
+            }}
+          </button>
+        }
       </div>
     </div>
 
@@ -56,102 +87,181 @@
           {{ "assignmentAdmin.club.loading" | transloco }}
         </div>
       </div>
-    } @else if (!games.length) {
+    } @else if (!groups.length) {
       <div class="bg-white py-[15px] px-[30px]">
         <div class="uppercase font-bold text-gray-400 text-sm">
           {{ "assignmentAdmin.club.empty" | transloco }}
         </div>
       </div>
     } @else {
-      <div class="bg-white p-[15px] lg:p-[30px] overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="text-left text-xs uppercase text-fb-gray-400">
-              <th class="py-2 pr-4">
-                {{ "assignmentAdmin.club.game" | transloco }}
-              </th>
-              <th class="py-2 pr-4">
-                {{ "assignmentAdmin.club.teams" | transloco }}
-              </th>
-              <th class="py-2 pr-4">
-                {{ "assignmentAdmin.club.clubColumn" | transloco }}
-              </th>
-              <th class="py-2 pr-4">
-                {{ "assignmentAdmin.club.freeTextColumn" | transloco }}
-              </th>
-              <th class="py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (game of games; track game.id) {
-              <tr class="border-t border-fb-gray-700 align-top">
-                <td class="py-3 pr-4 whitespace-nowrap">
-                  <div class="font-bold">{{ game.game_number }}</div>
-                  <div class="text-xs text-fb-gray-400">
-                    {{ game.date | date: "dd.MM.yyyy" }}
-                    {{ game.start_time }}
-                  </div>
-                  <div class="text-xs text-fb-gray-400">{{ game.league }}</div>
-                </td>
-                <td class="py-3 pr-4">
-                  <div>{{ game.home_team }}</div>
-                  <div class="text-fb-gray-400">{{ game.guest_team }}</div>
-                </td>
-                @if (game.locked) {
-                  <!-- Für die Personenebene markiert: hier gesperrt, damit sich
-                       nicht zwei Wege auf dasselbe Spiel legen. Sichtbar statt
-                       ausgeblendet, sonst bliebe unklar, warum das Spiel fehlt. -->
-                  <td class="py-3 pr-4" colspan="3">
-                    <span
-                      class="inline-block text-xs px-2 py-1 rounded bg-blue-100 text-blue-700"
-                    >
-                      {{ "assignmentAdmin.club.lockedHint" | transloco }}
-                    </span>
-                  </td>
-                } @else {
-                  <td class="py-3 pr-4">
-                    <select
-                      [(ngModel)]="rowStates[game.id].clubId"
-                      (change)="onClubChange(game)"
-                      [disabled]="rowStates[game.id].saving"
-                      class="border border-fb-gray-600 rounded px-2 py-1 text-sm min-w-[12rem]"
-                    >
-                      <option [ngValue]="null">
-                        {{ "assignmentAdmin.club.noClub" | transloco }}
-                      </option>
-                      @for (club of clubsFor(game); track club.id) {
-                        <option [ngValue]="club.id">{{ club.name }}</option>
-                      }
-                    </select>
-                  </td>
-                  <td class="py-3 pr-4">
-                    <input
-                      type="text"
-                      [(ngModel)]="rowStates[game.id].freeText"
-                      (ngModelChange)="onFreeTextChange(game)"
-                      [disabled]="rowStates[game.id].saving"
-                      [placeholder]="
-                        'assignmentAdmin.club.freeTextPlaceholder' | transloco
-                      "
-                      class="border border-fb-gray-600 rounded px-2 py-1 text-sm w-full min-w-[12rem]"
-                    />
-                  </td>
-                  <td class="py-3">
-                    <fb-button
-                      size="small"
-                      icon="save"
-                      [disabled]="rowStates[game.id].saving"
-                      (click)="save(game)"
-                    >
-                      {{ "assignmentAdmin.club.save" | transloco }}
-                    </fb-button>
-                  </td>
+      @for (group of groups; track group.key) {
+        <div class="bg-white mb-[5px]">
+          <button
+            type="button"
+            (click)="toggleGameDay(group.key)"
+            [attr.aria-expanded]="openGameDays.includes(group.key)"
+            class="w-full flex items-start gap-3 text-left px-[15px] lg:px-[30px] py-[15px] hover:opacity-75"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="w-4 h-4 mt-1 text-gray-400 transition-transform"
+              [ngClass]="{
+                'rotate-180': openGameDays.includes(group.key),
+              }"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+              />
+            </svg>
+            <div>
+              <div class="uppercase font-bold text-gray-400 text-sm">
+                @if (group.number !== null) {
+                  {{
+                    "assignmentAdmin.club.gameDayLabel"
+                      | transloco: { number: group.number }
+                  }}
                 }
-              </tr>
+                {{ group.date | date: "dd.MM.yyyy" }}
+                @if (group.games.length) {
+                  <span class="ml-1 font-normal normal-case"
+                    >({{ group.games.length }}
+                    {{
+                      group.games.length === 1
+                        ? ("assignmentAdmin.club.gameCountSingular" | transloco)
+                        : ("assignmentAdmin.club.gameCountPlural" | transloco)
+                    }})</span
+                  >
+                }
+              </div>
+              @if (group.arena) {
+                <div class="text-gray-400 text-sm">
+                  {{ group.arena
+                  }}{{ group.arenaCity ? ", " + group.arenaCity : "" }}
+                </div>
+              }
+            </div>
+            @if (assignableCount(group)) {
+              <span
+                class="ml-auto shrink-0 text-xs px-2 py-1 rounded"
+                [ngClass]="
+                  assignedCount(group) === assignableCount(group)
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-fb-gray-800 text-fb-gray-500'
+                "
+              >
+                {{
+                  "assignmentAdmin.club.assignedCount"
+                    | transloco
+                      : {
+                          done: assignedCount(group),
+                          total: assignableCount(group),
+                        }
+                }}
+              </span>
             }
-          </tbody>
-        </table>
-      </div>
+          </button>
+
+          @if (openGameDays.includes(group.key)) {
+            <div class="px-[15px] lg:px-[30px] pb-[15px] overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-xs uppercase text-fb-gray-400">
+                    <th class="py-2 pr-4">
+                      {{ "assignmentAdmin.club.game" | transloco }}
+                    </th>
+                    <th class="py-2 pr-4">
+                      {{ "assignmentAdmin.club.teams" | transloco }}
+                    </th>
+                    <th class="py-2 pr-4">
+                      {{ "assignmentAdmin.club.clubColumn" | transloco }}
+                    </th>
+                    <th class="py-2 pr-4">
+                      {{ "assignmentAdmin.club.freeTextColumn" | transloco }}
+                    </th>
+                    <th class="py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (game of group.games; track game.id) {
+                    <tr class="border-t border-fb-gray-700 align-top">
+                      <td class="py-3 pr-4 whitespace-nowrap">
+                        <div class="font-bold">{{ game.game_number }}</div>
+                        <div class="text-xs text-fb-gray-400">
+                          {{ game.date | date: "dd.MM.yyyy" }}
+                          {{ game.start_time }}
+                        </div>
+                      </td>
+                      <td class="py-3 pr-4">
+                        <div>{{ game.home_team }}</div>
+                        <div class="text-fb-gray-400">{{ game.guest_team }}</div>
+                      </td>
+                      @if (game.locked) {
+                        <!-- Für die Personenebene markiert: hier gesperrt, damit sich
+                             nicht zwei Wege auf dasselbe Spiel legen. Sichtbar statt
+                             ausgeblendet, sonst bliebe unklar, warum das Spiel fehlt. -->
+                        <td class="py-3 pr-4" colspan="3">
+                          <span
+                            class="inline-block text-xs px-2 py-1 rounded bg-blue-100 text-blue-700"
+                          >
+                            {{ "assignmentAdmin.club.lockedHint" | transloco }}
+                          </span>
+                        </td>
+                      } @else {
+                        <td class="py-3 pr-4">
+                          <select
+                            [(ngModel)]="rowStates[game.id].clubId"
+                            (change)="onClubChange(game)"
+                            [disabled]="rowStates[game.id].saving"
+                            class="border border-fb-gray-600 rounded px-2 py-1 text-sm min-w-[12rem]"
+                          >
+                            <option [ngValue]="null">
+                              {{ "assignmentAdmin.club.noClub" | transloco }}
+                            </option>
+                            @for (club of clubsFor(game); track club.id) {
+                              <option [ngValue]="club.id">
+                                {{ club.name }}
+                              </option>
+                            }
+                          </select>
+                        </td>
+                        <td class="py-3 pr-4">
+                          <input
+                            type="text"
+                            [(ngModel)]="rowStates[game.id].freeText"
+                            (ngModelChange)="onFreeTextChange(game)"
+                            [disabled]="rowStates[game.id].saving"
+                            [placeholder]="
+                              'assignmentAdmin.club.freeTextPlaceholder'
+                                | transloco
+                            "
+                            class="border border-fb-gray-600 rounded px-2 py-1 text-sm w-full min-w-[12rem]"
+                          />
+                        </td>
+                        <td class="py-3">
+                          <fb-button
+                            size="small"
+                            icon="save"
+                            [disabled]="rowStates[game.id].saving"
+                            (click)="save(game)"
+                          >
+                            {{ "assignmentAdmin.club.save" | transloco }}
+                          </fb-button>
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
     }
   </div>
 </div>

@@ -86,6 +86,14 @@
     "noClub": "No club",
     "save": "Save",
     "saved": "Entry saved.",
-    "lockedHint": "Assigned at person level by the assigner."
+    "lockedHint": "Assigned at person level by the assigner.",
+    "filterLeague": "League",
+    "filterLeagueAll": "All leagues",
+    "gameDayLabel": "Game day {{ number }},",
+    "gameCountSingular": "game",
+    "gameCountPlural": "games",
+    "assignedCount": "{{ done }} of {{ total }} entered",
+    "expandAll": "Expand all game days",
+    "collapseAll": "Collapse all game days"
   }
 }
