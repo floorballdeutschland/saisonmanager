@@ -165,6 +165,24 @@ export class ErrorInterceptor implements HttpInterceptor {
           }
         }
 
+        // Der Spielbericht ist eine Arbeitsfläche, keine Seite, die man betritt
+        // oder nicht. Ein 403 auf eine einzelne Aktion darin heißt „dieses Feld
+        // nicht", nicht „dieser Spielbericht nicht": Die Ansicht selbst ist
+        // bereits über `editable` freigegeben, sonst wären die Bedienelemente
+        // gar nicht sichtbar. Dieselbe Begründung wie bei den Lizenzdokumenten
+        // weiter oben, hier aber ohne frühen return, weil die Meldung bleiben
+        // soll. Ohne diese Ausnahme sprang die Oberfläche mitten im laufenden
+        // Spiel auf die Startseite, und zwar bei jedem weiteren Versuch erneut.
+        // Beobachtet am 15.08. bei der DM der Damen: 19 abgewiesene Speicherungen
+        // von Betreuer, Spielsekretariat, Livestream-Link, Zuschauerzahl und
+        // Anwurfzeit, jede mit Rauswurf.
+        //
+        // Die Ursache dieser 403 lag in der API (der ausrichtende Verein war von
+        // den Kopfdaten ausgesperrt) und ist dort behoben. Diese Ausnahme bleibt
+        // trotzdem richtig: Ein einzelnes abgelehntes Feld darf niemanden aus
+        // einem laufenden Spielbericht werfen, gleich aus welchem Grund.
+        const matchReportRequest = request.url.includes('user/games/');
+
         if (err.status === 403) {
           this._notificationService.error(
             'Berechtigungsfehler: ' + (this.errorDetail(err) || 'Kein Zugriff'),
@@ -173,7 +191,7 @@ export class ErrorInterceptor implements HttpInterceptor {
               keepAfterRouteChange: true,
             }
           );
-          if (!secretaryMode) {
+          if (!secretaryMode && !matchReportRequest) {
             this._router.navigate(['/']);
           }
         }

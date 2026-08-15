@@ -228,6 +228,60 @@ describe('ErrorInterceptor', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/']);
   });
 
+  // Der Spielbericht ist eine Arbeitsflaeche: Ein abgelehntes Einzelfeld darf
+  // niemanden aus einem laufenden Spiel werfen. Anders als bei den
+  // Lizenzdokumenten bleibt die Meldung hier stehen, sonst waere nicht
+  // erkennbar, dass die Eingabe nicht angekommen ist. Beobachtet am 15.08. bei
+  // der DM der Damen an set_field (Betreuer, Spielsekretariat, Livestream).
+  it('keeps the user in the game report on a 403', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung.' },
+      403,
+      `${environment.apiURL}user/games/46345/set_field.json`
+    );
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Berechtigungsfehler: Keine Berechtigung.',
+      { autoClose: false, keepAfterRouteChange: true }
+    );
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  // Dieselbe Ausnahme gilt fuer die uebrigen Aktionen des Spielberichts, nicht
+  // nur fuer set_field.
+  it('keeps the user in the game report on a 403 while adding an event', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung.' },
+      403,
+      `${environment.apiURL}user/games/46345/events/add.json`
+    );
+
+    expect(errorSpy).toHaveBeenCalled();
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  // Gegenprobe: Die oeffentliche Spielansicht ist eine eigene Seite und liegt
+  // nicht unter user/games/. Ein 403 darauf leitet weiter wie bisher.
+  it('still redirects on a 403 for the public game endpoint', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung' },
+      403,
+      `${environment.apiURL}games/46345.json`
+    );
+
+    expect(errorSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/']);
+  });
+
   // Spielsekretariats-Link: kein Benutzerkonto, also nichts zum Abmelden und
   // kein Weg zurueck von /login. Der Kader-Dialog im Spielbericht lief genau
   // dort hinein (api#396). Gemeldet werden muss der Fehlschlag trotzdem, sonst
