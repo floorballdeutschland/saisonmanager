@@ -86,6 +86,16 @@
     "noClub": "Kein Verein",
     "save": "Speichern",
     "saved": "Eintrag gespeichert.",
-    "lockedHint": "Wird durch die Ansetzer*in personenscharf angesetzt."
+    "lockedHint": "Wird durch die Ansetzer*in personenscharf angesetzt.",
+    "filterLeague": "Liga",
+    "filterLeagueAll": "Alle Ligen",
+    "gameDayLabel": "Spieltag {{ number }},",
+    "gameCountSingular": "Spiel",
+    "gameCountPlural": "Spiele",
+    "assignedCount": "{{ done }} von {{ total }} eingetragen",
+    "expandAll": "Alle Spieltage aufklappen",
+    "collapseAll": "Alle Spieltage zuklappen",
+    "clubsFailed": "Vereinsliste konnte nicht geladen werden.",
+    "clubsRetry": "Erneut versuchen"
   }
 }
