@@ -12,7 +12,7 @@ import {
   getPeriodMaxSeconds,
   isEventTimeValid,
 } from './event-time-validation';
-import { personName } from './person-name';
+import { personName, splitPersonName } from './person-name';
 import {
   Game,
   GameAdditionalFields,
@@ -148,10 +148,54 @@ describe('personName', () => {
   // Zusicherung fuer den Rueckleseweg: fieldValue.split(', ') muss wieder in
   // dieselben zwei Felder zerfallen, sonst wandert der Vorname in das
   // Nachnamensfeld.
-  it('bleibt durch split(", ") wieder zerlegbar', () => {
-    const [last, first] = personName(undefined, 'Carolina').split(', ');
+  it('bleibt durch splitPersonName wieder zerlegbar', () => {
+    const [last, first] = splitPersonName(personName(undefined, 'Carolina'));
     expect(last).toBe('');
     expect(first).toBe('Carolina');
+  });
+
+  // Gegenstueck zur Ruby-Seite (api#440): Ein Altbestand "Ziegler, undefined"
+  // landet ueber den Rueckleseweg sichtbar im Vornamensfeld. Ohne diese Regel
+  // schriebe das naechste Speichern ihn unveraendert zurueck, die Altzeile
+  // waere ueber die Oberflaeche nie loszuwerden.
+  it('verwirft "undefined" auch als eingelesenen Namensteil', () => {
+    expect(personName('Ziegler', 'undefined')).toBe('Ziegler');
+    expect(personName('undefined', 'Carolina')).toBe(', Carolina');
+    expect(personName('undefined', 'undefined')).toBe('');
+  });
+});
+
+describe('splitPersonName', () => {
+  it('zerlegt am Trennzeichen', () => {
+    expect(splitPersonName('Ziegler, Carolina')).toEqual(['Ziegler', 'Carolina']);
+  });
+
+  it('laesst den Vornamen Vorname bleiben, wenn der Nachname fehlt', () => {
+    expect(splitPersonName(', Carolina')).toEqual(['', 'Carolina']);
+  });
+
+  it('liest einen Wert ohne Trennzeichen als Nachnamen', () => {
+    expect(splitPersonName('Ziegler')).toEqual(['Ziegler', undefined]);
+  });
+
+  // Der eigentliche Grund fuer diese Funktion: split(', ') mit Zugriff auf [0]
+  // und [1] liess bei Altbestaenden mit mehreren Kommata alles ab dem dritten
+  // Teil fallen, und das naechste Speichern schrieb den verkuerzten Namen
+  // zurueck.
+  it('verliert bei mehreren Kommata keinen Namensteil', () => {
+    expect(splitPersonName('van der, Berg, Jan')).toEqual([
+      'van der',
+      'Berg, Jan',
+    ]);
+  });
+
+  // Zusicherung fuer den gemeinsamen Weg: Was personName erzeugt, muss
+  // splitPersonName unveraendert wieder hergeben.
+  it('ist zu personName invers', () => {
+    ['Ziegler, Carolina', ', Carolina', 'Ziegler'].forEach((stored) => {
+      const [last, first] = splitPersonName(stored);
+      expect(personName(last, first)).toBe(stored);
+    });
   });
 });
 

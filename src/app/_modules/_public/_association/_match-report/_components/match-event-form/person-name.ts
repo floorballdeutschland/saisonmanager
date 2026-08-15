@@ -21,12 +21,45 @@
  * Vorname da ist: „, Carolina" liest sich wieder als Vorname, ein bloßes
  * „Carolina" wäre zum Nachnamen geworden.
  */
+// Das Komma ist das Trennzeichen und wird deshalb überall entfernt, nicht nur
+// beim ersten Vorkommen.
+//
+// „undefined" wird verworfen: Ein Altbestand wie „Ziegler, undefined" wird beim
+// Öffnen des Berichts über split(', ') in die beiden Eingabefelder verteilt,
+// das Wort steht dann sichtbar im Vornamensfeld. Ohne diese Zeile schriebe das
+// nächste Speichern es unverändert zurück, und die Altzeile wäre über die
+// Oberfläche nie loszuwerden.
+function namePart(value?: string): string {
+  const cleaned = (value ?? '').replace(/,/g, '').trim();
+  return cleaned === 'undefined' ? '' : cleaned;
+}
+
 export function personName(lastname?: string, firstname?: string): string {
-  const last = (lastname ?? '').replace(/,/g, '').trim();
-  const first = (firstname ?? '').replace(/,/g, '').trim();
+  const last = namePart(lastname);
+  const first = namePart(firstname);
 
   // Beide leer: das Feld wird geleert, nicht auf „, " gesetzt.
   if (!last && !first) return '';
   if (!first) return last;
   return `${last}, ${first}`;
+}
+
+/**
+ * Gegenstück zu personName: zerlegt den gespeicherten Wert wieder in die beiden
+ * Eingabefelder.
+ *
+ * Getrennt wird ausschließlich am ERSTEN „, ". Ein schlichtes
+ * `split(', ')` mit Zugriff auf [0] und [1] ließ bei Altbeständen mit mehreren
+ * Kommata alles ab dem dritten Teil unter den Tisch fallen: Aus
+ * „van der, Berg, Jan" wurden die Felder „van der" und „Berg", und das nächste
+ * Speichern schrieb den verkürzten Namen zurück. Der Vorname ging dabei
+ * stillschweigend verloren.
+ */
+export function splitPersonName(
+  value: string
+): [string, string | undefined] {
+  const separator = value.indexOf(', ');
+  if (separator === -1) return [value, undefined];
+
+  return [value.slice(0, separator), value.slice(separator + 2)];
 }

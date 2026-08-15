@@ -32,7 +32,7 @@ import {
   getPeriodMaxSeconds,
   isEventTimeValid,
 } from './event-time-validation';
-import { personName } from './person-name';
+import { personName, splitPersonName } from './person-name';
 
 @Component({
   selector: 'fb-match-event-form',
@@ -276,14 +276,12 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
           this.vodstream = this.fieldValue;
           break;
         case 'recordkeeper':
-          const recordKeeperName = this.fieldValue.split(', ');
-          this.recordkeeperLastname = recordKeeperName[0];
-          this.recordkeeperFirstname = recordKeeperName[1];
+          [this.recordkeeperLastname, this.recordkeeperFirstname] =
+            splitPersonName(this.fieldValue);
           break;
         case 'timekeeper':
-          const timekeeperName = this.fieldValue.split(', ');
-          this.timekeeperLastname = timekeeperName[0];
-          this.timekeeperFirstname = timekeeperName[1];
+          [this.timekeeperLastname, this.timekeeperFirstname] =
+            splitPersonName(this.fieldValue);
           break;
         case 'referee1':
           // this.refereeNumber1 = parseInt(this.fieldValue || '', 10);
