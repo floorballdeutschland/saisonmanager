@@ -32,6 +32,7 @@ import {
   getPeriodMaxSeconds,
   isEventTimeValid,
 } from './event-time-validation';
+import { personName, splitPersonName } from './person-name';
 
 @Component({
   selector: 'fb-match-event-form',
@@ -275,14 +276,12 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
           this.vodstream = this.fieldValue;
           break;
         case 'recordkeeper':
-          const recordKeeperName = this.fieldValue.split(', ');
-          this.recordkeeperLastname = recordKeeperName[0];
-          this.recordkeeperFirstname = recordKeeperName[1];
+          [this.recordkeeperLastname, this.recordkeeperFirstname] =
+            splitPersonName(this.fieldValue);
           break;
         case 'timekeeper':
-          const timekeeperName = this.fieldValue.split(', ');
-          this.timekeeperLastname = timekeeperName[0];
-          this.timekeeperFirstname = timekeeperName[1];
+          [this.timekeeperLastname, this.timekeeperFirstname] =
+            splitPersonName(this.fieldValue);
           break;
         case 'referee1':
           // this.refereeNumber1 = parseInt(this.fieldValue || '', 10);
@@ -869,19 +868,19 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         break;
       case 'recordkeeper':
         fields = {
-          record_keeper_string: `${this.recordkeeperLastname?.replace(
-            ',',
-            ''
-          )}, ${this.recordkeeperFirstname?.replace(',', '')}`,
+          record_keeper_string: personName(
+            this.recordkeeperLastname,
+            this.recordkeeperFirstname
+          ),
         };
         saveMessage = 'Schriftführer/in gespeichert';
         break;
       case 'timekeeper':
         fields = {
-          time_keeper_string: `${this.timekeeperLastname?.replace(
-            ',',
-            ''
-          )}, ${this.timekeeperFirstname?.replace(',', '')}`,
+          time_keeper_string: personName(
+            this.timekeeperLastname,
+            this.timekeeperFirstname
+          ),
         };
         saveMessage = 'Zeitnehmer/in gespeichert';
         break;
