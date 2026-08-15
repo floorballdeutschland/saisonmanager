@@ -230,9 +230,12 @@ describe('ErrorInterceptor', () => {
 
   // Der Spielbericht ist eine Arbeitsflaeche: Ein abgelehntes Einzelfeld darf
   // niemanden aus einem laufenden Spiel werfen. Anders als bei den
-  // Lizenzdokumenten bleibt die Meldung hier stehen, sonst waere nicht
+  // Lizenzdokumenten bleibt die Meldung hier sichtbar, sonst waere nicht
   // erkennbar, dass die Eingabe nicht angekommen ist. Beobachtet am 15.08. bei
-  // der DM der Damen an set_field (Betreuer, Spielsekretariat, Livestream).
+  // der DM der Damen an set_field (Spielsekretariat, Zeitnehmer, Livestream).
+  //
+  // autoClose gehoert zur Zusicherung: Ohne Routenwechsel raeumt niemand die
+  // Meldungen ab, `autoClose: false` wuerde sie also unbegrenzt stapeln.
   it('keeps the user in the game report on a 403', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigate');
@@ -243,9 +246,10 @@ describe('ErrorInterceptor', () => {
       `${environment.apiURL}user/games/46345/set_field.json`
     );
 
+    expect(errorSpy).toHaveBeenCalledTimes(1);
     expect(errorSpy).toHaveBeenCalledWith(
       'Berechtigungsfehler: Keine Berechtigung.',
-      { autoClose: false, keepAfterRouteChange: true }
+      { autoClose: true, keepAfterRouteChange: false }
     );
     expect(navigateSpy).not.toHaveBeenCalled();
   });
@@ -262,12 +266,16 @@ describe('ErrorInterceptor', () => {
       `${environment.apiURL}user/games/46345/events/add.json`
     );
 
-    expect(errorSpy).toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Berechtigungsfehler: Keine Berechtigung.',
+      { autoClose: true, keepAfterRouteChange: false }
+    );
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
   // Gegenprobe: Die oeffentliche Spielansicht ist eine eigene Seite und liegt
-  // nicht unter user/games/. Ein 403 darauf leitet weiter wie bisher.
+  // nicht unter user/games/. Ein 403 darauf leitet weiter wie bisher, und die
+  // Meldung bleibt dabei ueber den Routenwechsel hinweg stehen.
   it('still redirects on a 403 for the public game endpoint', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigate');
@@ -278,8 +286,49 @@ describe('ErrorInterceptor', () => {
       `${environment.apiURL}games/46345.json`
     );
 
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Berechtigungsfehler: Keine Berechtigung',
+      { autoClose: false, keepAfterRouteChange: true }
+    );
+    expect(navigateSpy).toHaveBeenCalledWith(['/']);
+  });
+
+  // Zweite Gegenprobe, der schaerfere Rand: Der Spieltags-Link liegt unter
+  // user/game_days/ und wird beim Oeffnen des Berichts geladen. Wuerde die
+  // Ausnahme spaeter auf `user/game` verkuerzt, faenge sie ihn mit ein.
+  it('still redirects on a 403 for the game day overlay link', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung' },
+      403,
+      `${environment.apiURL}user/game_days/42/overlay_link.json`
+    );
+
     expect(errorSpy).toHaveBeenCalled();
     expect(navigateSpy).toHaveBeenCalledWith(['/']);
+  });
+
+  // Die Ausnahme gilt nur dem 403. Laeuft die Sitzung mitten im Spielbericht
+  // ab, muss weiterhin abgemeldet und auf /login geleitet werden, sonst sitzt
+  // jemand scheinbar angemeldet vor lauter fehlschlagenden Anfragen.
+  it('still logs out on a 401 in the game report', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+    failWith(
+      { message: 'Not authenticated' },
+      401,
+      `${environment.apiURL}user/games/46345/set_field.json`
+    );
+
+    expect(logoutSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/login'],
+      jasmine.objectContaining({ queryParams: jasmine.anything() })
+    );
   });
 
   // Spielsekretariats-Link: kein Benutzerkonto, also nichts zum Abmelden und

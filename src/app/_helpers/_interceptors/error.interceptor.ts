@@ -145,6 +145,35 @@ export class ErrorInterceptor implements HttpInterceptor {
           request.headers.has('X-Secretary-Token') &&
           !this.sessionService.currentUserValue;
 
+        // Der Spielbericht ist eine Arbeitsfläche, keine Seite, die man betritt
+        // oder nicht. Ein 403 auf eine einzelne Aktion darin heißt „dieses Feld
+        // nicht", nicht „dieser Spielbericht nicht": Ob die Bedienelemente
+        // überhaupt erscheinen, entscheidet bereits `game.permission`
+        // (`edit_game_report`, siehe canEditGame() in match-report.component.ts).
+        // Ohne diese Ausnahme sprang die Oberfläche mitten im laufenden Spiel auf
+        // die Startseite, und zwar bei jedem weiteren Versuch erneut. Beobachtet
+        // am 15.08. bei der DM der Damen: 19 abgewiesene Speicherungen von
+        // Spielsekretariat, Zeitnehmer, Livestream-Link, Zuschauerzahl,
+        // Anwurfzeit und Auszeiten, jede mit Rauswurf.
+        //
+        // Alle Endpunkte unter `user/games/` sind Aktionen aus einem bereits
+        // geöffneten Bericht heraus, keiner davon ist ein Seiteneinstieg. Die
+        // SBK-Übersicht (match-report-index.component.ts) nutzt mit `scan` und
+        // `game_status` zwei davon ebenfalls; auch dort ist eine Liste der
+        // falsche Ort für einen Rauswurf, die Ausweitung ist also gewollt.
+        //
+        // Bewusst ohne frühen return wie bei den Lizenzdokumenten weiter oben:
+        // Der Bericht braucht den 401-Zweig (Sitzung läuft mitten im Spiel ab)
+        // und er braucht die Meldung, sonst sieht niemand, dass die Eingabe
+        // nicht angekommen ist.
+        //
+        // Die Ursache der 403 vom 15.08. lag in der API (der ausrichtende Verein
+        // war von den Kopfdaten ausgesperrt), behoben in
+        // floorballdeutschland/saisonmanager-api#437. Diese Ausnahme bleibt
+        // unabhängig davon richtig: Ein einzelnes abgelehntes Feld darf niemanden
+        // aus einem laufenden Spielbericht werfen, gleich aus welchem Grund.
+        const matchReportRequest = request.url.includes('user/games/');
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           if (secretaryMode) {
             // Nur einmal je Sitzung: Die Spielansicht fragt die internen Felder
@@ -165,30 +194,22 @@ export class ErrorInterceptor implements HttpInterceptor {
           }
         }
 
-        // Der Spielbericht ist eine Arbeitsfläche, keine Seite, die man betritt
-        // oder nicht. Ein 403 auf eine einzelne Aktion darin heißt „dieses Feld
-        // nicht", nicht „dieser Spielbericht nicht": Die Ansicht selbst ist
-        // bereits über `editable` freigegeben, sonst wären die Bedienelemente
-        // gar nicht sichtbar. Dieselbe Begründung wie bei den Lizenzdokumenten
-        // weiter oben, hier aber ohne frühen return, weil die Meldung bleiben
-        // soll. Ohne diese Ausnahme sprang die Oberfläche mitten im laufenden
-        // Spiel auf die Startseite, und zwar bei jedem weiteren Versuch erneut.
-        // Beobachtet am 15.08. bei der DM der Damen: 19 abgewiesene Speicherungen
-        // von Betreuer, Spielsekretariat, Livestream-Link, Zuschauerzahl und
-        // Anwurfzeit, jede mit Rauswurf.
-        //
-        // Die Ursache dieser 403 lag in der API (der ausrichtende Verein war von
-        // den Kopfdaten ausgesperrt) und ist dort behoben. Diese Ausnahme bleibt
-        // trotzdem richtig: Ein einzelnes abgelehntes Feld darf niemanden aus
-        // einem laufenden Spielbericht werfen, gleich aus welchem Grund.
-        const matchReportRequest = request.url.includes('user/games/');
-
         if (err.status === 403) {
+          // Im Spielbericht bleibt die Ansicht stehen, es gibt also keinen
+          // Routenwechsel mehr. Ausgerechnet die Umleitung war bisher aber das
+          // Einzige, was alte Meldungen aufgeräumt hat: Die Notification-
+          // Komponente hängt jede Meldung an (`notifications.push`) und leert
+          // die Liste nur bei `NavigationStart`. Mit `autoClose: false` blieben
+          // bei 19 abgewiesenen Speicherungen 19 deckungsgleiche Hinweise
+          // stehen, ohne Versatz übereinander gelegt und einzeln wegzuklicken.
+          // Deshalb schließt diese Meldung im Bericht von selbst; die Eingabe
+          // bleibt im Feld stehen, ein kurzer Hinweis genügt also. Dasselbe
+          // Stapelproblem löst der 401-Zweig oben über `secretaryLinkRejected`.
           this._notificationService.error(
             'Berechtigungsfehler: ' + (this.errorDetail(err) || 'Kein Zugriff'),
             {
-              autoClose: false,
-              keepAfterRouteChange: true,
+              autoClose: matchReportRequest,
+              keepAfterRouteChange: !matchReportRequest,
             }
           );
           if (!secretaryMode && !matchReportRequest) {
