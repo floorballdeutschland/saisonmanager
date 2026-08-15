@@ -4,8 +4,6 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
-import { of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { TranslocoService } from '@jsverse/transloco';
 import {
   NotificationService,
@@ -26,6 +24,9 @@ interface ClubRowState {
 interface LeagueOption {
   id: number;
   name: string;
+  // Beschriftung im Auswahlfeld: der Liganame, bei gleichnamigen Ligen um den
+  // Spielbetrieb ergänzt.
+  label: string;
 }
 
 // Anzeige-Einheit ist der Spieltag, nicht das einzelne Spiel: die RSK arbeitet
@@ -34,6 +35,7 @@ interface GameDayGroup {
   key: string;
   number: number | null;
   date: string;
+  league: string;
   arena: string;
   arenaCity: string;
   games: RefereeAssignableGame[];
@@ -54,19 +56,32 @@ export class AssignmentClubIndexComponent implements OnInit {
   dateFrom = '';
   dateTo = '';
 
-  // Ligen aus der geladenen Spieleliste. Ein eigener Endpunkt wäre eine zweite
-  // Wahrheit: hier soll genau das zur Auswahl stehen, was auch Spiele hat.
+  // Ligen aus der geladenen Spieleliste, also aus den Spielen der Saison im
+  // gewählten Zeitraum, die noch nicht angepfiffen sind. Ein eigener Endpunkt
+  // wäre eine zweite Wahrheit: zur Auswahl soll genau stehen, was auch Spiele hat.
   leagues: LeagueOption[] = [];
-  // null bedeutet „alle Ligen“.
+  // null steht für „alle Ligen“ und zugleich für den Zustand vor dem ersten
+  // Laden sowie für „keine Liga hat Spiele“.
   selectedLeagueId: number | null = null;
   groups: GameDayGroup[] = [];
   openGameDays: string[] = [];
 
   rowStates: Record<number, ClubRowState> = {};
   // Vereine je Liga: die Auswahl sind die Vereine der Mannschaften dieser Liga,
-  // also pro Liga verschieden. Geladen wird nur, was gerade angezeigt wird.
+  // also pro Liga verschieden. Einmal je Liga geladen, nicht je Spiel; deshalb
+  // der Wächter in _loadClubs. Der Speicher wird nicht geleert, angefragt wird
+  // aber nur für aufgeklappte Spieltage.
   clubsByLeague: Record<number, AssignmentClub[]> = {};
+  // Ligen, deren Vereinsliste nicht geladen werden konnte. Ohne diese Trennung
+  // wäre ein Fehlschlag von „diese Liga hat keine Vereine“ nicht zu unterscheiden.
+  clubsFailed: Record<number, boolean> = {};
   private _clubsLoading = new Set<number>();
+  // Trennt „noch keine Entscheidung“ von „bewusst alles zugeklappt“. Beides
+  // wäre sonst eine leere openGameDays-Liste, und jeder Neuaufbau risse die
+  // zugeklappte Ansicht wieder auf.
+  private _openStateTouched = false;
+  // Die Spieltage des letzten Aufbaus, um neu hinzugekommene zu erkennen.
+  private _knownGroupKeys = new Set<string>();
 
   constructor(
     private _refereeService: RefereeService,
@@ -125,9 +140,10 @@ export class AssignmentClubIndexComponent implements OnInit {
   }
 
   onLeagueChange(): void {
-    // Die Spieltage der neuen Liga starten aufgeklappt, wie beim Wechsel auf
-    // eine andere Liga im Spielplan.
-    this.openGameDays = [];
+    // Eine frisch gewählte Liga startet mit dem Standardzustand: aufgeklappt,
+    // wie im Admin-Spielplan (schedule-index). „Alle Ligen“ startet zugeklappt,
+    // sonst stünden die Spieltage sämtlicher Ligen gleichzeitig offen.
+    this._openStateTouched = false;
     this._buildGroups();
     this._cdr.markForCheck();
   }
@@ -136,10 +152,20 @@ export class AssignmentClubIndexComponent implements OnInit {
     return game.league_id ? (this.clubsByLeague[game.league_id] ?? []) : [];
   }
 
+  clubsFailedFor(game: RefereeAssignableGame): boolean {
+    return game.league_id ? !!this.clubsFailed[game.league_id] : false;
+  }
+
+  retryClubs(game: RefereeAssignableGame): void {
+    if (game.league_id) this._loadClubs(game.league_id);
+  }
+
   toggleGameDay(key: string): void {
+    this._openStateTouched = true;
     this.openGameDays = this.openGameDays.includes(key)
       ? this.openGameDays.filter((item) => item !== key)
       : [...this.openGameDays, key];
+    this._loadClubsForOpenGroups();
   }
 
   get allExpanded(): boolean {
@@ -149,14 +175,17 @@ export class AssignmentClubIndexComponent implements OnInit {
   }
 
   toggleAllGameDays(): void {
+    this._openStateTouched = true;
     this.openGameDays = this.allExpanded
       ? []
       : this.groups.map((group) => group.key);
+    this._loadClubsForOpenGroups();
   }
 
-  // Zähler über *alle* Spiele des Spieltags, nicht über eine gefilterte Auswahl:
-  // sonst meldet der Kopf „0 von 1“, wo „7 von 8“ richtig wäre (vgl. fe#210).
-  // Gesperrte Spiele zählen nicht mit, die pflegt die Ansetzer*in personenscharf.
+  // Zähler über die Spiele des Spieltags, die in dieser Liste stehen, also die
+  // noch nicht angepfiffenen. Gesperrte zählen nicht mit: sie sind entweder für
+  // die Personenebene markiert oder bereits mit einem Gespann besetzt, in
+  // beiden Fällen nicht die Aufgabe der RSK.
   assignableCount(group: GameDayGroup): number {
     return group.games.filter((game) => !game.locked).length;
   }
@@ -187,6 +216,15 @@ export class AssignmentClubIndexComponent implements OnInit {
     const state = this.rowStates[game.id];
     if (!state || state.saving) return;
 
+    // Leeres Feld auf leerem Spiel ist keine Änderung. Ohne diese Bremse würde
+    // ein Speichern auf der noch nicht befüllten Zeile eine leere Ansetzung
+    // schreiben und den Erfolgs-Toast zeigen; steht dagegen schon etwas im
+    // Spiel, bleibt das Leeren die legitime Art, einen Eintrag zurückzunehmen.
+    const nothingEntered = !state.clubId && !state.freeText.trim();
+    const nothingStored =
+      game.assignment_club_id == null && !game.nominated_referee_string?.trim();
+    if (nothingEntered && nothingStored) return;
+
     state.saving = true;
     this._cdr.markForCheck();
 
@@ -215,16 +253,27 @@ export class AssignmentClubIndexComponent implements OnInit {
 
   private _buildLeagues(): void {
     const byId = new Map<number, LeagueOption>();
+    const nameCount = new Map<string, number>();
     this.games.forEach((game) => {
       if (game.league_id == null || byId.has(game.league_id)) return;
+      const name = game.league || `#${game.league_id}`;
+      nameCount.set(name, (nameCount.get(name) ?? 0) + 1);
       byId.set(game.league_id, {
         id: game.league_id,
-        name: game.league ?? '',
+        name,
+        // Erst nach dem Durchlauf entscheidbar, siehe unten.
+        label: game.game_operation ? `${name} (${game.game_operation})` : name,
       });
     });
-    this.leagues = [...byId.values()].sort((a, b) =>
-      a.name.localeCompare(b.name, 'de')
-    );
+    // Ligen verschiedener Verbände heißen oft gleich, und ein RSK-Scope kann
+    // mehrere Spielbetriebe umfassen. Nur dann trägt der Verband etwas bei,
+    // sonst bläht er jede Zeile auf.
+    this.leagues = [...byId.values()]
+      .map((league) => ({
+        ...league,
+        label: (nameCount.get(league.name) ?? 0) > 1 ? league.label : league.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'de'));
 
     // Die zuletzt gewählte Liga überlebt einen Filterwechsel, solange sie noch
     // Spiele hat; sonst die erste. Ohne Vorauswahl stünde die Ansicht wieder
@@ -234,7 +283,7 @@ export class AssignmentClubIndexComponent implements OnInit {
     );
     if (!stillThere) {
       this.selectedLeagueId = this.leagues.length ? this.leagues[0].id : null;
-      this.openGameDays = [];
+      this._openStateTouched = false;
     }
   }
 
@@ -244,8 +293,10 @@ export class AssignmentClubIndexComponent implements OnInit {
         ? this.games
         : this.games.filter((game) => game.league_id === this.selectedLeagueId);
 
-    // Die Reihenfolge kommt aus der API (Liga, Spieltagsnummer, Datum, Anwurf);
-    // die Map hält sie fest.
+    // Die Reihenfolge kommt aus der API (Liga, Spieltag, Datum, Anwurf,
+    // Spielnummer); die Map hält sie fest. Das trägt, weil dieselbe Rolle über
+    // Ansicht und Sortierung entscheidet: die Komponente wird nur im
+    // reduzierten Modus gerendert, und genau dort sortiert die API so.
     const byGameDay = new Map<string, GameDayGroup>();
     visible.forEach((game) => {
       const key = this._groupKey(game);
@@ -255,6 +306,7 @@ export class AssignmentClubIndexComponent implements OnInit {
           key,
           number: game.game_day_number ?? null,
           date: game.date,
+          league: game.league ?? '',
           arena: game.arena ?? '',
           arenaCity: game.arena_city ?? '',
           games: [],
@@ -266,36 +318,51 @@ export class AssignmentClubIndexComponent implements OnInit {
 
     this.groups = [...byGameDay.values()];
     this._syncOpenGameDays();
-    this._loadClubsForVisibleLeagues(visible);
+    this._loadClubsForOpenGroups();
   }
 
-  // Der Spieltag ist die Gruppe. Fehlt die Kennung (ältere API), fällt die
-  // Gruppierung auf Liga und Datum zurück – gröber, aber nie eine Liste, in der
-  // alles zu einem Klumpen zusammenfällt.
+  // Der Spieltag ist die Gruppe. Fehlt die Kennung, weil das Frontend vor der
+  // API live geht, fällt die Gruppierung auf Liga, Datum und Halle zurück. Das
+  // trennt zwei Spieltage derselben Liga am selben Tag nur, wenn sie in
+  // verschiedenen Hallen laufen; die Kopfzeile bliebe sonst falsch.
   private _groupKey(game: RefereeAssignableGame): string {
     return game.game_day_id != null
       ? `gd-${game.game_day_id}`
-      : `d-${game.league_id}-${game.date}`;
+      : `d-${game.league_id}-${game.date}-${game.arena ?? ''}`;
   }
 
   private _syncOpenGameDays(): void {
     const currentKeys = this.groups.map((group) => group.key);
-    if (this.openGameDays.length === 0) {
-      this.openGameDays = currentKeys;
+    const allLeagues = this.selectedLeagueId == null;
+
+    if (!this._openStateTouched) {
+      this.openGameDays = allLeagues ? [] : currentKeys;
+      this._knownGroupKeys = new Set(currentKeys);
       return;
     }
-    const known = new Set(this.openGameDays);
+
     const current = new Set(currentKeys);
     this.openGameDays = [
       ...this.openGameDays.filter((key) => current.has(key)),
-      ...currentKeys.filter((key) => !known.has(key)),
+      // Neu aufgetauchte Spieltage aufklappen, damit sie nach einem Reload
+      // nicht übersehen werden. Gemessen wird das an den zuletzt gezeigten
+      // Spieltagen, nicht an den offenen: sonst gälte nach „alle zuklappen“
+      // jeder Spieltag wieder als neu. Über alle Ligen hinweg wäre es zu viel.
+      ...(allLeagues
+        ? []
+        : currentKeys.filter((key) => !this._knownGroupKeys.has(key))),
     ];
+    this._knownGroupKeys = current;
   }
 
-  private _loadClubsForVisibleLeagues(visible: RefereeAssignableGame[]): void {
+  // Vereine werden erst geholt, wenn ein Spieltag offen ist. Sonst löste ein
+  // Wechsel auf „Alle Ligen“ eine Anfrage je Liga des Verbands aus.
+  private _loadClubsForOpenGroups(): void {
+    const open = new Set(this.openGameDays);
     new Set(
-      visible
-        .map((game) => game.league_id)
+      this.groups
+        .filter((group) => open.has(group.key))
+        .flatMap((group) => group.games.map((game) => game.league_id))
         .filter((id): id is number => id != null)
     ).forEach((leagueId) => this._loadClubs(leagueId));
   }
@@ -304,15 +371,22 @@ export class AssignmentClubIndexComponent implements OnInit {
     if (this.clubsByLeague[leagueId] || this._clubsLoading.has(leagueId)) return;
 
     this._clubsLoading.add(leagueId);
-    this._refereeService
-      .adminGetLeagueAssignmentClubs(leagueId)
-      .pipe(catchError(() => of([] as AssignmentClub[])))
-      .subscribe({
-        next: (clubs) => {
-          this.clubsByLeague[leagueId] = clubs;
-          this._clubsLoading.delete(leagueId);
-          this._cdr.markForCheck();
-        },
-      });
+    delete this.clubsFailed[leagueId];
+    this._refereeService.adminGetLeagueAssignmentClubs(leagueId).subscribe({
+      next: (clubs) => {
+        this.clubsByLeague[leagueId] = clubs;
+        this._clubsLoading.delete(leagueId);
+        this._cdr.markForCheck();
+      },
+      // Kein Eintrag in clubsByLeague: ein leeres Array wäre für den Wächter
+      // oben ein gültiges Ergebnis und die Liga würde nie wieder angefragt.
+      // Die Zeile zeigt stattdessen einen Hinweis statt einer leeren Auswahl,
+      // denn ein leeres Dropdown sieht aus wie „diese Liga hat keine Vereine“.
+      error: () => {
+        this._clubsLoading.delete(leagueId);
+        this.clubsFailed[leagueId] = true;
+        this._cdr.markForCheck();
+      },
+    });
   }
 }

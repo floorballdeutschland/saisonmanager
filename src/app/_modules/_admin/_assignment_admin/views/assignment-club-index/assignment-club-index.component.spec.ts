@@ -177,8 +177,8 @@ describe('AssignmentClubIndexComponent', () => {
     // Erster Aufbau: alle Spieltage offen.
     expect(component.openGameDays).toEqual(['gd-11', 'gd-12']);
 
-    // Einmal mit Daten rendern: die Gruppierung steckt im Template, ein Fehler
-    // dort fiele sonst erst im Browser auf.
+    // Einmal mit Daten rendern: Bindings und Kontrollfluss der Gruppierung
+    // stecken im Template und fielen sonst erst im Browser auf.
     fixture.detectChanges();
     const headers: HTMLElement[] = Array.from(
       fixture.nativeElement.querySelectorAll('button[aria-expanded]')
@@ -202,8 +202,9 @@ describe('AssignmentClubIndexComponent', () => {
     expect(component.groups[0].games.map((g) => g.id)).toEqual([2]);
   });
 
-  // Gesperrte Spiele pflegt die Ansetzer*in personenscharf. Zählten sie mit,
-  // bliebe der Spieltag im Kopf ewig unvollständig.
+  // Gesperrt ist ein Spiel, das personenscharf angesetzt wird oder bereits ein
+  // Gespann hat. Beides ist nicht die Aufgabe der RSK, im Zähler hätte es
+  // deshalb nichts zu suchen.
   it('zaehlt gesperrte Spiele nicht in den Spieltags-Fortschritt', () => {
     flushInit([
       { id: 1, league_id: 5, game_day_id: 11, assignment_club_id: 7 },
@@ -246,6 +247,172 @@ describe('AssignmentClubIndexComponent', () => {
     httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
 
     expect(component.groups.length).toBe(2);
+  });
+
+  // „Alle Ligen" ist der Überblick, nicht der Arbeitsmodus: alle Spieltage aller
+  // Ligen gleichzeitig offen hieße eine Vereinsanfrage je Liga des Verbands.
+  it('startet Alle Ligen zugeklappt und laedt dafuer keine Vereine', () => {
+    flushInit([
+      { id: 1, league_id: 5, league: 'A-Liga', game_day_id: 11 },
+      { id: 2, league_id: 6, league: 'B-Liga', game_day_id: 21 },
+    ]);
+    httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+
+    component.selectedLeagueId = null;
+    component.onLeagueChange();
+    httpMock.expectNone((r) => r.url.includes('league_clubs'));
+
+    expect(component.groups.map((g) => g.key)).toEqual(['gd-11', 'gd-21']);
+    expect(component.openGameDays).toEqual([]);
+
+    // Erst das Aufklappen holt die Vereine der betroffenen Liga.
+    component.toggleGameDay('gd-21');
+    httpMock
+      .expectOne((r) => r.url.includes('league_clubs') && r.url.includes('6'))
+      .flush([]);
+  });
+
+  // Ohne Liga-Vorauswahl steht die Liga sonst nirgends mehr auf dem Bildschirm.
+  it('zeigt die Liga im Spieltagskopf, wenn alle Ligen gewaehlt sind', () => {
+    flushInit([
+      {
+        id: 1,
+        league_id: 5,
+        league: 'A-Liga',
+        game_day_id: 11,
+        date: '2026-09-12',
+      },
+    ]);
+    httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+
+    component.selectedLeagueId = null;
+    component.onLeagueChange();
+    fixture.detectChanges();
+
+    expect(component.groups[0].league).toBe('A-Liga');
+    const header: HTMLElement = fixture.nativeElement.querySelector(
+      'button[aria-expanded]'
+    );
+    expect(header.textContent).toContain('A-Liga');
+  });
+
+  // Ein leeres Array im Zwischenspeicher wäre für den Wächter ein gültiges
+  // Ergebnis: die Liga würde nie wieder angefragt und die Auswahl bliebe bis
+  // zum Neuladen der Seite leer.
+  it('merkt sich einen gescheiterten Vereins-Abruf nicht als leeres Ergebnis', () => {
+    flushInit([{ id: 1, league_id: 5, game_day_id: 11 }]);
+    httpMock
+      .expectOne((r) => r.url.includes('league_clubs'))
+      .flush(null, { status: 500, statusText: 'Server Error' });
+
+    expect(component.clubsFailedFor(component.games[0])).toBeTrue();
+
+    component.retryClubs(component.games[0]);
+    httpMock
+      .expectOne((r) => r.url.includes('league_clubs'))
+      .flush([{ id: 3, name: 'SV Musterstadt' }]);
+
+    expect(component.clubsFailedFor(component.games[0])).toBeFalse();
+    expect(component.clubsFor(component.games[0]).length).toBe(1);
+  });
+
+  it('haelt ein bewusstes Zuklappen ueber das naechste Laden hinweg', () => {
+    flushInit([{ id: 1, league_id: 5, game_day_id: 11 }]);
+    httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+    expect(component.openGameDays).toEqual(['gd-11']);
+
+    component.toggleAllGameDays();
+    expect(component.openGameDays).toEqual([]);
+
+    component.load();
+    httpMock
+      .expectOne((r) => r.url.includes('admin/referee_assignments/games'))
+      .flush([{ id: 1, league_id: 5, game_day_id: 11 }]);
+
+    expect(component.openGameDays).toEqual([]);
+  });
+
+  // Speichern schreibt in dasselbe Spiel-Objekt, an dem der Zähler hängt.
+  it('zieht den Spieltags-Zaehler nach dem Speichern nach', () => {
+    flushInit([
+      { id: 1, league_id: 5, game_day_id: 11, nominated_referee_string: '' },
+      { id: 2, league_id: 5, game_day_id: 11, nominated_referee_string: '' },
+    ]);
+    httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+    expect(component.assignedCount(component.groups[0])).toBe(0);
+
+    component.rowStates[1].clubId = 7;
+    component.save(component.games[0]);
+    httpMock
+      .expectOne((r) => r.url.includes('games/1/club_assignment'))
+      .flush({
+        game_id: 1,
+        nominated_referee_string: 'SV Musterstadt',
+        assignment_club_id: 7,
+      });
+
+    expect(component.assignedCount(component.groups[0])).toBe(1);
+    expect(component.assignableCount(component.groups[0])).toBe(2);
+  });
+
+  // Ohne Eintrag und ohne Bestand ist Speichern keine Aenderung. Sonst schriebe
+  // ein Klick auf der noch leeren Zeile eine leere Ansetzung und meldete Erfolg.
+  it('speichert eine leere Zeile ohne Bestand nicht', () => {
+    flushInit([{ id: 1, league_id: 5, game_day_id: 11 }]);
+    httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+
+    component.save(component.games[0]);
+
+    httpMock.expectNone((r) => r.url.includes('club_assignment'));
+  });
+
+  // Fällt die Spieltags-Kennung aus (Frontend vor der API live), trennt die
+  // Rückfall-Gruppierung wenigstens die Hallen.
+  it('gruppiert ohne Spieltags-Kennung nach Liga, Datum und Halle', () => {
+    flushInit([
+      { id: 1, league_id: 5, date: '2026-09-12', arena: 'Halle Nord' },
+      { id: 2, league_id: 5, date: '2026-09-12', arena: 'Halle Nord' },
+      { id: 3, league_id: 5, date: '2026-09-12', arena: 'Halle Sued' },
+    ]);
+    httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+
+    expect(component.groups.map((g) => g.games.length)).toEqual([2, 1]);
+    expect(component.groups[1].arena).toBe('Halle Sued');
+  });
+
+  // Gleichnamige Ligen zweier Verbaende waeren in der Auswahl sonst nicht zu
+  // unterscheiden, und die Spiele der zweiten blieben unbemerkt liegen.
+  it('ergaenzt den Verband nur bei gleichnamigen Ligen', () => {
+    flushInit([
+      {
+        id: 1,
+        league_id: 5,
+        league: 'Bezirksliga',
+        game_operation: 'SBK Ost',
+        game_day_id: 11,
+      },
+      {
+        id: 2,
+        league_id: 6,
+        league: 'Bezirksliga',
+        game_operation: 'SBK West',
+        game_day_id: 21,
+      },
+      {
+        id: 3,
+        league_id: 7,
+        league: 'Landesliga',
+        game_operation: 'SBK Ost',
+        game_day_id: 31,
+      },
+    ]);
+    httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+
+    expect(component.leagues.map((l) => l.label)).toEqual([
+      'Bezirksliga (SBK Ost)',
+      'Bezirksliga (SBK West)',
+      'Landesliga',
+    ]);
   });
 
   afterEach(() => httpMock.verify());

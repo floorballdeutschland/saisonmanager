@@ -94,6 +94,8 @@
     "gameCountPlural": "Spiele",
     "assignedCount": "{{ done }} von {{ total }} eingetragen",
     "expandAll": "Alle Spieltage aufklappen",
-    "collapseAll": "Alle Spieltage zuklappen"
+    "collapseAll": "Alle Spieltage zuklappen",
+    "clubsFailed": "Vereinsliste konnte nicht geladen werden.",
+    "clubsRetry": "Erneut versuchen"
   }
 }

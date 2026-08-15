@@ -94,6 +94,8 @@
     "gameCountPlural": "games",
     "assignedCount": "{{ done }} of {{ total }} entered",
     "expandAll": "Expand all game days",
-    "collapseAll": "Collapse all game days"
+    "collapseAll": "Collapse all game days",
+    "clubsFailed": "The club list could not be loaded.",
+    "clubsRetry": "Try again"
   }
 }

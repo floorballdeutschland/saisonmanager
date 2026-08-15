@@ -352,8 +352,12 @@ export interface RefereeAssignableGame {
   guest_team_club_id?: number | null;
   league?: string;
   league_id?: number | null;
+  // Spielbetrieb der Liga: unterscheidet gleichnamige Ligen verschiedener
+  // Verbände in der Ligaauswahl.
+  game_operation?: string | null;
   // Spieltag als Gruppierungs-Einheit der Anzeige. Über das Datum allein ginge
-  // das nicht: zwei Spieltage derselben Liga können auf denselben Tag fallen.
+  // das nicht, denn zwei Spieltage derselben Liga können auf denselben Tag
+  // fallen.
   game_day_id?: number | null;
   game_day_number?: number | null;
   arena?: string;

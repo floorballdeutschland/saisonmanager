@@ -36,7 +36,7 @@
             class="border border-fb-gray-600 rounded px-2 py-1 text-sm min-w-[14rem]"
           >
             @for (league of leagues; track league.id) {
-              <option [ngValue]="league.id">{{ league.name }}</option>
+              <option [ngValue]="league.id">{{ league.label }}</option>
             }
             <option [ngValue]="null">
               {{ "assignmentAdmin.club.filterLeagueAll" | transloco }}
@@ -120,6 +120,11 @@
               />
             </svg>
             <div>
+              @if (selectedLeagueId === null && group.league) {
+                <!-- Ohne Liga-Vorauswahl stehen die Spieltage mehrerer Ligen
+                     untereinander; die Liga steht sonst nirgends mehr. -->
+                <div class="font-bold text-sm">{{ group.league }}</div>
+              }
               <div class="uppercase font-bold text-gray-400 text-sm">
                 @if (group.number !== null) {
                   {{
@@ -214,21 +219,40 @@
                         </td>
                       } @else {
                         <td class="py-3 pr-4">
-                          <select
-                            [(ngModel)]="rowStates[game.id].clubId"
-                            (change)="onClubChange(game)"
-                            [disabled]="rowStates[game.id].saving"
-                            class="border border-fb-gray-600 rounded px-2 py-1 text-sm min-w-[12rem]"
-                          >
-                            <option [ngValue]="null">
-                              {{ "assignmentAdmin.club.noClub" | transloco }}
-                            </option>
-                            @for (club of clubsFor(game); track club.id) {
-                              <option [ngValue]="club.id">
-                                {{ club.name }}
+                          @if (clubsFailedFor(game)) {
+                            <!-- Ein leeres Auswahlfeld sähe aus wie „diese Liga
+                                 hat keine Vereine“. -->
+                            <div class="text-xs text-red-700">
+                              {{
+                                "assignmentAdmin.club.clubsFailed" | transloco
+                              }}
+                              <button
+                                type="button"
+                                (click)="retryClubs(game)"
+                                class="underline hover:no-underline"
+                              >
+                                {{
+                                  "assignmentAdmin.club.clubsRetry" | transloco
+                                }}
+                              </button>
+                            </div>
+                          } @else {
+                            <select
+                              [(ngModel)]="rowStates[game.id].clubId"
+                              (change)="onClubChange(game)"
+                              [disabled]="rowStates[game.id].saving"
+                              class="border border-fb-gray-600 rounded px-2 py-1 text-sm min-w-[12rem]"
+                            >
+                              <option [ngValue]="null">
+                                {{ "assignmentAdmin.club.noClub" | transloco }}
                               </option>
-                            }
-                          </select>
+                              @for (club of clubsFor(game); track club.id) {
+                                <option [ngValue]="club.id">
+                                  {{ club.name }}
+                                </option>
+                              }
+                            </select>
+                          }
                         </td>
                         <td class="py-3 pr-4">
                           <input
