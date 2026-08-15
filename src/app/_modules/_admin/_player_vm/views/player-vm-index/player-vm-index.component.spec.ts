@@ -110,25 +110,40 @@ describe('PlayerVmIndexComponent (Anlege-Button)', () => {
 
   // Regression: Der Button hing an user.club_ids, und die enthält nur die
   // VM-Vereine. Teammanager*innen sahen ihn deshalb nie, obwohl sie den Kader
-  // aufstellen und Neuzugänge brauchen. Das Gate ist jetzt die Liste selbst:
-  // vm/clubs_and_teams liefert genau die Vereine, in denen die API das
-  // Anlegen erlaubt – für Vereins- wie für Teammanager*innen.
-  it('zeigt den Anlege-Link auch ohne VM-Vereine', () => {
+  // aufstellen und Neuzugänge brauchen. Die Prüfung liegt jetzt allein im
+  // Endpunkt: vm/clubs_and_teams liefert genau die Vereine, in denen die API
+  // das Anlegen erlaubt, für Vereins- wie für Teammanager*innen.
+  //
+  // Der Test hält das fest, indem er bewusst KEINEN SessionService-Stub
+  // bereitstellt: Ein wiedereingeführtes club_ids-Gate liefe zwangsläufig
+  // leer und der Link verschwände.
+  it('zeigt den Anlege-Link je Verein der Liste', () => {
     const fixture = TestBed.createComponent(PlayerVmIndexComponent);
     fixture.detectChanges();
 
-    http
-      .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
-      .flush([{ id: 113, name: 'TSV Rohrdorf-Thansau', teams: [] }]);
+    http.expectOne(`${environment.apiURL}vm/clubs_and_teams.json`).flush([
+      { id: 113, name: 'TSV Rohrdorf-Thansau', teams: [] },
+      { id: 114, name: 'SG Partnerverein', teams: [] },
+    ]);
     http
       .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
       .flush([]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=114`)
+      .flush([]);
     fixture.detectChanges();
 
-    const link: HTMLAnchorElement | null =
-      fixture.nativeElement.querySelector('a[href]');
-    expect(link?.getAttribute('href')).toBe(
-      '/verwaltung/vereine/113/spieler/neu'
-    );
+    // Je Verein ein eigener Link: fängt eine Interpolation, die alle Links
+    // auf denselben Verein zeigen ließe.
+    const hrefs = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'a[data-testid="new-player-link"]'
+      ) as NodeListOf<HTMLAnchorElement>
+    ).map((a) => a.getAttribute('href'));
+
+    expect(hrefs).toEqual([
+      '/verwaltung/vereine/113/spieler/neu',
+      '/verwaltung/vereine/114/spieler/neu',
+    ]);
   });
 });
