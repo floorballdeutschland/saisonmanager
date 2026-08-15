@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { Subject, forkJoin, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
-import { ClubService, PlayerService, SessionService } from '@floorball/core';
+import { ClubService, PlayerService } from '@floorball/core';
 import { ClubWithTeams, Player, PlayerCurrentLicense } from '@floorball/types';
 import { Title } from '@angular/platform-browser';
 
@@ -26,11 +26,6 @@ interface ClubPlayerList {
 })
 export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   clubLists: ClubPlayerList[] = [];
-  // Vereins-IDs, für die der/die Nutzer*in Vereinsmanager*in ist – nur dort
-  // erlaubt die API das Anlegen neuer Spieler*innen (`create_player`), daher
-  // wird der „Neue*r Spieler*in"-Button auch nur für diese Vereine gezeigt.
-  // Bei reinen Teammanager*innen ist die Liste leer.
-  vmClubIds: number[] = [];
   loading = false;
   actionError: string | null = null;
   confirmDeactivateId: number | null = null;
@@ -42,7 +37,6 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   constructor(
     private _clubService: ClubService,
     private _playerService: PlayerService,
-    private _sessionService: SessionService,
     private _cdr: ChangeDetectorRef,
     private _title: Title,
     private _transloco: TranslocoService
@@ -51,13 +45,6 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this._sessionService.currentUser$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((user) => {
-        this.vmClubIds = user?.club_ids ?? [];
-        this._cdr.markForCheck();
-      });
-
     this.loading = true;
     // Bewusst NICHT adminGetClubAndTeams(): das liefert alle Vereine, auf die
     // irgendeine Rolle Zugriff gibt. Wer zusätzlich SBK ist, bekam damit alle
