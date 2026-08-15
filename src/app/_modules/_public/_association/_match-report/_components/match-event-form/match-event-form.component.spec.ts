@@ -12,6 +12,7 @@ import {
   getPeriodMaxSeconds,
   isEventTimeValid,
 } from './event-time-validation';
+import { personName, splitPersonName } from './person-name';
 import {
   Game,
   GameAdditionalFields,
@@ -109,6 +110,91 @@ describe('event-time-validation', () => {
       expect(formatSecondsAsGameTime(0)).toBe('0:00');
       expect(formatSecondsAsGameTime(1200)).toBe('20:00');
       expect(formatSecondsAsGameTime(3661)).toBe('61:01');
+    });
+  });
+});
+
+describe('personName', () => {
+  it('setzt Nachname und Vorname mit dem Trennzeichen zusammen', () => {
+    expect(personName('Ziegler', 'Carolina')).toBe('Ziegler, Carolina');
+  });
+
+  // Der eigentliche Fund vom 15.08.: Ein Template-Literal machte aus dem
+  // fehlenden Nachnamen die Zeichenkette 'undefined', die so im Spielbericht
+  // stand (79 bzw. 85 Eintraege auf Prod).
+  it('schreibt kein "undefined", wenn ein Teil fehlt', () => {
+    expect(personName(undefined, 'Carolina')).toBe(', Carolina');
+    expect(personName('Ziegler', undefined)).toBe('Ziegler');
+  });
+
+  // 1408 bzw. 1346 Spiele trugen ein Leerzeichen am Ende, weil die Eingabe
+  // ungetrimmt uebernommen wurde.
+  it('trimmt beide Teile', () => {
+    expect(personName(' Ziegler ', ' Carolina ')).toBe('Ziegler, Carolina');
+  });
+
+  it('leert das Feld, statt ", " zu speichern', () => {
+    expect(personName('', '')).toBe('');
+    expect(personName(undefined, undefined)).toBe('');
+    expect(personName('  ', '  ')).toBe('');
+  });
+
+  // Das Komma ist das Trennzeichen. Frueher wurde nur das erste entfernt, ein
+  // zweites haette das Feld beim Zuruecklesen zerteilt.
+  it('entfernt Kommata aus beiden Teilen, nicht nur das erste', () => {
+    expect(personName('van, der, Berg', 'Jan')).toBe('van der Berg, Jan');
+  });
+
+  // Zusicherung fuer den Rueckleseweg: fieldValue.split(', ') muss wieder in
+  // dieselben zwei Felder zerfallen, sonst wandert der Vorname in das
+  // Nachnamensfeld.
+  it('bleibt durch splitPersonName wieder zerlegbar', () => {
+    const [last, first] = splitPersonName(personName(undefined, 'Carolina'));
+    expect(last).toBe('');
+    expect(first).toBe('Carolina');
+  });
+
+  // Gegenstueck zur Ruby-Seite (api#440): Ein Altbestand "Ziegler, undefined"
+  // landet ueber den Rueckleseweg sichtbar im Vornamensfeld. Ohne diese Regel
+  // schriebe das naechste Speichern ihn unveraendert zurueck, die Altzeile
+  // waere ueber die Oberflaeche nie loszuwerden.
+  it('verwirft "undefined" auch als eingelesenen Namensteil', () => {
+    expect(personName('Ziegler', 'undefined')).toBe('Ziegler');
+    expect(personName('undefined', 'Carolina')).toBe(', Carolina');
+    expect(personName('undefined', 'undefined')).toBe('');
+  });
+});
+
+describe('splitPersonName', () => {
+  it('zerlegt am Trennzeichen', () => {
+    expect(splitPersonName('Ziegler, Carolina')).toEqual(['Ziegler', 'Carolina']);
+  });
+
+  it('laesst den Vornamen Vorname bleiben, wenn der Nachname fehlt', () => {
+    expect(splitPersonName(', Carolina')).toEqual(['', 'Carolina']);
+  });
+
+  it('liest einen Wert ohne Trennzeichen als Nachnamen', () => {
+    expect(splitPersonName('Ziegler')).toEqual(['Ziegler', undefined]);
+  });
+
+  // Der eigentliche Grund fuer diese Funktion: split(', ') mit Zugriff auf [0]
+  // und [1] liess bei Altbestaenden mit mehreren Kommata alles ab dem dritten
+  // Teil fallen, und das naechste Speichern schrieb den verkuerzten Namen
+  // zurueck.
+  it('verliert bei mehreren Kommata keinen Namensteil', () => {
+    expect(splitPersonName('van der, Berg, Jan')).toEqual([
+      'van der',
+      'Berg, Jan',
+    ]);
+  });
+
+  // Zusicherung fuer den gemeinsamen Weg: Was personName erzeugt, muss
+  // splitPersonName unveraendert wieder hergeben.
+  it('ist zu personName invers', () => {
+    ['Ziegler, Carolina', ', Carolina', 'Ziegler'].forEach((stored) => {
+      const [last, first] = splitPersonName(stored);
+      expect(personName(last, first)).toBe(stored);
     });
   });
 });
