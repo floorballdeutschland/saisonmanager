@@ -4,10 +4,10 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 import { TranslocoService } from '@jsverse/transloco';
-import { SessionService, getTranslocoTestingModule } from '@floorball/core';
-import { User } from '@floorball/types';
+import { getTranslocoTestingModule } from '@floorball/core';
+import { UikitCommonModule } from '@floorball/uikit/common';
 import { environment } from 'src/environments/environment';
 
 import { PlayerVmIndexComponent } from './player-vm-index.component';
@@ -23,17 +23,6 @@ describe('PlayerVmIndexComponent', () => {
         getTranslocoTestingModule(),
       ],
       declarations: [PlayerVmIndexComponent],
-      providers: [
-        {
-          provide: SessionService,
-          useValue: {
-            currentUser$: of({
-              club_ids: [113],
-              permissions: {},
-            } as unknown as User),
-          },
-        },
-      ],
     })
       .overrideTemplate(PlayerVmIndexComponent, '')
       .compileComponents();
@@ -95,5 +84,51 @@ describe('PlayerVmIndexComponent', () => {
     );
     expect(req.request.body.reason).toBe('Sonstiges: Umzug ins Ausland');
     req.flush(player);
+  });
+});
+
+// Mit echter Vorlage, weil genau ihr Zustandekommen geprüft wird.
+describe('PlayerVmIndexComponent (Anlege-Button)', () => {
+  let http: HttpTestingController;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule,
+        FormsModule,
+        UikitCommonModule,
+        getTranslocoTestingModule(),
+      ],
+      declarations: [PlayerVmIndexComponent],
+    }).compileComponents();
+
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => http.verify());
+
+  // Regression: Der Button hing an user.club_ids, und die enthält nur die
+  // VM-Vereine. Teammanager*innen sahen ihn deshalb nie, obwohl sie den Kader
+  // aufstellen und Neuzugänge brauchen. Das Gate ist jetzt die Liste selbst:
+  // vm/clubs_and_teams liefert genau die Vereine, in denen die API das
+  // Anlegen erlaubt – für Vereins- wie für Teammanager*innen.
+  it('zeigt den Anlege-Link auch ohne VM-Vereine', () => {
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    http
+      .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
+      .flush([{ id: 113, name: 'TSV Rohrdorf-Thansau', teams: [] }]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
+      .flush([]);
+    fixture.detectChanges();
+
+    const link: HTMLAnchorElement | null =
+      fixture.nativeElement.querySelector('a[href]');
+    expect(link?.getAttribute('href')).toBe(
+      '/verwaltung/vereine/113/spieler/neu'
+    );
   });
 });
