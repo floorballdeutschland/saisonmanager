@@ -32,6 +32,7 @@ import {
   getPeriodMaxSeconds,
   isEventTimeValid,
 } from './event-time-validation';
+import { personName } from './person-name';
 
 @Component({
   selector: 'fb-match-event-form',
@@ -869,19 +870,19 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         break;
       case 'recordkeeper':
         fields = {
-          record_keeper_string: `${this.recordkeeperLastname?.replace(
-            ',',
-            ''
-          )}, ${this.recordkeeperFirstname?.replace(',', '')}`,
+          record_keeper_string: personName(
+            this.recordkeeperLastname,
+            this.recordkeeperFirstname
+          ),
         };
         saveMessage = 'Schriftführer/in gespeichert';
         break;
       case 'timekeeper':
         fields = {
-          time_keeper_string: `${this.timekeeperLastname?.replace(
-            ',',
-            ''
-          )}, ${this.timekeeperFirstname?.replace(',', '')}`,
+          time_keeper_string: personName(
+            this.timekeeperLastname,
+            this.timekeeperFirstname
+          ),
         };
         saveMessage = 'Zeitnehmer/in gespeichert';
         break;

@@ -12,6 +12,7 @@ import {
   getPeriodMaxSeconds,
   isEventTimeValid,
 } from './event-time-validation';
+import { personName } from './person-name';
 import {
   Game,
   GameAdditionalFields,
@@ -110,6 +111,47 @@ describe('event-time-validation', () => {
       expect(formatSecondsAsGameTime(1200)).toBe('20:00');
       expect(formatSecondsAsGameTime(3661)).toBe('61:01');
     });
+  });
+});
+
+describe('personName', () => {
+  it('setzt Nachname und Vorname mit dem Trennzeichen zusammen', () => {
+    expect(personName('Ziegler', 'Carolina')).toBe('Ziegler, Carolina');
+  });
+
+  // Der eigentliche Fund vom 15.08.: Ein Template-Literal machte aus dem
+  // fehlenden Nachnamen die Zeichenkette 'undefined', die so im Spielbericht
+  // stand (79 bzw. 85 Eintraege auf Prod).
+  it('schreibt kein "undefined", wenn ein Teil fehlt', () => {
+    expect(personName(undefined, 'Carolina')).toBe(', Carolina');
+    expect(personName('Ziegler', undefined)).toBe('Ziegler');
+  });
+
+  // 1408 bzw. 1346 Spiele trugen ein Leerzeichen am Ende, weil die Eingabe
+  // ungetrimmt uebernommen wurde.
+  it('trimmt beide Teile', () => {
+    expect(personName(' Ziegler ', ' Carolina ')).toBe('Ziegler, Carolina');
+  });
+
+  it('leert das Feld, statt ", " zu speichern', () => {
+    expect(personName('', '')).toBe('');
+    expect(personName(undefined, undefined)).toBe('');
+    expect(personName('  ', '  ')).toBe('');
+  });
+
+  // Das Komma ist das Trennzeichen. Frueher wurde nur das erste entfernt, ein
+  // zweites haette das Feld beim Zuruecklesen zerteilt.
+  it('entfernt Kommata aus beiden Teilen, nicht nur das erste', () => {
+    expect(personName('van, der, Berg', 'Jan')).toBe('van der Berg, Jan');
+  });
+
+  // Zusicherung fuer den Rueckleseweg: fieldValue.split(', ') muss wieder in
+  // dieselben zwei Felder zerfallen, sonst wandert der Vorname in das
+  // Nachnamensfeld.
+  it('bleibt durch split(", ") wieder zerlegbar', () => {
+    const [last, first] = personName(undefined, 'Carolina').split(', ');
+    expect(last).toBe('');
+    expect(first).toBe('Carolina');
   });
 });
 
