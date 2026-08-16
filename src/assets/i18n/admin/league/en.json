@@ -66,7 +66,7 @@
     "yes": "Yes",
     "no": "No",
     "parentalConsentRequired": "Parental consent required",
-    "parentalConsentHint": "Enable this if underage players must upload parental consent when applying for a license for this league.",
+    "parentalConsentHint": "Enable this if underage players must upload parental consent when applying for a license for this league and confirm that their legal guardians have been informed about any data processing.",
     "refereeFeedbackEnabled": "Referee feedback active",
     "refereeFeedbackHint": "If active, teams must submit mandatory referee feedback after every game in this league.",
     "directComparison": "What counts more?",
