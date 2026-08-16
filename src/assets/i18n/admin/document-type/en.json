@@ -55,7 +55,7 @@
     "infoLinksUrlHint": "Full address including https://. Leave empty to hide the link.",
     "infoLinksLoadError": "Failed to load links.",
     "infoLinks": {
-      "minor_privacy_bundesliga": "Data protection for underage Bundesliga players"
+      "minor_privacy_bundesliga": "Data protection for underage players"
     }
   }
 }
