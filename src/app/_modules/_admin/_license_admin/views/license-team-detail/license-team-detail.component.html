@@ -486,7 +486,11 @@
                       </label>
                     </div>
                   }
-                  <!-- Datenschutz-Block: nur bei Bundesliga-Teams und minderjährigen Spieler*innen -->
+                  <!-- Datenschutz-Block: bei minderjährigen Spieler*innen, wenn
+                       eine Liga der Mannschaft die Zustimmung verlangt
+                       (parental_consent_required). Das ist ausdrücklich nicht auf
+                       die Bundesliga beschränkt – jede Liga kann den Schalter
+                       tragen, und auf Produktion tun das auch Regionalligen. -->
                   @if (needsMinorConsent) {
                     <div
                       class="mt-3 p-4 border border-amber-300 bg-amber-50 rounded"
@@ -501,6 +505,12 @@
                         {{
                           "licenseAdmin.teamDetail.minorPrivacyText" | transloco
                         }}
+                        @if (parentalConsentLeagueName) {
+                          {{
+                            "licenseAdmin.teamDetail.minorPrivacyLeagueHint"
+                              | transloco: { league: parentalConsentLeagueName }
+                          }}
+                        }
                         <!-- Adresse wird unter /verwaltung/dokumentarten gepflegt.
                              Fehlt sie, bleibt der Hinweis stehen und der Link
                              entfällt – besser als eine tote Adresse. -->

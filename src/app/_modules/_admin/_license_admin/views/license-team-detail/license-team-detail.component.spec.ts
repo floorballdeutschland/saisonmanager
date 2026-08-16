@@ -68,4 +68,30 @@ describe('LicenseTeamDetailComponent', () => {
       );
     });
   });
+
+  // Der Datenschutz-Hinweis nennt die Liga, die die Zustimmung verlangt. Ohne
+  // sie las sich der Block wie eine Aussage über die 1. und 2. Bundesliga,
+  // obwohl ihn auf Produktion auch Regionalligen auslösen.
+  describe('parentalConsentLeagueName', () => {
+    function componentWith(hash: Partial<LicenseHash>) {
+      const fixture = TestBed.createComponent(LicenseTeamDetailComponent);
+      fixture.componentInstance.licenseHash = hash as LicenseHash;
+      return fixture.componentInstance;
+    }
+
+    it('gibt den Namen der auslösenden Liga zurück', () => {
+      const component = componentWith({
+        parental_consent_required: true,
+        parental_consent_league: { id: 7, name: 'Regionalliga Bayern' },
+      });
+
+      expect(component.parentalConsentLeagueName).toBe('Regionalliga Bayern');
+    });
+
+    it('gibt null zurück, solange die API die Liga nicht mitliefert', () => {
+      const component = componentWith({ parental_consent_required: true });
+
+      expect(component.parentalConsentLeagueName).toBeNull();
+    });
+  });
 });

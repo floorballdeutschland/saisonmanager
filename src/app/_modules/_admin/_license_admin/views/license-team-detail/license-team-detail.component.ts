@@ -46,7 +46,7 @@ export class LicenseTeamDetailComponent implements OnInit {
   currentSeasonId: number | null = null;
   uploadError: string | null = null;
   // Adresse des Datenschutz-Informationsblattes für minderjährige
-  // Bundesligaspieler*innen, gepflegt unter /verwaltung/dokumentarten.
+  // Spieler*innen, gepflegt unter /verwaltung/dokumentarten.
   minorPrivacyInfoUrl: string | null = null;
 
   constructor(
@@ -256,6 +256,13 @@ export class LicenseTeamDetailComponent implements OnInit {
       sp &&
       this.isMinor(sp.birthdate)
     );
+  }
+
+  // Name der Liga, die die Zustimmung verlangt – oder null, solange die API sie
+  // nicht mitliefert. Dann bleibt der Hinweis ohne Ligazeile stehen, statt eine
+  // Lücke im Satz zu hinterlassen.
+  get parentalConsentLeagueName(): string | null {
+    return this.licenseHash?.parental_consent_league?.name ?? null;
   }
 
   get submitDisabled(): boolean {
