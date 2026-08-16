@@ -66,3 +66,6 @@ scripts/*.csv
 *.xls
 *:Zone.Identifier
 produktivdaten/
+
+# Lokale Agenten-Anweisungen (maschinenspezifische Pfade, nicht geteilt)
+CLAUDE.md
