@@ -1,0 +1,8 @@
+@if (coaches?.length) {
+  <h4 class="font-bold mt-6 mb-2 lg:mb-4">Betreuer</h4>
+  @for (coach of coaches; track coach.number) {
+    <div class="border-b border-fb-gray-200 text-sm py-2">
+      {{ coach.name }}
+    </div>
+  }
+}

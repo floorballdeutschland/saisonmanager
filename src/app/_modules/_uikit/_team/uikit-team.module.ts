@@ -26,6 +26,7 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
     Organisms.TeamRankingTableComponent,
     Organisms.TeamRankingTableOverlayComponent,
     Organisms.TeamLineupComponent,
+    Organisms.TeamCoachesComponent,
     Organisms.TeamInfoComponent,
     Organisms.TeamHistoryComponent,
     Organisms.TeamSquadComponent,
@@ -36,6 +37,7 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
   exports: [
     Organisms.TeamRankingTableComponent,
     Organisms.TeamLineupComponent,
+    Organisms.TeamCoachesComponent,
     Organisms.TeamInfoComponent,
     Organisms.TeamHistoryComponent,
     Organisms.TeamSquadComponent,
