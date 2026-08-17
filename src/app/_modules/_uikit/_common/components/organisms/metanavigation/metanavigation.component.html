@@ -17,6 +17,7 @@
     showItem("menu_item_licence_club_admin") ||
     showItem("menu_item_licence_admin") ||
     showItem("menu_item_document_type_admin") ||
+    showItem("menu_item_contact_admin") ||
     showItem("menu_item_match_report_admin") ||
     showItem("menu_item_team_game_days") ||
     showItem("menu_item_secretary_links") ||
@@ -35,6 +36,16 @@
               [routerLink]="['/', 'verwaltung', 'dokumentarten']"
               (click)="closeMenu()"
               >{{ "nav.documentTypeAdmin" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_contact_admin")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'kontakte']"
+              (click)="closeMenu()"
+              >{{ "nav.contactAdmin" | transloco }}</a
             >
           </li>
         }
