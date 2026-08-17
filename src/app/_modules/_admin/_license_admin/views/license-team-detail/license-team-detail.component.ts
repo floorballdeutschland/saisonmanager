@@ -253,6 +253,13 @@ export class LicenseTeamDetailComponent implements OnInit {
     return this.licenseHash?.parental_consent_league?.name ?? null;
   }
 
+  // Name der Liga, wegen der die Expresslizenz möglich ist – oder null, solange
+  // die API sie nicht mitliefert. Dann bleibt der Hinweis wie bisher ohne
+  // Ligazeile stehen.
+  get expressLicenseLeagueName(): string | null {
+    return this.licenseHash?.express_license_league?.name ?? null;
+  }
+
   get submitDisabled(): boolean {
     if (!this.needsMinorConsent) return false;
     return !this.minorConsent || !this.guardianEmail.trim();

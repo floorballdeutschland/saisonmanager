@@ -479,9 +479,22 @@
                           <span class="text-sm font-bold">{{
                             "licenseAdmin.teamDetail.expressLabel" | transloco
                           }}</span>
-                          <span class="text-xs text-fb-gray-400">{{
-                            "licenseAdmin.teamDetail.expressHint" | transloco
-                          }}</span>
+                          <span class="text-xs text-fb-gray-400">
+                            {{
+                              "licenseAdmin.teamDetail.expressHint" | transloco
+                            }}
+                            <!-- Kann eine Pokal-Liga sein, deren Verband der
+                                 Verein hier sonst nirgends sieht: angezeigt wird
+                                 oben nur die Hauptliga. Gewaehlt wird sie in
+                                 Team#express_license_league. -->
+                            @if (expressLicenseLeagueName) {
+                              {{
+                                "licenseAdmin.teamDetail.expressLeagueHint"
+                                  | transloco
+                                    : { league: expressLicenseLeagueName }
+                              }}
+                            }
+                          </span>
                         </span>
                       </label>
                     </div>
