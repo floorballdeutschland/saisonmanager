@@ -1,6 +1,6 @@
-// Ansprechpersonen einer Saison, gebündelt für die Spielbetriebskommission
-// (GET admin/contacts). Gruppiert nach Verein, je Verein die Mannschaften der
-// gewählten Saison.
+// Ansprechpersonen der laufenden Saison, gebündelt für die
+// Spielbetriebskommission (GET admin/contacts). Gruppiert nach Verein, je
+// Verein die Mannschaften der Saison.
 
 // Konto einer Vereins- oder Teammanagerin bzw. eines Managers.
 export interface ContactManager {
@@ -28,7 +28,10 @@ export interface ContactClub {
   name: string;
   contact_email: string | null;
   state_association_name: string | null;
-  managers: ContactManager[];
+  // Nur die in der Vereinsverwaltung unter „Zusätzlich informieren"
+  // markierten Vereinsmanager, also dieselbe Auswahl wie beim Versand der
+  // Vereinspost. Nicht jedes Konto mit Vereinsmanager-Rolle.
+  notify_managers: ContactManager[];
   teams: ContactTeam[];
 }
 

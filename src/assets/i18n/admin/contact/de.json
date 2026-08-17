@@ -1,19 +1,19 @@
 {
   "index": {
     "title": "Kontakte",
-    "intro": "Ansprechpersonen der Vereine und Mannschaften deines Spielbetriebs: die am Verein und an der Mannschaft hinterlegten Kontakte sowie die Vereins- und Teammanager-Konten. Mannschaften ohne Ansprechperson bleiben in der Liste stehen, damit die Lücken sichtbar sind.",
+    "intro": "Ansprechpersonen der Vereine und Mannschaften deines Spielbetriebs in der laufenden Saison. Auf Vereinsebene steht hier dasselbe wie beim Versand der Vereinspost: die Kontaktadresse des Vereins und die Vereinsmanager, die in der Vereinsverwaltung unter „Zusätzlich informieren\" markiert sind. Lücken bleiben in der Liste stehen, damit sie sichtbar sind.",
     "exportButton": "Als CSV herunterladen",
-    "season": "Saison",
     "search": "Suche",
     "searchPlaceholder": "Verein, Mannschaft, Name oder E-Mail-Adresse",
     "loading": "Kontakte werden geladen …",
-    "empty": "Für diese Saison sind keine Mannschaften in deinem Spielbetrieb gemeldet.",
-    "summary": "{{clubs}} Vereine, {{teams}} Mannschaften. Ohne Vereinsmanager: {{clubsWithoutManager}}. Mannschaften ohne Ansprechperson: {{teamsWithoutContact}}.",
-    "clubManagers": "Vereinsmanager",
+    "empty": "In deinem Spielbetrieb ist für diese Saison keine Mannschaft gemeldet.",
+    "summary": "{{clubs}} Vereine, {{teams}} Mannschaften. Vereine ohne erreichbaren Kontakt: {{clubsWithoutContact}}. Mannschaften ohne Ansprechperson: {{teamsWithoutContact}}.",
+    "clubMail": "Vereinspost",
     "colTeam": "Mannschaft",
     "colLeague": "Liga",
     "colTeamContact": "Kontaktperson",
     "colTeamManagers": "Teammanager",
-    "none": "keine hinterlegt"
+    "none": "keine hinterlegt",
+    "noMail": "keine E-Mail-Adresse hinterlegt"
   }
 }

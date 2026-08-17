@@ -17,34 +17,17 @@
     {{ "contactAdmin.index.intro" | transloco }}
   </p>
 
-  <div class="flex flex-wrap gap-4 items-end mb-6">
-    <label class="block">
-      <span class="block text-sm font-medium mb-1">{{
-        "contactAdmin.index.season" | transloco
-      }}</span>
-      <select
-        class="border border-fb-gray-700 rounded px-3 py-2 text-sm"
-        [ngModel]="seasonId"
-        (ngModelChange)="onSeasonChange($event)"
-      >
-        @for (season of seasons; track season.id) {
-          <option [value]="season.id">{{ season.name }}</option>
-        }
-      </select>
-    </label>
-
-    <label class="block grow max-w-md">
-      <span class="block text-sm font-medium mb-1">{{
-        "contactAdmin.index.search" | transloco
-      }}</span>
-      <input
-        type="search"
-        class="w-full border border-fb-gray-700 rounded px-3 py-2 text-sm"
-        [placeholder]="'contactAdmin.index.searchPlaceholder' | transloco"
-        [(ngModel)]="search"
-      />
-    </label>
-  </div>
+  <label class="block max-w-md mb-6">
+    <span class="block text-sm font-medium mb-1">{{
+      "contactAdmin.index.search" | transloco
+    }}</span>
+    <input
+      type="search"
+      class="w-full border border-fb-gray-700 rounded px-3 py-2 text-sm"
+      [placeholder]="'contactAdmin.index.searchPlaceholder' | transloco"
+      [(ngModel)]="search"
+    />
+  </label>
 
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-8 text-center">
@@ -60,7 +43,7 @@
             : {
                 clubs: clubs.length,
                 teams: teamCount,
-                clubsWithoutManager: clubsWithoutManager,
+                clubsWithoutContact: clubsWithoutContact,
                 teamsWithoutContact: teamsWithoutContact,
               }
       }}
@@ -81,25 +64,25 @@
               club.state_association_name
             }}</span>
           }
-          @if (club.contact_email) {
-            <a
-              class="text-sm hover:underline"
-              [href]="'mailto:' + club.contact_email"
-              >{{ club.contact_email }}</a
-            >
-          }
         </div>
 
         <div class="mt-2 text-sm">
           <span class="font-medium"
-            >{{ "contactAdmin.index.clubManagers" | transloco }}:</span
+            >{{ "contactAdmin.index.clubMail" | transloco }}:</span
           >
-          @if (club.managers.length === 0) {
-            <span class="text-red-600">{{
+          @if (!club.contact_email && club.notify_managers.length === 0) {
+            <span class="text-red-600 ml-1">{{
               "contactAdmin.index.none" | transloco
             }}</span>
           }
-          @for (manager of club.managers; track manager.id) {
+          @if (club.contact_email) {
+            <a
+              class="ml-1 hover:underline"
+              [href]="'mailto:' + club.contact_email"
+              >{{ club.contact_email }}</a
+            >
+          }
+          @for (manager of club.notify_managers; track manager.id) {
             <span class="ml-1">
               {{ manager.name }}
               @if (manager.email) {
@@ -108,6 +91,10 @@
                   [href]="'mailto:' + manager.email"
                   >{{ manager.email }}</a
                 >)
+              } @else {
+                <span class="text-red-600">{{
+                  "contactAdmin.index.noMail" | transloco
+                }}</span>
               }
             </span>
           }

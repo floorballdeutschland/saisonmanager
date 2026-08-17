@@ -7,30 +7,30 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
-import {
-  AssociationService,
-  ContactService,
-  NotificationService,
-} from '@floorball/core';
-import { ContactClub, ContactManager, Season } from '@floorball/types';
+import { ContactService, NotificationService } from '@floorball/core';
+import { ContactClub, ContactManager } from '@floorball/types';
 import { CsvCell, downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 
-// Kopfzeile des CSV-Exports. Eine Zeile je Mannschaft und je Ansprechperson,
-// damit die Datei ohne Nacharbeit als Serienmail-Quelle taugt.
+// Kopfzeile des CSV-Exports. Eine Zeile je Empfänger, damit die Datei ohne
+// Nacharbeit als Serienmail-Quelle taugt: Die Spalte „E-Mail" trägt immer die
+// Adresse, an die geschrieben wird, Verein und Mannschaft stehen als Kontext
+// daneben. Die Liga der Mannschaft hat eine eigene Spalte.
 export const CONTACT_CSV_HEADERS = [
   'Verein',
   'Landesverband',
-  'Vereins-E-Mail',
   'Mannschaft',
   'Liga',
   'Spielbetrieb',
-  'Mannschafts-Kontaktperson',
-  'Mannschafts-E-Mail',
   'Rolle',
   'Name',
   'E-Mail',
   'Benutzername',
 ];
+
+const ROLE_CLUB_CONTACT = 'Vereins-Kontaktadresse';
+const ROLE_CLUB_MANAGER = 'Vereinsmanager (Vereinspost)';
+const ROLE_TEAM_CONTACT = 'Mannschafts-Kontaktperson';
+const ROLE_TEAM_MANAGER = 'Teammanager';
 
 @Component({
   templateUrl: './contact-index.component.html',
@@ -40,8 +40,6 @@ export const CONTACT_CSV_HEADERS = [
 })
 export class ContactIndexComponent implements OnInit, OnDestroy {
   clubs: ContactClub[] = [];
-  seasons: Season[] = [];
-  seasonId: string | null = null;
   loading = false;
   search = '';
 
@@ -49,29 +47,12 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
 
   constructor(
     private _contactService: ContactService,
-    private _associationService: AssociationService,
     private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this._associationService.seasons$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((seasons) => {
-        this.seasons = [...seasons].sort((a, b) => b.id - a.id);
-        this._cdr.markForCheck();
-      });
-
-    this._associationService.currentSeasonId$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((id) => {
-        // Nur vorbelegen, nicht überschreiben: Wer die Saison schon gewechselt
-        // hat, soll durch eine spätere Meldung nicht zurückgeworfen werden.
-        if (this.seasonId === null && id) {
-          this.seasonId = String(id);
-          this.load();
-        }
-      });
+    this.load();
   }
 
   ngOnDestroy(): void {
@@ -84,12 +65,11 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
 
     this._contactService
-      .getContacts(this.seasonId ?? undefined)
+      .getContacts()
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
           this.clubs = result.clubs;
-          this.seasonId = result.season_id;
           this.loading = false;
           this._cdr.markForCheck();
         },
@@ -103,11 +83,6 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
       });
   }
 
-  onSeasonChange(seasonId: string): void {
-    this.seasonId = seasonId;
-    this.load();
-  }
-
   // Sucht über Vereins-, Mannschafts- und Personennamen sowie Adressen, damit
   // sich eine gemeldete Adresse auch rückwärts zuordnen lässt.
   get filteredClubs(): ContactClub[] {
@@ -119,8 +94,14 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
     return this.clubs.filter((club) => this._clubHaystack(club).includes(term));
   }
 
-  get clubsWithoutManager(): number {
-    return this.clubs.filter((club) => club.managers.length === 0).length;
+  // Ein Verein ist nicht erreichbar, wenn weder eine Kontaktadresse hinterlegt
+  // ist noch ein markierter Vereinsmanager mit Adresse dahintersteht.
+  get clubsWithoutContact(): number {
+    return this.clubs.filter(
+      (club) =>
+        !club.contact_email &&
+        !club.notify_managers.some((manager) => manager.email)
+    ).length;
   }
 
   get teamsWithoutContact(): number {
@@ -128,7 +109,9 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
       (sum, club) =>
         sum +
         club.teams.filter(
-          (team) => team.managers.length === 0 && !team.contact_email
+          (team) =>
+            !team.contact_email &&
+            !team.managers.some((manager) => manager.email)
         ).length,
       0
     );
@@ -147,7 +130,7 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
       club.name,
       club.state_association_name,
       club.contact_email,
-      ...club.managers.flatMap((m) => [m.name, m.email]),
+      ...club.notify_managers.flatMap((m) => [m.name, m.email]),
       ...club.teams.flatMap((team) => [
         team.name,
         team.league_name,
@@ -161,61 +144,72 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
       .toLowerCase();
   }
 
-  // Eine Zeile je Ansprechperson. Vereine und Mannschaften ohne Konto bekommen
-  // trotzdem eine Zeile mit leeren Personenspalten: Diese Lücken sind der
-  // eigentliche Grund für den Export.
+  // Eine Zeile je Empfänger: die Kontaktadresse des Vereins, jeder markierte
+  // Vereinsmanager, je Mannschaft die hinterlegte Kontaktperson und jeder
+  // Teammanager. Eine Mannschaft ohne jeden Kontakt bekommt trotzdem eine
+  // Zeile mit leeren Personenspalten, genau diese Lücken sind der Grund für
+  // den Export.
   csvRows(): CsvCell[][] {
     const rows: CsvCell[][] = [];
 
     for (const club of this.filteredClubs) {
-      const clubCells = [
-        club.name,
-        club.state_association_name,
-        club.contact_email,
-      ];
+      const clubCells = [club.name, club.state_association_name, '', '', ''];
 
-      rows.push(
-        ...this._managerRows(
-          club.managers,
-          [...clubCells, '', '', '', '', ''],
-          'Vereinsmanager'
-        )
-      );
+      if (club.contact_email) {
+        rows.push([
+          ...clubCells,
+          ROLE_CLUB_CONTACT,
+          '',
+          club.contact_email,
+          '',
+        ]);
+      }
+
+      for (const manager of club.notify_managers) {
+        rows.push(this._managerRow(clubCells, ROLE_CLUB_MANAGER, manager));
+      }
 
       for (const team of club.teams) {
         const teamCells = [
-          ...clubCells,
+          club.name,
+          club.state_association_name,
           team.name,
           team.league_name,
           team.game_operation_name,
-          team.contact_person,
-          team.contact_email,
         ];
 
-        rows.push(
-          ...this._managerRows(team.managers, teamCells, 'Teammanager')
-        );
+        if (team.contact_person || team.contact_email) {
+          rows.push([
+            ...teamCells,
+            ROLE_TEAM_CONTACT,
+            team.contact_person,
+            team.contact_email,
+            '',
+          ]);
+        }
+
+        for (const manager of team.managers) {
+          rows.push(this._managerRow(teamCells, ROLE_TEAM_MANAGER, manager));
+        }
+
+        if (
+          !team.contact_person &&
+          !team.contact_email &&
+          team.managers.length === 0
+        ) {
+          rows.push([...teamCells, ROLE_TEAM_MANAGER, '', '', '']);
+        }
       }
     }
 
     return rows;
   }
 
-  private _managerRows(
-    managers: ContactManager[],
+  private _managerRow(
     prefix: CsvCell[],
-    role: string
-  ): CsvCell[][] {
-    if (managers.length === 0) {
-      return [[...prefix, role, '', '', '']];
-    }
-
-    return managers.map((manager) => [
-      ...prefix,
-      role,
-      manager.name,
-      manager.email,
-      manager.username,
-    ]);
+    role: string,
+    manager: ContactManager
+  ): CsvCell[] {
+    return [...prefix, role, manager.name, manager.email, manager.username];
   }
 }
