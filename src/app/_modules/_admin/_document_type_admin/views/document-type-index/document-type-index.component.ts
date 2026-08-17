@@ -8,19 +8,12 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import {
-  AssociationService,
   DocumentTypeService,
-  InfoLinkService,
   LeagueService,
   NotificationService,
   SessionService,
 } from '@floorball/core';
-import {
-  DocumentType,
-  GameOperationWithLeagues,
-  InfoLink,
-  User,
-} from '@floorball/types';
+import { DocumentType, GameOperationWithLeagues, User } from '@floorball/types';
 import { TranslocoService } from '@jsverse/transloco';
 
 // Zentraler Katalog der Dokumentarten für Lizenz-Pflichtdokumente.
@@ -51,21 +44,10 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
   newType: Partial<DocumentType> = this._emptyType();
   newTemplateFile: File | null = null;
 
-  // Links auf externe Informationsblätter (floorball.de). Der Katalog der Keys
-  // ist fest (jeder Key hat eine Stelle im Programm, die ihn anzeigt); gepflegt
-  // wird nur die Adresse, weil floorball.de Dateien verschiebt.
-  infoLinks: InfoLink[] = [];
-  infoLinksLoadFailed = false;
-  editingInfoLinkKey: string | null = null;
-  infoLinkBuffer = '';
-  savingInfoLink = false;
-
   private _destroy$ = new Subject<void>();
 
   constructor(
-    private _associationService: AssociationService,
     private _documentTypeService: DocumentTypeService,
-    private _infoLinkService: InfoLinkService,
     private _leagueService: LeagueService,
     private _sessionService: SessionService,
     private _notificationService: NotificationService,
@@ -104,7 +86,6 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
       });
 
     this.load();
-    this.loadInfoLinks();
   }
 
   ngOnDestroy(): void {
@@ -129,77 +110,6 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
           // Die Fehlermeldung zeigt der globale ErrorInterceptor (#84).
           this.loading = false;
           this.loadFailed = true;
-          this._cdr.markForCheck();
-        },
-      });
-  }
-
-  loadInfoLinks(): void {
-    this.infoLinksLoadFailed = false;
-    this._infoLinkService
-      .adminGetInfoLinks()
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (result) => {
-          this.infoLinks = result;
-          this._cdr.markForCheck();
-        },
-        error: () => {
-          // Ein Ladefehler darf nicht wie „kein Link gepflegt" aussehen.
-          this.infoLinksLoadFailed = true;
-          this._cdr.markForCheck();
-        },
-      });
-  }
-
-  // Der Key ist technisch; die Bezeichnung steht in der Sprachdatei. Fehlt sie
-  // (neuer Key, Sprachdatei noch nicht nachgezogen), bleibt der Key sichtbar,
-  // damit die Zeile nicht namenlos wird.
-  infoLinkLabel(key: string): string {
-    const translated = this._transloco.translate(
-      `documentTypeAdmin.index.infoLinks.${key}`
-    );
-    return translated === `documentTypeAdmin.index.infoLinks.${key}`
-      ? key
-      : translated;
-  }
-
-  startEditInfoLink(link: InfoLink): void {
-    this.editingInfoLinkKey = link.key;
-    this.infoLinkBuffer = link.url ?? '';
-  }
-
-  cancelEditInfoLink(): void {
-    this.editingInfoLinkKey = null;
-    this.infoLinkBuffer = '';
-  }
-
-  saveInfoLink(): void {
-    if (!this.editingInfoLinkKey) return;
-    const key = this.editingInfoLinkKey;
-    this.savingInfoLink = true;
-    this._infoLinkService
-      .adminUpdateInfoLink(key, this.infoLinkBuffer.trim())
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (updated) => {
-          this.infoLinks = this.infoLinks.map((l) =>
-            l.key === updated.key ? updated : l
-          );
-          // init wird nur beim Seitenaufbau geladen. Ohne das hier zeigte der
-          // Lizenzantrag nach dem Korrigieren weiter die alte Adresse – also
-          // genau dann, wenn jemand die Korrektur nachprüfen will.
-          this._associationService.setInfoLink(updated.key, updated.url);
-          this.cancelEditInfoLink();
-          this.savingInfoLink = false;
-          this._notificationService.success(
-            this._transloco.translate('documentTypeAdmin.index.saved'),
-            { autoClose: true, keepAfterRouteChange: false }
-          );
-          this._cdr.markForCheck();
-        },
-        error: () => {
-          this.savingInfoLink = false;
           this._cdr.markForCheck();
         },
       });
