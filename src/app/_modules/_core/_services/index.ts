@@ -21,6 +21,7 @@ export * from './game-operation.service';
 export * from './referee.service';
 export * from './arena.service';
 export * from './version.service';
+export * from './contact.service';
 export * from './state-association.service';
 export * from './api-key.service';
 export * from './api-key-application.service';

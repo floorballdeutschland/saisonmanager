@@ -1,0 +1,19 @@
+{
+  "index": {
+    "title": "Contacts",
+    "intro": "Contact persons for the clubs and teams in your game operation: the contacts stored on the club and the team, plus the club and team manager accounts. Teams without a contact stay in the list so the gaps stay visible.",
+    "exportButton": "Download as CSV",
+    "season": "Season",
+    "search": "Search",
+    "searchPlaceholder": "Club, team, name or e-mail address",
+    "loading": "Loading contacts …",
+    "empty": "No teams are registered in your game operation for this season.",
+    "summary": "{{clubs}} clubs, {{teams}} teams. Without a club manager: {{clubsWithoutManager}}. Teams without a contact: {{teamsWithoutContact}}.",
+    "clubManagers": "Club managers",
+    "colTeam": "Team",
+    "colLeague": "League",
+    "colTeamContact": "Contact person",
+    "colTeamManagers": "Team managers",
+    "none": "none on file"
+  }
+}
