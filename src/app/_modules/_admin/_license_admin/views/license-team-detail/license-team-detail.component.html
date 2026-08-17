@@ -483,11 +483,10 @@
                             {{
                               "licenseAdmin.teamDetail.expressHint" | transloco
                             }}
-                            <!-- Welche Liga die Expresslizenz erlaubt, ist keine
-                                 Nebeninformation: deren Verband bearbeitet den
-                                 Antrag und stellt die Zusatzkosten. Das kann eine
-                                 Pokal-Liga eines Verbands sein, den der Verein
-                                 hier sonst nirgends sieht. -->
+                            <!-- Kann eine Pokal-Liga sein, deren Verband der
+                                 Verein hier sonst nirgends sieht: angezeigt wird
+                                 oben nur die Hauptliga. Gewaehlt wird sie in
+                                 Team#express_license_league. -->
                             @if (expressLicenseLeagueName) {
                               {{
                                 "licenseAdmin.teamDetail.expressLeagueHint"

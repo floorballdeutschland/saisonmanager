@@ -196,7 +196,7 @@
     "newLicense": "Request new license",
     "expressLabel": "Request as express license (per fee schedule)",
     "expressHint": "Express licenses allow short-term post-licensing shortly before or after the first matchday. The request entails additional costs per the fee schedule and triggers an immediate email notification to the responsible game operations committee.",
-    "expressLeagueHint": "It is possible because of {{league}}. That league's association processes the request and charges the additional costs.",
+    "expressLeagueHint": "Express licensing is available because the team plays in {{league}}. The notification goes to that league's game operations committee, which charges the additional costs per the fee schedule.",
     "minorPrivacyHeading": "Privacy information for underage players",
     "minorPrivacyText": "This license request concerns an underage person. The club is obliged to inform the legal guardian about the processing of image and sound recordings in league operations before submitting the request.",
     "minorPrivacyLeagueHint": "This obligation applies because the team plays in {{league}}.",
