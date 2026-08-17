@@ -9,19 +9,19 @@ import { take } from 'rxjs';
 import { AssociationService } from './association.service';
 import { environment } from 'src/environments/environment';
 
+// Die Fälle zu den gepflegten Informationsblättern sind mit #456 entfallen; der
+// Mechanismus ist ausgebaut. Was bleibt, ist die Grundzusage des Service: init
+// wird genau einmal geladen (shareReplay) und speist alle Ströme daraus.
 describe('AssociationService', () => {
   let service: AssociationService;
   let httpMock: HttpTestingController;
 
   const initUrl = `${environment.apiURL}init.json`;
   const initPayload = {
-    seasons: [],
+    seasons: [{ id: 18, name: '2026/2027', current: true }],
     current_season_id: 18,
     game_operations: [],
     state_associations: [],
-    info_links: {
-      minor_privacy_bundesliga: 'https://floorball.de/alt.pdf',
-    },
   };
 
   beforeEach(() => {
@@ -33,73 +33,23 @@ describe('AssociationService', () => {
     httpMock = TestBed.inject(HttpTestingController);
   });
 
-  describe('infoLinks', () => {
-    it('liefert die Adresse aus init', () => {
-      let url: string | null | undefined;
-      service
-        .infoLinkUrl$('minor_privacy_bundesliga')
-        .pipe(take(1))
-        .subscribe((u) => (url = u));
+  it('speist die Saisons aus init', () => {
+    let seasons: unknown[] | undefined;
+    service.seasons$.pipe(take(1)).subscribe((s) => (seasons = s));
 
-      httpMock.expectOne(initUrl).flush(initPayload);
+    httpMock.expectOne(initUrl).flush(initPayload);
 
-      expect(url).toBe('https://floorball.de/alt.pdf');
-    });
+    expect(seasons).toEqual(initPayload.seasons);
+  });
 
-    it('liefert null für einen Key ohne gepflegte Adresse', () => {
-      let url: string | null | undefined;
-      service
-        .infoLinkUrl$('minor_privacy_bundesliga')
-        .pipe(take(1))
-        .subscribe((u) => (url = u));
+  // shareReplay: mehrere Abonnenten dürfen init nicht mehrfach anfordern, sonst
+  // hängt an jedem Seitenaufbau ein Request pro auswertendem Strom.
+  it('lädt init nur einmal, egal wie viele Ströme daran hängen', () => {
+    service.seasons$.pipe(take(1)).subscribe();
+    service.associations$.pipe(take(1)).subscribe();
+    service.stateAssociations$.pipe(take(1)).subscribe();
 
-      httpMock.expectOne(initUrl).flush({ ...initPayload, info_links: {} });
-
-      expect(url).toBeNull();
-    });
-
-    // Kein Zwischenstand vor init: Ein take(1) direkt nach dem Abonnieren darf
-    // nicht die noch leere Override-Liste erwischen.
-    it('emittiert erst, wenn init geladen ist', () => {
-      let emitted = false;
-      service.infoLinks$.pipe(take(1)).subscribe(() => (emitted = true));
-
-      expect(emitted).toBeFalse();
-
-      httpMock.expectOne(initUrl).flush(initPayload);
-
-      expect(emitted).toBeTrue();
-    });
-
-    it('setInfoLink überschreibt die Adresse aus init', () => {
-      httpMock.expectOne(initUrl).flush(initPayload);
-
-      service.setInfoLink(
-        'minor_privacy_bundesliga',
-        'https://floorball.de/neu.pdf'
-      );
-
-      let url: string | null | undefined;
-      service
-        .infoLinkUrl$('minor_privacy_bundesliga')
-        .pipe(take(1))
-        .subscribe((u) => (url = u));
-
-      expect(url).toBe('https://floorball.de/neu.pdf');
-    });
-
-    it('setInfoLink mit null entfernt die Adresse', () => {
-      httpMock.expectOne(initUrl).flush(initPayload);
-
-      service.setInfoLink('minor_privacy_bundesliga', null);
-
-      let url: string | null | undefined;
-      service
-        .infoLinkUrl$('minor_privacy_bundesliga')
-        .pipe(take(1))
-        .subscribe((u) => (url = u));
-
-      expect(url).toBeNull();
-    });
+    httpMock.expectOne(initUrl).flush(initPayload);
+    httpMock.verify();
   });
 });

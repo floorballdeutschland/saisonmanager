@@ -199,7 +199,6 @@
     "minorPrivacyHeading": "Privacy information for underage players",
     "minorPrivacyText": "This license request concerns an underage person. The club is obliged to inform the legal guardian about the processing of image and sound recordings in league operations before submitting the request.",
     "minorPrivacyLeagueHint": "This obligation applies because the team plays in {{league}}.",
-    "downloadInfoSheet": "Download information sheet",
     "guardianEmailLabel": "Email address of the legal guardian",
     "guardianEmailPlaceholder": "e-mail@example.com",
     "guardianEmailHint": "This address is used exclusively to transmit information required under data protection law (Art. 13 GDPR).",
