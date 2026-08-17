@@ -8,7 +8,7 @@
               <button
                 class="transition hover:bg-fb-gray-200 rounded px-3 whitespace-nowrap"
                 [ngClass]="{ 'bg-fb-gray-200': round === r }"
-                (click)="round = r"
+                (click)="selectRound(r)"
               >
                 {{ r === 0 ? "Gruppenphase" : "Platzierungsspiele" }}
               </button>
