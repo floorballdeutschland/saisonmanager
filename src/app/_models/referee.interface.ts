@@ -198,6 +198,10 @@ export interface RefereeHistoryGame {
   home_team: string;
   guest_team: string;
   league: string;
+  // league_id + game_operation_slug tragen den Link zur öffentlichen
+  // Spielseite: /:association/:leagueId/spiel/:matchId.
+  league_id?: number | null;
+  game_operation_slug?: string | null;
   season_id: number;
   result?: string;
 }
