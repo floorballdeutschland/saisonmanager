@@ -84,6 +84,18 @@ export interface AwardPlayer {
   trikot_number: number;
 }
 
+// Betreuer, wie sie der öffentliche Spielabruf ausgibt: nur belegte Plätze,
+// ohne die Unterschrift. `slot` ist der Betreuerplatz im Spielbericht (1 bis
+// 5), keine Trikotnummer; Strafen gegen Betreuer tragen ihn im Ereignis als
+// 2000 + slot, weil dort das Feld mit den Trikotnummern geteilt wird.
+// Altdaten liefern nur `name`, `first_name` und `last_name` sind dann leer.
+export interface GameCoach {
+  slot: number;
+  first_name: string;
+  last_name: string;
+  name: string;
+}
+
 export interface GameResult {
   home_goals: number;
   guest_goals: number;
@@ -138,6 +150,10 @@ export interface Game {
     home: AwardPlayer[];
     guest: AwardPlayer[];
   };
+  // Optional, weil Frontend und API getrennt ausgerollt werden, und leer für
+  // Spiele vergangener Saisons (dort bleiben die Betreuer intern).
+  home_coaches?: GameCoach[];
+  guest_coaches?: GameCoach[];
   started: boolean;
   ended: boolean;
   result_string: string;

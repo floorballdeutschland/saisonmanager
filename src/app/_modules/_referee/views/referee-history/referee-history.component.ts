@@ -9,6 +9,7 @@ import { RefereeService } from '@floorball/core';
 import {
   RefereeCourseResultCourseData,
   RefereeCourseResultSummary,
+  RefereeHistoryGame,
   RefereeHistorySeason,
 } from '@floorball/types';
 
@@ -59,6 +60,14 @@ export class RefereeHistoryComponent implements OnInit {
         this._cdr.markForCheck();
       },
     });
+  }
+
+  // Direktlink zur (öffentlichen) Spielseite: /:association/:leagueId/spiel/:matchId.
+  // Gleiches Muster wie in "Meine Spieltage". Altdaten-Spiele ohne Verband-Slug
+  // oder Liga-ID bleiben ohne Link, statt auf eine unvollständige Route zu zeigen.
+  matchLink(game: RefereeHistoryGame): (string | number)[] | null {
+    if (!game.game_operation_slug || !game.league_id) return null;
+    return ['/', game.game_operation_slug, game.league_id, 'spiel', game.id];
   }
 
   toggleSeason(seasonId: number): void {

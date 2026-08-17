@@ -45,17 +45,6 @@
     "createError": "Fehler beim Anlegen.",
     "saveError": "Fehler beim Speichern.",
     "deleteError": "Löschen nicht möglich.",
-    "loadError": "Dokumentarten konnten nicht geladen werden.",
-    "infoLinksTitle": "Links auf Informationsblätter",
-    "infoLinksHint": "Adressen von Informationsblättern auf floorball.de, die der Saisonmanager an festen Stellen verlinkt. Wird eine Datei dort neu abgelegt, wird die Adresse hier geändert.",
-    "infoLinksColName": "Informationsblatt",
-    "infoLinksColUrl": "Adresse",
-    "infoLinksEmpty": "Keine Adresse hinterlegt – der Link wird nicht angezeigt.",
-    "infoLinksUrlPlaceholder": "https://floorball.de/…",
-    "infoLinksUrlHint": "Vollständige Adresse mit https://. Leer lassen, um den Link auszublenden.",
-    "infoLinksLoadError": "Links konnten nicht geladen werden.",
-    "infoLinks": {
-      "minor_privacy_bundesliga": "Datenschutz für minderjährige Spieler*innen"
-    }
+    "loadError": "Dokumentarten konnten nicht geladen werden."
   }
 }

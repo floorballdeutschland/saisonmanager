@@ -144,6 +144,13 @@ export const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/contacts').then((m) => m.AdminContactModule),
+        canActivate: [permissionGuard],
+        data: { permission: 'menu_item_contact_admin' },
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/state-associations').then(
             (m) => m.AdminStateAssociationModule
           ),
