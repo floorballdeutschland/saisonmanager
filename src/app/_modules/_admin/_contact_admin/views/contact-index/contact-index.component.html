@@ -6,7 +6,7 @@
     <button
       type="button"
       class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
-      [disabled]="loading || clubs.length === 0"
+      [disabled]="loading || filteredClubs.length === 0"
       (click)="exportCsv()"
     >
       {{ "contactAdmin.index.exportButton" | transloco }}
@@ -52,6 +52,10 @@
     @if (clubs.length === 0) {
       <div class="text-fb-gray-500 text-sm py-8 text-center">
         {{ "contactAdmin.index.empty" | transloco }}
+      </div>
+    } @else if (filteredClubs.length === 0) {
+      <div class="text-fb-gray-500 text-sm py-8 text-center">
+        {{ "contactAdmin.index.noMatch" | transloco }}
       </div>
     }
 
@@ -155,6 +159,10 @@
                           [href]="'mailto:' + manager.email"
                           >{{ manager.email }}</a
                         >)
+                      } @else {
+                        <span class="text-red-600">{{
+                          "contactAdmin.index.noMail" | transloco
+                        }}</span>
                       }
                     </div>
                   }

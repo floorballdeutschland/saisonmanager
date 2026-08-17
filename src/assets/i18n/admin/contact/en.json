@@ -14,6 +14,8 @@
     "colTeamContact": "Contact person",
     "colTeamManagers": "Team managers",
     "none": "none on file",
-    "noMail": "no e-mail address on file"
+    "noMail": "no e-mail address on file",
+    "loadError": "The contacts could not be loaded.",
+    "noMatch": "No club and no team matches the search."
   }
 }

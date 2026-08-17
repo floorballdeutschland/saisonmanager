@@ -236,6 +236,25 @@ describe('ContactIndexComponent', () => {
     }
   });
 
+  it('nimmt in den Export nur, was die Suche uebrig laesst', () => {
+    setup(
+      list([
+        club({ id: 1, name: 'Aal Berlin', contact_email: 'info@aal.example' }),
+        club({
+          id: 2,
+          name: 'Barsch Bremen',
+          contact_email: 'info@barsch.example',
+        }),
+      ])
+    );
+
+    component.search = 'barsch';
+    const rows = component.csvRows();
+
+    expect(rows.length).toBe(1);
+    expect(rows[0][MAIL_COLUMN]).toBe('info@barsch.example');
+  });
+
   it('meldet einen Fehlschlag, statt still leer zu bleiben', () => {
     setup();
     getContacts.and.returnValue(throwError(() => new Error('kaputt')));

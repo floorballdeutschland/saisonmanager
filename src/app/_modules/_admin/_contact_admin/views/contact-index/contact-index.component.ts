@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { ContactService, NotificationService } from '@floorball/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { ContactClub, ContactManager } from '@floorball/types';
 import { CsvCell, downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 
@@ -47,6 +48,7 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
   constructor(
     private _contactService: ContactService,
     private _notificationService: NotificationService,
+    private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -76,7 +78,7 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
           this.loading = false;
           this._cdr.markForCheck();
           this._notificationService.error(
-            'Die Kontakte konnten nicht geladen werden.'
+            this._transloco.translate('contactAdmin.index.loadError')
           );
         },
       });
