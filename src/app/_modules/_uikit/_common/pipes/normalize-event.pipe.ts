@@ -133,7 +133,7 @@ export class NormalizeEventPipe implements PipeTransform {
 
     const published = (
       team === 'home' ? game.home_coaches : game.guest_coaches
-    )?.find((coach) => coach.number === slot);
+    )?.find((coach) => coach.slot === slot);
     if (!published) return undefined;
 
     // Altdaten kennen nur den zusammengesetzten Namen; der steht dann als

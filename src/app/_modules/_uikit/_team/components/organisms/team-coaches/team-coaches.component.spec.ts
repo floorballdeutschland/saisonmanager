@@ -7,8 +7,8 @@ describe('TeamCoachesComponent', () => {
   let component: TeamCoachesComponent;
   let fixture: ComponentFixture<TeamCoachesComponent>;
 
-  const coach = (number: number, name: string): GameCoach => ({
-    number,
+  const coach = (slot: number, name: string): GameCoach => ({
+    slot,
     first_name: name.split(' ')[0],
     last_name: name.split(' ')[1] ?? '',
     name,

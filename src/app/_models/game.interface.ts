@@ -85,11 +85,12 @@ export interface AwardPlayer {
 }
 
 // Betreuer, wie sie der öffentliche Spielabruf ausgibt: nur belegte Plätze,
-// ohne die Unterschrift. `number` ist der Platz im Spielbericht (1 bis 5);
-// Strafen gegen Betreuer tragen ihn als Pseudo-Trikotnummer 2000 + number.
+// ohne die Unterschrift. `slot` ist der Betreuerplatz im Spielbericht (1 bis
+// 5), keine Trikotnummer; Strafen gegen Betreuer tragen ihn im Ereignis als
+// 2000 + slot, weil dort das Feld mit den Trikotnummern geteilt wird.
 // Altdaten liefern nur `name`, `first_name` und `last_name` sind dann leer.
 export interface GameCoach {
-  number: number;
+  slot: number;
   first_name: string;
   last_name: string;
   name: string;

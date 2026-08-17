@@ -11,8 +11,8 @@ import {
 describe('NormalizeEventPipe', () => {
   const pipe = new NormalizeEventPipe();
 
-  const coach = (number: number, first: string, last: string): GameCoach => ({
-    number,
+  const coach = (slot: number, first: string, last: string): GameCoach => ({
+    slot,
     first_name: first,
     last_name: last,
     name: `${last}, ${first}`,
@@ -88,7 +88,7 @@ describe('NormalizeEventPipe', () => {
 
   it('setzt den Sammelnamen ein, wenn die Namensteile fehlen', () => {
     const legacy: GameCoach = {
-      number: 1,
+      slot: 1,
       first_name: '',
       last_name: '',
       name: 'Meier, Anna',
