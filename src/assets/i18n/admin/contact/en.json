@@ -1,0 +1,21 @@
+{
+  "index": {
+    "title": "Contacts",
+    "intro": "Contact persons for the clubs and teams in your game operation for the current season. At club level this mirrors who receives club mail: the club's contact address and the club managers marked as additional recipients in the club administration. Gaps stay in the list so they remain visible.",
+    "exportButton": "Download as CSV",
+    "search": "Search",
+    "searchPlaceholder": "Club, team, name or e-mail address",
+    "loading": "Loading contacts …",
+    "empty": "No team is registered in your game operation for this season.",
+    "summary": "{{clubs}} clubs, {{teams}} teams. Clubs without a reachable contact: {{clubsWithoutContact}}. Teams without a contact: {{teamsWithoutContact}}.",
+    "clubMail": "Club mail",
+    "colTeam": "Team",
+    "colLeague": "League",
+    "colTeamContact": "Contact person",
+    "colTeamManagers": "Team managers",
+    "none": "none on file",
+    "noMail": "no e-mail address on file",
+    "loadError": "The contacts could not be loaded.",
+    "noMatch": "No club and no team matches the search."
+  }
+}
