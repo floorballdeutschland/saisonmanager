@@ -209,6 +209,34 @@ describe('ContactIndexComponent', () => {
     expect(rows[0][MAIL_COLUMN]).toBe('');
   });
 
+  // Eine Zeile mit falscher Laenge verschoebe stillschweigend alle Spalten
+  // dahinter. Deshalb jede Zeilenart einmal gegen die Kopfzeile messen.
+  it('haelt jede Zeilenart auf der Breite der Kopfzeile', () => {
+    setup(
+      list([
+        club({
+          notify_managers: [manager(6, 'Anna Meier', 'anna@aal.example')],
+          teams: [
+            team({
+              id: 10,
+              contact_person: 'Carla Wolf',
+              contact_email: 'team1@aal.example',
+              managers: [manager(7, 'Bruno Sanchez', 'bruno@aal.example')],
+            }),
+            team({ id: 11 }),
+          ],
+        }),
+      ])
+    );
+
+    const rows = component.csvRows();
+
+    expect(rows.length).toBe(5);
+    for (const row of rows) {
+      expect(row.length).toBe(CONTACT_CSV_HEADERS.length);
+    }
+  });
+
   it('meldet einen Fehlschlag, statt still leer zu bleiben', () => {
     setup();
     getContacts.and.returnValue(throwError(() => new Error('kaputt')));
