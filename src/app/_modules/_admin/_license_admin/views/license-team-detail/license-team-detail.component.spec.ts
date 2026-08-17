@@ -94,4 +94,30 @@ describe('LicenseTeamDetailComponent', () => {
       expect(component.parentalConsentLeagueName).toBeNull();
     });
   });
+
+  // Der Express-Hinweis nennt die Liga, wegen der die Expresslizenz möglich ist.
+  // Deren Verband bearbeitet den Antrag und stellt die Zusatzkosten, und das kann
+  // eine Pokal-Liga sein, die der Verein im Formular sonst nirgends sieht (#455).
+  describe('expressLicenseLeagueName', () => {
+    function componentWith(hash: Partial<LicenseHash>) {
+      const fixture = TestBed.createComponent(LicenseTeamDetailComponent);
+      fixture.componentInstance.licenseHash = hash as LicenseHash;
+      return fixture.componentInstance;
+    }
+
+    it('gibt den Namen der erlaubenden Liga zurück', () => {
+      const component = componentWith({
+        express_license_enabled: true,
+        express_license_league: { id: 12, name: 'FD-Pokal' },
+      });
+
+      expect(component.expressLicenseLeagueName).toBe('FD-Pokal');
+    });
+
+    it('gibt null zurück, solange die API die Liga nicht mitliefert', () => {
+      const component = componentWith({ express_license_enabled: true });
+
+      expect(component.expressLicenseLeagueName).toBeNull();
+    });
+  });
 });

@@ -479,9 +479,23 @@
                           <span class="text-sm font-bold">{{
                             "licenseAdmin.teamDetail.expressLabel" | transloco
                           }}</span>
-                          <span class="text-xs text-fb-gray-400">{{
-                            "licenseAdmin.teamDetail.expressHint" | transloco
-                          }}</span>
+                          <span class="text-xs text-fb-gray-400">
+                            {{
+                              "licenseAdmin.teamDetail.expressHint" | transloco
+                            }}
+                            <!-- Welche Liga die Expresslizenz erlaubt, ist keine
+                                 Nebeninformation: deren Verband bearbeitet den
+                                 Antrag und stellt die Zusatzkosten. Das kann eine
+                                 Pokal-Liga eines Verbands sein, den der Verein
+                                 hier sonst nirgends sieht. -->
+                            @if (expressLicenseLeagueName) {
+                              {{
+                                "licenseAdmin.teamDetail.expressLeagueHint"
+                                  | transloco
+                                    : { league: expressLicenseLeagueName }
+                              }}
+                            }
+                          </span>
                         </span>
                       </label>
                     </div>

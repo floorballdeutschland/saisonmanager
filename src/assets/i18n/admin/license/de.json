@@ -196,6 +196,7 @@
     "newLicense": "Neue Lizenz beantragen",
     "expressLabel": "Als Expresslizenz (gemäß Gebührenordnung) beantragen",
     "expressHint": "Expresslizenzen ermöglichen eine kurzfristige Nachlizenzierung kurz vor oder nach dem ersten Spieltag. Die Beantragung ist gemäß Gebührenordnung mit Zusatzkosten verbunden und löst eine sofortige Benachrichtigung der zuständigen Spielbetriebskommission per E-Mail aus.",
+    "expressLeagueHint": "Möglich ist sie wegen der Liga {{league}}. Deren Verband bearbeitet den Antrag und stellt die Zusatzkosten.",
     "minorPrivacyHeading": "Datenschutzinformation für minderjährige Spieler*innen",
     "minorPrivacyText": "Dieser Lizenzantrag betrifft eine minderjährige Person. Der Verein ist verpflichtet, die gesetzliche Vertretung vor der Antragstellung über die Verarbeitung von Bild- und Tonaufnahmen im Spielbetrieb zu informieren.",
     "minorPrivacyLeagueHint": "Diese Pflicht besteht, weil die Mannschaft in der Liga {{league}} spielt.",
