@@ -96,7 +96,6 @@ export * from './admin-license.interface';
 export * from './user-admin.interface';
 export * from './license-document.interface';
 export { DocumentType } from './document-type.interface';
-export * from './info-link.interface';
 export * from './league-qualification.interface';
 export * from './email-log.interface';
 export * from './proceeding-proposal.interface';
