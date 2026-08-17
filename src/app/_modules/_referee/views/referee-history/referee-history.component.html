@@ -131,8 +131,33 @@
                           >
                             {{ formatDate(game.date) }}
                           </td>
-                          <td class="px-4 py-2">{{ game.home_team }}</td>
-                          <td class="px-4 py-2">{{ game.guest_team }}</td>
+                          @if (matchLink(game); as link) {
+                            <td class="px-4 py-2">
+                              <a
+                                [routerLink]="link"
+                                class="hover:underline focus:underline"
+                                [attr.title]="
+                                  'refereeSelf.history.openMatch' | transloco
+                                "
+                              >
+                                {{ game.home_team }}
+                              </a>
+                            </td>
+                            <td class="px-4 py-2">
+                              <a
+                                [routerLink]="link"
+                                class="hover:underline focus:underline"
+                                [attr.title]="
+                                  'refereeSelf.history.openMatch' | transloco
+                                "
+                              >
+                                {{ game.guest_team }}
+                              </a>
+                            </td>
+                          } @else {
+                            <td class="px-4 py-2">{{ game.home_team }}</td>
+                            <td class="px-4 py-2">{{ game.guest_team }}</td>
+                          }
                           <td
                             class="px-4 py-2 text-xs text-fb-gray-500 hidden sm:table-cell"
                           >
