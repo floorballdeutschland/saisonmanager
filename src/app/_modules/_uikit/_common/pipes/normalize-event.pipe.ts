@@ -138,11 +138,16 @@ export class NormalizeEventPipe implements PipeTransform {
 
     // Altdaten kennen nur den zusammengesetzten Namen; der steht dann als
     // Ganzes im Nachnamensfeld, statt die Zeile leer zu lassen.
-    return this.coachEntry(
-      slot,
-      published.first_name,
-      published.last_name || published.name
-    );
+    //
+    // Nur dann, und nicht schon bei fehlendem Nachnamen: Die API setzt `name`
+    // aus den vorhandenen Teilen zusammen, ein Platz mit bloss einem Vornamen
+    // liefert also `name === first_name`. Die Anzeige stellt beide Felder
+    // hintereinander und schriebe den Namen sonst doppelt hin.
+    if (published.first_name || published.last_name) {
+      return this.coachEntry(slot, published.first_name, published.last_name);
+    }
+
+    return this.coachEntry(slot, '', published.name);
   }
 
   private coachEntry(

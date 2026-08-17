@@ -102,6 +102,43 @@ describe('NormalizeEventPipe', () => {
     expect(result?.home.scorer?.player_name).toBe('Meier, Anna');
   });
 
+  // Die API setzt `name` aus den vorhandenen Teilen zusammen; ein Platz mit
+  // bloss einem Vornamen liefert `name === first_name`. Ohne Sonderfall stuende
+  // er zweimal in der Zeile.
+  it('schreibt einen halb gefuellten Namen nicht doppelt', () => {
+    const halfFilled: GameCoach = {
+      slot: 1,
+      first_name: 'Anna',
+      last_name: '',
+      name: 'Anna',
+    };
+
+    const result = pipe.transform(
+      penalty(2001, 'home'),
+      game({ home_coaches: [halfFilled] })
+    );
+
+    expect(result?.home.scorer?.player_firstname).toBe('Anna');
+    expect(result?.home.scorer?.player_name).toBe('');
+  });
+
+  it('die internen Felder gewinnen gegen die oeffentliche Liste', () => {
+    const additionalFields = {
+      home_team_coaches: {
+        coach1_first_name: 'Anna',
+        coach1_last_name: 'Meier',
+      },
+    } as unknown as GameAdditionalFields;
+
+    const result = pipe.transform(
+      penalty(2001, 'home'),
+      game({ home_coaches: [coach(1, 'Dana', 'Fischer')] }),
+      additionalFields
+    );
+
+    expect(result?.home.scorer?.player_name).toBe('Meier');
+  });
+
   it('bleibt ohne passenden Betreuer ohne Namen', () => {
     const result = pipe.transform(
       penalty(2003, 'home'),
