@@ -18,6 +18,13 @@ import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
 export class TournamentMatchesComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<boolean>();
 
+  // Sobald jemand die Reiter selbst umgeschaltet hat, hält die Vorauswahl
+  // still. Nötig, weil selectedLeague$ dieselbe Liga mehrfach meldet und jede
+  // Meldung den Spielplan neu lädt – ohne diese Sperre spränge die Ansicht
+  // dabei wieder zurück.
+  private _roundPicked = false;
+  private _loadedLeagueId?: number;
+
   round = 0;
 
   constructor(private _leagueService: LeagueService) {}
@@ -27,12 +34,40 @@ export class TournamentMatchesComponent implements OnInit, OnDestroy {
 
   matches$?: Observable<GameScheduleEntry[]>;
 
+  // Reiterwechsel von Hand.
+  selectRound(round: number) {
+    this._roundPicked = true;
+    this.round = round;
+  }
+
   getMatches(leagueNumber: number) {
-    this.matches$ = this._leagueService
-      .getGameSchedule(leagueNumber)
-      .pipe(shareReplay());
+    // Andere Liga, andere Vorauswahl: Die Sperre gilt nur für die Liga, in der
+    // umgeschaltet wurde.
+    if (this._loadedLeagueId !== leagueNumber) {
+      this._loadedLeagueId = leagueNumber;
+      this._roundPicked = false;
+      this.round = 0;
+    }
+
+    this.matches$ = this._leagueService.getGameSchedule(leagueNumber).pipe(
+      tap((matches) => this._preselectRound(matches)),
+      shareReplay()
+    );
 
     this.matches$.pipe(take(1), takeUntil(this._destroy$)).subscribe();
+  }
+
+  // Läuft die Platzierungsrunde bereits, ist sie und nicht mehr die
+  // Gruppenphase der Grund, weshalb jemand den Spieltag öffnet. Maßgeblich ist
+  // der Anpfiff: Ein bereits beendetes Platzierungsspiel zählt mit, ein bloß
+  // angesetztes nicht. Platzierungsspiele sind die Spiele ohne Gruppe
+  // (group_identifier), dieselbe Abgrenzung wie in der finalRounds-Pipe.
+  private _preselectRound(matches: GameScheduleEntry[]) {
+    if (this._roundPicked) {
+      return;
+    }
+
+    this.round = matches.some((m) => !m.group_identifier && m.started) ? 1 : 0;
   }
 
   ngOnDestroy(): void {
