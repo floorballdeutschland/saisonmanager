@@ -24,7 +24,6 @@ export const CONTACT_CSV_HEADERS = [
   'Rolle',
   'Name',
   'E-Mail',
-  'Benutzername',
 ];
 
 const ROLE_CLUB_CONTACT = 'Vereins-Kontaktadresse';
@@ -156,13 +155,7 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
       const clubCells = [club.name, club.state_association_name, '', '', ''];
 
       if (club.contact_email) {
-        rows.push([
-          ...clubCells,
-          ROLE_CLUB_CONTACT,
-          '',
-          club.contact_email,
-          '',
-        ]);
+        rows.push([...clubCells, ROLE_CLUB_CONTACT, '', club.contact_email]);
       }
 
       for (const manager of club.notify_managers) {
@@ -184,7 +177,6 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
             ROLE_TEAM_CONTACT,
             team.contact_person,
             team.contact_email,
-            '',
           ]);
         }
 
@@ -197,7 +189,7 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
           !team.contact_email &&
           team.managers.length === 0
         ) {
-          rows.push([...teamCells, ROLE_TEAM_MANAGER, '', '', '']);
+          rows.push([...teamCells, ROLE_TEAM_MANAGER, '', '']);
         }
       }
     }
@@ -210,6 +202,6 @@ export class ContactIndexComponent implements OnInit, OnDestroy {
     role: string,
     manager: ContactManager
   ): CsvCell[] {
-    return [...prefix, role, manager.name, manager.email, manager.username];
+    return [...prefix, role, manager.name, manager.email];
   }
 }

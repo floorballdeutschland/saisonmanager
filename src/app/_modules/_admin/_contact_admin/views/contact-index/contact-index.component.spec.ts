@@ -48,7 +48,6 @@ describe('ContactIndexComponent', () => {
   const manager = (id: number, name: string, email: string | null) => ({
     id,
     name,
-    username: `u${id}`,
     email,
     last_login_at: null,
   });

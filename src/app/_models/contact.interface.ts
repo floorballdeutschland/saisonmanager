@@ -6,7 +6,6 @@
 export interface ContactManager {
   id: number;
   name: string;
-  username: string;
   email: string | null;
   last_login_at: string | null;
 }
