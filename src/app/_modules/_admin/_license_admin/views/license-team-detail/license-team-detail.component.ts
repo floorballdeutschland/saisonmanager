@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import {
   GameOperation,
-  INFO_LINK_MINOR_PRIVACY_BUNDESLIGA,
   LicenseDocument,
   LicenseHash,
   Player,
@@ -45,9 +44,6 @@ export class LicenseTeamDetailComponent implements OnInit {
   documents: Record<number, LicenseDocument[]> = {};
   currentSeasonId: number | null = null;
   uploadError: string | null = null;
-  // Adresse des Datenschutz-Informationsblattes für minderjährige
-  // Spieler*innen, gepflegt unter /verwaltung/dokumentarten.
-  minorPrivacyInfoUrl: string | null = null;
 
   constructor(
     private _associationService: AssociationService,
@@ -80,14 +76,6 @@ export class LicenseTeamDetailComponent implements OnInit {
       this.currentSeasonId = seasonId;
       this._cdr.markForCheck();
     });
-
-    this._associationService
-      .infoLinkUrl$(INFO_LINK_MINOR_PRIVACY_BUNDESLIGA)
-      .pipe(take(1))
-      .subscribe((url) => {
-        this.minorPrivacyInfoUrl = url;
-        this._cdr.markForCheck();
-      });
 
     this._route.params.subscribe((params) => {
       if (params['teamId']) {
@@ -263,6 +251,13 @@ export class LicenseTeamDetailComponent implements OnInit {
   // Lücke im Satz zu hinterlassen.
   get parentalConsentLeagueName(): string | null {
     return this.licenseHash?.parental_consent_league?.name ?? null;
+  }
+
+  // Name der Liga, wegen der die Expresslizenz möglich ist – oder null, solange
+  // die API sie nicht mitliefert. Dann bleibt der Hinweis wie bisher ohne
+  // Ligazeile stehen.
+  get expressLicenseLeagueName(): string | null {
+    return this.licenseHash?.express_license_league?.name ?? null;
   }
 
   get submitDisabled(): boolean {
