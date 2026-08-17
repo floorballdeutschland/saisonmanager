@@ -50,7 +50,7 @@ export class TournamentMatchesComponent implements OnInit, OnDestroy {
     }
 
     this.matches$ = this._leagueService.getGameSchedule(leagueNumber).pipe(
-      tap((matches) => this._preselectRound(matches)),
+      tap((matches) => this._preselectRound(leagueNumber, matches)),
       shareReplay()
     );
 
@@ -62,8 +62,12 @@ export class TournamentMatchesComponent implements OnInit, OnDestroy {
   // der Anpfiff: Ein bereits beendetes Platzierungsspiel zählt mit, ein bloß
   // angesetztes nicht. Platzierungsspiele sind die Spiele ohne Gruppe
   // (group_identifier), dieselbe Abgrenzung wie in der finalRounds-Pipe.
-  private _preselectRound(matches: GameScheduleEntry[]) {
-    if (this._roundPicked) {
+  //
+  // Die Antwort der zuvor angezeigten Liga wird verworfen: Ein Ligawechsel
+  // bricht die laufende Anfrage nicht ab, und trifft die alte Antwort später
+  // ein, stellte sie sonst den Reiter nach fremden Spielen ein.
+  private _preselectRound(leagueNumber: number, matches: GameScheduleEntry[]) {
+    if (this._roundPicked || this._loadedLeagueId !== leagueNumber) {
       return;
     }
 

@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BehaviorSubject, of } from 'rxjs';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { BehaviorSubject, Subject, of } from 'rxjs';
 
 import { TournamentMatchesComponent } from './tournament-matches.component';
 import { LeagueService } from '@floorball/core';
@@ -29,6 +31,9 @@ describe('TournamentMatchesComponent', () => {
       .and.callFake((id: number) => of(schedule[id] ?? []));
 
     await TestBed.configureTestingModule({
+      // Die beiden Kindkomponenten sind hier nicht deklariert; ohne dieses
+      // Schema scheitert das Rendern an ihren Eingaben.
+      schemas: [NO_ERRORS_SCHEMA],
       declarations: [TournamentMatchesComponent],
       providers: [
         {
@@ -78,14 +83,45 @@ describe('TournamentMatchesComponent', () => {
     expect(component.round).toBe(1);
   });
 
+  // Bewusst über den Klick im Template und nicht über selectRound(): Sonst
+  // bliebe die Verdrahtung des Knopfes ungeprüft, und ein Rückbau auf
+  // `round = r` fiele nicht auf, obwohl er genau diese Sperre aushebelt.
   it('behält die von Hand gewählte Ansicht, wenn dieselbe Liga erneut lädt', () => {
     schedule[7] = [groupGame(true), finalGame(true)];
+    component.selectedLeague = league(7);
     selectedLeague$.next(league(7));
     fixture.detectChanges();
     expect(component.round).toBe(1);
 
-    component.selectRound(0);
+    const groupTab = fixture.debugElement.queryAll(By.css('button'))[0];
+    groupTab.nativeElement.click();
+    fixture.detectChanges();
+    expect(component.round).toBe(0);
+
     selectedLeague$.next(league(7));
+    fixture.detectChanges();
+
+    expect(component.round).toBe(0);
+  });
+
+  it('verwirft die verspätete Antwort der zuvor gezeigten Liga', () => {
+    const slow = new Subject<GameScheduleEntry[]>();
+    getGameSchedule.and.callFake((id: number) =>
+      id === 7 ? slow.asObservable() : of(schedule[id] ?? [])
+    );
+    schedule[8] = [groupGame(true), finalGame(false)];
+
+    // detectChanges zuerst: Erst dadurch laeuft ngOnInit und die Komponente
+    // haengt an selectedLeague$. Vorher gesendete Ligen erreichten sie nicht,
+    // der BehaviorSubject reichte nur die letzte nach.
+    fixture.detectChanges();
+    selectedLeague$.next(league(7));
+    selectedLeague$.next(league(8));
+    fixture.detectChanges();
+    expect(component.round).toBe(0);
+
+    // Liga 7 antwortet erst jetzt, angezeigt wird längst Liga 8.
+    slow.next([finalGame(true)]);
     fixture.detectChanges();
 
     expect(component.round).toBe(0);
