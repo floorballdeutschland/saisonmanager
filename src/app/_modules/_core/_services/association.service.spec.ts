@@ -43,13 +43,59 @@ describe('AssociationService', () => {
   });
 
   // shareReplay: mehrere Abonnenten dürfen init nicht mehrfach anfordern, sonst
-  // hängt an jedem Seitenaufbau ein Request pro auswertendem Strom.
+  // hängt an jedem Seitenaufbau ein Request pro auswertendem Strom. Der Fall
+  // fängt vor allem den naheliegenden Umbau-Unfall, dass ein einzelner Strom
+  // wieder sein eigenes getInit() bekommt.
   it('lädt init nur einmal, egal wie viele Ströme daran hängen', () => {
     service.seasons$.pipe(take(1)).subscribe();
     service.associations$.pipe(take(1)).subscribe();
     service.stateAssociations$.pipe(take(1)).subscribe();
 
-    httpMock.expectOne(initUrl).flush(initPayload);
-    httpMock.verify();
+    // match statt expectOne: expectOne wirft bei zwei Requests mit einer
+    // Jasmine-fremden Meldung, match liefert die Zahl und macht die Erwartung
+    // ausdrücklich. Sonst hat dieser Fall gar keine Expectation und Jasmine
+    // meldet ihn als "has no expectations".
+    const requests = httpMock.match(initUrl);
+    expect(requests.length).toBe(1);
+    requests[0].flush(initPayload);
+  });
+
+  // Der Dedupe-Guard in selectSeason ist der einzige Zweig hier, an dem ein
+  // Fehler nicht auffällt, sondern nur bremst: Ohne ihn emittiert jeder Aufruf
+  // erneut, und Abonnenten wie der Einzel-Liga-Fallback im LeagueService laden
+  // ihre Daten jedes Mal neu. Der Kommentar an der Methode benennt genau diese
+  // Regression, ein Test dafür fehlte.
+  describe('selectSeason', () => {
+    // Beobachtet wird ueber currentSeasonId$: die Id-Quelle selbst ist privat,
+    // und dieser Strom gibt sie unveraendert weiter (nur null wird zu 0).
+    function watchEmissions(): number[] {
+      const seen: number[] = [];
+      service.currentSeasonId$.subscribe((id) => seen.push(id));
+      return seen;
+    }
+
+    it('emittiert dieselbe Saison nicht zweimal', () => {
+      httpMock.expectOne(initUrl).flush(initPayload);
+      const seen = watchEmissions();
+      const before = seen.length;
+
+      service.selectSeason(17);
+      service.selectSeason(17);
+
+      expect(seen.length - before).toBe(1);
+      expect(seen[seen.length - 1]).toBe(17);
+    });
+
+    it('emittiert bei einem echten Saisonwechsel', () => {
+      httpMock.expectOne(initUrl).flush(initPayload);
+      const seen = watchEmissions();
+      const before = seen.length;
+
+      service.selectSeason(17);
+      service.selectSeason(18);
+
+      expect(seen.length - before).toBe(2);
+      expect(seen[seen.length - 1]).toBe(18);
+    });
   });
 });
