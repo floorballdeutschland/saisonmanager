@@ -67,7 +67,8 @@
     "noteRelease": "The release request is submitted for your club. The releasing club must approve it, after which the state association grants approval. The release is valid until 15 July of the current year.",
     "submitting": "Sending…",
     "submitRelease": "Submit release request",
-    "submitTransfer": "Submit transfer request"
+    "submitTransfer": "Submit transfer request",
+    "deactivatedHint": "This profile has been deactivated by its club. That is not an obstacle: the marking is removed when the player joins."
   },
   "detail": {
     "back": "← Back",
@@ -132,7 +133,8 @@
     "searchPlayer": "Search player",
     "bornPrefix": "b. {{ date }}",
     "submitting": "Assigning…",
-    "assignDirectly": "Assign directly"
+    "assignDirectly": "Assign directly",
+    "deactivatedHint": "This profile has been deactivated by its club. That is not an obstacle: the marking is removed when the player joins."
   },
   "notifications": {
     "loadError": "Transfer requests could not be loaded.",
