@@ -21,6 +21,9 @@ import { arenaMatchesTerm } from '../../arena-search';
 export class ArenaIndexComponent implements OnInit, OnDestroy {
   arenas: Arena[] = [];
   searchTerm = '';
+  // Knapp die Hälfte des Bestandes ist inaktiv und fehlt damit im Spieltag
+  // (#451). Der Filter macht diesen Teil der Liste ohne Suchbegriff greifbar.
+  onlyInactive = false;
   loading = false;
   deleteError: string | null = null;
   currentUser: User | null = null;
@@ -34,8 +37,10 @@ export class ArenaIndexComponent implements OnInit, OnDestroy {
 
   get filteredArenas(): Arena[] {
     const term = this.searchTerm.toLowerCase().trim();
-    if (!term) return this.arenas;
-    return this.arenas.filter((a) => arenaMatchesTerm(a, term));
+    let result = this.arenas;
+    if (this.onlyInactive) result = result.filter((a) => !a.active);
+    if (term) result = result.filter((a) => arenaMatchesTerm(a, term));
+    return result;
   }
 
   private _destroy$ = new Subject<void>();

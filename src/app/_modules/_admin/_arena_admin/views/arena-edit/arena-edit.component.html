@@ -80,6 +80,18 @@
       />
     </div>
 
+    @if (!isNew) {
+      <div class="mb-6 border-t border-fb-gray-700 pt-4">
+        <label class="flex items-center gap-2 text-sm font-medium">
+          <input type="checkbox" [(ngModel)]="active" name="active" />
+          {{ "arena.edit.active" | transloco }}
+        </label>
+        <p class="mt-1 text-xs text-fb-gray-500">
+          {{ "arena.edit.activeHint" | transloco }}
+        </p>
+      </div>
+    }
+
     @if (duplicateWarning) {
       <div class="bg-white border border-yellow-700 rounded p-4 mb-4">
         <p class="text-sm font-medium mb-2">
