@@ -115,6 +115,10 @@ export interface PlayerSearchResult {
   birthdate: string;
   gender: GenderKey;
   club_id: number | null;
+  // Gesetzt, wenn der Verein das Profil aus seiner aktiven Liste genommen hat.
+  // Die Suche liefert solche Profile bewusst mit: Die Deaktivierung ist eine
+  // Kennzeichnung der Vereinsansicht und kein Hindernis fuer eine Aufnahme.
+  deactivated_at?: string | null;
 }
 
 export interface PlayerLicense {
