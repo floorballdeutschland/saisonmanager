@@ -33,6 +33,11 @@ const KIND_LV: StateAssociation = {
   effective_vsk_email: 'vsk@verbund.example.com',
   effective_sbk_email: 'sbk@verbund.example.com',
   effective_rsk_email: null,
+  // Zuständigkeitsbereich: Sachsen-Anhalt selbst, Sachsen kommt über einen
+  // untergeordneten Verband dazu. Die Vererbung läuft hier nach unten, deshalb
+  // steht in effective_states mehr als in states.
+  states: ['de-st'],
+  effective_states: ['de-sn', 'de-st'],
   checklist_items: [],
   releases: [],
 };
@@ -126,5 +131,51 @@ describe('StateAssociationEditComponent', () => {
     // Postfächer bleiben geerbt, kein eigener Eintrag am Kind-LV.
     expect(payload.vsk_email).toBeNull();
     expect(payload.sbk_email).toBeNull();
+  });
+
+  it('trennt eigene und geerbte Bundeslaender', () => {
+    const component = createComponent();
+
+    expect(component.isStateSelected('de-st')).toBeTrue();
+    // Sachsen kommt über einen untergeordneten Verband und steht deshalb nicht
+    // als eigene Auswahl da, sondern als Hinweis.
+    expect(component.isStateSelected('de-sn')).toBeFalse();
+    expect(component.inheritedStates).toEqual(['de-sn']);
+    expect(component.inheritedStateNames).toBe('Sachsen');
+  });
+
+  it('schaltet ein Bundesland um und haelt die Auswahl sortiert', () => {
+    const component = createComponent();
+
+    component.toggleState('de-nw');
+    component.toggleState('de-be');
+
+    // Sortiert und nicht in Klickreihenfolge, damit die Anzeige stabil bleibt.
+    expect(component.stateAssociation.states).toEqual([
+      'de-be',
+      'de-nw',
+      'de-st',
+    ]);
+
+    component.toggleState('de-st');
+
+    expect(component.stateAssociation.states).toEqual(['de-be', 'de-nw']);
+  });
+
+  it('sendet den Zustaendigkeitsbereich mit', () => {
+    const component = createComponent();
+    component.toggleState('de-st');
+    component.toggleState('de-nw');
+
+    component.submit();
+
+    const payload = service.adminUpdate.calls.mostRecent()
+      .args[1] as StateAssociation;
+    expect(payload.states).toEqual(['de-nw']);
+  });
+
+  it('nennt den ganzen greifenden Bereich im Klartext', () => {
+    // Nur-Lese-Ansicht der SBK: eigene und geerbte Bundesländer zusammen.
+    expect(createComponent().effectiveStateNames).toBe('Sachsen, Sachsen-Anhalt');
   });
 });

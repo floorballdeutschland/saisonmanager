@@ -25,6 +25,10 @@ import {
   IMAGE_UPLOAD_ACCEPT,
   isAllowedImageType,
 } from 'src/app/_helpers/_utils/image-upload';
+import {
+  GERMAN_STATES,
+  germanStateName,
+} from 'src/app/_helpers/_utils/german-states';
 
 @Component({
   templateUrl: './state-association-edit.component.html',
@@ -36,6 +40,10 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
   stateAssociation: Partial<StateAssociation> = { name: '', short_name: '' };
   // Dateiauswahl-Filter für Logo und Banner, eine Quelle für Template und Prüfung.
   readonly acceptImageTypes = IMAGE_UPLOAD_ACCEPT;
+  // Auswahl für den Zuständigkeitsbereich. Ohne „Sonstige": ein Verband kann
+  // für Vereine mit Sitz im Ausland nicht zuständig sein, und die API weist das
+  // Kürzel am Landesverband ab.
+  readonly germanStates = GERMAN_STATES;
   editMode = false;
   saving = false;
   currentUser: User | null = null;
@@ -138,6 +146,50 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
 
   get hasChildren(): boolean {
     return !!this.stateAssociation.children?.length;
+  }
+
+  // Zuständigkeitsbereich: eigene Auswahl. `states` fehlt beim Neuanlegen und im
+  // Listen-Datensatz (short_hash), deshalb überall gegen [] absichern.
+  isStateSelected(isocode: string): boolean {
+    return (this.stateAssociation.states ?? []).includes(isocode);
+  }
+
+  toggleState(isocode: string): void {
+    const selected = new Set(this.stateAssociation.states ?? []);
+    if (selected.has(isocode)) {
+      selected.delete(isocode);
+    } else {
+      selected.add(isocode);
+    }
+    // Sortiert, damit die Anzeige nicht von der Klickreihenfolge abhängt. Die
+    // API sortiert beim Speichern ohnehin.
+    this.stateAssociation.states = [...selected].sort();
+  }
+
+  // Bundesländer, die dieser Verband nur über seine untergeordneten Verbände
+  // betreut. Bei einem Spielverbund ist das üblicherweise der gesamte Bereich,
+  // weil er selbst nichts einträgt.
+  //
+  // Aus effective_states abgeleitet und nicht aus children: der Detail-Datensatz
+  // liefert von den Kindern nur Name und Logo (short_hash), nicht deren
+  // Zuständigkeitsbereich.
+  get inheritedStates(): string[] {
+    const own = new Set(this.stateAssociation.states ?? []);
+    return (this.stateAssociation.effective_states ?? []).filter(
+      (code) => !own.has(code)
+    );
+  }
+
+  get inheritedStateNames(): string {
+    return this.inheritedStates.map((code) => germanStateName(code)).join(', ');
+  }
+
+  // Klartext für die Nur-Lese-Ansicht der SBK: der ganze greifende Bereich,
+  // eigener und geerbter zusammen.
+  get effectiveStateNames(): string {
+    return (this.stateAssociation.effective_states ?? [])
+      .map((code) => germanStateName(code))
+      .join(', ');
   }
 
   // Die effective_*-Werte berechnet der Server aus dem *gespeicherten*
@@ -245,6 +297,11 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       name: this.stateAssociation.name,
       short_name: this.stateAssociation.short_name,
       parent_id: this.stateAssociation.parent_id ?? null,
+      // Zuständigkeitsbereich, immer mitgesendet. Für einen regionalen SBK ist
+      // das Feld nicht sichtbar und der Server verwirft es; gesendet wird dann
+      // der geladene Stand, damit ein Speichern ihn nicht stillschweigend
+      // löscht (wie bei express_license_enabled unten).
+      states: this.stateAssociation.states ?? [],
       vsk_email: this.hasParent ? null : this.stateAssociation.vsk_email,
       sbk_email: this.hasParent ? null : this.stateAssociation.sbk_email,
       rsk_email: this.hasParent ? null : this.stateAssociation.rsk_email,

@@ -23,6 +23,7 @@ import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
+import { CLUB_STATE_OPTIONS } from 'src/app/_helpers/_utils/german-states';
 
 @Component({
   templateUrl: './club-edit.component.html',
@@ -39,25 +40,10 @@ export class ClubEditComponent implements OnInit, OnDestroy {
 
   loading$?: Observable<boolean>;
 
-  states = [
-    { name: 'Baden-Württemberg', isocode: 'de-bw' },
-    { name: 'Bayern', isocode: 'de-by' },
-    { name: 'Berlin', isocode: 'de-be' },
-    { name: 'Brandenburg', isocode: 'de-bb' },
-    { name: 'Bremen', isocode: 'de-hb' },
-    { name: 'Hamburg', isocode: 'de-hh' },
-    { name: 'Hessen', isocode: 'de-he' },
-    { name: 'Mecklenburg-Vorpommern', isocode: 'de-mv' },
-    { name: 'Niedersachsen', isocode: 'de-ni' },
-    { name: 'Nordrhein-Westfalen', isocode: 'de-nw' },
-    { name: 'Rheinland-Pfalz', isocode: 'de-rp' },
-    { name: 'Saarland', isocode: 'de-sl' },
-    { name: 'Sachsen', isocode: 'de-sn' },
-    { name: 'Sachsen-Anhalt', isocode: 'de-st' },
-    { name: 'Schleswig-Holstein', isocode: 'de-sh' },
-    { name: 'Thüringen', isocode: 'de-th' },
-    { name: 'Sonstige', isocode: 'de-sonstige' },
-  ];
+  // Geteilt mit dem Zuständigkeitsbereich des Landesverbands, damit die Kürzel
+  // nicht zweimal im Code stehen. Hier mit „Sonstige" für Vereine mit Sitz im
+  // Ausland; als Zuständigkeitsbereich gibt es den Wert nicht.
+  states = CLUB_STATE_OPTIONS;
 
   stateAssociations: StateAssociation[] = [];
   permissions: { [key: string]: boolean } = {};
