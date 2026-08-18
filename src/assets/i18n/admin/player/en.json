@@ -94,7 +94,7 @@
     "untilToday": "until today",
     "clubLeave": "Deactivation",
     "deactivatedOn": "Deactivated on",
-    "deactivatedHint": "This player is deactivated and no longer appears in the club's active player list. Club memberships and licences are unaffected, and the player remains findable in the player search and in transfer and release requests.",
+    "deactivatedHint": "This player is deactivated and no longer appears in the club's active player list. Club memberships and licences are unaffected, and the player remains findable in the player search and in transfer and release requests. Older deactivations still invalidated the player's licences; those stay invalid and are not reverted retroactively.",
     "reactivate": "Reactivate",
     "deactivatePlayer": "Deactivate player",
     "deactivateConfirm": "Really deactivate player?",
