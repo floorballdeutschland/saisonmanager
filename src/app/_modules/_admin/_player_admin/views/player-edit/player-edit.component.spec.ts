@@ -1,25 +1,52 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute } from '@angular/router';
+import { BehaviorSubject, of } from 'rxjs';
 
 import { PlayerEditComponent } from './player-edit.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { getTranslocoTestingModule, PlayerService } from '@floorball/core';
+import {
+  getTranslocoTestingModule,
+  PlayerService,
+  SessionService,
+} from '@floorball/core';
 import { RouterTestingModule } from '@angular/router/testing';
+import { UikitCommonModule } from '@floorball/uikit/common';
+import { UikitMatchesModule } from '@floorball/uikit/matches';
+import { UikitPlayerModule } from '@floorball/uikit/player';
+import { UikitTeamModule } from '@floorball/uikit/team';
 import {
   LicenseDocument,
   Player,
   PlayerLicense,
   Season,
+  User,
 } from '@floorball/models';
 
 describe('PlayerEditComponent', () => {
+  let currentUser$: BehaviorSubject<User | null>;
+
   beforeEach(async () => {
+    currentUser$ = new BehaviorSubject<User | null>(null);
     await TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
         getTranslocoTestingModule(),
+        UikitCommonModule,
+        UikitPlayerModule,
+        UikitTeamModule,
+        UikitMatchesModule,
       ],
       declarations: [PlayerEditComponent],
+      // Mit playerId in der Route bleibt editMode true, sonst schaltet ngOnInit
+      // beim ersten detectChanges auf die Neuanlage um.
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: { params: of({ playerId: '7' }) },
+        },
+        { provide: SessionService, useValue: { currentUser$ } },
+      ],
     }).compileComponents();
   });
 
@@ -96,6 +123,44 @@ describe('PlayerEditComponent', () => {
       expect(component.isCurrentSeasonLicense(license('c', undefined))).toBe(
         false
       );
+    });
+  });
+
+  // Der Verweis auf die Transferanträge ersetzt einen direkten Wechsel am
+  // Profil und darf nur bei den Rollen auftauchen, die dort auch die
+  // Direktzuweisung auslösen dürfen.
+  describe('Verweis auf die Transferanträge', () => {
+    // Die Berechtigung muss vor dem ersten Rendern stehen: die Komponente liest
+    // sie in ngOnInit aus currentUser$, ein spaeteres Setzen des Feldes laeuft
+    // nicht mehr in die Bindings (Angular 22, dirty-getrackte Views).
+    function render(
+      permissions: Record<string, boolean>
+    ): ComponentFixture<PlayerEditComponent> {
+      currentUser$.next({ permissions } as unknown as User);
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.componentInstance.player = { id: 7 } as Player;
+      // Ohne checkNoChanges: die Saison-Abos liefern ihren Wert erst im selben
+      // Durchlauf nach, das ist hier nicht der Prüflingsteil.
+      fixture.detectChanges(false);
+      return fixture;
+    }
+
+    function link(
+      fixture: ComponentFixture<PlayerEditComponent>
+    ): Element | null {
+      return fixture.nativeElement.querySelector(
+        'a[href="/verwaltung/transfer-anfragen"]'
+      );
+    }
+
+    it('links to the transfer requests for SBK and admin', () => {
+      expect(link(render({ menu_item_transfer_requests_sbk: true }))).not.toBe(
+        null
+      );
+    });
+
+    it('hides the link for club and team managers', () => {
+      expect(link(render({ menu_item_player_admin: true }))).toBe(null);
     });
   });
 
