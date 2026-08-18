@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import {
   getTranslocoTestingModule,
   NotificationService,
@@ -35,9 +35,12 @@ const KIND_LV: StateAssociation = {
   effective_rsk_email: null,
   // Zuständigkeitsbereich: Sachsen-Anhalt selbst, Sachsen kommt über einen
   // untergeordneten Verband dazu. Die Vererbung läuft hier nach unten, deshalb
-  // steht in effective_states mehr als in states.
+  // steht in effective_states mehr als in states. Die Kinder stehen als
+  // short_hash in `children`, also ohne ihre eigenen `states` — genau deshalb
+  // wird der geerbte Rest aus effective_states gerechnet.
   states: ['de-st'],
   effective_states: ['de-sn', 'de-st'],
+  children: [{ id: 3, name: 'Enkel-LV', short_name: 'ELV' }],
   checklist_items: [],
   releases: [],
 };
@@ -144,6 +147,37 @@ describe('StateAssociationEditComponent', () => {
     expect(component.inheritedStateNames).toBe('Sachsen');
   });
 
+  it('zaehlt ein abgewaehltes eigenes Bundesland nicht als geerbt', () => {
+    // effective_states ist ein Serverwert zum gespeicherten Stand, die Auswahl
+    // im Formular läuft ihm voraus. Ohne den gemerkten Stand rutschte das
+    // gerade abgewählte Sachsen-Anhalt in die geerbten, und die Maske
+    // behauptete, es käme über einen untergeordneten Verband.
+    const component = createComponent();
+
+    component.toggleState('de-st');
+
+    expect(component.inheritedStates).toEqual(['de-sn']);
+    expect(component.inheritedStateNames).toBe('Sachsen');
+  });
+
+  it('meldet einen Speicherfehler nicht selbst', () => {
+    // Das übernimmt der ErrorInterceptor für jeden Status. Ein zweiter Toast
+    // wäre eine Dublette, und weil beide nicht selbst schließen und ein
+    // Fehlschlag nicht navigiert, stapeln sie sich mit jedem Versuch (#228).
+    const notification = TestBed.inject(
+      NotificationService
+    ) as jasmine.SpyObj<NotificationService>;
+    service.adminUpdate.and.returnValue(
+      throwError(() => ({ status: 422, error: { errors: ['kaputt'] } }))
+    );
+    const component = createComponent();
+
+    component.submit();
+
+    expect(notification.error).not.toHaveBeenCalled();
+    expect(component.saving).toBeFalse();
+  });
+
   it('schaltet ein Bundesland um und haelt die Auswahl sortiert', () => {
     const component = createComponent();
 
@@ -176,6 +210,8 @@ describe('StateAssociationEditComponent', () => {
 
   it('nennt den ganzen greifenden Bereich im Klartext', () => {
     // Nur-Lese-Ansicht der SBK: eigene und geerbte Bundesländer zusammen.
-    expect(createComponent().effectiveStateNames).toBe('Sachsen, Sachsen-Anhalt');
+    expect(createComponent().effectiveStateNames).toBe(
+      'Sachsen, Sachsen-Anhalt'
+    );
   });
 });

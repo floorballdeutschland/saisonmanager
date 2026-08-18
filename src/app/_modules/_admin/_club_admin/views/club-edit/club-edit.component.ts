@@ -236,7 +236,9 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   public clubEditRestricted?: boolean;
 
   public get isRestricted(): boolean {
-    return this.clubEditRestricted ?? !!this.permissions['club_edit_restricted'];
+    return (
+      this.clubEditRestricted ?? !!this.permissions['club_edit_restricted']
+    );
   }
 
   public getStateName(club: Club): string {

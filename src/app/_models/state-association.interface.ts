@@ -1,3 +1,5 @@
+import { GermanStateCode } from 'src/app/_helpers/_utils/german-states';
+
 export interface ChecklistItem {
   id: number;
   question: string;
@@ -24,14 +26,14 @@ export interface StateAssociation {
   express_license_enabled?: boolean;
   scan_required?: boolean;
   // Bundeslaender im Zustaendigkeitsbereich, als ISO-Kuerzel (z.B. 'de-nw').
-  // Nur die Administration pflegt sie: daran haengt, wer einen Spielort
-  // abschalten, zusammenfuehren und loeschen darf.
-  states?: string[];
+  // Nur die Administration pflegt sie: daran soll kuenftig haengen, wer einen
+  // Spielort zusammenfuehren, loeschen und abschalten darf.
+  states?: GermanStateCode[];
   // Der tatsaechlich greifende Bereich einschliesslich der untergeordneten
   // Verbaende. Die Vererbung laeuft hier nach unten, anders als bei allen
   // effective_*-Feldern darunter: ein uebergeordneter Spielverbund erbt den
   // Bereich seiner Kinder, statt selbst etwas einzutragen.
-  effective_states?: string[];
+  effective_states?: GermanStateCode[];
   referee_license_review_enabled?: boolean;
   effective_referee_license_review_enabled?: boolean;
   // Tatsaechlich greifende Werte inklusive Vererbung vom uebergeordneten

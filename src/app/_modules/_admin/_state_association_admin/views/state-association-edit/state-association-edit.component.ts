@@ -27,6 +27,7 @@ import {
 } from 'src/app/_helpers/_utils/image-upload';
 import {
   GERMAN_STATES,
+  GermanStateCode,
   germanStateName,
 } from 'src/app/_helpers/_utils/german-states';
 
@@ -60,6 +61,10 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
 
   // Gespeicherter Stand von parent_id, Referenz für showInheritedValues.
   private _persistedParentId: number | null | undefined;
+  // Gespeicherter Stand von states, Referenz für inheritedStates. Aus demselben
+  // Grund wie _persistedParentId: effective_states berechnet der Server aus dem
+  // gespeicherten Stand, die Auswahl im Formular läuft ihm voraus.
+  private _persistedStates: GermanStateCode[] = [];
   // Mögliche Empfänger-Sportverbünde (alle außer den eigenen des LV) – vom
   // dedizierten releases#candidates-Endpoint, erst im Bearbeitungsmodus geladen.
   releaseCandidates: GameOperation[] = [];
@@ -116,6 +121,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
           next: (sa) => {
             this.stateAssociation = { ...sa };
             this._persistedParentId = sa.parent_id ?? null;
+            this._persistedStates = sa.states ?? [];
             this.checklistItems = sa.checklist_items ?? [];
             this.releases = sa.releases ?? [];
             this._cdr.markForCheck();
@@ -148,13 +154,13 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     return !!this.stateAssociation.children?.length;
   }
 
-  // Zuständigkeitsbereich: eigene Auswahl. `states` fehlt beim Neuanlegen und im
-  // Listen-Datensatz (short_hash), deshalb überall gegen [] absichern.
-  isStateSelected(isocode: string): boolean {
+  // Zuständigkeitsbereich: eigene Auswahl. Beim Neuanlegen gibt es noch kein
+  // `states`, deshalb gegen [] absichern.
+  isStateSelected(isocode: GermanStateCode): boolean {
     return (this.stateAssociation.states ?? []).includes(isocode);
   }
 
-  toggleState(isocode: string): void {
+  toggleState(isocode: GermanStateCode): void {
     const selected = new Set(this.stateAssociation.states ?? []);
     if (selected.has(isocode)) {
       selected.delete(isocode);
@@ -171,12 +177,18 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
   // weil er selbst nichts einträgt.
   //
   // Aus effective_states abgeleitet und nicht aus children: der Detail-Datensatz
-  // liefert von den Kindern nur Name und Logo (short_hash), nicht deren
-  // Zuständigkeitsbereich.
-  get inheritedStates(): string[] {
-    const own = new Set(this.stateAssociation.states ?? []);
+  // liefert die Kinder als short_hash, und darin steht kein states.
+  //
+  // Abgezogen wird der *gespeicherte* Stand, nicht die laufende Auswahl. Beides
+  // muss zusammenpassen, weil effective_states ein Serverwert zum gespeicherten
+  // Stand ist: Nimmt man den Haken bei einem eigenen Bundesland weg, rutschte es
+  // sonst in die geerbten, und die Maske behauptete, es käme über einen
+  // untergeordneten Verband. Dieselbe Vorkehrung wie _persistedParentId bei den
+  // geerbten Postfächern.
+  get inheritedStates(): GermanStateCode[] {
+    const persisted = new Set(this._persistedStates);
     return (this.stateAssociation.effective_states ?? []).filter(
-      (code) => !own.has(code)
+      (code) => !persisted.has(code)
     );
   }
 
@@ -297,10 +309,11 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       name: this.stateAssociation.name,
       short_name: this.stateAssociation.short_name,
       parent_id: this.stateAssociation.parent_id ?? null,
-      // Zuständigkeitsbereich, immer mitgesendet. Für einen regionalen SBK ist
-      // das Feld nicht sichtbar und der Server verwirft es; gesendet wird dann
-      // der geladene Stand, damit ein Speichern ihn nicht stillschweigend
-      // löscht (wie bei express_license_enabled unten).
+      // Zuständigkeitsbereich, immer mitgesendet, damit der Payload nicht von der
+      // Rolle abhängt. Für einen regionalen SBK ist das Feld unsichtbar und der
+      // Server strippt es beim permit; das Mitsenden ist dort also folgenlos.
+      // Anders als bei express_license_enabled unten, wo der Server das Feld
+      // gerade nicht strippt und der geladene Wert deshalb mit muss.
       states: this.stateAssociation.states ?? [],
       vsk_email: this.hasParent ? null : this.stateAssociation.vsk_email,
       sbk_email: this.hasParent ? null : this.stateAssociation.sbk_email,
@@ -356,17 +369,15 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
         );
         this._router.navigate(['/', 'verwaltung', 'landesverbaende']);
       },
+      // Ohne eigene Meldung: Das übernimmt der ErrorInterceptor, und zwar für
+      // jeden Status (4xx mit dem Klartext aus `errors`, 5xx, und auch ohne
+      // Verbindung). Ein zusätzlicher Toast wäre immer eine Dublette — beide
+      // schließen nicht selbst, und ein fehlgeschlagenes Speichern navigiert
+      // nicht, sodass sie sich mit jedem Versuch stapeln. Ab #228 verlassen
+      // sich die Komponenten hier auf den Interceptor.
       error: () => {
         this.saving = false;
         this._cdr.markForCheck();
-        this._notificationService.error(
-          this._transloco.translate(
-            'stateAssociationAdmin.notifications.saveError'
-          ),
-          {
-            autoClose: false,
-          }
-        );
       },
     });
   }
