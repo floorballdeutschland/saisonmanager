@@ -12,10 +12,10 @@ import { ArenaIndexComponent } from './arena-index.component';
 // (Import 2010–2014); `Arena.name` ist in der DB nicht NOT NULL. Deshalb steht
 // hier bewusst ein Eintrag mit name/city = null in der Liste.
 const ARENAS = [
-  { id: 1, name: 'Sporthalle Rohrdorf', city: 'Rohrdorf' },
-  { id: 2, name: 'Ballspielhalle', city: null },
-  { id: 3, name: null, city: null },
-  { id: 4, name: 'Halle am Park', city: 'Berlin' },
+  { id: 1, name: 'Sporthalle Rohrdorf', city: 'Rohrdorf', active: true },
+  { id: 2, name: 'Ballspielhalle', city: null, active: false },
+  { id: 3, name: null, city: null, active: false },
+  { id: 4, name: 'Halle am Park', city: 'Berlin', active: true },
 ] as unknown as Arena[];
 
 describe('ArenaIndexComponent', () => {
@@ -29,6 +29,14 @@ describe('ArenaIndexComponent', () => {
       fixture.nativeElement.querySelectorAll('tbody tr td:first-child')
     ).map((td) => (td as HTMLElement).textContent!.trim());
 
+  const rowStatus = (): string[] =>
+    Array.from(
+      fixture.nativeElement.querySelectorAll('tbody tr td:nth-child(4)')
+    ).map((td) => (td as HTMLElement).textContent!.trim());
+
+  const inactiveCheckbox = (): HTMLInputElement =>
+    fixture.nativeElement.querySelector('input[type="checkbox"]');
+
   const type = (value: string): void => {
     searchInput().value = value;
     searchInput().dispatchEvent(new Event('input'));
@@ -40,21 +48,33 @@ describe('ArenaIndexComponent', () => {
       imports: [
         FormsModule,
         RouterTestingModule,
+        // Die Übersetzungen stehen global unter dem Alias (`de: { arena: … }`),
+        // nicht als Scope-Schlüssel `'admin/arena/de'`: Letzterer bleibt in
+        // diesem TestBed unaufgelöst, weil die Komponente hier ohne ihr Modul
+        // und damit ohne dessen TRANSLOCO_SCOPE steht.
         getTranslocoTestingModule({
-          'admin/arena': {
-            index: {
-              title: 'Spielorte',
-              createNew: 'Neuen Spielort anlegen',
-              searchPlaceholder: 'Nach Name oder Stadt suchen…',
-              loading: 'Lade Spielorte…',
-              count: '{{ filtered }} von {{ total }} Einträgen',
-              colName: 'Name',
-              colCity: 'Stadt',
-              colAddress: 'Adresse',
-              edit: 'Bearbeiten',
-              merge: 'Zusammenlegen',
-              delete: 'Löschen',
-              empty: 'Keine Spielorte gefunden.',
+          de: {
+            arena: {
+              index: {
+                title: 'Spielorte',
+                createNew: 'Neuen Spielort anlegen',
+                searchPlaceholder: 'Nach Name oder Stadt suchen…',
+                loading: 'Lade Spielorte…',
+                count: '{{ filtered }} von {{ total }} Einträgen',
+                colName: 'Name',
+                colCity: 'Stadt',
+                colAddress: 'Adresse',
+                colStatus: 'Status',
+                statusActive: 'Aktiv',
+                statusInactive: 'Inaktiv',
+                statusInactiveHint:
+                  'Dieser Spielort steht im Spieltag nicht zur Auswahl.',
+                onlyInactive: 'Nur inaktive Spielorte',
+                edit: 'Bearbeiten',
+                merge: 'Zusammenlegen',
+                delete: 'Löschen',
+                empty: 'Keine Spielorte gefunden.',
+              },
             },
           },
         }),
@@ -92,6 +112,27 @@ describe('ArenaIndexComponent', () => {
   it('filtert nach der Stadt', () => {
     type('berlin');
     expect(rowNames()).toEqual(['Halle am Park']);
+  });
+
+  // #451: der Zustand war in der Verwaltung nirgends zu sehen, obwohl er
+  // darüber entscheidet, ob der Spielort im Spieltag zur Auswahl steht.
+  it('zeigt je Spielort, ob er aktiv ist', () => {
+    expect(rowStatus()).toEqual(['Aktiv', 'Inaktiv', 'Inaktiv', 'Aktiv']);
+  });
+
+  it('filtert auf Wunsch nur die inaktiven Spielorte', () => {
+    inactiveCheckbox().click();
+    fixture.detectChanges();
+
+    expect(rowNames()).toEqual(['Ballspielhalle', '']);
+  });
+
+  it('kombiniert den Inaktiv-Filter mit der Suche', () => {
+    inactiveCheckbox().click();
+    fixture.detectChanges();
+    type('halle');
+
+    expect(rowNames()).toEqual(['Ballspielhalle']);
   });
 
   // Regression: ein einziger Spielort ohne Namen ließ `filteredArenas` bei

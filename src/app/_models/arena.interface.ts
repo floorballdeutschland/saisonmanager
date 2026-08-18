@@ -11,4 +11,8 @@ export interface Arena {
   housenumber?: string;
   postcode?: string;
   schedule_item?: string;
+  // Steuert, ob der Spielort im Spieltag zur Auswahl steht (API: Arena.active).
+  // Optional, weil `Partial<Arena>`-Payloads das Feld beim Anlegen nicht setzen
+  // und der Altbestand vor #451 nie darauf angesehen wurde.
+  active?: boolean;
 }
