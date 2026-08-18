@@ -48,8 +48,8 @@ describe('ClubEditComponent', () => {
   // Vereinsmanager ohnehin (restricted_club_params); das Formular soll sie
   // deshalb gar nicht erst als änderbar anbieten.
   it('isRestricted folgt dem Benutzer-Flag, solange kein Verein geladen ist', () => {
-    const component = TestBed.createComponent(ClubEditComponent)
-      .componentInstance;
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
 
     component.permissions = {};
     expect(component.isRestricted).toBeFalse();
@@ -64,8 +64,8 @@ describe('ClubEditComponent', () => {
   // das Formular ihm die aenderbaren Felder, und das Speichern verwarf sie
   // stillschweigend.
   it('der geladene Verein schlaegt das Benutzer-Flag', () => {
-    const component = TestBed.createComponent(ClubEditComponent)
-      .componentInstance;
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
     component.permissions = { club_edit_restricted: false };
 
     component.clubEditRestricted = true;
@@ -77,8 +77,8 @@ describe('ClubEditComponent', () => {
   });
 
   it('zeigt Bundesland und Landesverband als Klartext an', () => {
-    const component = TestBed.createComponent(ClubEditComponent)
-      .componentInstance;
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
     component.stateAssociations = [
       { id: 7, name: 'Floorball Verband NRW' },
     ] as never;
@@ -94,11 +94,25 @@ describe('ClubEditComponent', () => {
     expect(component.getStateAssociationName(leer)).toBe('–');
   });
 
+  it('bietet Sonstige fuer Vereine mit Sitz im Ausland an', () => {
+    // Die Auswahl kommt aus CLUB_STATE_OPTIONS, nicht aus GERMAN_STATES: dort
+    // fehlt „Sonstige" absichtlich, weil ein Landesverband dafür nicht
+    // zuständig sein kann. Stellt jemand die Vereinsmaske später auf die
+    // engere Liste um, weil der Name allgemeiner klingt, verlieren Vereine im
+    // Ausland ihre Option und zeigen „–" statt „Sonstige".
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
 
+    expect(component.states.length).toBe(17);
+    expect(component.states.map((s) => s.isocode)).toContain('de-sonstige');
+    expect(component.getStateName({ state: 'de-sonstige' } as Club)).toBe(
+      'Sonstige'
+    );
+  });
 
   it('toggleNotifyUser nimmt Vereinsmanager auf und wieder heraus', () => {
-    const component = TestBed.createComponent(ClubEditComponent)
-      .componentInstance;
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
 
     expect(component.isNotifyUser(7)).toBeFalse();
 
@@ -115,8 +129,8 @@ describe('ClubEditComponent', () => {
   // Feld. Beide bekamen nie etwas, weil das Feld als eine Adresse verschickt
   // wird.
   it('errorMsg weist zwei Adressen im Kontaktfeld ab', () => {
-    const component = TestBed.createComponent(ClubEditComponent)
-      .componentInstance;
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
     const club = {
       name: 'Verein',
       long_name: 'Verein e.V.',
