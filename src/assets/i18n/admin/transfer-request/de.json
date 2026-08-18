@@ -67,7 +67,8 @@
     "noteRelease": "Der Freigabeantrag wird für deinen Verein gestellt. Der abgebende Verein muss zustimmen, danach genehmigt der Landesverband. Die Freigabe gilt bis zum 15.07. des laufenden Jahres.",
     "submitting": "Wird gesendet…",
     "submitRelease": "Freigabeantrag stellen",
-    "submitTransfer": "Transferantrag stellen"
+    "submitTransfer": "Transferantrag stellen",
+    "deactivatedHint": "Dieses Profil ist von seinem Verein deaktiviert. Das ist kein Hindernis: Mit der Aufnahme entfällt die Kennzeichnung."
   },
   "detail": {
     "back": "← Zurück",
@@ -132,7 +133,8 @@
     "searchPlayer": "Spieler suchen",
     "bornPrefix": "geb. {{ date }}",
     "submitting": "Wird zugewiesen…",
-    "assignDirectly": "Direkt zuweisen"
+    "assignDirectly": "Direkt zuweisen",
+    "deactivatedHint": "Dieses Profil ist von seinem Verein deaktiviert. Das ist kein Hindernis: Mit der Aufnahme entfällt die Kennzeichnung."
   },
   "notifications": {
     "loadError": "Transferanträge konnten nicht geladen werden.",

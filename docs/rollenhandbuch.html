@@ -2705,9 +2705,17 @@
                 Team- und Vereinsmanager legen neue Spieler an, Admin und SBK
                 haben systemweiten Zugriff. Statt ein Profil zu löschen, wird es
                 <strong>deaktiviert</strong>, damit die Spielhistorie erhalten
-                bleibt. Deaktivierte Spieler tauchen nicht mehr in Suche,
-                Transfer- und Freigabeanträgen auf, und ihre Lizenzen werden
-                ungültig. Reaktivieren ist möglich.
+                bleibt. Die Deaktivierung ist eine Kennzeichnung für die eigenen
+                Ansichten: Der Spieler verschwindet aus der Spielerliste des
+                Vereins und damit aus der Auswahl beim Lizenzantrag. Alles
+                andere bleibt, wie es ist. Vereinsmitgliedschaft und Lizenzen
+                werden nicht angetastet, und in der Spielersuche sowie in
+                Transfer- und Freigabeanträgen ist der Spieler weiterhin zu
+                finden, dort mit einem Hinweis auf die Deaktivierung. Genau
+                darauf kommt es beim Grund <em>Vereinsaustritt</em> an, denn der
+                nächste Verein muss die Person aufnehmen können. Nimmt er sie
+                auf, entfällt die Kennzeichnung des alten Vereins automatisch.
+                Reaktivieren ist jederzeit möglich.
               </p>
               <p class="proc-text">
                 Ein Spieler trägt seine
@@ -3347,9 +3355,10 @@
                 <em>Ungültig (Transfer)</em>. Eine widerrufene Freigabe setzt
                 die Lizenzen der Zweitmitgliedschaft auf <em>Zurückgezogen</em>.
                 Eine Spielersperre setzt aktive Lizenzen auf
-                <em>Gesperrt</em> und stellt sie beim Aufheben wieder her, und
-                ein deaktivierter Spieler verliert seine Lizenzen
-                (<em>Gelöscht</em>).
+                <em>Gesperrt</em> und stellt sie beim Aufheben wieder her. Eine
+                Deaktivierung löst dagegen keinen Statuswechsel aus: Sie nimmt
+                den Spieler nur aus der Vereinsliste, die Lizenz bleibt
+                gültig.
               </p>
               <div class="proc-h">Wer macht das?</div>
               <div class="roles-inline">
@@ -3624,9 +3633,10 @@
                 <strong>Grenzen:</strong> Ein verbandsgebundener SBK darf nur
                 zuweisen, wenn der abgebende Verein zu seinem eigenen
                 Spielbetrieb gehört, ein Admin und ein SBK ohne
-                Verbandsbindung überall. Deaktivierte Spieler und Spieler
-                ohne aktiven Hauptverein sind ausgeschlossen, ebenso ein
-                Zielverein, in dem der Spieler schon ist. Läuft für den
+                Verbandsbindung überall. Spieler ohne aktiven Hauptverein sind
+                ausgeschlossen, ebenso ein Zielverein, in dem der Spieler schon
+                ist. Ein deaktivierter Spieler lässt sich zuweisen, die
+                Kennzeichnung des abgebenden Vereins entfällt dabei. Läuft für den
                 Spieler noch ein Transfer, musst du ihn zuerst annullieren.
               </div>
               <div class="roles-inline">
@@ -5069,13 +5079,6 @@
                   ><span class="act">Freigabe widerrufen</span
                   ><span class="ar">→</span
                   ><span class="chip neutral">Zurückgezogen</span>
-                </div>
-                <div class="branch">
-                  <span class="from">aus Beantragt oder Erteilt:</span
-                  ><span class="rb admin">Admin / VM</span
-                  ><span class="act">Spieler deaktiviert</span
-                  ><span class="ar">→</span
-                  ><span class="chip neutral">Gelöscht</span>
                 </div>
                 <div class="branch">
                   <span class="from">aus Beantragt oder Erteilt:</span

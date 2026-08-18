@@ -92,13 +92,13 @@
     "documentUploadFailed": "Das Dokument konnte nicht hochgeladen werden.",
     "documentDeleteFailed": "Das Dokument konnte nicht gelöscht werden.",
     "untilToday": "bis heute",
-    "clubLeave": "Vereinsaustritt",
+    "clubLeave": "Deaktivierung",
     "deactivatedOn": "Deaktiviert am",
-    "deactivatedHint": "Dieser Spieler ist deaktiviert und erscheint nicht mehr in der aktiven Spielerliste.",
+    "deactivatedHint": "Dieser Spieler ist deaktiviert und erscheint nicht mehr in der aktiven Spielerliste des Vereins. Vereinsmitgliedschaft und Lizenzen sind davon nicht betroffen, und in der Spielersuche sowie in Transfer- und Freigabeanträgen bleibt er auffindbar.",
     "reactivate": "Reaktivieren",
     "deactivatePlayer": "Spieler deaktivieren",
     "deactivateConfirm": "Spieler wirklich deaktivieren?",
-    "deactivateWarning": "Der Spieler wird aus der aktiven Spielerliste entfernt. Alle Vereinsmitgliedschaften und Lizenzen werden auf ungültig gesetzt. Der Datensatz bleibt erhalten.",
+    "deactivateWarning": "Der Spieler wird aus der aktiven Spielerliste des Vereins entfernt und steht nicht mehr in der Auswahl für Lizenzanträge. Vereinsmitgliedschaften und Lizenzen bleiben unverändert, und in der Spielersuche sowie in Transfer- und Freigabeanträgen ist der Spieler weiterhin zu finden.",
     "reasonRequired": "Grund *",
     "reasonClubLeave": "Vereinsaustritt",
     "reasonCareerEnd": "Karriereende",
@@ -137,7 +137,8 @@
     "results": "Ergebnisse",
     "searching": "wird gesucht...",
     "noResults": "Keine Spieler gefunden.",
-    "minChars": "Mindestens 2 Zeichen eingeben, um die Suche zu starten."
+    "minChars": "Mindestens 2 Zeichen eingeben, um die Suche zu starten.",
+    "deactivatedBadge": "deaktiviert"
   },
   "merge": {
     "backToSearch": "← Zurück zur Spielersuche",

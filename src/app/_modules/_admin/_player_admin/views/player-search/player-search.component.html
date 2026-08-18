@@ -73,6 +73,15 @@
                                 >{{ player.gender | gender }}</span
                               >
                             }
+                            @if (player.deactivated_at) {
+                              <span
+                                class="ml-1 inline-block rounded-full bg-gray-100 px-2 text-[11px] font-semibold leading-5 text-gray-500"
+                                >{{
+                                  "playerAdmin.search.deactivatedBadge"
+                                    | transloco
+                                }}</span
+                              >
+                            }
                           </p>
                           <div class="ml-2 flex-shrink-0 text-sm text-gray-500">
                             {{

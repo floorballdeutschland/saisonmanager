@@ -92,13 +92,13 @@
     "documentUploadFailed": "The document could not be uploaded.",
     "documentDeleteFailed": "The document could not be deleted.",
     "untilToday": "until today",
-    "clubLeave": "Club departure",
+    "clubLeave": "Deactivation",
     "deactivatedOn": "Deactivated on",
-    "deactivatedHint": "This player is deactivated and no longer appears in the active player list.",
+    "deactivatedHint": "This player is deactivated and no longer appears in the club's active player list. Club memberships and licences are unaffected, and the player remains findable in the player search and in transfer and release requests.",
     "reactivate": "Reactivate",
     "deactivatePlayer": "Deactivate player",
     "deactivateConfirm": "Really deactivate player?",
-    "deactivateWarning": "The player will be removed from the active player list. All club memberships and licenses will be set to invalid. The record is preserved.",
+    "deactivateWarning": "The player will be removed from the club's active player list and from the selection for licence applications. Club memberships and licences remain unchanged, and the player stays findable in the player search and in transfer and release requests.",
     "reasonRequired": "Reason *",
     "reasonClubLeave": "Club departure",
     "reasonCareerEnd": "End of career",
@@ -137,7 +137,8 @@
     "results": "Results",
     "searching": "searching...",
     "noResults": "No players found.",
-    "minChars": "Enter at least 2 characters to start the search."
+    "minChars": "Enter at least 2 characters to start the search.",
+    "deactivatedBadge": "deactivated"
   },
   "merge": {
     "backToSearch": "← Back to player search",
