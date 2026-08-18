@@ -126,10 +126,10 @@ describe('PlayerEditComponent', () => {
     });
   });
 
-  // Der Verweis auf die Transferantraege ersetzt einen direkten Wechsel am
+  // Der Verweis auf die Transferanträge ersetzt einen direkten Wechsel am
   // Profil und darf nur bei den Rollen auftauchen, die dort auch die
-  // Direktzuweisung ausloesen duerfen.
-  describe('Verweis auf die Transferantraege', () => {
+  // Direktzuweisung auslösen dürfen.
+  describe('Verweis auf die Transferanträge', () => {
     // Die Berechtigung muss vor dem ersten Rendern stehen: die Komponente liest
     // sie in ngOnInit aus currentUser$, ein spaeteres Setzen des Feldes laeuft
     // nicht mehr in die Bindings (Angular 22, dirty-getrackte Views).
@@ -140,7 +140,7 @@ describe('PlayerEditComponent', () => {
       const fixture = TestBed.createComponent(PlayerEditComponent);
       fixture.componentInstance.player = { id: 7 } as Player;
       // Ohne checkNoChanges: die Saison-Abos liefern ihren Wert erst im selben
-      // Durchlauf nach, das ist hier nicht der Prueflingsteil.
+      // Durchlauf nach, das ist hier nicht der Prüflingsteil.
       fixture.detectChanges(false);
       return fixture;
     }
