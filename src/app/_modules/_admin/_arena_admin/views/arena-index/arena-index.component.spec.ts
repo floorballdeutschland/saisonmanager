@@ -29,13 +29,10 @@ describe('ArenaIndexComponent', () => {
       fixture.nativeElement.querySelectorAll('tbody tr td:first-child')
     ).map((td) => (td as HTMLElement).textContent!.trim());
 
-  // Der Zustand wird als Attribut mitgegeben statt über den sichtbaren Text
-  // geprüft: Der Scope `admin/arena` löst im TestBed nicht auf, die Zellen
-  // enthielten also nur den rohen Übersetzungs-Key.
-  const rowStatus = (): (string | null)[] =>
+  const rowStatus = (): string[] =>
     Array.from(
-      fixture.nativeElement.querySelectorAll('tbody tr td[data-status]')
-    ).map((td) => (td as HTMLElement).getAttribute('data-status'));
+      fixture.nativeElement.querySelectorAll('tbody tr td:nth-child(4)')
+    ).map((td) => (td as HTMLElement).textContent!.trim());
 
   const inactiveCheckbox = (): HTMLInputElement =>
     fixture.nativeElement.querySelector('input[type="checkbox"]');
@@ -51,27 +48,33 @@ describe('ArenaIndexComponent', () => {
       imports: [
         FormsModule,
         RouterTestingModule,
+        // Die Übersetzungen stehen global unter dem Alias (`de: { arena: … }`),
+        // nicht als Scope-Schlüssel `'admin/arena/de'`: Letzterer bleibt in
+        // diesem TestBed unaufgelöst, weil die Komponente hier ohne ihr Modul
+        // und damit ohne dessen TRANSLOCO_SCOPE steht.
         getTranslocoTestingModule({
-          'admin/arena': {
-            index: {
-              title: 'Spielorte',
-              createNew: 'Neuen Spielort anlegen',
-              searchPlaceholder: 'Nach Name oder Stadt suchen…',
-              loading: 'Lade Spielorte…',
-              count: '{{ filtered }} von {{ total }} Einträgen',
-              colName: 'Name',
-              colCity: 'Stadt',
-              colAddress: 'Adresse',
-              colStatus: 'Status',
-              statusActive: 'Aktiv',
-              statusInactive: 'Inaktiv',
-              statusInactiveHint:
-                'Dieser Spielort steht im Spieltag nicht zur Auswahl.',
-              onlyInactive: 'Nur inaktive Spielorte',
-              edit: 'Bearbeiten',
-              merge: 'Zusammenlegen',
-              delete: 'Löschen',
-              empty: 'Keine Spielorte gefunden.',
+          de: {
+            arena: {
+              index: {
+                title: 'Spielorte',
+                createNew: 'Neuen Spielort anlegen',
+                searchPlaceholder: 'Nach Name oder Stadt suchen…',
+                loading: 'Lade Spielorte…',
+                count: '{{ filtered }} von {{ total }} Einträgen',
+                colName: 'Name',
+                colCity: 'Stadt',
+                colAddress: 'Adresse',
+                colStatus: 'Status',
+                statusActive: 'Aktiv',
+                statusInactive: 'Inaktiv',
+                statusInactiveHint:
+                  'Dieser Spielort steht im Spieltag nicht zur Auswahl.',
+                onlyInactive: 'Nur inaktive Spielorte',
+                edit: 'Bearbeiten',
+                merge: 'Zusammenlegen',
+                delete: 'Löschen',
+                empty: 'Keine Spielorte gefunden.',
+              },
             },
           },
         }),
@@ -114,7 +117,7 @@ describe('ArenaIndexComponent', () => {
   // #451: der Zustand war in der Verwaltung nirgends zu sehen, obwohl er
   // darüber entscheidet, ob der Spielort im Spieltag zur Auswahl steht.
   it('zeigt je Spielort, ob er aktiv ist', () => {
-    expect(rowStatus()).toEqual(['active', 'inactive', 'inactive', 'active']);
+    expect(rowStatus()).toEqual(['Aktiv', 'Inaktiv', 'Inaktiv', 'Aktiv']);
   });
 
   it('filtert auf Wunsch nur die inaktiven Spielorte', () => {
