@@ -23,6 +23,16 @@ const INACTIVE: Arena = {
   active: false,
 };
 
+// Gegenstueck zum inaktiven Eintrag: Ohne beide Zustaende im Bestand liesse
+// sich nicht unterscheiden, ob das Haekchen den Spielort abbildet oder nur den
+// DOM-Default einer frischen Checkbox zeigt.
+const ACTIVE: Arena = {
+  id: 8,
+  name: 'Halle am Park',
+  city: 'Berlin',
+  active: true,
+};
+
 describe('ArenaEditComponent', () => {
   let service: jasmine.SpyObj<ArenaService>;
 
@@ -53,7 +63,7 @@ describe('ArenaEditComponent', () => {
       'createArena',
       'updateArena',
     ]);
-    service.getAdminArenas.and.returnValue(of([INACTIVE]));
+    service.getAdminArenas.and.returnValue(of([INACTIVE, ACTIVE]));
     service.createArena.and.returnValue(of(INACTIVE));
     service.updateArena.and.returnValue(of(INACTIVE));
 
@@ -92,11 +102,33 @@ describe('ArenaEditComponent', () => {
     }).compileComponents();
   });
 
-  it('uebernimmt den Aktiv-Zustand des Spielorts', () => {
+  it('uebernimmt den Aktiv-Zustand des Spielorts', fakeAsync(() => {
     const fixture = createFixture('7');
+    // ngModel schreibt Model -> View erst im Microtask. Ohne den Flush liest
+    // `checked` den DOM-Default false, und die Zusicherung koennte selbst dann
+    // nicht fehlschlagen, wenn die Bindung ganz fehlte.
+    tick();
 
     expect(fixture.componentInstance.active).toBeFalse();
     expect(activeCheckbox(fixture)!.checked).toBeFalse();
+  }));
+
+  it('zeigt das Haekchen bei einem aktiven Spielort gesetzt', fakeAsync(() => {
+    const fixture = createFixture('8');
+    tick();
+
+    expect(fixture.componentInstance.active).toBeTrue();
+    expect(activeCheckbox(fixture)!.checked).toBeTrue();
+  }));
+
+  // Haelt die Uebersetzungstabelle fest: Loeste der Alias nicht auf, stuende
+  // hier der rohe Key, und keine andere Zusicherung im Spec wuerde es merken.
+  it('beschriftet das Haekchen', () => {
+    const label = createFixture('7').nativeElement.querySelector(
+      'input[name="active"]'
+    ).parentElement as HTMLElement;
+
+    expect(label.textContent!.trim()).toBe('Im Spieltag zur Auswahl anbieten');
   });
 
   // Beim Anlegen setzt die API `active` selbst (#449). Stuende das Haekchen
