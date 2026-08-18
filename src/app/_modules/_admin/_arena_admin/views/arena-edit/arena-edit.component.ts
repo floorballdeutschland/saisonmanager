@@ -30,6 +30,7 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
   street = '';
   housenumber = '';
   postcode = '';
+  active = true;
 
   private _destroy$ = new Subject<void>();
 
@@ -69,6 +70,7 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
             this.street = found.street ?? '';
             this.housenumber = found.housenumber ?? '';
             this.postcode = found.postcode ?? '';
+            this.active = found.active ?? false;
             this._cdr.markForCheck();
           },
           error: () => {
@@ -90,13 +92,16 @@ export class ArenaEditComponent implements OnInit, OnDestroy {
   }
 
   get payload(): Partial<Arena> {
-    return {
+    const data: Partial<Arena> = {
       name: this.name.trim(),
       city: this.city.trim(),
       street: this.street.trim() || undefined,
       housenumber: this.housenumber.trim() || undefined,
       postcode: this.postcode.trim() || undefined,
     };
+    // Beim Anlegen setzt die API `active` selbst (#449); das Feld gibt es
+    // deshalb nur in der Bearbeiten-Maske.
+    return this.isNew ? data : { ...data, active: this.active };
   }
 
   submit(force = false): void {
