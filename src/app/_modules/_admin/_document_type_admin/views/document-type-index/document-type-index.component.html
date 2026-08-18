@@ -97,25 +97,65 @@
             </option>
           </select>
         </div>
-        <div class="flex flex-col gap-1 max-w-[180px]">
-          <label class="text-xs font-bold"
-            >{{ "documentTypeAdmin.index.requiredBelowAge" | transloco }}
-            <span class="font-normal text-fb-gray-500">{{
-              "documentTypeAdmin.index.optional" | transloco
-            }}</span></label
-          >
-          <input
-            type="number"
-            min="1"
-            max="99"
-            placeholder="18"
-            [(ngModel)]="newType.required_below_age"
+        <div class="flex flex-col gap-1 max-w-xs">
+          <label class="text-xs font-bold">{{
+            "documentTypeAdmin.index.ageRule" | transloco
+          }}</label>
+          <select
+            [ngModel]="newAgeRule"
+            (ngModelChange)="setNewAgeRule($event)"
             class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          />
+          >
+            <option value="none">
+              {{ "documentTypeAdmin.index.ageRuleNone" | transloco }}
+            </option>
+            <option value="below_age">
+              {{ "documentTypeAdmin.index.ageRuleBelowAge" | transloco }}
+            </option>
+            <option value="from_birth_year">
+              {{ "documentTypeAdmin.index.ageRuleFromBirthYear" | transloco }}
+            </option>
+          </select>
           <span class="text-[11px] text-fb-gray-500">{{
-            "documentTypeAdmin.index.requiredBelowAgeHint" | transloco
+            "documentTypeAdmin.index.ageRuleHint" | transloco
           }}</span>
         </div>
+        @if (newAgeRule === "below_age") {
+          <div class="flex flex-col gap-1 max-w-[180px]">
+            <label class="text-xs font-bold">{{
+              "documentTypeAdmin.index.requiredBelowAge" | transloco
+            }}</label>
+            <input
+              type="number"
+              min="1"
+              max="99"
+              placeholder="18"
+              [(ngModel)]="newType.required_below_age"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+            <span class="text-[11px] text-fb-gray-500">{{
+              "documentTypeAdmin.index.requiredBelowAgeHint" | transloco
+            }}</span>
+          </div>
+        }
+        @if (newAgeRule === "from_birth_year") {
+          <div class="flex flex-col gap-1 max-w-[180px]">
+            <label class="text-xs font-bold">{{
+              "documentTypeAdmin.index.requiredFromBirthYear" | transloco
+            }}</label>
+            <input
+              type="number"
+              min="1901"
+              [max]="maxBirthYear"
+              placeholder="2012"
+              [(ngModel)]="newType.required_from_birth_year"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+            <span class="text-[11px] text-fb-gray-500">{{
+              "documentTypeAdmin.index.requiredFromBirthYearHint" | transloco
+            }}</span>
+          </div>
+        }
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-xs font-bold"
@@ -237,17 +277,54 @@
                       }}
                     </option>
                   </select>
-                  <input
-                    type="number"
-                    min="1"
-                    max="99"
-                    placeholder="18"
-                    [(ngModel)]="editBuffer.required_below_age"
-                    [title]="
-                      'documentTypeAdmin.index.requiredBelowAge' | transloco
-                    "
-                    class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-[80px] focus:outline-none focus:border-black"
-                  />
+                  <select
+                    [ngModel]="editAgeRule"
+                    (ngModelChange)="setEditAgeRule($event)"
+                    [title]="'documentTypeAdmin.index.ageRule' | transloco"
+                    class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
+                  >
+                    <option value="none">
+                      {{ "documentTypeAdmin.index.ageRuleNone" | transloco }}
+                    </option>
+                    <option value="below_age">
+                      {{
+                        "documentTypeAdmin.index.ageRuleBelowAge" | transloco
+                      }}
+                    </option>
+                    <option value="from_birth_year">
+                      {{
+                        "documentTypeAdmin.index.ageRuleFromBirthYear"
+                          | transloco
+                      }}
+                    </option>
+                  </select>
+                  @if (editAgeRule === "below_age") {
+                    <input
+                      type="number"
+                      min="1"
+                      max="99"
+                      placeholder="18"
+                      [(ngModel)]="editBuffer.required_below_age"
+                      [title]="
+                        'documentTypeAdmin.index.requiredBelowAge' | transloco
+                      "
+                      class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-[80px] focus:outline-none focus:border-black"
+                    />
+                  }
+                  @if (editAgeRule === "from_birth_year") {
+                    <input
+                      type="number"
+                      min="1901"
+                      [max]="maxBirthYear"
+                      placeholder="2012"
+                      [(ngModel)]="editBuffer.required_from_birth_year"
+                      [title]="
+                        'documentTypeAdmin.index.requiredFromBirthYear'
+                          | transloco
+                      "
+                      class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-[90px] focus:outline-none focus:border-black"
+                    />
+                  }
                 </div>
               </td>
               <td class="py-2 pr-4">
@@ -348,6 +425,15 @@
                     >{{
                       "documentTypeAdmin.index.belowAgeBadge"
                         | transloco: { age: t.required_below_age }
+                    }}</span
+                  >
+                }
+                @if (t.required_from_birth_year) {
+                  <span
+                    class="ml-1 inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-600"
+                    >{{
+                      "documentTypeAdmin.index.fromBirthYearBadge"
+                        | transloco: { year: t.required_from_birth_year }
                     }}</span
                   >
                 }

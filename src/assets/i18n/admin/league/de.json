@@ -118,6 +118,7 @@
     "docValidityOnce": "einmalig",
     "docValidityPerSeason": "je Saison",
     "docBelowAge": "bis U{{ age }}",
+    "docFromBirthYear": "ab Jg. {{ year }}",
     "banner": "Werbebanner",
     "currentBanner": "Aktueller Banner",
     "bannerAlt": "Werbebanner",

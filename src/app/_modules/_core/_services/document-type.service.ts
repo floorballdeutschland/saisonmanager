@@ -56,6 +56,7 @@ export class DocumentTypeService {
       'game_operation_id',
       'validity',
       'required_below_age',
+      'required_from_birth_year',
     ] as const;
     fields.forEach((field) => {
       const value = data[field];

@@ -13,7 +13,12 @@ import {
   NotificationService,
   SessionService,
 } from '@floorball/core';
-import { DocumentType, GameOperationWithLeagues, User } from '@floorball/types';
+import {
+  DocumentType,
+  DocumentTypeAgeRule,
+  GameOperationWithLeagues,
+  User,
+} from '@floorball/types';
 import { TranslocoService } from '@jsverse/transloco';
 
 // Zentraler Katalog der Dokumentarten für Lizenz-Pflichtdokumente.
@@ -43,6 +48,16 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
   showNewForm = false;
   newType: Partial<DocumentType> = this._emptyType();
   newTemplateFile: File | null = null;
+
+  // Welche Form der Altersregel im jeweiligen Formular gewählt ist. Bewusst
+  // neben dem Puffer und nicht darin: Über die Leitung gehen die beiden
+  // Zahlfelder, die Regelart ist nur die Bedienung dafür.
+  newAgeRule: DocumentTypeAgeRule = 'none';
+  editAgeRule: DocumentTypeAgeRule = 'none';
+
+  // Obergrenze für das Jahrgangsfeld – ein Jahrgang in der Zukunft kann
+  // niemanden treffen, die API lehnt ihn ab.
+  readonly maxBirthYear = new Date().getFullYear();
 
   private _destroy$ = new Subject<void>();
 
@@ -149,6 +164,7 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
   startEdit(documentType: DocumentType): void {
     this.editingId = documentType.id;
     this.editBuffer = { ...documentType };
+    this.editAgeRule = this.ageRuleOf(documentType);
     this.editTemplateFile = null;
     this.editRemoveTemplate = false;
   }
@@ -156,8 +172,27 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
   cancelEdit(): void {
     this.editingId = null;
     this.editBuffer = {};
+    this.editAgeRule = 'none';
     this.editTemplateFile = null;
     this.editRemoveTemplate = false;
+  }
+
+  // Welche Form greift bei einem vorhandenen Eintrag? Die API lässt nie beide
+  // Felder zusammen zu, die Reihenfolge entscheidet hier also nichts.
+  ageRuleOf(documentType: Partial<DocumentType>): DocumentTypeAgeRule {
+    if (documentType.required_from_birth_year) return 'from_birth_year';
+    if (documentType.required_below_age) return 'below_age';
+    return 'none';
+  }
+
+  setNewAgeRule(rule: DocumentTypeAgeRule): void {
+    this.newAgeRule = rule;
+    this._clearUnusedAgeFields(this.newType, rule);
+  }
+
+  setEditAgeRule(rule: DocumentTypeAgeRule): void {
+    this.editAgeRule = rule;
+    this._clearUnusedAgeFields(this.editBuffer, rule);
   }
 
   saveEdit(): void {
@@ -211,6 +246,7 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.newType = this._emptyType();
+          this.newAgeRule = 'none';
           this.newTemplateFile = null;
           this.showNewForm = false;
           this.saving = false;
@@ -231,6 +267,7 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
   cancelNew(): void {
     this.showNewForm = false;
     this.newType = this._emptyType();
+    this.newAgeRule = 'none';
     this.newTemplateFile = null;
   }
 
@@ -269,16 +306,30 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
       validity: 'once',
       game_operation_id: null,
       required_below_age: null,
+      required_from_birth_year: null,
       description: null,
     };
   }
 
+  // Die nicht gewählte Form wird geleert, sonst ginge sie beim Wechsel der
+  // Regelart mit auf die Leitung und die API lehnte beide zusammen ab.
+  private _clearUnusedAgeFields(
+    buffer: Partial<DocumentType>,
+    rule: DocumentTypeAgeRule
+  ): void {
+    if (rule !== 'below_age') buffer.required_below_age = null;
+    if (rule !== 'from_birth_year') buffer.required_from_birth_year = null;
+  }
+
+  // Beide Felder gehen immer mit, auch leer: Nur so räumt ein Wechsel der
+  // Regelart die vorherige Angabe serverseitig ab.
   private _payload(data: Partial<DocumentType>): Partial<DocumentType> {
     const payload: Partial<DocumentType> = {
       name: data.name?.trim(),
       description: data.description ?? null,
       validity: data.validity,
       required_below_age: data.required_below_age ?? null,
+      required_from_birth_year: data.required_from_birth_year ?? null,
     };
     if (this.canChooseGameOperation) {
       payload.game_operation_id = data.game_operation_id ?? null;
