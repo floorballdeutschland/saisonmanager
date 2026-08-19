@@ -1041,6 +1041,22 @@
     );
   }
 
+  // `game_day` ist ein Objekt (`{ game_day_number, title }`), kein Text. Vorher
+  // stand es unverändert in der Überschrift, und die Verkettung machte daraus
+  // „SPIELTAG [object Object]", in jeder Liga und in jedem Startbild.
+  //
+  // Genommen wird der `title` allein: Er trägt das Wort „Spieltag" schon selbst,
+  // und er deckt die Pokalrunden mit ab („Achtelfinale", „Finale"), wo ein
+  // vorangestelltes „Spieltag" schlicht falsch wäre. Die Nummer ist nur der
+  // Notnagel, weil `game_days.number` nullable ist und der Titel dann
+  // „. Spieltag" lautet.
+  function gameDayTitle(gameDay) {
+    if (!gameDay) return "";
+    if (typeof gameDay !== "object") return "Spieltag " + gameDay;
+    if (gameDay.title) return gameDay.title;
+    return gameDay.game_day_number ? "Spieltag " + gameDay.game_day_number : "";
+  }
+
   function germanDate(iso) {
     if (!iso) return "";
     var parts = String(iso).split("-");
@@ -1068,13 +1084,13 @@
       // mittig statt oben klebend, sonst steht die untere Bildhälfte leer.
       center: true,
       league: league.name || "",
-      title: league.game_day ? "Spieltag " + league.game_day : "",
+      title: gameDayTitle(league.game_day),
       sub: germanDate(game.date),
       body: fragment([
         matchGrid("gegen", true),
         factRow([
           {
-            label: "Anwurf",
+            label: "Anstoß",
             value: game.start_time ? game.start_time + " Uhr" : "",
           },
           { label: "Halle", value: arena.name || "" },
@@ -1352,6 +1368,28 @@
   function fsFinal() {
     var game = state.game;
     if (!game) return null;
+
+    // Vor dem Anpfiff gibt es keinen Stand: `Game#result` bleibt nil, solange
+    // `started` nicht gesetzt ist. Damit griff der Riegel darunter, die Szene
+    // blieb unsichtbar, und auf Sendung stand ein schwarzes Bild ohne ein Wort
+    // dazu. Schwarz ist für Vereinsstreamer aber nicht von einem kaputten
+    // Overlay zu unterscheiden: Gemeldet wurde genau das, samt Verdacht auf
+    // einen falschen Link und der Neigung, immer neue anzufordern. Tabelle,
+    // Torschützenliste und Aufstellung benennen ihren Leerzustand längst, hier
+    // fehlte er.
+    if (!game.started) {
+      return {
+        center: true,
+        league: (game.league && game.league.name) || "",
+        title: "Endstand",
+        sub: teamLabel(game.home) + " gegen " + teamLabel(game.guest),
+        body: node(
+          "p",
+          "ov-fs-empty ov-fs-empty--center",
+          "Das Spiel hat noch nicht begonnen: Der Endstand steht nach dem Schlusspfiff hier."
+        ),
+      };
+    }
 
     var result = game.result || {};
     // KEIN Rückfall auf 0. Fehlt der Stand, ist er unbekannt, und "0 : 0" wäre
