@@ -3,7 +3,11 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { getTranslocoTestingModule } from 'src/app/_modules/_core/_i18n/transloco-testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of, throwError } from 'rxjs';
-import { SystemHealthData, SystemHealthService } from '@floorball/core';
+import {
+  BlockedIp,
+  SystemHealthData,
+  SystemHealthService,
+} from '@floorball/core';
 
 import { SystemIndexComponent } from './system-index.component';
 
@@ -54,11 +58,25 @@ describe('SystemIndexComponent', () => {
     ...overrides,
   });
 
+  const blocked = (overrides: Partial<BlockedIp> = {}): BlockedIp => ({
+    id: 1,
+    ip: '198.51.100.5',
+    reason: 'Dauerhaft 401',
+    created_at: '2026-08-19T09:00:00Z',
+    created_by_name: 'Daniel Kehne (dkehne)',
+    ...overrides,
+  });
+
   function setup() {
     service = jasmine.createSpyObj('SystemHealthService', [
       'getSystemHealth',
       'getSummary',
+      'getBlockedIps',
+      'createBlockedIp',
+      'deleteBlockedIp',
     ]);
+    // Vorgabe, damit die Kennzahlen-Tests nicht an der Sperrliste haengen.
+    service.getBlockedIps.and.returnValue(of([]));
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, getTranslocoTestingModule()],
@@ -178,5 +196,172 @@ describe('SystemIndexComponent', () => {
     expect(component.kindLabel('Widget', 'attachment')).toBe(
       'Widget / attachment'
     );
+  });
+
+  describe('Sperrliste', () => {
+    it('lädt die Sperrliste beim Öffnen', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      service.getBlockedIps.and.returnValue(of([blocked()]));
+
+      component.ngOnInit();
+
+      expect(component.blockedIps.length).toBe(1);
+      expect(component.blockedIpsLoadFailed).toBeFalse();
+    });
+
+    // Ein Ladefehler darf nicht wie eine leere Sperrliste aussehen — sonst
+    // glaubt ein Admin, es sei nichts gesperrt, und traegt doppelt ein.
+    it('unterscheidet Ladefehler von leerer Liste', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      service.getBlockedIps.and.returnValue(throwError(() => new Error('500')));
+
+      component.ngOnInit();
+
+      expect(component.blockedIpsLoadFailed).toBeTrue();
+      expect(component.blockedIps).toEqual([]);
+    });
+
+    it('sperrt erst, wenn Adresse und Grund ausgefüllt sind', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      service.createBlockedIp.and.returnValue(of(blocked()));
+      component.ngOnInit();
+
+      expect(component.canSubmitBlock).toBeFalse();
+
+      component.newIp = '198.51.100.5';
+      expect(component.canSubmitBlock).toBeFalse();
+
+      component.newReason = 'Dauerhaft 401';
+      expect(component.canSubmitBlock).toBeTrue();
+
+      component.addBlockedIp();
+      expect(service.createBlockedIp).toHaveBeenCalledWith(
+        '198.51.100.5',
+        'Dauerhaft 401'
+      );
+    });
+
+    it('räumt das Formular nach dem Sperren und ergänzt die Liste', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      service.createBlockedIp.and.returnValue(of(blocked({ id: 7 })));
+      component.ngOnInit();
+
+      component.newIp = '198.51.100.5';
+      component.newReason = 'Dauerhaft 401';
+      component.addBlockedIp();
+
+      expect(component.blockedIps.map((b) => b.id)).toContain(7);
+      expect(component.newIp).toBe('');
+      expect(component.newReason).toBe('');
+      expect(component.savingBlock).toBeFalse();
+    });
+
+    // Die Serverantwort nennt den Grund (unsinnige Adresse, eigenes Netz, schon
+    // gesperrt). Der gehoert an das Formular — in einem Toast waere er beim
+    // naechsten Klick weg, und der Admin wuesste nicht, was er aendern soll.
+    it('zeigt die Begründung des Servers am Formular', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      service.createBlockedIp.and.returnValue(
+        throwError(() => ({
+          error: {
+            errors: ['IP liegt im eigenen oder in einem privaten Netz'],
+          },
+        }))
+      );
+      component.ngOnInit();
+
+      component.newIp = '172.18.0.3';
+      component.newReason = 'Test';
+      component.addBlockedIp();
+
+      expect(component.blockError).toContain('privaten Netz');
+      expect(component.savingBlock).toBeFalse();
+      expect(component.newIp).toBe(
+        '172.18.0.3',
+        'Eingabe darf nicht verloren gehen'
+      );
+    });
+
+    it('gibt nach Bestätigung frei und nimmt die Zeile aus der Liste', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      service.getBlockedIps.and.returnValue(of([blocked({ id: 7 })]));
+      service.deleteBlockedIp.and.returnValue(of({}));
+      component.ngOnInit();
+      spyOn(window, 'confirm').and.returnValue(true);
+
+      component.removeBlockedIp(blocked({ id: 7 }));
+
+      expect(service.deleteBlockedIp).toHaveBeenCalledWith(7);
+      expect(component.blockedIps).toEqual([]);
+    });
+
+    // Der Knopf "Aktualisieren" im Kopf ruft load(). Zog der die Sperrliste
+    // nicht mit, zeigte die Tabelle nach dem Klick unveraendert den alten Stand.
+    it('Aktualisieren zieht die Sperrliste mit', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      component.ngOnInit();
+      service.getBlockedIps.calls.reset();
+
+      component.load();
+
+      expect(service.getBlockedIps).toHaveBeenCalled();
+    });
+
+    // Sonst bleibt nach einem Ladefehler die Fehlermeldung stehen und die neue
+    // Zeile unsichtbar: Erfolgs-Toast ohne Eintrag, und der Admin traegt erneut
+    // ein.
+    it('ein erfolgreiches Sperren räumt einen vorherigen Ladefehler ab', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      service.getBlockedIps.and.returnValue(throwError(() => new Error('500')));
+      service.createBlockedIp.and.returnValue(of(blocked({ id: 7 })));
+      component.ngOnInit();
+      expect(component.blockedIpsLoadFailed).toBeTrue();
+
+      component.newIp = '198.51.100.5';
+      component.newReason = 'Test';
+      component.addBlockedIp();
+
+      expect(component.blockedIpsLoadFailed).toBeFalse();
+      expect(component.blockedIps.map((b) => b.id)).toContain(7);
+    });
+
+    // Ein fehlgeschlagenes Freigeben liess die Zeile stehen, ohne dass die
+    // Tabelle je wieder mit dem Server abgeglichen wurde.
+    it('zieht nach fehlgeschlagenem Freigeben den Serverstand nach', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      service.getBlockedIps.and.returnValue(of([blocked({ id: 7 })]));
+      service.deleteBlockedIp.and.returnValue(
+        throwError(() => new Error('500'))
+      );
+      component.ngOnInit();
+      spyOn(window, 'confirm').and.returnValue(true);
+      service.getBlockedIps.calls.reset();
+
+      component.removeBlockedIp(blocked({ id: 7 }));
+
+      expect(service.getBlockedIps).toHaveBeenCalled();
+    });
+
+    it('gibt ohne Bestätigung nicht frei', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      service.getBlockedIps.and.returnValue(of([blocked({ id: 7 })]));
+      component.ngOnInit();
+      spyOn(window, 'confirm').and.returnValue(false);
+
+      component.removeBlockedIp(blocked({ id: 7 }));
+
+      expect(service.deleteBlockedIp).not.toHaveBeenCalled();
+      expect(component.blockedIps.length).toBe(1);
+    });
   });
 });

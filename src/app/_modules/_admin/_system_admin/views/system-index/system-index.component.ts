@@ -9,6 +9,8 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
+  BlockedIp,
+  NotificationService,
   SystemHealthData,
   SystemHealthService,
   SystemHealthStatus,
@@ -25,10 +27,20 @@ export class SystemIndexComponent implements OnInit, OnDestroy {
   data: SystemHealthData | null = null;
   loadError: string | null = null;
 
+  // Sperrliste. Getrennt vom Rest geladen, damit ein Fehler dort nicht die
+  // Kennzahlen mitnimmt und umgekehrt.
+  blockedIps: BlockedIp[] = [];
+  blockedIpsLoadFailed = false;
+  newIp = '';
+  newReason = '';
+  savingBlock = false;
+  blockError: string | null = null;
+
   private _destroy$ = new Subject<void>();
 
   constructor(
     private _systemHealthService: SystemHealthService,
+    private _notificationService: NotificationService,
     private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
@@ -37,12 +49,109 @@ export class SystemIndexComponent implements OnInit, OnDestroy {
     this.load();
   }
 
+  get canSubmitBlock(): boolean {
+    return !!this.newIp.trim() && !!this.newReason.trim() && !this.savingBlock;
+  }
+
+  loadBlockedIps(): void {
+    this.blockedIpsLoadFailed = false;
+    this._systemHealthService
+      .getBlockedIps()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.blockedIps = result;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          // Ein Ladefehler darf nicht wie eine leere Sperrliste aussehen.
+          this.blockedIpsLoadFailed = true;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  addBlockedIp(): void {
+    if (!this.canSubmitBlock) return;
+
+    this.savingBlock = true;
+    this.blockError = null;
+    this._systemHealthService
+      .createBlockedIp(this.newIp.trim(), this.newReason.trim())
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (created) => {
+          // Ohne das Zuruecksetzen bliebe nach einem vorherigen Ladefehler die
+          // Fehlermeldung stehen und die neue Zeile unsichtbar: Der Admin sieht
+          // den Erfolgs-Toast, aber keinen Eintrag, und traegt erneut ein.
+          this.blockedIpsLoadFailed = false;
+          this.blockedIps = [created, ...this.blockedIps];
+          this.newIp = '';
+          this.newReason = '';
+          this.savingBlock = false;
+          this._notificationService.success(
+            this._transloco.translate('system.blockedIps.added'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          // Die Serverantwort nennt den Grund (unsinnige Adresse, Bereich statt
+          // Adresse, privates Netz, schon gesperrt). Sie kommt zusätzlich als
+          // Toast über den ErrorInterceptor; am Formular bleibt sie neben der
+          // Eingabe stehen, die korrigiert werden soll.
+          this.blockError =
+            err?.error?.errors?.join(' ') ??
+            this._transloco.translate('system.blockedIps.addError');
+          this.savingBlock = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  removeBlockedIp(blocked: BlockedIp): void {
+    if (
+      !confirm(
+        this._transloco.translate('system.blockedIps.removeConfirm', {
+          ip: blocked.ip,
+        })
+      )
+    ) {
+      return;
+    }
+
+    this._systemHealthService
+      .deleteBlockedIp(blocked.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.blockedIps = this.blockedIps.filter((b) => b.id !== blocked.id);
+          this._notificationService.success(
+            this._transloco.translate('system.blockedIps.removed'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          // Die Meldung zeigt der ErrorInterceptor. Wichtig ist hier, dass die
+          // Tabelle danach nicht weiter eine Sperre behauptet, die der Server
+          // vielleicht gar nicht mehr kennt — also den echten Stand nachziehen.
+          this.loadBlockedIps();
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
   ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
   }
 
   load(): void {
+    // Auch die Sperrliste: "Aktualisieren" im Kopf soll die ganze Seite frisch
+    // holen. Sonst zeigt die Tabelle nach dem Klick unveraendert den alten
+    // Stand, ohne Hinweis darauf, dass dieser Knopf sie nicht betrifft.
+    this.loadBlockedIps();
     this.loading = true;
     this.loadError = null;
     this._systemHealthService
