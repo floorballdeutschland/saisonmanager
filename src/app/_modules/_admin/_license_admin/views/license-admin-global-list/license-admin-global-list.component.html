@@ -218,7 +218,15 @@
               (ngModelChange)="changePageSize($event)"
             >
               @for (size of pageSizeOptions; track size) {
-                <option [ngValue]="size">{{ size }}</option>
+                <option [ngValue]="size">
+                  @if (size === pageSizeAll) {
+                    {{ "licenseAdmin.globalList.perPageAll" | transloco }} ({{
+                      filteredEntries.length
+                    }})
+                  } @else {
+                    {{ size }}
+                  }
+                </option>
               }
             </select>
           </label>

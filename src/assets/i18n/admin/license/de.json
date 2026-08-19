@@ -57,6 +57,7 @@
     "onlyExpress": "Nur Expresslizenzen",
     "licensesFound": "{{ count }} Lizenzen gefunden",
     "perPage": "Einträge pro Seite",
+    "perPageAll": "Alle",
     "loadingShort": "Daten werden geladen...",
     "exportCsv": "CSV exportieren",
     "resetFilters": "Filter zurücksetzen",

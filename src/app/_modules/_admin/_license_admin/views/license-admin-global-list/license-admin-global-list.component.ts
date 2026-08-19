@@ -53,8 +53,11 @@ const LEAGUE_CLASS_KEYS: { value: string; labelKey: string }[] = [
 ];
 
 // Auswählbare Seitengröße. Die Wahl liegt im localStorage, damit sie den
-// nächsten Aufruf der Liste überlebt.
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
+// nächsten Aufruf der Liste überlebt. 0 steht für "Alle": dann rendert die
+// Tabelle die komplette Filtermenge auf einmal, was bei mehreren tausend
+// Zeilen entsprechend träge wird – deshalb ist es nicht die Voreinstellung.
+const PAGE_SIZE_ALL = 0;
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, PAGE_SIZE_ALL];
 const DEFAULT_PAGE_SIZE = 50;
 const PAGE_SIZE_STORAGE_KEY = 'license_admin_page_size';
 
@@ -73,6 +76,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   loadError = false;
 
   readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
+  readonly pageSizeAll = PAGE_SIZE_ALL;
   pageSize = DEFAULT_PAGE_SIZE;
   currentPage = 1;
 
@@ -120,10 +124,15 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
 
   // Eine gespeicherte Größe außerhalb der angebotenen Werte (alter Stand,
   // von Hand gesetzt) wird verworfen, statt eine krumme Seitenlänge zu zeigen.
+  // Der leere Wert muss vor der Umwandlung abgefangen werden: Number('') ist 0
+  // und das ist "Alle" – ohne gespeicherte Wahl wäre sonst alles auf einmal da.
   private restorePageSize(): void {
-    const stored = Number(this._storageService.getItem(PAGE_SIZE_STORAGE_KEY));
-    if (PAGE_SIZE_OPTIONS.includes(stored)) {
-      this.pageSize = stored;
+    const stored = this._storageService.getItem(PAGE_SIZE_STORAGE_KEY);
+    if (!stored) return;
+
+    const size = Number(stored);
+    if (PAGE_SIZE_OPTIONS.includes(size)) {
+      this.pageSize = size;
     }
   }
 
@@ -289,10 +298,14 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   // hier geht es allein darum, nicht mehrere hundert Zeilen auf einmal zu rendern.
 
   get numberOfPages(): number {
+    if (this.pageSize === PAGE_SIZE_ALL) return 1;
+
     return Math.max(1, Math.ceil(this.filteredEntries.length / this.pageSize));
   }
 
   get pagedEntries(): AdminLicenseEntry[] {
+    if (this.pageSize === PAGE_SIZE_ALL) return this.filteredEntries;
+
     const start = (this.currentPage - 1) * this.pageSize;
     return this.filteredEntries.slice(start, start + this.pageSize);
   }
@@ -307,7 +320,8 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     // sonst verliert man beim Umschalten die Stelle in der Liste.
     const firstIndex = (this.currentPage - 1) * this.pageSize;
     this.pageSize = size;
-    this.currentPage = Math.floor(firstIndex / size) + 1;
+    this.currentPage =
+      size === PAGE_SIZE_ALL ? 1 : Math.floor(firstIndex / size) + 1;
     this._storageService.setItem(PAGE_SIZE_STORAGE_KEY, String(size));
     this._cdr.markForCheck();
   }

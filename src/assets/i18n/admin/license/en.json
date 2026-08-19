@@ -57,6 +57,7 @@
     "onlyExpress": "Express licenses only",
     "licensesFound": "{{ count }} licenses found",
     "perPage": "Entries per page",
+    "perPageAll": "All",
     "loadingShort": "Loading data...",
     "exportCsv": "Export CSV",
     "resetFilters": "Reset filters",

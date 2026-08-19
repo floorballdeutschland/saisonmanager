@@ -104,7 +104,8 @@ describe('LicenseAdminGlobalListComponent', () => {
       const component = setup(120);
 
       expect(component.pageSize).toBe(50);
-      expect(component.pageSizeOptions).toEqual([25, 50, 100, 200]);
+      // 0 ist die Option "Alle".
+      expect(component.pageSizeOptions).toEqual([25, 50, 100, 200, 0]);
     });
 
     it('applies the chosen size right away', () => {
@@ -128,6 +129,30 @@ describe('LicenseAdminGlobalListComponent', () => {
 
     it('ignores a stored size that is not offered', () => {
       localStorage.setItem('license_admin_page_size', '7');
+
+      expect(setup(120).pageSize).toBe(50);
+    });
+
+    it('shows every entry on one page for "Alle"', () => {
+      const component = setup(120);
+
+      component.changePageSize(0);
+
+      expect(component.numberOfPages).toBe(1);
+      expect(component.pagedEntries.length).toBe(120);
+      expect(component.currentPage).toBe(1);
+    });
+
+    it('remembers "Alle" as well', () => {
+      setup(120).changePageSize(0);
+
+      expect(setup(120).pageSize).toBe(0);
+    });
+
+    // Number('') ist 0 und 0 heisst "Alle": ohne gespeicherte Wahl duerfen
+    // deshalb nicht alle Zeilen auf einmal erscheinen.
+    it('does not read a missing choice as "Alle"', () => {
+      expect(localStorage.getItem('license_admin_page_size')).toBeNull();
 
       expect(setup(120).pageSize).toBe(50);
     });
