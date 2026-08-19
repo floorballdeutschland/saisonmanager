@@ -6,7 +6,11 @@ import {
   OnInit,
 } from '@angular/core';
 import { AdminLicenseEntry, Season } from '@floorball/types';
-import { AssociationService, LeagueService } from '@floorball/core';
+import {
+  AssociationService,
+  LeagueService,
+  StorageService,
+} from '@floorball/core';
 import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
@@ -48,6 +52,17 @@ const LEAGUE_CLASS_KEYS: { value: string; labelKey: string }[] = [
   { value: 'll', labelKey: 'licenseAdmin.globalList.leagueClassLl' },
 ];
 
+// Auswählbare Seitengröße. Die Wahl liegt im localStorage, damit sie den
+// nächsten Aufruf der Liste überlebt. Voreingestellt ist die kleinste Stufe,
+// damit das Tabellenende samt waagerechter Scrollleiste ohne langes Scrollen
+// erreichbar bleibt. 0 steht für "Alle": dann rendert die Tabelle die komplette
+// Filtermenge auf einmal und wird mit deren Umfang langsamer, deshalb ist es
+// nicht die Voreinstellung.
+const PAGE_SIZE_ALL = 0;
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, PAGE_SIZE_ALL];
+const DEFAULT_PAGE_SIZE = 25;
+const PAGE_SIZE_STORAGE_KEY = 'license_admin_page_size';
+
 @Component({
   selector: 'fb-license-admin-global-list',
   templateUrl: './license-admin-global-list.component.html',
@@ -62,7 +77,9 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   loading = true;
   loadError = false;
 
-  readonly pageSize = 50;
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
+  readonly pageSizeAll = PAGE_SIZE_ALL;
+  pageSize = DEFAULT_PAGE_SIZE;
   currentPage = 1;
 
   gameOperationOptions: FilterOption[] = [];
@@ -101,8 +118,28 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     private _associationService: AssociationService,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
-    private _transloco: TranslocoService
-  ) {}
+    private _transloco: TranslocoService,
+    private _storageService: StorageService
+  ) {
+    this.restorePageSize();
+  }
+
+  // Eine gespeicherte Größe außerhalb der angebotenen Werte (alter Stand,
+  // von Hand gesetzt) wird verworfen, statt eine krumme Seitenlänge zu zeigen.
+  // Die Prüfung auf "nichts gespeichert" muss auf dem Text sitzen, nicht auf
+  // der Zahl: StorageService liefert für einen fehlenden Schlüssel '', und
+  // Number('') ist 0, also "Alle". Der Text '0' dagegen ist eine echte Wahl –
+  // eine Prüfung wie `if (!Number(stored))` würde sie stillschweigend fallen
+  // lassen.
+  private restorePageSize(): void {
+    const stored = this._storageService.getItem(PAGE_SIZE_STORAGE_KEY);
+    if (!stored) return;
+
+    const size = Number(stored);
+    if (PAGE_SIZE_OPTIONS.includes(size)) {
+      this.pageSize = size;
+    }
+  }
 
   // Titel und statische Dropdown-Labels erst bauen, wenn der (lazy geladene)
   // Scope 'admin/license' verfügbar ist – sonst würden hier die rohen Keys
@@ -263,19 +300,40 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   // ---- Pagination ----------------------------------------------------------
   // Rein clientseitig, wie in den übrigen Admin-Listen. Die Ladezeit hängt nicht
   // an der Menge der Zeilen, sondern am Aufbau der Liste in der Schnittstelle;
-  // hier geht es allein darum, nicht mehrere hundert Zeilen auf einmal zu rendern.
+  // die Seitenlänge hält allein die Zahl gerenderter Zeilen klein. Wer bewusst
+  // alles auf einmal sehen will, wählt "Alle" (siehe PAGE_SIZE_ALL).
 
   get numberOfPages(): number {
+    if (this.pageSize === PAGE_SIZE_ALL) return 1;
+
     return Math.max(1, Math.ceil(this.filteredEntries.length / this.pageSize));
   }
 
   get pagedEntries(): AdminLicenseEntry[] {
+    if (this.pageSize === PAGE_SIZE_ALL) return this.filteredEntries;
+
     const start = (this.currentPage - 1) * this.pageSize;
     return this.filteredEntries.slice(start, start + this.pageSize);
   }
 
   public changePage(page: number): void {
     this.currentPage = page;
+    this._cdr.markForCheck();
+  }
+
+  public changePageSize(size: number): void {
+    // Die Auswahl kommt über [ngValue] als Zahl. Die Umwandlung hält den Wert
+    // auch dann auf Kurs, wenn er einmal als Text ankommt: '0' === 0 ist falsch,
+    // "Alle" fiele damit aus der Prüfung und würde durch 0 teilen.
+    const next = Number(size);
+    // Den ersten sichtbaren Eintrag mitnehmen, statt auf Seite 1 zu springen:
+    // sonst verliert man beim Umschalten die Stelle in der Liste. Aus "Alle"
+    // heraus gibt es keine Seitenzahl zum Mitnehmen, dort beginnt es bei 1.
+    const firstIndex = (this.currentPage - 1) * this.pageSize;
+    this.pageSize = next;
+    this.currentPage =
+      next === PAGE_SIZE_ALL ? 1 : Math.floor(firstIndex / next) + 1;
+    this._storageService.setItem(PAGE_SIZE_STORAGE_KEY, String(next));
     this._cdr.markForCheck();
   }
 
