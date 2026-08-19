@@ -47,7 +47,6 @@ export class SystemIndexComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
-    this.loadBlockedIps();
   }
 
   get canSubmitBlock(): boolean {
@@ -82,6 +81,10 @@ export class SystemIndexComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (created) => {
+          // Ohne das Zuruecksetzen bliebe nach einem vorherigen Ladefehler die
+          // Fehlermeldung stehen und die neue Zeile unsichtbar: Der Admin sieht
+          // den Erfolgs-Toast, aber keinen Eintrag, und traegt erneut ein.
+          this.blockedIpsLoadFailed = false;
           this.blockedIps = [created, ...this.blockedIps];
           this.newIp = '';
           this.newReason = '';
@@ -129,6 +132,10 @@ export class SystemIndexComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: () => {
+          // Die Meldung zeigt der ErrorInterceptor. Wichtig ist hier, dass die
+          // Tabelle danach nicht weiter eine Sperre behauptet, die der Server
+          // vielleicht gar nicht mehr kennt — also den echten Stand nachziehen.
+          this.loadBlockedIps();
           this._cdr.markForCheck();
         },
       });
@@ -140,6 +147,10 @@ export class SystemIndexComponent implements OnInit, OnDestroy {
   }
 
   load(): void {
+    // Auch die Sperrliste: "Aktualisieren" im Kopf soll die ganze Seite frisch
+    // holen. Sonst zeigt die Tabelle nach dem Klick unveraendert den alten
+    // Stand, ohne Hinweis darauf, dass dieser Knopf sie nicht betrifft.
+    this.loadBlockedIps();
     this.loading = true;
     this.loadError = null;
     this._systemHealthService

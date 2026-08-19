@@ -301,6 +301,56 @@ describe('SystemIndexComponent', () => {
       expect(component.blockedIps).toEqual([]);
     });
 
+    // Der Knopf "Aktualisieren" im Kopf ruft load(). Zog der die Sperrliste
+    // nicht mit, zeigte die Tabelle nach dem Klick unveraendert den alten Stand.
+    it('Aktualisieren zieht die Sperrliste mit', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      component.ngOnInit();
+      service.getBlockedIps.calls.reset();
+
+      component.load();
+
+      expect(service.getBlockedIps).toHaveBeenCalled();
+    });
+
+    // Sonst bleibt nach einem Ladefehler die Fehlermeldung stehen und die neue
+    // Zeile unsichtbar: Erfolgs-Toast ohne Eintrag, und der Admin traegt erneut
+    // ein.
+    it('ein erfolgreiches Sperren räumt einen vorherigen Ladefehler ab', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      service.getBlockedIps.and.returnValue(throwError(() => new Error('500')));
+      service.createBlockedIp.and.returnValue(of(blocked({ id: 7 })));
+      component.ngOnInit();
+      expect(component.blockedIpsLoadFailed).toBeTrue();
+
+      component.newIp = '198.51.100.5';
+      component.newReason = 'Test';
+      component.addBlockedIp();
+
+      expect(component.blockedIpsLoadFailed).toBeFalse();
+      expect(component.blockedIps.map((b) => b.id)).toContain(7);
+    });
+
+    // Ein fehlgeschlagenes Freigeben liess die Zeile stehen, ohne dass die
+    // Tabelle je wieder mit dem Server abgeglichen wurde.
+    it('zieht nach fehlgeschlagenem Freigeben den Serverstand nach', () => {
+      setup();
+      service.getSystemHealth.and.returnValue(of(health()));
+      service.getBlockedIps.and.returnValue(of([blocked({ id: 7 })]));
+      service.deleteBlockedIp.and.returnValue(
+        throwError(() => new Error('500'))
+      );
+      component.ngOnInit();
+      spyOn(window, 'confirm').and.returnValue(true);
+      service.getBlockedIps.calls.reset();
+
+      component.removeBlockedIp(blocked({ id: 7 }));
+
+      expect(service.getBlockedIps).toHaveBeenCalled();
+    });
+
     it('gibt ohne Bestätigung nicht frei', () => {
       setup();
       service.getSystemHealth.and.returnValue(of(health()));
