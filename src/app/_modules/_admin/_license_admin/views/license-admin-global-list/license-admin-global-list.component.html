@@ -210,6 +210,18 @@
           }
         </span>
         <div class="flex items-center gap-4">
+          <label class="flex items-center gap-2 text-sm text-gray-500">
+            {{ "licenseAdmin.globalList.perPage" | transloco }}
+            <select
+              class="rounded border-gray-300 text-sm py-1"
+              [ngModel]="pageSize"
+              (ngModelChange)="changePageSize($event)"
+            >
+              @for (size of pageSizeOptions; track size) {
+                <option [ngValue]="size">{{ size }}</option>
+              }
+            </select>
+          </label>
           @if (!loading && filteredEntries.length > 0) {
             <button
               class="text-sm text-fb-gray-500 hover:text-black underline"

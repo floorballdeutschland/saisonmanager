@@ -6,7 +6,11 @@ import {
   OnInit,
 } from '@angular/core';
 import { AdminLicenseEntry, Season } from '@floorball/types';
-import { AssociationService, LeagueService } from '@floorball/core';
+import {
+  AssociationService,
+  LeagueService,
+  StorageService,
+} from '@floorball/core';
 import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
@@ -48,6 +52,12 @@ const LEAGUE_CLASS_KEYS: { value: string; labelKey: string }[] = [
   { value: 'll', labelKey: 'licenseAdmin.globalList.leagueClassLl' },
 ];
 
+// Auswählbare Seitengröße. Die Wahl liegt im localStorage, damit sie den
+// nächsten Aufruf der Liste überlebt.
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
+const DEFAULT_PAGE_SIZE = 50;
+const PAGE_SIZE_STORAGE_KEY = 'license_admin_page_size';
+
 @Component({
   selector: 'fb-license-admin-global-list',
   templateUrl: './license-admin-global-list.component.html',
@@ -62,7 +72,8 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   loading = true;
   loadError = false;
 
-  readonly pageSize = 50;
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
+  pageSize = DEFAULT_PAGE_SIZE;
   currentPage = 1;
 
   gameOperationOptions: FilterOption[] = [];
@@ -101,8 +112,20 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     private _associationService: AssociationService,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
-    private _transloco: TranslocoService
-  ) {}
+    private _transloco: TranslocoService,
+    private _storageService: StorageService
+  ) {
+    this.restorePageSize();
+  }
+
+  // Eine gespeicherte Größe außerhalb der angebotenen Werte (alter Stand,
+  // von Hand gesetzt) wird verworfen, statt eine krumme Seitenlänge zu zeigen.
+  private restorePageSize(): void {
+    const stored = Number(this._storageService.getItem(PAGE_SIZE_STORAGE_KEY));
+    if (PAGE_SIZE_OPTIONS.includes(stored)) {
+      this.pageSize = stored;
+    }
+  }
 
   // Titel und statische Dropdown-Labels erst bauen, wenn der (lazy geladene)
   // Scope 'admin/license' verfügbar ist – sonst würden hier die rohen Keys
@@ -276,6 +299,16 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
 
   public changePage(page: number): void {
     this.currentPage = page;
+    this._cdr.markForCheck();
+  }
+
+  public changePageSize(size: number): void {
+    // Den ersten sichtbaren Eintrag mitnehmen, statt auf Seite 1 zu springen:
+    // sonst verliert man beim Umschalten die Stelle in der Liste.
+    const firstIndex = (this.currentPage - 1) * this.pageSize;
+    this.pageSize = size;
+    this.currentPage = Math.floor(firstIndex / size) + 1;
+    this._storageService.setItem(PAGE_SIZE_STORAGE_KEY, String(size));
     this._cdr.markForCheck();
   }
 

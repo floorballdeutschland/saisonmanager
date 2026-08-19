@@ -9,6 +9,10 @@ import { LicenseAdminGlobalListComponent } from './license-admin-global-list.com
 
 describe('LicenseAdminGlobalListComponent', () => {
   beforeEach(async () => {
+    // Die Seitengröße liegt im localStorage; ohne Aufräumen würde eine
+    // Wahl aus einem vorigen Test in den nächsten hineinwirken.
+    localStorage.removeItem('license_admin_page_size');
+
     await TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
@@ -92,6 +96,52 @@ describe('LicenseAdminGlobalListComponent', () => {
 
       expect(component.filteredEntries.length).toBe(120);
       expect(component.pagedEntries.length).toBe(50);
+    });
+  });
+
+  describe('Einträge pro Seite', () => {
+    it('uses 50 entries as long as nothing else was chosen', () => {
+      const component = setup(120);
+
+      expect(component.pageSize).toBe(50);
+      expect(component.pageSizeOptions).toEqual([25, 50, 100, 200]);
+    });
+
+    it('applies the chosen size right away', () => {
+      const component = setup(120);
+
+      component.changePageSize(25);
+
+      expect(component.numberOfPages).toBe(5);
+      expect(component.pagedEntries.length).toBe(25);
+    });
+
+    // Sonst muesste man die Groesse bei jedem Aufruf der Liste neu setzen.
+    it('remembers the choice for the next visit', () => {
+      setup(120).changePageSize(100);
+
+      const nextVisit = setup(120);
+
+      expect(nextVisit.pageSize).toBe(100);
+      expect(nextVisit.pagedEntries.length).toBe(100);
+    });
+
+    it('ignores a stored size that is not offered', () => {
+      localStorage.setItem('license_admin_page_size', '7');
+
+      expect(setup(120).pageSize).toBe(50);
+    });
+
+    // Beim Umschalten soll die Stelle in der Liste erhalten bleiben, statt auf
+    // Seite 1 zurückzufallen.
+    it('keeps the first visible entry when the size changes', () => {
+      const component = setup(120);
+      component.changePage(3);
+
+      component.changePageSize(25);
+
+      expect(component.currentPage).toBe(5);
+      expect(component.pagedEntries[0].player_last_name).toBe('Spieler100');
     });
   });
 
