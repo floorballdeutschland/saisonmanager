@@ -9,6 +9,8 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
+  BlockedIp,
+  NotificationService,
   SystemHealthData,
   SystemHealthService,
   SystemHealthStatus,
@@ -25,16 +27,111 @@ export class SystemIndexComponent implements OnInit, OnDestroy {
   data: SystemHealthData | null = null;
   loadError: string | null = null;
 
+  // Sperrliste. Getrennt vom Rest geladen, damit ein Fehler dort nicht die
+  // Kennzahlen mitnimmt und umgekehrt.
+  blockedIps: BlockedIp[] = [];
+  blockedIpsLoadFailed = false;
+  newIp = '';
+  newReason = '';
+  savingBlock = false;
+  blockError: string | null = null;
+
   private _destroy$ = new Subject<void>();
 
   constructor(
     private _systemHealthService: SystemHealthService,
+    private _notificationService: NotificationService,
     private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.load();
+    this.loadBlockedIps();
+  }
+
+  get canSubmitBlock(): boolean {
+    return !!this.newIp.trim() && !!this.newReason.trim() && !this.savingBlock;
+  }
+
+  loadBlockedIps(): void {
+    this.blockedIpsLoadFailed = false;
+    this._systemHealthService
+      .getBlockedIps()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.blockedIps = result;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          // Ein Ladefehler darf nicht wie eine leere Sperrliste aussehen.
+          this.blockedIpsLoadFailed = true;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  addBlockedIp(): void {
+    if (!this.canSubmitBlock) return;
+
+    this.savingBlock = true;
+    this.blockError = null;
+    this._systemHealthService
+      .createBlockedIp(this.newIp.trim(), this.newReason.trim())
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (created) => {
+          this.blockedIps = [created, ...this.blockedIps];
+          this.newIp = '';
+          this.newReason = '';
+          this.savingBlock = false;
+          this._notificationService.success(
+            this._transloco.translate('system.blockedIps.added'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          // Die Serverantwort nennt den Grund (unsinnige Adresse, eigenes Netz,
+          // schon gesperrt) – die gehört an das Formular, nicht in einen Toast,
+          // der beim nächsten Klick weg ist.
+          this.blockError =
+            err?.error?.errors?.join(' ') ??
+            this._transloco.translate('system.blockedIps.addError');
+          this.savingBlock = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  removeBlockedIp(blocked: BlockedIp): void {
+    if (
+      !confirm(
+        this._transloco.translate('system.blockedIps.removeConfirm', {
+          ip: blocked.ip,
+        })
+      )
+    ) {
+      return;
+    }
+
+    this._systemHealthService
+      .deleteBlockedIp(blocked.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.blockedIps = this.blockedIps.filter((b) => b.id !== blocked.id);
+          this._notificationService.success(
+            this._transloco.translate('system.blockedIps.removed'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this._cdr.markForCheck();
+        },
+      });
   }
 
   ngOnDestroy(): void {

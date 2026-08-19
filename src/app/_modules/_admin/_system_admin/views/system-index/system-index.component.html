@@ -319,4 +319,108 @@
       {{ "system.warningFootnote" | transloco }}
     </p>
   }
+
+  <!-- Sperrliste. Bewusst ausserhalb von @if (data): Sie wird eigenstaendig
+       geladen und soll auch dann sichtbar sein, wenn die Kennzahlen scheitern. -->
+  <section class="mt-10">
+    <h2 class="text-base font-bold mb-1">
+      {{ "system.blockedIps.title" | transloco }}
+    </h2>
+    <p class="text-fb-gray-500 text-sm mb-4">
+      {{ "system.blockedIps.hint" | transloco }}
+    </p>
+
+    <div
+      class="mb-5 p-4 border border-fb-gray-700 rounded-[5px] flex flex-col gap-3 max-w-2xl"
+    >
+      <div class="flex flex-wrap gap-3">
+        <div class="flex flex-col gap-1 w-[180px]">
+          <label class="text-xs font-bold">{{
+            "system.blockedIps.ip" | transloco
+          }}</label>
+          <input
+            type="text"
+            [(ngModel)]="newIp"
+            placeholder="203.0.113.7"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
+        <div class="flex flex-col gap-1 flex-1 min-w-[220px]">
+          <label class="text-xs font-bold">{{
+            "system.blockedIps.reason" | transloco
+          }}</label>
+          <input
+            type="text"
+            maxlength="200"
+            [(ngModel)]="newReason"
+            [placeholder]="'system.blockedIps.reasonPlaceholder' | transloco"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
+      </div>
+      @if (blockError) {
+        <p class="text-xs text-red-600">{{ blockError }}</p>
+      }
+      <div>
+        <button
+          type="button"
+          (click)="addBlockedIp()"
+          [disabled]="!canSubmitBlock"
+          class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+        >
+          {{ "system.blockedIps.add" | transloco }}
+        </button>
+      </div>
+    </div>
+
+    @if (blockedIpsLoadFailed) {
+      <p class="text-red-600 text-sm">
+        {{ "system.blockedIps.loadError" | transloco }}
+      </p>
+    } @else if (blockedIps.length === 0) {
+      <p class="text-fb-gray-500 text-sm">
+        {{ "system.blockedIps.empty" | transloco }}
+      </p>
+    } @else {
+      <table class="w-full text-sm max-w-4xl">
+        <thead>
+          <tr class="border-b border-fb-gray-700 text-left">
+            <th class="py-2 pr-4 font-bold">
+              {{ "system.blockedIps.ip" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "system.blockedIps.reason" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "system.blockedIps.since" | transloco }}
+            </th>
+            <th class="py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of blockedIps; track b.id) {
+            <tr class="border-b border-fb-gray-800">
+              <td class="py-2 pr-4 font-mono">{{ b.ip }}</td>
+              <td class="py-2 pr-4">{{ b.reason }}</td>
+              <td class="py-2 pr-4 text-fb-gray-500 whitespace-nowrap">
+                {{ b.created_at | date: "dd.MM.yyyy" }}
+                @if (b.created_by_name) {
+                  <span class="block text-xs">{{ b.created_by_name }}</span>
+                }
+              </td>
+              <td class="py-2">
+                <button
+                  type="button"
+                  (click)="removeBlockedIp(b)"
+                  class="text-xs font-bold px-3 py-1 border border-red-300 text-red-400 rounded-[5px] hover:border-red-500"
+                >
+                  {{ "system.blockedIps.remove" | transloco }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
 </div>

@@ -84,5 +84,21 @@
   },
   "notifications": {
     "loadError": "System metrics could not be loaded."
+  },
+  "blockedIps": {
+    "title": "Blocked IP addresses",
+    "hint": "Requests from these addresses are rejected before the server processes them. Intended for addresses that permanently fail and only fill up the error log. Addresses from your own and from private networks cannot be blocked.",
+    "ip": "IP address",
+    "reason": "Reason",
+    "reasonPlaceholder": "e.g. no API key, only errors for weeks",
+    "since": "Blocked since",
+    "add": "Block",
+    "remove": "Unblock",
+    "removeConfirm": "Really remove the block for {{ ip }}?",
+    "added": "Address blocked.",
+    "removed": "Block removed.",
+    "addError": "Address could not be blocked.",
+    "loadError": "Block list could not be loaded.",
+    "empty": "No address blocked."
   }
 }
