@@ -96,9 +96,10 @@ export class SystemIndexComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: (err) => {
-          // Die Serverantwort nennt den Grund (unsinnige Adresse, eigenes Netz,
-          // schon gesperrt) – die gehört an das Formular, nicht in einen Toast,
-          // der beim nächsten Klick weg ist.
+          // Die Serverantwort nennt den Grund (unsinnige Adresse, Bereich statt
+          // Adresse, privates Netz, schon gesperrt). Sie kommt zusätzlich als
+          // Toast über den ErrorInterceptor; am Formular bleibt sie neben der
+          // Eingabe stehen, die korrigiert werden soll.
           this.blockError =
             err?.error?.errors?.join(' ') ??
             this._transloco.translate('system.blockedIps.addError');

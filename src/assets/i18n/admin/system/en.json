@@ -87,7 +87,7 @@
   },
   "blockedIps": {
     "title": "Blocked IP addresses",
-    "hint": "Requests from these addresses are rejected before the server processes them. Intended for addresses that permanently fail and only fill up the error log. Addresses from your own and from private networks cannot be blocked.",
+    "hint": "Requests from these addresses are rejected before any league or match data is touched. Intended for addresses that permanently fail and only fill up the error log. Two things to consider first: a blocked address loses the entire application including login, not just the API — and one address may represent a whole site, such as a sports hall, a school or a club whose connection everyone shares. Addresses from private networks cannot be entered, because they could never match anyone.",
     "ip": "IP address",
     "reason": "Reason",
     "reasonPlaceholder": "e.g. no API key, only errors for weeks",
