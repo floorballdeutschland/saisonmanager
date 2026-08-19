@@ -187,9 +187,8 @@ describe('LicenseAdminGlobalListComponent', () => {
       ).toBeTrue();
     });
 
-    // Aus "Alle" heraus gibt es keine Seitenzahl zum Mitnehmen. Ohne die
-    // Sonderbehandlung entstünde hier durch die Teilung mit 0 eine kaputte
-    // Seitenzahl.
+    // Aus "Alle" heraus gibt es keine Seitenzahl zum Mitnehmen, also beginnt
+    // es wieder bei 1. Die Teilung mit 0 droht auf dem Hinweg, nicht hier.
     it('returns from "Alle" to the first page', () => {
       const component = setup(120);
       component.changePageSize(0);
