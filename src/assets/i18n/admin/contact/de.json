@@ -1,7 +1,7 @@
 {
   "index": {
     "title": "Kontakte",
-    "intro": "Ansprechpersonen der Vereine und Mannschaften deines Spielbetriebs in der laufenden Saison. Auf Vereinsebene steht hier dasselbe wie beim Versand der Vereinspost: die Kontaktadresse des Vereins und die Vereinsmanager, die in der Vereinsverwaltung unter „Zusätzlich informieren\" markiert sind. Lücken bleiben in der Liste stehen, damit sie sichtbar sind.",
+    "intro": "Ansprechpersonen der Vereine und Mannschaften deines Spielbetriebs in der laufenden Saison. Auf Vereinsebene steht hier dasselbe wie beim Versand der Vereinspost: die Kontaktadresse des Vereins und die Vereinsmanager, die in der Vereinsverwaltung unter „Zusätzlich informieren\" nicht abgewählt sind. Lücken bleiben in der Liste stehen, damit sie sichtbar sind.",
     "exportButton": "Als CSV herunterladen",
     "search": "Suche",
     "searchPlaceholder": "Verein, Mannschaft, Name oder E-Mail-Adresse",

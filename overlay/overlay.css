@@ -828,6 +828,15 @@ body {
   color: var(--ov-text-muted);
 }
 
+/* Für die Hero-Bilder, deren Fläche über `.ov-fs-body--center` senkrecht
+   mittig setzt: Dort steht der Hinweis frei in der Mitte, und linksbündig
+   hinge er an einer Kante, die es in diesem Bild sonst nicht gibt. Die
+   Listenbilder (Tabelle, Torschützen, Aufstellung) bleiben linksbündig, dort
+   ist die Spaltenkante der Anker. */
+.ov-fs-empty--center {
+  text-align: center;
+}
+
 /* ── Dichtestufen ─────────────────────────────────────────────────────────
    Enger statt gekürzt. `overflow: hidden` schneidet lautlos ab, und eine
    Tabelle ohne ihre letzten drei Mannschaften sieht auf Sendung vollständig

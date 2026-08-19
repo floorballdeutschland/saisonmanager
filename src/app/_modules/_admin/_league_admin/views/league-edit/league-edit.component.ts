@@ -605,13 +605,22 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Anzeige-Hinweis je Option, z.B. „Sportärztliches Attest (bis U16, einmalig)".
+  // Anzeige-Hinweis je Option, z.B. „Sportärztliches Attest (bis U16, einmalig)"
+  // oder „… (ab Jg. 2012, je Saison)". Die beiden Formen der Altersregel
+  // schließen sich aus, es kann also nur eine der Angaben greifen.
   public docTypeOptionLabel(documentType: DocumentType): string {
     const hints: string[] = [];
     if (documentType.required_below_age) {
       hints.push(
         this._transloco.translate('leagueAdmin.edit.docBelowAge', {
           age: documentType.required_below_age,
+        })
+      );
+    }
+    if (documentType.required_from_birth_year) {
+      hints.push(
+        this._transloco.translate('leagueAdmin.edit.docFromBirthYear', {
+          year: documentType.required_from_birth_year,
         })
       );
     }

@@ -118,6 +118,7 @@
     "docValidityOnce": "once",
     "docValidityPerSeason": "per season",
     "docBelowAge": "below U{{ age }}",
+    "docFromBirthYear": "born {{ year }} or later",
     "banner": "Advertising banner",
     "currentBanner": "Current banner",
     "bannerAlt": "Advertising banner",
