@@ -84,5 +84,21 @@
   },
   "notifications": {
     "loadError": "Die Systemkennzahlen konnten nicht geladen werden."
+  },
+  "blockedIps": {
+    "title": "Gesperrte IP-Adressen",
+    "hint": "Anfragen von diesen Adressen werden abgewiesen, bevor Ligadaten oder Spielberichte angefasst werden. Gedacht für Adressen, die dauerhaft ins Leere laufen und nur das Fehlerprotokoll füllen. Zwei Dinge vorher bedenken: Eine gesperrte Adresse verliert die gesamte Anwendung einschließlich der Anmeldung, nicht nur die Schnittstelle — und hinter einer Adresse kann ein ganzer Standort stehen, etwa eine Halle, eine Schule oder ein Verein, dessen Anschluss alle teilen. Adressen aus privaten Netzen lassen sich nicht eintragen, weil sie ohnehin niemanden treffen könnten.",
+    "ip": "IP-Adresse",
+    "reason": "Grund",
+    "reasonPlaceholder": "z.B. kein API-Key, seit Wochen nur Fehler",
+    "since": "Gesperrt seit",
+    "add": "Sperren",
+    "remove": "Freigeben",
+    "removeConfirm": "Sperre für {{ ip }} wirklich aufheben?",
+    "added": "Adresse gesperrt.",
+    "removed": "Sperre aufgehoben.",
+    "addError": "Adresse konnte nicht gesperrt werden.",
+    "loadError": "Sperrliste konnte nicht geladen werden.",
+    "empty": "Keine Adresse gesperrt."
   }
 }

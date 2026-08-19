@@ -209,7 +209,30 @@
             }}</span>
           }
         </span>
-        <div class="flex items-center gap-4">
+        <div class="flex flex-wrap items-center gap-4">
+          <label class="flex items-center gap-2 text-sm text-gray-500">
+            {{ "licenseAdmin.globalList.perPage" | transloco }}
+            <!-- [ngValue] statt [value]: 0 ist die Kennung fuer "Alle" und wird
+                 im Bauteil mit === geprueft, ein Text '0' faellt durch. -->
+            <select
+              class="rounded border-gray-300 text-sm py-1"
+              [ngModel]="pageSize"
+              (ngModelChange)="changePageSize($event)"
+            >
+              @for (size of pageSizeOptions; track size) {
+                <option [ngValue]="size">
+                  @if (size === pageSizeAll) {
+                    {{ "licenseAdmin.globalList.perPageAll" | transloco }}
+                    @if (!loading) {
+                      ({{ filteredEntries.length }})
+                    }
+                  } @else {
+                    {{ size }}
+                  }
+                </option>
+              }
+            </select>
+          </label>
           @if (!loading && filteredEntries.length > 0) {
             <button
               class="text-sm text-fb-gray-500 hover:text-black underline"
@@ -269,7 +292,7 @@
           <thead>
             <tr class="border-b border-gray-200 text-left">
               <th
-                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+                class="sticky left-0 z-10 bg-white shadow-[inset_-1px_0_0_#e5e7eb] px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
                 {{ "licenseAdmin.globalList.colPlayer" | transloco }}
               </th>
@@ -335,9 +358,17 @@
               </tr>
             }
             @for (e of pagedEntries; track e) {
-              <tr class="hover:bg-fb-gray-100 transition-colors">
-                <!-- Spieler -->
-                <td class="px-4 py-3 whitespace-nowrap">
+              <tr class="group hover:bg-fb-gray-100 transition-colors">
+                <!-- Spieler. bg-white ist nicht Zierde: eine durchsichtige
+                     Zelle liesse die waagerecht darunter geschobenen Spalten
+                     durchscheinen. Weil sie damit deckend ist, kommt das
+                     hover der Zeile nicht mehr durch – daher group auf dem tr
+                     und group-hover hier. Die Trennlinie liegt als inset-
+                     Schatten in der Zelle: border-collapse (Tailwind-Preflight)
+                     zeichnet den Rahmen einer fixierten Zelle nicht mit. -->
+                <td
+                  class="sticky left-0 z-10 bg-white group-hover:bg-fb-gray-100 shadow-[inset_-1px_0_0_#e5e7eb] px-4 py-3 whitespace-nowrap transition-colors"
+                >
                   <p class="font-medium text-gray-900">
                     {{ e.player_last_name }}, {{ e.player_first_name }}
                   </p>

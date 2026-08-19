@@ -64,6 +64,18 @@ export interface SystemHealthData {
   };
 }
 
+/**
+ * Eine dauerhaft abgewiesene Adresse. Ausgewertet wird die Sperre serverseitig
+ * vor dem Router; die Maske hier ist nur die Pflege.
+ */
+export interface BlockedIp {
+  id: number;
+  ip: string;
+  reason: string;
+  created_at: string;
+  created_by_name: string | null;
+}
+
 /** Kurzfassung für den Hinweisstreifen: nur der Zustand der Platte. */
 export interface SystemHealthSummary {
   status: SystemHealthStatus;
@@ -81,6 +93,23 @@ export class SystemHealthService {
     return this.http.get<SystemHealthData>(
       environment.apiURL + 'admin/system_health'
     );
+  }
+
+  // Sperrliste: eigene Endpunkte, nicht Teil von system_health. Die Kennzahlen
+  // dort werden bei jedem Seitenaufruf frisch erhoben; die Sperrliste ändert
+  // sich selten und soll das nicht mitschleppen.
+  getBlockedIps() {
+    return this.http.get<BlockedIp[]>(environment.apiURL + 'admin/blocked_ips');
+  }
+
+  createBlockedIp(ip: string, reason: string) {
+    return this.http.post<BlockedIp>(environment.apiURL + 'admin/blocked_ips', {
+      blocked_ip: { ip, reason },
+    });
+  }
+
+  deleteBlockedIp(id: number) {
+    return this.http.delete(environment.apiURL + 'admin/blocked_ips/' + id);
   }
 
   // Bewusst ein eigener, schlanker Aufruf: Der Streifen wird bei jedem App-Start
