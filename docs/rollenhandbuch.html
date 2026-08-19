@@ -7864,7 +7864,11 @@
           </details>
         </section>
 
-        <section class="panel" id="panel-streamer" style="--rc: var(--c-streamer)">
+        <section
+          class="panel"
+          id="panel-streamer"
+          style="--rc: var(--c-streamer)"
+        >
           <div class="hero">
             <span class="hero-mark">▶</span>
             <div class="hero-badge">Streaming</div>
@@ -7872,10 +7876,13 @@
             <p>
               Der Saisonmanager stellt fertige Grafiken für OBS Studio bereit:
               eine Anzeigetafel mit Spielstand und Abschnitt, Bauchbinden für
-              Torschützen und Strafen sowie ein Bedienfeld. Alles speist sich
-              aus dem digitalen Spielbericht, niemand muss also nebenher Zahlen
-              pflegen. Du brauchst weder ein Zusatzprogramm noch eine
-              Installation, nur zwei Adressen aus dem Spielbericht.
+              Torschützen, Strafen und Paarung, acht Vollbilder für Startbild,
+              Aufstellungen, Drittelpause, Endstand, Tabelle, Torschützen und
+              weitere Spiele, dazu ein Bedienfeld, über das du im Spiel alles
+              steuerst. Alles speist sich aus dem digitalen Spielbericht,
+              niemand muss also nebenher Zahlen abtippen. Du brauchst weder ein
+              Zusatzprogramm noch eine Installation, es genügt, was der
+              Spielbericht dir ausgibt.
             </p>
             <div class="hero-scope">
               🎥 Für alle, die ein Spiel übertragen. Voraussetzung ist ein Konto
@@ -7886,35 +7893,158 @@
 
           <div class="sec">
             <span class="num">01</span>
-            <h2>Adressen holen</h2>
+            <h2>Vorbereitung</h2>
+          </div>
+          <p class="proc-text">
+            Overlay-Adressen erzeugen darf, wer den Spielbericht führen darf:
+            Admin, der SBK des Spielbetriebs, der Vereinsmanager des
+            ausrichtenden oder eines beteiligten Vereins und der Teammanager
+            einer beteiligten Mannschaft. Diese Anleitung setzt voraus, dass du
+            OBS Studio schon einmal gestartet hast und weißt, was eine Szene und
+            was eine Quelle ist. Alles Weitere steht hier.
+          </p>
+          <div class="note">
+            <strong
+              >Der Spielbericht muss während des Spiels vor Ort gepflegt werden,
+              nicht erst danach.</strong
+            >
+            Das ist die wichtigste organisatorische Voraussetzung und wird gern
+            übersehen. Die Anzeigetafel zeigt genau das, was das
+            Spielsekretariat eingetragen hat. Wird erst in der Pause oder nach
+            Spielende erfasst, steht auf Sendung die ganze Zeit 0:0. Sprich das
+            vor dem ersten Heimspiel mit dem Sekretariat ab, am Regieplatz
+            kannst du es nicht lösen.
+          </div>
+          <p class="proc-text">
+            Stelle in OBS unter <em>Einstellungen › Video</em> sowohl die
+            Basis-Leinwand als auch die Ausgabe auf <code>1920 × 1080</code>.
+            Das ist Pflicht: Die Overlays sind fest auf diese Größe gebaut, bei
+            einer anderen Leinwand sitzt die Anzeigetafel an der falschen Stelle
+            oder wird abgeschnitten. Produzierst du in 720p, lass die
+            Basis-Leinwand trotzdem auf <code>1920 × 1080</code> und stelle nur
+            die Ausgabe auf <code>1280 × 720</code>, dann skaliert OBS sauber
+            herunter.
+          </p>
+          <div class="note">
+            Die Overlays holen ihre Daten laufend vom Server. Eine stabile
+            Verbindung am Regieplatz brauchst du also nicht nur für den Stream
+            selbst, sondern auch für die Anzeigetafel. Fällt das Netz kurz aus,
+            behält die Anzeige bewusst ihren letzten Stand, statt leer zu
+            werden.
+          </div>
+
+          <div class="sec">
+            <span class="num">02</span>
+            <h2>Adressen und Szenensammlung holen</h2>
           </div>
           <p class="proc-text">
             Öffne den Spielbericht des Spiels und dort <em>Schritt 1</em>. Unter
             den Spielinformationen steht der Abschnitt
             <strong>Livestream-Overlays</strong>. Ein Druck auf
-            <em>Overlay-Links erzeugen</em> liefert zwei Adressen: eine für die
-            Anzeigetafel und eine für das Bedienfeld.
+            <em>Overlay-Links erzeugen</em> (besteht schon ein Zugang, heißt der
+            Knopf <em>Neu erzeugen</em>) liefert drei Dinge. Du brauchst nicht
+            alle drei, und genau daraus entsteht beim ersten Mal die meiste
+            Verwirrung.
           </p>
-          <div class="note">
-            <strong>Beide Adressen sofort kopieren.</strong> Sie werden aus
-            Sicherheitsgründen nur dieses eine Mal angezeigt. Wer sie verliert,
-            erzeugt neue; die alten gelten dann nicht mehr. Der Zugang läuft
-            nach 36 Stunden ab und gilt für
-            <strong>alle Spiele des Spieltags</strong>, nicht nur für das gerade
-            geöffnete. Bei einem Doppelspieltag reicht also ein Satz Adressen.
+          <div class="matrix-wrap">
+            <table class="matrix">
+              <thead>
+                <tr>
+                  <th>Was</th>
+                  <th>Was es ist</th>
+                  <th>Brauchst du es?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>Browser-Quelle (Anzeigetafel)</strong>, der
+                    <code>index.html</code>-Link
+                  </td>
+                  <td>Die Adresse der Grafik selbst</td>
+                  <td>
+                    Nein, wenn du die Szenensammlung nutzt. Ja, wenn du von Hand
+                    einbaust oder später nur das Token tauschen willst
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Bedienfeld</strong>, der <code>dock.html</code>-Link
+                  </td>
+                  <td>Die Adresse der Steuerung</td>
+                  <td>
+                    Ja, immer. In der Szenensammlung ist er nicht enthalten
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Szenensammlung herunterladen</strong></td>
+                  <td>Eine JSON-Datei mit allen neun Szenen</td>
+                  <td>Ja, wenn du den bequemen Weg gehst</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           <p class="proc-text">
-            Erzeugen darf, wer den Spielbericht führen darf: Admin, der SBK des
-            Spielbetriebs, der Vereinsmanager des ausrichtenden oder eines
-            beteiligten Vereins und der Teammanager einer beteiligten
-            Mannschaft. Ist eine Adresse versehentlich im Vereinschat gelandet,
-            zieht <em>Zugang zurückziehen</em> sie sofort zurück.
+            Zum Anzeigetafel-Link steht im Spielbericht sinngemäß „in OBS als
+            Browser-Quelle mit 1920 × 1080 Pixeln einfügen“. Das ist die
+            Anleitung für den manuellen Weg und stammt aus der Zeit, als es die
+            Szenensammlung noch nicht gab. Importierst du die Sammlung, musst du
+            mit diesem Link nichts tun: Er steckt bereits darin, neunmal, einmal
+            pro Szene, mit eingesetztem Token. Genau deshalb funktionieren die
+            Overlays nach dem Import sofort. Die
+            <code>1920 × 1080</code> sind übrigens nicht die Größe, in der die
+            Anzeigetafel im Bild erscheint. Die Grafik ist nur eine Leiste im
+            unteren Bildbereich, der Rest der Seite ist durchsichtig, und die
+            Browser-Quelle muss deshalb so groß sein wie die ganze Leinwand.
           </p>
           <div class="note">
-            <strong>Einen API-Zugang brauchst du dafür nicht.</strong> Die beiden
-            Adressen bringen ihren Zugang selbst mit: Das Token in der Adresse
-            reicht der Anzeigetafel und dem Bedienfeld, um die Daten des
-            Spieltags zu holen. Ein Schlüssel aus dem
+            <strong
+              >Hole alle drei Dinge in einem Durchgang und drücke danach nicht
+              mehr auf „Neu erzeugen“.</strong
+            >
+            Jeder Druck darauf macht die vorherigen Adressen sofort ungültig,
+            auch die in einer bereits heruntergeladenen Szenensammlung. Die
+            Datei auf deiner Festplatte sieht danach unverändert aus,
+            funktioniert aber nicht mehr. Genauso wirkt
+            <em>Zugang zurückziehen</em>: Alles, was du vorher geholt hast, ist
+            damit tot.
+          </div>
+          <ul>
+            <li>Auf <em>Overlay-Links erzeugen</em> drücken.</li>
+            <li>
+              <em>Szenensammlung herunterladen</em> anklicken und den Download
+              abwarten.
+            </li>
+            <li>
+              Beide Links kopieren und in eine Textdatei sichern, falls du das
+              Bedienfeld später neu einrichten oder nur das Token tauschen
+              willst.
+            </li>
+            <li>Erst danach die Seite verlassen.</li>
+          </ul>
+          <div class="note">
+            Die Adressen werden aus Sicherheitsgründen nur dieses eine Mal
+            angezeigt. Wer die Seite ohne sie verlässt, muss neu erzeugen und
+            alles noch einmal in OBS eintragen. Der Zugang gilt
+            <strong>36 Stunden</strong> und für
+            <strong>alle Spiele des Spieltags</strong>, nicht nur für das gerade
+            geöffnete. Bei einem Doppelspieltag reicht also ein Satz Adressen,
+            im Bedienfeld wechselst du zwischen den Spielen.
+          </div>
+          <div class="note">
+            <strong>Behandle die Adressen wie ein Kennwort.</strong> In ihnen
+            steckt ein Token aus 43 Zufallszeichen, und wer den Link hat, hat
+            Zugriff, eine weitere Anmeldung gibt es nicht. Auch in der
+            heruntergeladenen JSON-Datei steht das Token im Klartext. Also nicht
+            in Vereinschats posten und nicht in Gruppen weiterleiten, die
+            weiterverteilt werden. Ist es doch passiert, im Spielbericht
+            <em>Zugang zurückziehen</em> drücken und neu erzeugen.
+          </div>
+          <div class="note">
+            <strong>Einen API-Zugang brauchst du dafür nicht.</strong> Die
+            Adressen bringen ihren Zugang selbst mit: Das Token reicht der
+            Anzeigetafel und dem Bedienfeld, um die Daten des Spieltags zu
+            holen. Ein Schlüssel aus dem
             <a href="#panel-entwickler">API-Zugang für Entwickler</a> wäre hier
             sogar der falsche Weg, denn er liefert die Daten mit zehn Minuten
             Verzögerung und blendet Ergebnisse laufender Spiele aus. Für eine
@@ -7924,114 +8054,1335 @@
           </div>
 
           <div class="sec">
-            <span class="num">02</span>
+            <span class="num">03</span>
             <h2>In OBS einrichten</h2>
           </div>
-          <p class="proc-text">
-            <strong>Anzeigetafel:</strong> In der Szene
-            <em>Quelle hinzufügen › Browser</em> wählen, die erste Adresse
-            einfügen und Breite <code>1920</code>, Höhe
-            <code>1080</code> eintragen. Die Grafik hat einen durchsichtigen
-            Hintergrund, sie legt sich also über das Kamerabild. Die Quelle
-            gehört in der Ebenenliste nach oben.
-          </p>
-          <p class="proc-text">
-            <strong>Bedienfeld:</strong> Unter
-            <em>Ansicht › Docks › Benutzerdefiniertes Browser-Dock</em>
-            einen Eintrag anlegen, einen Namen vergeben und die zweite Adresse
-            einfügen. Das Bedienfeld erscheint als schmale Spalte neben dem
-            Programmbild. Es läuft genauso in einem normalen Browserfenster,
-            etwa auf einem zweiten Rechner in der Regie.
-          </p>
-          <div class="note">
-            Für eine Produktion in 720p hänge
-            <code>&amp;scale=0.667</code> an die Adresse der Anzeigetafel.
-          </div>
-
-          <div class="sec">
-            <span class="num">03</span>
-            <h2>Während des Spiels</h2>
-          </div>
-          <p class="proc-text">
-            Spielstand, Abschnitt und Torschützen kommen automatisch aus dem
-            Spielbericht, sobald das Spielsekretariat sie einträgt. Die
-            Anzeigetafel zieht binnen weniger Sekunden nach. Damit das
-            funktioniert, muss vor Ort <strong>während</strong> des Spiels
-            erfasst werden, nicht erst danach.
-          </p>
-          <p class="proc-text">
-            Über das Bedienfeld steuerst du alles, was nicht aus den Daten
-            folgt: die <strong>Spielzeit</strong> starten, anhalten und
-            korrigieren, <strong>Bauchbinden</strong> für das letzte Tor, die
-            letzte Strafe, die Paarung oder einen Freitext ein- und ausblenden
-            und bei einem Doppelspieltag das <strong>Spiel wechseln</strong>.
-          </p>
-          <div class="note">
-            <strong
-              >Die Spielzeit ist eine Anzeige, keine offizielle
-              Zeitmessung.</strong
-            >
-            Der Saisonmanager kennt die Hallenuhr nicht, deshalb stellst du sie
-            im Bedienfeld selbst. Weicht sie von der vom Sekretariat
-            eingetragenen Ereigniszeit ab, weist das Bedienfeld darauf hin,
-            korrigiert aber nichts von allein: Was stimmt, entscheidest du.
-          </div>
-          <p class="proc-text">
-            Hinkt das Sekretariat einmal hinterher, lässt sich der Spielstand im
-            Bedienfeld übersteuern. Diese Übersteuerung bleibt bestehen, bis du
-            sie ausdrücklich zurücknimmst, und ist währenddessen im Bedienfeld
-            rot gekennzeichnet. Denk daran, sie wieder auszuschalten, sonst geht
-            ein falscher Stand auf Sendung.
-          </p>
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">📦</span>
+              <div>
+                <div class="proc-title">Szenensammlung importieren</div>
+                <div class="proc-sub">
+                  Neun fertige Szenen, Token schon eingesetzt
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Die Szenensammlung ist der schnelle Weg. Öffne in OBS
+                <em>Szenensammlung › Importieren</em>, drücke
+                <em>Hinzufügen</em>, wähle die Datei
+                <code>saisonmanager-obs-szenen-….json</code> aus, setze den
+                Haken bei der Datei und drücke <em>Importieren</em>. Danach im
+                Menü <em>Szenensammlung</em> den neuen Eintrag „Saisonmanager,
+                Spiel …“ anklicken.
+              </p>
+              <p class="proc-text">
+                Deine bisherige Szenensammlung bleibt unangetastet. Der Import
+                legt eine zusätzliche an, du kannst also jederzeit
+                zurückwechseln. Was du danach hast, sind neun Szenen mit je
+                einer Browser-Quelle in <code>1920 × 1080</code>.
+                <strong>In der Sammlung sind nur die Grafiken</strong>, Kamera
+                und Ton fehlen und ergänzt du selbst.
+              </p>
+              <div class="note">
+                Bei den acht Vollbildern ist
+                <em>Quelle beenden, wenn nicht sichtbar</em> bereits gesetzt,
+                sonst fragen alle inaktiven Szenen die ganze Zeit mit. Bei der
+                Bühne ist es absichtlich nicht gesetzt: Sie soll beim
+                Szenenwechsel nicht neu laden und dabei Uhr und Einblendung
+                verlieren.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🎥</span>
+              <div>
+                <div class="proc-title">Kamera und Ton einbauen</div>
+                <div class="proc-sub">
+                  Kamera unter das Overlay, Ton global statt in die Szene
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Gesendet wird die Szene
+                <strong>Bühne (Anzeigetafel &amp; Bauchbinden)</strong>, und die
+                enthält bisher nur das durchsichtige Overlay. Klick die Bühne
+                an, drücke im Feld <em>Quellen</em> auf <em>+</em> und wähle den
+                passenden Typ: <em>Videoaufnahmegerät</em> für USB-Kamera oder
+                Capture Card, <em>Medienquelle</em> für einen Netzwerkstream
+                oder <em>NDI-Quelle</em>.
+              </p>
+              <div class="note">
+                <strong>Die Reihenfolge entscheidet.</strong> Eine neu
+                hinzugefügte Kamera steht oben in der Quellenliste und verdeckt
+                damit die komplette Anzeigetafel, denn in OBS gilt: oben in der
+                Liste heißt vorne im Bild. Zieh die Kamera also
+                <strong>unter</strong> den Eintrag „Saisonmanager, Bühne“.
+                Anschließend Rechtsklick auf die Kamera,
+                <em>Transformation › An Bildschirm anpassen</em>.
+              </div>
+              <p class="proc-text">
+                Mikrofone und Mischpult bindest du am besten über
+                <em>Einstellungen › Audio › Globale Audiogeräte</em> ein, dann
+                läuft der Ton szenenübergreifend weiter und deine Kommentatoren
+                bleiben auch in der Drittelpause hörbar. Legst du das Mikrofon
+                stattdessen als Quelle in der Bühnen-Szene an, verstummt es beim
+                Umschalten auf ein Vollbild. Die Browser-Quellen der Overlays
+                liefern selbst keinen Ton.
+              </p>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🎛️</span>
+              <div>
+                <div class="proc-title">Bedienfeld anlegen</div>
+                <div class="proc-sub">
+                  Der einzige Handgriff, den die Sammlung nicht mitbringt
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Das Bedienfeld steuert im Spiel die Uhr, die Bauchbinden und den
+                Spielwechsel. Es ist <strong>nicht</strong> in der
+                Szenensammlung enthalten, weil OBS Docks im Profil und nicht in
+                der Szenensammlung speichert. Öffne
+                <em>Ansicht › Andocken › Benutzerdefinierte Browser-Docks</em>,
+                vergib einen Namen (etwa <code>Saisonmanager Bedienfeld</code>),
+                füge den <code>dock.html</code>-Link als URL ein und drücke
+                <em>Anwenden</em>.
+              </p>
+              <p class="proc-text">
+                Das Dock erscheint als eigenes Fenster. Du kannst es an den Rand
+                des OBS-Fensters ziehen, bis es einrastet, oder es als freies
+                Fenster auf einem zweiten Monitor liegen lassen. Es läuft
+                genauso in einem gewöhnlichen Browserfenster, auch auf einem
+                zweiten Rechner, praktisch, wenn jemand anderes als der
+                OBS-Operator die Bauchbinden bedient.
+              </p>
+              <div class="note">
+                Das Dock überlebt einen Wechsel der Szenensammlung. Beim
+                nächsten Spieltag musst du die URL aber austauschen, weil ein
+                neues Token darin steckt.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">✅</span>
+              <div>
+                <div class="proc-title">Funktionstest vor der Sendung</div>
+                <div class="proc-sub">
+                  Rechtzeitig, nicht fünf Minuten vor Anpfiff
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <div class="note">
+                <strong
+                  >Eine weiße Seite beim Öffnen des
+                  <code>index.html</code>-Links im Browser ist normal.</strong
+                >
+                Die Bühne ist ein durchsichtiges Overlay ohne Hintergrund. In
+                OBS liegt darunter dein Kamerabild, im Browser nur Weiß. Solange
+                kein Spiel läuft und keine Bauchbinde eingeblendet ist, gibt es
+                schlicht nichts zu zeigen. Das ist die häufigste Fehlannahme
+                beim ersten Mal.
+              </div>
+              <p class="proc-text">
+                <strong>Vollbild im Browser:</strong> Nimm den
+                <code>index.html</code>-Link und häng
+                <code>&amp;only=fullscreen&amp;scene=startbild</code> an.
+                Vollständig sieht das so aus:
+              </p>
+              <pre class="code">
+https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen&amp;scene=startbild</pre
+              >
+              <p class="proc-text">
+                Die Vollbilder sind deckend. Erscheint das Startbild mit den
+                Vereinslogos, funktioniert die Auslieferung und dein Token ist
+                gültig. Weitere Werte zum Ausprobieren:
+                <code>tabelle</code>, <code>naechste-spiele</code>,
+                <code>topscorer</code>. Die ziehen ihre Daten unabhängig vom
+                Spielstand und zeigen also auch vor Anpfiff etwas.
+              </p>
+              <p class="proc-text">
+                <strong>Bedienfeld:</strong> Öffne das Dock. Oben darf keine
+                rote Meldung stehen, und die Spielauswahl muss gefüllt sein und
+                dein Spiel enthalten. Steht dort „Spieltag nicht geladen: HTTP
+                410“, ist dein Token abgelaufen oder zurückgezogen.
+              </p>
+              <p class="proc-text">
+                <strong>Zusammenspiel:</strong> Blende über das Bedienfeld eine
+                Bauchbinde ein, etwa <em>Paarung</em>, und schau parallel auf
+                die Bühnen-Szene in OBS. Taucht sie im Programmbild auf, ist
+                alles verbunden. Danach wieder <em>Ausblenden</em>. Zum Schluss
+                einmal durch alle neun Szenen klicken und prüfen, ob jede lädt.
+                Vollbilder brauchen beim ersten Aufruf manchmal einen Moment.
+              </p>
+            </div>
+          </details>
 
           <div class="sec">
             <span class="num">04</span>
-            <h2>Wenn etwas nicht erscheint</h2>
+            <h2>Die neun Szenen</h2>
           </div>
-          <ul>
-            <li>
-              <strong>Die Anzeigetafel bleibt leer:</strong> In der Regel ist
-              das Spiel noch nicht angepfiffen. Die Tafel erscheint, sobald das
-              Sekretariat das Spiel gestartet hat.
-            </li>
-            <li>
-              <strong>Der Live-Punkt geht aus:</strong> Dann kam längere Zeit
-              nichts Neues durch, meist ein Netzproblem in der Halle. Die
-              Anzeige behält bewusst ihren letzten Stand, statt leer zu werden.
-            </li>
-            <li>
-              <strong>Nichts geht mehr:</strong> Prüfe, ob der Zugang abgelaufen
-              ist. Er gilt 36 Stunden; danach erzeugst du im Spielbericht neue
-              Adressen und trägst sie in OBS ein.
-            </li>
-            <li>
-              <strong
-                >Statt der Grafik erscheint die Saisonmanager-Seite:</strong
-              >
-              Dann fehlt in der Adresse das <code>.html</code> oder das Token.
-              Kopiere die Adresse noch einmal aus dem Spielbericht.
-            </li>
-            <li>
-              <strong>Zur Fehlersuche</strong> hänge <code>&amp;debug=1</code>
-              an die Adresse der Anzeigetafel. Oben links erscheint dann eine
-              Statusfläche mit Spiel, Stand und letztem Abruf. Vor der Sendung
-              wieder entfernen.
-            </li>
-          </ul>
+          <p class="proc-text">
+            Alle Overlays folgen demselben Aufbau: dunkelblauer Hintergrund mit
+            leichtem Verlauf, oben links die Bezeichnung des Spielbetriebs als
+            kleine farbige Vorzeile, darunter die Überschrift in großer,
+            schmaler Versalschrift. Zwei Dinge richten sich nach dem
+            Spielbetrieb, und für beide musst du nichts einstellen: die
+            <strong>Akzentfarbe</strong> (in der 1. Bundesliga Herren rot, in
+            der Regionalliga Nordwest blau) und das
+            <strong>Ligazeichen</strong>, das oben rechts und zusätzlich als
+            dezentes Wasserzeichen am linken Rand erscheint, sofern für den
+            Spielbetrieb eines hinterlegt ist. Gibt es keines, bleiben die
+            Flächen leer und die Grafik funktioniert trotzdem.
+          </p>
+          <div class="note">
+            <strong>Wichtig für die Vorbereitung:</strong> Die meisten Szenen
+            zeigen nur dann etwas Sinnvolles, wenn im Spielbericht schon Daten
+            stehen. Klickst du eine leere Testansetzung durch, wirken einige
+            Bilder leer, obwohl alles stimmt. Bei jeder Szene unten steht
+            deshalb, ab wann sie gefüllt ist.
+          </div>
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">🎬</span>
+              <div>
+                <div class="proc-title">
+                  Bühne (Anzeigetafel &amp; Bauchbinden)
+                </div>
+                <div class="proc-sub">
+                  Gefüllt ab sofort, das einzige durchsichtige Overlay
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Im Ruhezustand enthält die Bühne nur die Anzeigetafel: eine
+                flache, dunkle Leiste im
+                <strong>unteren linken Bildbereich</strong> mit einem farbigen
+                Akzentstreifen an der linken Kante. Sie ist von links nach
+                rechts in Felder unterteilt.
+              </p>
+              <div class="matrix-wrap">
+                <table class="matrix">
+                  <thead>
+                    <tr>
+                      <th>Feld</th>
+                      <th>Inhalt</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td>
+                        Logo der Heimmannschaft auf hellem Feld, daneben das
+                        Kürzel (etwa <code>ATS</code>)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td>Spielstand, groß (<code>1 : 1</code>)</td>
+                    </tr>
+                    <tr>
+                      <td>3</td>
+                      <td>
+                        Kürzel der Gastmannschaft, daneben ihr Logo auf hellem
+                        Feld
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>4</td>
+                      <td>
+                        Spielzeit, nur wenn du sie im Bedienfeld auf sichtbar
+                        gestellt hast
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>5</td>
+                      <td>
+                        Abschnitt mit Statuspunkt: vor Anpfiff
+                        <code>● GLEICH</code>, im Spiel etwa
+                        <code>1. DRITTEL</code> mit <code>● LIVE</code>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>6</td>
+                      <td>Ligazeichen, sofern hinterlegt</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="proc-text">
+                Die Leiste passt ihre Breite an: Blendest du die Spielzeit aus,
+                fällt das Feld weg und die Leiste wird kürzer, ohne Ligazeichen
+                entfällt das letzte Feld. Bauchbinden erscheinen zusätzlich,
+                sobald du sie im Bedienfeld auslöst.
+              </p>
+              <div class="note">
+                <strong>Fürs Kamerabild heißt das:</strong> Der untere linke
+                Bildbereich muss frei bleiben. Setz dort keine eigenen Grafiken
+                hin und achte bei der Kameraführung darauf, dass dort nichts
+                Wichtiges passiert. Der rechte untere Bereich bleibt frei und
+                eignet sich für ein Vereins- oder Sponsorenlogo.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🖼️</span>
+              <div>
+                <div class="proc-title">Vollbild: Startbild</div>
+                <div class="proc-sub">
+                  Gefüllt ab sofort, funktioniert schon Tage vorher
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Das Vorlaufbild mit der kompletten Ansetzung: Spielbetrieb,
+                Spieltag und Datum als Kopf, darunter mittig beide Vereinslogos
+                auf hellen, abgerundeten Feldern, dazwischen das Wort
+                <em>gegen</em>, unter den Logos die ausgeschriebenen
+                Vereinsnamen. Am unteren Rand stehen nebeneinander
+                <strong>Anstoß</strong> (die angesetzte Uhrzeit),
+                <strong>Halle</strong> (der Spielort) und
+                <strong>Schiedsrichter</strong> (die angesetzten Unparteiischen,
+                sofern im Saisonmanager eingetragen).
+              </p>
+              <p class="proc-text">
+                Alles stammt aus der Ansetzung, nichts aus dem laufenden Spiel.
+                Das Startbild eignet sich deshalb gut zum Testen und ist das
+                richtige Bild für den Vorlauf.
+              </p>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">👥</span>
+              <div>
+                <div class="proc-title">
+                  Vollbild: Aufstellung Heim / Aufstellung Gast
+                </div>
+                <div class="proc-sub">
+                  Gefüllt, sobald die Mannschaft ihren Kader erfasst hat
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Zwei Szenen im selben Aufbau, jeweils für eine Mannschaft.
+                Kopfzeile ist der Vereinsname, darunter klein
+                <em>Aufstellung</em>. Der Kader steht in zwei Spalten:
+                <strong>Tor</strong> mit den Torhütern und
+                <strong>Feld</strong> mit den Feldspielern, jeweils mit
+                Rückennummer. Wer in der Startaufstellung steht, ist
+                hervorgehoben.
+              </p>
+              <p class="proc-text">
+                Die Kader werden erfahrungsgemäß erst kurz vor Anpfiff erfasst.
+                Beginne deinen Vorlauf also mit dem Startbild und wechsle später
+                zu den Aufstellungen.
+              </p>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">⏸️</span>
+              <div>
+                <div class="proc-title">Vollbild: Drittelpause</div>
+                <div class="proc-sub">
+                  Gefüllt, sobald das erste Drittel beendet ist
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Trotz des Szenennamens trägt das Bild als Überschrift
+                <strong>den gerade beendeten Abschnitt</strong>, also etwa
+                <em>1. Drittel</em>, darunter die Paarung in Kurzform (<code
+                  >ATS gegen MTV</code
+                >). Darunter steht eine kleine Ergebnistabelle: je eine Zeile
+                pro Mannschaft, eine Spalte je gespieltem Abschnitt und eine
+                Spalte <strong>Gesamt</strong>. Nach dem ersten Drittel ist das
+                eine Spalte, nach dem zweiten zwei. Verlängerung und
+                Penaltyschießen erscheinen nur, wenn dort Tore gefallen sind.
+              </p>
+              <p class="proc-text">
+                Es folgen unter <strong>Tore</strong> die Trefferliste des
+                bisherigen Spiels, jeweils mit Spielminute, Zwischenstand,
+                Torschütze und Mannschaft (etwa
+                <code>5:00 · 1:0 · Nick Bergjohan · ATS</code>), und unter
+                <strong>Strafen</strong> die Strafenbilanz beider Mannschaften.
+              </p>
+              <div class="note">
+                Das ist also kein leeres Pausenbild, sondern eine vollwertige
+                Zwischenbilanz. Es lohnt sich, die Szene in der Pause länger
+                stehen zu lassen und den Kommentar daran entlangzuführen. Vor
+                Spielbeginn zeigt sie nur die Überschrift.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🏁</span>
+              <div>
+                <div class="proc-title">Vollbild: Endstand</div>
+                <div class="proc-sub">
+                  Gefüllt ab Anpfiff, vorher mit Hinweistext
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Beide Vereinslogos groß nebeneinander, dazwischen das Ergebnis
+                in sehr großer Schrift, darunter die ausgeschriebenen
+                Vereinsnamen, dazu die vergebenen Auszeichnungen, sofern
+                erfasst.
+                <strong>Die Überschrift wechselt mit dem Spielstatus:</strong>
+                solange das Spiel läuft <em>Zwischenstand</em>, nach Spielende
+                <em>Endstand</em>. Die Szene ist also nicht erst am Schluss
+                brauchbar, du kannst sie auch in der Pause oder nach einem
+                wichtigen Treffer zeigen.
+              </p>
+              <p class="proc-text">
+                Vor dem Anpfiff gibt es keinen Stand. Dann steht im Bild „Das
+                Spiel hat noch nicht begonnen: Der Endstand steht nach dem
+                Schlusspfiff hier.“ Das ist kein Einrichtungsfehler, sondern der
+                benannte Leerzustand.
+              </p>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📊</span>
+              <div>
+                <div class="proc-title">Vollbild: Tabelle</div>
+                <div class="proc-sub">Immer gefüllt</div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Der aktuelle Tabellenstand des Spielbetriebs mit den Spalten
+                Platz, Mannschaft, SP, TORE, DIFF und PKT, vor jedem
+                Mannschaftsnamen das Vereinslogo als kleines Zeichen. Die beiden
+                am Spiel beteiligten Mannschaften sind
+                <strong>farblich hervorgehoben</strong>, sodass sofort erkennbar
+                ist, worum es tabellarisch geht. Zu Saisonbeginn stehen
+                erwartungsgemäß überall Nullen.
+              </p>
+              <div class="note">
+                Am unteren Rand erscheint während einer laufenden Partie der
+                Hinweis „Ein Spiel läuft noch und ist hier noch nicht
+                enthalten.“. Die Tabelle zeigt also den Stand
+                <strong>vor</strong> dem laufenden Spiel. Das ist korrekt so,
+                sollte im Kommentar aber erwähnt werden, damit sich niemand über
+                scheinbar veraltete Zahlen wundert.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">⚽</span>
+              <div>
+                <div class="proc-title">Vollbild: Torschützen</div>
+                <div class="proc-sub">
+                  Gefüllt, sobald am Spieltag eine Partie beendet ist
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Die Torschützenliste des Spielbetriebs. Solange am Spieltag noch
+                keine Partie beendet ist, steht dort der Hinweis „Noch keine
+                Torschützen: an diesem Spieltag ist keine Partie beendet.“,
+                ergänzt um denselben Fußnotenhinweis zur laufenden Partie wie
+                bei der Tabelle. Bei einem frühen Anstoß am Spieltag ist die
+                Szene also oft leer. Nimm dann die Tabelle oder die weiteren
+                Spiele als Pausenfüller.
+              </p>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📅</span>
+              <div>
+                <div class="proc-title">Vollbild: Nächste Spiele</div>
+                <div class="proc-sub">
+                  Gefüllt, sobald der Spieltag angesetzt ist
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Trotz des Szenennamens trägt das Bild die Überschrift
+                <strong>Weitere Spiele</strong> und zeigt Anstoßzeit, Begegnung
+                und Stand. Die eigene Partie ist hervorgehoben und trägt den
+                laufenden Zwischenstand.
+              </p>
+              <p class="proc-text">
+                Was hier gezeigt wird, ist erklärungsbedürftig: Die Szene folgt
+                der Spieltagslogik des Saisonmanagers und listet
+                <strong>alle Spiele, die zum selben Spieltag gehören</strong>.
+                Ein Spieltag ist im Saisonmanager keine Frage des Datums,
+                sondern eine Zuordnung, er kann über mehrere Termine und mehrere
+                Hallen verteilt sein.
+              </p>
+              <ul>
+                <li>
+                  <strong
+                    >Die Liste enthält Spiele, die an einem anderen Tag
+                    stattfinden.</strong
+                  >
+                  Sind zwei Partien des Spieltags am 19.08. angesetzt und zwei
+                  weitere am 30.08., stehen alle vier im Bild. Ein Datum wird
+                  nicht angezeigt, nur die Uhrzeit.
+                </li>
+                <li>
+                  <strong
+                    >Sortiert wird nach Spielnummer, nicht nach Uhrzeit.</strong
+                  >
+                  Die Zeiten wirken dadurch ungeordnet (etwa 12:00, 15:00,
+                  12:00, 15:00), obwohl die Reihenfolge korrekt ist.
+                </li>
+              </ul>
+              <div class="note">
+                Für den Kommentar heißt das: nicht als „das läuft heute noch“
+                ansagen, sondern als Übersicht über den Spieltag. Willst du
+                sicher wissen, welche Partien tatsächlich am selben Tag laufen,
+                schau vorher in die Spieltagsansicht im Saisonmanager.
+              </div>
+            </div>
+          </details>
 
           <div class="sec">
             <span class="num">05</span>
+            <h2>Das Bedienfeld im Spiel</h2>
+          </div>
+          <p class="proc-text">
+            Das Bedienfeld ist deine Schaltzentrale: Alles, was nicht
+            automatisch aus dem Spielbericht kommt, steuerst du hier. Die
+            automatischen Werte ziehen binnen weniger Sekunden nach, sobald das
+            Sekretariat sie einträgt, da musst du nichts anstoßen.
+          </p>
+          <div class="matrix-wrap">
+            <table class="matrix">
+              <thead>
+                <tr>
+                  <th>Kommt automatisch aus dem Spielbericht</th>
+                  <th>Steuerst du im Bedienfeld</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Spielstand</td>
+                  <td>Spielzeit</td>
+                </tr>
+                <tr>
+                  <td>Abschnitt (Drittel)</td>
+                  <td>Sichtbarkeit der Anzeigetafel</td>
+                </tr>
+                <tr>
+                  <td>Torschützen und Vorlagen</td>
+                  <td>Bauchbinden</td>
+                </tr>
+                <tr>
+                  <td>Strafen</td>
+                  <td>Freitexte</td>
+                </tr>
+                <tr>
+                  <td>Mannschaften und Logos</td>
+                  <td>Spielwechsel bei Doppelspieltagen</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="note">
+            <strong
+              >Die Statuszeile ganz oben ist deine Lebensversicherung.</strong
+            >
+            Steht dort „Verbunden“, ist alles in Ordnung. Erscheint dort etwas
+            in Rot, etwa „Spieltag nicht geladen: HTTP 410“, stimmt etwas nicht.
+            Wirf während der Sendung gelegentlich einen Blick darauf, besonders
+            in den Pausen.
+          </div>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🔀</span>
+              <div>
+                <div class="proc-title">Block Spiel</div>
+                <div class="proc-sub">
+                  Ein Satz Adressen für den ganzen Spieltag
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Ein Auswahlfeld mit allen Spielen des Spieltags, etwa „10:10
+                Berlin Rockets gegen Blau-Weiß 96 Schenefeld“. Weil der Zugang
+                für den gesamten Spieltag gilt, brauchst du bei einem
+                Doppelspieltag keine neuen Adressen: Du wählst hier um, und
+                sämtliche Overlays stellen sich auf die neue Paarung um,
+                Anzeigetafel, Aufstellungen und Endstand inklusive.
+              </p>
+              <div class="note">
+                <strong>Vor dem Anpfiff prüfen:</strong> Steht hier wirklich das
+                Spiel, das du gerade überträgst? Bei einem Doppelspieltag ist
+                das der klassische Fehler, die zweite Partie läuft und im
+                Overlay steht noch die erste. Beim Umschalten zwischen zwei
+                Spielen erst die Übersteuerung ausschalten, dann wechseln, dann
+                die Spielzeit zurücksetzen.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🔲</span>
+              <div>
+                <div class="proc-title">Block Anzeigetafel</div>
+                <div class="proc-sub">Kontrollanzeige und Ein-Aus-Schalter</div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Darunter siehst du den aktuellen Stand im Kurzformat, etwa
+                <code>BRO 0:0 BW96</code>. So weißt du, was gerade auf Sendung
+                ist, ohne ins Programmbild schauen zu müssen. Der Knopf rechts
+                schaltet die Tafel ein und aus und
+                <strong>zeigt dabei den aktuellen Zustand</strong>: grün
+                „Sichtbar“ heißt, die Tafel ist im Bild, „Ausgeblendet“ heißt,
+                sie ist es nicht.
+              </p>
+              <p class="proc-text">
+                Ausblenden lohnt sich, wenn du bewusst ein sauberes Bild willst:
+                bei Nahaufnahmen, in Interviews, beim Einlaufen der Mannschaften
+                oder wenn du längere Zeit auf das Publikum schwenkst.
+              </p>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">⏱️</span>
+              <div>
+                <div class="proc-title">Block Spielzeit</div>
+                <div class="proc-sub">
+                  Eine Anzeige, keine offizielle Zeitmessung
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <div class="note">
+                <strong
+                  >Der Saisonmanager hat keine Verbindung zur Hallenuhr.</strong
+                >
+                Was hier läuft, hast du selbst gestartet. Weicht die Uhr
+                deutlich von den Ereigniszeiten ab, die das Sekretariat
+                einträgt, weist das Bedienfeld darauf hin, korrigiert aber
+                nichts von allein: Was stimmt, entscheidest du.
+              </div>
+              <div class="matrix-wrap">
+                <table class="matrix">
+                  <thead>
+                    <tr>
+                      <th>Element</th>
+                      <th>Funktion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Start / Anhalten</strong></td>
+                      <td>
+                        Uhr läuft oder steht. Die Beschriftung zeigt, was der
+                        Klick bewirkt
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>−10 s / +10 s</strong></td>
+                      <td>Korrektur in Zehn-Sekunden-Schritten</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Zurücksetzen</strong></td>
+                      <td>Uhr zurück auf 0:00</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Sichtbar / Ausgeblendet</strong></td>
+                      <td>Uhr im Overlay zeigen oder verbergen</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="proc-text">
+                Beim Anpfiff drückst du Start, gleichzeitig mit dem Zeitnehmer
+                in der Halle. Bei jeder Unterbrechung <em>Anhalten</em>, beim
+                Weiterspielen wieder <em>Start</em>, nach jedem Drittel
+                zurücksetzen. Realistisch driftet die Uhr im Lauf eines Drittels
+                um ein paar Sekunden weg, du drückst nun einmal nicht in
+                derselben Millisekunde wie der Zeitnehmer. Nutze die
+                Zehn-Sekunden-Knöpfe bei der nächsten Unterbrechung zum
+                Nachziehen, dann fällt es niemandem auf.
+              </p>
+              <div class="note">
+                Bist du unsicher, ob du die Uhr sauber mitführen kannst, blende
+                sie einfach aus. Eine fehlende Uhr ist besser als eine falsche,
+                die im Stream sichtbar zwei Minuten danebenliegt.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">💬</span>
+              <div>
+                <div class="proc-title">Block Bauchbinde und Freitext</div>
+                <div class="proc-sub">
+                  Einblendungen am unteren Bildrand, jeweils sofort
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <div class="matrix-wrap">
+                <table class="matrix">
+                  <thead>
+                    <tr>
+                      <th>Knopf</th>
+                      <th>Inhalt</th>
+                      <th>Wann</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Letztes Tor</strong></td>
+                      <td>Torschütze, Vorlage, Spielstand</td>
+                      <td>
+                        Direkt nach einem Treffer, sobald das Sekretariat ihn
+                        erfasst hat
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Letzte Strafe</strong></td>
+                      <td>Bestrafter Spieler, Dauer, Grund</td>
+                      <td>Während die Strafe läuft</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Paarung</strong></td>
+                      <td>Beide Mannschaften, Liga</td>
+                      <td>
+                        Zu Beginn, nach Werbeunterbrechungen, beim
+                        Wiedereinstieg nach der Pause
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Ausblenden</strong></td>
+                      <td>Beendet die aktuelle Einblendung</td>
+                      <td>
+                        Ausgegraut, solange nichts eingeblendet ist, damit auch
+                        Kontrollanzeige
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="proc-text">
+                <strong>Zum Timing:</strong> Blende eine Bauchbinde etwa zehn
+                bis fünfzehn Sekunden ein, dann wieder aus, länger wirkt sie wie
+                vergessen. Und blende nichts ein, während der Ball im Spiel ist
+                und es gerade spannend wird, der beste Moment ist die
+                Unterbrechung nach dem Ereignis. Der Knopf
+                <em>Letztes Tor</em> funktioniert erst, wenn das Sekretariat den
+                Treffer eingetragen hat, in der Praxis dauert das ein paar
+                Sekunden. Drück also nicht in der Sekunde des Torjubels, sondern
+                wenn sich die Mannschaften neu aufstellen, dann stimmen auch
+                Schütze und Vorlage.
+              </p>
+              <p class="proc-text">
+                Unter den vier Knöpfen liegen zwei Eingabefelder und der Knopf
+                <strong>Freitext einblenden</strong>, damit blendest du
+                beliebige Texte ein. Das obere Feld ist die kleine Zeile
+                darüber, also die Funktionsbezeichnung
+                (<code>Kommentator</code>, <code>Am Mikrofon</code>,
+                <code>Trainer Heim</code>, <code>Hinweis</code>), das untere der
+                eigentliche Text, meist ein Name. Der Text bleibt in den Feldern
+                stehen, bis du ihn änderst. Du kannst den Kommentator also
+                einmal vorher eintragen und ihn während des Spiels mehrfach mit
+                einem Klick einblenden. Ausgeblendet wird über denselben
+                <em>Ausblenden</em>-Knopf wie bei den anderen Bauchbinden.
+              </p>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">⚠️</span>
+              <div>
+                <div class="proc-title">Block Spielstand übersteuern</div>
+                <div class="proc-sub">Notfallwerkzeug, im Normalfall aus</div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Gedacht ist der Block für den Fall, dass das Sekretariat
+                hinterherhinkt: Ein Tor ist gefallen, alle in der Halle wissen
+                es, im Spielbericht steht es noch nicht. Dann setzt du den Stand
+                über
+                <em>Heim −</em>, <em>Heim +</em>, <em>Gast −</em> und
+                <em>Gast +</em> von Hand hoch, damit im Stream nichts Falsches
+                steht. Der Knopf rechts schaltet die Übersteuerung insgesamt an
+                und aus.
+              </p>
+              <div class="note">
+                <strong
+                  >Solange die Übersteuerung aktiv ist, kommt der angezeigte
+                  Stand nicht aus dem Spielbericht.</strong
+                >
+                Das Bedienfeld weist mit einem roten Hinweis darauf hin. Trägt
+                das Sekretariat inzwischen nach, ändert sich im Overlay trotzdem
+                nichts, dein Handwert gilt weiter. Vergisst du, sie wieder
+                auszuschalten, geht der Rest des Spiels ein falscher Stand auf
+                Sendung. Bau dir eine feste Gewohnheit ein und prüfe bei jeder
+                Drittelpause, ob der Block auf inaktiv steht.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📋</span>
+              <div>
+                <div class="proc-title">Ein bewährter Sendungsablauf</div>
+                <div class="proc-sub">
+                  Vom Vorlauf bis zum Abspann, samt Tastenkürzeln
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <div class="matrix-wrap">
+                <table class="matrix">
+                  <thead>
+                    <tr>
+                      <th>Zeitpunkt</th>
+                      <th>Szene</th>
+                      <th>Am Bedienfeld</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Vorlauf</td>
+                      <td>Vollbild: Startbild</td>
+                      <td>
+                        Spiel auswählen, Statuszeile prüfen, Kommentator in den
+                        Freitext eintragen
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>ca. 10 Min. vorher</td>
+                      <td>Aufstellung Heim, dann Gast, falls schon gefüllt</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>kurz vor Anpfiff</td>
+                      <td>Bühne</td>
+                      <td>Anzeigetafel auf sichtbar, Uhr auf 0:00</td>
+                    </tr>
+                    <tr>
+                      <td>Anpfiff</td>
+                      <td>Bühne</td>
+                      <td>
+                        Uhr <em>Start</em>, kurz danach Bauchbinde Paarung
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Spiel</td>
+                      <td>Bühne</td>
+                      <td>
+                        Bauchbinden nach Ereignissen, Uhr bei Unterbrechungen
+                        anhalten
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Drittelende</td>
+                      <td>Bühne</td>
+                      <td>Uhr <em>Anhalten</em>, dann <em>Zurücksetzen</em></td>
+                    </tr>
+                    <tr>
+                      <td>Drittelpause</td>
+                      <td>
+                        Vollbild: Drittelpause, dazwischen Tabelle oder Weitere
+                        Spiele
+                      </td>
+                      <td>Übersteuerung prüfen</td>
+                    </tr>
+                    <tr>
+                      <td>letzte Sirene</td>
+                      <td>Bühne kurz halten</td>
+                      <td>Uhr anhalten</td>
+                    </tr>
+                    <tr>
+                      <td>danach</td>
+                      <td>Vollbild: Endstand</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>Abspann</td>
+                      <td>Vollbild: Nächste Spiele</td>
+                      <td>Kommentator-Bauchbinde zur Verabschiedung</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="note">
+                Für schnelles Umschalten lohnen sich Hotkeys: unter
+                <em>Einstellungen › Hotkeys</em> steht bei jeder Szene der
+                Eintrag <em>Zu Szene wechseln</em>. Leg dir zumindest für Bühne
+                und Drittelpause je eine Taste. Das Bedienfeld selbst kennt
+                keine Tastenkürzel, die Knöpfe klickst du mit der Maus.
+              </div>
+            </div>
+          </details>
+
+          <div class="sec">
+            <span class="num">06</span>
+            <h2>Wenn etwas nicht funktioniert</h2>
+          </div>
+          <div class="matrix-wrap">
+            <table class="matrix">
+              <thead>
+                <tr>
+                  <th>Symptom</th>
+                  <th>Ursache</th>
+                  <th>Lösung</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Anzeigetafel bleibt leer, das Spiel läuft aber</td>
+                  <td>Spiel im Spielbericht noch nicht gestartet</td>
+                  <td>Sekretariat bitten, das Spiel zu starten</td>
+                </tr>
+                <tr>
+                  <td>Endstand zeigt nur einen Hinweistext</td>
+                  <td>
+                    Kein Fehler, das Spiel ist noch nicht angepfiffen und es
+                    gibt keinen Stand
+                  </td>
+                  <td>
+                    Ab Anpfiff zeigt die Szene den Zwischenstand, nach Spielende
+                    den Endstand
+                  </td>
+                </tr>
+                <tr>
+                  <td>Aufstellungen sind leer</td>
+                  <td>Mannschaften haben den Kader noch nicht erfasst</td>
+                  <td>
+                    Passiert oft erst kurz vor Anpfiff, solange das Startbild
+                    zeigen
+                  </td>
+                </tr>
+                <tr>
+                  <td>Torschützen zeigt nur einen Hinweistext</td>
+                  <td>Am Spieltag ist noch keine Partie beendet</td>
+                  <td>Stattdessen Tabelle oder weitere Spiele nehmen</td>
+                </tr>
+                <tr>
+                  <td>Tabelle scheint veraltet</td>
+                  <td>Das laufende Spiel ist noch nicht eingerechnet</td>
+                  <td>
+                    Kein Fehler, Fußnote beachten und im Kommentar erwähnen
+                  </td>
+                </tr>
+                <tr>
+                  <td>Drittelpause zeigt nur die Überschrift</td>
+                  <td>Es ist noch kein Drittel beendet</td>
+                  <td>Füllt sich nach dem ersten Drittelende</td>
+                </tr>
+                <tr>
+                  <td>Anzeigetafel zeigt keine Uhr</td>
+                  <td>Spielzeit ist im Bedienfeld auf unsichtbar gestellt</td>
+                  <td>Im Block Spielzeit auf sichtbar schalten</td>
+                </tr>
+                <tr>
+                  <td>Ein Vereinslogo erscheint als leeres helles Feld</td>
+                  <td>
+                    Das Logo ist weiß auf transparent und verschwindet auf
+                    hellem Grund
+                  </td>
+                  <td>
+                    Verein bitten, eine dunkle Logovariante zu hinterlegen
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    Weiße Seite beim Öffnen des
+                    <code>index.html</code>-Links im Browser
+                  </td>
+                  <td>Kein Fehler, durchsichtiges Overlay ohne Inhalt</td>
+                  <td>
+                    Mit
+                    <code>&amp;only=fullscreen&amp;scene=startbild</code> testen
+                  </td>
+                </tr>
+                <tr>
+                  <td>Im Bedienfeld rot: „Spieltag nicht geladen: HTTP 410“</td>
+                  <td>
+                    Token abgelaufen oder durch erneutes Erzeugen ungültig
+                    geworden
+                  </td>
+                  <td>Neu erzeugen und alles neu eintragen</td>
+                </tr>
+                <tr>
+                  <td><code>401 Authorization Required</code> von nginx</td>
+                  <td>Serverseitiger Zugriffsschutz vor der Domain</td>
+                  <td>Nicht in OBS lösbar, bitte beim Verband melden</td>
+                </tr>
+                <tr>
+                  <td>Der Live-Punkt geht aus</td>
+                  <td>
+                    Längere Zeit keine neuen Daten, meist ein Netzproblem in der
+                    Halle
+                  </td>
+                  <td>
+                    Verbindung prüfen, die Anzeige behält bewusst den letzten
+                    Stand
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    Statt der Grafik erscheint die normale Saisonmanager-Seite
+                  </td>
+                  <td>
+                    In der Adresse fehlt <code>.html</code> oder das Token
+                  </td>
+                  <td>Adresse noch einmal sauber kopieren</td>
+                </tr>
+                <tr>
+                  <td>Anzeigetafel ist zu groß, zu klein oder verrutscht</td>
+                  <td>Leinwand nicht <code>1920 × 1080</code></td>
+                  <td>
+                    Einstellungen › Video prüfen, dann Rechtsklick auf die
+                    Quelle und <em>Transformation zurücksetzen</em>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Kamerabild verdeckt die Anzeigetafel</td>
+                  <td>Kamera liegt über dem Overlay</td>
+                  <td>Kamera in der Quellenliste nach unten ziehen</td>
+                </tr>
+                <tr>
+                  <td>Stand aktualisiert sich nicht mehr</td>
+                  <td>Browser-Quelle hängt</td>
+                  <td>Rechtsklick auf die Quelle, <em>Aktualisieren</em></td>
+                </tr>
+                <tr>
+                  <td>OBS ruckelt, hohe CPU-Last</td>
+                  <td>Mehrere Browser-Quellen fragen parallel mit</td>
+                  <td>
+                    In der Szenensammlung ist
+                    <em>Quelle beenden, wenn nicht sichtbar</em> bei den
+                    Vollbildern schon gesetzt. Baust du von Hand ein, setze es
+                    dort selbst, aber nicht bei der Bühne
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="note">
+            <strong>HTTP 410 richtig verstehen.</strong> 410 heißt „Gone“, die
+            Adresse gab es und ist jetzt endgültig ungültig. Typischer Ablauf:
+            Man erzeugt die Links, lädt die Szenensammlung herunter, ist
+            unsicher, ob alles geklappt hat, und drückt sicherheitshalber noch
+            einmal auf <em>Neu erzeugen</em>. Damit ist die eben
+            heruntergeladene Datei wertlos. Verwirrend dabei: Das Bedienfeld
+            sieht trotzdem erst einmal normal aus, denn seine Oberfläche ist nur
+            HTML. Erst der Datenabruf schlägt fehl, erkennbar an der leeren
+            Spielauswahl und dem Strich statt eines Spielstands. Die Bühne hat
+            kein Fehlerfeld und bleibt bei totem Token einfach weiß. Beide
+            Symptome haben dieselbe Ursache.
+          </div>
+          <p class="proc-text">
+            <strong>Wiederherstellung nach abgelaufenem Token:</strong> alte
+            Szenensammlung in OBS über
+            <em>Szenensammlung › Löschen</em> entfernen, im Spielbericht neu
+            erzeugen, ohne die Seite zu verlassen die Sammlung herunterladen
+            <strong>und</strong> beide Links in eine Textdatei kopieren, danach
+            nichts mehr anklicken. Dann Sammlung importieren, Dock-URL
+            austauschen, Kamera neu einbauen und vor dem Weitermachen den
+            Vollbild-Test machen.
+          </p>
+          <div class="note">
+            Zur Fehlersuche hänge <code>&amp;debug=1</code> an die Adresse der
+            Anzeigetafel. Oben links erscheint dann eine Statusfläche mit Spiel,
+            Stand und letztem Abruf.
+            <strong>Vor der Sendung wieder entfernen</strong>, sonst ist sie im
+            Stream zu sehen.
+          </div>
+
+          <div class="sec">
+            <span class="num">07</span>
             <h2>Logos</h2>
           </div>
           <p class="proc-text">
-            Die Anzeigetafel zeigt die Vereinslogos beider Mannschaften und das
-            Zeichen der Liga. Vereins- und Teamlogos pflegen die Vereine selbst,
-            das Liga-Logo pflegt der zuständige Verband. Weil die Grafik dunkel
-            ist, sehen <strong>freigestellte PNG</strong> mit transparentem
-            Hintergrund am besten aus; ein Logo mit weißem Kasten fällt darin
-            auf. Fehlt ein Logo, steht der Mannschaftsname allein, die Anzeige
-            bleibt also brauchbar.
+            Die Overlays greifen an mehreren Stellen auf Logos zurück: die
+            Anzeigetafel zeigt beide Vereinslogos klein auf hellem Feld, das
+            Startbild beide groß auf hellen abgerundeten Feldern, die Tabelle
+            alle Vereinslogos der Liga als kleine Zeichen, und überall erscheint
+            das Ligazeichen oben rechts sowie als Wasserzeichen. Vereins- und
+            Teamlogos pflegen die Vereine selbst im Saisonmanager, das
+            Ligazeichen pflegt der zuständige Verband. Fehlt eines, bleiben die
+            entsprechenden Flächen leer und der Mannschaftsname steht allein.
+            Die Anzeige bleibt also brauchbar, schöner ist es mit.
           </p>
+          <p class="proc-text">
+            Die Vereinslogos stehen im Overlay
+            <strong>auf hellem Grund</strong>, nicht auf dem dunklen
+            Hintergrund. Daraus folgt für die Bilddatei:
+          </p>
+          <ul class="checklist">
+            <li class="good">
+              Dunkle oder farbige Logos heben sich vom hellen Feld ab und
+              funktionieren gut.
+            </li>
+            <li class="bad">
+              Logos, die überwiegend aus weißer Schrift oder weißen Flächen
+              bestehen, verschwinden. Wer ein rein weißes Wappen hinterlegt hat,
+              sieht im Stream ein leeres Kästchen und braucht eine dunkle
+              Variante.
+            </li>
+            <li class="good">
+              Ein weißer Hintergrund in der Datei stört nicht, weil das Feld
+              ohnehin hell ist. Ein freigestelltes PNG passt sich auf die
+              abgerundeten Felder trotzdem sauberer ein.
+            </li>
+            <li class="good">
+              Quadratisches Format bevorzugen. Die Felder sind quadratisch, ein
+              sehr breites Logo wird entsprechend klein dargestellt.
+            </li>
+            <li class="good">
+              Einfache Motive gewinnen. In der Tabelle sind die Logos nur wenige
+              Millimeter groß, ein Wappen mit feiner Schrift ist dort nicht mehr
+              lesbar, ein klares Symbol schon.
+            </li>
+          </ul>
+          <div class="note">
+            <strong>Vor dem Spieltag prüfen:</strong> Schau dir im Vorlauf das
+            Startbild an, dort sind beide Logos groß zu sehen und Probleme
+            fallen sofort auf. Fehlt oder verschwindet das Logo des Gastvereins,
+            kann das nur der Gastverein selbst ändern. Sprich ihn rechtzeitig
+            vor dem Spieltag an, nicht am Spieltag selbst.
+          </div>
+
+          <div class="sec">
+            <span class="num">08</span>
+            <h2>Der nächste Spieltag</h2>
+          </div>
+          <p class="proc-text">
+            Das Token gilt 36 Stunden, vor jedem Spieltag holst du dir also neue
+            Adressen. Encoder-Einstellungen, Bitrate, Streamkey und Audiogeräte
+            liegen im <strong>Profil</strong> und nicht in der Szenensammlung,
+            die musst du nie erneut einrichten, egal welchen Weg du wählst.
+          </p>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🔁</span>
+              <div>
+                <div class="proc-title">Weg A: neu importieren</div>
+                <div class="proc-sub">Der einfache Weg</div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Neue Sammlung herunterladen, importieren, Kamera erneut
+                einbauen, Dock-URL austauschen. Räum dabei alte Sammlungen über
+                <em>Szenensammlung › Löschen</em> weg, sonst sammeln sie sich
+                über die Saison an und du greifst irgendwann zur falschen.
+              </p>
+              <div class="note">
+                <strong>Zeitsparender Trick:</strong> Kamera-Quelle in der alten
+                Sammlung rechtsklicken, <em>Kopieren</em>, in der neuen Sammlung
+                in der Bühnen-Szene <em>Einfügen (Duplizieren)</em>. Das klappt
+                in OBS 28 und neuer auch über Sammlungsgrenzen hinweg, solange
+                du OBS zwischendurch nicht schließt. So sparst du dir das
+                erneute Einrichten von Kamera-Einstellungen und Filtern.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🔑</span>
+              <div>
+                <div class="proc-title">
+                  Weg B: Token in der bestehenden Einrichtung ersetzen
+                </div>
+                <div class="proc-sub">
+                  Für aufwendige Setups, die bleiben sollen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Dafür brauchst du den <code>index.html</code>-Link, den du beim
+                Erzeugen mitkopiert hast, er ersetzt die alte Adresse in den
+                Browser-Quellen. <strong>Direkt in OBS:</strong> Rechtsklick auf
+                die Browser-Quelle, <em>Eigenschaften</em>, im Feld
+                <em>URL</em> die neue Adresse einsetzen. Bei der Bühne genügt
+                der reine Link, bei den Vollbildern musst du die Anhängsel
+                <code>&amp;only=fullscreen&amp;scene=…</code> aus der alten
+                Adresse übernehmen. Das sind neun Quellen, also etwas
+                Fleißarbeit.
+              </p>
+              <p class="proc-text">
+                <strong>Schneller über die Datei:</strong> OBS schließen, die
+                Szenendatei öffnen (Windows
+                <code>%APPDATA%\obs-studio\basic\scenes\</code>, macOS
+                <code
+                  >~/Library/Application Support/obs-studio/basic/scenes/</code
+                >), das alte Token durch das neue ersetzen (es kommt an neun
+                Stellen vor), speichern, OBS starten und die Dock-URL ebenfalls
+                austauschen. Die Anhängsel bleiben dabei unberührt.
+              </p>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🧩</span>
+              <div>
+                <div class="proc-title">
+                  Alternative: Einrichtung ohne Szenensammlung
+                </div>
+                <div class="proc-sub">
+                  Overlays in ein bestehendes Setup einbauen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                <strong>Anzeigetafel:</strong> in deiner bestehenden Szene
+                <em>Quellen › + › Browser</em>, Namen vergeben, den
+                <code>index.html</code>-Link als URL einfügen, Breite
+                <code>1920</code> und Höhe <code>1080</code> eintragen und die
+                Quelle in der Ebenenliste ganz nach oben ziehen.
+              </p>
+              <p class="proc-text">
+                <strong>Vollbilder:</strong> für jedes gewünschte Bild eine
+                eigene Szene anlegen, darin eine Browser-Quelle mit
+                <code>1920 × 1080</code> und dieser Adresse:
+              </p>
+              <pre class="code">
+https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen&amp;scene=WERT</pre
+              >
+              <div class="matrix-wrap">
+                <table class="matrix">
+                  <thead>
+                    <tr>
+                      <th>Wert für <code>scene=</code></th>
+                      <th>Inhalt</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>startbild</code></td>
+                      <td>Startbild</td>
+                    </tr>
+                    <tr>
+                      <td><code>aufstellung-heim</code></td>
+                      <td>Aufstellung Heim</td>
+                    </tr>
+                    <tr>
+                      <td><code>aufstellung-gast</code></td>
+                      <td>Aufstellung Gast</td>
+                    </tr>
+                    <tr>
+                      <td><code>drittelpause</code></td>
+                      <td>Drittelpause</td>
+                    </tr>
+                    <tr>
+                      <td><code>endstand</code></td>
+                      <td>Endstand</td>
+                    </tr>
+                    <tr>
+                      <td><code>tabelle</code></td>
+                      <td>Tabelle</td>
+                    </tr>
+                    <tr>
+                      <td><code>topscorer</code></td>
+                      <td>Torschützen</td>
+                    </tr>
+                    <tr>
+                      <td><code>naechste-spiele</code></td>
+                      <td>Nächste Spiele</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="proc-text">
+                Zusatzparameter hängst du mit <code>&amp;</code> hinter das
+                Token: <code>&amp;scale=0.667</code> für Produktionen in 720p,
+                wenn die Basis-Leinwand auf <code>1280 × 720</code> steht, und
+                <code>&amp;debug=1</code> für die Statusfläche zur Fehlersuche,
+                die vor der Sendung wieder heraus muss.
+              </p>
+            </div>
+          </details>
+
+          <div class="sec">
+            <span class="num">09</span>
+            <h2>Kurzcheckliste für den Spieltag</h2>
+          </div>
+          <ul class="checklist">
+            <li class="good">
+              Sekretariat weiß, dass während des Spiels erfasst werden muss
+            </li>
+            <li class="good">
+              OBS-Leinwand steht auf <code>1920 × 1080</code>
+            </li>
+            <li class="good">
+              Links erzeugt, Sammlung heruntergeladen, beide Links gesichert und
+              danach nicht mehr auf <em>Neu erzeugen</em> gedrückt
+            </li>
+            <li class="good">Sammlung importiert und ausgewählt</li>
+            <li class="good">
+              Kamera in der Bühnen-Szene, unterhalb des Overlays
+            </li>
+            <li class="good">Ton über globale Audiogeräte eingebunden</li>
+            <li class="good">Bedienfeld angelegt, keine rote Meldung</li>
+            <li class="good">Vollbild-Test im Browser bestanden</li>
+            <li class="good">Bauchbinde probeweise ein- und ausgeblendet</li>
+            <li class="good">Spielstand-Übersteuerung steht auf inaktiv</li>
+            <li class="good">Statuszeile im Bedienfeld zeigt „Verbunden“</li>
+            <li class="good">
+              <code>&amp;debug=1</code> ist nirgends mehr aktiv
+            </li>
+            <li class="good">
+              Logos beider Vereine im Startbild sichtbar und nicht weiß auf hell
+            </li>
+          </ul>
+          <div class="note">
+            Bei technischen Rückfragen zu den Overlays wende dich an die
+            Geschäftsstelle.
+          </div>
         </section>
 
         <section class="panel" id="panel-entwickler" style="--rc: var(--c-entwickler)">
