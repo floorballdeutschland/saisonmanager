@@ -147,6 +147,62 @@ describe('ClubEditComponent', () => {
     expect(component.errorMsg(club)).toEqual([]);
   });
 
+  // Der Landesverband bestimmt, welcher Spielbetrieb den Verein verwaltet. Ohne
+  // ihn legt die API keinen Verein an, weil er anschliessend in keiner
+  // Vereinsliste auftauchen wuerde.
+  it('errorMsg verlangt beim Anlegen einen Landesverband', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    component.editMode = false;
+    const club = {
+      name: 'Verein',
+      long_name: 'Verein e.V.',
+      short_name: 'VER',
+    } as Club;
+
+    expect(component.errorMsg(club).length).toBe(1);
+
+    club.state_association_id = 7;
+    expect(component.errorMsg(club)).toEqual([]);
+  });
+
+  // Gegenprobe: Beim Bearbeiten darf das Feld leer bleiben. Sonst waeren
+  // ausgerechnet die Vereine ohne Landesverband nicht mehr pflegbar, also die,
+  // deren Stammdaten am dringendsten Pflege brauchen. Ob das Leeren erlaubt ist,
+  // entscheidet die Berechtigung und damit der Server.
+  it('errorMsg laesst den Landesverband beim Bearbeiten leer', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const club = {
+      name: 'Verein',
+      long_name: 'Verein e.V.',
+      short_name: 'VER',
+    } as Club;
+
+    expect(component.editMode).toBeTrue();
+    expect(component.errorMsg(club)).toEqual([]);
+  });
+
+  // Der Spielverbund ist der Wurzel-Landesverband der Kette und wird nur
+  // angezeigt, nicht gepflegt. Fuer die Untergliederung von SBK Ost ist das der
+  // Dachverband, fuer einen parentlosen Verband er selbst.
+  it('getSportverbund folgt der Verbandskette nach oben', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    component.stateAssociations = [
+      { id: 6, name: 'SBK Ost' },
+      { id: 13, name: 'Floorballverband Sachsen', parent_id: 6 },
+    ] as never;
+
+    expect(
+      component.getSportverbund({ state_association_id: 13 } as Club)
+    ).toBe('SBK Ost');
+    expect(component.getSportverbund({ state_association_id: 6 } as Club)).toBe(
+      'SBK Ost'
+    );
+    expect(component.getSportverbund({} as Club)).toBe('–');
+  });
+
   it('onLogoSelected posts the file as FormData and applies both returned urls', () => {
     const fixture = TestBed.createComponent(ClubEditComponent);
     const component = fixture.componentInstance;

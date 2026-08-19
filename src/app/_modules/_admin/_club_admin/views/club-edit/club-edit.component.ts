@@ -9,7 +9,6 @@ import {
 import {
   AssociationService,
   ClubService,
-  GameOperationService,
   NotificationService,
   SessionService,
 } from '@floorball/core';
@@ -67,7 +66,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   // Anlegen relevant: der Heimat-Spielbetrieb entscheidet, wer den Verein
   // verwaltet, und beim Bearbeiten soll er sich nicht versehentlich ändern
   // (dort steht er weiter als Spielverbund read-only).
-  gameOperations: GameOperation[] = [];
 
   // Auswahlliste des Suchfelds: einmal beim Laden gebildet, nicht als Getter.
   // Ein neues Array pro Change-Detection wuerde die Trefferliste des Suchfelds
@@ -90,7 +88,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   constructor(
     private _associationService: AssociationService,
     private _clubService: ClubService,
-    private _gameOperationService: GameOperationService,
     private _sessionService: SessionService,
     private _router: Router,
     private _notificationService: NotificationService,
@@ -128,7 +125,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
         this.getClub(params['clubId']);
       } else {
         this.editMode = false;
-        this.loadGameOperations();
         this.newClub();
       }
     });
@@ -189,26 +185,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       : [...this.notifyUserIds, userId];
   }
 
-  private loadGameOperations(): void {
-    this._gameOperationService
-      .getAdminGameOperations()
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (result) => {
-          this.gameOperations = result;
-          this._cdr.markForCheck();
-        },
-        error: () => {
-          this._notificationService.error(
-            this._transloco.translate(
-              'clubAdmin.notifications.gameOperationLoadError'
-            ),
-            { autoClose: false }
-          );
-        },
-      });
-  }
-
   public newClub() {
     const club: Club = {
       id: 0,
@@ -216,16 +192,15 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       short_name: '',
       long_name: '',
       state: 'de-sh',
-      game_operation_id: 0,
     };
 
     this.club$ = of(club);
     this._cdr.markForCheck();
   }
 
-  // Vereinsmanager sehen Bundesland, Spielverbund und Landesverband, ändern
-  // können sie sie nicht: Die drei ordnen den Verein ein und entscheiden mit
-  // darüber, wer ihn verwaltet. Gegenstück zu
+  // Vereinsmanager sehen Bundesland, Landesverband und den daraus abgeleiteten
+  // Spielverbund, ändern können sie sie nicht: Sie ordnen den Verein ein, und
+  // der Landesverband entscheidet, wer ihn verwaltet. Gegenstück zu
   // ClubsController#restricted_club_params.
   //
   // `edit_restricted` kommt aus der Antwort zum geladenen Verein, weil die
@@ -312,12 +287,17 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       );
     }
 
-    // Nur beim Anlegen: der Spielbetrieb wird danach nicht mehr über dieses
-    // Formular geändert. Ohne ihn lehnt die API das Speichern ab.
-    if (!this.editMode && !club.game_operation_id) {
+    // Der Landesverband ordnet den Verein ein: Aus ihm ergibt sich der
+    // zuständige Spielbetrieb. Ohne ihn lehnt die API das Anlegen ab, weil der
+    // Verein sonst in keiner Vereinsliste auftaucht.
+    //
+    // Nur beim Anlegen geprüft. Beim Bearbeiten darf das Feld leer sein, sonst
+    // wären ausgerechnet die Vereine ohne Landesverband nicht pflegbar; ob das
+    // Leeren erlaubt ist, entscheidet die Berechtigung und damit der Server.
+    if (!this.editMode && !club.state_association_id) {
       msg.push(
         this._transloco.translate(
-          'clubAdmin.notifications.gameOperationRequired'
+          'clubAdmin.notifications.stateAssociationRequired'
         )
       );
     }
