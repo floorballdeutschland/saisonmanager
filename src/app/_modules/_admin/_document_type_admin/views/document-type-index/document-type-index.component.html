@@ -171,11 +171,21 @@
           class="text-sm"
         />
       </div>
+      @if (!ageRuleComplete(newType, newAgeRule)) {
+        <p class="text-[11px] text-red-500">
+          {{ "documentTypeAdmin.index.ageRuleIncomplete" | transloco }}
+        </p>
+      }
       <div class="flex gap-2">
         <button
           type="button"
           (click)="create()"
-          [disabled]="!newType.name || saving"
+          [disabled]="!newComplete || saving"
+          [title]="
+            newComplete
+              ? ''
+              : ('documentTypeAdmin.index.ageRuleIncomplete' | transloco)
+          "
           class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
         >
           {{ "documentTypeAdmin.index.create" | transloco }}
@@ -389,7 +399,13 @@
                   <button
                     type="button"
                     (click)="saveEdit()"
-                    [disabled]="saving || !editBuffer.name"
+                    [disabled]="saving || !editComplete"
+                    [title]="
+                      editComplete
+                        ? ''
+                        : ('documentTypeAdmin.index.ageRuleIncomplete'
+                          | transloco)
+                    "
                     class="text-xs font-bold px-3 py-1 bg-black text-white rounded-[5px] disabled:opacity-50"
                   >
                     {{ "documentTypeAdmin.index.save" | transloco }}

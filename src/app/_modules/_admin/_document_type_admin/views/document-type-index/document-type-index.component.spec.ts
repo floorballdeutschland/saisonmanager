@@ -1,5 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { getTranslocoTestingModule } from '@floorball/core';
 import { DocumentType } from '@floorball/types';
@@ -7,6 +10,7 @@ import { DocumentTypeIndexComponent } from './document-type-index.component';
 
 describe('DocumentTypeIndexComponent', () => {
   let component: DocumentTypeIndexComponent;
+  let httpMock: HttpTestingController;
 
   const documentType = (overrides: Partial<DocumentType> = {}): DocumentType =>
     ({
@@ -37,6 +41,13 @@ describe('DocumentTypeIndexComponent', () => {
     component = TestBed.createComponent(
       DocumentTypeIndexComponent
     ).componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+    // ngOnInit lädt Ligen und den Katalog; für diese Tests ohne Belang.
+    httpMock.match(() => true).forEach((r) => r.flush([]));
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it('should create', () => {
@@ -90,5 +101,70 @@ describe('DocumentTypeIndexComponent', () => {
     component.cancelEdit();
 
     expect(component.editAgeRule).toBe('none');
+  });
+
+  it('cancelNew setzt die Regelart zurück', () => {
+    component.setNewAgeRule('from_birth_year');
+    component.newType.required_from_birth_year = 2012;
+    component.cancelNew();
+
+    expect(component.newAgeRule).toBe('none');
+    expect(component.newType.required_from_birth_year).toBeNull();
+  });
+
+  // Eine gewählte Regelart ohne Zahl darf nicht gespeichert werden: Über die
+  // Leitung gingen beide Felder leer, die API käme auf "keine Altersregel", und
+  // die Dokumentart wäre anschließend für ALLE erforderlich — mit Erfolgsmeldung.
+  describe('Vollständigkeit der Altersregel', () => {
+    it('erkennt die fehlende Zahl je Regelart', () => {
+      expect(component.ageRuleComplete({}, 'none')).toBe(true);
+      expect(component.ageRuleComplete({}, 'below_age')).toBe(false);
+      expect(component.ageRuleComplete({}, 'from_birth_year')).toBe(false);
+      expect(
+        component.ageRuleComplete({ required_below_age: 16 }, 'below_age')
+      ).toBe(true);
+      expect(
+        component.ageRuleComplete(
+          { required_from_birth_year: 2012 },
+          'from_birth_year'
+        )
+      ).toBe(true);
+    });
+
+    it('speichert nicht, solange die Zahl fehlt', () => {
+      component.startEdit(documentType({ required_below_age: 16 }));
+      component.setEditAgeRule('from_birth_year');
+
+      expect(component.editComplete).toBe(false);
+      component.saveEdit();
+      httpMock.expectNone(
+        (r) => r.method === 'PATCH' || r.method === 'POST',
+        'ohne Jahrgang darf kein Request rausgehen'
+      );
+
+      component.editBuffer.required_from_birth_year = 2012;
+      expect(component.editComplete).toBe(true);
+    });
+  });
+
+  // Der Leitungskontrakt, an dem die ganze Abräum-Kette hängt: BEIDE Zahlfelder
+  // müssen mitgehen, auch leer. Ginge das geleerte Feld nicht mit, behielte die
+  // Dokumentart serverseitig still die alte Angabe — die Maske zeigte "ab Jg.
+  // 2012", die Datenbank behielte "unter 16".
+  it('schickt beim Wechsel der Regelart auch das geleerte Feld mit', () => {
+    component.startEdit(documentType({ id: 7, required_below_age: 16 }));
+    component.setEditAgeRule('from_birth_year');
+    component.editBuffer.required_from_birth_year = 2012;
+
+    component.saveEdit();
+
+    const request = httpMock.expectOne(
+      (r) => r.method === 'PATCH' && r.url.endsWith('admin/document_types/7')
+    );
+    const body = request.request.body as FormData;
+    expect(body.get('document_type[required_from_birth_year]')).toBe('2012');
+    expect(body.has('document_type[required_below_age]')).toBe(true);
+    expect(body.get('document_type[required_below_age]')).toBe('');
+    request.flush(documentType({ id: 7, required_from_birth_year: 2012 }));
   });
 });

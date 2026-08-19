@@ -19,6 +19,7 @@
     "ageRuleNone": "Always required",
     "ageRuleBelowAge": "Age on application date",
     "ageRuleFromBirthYear": "From birth year",
+    "ageRuleIncomplete": "Please enter the value for the selected age rule, otherwise the document type applies to everyone.",
     "ageRuleHint": "The application date rule counts the exact age on the day of application. The birth year rule covers a whole cohort regardless of birthday and application date, but has to be moved forward each season.",
     "requiredBelowAge": "Only below age",
     "requiredBelowAgeHint": "Only required if the player is younger at the time of application (e.g. 18).",

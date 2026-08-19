@@ -195,8 +195,36 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
     this._clearUnusedAgeFields(this.editBuffer, rule);
   }
 
+  // Eine gewaehlte Regelart braucht ihre Zahl. Ohne diese Pruefung gingen beide
+  // Felder leer auf die Leitung, die API kaeme auf "keine Altersregel" und die
+  // Dokumentart waere anschliessend fuer ALLE erforderlich — mit Erfolgsmeldung.
+  // Beim Bearbeiten waere zusaetzlich die vorherige Angabe weg, aus "Attest ab
+  // Jg. 2012" wuerde also "Attest fuer jede erwachsene Person".
+  ageRuleComplete(
+    data: Partial<DocumentType>,
+    rule: DocumentTypeAgeRule
+  ): boolean {
+    if (rule === 'below_age') return !!data.required_below_age;
+    if (rule === 'from_birth_year') return !!data.required_from_birth_year;
+    return true;
+  }
+
+  get newComplete(): boolean {
+    return (
+      !!this.newType.name?.trim() &&
+      this.ageRuleComplete(this.newType, this.newAgeRule)
+    );
+  }
+
+  get editComplete(): boolean {
+    return (
+      !!this.editBuffer.name?.trim() &&
+      this.ageRuleComplete(this.editBuffer, this.editAgeRule)
+    );
+  }
+
   saveEdit(): void {
-    if (!this.editingId || !this.editBuffer.name?.trim()) return;
+    if (!this.editingId || !this.editComplete) return;
     this.saving = true;
     this._documentTypeService
       .adminUpdateDocumentType(
@@ -235,7 +263,7 @@ export class DocumentTypeIndexComponent implements OnInit, OnDestroy {
   }
 
   create(): void {
-    if (!this.newType.name?.trim()) return;
+    if (!this.newComplete) return;
     this.saving = true;
     this._documentTypeService
       .adminCreateDocumentType(

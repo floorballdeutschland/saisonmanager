@@ -19,6 +19,7 @@
     "ageRuleNone": "Immer erforderlich",
     "ageRuleBelowAge": "Stichtag Alter",
     "ageRuleFromBirthYear": "Ab Geburtsjahrgang",
+    "ageRuleIncomplete": "Bitte den Wert zur gewählten Altersregel eintragen, sonst gilt die Dokumentart für alle.",
     "ageRuleHint": "Der Stichtag rechnet tagesgenau gegen das Antragsdatum. Der Geburtsjahrgang gilt für den ganzen Jahrgang, unabhängig von Geburtstag und Antragsdatum, muss dafür aber jede Saison nachgezogen werden.",
     "requiredBelowAge": "Nur unter Alter",
     "requiredBelowAgeHint": "Nur erforderlich, wenn Spieler*in bei Antrag jünger ist (z.B. 18).",
