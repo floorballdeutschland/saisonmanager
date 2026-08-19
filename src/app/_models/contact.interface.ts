@@ -27,9 +27,9 @@ export interface ContactClub {
   name: string;
   contact_email: string | null;
   state_association_name: string | null;
-  // Nur die in der Vereinsverwaltung unter „Zusätzlich informieren"
-  // markierten Vereinsmanager, also dieselbe Auswahl wie beim Versand der
-  // Vereinspost. Nicht jedes Konto mit Vereinsmanager-Rolle.
+  // Die Vereinsmanager, die Vereinspost bekommen, also alle des Vereins
+  // ausser den in der Vereinsverwaltung unter „Zusätzlich informieren"
+  // abgewählten. Deckt sich mit dem Verteiler beim Versand.
   notify_managers: ContactManager[];
   teams: ContactTeam[];
 }

@@ -37,7 +37,7 @@
     "contactEmailPlaceholder": "e.g. info@club.com",
     "contactEmailHint": "This address receives: the match report scan reminder, game day checklist confirmations and objections, published and changed referee assignments, and all transfer and player release messages. Please enter exactly one address.",
     "notifyManagers": "Also notify",
-    "notifyManagersHint": "These club managers receive the same messages as the contact email.",
+    "notifyManagersHint": "All club managers receive the same messages as the contact email. Uncheck anyone who should not. Newly appointed club managers are included automatically.",
     "notifyManagersEmpty": "No club manager is assigned to this club.",
     "notifyManagerNoEmail": "– no email address on file",
     "logo": "Club logo",

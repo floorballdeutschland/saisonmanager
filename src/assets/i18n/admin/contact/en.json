@@ -1,7 +1,7 @@
 {
   "index": {
     "title": "Contacts",
-    "intro": "Contact persons for the clubs and teams in your game operation for the current season. At club level this mirrors who receives club mail: the club's contact address and the club managers marked as additional recipients in the club administration. Gaps stay in the list so they remain visible.",
+    "intro": "Contact persons for the clubs and teams in your game operation for the current season. At club level this mirrors who receives club mail: the club's contact address and the club managers who have not been unchecked as additional recipients in the club administration. Gaps stay in the list so they remain visible.",
     "exportButton": "Download as CSV",
     "search": "Search",
     "searchPlaceholder": "Club, team, name or e-mail address",
