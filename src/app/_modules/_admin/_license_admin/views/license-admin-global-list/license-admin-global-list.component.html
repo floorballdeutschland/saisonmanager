@@ -212,6 +212,8 @@
         <div class="flex items-center gap-4">
           <label class="flex items-center gap-2 text-sm text-gray-500">
             {{ "licenseAdmin.globalList.perPage" | transloco }}
+            <!-- [ngValue] statt [value]: 0 ist die Kennung fuer "Alle" und wird
+                 im Bauteil mit === geprueft, ein Text '0' faellt durch. -->
             <select
               class="rounded border-gray-300 text-sm py-1"
               [ngModel]="pageSize"
@@ -289,7 +291,7 @@
           <thead>
             <tr class="border-b border-gray-200 text-left">
               <th
-                class="sticky left-0 z-20 bg-white border-r border-gray-200 px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+                class="sticky left-0 z-10 bg-white border-r border-gray-200 px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
                 {{ "licenseAdmin.globalList.colPlayer" | transloco }}
               </th>
@@ -356,7 +358,11 @@
             }
             @for (e of pagedEntries; track e) {
               <tr class="group hover:bg-fb-gray-100 transition-colors">
-                <!-- Spieler (bleibt beim Scrollen nach rechts stehen) -->
+                <!-- Spieler. bg-white ist nicht Zierde: eine durchsichtige
+                     Zelle liesse die waagerecht darunter geschobenen Spalten
+                     durchscheinen. Weil sie damit deckend ist, kommt das
+                     hover der Zeile nicht mehr durch – daher group auf dem tr
+                     und group-hover hier. -->
                 <td
                   class="sticky left-0 z-10 bg-white group-hover:bg-fb-gray-100 border-r border-gray-200 px-4 py-3 whitespace-nowrap transition-colors"
                 >

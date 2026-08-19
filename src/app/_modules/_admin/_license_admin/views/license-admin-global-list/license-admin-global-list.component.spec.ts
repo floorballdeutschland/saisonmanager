@@ -24,6 +24,12 @@ describe('LicenseAdminGlobalListComponent', () => {
     }).compileComponents();
   });
 
+  afterEach(() => {
+    // Auch nach dem letzten Test der Datei, sonst wirkt die Wahl in die
+    // uebrigen Spec-Dateien desselben Karma-Laufs hinein.
+    localStorage.removeItem('license_admin_page_size');
+  });
+
   function entry(lastName: string): AdminLicenseEntry {
     return {
       player_last_name: lastName,
@@ -104,8 +110,7 @@ describe('LicenseAdminGlobalListComponent', () => {
       const component = setup(120);
 
       expect(component.pageSize).toBe(25);
-      // 0 ist die Option "Alle".
-      expect(component.pageSizeOptions).toEqual([25, 50, 100, 200, 0]);
+      expect(component.pagedEntries.length).toBe(25);
     });
 
     it('applies the chosen size right away', () => {
@@ -117,7 +122,6 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(component.pagedEntries.length).toBe(100);
     });
 
-    // Sonst muesste man die Groesse bei jedem Aufruf der Liste neu setzen.
     it('remembers the choice for the next visit', () => {
       setup(120).changePageSize(100);
 
@@ -149,16 +153,16 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(setup(120).pageSize).toBe(0);
     });
 
-    // Number('') ist 0 und 0 heisst "Alle": ohne gespeicherte Wahl duerfen
-    // deshalb nicht alle Zeilen auf einmal erscheinen.
+    // StorageService gibt für einen fehlenden Schlüssel '' zurück, Number('')
+    // ist 0 und 0 heißt "Alle" – ohne gespeicherte Wahl darf deshalb nicht die
+    // ganze Liste erscheinen.
     it('does not read a missing choice as "Alle"', () => {
-      expect(localStorage.getItem('license_admin_page_size')).toBeNull();
-
       expect(setup(120).pageSize).toBe(25);
     });
 
     // Beim Umschalten soll die Stelle in der Liste erhalten bleiben, statt auf
-    // Seite 1 zurückzufallen.
+    // Seite 1 zurückzufallen: Seite 3 zu 25 beginnt bei Eintrag 50, der zu 50
+    // je Seite auf Seite 2 liegt.
     it('keeps the first visible entry when the size changes', () => {
       const component = setup(120);
       component.changePage(3);
@@ -167,6 +171,44 @@ describe('LicenseAdminGlobalListComponent', () => {
 
       expect(component.currentPage).toBe(2);
       expect(component.pagedEntries[0].player_last_name).toBe('Spieler50');
+    });
+
+    // Aufgerundet läge Eintrag 50 auf Seite 2 und wäre damit aus dem Bild –
+    // die Seite muss die Stelle enthalten, nicht hinter ihr beginnen.
+    it('rounds down to the page holding the entry', () => {
+      const component = setup(120);
+      component.changePage(3);
+
+      component.changePageSize(100);
+
+      expect(component.currentPage).toBe(1);
+      expect(
+        component.pagedEntries.some((e) => e.player_last_name === 'Spieler50')
+      ).toBeTrue();
+    });
+
+    // Aus "Alle" heraus gibt es keine Seitenzahl zum Mitnehmen. Ohne die
+    // Sonderbehandlung entstünde hier durch die Teilung mit 0 eine kaputte
+    // Seitenzahl.
+    it('returns from "Alle" to the first page', () => {
+      const component = setup(120);
+      component.changePageSize(0);
+
+      component.changePageSize(25);
+
+      expect(component.currentPage).toBe(1);
+      expect(component.pagedEntries.length).toBe(25);
+    });
+
+    // Die Vorlage bindet die Auswahl mit [ngValue] und liefert deshalb Zahlen.
+    // Kommt der Wert doch einmal als Text, darf "Alle" nicht durchfallen.
+    it('takes a text value as well', () => {
+      const component = setup(120);
+
+      component.changePageSize('0' as unknown as number);
+
+      expect(component.numberOfPages).toBe(1);
+      expect(component.pagedEntries.length).toBe(120);
     });
   });
 
