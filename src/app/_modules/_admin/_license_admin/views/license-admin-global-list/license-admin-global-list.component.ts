@@ -53,12 +53,14 @@ const LEAGUE_CLASS_KEYS: { value: string; labelKey: string }[] = [
 ];
 
 // Auswählbare Seitengröße. Die Wahl liegt im localStorage, damit sie den
-// nächsten Aufruf der Liste überlebt. 0 steht für "Alle": dann rendert die
-// Tabelle die komplette Filtermenge auf einmal, was bei mehreren tausend
-// Zeilen entsprechend träge wird – deshalb ist es nicht die Voreinstellung.
+// nächsten Aufruf der Liste überlebt. Voreingestellt sind 25 Zeilen: dann ist
+// das Tabellenende mit der waagerechten Scrollleiste ohne langes Scrollen
+// erreichbar. 0 steht für "Alle": dann rendert die Tabelle die komplette
+// Filtermenge auf einmal, was bei mehreren tausend Zeilen entsprechend träge
+// wird – deshalb ist es nicht die Voreinstellung.
 const PAGE_SIZE_ALL = 0;
 const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, PAGE_SIZE_ALL];
-const DEFAULT_PAGE_SIZE = 50;
+const DEFAULT_PAGE_SIZE = 25;
 const PAGE_SIZE_STORAGE_KEY = 'license_admin_page_size';
 
 @Component({

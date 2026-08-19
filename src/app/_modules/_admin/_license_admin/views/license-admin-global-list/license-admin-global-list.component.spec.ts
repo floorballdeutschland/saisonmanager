@@ -49,16 +49,16 @@ describe('LicenseAdminGlobalListComponent', () => {
     it('splits the entries into pages of pageSize', () => {
       const component = setup(120);
 
-      expect(component.pageSize).toBe(50);
-      expect(component.numberOfPages).toBe(3);
-      expect(component.pagedEntries.length).toBe(50);
+      expect(component.pageSize).toBe(25);
+      expect(component.numberOfPages).toBe(5);
+      expect(component.pagedEntries.length).toBe(25);
       expect(component.pagedEntries[0].player_last_name).toBe('Spieler0');
     });
 
     it('serves the requested page', () => {
       const component = setup(120);
 
-      component.changePage(3);
+      component.changePage(5);
 
       expect(component.pagedEntries.length).toBe(20);
       expect(component.pagedEntries[0].player_last_name).toBe('Spieler100');
@@ -95,15 +95,15 @@ describe('LicenseAdminGlobalListComponent', () => {
       const component = setup(120);
 
       expect(component.filteredEntries.length).toBe(120);
-      expect(component.pagedEntries.length).toBe(50);
+      expect(component.pagedEntries.length).toBe(25);
     });
   });
 
   describe('Einträge pro Seite', () => {
-    it('uses 50 entries as long as nothing else was chosen', () => {
+    it('uses 25 entries as long as nothing else was chosen', () => {
       const component = setup(120);
 
-      expect(component.pageSize).toBe(50);
+      expect(component.pageSize).toBe(25);
       // 0 ist die Option "Alle".
       expect(component.pageSizeOptions).toEqual([25, 50, 100, 200, 0]);
     });
@@ -111,10 +111,10 @@ describe('LicenseAdminGlobalListComponent', () => {
     it('applies the chosen size right away', () => {
       const component = setup(120);
 
-      component.changePageSize(25);
+      component.changePageSize(100);
 
-      expect(component.numberOfPages).toBe(5);
-      expect(component.pagedEntries.length).toBe(25);
+      expect(component.numberOfPages).toBe(2);
+      expect(component.pagedEntries.length).toBe(100);
     });
 
     // Sonst muesste man die Groesse bei jedem Aufruf der Liste neu setzen.
@@ -130,7 +130,7 @@ describe('LicenseAdminGlobalListComponent', () => {
     it('ignores a stored size that is not offered', () => {
       localStorage.setItem('license_admin_page_size', '7');
 
-      expect(setup(120).pageSize).toBe(50);
+      expect(setup(120).pageSize).toBe(25);
     });
 
     it('shows every entry on one page for "Alle"', () => {
@@ -154,7 +154,7 @@ describe('LicenseAdminGlobalListComponent', () => {
     it('does not read a missing choice as "Alle"', () => {
       expect(localStorage.getItem('license_admin_page_size')).toBeNull();
 
-      expect(setup(120).pageSize).toBe(50);
+      expect(setup(120).pageSize).toBe(25);
     });
 
     // Beim Umschalten soll die Stelle in der Liste erhalten bleiben, statt auf
@@ -163,10 +163,10 @@ describe('LicenseAdminGlobalListComponent', () => {
       const component = setup(120);
       component.changePage(3);
 
-      component.changePageSize(25);
+      component.changePageSize(50);
 
-      expect(component.currentPage).toBe(5);
-      expect(component.pagedEntries[0].player_last_name).toBe('Spieler100');
+      expect(component.currentPage).toBe(2);
+      expect(component.pagedEntries[0].player_last_name).toBe('Spieler50');
     });
   });
 
