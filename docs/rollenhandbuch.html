@@ -7879,7 +7879,8 @@
             </p>
             <div class="hero-scope">
               🎥 Für alle, die ein Spiel übertragen. Voraussetzung ist ein Konto
-              mit Zugriff auf den Spielbericht.
+              mit Zugriff auf den Spielbericht, einen API-Zugang brauchst du
+              nicht.
             </div>
           </div>
 
@@ -7909,6 +7910,18 @@
             Mannschaft. Ist eine Adresse versehentlich im Vereinschat gelandet,
             zieht <em>Zugang zurückziehen</em> sie sofort zurück.
           </p>
+          <div class="note">
+            <strong>Einen API-Zugang brauchst du dafür nicht.</strong> Die beiden
+            Adressen bringen ihren Zugang selbst mit: Das Token in der Adresse
+            reicht der Anzeigetafel und dem Bedienfeld, um die Daten des
+            Spieltags zu holen. Ein Schlüssel aus dem
+            <a href="#panel-entwickler">API-Zugang für Entwickler</a> wäre hier
+            sogar der falsche Weg, denn er liefert die Daten mit zehn Minuten
+            Verzögerung und blendet Ergebnisse laufender Spiele aus. Für eine
+            Anzeigetafel taugt das nicht. Das Spieltags-Token zeigt den Stand
+            dagegen ohne Verzögerung, gilt aber nur für die Spiele dieses
+            Spieltags und läuft nach 36 Stunden ab.
+          </div>
 
           <div class="sec">
             <span class="num">02</span>
