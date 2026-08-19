@@ -184,23 +184,63 @@ describe('ClubEditComponent', () => {
   });
 
   // Der Spielverbund ist der Wurzel-Landesverband der Kette und wird nur
-  // angezeigt, nicht gepflegt. Fuer die Untergliederung von SBK Ost ist das der
-  // Dachverband, fuer einen parentlosen Verband er selbst.
-  it('getSportverbund folgt der Verbandskette nach oben', () => {
+  // angezeigt, nicht gepflegt.
+  //
+  // Das Fixture ist DREIstufig. Bei zwei Ebenen sind "eine Ebene hoch" und "bis
+  // zur Wurzel" dasselbe, der Test koennte den Unterschied also nicht sehen und
+  // wuerde etwas behaupten, was der Code nicht tut. Der Server leitet die
+  // Zustaendigkeit ueber StateAssociation.root_id ab, und das laeuft bis zur
+  // Wurzel.
+  it('getSportverbund folgt der Verbandskette bis zur Wurzel', () => {
     const component =
       TestBed.createComponent(ClubEditComponent).componentInstance;
     component.stateAssociations = [
-      { id: 6, name: 'SBK Ost' },
+      { id: 1, name: 'Floorball-Verband Deutschland' },
+      { id: 6, name: 'SBK Ost', parent_id: 1 },
       { id: 13, name: 'Floorballverband Sachsen', parent_id: 6 },
     ] as never;
 
     expect(
       component.getSportverbund({ state_association_id: 13 } as Club)
-    ).toBe('SBK Ost');
+    ).toBe('Floorball-Verband Deutschland');
     expect(component.getSportverbund({ state_association_id: 6 } as Club)).toBe(
-      'SBK Ost'
+      'Floorball-Verband Deutschland'
+    );
+    expect(component.getSportverbund({ state_association_id: 1 } as Club)).toBe(
+      'Floorball-Verband Deutschland'
     );
     expect(component.getSportverbund({} as Club)).toBe('–');
+  });
+
+  // Bricht die Kette an einem geloeschten Verband ab, bleibt der letzte bekannte
+  // stehen statt auf "–" zu fallen. Auf state_associations.parent_id liegt kein
+  // Fremdschluessel; der Server verhaelt sich genauso (`parents.key?(up)`).
+  it('getSportverbund bleibt beim letzten bekannten Verband stehen', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    component.stateAssociations = [
+      { id: 13, name: 'Floorballverband Sachsen', parent_id: 999 },
+    ] as never;
+
+    expect(
+      component.getSportverbund({ state_association_id: 13 } as Club)
+    ).toBe('Floorballverband Sachsen');
+  });
+
+  // Ein Ringverweis aus der Zeit vor der Zyklus-Pruefung darf die Maske nicht in
+  // eine Endlosschleife schicken. Gleiche Vorsorge wie in
+  // StateAssociation.build_tree auf der Serverseite.
+  it('getSportverbund haelt einen Ringverweis aus', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    component.stateAssociations = [
+      { id: 1, name: 'A', parent_id: 2 },
+      { id: 2, name: 'B', parent_id: 1 },
+    ] as never;
+
+    expect(['A', 'B']).toContain(
+      component.getSportverbund({ state_association_id: 1 } as Club)
+    );
   });
 
   it('onLogoSelected posts the file as FormData and applies both returned urls', () => {

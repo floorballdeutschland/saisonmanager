@@ -12,12 +12,7 @@ import {
   NotificationService,
   SessionService,
 } from '@floorball/core';
-import {
-  Club,
-  ClubManager,
-  GameOperation,
-  StateAssociation,
-} from '@floorball/types';
+import { Club, ClubManager, StateAssociation } from '@floorball/types';
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -31,8 +26,6 @@ import { CLUB_STATE_OPTIONS } from 'src/app/_helpers/_utils/german-states';
   standalone: false,
 })
 export class ClubEditComponent implements OnInit, OnDestroy {
-  associations$: Observable<GameOperation[]>;
-
   clubId?: number;
   club$?: Observable<Club>;
   editMode = true;
@@ -61,11 +54,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   clubManagers: ClubManager[] = [];
   notifyUserIds: number[] = [];
   confirmDeactivate = false;
-
-  // Spielbetriebe, in denen der/die Nutzer*in Vereine anlegen darf. Nur beim
-  // Anlegen relevant: der Heimat-Spielbetrieb entscheidet, wer den Verein
-  // verwaltet, und beim Bearbeiten soll er sich nicht versehentlich ändern
-  // (dort steht er weiter als Spielverbund read-only).
 
   // Auswahlliste des Suchfelds: einmal beim Laden gebildet, nicht als Getter.
   // Ein neues Array pro Change-Detection wuerde die Trefferliste des Suchfelds
@@ -96,7 +84,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     private _metaTitle: Title,
     private _transloco: TranslocoService
   ) {
-    this.associations$ = this._associationService.associations$;
     this._metaTitle.setTitle('Floorball Saisonmanager');
   }
 
@@ -227,15 +214,36 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Der Spielverbund ist die WURZEL der Verbandskette, nicht der unmittelbare
+  // Elternverband. Genau so leitet der Server die Zuständigkeit ab
+  // (StateAssociation.root_id läuft die parent_id-Kette in einer Schleife hoch).
+  //
+  // Eine einzelne Ebene genügt nicht: Bei einer dreistufigen Kette zeigte die
+  // Maske sonst die Mitte an, während der Server die Wurzel nimmt. Das wäre
+  // wieder derselbe Widerspruch zwischen Anzeige und Wirkung, den diese
+  // Umstellung beseitigt, nur eine Ebene tiefer. Dreistufig ist erreichbar: Die
+  // Verbandsmaske bietet als Elternteil nur Wurzeln an, hindert aber nicht
+  // daran, einem Verband mit Kindern selbst einen Elternteil zu geben, und der
+  // Server prüft nur auf Ringverweise, nicht auf Tiefe.
+  //
+  // `seen` gegen einen Ringverweis aus der Zeit vor dieser Prüfung, aus
+  // demselben Grund wie in StateAssociation.build_tree. Bricht die Kette an
+  // einem gelöschten Verband ab, bleibt der letzte bekannte stehen — auch das
+  // deckt sich mit dem Server (`parents.key?(up)`).
   public getSportverbund(club: Club): string {
-    const sa = this.stateAssociations.find(
+    let sa = this.stateAssociations.find(
       (s) => s.id === club.state_association_id
     );
     if (!sa) return '–';
-    if (sa.parent_id) {
-      const parent = this.stateAssociations.find((s) => s.id === sa.parent_id);
-      return parent?.name ?? sa.name;
+
+    const seen: number[] = [];
+    while (sa.parent_id && !seen.includes(sa.id)) {
+      seen.push(sa.id);
+      const parent = this.stateAssociations.find((s) => s.id === sa!.parent_id);
+      if (!parent) break;
+      sa = parent;
     }
+
     return sa.name;
   }
 
