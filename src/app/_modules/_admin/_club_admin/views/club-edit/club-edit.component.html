@@ -89,7 +89,11 @@
                   @if (isRestricted) {
                     <span class="text-gray-700">{{ getStateName(club) }}</span>
                   } @else {
-                    <select name="state" [(ngModel)]="club.state" class="w-full">
+                    <select
+                      name="state"
+                      [(ngModel)]="club.state"
+                      class="w-full"
+                    >
                       <option [ngValue]="null">
                         {{ "clubAdmin.edit.pleaseSelect" | transloco }}
                       </option>
@@ -101,34 +105,13 @@
                     </select>
                   }
                 </div>
-                <!-- Spielbetrieb nur beim Anlegen wählbar: er entscheidet, wer
-                     den Verein verwaltet, und soll sich beim Bearbeiten nicht
-                     versehentlich ändern. Ohne ihn lehnt die API das Speichern
-                     ab, weil der Verein sonst in keiner Vereinsliste auftaucht. -->
-                @if (!editMode) {
-                  <div class="font-bold">
-                    {{ "clubAdmin.edit.gameOperation" | transloco }}
-                  </div>
-                  <div>
-                    <select
-                      name="game_operation_id"
-                      [(ngModel)]="club.game_operation_id"
-                      class="w-full"
-                      required
-                    >
-                      <option [ngValue]="0">
-                        {{ "clubAdmin.edit.pleaseSelect" | transloco }}
-                      </option>
-                      @for (go of gameOperations; track go.id) {
-                        <option [ngValue]="go.id">{{ go.name }}</option>
-                      }
-                    </select>
-                  </div>
-                }
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.sportverbund" | transloco }}
-                </div>
-                <div class="text-gray-700">{{ getSportverbund(club) }}</div>
+                <!-- Der Landesverband ordnet den Verein ein: Aus ihm ergibt
+                     sich, welcher Spielbetrieb ihn verwaltet. Er steht deshalb
+                     vor dem abgeleiteten Spielverbund, und die Auswahl gibt es
+                     beim Anlegen wie beim Bearbeiten. Vorher trug ein zweites,
+                     nur beim Anlegen sichtbares Spielbetriebs-Feld die
+                     Zuständigkeit, konnte dem Landesverband widersprechen und
+                     war danach nicht mehr erreichbar. -->
                 <div class="font-bold">
                   {{ "clubAdmin.edit.stateAssociation" | transloco }}
                 </div>
@@ -141,12 +124,19 @@
                     <fb-select-search
                       name="state_association_id"
                       [(ngModel)]="club.state_association_id"
-                      [items]="leafStateAssociations"
+                      [items]="selectableStateAssociations"
                       [placeholder]="'clubAdmin.edit.pleaseSelect' | transloco"
                       [resetLabel]="'clubAdmin.edit.pleaseSelect' | transloco"
                     />
+                    <p class="text-sm text-gray-500 mt-1">
+                      {{ "clubAdmin.edit.stateAssociationHint" | transloco }}
+                    </p>
                   }
                 </div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.sportverbund" | transloco }}
+                </div>
+                <div class="text-gray-700">{{ getSportverbund(club) }}</div>
                 <div class="font-bold">
                   {{ "clubAdmin.edit.contactEmail" | transloco }}
                 </div>

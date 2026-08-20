@@ -8,7 +8,13 @@ export interface Club {
   long_name: string;
   state: string;
   state_association_id?: number;
-  game_operation_id: number;
+  /**
+   * Nur lesend: Der zuständige Spielbetrieb wird serverseitig aus dem
+   * Landesverband abgeleitet (Club#main_game_operation_id) und lässt sich nicht
+   * setzen. `null`, wenn kein Verband zuständig ist. Vorher war das ein am
+   * Verein gepflegtes Feld, das dem Landesverband widersprechen konnte.
+   */
+  game_operation_id?: number | null;
   contact_email?: string;
   /**
 
@@ -22,7 +28,7 @@ export interface Club {
   /**
    * Nur in der Antwort zu einem einzelnen Verein (`admin/clubs/:id`): Darf der
    * angemeldete Benutzer bei DIESEM Verein die einordnenden Felder
-   * (Bundesland, Landesverband, Spielbetrieb) ändern? Die Berechtigung gilt pro
+   * (Bundesland, Landesverband) ändern? Die Berechtigung gilt pro
    * Verein, ein Flag am Benutzer kann Mehrfachrollen nicht abbilden.
    */
   edit_restricted?: boolean;

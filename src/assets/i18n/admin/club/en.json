@@ -30,9 +30,9 @@
     "registerName": "Club register name",
     "state": "State (club location)",
     "pleaseSelect": "– Please select –",
-    "gameOperation": "Competition",
     "sportverbund": "Sport association",
     "stateAssociation": "State federation",
+    "stateAssociationHint": "The state federation determines which competition administers the club.",
     "contactEmail": "Contact email",
     "contactEmailPlaceholder": "e.g. info@club.com",
     "contactEmailHint": "This address receives: the match report scan reminder, game day checklist confirmations and objections, published and changed referee assignments, and all transfer and player release messages. Please enter exactly one address.",
@@ -77,7 +77,6 @@
     "shortNameRequired": "An abbreviation must be set",
     "shortNameTooLong": "The abbreviation must not exceed 4 characters",
     "contactEmailInvalid": "The contact email must be exactly one valid address",
-    "gameOperationRequired": "Please select a competition.",
-    "gameOperationLoadError": "Could not load the competitions."
+    "stateAssociationRequired": "Please select a state federation."
   }
 }
