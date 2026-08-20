@@ -58,16 +58,24 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   // Auswahlliste des Suchfelds: einmal beim Laden gebildet, nicht als Getter.
   // Ein neues Array pro Change-Detection wuerde die Trefferliste des Suchfelds
   // bei jedem Durchlauf neu aufbauen.
-  leafStateAssociations: StateAssociation[] = [];
+  //
+  // ALLE Landesverbände, auch die mit Unterverbänden. Vorher standen hier nur
+  // Blatt-Verbände, mit der Begründung, ein Verband mit Unterverbänden verwalte
+  // keine Vereine. Das trifft nicht zu: Der Floorballverband Schleswig-Holstein
+  // hat fünf eigene Vereine und ist Elternverband des Floorball Bund Hamburg,
+  // SBK Ost hat einen eigenen und drei Unterverbände. Mit der Blatt-Regel fiel
+  // der eigene Landesverband dieser Vereine aus der Auswahl, und das Suchfeld
+  // zeigte den Platzhalter, obwohl ein Wert gesetzt war.
+  //
+  // Das ist auch fachlich richtig: Die Zuständigkeit löst sich über die Wurzel
+  // der Kette auf, ein Verband auf mittlerer Ebene ist also eine gültige Wahl.
+  // Der Server sieht es genauso, `state_association_move_conflict` lässt jeden
+  // Verband zu, für dessen Verbund ein Spielbetrieb zuständig ist.
+  selectableStateAssociations: StateAssociation[] = [];
 
-  private _refreshLeafStateAssociations(): void {
-    const parentIds = new Set(
-      this.stateAssociations
-        .filter((sa) => sa.parent_id)
-        .map((sa) => sa.parent_id as number)
-    );
-    this.leafStateAssociations = this.stateAssociations.filter(
-      (sa) => !parentIds.has(sa.id)
+  private _refreshSelectableStateAssociations(): void {
+    this.selectableStateAssociations = [...this.stateAssociations].sort(
+      (a, b) => a.name.localeCompare(b.name, 'de')
     );
   }
 
@@ -102,7 +110,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           this.stateAssociations = result;
-          this._refreshLeafStateAssociations();
+          this._refreshSelectableStateAssociations();
           this._cdr.markForCheck();
         },
       });

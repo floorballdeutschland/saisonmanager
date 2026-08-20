@@ -183,6 +183,29 @@ describe('ClubEditComponent', () => {
     expect(component.errorMsg(club)).toEqual([]);
   });
 
+  // Vorher standen im Suchfeld nur Blatt-Verbände, mit der Begründung, ein
+  // Verband mit Unterverbänden verwalte keine Vereine. Das trifft nicht zu: Nach
+  // dem Datenlauf zu diesem PR ist der Floorballverband Schleswig-Holstein
+  // Elternverband des Floorball Bund Hamburg und hat weiter fünf eigene Vereine.
+  // Mit der alten Regel fiel er aus der Auswahl, und das Suchfeld zeigte für
+  // seine Vereine den Platzhalter, obwohl ein Wert gesetzt war.
+  it('bietet auch Landesverbaende mit Unterverbaenden zur Auswahl an', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    component.stateAssociations = [
+      { id: 14, name: 'Floorball Bund Hamburg', parent_id: 5 },
+      { id: 5, name: 'Floorballverband Schleswig-Holstein' },
+    ] as never;
+
+    component['_refreshSelectableStateAssociations']();
+
+    const ids = component.selectableStateAssociations.map((sa) => sa.id);
+    expect(ids).toContain(5);
+    expect(ids).toContain(14);
+    // Alphabetisch, damit die Trefferliste des Suchfelds stabil bleibt.
+    expect(ids).toEqual([14, 5]);
+  });
+
   // Der Spielverbund ist der Wurzel-Landesverband der Kette und wird nur
   // angezeigt, nicht gepflegt.
   //
