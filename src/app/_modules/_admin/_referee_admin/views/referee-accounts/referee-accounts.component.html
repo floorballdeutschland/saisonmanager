@@ -1,0 +1,286 @@
+<div class="p-4 lg:p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">
+      {{ "refereeAdmin.accounts.title" | transloco }}
+    </h1>
+    <a
+      [routerLink]="['/', 'verwaltung', 'schiedsrichter']"
+      class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+    >
+      {{ "refereeAdmin.accounts.backToList" | transloco }}
+    </a>
+  </div>
+
+  <!-- E-Mailadressen aus CSV einlesen -->
+  <section class="mb-10 max-w-4xl">
+    <h2 class="text-lg font-bold mb-2">
+      {{ "refereeAdmin.accounts.importTitle" | transloco }}
+    </h2>
+    <p class="text-sm text-fb-gray-500 mb-4">
+      {{ "refereeAdmin.accounts.importHint" | transloco }}
+    </p>
+
+    <label
+      class="inline-block px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] cursor-pointer hover:bg-fb-gray-500"
+      [class.opacity-40]="importing"
+    >
+      {{
+        (importing
+          ? "refereeAdmin.accounts.importing"
+          : "refereeAdmin.accounts.chooseFile"
+        ) | transloco
+      }}
+      <input
+        type="file"
+        accept=".csv,text/csv"
+        class="hidden"
+        [disabled]="importing"
+        (change)="onFileSelected($event)"
+      />
+    </label>
+
+    @if (report) {
+      <div class="mt-6 border border-fb-gray-700 rounded-[5px] p-4">
+        <p class="text-sm font-bold mb-3">
+          {{
+            "refereeAdmin.accounts.reportSummary"
+              | transloco
+                : {
+                    rows: report.total_rows,
+                    updated: report.updated.length,
+                    skipped: report.skipped.length,
+                    notFound: report.not_found.length,
+                    invalid: report.invalid.length,
+                  }
+          }}
+        </p>
+
+        @if (report.updated.length) {
+          <details class="mb-2" open>
+            <summary class="text-sm font-bold cursor-pointer">
+              {{
+                "refereeAdmin.accounts.reportUpdated"
+                  | transloco: { count: report.updated.length }
+              }}
+            </summary>
+            <ul class="mt-2 text-sm">
+              @for (entry of report.updated; track entry.row) {
+                <li class="py-1 border-b border-fb-gray-800">
+                  <span class="text-fb-gray-500">{{ entry.row }}</span>
+                  <span class="font-mono">{{ entry.lizenznummer }}</span>
+                  {{ entry.name }} → {{ entry.email }}
+                </li>
+              }
+            </ul>
+          </details>
+        }
+
+        @if (report.skipped.length) {
+          <details class="mb-2">
+            <summary class="text-sm font-bold cursor-pointer">
+              {{
+                "refereeAdmin.accounts.reportSkipped"
+                  | transloco: { count: report.skipped.length }
+              }}
+            </summary>
+            <ul class="mt-2 text-sm">
+              @for (entry of report.skipped; track entry.row) {
+                <li class="py-1 border-b border-fb-gray-800">
+                  <span class="text-fb-gray-500">{{ entry.row }}</span>
+                  <span class="font-mono">{{ entry.lizenznummer }}</span>
+                  {{ entry.name }}: {{ entry.email }}
+                  <span class="text-fb-gray-500">
+                    ({{ skippedReason(entry.reason) }}
+                    @if (entry.reason === "other_email") {
+                      : {{ entry.csv_email }}
+                    }
+                    )
+                  </span>
+                </li>
+              }
+            </ul>
+          </details>
+        }
+
+        @if (report.not_found.length) {
+          <details class="mb-2">
+            <summary class="text-sm font-bold cursor-pointer">
+              {{
+                "refereeAdmin.accounts.reportNotFound"
+                  | transloco: { count: report.not_found.length }
+              }}
+            </summary>
+            <p class="mt-2 text-sm font-mono break-words">
+              {{ report.not_found.join(", ") }}
+            </p>
+          </details>
+        }
+
+        @if (report.invalid.length) {
+          <details>
+            <summary class="text-sm font-bold cursor-pointer text-red-600">
+              {{
+                "refereeAdmin.accounts.reportInvalid"
+                  | transloco: { count: report.invalid.length }
+              }}
+            </summary>
+            <ul class="mt-2 text-sm">
+              @for (row of report.invalid; track row.row) {
+                <li class="py-1 border-b border-fb-gray-800">
+                  {{
+                    "refereeAdmin.accounts.reportInvalidRow"
+                      | transloco: { row: row.row }
+                  }}
+                  <span class="font-mono">{{ row.value }}</span>
+                  <span class="text-fb-gray-500">({{ row.reason }})</span>
+                </li>
+              }
+            </ul>
+          </details>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Benutzerkonten in Tranchen anlegen -->
+  <section class="max-w-4xl">
+    <h2 class="text-lg font-bold mb-2">
+      {{ "refereeAdmin.accounts.createTitle" | transloco }}
+    </h2>
+    <p class="text-sm text-fb-gray-500 mb-4">
+      {{ "refereeAdmin.accounts.createHint" | transloco }}
+    </p>
+
+    @if (countLoading) {
+      <p class="text-sm text-fb-gray-500">
+        {{ "refereeAdmin.accounts.counting" | transloco }}
+      </p>
+    }
+
+    @if (countFailed) {
+      <div class="flex items-center gap-3">
+        <p class="text-sm text-red-600">
+          {{ "refereeAdmin.accounts.countError" | transloco }}
+        </p>
+        <button
+          type="button"
+          (click)="loadCount()"
+          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        >
+          {{ "refereeAdmin.accounts.retry" | transloco }}
+        </button>
+      </div>
+    }
+
+    @if (!countLoading && missing) {
+      <p class="text-sm mb-4">
+        {{
+          "refereeAdmin.accounts.missingCount"
+            | transloco: { count: missing.count }
+        }}
+      </p>
+
+      @if (missing.count > 0) {
+        <fb-confirmation
+          [title]="'refereeAdmin.accounts.confirmTitle' | transloco"
+          [content]="
+            'refereeAdmin.accounts.confirmContent'
+              | transloco: { count: nextBatchSize() }
+          "
+          [submitButtonTitle]="
+            'refereeAdmin.accounts.confirmSubmit' | transloco
+          "
+          (handleSubmit)="createMissingUsers()"
+        >
+          <button
+            type="button"
+            [disabled]="creating"
+            class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+          >
+            {{
+              (creating
+                ? "refereeAdmin.accounts.creating"
+                : "refereeAdmin.accounts.createButton"
+              ) | transloco: { count: nextBatchSize() }
+            }}
+          </button>
+        </fb-confirmation>
+      }
+    }
+
+    @if (bulkResult) {
+      <div class="mt-6 border border-fb-gray-700 rounded-[5px] p-4">
+        <p class="text-sm font-bold mb-3">
+          {{
+            "refereeAdmin.accounts.createSummary"
+              | transloco
+                : {
+                    created: bulkResult.created.length,
+                    failed: bulkResult.failed.length,
+                    remaining: bulkResult.remaining,
+                  }
+          }}
+        </p>
+
+        @if (bulkResult.created.length) {
+          <details open class="mb-2">
+            <summary class="text-sm font-bold cursor-pointer">
+              {{
+                "refereeAdmin.accounts.createdList"
+                  | transloco: { count: bulkResult.created.length }
+              }}
+            </summary>
+            <ul class="mt-2 text-sm">
+              @for (entry of bulkResult.created; track entry.id) {
+                <li class="py-1 border-b border-fb-gray-800">
+                  <span class="font-mono">{{ entry.user_name }}</span>
+                  {{ entry.name }} ({{ entry.email }})
+                  @if (entry.email_sent === false) {
+                    <span
+                      class="ml-1 text-red-600"
+                      [attr.title]="
+                        'refereeAdmin.accounts.mailFailedTitle' | transloco
+                      "
+                    >
+                      {{ "refereeAdmin.accounts.mailFailed" | transloco }}
+                    </span>
+                  }
+                  @if (entry.duplicate_email) {
+                    <span
+                      class="ml-1 text-orange-600"
+                      [attr.title]="
+                        'refereeAdmin.accounts.duplicateEmailTitle' | transloco
+                      "
+                    >
+                      {{ "refereeAdmin.accounts.duplicateEmail" | transloco }}
+                    </span>
+                  }
+                </li>
+              }
+            </ul>
+          </details>
+        }
+
+        @if (bulkResult.failed.length) {
+          <details>
+            <summary class="text-sm font-bold cursor-pointer text-red-600">
+              {{
+                "refereeAdmin.accounts.failedList"
+                  | transloco: { count: bulkResult.failed.length }
+              }}
+            </summary>
+            <ul class="mt-2 text-sm">
+              @for (entry of bulkResult.failed; track entry.id) {
+                <li class="py-1 border-b border-fb-gray-800">
+                  <span class="font-mono">{{ entry.lizenznummer }}</span>
+                  {{ entry.name }}:
+                  <span class="text-fb-gray-500">{{ entry.error }}</span>
+                </li>
+              }
+            </ul>
+          </details>
+        }
+      </div>
+    }
+  </section>
+</div>
