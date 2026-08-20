@@ -35,11 +35,22 @@ export interface StateAssociation {
   // Bereich seiner Kinder, statt selbst etwas einzutragen.
   effective_states?: GermanStateCode[];
   referee_license_review_enabled?: boolean;
-  effective_referee_license_review_enabled?: boolean;
   // Tatsaechlich greifende Werte inklusive Vererbung vom uebergeordneten
   // Verbund. Nur im Detail-Endpunkt enthalten, nicht in der Liste (short_hash),
   // deshalb optional.
+  //
+  // Einstellungen und Postfaecher erben unterschiedlich: Haengt ein Verbund
+  // dran, kommt der ganze Block „Einstellungen" von dort (die Felder unten sind
+  // dann nur noch Ueberbleibsel und werden weder angezeigt noch gesendet), die
+  // Postfaecher dagegen sind ein Rueckfall und weichen einem eigenen Eintrag.
   effective_express_license_enabled?: boolean;
+  effective_referee_license_review_enabled?: boolean;
+  effective_scan_required?: boolean;
+  effective_referee_assignment_external_enabled?: boolean;
+  effective_referee_assignment_enabled?: boolean;
+  effective_person_level_assignment_default?: boolean;
+  effective_report_form_email_enabled?: boolean;
+  effective_manual_proceeding_creation?: boolean;
   effective_vsk_email?: string | null;
   effective_sbk_email?: string | null;
   effective_rsk_email?: string | null;
