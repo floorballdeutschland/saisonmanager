@@ -43,7 +43,10 @@
       "career_ended": "Karriere beendet",
       "unknown": "Kein Lizenznachweis"
     },
-    "careerEndedHint": "Vier Lizenzjahre ohne Lizenz – für eine Rückkehr ist der Grundkurs erforderlich."
+    "careerEndedHint": "Vier Lizenzjahre ohne Lizenz – für eine Rückkehr ist der Grundkurs erforderlich.",
+    "accounts": "Benutzerkonten",
+    "hasAccountBadge": "Konto",
+    "hasAccountTitle": "Hat ein Benutzerkonto"
   },
   "detail": {
     "loading": "Lade…",
@@ -316,5 +319,43 @@
     "approved": "Antrag genehmigt.",
     "rejected": "Antrag abgelehnt.",
     "decided": "{{status}} · {{note}}"
+  },
+  "accounts": {
+    "title": "Schiedsrichter-Benutzerkonten",
+    "backToList": "Zurück zur Übersicht",
+    "importTitle": "E-Mailadressen aus einer CSV einlesen",
+    "importHint": "Die Datei braucht die beiden Spalten „Lizenznummer\" und „E-Mailadresse\" und muss als UTF-8 gespeichert sein (in Excel: „CSV UTF-8 (durch Trennzeichen getrennt)\"). Eingetragen wird nur dort, wo im Profil noch keine Adresse steht. Eine bereits vorhandene Adresse bleibt unangetastet.",
+    "chooseFile": "CSV auswählen",
+    "importing": "Lese ein…",
+    "importDone": "{{ count }} Adressen eingetragen.",
+    "importError": "Die Datei konnte nicht eingelesen werden.",
+    "fileNotCsv": "Bitte eine CSV-Datei auswählen.",
+    "fileTooLarge": "Die Datei ist zu groß (max. 5 MB).",
+    "fileEmpty": "Die Datei ist leer.",
+    "reportSummary": "{{ rows }} Zeilen gelesen: {{ updated }} eingetragen, {{ skipped }} übersprungen, {{ notFound }} unbekannte Lizenznummern, {{ invalid }} unbrauchbare Zeilen.",
+    "reportUpdated": "Eingetragen ({{ count }})",
+    "reportSkipped": "Übersprungen, Adresse war schon vorhanden ({{ count }})",
+    "reportNotFound": "Lizenznummern ohne Schiedsrichter ({{ count }})",
+    "reportInvalid": "Unbrauchbare Zeilen ({{ count }})",
+    "reportInvalidRow": "Zeile {{ row }}:",
+    "reasonIdentical": "identisch",
+    "reasonOtherEmail": "CSV enthielt eine andere Adresse",
+    "createTitle": "Fehlende Benutzerkonten anlegen",
+    "createHint": "Angelegt werden Konten für Schiedsrichter, die eine E-Mailadresse hinterlegt haben, noch kein Konto besitzen und deren Lizenz im Vierjahresfenster liegt. Karriere-Beendete bleiben außen vor. Jedes neue Konto bekommt die Willkommensmail mit dem Link zum Passwort-Setzen.",
+    "counting": "Zähle…",
+    "countError": "Die Anzahl konnte nicht geladen werden.",
+    "missingCount": "{{ count }} Schiedsrichter haben eine Adresse, aber noch kein Konto.",
+    "createButton": "{{ count }} Konten anlegen",
+    "creating": "Lege an…",
+    "createDone": "{{ count }} Konten angelegt.",
+    "createError": "Die Konten konnten nicht angelegt werden.",
+    "confirmTitle": "Benutzerkonten anlegen",
+    "confirmContent": "Es werden {{ count }} Benutzerkonten angelegt, und an jede hinterlegte Adresse geht eine Willkommensmail. Fortfahren?",
+    "confirmSubmit": "Anlegen",
+    "createSummary": "{{ created }} angelegt, {{ failed }} fehlgeschlagen, {{ remaining }} noch offen.",
+    "createdList": "Angelegt ({{ count }})",
+    "failedList": "Fehlgeschlagen ({{ count }})",
+    "duplicateEmail": "Adresse doppelt",
+    "duplicateEmailTitle": "Diese E-Mailadresse gehört bereits zu einem anderen Benutzerkonto."
   }
 }

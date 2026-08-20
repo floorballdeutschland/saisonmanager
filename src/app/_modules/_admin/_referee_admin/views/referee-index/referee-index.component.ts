@@ -31,6 +31,7 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
   stateAssociations: StateAssociation[] = [];
   loading = false;
   canCreate = false;
+  canManageAccounts = false;
   isRestricted = false;
 
   searchQuery = '';
@@ -68,6 +69,8 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
         next: (user) => {
           this.isRestricted = !!user?.permissions['referee_edit_restricted'];
           this.canCreate = !!user?.permissions['referee_can_create'];
+          this.canManageAccounts =
+            !!user?.permissions['referee_account_tools'];
           this._cdr.markForCheck();
         },
       });

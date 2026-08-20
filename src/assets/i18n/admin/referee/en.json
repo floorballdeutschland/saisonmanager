@@ -43,7 +43,10 @@
       "career_ended": "Career ended",
       "unknown": "No license record"
     },
-    "careerEndedHint": "Four license years without a license – returning requires the basic course again."
+    "careerEndedHint": "Four license years without a license – returning requires the basic course again.",
+    "accounts": "User accounts",
+    "hasAccountBadge": "Account",
+    "hasAccountTitle": "Has a user account"
   },
   "detail": {
     "loading": "Loading…",
@@ -316,5 +319,43 @@
     "approved": "Request approved.",
     "rejected": "Request rejected.",
     "decided": "{{status}} · {{note}}"
+  },
+  "accounts": {
+    "title": "Referee user accounts",
+    "backToList": "Back to list",
+    "importTitle": "Import e-mail addresses from a CSV",
+    "importHint": "The file needs the two columns \"Lizenznummer\" and \"E-Mailadresse\" and has to be saved as UTF-8. Addresses are only written where the profile has none yet; an existing address is never replaced.",
+    "chooseFile": "Choose CSV",
+    "importing": "Importing…",
+    "importDone": "{{ count }} addresses written.",
+    "importError": "The file could not be imported.",
+    "fileNotCsv": "Please choose a CSV file.",
+    "fileTooLarge": "The file is too large (max. 5 MB).",
+    "fileEmpty": "The file is empty.",
+    "reportSummary": "{{ rows }} rows read: {{ updated }} written, {{ skipped }} skipped, {{ notFound }} unknown licence numbers, {{ invalid }} unusable rows.",
+    "reportUpdated": "Written ({{ count }})",
+    "reportSkipped": "Skipped, address already present ({{ count }})",
+    "reportNotFound": "Licence numbers without a referee ({{ count }})",
+    "reportInvalid": "Unusable rows ({{ count }})",
+    "reportInvalidRow": "Row {{ row }}:",
+    "reasonIdentical": "identical",
+    "reasonOtherEmail": "CSV held a different address",
+    "createTitle": "Create missing user accounts",
+    "createHint": "Accounts are created for referees who have an e-mail address, no account yet, and a licence within the four-year window. Referees whose career has ended are left out. Every new account receives the welcome mail with the link to set a password.",
+    "counting": "Counting…",
+    "countError": "The number could not be loaded.",
+    "missingCount": "{{ count }} referees have an address but no account yet.",
+    "createButton": "Create {{ count }} accounts",
+    "creating": "Creating…",
+    "createDone": "{{ count }} accounts created.",
+    "createError": "The accounts could not be created.",
+    "confirmTitle": "Create user accounts",
+    "confirmContent": "{{ count }} user accounts will be created, and every stored address receives a welcome mail. Continue?",
+    "confirmSubmit": "Create",
+    "createSummary": "{{ created }} created, {{ failed }} failed, {{ remaining }} still open.",
+    "createdList": "Created ({{ count }})",
+    "failedList": "Failed ({{ count }})",
+    "duplicateEmail": "duplicate address",
+    "duplicateEmailTitle": "This e-mail address already belongs to another user account."
   }
 }

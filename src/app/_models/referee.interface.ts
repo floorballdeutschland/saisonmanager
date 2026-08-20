@@ -81,6 +81,9 @@ export interface RefereeAdmin {
   license_status?: RefereeLicenseStatus;
   qualifications?: RefereeQualificationEntry[];
   season_game_count?: number;
+  // Konto-Badge der Liste. Fehlt fuer Rollen ohne Zugriff auf Kontaktdaten
+  // (Vereinsmanager) - die API liefert das Feld dort gar nicht mit.
+  has_user?: boolean;
   user_id?: number | null;
   user_name?: string | null;
   email_sent?: boolean;
@@ -92,6 +95,64 @@ export interface RefereeAdmin {
   partner_lizenznummer?: number | null;
   tags?: RefereeTag[];
   tag_ids?: number[];
+}
+
+// Ergebnis des CSV-Imports von E-Mailadressen. Jede Zeile der Datei landet in
+// genau einem der vier Toepfe.
+export interface RefereeEmailImportEntry {
+  id: number;
+  lizenznummer: number;
+  name: string;
+  // Die Adresse, die jetzt im Profil steht.
+  email: string;
+  // Nur bei uebersprungenen Zeilen: was in der CSV stand.
+  csv_email?: string;
+  reason?: 'identical' | 'other_email';
+}
+
+export interface RefereeEmailImportInvalidRow {
+  row: number;
+  value: string;
+  reason: string;
+}
+
+export interface RefereeEmailImportReport {
+  total_rows: number;
+  updated: RefereeEmailImportEntry[];
+  skipped: RefereeEmailImportEntry[];
+  not_found: number[];
+  invalid: RefereeEmailImportInvalidRow[];
+}
+
+export interface RefereeMissingUserCount {
+  count: number;
+  batch_size: number;
+}
+
+export interface RefereeBulkUserCreated {
+  id: number;
+  lizenznummer: number;
+  name: string;
+  email: string;
+  user_name: string;
+  duplicate_email: boolean;
+}
+
+export interface RefereeBulkUserFailure {
+  id: number;
+  lizenznummer: number;
+  name: string;
+  error: string;
+}
+
+export interface RefereeBulkUserResult {
+  requested: number;
+  created: RefereeBulkUserCreated[];
+  failed: RefereeBulkUserFailure[];
+  // Wie viele Konten nach diesem Durchlauf noch offen sind (Fehlgeschlagene
+  // zaehlen mit, sie erfuellen die Bedingungen weiter).
+  remaining: number;
+  batch_size: number;
 }
 
 export interface RefereeVm {
