@@ -332,16 +332,16 @@
     "fileNotCsv": "Please choose a CSV file.",
     "fileTooLarge": "The file is too large (max. 5 MB).",
     "fileEmpty": "The file is empty.",
-    "reportSummary": "{{ rows }} rows read: {{ updated }} written, {{ skipped }} skipped, {{ notFound }} unknown licence numbers, {{ invalid }} unusable rows.",
+    "reportSummary": "{{ rows }} data rows read: {{ updated }} written, {{ skipped }} skipped, {{ notFound }} without an active referee, {{ invalid }} unusable rows.",
     "reportUpdated": "Written ({{ count }})",
     "reportSkipped": "Skipped, address already present ({{ count }})",
-    "reportNotFound": "Licence numbers without a referee ({{ count }})",
+    "reportNotFound": "Licence numbers without an active referee ({{ count }})",
     "reportInvalid": "Unusable rows ({{ count }})",
     "reportInvalidRow": "Row {{ row }}:",
     "reasonIdentical": "identical",
     "reasonOtherEmail": "CSV held a different address",
     "createTitle": "Create missing user accounts",
-    "createHint": "Accounts are created for referees who have an e-mail address, no account yet, and a licence within the four-year window. Referees whose career has ended are left out. Every new account receives the welcome mail with the link to set a password.",
+    "createHint": "Accounts are created for referees who have an e-mail address, no account yet, and a licence within the four-year window. Referees whose career has ended are left out, as are profiles without a stored validity date; for those the button in the referee profile remains. Every new account receives the welcome mail with the link to set a password.",
     "counting": "Counting…",
     "countError": "The number could not be loaded.",
     "missingCount": "{{ count }} referees have an address but no account yet.",
@@ -356,6 +356,9 @@
     "createdList": "Created ({{ count }})",
     "failedList": "Failed ({{ count }})",
     "duplicateEmail": "duplicate address",
-    "duplicateEmailTitle": "This e-mail address already belongs to another user account."
+    "duplicateEmailTitle": "This e-mail address already belongs to another user account.",
+    "retry": "Try again",
+    "mailFailed": "mail not sent",
+    "mailFailedTitle": "The account exists but the welcome mail did not go out. Please have the password reset manually."
   }
 }

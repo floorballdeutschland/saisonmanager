@@ -81,8 +81,9 @@ export interface RefereeAdmin {
   license_status?: RefereeLicenseStatus;
   qualifications?: RefereeQualificationEntry[];
   season_game_count?: number;
-  // Konto-Badge der Liste. Fehlt fuer Rollen ohne Zugriff auf Kontaktdaten
-  // (Vereinsmanager) - die API liefert das Feld dort gar nicht mit.
+  // Konto-Badge. Nur in der LISTEN-Antwort und nur fuer Rollen mit Zugriff auf
+  // Kontaktdaten (Verwaltung, RSK, Ansetzer); die Detailansicht fuehrt statt
+  // dessen user_id/user_name. Fehlt das Feld, wird kein Badge gezeigt.
   has_user?: boolean;
   user_id?: number | null;
   user_name?: string | null;
@@ -97,19 +98,29 @@ export interface RefereeAdmin {
   tag_ids?: number[];
 }
 
-// Ergebnis des CSV-Imports von E-Mailadressen. Jede Zeile der Datei landet in
-// genau einem der vier Toepfe.
-export interface RefereeEmailImportEntry {
+// Ergebnis des CSV-Imports von E-Mailadressen. Jede verarbeitete Datenzeile
+// landet in genau einem der vier Toepfe, die vier Groessen ergeben total_rows.
+// Leerzeilen der Datei zaehlen nicht mit.
+export interface RefereeEmailImportUpdate {
+  // Zeilennummer in der Datei (Kopfzeile ist 1). Traegt die Identitaet der Zeile:
+  // dieselbe Lizenznummer kann mehrfach in der Datei stehen.
+  row: number;
   id: number;
   lizenznummer: number;
   name: string;
   // Die Adresse, die jetzt im Profil steht.
   email: string;
-  // Nur bei uebersprungenen Zeilen: was in der CSV stand.
-  csv_email?: string;
-  reason?: 'identical' | 'other_email';
 }
 
+// Uebersprungene Zeile: Im Profil stand schon eine Adresse. `email` ist die
+// verbliebene, `csv_email` die aus der Datei.
+export interface RefereeEmailImportSkip extends RefereeEmailImportUpdate {
+  csv_email: string;
+  reason: 'identical' | 'other_email';
+}
+
+// Unbrauchbare Zeile. `message` ist freier Text und wird unuebersetzt angezeigt,
+// im Unterschied zum Schluessel `reason` der uebersprungenen Zeilen.
 export interface RefereeEmailImportInvalidRow {
   row: number;
   value: string;
@@ -117,9 +128,12 @@ export interface RefereeEmailImportInvalidRow {
 }
 
 export interface RefereeEmailImportReport {
+  // Verarbeitete Datenzeilen, ohne Kopf- und Leerzeilen.
   total_rows: number;
-  updated: RefereeEmailImportEntry[];
-  skipped: RefereeEmailImportEntry[];
+  updated: RefereeEmailImportUpdate[];
+  skipped: RefereeEmailImportSkip[];
+  // Lizenznummern ohne aktiven Schiedsrichter, je Zeile einmal (also mit
+  // Wiederholungen, damit die Summe der vier Toepfe total_rows ergibt).
   not_found: number[];
   invalid: RefereeEmailImportInvalidRow[];
 }
@@ -136,6 +150,9 @@ export interface RefereeBulkUserCreated {
   email: string;
   user_name: string;
   duplicate_email: boolean;
+  // false = Konto angelegt, Willkommensmail aber nicht rausgegangen. Dann kennt
+  // der Schiedsrichter sein Initialpasswort nicht und braucht ein Zuruecksetzen.
+  email_sent: boolean;
 }
 
 export interface RefereeBulkUserFailure {

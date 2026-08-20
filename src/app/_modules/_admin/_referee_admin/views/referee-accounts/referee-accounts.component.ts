@@ -12,6 +12,7 @@ import { NotificationService, RefereeService } from '@floorball/core';
 import {
   RefereeBulkUserResult,
   RefereeEmailImportReport,
+  RefereeEmailImportSkip,
   RefereeMissingUserCount,
 } from '@floorball/types';
 
@@ -33,6 +34,7 @@ export class RefereeAccountsComponent implements OnInit, OnDestroy {
   report: RefereeEmailImportReport | null = null;
 
   countLoading = false;
+  countFailed = false;
   missing: RefereeMissingUserCount | null = null;
   creating = false;
   bulkResult: RefereeBulkUserResult | null = null;
@@ -57,6 +59,7 @@ export class RefereeAccountsComponent implements OnInit, OnDestroy {
 
   loadCount(): void {
     this.countLoading = true;
+    this.countFailed = false;
     this._refereeService
       .adminGetMissingUserCount()
       .pipe(takeUntil(this._destroy$))
@@ -68,6 +71,11 @@ export class RefereeAccountsComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.countLoading = false;
+          // Ohne diesen Zustand bliebe der ganze Abschnitt leer: kein Knopf,
+          // keine Zahl, kein Hinweis. Die Seite saehe aus, als waere nichts zu
+          // tun, und nur ein wegklickbarer Toast haette widersprochen.
+          this.countFailed = true;
+          this.missing = null;
           this._notify.error(
             err?.error?.error ??
               this._transloco.translate('refereeAdmin.accounts.countError')
@@ -80,7 +88,7 @@ export class RefereeAccountsComponent implements OnInit, OnDestroy {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (!file) return;
+    if (!file || this.importing) return;
 
     const validationError = this.validateFile(file);
     if (validationError) {
@@ -99,11 +107,18 @@ export class RefereeAccountsComponent implements OnInit, OnDestroy {
           this.importing = false;
           input.value = '';
           this.report = report;
-          this._notify.success(
-            this._transloco.translate('refereeAdmin.accounts.importDone', {
-              count: report.updated.length,
-            })
+          // Eine gruene Meldung ueber "0 Adressen eingetragen" widerspricht dem
+          // Report darunter. Wo nichts geschrieben wurde oder Zeilen unbrauchbar
+          // waren, ist das eine Warnung, kein Erfolg.
+          const message = this._transloco.translate(
+            'refereeAdmin.accounts.importDone',
+            { count: report.updated.length }
           );
+          if (report.invalid.length || !report.updated.length) {
+            this._notify.error(message);
+          } else {
+            this._notify.success(message);
+          }
           // Neu eingetragene Adressen sind neue Kandidaten für die Massenanlage.
           this.loadCount();
           this._cdr.markForCheck();
@@ -121,6 +136,11 @@ export class RefereeAccountsComponent implements OnInit, OnDestroy {
   }
 
   createMissingUsers(): void {
+    // Eigener Riegel, nicht nur das [disabled] im Template: Ein zweiter Klick
+    // waehrend des Laufs waere eine zweite Tranche, also bis zu 100 weitere
+    // Konten und Mails.
+    if (this.creating) return;
+
     this.creating = true;
     this.bulkResult = null;
     this._refereeService
@@ -130,11 +150,15 @@ export class RefereeAccountsComponent implements OnInit, OnDestroy {
         next: (result) => {
           this.creating = false;
           this.bulkResult = result;
-          this._notify.success(
-            this._transloco.translate('refereeAdmin.accounts.createDone', {
-              count: result.created.length,
-            })
+          const message = this._transloco.translate(
+            'refereeAdmin.accounts.createDone',
+            { count: result.created.length }
           );
+          if (result.failed.length || !result.created.length) {
+            this._notify.error(message);
+          } else {
+            this._notify.success(message);
+          }
           this.loadCount();
           this._cdr.markForCheck();
         },
@@ -157,7 +181,9 @@ export class RefereeAccountsComponent implements OnInit, OnDestroy {
     return Math.min(this.missing.count, this.missing.batch_size);
   }
 
-  skippedReason(reason: string | undefined): string {
+  // Union statt string: Kommt auf der API-Seite ein dritter Grund hinzu, soll das
+  // der Compiler melden und nicht still als "andere Adresse" beschriftet werden.
+  skippedReason(reason: RefereeEmailImportSkip['reason']): string {
     return this._transloco.translate(
       reason === 'identical'
         ? 'refereeAdmin.accounts.reasonIdentical'

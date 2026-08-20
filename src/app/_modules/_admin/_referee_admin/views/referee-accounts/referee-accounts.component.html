@@ -64,8 +64,9 @@
               }}
             </summary>
             <ul class="mt-2 text-sm">
-              @for (entry of report.updated; track entry.id) {
+              @for (entry of report.updated; track entry.row) {
                 <li class="py-1 border-b border-fb-gray-800">
+                  <span class="text-fb-gray-500">{{ entry.row }}</span>
                   <span class="font-mono">{{ entry.lizenznummer }}</span>
                   {{ entry.name }} → {{ entry.email }}
                 </li>
@@ -83,12 +84,17 @@
               }}
             </summary>
             <ul class="mt-2 text-sm">
-              @for (entry of report.skipped; track entry.id) {
+              @for (entry of report.skipped; track entry.row) {
                 <li class="py-1 border-b border-fb-gray-800">
+                  <span class="text-fb-gray-500">{{ entry.row }}</span>
                   <span class="font-mono">{{ entry.lizenznummer }}</span>
                   {{ entry.name }}: {{ entry.email }}
                   <span class="text-fb-gray-500">
-                    ({{ skippedReason(entry.reason) }}{{ entry.csv_email && entry.reason === "other_email" ? ": " + entry.csv_email : "" }})
+                    ({{ skippedReason(entry.reason) }}
+                    @if (entry.reason === "other_email") {
+                      : {{ entry.csv_email }}
+                    }
+                    )
                   </span>
                 </li>
               }
@@ -149,6 +155,21 @@
       <p class="text-sm text-fb-gray-500">
         {{ "refereeAdmin.accounts.counting" | transloco }}
       </p>
+    }
+
+    @if (countFailed) {
+      <div class="flex items-center gap-3">
+        <p class="text-sm text-red-600">
+          {{ "refereeAdmin.accounts.countError" | transloco }}
+        </p>
+        <button
+          type="button"
+          (click)="loadCount()"
+          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        >
+          {{ "refereeAdmin.accounts.retry" | transloco }}
+        </button>
+      </div>
     }
 
     @if (!countLoading && missing) {
@@ -214,6 +235,16 @@
                 <li class="py-1 border-b border-fb-gray-800">
                   <span class="font-mono">{{ entry.user_name }}</span>
                   {{ entry.name }} ({{ entry.email }})
+                  @if (entry.email_sent === false) {
+                    <span
+                      class="ml-1 text-red-600"
+                      [attr.title]="
+                        'refereeAdmin.accounts.mailFailedTitle' | transloco
+                      "
+                    >
+                      {{ "refereeAdmin.accounts.mailFailed" | transloco }}
+                    </span>
+                  }
                   @if (entry.duplicate_email) {
                     <span
                       class="ml-1 text-orange-600"

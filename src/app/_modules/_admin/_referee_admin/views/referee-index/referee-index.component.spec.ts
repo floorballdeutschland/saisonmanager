@@ -68,9 +68,9 @@ describe('RefereeIndexComponent', () => {
         {
           provide: SessionService,
           useValue: {
-            currentUser$: of({ permissions } as unknown as User) as Observable<
-              User | null
-            >,
+            currentUser$: of({
+              permissions,
+            } as unknown as User) as Observable<User | null>,
           },
         },
       ],
