@@ -31,6 +31,36 @@ import {
   germanStateName,
 } from 'src/app/_helpers/_utils/german-states';
 
+// Der Block „Einstellungen" der Verbandsmaske. Haengt ein uebergeordneter
+// Verbund dran, kommen alle diese Werte von dort: die Maske sperrt die Felder,
+// das Backend verwirft sie beim Speichern eines Kind-LV
+// (StateAssociation::INHERITED_SETTINGS) und liest sie ueberall ueber die
+// effective_*-Methoden. Nicht dabei sind die Postfaecher, die anders erben (ein
+// eigener Eintrag am Kind-LV gewinnt) sowie Stammdaten, Zustaendigkeitsbereich,
+// Logo, Banner, Spieltagscheckliste und Freigaben.
+type InheritedSetting =
+  | 'express_license_enabled'
+  | 'referee_license_review_enabled'
+  | 'scan_required'
+  | 'referee_assignment_external_enabled'
+  | 'referee_assignment_enabled'
+  | 'person_level_assignment_default'
+  | 'report_form_email_enabled'
+  | 'manual_proceeding_creation';
+
+// Zu jedem Feld der tatsaechlich greifende Wert aus dem Detail-Endpunkt.
+const EFFECTIVE_SETTING: Record<InheritedSetting, keyof StateAssociation> = {
+  express_license_enabled: 'effective_express_license_enabled',
+  referee_license_review_enabled: 'effective_referee_license_review_enabled',
+  scan_required: 'effective_scan_required',
+  referee_assignment_external_enabled:
+    'effective_referee_assignment_external_enabled',
+  referee_assignment_enabled: 'effective_referee_assignment_enabled',
+  person_level_assignment_default: 'effective_person_level_assignment_default',
+  report_form_email_enabled: 'effective_report_form_email_enabled',
+  manual_proceeding_creation: 'effective_manual_proceeding_creation',
+};
+
 @Component({
   templateUrl: './state-association-edit.component.html',
   encapsulation: ViewEncapsulation.None,
@@ -260,44 +290,69 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Anzeigewert eines Hakens aus dem Block „Einstellungen".
+  //
+  // Bei gesetztem Verbund steht hier der geerbte Wert und nicht der eigene: Das
+  // Feld ist gesperrt, gelesen wird der eigene Stand nirgends mehr, und ihn
+  // anzuzeigen wäre eine Falschaussage darüber, was für diesen Verband gilt.
+  //
+  // Solange die Verbundsauswahl noch nicht gespeichert ist, gehören die
+  // effective_*-Werte noch zum alten Verbund (showInheritedValues ist dann
+  // false, siehe dort). Dann bleibt der eigene Stand stehen, und die Maske sagt
+  // darunter, dass der geerbte Wert erst nach dem Speichern feststeht.
+  setting(key: InheritedSetting): boolean {
+    const value = this.showInheritedValues
+      ? (this.stateAssociation[EFFECTIVE_SETTING[key]] as boolean | undefined)
+      : this.stateAssociation[key];
+    return value ?? false;
+  }
+
+  setSetting(key: InheritedSetting, value: boolean): void {
+    this.stateAssociation[key] = value;
+  }
+
   // Die drei Ansetzungs-Optionen sind gestaffelt: die Personenebene setzt den
   // Hauptschalter voraus, die Voreinstellung die Personenebene. Statt nur das
   // Eingabefeld auszugrauen, wird der Wert selbst durchgereicht – sonst bliebe
   // eine abgehakte untere Option im Modell stehen und tauchte beim erneuten
   // Einschalten der oberen unerwartet aktiv wieder auf.
+  //
+  // Die Staffelung gilt auch für die geerbten Werte: Das Backend wertet die drei
+  // Schalter ausschließlich in StateAssociation#referee_assignment_mode aus, und
+  // dort setzt jede Stufe die darüberliegende voraus.
   get refereeAssignmentExternal(): boolean {
-    return this.stateAssociation.referee_assignment_external_enabled ?? false;
+    return this.setting('referee_assignment_external_enabled');
   }
 
   set refereeAssignmentExternal(value: boolean) {
-    this.stateAssociation.referee_assignment_external_enabled = value;
+    this.setSetting('referee_assignment_external_enabled', value);
     if (!value) {
-      this.stateAssociation.referee_assignment_enabled = false;
-      this.stateAssociation.person_level_assignment_default = false;
+      this.setSetting('referee_assignment_enabled', false);
+      this.setSetting('person_level_assignment_default', false);
     }
   }
 
   get refereeAssignmentPersonLevel(): boolean {
     return (
       this.refereeAssignmentExternal &&
-      (this.stateAssociation.referee_assignment_enabled ?? false)
+      this.setting('referee_assignment_enabled')
     );
   }
 
   set refereeAssignmentPersonLevel(value: boolean) {
-    this.stateAssociation.referee_assignment_enabled = value;
-    if (!value) this.stateAssociation.person_level_assignment_default = false;
+    this.setSetting('referee_assignment_enabled', value);
+    if (!value) this.setSetting('person_level_assignment_default', false);
   }
 
   get personLevelAssignmentDefault(): boolean {
     return (
       this.refereeAssignmentPersonLevel &&
-      (this.stateAssociation.person_level_assignment_default ?? false)
+      this.setting('person_level_assignment_default')
     );
   }
 
   set personLevelAssignmentDefault(value: boolean) {
-    this.stateAssociation.person_level_assignment_default = value;
+    this.setSetting('person_level_assignment_default', value);
   }
 
   submit(): void {
@@ -318,36 +373,33 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       vsk_email: this.hasParent ? null : this.stateAssociation.vsk_email,
       sbk_email: this.hasParent ? null : this.stateAssociation.sbk_email,
       rsk_email: this.hasParent ? null : this.stateAssociation.rsk_email,
-      // Nicht für Kind-LVs auf false zwingen: effective_express_license_enabled
-      // ist `eigener Wert ODER Parent`, der eigene Wert bleibt also wirksam. Das
-      // Feld ist bei gesetztem Verbund gesperrt, gesendet wird der geladene
-      // Wert, damit ein Speichern ihn nicht stillschweigend löscht.
-      express_license_enabled:
-        this.stateAssociation.express_license_enabled ?? false,
-      // Pro-Spielbetrieb wirksam (Game#state_association liest den LV des
-      // Spielbetriebs, nicht den des Vereins) → auch ein Kind-LV muss den Wert
-      // für seine eigenen Spielbetriebe setzen können.
-      scan_required: this.stateAssociation.scan_required ?? false,
-      referee_license_review_enabled: this.hasParent
-        ? false
-        : (this.stateAssociation.referee_license_review_enabled ?? false),
-      // Pro-LV (keine Parent-Vererbung) und wirksam über den LV des
-      // Spielbetriebs → auch für Kind-LVs editierbar, dort aber nur für deren
-      // eigene Spielbetriebe wirksam (Hinweis im Template).
-      manual_proceeding_creation:
-        this.stateAssociation.manual_proceeding_creation ?? false,
-      // Pro-LV (keine Parent-Vererbung); drei gestaffelte Optionen, jede setzt
-      // die darüberliegende voraus. Die Maske graut die untergeordneten aus,
-      // der Server räumt widersprüchliche Kombinationen zusätzlich auf.
-      referee_assignment_external_enabled: this.refereeAssignmentExternal,
-      referee_assignment_enabled: this.refereeAssignmentPersonLevel,
-      person_level_assignment_default: this.personLevelAssignmentDefault,
-      // Pro-LV (keine Parent-Vererbung); steuert, ob das Berichtsformular des
-      // Schiris per E-Mail an die VSK versendet wird.
-      report_form_email_enabled:
-        this.stateAssociation.report_form_email_enabled ?? false,
       banner_link_url: this.stateAssociation.banner_link_url ?? null,
     };
+
+    // Der Block „Einstellungen" wird nur ohne übergeordneten Verbund gesendet.
+    // Mit Verbund gehören diese Werte dorthin: die Maske zeigt sie gesperrt und
+    // geerbt, und das Backend verwirft sie am Kind-LV ohnehin. Nichts zu senden
+    // lässt den gespeicherten Stand unangetastet, sodass ein später gelöster
+    // Verbund die früher gepflegten eigenen Werte wieder freigibt, statt einen
+    // stillschweigend überschriebenen Stand zu hinterlassen.
+    //
+    // Die drei Ansetzungs-Optionen kommen aus ihren Gettern, damit die
+    // Staffelung schon im Payload steht; der Server räumt widersprüchliche
+    // Kombinationen zusätzlich auf.
+    if (!this.hasParent) {
+      Object.assign(payload, {
+        express_license_enabled: this.setting('express_license_enabled'),
+        referee_license_review_enabled: this.setting(
+          'referee_license_review_enabled'
+        ),
+        scan_required: this.setting('scan_required'),
+        referee_assignment_external_enabled: this.refereeAssignmentExternal,
+        referee_assignment_enabled: this.refereeAssignmentPersonLevel,
+        person_level_assignment_default: this.personLevelAssignmentDefault,
+        report_form_email_enabled: this.setting('report_form_email_enabled'),
+        manual_proceeding_creation: this.setting('manual_proceeding_creation'),
+      });
+    }
 
     const call =
       this.editMode && this.stateAssociation.id

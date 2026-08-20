@@ -422,6 +422,28 @@
       <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
         {{ "stateAssociationAdmin.edit.settingsHeading" | transloco }}
       </div>
+      <!-- Mit uebergeordnetem Verbund ist der ganze Block gesperrt: Die Haken
+           zeigen dann den dort gesetzten Wert, nicht den am eigenen Datensatz
+           stehengebliebenen. Der Hinweis steht einmal ueber dem Block statt
+           unter jedem einzelnen Punkt. -->
+      @if (hasParent) {
+        <div class="text-xs text-fb-gray-400 italic mb-3">
+          @if (showInheritedValues) {
+            <span
+              [innerHTML]="
+                'stateAssociationAdmin.edit.settingsInheritedHint'
+                  | transloco: { name: stateAssociation.parent_name }
+              "
+            >
+            </span>
+          } @else {
+            {{
+              "stateAssociationAdmin.edit.settingsInheritedPendingHint"
+                | transloco
+            }}
+          }
+        </div>
+      }
       <div class="flex flex-col gap-3">
         <label
           class="flex items-start gap-3"
@@ -430,7 +452,8 @@
         >
           <input
             type="checkbox"
-            [(ngModel)]="stateAssociation.express_license_enabled"
+            [ngModel]="setting('express_license_enabled')"
+            (ngModelChange)="setSetting('express_license_enabled', $event)"
             name="express_license_enabled"
             [disabled]="hasParent"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
@@ -442,21 +465,6 @@
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.expressLicenseHint" | transloco
             }}</span>
-            @if (showInheritedValues) {
-              <span class="text-xs text-fb-gray-400 italic">
-                {{
-                  (stateAssociation.effective_express_license_enabled
-                    ? "stateAssociationAdmin.edit.inheritedValueYes"
-                    : "stateAssociationAdmin.edit.inheritedValueNo"
-                  ) | transloco
-                }}
-              </span>
-            }
-            @if (inheritedPending) {
-              <span class="text-xs text-fb-gray-400 italic">{{
-                "stateAssociationAdmin.edit.inheritedAfterSaveHint" | transloco
-              }}</span>
-            }
           </span>
         </label>
         <label
@@ -466,7 +474,10 @@
         >
           <input
             type="checkbox"
-            [(ngModel)]="stateAssociation.referee_license_review_enabled"
+            [ngModel]="setting('referee_license_review_enabled')"
+            (ngModelChange)="
+              setSetting('referee_license_review_enabled', $event)
+            "
             name="referee_license_review_enabled"
             [disabled]="hasParent"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
@@ -478,57 +489,45 @@
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.refereeReviewHint" | transloco
             }}</span>
-            @if (showInheritedValues) {
-              <span class="text-xs text-fb-gray-400 italic">
-                {{
-                  (stateAssociation.effective_referee_license_review_enabled
-                    ? "stateAssociationAdmin.edit.inheritedValueYes"
-                    : "stateAssociationAdmin.edit.inheritedValueNo"
-                  ) | transloco
-                }}
-              </span>
-            }
-            @if (inheritedPending) {
-              <span class="text-xs text-fb-gray-400 italic">{{
-                "stateAssociationAdmin.edit.inheritedAfterSaveHint" | transloco
-              }}</span>
-            }
           </span>
         </label>
-        <label class="flex items-start gap-3 cursor-pointer">
+        <label
+          class="flex items-start gap-3"
+          [class.cursor-not-allowed]="hasParent"
+          [class.cursor-pointer]="!hasParent"
+        >
           <input
             type="checkbox"
-            [(ngModel)]="stateAssociation.scan_required"
+            [ngModel]="setting('scan_required')"
+            (ngModelChange)="setSetting('scan_required', $event)"
             name="scan_required"
+            [disabled]="hasParent"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
-          <span class="flex flex-col gap-0.5">
+          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
             <span class="text-sm font-bold">{{
               "stateAssociationAdmin.edit.scanRequiredLabel" | transloco
             }}</span>
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.scanRequiredHint" | transloco
             }}</span>
-            @if (hasParent) {
-              <span class="text-xs text-fb-gray-400 italic">
-                {{
-                  "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
-                    | transloco: { name: stateAssociation.parent_name }
-                }}
-              </span>
-            }
           </span>
         </label>
         <!-- Drei gestaffelte Ansetzungs-Optionen: jede ist nur wählbar, solange
              die darüberliegende aktiv ist (sonst ausgegraut). -->
-        <label class="flex items-start gap-3 cursor-pointer">
+        <label
+          class="flex items-start gap-3"
+          [class.cursor-not-allowed]="hasParent"
+          [class.cursor-pointer]="!hasParent"
+        >
           <input
             type="checkbox"
             [(ngModel)]="refereeAssignmentExternal"
+            [disabled]="hasParent"
             name="referee_assignment_external_enabled"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
-          <span class="flex flex-col gap-0.5">
+          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
             <span class="text-sm font-bold">{{
               "stateAssociationAdmin.edit.refereeAssignmentExternalLabel"
                 | transloco
@@ -537,29 +536,24 @@
               "stateAssociationAdmin.edit.refereeAssignmentExternalHint"
                 | transloco
             }}</span>
-            @if (hasParent) {
-              <span class="text-xs text-fb-gray-400 italic">
-                {{
-                  "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
-                    | transloco: { name: stateAssociation.parent_name }
-                }}
-              </span>
-            }
           </span>
         </label>
         <label
           class="flex items-start gap-3"
-          [class.cursor-pointer]="refereeAssignmentExternal"
-          [class.opacity-50]="!refereeAssignmentExternal"
+          [class.cursor-not-allowed]="hasParent || !refereeAssignmentExternal"
+          [class.cursor-pointer]="!(hasParent || !refereeAssignmentExternal)"
         >
           <input
             type="checkbox"
             [(ngModel)]="refereeAssignmentPersonLevel"
-            [disabled]="!refereeAssignmentExternal"
+            [disabled]="hasParent || !refereeAssignmentExternal"
             name="referee_assignment_enabled"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
-          <span class="flex flex-col gap-0.5">
+          <span
+            class="flex flex-col gap-0.5"
+            [class.opacity-40]="hasParent || !refereeAssignmentExternal"
+          >
             <span class="text-sm font-bold">{{
               "stateAssociationAdmin.edit.refereeAssignmentLabel" | transloco
             }}</span>
@@ -570,17 +564,22 @@
         </label>
         <label
           class="flex items-start gap-3"
-          [class.cursor-pointer]="refereeAssignmentPersonLevel"
-          [class.opacity-50]="!refereeAssignmentPersonLevel"
+          [class.cursor-not-allowed]="
+            hasParent || !refereeAssignmentPersonLevel
+          "
+          [class.cursor-pointer]="!(hasParent || !refereeAssignmentPersonLevel)"
         >
           <input
             type="checkbox"
             [(ngModel)]="personLevelAssignmentDefault"
-            [disabled]="!refereeAssignmentPersonLevel"
+            [disabled]="hasParent || !refereeAssignmentPersonLevel"
             name="person_level_assignment_default"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
-          <span class="flex flex-col gap-0.5">
+          <span
+            class="flex flex-col gap-0.5"
+            [class.opacity-40]="hasParent || !refereeAssignmentPersonLevel"
+          >
             <span class="text-sm font-bold">{{
               "stateAssociationAdmin.edit.personLevelDefaultLabel" | transloco
             }}</span>
@@ -589,47 +588,50 @@
             }}</span>
           </span>
         </label>
-        <label class="flex items-start gap-3 cursor-pointer">
+        <label
+          class="flex items-start gap-3"
+          [class.cursor-not-allowed]="hasParent"
+          [class.cursor-pointer]="!hasParent"
+        >
           <input
             type="checkbox"
-            [(ngModel)]="stateAssociation.report_form_email_enabled"
+            [ngModel]="setting('report_form_email_enabled')"
+            (ngModelChange)="setSetting('report_form_email_enabled', $event)"
             name="report_form_email_enabled"
+            [disabled]="hasParent"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
-          <span class="flex flex-col gap-0.5">
+          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
             <span class="text-sm font-bold">{{
               "stateAssociationAdmin.edit.reportFormEmailLabel" | transloco
             }}</span>
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.reportFormEmailHint" | transloco
             }}</span>
-            @if (hasParent) {
-              <span class="text-xs text-fb-gray-400 italic">
-                {{
-                  "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
-                    | transloco: { name: stateAssociation.parent_name }
-                }}
-              </span>
-            }
           </span>
         </label>
         <label
           class="flex items-start gap-3"
           [class.cursor-not-allowed]="
-            !stateAssociation.report_form_email_enabled
+            hasParent || !setting('report_form_email_enabled')
           "
-          [class.cursor-pointer]="stateAssociation.report_form_email_enabled"
+          [class.cursor-pointer]="
+            !(hasParent || !setting('report_form_email_enabled'))
+          "
         >
           <input
             type="checkbox"
-            [(ngModel)]="stateAssociation.manual_proceeding_creation"
+            [ngModel]="setting('manual_proceeding_creation')"
+            (ngModelChange)="setSetting('manual_proceeding_creation', $event)"
             name="manual_proceeding_creation"
-            [disabled]="!stateAssociation.report_form_email_enabled"
+            [disabled]="hasParent || !setting('report_form_email_enabled')"
             class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
           />
           <span
             class="flex flex-col gap-0.5"
-            [class.opacity-40]="!stateAssociation.report_form_email_enabled"
+            [class.opacity-40]="
+              hasParent || !setting('report_form_email_enabled')
+            "
           >
             <span class="text-sm font-bold">{{
               "stateAssociationAdmin.edit.manualProceedingLabel" | transloco
@@ -637,14 +639,6 @@
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.manualProceedingHint" | transloco
             }}</span>
-            @if (hasParent) {
-              <span class="text-xs text-fb-gray-400 italic">
-                {{
-                  "stateAssociationAdmin.edit.ownGameOperationsOnlyHint"
-                    | transloco: { name: stateAssociation.parent_name }
-                }}
-              </span>
-            }
           </span>
         </label>
       </div>
