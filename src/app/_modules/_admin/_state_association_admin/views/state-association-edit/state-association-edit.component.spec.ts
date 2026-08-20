@@ -13,9 +13,12 @@ import { StateAssociation } from '@floorball/types';
 import { StateAssociationEditComponent } from './state-association-edit.component';
 
 // Untergeordneter Landesverband, wie ihn der Detail-Endpunkt liefert: eigene
-// Postfächer leer, die geerbten Werte als effective_* daneben. Die eigene
-// Expresslizenz steht auf true, weil effective_express_license_enabled im
-// Backend `eigener Wert ODER Verbund` ist.
+// Postfächer leer, die geerbten Werte als effective_* daneben.
+//
+// Die eigenen Einstellungen weichen bewusst von den geerbten ab. Das ist der
+// Bestand, den ein Kind-LV nach dem Anhängen eines Verbunds behält: gespeichert
+// bleibt er stehen, gelesen wird er nirgends mehr. Die Maske darf ihn deshalb
+// weder anzeigen noch zurückschreiben.
 const KIND_LV: StateAssociation = {
   id: 2,
   name: 'Kind-LV',
@@ -26,10 +29,21 @@ const KIND_LV: StateAssociation = {
   sbk_email: null,
   rsk_email: null,
   express_license_enabled: true,
-  scan_required: false,
+  scan_required: true,
   referee_license_review_enabled: false,
+  referee_assignment_external_enabled: false,
+  referee_assignment_enabled: false,
+  person_level_assignment_default: false,
+  report_form_email_enabled: false,
+  manual_proceeding_creation: false,
   effective_referee_license_review_enabled: true,
-  effective_express_license_enabled: true,
+  effective_express_license_enabled: false,
+  effective_scan_required: false,
+  effective_referee_assignment_external_enabled: true,
+  effective_referee_assignment_enabled: true,
+  effective_person_level_assignment_default: true,
+  effective_report_form_email_enabled: true,
+  effective_manual_proceeding_creation: true,
   effective_vsk_email: 'vsk@verbund.example.com',
   effective_sbk_email: 'sbk@verbund.example.com',
   effective_rsk_email: null,
@@ -117,23 +131,109 @@ describe('StateAssociationEditComponent', () => {
     expect(component.mailboxPlaceholder('sbk')).toBe('');
   });
 
-  it('speichert Papierspielberichtsbogen und Expresslizenz eines Kind-LV', () => {
+  it('zeigt bei einem Kind-LV die Einstellungen des Verbunds', () => {
     const component = createComponent();
-    component.stateAssociation.scan_required = true;
+
+    // Nicht der eigene (stehengebliebene) Stand, sondern der geerbte: Der ist
+    // der einzige, den das Backend noch liest.
+    expect(component.setting('scan_required')).toBeFalse();
+    expect(component.setting('express_license_enabled')).toBeFalse();
+    expect(component.setting('referee_license_review_enabled')).toBeTrue();
+    expect(component.setting('report_form_email_enabled')).toBeTrue();
+    expect(component.setting('manual_proceeding_creation')).toBeTrue();
+    // Die drei gestaffelten Ansetzungs-Optionen ebenso.
+    expect(component.refereeAssignmentExternal).toBeTrue();
+    expect(component.refereeAssignmentPersonLevel).toBeTrue();
+    expect(component.personLevelAssignmentDefault).toBeTrue();
+  });
+
+  it('zeigt den eigenen Stand, solange der Verbund nicht gespeichert ist', () => {
+    const component = createComponent();
+    component.stateAssociation.parent_id = 99;
+
+    // Die effective_*-Werte gehören noch zum alten Verbund. Bis zum Speichern
+    // bleibt deshalb der eigene Stand stehen, dazu der Hinweis im Template.
+    expect(component.inheritedPending).toBeTrue();
+    expect(component.setting('scan_required')).toBeTrue();
+    expect(component.setting('report_form_email_enabled')).toBeFalse();
+  });
+
+  it('sendet die Einstellungen eines Kind-LV gar nicht mit', () => {
+    const component = createComponent();
 
     component.submit();
 
     const payload = service.adminUpdate.calls.mostRecent()
       .args[1] as StateAssociation;
-    // Beides wirkt über den Landesverband des Spielbetriebs, ein Kind-LV muss
-    // die Werte für seine eigenen Spielbetriebe also setzen können.
-    expect(payload.scan_required).toBeTrue();
-    expect(payload.express_license_enabled).toBeTrue();
-    // Vom Verbund bestimmt, das Backend erzwingt hier ebenfalls false.
-    expect(payload.referee_license_review_enabled).toBeFalse();
-    // Postfächer bleiben geerbt, kein eigener Eintrag am Kind-LV.
+    // Nicht mitsenden statt auf false zwingen: Der gespeicherte Stand bleibt
+    // unangetastet und steht wieder zur Verfügung, wenn der Verbund gelöst wird.
+    expect('scan_required' in payload).toBeFalse();
+    expect('express_license_enabled' in payload).toBeFalse();
+    expect('referee_license_review_enabled' in payload).toBeFalse();
+    expect('referee_assignment_external_enabled' in payload).toBeFalse();
+    expect('report_form_email_enabled' in payload).toBeFalse();
+    expect('manual_proceeding_creation' in payload).toBeFalse();
+    // Stammdaten und Postfächer gehen weiter mit; die Postfächer erben anders
+    // (ein eigener Eintrag gewänne), am Kind-LV steht bewusst keiner.
+    expect(payload.name).toBe('Kind-LV');
     expect(payload.vsk_email).toBeNull();
     expect(payload.sbk_email).toBeNull();
+  });
+
+  it('uebernimmt beim Loesen des Verbunds die bis dahin geltenden Werte', () => {
+    const component = createComponent();
+
+    component.stateAssociation.parent_id = null;
+    component.onParentChanged();
+    component.submit();
+
+    const payload = service.adminUpdate.calls.mostRecent()
+      .args[1] as StateAssociation;
+    // Nicht der eigene (nie gepflegte) Stand: Sonst schaltete das Lösen des
+    // Verbunds in derselben Speicherung den Berichtsworkflow und den
+    // Ansetzungsweg ab, ohne dass irgendwo etwas davon steht.
+    expect(payload.report_form_email_enabled).toBeTrue();
+    expect(payload.manual_proceeding_creation).toBeTrue();
+    expect(payload.referee_assignment_external_enabled).toBeTrue();
+    expect(payload.referee_assignment_enabled).toBeTrue();
+    expect(payload.person_level_assignment_default).toBeTrue();
+    // Und umgekehrt: der eigene Haken am Kind-LV setzt sich nicht durch, wenn
+    // der Verbund die Einstellung aus hatte.
+    expect(payload.scan_required).toBeFalse();
+    expect(payload.express_license_enabled).toBeFalse();
+  });
+
+  it('greift auch, wenn das Dropdown den Wechsel nicht meldet', () => {
+    const component = createComponent();
+
+    // Ohne den Aufruf von onParentChanged: submit() holt es nach.
+    component.stateAssociation.parent_id = null;
+    component.submit();
+
+    const payload = service.adminUpdate.calls.mostRecent()
+      .args[1] as StateAssociation;
+    expect(payload.report_form_email_enabled).toBeTrue();
+  });
+
+  it('sendet die Einstellungen ohne Verbund weiterhin mit', () => {
+    const component = createComponent();
+    // Ein Verband, der nie einen Verbund hatte: kein Loesen, keine Uebernahme.
+    component.stateAssociation.parent_id = null;
+    component['_persistedParentId'] = null;
+    component.setSetting('scan_required', true);
+    component.refereeAssignmentExternal = true;
+    component.refereeAssignmentPersonLevel = true;
+
+    component.submit();
+
+    const payload = service.adminUpdate.calls.mostRecent()
+      .args[1] as StateAssociation;
+    expect(payload.scan_required).toBeTrue();
+    expect(payload.referee_assignment_external_enabled).toBeTrue();
+    expect(payload.referee_assignment_enabled).toBeTrue();
+    // Die Staffelung steht schon im Payload: Die Voreinstellung ist nicht
+    // gesetzt, obwohl die Personenebene an ist.
+    expect(payload.person_level_assignment_default).toBeFalse();
   });
 
   it('trennt eigene und geerbte Bundeslaender', () => {
