@@ -39,6 +39,14 @@
           {{ "refereeAdmin.index.qualifications" | transloco }}
         </a>
       }
+      @if (canManageAccounts) {
+        <a
+          [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'benutzerkonten']"
+          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        >
+          {{ "refereeAdmin.index.accounts" | transloco }}
+        </a>
+      }
       @if (canCreate) {
         <a
           [routerLink]="['/', 'verwaltung', 'schiedsrichter', 'neu']"
@@ -204,6 +212,19 @@
                 >
                   {{ r.nachname }}, {{ r.vorname }}
                 </a>
+                @if (r.has_user) {
+                  <span
+                    [attr.title]="
+                      'refereeAdmin.index.hasAccountTitle' | transloco
+                    "
+                    [attr.aria-label]="
+                      'refereeAdmin.index.hasAccountTitle' | transloco
+                    "
+                    class="ml-1 inline-block align-middle bg-black text-white text-[10px] font-bold px-1 rounded"
+                  >
+                    {{ "refereeAdmin.index.hasAccountBadge" | transloco }}
+                  </span>
+                }
               </td>
               <td class="py-2 pr-4">{{ r.lizenzstufe || "–" }}</td>
               <td class="py-2 pr-4">{{ r.landesverband || "–" }}</td>

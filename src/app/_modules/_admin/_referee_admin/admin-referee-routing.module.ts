@@ -50,6 +50,16 @@ const routes: Routes = [
     data: { scrollTop: true, permission: 'menu_item_referee_settings' },
   },
   {
+    // E-Mail-Import und Massenanlage der Benutzerkonten. Eigenes Recht
+    // (referee_account_tools, Verwaltung) und wie die Einstellungen vor der
+    // :lizenznummer-Wildcard-Route.
+    path: 'verwaltung/schiedsrichter/benutzerkonten',
+    pathMatch: 'full',
+    component: Views.RefereeAccountsComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'referee_account_tools' },
+  },
+  {
     // Antraege der Schiris auf Vereins-Ausschluesse; eigener Pfad, weil die
     // Seite nicht zu einem einzelnen Schiedsrichter gehoert.
     path: 'verwaltung/schiedsrichter-ausschluesse',

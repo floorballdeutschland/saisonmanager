@@ -13,8 +13,10 @@ import {
   RefereeAvailability,
   RefereeAvailabilityBulkResult,
   RefereeAvailabilityEntry,
+  RefereeBulkUserResult,
   RefereeClubExclusionPayload,
   RefereeClubExclusionRequest,
+  RefereeEmailImportReport,
   RefereeEntry,
   RefereeCourseResultSummary,
   RefereeGameDay,
@@ -22,6 +24,7 @@ import {
   RefereeHistorySeason,
   PenaltyCode,
   RefereeLicenseLevel,
+  RefereeMissingUserCount,
   RefereeProfile,
   RefereePublicLicense,
   RefereeQualificationType,
@@ -238,6 +241,33 @@ export class RefereeService {
   public adminDeleteUserAccount(id: number) {
     return this.http.delete<RefereeAdmin>(
       environment.apiURL + 'admin/referees/' + id + '/destroy_user'
+    );
+  }
+
+  // CSV mit den Spalten "Lizenznummer" und "E-Mailadresse". Traegt die Adressen
+  // nur dort ein, wo im Profil noch keine steht (Admin).
+  public adminImportEmails(file: File) {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http.post<RefereeEmailImportReport>(
+      environment.apiURL + 'admin/referees/import_emails',
+      form
+    );
+  }
+
+  // Wie viele Schiedsrichter haben eine Adresse, aber noch kein Konto (Admin).
+  public adminGetMissingUserCount() {
+    return this.http.get<RefereeMissingUserCount>(
+      environment.apiURL + 'admin/referees/missing_user_count'
+    );
+  }
+
+  // Legt die naechste Tranche fehlender Benutzerkonten an (Admin). Die API
+  // begrenzt je Aufruf; was offen bleibt, steht in `remaining`.
+  public adminCreateMissingUsers() {
+    return this.http.post<RefereeBulkUserResult>(
+      environment.apiURL + 'admin/referees/create_missing_users',
+      {}
     );
   }
 
