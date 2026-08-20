@@ -38,15 +38,18 @@ import {
 // effective_*-Methoden. Nicht dabei sind die Postfaecher, die anders erben (ein
 // eigener Eintrag am Kind-LV gewinnt) sowie Stammdaten, Zustaendigkeitsbereich,
 // Logo, Banner, Spieltagscheckliste und Freigaben.
-type InheritedSetting =
-  | 'express_license_enabled'
-  | 'referee_license_review_enabled'
-  | 'scan_required'
-  | 'referee_assignment_external_enabled'
-  | 'referee_assignment_enabled'
-  | 'person_level_assignment_default'
-  | 'report_form_email_enabled'
-  | 'manual_proceeding_creation';
+const INHERITED_SETTINGS = [
+  'express_license_enabled',
+  'referee_license_review_enabled',
+  'scan_required',
+  'referee_assignment_external_enabled',
+  'referee_assignment_enabled',
+  'person_level_assignment_default',
+  'report_form_email_enabled',
+  'manual_proceeding_creation',
+] as const;
+
+type InheritedSetting = (typeof INHERITED_SETTINGS)[number];
 
 // Zu jedem Feld der tatsaechlich greifende Wert aus dem Detail-Endpunkt.
 const EFFECTIVE_SETTING: Record<InheritedSetting, keyof StateAssociation> = {
@@ -311,6 +314,27 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     this.stateAssociation[key] = value;
   }
 
+  // Der übergeordnete Verbund wurde im Dropdown geändert.
+  //
+  // Wird er gelöst, übernimmt der Landesverband die Werte, die bis eben für ihn
+  // galten. Sonst stünde im Formular wieder sein eigener gespeicherter Stand,
+  // und der ist bei jedem Verband, der nie ohne Verbund war, durchgehend „aus":
+  // Das Lösen schaltete dann in derselben Speicherung den Berichtsworkflow, den
+  // Ansetzungsweg und alles Übrige ab, ohne dass irgendwo etwas davon steht.
+  //
+  // Übernommen wird vor dem Speichern, damit die Haken es sofort zeigen und
+  // korrigierbar bleiben, statt es dem Speichern zu überlassen.
+  onParentChanged(): void {
+    if (this.hasParent) return;
+
+    for (const key of INHERITED_SETTINGS) {
+      this.stateAssociation[key] =
+        (this.stateAssociation[EFFECTIVE_SETTING[key]] as
+          | boolean
+          | undefined) ?? false;
+    }
+  }
+
   // Die drei Ansetzungs-Optionen sind gestaffelt: die Personenebene setzt den
   // Hauptschalter voraus, die Voreinstellung die Personenebene. Statt nur das
   // Eingabefeld auszugrauen, wird der Wert selbst durchgereicht – sonst bliebe
@@ -359,6 +383,11 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     if (!this.stateAssociation.name?.trim()) return;
 
     this.saving = true;
+
+    // Wurde der Verbund gerade gelöst, übernimmt der Landesverband die bis eben
+    // geltenden Werte. Das Dropdown macht das schon beim Umstellen; hier steht
+    // es noch einmal für Wege, die es nicht anfassen.
+    if (!this.hasParent && this._persistedParentId) this.onParentChanged();
 
     const payload: Partial<StateAssociation> = {
       name: this.stateAssociation.name,

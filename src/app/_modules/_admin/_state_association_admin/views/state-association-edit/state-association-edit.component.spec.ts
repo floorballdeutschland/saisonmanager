@@ -180,9 +180,46 @@ describe('StateAssociationEditComponent', () => {
     expect(payload.sbk_email).toBeNull();
   });
 
+  it('uebernimmt beim Loesen des Verbunds die bis dahin geltenden Werte', () => {
+    const component = createComponent();
+
+    component.stateAssociation.parent_id = null;
+    component.onParentChanged();
+    component.submit();
+
+    const payload = service.adminUpdate.calls.mostRecent()
+      .args[1] as StateAssociation;
+    // Nicht der eigene (nie gepflegte) Stand: Sonst schaltete das Lösen des
+    // Verbunds in derselben Speicherung den Berichtsworkflow und den
+    // Ansetzungsweg ab, ohne dass irgendwo etwas davon steht.
+    expect(payload.report_form_email_enabled).toBeTrue();
+    expect(payload.manual_proceeding_creation).toBeTrue();
+    expect(payload.referee_assignment_external_enabled).toBeTrue();
+    expect(payload.referee_assignment_enabled).toBeTrue();
+    expect(payload.person_level_assignment_default).toBeTrue();
+    // Und umgekehrt: der eigene Haken am Kind-LV setzt sich nicht durch, wenn
+    // der Verbund die Einstellung aus hatte.
+    expect(payload.scan_required).toBeFalse();
+    expect(payload.express_license_enabled).toBeFalse();
+  });
+
+  it('greift auch, wenn das Dropdown den Wechsel nicht meldet', () => {
+    const component = createComponent();
+
+    // Ohne den Aufruf von onParentChanged: submit() holt es nach.
+    component.stateAssociation.parent_id = null;
+    component.submit();
+
+    const payload = service.adminUpdate.calls.mostRecent()
+      .args[1] as StateAssociation;
+    expect(payload.report_form_email_enabled).toBeTrue();
+  });
+
   it('sendet die Einstellungen ohne Verbund weiterhin mit', () => {
     const component = createComponent();
+    // Ein Verband, der nie einen Verbund hatte: kein Loesen, keine Uebernahme.
     component.stateAssociation.parent_id = null;
+    component['_persistedParentId'] = null;
     component.setSetting('scan_required', true);
     component.refereeAssignmentExternal = true;
     component.refereeAssignmentPersonLevel = true;
