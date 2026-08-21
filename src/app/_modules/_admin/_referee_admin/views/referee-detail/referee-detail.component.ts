@@ -143,6 +143,16 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  // Direktlink zur (öffentlichen) Spielseite: /:association/:leagueId/spiel/:matchId.
+  // Gleiches Muster wie in "Meine Historie" (referee-history.component.ts), damit
+  // die RSK-Sicht auf einen Schiedsrichter dieselben Wege anbietet wie seine eigene.
+  // Altdaten-Spiele ohne Verband-Slug oder Liga-ID bleiben ohne Link, statt auf
+  // eine unvollständige Route zu zeigen.
+  matchLink(game: RefereeAdminGame): (string | number)[] | null {
+    if (!game.game_operation_slug || !game.league_id) return null;
+    return ['/', game.game_operation_slug, game.league_id, 'spiel', game.id];
+  }
+
   loadGames(id: number): void {
     this.gamesLoading = true;
     this._refereeService

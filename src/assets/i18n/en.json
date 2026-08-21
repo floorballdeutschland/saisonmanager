@@ -73,7 +73,8 @@
     "refereeExclusions": "Club exclusions",
     "secretaryLinks": "Match secretariat",
     "liveToday": "Live today",
-    "systemHealth": "System"
+    "systemHealth": "System",
+    "gameOperations": "Game operations"
   },
   "account": {
     "title": "My account",
