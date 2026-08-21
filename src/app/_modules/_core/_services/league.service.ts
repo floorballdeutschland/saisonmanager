@@ -331,6 +331,35 @@ export class LeagueService {
     }>(path, { source_league_id: sourceLeagueId, top_n: topN });
   }
 
+  // Bestandsmannschaften einem Pokal-/Endrundenwettbewerb hinzufügen, ohne sie zu
+  // kopieren: Die Liga landet in `cup_leagues` der Mannschaft, ihre Hauptliga
+  // bleibt. Damit gelten Kader und Lizenzen in beiden Wettbewerben.
+  public adminAddExistingTeams(leagueId: number, teamIds: number[]) {
+    const path =
+      environment.apiURL +
+      'admin/leagues/' +
+      leagueId +
+      '/add_existing_teams.json';
+    return this.http.post<{
+      added: number;
+      skipped: number;
+      failed: number;
+    }>(path, { team_ids: teamIds });
+  }
+
+  // Nimmt nur den cup_leagues-Eintrag zurück. Die Mannschaft selbst gehört ihrer
+  // Hauptliga und wird hier nicht gelöscht.
+  public adminRemoveExistingTeam(leagueId: number, teamId: number) {
+    const path =
+      environment.apiURL +
+      'admin/leagues/' +
+      leagueId +
+      '/existing_teams/' +
+      teamId +
+      '.json';
+    return this.http.delete<{ removed: boolean }>(path);
+  }
+
   public adminCreateTeam(team: Team) {
     const path = environment.apiURL + 'admin/teams.json';
     return this.http.post<Team>(path, team);

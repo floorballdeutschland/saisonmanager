@@ -1,10 +1,35 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
 import { getTranslocoTestingModule } from '@floorball/core';
+import { environment } from 'src/environments/environment';
+import { Team } from 'src/app/_models';
 import { TeamIndexComponent } from './team-index.component';
 
+const CUP_LEAGUE_ID = 42;
+
+function team(overrides: Partial<Team>): Team {
+  return {
+    id: 1,
+    name: 'Berlin Rockets',
+    short_name: 'BER',
+    league_id: 7,
+    cup_leagues: [],
+    club_id: 3,
+    syndicate: false,
+    syndicate_clubs: [],
+    logo_url: '',
+    logo_small: '',
+    ...overrides,
+  } as Team;
+}
+
 describe('TeamIndexComponent', () => {
+  let http: HttpTestingController;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
@@ -13,13 +38,230 @@ describe('TeamIndexComponent', () => {
         getTranslocoTestingModule(),
       ],
       declarations: [TeamIndexComponent],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: { params: of({ leagueId: `${CUP_LEAGUE_ID}` }) },
+        },
+      ],
     })
       .overrideTemplate(TeamIndexComponent, '')
       .compileComponents();
+
+    http = TestBed.inject(HttpTestingController);
   });
 
-  it('should create', () => {
+  function createComponent(): TeamIndexComponent {
     const fixture = TestBed.createComponent(TeamIndexComponent);
-    expect(fixture.componentInstance).toBeTruthy();
+    // detectChanges statt nur createComponent: ngOnInit liest die leagueId aus
+    // der Route, und ohne die kennt die Komponente den Wettbewerb nicht.
+    fixture.detectChanges();
+    // Liga-Mannschaften und Ligaliste werden beim Init geladen. Bewusst je Aufruf
+    // die passende Form: Die Ligaliste ist ein Array, ein pauschales {} laesst
+    // die Komponente an groups.flatMap scheitern.
+    http
+      .match(() => true)
+      .forEach((r) => {
+        r.flush(r.request.url.endsWith('admin/leagues.json') ? [] : {});
+      });
+    return fixture.componentInstance;
+  }
+
+  it('should create', () => {
+    expect(createComponent()).toBeTruthy();
+  });
+
+  it('blendet Mannschaften aus, die schon zum Wettbewerb gehoeren', () => {
+    const component = createComponent();
+    component.addSourceLeagueId = 7;
+
+    component.onSourceLeagueChange();
+
+    http.expectOne(`${environment.apiURL}admin/leagues/7/teams.json`).flush({
+      teams: [
+        team({ id: 1, name: 'Frei' }),
+        team({ id: 2, name: 'Schon im Pokal', cup_leagues: [CUP_LEAGUE_ID] }),
+        team({
+          id: 3,
+          name: 'Hauptliga ist der Pokal',
+          league_id: CUP_LEAGUE_ID,
+        }),
+      ],
+    });
+
+    expect(component.candidateTeams.map((t) => t.id)).toEqual([1]);
+  });
+
+  it('schickt die ausgewaehlten Mannschaften an den Aufnahme-Endpoint', () => {
+    const component = createComponent();
+    component.selectedTeamIds = [5, 9];
+
+    component.addTeams();
+
+    const req = http.expectOne(
+      `${environment.apiURL}admin/leagues/${CUP_LEAGUE_ID}/add_existing_teams.json`
+    );
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ team_ids: [5, 9] });
+    req.flush({ added: 2, skipped: 0, failed: 0 });
+
+    expect(component.addResult?.added).toBe(2);
+    expect(component.selectedTeamIds).toEqual([]);
+  });
+
+  // Der Neuaufbau der Kandidatenliste nach einer Aufnahme darf die Rueckmeldung
+  // nicht wegwischen – sonst sieht niemand, was passiert ist.
+  it('behaelt die Rueckmeldung, wenn danach die Kandidatenliste neu laedt', () => {
+    const component = createComponent();
+    component.addSourceLeagueId = 7;
+    component.selectedTeamIds = [5];
+
+    component.addTeams();
+    http
+      .expectOne(
+        `${environment.apiURL}admin/leagues/${CUP_LEAGUE_ID}/add_existing_teams.json`
+      )
+      .flush({ added: 1, skipped: 0, failed: 0 });
+    expectCandidateReload(7);
+
+    expect(component.addResult?.added).toBe(1);
+  });
+
+  it('verwirft die Rueckmeldung beim Wechsel der Quell-Liga', () => {
+    const component = createComponent();
+    component.addResult = { added: 1, skipped: 0, failed: 0 };
+    component.addSourceLeagueId = null;
+
+    component.onSourceLeagueChange();
+
+    expect(component.addResult).toBeNull();
+  });
+
+  it('nimmt ohne Auswahl keine Anfrage vor', () => {
+    const component = createComponent();
+    component.selectedTeamIds = [];
+
+    component.addTeams();
+
+    http.expectNone(
+      `${environment.apiURL}admin/leagues/${CUP_LEAGUE_ID}/add_existing_teams.json`
+    );
+    expect(component.adding).toBeFalse();
+  });
+
+  // Zwei Wechsel hintereinander: Die spaeter eintreffende Antwort der zuerst
+  // gewaehlten Liga darf die Liste der aktuell gewaehlten nicht ueberschreiben,
+  // sonst nimmt ein Klick auf "aufnehmen" Mannschaften auf, die niemand sieht.
+  it('verwirft die verspaetete Antwort einer abgewaehlten Quell-Liga', () => {
+    const component = createComponent();
+
+    component.addSourceLeagueId = 7;
+    component.loadCandidates();
+    const slow = http.expectOne(
+      `${environment.apiURL}admin/leagues/7/teams.json`
+    );
+
+    component.addSourceLeagueId = 8;
+    component.loadCandidates();
+    http
+      .expectOne(`${environment.apiURL}admin/leagues/8/teams.json`)
+      .flush({ teams: [team({ id: 80, name: 'Aus Liga 8' })] });
+
+    // Erst jetzt antwortet die zuvor gewaehlte Liga.
+    slow.flush({ teams: [team({ id: 70, name: 'Aus Liga 7' })] });
+
+    expect(component.candidateTeams.map((t) => t.id)).toEqual([80]);
+    expect(component.loadingCandidates).toBeFalse();
+  });
+
+  it('laedt die Kandidaten nach dem Entfernen nur bei offenem Abschnitt nach', () => {
+    const component = createComponent();
+    component.addSourceLeagueId = 7;
+    component.showAdd = true;
+
+    component.removeTeam(team({ id: 8, league_id: 7 }));
+    http
+      .expectOne(
+        `${environment.apiURL}admin/leagues/${CUP_LEAGUE_ID}/existing_teams/8.json`
+      )
+      .flush({ removed: true });
+
+    expectCandidateReload(7);
+  });
+
+  it('verwirft beim Entfernen die Rueckmeldung der letzten Aufnahme', () => {
+    const component = createComponent();
+    component.addResult = { added: 2, skipped: 0, failed: 0 };
+
+    component.removeTeam(team({ id: 8, league_id: 7 }));
+    http
+      .expectOne(
+        `${environment.apiURL}admin/leagues/${CUP_LEAGUE_ID}/existing_teams/8.json`
+      )
+      .flush({ removed: true });
+
+    expect(component.addResult).toBeNull();
+  });
+
+  it('erkennt Gastmannschaften an ihrer fremden Hauptliga', () => {
+    const component = createComponent();
+
+    expect(component.isGuestTeam(team({ league_id: 7 }))).toBeTrue();
+    expect(
+      component.isGuestTeam(team({ league_id: CUP_LEAGUE_ID }))
+    ).toBeFalse();
+  });
+
+  it('entfernt eine Gastmannschaft nur aus dem Wettbewerb', () => {
+    const component = createComponent();
+
+    component.removeTeam(team({ id: 8, league_id: 7 }));
+
+    const req = http.expectOne(
+      `${environment.apiURL}admin/leagues/${CUP_LEAGUE_ID}/existing_teams/8.json`
+    );
+    expect(req.request.method).toBe('DELETE');
+    req.flush({ removed: true });
+  });
+
+  it('ruehrt eine Mannschaft der eigenen Hauptliga nicht an', () => {
+    const component = createComponent();
+
+    component.removeTeam(team({ id: 8, league_id: CUP_LEAGUE_ID }));
+
+    http.expectNone(
+      `${environment.apiURL}admin/leagues/${CUP_LEAGUE_ID}/existing_teams/8.json`
+    );
+    expect(component.removingTeamId).toBeNull();
+  });
+
+  it('schaltet die Auswahl einer Mannschaft um', () => {
+    const component = createComponent();
+
+    component.toggleTeam(4, { target: { checked: true } } as unknown as Event);
+    expect(component.selectedTeamIds).toEqual([4]);
+    expect(component.isSelected(4)).toBeTrue();
+
+    component.toggleTeam(4, { target: { checked: false } } as unknown as Event);
+    expect(component.selectedTeamIds).toEqual([]);
+  });
+
+  // Holt den Nachlade-Request der Kandidatenliste ab.
+  //
+  // Der Reload der Liga-Mannschaften taucht hier absichtlich nicht auf:
+  // _reloadLeague() weist league$ nur zu, und weil das Template in diesen Specs
+  // leer ist, abonniert die async-Pipe es nie – es fliesst also kein Request.
+  // Bewusst kein pauschales Flushen aller offenen Requests: damit koennte
+  // http.verify() im afterEach nie einen ueberzaehligen Aufruf melden.
+  function expectCandidateReload(sourceLeagueId: number): void {
+    http
+      .expectOne(
+        `${environment.apiURL}admin/leagues/${sourceLeagueId}/teams.json`
+      )
+      .flush({});
+  }
+
+  afterEach(() => {
+    http.verify();
   });
 });

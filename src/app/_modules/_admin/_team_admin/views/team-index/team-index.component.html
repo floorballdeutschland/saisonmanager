@@ -39,6 +39,18 @@
                         | transloco: { name: team.name, id: team.id }
                     }}
                   </a>
+                  @if (isGuestTeam(team)) {
+                    <div class="text-sm text-gray-500">
+                      {{
+                        "teamAdmin.index.guestTeamHint"
+                          | transloco
+                            : {
+                                league: team.league_name,
+                                association: team.game_operation_name,
+                              }
+                      }}
+                    </div>
+                  }
                   <div class="flex items-center mb-4">
                     <a
                       class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
@@ -52,6 +64,15 @@
                     >
                       {{ "teamAdmin.index.editTeam" | transloco }}
                     </a>
+                    @if (isGuestTeam(team)) {
+                      <button
+                        class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer disabled:opacity-50"
+                        [disabled]="removingTeamId === team.id"
+                        (click)="removeTeam(team)"
+                      >
+                        {{ "teamAdmin.index.removeGuestTeam" | transloco }}
+                      </button>
+                    }
                   </div>
                 </div>
               }
@@ -80,6 +101,108 @@
                 {{ "teamAdmin.index.newTeam" | transloco }}
               </a>
             </div>
+            <!-- Bestandsmannschaft aufnehmen (Pokal/Endrunde) -->
+            <div class="bg-white my-[5px] py-[15px] px-[30px]">
+              <button
+                class="uppercase font-bold text-gray-400 text-sm flex items-center gap-2"
+                (click)="showAdd = !showAdd"
+              >
+                {{ "teamAdmin.index.addExisting" | transloco }}
+                <span>{{ showAdd ? "\u25B2" : "\u25BC" }}</span>
+              </button>
+              @if (showAdd) {
+                <div class="mt-4 flex flex-col gap-4">
+                  <p class="text-sm text-gray-500">
+                    {{ "teamAdmin.index.addExistingHint" | transloco }}
+                  </p>
+                  <div>
+                    <label class="block text-sm font-bold mb-1">{{
+                      "teamAdmin.index.sourceLeague" | transloco
+                    }}</label>
+                    <fb-select-search
+                      [(ngModel)]="addSourceLeagueId"
+                      [items]="allLeagues"
+                      hintKey="goName"
+                      [placeholder]="
+                        'teamAdmin.index.selectPlaceholder' | transloco
+                      "
+                      [resetLabel]="
+                        'teamAdmin.index.selectPlaceholder' | transloco
+                      "
+                      (ngModelChange)="onSourceLeagueChange()"
+                    />
+                  </div>
+                  @if (loadingCandidates) {
+                    <p class="text-sm text-gray-400">
+                      {{ "teamAdmin.index.loadingCandidates" | transloco }}
+                    </p>
+                  } @else if (addSourceLeagueId && !candidateTeams.length) {
+                    <p class="text-sm text-gray-400">
+                      {{ "teamAdmin.index.noCandidates" | transloco }}
+                    </p>
+                  } @else {
+                    @for (team of candidateTeams; track team.id) {
+                      <label
+                        class="flex items-center gap-2 text-sm cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          [checked]="isSelected(team.id)"
+                          (change)="toggleTeam(team.id, $event)"
+                        />
+                        <span>{{ team.name }}</span>
+                        <span class="text-gray-400">{{
+                          team.game_operation_name
+                        }}</span>
+                      </label>
+                    }
+                  }
+                  <div>
+                    <button
+                      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer disabled:opacity-50"
+                      [disabled]="!selectedTeamIds.length || adding"
+                      (click)="addTeams()"
+                    >
+                      {{
+                        (adding
+                          ? "teamAdmin.index.adding"
+                          : selectedTeamIds.length === 1
+                            ? "teamAdmin.index.addSelectedOne"
+                            : "teamAdmin.index.addSelected"
+                        ) | transloco: { count: selectedTeamIds.length }
+                      }}
+                    </button>
+                  </div>
+                  @if (addResult) {
+                    <div
+                      class="text-sm p-3 rounded"
+                      [ngClass]="
+                        addResult.added > 0
+                          ? 'bg-green-50 text-green-800'
+                          : 'bg-gray-100 text-gray-600'
+                      "
+                    >
+                      {{
+                        "teamAdmin.index.addResult"
+                          | transloco
+                            : {
+                                added: addResult.added,
+                                skipped: addResult.skipped,
+                              }
+                      }}
+                      @if (addResult.failed > 0) {
+                        <span>{{
+                          "teamAdmin.index.importFailed"
+                            | transloco: { failed: addResult.failed }
+                        }}</span>
+                      }
+                      .
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
             <!-- Teams importieren -->
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <button
