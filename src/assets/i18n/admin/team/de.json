@@ -25,7 +25,8 @@
     "adding": "Wird aufgenommen …",
     "addResult": "{{added}} aufgenommen, {{skipped}} übersprungen",
     "guestTeamHint": "Gast aus {{league}} ({{association}})",
-    "removeGuestTeam": "Aus dem Wettbewerb nehmen"
+    "removeGuestTeam": "Aus dem Wettbewerb nehmen",
+    "addSelectedOne": "Eine Mannschaft aufnehmen"
   },
   "edit": {
     "title": "Teamverwaltung",

@@ -166,7 +166,9 @@
                       {{
                         (adding
                           ? "teamAdmin.index.adding"
-                          : "teamAdmin.index.addSelected"
+                          : selectedTeamIds.length === 1
+                            ? "teamAdmin.index.addSelectedOne"
+                            : "teamAdmin.index.addSelected"
                         ) | transloco: { count: selectedTeamIds.length }
                       }}
                     </button>

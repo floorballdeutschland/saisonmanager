@@ -25,7 +25,8 @@
     "adding": "Adding …",
     "addResult": "{{added}} added, {{skipped}} skipped",
     "guestTeamHint": "Guest from {{league}} ({{association}})",
-    "removeGuestTeam": "Remove from competition"
+    "removeGuestTeam": "Remove from competition",
+    "addSelectedOne": "Add one team"
   },
   "edit": {
     "title": "Team management",

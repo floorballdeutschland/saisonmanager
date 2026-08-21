@@ -88,29 +88,42 @@ export class TeamIndexComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Die Mannschaften der gewählten Quell-Liga. Der Lese-Endpoint ist für
-  // Admin/SBK auch über Spielbetriebsgrenzen offen, deshalb genügt der
-  // bestehende Aufruf.
-  // Wechsel der Quell-Liga: Auswahl und Rueckmeldung der letzten Aufnahme
-  // verwerfen, sie gehoeren zur vorherigen Liga.
+  // Wechsel der Quell-Liga: Auswahl und Rückmeldung der letzten Aufnahme
+  // verwerfen, sie gehören zur vorherigen Liga.
   public onSourceLeagueChange(): void {
     this.addResult = null;
     this.loadCandidates();
   }
 
-  // Bewusst ohne Zuruecksetzen von addResult: Nach einer Aufnahme wird die Liste
-  // neu geladen, und die Rueckmeldung dazu soll stehen bleiben.
+  // Die Mannschaften der gewählten Quell-Liga.
+  //
+  // Der Lese-Endpoint verlangt Rechte auf genau dieser Liga oder bundesweiten
+  // Zugriff (`admin_or_sbk_for_league?`), ist also nicht pauschal über
+  // Spielbetriebsgrenzen offen. Für diesen Abschnitt genügt das: Eine SBK-Rolle
+  // auf einem bundesweiten Spielbetrieb wird auf den globalen Scope gehoben
+  // (User#permission_hash), und erst mit dem führt die Liga-Auswahl überhaupt
+  // fremde Ligen. Wer ihn nicht hat, sieht dort nur eigene Ligen und läuft
+  // deshalb nicht in den 403.
+  //
+  // Setzt addResult bewusst nicht zurück: Nach einer Aufnahme wird die Liste neu
+  // geladen, und die Rückmeldung dazu soll stehen bleiben.
   public loadCandidates(): void {
     this.selectedTeamIds = [];
     this.candidateTeams = [];
     if (!this.addSourceLeagueId) return;
 
+    // Die angefragte Liga festhalten und die Antwort verwerfen, wenn inzwischen
+    // eine andere gewählt ist. Ohne das überschreibt die langsame Antwort der
+    // zuvor gewählten Liga die Liste der aktuellen, und das Aufnehmen träfe
+    // Mannschaften, die niemand mehr vor sich hat.
+    const requestedLeagueId = this.addSourceLeagueId;
     this.loadingCandidates = true;
     this._leagueService
-      .getLeagueWithTeams(this.addSourceLeagueId)
+      .getLeagueWithTeams(requestedLeagueId)
       .pipe(take(1), takeUntil(this._destroy$))
       .subscribe({
         next: (league) => {
+          if (this.addSourceLeagueId !== requestedLeagueId) return;
           // Mannschaften, die schon zu diesem Wettbewerb gehören, gar nicht erst
           // anbieten – der Endpoint würde sie überspringen, aber die Liste soll
           // zeigen, was noch offen ist.
@@ -123,6 +136,7 @@ export class TeamIndexComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: () => {
+          if (this.addSourceLeagueId !== requestedLeagueId) return;
           this.loadingCandidates = false;
           this._cdr.markForCheck();
         },
@@ -177,8 +191,13 @@ export class TeamIndexComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.removingTeamId = null;
+          // Die Rückmeldung der letzten Aufnahme gehört nicht zu dieser Aktion.
+          this.addResult = null;
           this._reloadLeague();
-          this.loadCandidates();
+          // Die entfernte Mannschaft ist wieder Kandidatin – aber nur bei offenem
+          // Abschnitt: Sonst kostet es einen Aufruf und wirft eine begonnene
+          // Auswahl weg, ohne dass jemand die Liste vor sich hat.
+          if (this.showAdd) this.loadCandidates();
         },
         error: () => {
           this.removingTeamId = null;

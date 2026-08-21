@@ -122,6 +122,7 @@ describe('TeamIndexComponent', () => {
         `${environment.apiURL}admin/leagues/${CUP_LEAGUE_ID}/add_existing_teams.json`
       )
       .flush({ added: 1, skipped: 0, failed: 0 });
+    expectCandidateReload(7);
 
     expect(component.addResult?.added).toBe(1);
   });
@@ -146,6 +147,60 @@ describe('TeamIndexComponent', () => {
       `${environment.apiURL}admin/leagues/${CUP_LEAGUE_ID}/add_existing_teams.json`
     );
     expect(component.adding).toBeFalse();
+  });
+
+  // Zwei Wechsel hintereinander: Die spaeter eintreffende Antwort der zuerst
+  // gewaehlten Liga darf die Liste der aktuell gewaehlten nicht ueberschreiben,
+  // sonst nimmt ein Klick auf "aufnehmen" Mannschaften auf, die niemand sieht.
+  it('verwirft die verspaetete Antwort einer abgewaehlten Quell-Liga', () => {
+    const component = createComponent();
+
+    component.addSourceLeagueId = 7;
+    component.loadCandidates();
+    const slow = http.expectOne(
+      `${environment.apiURL}admin/leagues/7/teams.json`
+    );
+
+    component.addSourceLeagueId = 8;
+    component.loadCandidates();
+    http
+      .expectOne(`${environment.apiURL}admin/leagues/8/teams.json`)
+      .flush({ teams: [team({ id: 80, name: 'Aus Liga 8' })] });
+
+    // Erst jetzt antwortet die zuvor gewaehlte Liga.
+    slow.flush({ teams: [team({ id: 70, name: 'Aus Liga 7' })] });
+
+    expect(component.candidateTeams.map((t) => t.id)).toEqual([80]);
+    expect(component.loadingCandidates).toBeFalse();
+  });
+
+  it('laedt die Kandidaten nach dem Entfernen nur bei offenem Abschnitt nach', () => {
+    const component = createComponent();
+    component.addSourceLeagueId = 7;
+    component.showAdd = true;
+
+    component.removeTeam(team({ id: 8, league_id: 7 }));
+    http
+      .expectOne(
+        `${environment.apiURL}admin/leagues/${CUP_LEAGUE_ID}/existing_teams/8.json`
+      )
+      .flush({ removed: true });
+
+    expectCandidateReload(7);
+  });
+
+  it('verwirft beim Entfernen die Rueckmeldung der letzten Aufnahme', () => {
+    const component = createComponent();
+    component.addResult = { added: 2, skipped: 0, failed: 0 };
+
+    component.removeTeam(team({ id: 8, league_id: 7 }));
+    http
+      .expectOne(
+        `${environment.apiURL}admin/leagues/${CUP_LEAGUE_ID}/existing_teams/8.json`
+      )
+      .flush({ removed: true });
+
+    expect(component.addResult).toBeNull();
   });
 
   it('erkennt Gastmannschaften an ihrer fremden Hauptliga', () => {
@@ -191,9 +246,22 @@ describe('TeamIndexComponent', () => {
     expect(component.selectedTeamIds).toEqual([]);
   });
 
+  // Holt den Nachlade-Request der Kandidatenliste ab.
+  //
+  // Der Reload der Liga-Mannschaften taucht hier absichtlich nicht auf:
+  // _reloadLeague() weist league$ nur zu, und weil das Template in diesen Specs
+  // leer ist, abonniert die async-Pipe es nie – es fliesst also kein Request.
+  // Bewusst kein pauschales Flushen aller offenen Requests: damit koennte
+  // http.verify() im afterEach nie einen ueberzaehligen Aufruf melden.
+  function expectCandidateReload(sourceLeagueId: number): void {
+    http
+      .expectOne(
+        `${environment.apiURL}admin/leagues/${sourceLeagueId}/teams.json`
+      )
+      .flush({});
+  }
+
   afterEach(() => {
-    // Der Reload nach Aufnahme/Entfernen laeuft noch offen mit.
-    http.match(() => true).forEach((r) => r.flush({}));
     http.verify();
   });
 });
