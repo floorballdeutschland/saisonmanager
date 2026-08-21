@@ -65,8 +65,19 @@ export class ClubService {
     return this.http.get<Team>(path);
   }
 
-  public getAdminClubAll() {
-    const path = environment.apiURL + 'admin/clubs/all.json';
+  /**
+   * Schlanke Vereinsliste über alle Landesverbände hinweg – im Gegensatz zu
+   * getAdminClubs() nicht auf den eigenen Zuständigkeitsbereich eingegrenzt.
+   *
+   * activeOnly für Masken, die einen Verein *neu* zuweisen: Dort darf ein
+   * deaktivierter Verein nicht auswählbar sein. Anzeige-Aufrufer lassen den
+   * Standard, sie brauchen deaktivierte Vereine für Bestandsdaten.
+   */
+  public getAdminClubAll(activeOnly = false) {
+    const path =
+      environment.apiURL +
+      'admin/clubs/all.json' +
+      (activeOnly ? '?active_only=true' : '');
     return this.http.get<Club[]>(path);
   }
 
