@@ -129,13 +129,30 @@ export class GameOperationEditComponent implements OnInit, OnDestroy {
       .replace(/^-+|-+$/g, '');
   }
 
-  // Zahl der Ligen, Vereine und Rollen am Spielbetrieb. Sie stehen in der
-  // Maske, damit vor dem Löschen dasteht, was im Weg ist, statt es erst aus der
-  // Fehlermeldung zu erfahren.
-  get hasDependencies(): boolean {
+  // Was am Spielbetrieb hängt, in Anzeigereihenfolge. Nur die Arten mit einer
+  // Zahl größer null kommen in die Liste, sonst stünden dort sieben Nullen.
+  //
+  // Über alle Arten zu laufen statt drei davon einzeln abzufragen ist der
+  // Punkt: Die API riegelt das Löschen an jeder dieser Zahlen ab, und eine hier
+  // vergessene ließe die Maske „nichts hängt mehr daran" melden, während das
+  // Löschen scheitert.
+  get dependencyLines(): { key: string; count: number }[] {
     const d = this.gameOperation.dependencies;
-    if (!d) return false;
-    return d.leagues > 0 || d.clubs > 0 || d.users > 0;
+    if (!d) return [];
+
+    return [
+      { key: 'dependencyLeagues', count: d.leagues },
+      { key: 'dependencyClubs', count: d.clubs },
+      { key: 'dependencyUsers', count: d.users },
+      { key: 'dependencyReferees', count: d.referees },
+      { key: 'dependencyDocumentTypes', count: d.document_types },
+      { key: 'dependencyRefereeTags', count: d.referee_tags },
+      { key: 'dependencyReleases', count: d.releases },
+    ].filter((line) => line.count > 0);
+  }
+
+  get hasDependencies(): boolean {
+    return this.dependencyLines.length > 0;
   }
 
   submit(): void {

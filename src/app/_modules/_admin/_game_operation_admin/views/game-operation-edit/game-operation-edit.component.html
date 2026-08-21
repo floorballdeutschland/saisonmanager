@@ -119,24 +119,14 @@
           {{ "gameOperationAdmin.edit.dependencyHeading" | transloco }}
         </div>
         <ul class="text-sm text-fb-gray-500 flex flex-col gap-1">
-          <li>
-            {{
-              "gameOperationAdmin.edit.dependencyLeagues"
-                | transloco: { count: gameOperation.dependencies.leagues }
-            }}
-          </li>
-          <li>
-            {{
-              "gameOperationAdmin.edit.dependencyClubs"
-                | transloco: { count: gameOperation.dependencies.clubs }
-            }}
-          </li>
-          <li>
-            {{
-              "gameOperationAdmin.edit.dependencyUsers"
-                | transloco: { count: gameOperation.dependencies.users }
-            }}
-          </li>
+          @for (line of dependencyLines; track line.key) {
+            <li>
+              {{
+                "gameOperationAdmin.edit." + line.key
+                  | transloco: { count: line.count }
+              }}
+            </li>
+          }
         </ul>
         <small class="block mt-2 text-fb-gray-500">
           {{

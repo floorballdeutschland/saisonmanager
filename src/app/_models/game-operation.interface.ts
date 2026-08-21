@@ -40,10 +40,18 @@ export interface GameOperationAdmin {
 
 // Was am Spielbetrieb hängt. Jede Zahl ist ein Riegel gegen das Löschen; die
 // Maske zeigt sie, damit vor dem Klick dasteht, was im Weg ist.
+//
+// Vollständig zu halten ist Pflicht, nicht Kosmetik: `hasDependencies` liest
+// diese Felder, und was hier fehlt, meldet die Maske als „nichts hängt mehr
+// daran", während die API das Löschen verweigert.
 export interface GameOperationDependencies {
   leagues: number;
   clubs: number;
   users: number;
+  referees: number;
+  document_types: number;
+  referee_tags: number;
+  releases: number;
 }
 
 export interface GameOperationWithLeagues extends GameOperation {

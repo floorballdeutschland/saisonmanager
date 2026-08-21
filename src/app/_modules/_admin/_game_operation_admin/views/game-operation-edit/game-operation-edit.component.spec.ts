@@ -27,7 +27,15 @@ const BESTAND: GameOperationAdmin = {
   state_association_name: 'FLV Schleswig-Holstein',
   banner_url: null,
   banner_link_url: null,
-  dependencies: { leagues: 3, clubs: 12, users: 2 },
+  dependencies: {
+    leagues: 3,
+    clubs: 12,
+    users: 2,
+    referees: 0,
+    document_types: 0,
+    referee_tags: 0,
+    releases: 0,
+  },
 };
 
 // Die Liste, aus der die Maske ableitet, welche Landesverbände schon einen
@@ -202,9 +210,54 @@ describe('GameOperationEditComponent', () => {
 
   it('meldet keine Abhaengigkeiten, wenn alle Zahlen null sind', () => {
     service.adminGet.and.returnValue(
-      of({ ...BESTAND, dependencies: { leagues: 0, clubs: 0, users: 0 } })
+      of({
+        ...BESTAND,
+        dependencies: {
+          leagues: 0,
+          clubs: 0,
+          users: 0,
+          referees: 0,
+          document_types: 0,
+          referee_tags: 0,
+          releases: 0,
+        },
+      })
     );
 
     expect(createComponent().hasDependencies).toBeFalse();
+  });
+
+  // Die API riegelt das Loeschen an sieben Zahlen ab, nicht an drei. Zaehlte die
+  // Maske nur Ligen, Vereine und Rollen, meldete sie „nichts haengt mehr daran"
+  // und das Loeschen scheiterte danach mit 422.
+  it('meldet Abhaengigkeiten auch fuer Schiedsrichter, Dokumentarten, Merkmale und Freigaben', () => {
+    const arten = [
+      'referees',
+      'document_types',
+      'referee_tags',
+      'releases',
+    ] as const;
+
+    arten.forEach((art) => {
+      service.adminGet.and.returnValue(
+        of({
+          ...BESTAND,
+          dependencies: {
+            leagues: 0,
+            clubs: 0,
+            users: 0,
+            referees: 0,
+            document_types: 0,
+            referee_tags: 0,
+            releases: 0,
+            [art]: 1,
+          },
+        })
+      );
+
+      expect(createComponent().hasDependencies)
+        .withContext(art)
+        .toBeTrue();
+    });
   });
 });
