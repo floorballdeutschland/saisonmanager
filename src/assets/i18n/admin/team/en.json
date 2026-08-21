@@ -16,7 +16,17 @@
     "importing": "Importing…",
     "importResult": "{{ imported }} team(s) imported, {{ skipped }} skipped (already present)",
     "importFailed": ", {{ failed }} failed",
-    "loading": "Loading data..."
+    "loading": "Loading data...",
+    "addExisting": "Add existing team",
+    "addExistingHint": "Adds existing teams to this competition without copying them. The team keeps its main league; squad and licences apply in both competitions. For cup and final-round competitions that teams enter individually, including from leagues of other game operations.",
+    "loadingCandidates": "Loading teams …",
+    "noCandidates": "This league has no team that is not already part of the competition.",
+    "addSelected": "Add {{count}} teams",
+    "adding": "Adding …",
+    "addResult": "{{added}} added, {{skipped}} skipped",
+    "guestTeamHint": "Guest from {{league}} ({{association}})",
+    "removeGuestTeam": "Remove from competition",
+    "addSelectedOne": "Add one team"
   },
   "edit": {
     "title": "Team management",

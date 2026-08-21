@@ -7,7 +7,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { AssociationService, LeagueService } from '@floorball/core';
-import { LeagueWithTeams } from 'src/app/_models';
+import { LeagueWithTeams, Team } from 'src/app/_models';
 import { Observable, share, Subject, take, takeUntil } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -34,6 +34,18 @@ export class TeamIndexComponent implements OnInit, OnDestroy {
   importResult: { imported: number; skipped: number; failed: number } | null =
     null;
   importing = false;
+
+  // Bestandsmannschaften aufnehmen (Pokal/Endrunde): Quell-Liga wählen, aus ihren
+  // Mannschaften auswählen. Anders als der Import kopiert das nichts, sondern
+  // trägt diese Liga in `cup_leagues` der Mannschaft ein.
+  showAdd = false;
+  addSourceLeagueId: number | null = null;
+  candidateTeams: Team[] = [];
+  selectedTeamIds: number[] = [];
+  loadingCandidates = false;
+  adding = false;
+  addResult: { added: number; skipped: number; failed: number } | null = null;
+  removingTeamId: number | null = null;
 
   private _leagueId = 0;
   private _destroy$ = new Subject<boolean>();
@@ -76,6 +88,124 @@ export class TeamIndexComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Wechsel der Quell-Liga: Auswahl und Rückmeldung der letzten Aufnahme
+  // verwerfen, sie gehören zur vorherigen Liga.
+  public onSourceLeagueChange(): void {
+    this.addResult = null;
+    this.loadCandidates();
+  }
+
+  // Die Mannschaften der gewählten Quell-Liga.
+  //
+  // Der Lese-Endpoint verlangt Rechte auf genau dieser Liga oder bundesweiten
+  // Zugriff (`admin_or_sbk_for_league?`), ist also nicht pauschal über
+  // Spielbetriebsgrenzen offen. Für diesen Abschnitt genügt das: Eine SBK-Rolle
+  // auf einem bundesweiten Spielbetrieb wird auf den globalen Scope gehoben
+  // (User#permission_hash), und erst mit dem führt die Liga-Auswahl überhaupt
+  // fremde Ligen. Wer ihn nicht hat, sieht dort nur eigene Ligen und läuft
+  // deshalb nicht in den 403.
+  //
+  // Setzt addResult bewusst nicht zurück: Nach einer Aufnahme wird die Liste neu
+  // geladen, und die Rückmeldung dazu soll stehen bleiben.
+  public loadCandidates(): void {
+    this.selectedTeamIds = [];
+    this.candidateTeams = [];
+    if (!this.addSourceLeagueId) return;
+
+    // Die angefragte Liga festhalten und die Antwort verwerfen, wenn inzwischen
+    // eine andere gewählt ist. Ohne das überschreibt die langsame Antwort der
+    // zuvor gewählten Liga die Liste der aktuellen, und das Aufnehmen träfe
+    // Mannschaften, die niemand mehr vor sich hat.
+    const requestedLeagueId = this.addSourceLeagueId;
+    this.loadingCandidates = true;
+    this._leagueService
+      .getLeagueWithTeams(requestedLeagueId)
+      .pipe(take(1), takeUntil(this._destroy$))
+      .subscribe({
+        next: (league) => {
+          if (this.addSourceLeagueId !== requestedLeagueId) return;
+          // Mannschaften, die schon zu diesem Wettbewerb gehören, gar nicht erst
+          // anbieten – der Endpoint würde sie überspringen, aber die Liste soll
+          // zeigen, was noch offen ist.
+          this.candidateTeams = (league.teams || []).filter(
+            (t) =>
+              t.league_id !== this._leagueId &&
+              !(t.cup_leagues || []).includes(this._leagueId)
+          );
+          this.loadingCandidates = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          if (this.addSourceLeagueId !== requestedLeagueId) return;
+          this.loadingCandidates = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  public isSelected(teamId: number): boolean {
+    return this.selectedTeamIds.includes(teamId);
+  }
+
+  public toggleTeam(teamId: number, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.selectedTeamIds = checked
+      ? [...this.selectedTeamIds, teamId]
+      : this.selectedTeamIds.filter((id) => id !== teamId);
+  }
+
+  public addTeams(): void {
+    if (!this.selectedTeamIds.length || !this._leagueId) return;
+    this.adding = true;
+    this.addResult = null;
+    this._leagueService
+      .adminAddExistingTeams(this._leagueId, this.selectedTeamIds)
+      .pipe(take(1), takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.addResult = result;
+          this.adding = false;
+          this.selectedTeamIds = [];
+          this._reloadLeague();
+          this.loadCandidates();
+        },
+        error: () => {
+          this.adding = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  // Nur für Gäste sinnvoll: Eine Mannschaft, deren Hauptliga dieser Wettbewerb
+  // ist, gehört in die Mannschaftsverwaltung und wird hier nicht angetastet.
+  public isGuestTeam(team: Team): boolean {
+    return team.league_id !== this._leagueId;
+  }
+
+  public removeTeam(team: Team): void {
+    if (!this.isGuestTeam(team) || !this._leagueId) return;
+    this.removingTeamId = team.id;
+    this._leagueService
+      .adminRemoveExistingTeam(this._leagueId, team.id)
+      .pipe(take(1), takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.removingTeamId = null;
+          // Die Rückmeldung der letzten Aufnahme gehört nicht zu dieser Aktion.
+          this.addResult = null;
+          this._reloadLeague();
+          // Die entfernte Mannschaft ist wieder Kandidatin – aber nur bei offenem
+          // Abschnitt: Sonst kostet es einen Aufruf und wirft eine begonnene
+          // Auswahl weg, ohne dass jemand die Liste vor sich hat.
+          if (this.showAdd) this.loadCandidates();
+        },
+        error: () => {
+          this.removingTeamId = null;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
   public importTeams(): void {
     if (!this.importSourceLeagueId || !this._leagueId) return;
     this.importing = true;
@@ -91,16 +221,20 @@ export class TeamIndexComponent implements OnInit, OnDestroy {
         next: (result) => {
           this.importResult = result;
           this.importing = false;
-          this.league$ = this._leagueService
-            .getLeagueWithTeams(this._leagueId)
-            .pipe(share());
-          this._cdr.markForCheck();
+          this._reloadLeague();
         },
         error: () => {
           this.importing = false;
           this._cdr.markForCheck();
         },
       });
+  }
+
+  private _reloadLeague(): void {
+    this.league$ = this._leagueService
+      .getLeagueWithTeams(this._leagueId)
+      .pipe(share());
+    this._cdr.markForCheck();
   }
 
   ngOnDestroy(): void {

@@ -47,15 +47,19 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Bewusst getAdminClubAll() und nicht getAdminClubs(): Der aufnehmende
+    // Verein darf in jedem Landesverband liegen, zustimmen muss allein der
+    // abgebende (siehe #sbk_may_assign? in der API). Die auf den eigenen
+    // Zustaendigkeitsbereich eingegrenzte Liste hat einen SBK deshalb daran
+    // gehindert, einen Spieler seines Spielbetriebs verbandsuebergreifend
+    // zuzuweisen, obwohl die API es erlaubt haette.
     this._clubService
-      .getAdminClubs()
+      .getAdminClubAll(true)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: (gos) => {
-          this.clubs = gos
-            .flatMap((go) => go.clubs)
+        next: (clubs) => {
+          this.clubs = clubs
             .map((c) => ({ id: c.id, name: c.name }))
-            .filter((c, i, arr) => arr.findIndex((x) => x.id === c.id) === i)
             .sort((a, b) => a.name.localeCompare(b.name));
           this._cdr.markForCheck();
         },
