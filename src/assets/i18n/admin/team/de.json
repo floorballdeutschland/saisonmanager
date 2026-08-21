@@ -16,7 +16,16 @@
     "importing": "Importiere…",
     "importResult": "{{ imported }} Team(s) importiert, {{ skipped }} übersprungen (bereits vorhanden)",
     "importFailed": ", {{ failed }} fehlgeschlagen",
-    "loading": "Daten werden geladen..."
+    "loading": "Daten werden geladen...",
+    "addExisting": "Bestandsmannschaft aufnehmen",
+    "addExistingHint": "Nimmt bestehende Mannschaften in diesen Wettbewerb auf, ohne sie zu kopieren. Die Mannschaft behält ihre Hauptliga, Kader und Lizenzen gelten in beiden Wettbewerben. Für Pokal- und Endrundenwettbewerbe, zu denen sich Mannschaften einzeln melden – auch aus Ligen anderer Spielbetriebe.",
+    "loadingCandidates": "Mannschaften werden geladen …",
+    "noCandidates": "Diese Liga hat keine Mannschaft, die nicht schon zum Wettbewerb gehört.",
+    "addSelected": "{{count}} Mannschaften aufnehmen",
+    "adding": "Wird aufgenommen …",
+    "addResult": "{{added}} aufgenommen, {{skipped}} übersprungen",
+    "guestTeamHint": "Gast aus {{league}} ({{association}})",
+    "removeGuestTeam": "Aus dem Wettbewerb nehmen"
   },
   "edit": {
     "title": "Teamverwaltung",
