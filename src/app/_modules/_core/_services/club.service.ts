@@ -70,8 +70,12 @@ export class ClubService {
    * getAdminClubs() nicht auf den eigenen Zuständigkeitsbereich eingegrenzt.
    *
    * activeOnly für Masken, die einen Verein *neu* zuweisen: Dort darf ein
-   * deaktivierter Verein nicht auswählbar sein. Anzeige-Aufrufer lassen den
-   * Standard, sie brauchen deaktivierte Vereine für Bestandsdaten.
+   * deaktivierter Verein nicht auswählbar sein. Standard bleibt die
+   * vollständige Liste, damit Anzeige-Aufrufer Bestandsdaten (alte
+   * Mitgliedschaften, Spieltage) weiter benennen können. Achtung: Von den
+   * Bestandsaufrufern setzt noch keiner den Parameter, obwohl Spielerprofil,
+   * Schiri- und Spieltagsmaske ebenfalls zuweisen — dort stehen deaktivierte
+   * Vereine also weiterhin in der Auswahl.
    */
   public getAdminClubAll(activeOnly = false) {
     const path =
