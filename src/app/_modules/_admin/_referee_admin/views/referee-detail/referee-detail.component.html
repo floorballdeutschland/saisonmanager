@@ -212,8 +212,33 @@
                     {{ g.game_number }}
                   </td>
                   <td class="py-2 pr-4">{{ g.date | date: "dd.MM.yyyy" }}</td>
-                  <td class="py-2 pr-4">{{ g.home_team }}</td>
-                  <td class="py-2 pr-4">{{ g.guest_team }}</td>
+                  @if (matchLink(g); as link) {
+                    <td class="py-2 pr-4">
+                      <a
+                        [routerLink]="link"
+                        class="hover:underline focus:underline"
+                        [attr.title]="
+                          'refereeAdmin.detail.openMatch' | transloco
+                        "
+                      >
+                        {{ g.home_team }}
+                      </a>
+                    </td>
+                    <td class="py-2 pr-4">
+                      <a
+                        [routerLink]="link"
+                        class="hover:underline focus:underline"
+                        [attr.title]="
+                          'refereeAdmin.detail.openMatch' | transloco
+                        "
+                      >
+                        {{ g.guest_team }}
+                      </a>
+                    </td>
+                  } @else {
+                    <td class="py-2 pr-4">{{ g.home_team }}</td>
+                    <td class="py-2 pr-4">{{ g.guest_team }}</td>
+                  }
                   <td class="py-2 pr-4 text-fb-gray-500">{{ g.league }}</td>
                   <td class="py-2 font-mono">{{ g.result || "–" }}</td>
                 </tr>

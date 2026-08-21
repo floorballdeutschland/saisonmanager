@@ -263,6 +263,11 @@ export interface RefereeAdminGame {
   home_team: string;
   guest_team: string;
   league: string;
+  // league_id + game_operation_slug tragen den Link zur öffentlichen
+  // Spielseite: /:association/:leagueId/spiel/:matchId. Gleiche Felder wie in
+  // RefereeHistoryGame.
+  league_id?: number | null;
+  game_operation_slug?: string | null;
   season_id: number;
   result?: string;
   referee1?: string;
