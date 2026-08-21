@@ -190,15 +190,6 @@ export const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
-          import('@floorball/admin/game-operations').then(
-            (m) => m.AdminGameOperationModule
-          ),
-        canActivate: [permissionGuard],
-        data: { permission: 'menu_item_game_operation_admin' },
-      },
-      {
-        path: '',
-        loadChildren: () =>
           import('@floorball/admin/player-change-requests').then(
             (m) => m.AdminPlayerChangeRequestModule
           ),

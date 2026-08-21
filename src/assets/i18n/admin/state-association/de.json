@@ -9,7 +9,11 @@
     "edit": "Bearbeiten",
     "details": "Details",
     "delete": "Löschen",
-    "empty": "Noch keine Landesverbände angelegt."
+    "empty": "Noch keine Landesverbände angelegt.",
+    "colGameOperation": "Spielbetrieb",
+    "noGameOperation": "keiner",
+    "gameOperationViaVerbund": "über den Verbund",
+    "orphanedGameOperations": "Ohne Verband: {{names}}. Diese Spielbetriebe sind für keinen Verein zuständig und an keiner Verbandsseite zu bearbeiten – die Zuordnung an einen Verband muss die Entwicklung vornehmen."
   },
   "edit": {
     "back": "← Zurück",

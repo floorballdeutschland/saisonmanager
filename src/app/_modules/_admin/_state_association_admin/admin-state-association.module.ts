@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { AdminGameOperationModule } from '@floorball/admin/game-operations';
 import { AdminStateAssociationRoutingModule } from './admin-state-association-routing.module';
 
 import * as Views from './views';
@@ -13,6 +14,8 @@ import * as Views from './views';
     FormsModule,
     AdminStateAssociationRoutingModule,
     UikitCommonModule,
+    // Bringt den Abschnitt „Spielbetrieb" samt eigenem Transloco-Scope mit.
+    AdminGameOperationModule,
   ],
   declarations: [
     Views.StateAssociationIndexComponent,

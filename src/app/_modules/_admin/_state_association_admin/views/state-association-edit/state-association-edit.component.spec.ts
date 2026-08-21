@@ -9,7 +9,7 @@ import {
   SessionService,
   StateAssociationService,
 } from '@floorball/core';
-import { StateAssociation } from '@floorball/types';
+import { StateAssociation, User } from '@floorball/types';
 import { StateAssociationEditComponent } from './state-association-edit.component';
 
 // Untergeordneter Landesverband, wie ihn der Detail-Endpunkt liefert: eigene
@@ -109,6 +109,27 @@ describe('StateAssociationEditComponent', () => {
     })
       .overrideTemplate(StateAssociationEditComponent, '')
       .compileComponents();
+  });
+
+  // Der Abschnitt „Spielbetrieb" haengt an einem eigenen, engeren Recht als die
+  // Maske selbst: Der globale SBK darf den Verband pflegen, aber am Spielbetrieb
+  // haengen zwei Felder, die Rechte verschieben. Die API antwortet ihm mit 403,
+  // und der ErrorInterceptor wuerde ihn aus dieser Maske werfen -- der Abschnitt
+  // darf ihm deshalb nicht einmal angezeigt werden.
+  it('zeigt den Spielbetriebs-Abschnitt nur bundesweiten Admins', () => {
+    const component = createComponent();
+
+    expect(component.canManageGameOperation).toBeFalse();
+
+    component.currentUser = {
+      permissions: { menu_item_state_association_sbk: true },
+    } as unknown as User;
+    expect(component.canManageGameOperation).toBeFalse();
+
+    component.currentUser = {
+      permissions: { menu_item_game_operation_admin: true },
+    } as unknown as User;
+    expect(component.canManageGameOperation).toBeTrue();
   });
 
   it('nennt den Verbund aus dem Detail-Datensatz, nicht aus der Liste', () => {

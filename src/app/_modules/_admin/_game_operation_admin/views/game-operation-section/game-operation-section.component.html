@@ -1,0 +1,265 @@
+<!-- Abschnitt „Spielbetrieb" der Verbandsmaske. Ohne das Recht rendert hier
+     nichts -- der Abschnitt fragt dann auch nichts ab, siehe Komponente. -->
+@if (canManage) {
+  <div class="border-t border-fb-gray-200 pt-6 mb-6">
+    <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
+      {{ "gameOperationAdmin.section.heading" | transloco }}
+    </div>
+    <p class="text-sm text-fb-gray-500 mb-4">
+      {{ "gameOperationAdmin.section.intro" | transloco }}
+    </p>
+
+    @if (loading) {
+      <div class="text-sm text-fb-gray-500 py-2">
+        {{ "gameOperationAdmin.section.loading" | transloco }}
+      </div>
+    }
+
+    <!-- Untergeordneter Verband: Zuständig ist der Spielbetrieb der Wurzel des
+         Verbandsbaums. Ein eigener hier hätte keine Vereine, deshalb steht
+         statt eines Formulars die Auskunft, wo dieser Verband spielt. -->
+    @if (!loading && isSubordinate) {
+      <p class="text-sm text-fb-gray-500">
+        {{
+          "gameOperationAdmin.section.subordinateHint"
+            | transloco: { verbund: verbundName }
+        }}
+      </p>
+    }
+
+    @if (!loading && !isSubordinate) {
+      <!-- Kein Spielbetrieb: anlegen, mit dem Verband als festem Zusammenhang. -->
+      @if (!gameOperation) {
+        <p class="text-sm text-fb-gray-500 mb-3">
+          {{ "gameOperationAdmin.section.none" | transloco }}
+        </p>
+        <button
+          type="button"
+          (click)="startCreate()"
+          class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500"
+        >
+          {{ "gameOperationAdmin.section.createButton" | transloco }}
+        </button>
+      }
+
+      @if (gameOperation) {
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-bold">{{
+              "gameOperationAdmin.edit.nameLabel" | transloco
+            }}</label>
+            <input
+              type="text"
+              [(ngModel)]="gameOperation.name"
+              [ngModelOptions]="{ standalone: true }"
+              [placeholder]="
+                'gameOperationAdmin.edit.namePlaceholder' | transloco
+              "
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-bold">{{
+              "gameOperationAdmin.edit.shortNameLabel" | transloco
+            }}</label>
+            <input
+              type="text"
+              [(ngModel)]="gameOperation.short_name"
+              [ngModelOptions]="{ standalone: true }"
+              [placeholder]="
+                'gameOperationAdmin.edit.shortNamePlaceholder' | transloco
+              "
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+            <small class="text-fb-gray-500">{{
+              "gameOperationAdmin.edit.shortNameHint" | transloco
+            }}</small>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-bold">{{
+              "gameOperationAdmin.edit.pathLabel" | transloco
+            }}</label>
+            <input
+              type="text"
+              [(ngModel)]="gameOperation.path"
+              [ngModelOptions]="{ standalone: true }"
+              [placeholder]="
+                'gameOperationAdmin.edit.pathPlaceholder' | transloco
+              "
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-mono focus:outline-none focus:border-black"
+            />
+            <small class="text-fb-gray-500">{{
+              "gameOperationAdmin.edit.pathHint" | transloco
+            }}</small>
+            @if (pathPreview) {
+              <small class="text-fb-gray-500">
+                {{ "gameOperationAdmin.edit.pathPreview" | transloco }}
+                <span class="font-mono font-bold">/{{ pathPreview }}</span>
+              </small>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="flex items-center gap-2 text-sm font-bold">
+              <input
+                type="checkbox"
+                [(ngModel)]="gameOperation.national"
+                [ngModelOptions]="{ standalone: true }"
+              />
+              {{ "gameOperationAdmin.edit.nationalLabel" | transloco }}
+            </label>
+            <small class="text-fb-gray-500">{{
+              "gameOperationAdmin.edit.nationalHint" | transloco
+            }}</small>
+          </div>
+
+          <!-- Was am Spielbetrieb hängt. Nur an einem gespeicherten Datensatz,
+               ein neuer kann nichts tragen. -->
+          @if (persisted && gameOperation.dependencies) {
+            <div>
+              <div class="text-sm font-bold text-fb-gray-400 uppercase mb-2">
+                {{ "gameOperationAdmin.edit.dependencyHeading" | transloco }}
+              </div>
+              <ul class="text-sm text-fb-gray-500 flex flex-col gap-1">
+                @for (line of dependencyLines; track line.key) {
+                  <li>
+                    {{
+                      "gameOperationAdmin.edit." + line.key
+                        | transloco: { count: line.count }
+                    }}
+                  </li>
+                }
+              </ul>
+              <small class="block mt-2 text-fb-gray-500">
+                {{
+                  (hasDependencies
+                    ? "gameOperationAdmin.edit.dependencyBlocked"
+                    : "gameOperationAdmin.edit.dependencyFree"
+                  ) | transloco
+                }}
+              </small>
+            </div>
+          }
+
+          @if (persisted) {
+            <div>
+              <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+                {{ "gameOperationAdmin.edit.bannerHeading" | transloco }}
+              </div>
+              <div class="grid grid-cols-2 gap-4 items-center">
+                <div class="font-bold text-sm">
+                  {{ "gameOperationAdmin.edit.currentBanner" | transloco }}
+                </div>
+                <div>
+                  @if (gameOperation.banner_url) {
+                    <img
+                      [src]="gameOperation.banner_url"
+                      [alt]="'gameOperationAdmin.edit.bannerAlt' | transloco"
+                      class="w-full max-w-xs object-contain"
+                      style="aspect-ratio: 6/1"
+                    />
+                  }
+                  @if (!gameOperation.banner_url) {
+                    <span class="text-sm text-fb-gray-400">{{
+                      "gameOperationAdmin.edit.noBanner" | transloco
+                    }}</span>
+                  }
+                </div>
+                <div class="font-bold text-sm">
+                  {{ "gameOperationAdmin.edit.uploadBanner" | transloco }}
+                </div>
+                <div>
+                  <input
+                    type="file"
+                    [attr.accept]="acceptImageTypes"
+                    #bannerInput
+                    (change)="onBannerSelected(bannerInput)"
+                  />
+                  <small class="block text-fb-gray-400 mt-1">{{
+                    "gameOperationAdmin.edit.bannerHint" | transloco
+                  }}</small>
+                </div>
+                <div class="font-bold text-sm">
+                  {{ "gameOperationAdmin.edit.linkUrlLabel" | transloco }}
+                </div>
+                <div>
+                  <input
+                    type="url"
+                    [(ngModel)]="gameOperation.banner_link_url"
+                    [ngModelOptions]="{ standalone: true }"
+                    [placeholder]="
+                      'gameOperationAdmin.edit.linkUrlPlaceholder' | transloco
+                    "
+                    class="border border-fb-gray-300 rounded px-3 py-1.5 text-sm w-full"
+                  />
+                </div>
+                <div></div>
+                <div>
+                  @if (gameOperation.banner_url) {
+                    <button
+                      type="button"
+                      (click)="deleteBanner()"
+                      [disabled]="deletingBanner"
+                      class="text-sm text-red-500 underline disabled:opacity-50"
+                    >
+                      {{
+                        (deletingBanner
+                          ? "gameOperationAdmin.edit.removingBanner"
+                          : "gameOperationAdmin.edit.removeBanner"
+                        ) | transloco
+                      }}
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Eigener Speichern-Knopf, denn Verband und Spielbetrieb sind zwei
+               Datensätze an zwei Endpunkten. Ein gemeinsamer Knopf müsste bei
+               einem Fehler die eine Hälfte gespeichert und die andere nicht
+               zurücklassen. -->
+          <div class="flex items-center gap-3">
+            <button
+              type="button"
+              (click)="submit()"
+              [disabled]="
+                saving ||
+                !gameOperation.name?.trim() ||
+                !gameOperation.short_name?.trim()
+              "
+              class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+            >
+              {{
+                (saving
+                  ? "gameOperationAdmin.section.saving"
+                  : "gameOperationAdmin.section.save"
+                ) | transloco
+              }}
+            </button>
+            @if (creating) {
+              <button
+                type="button"
+                (click)="cancelCreate()"
+                class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+              >
+                {{ "gameOperationAdmin.edit.cancel" | transloco }}
+              </button>
+            }
+            @if (persisted) {
+              <button
+                type="button"
+                (click)="delete()"
+                class="text-sm text-red-400 hover:text-red-600 ml-auto"
+              >
+                {{ "gameOperationAdmin.section.delete" | transloco }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+}
