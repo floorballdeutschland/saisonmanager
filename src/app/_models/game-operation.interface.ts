@@ -14,6 +14,44 @@ export interface GameOperation {
   top_leagues: League[];
   scan_required?: boolean;
   state_association_id?: number | null;
+  // Hebt SBK, RSK und Ansetzer dieses Spielbetriebs auf globalen Scope
+  // (User#permission_hash in der API). Steht nur in den Admin-Antworten, nicht
+  // im öffentlichen meta_hash.
+  national?: boolean;
+}
+
+// Der Datensatz der Spielbetriebs-Verwaltung
+// (GET admin/game_operations/:id). `path` ist hier der gespeicherte Wert, `slug`
+// der daraus abgeleitete – die Maske muss zeigen, was in der Spalte steht,
+// sonst schreibt das Speichern die Ableitung als eigenen Wert fest.
+export interface GameOperationAdmin {
+  id: number;
+  name: string;
+  short_name: string;
+  path: string;
+  slug: string;
+  national: boolean;
+  state_association_id: number | null;
+  state_association_name: string | null;
+  banner_url?: string | null;
+  banner_link_url?: string | null;
+  dependencies: GameOperationDependencies;
+}
+
+// Was am Spielbetrieb hängt. Jede Zahl ist ein Riegel gegen das Löschen; die
+// Maske zeigt sie, damit vor dem Klick dasteht, was im Weg ist.
+//
+// Vollständig zu halten ist Pflicht, nicht Kosmetik: `hasDependencies` liest
+// diese Felder, und was hier fehlt, meldet die Maske als „nichts hängt mehr
+// daran", während die API das Löschen verweigert.
+export interface GameOperationDependencies {
+  leagues: number;
+  clubs: number;
+  users: number;
+  referees: number;
+  document_types: number;
+  referee_tags: number;
+  releases: number;
 }
 
 export interface GameOperationWithLeagues extends GameOperation {

@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { GameOperation } from 'src/app/_models/game-operation.interface';
+import {
+  GameOperation,
+  GameOperationAdmin,
+} from 'src/app/_models/game-operation.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -15,6 +18,36 @@ export class GameOperationService {
   public getAdminGameOperations() {
     const path = environment.apiURL + 'admin/game_operations.json';
     return this.http.get<GameOperation[]>(path);
+  }
+
+  //
+  // Spielbetriebs-Verwaltung (nur bundesweite Admins). Kein eigener
+  // Listen-Endpunkt: Die Liste kommt von getAdminGameOperations() oben, die
+  // ohnehin alle Auswahlfelder versorgt und für einen bundesweiten Admin alle
+  // Spielbetriebe liefert.
+  //
+  public adminGet(id: number) {
+    return this.http.get<GameOperationAdmin>(
+      `${environment.apiURL}admin/game_operations/${id}`
+    );
+  }
+
+  public adminCreate(go: Partial<GameOperationAdmin>) {
+    return this.http.post<GameOperationAdmin>(
+      `${environment.apiURL}admin/game_operations`,
+      { game_operation: go }
+    );
+  }
+
+  public adminUpdate(id: number, go: Partial<GameOperationAdmin>) {
+    return this.http.put<GameOperationAdmin>(
+      `${environment.apiURL}admin/game_operations/${id}`,
+      { game_operation: go }
+    );
+  }
+
+  public adminDelete(id: number) {
+    return this.http.delete(`${environment.apiURL}admin/game_operations/${id}`);
   }
 
   public adminUploadBanner(gameOperationId: number, file: File) {

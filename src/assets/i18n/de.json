@@ -73,7 +73,8 @@
     "refereeExclusions": "Vereins-Ausschlüsse",
     "secretaryLinks": "Spielsekretariat",
     "liveToday": "Heute live",
-    "systemHealth": "System"
+    "systemHealth": "System",
+    "gameOperations": "Spielbetriebe"
   },
   "account": {
     "title": "Mein Konto",
