@@ -387,6 +387,53 @@ export interface RefereeAssignmentAvailable {
   tags?: RefereeTag[];
 }
 
+// Gespann-Historie: mit wem diese Person laut Spielbericht tatsächlich im
+// Einsatz war, über alle Saisons. Dieselbe Nutzlast liefern die RSK-/Ansetzer-
+// Sicht (GET admin/referees/:id/partners) und die Eigensicht
+// (GET referee/history/partners).
+//
+// Der Server rendert einen vollständigen Hash, lässt also keinen Schlüssel weg:
+// Ein nullbares Feld kommt als `null` an, nie als `undefined`. Deshalb hier
+// durchgehend `| null` statt `?`.
+export interface RefereePartnerHistory {
+  referee: {
+    id: number;
+    vorname: string;
+    nachname: string;
+    lizenznummer_display: string;
+  };
+  season_id: number;
+  // Serverseitiger Hinweis zur Belastbarkeit der Altdaten.
+  notice: string;
+  // Absteigend nach Einsätzen der laufenden Saison, dann nach Gesamtzahl.
+  partners: RefereePartnerHistoryEntry[];
+}
+
+export interface RefereePartnerHistoryEntry {
+  referee_id: number;
+  vorname: string;
+  nachname: string;
+  lizenznummer_display: string;
+  lizenzstufe: string | null;
+  club_name: string | null;
+  games_current_season: number;
+  // Mindestens 1: Ein Eintrag ohne gemeinsames Spiel entsteht nicht.
+  games_total: number;
+  // Jüngste Saison mit gemeinsamem Einsatz. `leagues.season_id` ist
+  // serverseitig varchar, wird für diese Antwort aber nach Integer gewandelt.
+  last_season_id: number;
+  last_season_name: string;
+  // Gültige Lizenz zum Abfragezeitpunkt.
+  active: boolean;
+  game_operations: RefereePartnerGameOperation[];
+}
+
+export interface RefereePartnerGameOperation {
+  game_operation_id: number;
+  game_operation_name: string | null;
+  game_count: number;
+}
+
 export type RefereeAvailabilityState = 'available' | 'unavailable' | 'assigned';
 
 export interface RefereeAvailabilityWeekend {

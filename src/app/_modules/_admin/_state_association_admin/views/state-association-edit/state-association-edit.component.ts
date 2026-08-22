@@ -529,6 +529,15 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Den Abschnitt „Spielbetrieb" sehen nur bundesweite Admins. Der globale SBK
+  // darf diese Maske oeffnen, aber am Spielbetrieb haengen zwei Felder, die
+  // Rechte verschieben (`state_association_id`, `national`) -- die API antwortet
+  // ihm auf jeden Zugriff mit 403. Deshalb hier gar nicht erst anzeigen: Der
+  // ErrorInterceptor wuerde ihn sonst aus der Verbandsmaske werfen.
+  get canManageGameOperation(): boolean {
+    return !!this.currentUser?.permissions['menu_item_game_operation_admin'];
+  }
+
   get availableGameOperations(): GameOperation[] {
     const usedIds = new Set(
       this.releases.map((r) => r.recipient_game_operation_id)
