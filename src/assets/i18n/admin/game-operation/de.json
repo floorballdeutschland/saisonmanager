@@ -1,25 +1,5 @@
 {
-  "index": {
-    "title": "Spielbetriebe",
-    "intro": "Ein Spielbetrieb ist der Verband, unter dem Ligen ausgetragen werden. Über den zugeordneten Landesverband entscheidet sich, für welche Vereine er zuständig ist: Zuständig ist immer der Spielbetrieb an der Wurzel eines Verbandsbaums, also nicht der an einem untergeordneten Verband.",
-    "newButton": "Neuer Spielbetrieb",
-    "loading": "Spielbetriebe werden geladen …",
-    "count": "{{count}} Spielbetriebe",
-    "colName": "Name",
-    "colShortName": "Kürzel",
-    "colPath": "Pfad",
-    "colStateAssociation": "Landesverband",
-    "nationalBadge": "bundesweit",
-    "noAssociation": "keiner",
-    "edit": "Bearbeiten",
-    "delete": "Löschen",
-    "confirmDelete": "Spielbetrieb „{{name}}\" wirklich löschen?",
-    "empty": "Noch kein Spielbetrieb angelegt."
-  },
   "edit": {
-    "back": "← Zurück",
-    "titleEdit": "Spielbetrieb bearbeiten",
-    "titleNew": "Neuer Spielbetrieb",
     "nameLabel": "Name",
     "namePlaceholder": "z. B. Floorball Verband Hessen",
     "shortNameLabel": "Kürzel",
@@ -29,10 +9,6 @@
     "pathPlaceholder": "z. B. fvh",
     "pathHint": "Nur Kleinbuchstaben, Ziffern und einzelne Bindestriche. Leer lassen, dann entsteht der Pfad aus dem Kürzel.",
     "pathPreview": "Öffentliche Adresse:",
-    "stateAssociationLabel": "Landesverband",
-    "noStateAssociation": "— kein Landesverband —",
-    "stateAssociationHint": "Verbände, an denen schon ein Spielbetrieb hängt, stehen nicht zur Auswahl: Ein Landesverband hat höchstens einen.",
-    "noStateAssociationWarning": "Ohne Landesverband ist dieser Spielbetrieb für keinen Verein zuständig.",
     "nationalLabel": "Bundesweiter Spielbetrieb",
     "nationalHint": "Hebt SBK, RSK und Ansetzer dieses Spielbetriebs auf alle Verbände. Bewusst setzen: Diese Rollen sehen danach die Daten aller Landesverbände.",
     "dependencyHeading": "Daran hängt",
@@ -55,8 +31,6 @@
     "linkUrlPlaceholder": "https://…",
     "removeBanner": "Banner entfernen",
     "removingBanner": "Banner wird entfernt …",
-    "save": "Speichern",
-    "saving": "Wird gespeichert …",
     "cancel": "Abbrechen"
   },
   "notifications": {
@@ -69,5 +43,18 @@
     "bannerUploadError": "Banner konnte nicht gespeichert werden.",
     "bannerDeleteError": "Banner konnte nicht gelöscht werden.",
     "confirmDeleteBanner": "Banner wirklich entfernen?"
+  },
+  "section": {
+    "heading": "Spielbetrieb",
+    "intro": "Unter diesem Spielbetrieb werden die Ligen des Verbands ausgetragen. Über den Verband entscheidet sich, für welche Vereine er zuständig ist.",
+    "loading": "Spielbetrieb wird geladen …",
+    "none": "Für diesen Verband ist noch kein Spielbetrieb angelegt. Ohne ihn kann er keine Ligen austragen.",
+    "createButton": "Spielbetrieb anlegen",
+    "subordinateHint": "Dieser Verband trägt seine Spiele im Spielbetrieb des Verbunds „{{verbund}}\" aus und braucht keinen eigenen. Zuständig ist immer der Spielbetrieb an der Wurzel des Verbandsbaums.",
+    "subordinateStranded": "Trotzdem hängt an diesem Verband ein eigener Spielbetrieb. Er ist für keinen Verein zuständig und gehört in aller Regel gelöscht.",
+    "save": "Spielbetrieb speichern",
+    "saving": "Wird gespeichert …",
+    "delete": "Spielbetrieb löschen",
+    "confirmDelete": "Spielbetrieb „{{name}}\" wirklich löschen?"
   }
 }

@@ -36,6 +36,11 @@
             <th class="py-2 pr-4 font-bold">
               {{ "stateAssociationAdmin.index.colShortName" | transloco }}
             </th>
+            @if (canManageGameOperation) {
+              <th class="py-2 pr-4 font-bold">
+                {{ "stateAssociationAdmin.index.colGameOperation" | transloco }}
+              </th>
+            }
             <th class="py-2"></th>
           </tr>
         </thead>
@@ -51,6 +56,33 @@
               <td class="py-2 pr-4 text-fb-gray-500">
                 {{ row.sa.short_name || "–" }}
               </td>
+              @if (canManageGameOperation) {
+                <td class="py-2 pr-4 text-fb-gray-500">
+                  @if (row.isChild) {
+                    <span class="italic">{{
+                      "stateAssociationAdmin.index.gameOperationViaVerbund"
+                        | transloco
+                    }}</span>
+                    @if (strandedGameOperationLabel(row.sa); as gestrandet) {
+                      <span class="block text-amber-600">{{
+                        "stateAssociationAdmin.index.strandedGameOperation"
+                          | transloco: { name: gestrandet }
+                      }}</span>
+                    }
+                  }
+                  @if (!row.isChild) {
+                    @if (gameOperationsFailed) {
+                      –
+                    } @else {
+                      {{
+                        gameOperationLabel(row.sa) ||
+                          ("stateAssociationAdmin.index.noGameOperation"
+                            | transloco)
+                      }}
+                    }
+                  }
+                </td>
+              }
               <td class="py-2 text-right flex gap-3 justify-end">
                 <a
                   [routerLink]="[
@@ -82,13 +114,38 @@
           }
           @if (sortedRows.length === 0) {
             <tr>
-              <td colspan="3" class="py-8 text-center text-fb-gray-500">
+              <td
+                [attr.colspan]="canManageGameOperation ? 4 : 3"
+                class="py-8 text-center text-fb-gray-500"
+              >
                 {{ "stateAssociationAdmin.index.empty" | transloco }}
               </td>
             </tr>
           }
         </tbody>
       </table>
+
+      <!-- Spielbetriebe ohne Verband. Sie stehen in keiner Zeile darueber, weil
+           sie an keinem Verband haengen -- ohne diesen Hinweis waeren sie nach
+           dem Zusammenlegen der Masken nirgends mehr zu sehen. -->
+      @if (canManageGameOperation && gameOperationsFailed) {
+        <p class="mt-6 text-sm text-amber-600">
+          {{ "stateAssociationAdmin.index.gameOperationsFailed" | transloco }}
+        </p>
+      }
+
+      @if (canManageGameOperation && orphanedGameOperations.length > 0) {
+        <p class="mt-6 text-sm text-amber-600">
+          {{
+            "stateAssociationAdmin.index.orphanedGameOperations"
+              | transloco
+                : {
+                    names: orphanedGameOperationNames,
+                    count: orphanedGameOperations.length,
+                  }
+          }}
+        </p>
+      }
     </div>
   }
 </div>

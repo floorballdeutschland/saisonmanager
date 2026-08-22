@@ -9,11 +9,12 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 import { Router } from '@angular/router';
 import {
+  GameOperationService,
   StateAssociationService,
   NotificationService,
   SessionService,
 } from '@floorball/core';
-import { StateAssociation, User } from '@floorball/types';
+import { GameOperation, StateAssociation, User } from '@floorball/types';
 
 @Component({
   templateUrl: './state-association-index.component.html',
@@ -49,6 +50,7 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
 
   constructor(
     private _stateAssociationService: StateAssociationService,
+    private _gameOperationService: GameOperationService,
     private _notificationService: NotificationService,
     private _sessionService: SessionService,
     private _cdr: ChangeDetectorRef,
@@ -65,6 +67,61 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
     return !!this.currentUser?.permissions[
       'state_association_manage_lifecycle'
     ];
+  }
+
+  // Der Spielbetrieb je Verband, nachgeschlagen ueber seine
+  // state_association_id. Steht in der Liste, weil es die frueher eigene
+  // Spielbetriebs-Uebersicht ersetzt: Der Spielbetrieb wird jetzt im Verband
+  // gepflegt, und wer alle auf einmal sehen will, soll das hier tun.
+  private _gameOperationsByStateAssociation = new Map<number, GameOperation>();
+
+  // Dieselbe Grenze wie am Abschnitt in der Maske: Nur bundesweite Admins.
+  // Der globale SBK bekommt vom Auswahl-Endpunkt eine nach seiner Rolle
+  // gescopte Liste, die Spalte waere fuer ihn also nur halb wahr.
+  get canManageGameOperation(): boolean {
+    return !!this.currentUser?.permissions['menu_item_game_operation_admin'];
+  }
+
+  // Spielbetriebe ohne Verband. Sie sind fuer keinen Verein zustaendig und
+  // haengen an keiner Verbandsseite -- seit der Spielbetrieb im Verband gepflegt
+  // wird, waeren sie also unsichtbar. Genau das darf nicht passieren: Ein
+  // Datensatz, den keine Maske mehr zeigt, ist einer, den niemand reparieren
+  // kann. Am 21.08.2026 gab es auf Produktion keinen einzigen; die Zuordnung
+  // eines solchen Altbestands an einen Verband bleibt Konsolenarbeit.
+  orphanedGameOperations: GameOperation[] = [];
+  // Der Abruf der Spielbetriebe ist gescheitert. Ohne diese Merkung stuende in
+  // jeder Zeile „keiner" -- nicht zu unterscheiden davon, dass tatsaechlich
+  // keiner angelegt ist.
+  gameOperationsFailed = false;
+
+  get orphanedGameOperationNames(): string {
+    return this.orphanedGameOperations
+      .map((go) => go.short_name || go.name)
+      .join(', ');
+  }
+
+  // Klartext fuer eine Zeile. Ein untergeordneter Verband hat keinen eigenen
+  // Spielbetrieb und soll auch keinen bekommen -- zustaendig ist der an der
+  // Wurzel des Verbandsbaums.
+  gameOperationLabel(sa: StateAssociation): string | null {
+    if (sa.parent_id) return null;
+
+    return this._labelFor(sa);
+  }
+
+  // Ein untergeordneter Verband soll keinen eigenen Spielbetrieb haben, kann
+  // aber einen tragen. Dieselbe Ueberlegung wie beim Hinweis auf die
+  // verbandlosen darunter: Ohne diese Zeile stuende in der Spalte nur „ueber
+  // den Verbund", und der Datensatz waere nirgends mehr zu sehen.
+  strandedGameOperationLabel(sa: StateAssociation): string | null {
+    if (!sa.parent_id) return null;
+
+    return this._labelFor(sa);
+  }
+
+  private _labelFor(sa: StateAssociation): string | null {
+    const go = this._gameOperationsByStateAssociation.get(sa.id);
+    return go ? go.short_name || go.name : null;
   }
 
   get isSbkOnly(): boolean {
@@ -110,10 +167,40 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
           }
           this._buildSortedRows();
           this.loading = false;
+          this._loadGameOperations();
           this._cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  // Erst nach den Verbaenden und nur mit Recht: Ohne das Recht antwortet der
+  // Endpunkt gescopt statt vollstaendig, und die Spalte wird ohnehin nicht
+  // gerendert.
+  private _loadGameOperations(): void {
+    if (!this.canManageGameOperation) return;
+
+    this._gameOperationService
+      .getAdminGameOperations()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (alle) => {
+          this._gameOperationsByStateAssociation = new Map(
+            alle
+              .filter((go) => !!go.state_association_id)
+              .map((go) => [go.state_association_id as number, go])
+          );
+          this.orphanedGameOperations = alle.filter(
+            (go) => !go.state_association_id
+          );
+          this.gameOperationsFailed = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.gameOperationsFailed = true;
           this._cdr.markForCheck();
         },
       });

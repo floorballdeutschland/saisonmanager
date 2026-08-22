@@ -789,4 +789,22 @@
       </a>
     </div>
   </form>
+
+  <!-- Der Spielbetrieb dieses Verbands. Bewusst ausserhalb des Formulars: Es
+       sind zwei Datensaetze an zwei Endpunkten, der Abschnitt bringt seinen
+       eigenen Speichern-Knopf mit. Nur beim Bearbeiten, ein noch nicht
+       angelegter Verband kann keinen Spielbetrieb tragen.
+
+       Erst mit der `id`, also nach der Antwort des Detail-Endpunkts: `editMode`
+       steht schon aus der Route fest, der Verband kommt hinterher. Ohne die
+       zweite Bedingung stuende hier fuer einen Wimpernschlag „noch kein
+       Spielbetrieb angelegt" samt Anlege-Knopf -- und ein schneller Klick legte
+       einen Spielbetrieb ohne Verband an. -->
+  @if (editMode && stateAssociation.id) {
+    <fb-game-operation-section
+      [stateAssociation]="stateAssociation"
+      [allStateAssociations]="allStateAssociations"
+      [canManage]="canManageGameOperation"
+    />
+  }
 </div>
