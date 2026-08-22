@@ -387,6 +387,44 @@ export interface RefereeAssignmentAvailable {
   tags?: RefereeTag[];
 }
 
+// Gespann-Historie (GET admin/referees/:id/partners): mit wem diese Person
+// laut Spielbericht tatsächlich im Einsatz war, über alle Saisons.
+export interface RefereePartnerHistory {
+  referee: {
+    id: number;
+    vorname: string;
+    nachname: string;
+    lizenznummer_display: string;
+  };
+  season_id: number;
+  // Serverseitiger Hinweis zur Belastbarkeit der Altdaten.
+  notice: string;
+  // Absteigend nach Einsätzen der laufenden Saison, dann nach Gesamtzahl.
+  partners: RefereePartnerHistoryEntry[];
+}
+
+export interface RefereePartnerHistoryEntry {
+  referee_id: number;
+  vorname: string;
+  nachname: string;
+  lizenznummer_display: string;
+  lizenzstufe?: string;
+  club_name?: string | null;
+  games_current_season: number;
+  games_total: number;
+  last_season_id?: number | null;
+  last_season_name?: string;
+  // Gültige Lizenz zum Abfragezeitpunkt.
+  active: boolean;
+  game_operations: RefereePartnerGameOperation[];
+}
+
+export interface RefereePartnerGameOperation {
+  game_operation_id: number;
+  game_operation_name?: string | null;
+  game_count: number;
+}
+
 export type RefereeAvailabilityState = 'available' | 'unavailable' | 'assigned';
 
 export interface RefereeAvailabilityWeekend {

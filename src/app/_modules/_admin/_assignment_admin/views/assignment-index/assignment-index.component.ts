@@ -21,6 +21,7 @@ import {
   RefereeAssignment,
   RefereeAssignmentAvailable,
   RefereeAssignmentStub,
+  RefereePartnerHistoryEntry,
   RefereeTag,
 } from '@floorball/types';
 import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
@@ -42,6 +43,21 @@ function todayIso(): string {
   return new Date().toLocaleDateString('sv-SE');
 }
 
+// Länge der Kurzliste aus der Gespann-Historie. Weitere Namen oben verdrängen
+// nur die alphabetische Liste, ohne die Auswahl weiter zu erleichtern.
+const MAX_PARTNER_SUGGESTIONS = 5;
+
+// Gespann-Hinweis zu einem Kandidaten im Dropdown von Schiri 2, bezogen auf den
+// bereits gewählten Schiri 1. `rank` ist die Position in der Kurzliste: 0 ist
+// die im Profil hinterlegte Nummer, dahinter folgen die häufigsten Partner
+// laut Spielbericht.
+interface PartnerHint {
+  rank: number;
+  declared: boolean;
+  gamesTotal: number;
+  gamesCurrentSeason: number;
+}
+
 interface RowState {
   // Ansetzungsart: zwei Schiedsrichter ODER ein Verein (entweder/oder).
   mode: AssignmentMode;
@@ -57,6 +73,10 @@ interface RowState {
   showCoachDropdown: boolean;
   availableReferees: RefereeAssignmentAvailable[];
   availableCoaches: RefereeAssignmentAvailable[];
+  // Gespannpartner von Schiri 1 unter den Kandidaten dieses Spieltags, Schlüssel
+  // ist die Schiri-PK. Vorberechnet statt im Template ermittelt, weil das
+  // Dropdown die Zuordnung je Zeile bei jedem Änderungslauf abfragt.
+  partnerHints: Map<number, PartnerHint>;
   loadingReferees: boolean;
   loadingCoaches: boolean;
   saving: boolean;
@@ -116,6 +136,11 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   notesSavingGameId: number | null = null;
 
   private _assignments: RefereeAssignment[] = [];
+  // Häufigste Partner je Schiri-PK aus der Gespann-Historie. Einmal je Person
+  // geladen und über alle Zeilen geteilt: Der Ansetzer greift über viele Spiele
+  // hinweg auf dieselben Namen zurück.
+  private _partnerHistory = new Map<number, RefereePartnerHistoryEntry[]>();
+  private _partnerHistoryLoading = new Set<number>();
   private _destroy$ = new Subject<void>();
 
   // Reduzierter Modus (Weg 3, #403): Wo ein Verband die Ansetzung außerhalb der
@@ -401,6 +426,26 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Dropdown für Schiri 2: die Gespannpartner von Schiri 1 stehen oben, zuerst
+  // die im Profil hinterlegte Nummer, dahinter die häufigsten Partner laut
+  // Spielbericht. Der Rest behält die alphabetische Reihenfolge des Servers.
+  // Gefiltert wird nichts, nur umsortiert.
+  partnerSortedReferees(
+    gameId: number,
+    query: string
+  ): RefereeAssignmentAvailable[] {
+    const list = this.filteredReferees(gameId, query);
+    const hints = this.rowStates.get(gameId)?.partnerHints;
+    if (!hints || hints.size === 0) return list;
+    const pinned: RefereeAssignmentAvailable[] = [];
+    const rest: RefereeAssignmentAvailable[] = [];
+    list.forEach((r) => (hints.has(r.id) ? pinned : rest).push(r));
+    pinned.sort(
+      (a, b) => (hints.get(a.id)?.rank ?? 0) - (hints.get(b.id)?.rank ?? 0)
+    );
+    return [...pinned, ...rest];
+  }
+
   // Lizenzstufen, die als Filter-Chips angeboten werden: alle in den bereits
   // geladenen Kandidatenlisten vorkommenden Stufen plus die aktuell gewählten.
   // (Bewusst aus den Daten abgeleitet, um keine zusätzliche – ggf. für Ansetzer
@@ -492,6 +537,11 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     state.showReferee2Dropdown = true;
     this._cdr.markForCheck();
     this._loadAvailableReferees(gameId);
+    // Auch ohne Klick auf Schiri 1: Eine bestehende Ansetzung bringt den Namen
+    // schon mit, die Kurzliste soll auch dann oben stehen.
+    if (state.selectedReferee1Id != null) {
+      this._loadPartnerHistory(state.selectedReferee1Id);
+    }
   }
 
   private _loadAvailableReferees(gameId: number): void {
@@ -509,6 +559,9 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
         next: (list) => {
           state.availableReferees = list;
           state.loadingReferees = false;
+          // Die Zuordnung braucht die Kandidaten: Vorgezogen wird nur, wer am
+          // Spieltag überhaupt zur Auswahl steht.
+          state.partnerHints = this._buildPartnerHints(state);
           this._cdr.markForCheck();
         },
         error: () => {
@@ -553,6 +606,10 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
         this._cdr.markForCheck();
       }
     }
+    // Kurzliste für Schiri 2 vorbereiten. Die hinterlegte Nummer steht schon in
+    // der Kandidatenliste, die Historie kommt nach.
+    state.partnerHints = this._buildPartnerHints(state);
+    this._loadPartnerHistory(r.id);
   }
 
   selectReferee2(gameId: number, r: RefereeAssignmentAvailable): void {
@@ -570,6 +627,8 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     state.selectedReferee1Id = null;
     state.referee1Query = '';
     state.showReferee1Dropdown = false;
+    // Ohne Schiri 1 gibt es keinen Bezugspunkt für die Kurzliste.
+    state.partnerHints = new Map();
     this._cdr.markForCheck();
   }
 
@@ -1116,6 +1175,95 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Gespann-Historie einer Person. Je Schiri-PK genau eine Anfrage; das Ergebnis
+  // gilt für alle Zeilen und wird nach dem Eintreffen in die betroffenen
+  // Zeilen übernommen.
+  private _loadPartnerHistory(refereeId: number): void {
+    if (
+      this._partnerHistory.has(refereeId) ||
+      this._partnerHistoryLoading.has(refereeId)
+    ) {
+      return;
+    }
+    this._partnerHistoryLoading.add(refereeId);
+    this._refereeService
+      .adminGetRefereePartners(refereeId)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (data) => {
+          this._partnerHistoryLoading.delete(refereeId);
+          this._partnerHistory.set(
+            refereeId,
+            (data.partners ?? []).slice(0, MAX_PARTNER_SUGGESTIONS)
+          );
+          this._refreshPartnerHints(refereeId);
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          // Die Kurzliste ist Beiwerk: Ohne Historie bleibt die alphabetische
+          // Liste stehen und die im Profil hinterlegte Nummer wird weiterhin
+          // vorgezogen. Leerer Eintrag statt neuem Versuch, damit nicht jeder
+          // Fokuswechsel eine weitere Anfrage auslöst.
+          this._partnerHistoryLoading.delete(refereeId);
+          this._partnerHistory.set(refereeId, []);
+        },
+      });
+  }
+
+  // Neu eingetroffene Historie in alle Zeilen übernehmen, die diese Person als
+  // Schiri 1 führen.
+  private _refreshPartnerHints(refereeId: number): void {
+    this.rowStates.forEach((state) => {
+      if (state.selectedReferee1Id !== refereeId) return;
+      state.partnerHints = this._buildPartnerHints(state);
+    });
+  }
+
+  // Ordnet die Kandidaten des Spieltags den Gespannpartnern von Schiri 1 zu.
+  // Zuerst die im Profil hinterlegte Nummer – sie ist die ausdrückliche Angabe
+  // der Person, die Historie nur eine Beobachtung –, dahinter die häufigsten
+  // Partner in der Reihenfolge des Servers (laufende Saison vor Gesamtzahl).
+  private _buildPartnerHints(state: RowState): Map<number, PartnerHint> {
+    const hints = new Map<number, PartnerHint>();
+    const referee1Id = state.selectedReferee1Id;
+    if (referee1Id == null) return hints;
+
+    const history = this._partnerHistory.get(referee1Id) ?? [];
+    const historyById = new Map(history.map((p) => [p.referee_id, p]));
+    const candidateIds = new Set(state.availableReferees.map((r) => r.id));
+
+    const declaredNumber =
+      state.availableReferees.find((r) => r.id === referee1Id)
+        ?.partner_lizenznummer ?? null;
+    const declaredId = declaredNumber
+      ? (state.availableReferees.find((r) => r.lizenznummer === declaredNumber)
+          ?.id ?? null)
+      : null;
+
+    let rank = 0;
+    if (declaredId != null && declaredId !== referee1Id) {
+      const entry = historyById.get(declaredId);
+      hints.set(declaredId, {
+        rank: rank++,
+        declared: true,
+        gamesTotal: entry?.games_total ?? 0,
+        gamesCurrentSeason: entry?.games_current_season ?? 0,
+      });
+    }
+    history.forEach((p) => {
+      // Vorgezogen wird nur, wer am Spieltag überhaupt zur Auswahl steht.
+      if (p.referee_id === referee1Id) return;
+      if (hints.has(p.referee_id) || !candidateIds.has(p.referee_id)) return;
+      hints.set(p.referee_id, {
+        rank: rank++,
+        declared: false,
+        gamesTotal: p.games_total,
+        gamesCurrentSeason: p.games_current_season,
+      });
+    });
+    return hints;
+  }
+
   private _createRowState(assignment: RefereeAssignment | null): RowState {
     const ref1 = assignment?.referee1 ?? null;
     const ref2 = assignment?.referee2 ?? null;
@@ -1135,6 +1283,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       showCoachDropdown: false,
       availableReferees: [],
       availableCoaches: [],
+      partnerHints: new Map(),
       loadingReferees: false,
       loadingCoaches: false,
       saving: false,

@@ -479,26 +479,30 @@
                         </div>
                         @if (
                           state.showReferee2Dropdown &&
-                          filteredReferees(row.game.id, state.referee2Query)
-                            .length > 0
+                          partnerSortedReferees(
+                            row.game.id,
+                            state.referee2Query
+                          ).length > 0
                         ) {
                           <ul
                             class="absolute z-50 left-0 bg-white border border-fb-gray-600 rounded-[5px] shadow-lg mt-1 max-h-40 overflow-y-auto"
                             style="min-width: 200px"
                           >
                             @for (
-                              r of filteredReferees(
+                              r of partnerSortedReferees(
                                 row.game.id,
                                 state.referee2Query
                               );
                               track r
                             ) {
+                              @let partnerHint = state.partnerHints.get(r.id);
                               <li
                                 (mousedown)="
                                   $event.preventDefault();
                                   selectReferee2(row.game.id, r)
                                 "
                                 class="px-2 py-1.5 hover:bg-fb-gray-200 cursor-pointer text-xs"
+                                [class.bg-fb-gray-800]="partnerHint"
                               >
                                 <span class="font-medium"
                                   >{{ r.nachname }}, {{ r.vorname }}</span
@@ -506,6 +510,38 @@
                                 @if (r.lizenzstufe) {
                                   <span class="text-fb-gray-400 ml-1"
                                     >({{ r.lizenzstufe }})</span
+                                  >
+                                }
+                                <!-- Gespann-Kurzliste: hinterlegte Nummer
+                                und/oder gemeinsame Einsätze laut Spielbericht. -->
+                                @if (partnerHint?.declared) {
+                                  <span
+                                    class="ml-1 text-[10px] font-bold uppercase text-primary"
+                                    [title]="
+                                      'assignmentAdmin.index.partnerDeclaredTitle'
+                                        | transloco
+                                    "
+                                    >{{
+                                      "assignmentAdmin.index.partnerDeclaredBadge"
+                                        | transloco
+                                    }}</span
+                                  >
+                                }
+                                @if (
+                                  partnerHint && partnerHint.gamesTotal > 0
+                                ) {
+                                  <span
+                                    class="ml-1 text-[10px] text-fb-gray-500"
+                                    [title]="
+                                      'assignmentAdmin.index.partnerGamesTitle'
+                                        | transloco
+                                          : {
+                                              total: partnerHint.gamesTotal,
+                                              season:
+                                                partnerHint.gamesCurrentSeason,
+                                            }
+                                    "
+                                    >{{ partnerHint.gamesTotal }}×</span
                                   >
                                 }
                                 @if (r.kurzfristig_mobil) {

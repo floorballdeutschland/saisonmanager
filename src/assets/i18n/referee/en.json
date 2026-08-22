@@ -24,7 +24,7 @@
     "zip": "ZIP code",
     "city": "City",
     "sectionPartner": "Most frequent refereeing partner",
-    "partnerHint": "Enter the license number of your primary partner here to simplify our assignments.",
+    "partnerHint": "Enter the license number of your primary partner here. The assignment then pre-fills the second slot automatically as soon as you are both available on the match day. One number is enough: other frequent partners are recognised from your past appearances.",
     "partnerPlaceholder": "License number",
     "save": "Save",
     "saving": "Saving…",

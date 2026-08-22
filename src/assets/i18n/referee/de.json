@@ -24,7 +24,7 @@
     "zip": "PLZ",
     "city": "Ort",
     "sectionPartner": "Häufigste/r Schiedsrichterpartner/in",
-    "partnerHint": "Gib hier die Lizenznummer deines primären Partners bzw. deiner primären Partnerin ein, damit uns Ansetzungen vereinfacht werden.",
+    "partnerHint": "Gib hier die Lizenznummer deines primären Partners bzw. deiner primären Partnerin ein. Die Ansetzung belegt den zweiten Platz damit automatisch vor, sobald ihr beide am Spieltag verfügbar seid. Eine Nummer genügt: Weitere häufige Gespannpartner erkennt die Ansetzung selbst an den bisherigen Einsätzen.",
     "partnerPlaceholder": "Lizenznummer",
     "save": "Speichern",
     "saving": "Speichern…",
