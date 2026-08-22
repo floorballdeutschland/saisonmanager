@@ -13,6 +13,8 @@
     "colGameOperation": "Spielbetrieb",
     "noGameOperation": "keiner",
     "gameOperationViaVerbund": "über den Verbund",
+    "gameOperationsFailed": "Die Spielbetriebe konnten nicht geladen werden. Die leere Spalte heißt also nicht, dass keiner angelegt ist.",
+    "strandedGameOperation": "eigener Spielbetrieb „{{name}}\", für keinen Verein zuständig",
     "orphanedGameOperations": "Ohne Verband: {{names}}. Diese Spielbetriebe sind für keinen Verein zuständig und an keiner Verbandsseite zu bearbeiten – die Zuordnung an einen Verband muss die Entwicklung vornehmen."
   },
   "edit": {

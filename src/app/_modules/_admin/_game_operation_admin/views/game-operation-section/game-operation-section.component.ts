@@ -3,8 +3,8 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
+  OnChanges,
   OnDestroy,
-  OnInit,
   ViewEncapsulation,
 } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
@@ -45,7 +45,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
-export class GameOperationSectionComponent implements OnInit, OnDestroy {
+export class GameOperationSectionComponent implements OnChanges, OnDestroy {
   // Der Verband, dessen Maske den Abschnitt zeigt.
   @Input({ required: true }) stateAssociation!: Partial<StateAssociation>;
   // Für das Auflösen der Verbundwurzel bei einem untergeordneten Verband. Die
@@ -69,6 +69,10 @@ export class GameOperationSectionComponent implements OnInit, OnDestroy {
   readonly acceptImageTypes = IMAGE_UPLOAD_ACCEPT;
 
   private readonly _maxBannerSize = 2 * 1024 * 1024;
+  // Verband, fuer den schon abgerufen wurde. Ohne diese Merkung liefe der
+  // Abruf bei jeder Eingabe erneut, denn ngOnChanges feuert bei jeder
+  // Aenderung an einem der drei Inputs.
+  private _loadedFor: number | null = null;
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -78,9 +82,18 @@ export class GameOperationSectionComponent implements OnInit, OnDestroy {
     private _cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    if (!this.canManage || !this.stateAssociation?.id) return;
+  // Abgerufen wird in ngOnChanges und nicht in ngOnInit: Die Verbandsmaske
+  // rendert den Abschnitt, sobald sie aus der Route weiss, dass sie im
+  // Bearbeiten-Modus ist -- der Verband selbst kommt erst mit der Antwort des
+  // Detail-Endpunkts hinterher, und das Recht haengt am Nutzer aus der Session.
+  // In ngOnInit steht beides noch nicht fest; der Abschnitt bliebe dann fuer
+  // immer bei dem leeren Verband stehen, mit dem er angelegt wurde, und meldete
+  // fuer jeden Verband „noch kein Spielbetrieb".
+  ngOnChanges(): void {
+    const id = this.stateAssociation?.id;
+    if (!this.canManage || !id || id === this._loadedFor) return;
 
+    this._loadedFor = id;
     this._load();
   }
 
@@ -95,12 +108,17 @@ export class GameOperationSectionComponent implements OnInit, OnDestroy {
     return !!this.stateAssociation?.parent_id;
   }
 
+  // Zuerst aus dem Detail-Datensatz, erst dann aus der Liste: Beide Abrufe der
+  // Verbandsmaske laufen nebeneinander, und gewinnt der Detail-Endpunkt, ist die
+  // Liste noch leer -- der Satz stuende dann mit einem leeren Verbundnamen da.
   get verbundName(): string | null {
     const parentId = this.stateAssociation?.parent_id;
     if (!parentId) return null;
 
     return (
-      this.allStateAssociations.find((sa) => sa.id === parentId)?.name ?? null
+      this.stateAssociation.parent_name ??
+      this.allStateAssociations.find((sa) => sa.id === parentId)?.name ??
+      null
     );
   }
 
@@ -266,13 +284,16 @@ export class GameOperationSectionComponent implements OnInit, OnDestroy {
     }
 
     this._gameOperationService
-      .adminUploadBanner(id, file)
+      .adminUploadBanner(id, file, this.gameOperation?.banner_link_url ?? null)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
           input.value = '';
           if (this.gameOperation) {
             this.gameOperation.banner_url = result.banner_url;
+            // Was die API zurueckmeldet, gilt: Der Link geht durch den Upload
+            // hindurch, und ein stiller Verlust waere hier zu sehen.
+            this.gameOperation.banner_link_url = result.banner_link_url;
           }
           this._notificationService.success(
             this._transloco.translate(

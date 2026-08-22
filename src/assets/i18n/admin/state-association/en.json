@@ -13,6 +13,8 @@
     "colGameOperation": "Game operation",
     "noGameOperation": "none",
     "gameOperationViaVerbund": "via the federation",
+    "gameOperationsFailed": "The game operations could not be loaded. An empty column therefore does not mean none exist.",
+    "strandedGameOperation": "own game operation \"{{name}}\", not responsible for any club",
     "orphanedGameOperations": "Without an association: {{names}}. These game operations are responsible for no club and cannot be edited from any association page – assigning them to an association requires a developer."
   },
   "edit": {

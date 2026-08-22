@@ -89,6 +89,10 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
   // kann. Am 21.08.2026 gab es auf Produktion keinen einzigen; die Zuordnung
   // eines solchen Altbestands an einen Verband bleibt Konsolenarbeit.
   orphanedGameOperations: GameOperation[] = [];
+  // Der Abruf der Spielbetriebe ist gescheitert. Ohne diese Merkung stuende in
+  // jeder Zeile „keiner" -- nicht zu unterscheiden davon, dass tatsaechlich
+  // keiner angelegt ist.
+  gameOperationsFailed = false;
 
   get orphanedGameOperationNames(): string {
     return this.orphanedGameOperations
@@ -102,6 +106,20 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
   gameOperationLabel(sa: StateAssociation): string | null {
     if (sa.parent_id) return null;
 
+    return this._labelFor(sa);
+  }
+
+  // Ein untergeordneter Verband soll keinen eigenen Spielbetrieb haben, kann
+  // aber einen tragen. Dieselbe Ueberlegung wie beim Hinweis auf die
+  // verbandlosen darunter: Ohne diese Zeile stuende in der Spalte nur „ueber
+  // den Verbund", und der Datensatz waere nirgends mehr zu sehen.
+  strandedGameOperationLabel(sa: StateAssociation): string | null {
+    if (!sa.parent_id) return null;
+
+    return this._labelFor(sa);
+  }
+
+  private _labelFor(sa: StateAssociation): string | null {
     const go = this._gameOperationsByStateAssociation.get(sa.id);
     return go ? go.short_name || go.name : null;
   }
@@ -178,6 +196,11 @@ export class StateAssociationIndexComponent implements OnInit, OnDestroy {
           this.orphanedGameOperations = alle.filter(
             (go) => !go.state_association_id
           );
+          this.gameOperationsFailed = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.gameOperationsFailed = true;
           this._cdr.markForCheck();
         },
       });

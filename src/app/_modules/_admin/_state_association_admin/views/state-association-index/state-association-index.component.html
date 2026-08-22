@@ -63,13 +63,23 @@
                       "stateAssociationAdmin.index.gameOperationViaVerbund"
                         | transloco
                     }}</span>
+                    @if (strandedGameOperationLabel(row.sa); as gestrandet) {
+                      <span class="block text-amber-600">{{
+                        "stateAssociationAdmin.index.strandedGameOperation"
+                          | transloco: { name: gestrandet }
+                      }}</span>
+                    }
                   }
                   @if (!row.isChild) {
-                    {{
-                      gameOperationLabel(row.sa) ||
-                        ("stateAssociationAdmin.index.noGameOperation"
-                          | transloco)
-                    }}
+                    @if (gameOperationsFailed) {
+                      –
+                    } @else {
+                      {{
+                        gameOperationLabel(row.sa) ||
+                          ("stateAssociationAdmin.index.noGameOperation"
+                            | transloco)
+                      }}
+                    }
                   }
                 </td>
               }
@@ -118,6 +128,12 @@
       <!-- Spielbetriebe ohne Verband. Sie stehen in keiner Zeile darueber, weil
            sie an keinem Verband haengen -- ohne diesen Hinweis waeren sie nach
            dem Zusammenlegen der Masken nirgends mehr zu sehen. -->
+      @if (canManageGameOperation && gameOperationsFailed) {
+        <p class="mt-6 text-sm text-amber-600">
+          {{ "stateAssociationAdmin.index.gameOperationsFailed" | transloco }}
+        </p>
+      }
+
       @if (canManageGameOperation && orphanedGameOperations.length > 0) {
         <p class="mt-6 text-sm text-amber-600">
           {{

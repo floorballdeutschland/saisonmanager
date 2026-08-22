@@ -51,6 +51,7 @@
     "none": "No game operation has been created for this association yet. Without one it cannot run any leagues.",
     "createButton": "Create game operation",
     "subordinateHint": "This association plays in the game operation of the \"{{verbund}}\" federation and does not need its own. Responsibility always sits with the game operation at the root of the association tree.",
+    "subordinateStranded": "Even so, this association carries a game operation of its own. It is not responsible for any club and should as a rule be deleted.",
     "save": "Save game operation",
     "saving": "Saving …",
     "delete": "Delete game operation",

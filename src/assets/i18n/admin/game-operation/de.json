@@ -51,6 +51,7 @@
     "none": "Für diesen Verband ist noch kein Spielbetrieb angelegt. Ohne ihn kann er keine Ligen austragen.",
     "createButton": "Spielbetrieb anlegen",
     "subordinateHint": "Dieser Verband trägt seine Spiele im Spielbetrieb des Verbunds „{{verbund}}\" aus und braucht keinen eigenen. Zuständig ist immer der Spielbetrieb an der Wurzel des Verbandsbaums.",
+    "subordinateStranded": "Trotzdem hängt an diesem Verband ein eigener Spielbetrieb. Er ist für keinen Verein zuständig und gehört in aller Regel gelöscht.",
     "save": "Spielbetrieb speichern",
     "saving": "Wird gespeichert …",
     "delete": "Spielbetrieb löschen",

@@ -50,10 +50,22 @@ export class GameOperationService {
     return this.http.delete(`${environment.apiURL}admin/game_operations/${id}`);
   }
 
-  public adminUploadBanner(gameOperationId: number, file: File) {
+  // Der Banner-Link muss mit hoch: Die API setzt ihn bei jedem Upload aus dem
+  // Parameter (`update!(banner_link_url: params[:banner_link_url].presence)`).
+  // Wird er weggelassen, loescht ein Bild-Upload den vorhandenen Link -- lautlos,
+  // denn die Maske zeigt danach weiter den alten Wert.
+  public adminUploadBanner(
+    gameOperationId: number,
+    file: File,
+    bannerLinkUrl: string | null
+  ) {
     const formData = new FormData();
     formData.append('banner', file);
-    return this.http.post<{ banner_url: string }>(
+    formData.append('banner_link_url', bannerLinkUrl ?? '');
+    return this.http.post<{
+      banner_url: string;
+      banner_link_url: string | null;
+    }>(
       `${environment.apiURL}admin/game_operations/${gameOperationId}/upload_banner.json`,
       formData
     );

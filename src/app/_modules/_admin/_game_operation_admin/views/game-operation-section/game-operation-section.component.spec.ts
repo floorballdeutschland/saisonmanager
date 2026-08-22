@@ -107,12 +107,68 @@ describe('GameOperationSectionComponent', () => {
     alle: StateAssociation[] = [WURZEL_LV, KIND_LV, VERBUND_LV]
   ): GameOperationSectionComponent {
     const fixture = TestBed.createComponent(GameOperationSectionComponent);
-    fixture.componentInstance.stateAssociation = stateAssociation;
-    fixture.componentInstance.allStateAssociations = alle;
-    fixture.componentInstance.canManage = canManage;
+    // Ueber setInput und nicht per Zuweisung: Der Abschnitt laedt in
+    // ngOnChanges, und das feuert nur fuer echte Input-Bindungen.
+    fixture.componentRef.setInput('stateAssociation', stateAssociation);
+    fixture.componentRef.setInput('allStateAssociations', alle);
+    fixture.componentRef.setInput('canManage', canManage);
     fixture.detectChanges();
     return fixture.componentInstance;
   }
+
+  // Die Verbandsmaske rendert den Abschnitt, sobald sie aus der Route weiss,
+  // dass sie im Bearbeiten-Modus ist -- der Verband selbst kommt erst mit der
+  // Antwort des Detail-Endpunkts hinterher. Wurde nur in ngOnInit abgerufen,
+  // blieb der Abschnitt bei dem leeren Verband stehen, mit dem er angelegt
+  // wurde: In der laufenden Anwendung meldete er dann fuer jeden Verband „noch
+  // kein Spielbetrieb", waehrend die Spezifikationen gruen blieben, weil sie
+  // die Eingaben vor dem ersten Rendern setzen.
+  it('laedt nach, wenn der Verband erst nach dem Rendern eintrifft', () => {
+    const fixture = TestBed.createComponent(GameOperationSectionComponent);
+    fixture.componentRef.setInput('stateAssociation', {
+      name: '',
+      short_name: '',
+    });
+    fixture.componentRef.setInput('canManage', true);
+    fixture.detectChanges();
+
+    expect(service.getAdminGameOperations).not.toHaveBeenCalled();
+
+    fixture.componentRef.setInput('stateAssociation', WURZEL_LV);
+    fixture.detectChanges();
+
+    expect(service.adminGet).toHaveBeenCalledWith(8);
+  });
+
+  // Dasselbe fuer das Recht: Es haengt am Nutzer aus der Session, der ebenfalls
+  // nach dem ersten Rendern eintreffen kann.
+  it('laedt nach, wenn das Recht erst nach dem Rendern feststeht', () => {
+    const fixture = TestBed.createComponent(GameOperationSectionComponent);
+    fixture.componentRef.setInput('stateAssociation', WURZEL_LV);
+    fixture.componentRef.setInput('canManage', false);
+    fixture.detectChanges();
+
+    expect(service.getAdminGameOperations).not.toHaveBeenCalled();
+
+    fixture.componentRef.setInput('canManage', true);
+    fixture.detectChanges();
+
+    expect(service.adminGet).toHaveBeenCalledWith(8);
+  });
+
+  // Jede Eingabe im Formular loest eine Pruefrunde aus, und ngOnChanges feuert
+  // dabei mit. Der Abruf darf sich davon nicht wiederholen.
+  it('ruft denselben Verband nicht mehrfach ab', () => {
+    const fixture = TestBed.createComponent(GameOperationSectionComponent);
+    fixture.componentRef.setInput('stateAssociation', WURZEL_LV);
+    fixture.componentRef.setInput('canManage', true);
+    fixture.detectChanges();
+
+    fixture.componentRef.setInput('allStateAssociations', [WURZEL_LV]);
+    fixture.detectChanges();
+
+    expect(service.getAdminGameOperations).toHaveBeenCalledTimes(1);
+  });
 
   it('laedt den Spielbetrieb des Verbands', () => {
     const component = bauen(WURZEL_LV);
@@ -206,6 +262,99 @@ describe('GameOperationSectionComponent', () => {
     );
 
     expect(bauen(WURZEL_LV).hasDependencies).toBeTrue();
+  });
+
+  // Der Verbundname kommt aus dem Detail-Datensatz und nicht aus der Liste:
+  // Beide Abrufe der Verbandsmaske laufen nebeneinander, und gewinnt der
+  // Detail-Endpunkt, ist die Liste noch leer.
+  it('nennt den Verbund auch ohne geladene Verbandsliste', () => {
+    const component = bauen(
+      { ...KIND_LV, parent_name: 'Verbund Nord' } as StateAssociation,
+      true,
+      []
+    );
+
+    expect(component.verbundName).toBe('Verbund Nord');
+  });
+
+  // Ein untergeordneter Verband soll keinen eigenen Spielbetrieb haben, kann
+  // aber einen tragen. Verschwiegen waere er nirgends mehr zu sehen und damit
+  // auch nicht mehr zu loeschen.
+  it('zeigt einen gestrandeten Spielbetrieb am untergeordneten Verband', () => {
+    service.getAdminGameOperations.and.returnValue(
+      of([{ ...LISTE[0], id: 9, state_association_id: 14 } as GameOperation])
+    );
+    service.adminGet.and.returnValue(
+      of({ ...DETAIL, id: 9, state_association_id: 14 })
+    );
+
+    const fixture = TestBed.createComponent(GameOperationSectionComponent);
+    fixture.componentRef.setInput('stateAssociation', KIND_LV);
+    fixture.componentRef.setInput('allStateAssociations', [
+      KIND_LV,
+      VERBUND_LV,
+    ]);
+    fixture.componentRef.setInput('canManage', true);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.isSubordinate).toBeTrue();
+    // Das Formular, nicht nur der Datensatz: Vorher lud der Abschnitt ihn zwar,
+    // zeigte aber allein den Verbundhinweis -- ohne Loeschen-Knopf.
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('gameOperationAdmin.section.subordinateStranded');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelectorAll(
+        'input[type="text"]'
+      ).length
+    ).toBeGreaterThan(0);
+  });
+
+  // Ein untergeordneter Verband ohne eigenen Spielbetrieb bekommt weiterhin nur
+  // den Hinweis -- und vor allem keinen Anlege-Knopf.
+  it('bietet einem untergeordneten Verband kein Anlegen an', () => {
+    service.getAdminGameOperations.and.returnValue(of([]));
+
+    const fixture = TestBed.createComponent(GameOperationSectionComponent);
+    fixture.componentRef.setInput('stateAssociation', KIND_LV);
+    fixture.componentRef.setInput('allStateAssociations', [
+      KIND_LV,
+      VERBUND_LV,
+    ]);
+    fixture.componentRef.setInput('canManage', true);
+    fixture.detectChanges();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('gameOperationAdmin.section.subordinateHint');
+    expect(text).not.toContain('gameOperationAdmin.section.createButton');
+  });
+
+  // Die API setzt den Banner-Link bei jedem Upload aus dem Parameter. Fehlt er,
+  // loescht ein Bild-Upload den vorhandenen Link -- lautlos, denn die Maske
+  // zeigt danach weiter den alten Wert.
+  it('schickt den Banner-Link beim Upload mit', () => {
+    service.adminGet.and.returnValue(
+      of({ ...DETAIL, banner_link_url: 'https://fvh.example.com' })
+    );
+    service.adminUploadBanner.and.returnValue(
+      of({ banner_url: '/b.png', banner_link_url: 'https://fvh.example.com' })
+    );
+    const component = bauen(WURZEL_LV);
+    const file = new File(['x'], 'banner.png', { type: 'image/png' });
+    const input = {
+      files: [file],
+      value: 'banner.png',
+    } as unknown as HTMLInputElement;
+
+    component.onBannerSelected(input);
+
+    expect(service.adminUploadBanner).toHaveBeenCalledWith(
+      8,
+      file,
+      'https://fvh.example.com'
+    );
+    expect(component.gameOperation?.banner_link_url).toBe(
+      'https://fvh.example.com'
+    );
   });
 
   it('leitet den Pfad fuer die Vorschau aus dem Kuerzel ab', () => {
