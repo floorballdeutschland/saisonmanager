@@ -215,6 +215,51 @@ describe('ErrorInterceptor', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/']);
   });
 
+  // Die Gespann-Historie ist ein Nachschlag zur offenen Ansetzung. Der 403 ist
+  // dort keine Randlage: Die Ansetzungsliste ist über den Spielbetrieb des
+  // Spiels gescopt, `can_access_referee?` über die Person – eine
+  // LV-übergreifend angesetzte Zeile fragt beim Fokus auf Schiri 2 eine fremde
+  // Person ab. Ohne die Ausnahme wirft dieser reine Fokuswechsel den Ansetzer
+  // auf die Startseite.
+  it('leaves the assignment alone when the partner history is forbidden', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { error: 'Nicht berechtigt' },
+      403,
+      `${environment.apiURL}admin/referees/5/partners`
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  // Dieselbe Ausnahme deckt die übrigen Status mit: Ein Serverfehler beim
+  // Nachschlag darf nicht je Zeile einen nicht selbstschließenden Hinweis
+  // stapeln, während die alphabetische Kandidatenliste unbeschadet steht.
+  it('stays quiet on a server error for the partner history', () => {
+    failWith({}, 500, `${environment.apiURL}admin/referees/5/partners`);
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  // Gegenprobe: Die Ausnahme gilt nur der Gespann-Historie. Die
+  // Schiri-Detailansicht ist ein Seiteneinstieg und muss weiter umleiten.
+  it('still redirects on a 403 for the referee detail', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { error: 'Nicht berechtigt' },
+      403,
+      `${environment.apiURL}admin/referees/5`
+    );
+
+    expect(errorSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/']);
+  });
+
   // Gegenprobe: Die Ausnahme gilt nur den Dokumenten. Ein 403 auf einem
   // anderen Verwaltungsendpunkt muss weiterhin melden und umleiten, sonst
   // hätte die Ausnahme still den allgemeinen Schutz ausgehebelt.

@@ -126,6 +126,32 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Die Gespann-Historie ist ein Nachschlag zur bereits geöffneten
+        // Ansetzung, genau wie die Lizenzdokumente oben: Sie sortiert im
+        // Dropdown von Schiri 2 die Gespannpartner nach oben. Ein 403 darauf
+        // heißt „diese Historie nicht", nicht „diese Ansetzung nicht".
+        //
+        // Der 403 ist keine Randlage: Die Ansetzungsliste ist über den
+        // Spielbetrieb des Spiels gescopt, `can_access_referee?` dagegen über
+        // die Person (Vereine des LV bzw. eigener Spielbetrieb). Trägt eine
+        // bestehende Ansetzung jemanden von außerhalb dieses Personen-Scopes
+        // (LV-übergreifend durch FD/Admin angesetzt, oder eine ausgelaufene
+        // Vereinsfreigabe), fragt schon das Hineinklicken in das Feld für
+        // Schiri 2 eine fremde Person ab. Ohne diese Ausnahme wirft ein reiner
+        // Fokuswechsel den Ansetzer auf die Startseite, mitsamt Filtern und
+        // halb eingetragenen Zeilen. Dritter Fall dieser Bauart nach #240
+        // (Lizenzdokumente) und api#437 (Spielbericht).
+        //
+        // Gilt für alle Status: Ohne Historie bleibt die alphabetische
+        // Kandidatenliste stehen und die im Profil hinterlegte Nummer wird
+        // weiterhin vorgezogen, es geht also keine Entscheidung verloren. Ein
+        // Toast je Zeile wäre bei zwölf Zeilen zwölf gestapelte Meldungen.
+        // Gemeint ist nur der personenbezogene Abruf; die Eigensicht unter
+        // `referee/history/partners` hat eine eigene Ansicht und bleibt außen.
+        if (/\/referees\/\d+\/partners(\.json)?$/.test(request.url)) {
+          return throwError(() => err);
+        }
+
         // Anfragen im Spielsekretariats-Modus tragen den Einmal-Token als
         // Kopfzeile (SecretaryTokenInterceptor, der in der Kette vor diesem
         // steht). Für sie gibt es keine Sitzung, die man abmelden könnte, und

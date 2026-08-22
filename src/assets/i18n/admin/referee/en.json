@@ -132,7 +132,7 @@
     "zip": "Postal code",
     "city": "City",
     "partnerHeading": "Most frequent referee partner",
-    "partnerHint": "Enter the license number of the primary partner here. The assignment then pre-fills the second slot automatically as soon as both are available on the match day. One number is enough: other frequent partners are recognised from past appearances.",
+    "partnerHint": "Enter the license number of the primary partner here. This moves that person to the top of the assignment's selection field and thus speeds up assigning; if they have registered availability for the match day and are not already assigned elsewhere, they are suggested for the second slot. This is not a wish list: anyone missing here is assigned just the same, and no restriction follows from it. The decision stays with the assignment. One number is enough, other frequent partners appear at the top anyway – they come from past joint appearances according to the game reports. At most five names are listed at the top.",
     "partnerPlaceholder": "License number",
     "saving": "Saving…",
     "save": "Save",

@@ -7,6 +7,7 @@ import {
 import { provideRouter } from '@angular/router';
 import {
   RefereeAssignableGame,
+  RefereeAssignment,
   RefereeAssignmentAvailable,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
@@ -170,7 +171,8 @@ describe('AssignmentIndexComponent – Gespann-Kurzliste', () => {
   function candidate(
     id: number,
     nachname: string,
-    partnerLizenznummer?: number
+    partnerLizenznummer?: number,
+    lizenzstufe?: string
   ): RefereeAssignmentAvailable {
     return {
       id,
@@ -179,18 +181,43 @@ describe('AssignmentIndexComponent – Gespann-Kurzliste', () => {
       vorname: 'Vorname',
       nachname,
       partner_lizenznummer: partnerLizenznummer ?? null,
+      lizenzstufe,
     };
   }
 
-  // Zeile mit bereits geladener Kandidatenliste. Schiri 1 wird aus derselben
-  // Liste gewählt, steht also mit drin.
-  function prepareRow(candidates: RefereeAssignmentAvailable[]) {
-    component.rows = [
-      { game: { id: GAME_ID, date: '2026-08-01' }, assignment: null },
-    ];
-    const state = component['_createRowState'](null);
+  // Bestehende Ansetzung mit belegtem Platz 1. Der Server nimmt tagesgleich
+  // Angesetzte aus der Kandidatenliste, diese Person steht dort also nicht.
+  function assignmentWith(
+    refereeId: number,
+    nachname: string,
+    partnerLizenznummer?: number
+  ): RefereeAssignment {
+    return {
+      id: 500,
+      game_id: GAME_ID,
+      status: 'published',
+      referee1: {
+        id: refereeId,
+        lizenznummer_display: `${1000 + refereeId}`,
+        vorname: 'Vorname',
+        nachname,
+        partner_lizenznummer: partnerLizenznummer ?? null,
+      },
+    };
+  }
+
+  // Zeile mit bereits geladener Kandidatenliste. Ohne Ansetzung wird Schiri 1
+  // aus derselben Liste gewählt und steht damit mit drin.
+  function prepareRow(
+    candidates: RefereeAssignmentAvailable[],
+    assignment: RefereeAssignment | null = null,
+    gameId = GAME_ID
+  ) {
+    const row = { game: { id: gameId, date: '2026-08-01' }, assignment };
+    component.rows = [...component.rows, row];
+    const state = component['_createRowState'](assignment);
     state.availableReferees = candidates;
-    component.rowStates.set(GAME_ID, state);
+    component.rowStates.set(gameId, state);
     return state;
   }
 
@@ -198,10 +225,30 @@ describe('AssignmentIndexComponent – Gespann-Kurzliste', () => {
     return environment.apiURL + `admin/referees/${refereeId}/partners`;
   }
 
-  function names(query = ''): string[] {
+  function availableUrl(gameId = GAME_ID) {
+    return (
+      environment.apiURL +
+      `admin/referee_assignments/available?date=2026-08-01&game_id=${gameId}`
+    );
+  }
+
+  // Antwortzeile der Gespann-Historie.
+  function partner(refereeId: number, total: number, season = 0) {
+    return {
+      referee_id: refereeId,
+      games_total: total,
+      games_current_season: season,
+    };
+  }
+
+  function names(query = '', gameId = GAME_ID): string[] {
     return component
-      .partnerSortedReferees(GAME_ID, query)
+      .partnerSortedReferees(gameId, query)
       .map((r) => r.nachname);
+  }
+
+  function hints(gameId = GAME_ID) {
+    return component.rowStates.get(gameId)!.partnerHints;
   }
 
   it('zieht die hinterlegte Nummer vor die häufigsten Partner', () => {
@@ -315,17 +362,206 @@ describe('AssignmentIndexComponent – Gespann-Kurzliste', () => {
       .flush('kaputt', { status: 500, statusText: 'Server Error' });
 
     // Die hinterlegte Nummer steht weiter oben, sie kommt aus der
-    // Kandidatenliste und braucht die Historie nicht.
+    // Kandidatenliste und braucht die Historie nicht. Ob nach einem Fehler
+    // erneut gefragt wird, hängt am Status – siehe die beiden Fälle unten.
     expect(names()).toEqual(['Zander', 'Albert', 'Bauer']);
-
-    // Kein neuer Versuch bei jedem Fokuswechsel.
-    component.onReferee2Focus(GAME_ID);
-    httpMock.expectNone(partnersUrl(1));
   });
 
   it('ohne Schiri 1 bleibt die Reihenfolge des Servers', () => {
     prepareRow([candidate(1, 'Albert'), candidate(2, 'Bauer')]);
 
     expect(names()).toEqual(['Albert', 'Bauer']);
+  });
+
+  // Der Server nimmt tagesgleich Angesetzte aus der Kandidatenliste, also auch
+  // das Gespann dieses Spiels. Bei einer bestehenden Ansetzung steht Schiri 1
+  // dort nicht, die hinterlegte Nummer muss deshalb aus der Ansetzung kommen –
+  // sonst fehlte die Kurzliste genau in den Zeilen, für die sie gedacht ist.
+  it('löst die hinterlegte Nummer auch aus einer bestehenden Ansetzung auf', () => {
+    prepareRow(
+      [candidate(2, 'Bauer'), candidate(3, 'Zander'), candidate(4, 'Meier')],
+      assignmentWith(1, 'Albert', 1003)
+    );
+
+    component.onReferee2Focus(GAME_ID);
+    httpMock.expectOne(partnersUrl(1)).flush({ partners: [] });
+
+    expect(names()).toEqual(['Zander', 'Bauer', 'Meier']);
+    expect(hints().get(3)?.declared).toBe(true);
+  });
+
+  // Die Historie kann vor der Kandidatenliste eintreffen. Ohne den zweiten
+  // Aufbau im Erfolgszweig der Kandidatenliste bliebe die Kurzliste dann leer,
+  // bis der Ansetzer Schiri 1 neu wählt.
+  it('trägt eine früher eingetroffene Historie nach', () => {
+    prepareRow([], assignmentWith(1, 'Albert'));
+
+    component.onReferee2Focus(GAME_ID);
+
+    httpMock.expectOne(partnersUrl(1)).flush({ partners: [partner(4, 9, 2)] });
+    httpMock
+      .expectOne(availableUrl())
+      .flush([
+        candidate(2, 'Bauer'),
+        candidate(3, 'Zander'),
+        candidate(4, 'Meier'),
+      ]);
+
+    expect(names()).toEqual(['Meier', 'Bauer', 'Zander']);
+  });
+
+  // Die Vorfilter entscheiden weiter, wer überhaupt erscheint. Ein
+  // vorgezogener Partner der falschen Lizenzstufe bleibt ausgeblendet, und die
+  // Kurzliste holt ihn auch nicht zurück.
+  it('holt einen vom Vorfilter ausgeblendeten Partner nicht zurück', () => {
+    const state = prepareRow([
+      candidate(1, 'Albert', 1003, 'N2'),
+      candidate(2, 'Bauer', undefined, 'N3'),
+      candidate(3, 'Zander', undefined, 'L2'),
+    ]);
+    component.toggleLicenseLevel('N');
+
+    component.selectReferee1(GAME_ID, state.availableReferees[0]);
+    httpMock.expectOne(partnersUrl(1)).flush({ partners: [partner(3, 20, 5)] });
+
+    // Zander ist als hinterlegter Partner UND häufigster Partner vorgezogen,
+    // fällt aber durch den Lizenzfilter.
+    expect(hints().has(3)).toBe(true);
+    expect(names()).toEqual(['Albert', 'Bauer']);
+  });
+
+  it('sortiert auch innerhalb eines Suchtextes vor', () => {
+    const state = prepareRow([
+      candidate(1, 'Albert'),
+      candidate(2, 'Baum'),
+      candidate(3, 'Bauer'),
+    ]);
+
+    component.selectReferee1(GAME_ID, state.availableReferees[0]);
+    httpMock.expectOne(partnersUrl(1)).flush({ partners: [partner(3, 7, 1)] });
+
+    expect(names('bau')).toEqual(['Bauer', 'Baum']);
+  });
+
+  // Eine Anfrage, zwei Zeilen: Die zweite Zeile hat keinen eigenen Weg zur
+  // Historie, weil die Anfrage der ersten noch läuft.
+  it('trägt die Historie in alle Zeilen mit demselben Schiri 1', () => {
+    const first = prepareRow([candidate(1, 'Albert'), candidate(2, 'Bauer')]);
+    const second = prepareRow(
+      [candidate(1, 'Albert'), candidate(2, 'Bauer')],
+      null,
+      8
+    );
+
+    component.selectReferee1(GAME_ID, first.availableReferees[0]);
+    component.selectReferee1(8, second.availableReferees[0]);
+
+    httpMock.expectOne(partnersUrl(1)).flush({ partners: [partner(2, 5, 2)] });
+
+    expect(names()).toEqual(['Bauer', 'Albert']);
+    expect(names('', 8)).toEqual(['Bauer', 'Albert']);
+  });
+
+  // Was im Dropdown steht: „hinterlegt" für die Profilangabe, die Zahl
+  // gemeinsamer Einsätze für die Historie. Ohne Historieneintrag bleibt die
+  // Zahl 0 und das Template blendet sie aus.
+  it('führt Kennzeichnung und Einsatzzahlen je Kandidat mit', () => {
+    const state = prepareRow([
+      candidate(1, 'Albert', 1003),
+      candidate(3, 'Zander'),
+      candidate(4, 'Meier'),
+    ]);
+
+    component.selectReferee1(GAME_ID, state.availableReferees[0]);
+    httpMock.expectOne(partnersUrl(1)).flush({ partners: [partner(4, 12, 3)] });
+
+    expect(hints().get(3)).toEqual({
+      rank: 0,
+      declared: true,
+      gamesTotal: 0,
+      gamesCurrentSeason: 0,
+    });
+    expect(hints().get(4)).toEqual({
+      rank: 1,
+      declared: false,
+      gamesTotal: 12,
+      gamesCurrentSeason: 3,
+    });
+  });
+
+  // Weitertippen verwirft die Auswahl von Schiri 1. Bliebe die Kurzliste
+  // stehen, zeigte das Dropdown Badges und Einsatzzahlen zu einer Person, die
+  // gar nicht mehr gewählt ist.
+  it('räumt die Kurzliste auf, wenn Schiri 1 übertippt wird', () => {
+    const state = prepareRow([
+      candidate(1, 'Albert'),
+      candidate(2, 'Bauer'),
+      candidate(3, 'Zander'),
+    ]);
+
+    component.selectReferee1(GAME_ID, state.availableReferees[0]);
+    httpMock.expectOne(partnersUrl(1)).flush({ partners: [partner(3, 8, 2)] });
+    expect(names()).toEqual(['Zander', 'Albert', 'Bauer']);
+
+    component.onReferee1Input(GAME_ID, 'Alb');
+
+    expect(names()).toEqual(['Albert', 'Bauer', 'Zander']);
+  });
+
+  // 403 heißt: Diese Person liegt außerhalb des Personen-Scopes des Ansetzers.
+  // Das ändert sich in dieser Sitzung nicht, ein erneuter Versuch wäre nur
+  // Last.
+  it('fragt nach einem 403 nicht erneut', () => {
+    const state = prepareRow([candidate(1, 'Albert'), candidate(2, 'Bauer')]);
+
+    component.selectReferee1(GAME_ID, state.availableReferees[0]);
+    httpMock
+      .expectOne(partnersUrl(1))
+      .flush(
+        { error: 'Nicht berechtigt' },
+        { status: 403, statusText: 'Forbidden' }
+      );
+
+    component.onReferee2Focus(GAME_ID);
+
+    httpMock.expectNone(partnersUrl(1));
+    expect(names()).toEqual(['Albert', 'Bauer']);
+  });
+
+  // Ein Serverfehler ist vorübergehend. Würde er wie ein 403 leer gecacht,
+  // fehlte die Kurzliste dieser Person bis zum Verlassen der Ansicht.
+  it('versucht es nach einem Serverfehler erneut', () => {
+    const state = prepareRow([candidate(1, 'Albert'), candidate(2, 'Bauer')]);
+
+    component.selectReferee1(GAME_ID, state.availableReferees[0]);
+    httpMock
+      .expectOne(partnersUrl(1))
+      .flush('kaputt', { status: 500, statusText: 'Server Error' });
+
+    component.onReferee2Focus(GAME_ID);
+
+    httpMock.expectOne(partnersUrl(1)).flush({ partners: [partner(2, 4, 1)] });
+    expect(names()).toEqual(['Bauer', 'Albert']);
+  });
+
+  // Der Deckel gilt für die Kurzliste, nicht für die Historie: Mit hinterlegter
+  // Nummer bleiben vier Plätze für die häufigsten Partner.
+  it('rechnet die hinterlegte Nummer in den Deckel ein', () => {
+    const state = prepareRow([
+      candidate(1, 'Albert', 1007),
+      candidate(2, 'B'),
+      candidate(3, 'C'),
+      candidate(4, 'D'),
+      candidate(5, 'E'),
+      candidate(6, 'F'),
+      candidate(7, 'G'),
+    ]);
+
+    component.selectReferee1(GAME_ID, state.availableReferees[0]);
+    httpMock.expectOne(partnersUrl(1)).flush({
+      partners: [2, 3, 4, 5, 6].map((id) => partner(id, 10 - id, 1)),
+    });
+
+    expect(names()).toEqual(['G', 'B', 'C', 'D', 'E', 'Albert', 'F']);
   });
 });
