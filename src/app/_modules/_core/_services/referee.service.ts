@@ -25,6 +25,7 @@ import {
   PenaltyCode,
   RefereeLicenseLevel,
   RefereeMissingUserCount,
+  RefereePartnerHistory,
   RefereeProfile,
   RefereePublicLicense,
   RefereeQualificationType,
@@ -536,6 +537,15 @@ export class RefereeService {
     if (gameId) query += `&game_id=${gameId}`;
     return this.http.get<RefereeAssignmentAvailable[]>(
       environment.apiURL + 'admin/referee_assignments/available' + query
+    );
+  }
+
+  // Gespann-Historie: mit wem diese Person laut Spielbericht tatsächlich im
+  // Einsatz war, absteigend nach Einsätzen der laufenden Saison. Speist in der
+  // Ansetzung die Kurzliste im Dropdown von Schiri 2.
+  public adminGetRefereePartners(refereeId: number) {
+    return this.http.get<RefereePartnerHistory>(
+      environment.apiURL + 'admin/referees/' + refereeId + '/partners'
     );
   }
 

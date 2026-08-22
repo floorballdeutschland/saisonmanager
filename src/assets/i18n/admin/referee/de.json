@@ -132,7 +132,7 @@
     "zip": "PLZ",
     "city": "Ort",
     "partnerHeading": "Häufigste/r Schiedsrichterpartner/in",
-    "partnerHint": "Gib hier die Lizenznummer des primären Partners bzw. der primären Partnerin ein, damit uns Ansetzungen vereinfacht werden.",
+    "partnerHint": "Gib hier die Lizenznummer des primären Partners bzw. der primären Partnerin ein. Die Angabe sortiert die Person im Auswahlfeld der Ansetzung nach oben und beschleunigt so das Ansetzen; ist sie am Spieltag verfügbar und noch nicht anderweitig angesetzt, wird sie für den zweiten Platz vorgeschlagen. Das ist keine Wunschliste: Wer hier fehlt, wird genauso angesetzt, und eine Einschränkung entsteht daraus nicht. Die Entscheidung bleibt bei der Ansetzung. Eine Nummer genügt, weitere häufige Gespannpartner stehen ohnehin oben – sie kommen aus den bisherigen gemeinsamen Einsätzen laut Spielbericht. Oben stehen höchstens fünf Namen.",
     "partnerPlaceholder": "Lizenznummer",
     "saving": "Speichern…",
     "save": "Speichern",
