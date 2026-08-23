@@ -62,7 +62,6 @@
     "correctionCancel": "Abbrechen",
     "correctionWithdraw": "Zurückziehen",
     "correctionOpenRequests": "Offene Korrekturanträge",
-    "correctionValues": "{{current}} → {{requested}}",
     "correctionHistory": "Frühere Korrekturanträge",
     "correctionStatus.approved": "genehmigt",
     "correctionStatus.rejected": "abgelehnt",

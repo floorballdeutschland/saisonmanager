@@ -339,7 +339,12 @@
     "noteRequired": "Please give a short reason for the rejection.",
     "approved": "Request approved.",
     "rejected": "Request rejected.",
-    "decided": "{{status}} · {{note}}"
+    "field": {
+      "vorname": "First name",
+      "nachname": "Last name",
+      "geburtsdatum": "Date of birth",
+      "verein": "Club"
+    }
   },
   "accounts": {
     "title": "Referee user accounts",

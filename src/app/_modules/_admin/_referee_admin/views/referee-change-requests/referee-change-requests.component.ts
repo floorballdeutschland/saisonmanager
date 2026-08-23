@@ -106,13 +106,37 @@ export class RefereeChangeRequestsComponent implements OnInit, OnDestroy {
       });
   }
 
-  refereeLink(request: RefereeChangeRequest): string[] {
-    return [
-      '/',
-      'verwaltung',
-      'schiedsrichter',
-      request.referee?.lizenznummer_display || String(request.referee_id),
-    ];
+  // Die Detailseite adressiert den Schiri über die Lizenznummer. Ohne Nummer
+  // (Bestandsdaten ohne Lizenz) gibt es keinen Link: Die Referee-ID an dieser
+  // Stelle führte auf die Person mit *dieser Lizenznummer*, also auf eine
+  // fremde Akte oder ins Leere.
+  refereeLink(request: RefereeChangeRequest): string[] | null {
+    const number = request.referee?.lizenznummer_display;
+    return number ? ['/', 'verwaltung', 'schiedsrichter', number] : null;
+  }
+
+  // Die API liefert die Feldbezeichnung deutsch und den Status als rohen
+  // Schlüssel; beides gehört in der Oberfläche übersetzt.
+  fieldKey(request: RefereeChangeRequest): string {
+    return 'refereeAdmin.changeRequests.field.' + request.correction_type;
+  }
+
+  statusKey(request: RefereeChangeRequest): string {
+    return (
+      'refereeAdmin.changeRequests.status' +
+      request.status.charAt(0).toUpperCase() +
+      request.status.slice(1)
+    );
+  }
+
+  // Geburtsdaten kommen als ISO-Wert; im Rest der Verwaltung stehen Daten
+  // deutsch.
+  valueDisplay(request: RefereeChangeRequest, value?: string | null): string {
+    if (!value) return '';
+    if (request.correction_type !== 'geburtsdatum') return value;
+
+    const parts = value.split('-');
+    return parts.length === 3 ? `${parts[2]}.${parts[1]}.${parts[0]}` : value;
   }
 
   private _afterDecision(messageKey: string): void {

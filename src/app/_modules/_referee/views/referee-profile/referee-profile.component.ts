@@ -232,11 +232,44 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
     return this.openChangeRequests.some((r) => r.correction_type === type);
   }
 
+  // Felder, für die noch kein Antrag offen ist. Als Getter, damit die Zeile
+  // „Korrektur beantragen für:" ganz verschwindet, sobald für alle vier ein
+  // Antrag läuft, statt als Beschriftung ohne Knöpfe stehen zu bleiben.
+  get correctableFields(): RefereeCorrectionType[] {
+    return this.correctionFields.filter((f) => !this.pendingCorrectionFor(f));
+  }
+
+  // Das Geburtsdatum kommt aus der API als ISO-Wert, im gesperrten Feld darüber
+  // steht es aber deutsch. Ohne diese Umformung stünden im selben Block
+  // „23.08.1990" und „1990-08-23" untereinander.
+  correctionValueDisplay(
+    request: RefereeChangeRequest,
+    value?: string | null
+  ): string {
+    if (!value) return '';
+    if (request.correction_type !== 'geburtsdatum') return value;
+
+    const parts = value.split('-');
+    return parts.length === 3 ? `${parts[2]}.${parts[1]}.${parts[0]}` : value;
+  }
+
+  // Deutsche Feldbezeichnung der API nicht durchreichen: In der englischen
+  // Oberfläche stünde sonst „Geburtsdatum" mitten im englischen Text.
+  correctionFieldKey(request: RefereeChangeRequest): string {
+    return 'refereeSelf.profile.correctionField.' + request.correction_type;
+  }
+
+  correctionStatusKey(request: RefereeChangeRequest): string {
+    return 'refereeSelf.profile.correctionStatus.' + request.status;
+  }
+
   // Alle aktiven Vereine außer dem eigenen: Ein Antrag auf den Verein, in dem
   // die Person schon ist, würde nichts ändern und die API weist ihn ab.
+  // Verglichen wird die ID und nicht der Name, sonst fiele bei zwei
+  // gleichnamigen Vereinen der falsche aus der Auswahl.
   get correctionClubs(): ExclusionClub[] {
-    const ownName = this.profile?.verein;
-    const next = this.clubs.filter((c) => c.name !== ownName);
+    const ownId = this.profile?.club_id;
+    const next = this.clubs.filter((c) => c.id !== ownId);
     const cache = this._correctionClubsCache;
     if (
       next.length !== cache.length ||
@@ -272,6 +305,14 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
       : !!this.correctionForm.new_value.trim();
   }
 
+  // Die Antragsfelder liegen im Profil-Formular. Ohne diesen Abfangjäger löst
+  // Enter dort die Formularabsendung aus: Das Profil würde gespeichert und
+  // gemeldet, der Antrag aber nie gestellt.
+  submitCorrectionFromKey(event: Event): void {
+    event.preventDefault();
+    this.submitCorrection();
+  }
+
   submitCorrection(): void {
     if (!this.correctionForm || !this.canSubmitCorrection()) return;
 
@@ -292,7 +333,10 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (payload) => {
           this._applyChangeRequestPayload(payload);
-          this.correctionForm = null;
+          // Nur schließen, wenn noch dasselbe Formular offen steht: Wer
+          // während des Absendens abbricht und ein zweites Feld öffnet, soll
+          // dieses nicht durch die eintreffende Antwort verlieren.
+          if (this.correctionForm === form) this.correctionForm = null;
           this.correctionBusy = false;
           this._cdr.markForCheck();
           this._notificationService.success(

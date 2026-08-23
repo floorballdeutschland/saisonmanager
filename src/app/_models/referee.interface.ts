@@ -201,6 +201,10 @@ export interface RefereeProfile {
   gueltigkeit?: string;
   geburtsdatum?: string;
   verein?: string;
+  // Vereins-ID zum Namen: Die Vereinsauswahl im Korrekturantrag blendet den
+  // eigenen Verein aus, und über den Namen wäre das bei zwei gleichnamigen
+  // Vereinen der falsche.
+  club_id?: number | null;
   landesverband?: string;
   strasse?: string;
   hausnummer?: string;

@@ -135,4 +135,29 @@ describe('RefereeChangeRequestsComponent', () => {
       '4711',
     ]);
   });
+
+  // Ohne Lizenznummer fuehrte die Referee-ID an dieser Stelle auf die Person
+  // mit genau dieser Lizenznummer, also auf eine fremde Akte.
+  it('verlinkt nicht, wenn keine Lizenznummer da ist', async () => {
+    await setUp();
+
+    const ohneNummer = {
+      ...REQUEST,
+      referee: { ...REQUEST.referee!, lizenznummer_display: '' },
+    };
+    expect(component.refereeLink(ohneNummer)).toBeNull();
+  });
+
+  it('zeigt Geburtsdaten deutsch und laesst andere Werte unveraendert', async () => {
+    await setUp();
+
+    const geburtstag = {
+      ...REQUEST,
+      correction_type: 'geburtsdatum' as const,
+      requested_value: '1991-02-03',
+    };
+    expect(component.valueDisplay(geburtstag, '1991-02-03')).toBe('03.02.1991');
+    expect(component.valueDisplay(REQUEST, 'Musterfrau')).toBe('Musterfrau');
+    expect(component.valueDisplay(REQUEST, null)).toBe('');
+  });
 });

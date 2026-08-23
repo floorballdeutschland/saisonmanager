@@ -339,7 +339,12 @@
     "noteRequired": "Bitte eine kurze Begründung für die Ablehnung angeben.",
     "approved": "Antrag genehmigt.",
     "rejected": "Antrag abgelehnt.",
-    "decided": "{{status}} · {{note}}"
+    "field": {
+      "vorname": "Vorname",
+      "nachname": "Nachname",
+      "geburtsdatum": "Geburtsdatum",
+      "verein": "Verein"
+    }
   },
   "accounts": {
     "title": "Schiedsrichter-Benutzerkonten",

@@ -34,6 +34,7 @@ const PROFILE: RefereeProfile = {
   vorname: 'Anna',
   nachname: 'Beispiel',
   verein: 'Eigener Verein',
+  club_id: 1,
   change_requests: [OPEN_REQUEST, DECIDED_REQUEST],
 };
 
@@ -59,6 +60,8 @@ describe('RefereeProfileComponent (Stammdaten-Korrekturen)', () => {
         of([
           { id: 1, name: 'Eigener Verein' },
           { id: 2, name: 'Neuer Verein' },
+          // Gleicher Name, anderer Verein: darf nicht mit ausgeblendet werden.
+          { id: 3, name: 'Eigener Verein' },
         ])
       ),
       createChangeRequest: jasmine
@@ -131,16 +134,53 @@ describe('RefereeProfileComponent (Stammdaten-Korrekturen)', () => {
     });
   });
 
-  // Der eigene Verein wuerde nichts aendern, die API weist ihn ab.
+  // Der eigene Verein wuerde nichts aendern, die API weist ihn ab. Verglichen
+  // wird die ID: Bei zwei gleichnamigen Vereinen fiele sonst der falsche raus.
   it('bietet den eigenen Verein nicht zur Auswahl an', async () => {
     await setUp();
 
     component.startCorrection('verein');
 
     expect(refereeService.getExclusionClubs).toHaveBeenCalled();
-    expect(component.correctionClubs.map((c) => c.name)).toEqual([
-      'Neuer Verein',
+    expect(component.correctionClubs.map((c) => c.id)).toEqual([2, 3]);
+  });
+
+  it('zeigt nur die Felder ohne offenen Antrag zur Auswahl', async () => {
+    await setUp();
+
+    expect(component.correctableFields).toEqual([
+      'nachname',
+      'geburtsdatum',
+      'verein',
     ]);
+  });
+
+  it('zeigt Geburtsdaten deutsch, andere Werte unveraendert', async () => {
+    await setUp();
+
+    const geburtstag = {
+      ...OPEN_REQUEST,
+      correction_type: 'geburtsdatum' as const,
+    };
+    expect(component.correctionValueDisplay(geburtstag, '1991-02-03')).toBe(
+      '03.02.1991'
+    );
+    expect(component.correctionValueDisplay(OPEN_REQUEST, 'Anne')).toBe('Anne');
+  });
+
+  // Enter im Antragsfeld darf nicht das umgebende Profil-Formular abschicken.
+  it('faengt Enter im Antragsfeld ab und stellt den Antrag', async () => {
+    await setUp();
+
+    component.startCorrection('nachname');
+    component.correctionForm!.new_value = 'Musterfrau';
+    const event = new KeyboardEvent('keydown', { key: 'Enter' });
+    spyOn(event, 'preventDefault');
+    component.submitCorrectionFromKey(event);
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(refereeService.createChangeRequest).toHaveBeenCalled();
+    expect(refereeService.updateProfile).not.toHaveBeenCalled();
   });
 
   it('schickt keinen leeren Antrag ab', async () => {

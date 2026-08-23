@@ -52,11 +52,17 @@
           class="border border-fb-gray-700 rounded-[5px] p-4 flex flex-col gap-2"
         >
           <div class="flex flex-wrap items-baseline gap-2">
-            <a
-              [routerLink]="refereeLink(request)"
-              class="text-sm font-bold underline"
-              >{{ request.referee?.vorname }} {{ request.referee?.nachname }}</a
-            >
+            @if (refereeLink(request); as link) {
+              <a [routerLink]="link" class="text-sm font-bold underline"
+                >{{ request.referee?.vorname }}
+                {{ request.referee?.nachname }}</a
+              >
+            } @else {
+              <span class="text-sm font-bold"
+                >{{ request.referee?.vorname }}
+                {{ request.referee?.nachname }}</span
+              >
+            }
             <span class="text-xs text-fb-gray-500"
               >{{ request.referee?.lizenznummer_display }} ·
               {{ request.referee?.club_name }}</span
@@ -64,13 +70,15 @@
           </div>
 
           <p class="text-sm">
-            <span class="font-bold">{{ request.label }}:</span>
+            <span class="font-bold">{{ fieldKey(request) | transloco }}:</span>
             <span class="text-fb-gray-500">{{
-              request.current_value ||
+              valueDisplay(request, request.current_value) ||
                 ("refereeAdmin.changeRequests.noValue" | transloco)
             }}</span>
             <span class="mx-1">→</span>
-            <span class="font-bold">{{ request.requested_value }}</span>
+            <span class="font-bold">{{
+              valueDisplay(request, request.requested_value)
+            }}</span>
           </p>
           @if (request.reason) {
             <p class="text-sm text-fb-gray-500">{{ request.reason }}</p>
@@ -107,14 +115,10 @@
             </div>
           } @else {
             <p class="text-xs text-fb-gray-500">
-              {{
-                "refereeAdmin.changeRequests.decided"
-                  | transloco
-                    : {
-                        status: request.status,
-                        note: request.decision_note || "",
-                      }
-              }}
+              {{ statusKey(request) | transloco }}
+              @if (request.decision_note) {
+                <span>· {{ request.decision_note }}</span>
+              }
             </p>
           }
         </div>
