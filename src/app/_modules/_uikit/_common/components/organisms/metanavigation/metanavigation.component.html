@@ -182,6 +182,7 @@
     showItem("menu_item_referee_profile") ||
     showItem("menu_item_referee_vm") ||
     showItem("menu_item_referee_exclusions") ||
+    showItem("menu_item_referee_change_requests") ||
     showItem("menu_item_referee_settings")
   ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
@@ -302,6 +303,16 @@
               [routerLink]="['/', 'verwaltung', 'schiedsrichter-verein']"
               (click)="closeMenu()"
               >{{ "nav.refereesVm" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_change_requests")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'schiedsrichter-korrekturen']"
+              (click)="closeMenu()"
+              >{{ "nav.refereeChangeRequests" | transloco }}</a
             >
           </li>
         }

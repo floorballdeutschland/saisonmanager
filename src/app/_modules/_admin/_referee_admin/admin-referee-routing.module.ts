@@ -69,6 +69,15 @@ const routes: Routes = [
     data: { scrollTop: true, permission: 'menu_item_referee_exclusions' },
   },
   {
+    // Stammdaten-Korrekturen der Schiris; wie die Ausschluesse ein eigener
+    // Pfad, weil die Seite nicht zu einem einzelnen Schiedsrichter gehoert.
+    path: 'verwaltung/schiedsrichter-korrekturen',
+    pathMatch: 'full',
+    component: Views.RefereeChangeRequestsComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_change_requests' },
+  },
+  {
     path: 'verwaltung/schiedsrichter/:lizenznummer',
     pathMatch: 'full',
     component: Views.RefereeDetailComponent,

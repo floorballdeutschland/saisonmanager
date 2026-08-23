@@ -9,7 +9,7 @@
     "sectionContact": "Name & Kontakt",
     "firstName": "Vorname",
     "lastName": "Nachname",
-    "nameReadOnlyHint": "Dein Name steht auf deinem digitalen Schiedsrichterausweis und wird deshalb ausschließlich von deiner Verbandsgeschäftsstelle gepflegt. Wende dich bei einer Änderung bitte dorthin.",
+    "nameReadOnlyHint": "Name, Geburtsdatum und Verein stehen auf deinem digitalen Schiedsrichterausweis bzw. bestimmen, wer dich ansetzt. Sie sind deshalb hier gesperrt. Ist eine Angabe falsch, stelle einen Korrekturantrag: Er geht an die Schiedsrichterkommission deines Landesverbands, und mit der Genehmigung wird der Wert übernommen.",
     "email": "E-Mail",
     "phone": "Telefonnummer",
     "phoneHint": "Die Telefonnummer wird ausschließlich in dringenden Fällen von der RSK bei der Ansetzung genutzt. Eine Weitergabe an Dritte oder eine Nutzung zu anderen Zwecken erfolgt nicht.",
@@ -45,7 +45,27 @@
     "exclusionReason": "Begründung",
     "exclusionReasonPlaceholder": "z. B. Tochter spielt dort",
     "exclusionSubmit": "Antrag stellen",
-    "exclusionCancel": "Abbrechen"
+    "exclusionCancel": "Abbrechen",
+    "birthdate": "Geburtsdatum",
+    "club": "Verein",
+    "correctionRequest": "Korrektur beantragen für:",
+    "correctionField.vorname": "Vorname",
+    "correctionField.nachname": "Nachname",
+    "correctionField.geburtsdatum": "Geburtsdatum",
+    "correctionField.verein": "Verein",
+    "correctionFor": "Korrektur beantragen: {{field}}",
+    "correctionClubPlaceholder": "Verein suchen",
+    "correctionValuePlaceholder": "Neuer Wert",
+    "correctionReason": "Begründung (optional)",
+    "correctionReasonPlaceholder": "z. B. Heirat, Vereinswechsel, Tippfehler",
+    "correctionSubmit": "Antrag stellen",
+    "correctionCancel": "Abbrechen",
+    "correctionWithdraw": "Zurückziehen",
+    "correctionOpenRequests": "Offene Korrekturanträge",
+    "correctionHistory": "Frühere Korrekturanträge",
+    "correctionStatus.approved": "genehmigt",
+    "correctionStatus.rejected": "abgelehnt",
+    "correctionStatus.withdrawn": "zurückgezogen"
   },
   "card": {
     "title": "Mein Ausweis",
@@ -163,6 +183,7 @@
     "gameDayConfirmed": "Spieltag bestätigt.",
     "gameDayReportSaved": "Meldung gespeichert.",
     "gameDaySaveError": "Speichern fehlgeschlagen.",
-    "exclusionRequested": "Antrag an die Ansetzung übermittelt."
+    "exclusionRequested": "Antrag an die Ansetzung übermittelt.",
+    "correctionRequested": "Korrekturantrag an deinen Landesverband übermittelt."
   }
 }
