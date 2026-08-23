@@ -15,6 +15,7 @@ import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitTeamModule } from '@floorball/uikit/team';
 import {
+  Club,
   LicenseDocument,
   Player,
   PlayerLicense,
@@ -53,6 +54,50 @@ describe('PlayerEditComponent', () => {
   it('should create', () => {
     const fixture = TestBed.createComponent(PlayerEditComponent);
     expect(fixture.componentInstance).toBeTruthy();
+  });
+
+  // fe#318: Die Karte „Zusatzverein hinzufügen" weist einen Verein zu, die
+  // Liste `allClubs` benennt daneben aber auch die bestehenden Zugehörigkeiten.
+  // Eingegrenzt wird deshalb nur die Auswahl.
+  describe('assignableClubs', () => {
+    function build(clubs: Club[]): PlayerEditComponent {
+      const component =
+        TestBed.createComponent(PlayerEditComponent).componentInstance;
+      component.player = { clubs: [] } as unknown as Player;
+      component.allClubs = clubs;
+      component['_refreshAssignableClubs']();
+      return component;
+    }
+
+    it('bietet keine deaktivierten Vereine zur Auswahl an', () => {
+      const component = build([
+        { id: 1, name: 'Aktiv' } as Club,
+        { id: 2, name: 'Deaktiviert', deactivated: true } as Club,
+      ]);
+
+      expect(component.assignableClubs.map((c) => c.id)).toEqual([1]);
+    });
+
+    it('behält den deaktivierten Verein zum Nachschlagen in allClubs', () => {
+      const component = build([
+        { id: 2, name: 'Deaktiviert', deactivated: true } as Club,
+      ]);
+
+      expect(component.getClubNameById(2)).toBe('Deaktiviert');
+    });
+
+    // „Erneut freigeben" weist denselben Verein erneut zu, geht dafür aber
+    // nicht über `assignableClubs`. Ohne eigene Prüfung bliebe dieser Weg offen.
+    it('erkennt den deaktivierten Verein für „Erneut freigeben"', () => {
+      const component = build([
+        { id: 1, name: 'Aktiv' } as Club,
+        { id: 2, name: 'Deaktiviert', deactivated: true } as Club,
+      ]);
+
+      expect(component.isClubDeactivated(2)).toBe(true);
+      expect(component.isClubDeactivated(1)).toBe(false);
+      expect(component.isClubDeactivated(99)).toBe(false);
+    });
   });
 
   describe('licenseSeasonGroups', () => {

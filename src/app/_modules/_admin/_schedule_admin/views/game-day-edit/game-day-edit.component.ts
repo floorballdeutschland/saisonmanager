@@ -277,7 +277,13 @@ export class GameDayEditComponent implements OnInit {
 
   private _filterClubs(): void {
     const q = this.clubQuery.trim().toLowerCase();
-    const source = this.allClubs;
+    // Ein deaktivierter Verein richtet keinen Spieltag mehr aus und steht
+    // deshalb nicht zur Wahl (fe#318). Der bereits eingetragene Ausrichter
+    // bleibt drin, damit ein Bestands-Spieltag seinen Verein behält, und sein
+    // Name kommt ohnehin aus der vollen Liste (_clubNameForCurrentSelection).
+    const source = this.allClubs.filter(
+      (c) => !c.deactivated || c.id === this.gameday?.club_id
+    );
     this.filteredClubs =
       q.length === 0
         ? source.slice(0, 50)
