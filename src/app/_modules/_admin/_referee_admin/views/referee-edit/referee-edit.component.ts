@@ -181,6 +181,20 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
     return this.licenseLevels.some((l) => l.name === name);
   }
 
+  /**
+   * Auswahl des Feldes „Verein". Ein deaktivierter Verein nimmt keinen
+   * Schiedsrichter mehr auf und steht deshalb nicht zur Wahl (fe#318). Der
+   * bereits eingetragene Verein bleibt in der Liste: `fb-select-search` liest
+   * sein Label aus `items`, ohne ihn stünde das Feld leer, obwohl der Verein am
+   * Schiedsrichter hängt. `clubs` bleibt vollständig, `derivedLandesverband`
+   * schlägt dort nach.
+   */
+  get selectableClubs(): Club[] {
+    return this.clubs.filter(
+      (club) => !club.deactivated || club.id === this.referee.club_id
+    );
+  }
+
   get derivedLandesverband(): string {
     if (!this.referee.club_id) return '';
     const club = this.clubs.find((c) => c.id === this.referee.club_id);

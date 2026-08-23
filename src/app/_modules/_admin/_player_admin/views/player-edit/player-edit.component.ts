@@ -421,10 +421,18 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Auswahl der Karte „Zusatzverein hinzufügen". Ein deaktivierter Verein nimmt
+   * keine Spieler mehr auf und steht deshalb nicht zur Wahl (fe#318); die volle
+   * Liste bleibt in `allClubs`, denn `getClubNameById()` benennt damit die
+   * bestehenden Zugehörigkeiten, auch die zu deaktivierten Vereinen.
+   */
   private _refreshAssignableClubs(): void {
     this.assignableClubs = this.allClubs.filter(
       (club) =>
-        !this.isAdditionalClubActive(club.id) && !this.isHomeClub(club.id)
+        !club.deactivated &&
+        !this.isAdditionalClubActive(club.id) &&
+        !this.isHomeClub(club.id)
     );
   }
 

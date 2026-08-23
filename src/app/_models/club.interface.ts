@@ -38,6 +38,15 @@ export interface Club {
   logo_small_url?: string;
   deactivated_at?: string;
   deactivated_by?: number;
+  /**
+   * Nur in der Vereinsliste der Verwaltung (`admin/clubs/all.json`): Ist der
+   * Verein deaktiviert? Masken, die einen Verein zuweisen UND den bereits
+   * gespeicherten benennen, grenzen damit nur ihre Auswahl ein und behalten die
+   * volle Liste zum Nachschlagen. `deactivated_at` selbst liefert dieser
+   * Endpunkt bewusst nicht, er teilt seine Darstellung mit den öffentlichen
+   * Endpunkten.
+   */
+  deactivated?: boolean;
 }
 
 export interface ClubWithTeams extends Club {
