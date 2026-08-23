@@ -47,5 +47,13 @@ describe('RefereeEditComponent', () => {
     it('behält den bereits eingetragenen Verein in der Liste', () => {
       expect(build(2).selectableClubs.map((c) => c.id)).toEqual([1, 2]);
     });
+
+    // fb-select-search wertet jede neue Referenz in ngOnChanges aus; bei
+    // unveränderter Auswahl muss dieselbe Liste zurückkommen.
+    it('liefert bei unveränderter Auswahl dieselbe Referenz', () => {
+      const component = build();
+
+      expect(component.selectableClubs).toBe(component.selectableClubs);
+    });
   });
 });

@@ -710,7 +710,8 @@
                     <div class="flex flex-row items-center">
                       @if (
                         can("player_add_additional_clubs") &&
-                        !isAdditionalClubActive(additionalClub.club_id)
+                        !isAdditionalClubActive(additionalClub.club_id) &&
+                        !isClubDeactivated(additionalClub.club_id)
                       ) {
                         <a
                           class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"

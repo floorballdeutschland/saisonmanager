@@ -188,12 +188,26 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
    * sein Label aus `items`, ohne ihn stünde das Feld leer, obwohl der Verein am
    * Schiedsrichter hängt. `clubs` bleibt vollständig, `derivedLandesverband`
    * schlägt dort nach.
+   *
+   * Bei unveränderter Auswahl kommt die bisherige Liste zurück, damit das
+   * Suchfeld nicht bei jeder Change-Detection eine neue Referenz sieht (gleiches
+   * Muster wie `selectableClubs` im Schiedsrichter-Profil).
    */
   get selectableClubs(): Club[] {
-    return this.clubs.filter(
+    const next = this.clubs.filter(
       (club) => !club.deactivated || club.id === this.referee.club_id
     );
+    const cache = this._selectableClubsCache;
+    if (
+      next.length !== cache.length ||
+      next.some((c, i) => c.id !== cache[i].id)
+    ) {
+      this._selectableClubsCache = next;
+    }
+    return this._selectableClubsCache;
   }
+
+  private _selectableClubsCache: Club[] = [];
 
   get derivedLandesverband(): string {
     if (!this.referee.club_id) return '';

@@ -464,6 +464,16 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     return this.allClubs.find((club) => club.id === id)?.name || '(unbekannt)';
   }
 
+  /**
+   * Ein deaktivierter Verein nimmt keine Spieler mehr auf (fe#318). Neben der
+   * Auswahl in `assignableClubs` betrifft das „Erneut freigeben" an einer
+   * abgelaufenen Zusatzmitgliedschaft: Der Knopf weist denselben Verein erneut
+   * zu, geht dafür aber nicht über die Auswahl.
+   */
+  public isClubDeactivated(id: number | undefined): boolean {
+    return this.allClubs.find((club) => club.id === id)?.deactivated === true;
+  }
+
   public newPlayer(): void {
     this.player = {
       id: 0,

@@ -85,6 +85,19 @@ describe('PlayerEditComponent', () => {
 
       expect(component.getClubNameById(2)).toBe('Deaktiviert');
     });
+
+    // „Erneut freigeben" weist denselben Verein erneut zu, geht dafür aber
+    // nicht über `assignableClubs`. Ohne eigene Prüfung bliebe dieser Weg offen.
+    it('erkennt den deaktivierten Verein für „Erneut freigeben"', () => {
+      const component = build([
+        { id: 1, name: 'Aktiv' } as Club,
+        { id: 2, name: 'Deaktiviert', deactivated: true } as Club,
+      ]);
+
+      expect(component.isClubDeactivated(2)).toBe(true);
+      expect(component.isClubDeactivated(1)).toBe(false);
+      expect(component.isClubDeactivated(99)).toBe(false);
+    });
   });
 
   describe('licenseSeasonGroups', () => {
