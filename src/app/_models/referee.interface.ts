@@ -210,6 +210,48 @@ export interface RefereeProfile {
   kurzfristig_mobil?: boolean;
   club_exclusions?: RefereeClubExclusion[];
   club_exclusion_requests?: RefereeClubExclusionRequest[];
+  // Korrekturanträge zu den gesperrten Stammdaten (Name, Geburtsdatum, Verein).
+  change_requests?: RefereeChangeRequest[];
+}
+
+// Feld, für das eine Korrektur beantragt werden kann. Die Werte sind die
+// correction_type der API.
+export type RefereeCorrectionType =
+  | 'vorname'
+  | 'nachname'
+  | 'geburtsdatum'
+  | 'verein';
+
+export interface RefereeChangeRequest {
+  id: number;
+  referee_id: number;
+  correction_type: RefereeCorrectionType;
+  // Deutsche Feldbezeichnung aus der API (für Mail und Verlauf).
+  label: string;
+  // Roher neuer Wert; beim Geburtsdatum ISO (JJJJ-MM-TT), beim Verein null.
+  new_value?: string | null;
+  new_club_id?: number | null;
+  new_club_name?: string | null;
+  // Stand am Profil zum Abrufzeitpunkt bzw. der beantragte Wert, beide bereits
+  // als Text: Beim Verein steht hier der Name und nicht die ID.
+  current_value?: string | null;
+  requested_value?: string | null;
+  reason?: string | null;
+  status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
+  decision_note?: string | null;
+  decided_at?: string | null;
+  created_at?: string;
+  referee?: {
+    id: number;
+    lizenznummer_display: string;
+    vorname: string;
+    nachname: string;
+    club_name?: string | null;
+  };
+}
+
+export interface RefereeChangeRequestPayload {
+  change_requests: RefereeChangeRequest[];
 }
 
 // Ein Verein, für den die Person nicht angesetzt werden möchte. „own_club" ist

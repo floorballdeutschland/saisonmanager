@@ -9,7 +9,7 @@
     "sectionContact": "Name & contact",
     "firstName": "First name",
     "lastName": "Last name",
-    "nameReadOnlyHint": "Your name appears on your digital referee ID card and is therefore maintained exclusively by your association office. Please contact them if it needs to change.",
+    "nameReadOnlyHint": "Your name, date of birth and club appear on your digital referee card or determine who assigns you, so they are read-only here. If something is wrong, submit a correction request: it goes to the referee committee of your state association and is applied once approved.",
     "email": "Email",
     "phone": "Phone number",
     "phoneHint": "The phone number is used by the RSK solely in urgent cases during assignment. It is not shared with third parties or used for any other purpose.",
@@ -45,7 +45,28 @@
     "exclusionReason": "Reason",
     "exclusionReasonPlaceholder": "e.g. my daughter plays there",
     "exclusionSubmit": "Submit request",
-    "exclusionCancel": "Cancel"
+    "exclusionCancel": "Cancel",
+    "birthdate": "Date of birth",
+    "club": "Club",
+    "correctionRequest": "Request a correction for:",
+    "correctionField.vorname": "First name",
+    "correctionField.nachname": "Last name",
+    "correctionField.geburtsdatum": "Date of birth",
+    "correctionField.verein": "Club",
+    "correctionFor": "Request a correction: {{field}}",
+    "correctionClubPlaceholder": "Search club",
+    "correctionValuePlaceholder": "New value",
+    "correctionReason": "Reason (optional)",
+    "correctionReasonPlaceholder": "e.g. marriage, club change, typo",
+    "correctionSubmit": "Submit request",
+    "correctionCancel": "Cancel",
+    "correctionWithdraw": "Withdraw",
+    "correctionOpenRequests": "Open correction requests",
+    "correctionValues": "{{current}} → {{requested}}",
+    "correctionHistory": "Earlier correction requests",
+    "correctionStatus.approved": "approved",
+    "correctionStatus.rejected": "rejected",
+    "correctionStatus.withdrawn": "withdrawn"
   },
   "card": {
     "title": "My card",
@@ -163,6 +184,7 @@
     "gameDayConfirmed": "Match day confirmed.",
     "gameDayReportSaved": "Report saved.",
     "gameDaySaveError": "Saving failed.",
-    "exclusionRequested": "Request sent to the assigners."
+    "exclusionRequested": "Request sent to the assigners.",
+    "correctionRequested": "Correction request sent to your state association."
   }
 }

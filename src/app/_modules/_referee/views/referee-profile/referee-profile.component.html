@@ -54,10 +54,192 @@
               class="border border-fb-gray-700 bg-fb-gray-800 text-fb-gray-500 rounded-[5px] px-3 py-2 text-sm"
             />
           </div>
-          <div class="flex flex-col gap-1 col-span-2">
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-bold">{{
+              "refereeSelf.profile.birthdate" | transloco
+            }}</label>
+            <input
+              type="text"
+              [value]="profile.geburtsdatum || ''"
+              readonly
+              class="border border-fb-gray-700 bg-fb-gray-800 text-fb-gray-500 rounded-[5px] px-3 py-2 text-sm"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-bold">{{
+              "refereeSelf.profile.club" | transloco
+            }}</label>
+            <input
+              type="text"
+              [value]="profile.verein || ''"
+              readonly
+              class="border border-fb-gray-700 bg-fb-gray-800 text-fb-gray-500 rounded-[5px] px-3 py-2 text-sm"
+            />
+          </div>
+          <!-- Stammdaten-Korrekturen -->
+          <div class="flex flex-col gap-2 col-span-2">
             <p class="text-xs text-fb-gray-500">
               {{ "refereeSelf.profile.nameReadOnlyHint" | transloco }}
             </p>
+
+            @if (openChangeRequests.length) {
+              <div class="flex flex-col gap-2">
+                <h4 class="text-xs font-bold uppercase text-fb-gray-500">
+                  {{ "refereeSelf.profile.correctionOpenRequests" | transloco }}
+                </h4>
+                @for (req of openChangeRequests; track req.id) {
+                  <div
+                    class="flex flex-wrap items-center gap-2 text-sm bg-fb-gray-900 rounded-[5px] px-3 py-2"
+                  >
+                    <span class="font-bold">{{ req.label }}</span>
+                    <span class="text-xs text-fb-gray-500">{{
+                      "refereeSelf.profile.correctionValues"
+                        | transloco
+                          : {
+                              current: req.current_value || "",
+                              requested: req.requested_value || "",
+                            }
+                    }}</span>
+                    <button
+                      type="button"
+                      [disabled]="correctionBusy"
+                      (click)="withdrawCorrection(req.id)"
+                      class="ml-auto text-xs underline disabled:opacity-50"
+                    >
+                      {{ "refereeSelf.profile.correctionWithdraw" | transloco }}
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (correctionForm) {
+              <div
+                class="flex flex-col gap-2 border border-fb-gray-600 rounded-[5px] p-3"
+              >
+                <p class="text-sm font-bold">
+                  {{
+                    "refereeSelf.profile.correctionFor"
+                      | transloco
+                        : {
+                            field:
+                              "refereeSelf.profile.correctionField." +
+                                correctionForm.correction_type | transloco,
+                          }
+                  }}
+                </p>
+                @if (correctionForm.correction_type === "verein") {
+                  <fb-select-search
+                    [(ngModel)]="correctionForm.new_club_id"
+                    name="correction_club_id"
+                    [ngModelOptions]="{ standalone: true }"
+                    [items]="correctionClubs"
+                    [placeholder]="
+                      'refereeSelf.profile.correctionClubPlaceholder'
+                        | transloco
+                    "
+                    class="max-w-md"
+                  />
+                } @else if (correctionForm.correction_type === "geburtsdatum") {
+                  <input
+                    type="date"
+                    [(ngModel)]="correctionForm.new_value"
+                    name="correction_birthdate"
+                    [ngModelOptions]="{ standalone: true }"
+                    class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm max-w-xs"
+                  />
+                } @else {
+                  <input
+                    type="text"
+                    maxlength="120"
+                    [(ngModel)]="correctionForm.new_value"
+                    name="correction_value"
+                    [ngModelOptions]="{ standalone: true }"
+                    [placeholder]="
+                      'refereeSelf.profile.correctionValuePlaceholder'
+                        | transloco
+                    "
+                    class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm max-w-md"
+                  />
+                }
+                <label class="text-sm font-bold">{{
+                  "refereeSelf.profile.correctionReason" | transloco
+                }}</label>
+                <input
+                  type="text"
+                  maxlength="200"
+                  [(ngModel)]="correctionForm.reason"
+                  name="correction_reason"
+                  [ngModelOptions]="{ standalone: true }"
+                  [placeholder]="
+                    'refereeSelf.profile.correctionReasonPlaceholder'
+                      | transloco
+                  "
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm max-w-md"
+                />
+                <div class="flex items-center gap-3">
+                  <button
+                    type="button"
+                    [disabled]="correctionBusy || !canSubmitCorrection()"
+                    (click)="submitCorrection()"
+                    class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] disabled:opacity-50"
+                  >
+                    {{ "refereeSelf.profile.correctionSubmit" | transloco }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="cancelCorrection()"
+                    class="text-sm underline"
+                  >
+                    {{ "refereeSelf.profile.correctionCancel" | transloco }}
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="text-xs text-fb-gray-500">{{
+                  "refereeSelf.profile.correctionRequest" | transloco
+                }}</span>
+                @for (field of correctionFields; track field) {
+                  @if (!pendingCorrectionFor(field)) {
+                    <button
+                      type="button"
+                      (click)="startCorrection(field)"
+                      class="text-sm underline"
+                    >
+                      {{
+                        "refereeSelf.profile.correctionField." + field
+                          | transloco
+                      }}
+                    </button>
+                  }
+                }
+              </div>
+            }
+
+            @if (decidedChangeRequests.length) {
+              <details class="text-xs text-fb-gray-500">
+                <summary class="cursor-pointer">
+                  {{ "refereeSelf.profile.correctionHistory" | transloco }}
+                </summary>
+                <ul class="flex flex-col gap-1 mt-2">
+                  @for (req of decidedChangeRequests; track req.id) {
+                    <li>
+                      <span class="font-bold">{{ req.label }}</span>
+                      {{ req.requested_value }}
+                      ·
+                      {{
+                        "refereeSelf.profile.correctionStatus." + req.status
+                          | transloco
+                      }}
+                      @if (req.decision_note) {
+                        <span>· {{ req.decision_note }}</span>
+                      }
+                    </li>
+                  }
+                </ul>
+              </details>
+            }
           </div>
           <div class="flex flex-col gap-1 col-span-2">
             <label class="text-sm font-bold">{{

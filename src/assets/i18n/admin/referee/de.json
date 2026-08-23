@@ -321,6 +321,26 @@
     "rejected": "Antrag abgelehnt.",
     "decided": "{{status}} · {{note}}"
   },
+  "changeRequests": {
+    "back": "← Zurück zur Schiedsrichterverwaltung",
+    "title": "Stammdaten-Korrekturen",
+    "hint": "Anträge der Schiedsrichter auf Korrektur von Vorname, Nachname, Geburtsdatum oder Verein. Mit der Genehmigung wird der Wert direkt am Schiedsrichterprofil übernommen.",
+    "statusFilter": "Status",
+    "statusPending": "Offen",
+    "statusApproved": "Genehmigt",
+    "statusRejected": "Abgelehnt",
+    "statusWithdrawn": "Zurückgezogen",
+    "loading": "Lade…",
+    "empty": "Keine Anträge in diesem Status.",
+    "noValue": "nicht hinterlegt",
+    "notePlaceholder": "Rückmeldung an den Schiri (bei Ablehnung Pflicht)",
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "noteRequired": "Bitte eine kurze Begründung für die Ablehnung angeben.",
+    "approved": "Antrag genehmigt.",
+    "rejected": "Antrag abgelehnt.",
+    "decided": "{{status}} · {{note}}"
+  },
   "accounts": {
     "title": "Schiedsrichter-Benutzerkonten",
     "backToList": "Zurück zur Übersicht",

@@ -321,6 +321,26 @@
     "rejected": "Request rejected.",
     "decided": "{{status}} · {{note}}"
   },
+  "changeRequests": {
+    "back": "← Back to referee administration",
+    "title": "Master data corrections",
+    "hint": "Referee requests to correct first name, last name, date of birth or club. Approving writes the value straight to the referee profile.",
+    "statusFilter": "Status",
+    "statusPending": "Open",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "statusWithdrawn": "Withdrawn",
+    "loading": "Loading…",
+    "empty": "No requests with this status.",
+    "noValue": "not set",
+    "notePlaceholder": "Feedback to the referee (required when rejecting)",
+    "approve": "Approve",
+    "reject": "Reject",
+    "noteRequired": "Please give a short reason for the rejection.",
+    "approved": "Request approved.",
+    "rejected": "Request rejected.",
+    "decided": "{{status}} · {{note}}"
+  },
   "accounts": {
     "title": "Referee user accounts",
     "backToList": "Back to list",

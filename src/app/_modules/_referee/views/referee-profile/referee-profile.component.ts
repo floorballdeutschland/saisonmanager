@@ -11,8 +11,11 @@ import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
 import {
   ExclusionClub,
+  RefereeChangeRequest,
+  RefereeChangeRequestPayload,
   RefereeClubExclusionPayload,
   RefereeClubExclusionRequest,
+  RefereeCorrectionType,
   RefereeProfile,
 } from '@floorball/types';
 
@@ -20,6 +23,13 @@ interface ExclusionRequestForm {
   kind: 'add' | 'remove';
   club_id: number | null;
   club_name?: string;
+  reason: string;
+}
+
+interface CorrectionForm {
+  correction_type: RefereeCorrectionType;
+  new_value: string;
+  new_club_id: number | null;
   reason: string;
 }
 
@@ -40,6 +50,17 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
   clubs: ExclusionClub[] = [];
   requestForm: ExclusionRequestForm | null = null;
   exclusionBusy = false;
+
+  // Stammdaten-Korrekturen: Name, Geburtsdatum und Verein sind gesperrt und
+  // werden über einen Antrag an die RSK des Landesverbands geändert.
+  correctionForm: CorrectionForm | null = null;
+  correctionBusy = false;
+  readonly correctionFields: RefereeCorrectionType[] = [
+    'vorname',
+    'nachname',
+    'geburtsdatum',
+    'verein',
+  ];
 
   private _destroy$ = new Subject<void>();
 
@@ -193,6 +214,130 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
       });
   }
 
+  get openChangeRequests(): RefereeChangeRequest[] {
+    return (this.profile?.change_requests || []).filter(
+      (r) => r.status === 'pending'
+    );
+  }
+
+  // Entschiedene und zurückgezogene Anträge als Verlauf, damit die
+  // Rückmeldung der Kommission im Profil nachlesbar bleibt.
+  get decidedChangeRequests(): RefereeChangeRequest[] {
+    return (this.profile?.change_requests || []).filter(
+      (r) => r.status !== 'pending'
+    );
+  }
+
+  pendingCorrectionFor(type: RefereeCorrectionType): boolean {
+    return this.openChangeRequests.some((r) => r.correction_type === type);
+  }
+
+  // Alle aktiven Vereine außer dem eigenen: Ein Antrag auf den Verein, in dem
+  // die Person schon ist, würde nichts ändern und die API weist ihn ab.
+  get correctionClubs(): ExclusionClub[] {
+    const ownName = this.profile?.verein;
+    const next = this.clubs.filter((c) => c.name !== ownName);
+    const cache = this._correctionClubsCache;
+    if (
+      next.length !== cache.length ||
+      next.some((c, i) => c.id !== cache[i].id)
+    ) {
+      this._correctionClubsCache = next;
+    }
+    return this._correctionClubsCache;
+  }
+
+  private _correctionClubsCache: ExclusionClub[] = [];
+
+  startCorrection(type: RefereeCorrectionType): void {
+    this.correctionForm = {
+      correction_type: type,
+      new_value: '',
+      new_club_id: null,
+      reason: '',
+    };
+    if (type === 'verein' && this.clubs.length === 0) {
+      this._loadClubs();
+    }
+  }
+
+  cancelCorrection(): void {
+    this.correctionForm = null;
+  }
+
+  canSubmitCorrection(): boolean {
+    if (!this.correctionForm) return false;
+    return this.correctionForm.correction_type === 'verein'
+      ? !!this.correctionForm.new_club_id
+      : !!this.correctionForm.new_value.trim();
+  }
+
+  submitCorrection(): void {
+    if (!this.correctionForm || !this.canSubmitCorrection()) return;
+
+    const form = this.correctionForm;
+    this.correctionBusy = true;
+    this._refereeService
+      .createChangeRequest({
+        correction_type: form.correction_type,
+        new_value:
+          form.correction_type === 'verein' ? undefined : form.new_value.trim(),
+        new_club_id:
+          form.correction_type === 'verein'
+            ? (form.new_club_id as number)
+            : undefined,
+        reason: form.reason.trim() || undefined,
+      })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (payload) => {
+          this._applyChangeRequestPayload(payload);
+          this.correctionForm = null;
+          this.correctionBusy = false;
+          this._cdr.markForCheck();
+          this._notificationService.success(
+            this._transloco.translate(
+              'refereeSelf.notifications.correctionRequested'
+            ),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+        },
+        error: () => {
+          this.correctionBusy = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  withdrawCorrection(id: number): void {
+    this.correctionBusy = true;
+    this._refereeService
+      .withdrawChangeRequest(id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (payload) => {
+          this._applyChangeRequestPayload(payload);
+          this.correctionBusy = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.correctionBusy = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  private _applyChangeRequestPayload(
+    payload: RefereeChangeRequestPayload
+  ): void {
+    if (!this.profile) return;
+
+    this.profile = {
+      ...this.profile,
+      change_requests: payload.change_requests,
+    };
+  }
+
   private _applyExclusionPayload(payload: RefereeClubExclusionPayload): void {
     if (!this.profile) return;
 
@@ -225,10 +370,11 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
     delete draft.account_email;
     delete draft.vorname;
     delete draft.nachname;
-    // Die Ausschlussliste läuft über eigene Endpunkte und gehört nicht in den
-    // Profil-PUT.
+    // Ausschlussliste und Korrekturanträge laufen über eigene Endpunkte und
+    // gehören nicht in den Profil-PUT.
     delete draft.club_exclusions;
     delete draft.club_exclusion_requests;
+    delete draft.change_requests;
     return draft;
   }
 
