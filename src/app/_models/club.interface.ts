@@ -51,6 +51,16 @@ export interface Club {
 
 export interface ClubWithTeams extends Club {
   teams: Team[];
+  /**
+   * Nur aus `vm/clubs_and_teams`: Darf der angemeldete Benutzer den
+   * Spielerbestand DIESES Vereins ordnen, also anlegen, deaktivieren und
+   * reaktivieren (api#530)? Serverseitig aus `Club#user_permissions`, also aus
+   * derselben Quelle wie die Prüfung beim Schreiben. Ein Flag am Benutzer
+   * könnte das nicht abbilden: Die Liste enthält auch Vereine, in denen der
+   * Benutzer nur Teammanager ist, und `permissions` im Browser kennt weder den
+   * Spielbetrieb eines Vereins noch eine Rechteänderung seit der Anmeldung.
+   */
+  manage_players?: boolean;
 }
 
 /** Vereinsmanager eines Vereins, Auswahlliste für die Vereinspost. */

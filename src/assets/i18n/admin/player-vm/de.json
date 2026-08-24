@@ -2,7 +2,7 @@
   "index": {
     "title": "Spieler*innen",
     "newPlayer": "Neu anlegen",
-    "newPlayerVmOnly": "Anlegen, Deaktivieren und Reaktivieren übernimmt der Vereinsmanager des Vereins. Als Teammanager*in siehst du den Bestand, öffnest die Profile, beantragst Lizenzen und stellst auf.",
+    "newPlayerVmOnly": "Für diesen Verein liegen Anlegen, Deaktivieren und Reaktivieren beim Vereinsmanager. Der Bestand steht dir offen: Profile öffnen, Lizenzen beantragen und aufstellen geht weiter. Wenn du gerade als Vereinsmanager eingetragen wurdest, melde dich einmal ab und wieder an.",
     "loading": "Lade Spieler…",
     "intro": "Spieler*innen, die aktuell nicht mehr aktiv am Spielbetrieb teilnehmen können deaktiviert werden. Deaktivierte Spieler*innen tauchen im Dropdown für die Lizenzbeantragung nicht mehr auf und sorgen für mehr Übersichtlichkeit in der Vereinsübersicht. Spieler*innen können zu späteren Zeitpunkten wieder aktiviert werden.",
     "countSingular": "Spieler*in",

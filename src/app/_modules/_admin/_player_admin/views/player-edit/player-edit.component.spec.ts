@@ -250,15 +250,50 @@ describe('PlayerEditComponent', () => {
     });
 
     // Ein reiner Teammanager hat kein club_ids: permission_hash[:vm] ist leer,
-    // das Feld fehlt in der Antwort.
+    // `club_ids` kommt als null. Die übrigen Rechte sind die echten, denn genau
+    // an ihnen hing der Fehler: `update_player_email` gilt auch für den TM, und
+    // solange `create_player` in der Anlage true war, blieb der zweite
+    // E-Mail-Zweig der Maske unerreichbar.
     it('nennt dem Teammanager den Grund statt eines Formulars', () => {
       const fixture = render({
-        permissions: { create_player: true },
+        permissions: {
+          create_player: true,
+          update_player_email: true,
+          player_deactivate: false,
+        },
       } as Partial<User>);
 
       expect(fixture.componentInstance.createNotAllowed).toBe(true);
       expect(fixture.componentInstance.can('player_create_update')).toBe(false);
       expect(hint(fixture)).not.toBe(null);
+    });
+
+    // Regression: Mit `can('player_create_update') === false` erschien in der
+    // Anlage der eigene Knopf „E-Mail speichern" samt Eingabefeld. Er kann
+    // nicht tragen -- `saveEmail()` braucht eine Spieler-id, die es erst nach
+    // dem Speichern gibt -- und kehrte ohne Meldung zurück.
+    it('bietet dem Teammanager in der Anlage kein E-Mail-Feld an', () => {
+      const fixture = render({
+        permissions: { create_player: true, update_player_email: true },
+      } as Partial<User>);
+
+      expect(fixture.componentInstance.canEnterEmail).toBe(false);
+      expect(fixture.componentInstance.canSaveEmailOnly).toBe(false);
+      expect(fixture.nativeElement.querySelector('input#email')).toBe(null);
+    });
+
+    // Gegenprobe: Am bestehenden Profil bleibt genau dieser Weg dem
+    // Vereins-/Teammanager erhalten (update_player_email).
+    it('behaelt das E-Mail-Feld im Bearbeiten-Modus', () => {
+      const fixture = render(
+        { permissions: { update_player_email: true } } as Partial<User>,
+        { clubId: '113', playerId: '7' }
+      );
+      fixture.componentInstance.player = { id: 7 } as Player;
+      fixture.detectChanges(false);
+
+      expect(fixture.componentInstance.canEnterEmail).toBe(true);
+      expect(fixture.componentInstance.canSaveEmailOnly).toBe(true);
     });
 
     it('lässt den Teammanager auch in einem fremden Verein nicht anlegen', () => {
@@ -270,8 +305,12 @@ describe('PlayerEditComponent', () => {
       expect(fixture.componentInstance.createNotAllowed).toBe(true);
     });
 
-    // Admin und SBK haben kein club_ids, das führt nur VM-Vereine.
-    it('lässt Admin und SBK überall anlegen', () => {
+    // Admin und SBK haben kein club_ids, das führt nur VM-Vereine. `update_player`
+    // ist dabei eine unscoped Näherung für „Verbandsrolle": Eine Landes-SBK
+    // bekommt hier auch für einen Verein eines fremden Spielbetriebs ein
+    // Formular, dessen Speichern die API ablehnt. Für einen einzelnen fremden
+    // Verein hat diese Maske keine bessere Quelle; die Vereinssicht hat eine.
+    it('lässt Admin und SBK das Formular ausfüllen', () => {
       const fixture = render({
         permissions: { create_player: true, update_player: true },
       } as Partial<User>);
