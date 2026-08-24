@@ -10,6 +10,7 @@ import {
   SessionService,
 } from '@floorball/core';
 import { RouterTestingModule } from '@angular/router/testing';
+import { FormsModule } from '@angular/forms';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitPlayerModule } from '@floorball/uikit/player';
@@ -32,6 +33,9 @@ describe('PlayerEditComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
+        // Die Anlege-Maske rendert die Eingabefelder mit ngModel; ohne
+        // FormsModule protokolliert Angular dafür eine unbekannte Bindung.
+        FormsModule,
         getTranslocoTestingModule(),
         UikitCommonModule,
         UikitPlayerModule,
@@ -206,6 +210,86 @@ describe('PlayerEditComponent', () => {
 
     it('hides the link for club and team managers', () => {
       expect(link(render({ menu_item_player_admin: true }))).toBe(null);
+    });
+  });
+
+  // Anlegen darf nur der Vereinsmanager des Vereins, Admin und SBK überall
+  // (api: Club#user_permissions, :create_player). Ein Teammanager erreicht die
+  // Maske über die Route, bekommt aber keine Eingabefelder, sondern den Grund.
+  describe('Neuanlage', () => {
+    function render(
+      user: Partial<User>,
+      params: Record<string, string> = { clubId: '113' }
+    ): ComponentFixture<PlayerEditComponent> {
+      TestBed.overrideProvider(ActivatedRoute, {
+        useValue: { params: of(params) },
+      });
+      currentUser$.next(user as User);
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.detectChanges(false);
+      return fixture;
+    }
+
+    function hint(
+      fixture: ComponentFixture<PlayerEditComponent>
+    ): Element | null {
+      return fixture.nativeElement.querySelector(
+        '[data-testid="create-not-allowed"]'
+      );
+    }
+
+    it('lässt den Vereinsmanager des Vereins anlegen', () => {
+      const fixture = render({
+        club_ids: [113],
+        permissions: { create_player: true },
+      } as Partial<User>);
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(false);
+      expect(fixture.componentInstance.can('player_create_update')).toBe(true);
+      expect(hint(fixture)).toBe(null);
+    });
+
+    // Ein reiner Teammanager hat kein club_ids: permission_hash[:vm] ist leer,
+    // das Feld fehlt in der Antwort.
+    it('nennt dem Teammanager den Grund statt eines Formulars', () => {
+      const fixture = render({
+        permissions: { create_player: true },
+      } as Partial<User>);
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(true);
+      expect(fixture.componentInstance.can('player_create_update')).toBe(false);
+      expect(hint(fixture)).not.toBe(null);
+    });
+
+    it('lässt den Teammanager auch in einem fremden Verein nicht anlegen', () => {
+      const fixture = render({
+        club_ids: [114],
+        permissions: { create_player: true },
+      } as Partial<User>);
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(true);
+    });
+
+    // Admin und SBK haben kein club_ids, das führt nur VM-Vereine.
+    it('lässt Admin und SBK überall anlegen', () => {
+      const fixture = render({
+        permissions: { create_player: true, update_player: true },
+      } as Partial<User>);
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(false);
+      expect(hint(fixture)).toBe(null);
+    });
+
+    // Die Grenze gilt nur der Anlage: Ein bestehendes Profil öffnet der
+    // Teammanager weiter, das Speichern hängt dort an :update_player.
+    it('greift im Bearbeiten-Modus nicht', () => {
+      const fixture = render({ permissions: {} } as Partial<User>, {
+        clubId: '113',
+        playerId: '7',
+      });
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(false);
+      expect(hint(fixture)).toBe(null);
     });
   });
 

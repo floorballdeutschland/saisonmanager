@@ -6,8 +6,10 @@ import {
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { TranslocoService } from '@jsverse/transloco';
-import { getTranslocoTestingModule } from '@floorball/core';
+import { getTranslocoTestingModule, SessionService } from '@floorball/core';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { User } from '@floorball/types';
+import { Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 import { PlayerVmIndexComponent } from './player-vm-index.component';
@@ -91,7 +93,7 @@ describe('PlayerVmIndexComponent', () => {
 describe('PlayerVmIndexComponent (Anlege-Button)', () => {
   let http: HttpTestingController;
 
-  beforeEach(async () => {
+  async function setup(user: Partial<User>): Promise<void> {
     await TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
@@ -101,26 +103,20 @@ describe('PlayerVmIndexComponent (Anlege-Button)', () => {
         getTranslocoTestingModule(),
       ],
       declarations: [PlayerVmIndexComponent],
+      providers: [
+        {
+          provide: SessionService,
+          useValue: {
+            currentUser$: of(user as User) as Observable<User | null>,
+          },
+        },
+      ],
     }).compileComponents();
 
     http = TestBed.inject(HttpTestingController);
-  });
+  }
 
-  afterEach(() => http.verify());
-
-  // Regression: Der Button hing an user.club_ids, und die enthält nur die
-  // VM-Vereine. Teammanager*innen sahen ihn deshalb nie, obwohl sie den Kader
-  // aufstellen und Neuzugänge brauchen. Die Prüfung liegt jetzt allein im
-  // Endpunkt: vm/clubs_and_teams liefert genau die Vereine, in denen die API
-  // das Anlegen erlaubt, für Vereins- wie für Teammanager*innen.
-  //
-  // Der Test hält das fest, indem er bewusst KEINEN SessionService-Stub
-  // bereitstellt: Ein wiedereingeführtes club_ids-Gate liefe zwangsläufig
-  // leer und der Link verschwände.
-  it('zeigt den Anlege-Link je Verein der Liste', () => {
-    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
-    fixture.detectChanges();
-
+  function zweiVereine(): void {
     http.expectOne(`${environment.apiURL}vm/clubs_and_teams.json`).flush([
       { id: 113, name: 'TSV Rohrdorf-Thansau', teams: [] },
       { id: 114, name: 'SG Partnerverein', teams: [] },
@@ -131,6 +127,16 @@ describe('PlayerVmIndexComponent (Anlege-Button)', () => {
     http
       .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=114`)
       .flush([]);
+  }
+
+  afterEach(() => http.verify());
+
+  it('zeigt den Anlege-Link an jedem Verein, in dem der Account VM ist', async () => {
+    await setup({ club_ids: [113, 114], permissions: {} });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    zweiVereine();
     fixture.detectChanges();
 
     // Je Verein ein eigener Link: fängt eine Interpolation, die alle Links
@@ -145,5 +151,68 @@ describe('PlayerVmIndexComponent (Anlege-Button)', () => {
       '/verwaltung/vereine/113/spieler/neu',
       '/verwaltung/vereine/114/spieler/neu',
     ]);
+  });
+
+  // Anlegen darf nur der Vereinsmanager des Vereins (api:
+  // Club#user_permissions). Die Liste enthält aber auch die Vereine, in denen
+  // der Account nur Teammanager ist – dort steht der Knopf abgeblendet mit dem
+  // Grund daneben, statt zu verschwinden.
+  it('blendet den Knopf im Verein ab, in dem der Account nur TM ist', async () => {
+    await setup({ club_ids: [113], permissions: {} });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    zweiVereine();
+    fixture.detectChanges();
+
+    const links = fixture.nativeElement.querySelectorAll(
+      'a[data-testid="new-player-link"]'
+    ) as NodeListOf<HTMLAnchorElement>;
+    expect(Array.from(links).map((a) => a.getAttribute('href'))).toEqual([
+      '/verwaltung/vereine/113/spieler/neu',
+    ]);
+
+    const disabled = fixture.nativeElement.querySelectorAll(
+      'button[data-testid="new-player-disabled"]'
+    ) as NodeListOf<HTMLButtonElement>;
+    expect(disabled.length).toBe(1);
+    expect(disabled[0].disabled).toBeTrue();
+  });
+
+  // Ein reiner Teammanager hat kein club_ids (permission_hash[:vm] ist leer),
+  // die Antwort liefert das Feld dann gar nicht.
+  it('blendet den Knopf auch ohne club_ids ab', async () => {
+    await setup({ permissions: {} });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    zweiVereine();
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelectorAll('a[data-testid="new-player-link"]')
+        .length
+    ).toBe(0);
+    expect(
+      fixture.nativeElement.querySelectorAll(
+        'button[data-testid="new-player-disabled"]'
+      ).length
+    ).toBe(2);
+  });
+
+  // Admin und SBK erreichen diese Vereinssicht nur mit einer Vereinsrolle,
+  // legen aber überall an; ihr club_ids ist leer (es führt nur VM-Vereine).
+  it('zeigt den Link für Admin/SBK auch ohne club_ids', async () => {
+    await setup({ permissions: { update_player: true } });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    zweiVereine();
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelectorAll('a[data-testid="new-player-link"]')
+        .length
+    ).toBe(2);
   });
 });

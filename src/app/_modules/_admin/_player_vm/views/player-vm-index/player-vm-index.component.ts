@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { Subject, forkJoin, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
-import { ClubService, PlayerService } from '@floorball/core';
+import { ClubService, PlayerService, SessionService } from '@floorball/core';
 import { ClubWithTeams, Player, PlayerCurrentLicense } from '@floorball/types';
 import { Title } from '@angular/platform-browser';
 
@@ -27,6 +27,13 @@ interface ClubPlayerList {
 export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   clubLists: ClubPlayerList[] = [];
   loading = false;
+  // Vereine, in denen der Account Vereinsmanager ist (permission_hash[:vm]).
+  // Nur dort darf angelegt werden; als Teammanager*in steht der Knopf
+  // abgeblendet da (api: Club#user_permissions, :create_player).
+  vmClubIds: number[] = [];
+  // Admin und SBK erreichen diese Vereinssicht nur zusammen mit einer
+  // Vereinsrolle, dürfen aber überall anlegen.
+  private _isAssociationRole = false;
   actionError: string | null = null;
   confirmDeactivateId: number | null = null;
   deactivateReason = '';
@@ -39,12 +46,21 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
     private _playerService: PlayerService,
     private _cdr: ChangeDetectorRef,
     private _title: Title,
-    private _transloco: TranslocoService
+    private _transloco: TranslocoService,
+    private _sessionService: SessionService
   ) {
     this._title.setTitle('Floorball Saisonmanager Spielerliste (Verein)');
   }
 
   ngOnInit(): void {
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((user) => {
+        this.vmClubIds = user?.club_ids ?? [];
+        this._isAssociationRole = !!user?.permissions?.['update_player'];
+        this._cdr.markForCheck();
+      });
+
     this.loading = true;
     // Bewusst NICHT adminGetClubAndTeams(): das liefert alle Vereine, auf die
     // irgendeine Rolle Zugriff gibt. Wer zusätzlich SBK ist, bekam damit alle
@@ -122,6 +138,17 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
       return 'bg-yellow-100 text-yellow-800';
     }
     return 'bg-red-100 text-red-800';
+  }
+
+  /**
+   * Anlegen darf nur der Vereinsmanager dieses Vereins (plus Admin/SBK). Ein
+   * Teammanager sieht denselben Bestand, legt aber nichts an: Die Anlage
+   * schreibt eine Heimatmitgliedschaft im Verein, das entscheidet der Verein.
+   * Der Knopf bleibt trotzdem sichtbar, damit an seiner Stelle die Begründung
+   * steht statt einer Lücke. Die Prüfung selbst bleibt serverseitig.
+   */
+  canCreatePlayer(list: ClubPlayerList): boolean {
+    return this._isAssociationRole || this.vmClubIds.includes(list.club.id);
   }
 
   visiblePlayers(list: ClubPlayerList): Player[] {

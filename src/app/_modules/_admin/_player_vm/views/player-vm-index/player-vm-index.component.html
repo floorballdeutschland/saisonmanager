@@ -50,26 +50,42 @@
         </button>
       }
     </p>
-    <!-- Kein eigenes Rollen-Gate: Jeder Verein dieser Liste ist einer, in dem
-         die API das Anlegen erlaubt. Die Liste stammt aus vm/clubs_and_teams,
-         und dieser Endpunkt bildet dieselbe Vereinsmenge wie
-         Club#user_permissions für `create_player`. Die Prüfung selbst bleibt
-         serverseitig. -->
+    <!-- Diese Liste enthält auch die Vereine, in denen der Account nur
+         Teammanager ist. Angelegt wird dort nicht (api:
+         Club#user_permissions, :create_player), der Knopf steht deshalb
+         abgeblendet mit der Begründung daneben statt zu verschwinden. Die
+         Prüfung selbst bleibt serverseitig. -->
     <div class="mb-6">
-      <a
-        data-testid="new-player-link"
-        class="inline-block font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-        [routerLink]="[
-          '/',
-          'verwaltung',
-          'vereine',
-          list.club.id,
-          'spieler',
-          'neu',
-        ]"
-      >
-        {{ "playerVm.index.newPlayer" | transloco }}
-      </a>
+      @if (canCreatePlayer(list)) {
+        <a
+          data-testid="new-player-link"
+          class="inline-block font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+          [routerLink]="[
+            '/',
+            'verwaltung',
+            'vereine',
+            list.club.id,
+            'spieler',
+            'neu',
+          ]"
+        >
+          {{ "playerVm.index.newPlayer" | transloco }}
+        </a>
+      } @else {
+        <div class="flex flex-wrap items-center gap-3">
+          <button
+            data-testid="new-player-disabled"
+            type="button"
+            disabled
+            class="inline-block font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white border-fb-gray-600 rounded-[5px] disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {{ "playerVm.index.newPlayer" | transloco }}
+          </button>
+          <p class="text-sm text-fb-gray-500 max-w-xl">
+            {{ "playerVm.index.newPlayerVmOnly" | transloco }}
+          </p>
+        </div>
+      }
     </div>
     @if (list.players.length > 0) {
       <table class="w-full text-sm mb-10">

@@ -2,6 +2,8 @@
   "index": {
     "title": "Spieler*innen",
     "newPlayer": "Neu anlegen",
+    "newPlayerVmOnly": "Neue Spieler*innen legt der Vereinsmanager des Vereins an. Als Teammanager*in kannst du den Bestand einsehen, Lizenzen beantragen und aufstellen.",
+    "newPlayerVmOnly": "Neue Spieler*innen legt der Vereinsmanager des Vereins an. Als Teammanager*in kannst du den Bestand einsehen, Lizenzen beantragen und aufstellen.",
     "loading": "Lade Spieler…",
     "intro": "Spieler*innen, die aktuell nicht mehr aktiv am Spielbetrieb teilnehmen können deaktiviert werden. Deaktivierte Spieler*innen tauchen im Dropdown für die Lizenzbeantragung nicht mehr auf und sorgen für mehr Übersichtlichkeit in der Vereinsübersicht. Spieler*innen können zu späteren Zeitpunkten wieder aktiviert werden.",
     "countSingular": "Spieler*in",

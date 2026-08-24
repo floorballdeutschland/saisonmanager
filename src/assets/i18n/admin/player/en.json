@@ -14,6 +14,7 @@
     "backToList": "← Back to player list",
     "editPlayer": "Edit player",
     "newPlayer": "Add new player",
+    "createVmOnly": "New players are created by the club manager. As a team manager you cannot save here.",
     "playerData": "Player data",
     "playerId": "Player ID",
     "idAfterCreate": "Will be assigned after creation",
