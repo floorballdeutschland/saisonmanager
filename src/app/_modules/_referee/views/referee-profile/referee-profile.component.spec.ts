@@ -101,14 +101,24 @@ describe('RefereeProfileComponent (Stammdaten-Korrekturen)', () => {
   it('fuehrt die Zusatzqualifikationen und bewertet ihre Gueltigkeit', async () => {
     await setUp();
 
-    expect(component.qualifications.map((q) => q.qualification_type_name)).toEqual([
-      'Beobachter',
-      'Ohne Ablauf',
-    ]);
+    expect(
+      component.qualifications.map((q) => q.qualification_type_name)
+    ).toEqual(['Beobachter', 'Ohne Ablauf']);
     expect(component.qualificationExpired('31.01.2020')).toBeTrue();
     expect(component.qualificationExpired('31.12.2099')).toBeFalse();
     // Ohne hinterlegten Ablauf gibt es keine Aussage, also nicht rot zeichnen.
     expect(component.qualificationExpired(null)).toBeFalse();
+    // Der Ablauftag selbst zaehlt noch als gueltig, wie in der API.
+    const heute = new Date();
+    expect(
+      component.qualificationExpired(
+        [
+          String(heute.getDate()).padStart(2, '0'),
+          String(heute.getMonth() + 1).padStart(2, '0'),
+          heute.getFullYear(),
+        ].join('.')
+      )
+    ).toBeFalse();
   });
 
   it('kennt ohne Qualifikationen eine leere Liste', async () => {

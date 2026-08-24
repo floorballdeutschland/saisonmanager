@@ -68,7 +68,8 @@
     "correctionStatus.withdrawn": "zurückgezogen",
     "sectionQualifications": "Zusatzqualifikationen",
     "qualificationsHint": "Diese Angaben pflegt die Schiedsrichterkommission und sie stehen auch auf deinem digitalen Ausweis sowie im öffentlichen Lizenzcheck. Ist eine Qualifikation falsch oder fehlt sie, wende dich an die Schiedsrichterkommission deines Landesverbands.",
-    "qualificationNoExpiry": "ohne Ablaufdatum"
+    "qualificationNoExpiry": "ohne Ablaufdatum",
+    "qualificationExpiredOn": "abgelaufen am {{ date }}"
   },
   "card": {
     "title": "Mein Ausweis",

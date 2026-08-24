@@ -17,7 +17,7 @@ import {
   RefereeClubExclusionRequest,
   RefereeCorrectionType,
   RefereeProfile,
-  RefereeProfileQualification,
+  RefereeQualificationDisplay,
 } from '@floorball/types';
 import { isGermanDateExpired } from 'src/app/_helpers/_utils/german-date';
 
@@ -108,7 +108,7 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
 
   // Zusatzqualifikationen samt Gueltigkeit. Rein lesend: Gepflegt werden sie von
   // der Schiedsrichterkommission, die API nimmt sie im Profil-Update nicht an.
-  get qualifications(): RefereeProfileQualification[] {
+  get qualifications(): RefereeQualificationDisplay[] {
     return this.profile?.qualifications || [];
   }
 

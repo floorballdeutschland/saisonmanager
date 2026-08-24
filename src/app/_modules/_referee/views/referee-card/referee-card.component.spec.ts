@@ -16,9 +16,9 @@ const PROFILE: RefereeProfile = {
   lizenzstufe: 'A',
   gueltigkeit: '30.06.2099',
   qualifications: [
-    { qualification_type_name: 'Beobachter', short_name: 'BEO', valid_until: '31.12.2099' },
-    { qualification_type_name: 'Spielleiter', short_name: 'SL', valid_until: '31.01.2020' },
-    { qualification_type_name: 'Ohne Ablauf', short_name: null, valid_until: null },
+    { qualification_type_name: 'Beobachter', valid_until: '31.12.2099' },
+    { qualification_type_name: 'Spielleiter', valid_until: '31.01.2020' },
+    { qualification_type_name: 'Ohne Ablauf', valid_until: null },
   ],
 };
 
@@ -56,15 +56,16 @@ describe('RefereeCardComponent (Zusatzqualifikationen)', () => {
     return Array.from(host.querySelectorAll<HTMLElement>(selector));
   }
 
-  it('zeichnet den Ausweis mit jeder Zusatzqualifikation, Kurzname bevorzugt', async () => {
+  // Der vollstaendige Name, nicht das Kuerzel: Die Karte wird von Dritten
+  // gelesen, die „BEO" nicht auflösen koennen.
+  it('zeichnet den Ausweis mit jeder Zusatzqualifikation', async () => {
     await setUp(PROFILE);
 
     const labels = queryAll('[data-testid="qualification-name"]').map((el) =>
       el.textContent!.trim()
     );
 
-    // Ohne Kurzname steht der vollstaendige Name da.
-    expect(labels).toEqual(['BEO', 'SL', 'Ohne Ablauf']);
+    expect(labels).toEqual(['Beobachter', 'Spielleiter', 'Ohne Ablauf']);
   });
 
   it('faerbt eine gueltige Qualifikation gruen, eine abgelaufene rot und eine ohne Ablauf gar nicht', async () => {
@@ -79,8 +80,11 @@ describe('RefereeCardComponent (Zusatzqualifikationen)', () => {
     ]);
     expect(values[0].classList).toContain('text-green-600');
     expect(values[1].classList).toContain('text-red-600');
+    // Nicht allein die Farbe: Abgelaufenes ist zusaetzlich durchgestrichen.
+    expect(values[1].classList).toContain('line-through');
     expect(values[2].classList).not.toContain('text-red-600');
     expect(values[2].classList).not.toContain('text-green-600');
+    expect(values[2].classList).not.toContain('line-through');
   });
 
   // Der Abschnitt darf nicht als leere Ueberschrift stehenbleiben.
@@ -99,5 +103,27 @@ describe('RefereeCardComponent (Zusatzqualifikationen)', () => {
     expect(component.qualificationExpired('31.02.2099')).toBeTrue();
     expect(component.qualificationExpired(null)).toBeFalse();
     expect(component.qualificationExpired(undefined)).toBeFalse();
+  });
+
+  // Der Ausweis darf die Lizenz am Ablauftag nicht schon als abgelaufen
+  // ausweisen: Die API zaehlt diesen Tag noch mit.
+  it('weist die Lizenz am Ablauftag noch als gueltig aus', async () => {
+    const heute = new Date();
+    const heuteDeutsch = [
+      String(heute.getDate()).padStart(2, '0'),
+      String(heute.getMonth() + 1).padStart(2, '0'),
+      heute.getFullYear(),
+    ].join('.');
+
+    await setUp({ ...PROFILE, gueltigkeit: heuteDeutsch });
+
+    expect(component.expired).toBeFalse();
+  });
+
+  // Ohne Nachweis dagegen abgelaufen, nicht faelschlich gruen.
+  it('weist eine Lizenz ohne Gueltigkeit als abgelaufen aus', async () => {
+    await setUp({ ...PROFILE, gueltigkeit: undefined });
+
+    expect(component.expired).toBeTrue();
   });
 });

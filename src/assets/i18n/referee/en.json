@@ -68,7 +68,8 @@
     "correctionStatus.withdrawn": "withdrawn",
     "sectionQualifications": "Additional qualifications",
     "qualificationsHint": "These entries are maintained by the referee commission and also appear on your digital referee card and in the public licence check. If a qualification is wrong or missing, contact the referee commission of your state association.",
-    "qualificationNoExpiry": "no expiry date"
+    "qualificationNoExpiry": "no expiry date",
+    "qualificationExpiredOn": "expired on {{ date }}"
   },
   "card": {
     "title": "My card",

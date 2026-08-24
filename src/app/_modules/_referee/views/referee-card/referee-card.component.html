@@ -113,8 +113,11 @@
       </div>
 
       <!-- Zusatzqualifikationen. Nur wenn welche hinterlegt sind: Ein leerer
-           Abschnitt sagt auf einem Ausweis nichts. Kurzname bevorzugt, weil
-           die Karte schmal ist; ohne Kurzname der vollständige Name. -->
+           Abschnitt sagt auf einem Ausweis nichts. Der vollständige Name, nicht
+           das Kürzel: Die Karte wird von Dritten gelesen, die „BEO" nicht
+           auflösen können, und der Lizenzcheck hinter dem QR-Code nennt
+           ebenfalls den Namen. Abgelaufenes ist zusätzlich durchgestrichen,
+           damit die Aussage nicht allein an der Farbe hängt. -->
       @if (qualifications.length) {
         <div class="px-6 pb-4">
           <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
@@ -126,7 +129,7 @@
                 <span
                   class="text-fb-gray-500"
                   data-testid="qualification-name"
-                  >{{ q.short_name || q.qualification_type_name }}</span
+                  >{{ q.qualification_type_name }}</span
                 >
                 <span
                   class="font-bold text-right"
@@ -134,7 +137,7 @@
                   [ngClass]="
                     q.valid_until
                       ? qualificationExpired(q.valid_until)
-                        ? 'text-red-600'
+                        ? 'text-red-600 line-through'
                         : 'text-green-600'
                       : ''
                   "

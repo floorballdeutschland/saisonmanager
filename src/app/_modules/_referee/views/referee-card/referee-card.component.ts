@@ -10,11 +10,8 @@ import { Subject, takeUntil } from 'rxjs';
 import QRCode from 'qrcode';
 import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
-import { RefereeProfile, RefereeProfileQualification } from '@floorball/types';
-import {
-  isGermanDateExpired,
-  parseGermanDate,
-} from 'src/app/_helpers/_utils/german-date';
+import { RefereeProfile, RefereeQualificationDisplay } from '@floorball/types';
+import { isGermanDateExpired } from 'src/app/_helpers/_utils/german-date';
 
 @Component({
   templateUrl: './referee-card.component.html',
@@ -79,14 +76,16 @@ export class RefereeCardComponent implements OnInit, OnDestroy {
   }
 
   get expired(): boolean {
-    // Ohne Datum ist die Lizenz nicht nachgewiesen, und bei unerwartetem
-    // Format sicherheitshalber „abgelaufen" anzeigen, statt fälschlich
-    // „gültig" (grün) auszugeben.
-    const parsed = parseGermanDate(this.profile?.gueltigkeit);
-    return !parsed || parsed < new Date();
+    // Ohne Datum ist die Lizenz nicht nachgewiesen, und bei unerwartetem Format
+    // sicherheitshalber „abgelaufen" anzeigen, statt fälschlich „gültig" (grün)
+    // auszugeben. Am Ablauftag selbst gilt sie noch, siehe isGermanDateExpired.
+    return (
+      !this.profile?.gueltigkeit ||
+      isGermanDateExpired(this.profile.gueltigkeit)
+    );
   }
 
-  get qualifications(): RefereeProfileQualification[] {
+  get qualifications(): RefereeQualificationDisplay[] {
     return this.profile?.qualifications || [];
   }
 

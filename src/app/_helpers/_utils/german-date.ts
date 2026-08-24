@@ -35,12 +35,23 @@ export function parseGermanDate(value?: string | null): Date | null {
 }
 
 /**
- * `true`, wenn das Datum vor heute liegt. Ein unlesbares Datum gilt als
- * abgelaufen, damit im Zweifel nicht faelschlich „gueltig“ (gruen) ausgegeben
- * wird; eine fehlende Angabe ist dagegen keine Aussage und damit `false`.
+ * `true`, wenn das Datum vor dem heutigen Tag liegt. Der Ablauftag selbst zaehlt
+ * noch als gueltig: Die API rechnet ebenso (`gueltigkeit >= Date.current` in
+ * Referee, `valid_until >= ?` bei der Ansetzung), und die Verwaltungsansicht
+ * setzt dafuer eigens 23:59:59. Verglichen wird deshalb gegen den Tagesbeginn
+ * und nicht gegen die aktuelle Uhrzeit, sonst wuerde eine Qualifikation einen
+ * Tag lang rot, die die Ansetzung noch anerkennt.
+ *
+ * Ein unlesbares Datum gilt als abgelaufen, damit im Zweifel nicht faelschlich
+ * „gueltig“ (gruen) ausgegeben wird; eine fehlende Angabe ist dagegen keine
+ * Aussage und damit `false`.
  */
 export function isGermanDateExpired(value?: string | null): boolean {
   if (!value) return false;
   const parsed = parseGermanDate(value);
-  return !parsed || parsed < new Date();
+  if (!parsed) return true;
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  return parsed < startOfToday;
 }

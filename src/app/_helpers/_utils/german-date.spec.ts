@@ -32,9 +32,29 @@ describe('parseGermanDate', () => {
 });
 
 describe('isGermanDateExpired', () => {
+  function germanDate(offsetInDays: number): string {
+    const date = new Date();
+    date.setDate(date.getDate() + offsetInDays);
+    return [
+      String(date.getDate()).padStart(2, '0'),
+      String(date.getMonth() + 1).padStart(2, '0'),
+      date.getFullYear(),
+    ].join('.');
+  }
+
   it('vergleicht mit heute', () => {
     expect(isGermanDateExpired('01.01.2020')).toBeTrue();
     expect(isGermanDateExpired('31.12.2099')).toBeFalse();
+  });
+
+  // Die Tagesgrenze ist der Kern: Der Ablauftag selbst zaehlt noch als
+  // gueltig, so wie die API rechnet (`gueltigkeit >= Date.current`) und die
+  // Ansetzung eine Qualifikation an diesem Tag noch anerkennt. Verglichen wird
+  // deshalb gegen den Tagesbeginn und nicht gegen die aktuelle Uhrzeit.
+  it('laesst den Ablauftag selbst noch gelten', () => {
+    expect(isGermanDateExpired(germanDate(-1))).toBeTrue();
+    expect(isGermanDateExpired(germanDate(0))).toBeFalse();
+    expect(isGermanDateExpired(germanDate(1))).toBeFalse();
   });
 
   // Ohne Angabe gibt es keine Aussage: Eine Zusatzqualifikation ohne

@@ -43,18 +43,25 @@
         <ul class="flex flex-col divide-y divide-fb-gray-700 text-sm">
           @for (q of qualifications; track q) {
             <li class="flex justify-between gap-3 py-2">
-              <span class="font-bold">{{ q.qualification_type_name }}</span>
+              <span class="font-bold" data-testid="qualification-name">{{
+                q.qualification_type_name
+              }}</span>
               @if (q.valid_until) {
+                <!-- „abgelaufen am" statt „gültig bis": Die Aussage darf nicht
+                     allein an der Farbe hängen. -->
                 <span
                   class="text-right"
+                  data-testid="qualification-validity"
                   [ngClass]="
                     qualificationExpired(q.valid_until)
                       ? 'text-red-600'
                       : 'text-green-600'
                   "
                   >{{
-                    "refereeSelf.profile.validUntil"
-                      | transloco: { date: q.valid_until }
+                    (qualificationExpired(q.valid_until)
+                      ? "refereeSelf.profile.qualificationExpiredOn"
+                      : "refereeSelf.profile.validUntil"
+                    ) | transloco: { date: q.valid_until }
                   }}</span
                 >
               } @else {
