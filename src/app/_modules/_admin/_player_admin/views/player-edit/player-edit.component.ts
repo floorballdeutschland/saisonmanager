@@ -52,6 +52,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   static readonly MAX_DOCUMENT_SIZE = 10 * 1024 * 1024;
 
   permissions: { [key: string]: boolean } = {};
+  // Vereine, in denen der Account Vereinsmanager ist (permission_hash[:vm]).
+  vmClubIds: number[] = [];
   player?: Player;
   nations?: Nation[] = [];
   allClubs: Club[] = [];
@@ -153,6 +155,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     this._sessionService.currentUser$.subscribe({
       next: (user) => {
         this.permissions = user?.permissions || {};
+        this.vmClubIds = user?.club_ids ?? [];
       },
     });
 
@@ -506,10 +509,35 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     return Object.keys(PLAYER_GENDERS) as GenderKey[];
   }
 
+  /**
+   * Anlegen darf nur der Vereinsmanager dieses Vereins, Admin und SBK überall
+   * (api: Club#user_permissions, :create_player). Ein Teammanager kommt über
+   * einen Direktaufruf oder einen noch offenen Tab hierher: Statt ihn das
+   * Formular ausfüllen und erst am Speichern scheitern zu lassen, steht der
+   * Grund oben und der Speichern-Knopf entfällt. Die Prüfung selbst bleibt
+   * serverseitig.
+   *
+   * `club_id` kommt als Routenparameter, also als String.
+   */
+  public get createNotAllowed(): boolean {
+    if (this.editMode || this.permissions['update_player']) {
+      return false;
+    }
+
+    return !this.vmClubIds.includes(Number(this.club_id));
+  }
+
   public can(permissionString: string): boolean {
     let p = permissionString;
 
     if (p === 'player_create_update') {
+      // Ohne das Recht am Verein bleibt die Maske lesend: Die Felder stehen
+      // als Text da und der Speichern-Knopf entfällt, statt ein Formular
+      // anzubieten, das erst beim Absenden abgelehnt wird.
+      if (this.createNotAllowed) {
+        return false;
+      }
+
       p = this.editMode ? 'update_player' : 'create_player';
     }
 
