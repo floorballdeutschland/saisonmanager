@@ -48,6 +48,33 @@
           {{ "refereeCourseAdmin.review.newRefereeCreated" | transloco }}
         </div>
       }
+      <!--
+        Der Match-Score zählt alle sechs Merkmale. Ohne ihn und ohne die
+        Markierung der abweichenden Zeilen war bei einem Teilmatch nicht zu
+        sehen, welches Merkmal überhaupt abweicht.
+      -->
+      @if (r.referee_snapshot?.id) {
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-xs">
+          <span
+            class="px-2 py-0.5 rounded"
+            [class.bg-green-100]="r.match_field_count === reviewFields.length"
+            [class.text-green-800]="r.match_field_count === reviewFields.length"
+            [class.bg-amber-100]="r.match_field_count !== reviewFields.length"
+            [class.text-amber-800]="r.match_field_count !== reviewFields.length"
+          >
+            {{
+              "refereeCourseAdmin.review.matchScore"
+                | transloco
+                  : { matched: r.match_field_count, total: reviewFields.length }
+            }}
+          </span>
+          @if (differingFields(r).length) {
+            <span class="text-fb-gray-600">
+              {{ "refereeCourseAdmin.review.differsLegend" | transloco }}
+            </span>
+          }
+        </div>
+      }
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-fb-gray-600 border-b border-fb-gray-100">
@@ -66,9 +93,21 @@
           </tr>
         </thead>
         <tbody>
-          <tr class="border-b border-fb-gray-50">
+          <tr
+            class="border-b border-fb-gray-50"
+            [class.bg-amber-50]="fieldsDiffer(r, 'lizenznummer')"
+          >
             <td class="py-1">
               {{ "refereeCourseAdmin.review.fieldLicenseNumber" | transloco }}
+              @if (fieldsDiffer(r, "lizenznummer")) {
+                <span
+                  class="ml-1 text-amber-700"
+                  [attr.title]="
+                    'refereeCourseAdmin.review.differsHint' | transloco
+                  "
+                  >&#9679;</span
+                >
+              }
             </td>
             <td>
               {{
@@ -100,9 +139,21 @@
               />
             </td>
           </tr>
-          <tr class="border-b border-fb-gray-50">
+          <tr
+            class="border-b border-fb-gray-50"
+            [class.bg-amber-50]="fieldsDiffer(r, 'vorname')"
+          >
             <td class="py-1">
               {{ "refereeCourseAdmin.review.fieldFirstName" | transloco }}
+              @if (fieldsDiffer(r, "vorname")) {
+                <span
+                  class="ml-1 text-amber-700"
+                  [attr.title]="
+                    'refereeCourseAdmin.review.differsHint' | transloco
+                  "
+                  >&#9679;</span
+                >
+              }
             </td>
             <td>
               {{
@@ -127,9 +178,21 @@
               />
             </td>
           </tr>
-          <tr class="border-b border-fb-gray-50">
+          <tr
+            class="border-b border-fb-gray-50"
+            [class.bg-amber-50]="fieldsDiffer(r, 'nachname')"
+          >
             <td class="py-1">
               {{ "refereeCourseAdmin.review.fieldLastName" | transloco }}
+              @if (fieldsDiffer(r, "nachname")) {
+                <span
+                  class="ml-1 text-amber-700"
+                  [attr.title]="
+                    'refereeCourseAdmin.review.differsHint' | transloco
+                  "
+                  >&#9679;</span
+                >
+              }
             </td>
             <td>
               {{
@@ -154,9 +217,21 @@
               />
             </td>
           </tr>
-          <tr class="border-b border-fb-gray-50">
+          <tr
+            class="border-b border-fb-gray-50"
+            [class.bg-amber-50]="fieldsDiffer(r, 'geburtsdatum')"
+          >
             <td class="py-1">
               {{ "refereeCourseAdmin.review.fieldBirthDate" | transloco }}
+              @if (fieldsDiffer(r, "geburtsdatum")) {
+                <span
+                  class="ml-1 text-amber-700"
+                  [attr.title]="
+                    'refereeCourseAdmin.review.differsHint' | transloco
+                  "
+                  >&#9679;</span
+                >
+              }
             </td>
             <td>
               {{
@@ -184,9 +259,21 @@
               />
             </td>
           </tr>
-          <tr class="border-b border-fb-gray-50">
+          <tr
+            class="border-b border-fb-gray-50"
+            [class.bg-amber-50]="fieldsDiffer(r, 'email')"
+          >
             <td class="py-1">
               {{ "refereeCourseAdmin.review.fieldEmail" | transloco }}
+              @if (fieldsDiffer(r, "email")) {
+                <span
+                  class="ml-1 text-amber-700"
+                  [attr.title]="
+                    'refereeCourseAdmin.review.differsHint' | transloco
+                  "
+                  >&#9679;</span
+                >
+              }
             </td>
             <td>
               {{
@@ -211,6 +298,91 @@
                   setField(r, 'email', $any($event.target).value || null)
                 "
               />
+            </td>
+          </tr>
+          <!--
+            Der Verein ist das sechste Merkmal und das, an dem die meisten
+            Teilmatches hängen: Der Abgleich beim Import trifft nur exakte
+            Namen, „Unihockeyverein X e.V." in der Datei findet den Verein
+            „UV X" also nicht. Ohne diese Zeile war der häufigste Grund für
+            einen Teilmatch in der Maske gar nicht zu sehen.
+          -->
+          <tr
+            class="border-b border-fb-gray-50"
+            [class.bg-amber-50]="fieldsDiffer(r, 'club')"
+          >
+            <td class="py-1">
+              {{ "refereeCourseAdmin.review.fieldClub" | transloco }}
+              @if (fieldsDiffer(r, "club")) {
+                <span
+                  class="ml-1 text-amber-700"
+                  [attr.title]="
+                    'refereeCourseAdmin.review.differsHint' | transloco
+                  "
+                  >&#9679;</span
+                >
+              }
+            </td>
+            <td>
+              {{
+                r.referee_snapshot?.club_name ??
+                  ("refereeCourseAdmin.detail.dash" | transloco)
+              }}
+            </td>
+            <td>
+              @if (clubUnmatched(r)) {
+                <span class="text-red-600">{{
+                  "refereeCourseAdmin.detail.clubUnmatched"
+                    | transloco: { name: r.csv.verein }
+                }}</span>
+              } @else {
+                {{
+                  r.csv.verein ?? ("refereeCourseAdmin.detail.dash" | transloco)
+                }}
+              }
+            </td>
+            <td>
+              <!--
+                fb-select-search kennt kein aria-label, aber eine inputId — die
+                Beschriftung hängt deshalb an einem verknüpften Label statt an
+                einem Attribut, damit die geteilte UIKit-Komponente unverändert
+                bleibt.
+              -->
+              <label class="sr-only" [attr.for]="'club-final-' + r.id">
+                {{ "refereeCourseAdmin.review.ariaClub" | transloco }}
+              </label>
+              <fb-select-search
+                [items]="clubs"
+                labelKey="name"
+                valueKey="id"
+                [inputId]="'club-final-' + r.id"
+                [disabled]="clubsUnavailable"
+                [placeholder]="
+                  'refereeCourseAdmin.review.clubPlaceholder' | transloco
+                "
+                [resetLabel]="'refereeCourseAdmin.review.clubReset' | transloco"
+                [ngModel]="selectedClubId(r)"
+                (ngModelChange)="setField(r, 'club_id', $event)"
+              ></fb-select-search>
+              <!--
+                Ohne Vereinsliste zeigt das Auswahlfeld nichts an, auch wenn ein
+                Verein gesetzt ist. Der gesetzte Wert steht deshalb daneben,
+                sonst wäre nicht zu sehen, was die Freigabe schreiben würde.
+              -->
+              @if (clubsUnavailable) {
+                <div class="text-xs text-fb-gray-600 mt-1">
+                  {{
+                    "refereeCourseAdmin.review.clubUnavailable"
+                      | transloco
+                        : {
+                            club:
+                              r.matched_club?.name ??
+                              ("refereeCourseAdmin.review.clubNone"
+                                | transloco),
+                          }
+                  }}
+                </div>
+              }
             </td>
           </tr>
         </tbody>
