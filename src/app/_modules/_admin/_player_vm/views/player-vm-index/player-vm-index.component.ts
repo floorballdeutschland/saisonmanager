@@ -28,11 +28,12 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   clubLists: ClubPlayerList[] = [];
   loading = false;
   // Vereine, in denen der Account Vereinsmanager ist (permission_hash[:vm]).
-  // Nur dort darf angelegt werden; als Teammanager*in steht der Knopf
-  // abgeblendet da (api: Club#user_permissions, :create_player).
+  // Nur dort wird angelegt, deaktiviert und reaktiviert; als Teammanager*in
+  // steht der Anlege-Knopf abgeblendet da und die Zeilen tragen keine
+  // Aktionen (api: Club#user_permissions, PlayersController).
   vmClubIds: number[] = [];
   // Admin und SBK erreichen diese Vereinssicht nur zusammen mit einer
-  // Vereinsrolle, dürfen aber überall anlegen.
+  // Vereinsrolle, entscheiden aber überall.
   private _isAssociationRole = false;
   actionError: string | null = null;
   confirmDeactivateId: number | null = null;
@@ -141,13 +142,15 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Anlegen darf nur der Vereinsmanager dieses Vereins (plus Admin/SBK). Ein
-   * Teammanager sieht denselben Bestand, legt aber nichts an: Die Anlage
-   * schreibt eine Heimatmitgliedschaft im Verein, das entscheidet der Verein.
-   * Der Knopf bleibt trotzdem sichtbar, damit an seiner Stelle die Begründung
-   * steht statt einer Lücke. Die Prüfung selbst bleibt serverseitig.
+   * Anlegen, Deaktivieren und Reaktivieren darf nur der Vereinsmanager dieses
+   * Vereins (plus Admin/SBK). Ein Teammanager sieht denselben Bestand samt
+   * Lizenzstand, entscheidet aber nicht über die Mitgliedschaft: Die Anlage
+   * schreibt eine Heimatmitgliedschaft, die Deaktivierung schließt alle
+   * Zugehörigkeiten. Der Anlege-Knopf bleibt trotzdem stehen, damit an seiner
+   * Stelle die Begründung steht statt einer Lücke. Die Prüfung selbst bleibt
+   * serverseitig.
    */
-  canCreatePlayer(list: ClubPlayerList): boolean {
+  canManagePlayers(list: ClubPlayerList): boolean {
     return this._isAssociationRole || this.vmClubIds.includes(list.club.id);
   }
 

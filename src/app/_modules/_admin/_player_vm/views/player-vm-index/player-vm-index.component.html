@@ -51,12 +51,13 @@
       }
     </p>
     <!-- Diese Liste enthält auch die Vereine, in denen der Account nur
-         Teammanager ist. Angelegt wird dort nicht (api:
-         Club#user_permissions, :create_player), der Knopf steht deshalb
-         abgeblendet mit der Begründung daneben statt zu verschwinden. Die
-         Prüfung selbst bleibt serverseitig. -->
+         Teammanager ist. Dort wird nicht angelegt, deaktiviert oder
+         reaktiviert (api: Club#user_permissions, PlayersController). Der
+         Anlege-Knopf steht deshalb abgeblendet mit der Begründung daneben
+         statt zu verschwinden; sie gilt für beide Wege, weil die Zeilen dann
+         auch keine Aktionen tragen. Die Prüfung selbst bleibt serverseitig. -->
     <div class="mb-6">
-      @if (canCreatePlayer(list)) {
+      @if (canManagePlayers(list)) {
         <a
           data-testid="new-player-link"
           class="inline-block font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
@@ -183,7 +184,7 @@
                 }
               </td>
               <td class="py-2 text-right">
-                @if (!player.deactivated_at) {
+                @if (canManagePlayers(list) && !player.deactivated_at) {
                   @if (confirmDeactivateId !== player.id) {
                     <fb-button
                       size="small"
@@ -254,7 +255,7 @@
                     </div>
                   }
                 }
-                @if (player.deactivated_at) {
+                @if (canManagePlayers(list) && player.deactivated_at) {
                   <fb-button
                     size="small"
                     variant="success"

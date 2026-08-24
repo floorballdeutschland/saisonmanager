@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   HttpClientTestingModule,
   HttpTestingController,
@@ -90,7 +90,7 @@ describe('PlayerVmIndexComponent', () => {
 });
 
 // Mit echter Vorlage, weil genau ihr Zustandekommen geprüft wird.
-describe('PlayerVmIndexComponent (Anlege-Button)', () => {
+describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
   let http: HttpTestingController;
 
   async function setup(user: Partial<User>): Promise<void> {
@@ -123,10 +123,19 @@ describe('PlayerVmIndexComponent (Anlege-Button)', () => {
     ]);
     http
       .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
-      .flush([]);
+      .flush([{ id: 1, first_name: 'Aktiv', last_name: 'Beispiel' }]);
     http
       .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=114`)
-      .flush([]);
+      .flush([{ id: 2, first_name: 'Aktiv', last_name: 'Partner' }]);
+  }
+
+  // Die Knöpfe der Zeile hängen an derselben Entscheidung wie das Anlegen.
+  function aktionen(fixture: ComponentFixture<PlayerVmIndexComponent>): number {
+    return (
+      fixture.nativeElement.querySelectorAll(
+        'tbody fb-button'
+      ) as NodeListOf<HTMLElement>
+    ).length;
   }
 
   afterEach(() => http.verify());
@@ -151,6 +160,8 @@ describe('PlayerVmIndexComponent (Anlege-Button)', () => {
       '/verwaltung/vereine/113/spieler/neu',
       '/verwaltung/vereine/114/spieler/neu',
     ]);
+    // Je Zeile ein „Deaktivieren".
+    expect(aktionen(fixture)).toBe(2);
   });
 
   // Anlegen darf nur der Vereinsmanager des Vereins (api:
@@ -177,6 +188,9 @@ describe('PlayerVmIndexComponent (Anlege-Button)', () => {
     ) as NodeListOf<HTMLButtonElement>;
     expect(disabled.length).toBe(1);
     expect(disabled[0].disabled).toBeTrue();
+
+    // Nur die Zeile des VM-Vereins trägt „Deaktivieren".
+    expect(aktionen(fixture)).toBe(1);
   });
 
   // Ein reiner Teammanager hat kein club_ids (permission_hash[:vm] ist leer),
@@ -198,6 +212,7 @@ describe('PlayerVmIndexComponent (Anlege-Button)', () => {
         'button[data-testid="new-player-disabled"]'
       ).length
     ).toBe(2);
+    expect(aktionen(fixture)).toBe(0);
   });
 
   // Admin und SBK erreichen diese Vereinssicht nur mit einer Vereinsrolle,
