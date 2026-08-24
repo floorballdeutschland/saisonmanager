@@ -1,9 +1,11 @@
 import {
   ChangeDetectorRef,
   Component,
+  Injector,
   OnDestroy,
   OnInit,
   ChangeDetectionStrategy,
+  afterNextRender,
 } from '@angular/core';
 import {
   Club,
@@ -30,6 +32,12 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
   private _leagueId?: number;
 
   handledPlayerIds: number[] = [];
+
+  // Aus der Uebersicht kommt der Spieler als Query-Parameter mit (?spieler=).
+  // Sein Antrag wird aufgeklappt und angesprungen, sonst muesste man ihn in
+  // einer Liga mit vielen offenen Antraegen erneut suchen.
+  focusPlayerId?: number;
+  private _focusApplied = false;
   copyLoading = false;
   copyResult?: { copied: number };
 
@@ -46,7 +54,8 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
-    private _transloco: TranslocoService
+    private _transloco: TranslocoService,
+    private _injector: Injector
   ) {}
 
   ngOnInit(): void {
@@ -62,6 +71,17 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
           this._transloco.translate('licenseAdmin.leagueDetail.metaTitle')
         )
       );
+
+    this._route.queryParams
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((query) => {
+        const parsed = parseInt(query['spieler'], 10);
+        const next = Number.isNaN(parsed) ? undefined : parsed;
+        if (next !== this.focusPlayerId) {
+          this.focusPlayerId = next;
+          this._focusApplied = false;
+        }
+      });
 
     this._route.params.pipe(takeUntil(this._destroy$)).subscribe((params) => {
       const parsed = parseInt(params['leagueId'], 10);
@@ -96,8 +116,40 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
         next: (teams) => {
           this.teams = teams;
           this._cdr.markForCheck();
+          this.scrollToFocusedPlayer();
         },
       });
+  }
+
+  // Nur der erste Ladevorgang springt. Nach jeder Entscheidung laedt
+  // getGameOperations() erneut; ein Sprung waere dann ein Ruck an eine Stelle,
+  // die die Bearbeitung gerade verlassen hat.
+  private scrollToFocusedPlayer(): void {
+    if (!this.focusPlayerId || this._focusApplied) return;
+    this._focusApplied = true;
+    const playerId = this.focusPlayerId;
+    // afterNextRender laeuft nur im Browser und erst, wenn die Liste im DOM
+    // steht; ein Aufruf direkt hier fiele auf die alte Ansicht.
+    afterNextRender(
+      () => {
+        const target =
+          document.getElementById(`antrag-${playerId}`) ??
+          document.getElementById(`spieler-${playerId}`);
+        target?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      },
+      { injector: this._injector }
+    );
+  }
+
+  // Voreinstellung fuer das aufgeklappte Antragsformular: der angesprungene
+  // Spieler, sonst wie bisher der erste Antrag der Liste.
+  public isInitiallyOpen(
+    player: PlayerWithLicense,
+    teamIndex: number,
+    playerIndex: number
+  ): boolean {
+    if (this.focusPlayerId) return player.id === this.focusPlayerId;
+    return !teamIndex && !playerIndex;
   }
 
   public getAllClubs(): void {

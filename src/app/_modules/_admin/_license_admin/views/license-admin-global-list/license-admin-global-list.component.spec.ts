@@ -51,6 +51,33 @@ describe('LicenseAdminGlobalListComponent', () => {
     return component;
   }
 
+  // Der Weg zur Detailseite hing an einem Pfeil in der zwoelften Spalte, die
+  // auf schmalen Displays hinter dem waagerechten Scrollen lag. Jetzt traegt
+  // ihn der Name in der fixierten ersten Spalte.
+  describe('Weg zur Liga-Seite', () => {
+    it('verlinkt den Spielernamen auf die Liga und gibt den Spieler mit', () => {
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      const component = fixture.componentInstance;
+      component.allEntries = [
+        {
+          ...entry('Muster'),
+          player_id: 42,
+          league_id: 7,
+        } as AdminLicenseEntry,
+      ];
+      component.applyFilters();
+      component.loading = false;
+      fixture.detectChanges();
+
+      const link: HTMLAnchorElement | null =
+        fixture.nativeElement.querySelector('tbody td a');
+      expect(link?.getAttribute('href')).toBe(
+        '/verwaltung/lizenzwesen/verband/liga/7?spieler=42'
+      );
+      expect(link?.textContent).toContain('Muster, Test');
+    });
+  });
+
   describe('pagination', () => {
     it('splits the entries into pages of pageSize', () => {
       const component = setup(120);
