@@ -1,9 +1,11 @@
 import {
   ChangeDetectorRef,
   Component,
+  Injector,
   OnDestroy,
   OnInit,
   ChangeDetectionStrategy,
+  afterNextRender,
 } from '@angular/core';
 import {
   Club,
@@ -16,6 +18,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
+import { readUploadedAt } from '../../_utils/document-upload-date';
 
 @Component({
   selector: 'fb-license-admin-league-detail',
@@ -30,6 +33,13 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
   private _leagueId?: number;
 
   handledPlayerIds: number[] = [];
+
+  // Aus der Übersicht kommt der Spieler als Query-Parameter mit (?spieler=).
+  // Seine Zeile wird hervorgehoben und angesprungen und, sofern er hier
+  // überhaupt einen offenen Antrag hat, wird dieser aufgeklappt. Sonst müsste
+  // man ihn in einer Liga mit vielen Anträgen erneut suchen.
+  focusPlayerId?: number;
+  private _focusApplied = false;
   copyLoading = false;
   copyResult?: { copied: number };
 
@@ -46,7 +56,8 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
-    private _transloco: TranslocoService
+    private _transloco: TranslocoService,
+    private _injector: Injector
   ) {}
 
   ngOnInit(): void {
@@ -62,6 +73,31 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
           this._transloco.translate('licenseAdmin.leagueDetail.metaTitle')
         )
       );
+
+    this._route.queryParams
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((query) => {
+        const parsed = parseInt(query['spieler'], 10);
+        const next = Number.isNaN(parsed) ? undefined : parsed;
+        if (next === this.focusPlayerId) return;
+        this.focusPlayerId = next;
+        this._focusApplied = false;
+        // Wechselt nur der Spieler (zweiter Klick aus der Übersicht in
+        // dieselbe Liga), meldet sich params nicht erneut, weil der Router
+        // allein die Pfad-Parameter vergleicht. Ohne das Nachladen hier bliebe
+        // die Seite auf dem zuerst angesprungenen Spieler stehen, denn die
+        // Antragskarten lesen initiallyOpen nur in ihrem ngOnInit. Wechselt
+        // dagegen die Liga mit, lädt die params-Subscription ohnehin; der
+        // Router setzt den Snapshot vor dem Melden, die neue Liga steht hier
+        // also schon und wir halten uns heraus.
+        const routedLeagueId = parseInt(
+          this._route.snapshot.params['leagueId'],
+          10
+        );
+        if (this._leagueId !== undefined && routedLeagueId === this._leagueId) {
+          this.getGameOperations();
+        }
+      });
 
     this._route.params.pipe(takeUntil(this._destroy$)).subscribe((params) => {
       const parsed = parseInt(params['leagueId'], 10);
@@ -96,8 +132,49 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
         next: (teams) => {
           this.teams = teams;
           this._cdr.markForCheck();
+          this.scrollToFocusedPlayer();
         },
       });
+  }
+
+  // Nur der erste Ladevorgang springt. Die Liga wird nach jeder Entscheidung
+  // und nach dem Übernehmen der Vorrundenlizenzen neu geladen; dann ist der
+  // eben entschiedene Antrag weg, der Sprung fiele auf das Ersatzziel zurück
+  // und risse die Ansicht aus der Antragsliste hinunter in die Mannschaften.
+  private scrollToFocusedPlayer(): void {
+    if (!this.focusPlayerId || this._focusApplied) return;
+    this._focusApplied = true;
+    const playerId = this.focusPlayerId;
+    // Erst nach dem Rendern, sonst steht die Liste noch nicht im DOM und
+    // getElementById liefert null (beim Neuladen: das alte Element).
+    // afterNextRender läuft zudem nie auf dem Server.
+    afterNextRender(
+      () => {
+        const target =
+          document.getElementById(`antrag-${playerId}`) ??
+          document.getElementById(`spieler-${playerId}`);
+        if (!target) return;
+        target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        // Ohne das wandert nur der Blick: Tastatur und Screenreader stünden
+        // weiter am Seitenanfang. Das tabindex="-1" dazu steht an beiden
+        // Sprungzielen im Template.
+        target.focus({ preventScroll: true });
+      },
+      { injector: this._injector }
+    );
+  }
+
+  // Voreinstellung für das aufgeklappte Antragsformular: der angesprungene
+  // Spieler, sonst der erste offene Antrag der Liste. Mit Sprungziel bleibt
+  // alles andere zu, auch wenn dieser Spieler hier gar keinen offenen Antrag
+  // hat (dann führt der Sprung zu seiner Mannschaftszeile).
+  public isInitiallyOpen(
+    player: PlayerWithLicense,
+    teamIndex: number,
+    playerIndex: number
+  ): boolean {
+    if (this.focusPlayerId) return player.id === this.focusPlayerId;
+    return !teamIndex && !playerIndex;
   }
 
   public getAllClubs(): void {
@@ -114,6 +191,11 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
 
   public handledPlayer(playerId: number) {
     this.handledPlayerIds.push(playerId);
+    // Ist der angesprungene Spieler entschieden, endet der Sprung-Zustand.
+    // Sonst bliebe seine Mannschaftszeile den ganzen Besuch lang hervorgehoben
+    // und isInitiallyOpen() hielte jeden verbliebenen Antrag zu, statt wie
+    // bisher den nächsten aufzuklappen.
+    if (playerId === this.focusPlayerId) this.focusPlayerId = undefined;
     this.getGameOperations();
   }
 
@@ -145,6 +227,15 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
       ),
     };
     return labels[docType] ?? docType;
+  }
+
+  // Uploadzeitpunkt einer Dokumentart. Die API setzt das Feld nur zusammen mit
+  // einer abrufbaren Datei; fehlt es, bleibt es beim reinen Label.
+  public docUploadedAt(
+    player: PlayerWithLicense,
+    docType: string
+  ): string | null {
+    return readUploadedAt(player.team_license?.documents, docType);
   }
 
   // Elternzustimmung verlangt die Liga, nicht das Geburtsdatum allein: Die API

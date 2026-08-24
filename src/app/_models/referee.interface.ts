@@ -3,7 +3,7 @@ export interface RefereePublicLicense {
   lizenzstufe?: string;
   gueltigkeit?: string;
   landesverband?: string;
-  qualifications?: { qualification_type_name?: string; valid_until?: string }[];
+  qualifications?: RefereeQualificationDisplay[];
 }
 
 export interface RefereeQualificationType {
@@ -28,6 +28,18 @@ export interface RefereeQualificationEntry {
   qualification_type_id: number;
   qualification_type_name?: string;
   valid_until?: string;
+}
+
+/**
+ * Zusatzqualifikation zur Anzeige: im eigenen Profil, auf dem Ausweis und im
+ * öffentlichen Lizenzcheck. Rein lesend, deshalb ohne die IDs, die das
+ * Verwaltungsformular braucht (siehe RefereeQualificationEntry).
+ * `valid_until` ist im Format TT.MM.JJJJ, leer heisst „kein Ablauf hinterlegt“
+ * und nicht „abgelaufen“.
+ */
+export interface RefereeQualificationDisplay {
+  qualification_type_name?: string;
+  valid_until?: string | null;
 }
 
 export interface RefereeTag {
@@ -216,6 +228,9 @@ export interface RefereeProfile {
   club_exclusion_requests?: RefereeClubExclusionRequest[];
   // Korrekturanträge zu den gesperrten Stammdaten (Name, Geburtsdatum, Verein).
   change_requests?: RefereeChangeRequest[];
+  // Zusatzqualifikationen samt Gültigkeit, von der RSK gepflegt und hier nur
+  // angezeigt. Nach Namen sortiert von der API.
+  qualifications?: RefereeQualificationDisplay[];
 }
 
 // Feld, für das eine Korrektur beantragt werden kann. Die Werte sind die

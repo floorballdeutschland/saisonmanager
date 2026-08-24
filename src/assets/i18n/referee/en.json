@@ -65,7 +65,11 @@
     "correctionHistory": "Earlier correction requests",
     "correctionStatus.approved": "approved",
     "correctionStatus.rejected": "rejected",
-    "correctionStatus.withdrawn": "withdrawn"
+    "correctionStatus.withdrawn": "withdrawn",
+    "sectionQualifications": "Additional qualifications",
+    "qualificationsHint": "These entries are maintained by the referee commission and also appear on your digital referee card and in the public licence check. If a qualification is wrong or missing, contact the referee commission of your state association.",
+    "qualificationNoExpiry": "no expiry date",
+    "qualificationExpiredOn": "expired on {{ date }}"
   },
   "card": {
     "title": "My card",
@@ -81,7 +85,8 @@
     "validUntil": "Valid until",
     "association": "Association",
     "disclaimer": "This card was issued by Floorball-Verband Deutschland e. V. Validity and license level can be checked via the QR code or at saisonmanager.de/lizenzcheck. From iOS 27 and Android 8 onwards, you can also import this QR code into your official wallet app. To do so, open your wallet app and follow the instructions there.",
-    "notFound": "No referee profile found."
+    "notFound": "No referee profile found.",
+    "qualifications": "Additional qualifications"
   },
   "history": {
     "title": "My history",

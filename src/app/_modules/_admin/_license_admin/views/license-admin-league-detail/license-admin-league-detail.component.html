@@ -114,9 +114,15 @@
                     player.team_license.last_status.license_status_id === 2 &&
                     !handledPlayerIds.includes(player.id)
                   ) {
-                    <li>
+                    <!-- Sprungziel aus der Übersicht: scrollToFocusedPlayer()
+                         sucht genau diese ID per getElementById und zieht sie
+                         der Mannschaftszeile weiter unten vor. tabindex, damit
+                         der Fokus mitkommt. -->
+                    <li [id]="'antrag-' + player.id" tabindex="-1">
                       <fb-license-admin-detail
-                        [initiallyOpen]="!teamIndex && !playerIndex"
+                        [initiallyOpen]="
+                          isInitiallyOpen(player, teamIndex, playerIndex)
+                        "
                         [forceOpen]="allOpen"
                         [player]="player"
                         [team]="team"
@@ -140,8 +146,14 @@
             <div class="flex flex-col gap-2">
               <ul role="list" class="divide-y divide-gray-200">
                 @for (p of team.players; track p) {
-                  <li>
-                    <div href="#" class="block hover:bg-gray-50">
+                  <!-- Ersatz-Sprungziel: hierhin springt
+                       scrollToFocusedPlayer(), wenn der angesprungene Spieler
+                       hier keinen offenen Antrag (mehr) hat. -->
+                  <li [id]="'spieler-' + p.id" tabindex="-1">
+                    <div
+                      class="block hover:bg-gray-50"
+                      [class.bg-yellow-50]="p.id === focusPlayerId"
+                    >
                       <div class="-mx-4 px-4 py-4 sm:px-6 sm:-mx-6">
                         <div class="flex items-start justify-between">
                           <p class="truncate text-sm font-medium">
@@ -259,11 +271,35 @@
                                         rel="noopener"
                                         class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
                                         [title]="
-                                          'licenseAdmin.leagueDetail.docView'
-                                            | transloco
-                                              : { doc: docTypeLabel(docType) }
+                                          docUploadedAt(p, docType)
+                                            ? ('licenseAdmin.leagueDetail.docViewUploaded'
+                                              | transloco
+                                                : {
+                                                    doc: docTypeLabel(docType),
+                                                    date:
+                                                      docUploadedAt(p, docType)
+                                                      | date
+                                                        : 'dd.MM.yyyy'
+                                                        : 'Europe/Berlin',
+                                                  })
+                                            : ('licenseAdmin.leagueDetail.docView'
+                                              | transloco
+                                                : { doc: docTypeLabel(docType) })
                                         "
-                                        >{{ docTypeLabel(docType) }}</a
+                                        >{{ docTypeLabel(docType)
+                                        }}@if (docUploadedAt(p, docType)) {
+                                          <span
+                                            class="font-normal tabular-nums"
+                                          >
+                                            ·
+                                            {{
+                                              docUploadedAt(p, docType)
+                                                | date
+                                                  : "dd.MM.yy"
+                                                  : "Europe/Berlin"
+                                            }}</span
+                                          >
+                                        }</a
                                       >
                                     }
                                     @if (
@@ -298,13 +334,41 @@
                                       rel="noopener"
                                       class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
                                       [title]="
-                                        'licenseAdmin.leagueDetail.parentalConsentView'
-                                          | transloco
+                                        docUploadedAt(p, 'parental_consent')
+                                          ? ('licenseAdmin.leagueDetail.parentalConsentViewUploaded'
+                                            | transloco
+                                              : {
+                                                  date:
+                                                    docUploadedAt(
+                                                      p,
+                                                      'parental_consent'
+                                                    )
+                                                    | date
+                                                      : 'dd.MM.yyyy'
+                                                      : 'Europe/Berlin',
+                                                })
+                                          : ('licenseAdmin.leagueDetail.parentalConsentView'
+                                            | transloco)
                                       "
                                       >{{
                                         "licenseAdmin.leagueDetail.parentalConsent"
                                           | transloco
-                                      }}</a
+                                      }}@if (
+                                        docUploadedAt(p, "parental_consent")
+                                      ) {
+                                        <span class="font-normal tabular-nums">
+                                          ·
+                                          {{
+                                            docUploadedAt(
+                                              p,
+                                              "parental_consent"
+                                            )
+                                              | date
+                                                : "dd.MM.yy"
+                                                : "Europe/Berlin"
+                                          }}</span
+                                        >
+                                      }</a
                                     >
                                   } @else {
                                     <span

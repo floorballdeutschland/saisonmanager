@@ -194,10 +194,28 @@
                       rel="noopener"
                       class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
                       [title]="
-                        'licenseAdmin.leagueDetail.docView'
-                          | transloco: { doc: docTypeLabel(docType) }
+                        docUploadedAt(docType)
+                          ? ('licenseAdmin.leagueDetail.docViewUploaded'
+                            | transloco
+                              : {
+                                  doc: docTypeLabel(docType),
+                                  date:
+                                    docUploadedAt(docType)
+                                    | date: 'dd.MM.yyyy' : 'Europe/Berlin',
+                                })
+                          : ('licenseAdmin.leagueDetail.docView'
+                            | transloco: { doc: docTypeLabel(docType) })
                       "
-                      >{{ docTypeLabel(docType) }}</a
+                      >{{ docTypeLabel(docType)
+                      }}@if (docUploadedAt(docType)) {
+                        <span class="font-normal tabular-nums">
+                          ·
+                          {{
+                            docUploadedAt(docType)
+                              | date: "dd.MM.yy" : "Europe/Berlin"
+                          }}</span
+                        >
+                      }</a
                     >
                   } @else {
                     <span
@@ -220,12 +238,28 @@
                     rel="noopener"
                     class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-green-100 text-green-700 hover:bg-green-200"
                     [title]="
-                      'licenseAdmin.leagueDetail.parentalConsentView'
-                        | transloco
+                      docUploadedAt('parental_consent')
+                        ? ('licenseAdmin.leagueDetail.parentalConsentViewUploaded'
+                          | transloco
+                            : {
+                                date:
+                                  docUploadedAt('parental_consent')
+                                  | date: 'dd.MM.yyyy' : 'Europe/Berlin',
+                              })
+                        : ('licenseAdmin.leagueDetail.parentalConsentView'
+                          | transloco)
                     "
                     >{{
                       "licenseAdmin.leagueDetail.parentalConsent" | transloco
-                    }}</a
+                    }}@if (docUploadedAt("parental_consent")) {
+                      <span class="font-normal tabular-nums">
+                        ·
+                        {{
+                          docUploadedAt("parental_consent")
+                            | date: "dd.MM.yy" : "Europe/Berlin"
+                        }}</span
+                      >
+                    }</a
                   >
                 } @else {
                   <span

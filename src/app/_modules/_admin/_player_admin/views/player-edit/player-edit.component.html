@@ -709,6 +709,35 @@
                         {{ "playerAdmin.edit.until" | transloco }}
                         {{ additionalClub.valid_until | date: "dd.MM.yyyy" }}
                       </p>
+                      <!-- Handelnde Konten. Fehlt der Name (Konto gelöscht
+                           oder ohne hinterlegten Namen), bleibt die Konto-ID
+                           als belastbare Angabe stehen. -->
+                      @if (
+                        additionalClub.created_by_name ||
+                        additionalClub.created_by
+                      ) {
+                        <p class="text-sm text-fb-gray-500">
+                          {{ "playerAdmin.edit.releaseGrantedBy" | transloco }}
+                          {{
+                            additionalClub.created_by_name ||
+                              ("playerAdmin.edit.unknownActor"
+                                | transloco: { id: additionalClub.created_by })
+                          }}
+                        </p>
+                      }
+                      @if (
+                        additionalClub.valid_set_by_name ||
+                        additionalClub.valid_set_by
+                      ) {
+                        <p class="text-sm text-fb-gray-500">
+                          {{ "playerAdmin.edit.releaseEndedBy" | transloco }}
+                          {{
+                            additionalClub.valid_set_by_name ||
+                              ("playerAdmin.edit.unknownActor"
+                                | transloco: { id: additionalClub.valid_set_by })
+                          }}
+                        </p>
+                      }
                     </div>
                     <div class="flex flex-row items-center">
                       @if (
@@ -798,6 +827,29 @@
                         {{ "playerAdmin.edit.untilToday" | transloco }}
                       }
                     </p>
+                    <!-- Handelnde Konten. Fehlt der Name (Konto gelöscht
+                         oder ohne hinterlegten Namen), bleibt die Konto-ID als
+                         belastbare Angabe stehen. -->
+                    @if (club.created_by_name || club.created_by) {
+                      <p class="text-sm text-fb-gray-500">
+                        {{ "playerAdmin.edit.homeClubSetBy" | transloco }}
+                        {{
+                          club.created_by_name ||
+                            ("playerAdmin.edit.unknownActor"
+                              | transloco: { id: club.created_by })
+                        }}
+                      </p>
+                    }
+                    @if (club.valid_set_by_name || club.valid_set_by) {
+                      <p class="text-sm text-fb-gray-500">
+                        {{ "playerAdmin.edit.homeClubEndedBy" | transloco }}
+                        {{
+                          club.valid_set_by_name ||
+                            ("playerAdmin.edit.unknownActor"
+                              | transloco: { id: club.valid_set_by })
+                        }}
+                      </p>
+                    }
                   </div>
                 }
               </div>

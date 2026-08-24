@@ -15,6 +15,7 @@ import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
+import { readUploadedAt } from '../../_utils/document-upload-date';
 
 interface FilterOption {
   value: string | number | boolean | null;
@@ -420,6 +421,17 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
 
   public extraRequiredDocs(requiredDocuments: string[]): string[] {
     return (requiredDocuments || []).filter((d) => d !== 'parental_consent');
+  }
+
+  // Uploadzeitpunkt einer Dokumentart, damit in der Übersicht erkennbar ist,
+  // was seit dem letzten Durchgang neu dazugekommen ist. Die API setzt das Feld
+  // nur zusammen mit einer abrufbaren Datei; fehlt es (älterer Server, kein
+  // Upload), bleibt die Anzeige beim reinen Symbol.
+  public docUploadedAt(
+    entry: AdminLicenseEntry,
+    docType: string
+  ): string | null {
+    return readUploadedAt(entry.documents, docType);
   }
 
   public docTypeLabel(docType: string): string {
