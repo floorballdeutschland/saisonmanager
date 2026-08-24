@@ -35,9 +35,13 @@ export interface AdminLicenseEntry {
   approved_at: string | null;
   valid_until: string | null;
   required_documents: string[];
+  // Je Dokumentart drei Einträge: <key> (liegt vor), <key>_url (Abruf) und
+  // <key>_uploaded_at (Zeitpunkt des Uploads, nur gesetzt, wenn auch eine
+  // abrufbare Datei hängt).
   documents: {
     parental_consent: boolean;
     parental_consent_url?: string | null;
+    parental_consent_uploaded_at?: string | null;
     [key: string]: boolean | string | null | undefined;
   } | null;
 }

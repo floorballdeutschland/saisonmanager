@@ -271,4 +271,69 @@ describe('LicenseAdminGlobalListComponent', () => {
       ).toBeFalse();
     });
   });
+
+  // In der Genehmigungsübersicht war bisher nur zu sehen, DASS ein Dokument
+  // vorliegt, nicht seit wann. Wer die Liste in Durchgängen abarbeitet, konnte
+  // Neuzugänge nicht von längst geprüften Uploads unterscheiden.
+  describe('Uploadzeitpunkt der Dokumente', () => {
+    function entryWithDocuments(
+      documents: AdminLicenseEntry['documents']
+    ): AdminLicenseEntry {
+      return { ...entry('Dokument'), documents } as AdminLicenseEntry;
+    }
+
+    it('liefert den Uploadzeitpunkt einer Dokumentart', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+      const e = entryWithDocuments({
+        parental_consent: true,
+        parental_consent_url: 'https://example.test/doc.pdf',
+        parental_consent_uploaded_at: '2026-08-12T09:30:00.000Z',
+      });
+
+      expect(component.docUploadedAt(e, 'parental_consent')).toBe(
+        '2026-08-12T09:30:00.000Z'
+      );
+    });
+
+    // Ältere Serverantworten kennen das Feld nicht; die Übersicht darf davon
+    // nicht abhängen und zeigt dann weiter nur das Symbol.
+    it('bleibt ohne Zeitpunkt bei null', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+
+      expect(
+        component.docUploadedAt(
+          entryWithDocuments({
+            parental_consent: true,
+            parental_consent_url: 'https://example.test/doc.pdf',
+          }),
+          'parental_consent'
+        )
+      ).toBeNull();
+      expect(
+        component.docUploadedAt(entryWithDocuments(null), 'parental_consent')
+      ).toBeNull();
+    });
+
+    // Ohne Upload steht dort false statt eines Datums – der Helfer darf den
+    // booleschen Wert nicht als Zeitstempel durchreichen.
+    it('reicht einen booleschen Wert nicht als Zeitpunkt durch', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+
+      expect(
+        component.docUploadedAt(
+          entryWithDocuments({
+            parental_consent: false,
+            parental_consent_uploaded_at: null,
+          }),
+          'parental_consent'
+        )
+      ).toBeNull();
+    });
+  });
 });

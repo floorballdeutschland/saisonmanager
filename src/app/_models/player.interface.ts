@@ -54,9 +54,13 @@ export interface PlayerWithLicense extends Player {
     approved_at?: string;
     requested_at: string;
     express?: boolean;
+    // Je Dokumentart drei Einträge: <key> (liegt vor), <key>_url (Abruf) und
+    // <key>_uploaded_at (Zeitpunkt des Uploads, nur gesetzt, wenn auch eine
+    // abrufbare Datei hängt).
     documents?: {
       parental_consent: boolean;
       parental_consent_url?: string | null;
+      parental_consent_uploaded_at?: string | null;
       [key: string]: boolean | string | null | undefined;
     };
     // Für diesen Spieler tatsächlich erforderliche Dokumentarten-Keys

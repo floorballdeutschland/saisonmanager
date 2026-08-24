@@ -422,6 +422,18 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     return (requiredDocuments || []).filter((d) => d !== 'parental_consent');
   }
 
+  // Uploadzeitpunkt einer Dokumentart, damit in der Übersicht erkennbar ist,
+  // was seit dem letzten Durchgang neu dazugekommen ist. Die API setzt das Feld
+  // nur zusammen mit einer abrufbaren Datei; fehlt es (älterer Server, kein
+  // Upload), bleibt die Anzeige beim reinen Symbol.
+  public docUploadedAt(
+    entry: AdminLicenseEntry,
+    docType: string
+  ): string | null {
+    const value = entry.documents?.[docType + '_uploaded_at'];
+    return typeof value === 'string' ? value : null;
+  }
+
   public docTypeLabel(docType: string): string {
     const labels: Record<string, string> = {
       id_copy: this._transloco.translate(

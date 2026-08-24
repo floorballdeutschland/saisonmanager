@@ -228,6 +228,16 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
     return labels[docType] ?? docType;
   }
 
+  // Uploadzeitpunkt einer Dokumentart. Die API setzt das Feld nur zusammen mit
+  // einer abrufbaren Datei; fehlt es, bleibt es beim reinen Label.
+  public docUploadedAt(
+    player: PlayerWithLicense,
+    docType: string
+  ): string | null {
+    const value = player.team_license?.documents?.[docType + '_uploaded_at'];
+    return typeof value === 'string' ? value : null;
+  }
+
   // Elternzustimmung verlangt die Liga, nicht das Geburtsdatum allein: Die API
   // löst beides auf (Liga-Flag bzw. eingetragene Dokumentart, Alter am Tag der
   // Beantragung) und liefert das Ergebnis in required_documents. Vorher prüfte

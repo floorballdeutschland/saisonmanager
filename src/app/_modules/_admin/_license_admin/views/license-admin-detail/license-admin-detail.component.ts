@@ -279,6 +279,16 @@ export class LicenseAdminDetailComponent implements OnInit {
     return labels[docType] ?? docType;
   }
 
+  // Uploadzeitpunkt einer Dokumentart, damit vor der Genehmigung erkennbar ist,
+  // wie frisch das vorliegende Dokument ist. Die API setzt das Feld nur
+  // zusammen mit einer abrufbaren Datei; fehlt es, bleibt es beim reinen Label.
+  public docUploadedAt(docType: string): string | null {
+    const value = this.player?.team_license?.documents?.[
+      docType + '_uploaded_at'
+    ];
+    return typeof value === 'string' ? value : null;
+  }
+
   // Für diesen Spieler tatsächlich erforderliche Dokumentarten-Keys
   // (serverseitig aufgelöst); Fallback: Liga-Konfiguration.
   public requiredDocs(): string[] {
