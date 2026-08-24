@@ -166,9 +166,7 @@
                   "playerAdmin.edit.email" | transloco
                 }}</label>
                 <div class="md:col-span-2 xl:col-span-3">
-                  @if (
-                    can("player_create_update") || can("update_player_email")
-                  ) {
+                  @if (canEnterEmail) {
                     <input
                       [(ngModel)]="player.email"
                       type="email"
@@ -179,17 +177,13 @@
                       "
                     />
                   }
-                  @if (
-                    !can("player_create_update") && !can("update_player_email")
-                  ) {
+                  @if (!canEnterEmail) {
                     {{ player.email || "–" }}
                   }
                   <p class="text-sm text-gray-500 mt-1">
                     {{ "playerAdmin.edit.emailHint" | transloco }}
                   </p>
-                  @if (
-                    can("update_player_email") && !can("player_create_update")
-                  ) {
+                  @if (canSaveEmailOnly) {
                     <div class="mt-2">
                       <a
                         class="font-bold text-black leading-[17px] text-sm px-4 py-2 border bg-white border-fb-gray-600 rounded-[5px]"

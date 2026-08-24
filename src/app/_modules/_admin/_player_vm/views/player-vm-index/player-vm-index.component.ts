@@ -27,13 +27,11 @@ interface ClubPlayerList {
 export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   clubLists: ClubPlayerList[] = [];
   loading = false;
-  // Vereine, in denen der Account Vereinsmanager ist (permission_hash[:vm]).
-  // Nur dort wird angelegt, deaktiviert und reaktiviert; als Teammanager*in
-  // steht der Anlege-Knopf abgeblendet da und die Zeilen tragen keine
-  // Aktionen (api: Club#user_permissions, PlayersController).
+  // Rückfall, solange die API das Feld `manage_players` je Verein noch nicht
+  // liefert (Frontend-Deploy vor dem API-Deploy): die Vereine, in denen der
+  // Account Vereinsmanager ist, plus die Verbandsrollen. Ungenauer als das
+  // Feld, siehe canManagePlayers.
   vmClubIds: number[] = [];
-  // Admin und SBK erreichen diese Vereinssicht nur zusammen mit einer
-  // Vereinsrolle, entscheiden aber überall.
   private _isAssociationRole = false;
   actionError: string | null = null;
   confirmDeactivateId: number | null = null;
@@ -142,16 +140,30 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Anlegen, Deaktivieren und Reaktivieren darf nur der Vereinsmanager dieses
-   * Vereins (plus Admin/SBK). Ein Teammanager sieht denselben Bestand samt
-   * Lizenzstand, entscheidet aber nicht über die Mitgliedschaft: Die Anlage
-   * schreibt eine Heimatmitgliedschaft, die Deaktivierung schließt alle
-   * Zugehörigkeiten. Der Anlege-Knopf bleibt trotzdem stehen, damit an seiner
-   * Stelle die Begründung steht statt einer Lücke. Die Prüfung selbst bleibt
-   * serverseitig.
+   * Anlegen, Deaktivieren und Reaktivieren darf nur, wer den Bestand dieses
+   * Vereins ordnet: der Vereinsmanager, dazu Admin und die zuständige SBK. Ein
+   * Teammanager sieht denselben Bestand samt Lizenzstand und öffnet die
+   * Profile, entscheidet aber nicht, wer im Verein steht. Der Anlege-Knopf
+   * bleibt trotzdem stehen, damit an seiner Stelle die Begründung steht statt
+   * einer Lücke. Die Prüfung selbst bleibt serverseitig.
+   *
+   * Maßgeblich ist das Feld am Verein (`manage_players` aus
+   * vm/clubs_and_teams), nicht die Rollenliste im Browser: Die kennt den
+   * Spielbetrieb eines Vereins nicht (eine Landes-SBK sähe damit auch Vereine
+   * fremder Verbände als eigene) und steht nach einer Rechteänderung bis zur
+   * nächsten Anmeldung veraltet da. Fehlt das Feld, greift der alte Rückfall,
+   * damit ein Frontend-Deploy vor dem API-Deploy niemandem die Knöpfe nimmt.
    */
   canManagePlayers(list: ClubPlayerList): boolean {
-    return this._isAssociationRole || this.vmClubIds.includes(list.club.id);
+    return (
+      list.club.manage_players ??
+      (this._isAssociationRole || this.vmClubIds.includes(list.club.id))
+    );
+  }
+
+  /** Für die Einleitung: Beschreibt sie Knöpfe, die es hier überhaupt gibt? */
+  get anyClubManageable(): boolean {
+    return this.clubLists.some((list) => this.canManagePlayers(list));
   }
 
   visiblePlayers(list: ClubPlayerList): Player[] {
