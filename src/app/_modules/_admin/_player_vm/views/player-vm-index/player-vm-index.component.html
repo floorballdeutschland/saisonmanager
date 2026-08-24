@@ -17,9 +17,14 @@
     </div>
   }
 
-  <p class="text-sm text-fb-gray-500 mb-6 max-w-2xl">
-    {{ "playerVm.index.intro" | transloco }}
-  </p>
+  <!-- Die Einleitung erklärt das Deaktivieren. Wer hier nur den Bestand
+       einsieht (Teammanager), bekäme eine Anleitung für Knöpfe, die er nicht
+       hat; für ihn steht der Hinweis am abgeblendeten Anlege-Knopf. -->
+  @if (anyClubManageable) {
+    <p class="text-sm text-fb-gray-500 mb-6 max-w-2xl">
+      {{ "playerVm.index.intro" | transloco }}
+    </p>
+  }
 
   @for (list of clubLists; track list) {
     @if (clubLists.length > 1) {
@@ -52,10 +57,10 @@
     </p>
     <!-- Diese Liste enthält auch die Vereine, in denen der Account nur
          Teammanager ist. Dort wird nicht angelegt, deaktiviert oder
-         reaktiviert (api: Club#user_permissions, PlayersController). Der
-         Anlege-Knopf steht deshalb abgeblendet mit der Begründung daneben
-         statt zu verschwinden; sie gilt für beide Wege, weil die Zeilen dann
-         auch keine Aktionen tragen. Die Prüfung selbst bleibt serverseitig. -->
+         reaktiviert (api#530). Der Anlege-Knopf steht deshalb abgeblendet mit
+         der Begründung daneben statt zu verschwinden; sie gilt für beide Wege,
+         weil die Zeilen dann auch keine Aktionen tragen. Die Prüfung selbst
+         bleibt serverseitig. -->
     <div class="mb-6">
       @if (canManagePlayers(list)) {
         <a
@@ -187,6 +192,7 @@
                 @if (canManagePlayers(list) && !player.deactivated_at) {
                   @if (confirmDeactivateId !== player.id) {
                     <fb-button
+                      data-testid="deactivate-player"
                       size="small"
                       variant="error"
                       (click)="startDeactivate(player)"
@@ -257,6 +263,7 @@
                 }
                 @if (canManagePlayers(list) && player.deactivated_at) {
                   <fb-button
+                    data-testid="reactivate-player"
                     size="small"
                     variant="success"
                     (click)="reactivate(list, player)"

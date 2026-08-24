@@ -510,12 +510,19 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Anlegen darf nur der Vereinsmanager dieses Vereins, Admin und SBK überall
-   * (api: Club#user_permissions, :create_player). Ein Teammanager kommt über
-   * einen Direktaufruf oder einen noch offenen Tab hierher: Statt ihn das
-   * Formular ausfüllen und erst am Speichern scheitern zu lassen, steht der
-   * Grund oben und der Speichern-Knopf entfällt. Die Prüfung selbst bleibt
-   * serverseitig.
+   * Anlegen darf nur der Vereinsmanager dieses Vereins (api:
+   * Club#user_permissions, :create_player). Wer über einen Direktaufruf oder
+   * einen noch offenen Tab hierher kommt, soll das Formular nicht ausfüllen
+   * und erst am Speichern scheitern: Der Grund steht oben, die leeren Felder
+   * stehen als Text da, der Speichern-Knopf entfällt.
+   *
+   * `update_player` steht hier für „Verbandsrolle" und ist bewusst eine
+   * Näherung: Das Flag gilt global (Admin/SBK), `Club#user_permissions`
+   * scopet SBK dagegen auf den Spielbetrieb des Vereins. Eine Landes-SBK
+   * bekommt hier also unter Umständen ein Formular, dessen Speichern die API
+   * ablehnt -- die Entscheidung fällt serverseitig, diese Maske hat für einen
+   * fremden Verein keine bessere Quelle. Die Vereinssicht hat eine
+   * (`manage_players` aus vm/clubs_and_teams).
    *
    * `club_id` kommt als Routenparameter, also als String.
    */
@@ -525,6 +532,29 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     }
 
     return !this.vmClubIds.includes(Number(this.club_id));
+  }
+
+  /**
+   * Das E-Mail-Feld hängt an `update_player_email` und damit an einem Recht,
+   * das Team- und Vereinsmanager haben. In der Neuanlage trägt es trotzdem
+   * nicht: `saveEmail()` braucht eine Spieler-id, die es erst nach dem
+   * Speichern gibt. Bevor `can('player_create_update')` in der Anlage falsch
+   * werden konnte, war der Fall verdeckt -- der eigene Speichern-Knopf für die
+   * E-Mail erscheint nur, wenn das Formular selbst nicht speichern darf.
+   */
+  public get canEnterEmail(): boolean {
+    return (
+      this.can('player_create_update') ||
+      (this.editMode && this.can('update_player_email'))
+    );
+  }
+
+  public get canSaveEmailOnly(): boolean {
+    return (
+      this.editMode &&
+      this.can('update_player_email') &&
+      !this.can('player_create_update')
+    );
   }
 
   public can(permissionString: string): boolean {
@@ -718,7 +748,18 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   public saveEmail(): void {
-    if (!this.player?.id || !this.player?.email) return;
+    // Ohne Adresse ist der Knopf abgeblendet, das ist der stille Normalfall.
+    if (!this.player?.email) return;
+    // Ohne id gibt es nichts zu speichern (Neuanlage). Die Maske bietet den
+    // Knopf dort nicht an (canSaveEmailOnly), ein Aufruf trotzdem wäre ein
+    // Fehler und darf nicht als Erfolg aussehen.
+    if (!this.player.id) {
+      this._notificationService.error(
+        'Die E-Mail-Adresse lässt sich erst nach dem Anlegen speichern.',
+        { autoClose: true, keepAfterRouteChange: false }
+      );
+      return;
+    }
     this._playerService
       .updatePlayerEmail(this.player.id, this.player.email ?? null)
       .pipe(takeUntil(this._destroy$))

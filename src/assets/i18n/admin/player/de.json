@@ -14,7 +14,7 @@
     "backToList": "← Zurück zur Spielerliste",
     "editPlayer": "Spieler bearbeiten",
     "newPlayer": "Neuen Spieler anlegen",
-    "createVmOnly": "Neue Spieler*innen legt der Vereinsmanager des Vereins an. Als Teammanager*in kannst du hier nichts speichern.",
+    "createVmOnly": "Neue Spieler*innen legt der Vereinsmanager dieses Vereins an, hier lässt sich nichts speichern. Wenn du gerade als Vereinsmanager eingetragen wurdest, melde dich einmal ab und wieder an.",
     "playerData": "Spielerdaten",
     "playerId": "Spieler ID",
     "idAfterCreate": "Wird nach dem Anlegen festgelegt",

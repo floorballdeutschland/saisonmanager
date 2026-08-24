@@ -116,10 +116,22 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
     http = TestBed.inject(HttpTestingController);
   }
 
-  function zweiVereine(): void {
+  // `manage_players` je Verein ist die maßgebliche Quelle (api#530);
+  // `undefined` steht für eine API, die das Feld noch nicht liefert.
+  function zweiVereine(flags: (boolean | undefined)[] = [true, true]): void {
     http.expectOne(`${environment.apiURL}vm/clubs_and_teams.json`).flush([
-      { id: 113, name: 'TSV Rohrdorf-Thansau', teams: [] },
-      { id: 114, name: 'SG Partnerverein', teams: [] },
+      {
+        id: 113,
+        name: 'TSV Rohrdorf-Thansau',
+        teams: [],
+        manage_players: flags[0],
+      },
+      {
+        id: 114,
+        name: 'SG Partnerverein',
+        teams: [],
+        manage_players: flags[1],
+      },
     ]);
     http
       .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
@@ -129,23 +141,23 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
       .flush([{ id: 2, first_name: 'Aktiv', last_name: 'Partner' }]);
   }
 
-  // Die Knöpfe der Zeile hängen an derselben Entscheidung wie das Anlegen.
+  // Beide Knöpfe der Zeile hängen an derselben Entscheidung wie das Anlegen.
+  // Über data-testid und nicht über `fb-button`, damit ein zusätzlicher Knopf
+  // in der Zeile den Test nicht falsch scheitern lässt.
   function aktionen(fixture: ComponentFixture<PlayerVmIndexComponent>): number {
-    return (
-      fixture.nativeElement.querySelectorAll(
-        'tbody fb-button'
-      ) as NodeListOf<HTMLElement>
+    return fixture.nativeElement.querySelectorAll(
+      '[data-testid="deactivate-player"], [data-testid="reactivate-player"]'
     ).length;
   }
 
   afterEach(() => http.verify());
 
-  it('zeigt den Anlege-Link an jedem Verein, in dem der Account VM ist', async () => {
-    await setup({ club_ids: [113, 114], permissions: {} });
+  it('zeigt den Anlege-Link an jedem Verein mit manage_players', async () => {
+    await setup({ permissions: {} });
     const fixture = TestBed.createComponent(PlayerVmIndexComponent);
     fixture.detectChanges();
 
-    zweiVereine();
+    zweiVereine([true, true]);
     fixture.detectChanges();
 
     // Je Verein ein eigener Link: fängt eine Interpolation, die alle Links
@@ -164,16 +176,16 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
     expect(aktionen(fixture)).toBe(2);
   });
 
-  // Anlegen darf nur der Vereinsmanager des Vereins (api:
-  // Club#user_permissions). Die Liste enthält aber auch die Vereine, in denen
+  // Anlegen, Deaktivieren und Reaktivieren darf nur, wer den Bestand dieses
+  // Vereins ordnet (api#530). Die Liste enthält aber auch die Vereine, in denen
   // der Account nur Teammanager ist – dort steht der Knopf abgeblendet mit dem
   // Grund daneben, statt zu verschwinden.
-  it('blendet den Knopf im Verein ab, in dem der Account nur TM ist', async () => {
-    await setup({ club_ids: [113], permissions: {} });
+  it('blendet den Knopf im Verein ohne manage_players ab', async () => {
+    await setup({ permissions: {} });
     const fixture = TestBed.createComponent(PlayerVmIndexComponent);
     fixture.detectChanges();
 
-    zweiVereine();
+    zweiVereine([true, false]);
     fixture.detectChanges();
 
     const links = fixture.nativeElement.querySelectorAll(
@@ -193,14 +205,12 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
     expect(aktionen(fixture)).toBe(1);
   });
 
-  // Ein reiner Teammanager hat kein club_ids (permission_hash[:vm] ist leer),
-  // die Antwort liefert das Feld dann gar nicht.
-  it('blendet den Knopf auch ohne club_ids ab', async () => {
+  it('blendet ohne manage_players an jedem Verein ab', async () => {
     await setup({ permissions: {} });
     const fixture = TestBed.createComponent(PlayerVmIndexComponent);
     fixture.detectChanges();
 
-    zweiVereine();
+    zweiVereine([false, false]);
     fixture.detectChanges();
 
     expect(
@@ -215,19 +225,95 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
     expect(aktionen(fixture)).toBe(0);
   });
 
-  // Admin und SBK erreichen diese Vereinssicht nur mit einer Vereinsrolle,
-  // legen aber überall an; ihr club_ids ist leer (es führt nur VM-Vereine).
-  it('zeigt den Link für Admin/SBK auch ohne club_ids', async () => {
+  // Rückfall für den Fall, dass das Frontend vor der API ausgerollt wird: Ohne
+  // das Feld entscheidet wie bisher die Rollenliste aus dem Browser.
+  it('faellt ohne das Feld auf club_ids zurueck', async () => {
+    await setup({ club_ids: [113], permissions: {} });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    zweiVereine([undefined, undefined]);
+    fixture.detectChanges();
+
+    expect(
+      Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'a[data-testid="new-player-link"]'
+        ) as NodeListOf<HTMLAnchorElement>
+      ).map((a) => a.getAttribute('href'))
+    ).toEqual(['/verwaltung/vereine/113/spieler/neu']);
+  });
+
+  it('faellt ohne das Feld fuer Admin und SBK auf update_player zurueck', async () => {
     await setup({ permissions: { update_player: true } });
     const fixture = TestBed.createComponent(PlayerVmIndexComponent);
     fixture.detectChanges();
 
-    zweiVereine();
+    zweiVereine([undefined, undefined]);
     fixture.detectChanges();
 
     expect(
       fixture.nativeElement.querySelectorAll('a[data-testid="new-player-link"]')
         .length
     ).toBe(2);
+  });
+
+  // Der zweite Zweig der Zeile: Ein deaktiviertes Profil trägt „Reaktivieren",
+  // und zwar unter derselben Bedingung.
+  it('zeigt Reaktivieren nur im Verein mit manage_players', async () => {
+    await setup({ permissions: {} });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    http.expectOne(`${environment.apiURL}vm/clubs_and_teams.json`).flush([
+      { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
+      { id: 114, name: 'Nur Mannschaft', teams: [], manage_players: false },
+    ]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
+      .flush([
+        {
+          id: 1,
+          first_name: 'Weg',
+          last_name: 'Eigen',
+          deactivated_at: '2026-08-01T00:00:00Z',
+        },
+      ]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=114`)
+      .flush([
+        {
+          id: 2,
+          first_name: 'Weg',
+          last_name: 'Fremd',
+          deactivated_at: '2026-08-01T00:00:00Z',
+        },
+      ]);
+    fixture.detectChanges();
+
+    // Deaktivierte stehen erst hinter dem Schalter.
+    fixture.componentInstance.clubLists.forEach((list) =>
+      fixture.componentInstance.toggleDeactivated(list)
+    );
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelectorAll(
+        '[data-testid="reactivate-player"]'
+      ).length
+    ).toBe(1);
+  });
+
+  // Die Einleitung erklärt das Deaktivieren; ohne einen einzigen eigenen Verein
+  // beschreibt sie Knöpfe, die es hier nicht gibt.
+  it('laesst die Einleitung weg, wenn kein Verein zu ordnen ist', async () => {
+    await setup({ permissions: {} });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    zweiVereine([false, false]);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.anyClubManageable).toBeFalse();
   });
 });
