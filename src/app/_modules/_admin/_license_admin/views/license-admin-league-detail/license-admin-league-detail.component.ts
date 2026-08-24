@@ -33,9 +33,10 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
 
   handledPlayerIds: number[] = [];
 
-  // Aus der Uebersicht kommt der Spieler als Query-Parameter mit (?spieler=).
-  // Sein Antrag wird aufgeklappt und angesprungen, sonst muesste man ihn in
-  // einer Liga mit vielen offenen Antraegen erneut suchen.
+  // Aus der Übersicht kommt der Spieler als Query-Parameter mit (?spieler=).
+  // Seine Zeile wird hervorgehoben und angesprungen und, sofern er hier
+  // überhaupt einen offenen Antrag hat, wird dieser aufgeklappt. Sonst müsste
+  // man ihn in einer Liga mit vielen Anträgen erneut suchen.
   focusPlayerId?: number;
   private _focusApplied = false;
   copyLoading = false;
@@ -77,9 +78,23 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
       .subscribe((query) => {
         const parsed = parseInt(query['spieler'], 10);
         const next = Number.isNaN(parsed) ? undefined : parsed;
-        if (next !== this.focusPlayerId) {
-          this.focusPlayerId = next;
-          this._focusApplied = false;
+        if (next === this.focusPlayerId) return;
+        this.focusPlayerId = next;
+        this._focusApplied = false;
+        // Wechselt nur der Spieler (zweiter Klick aus der Übersicht in
+        // dieselbe Liga), meldet sich params nicht erneut, weil der Router
+        // allein die Pfad-Parameter vergleicht. Ohne das Nachladen hier bliebe
+        // die Seite auf dem zuerst angesprungenen Spieler stehen, denn die
+        // Antragskarten lesen initiallyOpen nur in ihrem ngOnInit. Wechselt
+        // dagegen die Liga mit, lädt die params-Subscription ohnehin; der
+        // Router setzt den Snapshot vor dem Melden, die neue Liga steht hier
+        // also schon und wir halten uns heraus.
+        const routedLeagueId = parseInt(
+          this._route.snapshot.params['leagueId'],
+          10
+        );
+        if (this._leagueId !== undefined && routedLeagueId === this._leagueId) {
+          this.getGameOperations();
         }
       });
 
@@ -121,28 +136,37 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Nur der erste Ladevorgang springt. Nach jeder Entscheidung laedt
-  // getGameOperations() erneut; ein Sprung waere dann ein Ruck an eine Stelle,
-  // die die Bearbeitung gerade verlassen hat.
+  // Nur der erste Ladevorgang springt. Die Liga wird nach jeder Entscheidung
+  // und nach dem Übernehmen der Vorrundenlizenzen neu geladen; dann ist der
+  // eben entschiedene Antrag weg, der Sprung fiele auf das Ersatzziel zurück
+  // und risse die Ansicht aus der Antragsliste hinunter in die Mannschaften.
   private scrollToFocusedPlayer(): void {
     if (!this.focusPlayerId || this._focusApplied) return;
     this._focusApplied = true;
     const playerId = this.focusPlayerId;
-    // afterNextRender laeuft nur im Browser und erst, wenn die Liste im DOM
-    // steht; ein Aufruf direkt hier fiele auf die alte Ansicht.
+    // Erst nach dem Rendern, sonst steht die Liste noch nicht im DOM und
+    // getElementById liefert null (beim Neuladen: das alte Element).
+    // afterNextRender läuft zudem nie auf dem Server.
     afterNextRender(
       () => {
         const target =
           document.getElementById(`antrag-${playerId}`) ??
           document.getElementById(`spieler-${playerId}`);
-        target?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        if (!target) return;
+        target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        // Ohne das wandert nur der Blick: Tastatur und Screenreader stünden
+        // weiter am Seitenanfang. Das tabindex="-1" dazu steht an beiden
+        // Sprungzielen im Template.
+        target.focus({ preventScroll: true });
       },
       { injector: this._injector }
     );
   }
 
-  // Voreinstellung fuer das aufgeklappte Antragsformular: der angesprungene
-  // Spieler, sonst wie bisher der erste Antrag der Liste.
+  // Voreinstellung für das aufgeklappte Antragsformular: der angesprungene
+  // Spieler, sonst der erste offene Antrag der Liste. Mit Sprungziel bleibt
+  // alles andere zu, auch wenn dieser Spieler hier gar keinen offenen Antrag
+  // hat (dann führt der Sprung zu seiner Mannschaftszeile).
   public isInitiallyOpen(
     player: PlayerWithLicense,
     teamIndex: number,
@@ -166,6 +190,11 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
 
   public handledPlayer(playerId: number) {
     this.handledPlayerIds.push(playerId);
+    // Ist der angesprungene Spieler entschieden, endet der Sprung-Zustand.
+    // Sonst bliebe seine Mannschaftszeile den ganzen Besuch lang hervorgehoben
+    // und isInitiallyOpen() hielte jeden verbliebenen Antrag zu, statt wie
+    // bisher den nächsten aufzuklappen.
+    if (playerId === this.focusPlayerId) this.focusPlayerId = undefined;
     this.getGameOperations();
   }
 

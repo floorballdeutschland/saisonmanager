@@ -51,9 +51,9 @@ describe('LicenseAdminGlobalListComponent', () => {
     return component;
   }
 
-  // Der Weg zur Detailseite hing an einem Pfeil in der zwoelften Spalte, die
-  // auf schmalen Displays hinter dem waagerechten Scrollen lag. Jetzt traegt
-  // ihn der Name in der fixierten ersten Spalte.
+  // Der Weg zur Detailseite hing an einem Pfeil in der letzten Spalte am
+  // rechten Tabellenrand, die auf schmalen Displays hinter dem waagerechten
+  // Scrollen lag. Jetzt trägt ihn der Name in der fixierten ersten Spalte.
   describe('Weg zur Liga-Seite', () => {
     it('verlinkt den Spielernamen auf die Liga und gibt den Spieler mit', () => {
       const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
