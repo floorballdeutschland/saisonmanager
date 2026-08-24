@@ -80,11 +80,18 @@
     "fieldLastName": "Last name",
     "fieldBirthDate": "Date of birth",
     "fieldEmail": "Email",
+    "fieldClub": "Club",
     "ariaLicenseNumber": "License number (final)",
     "ariaFirstName": "First name (final)",
     "ariaLastName": "Last name (final)",
     "ariaBirthDate": "Date of birth (final)",
     "ariaEmail": "Email (final)",
+    "ariaClub": "Club (final)",
+    "clubPlaceholder": "Search club",
+    "clubReset": "no club",
+    "matchScore": "{{ matched }} of 6 attributes match",
+    "differsLegend": "Differences are highlighted.",
+    "differsHint": "Differs from the database",
     "saving": "Saving...",
     "approve": "Approve"
   },
@@ -109,6 +116,7 @@
     "cancelFailed": "Cancellation failed",
     "loadPendingError": "Open cases could not be loaded",
     "approved": "Approved",
-    "approveFailed": "Approval failed"
+    "approveFailed": "Approval failed",
+    "loadClubsError": "Could not load the list of clubs — the club selection stays empty"
   }
 }

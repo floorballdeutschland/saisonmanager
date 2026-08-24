@@ -80,11 +80,18 @@
     "fieldLastName": "Nachname",
     "fieldBirthDate": "Geburtsdatum",
     "fieldEmail": "E-Mail",
+    "fieldClub": "Verein",
     "ariaLicenseNumber": "Lizenznummer (final)",
     "ariaFirstName": "Vorname (final)",
     "ariaLastName": "Nachname (final)",
     "ariaBirthDate": "Geburtsdatum (final)",
     "ariaEmail": "E-Mail (final)",
+    "ariaClub": "Verein (final)",
+    "clubPlaceholder": "Verein suchen",
+    "clubReset": "kein Verein",
+    "matchScore": "{{ matched }} von 6 Merkmalen stimmen überein",
+    "differsLegend": "Abweichungen sind hervorgehoben.",
+    "differsHint": "Weicht von der Datenbank ab",
     "saving": "Speichere...",
     "approve": "Freigeben"
   },
@@ -109,6 +116,7 @@
     "cancelFailed": "Abbruch fehlgeschlagen",
     "loadPendingError": "Offene Vorgänge konnten nicht geladen werden",
     "approved": "Freigegeben",
-    "approveFailed": "Freigabe fehlgeschlagen"
+    "approveFailed": "Freigabe fehlgeschlagen",
+    "loadClubsError": "Vereinsliste konnte nicht geladen werden — die Vereinsauswahl bleibt leer"
   }
 }

@@ -4,7 +4,10 @@ export type RefereeCourseImportStatus =
   | 'completed'
   | 'cancelled';
 
-export type RefereeCourseResultStatus = 'pending_review' | 'applied';
+export type RefereeCourseResultStatus =
+  | 'pending_review'
+  | 'applied'
+  | 'rejected';
 
 export type RefereeCourseMatchType =
   | 'exact_match'
@@ -53,6 +56,9 @@ export interface RefereeSnapshot {
   geburtsdatum: string | null;
   email: string | null;
   club_id: number | null;
+  // Nur die Freigabeübersicht liefert den Vereinsnamen mit — ohne ihn wäre
+  // der Verein in der Maske nicht darstellbar, die club_id sagt niemandem was.
+  club_name?: string | null;
   lizenzstufe?: string | null;
   gueltigkeit?: string | null;
 }
