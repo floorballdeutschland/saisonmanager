@@ -89,7 +89,9 @@
     "ariaClub": "Verein (final)",
     "clubPlaceholder": "Verein suchen",
     "clubReset": "kein Verein",
-    "matchScore": "{{ matched }} von 6 Merkmalen stimmen überein",
+    "clubUnavailable": "Gesetzt: {{ club }}. Vereinsliste nicht verfügbar, Auswahl gesperrt.",
+    "clubNone": "kein Verein",
+    "matchScore": "{{ matched }} von {{ total }} Merkmalen stimmen überein",
     "differsLegend": "Abweichungen sind hervorgehoben.",
     "differsHint": "Weicht von der Datenbank ab",
     "saving": "Speichere...",
@@ -117,6 +119,6 @@
     "loadPendingError": "Offene Vorgänge konnten nicht geladen werden",
     "approved": "Freigegeben",
     "approveFailed": "Freigabe fehlgeschlagen",
-    "loadClubsError": "Vereinsliste konnte nicht geladen werden — die Vereinsauswahl bleibt leer"
+    "loadClubsError": "Vereinsliste konnte nicht geladen werden. Die Vereinsauswahl bleibt gesperrt."
   }
 }

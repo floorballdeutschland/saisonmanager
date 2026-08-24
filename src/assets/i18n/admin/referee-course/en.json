@@ -89,7 +89,9 @@
     "ariaClub": "Club (final)",
     "clubPlaceholder": "Search club",
     "clubReset": "no club",
-    "matchScore": "{{ matched }} of 6 attributes match",
+    "clubUnavailable": "Set: {{ club }}. Club list unavailable, selection disabled.",
+    "clubNone": "no club",
+    "matchScore": "{{ matched }} of {{ total }} attributes match",
     "differsLegend": "Differences are highlighted.",
     "differsHint": "Differs from the database",
     "saving": "Saving...",
@@ -117,6 +119,6 @@
     "loadPendingError": "Open cases could not be loaded",
     "approved": "Approved",
     "approveFailed": "Approval failed",
-    "loadClubsError": "Could not load the list of clubs — the club selection stays empty"
+    "loadClubsError": "Could not load the list of clubs. The club selection stays disabled."
   }
 }
