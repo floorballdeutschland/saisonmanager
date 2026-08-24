@@ -323,6 +323,26 @@ describe('LicenseAdminGlobalListComponent', () => {
     // rendert sie ihn nicht als Datum, sondern wirft. Der Helfer lässt nur
     // Zeichenketten durch, damit eine unerwartete Antwort die Übersicht nicht
     // zerlegt.
+    // Eine Zeichenkette ist noch kein lesbares Datum. Die date-Pipe wirft auch
+    // dafuer, und zwar mitten in der Change Detection: Die ganze Uebersicht
+    // rendert dann nicht mehr, nicht nur diese Zelle.
+    it('reicht ein unlesbares Datum nicht durch', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+
+      expect(
+        component.docUploadedAt(
+          entryWithDocuments({
+            parental_consent: true,
+            parental_consent_url: 'https://example.test/doc.pdf',
+            parental_consent_uploaded_at: 'irgendwann',
+          }),
+          'parental_consent'
+        )
+      ).toBeNull();
+    });
+
     it('reicht einen booleschen Wert nicht als Zeitpunkt durch', () => {
       const component = TestBed.createComponent(
         LicenseAdminGlobalListComponent

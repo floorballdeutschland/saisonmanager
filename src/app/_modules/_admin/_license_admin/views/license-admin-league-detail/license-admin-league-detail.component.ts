@@ -18,6 +18,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
+import { readUploadedAt } from '../../_utils/document-upload-date';
 
 @Component({
   selector: 'fb-license-admin-league-detail',
@@ -234,8 +235,7 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
     player: PlayerWithLicense,
     docType: string
   ): string | null {
-    const value = player.team_license?.documents?.[docType + '_uploaded_at'];
-    return typeof value === 'string' ? value : null;
+    return readUploadedAt(player.team_license?.documents, docType);
   }
 
   // Elternzustimmung verlangt die Liga, nicht das Geburtsdatum allein: Die API

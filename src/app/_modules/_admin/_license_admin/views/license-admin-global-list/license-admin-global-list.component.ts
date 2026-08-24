@@ -15,6 +15,7 @@ import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
+import { readUploadedAt } from '../../_utils/document-upload-date';
 
 interface FilterOption {
   value: string | number | boolean | null;
@@ -430,8 +431,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     entry: AdminLicenseEntry,
     docType: string
   ): string | null {
-    const value = entry.documents?.[docType + '_uploaded_at'];
-    return typeof value === 'string' ? value : null;
+    return readUploadedAt(entry.documents, docType);
   }
 
   public docTypeLabel(docType: string): string {

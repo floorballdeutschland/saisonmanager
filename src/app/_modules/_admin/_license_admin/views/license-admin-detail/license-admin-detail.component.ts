@@ -17,6 +17,7 @@ import {
 } from '@floorball/types';
 import { NotificationService, PlayerService } from '@floorball/core';
 import { TranslocoService } from '@jsverse/transloco';
+import { readUploadedAt } from '../../_utils/document-upload-date';
 
 @Component({
   selector: 'fb-license-admin-detail',
@@ -283,10 +284,7 @@ export class LicenseAdminDetailComponent implements OnInit {
   // wie frisch das vorliegende Dokument ist. Die API setzt das Feld nur
   // zusammen mit einer abrufbaren Datei; fehlt es, bleibt es beim reinen Label.
   public docUploadedAt(docType: string): string | null {
-    const value = this.player?.team_license?.documents?.[
-      docType + '_uploaded_at'
-    ];
-    return typeof value === 'string' ? value : null;
+    return readUploadedAt(this.player?.team_license?.documents, docType);
   }
 
   // Für diesen Spieler tatsächlich erforderliche Dokumentarten-Keys
