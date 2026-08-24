@@ -114,9 +114,15 @@
                     player.team_license.last_status.license_status_id === 2 &&
                     !handledPlayerIds.includes(player.id)
                   ) {
-                    <li>
+                    <!-- Sprungziel aus der Übersicht: scrollToFocusedPlayer()
+                         sucht genau diese ID per getElementById und zieht sie
+                         der Mannschaftszeile weiter unten vor. tabindex, damit
+                         der Fokus mitkommt. -->
+                    <li [id]="'antrag-' + player.id" tabindex="-1">
                       <fb-license-admin-detail
-                        [initiallyOpen]="!teamIndex && !playerIndex"
+                        [initiallyOpen]="
+                          isInitiallyOpen(player, teamIndex, playerIndex)
+                        "
                         [forceOpen]="allOpen"
                         [player]="player"
                         [team]="team"
@@ -140,8 +146,14 @@
             <div class="flex flex-col gap-2">
               <ul role="list" class="divide-y divide-gray-200">
                 @for (p of team.players; track p) {
-                  <li>
-                    <div href="#" class="block hover:bg-gray-50">
+                  <!-- Ersatz-Sprungziel: hierhin springt
+                       scrollToFocusedPlayer(), wenn der angesprungene Spieler
+                       hier keinen offenen Antrag (mehr) hat. -->
+                  <li [id]="'spieler-' + p.id" tabindex="-1">
+                    <div
+                      class="block hover:bg-gray-50"
+                      [class.bg-yellow-50]="p.id === focusPlayerId"
+                    >
                       <div class="-mx-4 px-4 py-4 sm:px-6 sm:-mx-6">
                         <div class="flex items-start justify-between">
                           <p class="truncate text-sm font-medium">

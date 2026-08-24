@@ -346,13 +346,12 @@
               >
                 {{ "licenseAdmin.globalList.colValidUntil" | transloco }}
               </th>
-              <th class="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             @if (filteredEntries.length === 0) {
               <tr>
-                <td colspan="12" class="px-4 py-8 text-center text-gray-400">
+                <td colspan="11" class="px-4 py-8 text-center text-gray-400">
                   {{ "licenseAdmin.globalList.noLicensesFound" | transloco }}
                 </td>
               </tr>
@@ -365,13 +364,39 @@
                      hover der Zeile nicht mehr durch – daher group auf dem tr
                      und group-hover hier. Die Trennlinie liegt als inset-
                      Schatten in der Zelle: border-collapse (Tailwind-Preflight)
-                     zeichnet den Rahmen einer fixierten Zelle nicht mit. -->
+                     zeichnet den Rahmen einer fixierten Zelle nicht mit.
+                     Der Name ist zugleich der Weg zur Liga-Seite: die
+                     Spalte ist fixiert, der Link bleibt also unabhängig vom
+                     waagerechten Scrollen erreichbar, während eine eigene
+                     Spalte am rechten Rand auf schmalen Displays aus dem
+                     Sichtfeld wanderte. Den mitgegebenen Spieler liest die
+                     LicenseAdminLeagueDetailComponent: sie klappt dessen
+                     Antrag auf und springt hin. -->
                 <td
                   class="sticky left-0 z-10 bg-white group-hover:bg-fb-gray-100 shadow-[inset_-1px_0_0_#e5e7eb] px-4 py-3 whitespace-nowrap transition-colors"
                 >
-                  <p class="font-medium text-gray-900">
+                  <a
+                    [routerLink]="[
+                      '/',
+                      'verwaltung',
+                      'lizenzwesen',
+                      'verband',
+                      'liga',
+                      e.league_id,
+                    ]"
+                    [queryParams]="{ spieler: e.player_id }"
+                    [title]="
+                      'licenseAdmin.globalList.openPlayerTitle' | transloco
+                    "
+                    class="group/link font-medium text-gray-900 hover:underline"
+                  >
                     {{ e.player_last_name }}, {{ e.player_first_name }}
-                  </p>
+                    <span
+                      aria-hidden="true"
+                      class="ml-1 text-fb-gray-500 group-hover/link:text-black"
+                      >→</span
+                    >
+                  </a>
                   <p class="text-xs text-gray-400">
                     {{
                       "licenseAdmin.globalList.birthYear"
@@ -635,21 +660,6 @@
                   "
                 >
                   {{ e.valid_until ? (e.valid_until | date: "dd.MM.yy") : "–" }}
-                </td>
-                <!-- Detail-Link -->
-                <td class="px-4 py-3 whitespace-nowrap text-right">
-                  <a
-                    [routerLink]="[
-                      '/',
-                      'verwaltung',
-                      'lizenzwesen',
-                      'verband',
-                      'liga',
-                      e.league_id,
-                    ]"
-                    class="text-sm font-medium text-fb-gray-500 hover:text-black"
-                    >→</a
-                  >
                 </td>
               </tr>
             }

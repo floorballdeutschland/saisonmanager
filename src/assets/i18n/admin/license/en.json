@@ -65,6 +65,7 @@
     "loadErrorText": "License data could not be loaded.",
     "retry": "Try again",
     "colPlayer": "Player",
+    "openPlayerTitle": "Open this league's licenses and jump to this player",
     "colTeam": "Team",
     "colCompetition": "Competition",
     "colLeague": "League",
