@@ -97,6 +97,7 @@
     "releaseEndedBy": "Freigabe beendet durch",
     "homeClubSetBy": "Eingetragen durch",
     "homeClubEndedBy": "Beendet durch",
+    "unknownActor": "Konto {{ id }} (nicht mehr vorhanden)",
     "clubLeave": "Deaktivierung",
     "deactivatedOn": "Deaktiviert am",
     "deactivatedHint": "Dieser Spieler ist deaktiviert und erscheint nicht mehr in der aktiven Spielerliste des Vereins. Vereinsmitgliedschaft und Lizenzen sind davon nicht betroffen, und in der Spielersuche sowie in Transfer- und Freigabeanträgen bleibt er auffindbar. Ältere Deaktivierungen haben die Lizenzen noch auf ungültig gesetzt; das bleibt so und wird nicht nachträglich zurückgenommen.",

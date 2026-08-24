@@ -712,16 +712,30 @@
                       <!-- Handelnde Konten. Die API löst die Namen nur für
                            Geschäftsstelle und zuständige SBK auf; für andere
                            Rollen bleibt der Abschnitt leer. -->
-                      @if (additionalClub.created_by_name) {
+                      @if (
+                        additionalClub.created_by_name ||
+                        additionalClub.created_by
+                      ) {
                         <p class="text-sm text-fb-gray-500">
                           {{ "playerAdmin.edit.releaseGrantedBy" | transloco }}
-                          {{ additionalClub.created_by_name }}
+                          {{
+                            additionalClub.created_by_name ||
+                              ("playerAdmin.edit.unknownActor"
+                                | transloco: { id: additionalClub.created_by })
+                          }}
                         </p>
                       }
-                      @if (additionalClub.valid_set_by_name) {
+                      @if (
+                        additionalClub.valid_set_by_name ||
+                        additionalClub.valid_set_by
+                      ) {
                         <p class="text-sm text-fb-gray-500">
                           {{ "playerAdmin.edit.releaseEndedBy" | transloco }}
-                          {{ additionalClub.valid_set_by_name }}
+                          {{
+                            additionalClub.valid_set_by_name ||
+                              ("playerAdmin.edit.unknownActor"
+                                | transloco: { id: additionalClub.valid_set_by })
+                          }}
                         </p>
                       }
                     </div>
@@ -816,16 +830,24 @@
                     <!-- Handelnde Konten. Die API löst die Namen nur für
                          Geschäftsstelle und zuständige SBK auf; für andere
                          Rollen bleibt der Abschnitt leer. -->
-                    @if (club.created_by_name) {
+                    @if (club.created_by_name || club.created_by) {
                       <p class="text-sm text-fb-gray-500">
                         {{ "playerAdmin.edit.homeClubSetBy" | transloco }}
-                        {{ club.created_by_name }}
+                        {{
+                          club.created_by_name ||
+                            ("playerAdmin.edit.unknownActor"
+                              | transloco: { id: club.created_by })
+                        }}
                       </p>
                     }
-                    @if (club.valid_set_by_name) {
+                    @if (club.valid_set_by_name || club.valid_set_by) {
                       <p class="text-sm text-fb-gray-500">
                         {{ "playerAdmin.edit.homeClubEndedBy" | transloco }}
-                        {{ club.valid_set_by_name }}
+                        {{
+                          club.valid_set_by_name ||
+                            ("playerAdmin.edit.unknownActor"
+                              | transloco: { id: club.valid_set_by })
+                        }}
                       </p>
                     }
                   </div>

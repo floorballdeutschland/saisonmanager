@@ -53,9 +53,12 @@ export interface TransferRequest {
 
   // Zu jedem Schritt Zeitpunkt und handelndes Konto. Der Name ist die Anzeige,
   // die ID bleibt die belastbare Angabe, wenn ein Konto umbenannt oder gelöscht
-  // wurde; ein nicht mehr auffindbares Konto liefert die ID ohne Namen. Die
-  // Bestätigung durch die Person selbst und der Fristablauf haben kein
-  // handelndes Konto, dort gibt es nur den Zeitpunkt.
+  // wurde; ein nicht mehr auffindbares Konto liefert die ID ohne Namen.
+  //
+  // Die Bestätigung oder Ablehnung durch die Person selbst läuft über den Link
+  // in ihrer Mail, ohne Anmeldung: dort gibt es einen Zeitpunkt, aber kein
+  // Konto. Der Fristablauf hat weder das eine noch das andere, ein
+  // `expired_at` existiert nicht; erkennbar ist er allein am Status.
   created_at: string;
   created_by?: number | null;
   created_by_name?: string | null;
