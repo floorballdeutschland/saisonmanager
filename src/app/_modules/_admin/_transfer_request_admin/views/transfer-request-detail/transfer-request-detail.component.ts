@@ -14,7 +14,7 @@ import {
   SessionService,
   TransferRequestService,
 } from '@floorball/core';
-import { TransferRequest } from '@floorball/types';
+import { TransferProtocolStep, TransferRequest } from '@floorball/types';
 
 @Component({
   templateUrl: './transfer-request-detail.component.html',
@@ -406,6 +406,93 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
     return keys[status]
       ? this._transloco.translate(`transferRequestAdmin.detail.${keys[status]}`)
       : status;
+  }
+
+  // Der Vorgang als Chronik: je Schritt Zeitpunkt und handelndes Konto.
+  //
+  // Vorher zeigte das Protokoll nur zwei Zeitpunkte und nur bei Freigaben, die
+  // genehmigt oder widerrufen waren; wer gehandelt hat, stand nirgends. Ein
+  // Schritt erscheint nur, wenn sein Zeitpunkt vorliegt -- so bleibt die Liste
+  // ohne weitere Statusabfragen richtig, auch für abgebrochene und abgelehnte
+  // Vorgänge.
+  //
+  // Fristablauf ("expired") und die Beendigung durch eine Vereinsdeaktivierung
+  // tauchen nicht auf: Das sind Systemvorgänge, die kein Konto und keinen
+  // eigenen Zeitpunkt hinterlassen. Dafür steht der Status im Kopf der Seite.
+  get protocolSteps(): TransferProtocolStep[] {
+    const r = this.request;
+    if (!r) return [];
+
+    const isRelease = r.request_type === 'release';
+    const steps: TransferProtocolStep[] = [
+      {
+        key: 'submitted',
+        at: r.created_at,
+        actorName: r.created_by_name,
+        actorId: r.created_by,
+        kind: 'done',
+      },
+      {
+        key: 'clubApproved',
+        at: r.club_approved_at,
+        actorName: r.approved_by_club_user_name,
+        actorId: r.approved_by_club_user_id,
+        kind: 'done',
+      },
+      // Die Person bestätigt über den Link in ihrer Mail, ohne Anmeldung; es
+      // gibt daher kein handelndes Konto, nur den Zeitpunkt.
+      { key: 'playerApproved', at: r.player_approved_at, kind: 'done' },
+      { key: 'playerRejected', at: r.player_rejected_at, kind: 'rejected' },
+      {
+        key: isRelease ? 'releaseGranted' : 'lvApproved',
+        at: r.lv_approved_at,
+        actorName: r.approved_by_lv_user_name,
+        actorId: r.approved_by_lv_user_id,
+        kind: 'done',
+      },
+      {
+        // Ein Antrag kann vom Verein oder vom Verband abgelehnt werden; beide
+        // Wege schreiben in dieselben Felder, der Status sagt welcher es war.
+        key: r.status === 'rejected_by_lv' ? 'rejectedByLv' : 'rejectedByClub',
+        at: r.rejected_at,
+        actorName: r.rejected_by_name,
+        actorId: r.rejected_by,
+        kind: 'rejected',
+        note: r.rejection_reason,
+      },
+      {
+        key: 'revoked',
+        at: r.revoked_at,
+        actorName: r.revoked_by_name,
+        actorId: r.revoked_by,
+        kind: 'rejected',
+        note: r.revocation_reason,
+      },
+      {
+        key: 'withdrawn',
+        at: r.withdrawn_at,
+        actorName: r.withdrawn_by_name,
+        actorId: r.withdrawn_by,
+        kind: 'rejected',
+      },
+    ];
+
+    return steps.filter((step) => !!step.at);
+  }
+
+  // Anzeige des handelnden Kontos. Der Name ist die Anzeige; ist er leer, weil
+  // das Konto gelöscht wurde oder weil die eigene Rolle keine Namen sieht,
+  // bleibt die ID als belastbare Angabe. Ohne beides steht dort nichts, statt
+  // eine leere Klammer zu zeigen.
+  actorLabel(step: TransferProtocolStep): string | null {
+    if (step.actorName) return step.actorName;
+    if (step.actorId) {
+      return this._transloco.translate(
+        'transferRequestAdmin.detail.protocolUnknownActor',
+        { id: step.actorId }
+      );
+    }
+    return null;
   }
 
   statusClass(status: string): string {

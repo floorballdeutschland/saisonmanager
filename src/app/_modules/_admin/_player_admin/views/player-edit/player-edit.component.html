@@ -709,6 +709,21 @@
                         {{ "playerAdmin.edit.until" | transloco }}
                         {{ additionalClub.valid_until | date: "dd.MM.yyyy" }}
                       </p>
+                      <!-- Handelnde Konten. Die API löst die Namen nur für
+                           Geschäftsstelle und zuständige SBK auf; für andere
+                           Rollen bleibt der Abschnitt leer. -->
+                      @if (additionalClub.created_by_name) {
+                        <p class="text-sm text-fb-gray-500">
+                          {{ "playerAdmin.edit.releaseGrantedBy" | transloco }}
+                          {{ additionalClub.created_by_name }}
+                        </p>
+                      }
+                      @if (additionalClub.valid_set_by_name) {
+                        <p class="text-sm text-fb-gray-500">
+                          {{ "playerAdmin.edit.releaseEndedBy" | transloco }}
+                          {{ additionalClub.valid_set_by_name }}
+                        </p>
+                      }
                     </div>
                     <div class="flex flex-row items-center">
                       @if (
@@ -798,6 +813,21 @@
                         {{ "playerAdmin.edit.untilToday" | transloco }}
                       }
                     </p>
+                    <!-- Handelnde Konten. Die API löst die Namen nur für
+                         Geschäftsstelle und zuständige SBK auf; für andere
+                         Rollen bleibt der Abschnitt leer. -->
+                    @if (club.created_by_name) {
+                      <p class="text-sm text-fb-gray-500">
+                        {{ "playerAdmin.edit.homeClubSetBy" | transloco }}
+                        {{ club.created_by_name }}
+                      </p>
+                    }
+                    @if (club.valid_set_by_name) {
+                      <p class="text-sm text-fb-gray-500">
+                        {{ "playerAdmin.edit.homeClubEndedBy" | transloco }}
+                        {{ club.valid_set_by_name }}
+                      </p>
+                    }
                   </div>
                 }
               </div>
