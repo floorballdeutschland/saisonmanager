@@ -21,6 +21,15 @@
         | transloco
     }}
   </h2>
+
+  @if (createNotAllowed) {
+    <div
+      data-testid="create-not-allowed"
+      class="mb-4 rounded bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm text-yellow-800"
+    >
+      {{ "playerAdmin.edit.createVmOnly" | transloco }}
+    </div>
+  }
 </div>
 
 <ng-container>
@@ -157,9 +166,7 @@
                   "playerAdmin.edit.email" | transloco
                 }}</label>
                 <div class="md:col-span-2 xl:col-span-3">
-                  @if (
-                    can("player_create_update") || can("update_player_email")
-                  ) {
+                  @if (canEnterEmail) {
                     <input
                       [(ngModel)]="player.email"
                       type="email"
@@ -170,17 +177,13 @@
                       "
                     />
                   }
-                  @if (
-                    !can("player_create_update") && !can("update_player_email")
-                  ) {
+                  @if (!canEnterEmail) {
                     {{ player.email || "–" }}
                   }
                   <p class="text-sm text-gray-500 mt-1">
                     {{ "playerAdmin.edit.emailHint" | transloco }}
                   </p>
-                  @if (
-                    can("update_player_email") && !can("player_create_update")
-                  ) {
+                  @if (canSaveEmailOnly) {
                     <div class="mt-2">
                       <a
                         class="font-bold text-black leading-[17px] text-sm px-4 py-2 border bg-white border-fb-gray-600 rounded-[5px]"
@@ -710,7 +713,8 @@
                     <div class="flex flex-row items-center">
                       @if (
                         can("player_add_additional_clubs") &&
-                        !isAdditionalClubActive(additionalClub.club_id)
+                        !isAdditionalClubActive(additionalClub.club_id) &&
+                        !isClubDeactivated(additionalClub.club_id)
                       ) {
                         <a
                           class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"

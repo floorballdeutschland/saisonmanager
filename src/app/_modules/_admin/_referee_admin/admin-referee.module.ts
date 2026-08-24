@@ -24,6 +24,7 @@ import * as Views from './views';
     Views.RefereeSettingsComponent,
     Views.RefereeMergeComponent,
     Views.RefereeExclusionRequestsComponent,
+    Views.RefereeChangeRequestsComponent,
     Views.RefereeAccountsComponent,
   ],
   providers: [

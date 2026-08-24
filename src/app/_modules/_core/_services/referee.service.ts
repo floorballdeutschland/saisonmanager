@@ -14,8 +14,11 @@ import {
   RefereeAvailabilityBulkResult,
   RefereeAvailabilityEntry,
   RefereeBulkUserResult,
+  RefereeChangeRequest,
+  RefereeChangeRequestPayload,
   RefereeClubExclusionPayload,
   RefereeClubExclusionRequest,
+  RefereeCorrectionType,
   RefereeEmailImportReport,
   RefereeEntry,
   RefereeCourseResultSummary,
@@ -93,6 +96,27 @@ export class RefereeService {
     );
   }
 
+  // Stammdaten-Korrekturen (Schiri-Selfservice). Die laufenden Anträge kommen
+  // mit dem Profil; hier laufen nur Anlegen und Zurückziehen.
+
+  public createChangeRequest(data: {
+    correction_type: RefereeCorrectionType;
+    new_value?: string;
+    new_club_id?: number;
+    reason?: string;
+  }) {
+    return this.http.post<RefereeChangeRequestPayload>(
+      environment.apiURL + 'referee/change_requests',
+      { change_request: data }
+    );
+  }
+
+  public withdrawChangeRequest(id: number) {
+    return this.http.delete<RefereeChangeRequestPayload>(
+      environment.apiURL + 'referee/change_requests/' + id
+    );
+  }
+
   // Admin endpoints
 
   public adminGetClubExclusionRequests(status = 'pending') {
@@ -119,6 +143,28 @@ export class RefereeService {
         'admin/referee_club_exclusion_requests/' +
         id +
         '/reject',
+      { decision_note: decisionNote }
+    );
+  }
+
+  public adminGetChangeRequests(status = 'pending') {
+    return this.http.get<RefereeChangeRequest[]>(
+      environment.apiURL +
+        'admin/referee_change_requests?status=' +
+        encodeURIComponent(status)
+    );
+  }
+
+  public adminApproveChangeRequest(id: number, decisionNote?: string) {
+    return this.http.post<RefereeChangeRequest>(
+      environment.apiURL + 'admin/referee_change_requests/' + id + '/approve',
+      { decision_note: decisionNote }
+    );
+  }
+
+  public adminRejectChangeRequest(id: number, decisionNote: string) {
+    return this.http.post<RefereeChangeRequest>(
+      environment.apiURL + 'admin/referee_change_requests/' + id + '/reject',
       { decision_note: decisionNote }
     );
   }

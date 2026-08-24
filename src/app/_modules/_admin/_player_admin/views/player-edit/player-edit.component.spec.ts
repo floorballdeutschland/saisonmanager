@@ -10,11 +10,13 @@ import {
   SessionService,
 } from '@floorball/core';
 import { RouterTestingModule } from '@angular/router/testing';
+import { FormsModule } from '@angular/forms';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitTeamModule } from '@floorball/uikit/team';
 import {
+  Club,
   LicenseDocument,
   Player,
   PlayerLicense,
@@ -31,6 +33,9 @@ describe('PlayerEditComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
+        // Die Anlege-Maske rendert die Eingabefelder mit ngModel; ohne
+        // FormsModule protokolliert Angular dafür eine unbekannte Bindung.
+        FormsModule,
         getTranslocoTestingModule(),
         UikitCommonModule,
         UikitPlayerModule,
@@ -53,6 +58,50 @@ describe('PlayerEditComponent', () => {
   it('should create', () => {
     const fixture = TestBed.createComponent(PlayerEditComponent);
     expect(fixture.componentInstance).toBeTruthy();
+  });
+
+  // fe#318: Die Karte „Zusatzverein hinzufügen" weist einen Verein zu, die
+  // Liste `allClubs` benennt daneben aber auch die bestehenden Zugehörigkeiten.
+  // Eingegrenzt wird deshalb nur die Auswahl.
+  describe('assignableClubs', () => {
+    function build(clubs: Club[]): PlayerEditComponent {
+      const component =
+        TestBed.createComponent(PlayerEditComponent).componentInstance;
+      component.player = { clubs: [] } as unknown as Player;
+      component.allClubs = clubs;
+      component['_refreshAssignableClubs']();
+      return component;
+    }
+
+    it('bietet keine deaktivierten Vereine zur Auswahl an', () => {
+      const component = build([
+        { id: 1, name: 'Aktiv' } as Club,
+        { id: 2, name: 'Deaktiviert', deactivated: true } as Club,
+      ]);
+
+      expect(component.assignableClubs.map((c) => c.id)).toEqual([1]);
+    });
+
+    it('behält den deaktivierten Verein zum Nachschlagen in allClubs', () => {
+      const component = build([
+        { id: 2, name: 'Deaktiviert', deactivated: true } as Club,
+      ]);
+
+      expect(component.getClubNameById(2)).toBe('Deaktiviert');
+    });
+
+    // „Erneut freigeben" weist denselben Verein erneut zu, geht dafür aber
+    // nicht über `assignableClubs`. Ohne eigene Prüfung bliebe dieser Weg offen.
+    it('erkennt den deaktivierten Verein für „Erneut freigeben"', () => {
+      const component = build([
+        { id: 1, name: 'Aktiv' } as Club,
+        { id: 2, name: 'Deaktiviert', deactivated: true } as Club,
+      ]);
+
+      expect(component.isClubDeactivated(2)).toBe(true);
+      expect(component.isClubDeactivated(1)).toBe(false);
+      expect(component.isClubDeactivated(99)).toBe(false);
+    });
   });
 
   describe('licenseSeasonGroups', () => {
@@ -161,6 +210,125 @@ describe('PlayerEditComponent', () => {
 
     it('hides the link for club and team managers', () => {
       expect(link(render({ menu_item_player_admin: true }))).toBe(null);
+    });
+  });
+
+  // Anlegen darf nur der Vereinsmanager des Vereins, Admin und SBK überall
+  // (api: Club#user_permissions, :create_player). Ein Teammanager erreicht die
+  // Maske über die Route, bekommt aber keine Eingabefelder, sondern den Grund.
+  describe('Neuanlage', () => {
+    function render(
+      user: Partial<User>,
+      params: Record<string, string> = { clubId: '113' }
+    ): ComponentFixture<PlayerEditComponent> {
+      TestBed.overrideProvider(ActivatedRoute, {
+        useValue: { params: of(params) },
+      });
+      currentUser$.next(user as User);
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.detectChanges(false);
+      return fixture;
+    }
+
+    function hint(
+      fixture: ComponentFixture<PlayerEditComponent>
+    ): Element | null {
+      return fixture.nativeElement.querySelector(
+        '[data-testid="create-not-allowed"]'
+      );
+    }
+
+    it('lässt den Vereinsmanager des Vereins anlegen', () => {
+      const fixture = render({
+        club_ids: [113],
+        permissions: { create_player: true },
+      } as Partial<User>);
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(false);
+      expect(fixture.componentInstance.can('player_create_update')).toBe(true);
+      expect(hint(fixture)).toBe(null);
+    });
+
+    // Ein reiner Teammanager hat kein club_ids: permission_hash[:vm] ist leer,
+    // `club_ids` kommt als null. Die übrigen Rechte sind die echten, denn genau
+    // an ihnen hing der Fehler: `update_player_email` gilt auch für den TM, und
+    // solange `create_player` in der Anlage true war, blieb der zweite
+    // E-Mail-Zweig der Maske unerreichbar.
+    it('nennt dem Teammanager den Grund statt eines Formulars', () => {
+      const fixture = render({
+        permissions: {
+          create_player: true,
+          update_player_email: true,
+          player_deactivate: false,
+        },
+      } as Partial<User>);
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(true);
+      expect(fixture.componentInstance.can('player_create_update')).toBe(false);
+      expect(hint(fixture)).not.toBe(null);
+    });
+
+    // Regression: Mit `can('player_create_update') === false` erschien in der
+    // Anlage der eigene Knopf „E-Mail speichern" samt Eingabefeld. Er kann
+    // nicht tragen -- `saveEmail()` braucht eine Spieler-id, die es erst nach
+    // dem Speichern gibt -- und kehrte ohne Meldung zurück.
+    it('bietet dem Teammanager in der Anlage kein E-Mail-Feld an', () => {
+      const fixture = render({
+        permissions: { create_player: true, update_player_email: true },
+      } as Partial<User>);
+
+      expect(fixture.componentInstance.canEnterEmail).toBe(false);
+      expect(fixture.componentInstance.canSaveEmailOnly).toBe(false);
+      expect(fixture.nativeElement.querySelector('input#email')).toBe(null);
+    });
+
+    // Gegenprobe: Am bestehenden Profil bleibt genau dieser Weg dem
+    // Vereins-/Teammanager erhalten (update_player_email).
+    it('behaelt das E-Mail-Feld im Bearbeiten-Modus', () => {
+      const fixture = render(
+        { permissions: { update_player_email: true } } as Partial<User>,
+        { clubId: '113', playerId: '7' }
+      );
+      fixture.componentInstance.player = { id: 7 } as Player;
+      fixture.detectChanges(false);
+
+      expect(fixture.componentInstance.canEnterEmail).toBe(true);
+      expect(fixture.componentInstance.canSaveEmailOnly).toBe(true);
+    });
+
+    it('lässt den Teammanager auch in einem fremden Verein nicht anlegen', () => {
+      const fixture = render({
+        club_ids: [114],
+        permissions: { create_player: true },
+      } as Partial<User>);
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(true);
+    });
+
+    // Admin und SBK haben kein club_ids, das führt nur VM-Vereine. `update_player`
+    // ist dabei eine unscoped Näherung für „Verbandsrolle": Eine Landes-SBK
+    // bekommt hier auch für einen Verein eines fremden Spielbetriebs ein
+    // Formular, dessen Speichern die API ablehnt. Für einen einzelnen fremden
+    // Verein hat diese Maske keine bessere Quelle; die Vereinssicht hat eine.
+    it('lässt Admin und SBK das Formular ausfüllen', () => {
+      const fixture = render({
+        permissions: { create_player: true, update_player: true },
+      } as Partial<User>);
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(false);
+      expect(hint(fixture)).toBe(null);
+    });
+
+    // Die Grenze gilt nur der Anlage: Ein bestehendes Profil öffnet der
+    // Teammanager weiter, das Speichern hängt dort an :update_player.
+    it('greift im Bearbeiten-Modus nicht', () => {
+      const fixture = render({ permissions: {} } as Partial<User>, {
+        clubId: '113',
+        playerId: '7',
+      });
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(false);
+      expect(hint(fixture)).toBe(null);
     });
   });
 

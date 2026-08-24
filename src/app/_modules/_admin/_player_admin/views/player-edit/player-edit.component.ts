@@ -52,6 +52,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   static readonly MAX_DOCUMENT_SIZE = 10 * 1024 * 1024;
 
   permissions: { [key: string]: boolean } = {};
+  // Vereine, in denen der Account Vereinsmanager ist (permission_hash[:vm]).
+  vmClubIds: number[] = [];
   player?: Player;
   nations?: Nation[] = [];
   allClubs: Club[] = [];
@@ -153,6 +155,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     this._sessionService.currentUser$.subscribe({
       next: (user) => {
         this.permissions = user?.permissions || {};
+        this.vmClubIds = user?.club_ids ?? [];
       },
     });
 
@@ -421,10 +424,18 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Auswahl der Karte „Zusatzverein hinzufügen". Ein deaktivierter Verein nimmt
+   * keine Spieler mehr auf und steht deshalb nicht zur Wahl (fe#318); die volle
+   * Liste bleibt in `allClubs`, denn `getClubNameById()` benennt damit die
+   * bestehenden Zugehörigkeiten, auch die zu deaktivierten Vereinen.
+   */
   private _refreshAssignableClubs(): void {
     this.assignableClubs = this.allClubs.filter(
       (club) =>
-        !this.isAdditionalClubActive(club.id) && !this.isHomeClub(club.id)
+        !club.deactivated &&
+        !this.isAdditionalClubActive(club.id) &&
+        !this.isHomeClub(club.id)
     );
   }
 
@@ -454,6 +465,16 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   public getClubNameById(id: number): string {
     return this.allClubs.find((club) => club.id === id)?.name || '(unbekannt)';
+  }
+
+  /**
+   * Ein deaktivierter Verein nimmt keine Spieler mehr auf (fe#318). Neben der
+   * Auswahl in `assignableClubs` betrifft das „Erneut freigeben" an einer
+   * abgelaufenen Zusatzmitgliedschaft: Der Knopf weist denselben Verein erneut
+   * zu, geht dafür aber nicht über die Auswahl.
+   */
+  public isClubDeactivated(id: number | undefined): boolean {
+    return this.allClubs.find((club) => club.id === id)?.deactivated === true;
   }
 
   public newPlayer(): void {
@@ -488,10 +509,65 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     return Object.keys(PLAYER_GENDERS) as GenderKey[];
   }
 
+  /**
+   * Anlegen darf nur der Vereinsmanager dieses Vereins (api:
+   * Club#user_permissions, :create_player). Wer über einen Direktaufruf oder
+   * einen noch offenen Tab hierher kommt, soll das Formular nicht ausfüllen
+   * und erst am Speichern scheitern: Der Grund steht oben, die leeren Felder
+   * stehen als Text da, der Speichern-Knopf entfällt.
+   *
+   * `update_player` steht hier für „Verbandsrolle" und ist bewusst eine
+   * Näherung: Das Flag gilt global (Admin/SBK), `Club#user_permissions`
+   * scopet SBK dagegen auf den Spielbetrieb des Vereins. Eine Landes-SBK
+   * bekommt hier also unter Umständen ein Formular, dessen Speichern die API
+   * ablehnt -- die Entscheidung fällt serverseitig, diese Maske hat für einen
+   * fremden Verein keine bessere Quelle. Die Vereinssicht hat eine
+   * (`manage_players` aus vm/clubs_and_teams).
+   *
+   * `club_id` kommt als Routenparameter, also als String.
+   */
+  public get createNotAllowed(): boolean {
+    if (this.editMode || this.permissions['update_player']) {
+      return false;
+    }
+
+    return !this.vmClubIds.includes(Number(this.club_id));
+  }
+
+  /**
+   * Das E-Mail-Feld hängt an `update_player_email` und damit an einem Recht,
+   * das Team- und Vereinsmanager haben. In der Neuanlage trägt es trotzdem
+   * nicht: `saveEmail()` braucht eine Spieler-id, die es erst nach dem
+   * Speichern gibt. Bevor `can('player_create_update')` in der Anlage falsch
+   * werden konnte, war der Fall verdeckt -- der eigene Speichern-Knopf für die
+   * E-Mail erscheint nur, wenn das Formular selbst nicht speichern darf.
+   */
+  public get canEnterEmail(): boolean {
+    return (
+      this.can('player_create_update') ||
+      (this.editMode && this.can('update_player_email'))
+    );
+  }
+
+  public get canSaveEmailOnly(): boolean {
+    return (
+      this.editMode &&
+      this.can('update_player_email') &&
+      !this.can('player_create_update')
+    );
+  }
+
   public can(permissionString: string): boolean {
     let p = permissionString;
 
     if (p === 'player_create_update') {
+      // Ohne das Recht am Verein bleibt die Maske lesend: Die Felder stehen
+      // als Text da und der Speichern-Knopf entfällt, statt ein Formular
+      // anzubieten, das erst beim Absenden abgelehnt wird.
+      if (this.createNotAllowed) {
+        return false;
+      }
+
       p = this.editMode ? 'update_player' : 'create_player';
     }
 
@@ -672,7 +748,18 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   public saveEmail(): void {
-    if (!this.player?.id || !this.player?.email) return;
+    // Ohne Adresse ist der Knopf abgeblendet, das ist der stille Normalfall.
+    if (!this.player?.email) return;
+    // Ohne id gibt es nichts zu speichern (Neuanlage). Die Maske bietet den
+    // Knopf dort nicht an (canSaveEmailOnly), ein Aufruf trotzdem wäre ein
+    // Fehler und darf nicht als Erfolg aussehen.
+    if (!this.player.id) {
+      this._notificationService.error(
+        'Die E-Mail-Adresse lässt sich erst nach dem Anlegen speichern.',
+        { autoClose: true, keepAfterRouteChange: false }
+      );
+      return;
+    }
     this._playerService
       .updatePlayerEmail(this.player.id, this.player.email ?? null)
       .pipe(takeUntil(this._destroy$))

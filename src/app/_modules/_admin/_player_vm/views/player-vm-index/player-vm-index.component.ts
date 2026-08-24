@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { Subject, forkJoin, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
-import { ClubService, PlayerService } from '@floorball/core';
+import { ClubService, PlayerService, SessionService } from '@floorball/core';
 import { ClubWithTeams, Player, PlayerCurrentLicense } from '@floorball/types';
 import { Title } from '@angular/platform-browser';
 
@@ -27,6 +27,12 @@ interface ClubPlayerList {
 export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   clubLists: ClubPlayerList[] = [];
   loading = false;
+  // Rückfall, solange die API das Feld `manage_players` je Verein noch nicht
+  // liefert (Frontend-Deploy vor dem API-Deploy): die Vereine, in denen der
+  // Account Vereinsmanager ist, plus die Verbandsrollen. Ungenauer als das
+  // Feld, siehe canManagePlayers.
+  vmClubIds: number[] = [];
+  private _isAssociationRole = false;
   actionError: string | null = null;
   confirmDeactivateId: number | null = null;
   deactivateReason = '';
@@ -39,12 +45,21 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
     private _playerService: PlayerService,
     private _cdr: ChangeDetectorRef,
     private _title: Title,
-    private _transloco: TranslocoService
+    private _transloco: TranslocoService,
+    private _sessionService: SessionService
   ) {
     this._title.setTitle('Floorball Saisonmanager Spielerliste (Verein)');
   }
 
   ngOnInit(): void {
+    this._sessionService.currentUser$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((user) => {
+        this.vmClubIds = user?.club_ids ?? [];
+        this._isAssociationRole = !!user?.permissions?.['update_player'];
+        this._cdr.markForCheck();
+      });
+
     this.loading = true;
     // Bewusst NICHT adminGetClubAndTeams(): das liefert alle Vereine, auf die
     // irgendeine Rolle Zugriff gibt. Wer zusätzlich SBK ist, bekam damit alle
@@ -122,6 +137,33 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
       return 'bg-yellow-100 text-yellow-800';
     }
     return 'bg-red-100 text-red-800';
+  }
+
+  /**
+   * Anlegen, Deaktivieren und Reaktivieren darf nur, wer den Bestand dieses
+   * Vereins ordnet: der Vereinsmanager, dazu Admin und die zuständige SBK. Ein
+   * Teammanager sieht denselben Bestand samt Lizenzstand und öffnet die
+   * Profile, entscheidet aber nicht, wer im Verein steht. Der Anlege-Knopf
+   * bleibt trotzdem stehen, damit an seiner Stelle die Begründung steht statt
+   * einer Lücke. Die Prüfung selbst bleibt serverseitig.
+   *
+   * Maßgeblich ist das Feld am Verein (`manage_players` aus
+   * vm/clubs_and_teams), nicht die Rollenliste im Browser: Die kennt den
+   * Spielbetrieb eines Vereins nicht (eine Landes-SBK sähe damit auch Vereine
+   * fremder Verbände als eigene) und steht nach einer Rechteänderung bis zur
+   * nächsten Anmeldung veraltet da. Fehlt das Feld, greift der alte Rückfall,
+   * damit ein Frontend-Deploy vor dem API-Deploy niemandem die Knöpfe nimmt.
+   */
+  canManagePlayers(list: ClubPlayerList): boolean {
+    return (
+      list.club.manage_players ??
+      (this._isAssociationRole || this.vmClubIds.includes(list.club.id))
+    );
+  }
+
+  /** Für die Einleitung: Beschreibt sie Knöpfe, die es hier überhaupt gibt? */
+  get anyClubManageable(): boolean {
+    return this.clubLists.some((list) => this.canManagePlayers(list));
   }
 
   visiblePlayers(list: ClubPlayerList): Player[] {

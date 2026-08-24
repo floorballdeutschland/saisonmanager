@@ -43,11 +43,19 @@ export class TransferConfirmationComponent implements OnInit {
       title: 'Bereits abgelehnt',
       message: 'Dieser Vorgang wurde bereits abgelehnt.',
     },
+    // Sammelfall, und er trifft mehr als einen kaputten Link: Sobald ein Antrag
+    // beendet ist, wird sein Bestätigungs-Token geleert (Rückzug, Annullierung,
+    // Fristablauf, und seit api#529 auch die Deaktivierung des aufnehmenden
+    // Vereins). Der alte Link aus der Zustimmungs-Mail findet den Antrag dann
+    // nicht mehr und landet hier. „Link ungültig" war deshalb irreführend, und
+    // der Rat, sich an „deinen Verein" zu wenden, führte im
+    // Deaktivierungsfall an einen Verein, den es nicht mehr gibt. Über einen
+    // beendeten Antrag informiert eine eigene E-Mail.
     error: {
       variant: 'error',
-      title: 'Link ungültig',
+      title: 'Link nicht mehr gültig',
       message:
-        'Der Bestätigungslink ist ungültig, abgelaufen oder wurde bereits verwendet. Bitte wende dich bei Fragen an deinen Verein.',
+        'Dieser Bestätigungslink lässt sich nicht mehr verwenden. Entweder wurde er bereits benutzt, oder der Vorgang ist inzwischen beendet – dann hast du dazu eine E-Mail bekommen. Bei Fragen hilft dir der Verein weiter, der den Antrag gestellt hat, oder dein Landesverband.',
     },
   };
 

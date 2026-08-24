@@ -200,6 +200,25 @@ export class ErrorInterceptor implements HttpInterceptor {
         // aus einem laufenden Spielbericht werfen, gleich aus welchem Grund.
         const matchReportRequest = request.url.includes('user/games/');
 
+        // Anlegen, Deaktivieren und Reaktivieren einer Person sind Aktionen aus
+        // einer bereits geöffneten Arbeitsfläche heraus: aus der Zeile der
+        // Vereinsspielerliste oder aus dem geöffneten Formular. Ein 403 darauf
+        // heißt „diese Aktion nicht", nicht „diese Seite nicht" – der
+        // generische Zweig weiter unten warf dagegen auf die Startseite, mitten
+        // aus der Liste heraus, und nahm dabei die halb eingetragenen
+        // Stammdaten des Formulars mit. Vierter Fall dieser Bauart nach #240
+        // (Lizenzdokumente), api#437 (Spielbericht) und der Gespann-Historie.
+        //
+        // Praktisch wird der 403 mit api#530: Die Entscheidung über den
+        // Vereinsbestand liegt seither beim Vereinsmanager, ein noch offener
+        // Tab einer Teammanager*in trifft also auf eine Absage. Die Meldung
+        // nennt die zuständige Rolle und gehört genau dorthin, wo geklickt
+        // wurde. Bewusst ohne frühen return: Ohne Meldung sähe niemand, dass
+        // die Aktion nicht angekommen ist.
+        const playerClubDecision =
+          /admin\/players(\.json)?$/.test(request.url) ||
+          /admin\/players\/\d+\/(de|re)activate(\.json)?$/.test(request.url);
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           if (secretaryMode) {
             // Nur einmal je Sitzung: Die Spielansicht fragt die internen Felder
@@ -231,14 +250,15 @@ export class ErrorInterceptor implements HttpInterceptor {
           // Deshalb schließt diese Meldung im Bericht von selbst; die Eingabe
           // bleibt im Feld stehen, ein kurzer Hinweis genügt also. Dasselbe
           // Stapelproblem löst der 401-Zweig oben über `secretaryLinkRejected`.
+          const staysOnPage = matchReportRequest || playerClubDecision;
           this._notificationService.error(
             'Berechtigungsfehler: ' + (this.errorDetail(err) || 'Kein Zugriff'),
             {
-              autoClose: matchReportRequest,
-              keepAfterRouteChange: !matchReportRequest,
+              autoClose: staysOnPage,
+              keepAfterRouteChange: !staysOnPage,
             }
           );
-          if (!secretaryMode && !matchReportRequest) {
+          if (!secretaryMode && !staysOnPage) {
             this._router.navigate(['/']);
           }
         }

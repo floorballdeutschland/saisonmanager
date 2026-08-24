@@ -7,4 +7,5 @@ export * from './referee-license-levels/referee-license-levels.component';
 export * from './referee-settings/referee-settings.component';
 export * from './referee-merge/referee-merge.component';
 export * from './referee-exclusion-requests/referee-exclusion-requests.component';
+export * from './referee-change-requests/referee-change-requests.component';
 export * from './referee-accounts/referee-accounts.component';

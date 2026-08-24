@@ -17,9 +17,14 @@
     </div>
   }
 
-  <p class="text-sm text-fb-gray-500 mb-6 max-w-2xl">
-    {{ "playerVm.index.intro" | transloco }}
-  </p>
+  <!-- Die Einleitung erklärt das Deaktivieren. Wer hier nur den Bestand
+       einsieht (Teammanager), bekäme eine Anleitung für Knöpfe, die er nicht
+       hat; für ihn steht der Hinweis am abgeblendeten Anlege-Knopf. -->
+  @if (anyClubManageable) {
+    <p class="text-sm text-fb-gray-500 mb-6 max-w-2xl">
+      {{ "playerVm.index.intro" | transloco }}
+    </p>
+  }
 
   @for (list of clubLists; track list) {
     @if (clubLists.length > 1) {
@@ -50,26 +55,43 @@
         </button>
       }
     </p>
-    <!-- Kein eigenes Rollen-Gate: Jeder Verein dieser Liste ist einer, in dem
-         die API das Anlegen erlaubt. Die Liste stammt aus vm/clubs_and_teams,
-         und dieser Endpunkt bildet dieselbe Vereinsmenge wie
-         Club#user_permissions für `create_player`. Die Prüfung selbst bleibt
-         serverseitig. -->
+    <!-- Diese Liste enthält auch die Vereine, in denen der Account nur
+         Teammanager ist. Dort wird nicht angelegt, deaktiviert oder
+         reaktiviert (api#530). Der Anlege-Knopf steht deshalb abgeblendet mit
+         der Begründung daneben statt zu verschwinden; sie gilt für beide Wege,
+         weil die Zeilen dann auch keine Aktionen tragen. Die Prüfung selbst
+         bleibt serverseitig. -->
     <div class="mb-6">
-      <a
-        data-testid="new-player-link"
-        class="inline-block font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-        [routerLink]="[
-          '/',
-          'verwaltung',
-          'vereine',
-          list.club.id,
-          'spieler',
-          'neu',
-        ]"
-      >
-        {{ "playerVm.index.newPlayer" | transloco }}
-      </a>
+      @if (canManagePlayers(list)) {
+        <a
+          data-testid="new-player-link"
+          class="inline-block font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+          [routerLink]="[
+            '/',
+            'verwaltung',
+            'vereine',
+            list.club.id,
+            'spieler',
+            'neu',
+          ]"
+        >
+          {{ "playerVm.index.newPlayer" | transloco }}
+        </a>
+      } @else {
+        <div class="flex flex-wrap items-center gap-3">
+          <button
+            data-testid="new-player-disabled"
+            type="button"
+            disabled
+            class="inline-block font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white border-fb-gray-600 rounded-[5px] disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {{ "playerVm.index.newPlayer" | transloco }}
+          </button>
+          <p class="text-sm text-fb-gray-500 max-w-xl">
+            {{ "playerVm.index.newPlayerVmOnly" | transloco }}
+          </p>
+        </div>
+      }
     </div>
     @if (list.players.length > 0) {
       <table class="w-full text-sm mb-10">
@@ -167,9 +189,10 @@
                 }
               </td>
               <td class="py-2 text-right">
-                @if (!player.deactivated_at) {
+                @if (canManagePlayers(list) && !player.deactivated_at) {
                   @if (confirmDeactivateId !== player.id) {
                     <fb-button
+                      data-testid="deactivate-player"
                       size="small"
                       variant="error"
                       (click)="startDeactivate(player)"
@@ -238,8 +261,9 @@
                     </div>
                   }
                 }
-                @if (player.deactivated_at) {
+                @if (canManagePlayers(list) && player.deactivated_at) {
                   <fb-button
+                    data-testid="reactivate-player"
                     size="small"
                     variant="success"
                     (click)="reactivate(list, player)"
