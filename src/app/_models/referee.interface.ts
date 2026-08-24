@@ -30,6 +30,18 @@ export interface RefereeQualificationEntry {
   valid_until?: string;
 }
 
+/**
+ * Zusatzqualifikation, wie sie das eigene Profil und der Ausweis anzeigen.
+ * Rein lesend, deshalb ohne die IDs, die das Verwaltungsformular braucht
+ * (siehe RefereeQualificationEntry). `valid_until` ist im Format TT.MM.JJJJ,
+ * leer heisst „kein Ablauf hinterlegt“ und nicht „abgelaufen“.
+ */
+export interface RefereeProfileQualification {
+  qualification_type_name?: string;
+  short_name?: string | null;
+  valid_until?: string | null;
+}
+
 export interface RefereeTag {
   id: number;
   name: string;
@@ -216,6 +228,9 @@ export interface RefereeProfile {
   club_exclusion_requests?: RefereeClubExclusionRequest[];
   // Korrekturanträge zu den gesperrten Stammdaten (Name, Geburtsdatum, Verein).
   change_requests?: RefereeChangeRequest[];
+  // Zusatzqualifikationen samt Gültigkeit, von der RSK gepflegt und hier nur
+  // angezeigt. Nach Namen sortiert von der API.
+  qualifications?: RefereeProfileQualification[];
 }
 
 // Feld, für das eine Korrektur beantragt werden kann. Die Werte sind die

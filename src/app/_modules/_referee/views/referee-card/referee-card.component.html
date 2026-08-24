@@ -112,6 +112,40 @@
         }
       </div>
 
+      <!-- Zusatzqualifikationen. Nur wenn welche hinterlegt sind: Ein leerer
+           Abschnitt sagt auf einem Ausweis nichts. Kurzname bevorzugt, weil
+           die Karte schmal ist; ohne Kurzname der vollständige Name. -->
+      @if (qualifications.length) {
+        <div class="px-6 pb-4">
+          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+            {{ "refereeSelf.card.qualifications" | transloco }}
+          </p>
+          <div class="divide-y divide-fb-gray-200 text-sm">
+            @for (q of qualifications; track q) {
+              <div class="flex justify-between gap-3 py-2.5">
+                <span
+                  class="text-fb-gray-500"
+                  data-testid="qualification-name"
+                  >{{ q.short_name || q.qualification_type_name }}</span
+                >
+                <span
+                  class="font-bold text-right"
+                  data-testid="qualification-validity"
+                  [ngClass]="
+                    q.valid_until
+                      ? qualificationExpired(q.valid_until)
+                        ? 'text-red-600'
+                        : 'text-green-600'
+                      : ''
+                  "
+                  >{{ q.valid_until || "–" }}</span
+                >
+              </div>
+            }
+          </div>
+        </div>
+      }
+
       <!-- Hinweistext (Rückseite der Vorlage) -->
       <div class="bg-fb-gray-100 px-6 py-4">
         <p class="text-[11px] leading-snug text-fb-gray-500 text-center">

@@ -17,7 +17,9 @@ import {
   RefereeClubExclusionRequest,
   RefereeCorrectionType,
   RefereeProfile,
+  RefereeProfileQualification,
 } from '@floorball/types';
+import { isGermanDateExpired } from 'src/app/_helpers/_utils/german-date';
 
 interface ExclusionRequestForm {
   kind: 'add' | 'remove';
@@ -102,6 +104,18 @@ export class RefereeProfileComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
+  }
+
+  // Zusatzqualifikationen samt Gueltigkeit. Rein lesend: Gepflegt werden sie von
+  // der Schiedsrichterkommission, die API nimmt sie im Profil-Update nicht an.
+  get qualifications(): RefereeProfileQualification[] {
+    return this.profile?.qualifications || [];
+  }
+
+  // Abgelaufene Qualifikationen bleiben stehen und werden rot gezeichnet; ohne
+  // hinterlegten Ablauf gibt es keine Aussage (siehe isGermanDateExpired).
+  qualificationExpired(validUntil?: string | null): boolean {
+    return isGermanDateExpired(validUntil);
   }
 
   get openRequests(): RefereeClubExclusionRequest[] {

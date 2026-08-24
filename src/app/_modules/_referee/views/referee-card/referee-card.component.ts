@@ -10,7 +10,11 @@ import { Subject, takeUntil } from 'rxjs';
 import QRCode from 'qrcode';
 import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
-import { RefereeProfile } from '@floorball/types';
+import { RefereeProfile, RefereeProfileQualification } from '@floorball/types';
+import {
+  isGermanDateExpired,
+  parseGermanDate,
+} from 'src/app/_helpers/_utils/german-date';
 
 @Component({
   templateUrl: './referee-card.component.html',
@@ -75,14 +79,25 @@ export class RefereeCardComponent implements OnInit, OnDestroy {
   }
 
   get expired(): boolean {
-    const date = this.profile?.gueltigkeit;
-    if (!date) return true;
-    const [day, month, year] = date.split('.');
-    const parsed = new Date(+year, +month - 1, +day);
-    // Bei unerwartetem/unparsebarem Format sicherheitshalber „abgelaufen"
-    // anzeigen, statt fälschlich „gültig" (grün) auszugeben.
-    if (isNaN(parsed.getTime())) return true;
-    return parsed < new Date();
+    // Ohne Datum ist die Lizenz nicht nachgewiesen, und bei unerwartetem
+    // Format sicherheitshalber „abgelaufen" anzeigen, statt fälschlich
+    // „gültig" (grün) auszugeben.
+    const parsed = parseGermanDate(this.profile?.gueltigkeit);
+    return !parsed || parsed < new Date();
+  }
+
+  get qualifications(): RefereeProfileQualification[] {
+    return this.profile?.qualifications || [];
+  }
+
+  /**
+   * Abgelaufene Zusatzqualifikationen bleiben auf dem Ausweis stehen und werden
+   * rot gezeichnet: Ein stilles Weglassen wäre von „nie erworben" nicht zu
+   * unterscheiden. Ohne hinterlegten Ablauf gibt es keine Aussage, deshalb
+   * bleibt die Zeile dann ungefärbt (siehe isGermanDateExpired).
+   */
+  qualificationExpired(validUntil?: string | null): boolean {
+    return isGermanDateExpired(validUntil);
   }
 
   private _generateQrCode(profile: RefereeProfile): void {

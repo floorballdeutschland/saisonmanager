@@ -25,6 +25,49 @@
         >
       }
     </p>
+    <!-- Zusatzqualifikationen: rein lesend, gepflegt von der RSK. Nur
+         eingeblendet, wenn welche hinterlegt sind. Sie stehen auch auf dem
+         Ausweis und im öffentlichen Lizenzcheck. -->
+    @if (qualifications.length) {
+      <div
+        class="flex flex-col gap-4 border border-fb-gray-700 rounded-[5px] p-4 mb-6"
+      >
+        <div class="flex flex-col gap-1">
+          <h2 class="text-sm font-bold uppercase text-fb-gray-500">
+            {{ "refereeSelf.profile.sectionQualifications" | transloco }}
+          </h2>
+          <p class="text-xs text-fb-gray-500">
+            {{ "refereeSelf.profile.qualificationsHint" | transloco }}
+          </p>
+        </div>
+        <ul class="flex flex-col divide-y divide-fb-gray-700 text-sm">
+          @for (q of qualifications; track q) {
+            <li class="flex justify-between gap-3 py-2">
+              <span class="font-bold">{{ q.qualification_type_name }}</span>
+              @if (q.valid_until) {
+                <span
+                  class="text-right"
+                  [ngClass]="
+                    qualificationExpired(q.valid_until)
+                      ? 'text-red-600'
+                      : 'text-green-600'
+                  "
+                  >{{
+                    "refereeSelf.profile.validUntil"
+                      | transloco: { date: q.valid_until }
+                  }}</span
+                >
+              } @else {
+                <span class="text-right text-fb-gray-500">{{
+                  "refereeSelf.profile.qualificationNoExpiry" | transloco
+                }}</span>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
     <form (ngSubmit)="submit()" class="flex flex-col gap-6">
       <!-- Name & Kontakt -->
       <div class="flex flex-col gap-4">
