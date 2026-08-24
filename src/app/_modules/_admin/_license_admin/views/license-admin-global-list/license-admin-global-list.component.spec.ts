@@ -318,8 +318,11 @@ describe('LicenseAdminGlobalListComponent', () => {
       ).toBeNull();
     });
 
-    // Ohne Upload steht dort false statt eines Datums – der Helfer darf den
-    // booleschen Wert nicht als Zeitstempel durchreichen.
+    // Die documents-Map ist über ihre Index-Signatur auch für boolesche Werte
+    // offen (unter <key> steht einer). Läuft ein solcher Wert in die date-Pipe,
+    // rendert sie ihn nicht als Datum, sondern wirft. Der Helfer lässt nur
+    // Zeichenketten durch, damit eine unerwartete Antwort die Übersicht nicht
+    // zerlegt.
     it('reicht einen booleschen Wert nicht als Zeitpunkt durch', () => {
       const component = TestBed.createComponent(
         LicenseAdminGlobalListComponent
@@ -328,8 +331,9 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(
         component.docUploadedAt(
           entryWithDocuments({
-            parental_consent: false,
-            parental_consent_uploaded_at: null,
+            parental_consent: true,
+            parental_consent_url: 'https://example.test/doc.pdf',
+            parental_consent_uploaded_at: true as unknown as string,
           }),
           'parental_consent'
         )
