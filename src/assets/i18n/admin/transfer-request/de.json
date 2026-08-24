@@ -107,7 +107,8 @@
     "revokeReleaseHintSuffix": "werden auf ungültig gesetzt.",
     "protocol": "Protokoll",
     "protocolBy": "durch",
-    "protocolUnknownActor": "Konto {{ id }} (nicht mehr vorhanden)",
+    "protocolUnknownActor": "Konto {{ id }} (Name nicht verfügbar)",
+    "protocolTimeUnknown": "Zeitpunkt nicht erfasst",
     "protocolStep": {
       "submitted": "Antrag gestellt am",
       "clubApproved": "Vereinsfreigabe erteilt am",
@@ -118,7 +119,8 @@
       "rejectedByClub": "Vom Verein abgelehnt am",
       "rejectedByLv": "Vom Verband abgelehnt am",
       "revoked": "Freigabe zurückgezogen am",
-      "withdrawn": "Vorgang abgebrochen am"
+      "withdrawn": "Vorgang abgebrochen am",
+      "rejected": "Abgelehnt am"
     },
     "notFound": "Transferantrag nicht gefunden.",
     "statusPendingClub": "Warten auf abgebenden Verein",

@@ -24,6 +24,10 @@ export interface TransferProtocolStep {
   actorId?: number | null;
   kind: 'done' | 'rejected';
   note?: string | null;
+  // Schritt hat nachweislich stattgefunden, aber ohne festgehaltenen
+  // Zeitpunkt (Altbestand vor Einführung von withdrawn_at). Die Ansicht zeigt
+  // ihn dann ohne Datum, statt ihn wegzulassen.
+  timeUnknown?: boolean;
 }
 
 export interface TransferRequestPlayer {

@@ -146,6 +146,32 @@ describe('TransferRequestDetailComponent – Chronik', () => {
     expect(component.actorLabel(step!)).toBeNull();
   });
 
+  // withdrawn_at ist neu. Ohne Nachtrag endete die Chronik eines vor der
+  // Aenderung abgebrochenen Vorgangs beim letzten bekannten Schritt und saehe
+  // damit aus wie ein noch laufender.
+  it('fuehrt den Abbruch aus dem Altbestand ohne Zeitpunkt', () => {
+    const component = componentWith({
+      status: 'withdrawn',
+      club_approved_at: '2026-08-02T10:00:00.000Z',
+    });
+
+    const step = component.protocolSteps.find((s) => s.key === 'withdrawn');
+    expect(step).toBeDefined();
+    expect(step?.timeUnknown).toBeTrue();
+    expect(step?.at).toBeFalsy();
+  });
+
+  it('doppelt den Abbruch nicht, wenn ein Zeitpunkt vorliegt', () => {
+    const component = componentWith({
+      status: 'withdrawn',
+      withdrawn_at: '2026-08-02T10:00:00.000Z',
+    });
+
+    const steps = component.protocolSteps.filter((s) => s.key === 'withdrawn');
+    expect(steps.length).toBe(1);
+    expect(steps[0].timeUnknown).toBeFalsy();
+  });
+
   describe('Anzeige des handelnden Kontos', () => {
     it('nimmt den Namen, wenn er vorliegt', () => {
       const component = componentWith({});
@@ -167,6 +193,22 @@ describe('TransferRequestDetailComponent – Chronik', () => {
 
       expect(
         component.actorLabel({ key: 'submitted', kind: 'done', actorId: 7 })
+      ).toContain('7');
+    });
+
+    // User#fullname liefert bei einem Konto ohne Vor- und Nachnamen ein blosses
+    // Leerzeichen. Ungetrimmt waere das hier "wahr", die Maske schriebe "durch"
+    // und dahinter nichts, und der Rueckfall auf die ID waere toter Code.
+    it('behandelt einen Namen aus Leerzeichen als fehlend', () => {
+      const component = componentWith({});
+
+      expect(
+        component.actorLabel({
+          key: 'submitted',
+          kind: 'done',
+          actorId: 7,
+          actorName: '  ',
+        })
       ).toContain('7');
     });
 

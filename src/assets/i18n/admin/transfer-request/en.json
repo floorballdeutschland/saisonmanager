@@ -107,7 +107,8 @@
     "revokeReleaseHintSuffix": "will be set to invalid.",
     "protocol": "Log",
     "protocolBy": "by",
-    "protocolUnknownActor": "Account {{ id }} (no longer present)",
+    "protocolUnknownActor": "Account {{ id }} (name unavailable)",
+    "protocolTimeUnknown": "time not recorded",
     "protocolStep": {
       "submitted": "Request submitted on",
       "clubApproved": "Club release granted on",
@@ -118,7 +119,8 @@
       "rejectedByClub": "Rejected by the club on",
       "rejectedByLv": "Rejected by the association on",
       "revoked": "Release revoked on",
-      "withdrawn": "Process cancelled on"
+      "withdrawn": "Process cancelled on",
+      "rejected": "Rejected on"
     },
     "notFound": "Transfer request not found.",
     "statusPendingClub": "Awaiting releasing club",

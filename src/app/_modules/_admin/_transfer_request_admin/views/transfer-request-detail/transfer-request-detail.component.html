@@ -314,9 +314,16 @@
                   "transferRequestAdmin.detail.protocolStep." + step.key
                     | transloco
                 }}
-                <strong>{{
-                  step.at | date: "dd.MM.yyyy HH:mm" : "Europe/Berlin"
-                }}</strong>
+                @if (step.timeUnknown) {
+                  <em class="text-fb-gray-500">{{
+                    "transferRequestAdmin.detail.protocolTimeUnknown"
+                      | transloco
+                  }}</em>
+                } @else {
+                  <strong>{{
+                    step.at | date: "dd.MM.yyyy HH:mm" : "Europe/Berlin"
+                  }}</strong>
+                }
                 @if (actorLabel(step)) {
                   <span class="block text-xs text-fb-gray-500 mt-0.5">
                     {{ "transferRequestAdmin.detail.protocolBy" | transloco }}

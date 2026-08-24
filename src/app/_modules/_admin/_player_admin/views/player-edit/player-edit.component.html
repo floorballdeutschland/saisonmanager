@@ -709,9 +709,9 @@
                         {{ "playerAdmin.edit.until" | transloco }}
                         {{ additionalClub.valid_until | date: "dd.MM.yyyy" }}
                       </p>
-                      <!-- Handelnde Konten. Die API löst die Namen nur für
-                           Geschäftsstelle und zuständige SBK auf; für andere
-                           Rollen bleibt der Abschnitt leer. -->
+                      <!-- Handelnde Konten. Fehlt der Name (Konto gelöscht
+                           oder ohne hinterlegten Namen), bleibt die Konto-ID
+                           als belastbare Angabe stehen. -->
                       @if (
                         additionalClub.created_by_name ||
                         additionalClub.created_by
@@ -827,9 +827,9 @@
                         {{ "playerAdmin.edit.untilToday" | transloco }}
                       }
                     </p>
-                    <!-- Handelnde Konten. Die API löst die Namen nur für
-                         Geschäftsstelle und zuständige SBK auf; für andere
-                         Rollen bleibt der Abschnitt leer. -->
+                    <!-- Handelnde Konten. Fehlt der Name (Konto gelöscht
+                         oder ohne hinterlegten Namen), bleibt die Konto-ID als
+                         belastbare Angabe stehen. -->
                     @if (club.created_by_name || club.created_by) {
                       <p class="text-sm text-fb-gray-500">
                         {{ "playerAdmin.edit.homeClubSetBy" | transloco }}

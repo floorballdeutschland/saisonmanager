@@ -416,9 +416,12 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
   // ohne weitere Statusabfragen richtig, auch für abgebrochene und abgelehnte
   // Vorgänge.
   //
-  // Fristablauf ("expired") und die Beendigung durch eine Vereinsdeaktivierung
-  // tauchen nicht auf: Das sind Systemvorgänge, die kein Konto und keinen
-  // eigenen Zeitpunkt hinterlassen. Dafür steht der Status im Kopf der Seite.
+  // Der Fristablauf ("expired") taucht nicht auf: Er hinterlässt weder Konto
+  // noch Zeitpunkt, ein expired_at gibt es nicht. Dafür steht der Status im Kopf
+  // der Seite. Die Beendigung durch eine Vereinsdeaktivierung erscheint dagegen
+  // als Abbruch mit dem Konto, das den Verein deaktiviert hat -- die Datenbank
+  // kann diesen Weg nicht von withdraw und cancel unterscheiden, alle drei
+  // landen als "withdrawn" mit withdrawn_by.
   get protocolSteps(): TransferProtocolStep[] {
     const r = this.request;
     if (!r) return [];
@@ -453,7 +456,15 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
       {
         // Ein Antrag kann vom Verein oder vom Verband abgelehnt werden; beide
         // Wege schreiben in dieselben Felder, der Status sagt welcher es war.
-        key: r.status === 'rejected_by_lv' ? 'rejectedByLv' : 'rejectedByClub',
+        // Beide ausdrücklich abfragen statt einen als Rest zu behandeln: Käme
+        // ein dritter Weg dazu, schriebe ihn ein Negativ-Default still dem
+        // Verein zu.
+        key:
+          r.status === 'rejected_by_lv'
+            ? 'rejectedByLv'
+            : r.status === 'rejected_by_club'
+              ? 'rejectedByClub'
+              : 'rejected',
         at: r.rejected_at,
         actorName: r.rejected_by_name,
         actorId: r.rejected_by,
@@ -477,7 +488,20 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
       },
     ];
 
-    return steps.filter((step) => !!step.at);
+    const visible = steps.filter((step) => !!step.at);
+
+    // withdrawn_at ist neu. Vorgänge, die vor dieser Änderung zurückgezogen,
+    // annulliert oder durch eine Vereinsdeaktivierung beendet wurden, tragen
+    // keinen Zeitpunkt, und der Filter oben würde ihren Abschluss verschlucken:
+    // Die Chronik endete beim letzten bekannten Schritt und sähe damit aus wie
+    // ein noch laufender Vorgang. Der Schritt erscheint deshalb auch ohne
+    // Datum, ausdrücklich als "Zeitpunkt nicht erfasst" statt mit einem
+    // erfundenen.
+    if (r.status === 'withdrawn' && !visible.some((s) => s.key === 'withdrawn')) {
+      visible.push({ key: 'withdrawn', kind: 'rejected', timeUnknown: true });
+    }
+
+    return visible;
   }
 
   // Anzeige des handelnden Kontos. Der Name ist die Anzeige; ist er leer, weil
@@ -485,7 +509,12 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
   // bleibt die ID als belastbare Angabe. Ohne beides steht dort nichts, statt
   // eine leere Klammer zu zeigen.
   actorLabel(step: TransferProtocolStep): string | null {
-    if (step.actorName) return step.actorName;
+    // Trim, weil ein Konto ohne hinterlegten Vor- und Nachnamen serverseitig
+    // als leerer Name durchkommen kann. Ungetrimmt wäre er hier "wahr", die
+    // Maske schriebe "durch" und dahinter nichts, und der Rückfall auf die
+    // Konto-ID wäre toter Code.
+    const name = step.actorName?.trim();
+    if (name) return name;
     if (step.actorId) {
       return this._transloco.translate(
         'transferRequestAdmin.detail.protocolUnknownActor',
