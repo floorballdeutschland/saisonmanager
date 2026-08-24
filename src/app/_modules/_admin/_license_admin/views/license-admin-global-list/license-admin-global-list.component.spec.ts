@@ -271,4 +271,93 @@ describe('LicenseAdminGlobalListComponent', () => {
       ).toBeFalse();
     });
   });
+
+  // In der Genehmigungsübersicht war bisher nur zu sehen, DASS ein Dokument
+  // vorliegt, nicht seit wann. Wer die Liste in Durchgängen abarbeitet, konnte
+  // Neuzugänge nicht von längst geprüften Uploads unterscheiden.
+  describe('Uploadzeitpunkt der Dokumente', () => {
+    function entryWithDocuments(
+      documents: AdminLicenseEntry['documents']
+    ): AdminLicenseEntry {
+      return { ...entry('Dokument'), documents } as AdminLicenseEntry;
+    }
+
+    it('liefert den Uploadzeitpunkt einer Dokumentart', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+      const e = entryWithDocuments({
+        parental_consent: true,
+        parental_consent_url: 'https://example.test/doc.pdf',
+        parental_consent_uploaded_at: '2026-08-12T09:30:00.000Z',
+      });
+
+      expect(component.docUploadedAt(e, 'parental_consent')).toBe(
+        '2026-08-12T09:30:00.000Z'
+      );
+    });
+
+    // Ältere Serverantworten kennen das Feld nicht; die Übersicht darf davon
+    // nicht abhängen und zeigt dann weiter nur das Symbol.
+    it('bleibt ohne Zeitpunkt bei null', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+
+      expect(
+        component.docUploadedAt(
+          entryWithDocuments({
+            parental_consent: true,
+            parental_consent_url: 'https://example.test/doc.pdf',
+          }),
+          'parental_consent'
+        )
+      ).toBeNull();
+      expect(
+        component.docUploadedAt(entryWithDocuments(null), 'parental_consent')
+      ).toBeNull();
+    });
+
+    // Die documents-Map ist über ihre Index-Signatur auch für boolesche Werte
+    // offen (unter <key> steht einer). Läuft ein solcher Wert in die date-Pipe,
+    // rendert sie ihn nicht als Datum, sondern wirft. Der Helfer lässt nur
+    // Zeichenketten durch, damit eine unerwartete Antwort die Übersicht nicht
+    // zerlegt.
+    // Eine Zeichenkette ist noch kein lesbares Datum. Die date-Pipe wirft auch
+    // dafuer, und zwar mitten in der Change Detection: Die ganze Uebersicht
+    // rendert dann nicht mehr, nicht nur diese Zelle.
+    it('reicht ein unlesbares Datum nicht durch', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+
+      expect(
+        component.docUploadedAt(
+          entryWithDocuments({
+            parental_consent: true,
+            parental_consent_url: 'https://example.test/doc.pdf',
+            parental_consent_uploaded_at: 'irgendwann',
+          }),
+          'parental_consent'
+        )
+      ).toBeNull();
+    });
+
+    it('reicht einen booleschen Wert nicht als Zeitpunkt durch', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+
+      expect(
+        component.docUploadedAt(
+          entryWithDocuments({
+            parental_consent: true,
+            parental_consent_url: 'https://example.test/doc.pdf',
+            parental_consent_uploaded_at: true as unknown as string,
+          }),
+          'parental_consent'
+        )
+      ).toBeNull();
+    });
+  });
 });

@@ -525,15 +525,23 @@
                           [href]="e.documents!.parental_consent_url"
                           target="_blank"
                           rel="noopener"
-                          class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
+                          class="inline-flex items-center gap-1 h-5 px-1 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
                           [title]="
-                            'licenseAdmin.globalList.parentalConsentView'
-                              | transloco
+                            docUploadedAt(e, 'parental_consent')
+                              ? ('licenseAdmin.globalList.parentalConsentViewUploaded'
+                                | transloco
+                                  : {
+                                      date:
+                                        docUploadedAt(e, 'parental_consent')
+                                        | date: 'dd.MM.yyyy' : 'Europe/Berlin',
+                                    })
+                              : ('licenseAdmin.globalList.parentalConsentView'
+                                | transloco)
                           "
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            class="w-3 h-3"
+                            class="w-3 h-3 shrink-0"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -545,6 +553,12 @@
                               d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
                             />
                           </svg>
+                          @if (docUploadedAt(e, "parental_consent")) {
+                            <span class="tabular-nums">{{
+                              docUploadedAt(e, "parental_consent")
+                                | date: "dd.MM.yy" : "Europe/Berlin"
+                            }}</span>
+                          }
                         </a>
                       } @else {
                         <span
@@ -586,15 +600,24 @@
                           [href]="e.documents![docType + '_url']"
                           target="_blank"
                           rel="noopener"
-                          class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
+                          class="inline-flex items-center gap-1 h-5 px-1 rounded text-[10px] bg-green-100 text-green-700 hover:bg-green-200"
                           [title]="
-                            'licenseAdmin.globalList.docView'
-                              | transloco: { doc: docTypeLabel(docType) }
+                            docUploadedAt(e, docType)
+                              ? ('licenseAdmin.globalList.docViewUploaded'
+                                | transloco
+                                  : {
+                                      doc: docTypeLabel(docType),
+                                      date:
+                                        docUploadedAt(e, docType)
+                                        | date: 'dd.MM.yyyy' : 'Europe/Berlin',
+                                    })
+                              : ('licenseAdmin.globalList.docView'
+                                | transloco: { doc: docTypeLabel(docType) })
                           "
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            class="w-3 h-3"
+                            class="w-3 h-3 shrink-0"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -606,6 +629,12 @@
                               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                             />
                           </svg>
+                          @if (docUploadedAt(e, docType)) {
+                            <span class="tabular-nums">{{
+                              docUploadedAt(e, docType)
+                                | date: "dd.MM.yy" : "Europe/Berlin"
+                            }}</span>
+                          }
                         </a>
                       }
                       @if (!e.documents?.[docType + "_url"]) {

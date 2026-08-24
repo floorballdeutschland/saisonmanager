@@ -18,6 +18,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
+import { readUploadedAt } from '../../_utils/document-upload-date';
 
 @Component({
   selector: 'fb-license-admin-league-detail',
@@ -226,6 +227,15 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
       ),
     };
     return labels[docType] ?? docType;
+  }
+
+  // Uploadzeitpunkt einer Dokumentart. Die API setzt das Feld nur zusammen mit
+  // einer abrufbaren Datei; fehlt es, bleibt es beim reinen Label.
+  public docUploadedAt(
+    player: PlayerWithLicense,
+    docType: string
+  ): string | null {
+    return readUploadedAt(player.team_license?.documents, docType);
   }
 
   // Elternzustimmung verlangt die Liga, nicht das Geburtsdatum allein: Die API

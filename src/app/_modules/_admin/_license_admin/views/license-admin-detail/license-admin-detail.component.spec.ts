@@ -220,4 +220,50 @@ describe('LicenseAdminDetailComponent', () => {
       expect(component.isDocumentsComplete(component.player)).toBe(false);
     });
   });
+  // Vor der Genehmigung soll erkennbar sein, wie frisch das vorliegende
+  // Dokument ist. Der Genehmigungsdialog liest dafür einen anderen Pfad als die
+  // Verbandsliste (player.team_license.documents statt entry.documents).
+  describe('Uploadzeitpunkt der Dokumente', () => {
+    function withDocuments(
+      documents: Record<string, unknown> | undefined
+    ): LicenseAdminDetailComponent {
+      const component = TestBed.createComponent(LicenseAdminDetailComponent)
+        .componentInstance;
+      component.player = {
+        team_license: { documents },
+      } as unknown as PlayerWithLicense;
+      return component;
+    }
+
+    it('liefert den Uploadzeitpunkt einer Dokumentart', () => {
+      const component = withDocuments({
+        id_copy: true,
+        id_copy_url: 'https://example.test/doc.pdf',
+        id_copy_uploaded_at: '2026-08-12T09:30:00.000Z',
+      });
+
+      expect(component.docUploadedAt('id_copy')).toBe(
+        '2026-08-12T09:30:00.000Z'
+      );
+    });
+
+    // Ältere Serverantworten kennen das Feld nicht; der Dialog bleibt dann beim
+    // reinen Label statt eine Lücke zu zeigen.
+    it('bleibt ohne Zeitpunkt bei null', () => {
+      expect(
+        withDocuments({ id_copy: true, id_copy_url: 'x' }).docUploadedAt(
+          'id_copy'
+        )
+      ).toBeNull();
+      expect(withDocuments(undefined).docUploadedAt('id_copy')).toBeNull();
+    });
+
+    it('reicht einen booleschen Wert nicht als Zeitpunkt durch', () => {
+      expect(
+        withDocuments({ id_copy: true, id_copy_uploaded_at: true }).docUploadedAt(
+          'id_copy'
+        )
+      ).toBeNull();
+    });
+  });
 });

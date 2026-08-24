@@ -194,4 +194,52 @@ describe('LicenseAdminLeagueDetailComponent', () => {
       expect(component.needsParentalConsent(player(undefined))).toBe(false);
     });
   });
+  // Die Liga-Detailansicht liest den Zeitpunkt je Spieler aus der Zeile, nicht
+  // aus einem Eintrag der Verbandsliste.
+  describe('Uploadzeitpunkt der Dokumente', () => {
+    function playerWithDocuments(
+      documents: Record<string, unknown> | undefined
+    ): PlayerWithLicense {
+      return {
+        birthdate: '2012-05-04',
+        team_license: { documents },
+      } as unknown as PlayerWithLicense;
+    }
+
+    it('liefert den Uploadzeitpunkt einer Dokumentart', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminLeagueDetailComponent
+      ).componentInstance;
+
+      expect(
+        component.docUploadedAt(
+          playerWithDocuments({
+            id_copy: true,
+            id_copy_url: 'https://example.test/doc.pdf',
+            id_copy_uploaded_at: '2026-08-12T09:30:00.000Z',
+          }),
+          'id_copy'
+        )
+      ).toBe('2026-08-12T09:30:00.000Z');
+    });
+
+    it('bleibt ohne Zeitpunkt und ohne boolesche Durchreiche bei null', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminLeagueDetailComponent
+      ).componentInstance;
+
+      expect(
+        component.docUploadedAt(playerWithDocuments({ id_copy: true }), 'id_copy')
+      ).toBeNull();
+      expect(
+        component.docUploadedAt(playerWithDocuments(undefined), 'id_copy')
+      ).toBeNull();
+      expect(
+        component.docUploadedAt(
+          playerWithDocuments({ id_copy_uploaded_at: true }),
+          'id_copy'
+        )
+      ).toBeNull();
+    });
+  });
 });
