@@ -65,7 +65,11 @@
     "correctionHistory": "Frühere Korrekturanträge",
     "correctionStatus.approved": "genehmigt",
     "correctionStatus.rejected": "abgelehnt",
-    "correctionStatus.withdrawn": "zurückgezogen"
+    "correctionStatus.withdrawn": "zurückgezogen",
+    "sectionQualifications": "Zusatzqualifikationen",
+    "qualificationsHint": "Diese Angaben pflegt die Schiedsrichterkommission und sie stehen auch auf deinem digitalen Ausweis sowie im öffentlichen Lizenzcheck. Ist eine Qualifikation falsch oder fehlt sie, wende dich an die Schiedsrichterkommission deines Landesverbands.",
+    "qualificationNoExpiry": "ohne Ablaufdatum",
+    "qualificationExpiredOn": "abgelaufen am {{ date }}"
   },
   "card": {
     "title": "Mein Ausweis",
@@ -81,7 +85,8 @@
     "validUntil": "Gültig bis",
     "association": "Verband",
     "disclaimer": "Dieser Ausweis wurde vom Floorball-Verband Deutschland e. V. ausgestellt. Gültigkeit und Lizenzstufe können über den QR-Code oder unter saisonmanager.de/lizenzcheck abgerufen werden. Ab iOS 27 und Android 8 kannst du diesen QR-Codes auch in deine offiziellen Wallet-App importieren. Öffne dazu deine Wallet-App und folge den dortigen Anweisungen.",
-    "notFound": "Kein Schiedsrichter-Profil gefunden."
+    "notFound": "Kein Schiedsrichter-Profil gefunden.",
+    "qualifications": "Zusatzqualifikationen"
   },
   "history": {
     "title": "Meine Historie",

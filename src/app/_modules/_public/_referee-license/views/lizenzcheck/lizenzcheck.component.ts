@@ -62,7 +62,7 @@ export class LizenzcheckComponent implements OnInit {
     });
   }
 
-  isExpired(dateString?: string): boolean {
+  isExpired(dateString?: string | null): boolean {
     if (!dateString) return true;
     const [day, month, year] = dateString.split('.');
     return new Date(+year, +month - 1, +day) < new Date();

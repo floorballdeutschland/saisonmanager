@@ -36,6 +36,10 @@ const PROFILE: RefereeProfile = {
   verein: 'Eigener Verein',
   club_id: 1,
   change_requests: [OPEN_REQUEST, DECIDED_REQUEST],
+  qualifications: [
+    { qualification_type_name: 'Beobachter', valid_until: '31.12.2099' },
+    { qualification_type_name: 'Ohne Ablauf', valid_until: null },
+  ],
 };
 
 describe('RefereeProfileComponent (Stammdaten-Korrekturen)', () => {
@@ -50,9 +54,9 @@ describe('RefereeProfileComponent (Stammdaten-Korrekturen)', () => {
   };
   let notify: { success: jasmine.Spy; error: jasmine.Spy };
 
-  async function setUp() {
+  async function setUp(profile: RefereeProfile = PROFILE) {
     refereeService = {
-      getProfile: jasmine.createSpy('getProfile').and.returnValue(of(PROFILE)),
+      getProfile: jasmine.createSpy('getProfile').and.returnValue(of(profile)),
       updateProfile: jasmine
         .createSpy('updateProfile')
         .and.returnValue(of(PROFILE)),
@@ -91,6 +95,37 @@ describe('RefereeProfileComponent (Stammdaten-Korrekturen)', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
   }
+
+  // Die Zusatzqualifikationen stehen im Profil nur zur Anzeige: Gepflegt werden
+  // sie von der RSK, die API nimmt sie im Update nicht an.
+  it('fuehrt die Zusatzqualifikationen und bewertet ihre Gueltigkeit', async () => {
+    await setUp();
+
+    expect(
+      component.qualifications.map((q) => q.qualification_type_name)
+    ).toEqual(['Beobachter', 'Ohne Ablauf']);
+    expect(component.qualificationExpired('31.01.2020')).toBeTrue();
+    expect(component.qualificationExpired('31.12.2099')).toBeFalse();
+    // Ohne hinterlegten Ablauf gibt es keine Aussage, also nicht rot zeichnen.
+    expect(component.qualificationExpired(null)).toBeFalse();
+    // Der Ablauftag selbst zaehlt noch als gueltig, wie in der API.
+    const heute = new Date();
+    expect(
+      component.qualificationExpired(
+        [
+          String(heute.getDate()).padStart(2, '0'),
+          String(heute.getMonth() + 1).padStart(2, '0'),
+          heute.getFullYear(),
+        ].join('.')
+      )
+    ).toBeFalse();
+  });
+
+  it('kennt ohne Qualifikationen eine leere Liste', async () => {
+    await setUp({ ...PROFILE, qualifications: undefined });
+
+    expect(component.qualifications).toEqual([]);
+  });
 
   it('trennt offene Antraege vom Verlauf', async () => {
     await setUp();
