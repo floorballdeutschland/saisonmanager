@@ -5,11 +5,14 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { Club, League, TeamWithPlayers } from '@floorball/types';
-import { ClubService, LeagueService } from '@floorball/core';
+import { ClubService, LeagueService, StorageService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { TranslocoService } from '@jsverse/transloco';
 import { take } from 'rxjs';
+
+// Schreibweise wie die Nachbarschlüssel des Moduls (license_admin_page_size).
+const SHOW_DATES_STORAGE_KEY = 'license_list_show_dates';
 
 @Component({
   selector: 'fb-license-user-league-detail',
@@ -26,9 +29,16 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
 
   handledPlayerIds: number[] = [];
 
+  // Beantragungs-, Erteilungs- und Freigabedatum in der Liste. An, weil die
+  // Fristen aus Lizenzordnung (Freigabe) und SPO (Beantragung) genau dafür
+  // nachgeschlagen werden; abwählbar für einen schlanken Spieltagsbeleg. Die
+  // Wahl gilt auch für den Ausdruck.
+  showDates = true;
+
   constructor(
     private _leagueService: LeagueService,
     private _clubService: ClubService,
+    private _storageService: StorageService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
@@ -49,8 +59,25 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
         )
       );
 
+    this.showDates = this.readShowDates();
+
     this.getGameOperations();
     this.getAllClubs();
+  }
+
+  public toggleDates(show: boolean): void {
+    this.showDates = show;
+    this._storageService.setItem(SHOW_DATES_STORAGE_KEY, String(show));
+  }
+
+  // Nur das ausdrücklich geschriebene 'false' blendet aus; jeder andere Inhalt
+  // (Rest einer früheren Fassung, von Hand gesetzter Wert) fällt auf die
+  // Vorgabe zurück. Sonst versteckt ein unbrauchbarer Wert genau die Angaben,
+  // für die diese Liste gelesen wird. Gleiches Muster wie die Seitengröße in
+  // der Verbandsübersicht, die ihren Wert ebenfalls gegen die erlaubten prüft.
+  // StorageService liefert für einen fehlenden Schlüssel '' statt null.
+  private readShowDates(): boolean {
+    return this._storageService.getItem(SHOW_DATES_STORAGE_KEY) !== 'false';
   }
 
   public getGameOperations(): void {

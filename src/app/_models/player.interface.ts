@@ -53,6 +53,11 @@ export interface PlayerWithLicense extends Player {
 
     approved_at?: string;
     requested_at: string;
+    // Datum der Vereins-Freigabe (genehmigter Freigabe-Antrag der Saison für
+    // den Verein der Mannschaft). Leer bei allen, die keine Freigabe
+    // brauchten – eine Zweitvereins-Zugehörigkeit ohne Freigabeverfahren
+    // zählt bewusst nicht.
+    released_at?: string | null;
     express?: boolean;
     // Je Dokumentart drei Einträge: <key> (liegt vor), <key>_url (Abruf) und
     // <key>_uploaded_at (Zeitpunkt des Uploads, nur gesetzt, wenn auch eine
