@@ -6,11 +6,11 @@ import { StartingPlayer } from '@floorball/types';
   standalone: false,
 })
 export class HasStartingPlayerPipe implements PipeTransform {
-  transform(startingPlayers: StartingPlayer[]): boolean {
-    return (
-      startingPlayers.filter((player) => {
-        return player.player_id;
-      }).length > 0
-    );
+  transform(startingPlayers: StartingPlayer[] | null | undefined): boolean {
+    if (!Array.isArray(startingPlayers)) {
+      return false;
+    }
+
+    return startingPlayers.some((player) => !!player?.player_id);
   }
 }

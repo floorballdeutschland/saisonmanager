@@ -79,24 +79,31 @@
       <div
         class="hidden md:block rounded-full border border-fb-gray-200 w-[30px] h-[30px] flex items-center justify-center"
       >
+        <!--
+          Absolute Pfade. `./assets/…` löst im Browser dank des <base href="/">
+          zwar richtig auf, nicht aber bei Clients, die das base-Element
+          übergehen: Die fordern `…/spiel/assets/images/union.svg` an, bekommen
+          über den index.html-Fallback die Anwendung und lassen den Router mit
+          NG04002 scheitern (Sentry SAISONMANAGER-3H/3P).
+        -->
         @switch (gameEvent.event_type) {
           @case ("goal") {
             <img
-              src="./assets/images/union.svg"
+              src="/assets/images/union.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />
           }
           @case ("penalty") {
             <img
-              src="./assets/images/ban.svg"
+              src="/assets/images/ban.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />
           }
           @case ("timeout") {
             <img
-              src="./assets/images/clock.svg"
+              src="/assets/images/clock.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />
@@ -123,21 +130,21 @@
         @switch (gameEvent.event_type) {
           @case ("goal") {
             <img
-              src="./assets/images/union.svg"
+              src="/assets/images/union.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />
           }
           @case ("penalty") {
             <img
-              src="./assets/images/ban.svg"
+              src="/assets/images/ban.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />
           }
           @case ("timeout") {
             <img
-              src="./assets/images/clock.svg"
+              src="/assets/images/clock.svg"
               alt="Tor"
               class="w-full h-full p-[6px]"
             />

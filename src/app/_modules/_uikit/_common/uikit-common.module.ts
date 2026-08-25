@@ -1,5 +1,5 @@
 import { OverlayModule } from '@angular/cdk/overlay';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
@@ -66,6 +66,7 @@ import { UikitShellModule } from './uikit-shell.module';
     HelperPipes.HasStartingPlayerPipe,
     HelperPipes.PeriodFilterPipe,
     HelperPipes.ReversePeriodsPipe,
+    HelperPipes.SafeDatePipe,
     HelperPipes.SortPlayersPipe,
     HelperPipes.SortTrikotnumbersPipe,
     HelperPipes.StartingPlayerPositionTitlePipe,
@@ -108,6 +109,7 @@ import { UikitShellModule } from './uikit-shell.module';
     HelperPipes.GroupIdentifierFilterPipe,
     HelperPipes.PeriodFilterPipe,
     HelperPipes.ReversePeriodsPipe,
+    HelperPipes.SafeDatePipe,
     HelperPipes.SortPlayersPipe,
     HelperPipes.SortTrikotnumbersPipe,
     HelperPipes.TeamLineupPlayerPipe,
@@ -116,5 +118,6 @@ import { UikitShellModule } from './uikit-shell.module';
     AwardTitlePipe,
     HasStartingPlayerPipe,
   ],
+  providers: [DatePipe],
 })
 export class UikitCommonModule {}

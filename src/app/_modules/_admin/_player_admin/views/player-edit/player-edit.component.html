@@ -636,8 +636,9 @@
                       {{ "playerAdmin.edit.history" | transloco }}<br />
                       @for (hist of license.history; track hist) {
                         <div>
-                          {{ hist.created_at | date: "dd.MM.yyyy HH:mm:ss" }},
-                          <b>{{ hist.license_status }}</b
+                          {{
+                            hist.created_at | safeDate: "dd.MM.yyyy HH:mm:ss"
+                          }}, <b>{{ hist.license_status }}</b
                           >, {{ "playerAdmin.edit.by" | transloco }}
                           {{ hist.created_by_name }}
                           @if (hist.reason) {
@@ -704,10 +705,10 @@
                       <p>
                         @if (additionalClub.created_at) {
                           {{ "playerAdmin.edit.from" | transloco }}
-                          {{ additionalClub.created_at | date: "dd.MM.yyyy" }}
+                          {{ additionalClub.created_at | safeDate }}
                         }
                         {{ "playerAdmin.edit.until" | transloco }}
-                        {{ additionalClub.valid_until | date: "dd.MM.yyyy" }}
+                        {{ additionalClub.valid_until | safeDate }}
                       </p>
                       <!-- Handelnde Konten. Fehlt der Name (Konto gelöscht
                            oder ohne hinterlegten Namen), bleibt die Konto-ID
@@ -734,7 +735,8 @@
                           {{
                             additionalClub.valid_set_by_name ||
                               ("playerAdmin.edit.unknownActor"
-                                | transloco: { id: additionalClub.valid_set_by })
+                                | transloco
+                                  : { id: additionalClub.valid_set_by })
                           }}
                         </p>
                       }
@@ -817,11 +819,11 @@
                     <p>
                       @if (club.created_at) {
                         {{ "playerAdmin.edit.from" | transloco }}
-                        {{ club.created_at | date: "dd.MM.yyyy" }}
+                        {{ club.created_at | safeDate }}
                       }
                       @if (club.valid_until) {
                         {{ "playerAdmin.edit.until" | transloco }}
-                        {{ club.valid_until | date: "dd.MM.yyyy" }}
+                        {{ club.valid_until | safeDate }}
                       }
                       @if (!club.valid_until) {
                         {{ "playerAdmin.edit.untilToday" | transloco }}
@@ -913,7 +915,7 @@
                           <p class="font-semibold">{{ documentLabel(doc) }}</p>
                           <p class="text-sm text-fb-gray-500">
                             {{ doc.filename }} ·
-                            {{ doc.created_at | date: "dd.MM.yyyy" }}
+                            {{ doc.created_at | safeDate }}
                           </p>
                         </div>
                         <div class="flex flex-row items-center">
