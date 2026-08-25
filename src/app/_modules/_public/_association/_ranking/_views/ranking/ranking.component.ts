@@ -42,9 +42,11 @@ export class RankingComponent implements OnInit, OnDestroy {
             this._metaTitle.setTitle(
               `${league.name} - Tabelle | Floorball Saisonmanager`
             );
+            // Vorbelegung vor dem Laden, damit der aus den Spielen ermittelte
+            // Spieltag sie überschreibt und nicht umgekehrt.
+            this.selectedMatchDay = league.game_day_titles?.[0] ?? null;
             this.getTeamRanking(league.id);
             this.getMatches(league);
-            this.selectedMatchDay = league.game_day_titles[0];
             this._cdr.markForCheck();
           }
         }),
@@ -71,13 +73,18 @@ export class RankingComponent implements OnInit, OnDestroy {
       .pipe(
         take(1),
         tap((games) => {
-          if (!games) {
+          // Eine Liga ohne angesetzte Spiele liefert ein leeres Array. Die
+          // Spieltagsnummer der ersten Zeile gibt es dann nicht, deshalb die
+          // Vorauswahl aus dem ersten Spieltagstitel beibehalten.
+          if (!games || !games.length) {
             return;
           }
           this.selectedMatchDay =
-            league.game_day_titles.find(
+            league.game_day_titles?.find(
               (_item) => _item.game_day_number === games[0].game_day
-            ) ?? league.game_day_titles[0];
+            ) ??
+            league.game_day_titles?.[0] ??
+            null;
         }),
         takeUntil(this._destroy$)
       )
@@ -86,7 +93,7 @@ export class RankingComponent implements OnInit, OnDestroy {
 
   selectMatchDay(matchDay: number, league: League) {
     this.selectedMatchDay =
-      league.game_day_titles.find(
+      league.game_day_titles?.find(
         (_item) => _item.game_day_number === matchDay
       ) ?? null;
 
