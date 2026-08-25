@@ -132,9 +132,25 @@ export class GameDayEditComponent implements OnInit {
     this.showClubDropdown = false;
     this.clubQuery = '';
     this.filteredClubs = [];
-    if (!this.clubs.find((c) => c.id === this.gameday.club_id)) {
-      this.gameday.club_id = 0;
+
+    // Der eingetragene Ausrichter muss die Rückkehr zur Ligaliste überleben.
+    // Früher wurde er hier auf 0 gesetzt, wenn er nicht in der Liste steht,
+    // also genau bei einem Verein aus einem anderen Spielbetrieb. Das Speichern
+    // scheiterte danach an der Fremdschlüsselprüfung, was den Datensatz
+    // unbeabsichtigt geschützt hat; seit die API die 0 als leere Auswahl liest,
+    // wäre der Ausrichter stattdessen still verschwunden. Statt die Auswahl zu
+    // verwerfen, wird der Verein in die Liste aufgenommen, damit er sichtbar
+    // bleibt und bewusst geändert werden muss.
+    const eingetragen = this.gameday.club_id;
+    if (eingetragen > 0 && !this.clubs.find((c) => c.id === eingetragen)) {
+      const ausGesamtliste = this.allClubs.find((c) => c.id === eingetragen);
+      if (ausGesamtliste) {
+        this.clubs = [...this.clubs, ausGesamtliste].sort((a, b) =>
+          a.name.localeCompare(b.name, 'de')
+        );
+      }
     }
+
     this._cdr.markForCheck();
   }
 

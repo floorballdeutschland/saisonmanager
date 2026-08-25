@@ -11,6 +11,7 @@ export * from './group-identifier-filter.pipe';
 export * from './has-starting-player.pipe';
 export * from './period-filter.pipe';
 export * from './reverse-periods.pipe';
+export * from './safe-date.pipe';
 export * from './sort-players.pipe';
 export * from './sort-trikotnumbers.pipe';
 export * from './starting-player-position-title.pipe';

@@ -30,13 +30,33 @@ export class ErrorInterceptor implements HttpInterceptor {
   // aus ActiveModel-Validierungen) — alle drei Formen auswerten, damit der
   // Interceptor die spezifische Meldung zeigt statt einer generischen (#84).
   private errorDetail(err: {
-    error?: { message?: string; error?: string; errors?: string[] };
+    error?: { message?: string; error?: unknown; errors?: string[] };
   }): string | undefined {
     if (err.error?.message) return err.error.message;
-    if (err.error?.error) return err.error.error;
+    if (err.error?.error) return this.readableDetail(err.error.error);
     if (Array.isArray(err.error?.errors) && err.error.errors.length > 0) {
       return err.error.errors.join(', ');
     }
+    return undefined;
+  }
+
+  // `error` ist nicht überall ein Text: Endpunkte, die `model.errors` ohne
+  // `full_messages` rendern, liefern den Validierungs-Hash `{ feld: [...] }`.
+  // Ungeprüft weitergereicht wird der im Meldungs-Template zu
+  // "[object Object]" — eine Meldung, die den Kanal belegt, ohne etwas zu
+  // sagen. Deshalb hier flach ziehen und im Zweifel lieber nichts liefern,
+  // damit der generische Text greift.
+  private readableDetail(detail: unknown): string | undefined {
+    if (typeof detail === 'string') return detail;
+
+    if (detail && typeof detail === 'object') {
+      const meldungen = Object.values(detail as Record<string, unknown>)
+        .flat()
+        .filter((eintrag): eintrag is string => typeof eintrag === 'string');
+
+      if (meldungen.length > 0) return meldungen.join(', ');
+    }
+
     return undefined;
   }
 
