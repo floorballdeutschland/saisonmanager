@@ -176,6 +176,39 @@
                                 }}
                               </span>
                             }
+                            <!-- Erst-/Zweitlizenz-Zuordnung (GF-Erwachsenenbereich) -->
+                            @if (
+                              p.team_license.license.gf_role === "erstlizenz"
+                            ) {
+                              <span
+                                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-emerald-100 text-emerald-800"
+                                [title]="
+                                  'licenseAdmin.leagueDetail.erstlizenzTitle'
+                                    | transloco
+                                "
+                              >
+                                {{
+                                  "licenseAdmin.leagueDetail.erstlizenzBadge"
+                                    | transloco
+                                }}
+                              </span>
+                            }
+                            @if (
+                              p.team_license.license.gf_role === "zweitlizenz"
+                            ) {
+                              <span
+                                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-amber-100 text-amber-800"
+                                [title]="
+                                  'licenseAdmin.leagueDetail.zweitlizenzTitle'
+                                    | transloco
+                                "
+                              >
+                                {{
+                                  "licenseAdmin.leagueDetail.zweitlizenzBadge"
+                                    | transloco
+                                }}
+                              </span>
+                            }
                             <div>
                               <p
                                 class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-green-800 text-[13px]"
@@ -284,10 +317,12 @@
                                                   })
                                             : ('licenseAdmin.leagueDetail.docView'
                                               | transloco
-                                                : { doc: docTypeLabel(docType) })
+                                                : {
+                                                    doc: docTypeLabel(docType),
+                                                  })
                                         "
-                                        >{{ docTypeLabel(docType)
-                                        }}@if (docUploadedAt(p, docType)) {
+                                        >{{ docTypeLabel(docType) }}
+                                        @if (docUploadedAt(p, docType)) {
                                           <span
                                             class="font-normal tabular-nums"
                                           >
@@ -299,8 +334,8 @@
                                                   : "Europe/Berlin"
                                             }}</span
                                           >
-                                        }</a
-                                      >
+                                        }
+                                      </a>
                                     }
                                     @if (
                                       !p.team_license.documents[
@@ -353,23 +388,21 @@
                                       >{{
                                         "licenseAdmin.leagueDetail.parentalConsent"
                                           | transloco
-                                      }}@if (
+                                      }}
+                                      @if (
                                         docUploadedAt(p, "parental_consent")
                                       ) {
                                         <span class="font-normal tabular-nums">
                                           ·
                                           {{
-                                            docUploadedAt(
-                                              p,
-                                              "parental_consent"
-                                            )
+                                            docUploadedAt(p, "parental_consent")
                                               | date
                                                 : "dd.MM.yy"
                                                 : "Europe/Berlin"
                                           }}</span
                                         >
-                                      }</a
-                                    >
+                                      }
+                                    </a>
                                   } @else {
                                     <span
                                       class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
