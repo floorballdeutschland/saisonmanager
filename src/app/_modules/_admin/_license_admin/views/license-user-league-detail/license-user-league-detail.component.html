@@ -24,8 +24,12 @@
 <ng-container>
   <div class="bg-fb-gray-800 pt-4 lg:pt-8 pb-16 print:p-0">
     <div class="screen:container mx-auto px-4 lg:px-8 print:px-0">
+      <!-- Mit Datumsangaben nur eine Kartenspalte: Bei zwei Spalten bleiben
+           dem Namen auf einem 1280er-Bildschirm rund 70 px, er waere dann auf
+           drei Zeichen gekuerzt. -->
       <div
-        class="grid grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9 print:mt-0 print:gap-0"
+        class="grid grid-cols-1 gap-[25px] mt-4 lg:mt-9 print:mt-0 print:gap-0"
+        [ngClass]="showDates ? '' : 'xl:grid-cols-2'"
       >
         <ng-template #loading>
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
@@ -86,6 +90,23 @@
             >
               {{ "licenseAdmin.userLeagueDetail.dayAfterTomorrow" | transloco }}
             </button>
+
+            <label
+              class="md:col-span-3 flex items-start gap-2 text-sm cursor-pointer mt-2"
+            >
+              <input
+                type="checkbox"
+                class="mt-0.5"
+                [checked]="showDates"
+                (change)="toggleDates($any($event.target).checked)"
+              />
+              <span>
+                {{ "licenseAdmin.userLeagueDetail.showDates" | transloco }}
+                <span class="block text-fb-gray-500">{{
+                  "licenseAdmin.userLeagueDetail.showDatesHint" | transloco
+                }}</span>
+              </span>
+            </label>
           </div>
         </div>
         <div class="print:hidden"></div>
@@ -102,7 +123,7 @@
                     | transloco
                       : {
                           date:
-                            (currentTime() | date: "dd.MM.YYYY HH:mm") + " Uhr",
+                            (currentTime() | date: "dd.MM.yyyy HH:mm") + " Uhr",
                         }
                 }}</span>
               </p>
@@ -179,12 +200,85 @@
                               >
                             }
                           </div>
-                          <div>
+                          <!-- dir="ltr" nur bei sichtbaren Daten: Das umgebende
+                               Raster laeuft am Bildschirm rtl (siehe
+                               .license-direction), damit der Status rechts
+                               steht; im Druck ist es ltr. Ohne das Zuruecksetzen
+                               waeren Name und Daten am Bildschirm vertauscht.
+                               Weil `dir` zugleich die Textausrichtung des Namens
+                               von rechts auf links kippt, wird es abgewaehlt
+                               nicht gesetzt -- die Liste sieht dann aus wie
+                               bisher. -->
+                          <div
+                            class="flex flex-wrap print:flex-nowrap items-baseline gap-x-3 min-w-0"
+                            [attr.dir]="showDates ? 'ltr' : null"
+                          >
                             <p
                               class="truncate text-sm print:text-xs font-medium print:leading-[22px]"
                             >
                               {{ p.last_name }}, {{ p.first_name }}
                             </p>
+                            <!-- Beantragungs-, Erteilungs- und Freigabedatum.
+                                 "Beantragt" bleibt nach der Erteilung stehen:
+                                 Die SBK liest daran ab, ob die Lizenz
+                                 fristgerecht beantragt wurde. Die Freigabe
+                                 steht nur bei Spielern, die eine erhalten
+                                 haben. Der Saisonmanager prueft keine Fristen
+                                 und hebt nichts hervor. -->
+                            @if (showDates) {
+                              <!-- basis-full unterhalb md: Der Block schrumpft
+                                   nicht (whitespace-nowrap), der Name mit
+                                   `truncate` dagegen bis auf null -- nebeneinander
+                                   verschwaende auf schmalen Geraeten der Name
+                                   statt der Daten. Im Druck dagegen unterbindet
+                                   print:flex-nowrap am Umschlag jeden Umbruch:
+                                   Dort ist die feste Zeilenhoehe von 22 px das
+                                   Wichtigere, ein sehr langer Name wird lieber
+                                   gekuerzt als dass die Zeile aufreisst und der
+                                   Seitenumbruch verrutscht.
+                                   grid-cols-3 statt flex: Die drei Angaben
+                                   fluchten dann auch in Zeilen ohne Freigabe. -->
+                              <div
+                                class="basis-full md:basis-auto md:ml-auto print:basis-auto print:ml-auto shrink-0 grid grid-cols-3 gap-x-3 text-[11px] text-fb-gray-500 leading-5 print:text-[9px] print:leading-[22px] whitespace-nowrap"
+                              >
+                                <span>
+                                  <span class="font-medium">{{
+                                    "licenseAdmin.userLeagueDetail.requested"
+                                      | transloco
+                                  }}</span>
+                                  {{
+                                    p.team_license.requested_at
+                                      ? (p.team_license.requested_at
+                                        | date: "dd.MM.yy" : "Europe/Berlin")
+                                      : "–"
+                                  }}
+                                </span>
+                                <span>
+                                  <span class="font-medium">{{
+                                    "licenseAdmin.userLeagueDetail.approved"
+                                      | transloco
+                                  }}</span>
+                                  {{
+                                    p.team_license.approved_at
+                                      ? (p.team_license.approved_at
+                                        | date: "dd.MM.yy" : "Europe/Berlin")
+                                      : "–"
+                                  }}
+                                </span>
+                                <span>
+                                  @if (p.team_license.released_at) {
+                                    <span class="font-medium">{{
+                                      "licenseAdmin.userLeagueDetail.released"
+                                        | transloco
+                                    }}</span>
+                                    {{
+                                      p.team_license.released_at
+                                        | date: "dd.MM.yy" : "Europe/Berlin"
+                                    }}
+                                  }
+                                </span>
+                              </div>
+                            }
                           </div>
                         </div>
                       </div>

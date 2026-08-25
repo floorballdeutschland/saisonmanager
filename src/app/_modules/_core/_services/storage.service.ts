@@ -9,28 +9,31 @@ export class StorageService {
     return typeof localStorage !== 'undefined';
   }
 
+  // Der Zugriff wirft auch dort, wo es localStorage gibt: privates Fenster,
+  // per Browsereinstellung blockierte Website-Daten, volles Kontingent. Bisher
+  // deckte der Dienst nur den SSR-Fall ab, eine Ausnahme aus dem Zugriff selbst
+  // schlug bis in die aufrufende Komponente durch. Alles, was hier abgelegt
+  // wird, ist eine Bequemlichkeit (zuletzt gewählte Ansicht, Favoriten) --
+  // fällt der Speicher aus, muss die Seite trotzdem laufen.
+  private guard<T>(fallback: T, operation: () => T): T {
+    if (!this.available) return fallback;
+
+    try {
+      return operation();
+    } catch {
+      return fallback;
+    }
+  }
+
   setItem(key: string, value: string): void {
-    if (!this.available) return;
-    localStorage.setItem(key, value);
+    this.guard(undefined, () => localStorage.setItem(key, value));
   }
 
   getItem(key: string): string {
-    if (!this.available) return '';
-    const item = localStorage.getItem(key);
-
-    if (!item) return '';
-
-    return item;
+    return this.guard('', () => localStorage.getItem(key) || '');
   }
 
   removeItem(key: string) {
-    if (!this.available) return;
-    const item = localStorage.getItem(key);
-
-    if (!item) return;
-
-    if (item) {
-      localStorage.removeItem(key);
-    }
+    this.guard(undefined, () => localStorage.removeItem(key));
   }
 }
