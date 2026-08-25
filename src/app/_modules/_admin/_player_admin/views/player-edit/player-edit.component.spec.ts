@@ -178,6 +178,64 @@ describe('PlayerEditComponent', () => {
   // Der Verweis auf die Transferanträge ersetzt einen direkten Wechsel am
   // Profil und darf nur bei den Rollen auftauchen, die dort auch die
   // Direktzuweisung auslösen dürfen.
+  // Der Lizenzverlauf rendert Zeitstempel aus einem JSONB-Feld, in dem auch
+  // Bestand liegt, den die DatePipe nicht lesen kann. Sie würde dafür NG02100
+  // werfen und aus einer Pipe heraus die Change Detection beenden, also die
+  // ganze Maske mitnehmen (Sentry SAISONMANAGER-3B).
+  //
+  // Der Test rendert bewusst über das echte UikitCommonModule statt die Pipe
+  // direkt zu bauen: Nur so hängt er an der Registrierung UND am
+  // DatePipe-Provider, den SafeDatePipe injiziert. Ohne ihn stirbt die Maske in
+  // Produktion mit NullInjectorError, während ein Pipe-Unittest grün bliebe.
+  describe('Lizenzverlauf mit unlesbarem Zeitstempel', () => {
+    function renderMitVerlauf(
+      createdAt: string
+    ): ComponentFixture<PlayerEditComponent> {
+      currentUser$.next({ permissions: {} } as unknown as User);
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.componentInstance.seasons = [
+        { id: 18, name: '2026/2027', current: true },
+      ] as Season[];
+      fixture.componentInstance.currentSeasonId = 18;
+      fixture.componentInstance.player = {
+        id: 7,
+        licenses: [
+          {
+            id: 'a',
+            team_id: 1,
+            season_id: 18,
+            league_class_id: '',
+            requested_at: '',
+            history: [
+              {
+                created_at: createdAt,
+                license_status: 'beantragt',
+                created_by_name: 'Testkonto',
+              },
+            ],
+          } as unknown as PlayerLicense,
+        ],
+      } as Player;
+      fixture.detectChanges(false);
+      return fixture;
+    }
+
+    it('rendert die Maske, statt an der DatePipe zu scheitern', () => {
+      const fixture = renderMitVerlauf('unbekannt');
+
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain('unbekannt');
+      expect(text).toContain('beantragt');
+    });
+
+    it('formatiert einen lesbaren Zeitstempel weiterhin', () => {
+      const fixture = renderMitVerlauf('2026-08-24T19:16:15Z');
+
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain('24.08.2026');
+    });
+  });
+
   describe('Verweis auf die Transferanträge', () => {
     // Die Berechtigung muss vor dem ersten Rendern stehen: die Komponente liest
     // sie in ngOnInit aus currentUser$, ein spaeteres Setzen des Feldes laeuft

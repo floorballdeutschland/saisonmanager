@@ -98,8 +98,10 @@ describe('RankingComponent', () => {
   }
 
   it('überlebt eine Liga ohne angesetzte Spiele', fakeAsync(() => {
-    // Ohne Guard greift die Komponente auf games[0].game_day zu und reißt mit
-    // dem TypeError die ganze Tabellenseite mit.
+    // Ohne Guard greift die Komponente auf games[0].game_day zu. Der TypeError
+    // landet im Fehlerkanal des tap und damit über onUnhandledError in Sentry
+    // (2R, 47 Ereignisse); die Seite rendert weiter, aber die Spieltagsauswahl
+    // bleibt stehen, wo sie war.
     leagueService.currentGameDaySchedule = [];
 
     const errors = unhandledErrorsWhile(() =>

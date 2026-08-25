@@ -2,13 +2,19 @@ import { DatePipe } from '@angular/common';
 import { Pipe, PipeTransform } from '@angular/core';
 
 /**
- * Wie die Angular-DatePipe, wirft aber nicht.
+ * Ersatz für die DatePipe an den JSONB-Zeitstempeln der Spielermaske.
  *
- * Die DatePipe beendet die Change Detection mit NG02100, sobald sie einen Wert
- * bekommt, den sie nicht in ein Datum umwandeln kann. In JSONB-Feldern wie
- * `Player#licenses[].history[].created_at` stehen aber Altdaten-Einträge mit
- * abweichenden oder fehlenden Zeitstempeln, und ein einziger davon nimmt sonst
- * die komplette Maske mit. Solche Werte werden hier unformatiert durchgereicht.
+ * Die DatePipe wirft NG02100, sobald sie einen Wert bekommt, den sie nicht in
+ * ein Datum umwandeln kann. Aus einer Pipe heraus beendet das die Change
+ * Detection, ein einziger solcher Wert nimmt also die komplette Maske mit
+ * (Sentry SAISONMANAGER-3B, 39 Ereignisse in `licenses[].history[].created_at`).
+ * Welcher Wert genau, ist offen: Der Blick in die Produktionsdaten stand nicht
+ * zur Verfügung. Fehlende Werte sind es nicht, die gibt die DatePipe selbst als
+ * `null` zurück.
+ *
+ * Kein Ersatz für jedes `| date`: Die Voreinstellung ist `dd.MM.yyyy`, und
+ * `timezone` sowie `locale` werden bewusst nicht durchgereicht, weil hier nur
+ * Datumsangaben aus dem Bestand gerendert werden.
  */
 @Pipe({
   name: 'safeDate',
