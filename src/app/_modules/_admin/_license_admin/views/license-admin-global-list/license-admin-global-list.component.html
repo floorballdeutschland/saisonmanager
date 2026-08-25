@@ -344,11 +344,6 @@
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
-                {{ "licenseAdmin.globalList.colReleased" | transloco }}
-              </th>
-              <th
-                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
-              >
                 {{ "licenseAdmin.globalList.colValidUntil" | transloco }}
               </th>
             </tr>
@@ -356,7 +351,7 @@
           <tbody class="divide-y divide-gray-100">
             @if (filteredEntries.length === 0) {
               <tr>
-                <td colspan="12" class="px-4 py-8 text-center text-gray-400">
+                <td colspan="11" class="px-4 py-8 text-center text-gray-400">
                   {{ "licenseAdmin.globalList.noLicensesFound" | transloco }}
                 </td>
               </tr>
@@ -683,11 +678,6 @@
                 <!-- Erteilt -->
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                   {{ e.approved_at ? (e.approved_at | date: "dd.MM.yy") : "–" }}
-                </td>
-                <!-- Freigabe durch den abgebenden Verein; leer bei allen, die
-                     keine brauchten. -->
-                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                  {{ e.released_at ? (e.released_at | date: "dd.MM.yy") : "–" }}
                 </td>
                 <!-- Gültig bis -->
                 <td
