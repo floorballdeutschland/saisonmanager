@@ -242,6 +242,20 @@
                                 }}
                               </p>
                             }
+                            <!-- Freigabe durch den abgebenden Verein. Steht nur
+                                 bei Spielern, die eine erhalten haben. -->
+                            @if (p.team_license.released_at) {
+                              <p class="flex items-start text-sm text-gray-500">
+                                <span class="font-medium mr-1">{{
+                                  "licenseAdmin.leagueDetail.released"
+                                    | transloco
+                                }}</span>
+                                {{
+                                  p.team_license.released_at
+                                    | date: "dd.MM.yyyy" : "Europe/Berlin"
+                                }}
+                              </p>
+                            }
                             @if (p.team_license.documents) {
                               <div
                                 class="flex items-center gap-1.5 text-sm text-gray-500"

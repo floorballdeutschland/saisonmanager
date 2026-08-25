@@ -33,6 +33,9 @@ export interface AdminLicenseEntry {
   express: boolean;
   requested_at: string | null;
   approved_at: string | null;
+  // Datum der Vereins-Freigabe (genehmigter Freigabe-Antrag), leer bei
+  // Spielern, die keine brauchten.
+  released_at: string | null;
   valid_until: string | null;
   required_documents: string[];
   // Je Dokumentart drei Einträge: <key> (liegt vor), <key>_url (Abruf) und

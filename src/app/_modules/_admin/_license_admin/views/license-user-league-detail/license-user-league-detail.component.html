@@ -86,6 +86,23 @@
             >
               {{ "licenseAdmin.userLeagueDetail.dayAfterTomorrow" | transloco }}
             </button>
+
+            <label
+              class="md:col-span-3 flex items-start gap-2 text-sm cursor-pointer mt-2"
+            >
+              <input
+                type="checkbox"
+                class="mt-0.5"
+                [checked]="showDates"
+                (change)="toggleDates($any($event.target).checked)"
+              />
+              <span>
+                {{ "licenseAdmin.userLeagueDetail.showDates" | transloco }}
+                <span class="block text-fb-gray-600">{{
+                  "licenseAdmin.userLeagueDetail.showDatesHint" | transloco
+                }}</span>
+              </span>
+            </label>
           </div>
         </div>
         <div class="print:hidden"></div>
@@ -179,12 +196,69 @@
                               >
                             }
                           </div>
-                          <div>
+                          <!-- dir="ltr": Das umgebende Raster laeuft am
+                               Bildschirm rtl (siehe .license-direction), damit
+                               der Status rechts steht. Innerhalb der Zelle
+                               waere sonst auch die Reihenfolge von Name und
+                               Daten gespiegelt. -->
+                          <div
+                            class="flex items-baseline gap-3 min-w-0"
+                            dir="ltr"
+                          >
                             <p
                               class="truncate text-sm print:text-xs font-medium print:leading-[22px]"
                             >
                               {{ p.last_name }}, {{ p.first_name }}
                             </p>
+                            <!-- Beantragungs-, Erteilungs- und Freigabedatum.
+                                 "Beantragt" bleibt nach der Erteilung stehen:
+                                 Die SBK liest daran ab, ob die Lizenz
+                                 fristgerecht beantragt wurde. Die Freigabe
+                                 steht nur bei Spielern, die eine erhalten
+                                 haben. Der Saisonmanager prueft keine Fristen
+                                 und hebt nichts hervor. -->
+                            @if (showDates) {
+                              <div
+                                class="ml-auto flex gap-x-3 text-[11px] text-fb-gray-600 leading-5 print:text-[9px] print:leading-[22px] whitespace-nowrap"
+                              >
+                                <span>
+                                  <span class="font-medium">{{
+                                    "licenseAdmin.userLeagueDetail.requested"
+                                      | transloco
+                                  }}</span>
+                                  {{
+                                    p.team_license.requested_at
+                                      ? (p.team_license.requested_at
+                                        | date: "dd.MM.yy" : "Europe/Berlin")
+                                      : "–"
+                                  }}
+                                </span>
+                                <span>
+                                  <span class="font-medium">{{
+                                    "licenseAdmin.userLeagueDetail.approved"
+                                      | transloco
+                                  }}</span>
+                                  {{
+                                    p.team_license.approved_at
+                                      ? (p.team_license.approved_at
+                                        | date: "dd.MM.yy" : "Europe/Berlin")
+                                      : "–"
+                                  }}
+                                </span>
+                                @if (p.team_license.released_at) {
+                                  <span>
+                                    <span class="font-medium">{{
+                                      "licenseAdmin.userLeagueDetail.released"
+                                        | transloco
+                                    }}</span>
+                                    {{
+                                      p.team_license.released_at
+                                        | date: "dd.MM.yy" : "Europe/Berlin"
+                                    }}
+                                  </span>
+                                }
+                              </div>
+                            }
                           </div>
                         </div>
                       </div>

@@ -26,6 +26,14 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
 
   handledPlayerIds: number[] = [];
 
+  // Beantragungs-, Erteilungs- und Freigabedatum in der Liste. An, weil die
+  // Fristen aus Lizenzordnung (Freigabe) und SPO (Beantragung) genau dafür
+  // nachgeschlagen werden; abwählbar für einen schlanken Spieltagsbeleg. Die
+  // Wahl gilt auch für den Ausdruck.
+  showDates = true;
+
+  private static readonly SHOW_DATES_KEY = 'licenseListShowDates';
+
   constructor(
     private _leagueService: LeagueService,
     private _clubService: ClubService,
@@ -49,8 +57,36 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
         )
       );
 
+    this.showDates = this.readShowDates();
+
     this.getGameOperations();
     this.getAllClubs();
+  }
+
+  public toggleDates(show: boolean): void {
+    this.showDates = show;
+    // localStorage kann werfen (privates Fenster, blockierte Website-Daten).
+    // Die Einstellung ist eine Bequemlichkeit, kein Zustand, ohne den die
+    // Liste nicht funktioniert.
+    try {
+      localStorage.setItem(
+        LicenseUserLeagueDetailComponent.SHOW_DATES_KEY,
+        String(show)
+      );
+    } catch {
+      // bewusst ohne Behandlung: Auswahl gilt dann nur für diesen Aufruf
+    }
+  }
+
+  private readShowDates(): boolean {
+    try {
+      const stored = localStorage.getItem(
+        LicenseUserLeagueDetailComponent.SHOW_DATES_KEY
+      );
+      return stored === null ? true : stored === 'true';
+    } catch {
+      return true;
+    }
   }
 
   public getGameOperations(): void {
