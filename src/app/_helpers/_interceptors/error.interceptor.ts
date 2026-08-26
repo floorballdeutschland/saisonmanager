@@ -154,20 +154,39 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
-        // Die Spielersuche der Transfermaske meldet jeden Fehlschlag selbst an
-        // Ort und Stelle: Die Komponente schreibt `err.error.error` in
-        // `searchError` und zeigt ihn unter dem Suchfeld. Ohne diese Ausnahme
-        // stünde die Meldung zweimal da (einmal im Feld, einmal als Toast),
-        // und ein 403 würde zusätzlich auf die Startseite umleiten, mitten aus
-        // der halb ausgefüllten Maske heraus. Die Suche ist der erste Schritt
-        // der Direktzuweisung, der Rauswurf sah deshalb aus, als sei der
-        // Vorgang selbst nicht erlaubt.
+        // Die Spielersuche der Transfermaske meldet ihre eigenen Absagen an Ort
+        // und Stelle: Beide Masken, die Direktzuweisung und der reguläre
+        // Antrag, schreiben `err.error.error` in `searchError` und zeigen ihn
+        // unter dem Suchfeld. Der Endpunkt formuliert genau zwei Status selbst,
+        // und beide wurden bisher falsch behandelt:
         //
-        // Betrifft alle Absagen dieses Endpunkts, nicht nur den 403: „Spieler
-        // ist bereits in diesem Verein" und „Für diesen Spieler ist bereits ein
-        // Transferantrag aktiv" kommen als 422 und wurden bisher ebenfalls
-        // doppelt angezeigt.
-        if (request.url.includes('transfer_requests/search_player')) {
+        // 403 („Nicht berechtigt fuer diesen Verein") leitete auf die
+        // Startseite um. Die Feldmeldung war damit gar nicht zu sehen, denn die
+        // Umleitung zerstört die Ansicht: Es blieb ein Toast und eine leere
+        // Startseite, mitten aus der halb ausgefüllten Maske heraus. Die Suche
+        // ist der erste Schritt der Direktzuweisung, der Rauswurf sah deshalb
+        // aus, als sei der Vorgang selbst nicht erlaubt.
+        //
+        // 422 („Spieler ist bereits in diesem Verein", „Für diesen Spieler ist
+        // bereits ein Transferantrag aktiv", ungültiges Geburtsdatum) leitet
+        // nicht um und stand deshalb doppelt da, einmal im Feld und einmal als
+        // Toast.
+        //
+        // Bewusst NUR diese beiden Status. Alles andere gehört weiter den
+        // Zweigen unten, und das ist keine Feinheit: Der frühe return
+        // übersprungen sonst auch den 401, und eine abgelaufene Sitzung würde
+        // in dieser Maske nicht mehr abmelden, sondern als „Fehler bei der
+        // Suche." erscheinen (die 401-Antwort trägt `message`, nicht `error`,
+        // die Komponente fällt also auf ihren generischen Text zurück). Ebenso
+        // bleiben 5xx, `status === 0` („Keine Verbindung zum Server") und die
+        // diagnostischen console.error-Wegmarken für Sentry erhalten. Die
+        // Ausnahmen für Endpunkte ohne Benutzerkonto weiter oben
+        // (`public/secretary`, `referee_feedback_invitations`) dürfen den 401
+        // schlucken, weil es dort nichts abzumelden gibt; hier gibt es das.
+        if (
+          [403, 422].includes(err.status) &&
+          request.url.includes('transfer_requests/search_player')
+        ) {
           return throwError(() => err);
         }
 

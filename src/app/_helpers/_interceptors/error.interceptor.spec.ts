@@ -160,33 +160,102 @@ describe('ErrorInterceptor', () => {
     );
   });
 
-  // Die Spielersuche der Transfermaske zeigt jeden Fehlschlag selbst unter dem
-  // Suchfeld. Ein 403 darauf heißt „dieser Verein nicht", nicht „diese Maske
-  // nicht": Der generische Zweig warf aus dem ersten Schritt der
-  // Direktzuweisung auf die Startseite, und die Meldung stand dabei doppelt da.
+  // Die Spielersuche der Transfermaske zeigt ihre eigenen Absagen selbst unter
+  // dem Suchfeld. Ein 403 darauf heißt „dieser Verein nicht", nicht „diese
+  // Maske nicht": Der generische Zweig warf aus dem ersten Schritt der
+  // Direktzuweisung auf die Startseite, und die Umleitung nahm die Feldmeldung
+  // gleich mit.
+  //
+  // Die URL ist die, die der Service wirklich sendet (`search_player.json` als
+  // GET mit Abfrageparametern). Ein Spec auf einer Form, die es nicht gibt,
+  // überlebt jede spätere Verschärfung des Musters.
+  const searchUrl =
+    `${environment.apiURL}admin/transfer_requests/search_player.json` +
+    '?first_name=Max&last_name=Mustermann&birthdate=1995-03-15&requesting_club_id=42';
+
+  function searchFailsWith(body: object, status: number): unknown {
+    let received: unknown;
+    http.get(searchUrl).subscribe({
+      next: () => fail('expected the request to fail'),
+      error: (err) => (received = err),
+    });
+    httpMock.expectOne(searchUrl).flush(body, { status, statusText: 'Error' });
+    return received;
+  }
+
   it('leaves the page alone when the transfer player search is forbidden', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigate');
 
-    failWith(
+    const err = searchFailsWith(
       { error: 'Nicht berechtigt fuer diesen Verein' },
-      403,
-      `${environment.apiURL}admin/transfer_requests/search_player`
+      403
     );
 
     expect(errorSpy).not.toHaveBeenCalled();
     expect(navigateSpy).not.toHaveBeenCalled();
+    // Der Fehler muss den Abonnenten erreichen, sonst zeigt die Maske nichts an
+    // und die Ausnahme hätte den Fehlschlag stumm geschaltet statt umgeleitet.
+    expect((err as HttpErrorResponse).error.error).toBe(
+      'Nicht berechtigt fuer diesen Verein'
+    );
   });
 
   // Auch die fachlichen Absagen der Suche kommen ohne zweite Meldung aus.
   it('leaves the transfer player search alone on 422', () => {
-    failWith(
+    const err = searchFailsWith(
       { error: 'Spieler ist bereits in diesem Verein' },
-      422,
-      `${environment.apiURL}admin/transfer_requests/search_player`
+      422
     );
 
     expect(errorSpy).not.toHaveBeenCalled();
+    expect((err as HttpErrorResponse).error.error).toBe(
+      'Spieler ist bereits in diesem Verein'
+    );
+  });
+
+  // Die Ausnahme gilt genau zwei Status. Der 401 gehört nicht dazu: Die
+  // Transfermaske wird angemeldet bedient, eine abgelaufene Sitzung muss
+  // abmelden und auf /login führen. Ohne diesen Test macht der nächste
+  // Ausnahme-Eintrag daraus wieder ein „Fehler bei der Suche." an einer Maske,
+  // die nie wieder funktioniert.
+  it('still logs out when the transfer player search hits an expired session', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+    searchFailsWith({ success: false, message: 'Not authenticated' }, 401);
+
+    expect(logoutSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/login'],
+      jasmine.objectContaining({ queryParams: jasmine.anything() })
+    );
+  });
+
+  // Ein Serverfehler ist keine Absage, die die Maske formulieren könnte: Ihr
+  // Rückfalltext („Fehler bei der Suche.") sähe aus wie ein Eingabefehler.
+  it('still reports a server error on the transfer player search', () => {
+    searchFailsWith({ message: 'Server-Fehler.' }, 500);
+
+    expect(errorSpy).toHaveBeenCalled();
+  });
+
+  // Die Ausnahme hängt am vollständigen Pfad der Suche, nicht am Präfix des
+  // Controllers: Liste, Detail und die Direktzuweisung selbst sind eigene
+  // Ansichten und müssen weiter melden und umleiten.
+  it('keeps the generic handling for the other transfer endpoints', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { error: 'Nicht berechtigt' },
+      403,
+      `${environment.apiURL}admin/transfer_requests/direct_assign.json`
+    );
+
+    expect(errorSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/']);
   });
 
   // Lizenzdokumente sind ein Nachschlag zu einer offenen Seite, keine eigene
