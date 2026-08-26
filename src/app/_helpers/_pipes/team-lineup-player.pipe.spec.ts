@@ -108,6 +108,36 @@ describe('TeamLineupPlayerPipe', () => {
       expect(result[0].gamePlayerEntry).toBeTruthy();
     });
 
+    it('lässt REQUESTED zu, wenn der Landesverband es erlaubt', () => {
+      const players = [player(1), player(2, 'Z', 'A', 2)];
+      const result = pipe.transform(players, [], 'all', true);
+      expect(result.map((r) => r.player.id)).toEqual(
+        jasmine.arrayContaining([1, 2])
+      );
+      expect(result.length).toBe(2);
+    });
+
+    it('lässt auch mit der Erlaubnis nur den offenen Antrag zu', () => {
+      // DENIED (3), DELETED (4), WITHDRAWN (8), SUSPENDED (9) bleiben draußen –
+      // zugelassen ist der gestellte Antrag, nicht der entschiedene.
+      const players = [
+        player(1, 'Z', 'A', 3),
+        player(2, 'Z', 'A', 4),
+        player(3, 'Z', 'A', 8),
+        player(4, 'Z', 'A', 9),
+      ];
+      const result = pipe.transform(players, [], 'all', true);
+      expect(result.length).toBe(0);
+    });
+
+    it('blendet REQUESTED ohne die Erlaubnis weiterhin aus (Default)', () => {
+      // Ohne das Feld am Spiel (Frontend-Deploy vor dem API-Deploy) greift der
+      // Default und die Liste bleibt wie bisher.
+      const players = [player(2, 'Z', 'A', 2)];
+      expect(pipe.transform(players, [], 'all').length).toBe(0);
+      expect(pipe.transform(players, [], 'all', false).length).toBe(0);
+    });
+
     it('blendet Spieler ohne current_status aus', () => {
       const players = [
         { id: 1, last_name: 'Z', first_name: 'A' } as PlayerWithLicense,

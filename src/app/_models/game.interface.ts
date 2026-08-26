@@ -166,6 +166,13 @@ export interface Game {
   game_operation_short_name: string;
   game_operation_slug?: string;
   scan_required: boolean;
+  // Laesst der Landesverband der Liga Personen mit dem Lizenzstatus
+  // „beantragt" aufstellen? Entscheidet, wen der Kader-Dialog anbietet.
+  //
+  // Optional, weil Frontend und API getrennt ausgerollt werden: Zwischen einem
+  // Frontend-Deploy und dem passenden API-Deploy fehlt das Feld, und der
+  // Kader-Dialog filtert dann wie bisher allein auf „erteilt".
+  requested_license_playable?: boolean;
   arena: number;
   arena_name: string;
   arena_address: string;

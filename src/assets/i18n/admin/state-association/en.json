@@ -38,6 +38,8 @@
     "settingsInheritedPendingHint": "The inherited settings are only available once the parent association has been saved.",
     "expressLicenseLabel": "Express licenses supported",
     "expressLicenseHint": "Club managers can enable the express option when applying for licenses. Submitting the application triggers an automatic notification to the SBK.",
+    "requestedLicensePlayableLabel": "Players with a requested license may play",
+    "requestedLicensePlayableHint": "Anyone whose club has applied for a license for a team may be fielded in this association's leagues before the license is granted. Those players show up in the squad dialog of the match report and no longer trigger a warning there. Only the open application counts: rejected, withdrawn and suspended licenses stay excluded. Without this option, only a granted license makes a player eligible, as before.",
     "refereeReviewLabel": "Review process for referee licenses",
     "refereeReviewHint": "When importing course results via CSV, records with master-data corrections or new entries are submitted to this state association's RSK for review and approval before being added to the master record.",
     "scanRequiredLabel": "Upload paper game report sheet",

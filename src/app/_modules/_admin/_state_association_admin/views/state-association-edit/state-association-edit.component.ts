@@ -47,6 +47,7 @@ const INHERITED_SETTINGS = [
   'person_level_assignment_default',
   'report_form_email_enabled',
   'manual_proceeding_creation',
+  'requested_license_playable',
 ] as const;
 
 type InheritedSetting = (typeof INHERITED_SETTINGS)[number];
@@ -62,6 +63,7 @@ const EFFECTIVE_SETTING: Record<InheritedSetting, keyof StateAssociation> = {
   person_level_assignment_default: 'effective_person_level_assignment_default',
   report_form_email_enabled: 'effective_report_form_email_enabled',
   manual_proceeding_creation: 'effective_manual_proceeding_creation',
+  requested_license_playable: 'effective_requested_license_playable',
 };
 
 @Component({

@@ -44,6 +44,7 @@ const KIND_LV: StateAssociation = {
   effective_person_level_assignment_default: true,
   effective_report_form_email_enabled: true,
   effective_manual_proceeding_creation: true,
+  effective_requested_license_playable: true,
   effective_vsk_email: 'vsk@verbund.example.com',
   effective_sbk_email: 'sbk@verbund.example.com',
   effective_rsk_email: null,
@@ -162,6 +163,7 @@ describe('StateAssociationEditComponent', () => {
     expect(component.setting('referee_license_review_enabled')).toBeTrue();
     expect(component.setting('report_form_email_enabled')).toBeTrue();
     expect(component.setting('manual_proceeding_creation')).toBeTrue();
+    expect(component.setting('requested_license_playable')).toBeTrue();
     // Die drei gestaffelten Ansetzungs-Optionen ebenso.
     expect(component.refereeAssignmentExternal).toBeTrue();
     expect(component.refereeAssignmentPersonLevel).toBeTrue();
@@ -194,6 +196,7 @@ describe('StateAssociationEditComponent', () => {
     expect('referee_assignment_external_enabled' in payload).toBeFalse();
     expect('report_form_email_enabled' in payload).toBeFalse();
     expect('manual_proceeding_creation' in payload).toBeFalse();
+    expect('requested_license_playable' in payload).toBeFalse();
     // Stammdaten und Postfächer gehen weiter mit; die Postfächer erben anders
     // (ein eigener Eintrag gewänne), am Kind-LV steht bewusst keiner.
     expect(payload.name).toBe('Kind-LV');
