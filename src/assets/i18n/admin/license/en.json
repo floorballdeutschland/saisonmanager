@@ -270,7 +270,6 @@
     "withdrawRequestError": "License request could not be withdrawn.",
     "actionFailed": "Action failed.",
     "fileTooLarge": "The file may not exceed 5 MB.",
-    "rejectionRevoked": "Rejection for player {{ firstName }} {{ lastName }} ({{ id }}) revoked, the request is pending again",
-    "revokeRejectionError": "The rejection could not be revoked."
+    "rejectionRevoked": "Rejection for player {{ firstName }} {{ lastName }} ({{ id }}) revoked, the request is pending again"
   }
 }

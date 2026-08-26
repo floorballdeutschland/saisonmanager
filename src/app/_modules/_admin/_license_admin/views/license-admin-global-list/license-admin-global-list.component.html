@@ -495,10 +495,15 @@
                                 | transloco
                             }}</fb-button
                           >
-                          <fb-button size="small" (click)="cancelRevoke()">{{
-                            "licenseAdmin.globalList.revokeRejectionCancel"
-                              | transloco
-                          }}</fb-button>
+                          <fb-button
+                            data-testid="revoke-rejection-cancel"
+                            size="small"
+                            (click)="cancelRevoke()"
+                            >{{
+                              "licenseAdmin.globalList.revokeRejectionCancel"
+                                | transloco
+                            }}</fb-button
+                          >
                         </div>
                       </div>
                     }

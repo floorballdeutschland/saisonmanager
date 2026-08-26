@@ -14,7 +14,7 @@ import {
   StorageService,
 } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, finalize, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 import { readUploadedAt } from '../../_utils/document-upload-date';
@@ -583,10 +583,21 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   }
 
   public revokeRejection(entry: AdminLicenseEntry): void {
-    // Der zweite Klick auf einen noch laufenden Widerruf wuerde den
-    // Statuswechsel nicht wiederholen (die API sieht dann keinen Unterschied
-    // mehr), aber eine zweite Erfolgsmeldung erzeugen.
-    if (this.revokingLicenseId) return;
+    // Nur der Widerruf DIESER Zeile ist gesperrt, nicht die ganze Maske: Ein
+    // globaler Riegel verwarf den Klick in einer anderen Zeile stumm, waehrend
+    // der Knopf dort gar nicht deaktiviert war ([disabled] vergleicht die
+    // Lizenz-ID). Der zweite Klick auf dieselbe Zeile wuerde den Statuswechsel
+    // nicht wiederholen (die API sieht dann keinen Unterschied mehr), aber eine
+    // zweite Erfolgsmeldung erzeugen.
+    if (this.revokingLicenseId === entry.license_id) return;
+
+    // Die Liste wird einmal geladen und nicht nachgefuehrt. Wurde der Antrag in
+    // der Zwischenzeit anderswo entschieden, zeigt die Zeile noch "abgelehnt",
+    // und ein Widerruf setzte eine erteilte Lizenz zurueck auf "beantragt" --
+    // mit dem Chronikeintrag "versehentlich abgelehnt", obwohl nichts abgelehnt
+    // war. Die API prueft nur, dass der neue Status abweicht, sie kann das also
+    // nicht abfangen.
+    if (!this.isRejected(entry)) return;
 
     this.revokingLicenseId = entry.license_id;
     this._playerService
@@ -596,14 +607,28 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
         STATUS_REQUESTED,
         REVOKE_REASON
       )
+      .pipe(
+        takeUntil(this._destroy$),
+        // Der Riegel gehoert in finalize und nicht in die Rueckrufaktionen:
+        // Sonst bliebe er bei einem Abbruch durch takeUntil gesetzt, und ohne
+        // Antwort waere jeder weitere Widerruf dieser Zeile bis zum Neuladen
+        // ein stiller Fehlschlag.
+        finalize(() => {
+          this.revokingLicenseId = null;
+          this._cdr.markForCheck();
+        })
+      )
       .subscribe({
         next: () => {
           entry.license_status_id = STATUS_REQUESTED;
           entry.license_status = this._transloco.translate(
             'licenseAdmin.globalList.statusRequested'
           );
-          this.confirmRevokeLicenseId = null;
-          this.revokingLicenseId = null;
+          // Nur die eigene Rueckfrage schliessen: Sonst klappt die Rueckfrage
+          // einer anderen Zeile zu, die waehrend des Wartens geoeffnet wurde.
+          if (this.confirmRevokeLicenseId === entry.license_id) {
+            this.confirmRevokeLicenseId = null;
+          }
           this.reapplyFiltersKeepingPage();
           this._notificationService.success(
             this._transloco.translate(
@@ -618,24 +643,14 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
           );
           this._cdr.markForCheck();
         },
-        error: (err: { error?: { message?: string | object } }) => {
-          this.revokingLicenseId = null;
-          // Der globale ErrorInterceptor zeigt 422 nicht an (etwa eine aktive
-          // Sperre); ohne eigene Meldung blieb der Klick wirkungslos und
-          // unkommentiert.
-          const message =
-            typeof err?.error?.message === 'string'
-              ? err.error.message
-              : undefined;
-          this._notificationService.error(
-            message ??
-              this._transloco.translate(
-                'licenseAdmin.notifications.revokeRejectionError'
-              ),
-            { autoClose: false, keepAfterRouteChange: false }
-          );
-          this._cdr.markForCheck();
-        },
+        // Kein eigener error-Zweig: Der ErrorInterceptor zeigt 4xx, 5xx und
+        // einen Verbindungsabbruch schon selbst an (error.interceptor.spec:
+        // "shows the server message for a 422 so a component needs no own
+        // toast"), eine zweite Meldung stapelte sich nur darueber. Und ohne
+        // eigenen Zweig laeuft der Fehlschlag weiter in Angulars ErrorHandler,
+        // wo ihn der FilteringErrorHandler an Sentry gibt -- genau die
+        // Sichtbarkeit, die ein Rechte-Fehler auf diesem Weg braucht. Die
+        // Rueckfrage bleibt dabei offen, der zweite Versuch geht sofort.
       });
   }
 

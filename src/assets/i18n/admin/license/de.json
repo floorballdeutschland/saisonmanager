@@ -270,7 +270,6 @@
     "withdrawRequestError": "Lizenzantrag konnte nicht zurückgezogen werden.",
     "actionFailed": "Aktion fehlgeschlagen.",
     "fileTooLarge": "Die Datei darf maximal 5 MB groß sein.",
-    "rejectionRevoked": "Ablehnung für Spieler {{ firstName }} {{ lastName }} ({{ id }}) widerrufen, der Antrag steht wieder auf „beantragt\"",
-    "revokeRejectionError": "Die Ablehnung konnte nicht widerrufen werden."
+    "rejectionRevoked": "Ablehnung für Spieler {{ firstName }} {{ lastName }} ({{ id }}) widerrufen, der Antrag steht wieder auf „beantragt\""
   }
 }

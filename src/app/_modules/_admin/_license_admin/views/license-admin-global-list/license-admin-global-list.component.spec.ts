@@ -6,6 +6,7 @@ import {
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { getTranslocoTestingModule } from '@floorball/core';
+import { config as rxjsConfig } from 'rxjs';
 import { AdminLicenseEntry } from '@floorball/types';
 
 import { LicenseAdminGlobalListComponent } from './license-admin-global-list.component';
@@ -368,6 +369,23 @@ describe('LicenseAdminGlobalListComponent', () => {
   // der offenen Antraege, und die Entscheidungsmaske der Liga-Seite rendert nur
   // Status "beantragt". Dem Verein blieb ein neuer, kostenpflichtiger Antrag.
   describe('Ablehnung widerrufen', () => {
+    // Ohne eigenen error-Zweig laeuft ein Fehlschlag weiter in den globalen
+    // Fehlerweg: der ErrorInterceptor zeigt ihn an, der FilteringErrorHandler
+    // gibt ihn an Sentry. Genau das ist die Absicht -- im Karma-Lauf ist es
+    // aber ein unbehandelter Fehler, und RxJS meldet ihn asynchron, also erst
+    // nach dem Testkoerper. Deshalb fuer diesen Block stillgelegt und nicht je
+    // Test: sonst reisst der Nachlaeufer die ganze Datei in ein afterAll.
+    let previousOnUnhandledError: typeof rxjsConfig.onUnhandledError;
+
+    beforeAll(() => {
+      previousOnUnhandledError = rxjsConfig.onUnhandledError;
+      rxjsConfig.onUnhandledError = () => undefined;
+    });
+
+    afterAll(() => {
+      rxjsConfig.onUnhandledError = previousOnUnhandledError;
+    });
+
     function rejected(
       licenseId: string,
       playerId = 42,
@@ -400,15 +418,20 @@ describe('LicenseAdminGlobalListComponent', () => {
       };
     }
 
+    // Zeilenweise geprueft und nicht gezaehlt: Eine reine Anzahl waere auch
+    // erfuellt, wenn der Knopf in der falschen Zeile stuende.
     it('bietet den Widerruf nur bei abgelehnten Antraegen an', () => {
       const { root } = render([
         rejected('lic-1'),
         { ...entry('Erteilt'), license_id: 'lic-2' } as AdminLicenseEntry,
+        { ...entry('Zurueckgezogen'), license_status_id: 8 } as AdminLicenseEntry,
       ]);
 
-      expect(
-        root.querySelectorAll('[data-testid="revoke-rejection"]').length
-      ).toBe(1);
+      const rows = Array.from(root.querySelectorAll('tbody tr'));
+      const withButton = rows.map(
+        (row) => row.querySelector('[data-testid="revoke-rejection"]') !== null
+      );
+      expect(withButton).toEqual([true, false, false]);
     });
 
     // Nur bis "beantragt", nicht direkt auf "erteilt": Die Genehmigung bleibt
@@ -477,6 +500,175 @@ describe('LicenseAdminGlobalListComponent', () => {
 
       expect(component.filteredEntries.length).toBe(119);
       expect(component.currentPage).toBe(3);
+    });
+
+    // Nach dem Erfolg muss der Riegel fallen. Bleibt er stehen, schluckt die
+    // Maske jeden weiteren Widerruf still - der Riegel gilt je Zeile, aber ohne
+    // Freigabe waere diese Zeile dauerhaft tot.
+    it('gibt die Zeile nach dem Widerruf wieder frei', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const { component } = render([rejected('lic-1')]);
+
+      component.revokeRejection(component.allEntries[0]);
+      http
+        .expectOne((r) =>
+          r.url.endsWith('admin/players/42/handle_license_request.json')
+        )
+        .flush({});
+
+      expect(component.revokingLicenseId).toBeNull();
+      expect(component.allEntries[0].license_status_id).toBe(2);
+    });
+
+    // Der Riegel war zuerst global. Eine zweite Zeile liess sich dann waehrend
+    // eines laufenden Widerrufs nicht widerrufen, obwohl ihr Knopf gar nicht
+    // deaktiviert war - der Klick fiel stumm ins Leere.
+    it('sperrt nur die laufende Zeile, nicht die Nachbarzeile', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const { component } = render([
+        rejected('lic-1', 42),
+        rejected('lic-2', 43),
+      ]);
+
+      component.revokeRejection(component.allEntries[0]);
+      component.revokeRejection(component.allEntries[1]);
+
+      // Beide Anfragen sind unterwegs: Der globale Riegel haette die zweite
+      // verworfen, und expectOne waere daran gescheitert.
+      const first = http.match((r) =>
+        r.url.endsWith('admin/players/42/handle_license_request.json')
+      );
+      const second = http.match((r) =>
+        r.url.endsWith('admin/players/43/handle_license_request.json')
+      );
+      expect(first.length).toBe(1);
+      expect(second.length).toBe(1);
+
+      second[0].flush({});
+      first[0].flush({});
+      expect(component.allEntries[0].license_status_id).toBe(2);
+      expect(component.allEntries[1].license_status_id).toBe(2);
+    });
+
+    // Waehrend eine Zeile laeuft, oeffnet die Bedienung die Rueckfrage einer
+    // anderen. Trifft die Antwort der ersten ein, darf sie die fremde Rueckfrage
+    // nicht zuklappen - sonst verschwindet sie unter dem Mauszeiger, begleitet
+    // von der Erfolgsmeldung fuer einen anderen Spieler.
+    it('laesst die Rueckfrage einer anderen Zeile stehen', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const { component } = render([
+        rejected('lic-1', 42),
+        rejected('lic-2', 43),
+      ]);
+
+      component.revokeRejection(component.allEntries[0]);
+      component.startRevoke(component.allEntries[1]);
+      http
+        .expectOne((r) =>
+          r.url.endsWith('admin/players/42/handle_license_request.json')
+        )
+        .flush({});
+
+      expect(component.confirmRevokeLicenseId).toBe('lic-2');
+    });
+
+    // Die Liste wird einmal geladen. Wurde der Antrag zwischenzeitlich anderswo
+    // genehmigt, zeigt die Zeile noch "abgelehnt" - ein Widerruf setzte dann
+    // eine erteilte Lizenz auf "beantragt" zurueck. Die API kann das nicht
+    // abfangen, sie prueft nur, dass der Status abweicht.
+    it('widerruft nichts, wenn die Zeile nicht mehr abgelehnt ist', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const { component } = render([rejected('lic-1')]);
+      component.allEntries[0].license_status_id = 1;
+
+      component.revokeRejection(component.allEntries[0]);
+
+      http.expectNone((r) =>
+        r.url.endsWith('admin/players/42/handle_license_request.json')
+      );
+      expect(component.revokingLicenseId).toBeNull();
+      expect(component.allEntries[0].license_status_id).toBe(1);
+    });
+
+    // Der Fehlerzweig war zuerst eine eigene Meldung. Die stapelte sich ueber
+    // die des ErrorInterceptors, der 4xx bereits anzeigt. Ohne eigenen Zweig
+    // bleibt der Zustand trotzdem brauchbar: Riegel frei, Rueckfrage offen,
+    // Zeile unveraendert, zweiter Versuch geht raus.
+    // Dass hier ueberhaupt etwas abgefangen werden muss, ist der Beweis fuer die
+    // Absicht: Ohne eigenen error-Zweig laeuft der Fehlschlag weiter in den
+    // globalen Fehlerweg (ErrorInterceptor fuer die Meldung, FilteringErrorHandler
+    // fuer Sentry). Im Karma-Lauf ist das ein unbehandelter Fehler, der die
+    // ganze Datei abbricht -- deshalb nur fuer diesen Spec stillgelegt. Wird der
+    // eigene Zweig je wieder eingebaut, faellt die Zusicherung darunter auf.
+    it('bleibt nach einem Fehlschlag versuchsbereit', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const { component } = render([rejected('lic-1')]);
+      component.startRevoke(component.allEntries[0]);
+
+      component.revokeRejection(component.allEntries[0]);
+      http
+        .expectOne((r) =>
+          r.url.endsWith('admin/players/42/handle_license_request.json')
+        )
+        .flush(
+          { message: 'Spieler ist gesperrt' },
+          { status: 422, statusText: 'Unprocessable Entity' }
+        );
+
+      expect(component.revokingLicenseId).toBeNull();
+      expect(component.confirmRevokeLicenseId).toBe('lic-1');
+      expect(component.allEntries[0].license_status_id).toBe(3);
+
+      component.revokeRejection(component.allEntries[0]);
+      http
+        .expectOne((r) =>
+          r.url.endsWith('admin/players/42/handle_license_request.json')
+        )
+        .flush({});
+      expect(component.allEntries[0].license_status_id).toBe(2);
+    });
+
+    // Genau der Fall, fuer den die Klemme in reapplyFiltersKeepingPage da ist:
+    // Der letzte Eintrag der letzten Seite verlaesst die Trefferliste, die
+    // gemerkte Seitenzahl liegt danach hinter dem Ende.
+    it('rueckt eine Seite zurueck, wenn die letzte Seite leer wird', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      const component = fixture.componentInstance;
+      component.allEntries = Array.from({ length: 101 }, (_, i) =>
+        rejected(`lic-${i}`, i + 1, `Spieler${i}`)
+      );
+      component.filterStatusId = 3;
+      component.applyFilters();
+      component.changePage(5);
+
+      component.revokeRejection(component.allEntries[100]);
+      http
+        .expectOne((r) =>
+          r.url.endsWith('admin/players/101/handle_license_request.json')
+        )
+        .flush({});
+
+      expect(component.numberOfPages).toBe(4);
+      expect(component.currentPage).toBe(4);
+      expect(component.pagedEntries.length).toBe(25);
+    });
+
+    it('schliesst die Rueckfrage beim Abbrechen, ohne etwas zu schicken', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const { component, root, detectChanges } = render([rejected('lic-1')]);
+      component.startRevoke(component.allEntries[0]);
+      detectChanges();
+
+      root
+        .querySelector<HTMLElement>('[data-testid="revoke-rejection-cancel"]')
+        ?.click();
+
+      expect(component.confirmRevokeLicenseId).toBeNull();
+      expect(component.revokingLicenseId).toBeNull();
+      http.expectNone((r) =>
+        r.url.endsWith('admin/players/42/handle_license_request.json')
+      );
     });
 
     // Der zweite Klick wuerde den Statuswechsel nicht wiederholen (die API sieht
