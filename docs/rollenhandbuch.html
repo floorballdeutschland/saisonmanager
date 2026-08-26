@@ -4269,12 +4269,82 @@
                 <strong>unbestätigt</strong> angelegt. Am Ende siehst du, wie
                 viele Teams übernommen, übersprungen oder fehlgeschlagen sind.
               </p>
+              <p class="proc-text">
+                Wichtig für die Lizenzen: Der Import
+                <strong>legt neue Mannschaften an</strong>. Übernommen werden
+                Verein, Name, Kürzel und die Kontaktdaten, der
+                <strong>Kader bleibt leer</strong>. Eine Lizenz hängt im
+                Saisonmanager immer an einer bestimmten Mannschaft, nicht an der
+                Liga. Für die neu angelegte Mannschaft brauchen die Spielerinnen
+                und Spieler deshalb <strong>neue Lizenzen</strong>, und die
+                zählen in der Gebührenabrechnung als weitere Lizenz neben der
+                Hauptlizenz.
+              </p>
               <div class="note">
-                <strong>Passwörter</strong> brauchen überall dort, wo ein Mensch
-                eines setzt, mindestens <strong>12 Zeichen</strong> mit
-                mindestens einem Großbuchstaben und einer Ziffer. Das gilt beim
-                Anlegen durch die Verwaltung ebenso wie beim Zurücksetzen durch
-                die Nutzerin selbst.
+                <strong>Vorrunde in Meisterrunde?</strong> Dafür ist der
+                Top-N-Import der falsche Weg. Nimm die Mannschaften stattdessen
+                über <em>Bestandsmannschaft aufnehmen</em> in den Wettbewerb auf
+                (nächster Abschnitt): Sie behalten ihre Hauptliga, ihren Kader
+                und ihre Lizenzen, es entsteht keine zweite Lizenz. Der
+                Top-N-Import ist für Wettbewerbe gedacht, die bewusst einen
+                eigenen, getrennten Kader führen.
+              </div>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb sbk">SBK</span>
+              </div>
+            </div>
+          </details>
+
+          <!-- Bestandsmannschaft aufnehmen -->
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🏆</span>
+              <div>
+                <div class="proc-title">
+                  Bestandsmannschaft in einen Wettbewerb aufnehmen
+                </div>
+                <div class="proc-sub">
+                  Pokal, Endrunde und Meisterrunde ohne neue Lizenzen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Für Wettbewerbe, zu denen sich bestehende Mannschaften einzeln
+                melden, gibt es in der Teamverwaltung der Zielliga den zweiten
+                Weg: <em>Bestandsmannschaft aufnehmen</em>. Du wählst eine
+                Quell-Liga, bekommst deren Mannschaften angeboten und nimmst die
+                gemeldeten davon auf. Die Mannschaft wird dabei
+                <strong>nicht kopiert</strong>, sondern zusätzlich dem
+                Wettbewerb zugeordnet.
+              </p>
+              <p class="proc-text">
+                Sie behält ihre <strong>Hauptliga</strong>, ihren Kader und ihre
+                Lizenzen, und all das gilt in beiden Wettbewerben. Weil keine
+                neue Mannschaft entsteht, braucht auch niemand eine zweite
+                Lizenz und es fallen keine zusätzlichen Lizenzgebühren an. In
+                Spielplan, Tabelle und Spielbericht des Wettbewerbs taucht die
+                Mannschaft ganz normal auf; in der Teamliste der Zielliga ist
+                sie als Gast aus ihrer Herkunftsliga gekennzeichnet.
+              </p>
+              <p class="proc-text">
+                Die Quell-Liga darf in einem
+                <strong>anderen Spielbetrieb</strong> liegen, bei bundesweiten
+                Endrunden ist das der Regelfall. Geprüft wird die Zielliga: Wer
+                den Wettbewerb verwalten darf, darf Mannschaften aufnehmen, und
+                zusätzlich muss er jede einzelne aufzunehmende Mannschaft
+                bearbeiten dürfen. Über <em>Aus dem Wettbewerb nehmen</em> löst
+                du die Zuordnung wieder.
+              </p>
+              <div class="note">
+                Die Zuordnung ist
+                <strong>nicht an die Saison gebunden</strong> und bleibt stehen,
+                bis sie jemand entfernt. Räum abgelaufene Wettbewerbe deshalb
+                auf, sonst zählt eine Mannschaft in Auswertungen weiter zu einem
+                längst gespielten Wettbewerb. Für Lizenzanträge ist das
+                unkritisch, dort gilt die Saison der Hauptliga.
               </div>
               <div class="roles-inline">
                 <span class="rb admin">Admin</span>
@@ -4700,6 +4770,13 @@
                 Geschäftsstelle vorbehalten, weil er auf dem digitalen
                 Schiedsrichterausweis erscheint.
               </p>
+              <div class="note">
+                <strong>Passwörter</strong> brauchen überall dort, wo ein Mensch
+                eines setzt, mindestens <strong>12 Zeichen</strong> mit
+                mindestens einem Großbuchstaben und einer Ziffer. Das gilt beim
+                Anlegen durch die Verwaltung ebenso wie beim Zurücksetzen durch
+                die Nutzerin selbst.
+              </div>
               <div class="roles-inline">
                 <span class="rb admin">Admin</span>
                 <span class="rb sbk">SBK</span>
@@ -4759,6 +4836,10 @@
                 <li>Vereine erstellen, bearbeiten, deaktivieren</li>
                 <li>Teams anlegen und Ligen zuordnen</li>
                 <li>Teams aus Quell-Liga importieren (Top-N aus Tabelle)</li>
+                <li>
+                  Bestandsmannschaften in Pokal- und Endrundenwettbewerbe
+                  aufnehmen, ohne sie zu kopieren
+                </li>
                 <li>Hallen anlegen und verwalten</li>
                 <li>Landesverbände verwalten</li>
                 <li>
