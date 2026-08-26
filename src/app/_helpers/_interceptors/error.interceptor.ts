@@ -281,11 +281,17 @@ export class ErrorInterceptor implements HttpInterceptor {
         // Gespann-Historie, api#530 (Spieleranlage) und der Lizenzentscheidung.
         //
         // api#555 lässt die Knöpfe außerhalb des eigenen Spielbetriebs
-        // verschwinden, die 403 wird also selten. Diese Ausnahme bleibt
-        // unabhängig davon richtig: Es gibt weiter Wege zu einer Absage (ein
-        // Tab, der offen stand, während die Rolle sich änderte, oder das
-        // Tausch-Limit der Saison), und keiner davon rechtfertigt, jemanden aus
-        // dem Profil zu werfen.
+        // verschwinden, die 403 wird damit zur Randlage. Sie bleibt aber
+        // erreichbar: Ein Tab, der offen stand, während die Rolle sich änderte,
+        // trifft weiter auf eine Absage, und die rechtfertigt keinen Rauswurf
+        // aus dem Profil.
+        //
+        // Es ist der EINZIGE verbleibende 403-Weg dieser Aktion. Die übrigen
+        // Absagen von `set_gf_license_role` – Tausch-Limit der Saison,
+        // unveränderte Zuordnung, Liga außerhalb des GF-Erwachsenenbereichs –
+        // antworten mit 422 und landen im generischen 4xx-Zweig, nicht hier.
+        // Ohne diesen Hinweis liest sich die Ausnahme später gewichtiger, als
+        // sie ist.
         const gfRoleDecision =
           /admin\/players\/\d+\/set_gf_license_role(\.json)?$/.test(
             request.url
