@@ -160,6 +160,35 @@ describe('ErrorInterceptor', () => {
     );
   });
 
+  // Die Spielersuche der Transfermaske zeigt jeden Fehlschlag selbst unter dem
+  // Suchfeld. Ein 403 darauf heißt „dieser Verein nicht", nicht „diese Maske
+  // nicht": Der generische Zweig warf aus dem ersten Schritt der
+  // Direktzuweisung auf die Startseite, und die Meldung stand dabei doppelt da.
+  it('leaves the page alone when the transfer player search is forbidden', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { error: 'Nicht berechtigt fuer diesen Verein' },
+      403,
+      `${environment.apiURL}admin/transfer_requests/search_player`
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  // Auch die fachlichen Absagen der Suche kommen ohne zweite Meldung aus.
+  it('leaves the transfer player search alone on 422', () => {
+    failWith(
+      { error: 'Spieler ist bereits in diesem Verein' },
+      422,
+      `${environment.apiURL}admin/transfer_requests/search_player`
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
   // Lizenzdokumente sind ein Nachschlag zu einer offenen Seite, keine eigene
   // Ansicht. Der generische 403-Zweig warf die Nutzerin bzw. den Nutzer mitten
   // aus der Spielerbearbeitung auf die Startseite (SAISONMANAGER-2D): Der

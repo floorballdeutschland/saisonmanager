@@ -154,6 +154,23 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Die Spielersuche der Transfermaske meldet jeden Fehlschlag selbst an
+        // Ort und Stelle: Die Komponente schreibt `err.error.error` in
+        // `searchError` und zeigt ihn unter dem Suchfeld. Ohne diese Ausnahme
+        // stünde die Meldung zweimal da (einmal im Feld, einmal als Toast),
+        // und ein 403 würde zusätzlich auf die Startseite umleiten, mitten aus
+        // der halb ausgefüllten Maske heraus. Die Suche ist der erste Schritt
+        // der Direktzuweisung, der Rauswurf sah deshalb aus, als sei der
+        // Vorgang selbst nicht erlaubt.
+        //
+        // Betrifft alle Absagen dieses Endpunkts, nicht nur den 403: „Spieler
+        // ist bereits in diesem Verein" und „Für diesen Spieler ist bereits ein
+        // Transferantrag aktiv" kommen als 422 und wurden bisher ebenfalls
+        // doppelt angezeigt.
+        if (request.url.includes('transfer_requests/search_player')) {
+          return throwError(() => err);
+        }
+
         // Die Gespann-Historie ist ein Nachschlag zur bereits geöffneten
         // Ansetzung, genau wie die Lizenzdokumente oben: Sie sortiert im
         // Dropdown von Schiri 2 die Gespannpartner nach oben. Ein 403 darauf
