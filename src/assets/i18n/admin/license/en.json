@@ -135,7 +135,12 @@
     "onlyZweitlizenz": "Second licenses only",
     "onlyWithoutGfRole": "Without first/second assignment",
     "csvHauptlizenz": "Main license",
-    "csvGfRole": "First/second license (large field)"
+    "csvGfRole": "First/second license (large field)",
+    "revokeRejection": "Revoke rejection",
+    "revokeRejectionTitle": "Resets the request to \"requested\" so it can be decided again",
+    "revokeRejectionConfirm": "Really revoke the rejection?",
+    "revokeRejectionYes": "Revoke",
+    "revokeRejectionCancel": "Cancel"
   },
   "leagueDetail": {
     "title": "License management",
@@ -264,6 +269,8 @@
     "recreateRequestError": "License request could not be submitted again.",
     "withdrawRequestError": "License request could not be withdrawn.",
     "actionFailed": "Action failed.",
-    "fileTooLarge": "The file may not exceed 5 MB."
+    "fileTooLarge": "The file may not exceed 5 MB.",
+    "rejectionRevoked": "Rejection for player {{ firstName }} {{ lastName }} ({{ id }}) revoked, the request is pending again",
+    "revokeRejectionError": "The rejection could not be revoked."
   }
 }

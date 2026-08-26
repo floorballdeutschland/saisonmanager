@@ -1,6 +1,9 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { getTranslocoTestingModule } from '@floorball/core';
 import { AdminLicenseEntry } from '@floorball/types';
@@ -358,6 +361,141 @@ describe('LicenseAdminGlobalListComponent', () => {
           'parental_consent'
         )
       ).toBeNull();
+    });
+  });
+
+  // Eine versehentliche Ablehnung war endgueltig: Der Antrag fiel aus der Liste
+  // der offenen Antraege, und die Entscheidungsmaske der Liga-Seite rendert nur
+  // Status "beantragt". Dem Verein blieb ein neuer, kostenpflichtiger Antrag.
+  describe('Ablehnung widerrufen', () => {
+    function rejected(
+      licenseId: string,
+      playerId = 42,
+      lastName = 'Muster'
+    ): AdminLicenseEntry {
+      return {
+        ...entry(lastName),
+        player_id: playerId,
+        license_id: licenseId,
+        license_status_id: 3,
+        license_status: 'Abgelehnt',
+      } as AdminLicenseEntry;
+    }
+
+    function render(entries: AdminLicenseEntry[]): {
+      component: LicenseAdminGlobalListComponent;
+      root: HTMLElement;
+      detectChanges: () => void;
+    } {
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      const component = fixture.componentInstance;
+      component.allEntries = entries;
+      component.applyFilters();
+      component.loading = false;
+      fixture.detectChanges();
+      return {
+        component,
+        root: fixture.nativeElement,
+        detectChanges: () => fixture.detectChanges(),
+      };
+    }
+
+    it('bietet den Widerruf nur bei abgelehnten Antraegen an', () => {
+      const { root } = render([
+        rejected('lic-1'),
+        { ...entry('Erteilt'), license_id: 'lic-2' } as AdminLicenseEntry,
+      ]);
+
+      expect(
+        root.querySelectorAll('[data-testid="revoke-rejection"]').length
+      ).toBe(1);
+    });
+
+    // Nur bis "beantragt", nicht direkt auf "erteilt": Die Genehmigung bleibt
+    // eine bewusste Handlung mit Gueltigkeitsdatum und ggf. Erst-/Zweitlizenz.
+    it('setzt den Antrag auf "beantragt" zurueck', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const { component, root, detectChanges } = render([rejected('lic-1')]);
+
+      root
+        .querySelector<HTMLButtonElement>('[data-testid="revoke-rejection"]')
+        ?.click();
+      detectChanges();
+      root
+        .querySelector<HTMLElement>('[data-testid="revoke-rejection-yes"]')
+        ?.click();
+
+      const req = http.expectOne((r) =>
+        r.url.endsWith('admin/players/42/handle_license_request.json')
+      );
+      expect(req.request.body.license_id).toBe('lic-1');
+      expect(req.request.body.license_status_id).toBe(2);
+      expect(req.request.body.reason).toContain('Ablehnung widerrufen');
+      req.flush({});
+
+      expect(component.allEntries[0].license_status_id).toBe(2);
+    });
+
+    // Die Bestaetigung haengt an der Lizenz, nicht am Spieler: Wer in zwei Ligen
+    // abgelehnt wurde, hat zwei Zeilen, und nur eine davon ist gemeint.
+    it('fragt nur in der angeklickten Zeile nach', () => {
+      const { component, root, detectChanges } = render([
+        rejected('lic-1'),
+        rejected('lic-2'),
+      ]);
+
+      component.startRevoke(component.allEntries[1]);
+      detectChanges();
+
+      expect(
+        root.querySelectorAll('[data-testid="revoke-rejection"]').length
+      ).toBe(1);
+      expect(
+        root.querySelectorAll('[data-testid="revoke-rejection-yes"]').length
+      ).toBe(1);
+    });
+
+    // Die widerrufene Zeile passt nicht mehr zum Statusfilter "abgelehnt" und
+    // muss aus der Trefferliste – aber ohne die Liste auf Seite 1 zu reissen.
+    it('filtert neu und bleibt auf der Seite', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      const component = fixture.componentInstance;
+      component.allEntries = Array.from({ length: 120 }, (_, i) =>
+        rejected(`lic-${i}`, i + 1, `Spieler${i}`)
+      );
+      component.filterStatusId = 3;
+      component.applyFilters();
+      component.changePage(3);
+
+      component.revokeRejection(component.allEntries[60]);
+      http
+        .expectOne((r) =>
+          r.url.endsWith('admin/players/61/handle_license_request.json')
+        )
+        .flush({});
+
+      expect(component.filteredEntries.length).toBe(119);
+      expect(component.currentPage).toBe(3);
+    });
+
+    // Der zweite Klick wuerde den Statuswechsel nicht wiederholen (die API sieht
+    // dann keinen Unterschied mehr), aber eine zweite Erfolgsmeldung erzeugen.
+    it('schickt einen laufenden Widerruf nicht zweimal los', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const { component } = render([rejected('lic-1')]);
+
+      component.revokeRejection(component.allEntries[0]);
+      component.revokeRejection(component.allEntries[0]);
+
+      // match() statt expectOne(): Die Zahl der Aufrufe ist hier die Aussage,
+      // und ein zweiter Aufruf soll als "2 statt 1" scheitern, nicht als
+      // "mehr als eine Uebereinstimmung".
+      const requests = http.match((r) =>
+        r.url.endsWith('admin/players/42/handle_license_request.json')
+      );
+      expect(requests.length).toBe(1);
+      requests[0].flush({});
     });
   });
 });

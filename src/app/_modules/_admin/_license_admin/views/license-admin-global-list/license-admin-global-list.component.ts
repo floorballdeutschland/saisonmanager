@@ -9,6 +9,8 @@ import { AdminLicenseEntry, Season } from '@floorball/types';
 import {
   AssociationService,
   LeagueService,
+  NotificationService,
+  PlayerService,
   StorageService,
 } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
@@ -59,6 +61,17 @@ const LEAGUE_CLASS_KEYS: { value: string; labelKey: string }[] = [
 // erreichbar bleibt. 0 steht für "Alle": dann rendert die Tabelle die komplette
 // Filtermenge auf einmal und wird mit deren Umfang langsamer, deshalb ist es
 // nicht die Voreinstellung.
+// Lizenz-Status (License::* auf der API-Seite): 1 erteilt, 2 beantragt,
+// 3 abgelehnt, 8 zurueckgezogen.
+const STATUS_REQUESTED = 2;
+const STATUS_REJECTED = 3;
+
+// Grund des Widerrufs. Er landet als Klartext in der Chronik der Lizenz und
+// bleibt deshalb deutsch, unabhaengig von der Sprache der Oberflaeche – wie die
+// Deaktivierungsgruende in der Vereins-Spielerliste. Uebersetzt stuende im
+// Datensatz je nach Bediensprache etwas anderes.
+const REVOKE_REASON = 'Ablehnung widerrufen (versehentliche Ablehnung)';
+
 const PAGE_SIZE_ALL = 0;
 const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, PAGE_SIZE_ALL];
 const DEFAULT_PAGE_SIZE = 25;
@@ -106,6 +119,12 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   filterGfRole: string | null = null;
   filterExpressOnly = false;
 
+  // Lizenz-ID der Zeile, die gerade nach Bestaetigung fragt, und die, deren
+  // Widerruf laeuft. Je Lizenz und nicht je Spieler: Wer in zwei Ligen
+  // abgelehnt wurde, hat zwei Zeilen, und nur eine davon ist gemeint.
+  confirmRevokeLicenseId: string | null = null;
+  revokingLicenseId: string | null = null;
+
   filterSeasonId: number | null = null;
   private _currentSeasonId: number | null = null;
   private _destroy$ = new Subject<void>();
@@ -117,6 +136,8 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   constructor(
     private _leagueService: LeagueService,
     private _associationService: AssociationService,
+    private _playerService: PlayerService,
+    private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
     private _transloco: TranslocoService,
@@ -534,5 +555,98 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       value: id,
       label: name,
     }));
+  }
+
+  // ---- Ablehnung widerrufen ------------------------------------------------
+  // Eine versehentliche Ablehnung war bisher endgueltig: Der Antrag fiel aus
+  // der Liste der offenen Antraege, und die Entscheidungsmaske der Liga-Seite
+  // rendert nur Status "beantragt". Dem Verein blieb ein neuer, kostenpflichtiger
+  // Antrag. Die API laesst den Weg zurueck laengst zu (handle_license_request
+  // prueft nur, dass der Status abweicht) – hier fehlte allein der Einstieg.
+  //
+  // Zurueck geht es nur auf "beantragt", nicht direkt auf "erteilt": Die
+  // Genehmigung bleibt eine bewusste Handlung mit Gueltigkeitsdatum und
+  // gegebenenfalls Erst-/Zweitlizenz-Zuordnung.
+
+  public isRejected(entry: AdminLicenseEntry): boolean {
+    return entry.license_status_id === STATUS_REJECTED;
+  }
+
+  public startRevoke(entry: AdminLicenseEntry): void {
+    this.confirmRevokeLicenseId = entry.license_id;
+    this._cdr.markForCheck();
+  }
+
+  public cancelRevoke(): void {
+    this.confirmRevokeLicenseId = null;
+    this._cdr.markForCheck();
+  }
+
+  public revokeRejection(entry: AdminLicenseEntry): void {
+    // Der zweite Klick auf einen noch laufenden Widerruf wuerde den
+    // Statuswechsel nicht wiederholen (die API sieht dann keinen Unterschied
+    // mehr), aber eine zweite Erfolgsmeldung erzeugen.
+    if (this.revokingLicenseId) return;
+
+    this.revokingLicenseId = entry.license_id;
+    this._playerService
+      .updateLicenseStatus(
+        entry.player_id,
+        entry.license_id,
+        STATUS_REQUESTED,
+        REVOKE_REASON
+      )
+      .subscribe({
+        next: () => {
+          entry.license_status_id = STATUS_REQUESTED;
+          entry.license_status = this._transloco.translate(
+            'licenseAdmin.globalList.statusRequested'
+          );
+          this.confirmRevokeLicenseId = null;
+          this.revokingLicenseId = null;
+          this.reapplyFiltersKeepingPage();
+          this._notificationService.success(
+            this._transloco.translate(
+              'licenseAdmin.notifications.rejectionRevoked',
+              {
+                firstName: entry.player_first_name,
+                lastName: entry.player_last_name,
+                id: entry.player_id,
+              }
+            ),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this._cdr.markForCheck();
+        },
+        error: (err: { error?: { message?: string | object } }) => {
+          this.revokingLicenseId = null;
+          // Der globale ErrorInterceptor zeigt 422 nicht an (etwa eine aktive
+          // Sperre); ohne eigene Meldung blieb der Klick wirkungslos und
+          // unkommentiert.
+          const message =
+            typeof err?.error?.message === 'string'
+              ? err.error.message
+              : undefined;
+          this._notificationService.error(
+            message ??
+              this._transloco.translate(
+                'licenseAdmin.notifications.revokeRejectionError'
+              ),
+            { autoClose: false, keepAfterRouteChange: false }
+          );
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  // Die widerrufene Zeile steht jetzt auf "beantragt" und gehoert bei einem
+  // Statusfilter "abgelehnt" nicht mehr in die Trefferliste. applyFilters()
+  // springt dabei auf Seite 1 – die Stelle in der Liste wird deshalb
+  // festgehalten und auf die neue Seitenzahl begrenzt, sonst verliert ein
+  // Widerruf auf Seite 7 den Platz.
+  private reapplyFiltersKeepingPage(): void {
+    const page = this.currentPage;
+    this.applyFilters();
+    this.currentPage = Math.min(page, this.numberOfPages);
   }
 }
