@@ -31,6 +31,16 @@ export class TeamSquadComponent implements OnInit {
   @Input() team!: string;
   @Input() teamId!: number;
   @Input() events: GameEvent[] = [];
+  /**
+   * Der Landesverband der Liga dieses Spiels lässt Personen mit dem
+   * Lizenzstatus „beantragt" aufstellen (Game#requested_license_playable).
+   *
+   * Kommt vom Spiel und nicht von der Mannschaft: Zuständig für den
+   * Spielbetrieb einer Liga ist allein deren Verband, und eine Mannschaft kann
+   * daneben im Pokal eines anderen Verbands antreten. Standard false, damit
+   * ein Frontend-Deploy vor dem API-Deploy wie bisher nur „erteilt" zulässt.
+   */
+  @Input() requestedLicensePlayable = false;
   @Output() handleClose: EventEmitter<void> = new EventEmitter<void>();
 
   licenseHash!: LicenseHash;

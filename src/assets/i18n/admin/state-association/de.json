@@ -38,6 +38,8 @@
     "settingsInheritedPendingHint": "Die geerbten Einstellungen stehen erst nach dem Speichern des übergeordneten Verbunds.",
     "expressLicenseLabel": "Expresslizenzen unterstützt",
     "expressLicenseHint": "Vereinsmanager können bei Lizenzanträgen die Express-Option aktivieren. Die Beantragung löst eine automatische Benachrichtigung an die SBK aus.",
+    "requestedLicensePlayableLabel": "Spieler*innen mit beantragter Lizenz sind einsetzbar",
+    "requestedLicensePlayableHint": "Wer für eine Mannschaft einen Lizenzantrag gestellt hat, darf in den Ligen dieses Spielbetriebs bereits aufgestellt werden, ohne dass die Lizenz erteilt sein muss. Solche Personen erscheinen dann im Kader-Dialog des Spielberichts und lösen dort keine Warnung mehr aus. Nur der offene Antrag zählt: abgelehnte, zurückgezogene und gesperrte Lizenzen bleiben ausgeschlossen. Ohne diesen Haken ist wie bisher allein eine erteilte Lizenz spielberechtigt.",
     "refereeReviewLabel": "Kontrollprozess für Schiedsrichterlizenzen",
     "refereeReviewHint": "Beim CSV-Import von Kursergebnissen werden Datensätze mit Stammdaten-Korrekturen oder Neuanlagen dem RSK dieses Landesverbands zur Kontrolle und Freigabe vorgelegt, bevor sie in den Stammdatensatz übernommen werden.",
     "scanRequiredLabel": "Papierspielberichtsbogen hochladen",

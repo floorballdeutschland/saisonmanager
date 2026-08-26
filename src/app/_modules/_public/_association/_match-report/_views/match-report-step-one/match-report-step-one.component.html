@@ -60,6 +60,7 @@
           : game.players.home || []
       "
       [events]="game.events || []"
+      [requestedLicensePlayable]="game.requested_license_playable === true"
     ></fb-team-squad>
   }
 
