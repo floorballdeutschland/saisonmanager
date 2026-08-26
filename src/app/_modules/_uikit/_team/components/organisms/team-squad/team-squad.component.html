@@ -96,7 +96,10 @@
                 <ul role="list" class="divide-y divide-gray-200">
                   @for (
                     player of licenseHash.current_requests
-                      | teamLineupPlayer: players : filter;
+                      | teamLineupPlayer
+                        : players
+                        : filter
+                        : requestedLicensePlayable;
                     track player
                   ) {
                     <li class="py-2">
