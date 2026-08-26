@@ -56,6 +56,8 @@ export class RefereeAvailabilitiesComponent implements OnInit, OnDestroy {
   private _availabilityMap = new Map<string, number>();
   private _destroy$ = new Subject<void>();
 
+  // Einmal beim Erzeugen festgehalten: Ein lange offener Tab behält das Fenster
+  // und die `past`-Grenze seines Öffnungstages.
   private _today = new Date();
   private _todayIso = this._isoDate(this._today);
 
@@ -67,9 +69,8 @@ export class RefereeAvailabilitiesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const now = new Date();
-    const from = this._isoDate(new Date(now.getFullYear(), 0, 1));
-    const to = this._isoDate(new Date(now.getFullYear() + 1, 11, 31));
+    const from = this._isoDate(this._firstShownMonth());
+    const to = this._isoDate(this._lastShownDay());
 
     this._refereeService
       .getAvailabilities({ date_from: from, date_to: to })
@@ -232,14 +233,34 @@ export class RefereeAvailabilitiesComponent implements OnInit, OnDestroy {
   }
 
   private _buildCalendar(): void {
-    const now = new Date();
+    const last = this._lastShownDay();
     const months: CalendarMonth[] = [];
-    for (let y = now.getFullYear(); y <= now.getFullYear() + 1; y++) {
-      for (let m = 0; m < 12; m++) {
-        months.push(this._buildMonth(y, m));
-      }
+    const cursor = this._firstShownMonth();
+    while (cursor <= last) {
+      months.push(this._buildMonth(cursor.getFullYear(), cursor.getMonth()));
+      cursor.setMonth(cursor.getMonth() + 1);
     }
     this.months = months;
+  }
+
+  // Erster Tag des Vormonats. Weiter zurück wird nicht mehr gezeigt: Ältere
+  // Tage sind nicht mehr änderbar und für die Ansetzung erledigt, kosten aber
+  // Scrollweg, auf dem Handy eine ganze Bildschirmseite je Monat. Bewusst in
+  // Kauf genommen: Die eigene Meldehistorie (siehe `legendPast`) reicht nur
+  // noch bis zum Vormonat zurück. Der Vormonat selbst bleibt, damit die zuletzt
+  // gemeldeten Tage noch nachvollziehbar sind, auch wenn er ganz `past` ist.
+  // Der Rückgabetag muss der 1. sein, sonst überspringt `setMonth` in
+  // `_buildCalendar` Monate (31. Januar plus ein Monat wäre der 3. März).
+  private _firstShownMonth(): Date {
+    return new Date(this._today.getFullYear(), this._today.getMonth() - 1, 1);
+  }
+
+  // Ende ist der 31. Dezember des Folgejahres, wie vor der Umstellung: Ligen
+  // werden saisonweise geplant, weiter voraus gibt es nichts zu melden. Das
+  // Fenster hängt damit am Kalenderjahr und ist nicht gleich lang; im Januar
+  // reicht es knapp zwei Jahre voraus, im Dezember gut ein Jahr.
+  private _lastShownDay(): Date {
+    return new Date(this._today.getFullYear() + 1, 11, 31);
   }
 
   private _rebuildDays(): void {
