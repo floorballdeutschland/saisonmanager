@@ -57,8 +57,11 @@ export interface StateAssociation {
   effective_rsk_email?: string | null;
   manual_proceeding_creation?: boolean;
   // Laesst Personen mit dem Lizenzstatus „beantragt" im Spielbetrieb dieses
-  // Verbands aufstellen. Gelesen wird der Wert nicht hier, sondern am Spiel
-  // (Game#requested_license_playable): Zustaendig ist der Verband der Liga.
+  // Verbands aufstellen. Der gespeicherte Schalter dieses Verbands: Die
+  // Verbandsmaske liest und schreibt ihn, der geerbte Anzeigewert steht in
+  // effective_requested_license_playable. Fuer die Aufstellung wird er nicht
+  // hier gelesen, sondern am Spiel (Game#requested_license_playable) --
+  // zustaendig ist der Verband der Liga.
   requested_license_playable?: boolean;
   // Drei gestaffelte Ansetzungs-Optionen: der Hauptschalter erlaubt die
   // Ansetzung ausserhalb der SBK, referee_assignment_enabled hebt sie auf die
