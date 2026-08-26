@@ -257,7 +257,8 @@
     "metaTitle": "Floorball Saisonmanager License Management"
   },
   "teamEntry": {
-    "teamLabel": "{{ team }} ({{ id }})"
+    "teamLabel": "{{ team }} ({{ id }})",
+    "teamIdOnly": "({{ id }})"
   },
   "notifications": {
     "licenseGranted": "License granted for player {{ firstName }} {{ lastName }} ({{ id }})",
