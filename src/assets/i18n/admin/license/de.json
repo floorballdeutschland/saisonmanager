@@ -21,6 +21,7 @@
     "age": "Alter",
     "ageYears": "{{ age }} Jahre",
     "bornOn": "Geb. {{ date }}",
+    "gender": "Geschlecht",
     "licenses": "Lizenzen",
     "approvals": "Freigaben",
     "validUntil": "Gültig bis",
