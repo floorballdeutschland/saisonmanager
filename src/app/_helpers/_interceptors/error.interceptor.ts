@@ -272,6 +272,25 @@ export class ErrorInterceptor implements HttpInterceptor {
             request.url
           );
 
+        // Die Erst-/Zweitlizenz-Zuordnung ist ein Knopf im geöffneten
+        // Spielerprofil, kein Seiteneinstieg. Ein 403 darauf heißt „diese
+        // Lizenz nicht", nicht „dieses Profil nicht" – der generische Zweig
+        // warf dagegen auf die Startseite und nahm die ganze Maske mit, samt
+        // allem, was daneben halb ausgefüllt war. Sechster Fall dieser Bauart
+        // nach #240 (Lizenzdokumente), api#437 (Spielbericht), der
+        // Gespann-Historie, api#530 (Spieleranlage) und der Lizenzentscheidung.
+        //
+        // api#555 lässt die Knöpfe außerhalb des eigenen Spielbetriebs
+        // verschwinden, die 403 wird also selten. Diese Ausnahme bleibt
+        // unabhängig davon richtig: Es gibt weiter Wege zu einer Absage (ein
+        // Tab, der offen stand, während die Rolle sich änderte, oder das
+        // Tausch-Limit der Saison), und keiner davon rechtfertigt, jemanden aus
+        // dem Profil zu werfen.
+        const gfRoleDecision =
+          /admin\/players\/\d+\/set_gf_license_role(\.json)?$/.test(
+            request.url
+          );
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           if (secretaryMode) {
             // Nur einmal je Sitzung: Die Spielansicht fragt die internen Felder
@@ -304,7 +323,10 @@ export class ErrorInterceptor implements HttpInterceptor {
           // bleibt im Feld stehen, ein kurzer Hinweis genügt also. Dasselbe
           // Stapelproblem löst der 401-Zweig oben über `secretaryLinkRejected`.
           const staysOnPage =
-            matchReportRequest || playerClubDecision || licenseDecision;
+            matchReportRequest ||
+            playerClubDecision ||
+            licenseDecision ||
+            gfRoleDecision;
           this._notificationService.error(
             'Berechtigungsfehler: ' + (this.errorDetail(err) || 'Kein Zugriff'),
             {

@@ -236,6 +236,67 @@ describe('PlayerEditComponent', () => {
     });
   });
 
+  // Zuständig für die Erst-/Zweitlizenz-Zuordnung ist der Verband der Liga, an
+  // der die Lizenz hängt. Das Profil zeigt alle Lizenzen der Person, auch die
+  // aus fremden Spielbetrieben, und `player_set_gf_role` allein unterscheidet
+  // sie nicht: Der permissions-Hash kennt keine Spielbetriebe. Die Knöpfe
+  // standen daher an jeder GF-Erwachsenenlizenz, und auf einer fremden wies die
+  // API mit 403 ab. api#555 liefert die Zuständigkeit je Lizenz mit.
+  describe('Erst-/Zweitlizenz-Zuordnung', () => {
+    function gfLicense(
+      id: string,
+      gfRoleEditable?: boolean,
+      gfRole?: 'erstlizenz' | 'zweitlizenz'
+    ): PlayerLicense {
+      return {
+        id,
+        team_id: 1,
+        season_id: 18,
+        league_class_id: '',
+        requested_at: '',
+        history: [{ license_status_id: 2 }],
+        league: { field_size: 'GF', age_group: 'Herren', female: false },
+        gf_role: gfRole,
+        gf_role_editable: gfRoleEditable,
+      } as unknown as PlayerLicense;
+    }
+
+    function build(licenses: PlayerLicense[]): PlayerEditComponent {
+      currentUser$.next({
+        permissions: { player_set_gf_role: true },
+      } as unknown as User);
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.componentInstance.player = { id: 7, licenses } as Player;
+      fixture.detectChanges(false);
+      return fixture.componentInstance;
+    }
+
+    it('bietet die Zuordnung im eigenen Spielbetrieb an', () => {
+      const own = gfLicense('eigen', true);
+      const component = build([own, gfLicense('partner', true)]);
+
+      expect(component.gfRoleEditable(own)).toBe(true);
+    });
+
+    it('bietet sie für eine Lizenz eines fremden Spielbetriebs nicht an', () => {
+      // Zuordnung gesetzt und Partnerlizenz vorhanden: Ohne die Auskunft der API
+      // wären damit beide übrigen Bedingungen erfüllt und die Knöpfe da.
+      const foreign = gfLicense('fremd', false, 'erstlizenz');
+      const component = build([foreign, gfLicense('partner', true)]);
+
+      expect(component.gfRoleEditable(foreign)).toBe(false);
+    });
+
+    // Abwärtskompatibilität: Eine API vor api#555 liefert das Feld nicht. Würde
+    // ein fehlender Wert sperren, wäre die Zuordnung im ganzen Bestand weg.
+    it('bleibt beim alten Verhalten, wenn die API das Feld nicht liefert', () => {
+      const legacy = gfLicense('ohne-feld', undefined, 'erstlizenz');
+      const component = build([legacy]);
+
+      expect(component.gfRoleEditable(legacy)).toBe(true);
+    });
+  });
+
   describe('Verweis auf die Transferanträge', () => {
     // Die Berechtigung muss vor dem ersten Rendern stehen: die Komponente liest
     // sie in ngOnInit aus currentUser$, ein spaeteres Setzen des Feldes laeuft

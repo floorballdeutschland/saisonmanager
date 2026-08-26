@@ -341,6 +341,27 @@ describe('ErrorInterceptor', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
+  // Die Erst-/Zweitlizenz-Zuordnung ist ein Knopf im geoeffneten Spielerprofil.
+  // Ein 403 darauf heisst „diese Lizenz nicht", nicht „dieses Profil nicht":
+  // Der generische Zweig nahm die ganze Maske mit, samt allem, was daneben halb
+  // ausgefuellt war.
+  it('keeps the user in the player mask on a 403 for the gf role decision', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung.' },
+      403,
+      `${environment.apiURL}admin/players/4711/set_gf_license_role.json`
+    );
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Berechtigungsfehler: Keine Berechtigung.',
+      { autoClose: true, keepAfterRouteChange: false }
+    );
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
   // Gegenprobe zur Ausnahme oben: Sie gilt genau diesem Endpunkt, nicht allem
   // unter admin/players/. Die Spielerbearbeitung selbst ist eine eigene Seite.
   it('still redirects on a 403 for other player endpoints', () => {

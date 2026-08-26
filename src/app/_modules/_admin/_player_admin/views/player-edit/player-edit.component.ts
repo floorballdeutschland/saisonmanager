@@ -874,6 +874,18 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   public gfRoleEditable(license: PlayerLicense): boolean {
     if (!this.can('player_set_gf_role')) return false;
+    // Zuständig ist der Verband der Liga, an der DIESE Lizenz hängt, und das
+    // Profil zeigt alle Lizenzen der Person – auch die aus fremden
+    // Spielbetrieben. `player_set_gf_role` allein reicht als Prüfung nicht: Der
+    // permissions-Hash ist eine flache Ja/Nein-Liste ohne Spielbetriebe, der
+    // Schlüssel heißt dort nur „ist Admin oder SBK". Die Knöpfe standen deshalb
+    // an jeder GF-Erwachsenenlizenz, und auf einer fremden wies die API mit 403
+    // ab – samt Umleitung auf die Startseite, siehe setGfRole().
+    //
+    // Nur ein ausdrückliches `false` sperrt. Fehlt das Feld, ist die API älter
+    // als api#555 und liefert es überhaupt nicht; dann bleibt es beim alten
+    // Verhalten, statt die Zuordnung im ganzen Bestand zu verstecken.
+    if (license.gf_role_editable === false) return false;
     if (!this.isGfAdultLicense(license) || !this.isActiveLicense(license))
       return false;
     return !!license.gf_role || this.gfPartnerLicenses(license).length > 0;

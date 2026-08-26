@@ -143,6 +143,12 @@ export interface PlayerLicense {
   // Manuelle Erst-/Zweitlizenz-Zuordnung im GF-Erwachsenenbereich.
   gf_role?: GfRole | null;
   gf_role_history?: GfRoleHistoryEntry[];
+  // Darf dieses Konto die Zuordnung DIESER Lizenz setzen? Zuständig ist der
+  // Verband der Liga, an der die Lizenz hängt – eine Angabe, die der flache
+  // permissions-Hash nicht tragen kann, weil er keine Spielbetriebe kennt.
+  // Nur von `admin/players/:id` geliefert; fehlt das Feld, entscheidet
+  // gfRoleEditable() wie vor api#555 allein über die Fähigkeit.
+  gf_role_editable?: boolean;
 }
 
 export interface PlayerSuspension {
