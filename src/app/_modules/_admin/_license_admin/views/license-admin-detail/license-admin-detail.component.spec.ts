@@ -13,6 +13,7 @@ import {
   PlayerLicense,
   PlayerOtherLicense,
   PlayerWithLicense,
+  TeamWithPlayers,
 } from '@floorball/types';
 
 describe('LicenseAdminDetailComponent', () => {
@@ -312,7 +313,10 @@ describe('LicenseAdminDetailComponent', () => {
           required_documents: [],
         },
       } as unknown as PlayerWithLicense;
-      component.team = { id: 1, name: 'Musterstadt' } as never;
+      component.team = {
+        id: 1,
+        name: 'Musterstadt',
+      } as unknown as TeamWithPlayers;
       fixture.detectChanges();
       return fixture.nativeElement;
     }

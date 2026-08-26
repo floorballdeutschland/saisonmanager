@@ -163,7 +163,9 @@
               @if (player.gender) {
                 {{ player.gender | gender }}
               } @else {
-                –
+                <!-- Gedaempft wie der Strich der Dokumentenzeile weiter unten:
+                     Beide sagen dasselbe, sie sollen auch gleich aussehen. -->
+                <span class="text-[12px] font-normal text-gray-400">–</span>
               }
             </p>
           </div>
