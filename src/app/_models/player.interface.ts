@@ -149,6 +149,13 @@ export interface PlayerLicense {
   // Nur von `admin/players/:id` geliefert; fehlt das Feld, entscheidet
   // gfRoleEditable() wie vor api#555 allein über die Fähigkeit.
   gf_role_editable?: boolean;
+  // Mannschaft und Liga dieser Lizenz, benannt von den Lizenzlisten einer Liga
+  // (League#build_license_items). Die Genehmigungskarte rendert daraus, statt je
+  // Zeile `admin/teams/:id` nachzuholen – ein Abruf, der bei einer Lizenz aus
+  // einem fremden Spielbetrieb mit 403 endete. Fehlt der Name, ist die
+  // Mannschaft gelöscht oder die API älter als api#555.
+  team_name?: string | null;
+  league_name?: string | null;
 }
 
 export interface PlayerSuspension {

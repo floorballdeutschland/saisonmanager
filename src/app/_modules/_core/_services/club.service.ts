@@ -7,7 +7,6 @@ import {
   ClubWithTeams,
   LicenseHash,
   StateAssociationWithClubs,
-  Team,
 } from '@floorball/types';
 
 @Injectable({
@@ -58,11 +57,6 @@ export class ClubService {
     const path =
       environment.apiURL + 'admin/clubs/' + clubId + '/managers.json';
     return this.http.get<ClubManagerList>(path);
-  }
-
-  public getAdminTeam(teamId: number) {
-    const path = environment.apiURL + 'admin/teams/' + teamId + '.json';
-    return this.http.get<Team>(path);
   }
 
   /**

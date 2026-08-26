@@ -55,10 +55,19 @@
     }
   </div>
   <div class="grid gap-1">
-    <span class="font-bold text-[14px] leading-[12px]">{{
-      "licenseAdmin.teamEntry.teamLabel"
-        | transloco: { team: team?.name, id: teamId }
-    }}</span>
-    <span class="text-[12px]">{{ team?.league_name }}</span>
+    <!-- Ohne Namen bleibt die Kennung allein stehen: „(9664)" sagt weniger als
+         der Name, aber mehr als das leere „ (9664)", das die Vorlage sonst
+         setzte. -->
+    <span class="font-bold text-[14px] leading-[12px]">
+      @if (teamName) {
+        {{
+          "licenseAdmin.teamEntry.teamLabel"
+            | transloco: { team: teamName, id: teamId }
+        }}
+      } @else {
+        {{ "licenseAdmin.teamEntry.teamIdOnly" | transloco: { id: teamId } }}
+      }
+    </span>
+    <span class="text-[12px]">{{ leagueName }}</span>
   </div>
 </li>

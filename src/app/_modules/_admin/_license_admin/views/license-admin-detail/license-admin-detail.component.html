@@ -178,6 +178,8 @@
                 <li>
                   <fb-license-admin-team-entry
                     [teamId]="license.team_id"
+                    [teamName]="license.team_name"
+                    [leagueName]="license.league_name"
                     [lastHistory]="license.history[license.history.length - 1]"
                   ></fb-license-admin-team-entry>
                 </li>
@@ -226,8 +228,8 @@
                           : ('licenseAdmin.leagueDetail.docView'
                             | transloco: { doc: docTypeLabel(docType) })
                       "
-                      >{{ docTypeLabel(docType)
-                      }}@if (docUploadedAt(docType)) {
+                      >{{ docTypeLabel(docType) }}
+                      @if (docUploadedAt(docType)) {
                         <span class="font-normal tabular-nums">
                           ·
                           {{
@@ -235,8 +237,8 @@
                               | date: "dd.MM.yy" : "Europe/Berlin"
                           }}</span
                         >
-                      }</a
-                    >
+                      }
+                    </a>
                   } @else {
                     <span
                       class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
@@ -271,7 +273,8 @@
                     "
                     >{{
                       "licenseAdmin.leagueDetail.parentalConsent" | transloco
-                    }}@if (docUploadedAt("parental_consent")) {
+                    }}
+                    @if (docUploadedAt("parental_consent")) {
                       <span class="font-normal tabular-nums">
                         ·
                         {{
@@ -279,8 +282,8 @@
                             | date: "dd.MM.yy" : "Europe/Berlin"
                         }}</span
                       >
-                    }</a
-                  >
+                    }
+                  </a>
                 } @else {
                   <span
                     class="inline-flex rounded px-1.5 text-[11px] font-semibold leading-5 bg-gray-100 text-gray-400"
