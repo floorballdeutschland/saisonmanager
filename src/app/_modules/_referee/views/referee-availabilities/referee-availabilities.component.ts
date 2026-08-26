@@ -67,9 +67,8 @@ export class RefereeAvailabilitiesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const now = new Date();
-    const from = this._isoDate(new Date(now.getFullYear(), 0, 1));
-    const to = this._isoDate(new Date(now.getFullYear() + 1, 11, 31));
+    const from = this._isoDate(this._firstShownMonth());
+    const to = this._isoDate(this._lastShownDay());
 
     this._refereeService
       .getAvailabilities({ date_from: from, date_to: to })
@@ -232,14 +231,25 @@ export class RefereeAvailabilitiesComponent implements OnInit, OnDestroy {
   }
 
   private _buildCalendar(): void {
-    const now = new Date();
+    const last = this._lastShownDay();
     const months: CalendarMonth[] = [];
-    for (let y = now.getFullYear(); y <= now.getFullYear() + 1; y++) {
-      for (let m = 0; m < 12; m++) {
-        months.push(this._buildMonth(y, m));
-      }
+    const cursor = this._firstShownMonth();
+    while (cursor <= last) {
+      months.push(this._buildMonth(cursor.getFullYear(), cursor.getMonth()));
+      cursor.setMonth(cursor.getMonth() + 1);
     }
     this.months = months;
+  }
+
+  // Die Ansicht beginnt im Vormonat. Ältere Monate sind leer, nicht mehr
+  // auswählbar und für die Ansetzung ohne Belang; sie kosten nur Scrollweg,
+  // auf dem Handy besonders viel.
+  private _firstShownMonth(): Date {
+    return new Date(this._today.getFullYear(), this._today.getMonth() - 1, 1);
+  }
+
+  private _lastShownDay(): Date {
+    return new Date(this._today.getFullYear() + 1, 11, 31);
   }
 
   private _rebuildDays(): void {
