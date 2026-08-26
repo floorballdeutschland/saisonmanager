@@ -451,13 +451,63 @@
                     </p>
                   }
                 </td>
-                <!-- Status -->
+                <!-- Status. Bei einer Ablehnung sitzt hier der Widerruf: Die
+                     Entscheidungsmaske der Liga-Seite rendert nur offene
+                     Antraege, ein versehentliches "abgelehnt" war von dort aus
+                     nicht mehr erreichbar. -->
                 <td class="px-4 py-3 whitespace-nowrap">
                   <span
                     class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5"
                     [ngClass]="statusBadgeClass(e.license_status_id)"
                     >{{ e.license_status }}</span
                   >
+                  @if (isRejected(e)) {
+                    @if (confirmRevokeLicenseId !== e.license_id) {
+                      <button
+                        type="button"
+                        data-testid="revoke-rejection"
+                        class="mt-1 block text-[11px] text-fb-gray-500 hover:text-black hover:underline"
+                        [title]="
+                          'licenseAdmin.globalList.revokeRejectionTitle'
+                            | transloco
+                        "
+                        (click)="startRevoke(e)"
+                      >
+                        {{
+                          "licenseAdmin.globalList.revokeRejection" | transloco
+                        }}
+                      </button>
+                    } @else {
+                      <div class="mt-1 flex flex-col items-start gap-1">
+                        <span class="text-[11px] text-gray-600">{{
+                          "licenseAdmin.globalList.revokeRejectionConfirm"
+                            | transloco
+                        }}</span>
+                        <div class="flex gap-1">
+                          <fb-button
+                            data-testid="revoke-rejection-yes"
+                            size="small"
+                            variant="success"
+                            [disabled]="revokingLicenseId === e.license_id"
+                            (click)="revokeRejection(e)"
+                            >{{
+                              "licenseAdmin.globalList.revokeRejectionYes"
+                                | transloco
+                            }}</fb-button
+                          >
+                          <fb-button
+                            data-testid="revoke-rejection-cancel"
+                            size="small"
+                            (click)="cancelRevoke()"
+                            >{{
+                              "licenseAdmin.globalList.revokeRejectionCancel"
+                                | transloco
+                            }}</fb-button
+                          >
+                        </div>
+                      </div>
+                    }
+                  }
                 </td>
                 <!-- Lizenztyp -->
                 <td class="px-4 py-3 whitespace-nowrap">
