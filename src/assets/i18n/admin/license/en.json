@@ -19,6 +19,7 @@
     "express": "Express license",
     "checksPassed": "Checks passed",
     "age": "Age",
+    "gender": "Gender",
     "ageYears": "{{ age }} years",
     "bornOn": "Born {{ date }}",
     "licenses": "Licenses",

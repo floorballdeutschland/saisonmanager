@@ -3,8 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { LicenseAdminDetailComponent } from './license-admin-detail.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { FormsModule } from '@angular/forms';
 import { getTranslocoTestingModule } from '@floorball/core';
+import { UikitCommonModule } from '@floorball/uikit/common';
+import { UikitPlayerModule } from '@floorball/uikit/player';
 import {
+  GenderKey,
   League,
   PlayerLicense,
   PlayerOtherLicense,
@@ -264,6 +268,78 @@ describe('LicenseAdminDetailComponent', () => {
           'id_copy'
         )
       ).toBeNull();
+    });
+  });
+
+  // Das Geschlecht liegt im Payload (Player#full_hash) und stand in der
+  // Antragsmaske trotzdem nicht. Ein Getter-Test würde das nicht bemerken:
+  // Die Angabe hängt allein am Template.
+  describe('Geschlecht in der Antragsmaske', () => {
+    function render(gender: GenderKey): HTMLElement {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [
+          HttpClientTestingModule,
+          RouterTestingModule,
+          // Das Template braucht die gender-Pipe aus dem Player-UIKit, den
+          // additionalClubFilter aus dem gemeinsamen UIKit und ngModel für die
+          // Entscheidungsfelder. Die Getter-Specs oben rendern nicht.
+          UikitPlayerModule,
+          UikitCommonModule,
+          FormsModule,
+          getTranslocoTestingModule({
+            de: { licenseAdmin: { detail: { gender: 'Geschlecht' } } },
+          }),
+        ],
+        declarations: [LicenseAdminDetailComponent],
+      });
+      const fixture = TestBed.createComponent(LicenseAdminDetailComponent);
+      const component = fixture.componentInstance;
+      component.initiallyOpen = true;
+      component.allClubs = [];
+      component.player = {
+        id: 1,
+        first_name: 'Mia',
+        last_name: 'Muster',
+        birthdate: '2000-05-01',
+        gender,
+        clubs: [],
+        licenses: [],
+        team_license: {
+          license: { id: 'l1', team_id: 1, history: [] },
+          last_status: { license_status_id: 2 },
+          documents: {},
+          required_documents: [],
+        },
+      } as unknown as PlayerWithLicense;
+      component.team = { id: 1, name: 'Musterstadt' } as never;
+      fixture.detectChanges();
+      return fixture.nativeElement;
+    }
+
+    // Gezielt über data-testid: Ein Strich steht auch bei den fehlenden
+    // Dokumenten, ein Vergleich über den ganzen Seitentext wäre für den
+    // zweiten Fall tautologisch.
+    function genderText(root: HTMLElement): string {
+      return (
+        root.querySelector('[data-testid="player-gender"]')?.textContent ?? ''
+      ).trim();
+    }
+
+    it('nennt das Geschlecht im Datenblock', () => {
+      const root = render('W');
+
+      expect(root.textContent).toContain('Geschlecht');
+      expect(genderText(root)).toBe('weiblich');
+    });
+
+    // Ein Leerstring liesse die Zeile leer stehen und wäre von "steht nicht in
+    // den Stammdaten" nicht zu unterscheiden.
+    it('setzt einen Strich, wenn das Geschlecht nicht gepflegt ist', () => {
+      const root = render(null);
+
+      expect(root.textContent).toContain('Geschlecht');
+      expect(genderText(root)).toBe('–');
     });
   });
 });

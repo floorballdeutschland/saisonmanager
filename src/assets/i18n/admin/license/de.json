@@ -19,6 +19,7 @@
     "express": "Expresslizenz",
     "checksPassed": "Prüfungen erfolgreich",
     "age": "Alter",
+    "gender": "Geschlecht",
     "ageYears": "{{ age }} Jahre",
     "bornOn": "Geb. {{ date }}",
     "licenses": "Lizenzen",

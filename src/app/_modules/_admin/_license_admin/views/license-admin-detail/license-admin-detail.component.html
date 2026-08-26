@@ -130,7 +130,7 @@
     <div class="p-4 bg-fb-gray-300 shadow">
       <div class="grid gap-4 lg:grid-cols-3">
         <div class="grid gap-4 md:grid-cols-2 lg:col-span-2">
-          <div class="md:col-span-2">
+          <div>
             <p class="uppercase font-bold text-gray-400 text-sm mb-3">
               {{ "licenseAdmin.detail.age" | transloco }}
             </p>
@@ -148,6 +148,24 @@
                 }}
               </p>
             </div>
+          </div>
+          <div>
+            <p class="uppercase font-bold text-gray-400 text-sm mb-3">
+              {{ "licenseAdmin.detail.gender" | transloco }}
+            </p>
+            <!-- Ohne gesetztes Geschlecht gibt die Pipe einen Leerstring
+                 zurueck. Ein Strich sagt "steht nicht in den Stammdaten",
+                 eine leere Zeile sagt nichts. -->
+            <p
+              class="font-bold text-[14px] leading-[12px]"
+              data-testid="player-gender"
+            >
+              @if (player.gender) {
+                {{ player.gender | gender }}
+              } @else {
+                –
+              }
+            </p>
           </div>
           <div>
             <p class="uppercase font-bold text-gray-400 text-sm mb-3">
