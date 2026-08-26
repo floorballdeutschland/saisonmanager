@@ -177,12 +177,36 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Liefert die API die E-Mail-Adresse überhaupt?
+   *
+   * Ohne diese Unterscheidung fielen zwei verschiedene Zustände zusammen: „das
+   * Feld kam nicht mit" und „die Adresse ist nicht gepflegt". Frontend und API
+   * werden getrennt ausgerollt, und `Player#meta_hash` führte das Feld bis
+   * api#565 nicht — ein Frontend-Deploy davor hätte in jeder Zeile ein rotes
+   * „fehlt" und über der Tabelle den ganzen Verein als lückenhaft gemeldet,
+   * ohne Fehler und ohne Möglichkeit, das von echten Daten zu unterscheiden.
+   * Die naheliegende Reaktion wäre, längst gepflegte Adressen neu zu erfassen.
+   *
+   * Solange das Feld fehlt, bleiben Spalte und Zähler deshalb ganz weg: Die
+   * Maske sieht dann aus wie vorher, statt etwas Falsches zu behaupten.
+   * Gleicher Rückfall-Gedanke wie bei `manage_players` in canManagePlayers.
+   *
+   * `'email' in p` und nicht `p.email != null`: Eine gepflegte Liste, in der
+   * niemand eine Adresse hat, liefert den Schlüssel mit dem Wert null — das ist
+   * eine Auskunft und keine fehlende.
+   */
+  emailKnown(list: ClubPlayerList): boolean {
+    return list.players.some((p) => 'email' in p);
+  }
+
+  /**
    * Ist eine E-Mail-Adresse gepflegt?
    *
    * Eine Methode für Spalte und Zähler, damit beide dieselbe Auskunft geben.
-   * `trim()` gegen ein leergeräumtes Feld: `update_email` speichert eine leere
-   * Eingabe als null, ein Altbestand kann aber eine Leerzeichenkette tragen,
-   * und die wäre truthy.
+   * `trim()` gegen ein leergeräumtes Feld: `update_email` normalisiert eine
+   * leere Eingabe zu null, `create`/`update` über `player_params` dagegen nicht
+   * (`validates :email, allow_blank: true`). Eine Leerzeichenkette ist also
+   * weiterhin möglich, nicht nur im Altbestand, und wäre truthy.
    */
   hasEmail(player: Player): boolean {
     return !!player.email?.trim();

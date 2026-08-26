@@ -402,6 +402,62 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
     expect(component.missingEmailCount(list)).toBe(1);
   });
 
+  // Frontend-Deploy vor dem API-Deploy: Die Liste kommt ohne das Feld. Dann
+  // muss die Spalte ganz wegbleiben, statt einen komplett gepflegten Verein als
+  // lückenhaft zu melden — die Maske sieht aus wie vorher.
+  it('laesst Spalte und Zaehler weg, solange die API die Adresse nicht liefert', async () => {
+    await setup({ permissions: {} });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    http
+      .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
+      .flush([
+        { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
+      ]);
+    // Genau der meta_hash von vor api#565: kein email-Schluessel.
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
+      .flush([{ id: 1, first_name: 'Ohne', last_name: 'Feld' }]);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    expect(component.emailKnown(component.clubLists[0])).toBeFalse();
+    expect(
+      fixture.nativeElement.querySelectorAll('[data-testid="email-missing"]')
+        .length
+    ).toBe(0);
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="missing-email-count"]')
+    ).toBeNull();
+  });
+
+  // Ein Verein ohne Luecke soll das auch bestaetigt bekommen, statt gar nichts
+  // zu lesen.
+  it('meldet einen vollstaendig gepflegten Verein ausdruecklich', async () => {
+    await setup({ permissions: {} });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    http
+      .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
+      .flush([
+        { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
+      ]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
+      .flush([
+        { id: 1, first_name: 'Mit', last_name: 'Adresse', email: 'a@x.org' },
+      ]);
+    fixture.detectChanges();
+
+    const zaehler = fixture.nativeElement.querySelector(
+      '[data-testid="missing-email-count"]'
+    ) as HTMLElement;
+    expect(zaehler.textContent).toContain('Alle mit E-Mail-Adresse');
+    expect(zaehler.classList).not.toContain('text-red-600');
+  });
+
   // Die Einleitung erklärt das Deaktivieren; ohne einen einzigen eigenen Verein
   // beschreibt sie Knöpfe, die es hier nicht gibt.
   it('laesst die Einleitung weg, wenn kein Verein zu ordnen ist', async () => {
