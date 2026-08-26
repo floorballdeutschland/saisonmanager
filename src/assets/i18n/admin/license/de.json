@@ -21,6 +21,7 @@
     "age": "Alter",
     "ageYears": "{{ age }} Jahre",
     "bornOn": "Geb. {{ date }}",
+    "gender": "Geschlecht",
     "licenses": "Lizenzen",
     "approvals": "Freigaben",
     "validUntil": "Gültig bis",
@@ -135,7 +136,12 @@
     "onlyZweitlizenz": "Nur Zweitlizenzen",
     "onlyWithoutGfRole": "Ohne Erst-/Zweit-Zuordnung",
     "csvHauptlizenz": "Hauptlizenz",
-    "csvGfRole": "Erst-/Zweitlizenz (GF)"
+    "csvGfRole": "Erst-/Zweitlizenz (GF)",
+    "revokeRejection": "Ablehnung widerrufen",
+    "revokeRejectionTitle": "Setzt den Antrag zurück auf „beantragt\", danach ist er wieder entscheidbar",
+    "revokeRejectionConfirm": "Ablehnung wirklich widerrufen?",
+    "revokeRejectionYes": "Widerrufen",
+    "revokeRejectionCancel": "Abbrechen"
   },
   "leagueDetail": {
     "title": "Lizenzverwaltung",
@@ -264,6 +270,7 @@
     "recreateRequestError": "Lizenzantrag konnte nicht erneut gestellt werden.",
     "withdrawRequestError": "Lizenzantrag konnte nicht zurückgezogen werden.",
     "actionFailed": "Aktion fehlgeschlagen.",
-    "fileTooLarge": "Die Datei darf maximal 5 MB groß sein."
+    "fileTooLarge": "Die Datei darf maximal 5 MB groß sein.",
+    "rejectionRevoked": "Ablehnung für Spieler {{ firstName }} {{ lastName }} ({{ id }}) widerrufen, der Antrag steht wieder auf „beantragt\""
   }
 }

@@ -30,9 +30,17 @@ export class ErrorInterceptor implements HttpInterceptor {
   // aus ActiveModel-Validierungen) — alle drei Formen auswerten, damit der
   // Interceptor die spezifische Meldung zeigt statt einer generischen (#84).
   private errorDetail(err: {
-    error?: { message?: string; error?: unknown; errors?: string[] };
+    error?: { message?: unknown; error?: unknown; errors?: string[] };
   }): string | undefined {
-    if (err.error?.message) return err.error.message;
+    // `message` ist so wenig garantiert ein Text wie `error` darunter:
+    // handle_license_request rendert bei einer gescheiterten Validierung
+    // `{ message: player.errors }`, also den Validierungs-Hash. Ungeprüft
+    // weitergereicht stand da „[object Object]" – deshalb durch dieselbe
+    // Aufbereitung wie `error` und im Zweifel weiter zu den nächsten Formen.
+    if (err.error?.message) {
+      const detail = this.readableDetail(err.error.message);
+      if (detail) return detail;
+    }
     if (err.error?.error) return this.readableDetail(err.error.error);
     if (Array.isArray(err.error?.errors) && err.error.errors.length > 0) {
       return err.error.errors.join(', ');
@@ -239,6 +247,31 @@ export class ErrorInterceptor implements HttpInterceptor {
           /admin\/players(\.json)?$/.test(request.url) ||
           /admin\/players\/\d+\/(de|re)activate(\.json)?$/.test(request.url);
 
+        // Die Entscheidung über einen Lizenzantrag ist eine Aktion aus einer
+        // bereits geöffneten Arbeitsfläche heraus, kein Seiteneinstieg:
+        // Erteilen, Ablehnen und der Widerruf einer Ablehnung sitzen in einer
+        // Tabellenzeile der Lizenzübersicht, und deren Suchbegriffe, zwölf
+        // Filter und Seitenzahl stehen ausschließlich im Komponentenzustand (im
+        // Storage liegt nur die Seitengröße). Ein 403 darauf heißt „diese Lizenz
+        // nicht", nicht „diese Liste nicht" – der generische Zweig warf dagegen
+        // auf die Startseite und nahm die ganze Filterung mit.
+        //
+        // Der 403 ist keine Randlage: Die Liste zeigt auch Mannschaften, die
+        // einer Liga nur über `cup_leagues` angehören, während
+        // `sbk_can_access_license?` beim Schreiben ausdrücklich nur die
+        // Hauptliga der Mannschaft prüft. Eine auf einen Spielbetrieb begrenzte
+        // SBK sieht damit Zeilen, deren Entscheidung die API abweist. Fünfter
+        // Fall dieser Bauart nach #240 (Lizenzdokumente), api#437
+        // (Spielbericht), der Gespann-Historie und api#530 (Spieleranlage).
+        //
+        // Bewusst ohne frühen return: Die Meldung soll bleiben, sonst sieht
+        // niemand, dass die Entscheidung nicht angekommen ist, und der
+        // 401-Zweig muss weiter greifen.
+        const licenseDecision =
+          /admin\/players\/\d+\/handle_license_request(\.json)?$/.test(
+            request.url
+          );
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           if (secretaryMode) {
             // Nur einmal je Sitzung: Die Spielansicht fragt die internen Felder
@@ -270,7 +303,8 @@ export class ErrorInterceptor implements HttpInterceptor {
           // Deshalb schließt diese Meldung im Bericht von selbst; die Eingabe
           // bleibt im Feld stehen, ein kurzer Hinweis genügt also. Dasselbe
           // Stapelproblem löst der 401-Zweig oben über `secretaryLinkRejected`.
-          const staysOnPage = matchReportRequest || playerClubDecision;
+          const staysOnPage =
+            matchReportRequest || playerClubDecision || licenseDecision;
           this._notificationService.error(
             'Berechtigungsfehler: ' + (this.errorDetail(err) || 'Kein Zugriff'),
             {

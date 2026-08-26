@@ -318,6 +318,65 @@ describe('ErrorInterceptor', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
+  // Die Entscheidung ueber einen Lizenzantrag sitzt in einer Tabellenzeile der
+  // Lizenzuebersicht, deren Suche, Filter und Seitenzahl ausschliesslich im
+  // Komponentenzustand stehen. Ein Rauswurf auf die Startseite kostet die ganze
+  // Filterung. Der 403 ist keine Randlage: Die Liste zeigt Mannschaften, die
+  // einer Liga nur ueber cup_leagues angehoeren, waehrend die schreibende
+  // Pruefung nur die Hauptliga betrachtet.
+  it('keeps the user in the license list on a 403', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung.' },
+      403,
+      `${environment.apiURL}admin/players/4711/handle_license_request.json`
+    );
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Berechtigungsfehler: Keine Berechtigung.',
+      { autoClose: true, keepAfterRouteChange: false }
+    );
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  // Gegenprobe zur Ausnahme oben: Sie gilt genau diesem Endpunkt, nicht allem
+  // unter admin/players/. Die Spielerbearbeitung selbst ist eine eigene Seite.
+  it('still redirects on a 403 for other player endpoints', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung.' },
+      403,
+      `${environment.apiURL}admin/players/4711/update_player.json`
+    );
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/']);
+  });
+
+  // handle_license_request rendert bei einer gescheiterten Validierung
+  // `{ message: player.errors }`, also den Validierungs-Hash. Ungepruefte
+  // Weitergabe ergab "[object Object]" -- eine Meldung, die den Kanal belegt,
+  // ohne etwas zu sagen. `message` braucht deshalb dieselbe Aufbereitung wie
+  // `error`.
+  it('flattens a validation hash in message instead of showing [object Object]', () => {
+    failWith({ message: { valid_until: ['ist kein Datum'] } }, 422);
+
+    expect(errorSpy.calls.mostRecent().args[0]).toBe('ist kein Datum');
+  });
+
+  // Bleibt nichts Lesbares uebrig, greift der generische Text statt eines
+  // leeren oder unverstaendlichen Hinweises.
+  it('falls back to the generic text when message carries nothing readable', () => {
+    failWith({ message: {} }, 422);
+
+    expect(errorSpy.calls.mostRecent().args[0]).toBe(
+      'Die Eingabe konnte nicht verarbeitet werden.'
+    );
+  });
+
   // Gegenprobe: Die oeffentliche Spielansicht ist eine eigene Seite und liegt
   // nicht unter user/games/. Ein 403 darauf leitet weiter wie bisher, und die
   // Meldung bleibt dabei ueber den Routenwechsel hinweg stehen.
