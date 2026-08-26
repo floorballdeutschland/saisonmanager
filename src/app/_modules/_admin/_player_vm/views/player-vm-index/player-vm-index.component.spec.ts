@@ -100,7 +100,19 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
         RouterTestingModule,
         FormsModule,
         UikitCommonModule,
-        getTranslocoTestingModule(),
+        // Mit echten Texten fuer den Scope, weil eine der Pruefungen unten die
+        // gerenderte Zahl liest und der blosse Schluessel sie nicht traegt.
+        getTranslocoTestingModule({
+          de: {
+            playerVm: {
+              index: {
+                emailMissingCount: '{{ count }} ohne E-Mail-Adresse',
+                emailAllPresent: 'Alle mit E-Mail-Adresse',
+                emailMissing: 'fehlt',
+              },
+            },
+          },
+        }),
       ],
       declarations: [PlayerVmIndexComponent],
       providers: [
@@ -302,6 +314,92 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
         '[data-testid="reactivate-player"]'
       ).length
     ).toBe(1);
+  });
+
+  // Ohne E-Mail-Adresse laufen Transfer- und Elternzustimmung ins Leere. Die
+  // Spalte zeigt sie, die Zahl darüber nennt die Lücken.
+  it('zeigt die Adresse je Zeile und zaehlt die fehlenden', async () => {
+    await setup({ permissions: {} });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    http
+      .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
+      .flush([
+        { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
+      ]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
+      .flush([
+        {
+          id: 1,
+          first_name: 'Mit',
+          last_name: 'Adresse',
+          email: 'a@example.org',
+        },
+        { id: 2, first_name: 'Ohne', last_name: 'Adresse', email: null },
+        // Ein leergeraeumtes Feld aus dem Altbestand: truthy, aber keine
+        // Adresse.
+        { id: 3, first_name: 'Leer', last_name: 'Adresse', email: '   ' },
+      ]);
+    fixture.detectChanges();
+
+    const zeilen: string = fixture.nativeElement.textContent;
+    expect(zeilen).toContain('a@example.org');
+    expect(
+      fixture.nativeElement.querySelectorAll('[data-testid="email-missing"]')
+        .length
+    ).toBe(2);
+    expect(
+      fixture.componentInstance.missingEmailCount(
+        fixture.componentInstance.clubLists[0]
+      )
+    ).toBe(2);
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="missing-email-count"]')
+        .textContent
+    ).toContain('2');
+  });
+
+  // Die Zahl muss sich mit der Tabelle darunter decken: Ein deaktiviertes
+  // Profil ohne Adresse zaehlt erst mit, wenn es eingeblendet ist.
+  it('zaehlt deaktivierte erst mit, wenn sie eingeblendet sind', async () => {
+    await setup({ permissions: {} });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    http
+      .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
+      .flush([
+        { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
+      ]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
+      .flush([
+        {
+          id: 1,
+          first_name: 'Mit',
+          last_name: 'Adresse',
+          email: 'a@example.org',
+        },
+        {
+          id: 2,
+          first_name: 'Weg',
+          last_name: 'Ohne',
+          email: null,
+          deactivated_at: '2026-08-01T00:00:00Z',
+        },
+      ]);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const list = component.clubLists[0];
+    expect(component.missingEmailCount(list)).toBe(0);
+
+    component.toggleDeactivated(list);
+    fixture.detectChanges();
+
+    expect(component.missingEmailCount(list)).toBe(1);
   });
 
   // Die Einleitung erklärt das Deaktivieren; ohne einen einzigen eigenen Verein

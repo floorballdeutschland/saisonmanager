@@ -176,6 +176,29 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
     return list.players.filter((p) => p.deactivated_at).length;
   }
 
+  /**
+   * Ist eine E-Mail-Adresse gepflegt?
+   *
+   * Eine Methode für Spalte und Zähler, damit beide dieselbe Auskunft geben.
+   * `trim()` gegen ein leergeräumtes Feld: `update_email` speichert eine leere
+   * Eingabe als null, ein Altbestand kann aber eine Leerzeichenkette tragen,
+   * und die wäre truthy.
+   */
+  hasEmail(player: Player): boolean {
+    return !!player.email?.trim();
+  }
+
+  /**
+   * Wie viele der gerade sichtbaren Personen keine E-Mail-Adresse haben.
+   *
+   * Bewusst über `visiblePlayers` und nicht über den ganzen Bestand: Die Zahl
+   * steht direkt über der Tabelle und muss sich mit deren Spalte decken.
+   * Deaktivierte zählen deshalb nur mit, solange sie eingeblendet sind.
+   */
+  missingEmailCount(list: ClubPlayerList): number {
+    return this.visiblePlayers(list).filter((p) => !this.hasEmail(p)).length;
+  }
+
   toggleDeactivated(list: ClubPlayerList): void {
     list.showDeactivated = !list.showDeactivated;
     this._cdr.markForCheck();
