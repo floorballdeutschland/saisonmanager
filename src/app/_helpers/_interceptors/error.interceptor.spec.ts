@@ -525,8 +525,10 @@ describe('ErrorInterceptor', () => {
     );
   });
 
-  // Gegenprobe zur Ausnahme oben: Sie gilt genau diesen beiden Endpunkten, nicht
-  // allem unter admin/players/.
+  // Gegenprobe zu den beiden Ausnahmen oben (Profilabruf und GF-Rollen-
+  // Entscheidung): Sie gelten genau diesen Adressen, nicht allem unter
+  // admin/players/. `transfer` ist eine echte Route (routes.rb) und hat keinen
+  // eigenen Zweig, ein 403 darauf muss weiter melden und umleiten.
   it('still redirects on a 403 for other player endpoints', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigate');
@@ -534,7 +536,7 @@ describe('ErrorInterceptor', () => {
     failWith(
       { message: 'Keine Berechtigung.' },
       403,
-      `${environment.apiURL}admin/players/4711/update_player.json`
+      `${environment.apiURL}admin/players/4711/transfer.json`
     );
 
     expect(navigateSpy).toHaveBeenCalledWith(['/']);

@@ -134,8 +134,10 @@ export interface PlayerSearchResult {
   // Steht an jedem Treffer, auch am oeffenbaren, damit `false` nicht mit einer
   // Antwort ohne das Feld verwechselt wird.
   manageable?: boolean;
-  // Der zustaendige Spielbetrieb, nur an gesperrten Treffern. Fehlt, wenn das
-  // Profil keine gueltige Heimat-Zugehoerigkeit hat: Dann ist niemand zustaendig.
+  // Der zustaendige Spielbetrieb, nur an gesperrten Treffern. Fehlt aus zwei
+  // Gruenden, die von hier aus nicht zu unterscheiden sind: Das Profil hat keine
+  // gueltige Heimat-Zugehoerigkeit, oder sein Heimatverein gehoert zu keinem
+  // Spielbetrieb. Der Hinweistext darf deshalb keine Ursache nennen.
   responsible?: string | null;
 }
 

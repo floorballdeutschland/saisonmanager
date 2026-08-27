@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ErrorHandler } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
@@ -542,7 +543,12 @@ describe('PlayerEditComponent', () => {
 
     // Jeder andere Status bleibt beim Interceptor, der ihn meldet. Ein 404 als
     // fehlende Zustaendigkeit auszugeben, waere schlicht falsch.
+    //
+    // Und er muss den globalen ErrorHandler erreichen: Das ist in Produktion
+    // der Sentry-Handler, und ein error-Zweig, der alles verschluckt, haette
+    // den 500 beim Oeffnen eines Profils lautlos aus dem Monitoring genommen.
     it('deutet einen anderen Fehler nicht als fehlende Zustaendigkeit', () => {
+      const handleError = spyOn(TestBed.inject(ErrorHandler), 'handleError');
       denyWith(404);
 
       const fixture = TestBed.createComponent(PlayerEditComponent);
@@ -552,6 +558,20 @@ describe('PlayerEditComponent', () => {
       expect(
         fixture.nativeElement.querySelector('[data-testid="load-denied"]')
       ).toBe(null);
+      expect(handleError).toHaveBeenCalled();
+    });
+
+    // Gegenprobe: Der 403 ist der eine Fall, den die Maske selbst beantwortet.
+    // Er gehoert nicht ins Monitoring, er ist eine gueltige Antwort.
+    it('meldet den 403 nicht an den globalen ErrorHandler', () => {
+      const handleError = spyOn(TestBed.inject(ErrorHandler), 'handleError');
+      denyWith(403);
+
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.detectChanges(false);
+
+      expect(fixture.componentInstance.loadDenied).toBe(true);
+      expect(handleError).not.toHaveBeenCalled();
     });
 
     // Nach einer Aktion laedt dieselbe Methode das offene Profil neu. Ein
@@ -569,6 +589,45 @@ describe('PlayerEditComponent', () => {
 
       expect(component.loadDenied).toBe(false);
       expect(notify).toHaveBeenCalled();
+    });
+
+    // Die Komponente haengt an `route.params` und ueberlebt einen
+    // Parameterwechsel. Wer von einem erlaubten auf ein gesperrtes Profil
+    // wechselt, darf nicht das alte unter der neuen Adresse weiterlesen und
+    // bearbeiten -- deshalb entscheidet die angefragte id und nicht die blosse
+    // Anwesenheit eines Profils.
+    it('raeumt das vorige Profil beim Wechsel auf ein gesperrtes ab', () => {
+      denyWith(403);
+
+      const component =
+        TestBed.createComponent(PlayerEditComponent).componentInstance;
+      component.player = { id: 7 } as Player;
+      component.getPlayer('8');
+
+      expect(component.loadDenied).toBe(true);
+      expect(component.player).toBeUndefined();
+    });
+
+    // Der Hinweis ersetzt die Maske, er steht nicht darueber: Ohne diese
+    // Bedingungen drehten sich darunter zwei Ladekreisel weiter und die Karte
+    // „Freigaben" bot einen Knopf an, der ohne Spieler-id ins Leere greift.
+    it('laesst unter dem Hinweis nichts Bedienbares stehen', () => {
+      denyWith(403);
+      currentUser$.next({
+        permissions: {
+          menu_item_player_admin: true,
+          player_add_additional_clubs: true,
+        },
+      } as unknown as User);
+
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.detectChanges(false);
+
+      const dom = fixture.nativeElement;
+      expect(dom.querySelector('[data-testid="load-denied"]')).not.toBe(null);
+      expect(dom.querySelector('.animate-spin')).toBe(null);
+      expect(dom.textContent).not.toContain('playerAdmin.edit.releases');
+      expect(dom.querySelector('button')).toBe(null);
     });
   });
 });

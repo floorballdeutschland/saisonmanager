@@ -1,6 +1,7 @@
 import {
   ChangeDetectorRef,
   Component,
+  ErrorHandler,
   OnDestroy,
   OnInit,
   ViewEncapsulation,
@@ -142,6 +143,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     private _changeRequestService: PlayerChangeRequestService,
     private _associationService: AssociationService,
     private _transloco: TranslocoService,
+    private _errorHandler: ErrorHandler,
     private _metaTitle: Title
   ) {
     this._metaTitle.setTitle('Floorball Saisonmanager Spielerverwaltung');
@@ -205,30 +207,56 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
         this._cdr.markForCheck();
       },
-      // Ein 403 heißt hier: Das Profil gehört zu einem anderen Spielbetrieb.
-      // Weil der ErrorInterceptor dafür nicht mehr umleitet (der Rauswurf nahm
-      // die Spielersuche mit), zeigt die Maske die Absage selbst. Jeder andere
-      // Status bleibt beim Interceptor, der ihn meldet.
+      // Ausschließlich der 403 wird hier ausgewertet: Er heißt „das Profil
+      // gehört zu einem anderen Spielbetrieb", und weil der ErrorInterceptor
+      // dafür nicht mehr umleitet (der Rauswurf nahm die Spielersuche mit),
+      // muss die Maske ihn selbst zeigen.
       //
-      // Nur beim Öffnen: Nach Aktionen lädt dieselbe Methode das bereits offene
-      // Profil neu (Freigabe, Lizenzentscheidung, Sperre). Ein Fehlschlag dort
-      // darf die gefüllte Maske nicht gegen einen Hinweis tauschen, dort genügt
-      // die Meldung, die der Interceptor in diesem einen Fall nicht mehr zeigt.
+      // Jeder andere Status geht ausdrücklich an den globalen ErrorHandler.
+      // Das ist kein Beiwerk: In Produktion ist das `Sentry.createErrorHandler()`
+      // (app.module.ts), und der sieht sonst nichts von diesem Abruf. Vor
+      // diesem error-Zweig blieb ein Fehler unbehandelt und ging genau deshalb
+      // nach Sentry; ein Zweig, der alles verschluckt, hätte den 500 beim
+      // Öffnen eines Profils lautlos aus dem Monitoring genommen. Der sichtbare
+      // Hinweis kommt weiterhin vom Interceptor, der für 404, 4xx, 5xx und
+      // status 0 eigene Zweige hat.
       error: (err) => {
-        if (err?.status !== 403) return;
-
-        if (this.player) {
-          this._notificationService.error(
-            this._transloco.translate('playerAdmin.edit.noAccess'),
-            { autoClose: true, keepAfterRouteChange: false }
-          );
+        if (err?.status !== 403) {
+          this._errorHandler.handleError(err);
           return;
         }
 
-        this.loadDenied = true;
-        this._cdr.markForCheck();
+        this._handleProfileForbidden(parseInt(id));
       },
     });
+  }
+
+  // Die Absage auf den Profilabruf: als Hinweis statt der Maske, wenn dieses
+  // Profil noch gar nicht offen war, sonst als Meldung.
+  //
+  // Verglichen wird die angefragte id, nicht bloß die Anwesenheit eines
+  // Profils: Die Komponente hängt an `route.params` und überlebt einen
+  // Parameterwechsel. Beim Sprung von einem erlaubten auf ein gesperrtes Profil
+  // stünde sonst weiterhin das alte, vollständig und bearbeitbar, unter der
+  // Adresse des neuen.
+  //
+  // Der zweite Zweig ist der Neuladevorgang nach einer Aktion (Freigabe,
+  // Lizenzentscheidung, Sperre). Dort bleibt die gefüllte Maske stehen, die
+  // Meldung muss aber sein: Der Interceptor zeigt sie in diesem einen Fall
+  // nicht mehr.
+  private _handleProfileForbidden(id: number): void {
+    if (this.player?.id === id) {
+      this._notificationService.error(
+        this._transloco.translate('playerAdmin.edit.noAccess'),
+        { autoClose: true, keepAfterRouteChange: false }
+      );
+      this._cdr.markForCheck();
+      return;
+    }
+
+    this.player = undefined;
+    this.loadDenied = true;
+    this._cdr.markForCheck();
   }
 
   public loadLicenseDocuments(): void {

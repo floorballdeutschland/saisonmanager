@@ -203,12 +203,16 @@ export class ErrorInterceptor implements HttpInterceptor {
         //
         // Die Trefferliste verlinkt solche Profile seit api#567 gar nicht mehr
         // (`manageable`), erreichbar bleiben sie über einen kopierten Link oder
-        // einen Tab, der offen stand, während sich die Rolle änderte. Die Maske
-        // meldet den Fall selbst (loadDenied in player-edit) und nennt den Weg
-        // zurück zur Suche, es geht also nichts still verloren.
+        // einen Tab, der offen stand, während sich die Rolle änderte.
+        //
+        // Es geht nichts still verloren, aber das gilt nur, solange BEIDE
+        // Aufrufer dieser Adresse den Fall selbst melden: die Spielermaske über
+        // `loadDenied` (player-edit) und die Dublettenmaske über ihren eigenen
+        // error-Zweig (player-merge), die dabei auf die Suche zurückspringt. Wer
+        // hier einen dritten Aufrufer anschließt, muss dasselbe tun.
         //
         // Bewusst nur der 403 und nur der Profilabruf: Der frühe return
-        // übersprungen sonst den 401, und eine abgelaufene Sitzung würde beim
+        // überspränge sonst den 401, und eine abgelaufene Sitzung würde beim
         // Öffnen eines Profils nicht mehr abmelden. Die Aktionen unter derselben
         // Adresse (handle_license_request, set_gf_license_role, deactivate) haben
         // ihre eigenen Zweige weiter unten.

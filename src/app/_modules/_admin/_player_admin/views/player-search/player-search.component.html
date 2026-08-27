@@ -41,7 +41,17 @@
               }
             </div>
 
-            @if (!loading && searched && results.length === 0) {
+            <!--
+              „Keine Spieler gefunden" ist eine Aussage ueber den Bestand und
+              darf nicht fuer einen gescheiterten Abruf herhalten: Gerade diese
+              Suche klaert, ob es eine Person schon gibt, und die falsche
+              Auskunft fuehrt geradewegs zu einer Dublette.
+            -->
+            @if (!loading && searchFailed) {
+              <p class="text-sm text-red-700" data-testid="search-failed">
+                {{ "playerAdmin.search.searchFailed" | transloco }}
+              </p>
+            } @else if (!loading && searched && results.length === 0) {
               <p class="text-sm text-gray-500">
                 {{ "playerAdmin.search.noResults" | transloco }}
               </p>

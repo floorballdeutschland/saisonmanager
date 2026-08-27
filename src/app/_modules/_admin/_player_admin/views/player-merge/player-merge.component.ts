@@ -64,8 +64,23 @@ export class PlayerMergeComponent implements OnInit, OnDestroy {
               this.master = p;
               this._cdr.markForCheck();
             },
-            error: () =>
-              this._router.navigate(['/', 'verwaltung', 'spieler', 'suche']),
+            // Der Rueckweg auf die Suche bleibt, die Begruendung kommt jetzt
+            // mit: Seit der Profilabruf beim 403 vom Rauswurf des
+            // ErrorInterceptors ausgenommen ist, meldet der ihn nicht mehr, und
+            // diese Maske sprang wortlos zurueck. Genau der Fall ist hier
+            // erreichbar, denn `player_merge` hat auch die auf einen
+            // Spielbetrieb begrenzte SBK, waehrend `merge` den Zugriff auf das
+            // Profil verlangt. Die Meldung muss den Routenwechsel ueberleben,
+            // sonst raeumt ihn die Suche sofort wieder ab.
+            error: (err) => {
+              if (err?.status === 403) {
+                this._notificationService.error(
+                  this._transloco.translate('playerAdmin.edit.noAccess'),
+                  { autoClose: false, keepAfterRouteChange: true }
+                );
+              }
+              this._router.navigate(['/', 'verwaltung', 'spieler', 'suche']);
+            },
           });
       });
   }
