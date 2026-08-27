@@ -7,8 +7,9 @@ import {
 } from '@angular/core';
 import { PlayerService } from '@floorball/core';
 import { PlayerSearchResult } from '@floorball/models';
-import { Subject } from 'rxjs';
+import { Subject, of } from 'rxjs';
 import {
+  catchError,
   debounceTime,
   distinctUntilChanged,
   switchMap,
@@ -27,6 +28,8 @@ export class PlayerSearchComponent implements OnDestroy {
   results: PlayerSearchResult[] = [];
   loading = false;
   searched = false;
+  /** Der Abruf ist gescheitert – von „keine Treffer" zu unterscheiden. */
+  searchFailed = false;
 
   private _query$ = new Subject<string>();
   private _destroy$ = new Subject<boolean>();
@@ -47,24 +50,31 @@ export class PlayerSearchComponent implements OnDestroy {
             this.results = [];
             this.loading = false;
             this.searched = false;
+            this.searchFailed = false;
             this._cdr.markForCheck();
             return [];
           }
           this.loading = true;
+          this.searchFailed = false;
           this._cdr.markForCheck();
-          return this._playerService.globalSearch(q);
+          // Der Fehler wird INNERHALB des switchMap abgefangen: Ein Fehler der
+          // inneren Observable laeuft sonst bis zum aeusseren Subscriber durch
+          // und beendet dessen Subscription. `_query$` ist ein langlebiges
+          // Subject, das Suchfeld nahm nach einem einzigen Fehlschlag also
+          // weiter Eingaben an, ohne je wieder etwas zu tun -- bis zum
+          // Neuladen der Seite, und ohne jeden Hinweis darauf.
+          return this._playerService.globalSearch(q).pipe(
+            catchError(() => {
+              this.searchFailed = true;
+              return of([] as PlayerSearchResult[]);
+            })
+          );
         }),
         takeUntil(this._destroy$)
       )
       .subscribe({
         next: (res) => {
           this.results = res;
-          this.loading = false;
-          this.searched = true;
-          this._cdr.markForCheck();
-        },
-        error: () => {
-          this.results = [];
           this.loading = false;
           this.searched = true;
           this._cdr.markForCheck();

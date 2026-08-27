@@ -41,7 +41,17 @@
               }
             </div>
 
-            @if (!loading && searched && results.length === 0) {
+            <!--
+              „Keine Spieler gefunden" ist eine Aussage ueber den Bestand und
+              darf nicht fuer einen gescheiterten Abruf herhalten: Gerade diese
+              Suche klaert, ob es eine Person schon gibt, und die falsche
+              Auskunft fuehrt geradewegs zu einer Dublette.
+            -->
+            @if (!loading && searchFailed) {
+              <p class="text-sm text-red-700" data-testid="search-failed">
+                {{ "playerAdmin.search.searchFailed" | transloco }}
+              </p>
+            } @else if (!loading && searched && results.length === 0) {
               <p class="text-sm text-gray-500">
                 {{ "playerAdmin.search.noResults" | transloco }}
               </p>
@@ -51,51 +61,100 @@
               <ul role="list" class="divide-y divide-gray-200">
                 @for (player of results; track player) {
                   <li>
-                    <a
-                      [routerLink]="[
-                        '/',
-                        'verwaltung',
-                        'vereine',
-                        player.club_id ?? 'alle',
-                        'spieler',
-                        player.id,
-                        'bearbeiten',
-                      ]"
-                      class="block hover:bg-gray-50"
-                    >
-                      <div class="px-4 py-4 sm:px-6">
-                        <div class="flex items-center justify-between">
-                          <p class="truncate text-sm font-medium">
-                            {{ player.last_name }}, {{ player.first_name }}
-                            @if (player.gender) {
-                              <span
-                                class="ml-1 inline-block rounded px-1 text-xs font-normal text-fb-gray-400"
-                                >{{ player.gender | gender }}</span
-                              >
-                            }
-                            @if (player.deactivated_at) {
-                              <span
-                                class="ml-1 inline-block rounded-full bg-gray-100 px-2 text-[11px] font-semibold leading-5 text-gray-500"
-                                >{{
-                                  "playerAdmin.search.deactivatedBadge"
-                                    | transloco
-                                }}</span
-                              >
-                            }
-                          </p>
-                          <div class="ml-2 flex-shrink-0 text-sm text-gray-500">
-                            {{
-                              player.birthdate
-                                ? (player.birthdate | date: "dd.MM.yyyy")
-                                : "-"
-                            }}
-                          </div>
-                        </div>
+                    <!--
+                      Ein Treffer, den die eigene Rolle nicht oeffnen darf, wird
+                      nicht verlinkt: Die Suche laeuft ueber den gesamten
+                      Bestand, das Profil dahinter ist auf den
+                      Heimat-Spielbetrieb begrenzt. Der Link endete dort mit 403
+                      und warf ueber den Interceptor auf die Startseite, samt
+                      Suchbegriff und Trefferliste. Sichtbar bleibt der Treffer,
+                      genau dafuer gibt es die Suche.
+                    -->
+                    @if (player.manageable === false) {
+                      <div
+                        class="px-4 py-4 sm:px-6"
+                        data-testid="locked-result"
+                      >
+                        <ng-container
+                          *ngTemplateOutlet="
+                            zeile;
+                            context: { $implicit: player }
+                          "
+                        ></ng-container>
+                        <p class="mt-1 text-xs text-gray-500">
+                          {{
+                            player.responsible
+                              ? ("playerAdmin.search.noAccessHint"
+                                | transloco
+                                  : { association: player.responsible })
+                              : ("playerAdmin.search.noAccessHintUnknown"
+                                | transloco)
+                          }}
+                        </p>
                       </div>
-                    </a>
+                    } @else {
+                      <a
+                        [routerLink]="[
+                          '/',
+                          'verwaltung',
+                          'vereine',
+                          player.club_id ?? 'alle',
+                          'spieler',
+                          player.id,
+                          'bearbeiten',
+                        ]"
+                        class="block hover:bg-gray-50"
+                      >
+                        <div class="px-4 py-4 sm:px-6">
+                          <ng-container
+                            *ngTemplateOutlet="
+                              zeile;
+                              context: { $implicit: player }
+                            "
+                          ></ng-container>
+                        </div>
+                      </a>
+                    }
                   </li>
                 }
               </ul>
+
+              <ng-template #zeile let-player>
+                <div class="flex items-center justify-between">
+                  <p class="truncate text-sm font-medium">
+                    {{ player.last_name }}, {{ player.first_name }}
+                    @if (player.gender) {
+                      <span
+                        class="ml-1 inline-block rounded px-1 text-xs font-normal text-fb-gray-400"
+                        >{{ player.gender | gender }}</span
+                      >
+                    }
+                    @if (player.deactivated_at) {
+                      <span
+                        class="ml-1 inline-block rounded-full bg-gray-100 px-2 text-[11px] font-semibold leading-5 text-gray-500"
+                        >{{
+                          "playerAdmin.search.deactivatedBadge" | transloco
+                        }}</span
+                      >
+                    }
+                    @if (player.manageable === false) {
+                      <span
+                        class="ml-1 inline-block rounded-full bg-gray-100 px-2 text-[11px] font-semibold leading-5 text-gray-500"
+                        >{{
+                          "playerAdmin.search.noAccessBadge" | transloco
+                        }}</span
+                      >
+                    }
+                  </p>
+                  <div class="ml-2 flex-shrink-0 text-sm text-gray-500">
+                    {{
+                      player.birthdate
+                        ? (player.birthdate | date: "dd.MM.yyyy")
+                        : "-"
+                    }}
+                  </div>
+                </div>
+              </ng-template>
             }
 
             @if (!searched && query.length < 2) {

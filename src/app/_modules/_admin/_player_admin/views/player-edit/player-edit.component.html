@@ -30,6 +30,27 @@
       {{ "playerAdmin.edit.createVmOnly" | transloco }}
     </div>
   }
+
+  <!--
+    Das Profil gehoert zu einem anderen Spielbetrieb. Frueher warf der
+    ErrorInterceptor dafuer auf die Startseite, mitsamt der Suche, aus der der
+    Aufruf kam. Die Absage steht deshalb hier, und mit ihr der Weg zurueck.
+  -->
+  @if (loadDenied) {
+    <div
+      data-testid="load-denied"
+      class="mb-4 rounded bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm text-yellow-800"
+    >
+      {{ "playerAdmin.edit.noAccess" | transloco }}
+      @if (permissions["menu_item_player_admin"]) {
+        <a
+          [routerLink]="['/', 'verwaltung', 'spieler', 'suche']"
+          class="ml-1 underline"
+          >{{ "playerAdmin.edit.backToSearch" | transloco }}</a
+        >
+      }
+    </div>
+  }
 </div>
 
 <ng-container>
@@ -410,7 +431,11 @@
               </div>
             }
           </div>
-        } @else {
+        } @else if (!loadDenied) {
+          <!--
+            Nicht bei loadDenied: Ohne diese Bedingung drehte sich unter dem
+            Hinweis „kein Zugriff" ein Ladekreisel weiter, der nie ankommt.
+          -->
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               <svg
@@ -655,7 +680,11 @@
               }
             </div>
           </div>
-        } @else {
+        } @else if (!loadDenied) {
+          <!--
+            Nicht bei loadDenied: Ohne diese Bedingung drehte sich unter dem
+            Hinweis „kein Zugriff" ein Ladekreisel weiter, der nie ankommt.
+          -->
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               <svg
@@ -678,7 +707,13 @@
           </div>
         }
 
-        @if (editMode) {
+        <!--
+          `player` gehoert zur Bedingung: `editMode` ist mit true vorbelegt und
+          wird auf dem Profil-Pfad nie zurueckgesetzt. Ohne das Profil stand die
+          Karte deshalb auch dann da, wenn der Abruf abgelehnt wurde, samt
+          „Freigabe erteilen" -- ein Knopf, der ohne Spieler-id ins Leere greift.
+        -->
+        @if (editMode && player) {
           <div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
