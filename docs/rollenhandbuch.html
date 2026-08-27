@@ -2722,6 +2722,20 @@
                 Reaktivieren ist jederzeit möglich.
               </p>
               <p class="proc-text">
+                Die <strong>Spielersuche</strong> durchsucht bewusst den
+                gesamten Bestand und nicht nur den eigenen Spielbetrieb, denn
+                eine Landes-SBK muss eine zuziehende Person finden können, bevor
+                ein Transfer überhaupt beginnt. Das Profil dahinter ist dagegen
+                auf den Heimatverband der Person begrenzt. Ein Treffer, den die
+                eigene Rolle nicht öffnen darf, ist deshalb nicht verlinkt,
+                sondern als <em>kein Zugriff</em> gekennzeichnet und nennt den
+                zuständigen Spielbetrieb, an den sich eine Rückfrage richtet.
+                Findbar bleiben diese Personen mit Name, Geburtsdatum und
+                Geschlecht, denn genau dafür gibt es die Suche. Vereins- und
+                Teammanagern steht sie wie bisher nicht offen; sie arbeiten mit
+                der Spielerliste ihres Vereins.
+              </p>
+              <p class="proc-text">
                 Ein Spieler trägt seine
                 <strong>Vereinsmitgliedschaften</strong> als Historie mit Start-
                 und Enddatum. Zusätzliche Mitgliedschaften, etwa für
@@ -3001,9 +3015,24 @@
                 <strong>vorläufig benachrichtigen</strong> (die Schiris bekommen
                 eine E-Mail, der Status bleibt vorläufig), danach
                 <strong>veröffentlichen</strong>. Beim Veröffentlichen erhalten
-                die Schiris eine E-Mail mit einem Lizenzkarten-Link (72 Stunden
-                gültig), und die Schiedsrichterbezeichnung am Spiel wird
+                die Schiris eine E-Mail, die den Termin als Kalenderdatei
+                beilegt, und die Schiedsrichterbezeichnung am Spiel wird
                 gesetzt.
+              </p>
+              <p class="proc-text">
+                Die <strong>Lizenzlisten</strong> hängen nicht an dieser Mail,
+                denn angesetzt wird oft Wochen im Voraus. Sie kommen in einer
+                eigenen Mail wenige Tage vor dem Spiel, wöchentlich in der Nacht
+                von Donnerstag auf Freitag für alle Spiele der kommenden sieben
+                Tage, gebündelt mit einer Zeile je Spiel. Jeder Link läuft am
+                Ende des Tages nach dem jeweiligen Spiel ab, damit bis zum
+                Anpfiff nachgereichte Expresslizenzen sichtbar sind und danach
+                niemand mehr an die Spielerdaten kommt. Wird so kurzfristig
+                angesetzt, dass kein wöchentlicher Lauf mehr vor dem Spiel
+                liegt, kommen die Listen direkt mit der Ansetzungsmail. Wird ein
+                Gespann umbesetzt, gehen sie an die neue Besetzung; wird der
+                Spieltag verschoben, verfällt der alte Link und vor dem neuen
+                Termin geht ein frischer hinaus.
               </p>
               <p class="proc-text">
                 Welche Spiele in dieser Liste stehen, steuert die SBK je Spiel
@@ -3349,6 +3378,23 @@
                 Beantragen prüft das System die für die Liga hinterlegten
                 Pflichtdokumente (siehe unten) und, je nach Liga, die
                 Altersberechtigung.
+              </p>
+              <p class="proc-text">
+                Aufstellen darf grundsätzlich nur, wessen Lizenz für die
+                aufstellende Mannschaft <strong>erteilt</strong> ist; der
+                Kader-Dialog des Spielberichts blendet alles andere aus.
+                Landesverbände, deren SBK über die Anträge erst nach dem
+                Spieltag entscheidet, können das über den Schalter
+                <strong>Beantragte Lizenz einsetzbar</strong> lockern: Dort
+                genügt der offene Antrag. Zugelassen ist ausschließlich dieser.
+                Abgelehnt, zurückgezogen, gelöscht und gesperrt bleiben
+                ausgeschlossen, ebenso eine Lizenz für eine andere Mannschaft
+                und eine, deren Lizenzklasse nicht zur Spielklasse passt.
+                Maßgeblich ist der Verband der <strong>Liga</strong> und nicht
+                der des Vereins, also dieselbe Zuständigkeit wie bei der
+                Expresslizenz: Eine Mannschaft, die zusätzlich im Pokal eines
+                anderen Verbands antritt, richtet sich dort nach dessen Regel.
+                An der Gebührenpflicht ändert der Schalter nichts.
               </p>
               <p class="proc-text">
                 Über den einfachen Weg Beantragt, dann Erteilt hinaus kennt die
@@ -3866,6 +3912,21 @@
                 ihn Vereins- und Teammanager selbst unter
                 <strong>Verein › Spielsekretariat</strong>, außerdem Admin und
                 SBK über die Spielplanverwaltung.
+              </p>
+              <p class="proc-text">
+                Für Vereins- und Teammanager zählt dabei allein der
+                <strong>Ausrichter</strong>. In der Übersicht stehen nur
+                Spieltage, die der eigene Verein ausrichtet, beim Teammanager
+                zusätzlich nur die der eigenen Mannschaft. Am Tisch sitzt der
+                ausrichtende Verein, und der Link öffnet die Spielberichte aller
+                Spiele der Halle an diesem Tag: Ein Gastverein hat darin nichts
+                zu suchen. Eine Spielgemeinschaft, die unter einem ihrer
+                Partnervereine ausrichtet, fällt nicht durch, denn verglichen
+                werden alle Vereine der Mannschaft. Ist am Spieltag kein
+                Ausrichter eingetragen, gibt es dort keinen Link; sobald er
+                nachgetragen ist, ist er da. Dieselbe Regel gilt für den
+                Overlay-Zugang der Livestream-Grafiken, weil auch dort aus der
+                Halle des Ausrichters gestreamt wird.
               </p>
               <p class="proc-text">
                 Der Link gilt für einen <strong>ganzen Spieltag</strong> und
@@ -4549,6 +4610,17 @@
                       <td class="def">aus</td>
                     </tr>
                     <tr>
+                      <td>
+                        <strong>Beantragte Lizenz einsetzbar</strong>
+                      </td>
+                      <td>
+                        Wer für die Mannschaft einen Lizenzantrag gestellt hat,
+                        darf in den Ligen dieses Spielbetriebs schon vor der
+                        Erteilung aufgestellt werden.
+                      </td>
+                      <td class="def">aus</td>
+                    </tr>
+                    <tr>
                       <td><strong>Kontrollprozess Schiri-Lizenzen</strong></td>
                       <td>
                         Beim Kurs-Import werden Korrekturen und Neuanlagen dem
@@ -5140,8 +5212,9 @@
                 <strong>Vorläufige Benachrichtigung:</strong> Die angesetzten
                 Schiedsrichter erhalten eine E-Mail; der Status bleibt
                 Vorläufig. · <strong>Veröffentlichen:</strong> Status wechselt
-                zu Veröffentlicht; Schiedsrichter erhalten eine E-Mail mit einem
-                Lizenzkarten-Link (72 Stunden gültig); die
+                zu Veröffentlicht; Schiedsrichter erhalten eine E-Mail mit dem
+                Termin als Kalenderdatei, die Lizenzlisten folgen in einer
+                eigenen Mail wenige Tage vor dem Spiel; die
                 Schiedsrichterbezeichnung am Spiel wird gesetzt. ·
                 <strong>Verfügbarkeitsprüfung:</strong> In der Auswahl
                 erscheinen nur Schiedsrichter, die den Spieltag als verfügbar
@@ -6985,6 +7058,12 @@
                 <li>Spielerliste einsehen, Spieler anlegen</li>
                 <li>Spieler deaktivieren und reaktivieren</li>
                 <li>Spielerprofil-Detailseite aufrufen</li>
+                <li>
+                  E-Mail-Adressen als eigene Spalte sehen, fehlende sind rot
+                  markiert und unter der Gesamtzahl steht, bei wie vielen sie
+                  fehlt. Ohne Adresse laufen die Zustimmung zu Transfer und
+                  Freigabe und die Nachricht über die erteilte Lizenz ins Leere
+                </li>
               </ul>
             </div>
             <div class="cap">
@@ -7842,8 +7921,11 @@
               </div>
               <div class="note">
                 Mit der Veröffentlichung erhält der Schiedsrichter eine E-Mail
-                mit einem Lizenzlisten-Link, der
-                <strong>72 Stunden</strong> gültig ist. Über „Meine Spieltage“
+                mit dem Termin als Kalenderdatei. Die Lizenzlisten kommen in
+                einer eigenen Mail wenige Tage vor dem Spiel, wöchentlich in der
+                Nacht von Donnerstag auf Freitag und gebündelt für alle
+                Ansetzungen der kommenden sieben Tage; ihr Link läuft am Ende
+                des Tages nach dem Spiel ab. Über „Meine Spieltage“
                 wird der Spieltag bestätigt; bleibt die Bestätigung aus, kann
                 der Spieltag automatisch als bestätigt gelten. Die Bestätigung
                 der ordnungsgemäßen Durchführung setzt voraus, dass der
