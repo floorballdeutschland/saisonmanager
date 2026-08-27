@@ -190,6 +190,39 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Das Spielerprofil ist der Ort, an dem eine Absage zu lesen sein muss,
+        // nicht die Startseite. Die Spielersuche (/verwaltung/spieler/suche)
+        // durchsucht bewusst den gesamten Bestand — eine Landes-SBK muss eine
+        // zuziehende Person finden können —, während das Profil dahinter auf den
+        // Heimat-Spielbetrieb begrenzt ist. Jeder Treffer aus einem anderen
+        // Landesverband war damit ein Link, der über diesen Zweig auf die
+        // Startseite führte und dabei Suchbegriff und Trefferliste mitnahm; beide
+        // stehen nur im Komponentenzustand. Wer eine Person nicht sicher zuordnen
+        // konnte, klickte reihum durch die Namensgleichen und flog jedes Mal
+        // erneut heraus.
+        //
+        // Die Trefferliste verlinkt solche Profile seit api#567 gar nicht mehr
+        // (`manageable`), erreichbar bleiben sie über einen kopierten Link oder
+        // einen Tab, der offen stand, während sich die Rolle änderte.
+        //
+        // Es geht nichts still verloren, aber das gilt nur, solange BEIDE
+        // Aufrufer dieser Adresse den Fall selbst melden: die Spielermaske über
+        // `loadDenied` (player-edit) und die Dublettenmaske über ihren eigenen
+        // error-Zweig (player-merge), die dabei auf die Suche zurückspringt. Wer
+        // hier einen dritten Aufrufer anschließt, muss dasselbe tun.
+        //
+        // Bewusst nur der 403 und nur der Profilabruf: Der frühe return
+        // überspränge sonst den 401, und eine abgelaufene Sitzung würde beim
+        // Öffnen eines Profils nicht mehr abmelden. Die Aktionen unter derselben
+        // Adresse (handle_license_request, set_gf_license_role, deactivate) haben
+        // ihre eigenen Zweige weiter unten.
+        if (
+          err.status === 403 &&
+          /admin\/players\/\d+\.json(\?|$)/.test(request.url)
+        ) {
+          return throwError(() => err);
+        }
+
         // Der Spielplanimport meldet seine Fehler selbst, und zwar ausführlich:
         // Die Maske listet jede beanstandete Zeile einzeln auf, dazu die
         // Warnungen. Die Antwort transportiert diese Liste als JSON-String im

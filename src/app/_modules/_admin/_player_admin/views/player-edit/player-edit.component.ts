@@ -1,6 +1,7 @@
 import {
   ChangeDetectorRef,
   Component,
+  ErrorHandler,
   OnDestroy,
   OnInit,
   ViewEncapsulation,
@@ -31,6 +32,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { PLAYER_GENDERS } from '@floorball/types';
 
 // Lizenzen des Spielers, nach Saison gruppiert (aktuelle Saison zuerst).
@@ -92,6 +94,13 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   /** Abruf der Dokumente gescheitert (meist 403) – von „keine vorhanden" zu unterscheiden. */
   documentsFailed = false;
 
+  /**
+   * Das Profil liegt außerhalb der eigenen Zuständigkeit (403 beim Öffnen).
+   * Der ErrorInterceptor leitet dafür nicht mehr auf die Startseite um, siehe
+   * dort; die Absage muss deshalb hier stehen.
+   */
+  loadDenied = false;
+
   // Dokumentarten, die für diesen Spieler hochgeladen werden können: global
   // gültige plus die seines Heimat-Spielbetriebs, ohne die altersmäßig
   // erledigten. Die Auswahl kommt vom Server, nicht aus dem Katalog-Abruf, der
@@ -133,6 +142,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     private _notificationService: NotificationService,
     private _changeRequestService: PlayerChangeRequestService,
     private _associationService: AssociationService,
+    private _transloco: TranslocoService,
+    private _errorHandler: ErrorHandler,
     private _metaTitle: Title
   ) {
     this._metaTitle.setTitle('Floorball Saisonmanager Spielerverwaltung');
@@ -183,6 +194,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     // (route.params), sonst stuende die Auswahl oder Fehlermeldung des vorigen
     // Spielers noch da.
     this._resetDocumentUploadState();
+    this.loadDenied = false;
 
     // Im Profil die vollständige, saisonübergreifende Lizenzhistorie laden.
     this._playerService.getPlayer(parseInt(id), true).subscribe({
@@ -195,7 +207,56 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
         this._cdr.markForCheck();
       },
+      // Ausschließlich der 403 wird hier ausgewertet: Er heißt „das Profil
+      // gehört zu einem anderen Spielbetrieb", und weil der ErrorInterceptor
+      // dafür nicht mehr umleitet (der Rauswurf nahm die Spielersuche mit),
+      // muss die Maske ihn selbst zeigen.
+      //
+      // Jeder andere Status geht ausdrücklich an den globalen ErrorHandler.
+      // Das ist kein Beiwerk: In Produktion ist das `Sentry.createErrorHandler()`
+      // (app.module.ts), und der sieht sonst nichts von diesem Abruf. Vor
+      // diesem error-Zweig blieb ein Fehler unbehandelt und ging genau deshalb
+      // nach Sentry; ein Zweig, der alles verschluckt, hätte den 500 beim
+      // Öffnen eines Profils lautlos aus dem Monitoring genommen. Der sichtbare
+      // Hinweis kommt weiterhin vom Interceptor, der für 404, 4xx, 5xx und
+      // status 0 eigene Zweige hat.
+      error: (err) => {
+        if (err?.status !== 403) {
+          this._errorHandler.handleError(err);
+          return;
+        }
+
+        this._handleProfileForbidden(parseInt(id));
+      },
     });
+  }
+
+  // Die Absage auf den Profilabruf: als Hinweis statt der Maske, wenn dieses
+  // Profil noch gar nicht offen war, sonst als Meldung.
+  //
+  // Verglichen wird die angefragte id, nicht bloß die Anwesenheit eines
+  // Profils: Die Komponente hängt an `route.params` und überlebt einen
+  // Parameterwechsel. Beim Sprung von einem erlaubten auf ein gesperrtes Profil
+  // stünde sonst weiterhin das alte, vollständig und bearbeitbar, unter der
+  // Adresse des neuen.
+  //
+  // Der zweite Zweig ist der Neuladevorgang nach einer Aktion (Freigabe,
+  // Lizenzentscheidung, Sperre). Dort bleibt die gefüllte Maske stehen, die
+  // Meldung muss aber sein: Der Interceptor zeigt sie in diesem einen Fall
+  // nicht mehr.
+  private _handleProfileForbidden(id: number): void {
+    if (this.player?.id === id) {
+      this._notificationService.error(
+        this._transloco.translate('playerAdmin.edit.noAccess'),
+        { autoClose: true, keepAfterRouteChange: false }
+      );
+      this._cdr.markForCheck();
+      return;
+    }
+
+    this.player = undefined;
+    this.loadDenied = true;
+    this._cdr.markForCheck();
   }
 
   public loadLicenseDocuments(): void {
