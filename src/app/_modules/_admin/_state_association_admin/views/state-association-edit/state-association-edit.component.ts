@@ -38,7 +38,7 @@ import {
 // effective_*-Methoden. Nicht dabei sind die Postfaecher, die anders erben (ein
 // eigener Eintrag am Kind-LV gewinnt) sowie Stammdaten, Zustaendigkeitsbereich,
 // Logo, Banner, Spieltagscheckliste und Freigaben.
-const INHERITED_SETTINGS = [
+export const INHERITED_SETTINGS = [
   'express_license_enabled',
   'referee_license_review_enabled',
   'scan_required',
@@ -47,6 +47,7 @@ const INHERITED_SETTINGS = [
   'person_level_assignment_default',
   'report_form_email_enabled',
   'manual_proceeding_creation',
+  'requested_license_playable',
 ] as const;
 
 type InheritedSetting = (typeof INHERITED_SETTINGS)[number];
@@ -62,6 +63,7 @@ const EFFECTIVE_SETTING: Record<InheritedSetting, keyof StateAssociation> = {
   person_level_assignment_default: 'effective_person_level_assignment_default',
   report_form_email_enabled: 'effective_report_form_email_enabled',
   manual_proceeding_creation: 'effective_manual_proceeding_creation',
+  requested_license_playable: 'effective_requested_license_playable',
 };
 
 @Component({
@@ -412,22 +414,31 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     // Verbund die früher gepflegten eigenen Werte wieder freigibt, statt einen
     // stillschweigend überschriebenen Stand zu hinterlassen.
     //
+    // Der Block wird aus INHERITED_SETTINGS abgeleitet und nicht handgeschrieben:
+    // Eine Einstellung, die in der Konstante steht, hier aber vergessen wird,
+    // lässt sich in der Maske anhaken und verschwindet beim Speichern spurlos —
+    // der Server antwortet 200, weil er den fehlenden Schlüssel nicht vermisst.
+    // Genau so wäre `requested_license_playable` als toter Schalter in die
+    // Verbandsmaske gekommen.
+    //
     // Die drei Ansetzungs-Optionen kommen aus ihren Gettern, damit die
     // Staffelung schon im Payload steht; der Server räumt widersprüchliche
     // Kombinationen zusätzlich auf.
     if (!this.hasParent) {
-      Object.assign(payload, {
-        express_license_enabled: this.setting('express_license_enabled'),
-        referee_license_review_enabled: this.setting(
-          'referee_license_review_enabled'
-        ),
-        scan_required: this.setting('scan_required'),
+      const staged: Partial<Record<InheritedSetting, boolean>> = {
         referee_assignment_external_enabled: this.refereeAssignmentExternal,
         referee_assignment_enabled: this.refereeAssignmentPersonLevel,
         person_level_assignment_default: this.personLevelAssignmentDefault,
-        report_form_email_enabled: this.setting('report_form_email_enabled'),
-        manual_proceeding_creation: this.setting('manual_proceeding_creation'),
-      });
+      };
+      Object.assign(
+        payload,
+        Object.fromEntries(
+          INHERITED_SETTINGS.map((key) => [
+            key,
+            staged[key] ?? this.setting(key),
+          ])
+        )
+      );
     }
 
     const call =

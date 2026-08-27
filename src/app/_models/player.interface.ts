@@ -128,6 +128,17 @@ export interface PlayerSearchResult {
   // Die Suche liefert solche Profile bewusst mit: Die Deaktivierung ist eine
   // Kennzeichnung der Vereinsansicht und kein Hindernis fuer eine Aufnahme.
   deactivated_at?: string | null;
+  // Darf die angemeldete Rolle dieses Profil oeffnen? Die Suche laeuft ueber den
+  // gesamten Bestand, das Profil dahinter ist auf den Heimat-Spielbetrieb
+  // begrenzt — ohne diese Angabe boete die Liste Links an, die mit 403 enden.
+  // Steht an jedem Treffer, auch am oeffenbaren, damit `false` nicht mit einer
+  // Antwort ohne das Feld verwechselt wird.
+  manageable?: boolean;
+  // Der zustaendige Spielbetrieb, nur an gesperrten Treffern. Fehlt aus zwei
+  // Gruenden, die von hier aus nicht zu unterscheiden sind: Das Profil hat keine
+  // gueltige Heimat-Zugehoerigkeit, oder sein Heimatverein gehoert zu keinem
+  // Spielbetrieb. Der Hinweistext darf deshalb keine Ursache nennen.
+  responsible?: string | null;
 }
 
 export interface PlayerLicense {

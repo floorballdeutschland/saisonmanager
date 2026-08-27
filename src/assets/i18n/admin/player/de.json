@@ -15,6 +15,8 @@
     "editPlayer": "Spieler bearbeiten",
     "newPlayer": "Neuen Spieler anlegen",
     "createVmOnly": "Neue Spieler*innen legt der Vereinsmanager dieses Vereins an, hier lässt sich nichts speichern. Wenn du gerade als Vereinsmanager eingetragen wurdest, melde dich einmal ab und wieder an.",
+    "noAccess": "Dieses Profil liegt außerhalb deiner Zuständigkeit und lässt sich hier nicht öffnen. Zuständig ist der Spielbetrieb des Heimatvereins; für Rückfragen wende dich bitte dorthin. Wenn sich deine Rolle gerade geändert hat, melde dich einmal ab und wieder an.",
+    "backToSearch": "← Zurück zur Spielersuche",
     "playerData": "Spielerdaten",
     "playerId": "Spieler ID",
     "idAfterCreate": "Wird nach dem Anlegen festgelegt",
@@ -143,8 +145,12 @@
     "results": "Ergebnisse",
     "searching": "wird gesucht...",
     "noResults": "Keine Spieler gefunden.",
+    "searchFailed": "Die Suche ist fehlgeschlagen. Das heißt nicht, dass es die Person nicht gibt, bitte den Versuch wiederholen.",
     "minChars": "Mindestens 2 Zeichen eingeben, um die Suche zu starten.",
-    "deactivatedBadge": "deaktiviert"
+    "deactivatedBadge": "deaktiviert",
+    "noAccessBadge": "kein Zugriff",
+    "noAccessHint": "Für dieses Profil ist {{association}} zuständig. Öffnen kannst du es nicht, für Rückfragen wende dich bitte dorthin.",
+    "noAccessHintUnknown": "Für dieses Profil lässt sich kein zuständiger Spielbetrieb ermitteln. Öffnen können es die Administration und die bundesweite Spielbetriebskommission."
   },
   "merge": {
     "backToSearch": "← Zurück zur Spielersuche",

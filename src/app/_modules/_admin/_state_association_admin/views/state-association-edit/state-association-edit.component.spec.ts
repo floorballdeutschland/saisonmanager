@@ -10,7 +10,10 @@ import {
   StateAssociationService,
 } from '@floorball/core';
 import { StateAssociation, User } from '@floorball/types';
-import { StateAssociationEditComponent } from './state-association-edit.component';
+import {
+  INHERITED_SETTINGS,
+  StateAssociationEditComponent,
+} from './state-association-edit.component';
 
 // Untergeordneter Landesverband, wie ihn der Detail-Endpunkt liefert: eigene
 // Postfächer leer, die geerbten Werte als effective_* daneben.
@@ -44,6 +47,7 @@ const KIND_LV: StateAssociation = {
   effective_person_level_assignment_default: true,
   effective_report_form_email_enabled: true,
   effective_manual_proceeding_creation: true,
+  effective_requested_license_playable: true,
   effective_vsk_email: 'vsk@verbund.example.com',
   effective_sbk_email: 'sbk@verbund.example.com',
   effective_rsk_email: null,
@@ -162,6 +166,7 @@ describe('StateAssociationEditComponent', () => {
     expect(component.setting('referee_license_review_enabled')).toBeTrue();
     expect(component.setting('report_form_email_enabled')).toBeTrue();
     expect(component.setting('manual_proceeding_creation')).toBeTrue();
+    expect(component.setting('requested_license_playable')).toBeTrue();
     // Die drei gestaffelten Ansetzungs-Optionen ebenso.
     expect(component.refereeAssignmentExternal).toBeTrue();
     expect(component.refereeAssignmentPersonLevel).toBeTrue();
@@ -194,6 +199,7 @@ describe('StateAssociationEditComponent', () => {
     expect('referee_assignment_external_enabled' in payload).toBeFalse();
     expect('report_form_email_enabled' in payload).toBeFalse();
     expect('manual_proceeding_creation' in payload).toBeFalse();
+    expect('requested_license_playable' in payload).toBeFalse();
     // Stammdaten und Postfächer gehen weiter mit; die Postfächer erben anders
     // (ein eigener Eintrag gewänne), am Kind-LV steht bewusst keiner.
     expect(payload.name).toBe('Kind-LV');
@@ -242,6 +248,7 @@ describe('StateAssociationEditComponent', () => {
     component.stateAssociation.parent_id = null;
     component['_persistedParentId'] = null;
     component.setSetting('scan_required', true);
+    component.setSetting('requested_license_playable', true);
     component.refereeAssignmentExternal = true;
     component.refereeAssignmentPersonLevel = true;
 
@@ -255,6 +262,30 @@ describe('StateAssociationEditComponent', () => {
     // Die Staffelung steht schon im Payload: Die Voreinstellung ist nicht
     // gesetzt, obwohl die Personenebene an ist.
     expect(payload.person_level_assignment_default).toBeFalse();
+    // Der neue Schalter ebenso: Er stand in INHERITED_SETTINGS und in der
+    // Maske, fehlte aber im handgeschriebenen Payload-Block — die Checkbox
+    // liess sich anhaken und der Wert verschwand beim Speichern spurlos.
+    expect(payload.requested_license_playable).toBeTrue();
+  });
+
+  // Strukturell und nicht Feld fuer Feld: Die naechste Einstellung, die jemand
+  // in INHERITED_SETTINGS eintraegt, aber im Payload vergisst, faellt hier auf.
+  // Der negative Test weiter oben (Kind-LV sendet nichts mit) kann das nicht
+  // leisten — ein Schluessel, der nirgends geschrieben wird, besteht ihn.
+  it('sendet ohne Verbund JEDE Einstellung aus INHERITED_SETTINGS mit', () => {
+    const component = createComponent();
+    component.stateAssociation.parent_id = null;
+    component['_persistedParentId'] = null;
+
+    component.submit();
+
+    const payload = service.adminUpdate.calls.mostRecent()
+      .args[1] as StateAssociation;
+    INHERITED_SETTINGS.forEach((key) => {
+      expect(key in payload)
+        .withContext(`${key} fehlt im Payload`)
+        .toBeTrue();
+    });
   });
 
   it('trennt eigene und geerbte Bundeslaender', () => {

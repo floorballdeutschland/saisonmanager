@@ -78,6 +78,16 @@ describe('ErrorInterceptor', () => {
     httpMock.expectOne(url).flush(body, { status, statusText: 'Error' });
   }
 
+  // Wie failWith, nur lesend: Der Profilabruf unten ist ein GET, und ein POST
+  // auf dieselbe Adresse gaebe es gar nicht.
+  function failGetWith(body: object, status: number, url: string): void {
+    http.get(url).subscribe({
+      next: () => fail('expected the request to fail'),
+      error: () => undefined,
+    });
+    httpMock.expectOne(url).flush(body, { status, statusText: 'Error' });
+  }
+
   it('shows the server message for a 422 so a component needs no own toast', () => {
     failWith(
       { message: 'Das Logo muss quadratisch sein (gleiche Breite und Höhe).' },
@@ -460,8 +470,65 @@ describe('ErrorInterceptor', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
-  // Gegenprobe zur Ausnahme oben: Sie gilt genau diesem Endpunkt, nicht allem
-  // unter admin/players/. Die Spielerbearbeitung selbst ist eine eigene Seite.
+  // Der Profilabruf selbst: Die Spielersuche (/verwaltung/spieler/suche) geht
+  // ueber den gesamten Bestand, das Profil dahinter ist auf den
+  // Heimat-Spielbetrieb begrenzt. Jeder Treffer aus einem anderen Landesverband
+  // war damit ein Link, der hier auf die Startseite fuehrte und Suchbegriff wie
+  // Trefferliste mitnahm. Die Maske meldet den Fall selbst (loadDenied).
+  it('leaves the player mask alone when the profile itself is forbidden', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failGetWith(
+      { message: 'Keine Berechtigung.' },
+      403,
+      `${environment.apiURL}admin/players/4711.json?all_licenses=true`
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  // Die Ausnahme gilt nur dem 403. Der fruehe return duerfte den 401 nicht
+  // mitnehmen, sonst meldete eine abgelaufene Sitzung beim Oeffnen eines
+  // Profils niemanden mehr ab.
+  it('still logs out when the profile request hits an expired session', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+    failGetWith(
+      { message: 'Nicht eingeloggt.' },
+      401,
+      `${environment.apiURL}admin/players/4711.json?all_licenses=true`
+    );
+
+    expect(logoutSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/login'],
+      jasmine.objectContaining({ queryParams: jasmine.anything() })
+    );
+  });
+
+  // Und nur dem Profilabruf: Die Aktionen unter derselben Adresse haben eigene
+  // Zweige, alles andere bleibt beim generischen Verhalten.
+  it('still reports a server error on the profile request', () => {
+    failGetWith(
+      { message: 'kaputt' },
+      500,
+      `${environment.apiURL}admin/players/4711.json`
+    );
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Server-Fehler. Bitte versuche es später erneut.',
+      { autoClose: false, keepAfterRouteChange: false }
+    );
+  });
+
+  // Gegenprobe zu den beiden Ausnahmen oben (Profilabruf und GF-Rollen-
+  // Entscheidung): Sie gelten genau diesen Adressen, nicht allem unter
+  // admin/players/. `transfer` ist eine echte Route (routes.rb) und hat keinen
+  // eigenen Zweig, ein 403 darauf muss weiter melden und umleiten.
   it('still redirects on a 403 for other player endpoints', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigate');
@@ -469,7 +536,7 @@ describe('ErrorInterceptor', () => {
     failWith(
       { message: 'Keine Berechtigung.' },
       403,
-      `${environment.apiURL}admin/players/4711/update_player.json`
+      `${environment.apiURL}admin/players/4711/transfer.json`
     );
 
     expect(navigateSpy).toHaveBeenCalledWith(['/']);
@@ -705,5 +772,74 @@ describe('ErrorInterceptor', () => {
 
     expect(caught?.status).toBe(422);
     expect(caught?.error?.message).toBe('Datei zu groß.');
+  });
+
+  // Der Spielplanimport listet jede beanstandete Zeile in der Maske auf. Die
+  // Antwort transportiert diese Liste als JSON-String im Feld `message`, also
+  // genau dort, wo `errorDetail` den Meldungstext sucht. Ohne die Ausnahme
+  // stand neben der Liste ein Toast mit rohem JSON.
+  const importUrl = `${environment.apiURL}admin/leagues/import_schedule.json`;
+
+  function importFailsWith(body: object, status: number): unknown {
+    let received: unknown;
+    http.post(importUrl, new FormData()).subscribe({
+      next: () => fail('expected the request to fail'),
+      error: (err) => (received = err),
+    });
+    httpMock.expectOne(importUrl).flush(body, { status, statusText: 'Error' });
+    return received;
+  }
+
+  const importFehler = JSON.stringify({
+    errors: ['Zeile 12: Heimteam nicht erkannt'],
+    warnings: [],
+  });
+
+  it('leaves the schedule import alone on 400 so no raw JSON toast appears', () => {
+    const err = importFailsWith({ message: importFehler }, 400);
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    // Der Fehler muss die Maske erreichen, sonst hätte die Ausnahme den
+    // Fehlschlag stumm geschaltet statt die doppelte Meldung entfernt.
+    expect((err as HttpErrorResponse).error.message).toBe(importFehler);
+  });
+
+  it('leaves the schedule import alone on 422', () => {
+    importFailsWith(
+      {
+        message: JSON.stringify({
+          errors: ['Keine Importdatei'],
+          warnings: [],
+        }),
+      },
+      422
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  // Die Ausnahme gilt genau zwei Status. Der 401 gehört nicht dazu: Der Import
+  // wird angemeldet bedient, eine mitten darin abgelaufene Sitzung muss
+  // abmelden. Genau diese Verwechslung war der ursprüngliche Fehler (api#568),
+  // sie darf nicht über die Hintertür der Ausnahme zurückkommen.
+  it('still logs out when the schedule import hits an expired session', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+    importFailsWith({ success: false, message: 'Not authenticated' }, 401);
+
+    expect(logoutSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/login'],
+      jasmine.objectContaining({ queryParams: jasmine.anything() })
+    );
+  });
+
+  // Ein Serverfehler ist keine Zeilenliste, die die Maske aufzählen könnte.
+  it('still reports a server error on the schedule import', () => {
+    importFailsWith({ message: 'Server-Fehler.' }, 500);
+
+    expect(errorSpy).toHaveBeenCalled();
   });
 });

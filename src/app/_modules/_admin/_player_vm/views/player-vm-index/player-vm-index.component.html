@@ -54,6 +54,24 @@
           }}
         </button>
       }
+      <!-- Ohne E-Mail-Adresse laufen Transfer- und Elternzustimmung ins Leere.
+           Die Zahl zaehlt genau die Zeilen, die gerade in der Tabelle stehen
+           (deaktivierte also nur, solange sie eingeblendet sind), damit sie
+           sich mit der Spalte daneben deckt. -->
+      @if (emailKnown(list) && visiblePlayers(list).length > 0) {
+        <br />
+        <span
+          data-testid="missing-email-count"
+          [class.text-red-600]="missingEmailCount(list) > 0"
+        >
+          {{
+            missingEmailCount(list) === 0
+              ? ("playerVm.index.emailAllPresent" | transloco)
+              : ("playerVm.index.emailMissingCount"
+                | transloco: { count: missingEmailCount(list) })
+          }}
+        </span>
+      }
     </p>
     <!-- Diese Liste enthält auch die Vereine, in denen der Account nur
          Teammanager ist. Dort wird nicht angelegt, deaktiviert oder
@@ -106,6 +124,11 @@
             <th class="py-2 pr-4 font-bold">
               {{ "playerVm.index.colGender" | transloco }}
             </th>
+            @if (emailKnown(list)) {
+              <th class="py-2 pr-4 font-bold">
+                {{ "playerVm.index.colEmail" | transloco }}
+              </th>
+            }
             <th class="py-2 pr-4 font-bold">
               {{ "playerVm.index.colStatus" | transloco }}
             </th>
@@ -145,6 +168,24 @@
                       : ("playerVm.index.genderDiverse" | transloco)
                 }}
               </td>
+              <!-- Die Adresse selbst und nicht nur ein Haken: Der Verein
+                   erkennt daran auch einen Tippfehler oder eine
+                   Sammeladresse. Gepflegt wird sie im Profil daneben.
+                   Liefert die API das Feld noch nicht, entfaellt die Spalte
+                   ganz -- siehe emailKnown. -->
+              @if (emailKnown(list)) {
+                <td class="py-2 pr-4 break-all">
+                  @if (hasEmail(player)) {
+                    <span class="text-fb-gray-500">{{ player.email }}</span>
+                  } @else {
+                    <span
+                      data-testid="email-missing"
+                      class="text-red-600 text-xs font-medium"
+                      >{{ "playerVm.index.emailMissing" | transloco }}</span
+                    >
+                  }
+                </td>
+              }
               <td class="py-2 pr-4">
                 @if (!player.deactivated_at) {
                   <span class="text-green-600 text-xs font-medium">{{

@@ -15,6 +15,8 @@
     "editPlayer": "Edit player",
     "newPlayer": "Add new player",
     "createVmOnly": "New players are created by the club manager of this club, nothing can be saved here. If you have just been made club manager, sign out and back in once.",
+    "noAccess": "This profile is outside your area of responsibility and cannot be opened here. It is managed by the game operation of the player's home club; please direct any questions there. If your role has just changed, sign out and back in once.",
+    "backToSearch": "← Back to player search",
     "playerData": "Player data",
     "playerId": "Player ID",
     "idAfterCreate": "Will be assigned after creation",
@@ -143,8 +145,12 @@
     "results": "Results",
     "searching": "searching...",
     "noResults": "No players found.",
+    "searchFailed": "The search failed. That does not mean the person does not exist, please try again.",
     "minChars": "Enter at least 2 characters to start the search.",
-    "deactivatedBadge": "deactivated"
+    "deactivatedBadge": "deactivated",
+    "noAccessBadge": "no access",
+    "noAccessHint": "This profile is managed by {{association}}. You cannot open it; please direct any questions there.",
+    "noAccessHintUnknown": "No responsible game operation can be determined for this profile. Only the administration and the nationwide game operations committee can open it."
   },
   "merge": {
     "backToSearch": "← Back to player search",

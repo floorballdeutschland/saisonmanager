@@ -475,6 +475,30 @@
         >
           <input
             type="checkbox"
+            [ngModel]="setting('requested_license_playable')"
+            (ngModelChange)="setSetting('requested_license_playable', $event)"
+            name="requested_license_playable"
+            [disabled]="hasParent"
+            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+          />
+          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
+            <span class="text-sm font-bold">{{
+              "stateAssociationAdmin.edit.requestedLicensePlayableLabel"
+                | transloco
+            }}</span>
+            <span class="text-xs text-fb-gray-400">{{
+              "stateAssociationAdmin.edit.requestedLicensePlayableHint"
+                | transloco
+            }}</span>
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-3"
+          [class.cursor-not-allowed]="hasParent"
+          [class.cursor-pointer]="!hasParent"
+        >
+          <input
+            type="checkbox"
             [ngModel]="setting('referee_license_review_enabled')"
             (ngModelChange)="
               setSetting('referee_license_review_enabled', $event)

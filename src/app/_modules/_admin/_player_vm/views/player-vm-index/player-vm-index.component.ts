@@ -176,6 +176,53 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
     return list.players.filter((p) => p.deactivated_at).length;
   }
 
+  /**
+   * Liefert die API die E-Mail-Adresse überhaupt?
+   *
+   * Ohne diese Unterscheidung fielen zwei verschiedene Zustände zusammen: „das
+   * Feld kam nicht mit" und „die Adresse ist nicht gepflegt". Frontend und API
+   * werden getrennt ausgerollt, und `Player#meta_hash` führte das Feld bis
+   * api#565 nicht — ein Frontend-Deploy davor hätte in jeder Zeile ein rotes
+   * „fehlt" und über der Tabelle den ganzen Verein als lückenhaft gemeldet,
+   * ohne Fehler und ohne Möglichkeit, das von echten Daten zu unterscheiden.
+   * Die naheliegende Reaktion wäre, längst gepflegte Adressen neu zu erfassen.
+   *
+   * Solange das Feld fehlt, bleiben Spalte und Zähler deshalb ganz weg: Die
+   * Maske sieht dann aus wie vorher, statt etwas Falsches zu behaupten.
+   * Gleicher Rückfall-Gedanke wie bei `manage_players` in canManagePlayers.
+   *
+   * `'email' in p` und nicht `p.email != null`: Eine gepflegte Liste, in der
+   * niemand eine Adresse hat, liefert den Schlüssel mit dem Wert null — das ist
+   * eine Auskunft und keine fehlende.
+   */
+  emailKnown(list: ClubPlayerList): boolean {
+    return list.players.some((p) => 'email' in p);
+  }
+
+  /**
+   * Ist eine E-Mail-Adresse gepflegt?
+   *
+   * Eine Methode für Spalte und Zähler, damit beide dieselbe Auskunft geben.
+   * `trim()` gegen ein leergeräumtes Feld: `update_email` normalisiert eine
+   * leere Eingabe zu null, `create`/`update` über `player_params` dagegen nicht
+   * (`validates :email, allow_blank: true`). Eine Leerzeichenkette ist also
+   * weiterhin möglich, nicht nur im Altbestand, und wäre truthy.
+   */
+  hasEmail(player: Player): boolean {
+    return !!player.email?.trim();
+  }
+
+  /**
+   * Wie viele der gerade sichtbaren Personen keine E-Mail-Adresse haben.
+   *
+   * Bewusst über `visiblePlayers` und nicht über den ganzen Bestand: Die Zahl
+   * steht direkt über der Tabelle und muss sich mit deren Spalte decken.
+   * Deaktivierte zählen deshalb nur mit, solange sie eingeblendet sind.
+   */
+  missingEmailCount(list: ClubPlayerList): number {
+    return this.visiblePlayers(list).filter((p) => !this.hasEmail(p)).length;
+  }
+
   toggleDeactivated(list: ClubPlayerList): void {
     list.showDeactivated = !list.showDeactivated;
     this._cdr.markForCheck();
