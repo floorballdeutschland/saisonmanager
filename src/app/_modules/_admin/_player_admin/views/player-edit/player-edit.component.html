@@ -30,6 +30,27 @@
       {{ "playerAdmin.edit.createVmOnly" | transloco }}
     </div>
   }
+
+  <!--
+    Das Profil gehoert zu einem anderen Spielbetrieb. Frueher warf der
+    ErrorInterceptor dafuer auf die Startseite, mitsamt der Suche, aus der der
+    Aufruf kam. Die Absage steht deshalb hier, und mit ihr der Weg zurueck.
+  -->
+  @if (loadDenied) {
+    <div
+      data-testid="load-denied"
+      class="mb-4 rounded bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm text-yellow-800"
+    >
+      {{ "playerAdmin.edit.noAccess" | transloco }}
+      @if (permissions["menu_item_player_admin"]) {
+        <a
+          [routerLink]="['/', 'verwaltung', 'spieler', 'suche']"
+          class="ml-1 underline"
+          >{{ "playerAdmin.edit.backToSearch" | transloco }}</a
+        >
+      }
+    </div>
+  }
 </div>
 
 <ng-container>

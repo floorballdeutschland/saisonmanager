@@ -1,11 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { PlayerEditComponent } from './player-edit.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   getTranslocoTestingModule,
+  NotificationService,
   PlayerService,
   SessionService,
 } from '@floorball/core';
@@ -509,5 +511,64 @@ describe('PlayerEditComponent', () => {
         target: { files: [file], value: 'c:\\fake' },
       } as unknown as Event;
     }
+  });
+
+  // Die Spielersuche geht ueber den gesamten Bestand, das Profil dahinter ist
+  // auf den Heimat-Spielbetrieb begrenzt. Bis api#567 warf der 403 ueber den
+  // ErrorInterceptor auf die Startseite, mitsamt der Suche, aus der der Aufruf
+  // kam. Der Interceptor nimmt diesen einen Abruf jetzt aus, also muss die
+  // Maske die Absage selbst zeigen -- sonst bliebe sie kommentarlos leer.
+  describe('Profil ausserhalb der eigenen Zustaendigkeit', () => {
+    function denyWith(status: number): void {
+      spyOn(TestBed.inject(PlayerService), 'getPlayer').and.returnValue(
+        throwError(() => new HttpErrorResponse({ status }))
+      );
+    }
+
+    it('zeigt die Absage in der Maske', () => {
+      denyWith(403);
+      currentUser$.next({
+        permissions: { menu_item_player_admin: true },
+      } as unknown as User);
+
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.detectChanges(false);
+
+      expect(fixture.componentInstance.loadDenied).toBe(true);
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="load-denied"]')
+      ).not.toBe(null);
+    });
+
+    // Jeder andere Status bleibt beim Interceptor, der ihn meldet. Ein 404 als
+    // fehlende Zustaendigkeit auszugeben, waere schlicht falsch.
+    it('deutet einen anderen Fehler nicht als fehlende Zustaendigkeit', () => {
+      denyWith(404);
+
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.detectChanges(false);
+
+      expect(fixture.componentInstance.loadDenied).toBe(false);
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="load-denied"]')
+      ).toBe(null);
+    });
+
+    // Nach einer Aktion laedt dieselbe Methode das offene Profil neu. Ein
+    // Fehlschlag dort darf die gefuellte Maske nicht gegen einen Hinweis
+    // tauschen, gemeldet werden muss er trotzdem: Der Interceptor tut es in
+    // diesem einen Fall nicht mehr.
+    it('tauscht ein bereits geoeffnetes Profil nicht gegen den Hinweis', () => {
+      const notify = spyOn(TestBed.inject(NotificationService), 'error');
+      denyWith(403);
+
+      const component =
+        TestBed.createComponent(PlayerEditComponent).componentInstance;
+      component.player = { id: 7 } as Player;
+      component.getPlayer('7');
+
+      expect(component.loadDenied).toBe(false);
+      expect(notify).toHaveBeenCalled();
+    });
   });
 });

@@ -27,6 +27,9 @@ describe('PlayerSearchComponent', () => {
           noResults: 'Keine Spieler gefunden.',
           minChars: 'Mindestens 2 Zeichen eingeben.',
           deactivatedBadge: 'deaktiviert',
+          noAccessBadge: 'kein Zugriff',
+          noAccessHint: 'Zustaendig ist {{association}}.',
+          noAccessHintUnknown: 'Kein Spielbetrieb zustaendig.',
         },
       },
     },
@@ -91,5 +94,57 @@ describe('PlayerSearchComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Blok, Chiel');
     expect(fixture.nativeElement.textContent).not.toContain('deaktiviert');
+  });
+
+  // Der Regressionsfall: Die Suche geht ueber den gesamten Bestand, das Profil
+  // dahinter ist auf den Heimat-Spielbetrieb begrenzt. Ein Link auf einen
+  // Treffer aus einem anderen Landesverband endete mit 403 und warf ueber den
+  // ErrorInterceptor auf die Startseite, samt Suchbegriff und Trefferliste.
+  it('verlinkt einen Treffer ohne Zugriff nicht und nennt den zustaendigen Verband', async () => {
+    const fixture = await setup([
+      treffer({ manageable: false, responsible: 'SBK Ost' }),
+    ]);
+
+    expect(fixture.nativeElement.textContent).toContain('Blok, Chiel');
+    expect(fixture.nativeElement.textContent).toContain('kein Zugriff');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Zustaendig ist SBK Ost.'
+    );
+    expect(fixture.nativeElement.querySelector('a')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="locked-result"]')
+    ).toBeTruthy();
+  });
+
+  // Ohne gueltige Heimat-Zugehoerigkeit ist niemand zustaendig (api#389). Der
+  // Hinweis darf dann keinen Verband erfinden.
+  it('nennt ohne zustaendigen Verband den allgemeinen Hinweis', async () => {
+    const fixture = await setup([
+      treffer({ manageable: false, responsible: null }),
+    ]);
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Kein Spielbetrieb zustaendig.'
+    );
+  });
+
+  it('verlinkt einen Treffer mit Zugriff', async () => {
+    const fixture = await setup([treffer({ manageable: true })]);
+
+    const link = fixture.nativeElement.querySelector('a');
+    expect(link).toBeTruthy();
+    expect(link.getAttribute('href')).toBe(
+      '/verwaltung/vereine/202/spieler/1/bearbeiten'
+    );
+    expect(fixture.nativeElement.textContent).not.toContain('kein Zugriff');
+  });
+
+  // Eine Antwort ohne das Feld (aeltere API) darf die Trefferliste nicht
+  // sperren: Der Link ist der Normalfall, die Sperre die Ausnahme.
+  it('verlinkt einen Treffer ohne die Angabe wie bisher', async () => {
+    const fixture = await setup([treffer()]);
+
+    expect(fixture.nativeElement.querySelector('a')).toBeTruthy();
+    expect(fixture.nativeElement.textContent).not.toContain('kein Zugriff');
   });
 });

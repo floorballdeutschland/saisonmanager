@@ -31,6 +31,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { PLAYER_GENDERS } from '@floorball/types';
 
 // Lizenzen des Spielers, nach Saison gruppiert (aktuelle Saison zuerst).
@@ -92,6 +93,13 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   /** Abruf der Dokumente gescheitert (meist 403) – von „keine vorhanden" zu unterscheiden. */
   documentsFailed = false;
 
+  /**
+   * Das Profil liegt außerhalb der eigenen Zuständigkeit (403 beim Öffnen).
+   * Der ErrorInterceptor leitet dafür nicht mehr auf die Startseite um, siehe
+   * dort; die Absage muss deshalb hier stehen.
+   */
+  loadDenied = false;
+
   // Dokumentarten, die für diesen Spieler hochgeladen werden können: global
   // gültige plus die seines Heimat-Spielbetriebs, ohne die altersmäßig
   // erledigten. Die Auswahl kommt vom Server, nicht aus dem Katalog-Abruf, der
@@ -133,6 +141,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     private _notificationService: NotificationService,
     private _changeRequestService: PlayerChangeRequestService,
     private _associationService: AssociationService,
+    private _transloco: TranslocoService,
     private _metaTitle: Title
   ) {
     this._metaTitle.setTitle('Floorball Saisonmanager Spielerverwaltung');
@@ -183,6 +192,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     // (route.params), sonst stuende die Auswahl oder Fehlermeldung des vorigen
     // Spielers noch da.
     this._resetDocumentUploadState();
+    this.loadDenied = false;
 
     // Im Profil die vollständige, saisonübergreifende Lizenzhistorie laden.
     this._playerService.getPlayer(parseInt(id), true).subscribe({
@@ -193,6 +203,29 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         this.loadAvailableDocumentTypes();
         this._refreshAssignableClubs();
 
+        this._cdr.markForCheck();
+      },
+      // Ein 403 heißt hier: Das Profil gehört zu einem anderen Spielbetrieb.
+      // Weil der ErrorInterceptor dafür nicht mehr umleitet (der Rauswurf nahm
+      // die Spielersuche mit), zeigt die Maske die Absage selbst. Jeder andere
+      // Status bleibt beim Interceptor, der ihn meldet.
+      //
+      // Nur beim Öffnen: Nach Aktionen lädt dieselbe Methode das bereits offene
+      // Profil neu (Freigabe, Lizenzentscheidung, Sperre). Ein Fehlschlag dort
+      // darf die gefüllte Maske nicht gegen einen Hinweis tauschen, dort genügt
+      // die Meldung, die der Interceptor in diesem einen Fall nicht mehr zeigt.
+      error: (err) => {
+        if (err?.status !== 403) return;
+
+        if (this.player) {
+          this._notificationService.error(
+            this._transloco.translate('playerAdmin.edit.noAccess'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          return;
+        }
+
+        this.loadDenied = true;
         this._cdr.markForCheck();
       },
     });
