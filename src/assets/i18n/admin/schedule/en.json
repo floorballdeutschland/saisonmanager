@@ -130,6 +130,9 @@
     "errorsHeading": "Errors",
     "warningsHeading": "Warnings",
     "startImport": "Start import",
+    "noFileSelected": "No file selected. Please choose an import file above first.",
+    "fileRequiredHint": "Please choose an import file first.",
+    "importFailed": "The import failed. Please check the file and try again.",
     "confirmTitle": "Import / replace schedule?",
     "confirmContent": "If this league already has a schedule, it will be fully replaced by the uploaded template – including any existing referee assignments, scorekeeper links and confirmations. This is only possible as long as no game has started. Continue?",
     "cancel": "Cancel"
