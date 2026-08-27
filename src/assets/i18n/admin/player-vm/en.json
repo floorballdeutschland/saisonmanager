@@ -2,7 +2,7 @@
   "index": {
     "title": "Players",
     "newPlayer": "Create new",
-    "newPlayerVmOnly": "For this club, creating, deactivating and reactivating players is up to the club manager. The squad stays open to you: opening profiles, requesting licenses and setting line-ups still work. If you have just been made club manager, sign out and back in once.",
+    "newPlayerVmOnly": "For this club the club manager has reserved creating, deactivating and reactivating. They can release it to team managers in the club administration. The squad stays open to you regardless: opening profiles, requesting licences and setting line-ups still work. If you have just been made club manager, sign out and back in once.",
     "loading": "Loading players…",
     "intro": "Players who currently no longer take part in match operations can be deactivated. Deactivated players no longer appear in the dropdown for licence applications and keep the club overview clearer. Players can be reactivated at a later point in time.",
     "countSingular": "player",

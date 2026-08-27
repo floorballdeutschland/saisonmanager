@@ -23,6 +23,19 @@ export interface Player {
   current_license_status?: string;
   current_licenses?: PlayerCurrentLicense[];
   deactivation_reason?: string;
+  /**
+   * Nur in der Antwort zu einem einzelnen Profil (`admin/players/:id`): Darf
+   * der angemeldete Benutzer DIESES Profil deaktivieren und reaktivieren?
+   *
+   * Je Profil und nicht als Rolle im Browser, weil die Freigabe an
+   * Teammanager*innen am einzelnen Verein hängt
+   * (`clubs.team_managers_manage_players`). Ein globales Flag zeigte einem
+   * Teammanager die Knöpfe entweder in jedem Verein oder in keinem.
+   *
+   * Fehlt das Feld, ist die API älter als die Freigabe; dann gilt weiter das
+   * Rollen-Flag `player_deactivate`.
+   */
+  can_deactivate?: boolean;
 }
 
 // Lizenz-Badge der VM-Spielerliste: ein Eintrag pro Liga-Lizenz der laufenden

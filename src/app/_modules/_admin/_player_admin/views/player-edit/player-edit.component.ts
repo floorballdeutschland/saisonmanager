@@ -56,6 +56,12 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   permissions: { [key: string]: boolean } = {};
   // Vereine, in denen der Account Vereinsmanager ist (permission_hash[:vm]).
   vmClubIds: number[] = [];
+  /**
+   * Vereine, in denen der Account anlegen darf (`manage_players` aus
+   * `vm/clubs_and_teams`). `null` heißt „noch nicht geladen"; solange gilt die
+   * Näherung aus `vmClubIds`, siehe createNotAllowed.
+   */
+  manageableClubIds: number[] | null = null;
   player?: Player;
   nations?: Nation[] = [];
   allClubs: Club[] = [];
@@ -167,6 +173,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       next: (user) => {
         this.permissions = user?.permissions || {};
         this.vmClubIds = user?.club_ids ?? [];
+        this._loadManageableClubs();
       },
     });
 
@@ -571,19 +578,31 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Anlegen darf nur der Vereinsmanager dieses Vereins (api:
-   * Club#user_permissions, :create_player). Wer über einen Direktaufruf oder
-   * einen noch offenen Tab hierher kommt, soll das Formular nicht ausfüllen
-   * und erst am Speichern scheitern: Der Grund steht oben, die leeren Felder
-   * stehen als Text da, der Speichern-Knopf entfällt.
+   * Anlegen darf, wem der Verein es erlaubt (api: Club#user_permissions,
+   * :create_player). Das ist der Vereinsmanager, und zusätzlich die
+   * Teammanager*innen, wenn der Verein das in seiner Vereinsverwaltung
+   * freigegeben hat. Wer über einen Direktaufruf oder einen noch offenen Tab
+   * hierher kommt, soll das Formular nicht ausfüllen und erst am Speichern
+   * scheitern: Der Grund steht oben, die leeren Felder stehen als Text da, der
+   * Speichern-Knopf entfällt.
    *
-   * `update_player` steht hier für „Verbandsrolle" und ist bewusst eine
-   * Näherung: Das Flag gilt global (Admin/SBK), `Club#user_permissions`
-   * scopet SBK dagegen auf den Spielbetrieb des Vereins. Eine Landes-SBK
-   * bekommt hier also unter Umständen ein Formular, dessen Speichern die API
-   * ablehnt -- die Entscheidung fällt serverseitig, diese Maske hat für einen
-   * fremden Verein keine bessere Quelle. Die Vereinssicht hat eine
-   * (`manage_players` aus vm/clubs_and_teams).
+   * Maßgeblich ist `manage_players` aus `vm/clubs_and_teams`, also dieselbe
+   * Quelle wie die Prüfung beim Schreiben. Die Rollenliste im Browser kann die
+   * Frage nicht beantworten: Sie kennt den Schalter des Vereins nicht, und die
+   * Freigabe kann sich seit der Anmeldung geändert haben.
+   *
+   * `update_player` steht für „Verbandsrolle" und bleibt eine Näherung: Das
+   * Flag gilt global (Admin/SBK), `Club#user_permissions` scopet SBK dagegen
+   * auf den Spielbetrieb des Vereins. Eine Landes-SBK bekommt hier also unter
+   * Umständen ein Formular, dessen Speichern die API ablehnt. Für sie gibt es
+   * keine bessere Quelle: `vm/clubs_and_teams` antwortet ihr mit 403, es ist
+   * die Vereinssicht und nicht die Verbandssicht.
+   *
+   * Solange die Liste nicht geladen ist, gilt die alte Näherung über
+   * `vmClubIds`. Für einen Vereinsmanager stimmt sie sofort; ein Teammanager
+   * eines freigegebenen Vereins sieht die Maske für die Dauer eines Abrufs
+   * lesend. Andersherum wäre es schlimmer: ein ausfüllbares Formular, das sich
+   * nachträglich sperrt.
    *
    * `club_id` kommt als Routenparameter, also als String.
    */
@@ -592,7 +611,41 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    return !this.vmClubIds.includes(Number(this.club_id));
+    const clubId = Number(this.club_id);
+
+    return this.manageableClubIds === null
+      ? !this.vmClubIds.includes(clubId)
+      : !this.manageableClubIds.includes(clubId);
+  }
+
+  /**
+   * Die Vereine, in denen dieses Konto anlegen darf. Nur für die Anlage und
+   * nur für Vereins- und Teammanager: Im Bearbeiten-Modus entscheidet
+   * `update_player`, und einer Verbandsrolle antwortet der Endpunkt mit 403.
+   *
+   * Der eigene error-Zweig ist Absicht. Ohne ihn zeigte der ErrorInterceptor
+   * eine Fehlermeldung für einen Abruf, den der Benutzer nie ausgelöst hat,
+   * und der 403 würfe ihn aus der Maske. Scheitert der Abruf, bleibt
+   * `manageableClubIds` auf `null` und es gilt die Näherung, also genau das
+   * Verhalten von vorher.
+   */
+  private _loadManageableClubs(): void {
+    if (this.editMode || this.permissions['update_player']) {
+      return;
+    }
+
+    this._clubService.vmGetClubAndTeams().subscribe({
+      next: (clubs) => {
+        this.manageableClubIds = clubs
+          .filter((club) => club.manage_players)
+          .map((club) => club.id);
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this.manageableClubIds = null;
+        this._cdr.markForCheck();
+      },
+    });
   }
 
   /**
@@ -746,14 +799,29 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     return !!this.player?.deactivated_at;
   }
 
+  /**
+   * Darf dieses Konto dieses Profil deaktivieren?
+   *
+   * Maßgeblich ist `can_deactivate` aus der Antwort zum Profil, also dieselbe
+   * Quelle wie die Prüfung beim Schreiben. Das Rollen-Flag `player_deactivate`
+   * gilt global und kann die Freigabe an Teammanager*innen nicht abbilden: Die
+   * hängt am einzelnen Verein, und wer für Mannschaften zweier Vereine
+   * zuständig ist, darf im einen und im anderen nicht.
+   *
+   * Fehlt das Feld, ist die API älter als die Freigabe (Frontend-Deploy vor
+   * API-Deploy). Dann gilt weiter das Rollen-Flag, also das Verhalten von
+   * vorher.
+   */
+  private get mayDeactivate(): boolean {
+    return this.player?.can_deactivate ?? this.can('player_deactivate');
+  }
+
   get canDeactivate(): boolean {
-    return (
-      !this.isDeactivated && this.editMode && this.can('player_deactivate')
-    );
+    return !this.isDeactivated && this.editMode && this.mayDeactivate;
   }
 
   get canReactivate(): boolean {
-    return this.isDeactivated && this.editMode && this.can('player_deactivate');
+    return this.isDeactivated && this.editMode && this.mayDeactivate;
   }
 
   public cancelDeactivate(): void {

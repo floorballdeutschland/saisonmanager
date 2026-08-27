@@ -4,7 +4,11 @@ import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { PlayerEditComponent } from './player-edit.component';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
+import { environment } from 'src/environments/environment';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   getTranslocoTestingModule,
@@ -451,6 +455,158 @@ describe('PlayerEditComponent', () => {
 
       expect(fixture.componentInstance.createNotAllowed).toBe(false);
       expect(hint(fixture)).toBe(null);
+    });
+
+    // Der Verein kann das Anlegen seinen Teammanager*innen freigeben. Die
+    // Rollenliste im Browser sieht davon nichts: `club_ids` führt nur
+    // VM-Vereine. Maßgeblich ist `manage_players` aus vm/clubs_and_teams,
+    // also dieselbe Quelle wie die Prüfung beim Schreiben.
+    function freigeben(clubs: { id: number; manage_players: boolean }[]): void {
+      const httpMock = TestBed.inject(HttpTestingController);
+      httpMock
+        .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
+        .flush(clubs.map((club) => ({ ...club, teams: [] })));
+    }
+
+    it('laesst den Teammanager im freigegebenen Verein anlegen', () => {
+      const fixture = render({
+        permissions: { create_player: true, update_player_email: true },
+      } as Partial<User>);
+      freigeben([{ id: 113, manage_players: true }]);
+      fixture.detectChanges(false);
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(false);
+      expect(fixture.componentInstance.can('player_create_update')).toBe(true);
+      expect(hint(fixture)).toBe(null);
+    });
+
+    // Gegenprobe: Der Verein steht in der Liste, hat aber nicht freigegeben.
+    // Der Teammanager sieht dort weiter nur den Grund.
+    it('laesst ihn im nicht freigegebenen Verein weiter nicht anlegen', () => {
+      const fixture = render({
+        permissions: { create_player: true },
+      } as Partial<User>);
+      freigeben([{ id: 113, manage_players: false }]);
+      fixture.detectChanges(false);
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(true);
+      expect(hint(fixture)).not.toBe(null);
+    });
+
+    // Die Freigabe hängt am Verein: Wer Mannschaften zweier Vereine betreut,
+    // richtet sich in jedem nach dessen Entscheidung.
+    it('unterscheidet die Vereine desselben Kontos', () => {
+      const fixture = render(
+        { permissions: { create_player: true } } as Partial<User>,
+        { clubId: '114' }
+      );
+      freigeben([
+        { id: 113, manage_players: true },
+        { id: 114, manage_players: false },
+      ]);
+      fixture.detectChanges(false);
+
+      expect(fixture.componentInstance.createNotAllowed).toBe(true);
+    });
+
+    // Scheitert der Abruf, bleibt es bei der Näherung über `club_ids`, also
+    // beim Verhalten von vorher. Ohne den eigenen error-Zweig würfe der
+    // ErrorInterceptor bei 403 aus der Maske.
+    it('faellt bei gescheitertem Abruf auf die Vereinsliste zurueck', () => {
+      const fixture = render({
+        club_ids: [113],
+        permissions: { create_player: true },
+      } as Partial<User>);
+      TestBed.inject(HttpTestingController)
+        .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
+        .flush(
+          { message: 'Keine Berechtigung.' },
+          { status: 403, statusText: 'Forbidden' }
+        );
+      fixture.detectChanges(false);
+
+      expect(fixture.componentInstance.manageableClubIds).toBeNull();
+      expect(fixture.componentInstance.createNotAllowed).toBe(false);
+    });
+
+    // Einer Verbandsrolle antwortet der Endpunkt mit 403, er ist die
+    // Vereinssicht. Für sie wird er deshalb gar nicht erst gerufen.
+    it('fragt die Vereinsliste fuer Admin und SBK nicht ab', () => {
+      render({
+        permissions: { create_player: true, update_player: true },
+      } as Partial<User>);
+
+      TestBed.inject(HttpTestingController).expectNone(
+        `${environment.apiURL}vm/clubs_and_teams.json`
+      );
+    });
+  });
+
+  // Die Knöpfe zum Deaktivieren und Reaktivieren im Profil folgen derselben
+  // Freigabe wie die Vereinsliste. Weil sie am Verein hängt, kann das
+  // Rollen-Flag `player_deactivate` sie nicht steuern: Es gilt global.
+  describe('Deaktivieren im Profil', () => {
+    function build(
+      permissions: Record<string, boolean>,
+      player: Partial<Player>
+    ): PlayerEditComponent {
+      const component =
+        TestBed.createComponent(PlayerEditComponent).componentInstance;
+      component.permissions = permissions;
+      component.editMode = true;
+      component.player = player as Player;
+      return component;
+    }
+
+    it('zeigt die Knoepfe, wenn das Profil sie erlaubt', () => {
+      const component = build(
+        { player_deactivate: false },
+        {
+          id: 7,
+          can_deactivate: true,
+        }
+      );
+
+      expect(component.canDeactivate).toBe(true);
+      expect(component.canReactivate).toBe(false);
+    });
+
+    it('verbirgt sie, wenn das Profil sie verneint', () => {
+      const component = build(
+        { player_deactivate: true },
+        {
+          id: 7,
+          can_deactivate: false,
+        }
+      );
+
+      expect(component.canDeactivate).toBe(false);
+      expect(component.canReactivate).toBe(false);
+    });
+
+    it('bietet Reaktivieren am deaktivierten Profil an', () => {
+      const component = build(
+        { player_deactivate: false },
+        {
+          id: 7,
+          can_deactivate: true,
+          deactivated_at: '2026-08-01T10:00:00Z',
+        }
+      );
+
+      expect(component.canReactivate).toBe(true);
+      expect(component.canDeactivate).toBe(false);
+    });
+
+    // Frontend-Deploy vor API-Deploy: Fehlt das Feld, gilt weiter das
+    // Rollen-Flag, also genau das Verhalten von vorher.
+    it('faellt ohne das Feld auf das Rollen-Flag zurueck', () => {
+      expect(build({ player_deactivate: true }, { id: 7 }).canDeactivate).toBe(
+        true
+      );
+      expect(build({ player_deactivate: false }, { id: 7 }).canDeactivate).toBe(
+        false
+      );
     });
   });
 
