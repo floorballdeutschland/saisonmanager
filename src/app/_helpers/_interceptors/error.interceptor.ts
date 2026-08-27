@@ -190,6 +190,29 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Der Spielplanimport meldet seine Fehler selbst, und zwar ausführlich:
+        // Die Maske listet jede beanstandete Zeile einzeln auf, dazu die
+        // Warnungen. Die Antwort transportiert diese Liste als JSON-String im
+        // Feld `message` – genau dort, wo `errorDetail` den Text für die
+        // Meldung sucht. Der generische 4xx-Zweig weiter unten zeigte deshalb
+        // zusätzlich einen Toast mit rohem JSON: Ein falsches Heimteam in
+        // Zeile 12 ergab neben der sauberen Liste ein
+        // `{"errors":["Zeile 12: Heimteam nicht erkannt"],"warnings":[]}`.
+        //
+        // Bewusst NUR 400 und 422, die beiden Status, die diese Action für
+        // Eingabefehler verwendet (Parse-Fehler und abgewiesener Re-Import mit
+        // 400, fehlende oder unlesbare Datei mit 422, siehe api#568). Ein
+        // früher return für alle Status übersprungen sonst auch den 401, und
+        // eine mitten im Import abgelaufene Sitzung würde dann nicht mehr
+        // abmelden. Ebenso bleiben 5xx und `status === 0` bei den Zweigen
+        // unten, denn die meldet die Maske nicht so genau.
+        if (
+          [400, 422].includes(err.status) &&
+          request.url.includes('leagues/import_schedule')
+        ) {
+          return throwError(() => err);
+        }
+
         // Die Gespann-Historie ist ein Nachschlag zur bereits geöffneten
         // Ansetzung, genau wie die Lizenzdokumente oben: Sie sortiert im
         // Dropdown von Schiri 2 die Gespannpartner nach oben. Ein 403 darauf
