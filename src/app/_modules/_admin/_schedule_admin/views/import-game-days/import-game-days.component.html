@@ -80,27 +80,45 @@
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="flex flex-col gap-2">
               <div class="flex items-center mb-4">
-                <fb-confirmation
-                  class="mr-4"
-                  [title]="
-                    'scheduleAdmin.importGameDays.confirmTitle' | transloco
-                  "
-                  [content]="
-                    'scheduleAdmin.importGameDays.confirmContent' | transloco
-                  "
-                  [submitButtonTitle]="
-                    'scheduleAdmin.importGameDays.startImport' | transloco
-                  "
-                  icon="warning"
-                  buttonVariant="error"
-                  (handleSubmit)="import()"
-                >
-                  <a
-                    class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                <!-- Ohne ausgewählte Datei gibt es nichts zu bestätigen: Der
+                     Knopf steht dann sichtbar inaktiv da statt den Import
+                     anzubieten, der ohne Datei nur scheitern kann. Bis api#568
+                     endete genau dieser Klick in einer Abmeldung. -->
+                @if (hasFile) {
+                  <fb-confirmation
+                    class="mr-4"
+                    [title]="
+                      'scheduleAdmin.importGameDays.confirmTitle' | transloco
+                    "
+                    [content]="
+                      'scheduleAdmin.importGameDays.confirmContent' | transloco
+                    "
+                    [submitButtonTitle]="
+                      'scheduleAdmin.importGameDays.startImport' | transloco
+                    "
+                    icon="warning"
+                    buttonVariant="error"
+                    (handleSubmit)="import()"
+                  >
+                    <a
+                      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    >
+                      {{
+                        "scheduleAdmin.importGameDays.startImport" | transloco
+                      }}
+                    </a>
+                  </fb-confirmation>
+                } @else {
+                  <span
+                    class="font-bold text-fb-gray-500 leading-[17px] text-sm px-5 py-2.5 border bg-fb-gray-200 border-fb-gray-400 rounded-[5px] cursor-not-allowed mr-4"
+                    [title]="
+                      'scheduleAdmin.importGameDays.fileRequiredHint'
+                        | transloco
+                    "
                   >
                     {{ "scheduleAdmin.importGameDays.startImport" | transloco }}
-                  </a>
-                </fb-confirmation>
+                  </span>
+                }
                 <a
                   class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                   deactivated="true"
@@ -109,6 +127,17 @@
                   {{ "scheduleAdmin.importGameDays.cancel" | transloco }}
                 </a>
               </div>
+
+              <!-- Der Tooltip am inaktiven Knopf allein genügt nicht: Auf
+                   Tastatur und Touch ist er nicht zu sehen. Deshalb der
+                   Hinweis zusätzlich als Text unter der Knopfleiste. -->
+              @if (!hasFile) {
+                <p class="text-sm text-fb-gray-600 mb-4">
+                  {{
+                    "scheduleAdmin.importGameDays.fileRequiredHint" | transloco
+                  }}
+                </p>
+              }
             </div>
           </div>
         </div>

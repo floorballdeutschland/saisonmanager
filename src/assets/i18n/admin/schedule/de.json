@@ -130,6 +130,9 @@
     "errorsHeading": "Fehler",
     "warningsHeading": "Warnungen",
     "startImport": "Import starten",
+    "noFileSelected": "Keine Datei ausgewählt. Bitte zuerst oben eine Importdatei auswählen.",
+    "fileRequiredHint": "Bitte zuerst eine Importdatei auswählen.",
+    "importFailed": "Der Import ist fehlgeschlagen. Bitte die Datei prüfen und es erneut versuchen.",
     "confirmTitle": "Spielplan importieren / ersetzen?",
     "confirmContent": "Falls diese Liga bereits einen Spielplan hat, wird er vollständig durch die hochgeladene Vorlage ersetzt – inklusive bereits vorhandener Schiedsrichter-Ansetzungen, Sekretär-Zuordnungen und Bestätigungen. Dies ist nur möglich, solange noch kein Spiel begonnen wurde. Fortfahren?",
     "cancel": "Abbrechen"

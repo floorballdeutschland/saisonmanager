@@ -773,4 +773,73 @@ describe('ErrorInterceptor', () => {
     expect(caught?.status).toBe(422);
     expect(caught?.error?.message).toBe('Datei zu groß.');
   });
+
+  // Der Spielplanimport listet jede beanstandete Zeile in der Maske auf. Die
+  // Antwort transportiert diese Liste als JSON-String im Feld `message`, also
+  // genau dort, wo `errorDetail` den Meldungstext sucht. Ohne die Ausnahme
+  // stand neben der Liste ein Toast mit rohem JSON.
+  const importUrl = `${environment.apiURL}admin/leagues/import_schedule.json`;
+
+  function importFailsWith(body: object, status: number): unknown {
+    let received: unknown;
+    http.post(importUrl, new FormData()).subscribe({
+      next: () => fail('expected the request to fail'),
+      error: (err) => (received = err),
+    });
+    httpMock.expectOne(importUrl).flush(body, { status, statusText: 'Error' });
+    return received;
+  }
+
+  const importFehler = JSON.stringify({
+    errors: ['Zeile 12: Heimteam nicht erkannt'],
+    warnings: [],
+  });
+
+  it('leaves the schedule import alone on 400 so no raw JSON toast appears', () => {
+    const err = importFailsWith({ message: importFehler }, 400);
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    // Der Fehler muss die Maske erreichen, sonst hätte die Ausnahme den
+    // Fehlschlag stumm geschaltet statt die doppelte Meldung entfernt.
+    expect((err as HttpErrorResponse).error.message).toBe(importFehler);
+  });
+
+  it('leaves the schedule import alone on 422', () => {
+    importFailsWith(
+      {
+        message: JSON.stringify({
+          errors: ['Keine Importdatei'],
+          warnings: [],
+        }),
+      },
+      422
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  // Die Ausnahme gilt genau zwei Status. Der 401 gehört nicht dazu: Der Import
+  // wird angemeldet bedient, eine mitten darin abgelaufene Sitzung muss
+  // abmelden. Genau diese Verwechslung war der ursprüngliche Fehler (api#568),
+  // sie darf nicht über die Hintertür der Ausnahme zurückkommen.
+  it('still logs out when the schedule import hits an expired session', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+    importFailsWith({ success: false, message: 'Not authenticated' }, 401);
+
+    expect(logoutSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/login'],
+      jasmine.objectContaining({ queryParams: jasmine.anything() })
+    );
+  });
+
+  // Ein Serverfehler ist keine Zeilenliste, die die Maske aufzählen könnte.
+  it('still reports a server error on the schedule import', () => {
+    importFailsWith({ message: 'Server-Fehler.' }, 500);
+
+    expect(errorSpy).toHaveBeenCalled();
+  });
 });
