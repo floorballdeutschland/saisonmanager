@@ -8,6 +8,7 @@ import {
   LicenseDocument,
   Nation,
   Player,
+  PlayerImportReport,
   PlayerSearchResult,
   PlayerStats,
   PlayerSuspension,
@@ -197,6 +198,20 @@ export class PlayerService {
   public vmGetPlayers(clubId: number) {
     const path = environment.apiURL + 'admin/vm/players.json?club_id=' + clubId;
     return this.http.get<Player[]>(path);
+  }
+
+  // Traegt fehlende Stammdaten aus einer CSV im Format des Listen-Exports nach.
+  // Geschrieben wird nur, wo im Profil noch nichts steht; welches Feld dieses
+  // Konto ueberhaupt schreiben darf, entscheidet die API und benennt es je Feld
+  // im Bericht.
+  public vmImportPlayers(clubId: number, file: File) {
+    const form = new FormData();
+    form.append('club_id', String(clubId));
+    form.append('file', file, file.name);
+    return this.http.post<PlayerImportReport>(
+      environment.apiURL + 'admin/vm/players/import',
+      form
+    );
   }
 
   // Lizenz-Dokumente gelten pro Spieler (saisonübergreifend), nicht mehr pro

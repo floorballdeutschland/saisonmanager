@@ -7064,6 +7064,16 @@
                   fehlt. Ohne Adresse laufen die Zustimmung zu Transfer und
                   Freigabe und die Nachricht über die erteilte Lizenz ins Leere
                 </li>
+                <li>
+                  Den aktiven Bestand oben rechts als CSV-Datei herunterladen –
+                  mit ID, Name, Geburtsdatum, Geschlecht, Nationalität,
+                  E-Mail-Adresse und Lizenzstand. Deaktivierte sind nicht dabei
+                </li>
+                <li>
+                  Fehlende E-Mail-Adressen über den Link „Import“ aus derselben
+                  Datei nachtragen. Gefüllt werden nur leere Felder, ein
+                  vorhandener Wert wird nie überschrieben (siehe unten)
+                </li>
               </ul>
             </div>
             <div class="cap">
@@ -7358,6 +7368,74 @@
 
           <details class="proc">
             <summary>
+              <span class="proc-icon">📤</span>
+              <div>
+                <div class="proc-title">E-Mail-Adressen per CSV nachtragen</div>
+                <div class="proc-sub">
+                  Bestand exportieren, Lücken füllen, Datei wieder hochladen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <div class="note">
+                Der Weg lohnt sich, sobald mehrere Adressen fehlen. Für eine
+                einzelne genügt der Weg über das Spielerprofil.
+              </div>
+              <div class="flow">
+                <div class="st start">
+                  „Meine Spieler*innen“ → oben rechts
+                  <strong>CSV-Export</strong>
+                </div>
+                <div class="cn act">
+                  <span class="cl">leere Zellen in Excel füllen</span
+                  ><span class="rb vm">VM</span><span class="ar">→</span>
+                </div>
+                <div class="st pending">Datei vorbereitet</div>
+                <div class="cn">
+                  <span class="cl">Link „Import“ → Datei wählen</span
+                  ><span class="rb vm">VM</span><span class="ar">→</span>
+                </div>
+                <div class="st success">Bericht mit Zeilennummern</div>
+              </div>
+              <ul class="checklist">
+                <li class="good">
+                  Die Spalte <code>ID</code> unverändert lassen – sie ordnet
+                  jede Zeile ihrem Profil zu
+                </li>
+                <li class="good">
+                  Nur leere Zellen füllen. Ein bereits gepflegter Wert wird
+                  nicht überschrieben, sondern im Bericht als übersprungen
+                  aufgeführt
+                </li>
+                <li class="good">
+                  Als CSV speichern, in Excel „CSV UTF-8 (durch Trennzeichen
+                  getrennt)“
+                </li>
+                <li class="bad">
+                  Keine Zeilen anderer Vereine – sie werden nicht eingetragen,
+                  sondern als „nicht gefunden“ gemeldet
+                </li>
+                <li class="bad">
+                  Geburtsdatum, Geschlecht und Nationalität kann der Verein hier
+                  nicht nachtragen; dafür gilt die
+                  <strong>Spielerdaten-Korrekturanfrage</strong> darüber
+                </li>
+              </ul>
+              <div class="note">
+                Der Bericht nach dem Hochladen ordnet jede Zeile einem von vier
+                Ausgängen zu: eingetragen, übersprungen (mit Grund je Feld),
+                nicht gefunden oder unbrauchbar. Die genannte Zeilennummer ist
+                die aus der Tabellenkalkulation. Eine Zeile mit einem
+                unbrauchbaren Wert wird ganz verworfen – Datei korrigieren und
+                erneut hochladen ist gefahrlos, denn bereits eingetragene Felder
+                sind dann gefüllt und werden übersprungen.
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
               <span class="proc-icon">📝</span>
               <div>
                 <div class="proc-title">Spielberichtsprozess</div>
@@ -7441,6 +7519,12 @@
                   Lizenzstand je Liga
                 </li>
                 <li>Profile öffnen und die E-Mail-Adresse pflegen</li>
+                <li>
+                  Den aktiven Bestand als CSV-Datei herunterladen und fehlende
+                  E-Mail-Adressen über den Link „Import“ aus derselben Datei
+                  nachtragen. Gefüllt werden nur leere Felder; Geburtsdatum,
+                  Geschlecht und Nationalität bleiben dem Verband vorbehalten
+                </li>
                 <li>
                   Anlegen, deaktivieren und reaktivieren geht nicht: Darüber
                   entscheidet der Vereinsmanager des Vereins. Der Anlege-Knopf
