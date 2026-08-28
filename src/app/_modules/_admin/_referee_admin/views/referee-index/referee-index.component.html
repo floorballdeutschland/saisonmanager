@@ -226,7 +226,23 @@
                   </span>
                 }
               </td>
-              <td class="py-2 pr-4">{{ r.lizenzstufe || "–" }}</td>
+              <td class="py-2 pr-4 whitespace-nowrap">
+                {{ r.lizenzstufe || "–" }}
+                <!-- Zusatzqualifikationen als Marke neben der Stufe: Der Filter
+                     darüber sucht auch in ihnen, also muss die Zeile zeigen,
+                     warum sie getroffen wurde. -->
+                @for (q of r.qualifications; track q.qualification_type_id) {
+                  <span
+                    [attr.title]="qualificationTitle(q)"
+                    class="ml-1 inline-block bg-fb-gray-200 text-fb-gray-500 text-[10px] font-bold px-1 rounded"
+                  >
+                    {{
+                      q.qualification_type_short_name ||
+                        q.qualification_type_name
+                    }}
+                  </span>
+                }
+              </td>
               <td class="py-2 pr-4">{{ r.landesverband || "–" }}</td>
               <td class="py-2 pr-4">
                 @if (r.gueltigkeit) {

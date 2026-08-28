@@ -50,6 +50,9 @@ describe('RefereeIndexComponent', () => {
                 accounts: 'Benutzerkonten',
                 hasAccountBadge: 'Konto',
                 hasAccountTitle: 'Hat ein Benutzerkonto',
+                colQualificationsTitle: 'Zusatzqualifikation: {{ name }}',
+                colQualificationsValidUntil:
+                  'Zusatzqualifikation: {{ name }}, gültig bis {{ date }}',
               },
             },
           },
@@ -97,6 +100,53 @@ describe('RefereeIndexComponent', () => {
     await setUp({ menu_item_referee_admin: true }, [referee({ id: 1 })]);
 
     expect(accountBadges().length).toBe(0);
+  });
+
+  // Der Stufenfilter sucht auch in den Zusatzqualifikationen. Ohne die Marke in
+  // der Zeile wäre der Trefferliste nicht anzusehen, warum jemand darin steht.
+  it('zeigt die Zusatzqualifikationen neben der Lizenzstufe', async () => {
+    await setUp({ menu_item_referee_admin: true }, [
+      referee({
+        id: 1,
+        lizenzstufe: 'B',
+        qualifications: [
+          {
+            qualification_type_id: 3,
+            qualification_type_name: 'Beobachter',
+            qualification_type_short_name: 'BEO',
+            valid_until: '30.06.2028',
+          },
+        ],
+      }),
+    ]);
+
+    const badge = fixture.nativeElement.querySelector(
+      '[title="Zusatzqualifikation: Beobachter, gültig bis 30.06.2028"]'
+    );
+
+    expect(badge).not.toBeNull();
+    expect(badge.textContent.trim()).toBe('BEO');
+  });
+
+  // Das Kürzel ist optional; ohne es muss der ausgeschriebene Name stehen,
+  // sonst bliebe die Marke leer.
+  it('nimmt den Namen, wenn kein Kürzel gepflegt ist', async () => {
+    await setUp({ menu_item_referee_admin: true }, [
+      referee({
+        id: 1,
+        lizenzstufe: 'A',
+        qualifications: [
+          { qualification_type_id: 4, qualification_type_name: 'Ausbilder' },
+        ],
+      }),
+    ]);
+
+    const badge = fixture.nativeElement.querySelector(
+      '[title="Zusatzqualifikation: Ausbilder"]'
+    );
+
+    expect(badge).not.toBeNull();
+    expect(badge.textContent.trim()).toBe('Ausbilder');
   });
 
   it('verlinkt die Konto-Seite nicht ohne referee_account_tools', async () => {

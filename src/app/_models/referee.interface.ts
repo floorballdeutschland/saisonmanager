@@ -27,6 +27,9 @@ export interface RefereeQualificationEntry {
   id?: number;
   qualification_type_id: number;
   qualification_type_name?: string;
+  // Kuerzel des Qualifikationstyps, sofern gepflegt. Traegt die Marke in der
+  // Verwaltungsliste; fehlt es, steht dort der ausgeschriebene Name.
+  qualification_type_short_name?: string | null;
   valid_until?: string;
 }
 

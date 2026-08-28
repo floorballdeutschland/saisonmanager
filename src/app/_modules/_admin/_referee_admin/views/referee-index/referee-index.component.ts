@@ -15,6 +15,7 @@ import {
 } from '@floorball/core';
 import {
   RefereeAdmin,
+  RefereeQualificationEntry,
   RefereeStatusFilter,
   StateAssociation,
 } from '@floorball/types';
@@ -140,6 +141,7 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
       t('refereeAdmin.index.csvLastName'),
       t('refereeAdmin.index.csvFirstName'),
       t('refereeAdmin.index.colLevel'),
+      t('refereeAdmin.index.qualifications'),
       t('refereeAdmin.index.colRegion'),
       t('refereeAdmin.index.colValidity'),
       t('refereeAdmin.index.csvStatus'),
@@ -152,6 +154,7 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
       r.nachname,
       r.vorname,
       r.lizenzstufe,
+      (r.qualifications ?? []).map((q) => q.qualification_type_name).join(', '),
       r.landesverband,
       r.gueltigkeit,
       r.guest ? t('refereeAdmin.index.csvGuest') : t(this.statusLabelKey(r)),
@@ -161,6 +164,20 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     ]);
 
     downloadCsv('schiedsrichter', headers, rows);
+  }
+
+  // Titel der Qualifikations-Marke neben der Stufe. Das Kürzel allein sagt
+  // niemandem etwas, der es nicht ohnehin kennt.
+  qualificationTitle(qualification: RefereeQualificationEntry): string {
+    const name = qualification.qualification_type_name ?? '';
+    return qualification.valid_until
+      ? this._transloco.translate(
+          'refereeAdmin.index.colQualificationsValidUntil',
+          { name, date: qualification.valid_until }
+        )
+      : this._transloco.translate('refereeAdmin.index.colQualificationsTitle', {
+          name,
+        });
   }
 
   // Fällt die API-Angabe aus (ältere Antwort), bleibt das alte active-Flag die
