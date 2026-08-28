@@ -628,6 +628,14 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
    * und der 403 würfe ihn aus der Maske. Scheitert der Abruf, bleibt
    * `manageableClubIds` auf `null` und es gilt die Näherung, also genau das
    * Verhalten von vorher.
+   *
+   * Stillgestellt wird dabei ausschließlich der 403: Er ist die erwartete
+   * Antwort auf eine Verbandsrolle und keine Störung. Jeder andere Status geht
+   * wie in `getPlayer` an den globalen ErrorHandler, in Produktion also an
+   * Sentry. Ein Zweig, der auch 500 und `status 0` schluckt, ließe einen
+   * Teammanager eines freigegebenen Vereins mit der falschen Begründung „das
+   * darf nur der Vereinsmanager" vor einer lesenden Maske sitzen, ohne dass
+   * irgendwo etwas davon steht.
    */
   private _loadManageableClubs(): void {
     if (this.editMode || this.permissions['update_player']) {
@@ -641,9 +649,13 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           .map((club) => club.id);
         this._cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
         this.manageableClubIds = null;
         this._cdr.markForCheck();
+
+        if (err?.status !== 403) {
+          this._errorHandler.handleError(err);
+        }
       },
     });
   }

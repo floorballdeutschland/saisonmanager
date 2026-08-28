@@ -529,6 +529,50 @@ describe('PlayerEditComponent', () => {
       expect(fixture.componentInstance.createNotAllowed).toBe(false);
     });
 
+    // Der 403 ist die erwartete Antwort und keine Stoerung: Er gehoert nicht
+    // ins Monitoring.
+    it('meldet den 403 der Vereinsliste nicht an den globalen ErrorHandler', () => {
+      const fixture = render({
+        permissions: { create_player: true },
+      } as Partial<User>);
+      // Erst nach `render`: `TestBed.inject` instanziiert das Testmodul, und
+      // danach lehnt `overrideProvider` im Render-Helfer ab.
+      const handleError = spyOn(TestBed.inject(ErrorHandler), 'handleError');
+      TestBed.inject(HttpTestingController)
+        .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
+        .flush(
+          { message: 'Keine Berechtigung.' },
+          { status: 403, statusText: 'Forbidden' }
+        );
+      fixture.detectChanges(false);
+
+      expect(handleError).not.toHaveBeenCalled();
+    });
+
+    // Jeder andere Status dagegen schon. Faellt der Endpunkt mit 500 aus,
+    // bekommt ein Teammanager eines freigegebenen Vereins die Maske lesend mit
+    // der inhaltlich falschen Begruendung „das darf nur der Vereinsmanager" --
+    // ein error-Zweig, der alles verschluckt, naehme genau diesen Fall lautlos
+    // aus dem Monitoring.
+    it('meldet einen Ausfall der Vereinsliste an den globalen ErrorHandler', () => {
+      const fixture = render({
+        permissions: { create_player: true },
+      } as Partial<User>);
+      const handleError = spyOn(TestBed.inject(ErrorHandler), 'handleError');
+      TestBed.inject(HttpTestingController)
+        .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
+        .flush(
+          { message: 'Fehler.' },
+          { status: 500, statusText: 'Server Error' }
+        );
+      fixture.detectChanges(false);
+
+      expect(handleError).toHaveBeenCalled();
+      // Die Naeherung bleibt: Der Ausfall darf die Maske nicht zusaetzlich
+      // umbauen, er wird nur gemeldet.
+      expect(fixture.componentInstance.manageableClubIds).toBeNull();
+    });
+
     // Einer Verbandsrolle antwortet der Endpunkt mit 403, er ist die
     // Vereinssicht. Für sie wird er deshalb gar nicht erst gerufen.
     it('fragt die Vereinsliste fuer Admin und SBK nicht ab', () => {
@@ -596,6 +640,45 @@ describe('PlayerEditComponent', () => {
 
       expect(component.canReactivate).toBe(true);
       expect(component.canDeactivate).toBe(false);
+    });
+
+    // Die Maske uebernimmt die Antwort auf die Aktion ungefiltert
+    // (`this.player = updated`) und leitet den Gegenknopf daraus ab. Solange
+    // die Antwort das Feld traegt, bleibt er stehen; ohne griff der Rueckfall
+    // auf das globale Rollen-Flag, und einem reinen Teammanager fehlte
+    // „Reaktivieren" bis zum naechsten Seitenaufruf.
+    it('behaelt den Gegenknopf nach dem Deaktivieren', () => {
+      const component = build(
+        { player_deactivate: false },
+        { id: 7, can_deactivate: true }
+      );
+
+      component.deactivatePlayer();
+      TestBed.inject(HttpTestingController)
+        .expectOne(`${environment.apiURL}admin/players/7/deactivate.json`)
+        .flush({
+          id: 7,
+          can_deactivate: true,
+          deactivated_at: '2026-08-28T10:00:00Z',
+        });
+
+      expect(component.canReactivate).toBe(true);
+      expect(component.canDeactivate).toBe(false);
+    });
+
+    it('behaelt den Gegenknopf nach dem Reaktivieren', () => {
+      const component = build(
+        { player_deactivate: false },
+        { id: 7, can_deactivate: true, deactivated_at: '2026-08-28T10:00:00Z' }
+      );
+
+      component.reactivatePlayer();
+      TestBed.inject(HttpTestingController)
+        .expectOne(`${environment.apiURL}admin/players/7/reactivate.json`)
+        .flush({ id: 7, can_deactivate: true });
+
+      expect(component.canDeactivate).toBe(true);
+      expect(component.canReactivate).toBe(false);
     });
 
     // Frontend-Deploy vor API-Deploy: Fehlt das Feld, gilt weiter das
