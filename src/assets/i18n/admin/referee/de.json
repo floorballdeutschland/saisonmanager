@@ -8,6 +8,8 @@
     "searchPlaceholder": "Name oder Lizenznummer",
     "allAssociations": "Alle Landesverbände",
     "licenseLevelPlaceholder": "Stufe oder Zusatzqualifikation (z.B. A, B, Beobachter)",
+    "colQualifications": "Zusatzq.",
+    "qualificationValidUntil": "bis {{ date }}",
     "colQualificationsTitle": "Zusatzqualifikation: {{ name }}",
     "colQualificationsValidUntil": "Zusatzqualifikation: {{ name }}, gültig bis {{ date }}",
     "search": "Suchen",

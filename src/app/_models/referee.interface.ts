@@ -89,6 +89,9 @@ export interface RefereeAdmin {
   club_id?: number | null;
   club_name?: string;
   landesverband?: string;
+  // Kuerzel des Landesverbands, nur in der Listenantwort. In der Datenbank
+  // optional, deshalb faellt die Spalte „Region" auf den vollen Namen zurueck.
+  landesverband_short?: string | null;
   game_operation_id?: number;
   lizenzstufe?: string;
   gueltigkeit?: string;

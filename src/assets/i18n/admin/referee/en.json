@@ -8,6 +8,8 @@
     "searchPlaceholder": "Name or license number",
     "allAssociations": "All state associations",
     "licenseLevelPlaceholder": "Level or additional qualification (e.g. A, B, Beobachter)",
+    "colQualifications": "Add. qual.",
+    "qualificationValidUntil": "until {{ date }}",
     "colQualificationsTitle": "Additional qualification: {{ name }}",
     "colQualificationsValidUntil": "Additional qualification: {{ name }}, valid until {{ date }}",
     "search": "Search",

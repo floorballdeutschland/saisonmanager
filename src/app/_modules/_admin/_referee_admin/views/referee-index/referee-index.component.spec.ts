@@ -50,6 +50,8 @@ describe('RefereeIndexComponent', () => {
                 accounts: 'Benutzerkonten',
                 hasAccountBadge: 'Konto',
                 hasAccountTitle: 'Hat ein Benutzerkonto',
+                colQualifications: 'Zusatzq.',
+                qualificationValidUntil: 'bis {{ date }}',
                 colQualificationsTitle: 'Zusatzqualifikation: {{ name }}',
                 colQualificationsValidUntil:
                   'Zusatzqualifikation: {{ name }}, gültig bis {{ date }}',
@@ -120,12 +122,15 @@ describe('RefereeIndexComponent', () => {
       }),
     ]);
 
-    const badge = fixture.nativeElement.querySelector(
+    const cell = fixture.nativeElement.querySelector(
       '[title="Zusatzqualifikation: Beobachter, gültig bis 30.06.2028"]'
     );
 
-    expect(badge).not.toBeNull();
-    expect(badge.textContent.trim()).toBe('BEO');
+    expect(cell).not.toBeNull();
+    // Kürzel und Gültigkeit stehen zusammen in der Spalte; der volle Name im Titel.
+    expect(cell.textContent.replace(/\s+/g, ' ').trim()).toBe(
+      'BEO bis 30.06.2028'
+    );
   });
 
   // Das Kürzel ist optional; ohne es muss der ausgeschriebene Name stehen,
@@ -141,12 +146,44 @@ describe('RefereeIndexComponent', () => {
       }),
     ]);
 
-    const badge = fixture.nativeElement.querySelector(
+    const cell = fixture.nativeElement.querySelector(
       '[title="Zusatzqualifikation: Ausbilder"]'
     );
 
-    expect(badge).not.toBeNull();
-    expect(badge.textContent.trim()).toBe('Ausbilder');
+    expect(cell).not.toBeNull();
+    expect(cell.textContent.trim()).toBe('Ausbilder');
+  });
+
+  // Die Spalte „Region" trägt eine Zuordnung, keinen Fließtext – das Kürzel
+  // reicht und lässt Platz für die Gültigkeit der Zusatzqualifikation.
+  it('zeigt in der Region das Kürzel des Landesverbands', async () => {
+    await setUp({ menu_item_referee_admin: true }, [
+      referee({
+        id: 1,
+        landesverband: 'Floorball Verband Berlin',
+        landesverband_short: 'FVB',
+      }),
+    ]);
+
+    const cell = fixture.nativeElement.querySelector(
+      '[title="Floorball Verband Berlin"]'
+    );
+
+    expect(cell).not.toBeNull();
+    expect(cell.textContent.trim()).toBe('FVB');
+  });
+
+  // Das Kürzel ist in der Datenbank optional.
+  it('faellt in der Region auf den vollen Namen zurueck', async () => {
+    await setUp({ menu_item_referee_admin: true }, [
+      referee({ id: 1, landesverband: 'Floorball Verband Berlin' }),
+    ]);
+
+    const cell = fixture.nativeElement.querySelector(
+      '[title="Floorball Verband Berlin"]'
+    );
+
+    expect(cell.textContent.trim()).toBe('Floorball Verband Berlin');
   });
 
   it('verlinkt die Konto-Seite nicht ohne referee_account_tools', async () => {

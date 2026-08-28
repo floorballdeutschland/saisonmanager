@@ -173,6 +173,9 @@
               {{ "refereeAdmin.index.colLevel" | transloco }}
             </th>
             <th class="py-2 pr-4 font-bold">
+              {{ "refereeAdmin.index.colQualifications" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
               {{ "refereeAdmin.index.colRegion" | transloco }}
             </th>
             <th class="py-2 pr-4 font-bold">
@@ -226,24 +229,37 @@
                   </span>
                 }
               </td>
+              <td class="py-2 pr-4">{{ r.lizenzstufe || "–" }}</td>
+              <!-- Eigene Spalte, weil der Stufenfilter auch die
+                   Zusatzqualifikationen durchsucht: Die Trefferliste muss
+                   zeigen, warum eine Zeile in ihr steht. Je Qualifikation eine
+                   Zeile, dahinter die Gültigkeit, sofern eine hinterlegt ist. -->
               <td class="py-2 pr-4 whitespace-nowrap">
-                {{ r.lizenzstufe || "–" }}
-                <!-- Zusatzqualifikationen als Marke neben der Stufe: Der Filter
-                     darüber sucht auch in ihnen, also muss die Zeile zeigen,
-                     warum sie getroffen wurde. -->
                 @for (q of r.qualifications; track q.qualification_type_id) {
-                  <span
-                    [attr.title]="qualificationTitle(q)"
-                    class="ml-1 inline-block bg-fb-gray-200 text-fb-gray-500 text-[10px] font-bold px-1 rounded"
-                  >
-                    {{
+                  <div [attr.title]="qualificationTitle(q)">
+                    <span class="font-medium">{{
                       q.qualification_type_short_name ||
                         q.qualification_type_name
-                    }}
-                  </span>
+                    }}</span>
+                    @if (q.valid_until) {
+                      <span class="text-fb-gray-500 text-xs">
+                        {{
+                          "refereeAdmin.index.qualificationValidUntil"
+                            | transloco: { date: q.valid_until }
+                        }}
+                      </span>
+                    }
+                  </div>
+                }
+                @if (!r.qualifications?.length) {
+                  <span class="text-fb-gray-500">–</span>
                 }
               </td>
-              <td class="py-2 pr-4">{{ r.landesverband || "–" }}</td>
+              <!-- Kürzel statt vollem Namen: Die Spalte ist eine Zuordnung, kein
+                   Fließtext, und der volle Name steht im Titel. -->
+              <td class="py-2 pr-4" [attr.title]="r.landesverband">
+                {{ r.landesverband_short || r.landesverband || "–" }}
+              </td>
               <td class="py-2 pr-4">
                 @if (r.gueltigkeit) {
                   <span [class]="statusClass(r)">{{ r.gueltigkeit }}</span>
@@ -299,7 +315,7 @@
           }
           @if (referees.length === 0) {
             <tr>
-              <td colspan="8" class="py-8 text-center text-fb-gray-500">
+              <td colspan="9" class="py-8 text-center text-fb-gray-500">
                 {{ "refereeAdmin.index.empty" | transloco }}
               </td>
             </tr>
