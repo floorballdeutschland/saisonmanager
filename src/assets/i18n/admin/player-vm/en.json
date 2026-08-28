@@ -43,7 +43,7 @@
     "importShow": "Import",
     "importHide": "Close import",
     "importTitle": "Fill in missing details – {{ club }}",
-    "importHint": "Download the CSV export of this page, fill in the empty cells and upload the file here. The export format is expected; the “ID” column maps each row to its profile and must stay unchanged.\nOnly empty fields are filled – an existing value is never overwritten. Rows belonging to another club are not applied. Date of birth, gender and nationality can only be added by the association; for the club the route there is the change request on the player profile.",
+    "importHint": "Download the CSV export of this page, fill in the empty cells and upload the file here. The export format is expected; the “ID” column maps each row to its profile and must stay unchanged.\nOnly empty fields are filled – an existing value is never overwritten. Rows belonging to another club are not applied. Date of birth, gender and nationality can only be added by the association responsible for the home club; for the club the route there is the change request on the player profile.\nNationality may be given as plain text (“Deutschland”) or as a nation ID – both fill the same field on the profile, and where a row has both columns the ID wins.",
     "importChooseFile": "Choose CSV file",
     "importing": "Reading…",
     "reportSummary": "{{ rows }} data rows: {{ updated }} applied, {{ skipped }} skipped, {{ notFound }} not found, {{ invalid }} unusable",

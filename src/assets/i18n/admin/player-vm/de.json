@@ -43,7 +43,7 @@
     "importShow": "Import",
     "importHide": "Import schließen",
     "importTitle": "Fehlende Angaben nachtragen – {{ club }}",
-    "importHint": "Lade den CSV-Export dieser Seite herunter, fülle die leeren Zellen und lade die Datei hier wieder hoch. Erwartet wird das Format des Exports; die Spalte „ID“ ordnet jede Zeile ihrem Profil zu und muss unverändert bleiben.\nEs werden nur leere Felder gefüllt – ein bereits gepflegter Wert wird nie überschrieben. Zeilen, die zu einem anderen Verein gehören, werden nicht eingetragen. Geburtsdatum, Geschlecht und Nationalität trägt nur der Verband nach; für den Verein führt der Weg dorthin über den Änderungsantrag im Spielerprofil.",
+    "importHint": "Lade den CSV-Export dieser Seite herunter, fülle die leeren Zellen und lade die Datei hier wieder hoch. Erwartet wird das Format des Exports; die Spalte „ID“ ordnet jede Zeile ihrem Profil zu und muss unverändert bleiben.\nEs werden nur leere Felder gefüllt – ein bereits gepflegter Wert wird nie überschrieben. Zeilen, die zu einem anderen Verein gehören, werden nicht eingetragen. Geburtsdatum, Geschlecht und Nationalität trägt nur der für den Heimatverein zuständige Verband nach; für den Verein führt der Weg dorthin über den Änderungsantrag im Spielerprofil.\nDie Nationalität darf dabei im Klartext („Deutschland“) oder als Nation-ID dastehen – gefüllt wird in beiden Fällen dieselbe Angabe im Profil, und stehen beide Spalten in der Zeile, gilt die ID.",
     "importChooseFile": "CSV-Datei wählen",
     "importing": "Wird eingelesen…",
     "reportSummary": "{{ rows }} Datenzeilen: {{ updated }} eingetragen, {{ skipped }} übersprungen, {{ notFound }} nicht gefunden, {{ invalid }} unbrauchbar",
