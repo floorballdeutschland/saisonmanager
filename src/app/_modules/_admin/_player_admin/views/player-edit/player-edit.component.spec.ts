@@ -239,6 +239,87 @@ describe('PlayerEditComponent', () => {
     });
   });
 
+  // 292 Profile aus dem Altdaten-Import tragen kein Geburtsdatum, 161 davon sind
+  // aktiv und rund 40 hängen an echten Vereinen, sind für den Vereinsmanager also
+  // über die Spielerliste erreichbar. `errorMsg` griff mit `player.birthdate.length`
+  // ungeschützt darauf zu, und weil das Template `error(player)` in der Change
+  // Detection auswertet, zerlegte der TypeError die ganze Maske statt nur die
+  // Meldung. Gemeldet über Spieler 13271 (Sentry SAISONMANAGER-41).
+  describe('Profil ohne Geburtsdatum', () => {
+    function renderMitGeburtsdatum(
+      birthdate: string | null
+    ): ComponentFixture<PlayerEditComponent> {
+      // `update_player` ist nötig, damit das Template den Block mit
+      // `@if (error(player))` überhaupt rendert, und genau dort schlug der
+      // TypeError zu. Mit leeren permissions bleibt die Maske lesend und der
+      // Test wäre eine Scheinabsicherung.
+      currentUser$.next({
+        permissions: { update_player: true },
+      } as unknown as User);
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.componentInstance.player = {
+        id: 13271,
+        first_name: 'Alexandra',
+        last_name: 'Zadilska',
+        birthdate,
+        nation_id: 99,
+        licenses: [],
+      } as unknown as Player;
+      fixture.detectChanges(false);
+      return fixture;
+    }
+
+    it('rendert die Maske, statt am fehlenden Geburtsdatum zu scheitern', () => {
+      const fixture = renderMitGeburtsdatum(null);
+
+      // Der Name steckt im value der Eingabefelder, nicht im Textinhalt; die
+      // Spieler-ID und die Beanstandung beweisen, dass die Maske samt dem
+      // Block mit `error(player)` durchgelaufen ist.
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain('13271');
+      expect(text).toContain('playerAdmin.notifications.errBirthdate');
+    });
+
+    it('meldet das fehlende Geburtsdatum als Grund', () => {
+      const komponente = renderMitGeburtsdatum(null).componentInstance;
+      const spieler = komponente.player as Player;
+
+      expect(komponente.error(spieler)).toBeTrue();
+      // Ohne hinterlegte Scope-Übersetzungen gibt Transloco im Test den
+      // Schlüssel zurück; geprüft wird hier die Verzweigung, nicht der Text.
+      expect(komponente.errorMsg(spieler)).toEqual([
+        'playerAdmin.notifications.errBirthdate',
+      ]);
+    });
+
+    it('beanstandet ein vorhandenes Geburtsdatum nicht', () => {
+      const komponente = renderMitGeburtsdatum('2000-09-25').componentInstance;
+      const spieler = komponente.player as Player;
+
+      expect(komponente.error(spieler)).toBeFalse();
+      expect(komponente.errorMsg(spieler)).toEqual([]);
+    });
+
+    it('beanstandet auch leere Namen und fehlende Nationalität', () => {
+      const komponente = renderMitGeburtsdatum(null).componentInstance;
+      const spieler = {
+        id: 0,
+        first_name: '',
+        last_name: null,
+        birthdate: null,
+        nation_id: null,
+        licenses: [],
+      } as unknown as Player;
+
+      expect(komponente.errorMsg(spieler)).toEqual([
+        'playerAdmin.notifications.errFirstName',
+        'playerAdmin.notifications.errLastName',
+        'playerAdmin.notifications.errBirthdate',
+        'playerAdmin.notifications.errNationality',
+      ]);
+    });
+  });
+
   // Zuständig für die Erst-/Zweitlizenz-Zuordnung ist der Verband der Liga, an
   // der die Lizenz hängt. Das Profil zeigt alle Lizenzen der Person, auch die
   // aus fremden Spielbetrieben, und `player_set_gf_role` allein unterscheidet
