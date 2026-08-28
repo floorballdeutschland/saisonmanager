@@ -9,6 +9,7 @@ export { TeamService } from './team.service';
 export { OverlayService } from './overlay.service';
 export { RefereeService } from './referee.service';
 export { RefereeFeedbackService } from './referee-feedback.service';
+export { RefereeObservationService } from './referee-observation.service';
 export { FeedbackCommentsService } from './feedback-comments.service';
 export { RefereeFeedbackReportService } from './referee-feedback-report.service';
 export { ArenaService } from './arena.service';

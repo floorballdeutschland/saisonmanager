@@ -401,6 +401,78 @@
         }
       }
     }
+
+    <!-- Beobachtungen der Schiedsrichtercoaches -->
+    @if (canViewObservations) {
+      <h2 class="text-lg font-bold mb-4 mt-10">
+        {{ "refereeObservation.admin.title" | transloco }}
+      </h2>
+      @if (observationsLoading) {
+        <div class="text-fb-gray-500 text-sm py-4">
+          {{ "refereeAdmin.detail.loading" | transloco }}
+        </div>
+      } @else if (observationsFailed) {
+        <p class="text-fb-gray-500 text-sm">
+          {{ "refereeObservation.admin.loadFailed" | transloco }}
+        </p>
+      } @else if (!observations?.observations?.length) {
+        <p class="text-fb-gray-500 text-sm">
+          {{ "refereeObservation.admin.empty" | transloco }}
+        </p>
+      } @else {
+        <!-- Schnitt ueber die EIGENEN Bewertungen dieser Person, nicht ueber
+             die des Gespanns. Genau dafuer haengen die Bewertungen an der
+             Person und nicht am Bogen. -->
+        <div class="flex flex-wrap gap-6 mb-4 text-sm">
+          <div>
+            <span class="text-fb-gray-500">
+              {{ "refereeObservation.admin.count" | transloco }}
+            </span>
+            <span class="font-bold ml-1">{{ observations?.summary?.count }}</span>
+          </div>
+          @for (dimension of observationDimensions; track dimension.key) {
+            <div>
+              <span class="text-fb-gray-500">
+                {{ "refereeObservation.dimension." + dimension.key | transloco }}
+              </span>
+              <span class="font-bold ml-1">
+                {{ averageObservationRating(dimension.ratingKey) }} / 7
+              </span>
+            </div>
+          }
+        </div>
+
+        <div class="flex flex-col gap-4">
+          @for (
+            observation of observations?.observations;
+            track observation.id
+          ) {
+            <div>
+              <fb-referee-observation-detail [observation]="observation" />
+              <div class="mt-1">
+                <button
+                  type="button"
+                  class="text-xs underline hover:no-underline text-fb-gray-500"
+                  (click)="
+                    toggleObservationStatus(
+                      observation.id,
+                      observation.status !== 'hidden'
+                    )
+                  "
+                >
+                  {{
+                    (observation.status === "hidden"
+                      ? "refereeObservation.admin.unhide"
+                      : "refereeObservation.admin.hide"
+                    ) | transloco
+                  }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
   }
 
   @if (!loading && !referee) {

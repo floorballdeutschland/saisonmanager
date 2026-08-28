@@ -74,7 +74,9 @@
     "refereeChangeRequests": "Stammdaten-Korrekturen",
     "secretaryLinks": "Spielsekretariat",
     "liveToday": "Heute live",
-    "systemHealth": "System"
+    "systemHealth": "System",
+    "myObservations": "Meine Beobachtungen",
+    "myReceivedObservations": "Rückmeldungen meiner Coaches"
   },
   "account": {
     "title": "Mein Konto",

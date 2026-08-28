@@ -1,0 +1,88 @@
+{
+  "loading": "Loading …",
+  "loadFailed": "The observations could not be loaded.",
+  "dimension": {
+    "stickPlay": "Stick play",
+    "physicalPlay": "Physical play",
+    "penaltyLine": "Penalty line",
+    "gameManagement": "Game management",
+    "overall": "Overall assessment"
+  },
+  "comment": {
+    "stickPlay": "Comments on stick play",
+    "physicalPlay": "Comments on physical play",
+    "penaltyLine": "Comments on penalty line",
+    "gameManagement": "Comments on game management"
+  },
+  "field": {
+    "matchDescription": "Match description",
+    "otherMatters": "Other matters",
+    "finalComments": "Final comments and development points for refereeing"
+  },
+  "scale": {
+    "title": "Rating scale 1 to 7",
+    "hint": "Scale 1 to 7, where 7 is the best rating and 4 is the expected level.",
+    "label": {
+      "7": "Excellent",
+      "6": "Very good",
+      "5": "Good",
+      "4": "Default level",
+      "3": "Satisfactory",
+      "2": "Weak",
+      "1": "Poor"
+    },
+    "description": {
+      "7": "An outstanding overall performance. Game management and communication are highly proactive, and leadership is strong and convincing throughout the match. Technical execution is practically flawless. Decisions consistently balance the rules and the flow of the game at an excellent level.",
+      "6": "A very strong overall performance. The match is clearly under control, with leadership and communication that are clear, consistent, and reliable. Only minor errors in one area. Decisions are well-justified, take game events into account, and exceed the expected standard.",
+      "5": "A solid and consistent performance with some minor errors across different areas, without significant impact on the game. Referees perform better than the expected standard in several aspects. Penalties are justifiable according to the rules, and the disciplinary line is in line with the season's guidelines.",
+      "4": "The expected performance level in top leagues. The game is under control, with decisions and penalties justifiable according to the rules. The disciplinary line follows the season's guidelines. Referees move, position, and manage the game at the standard required by their training.",
+      "3": "The overall performance is acceptable but contains errors that partially affect the game. Referees' decisions may be inconsistent, and communication between the pair is not always aligned with the nature of the game or specific situations. The match remains under control, but the standard is below what is expected in the top league.",
+      "2": "Performance is insufficient, with recurring errors and deficiencies in several areas. Game management shows clear difficulties, and decisions differ significantly between the referees. Referees do not consistently operate as required by their training. Match control is fragile.",
+      "1": "A deficient overall performance. The referees struggle to maintain control of the match, with many clear errors across different areas. Proactive leadership and correct application of the rules are missing. Several mandatory penalties are either not imposed or incorrectly applied. The required top-league standard is not reached."
+    }
+  },
+  "detail": {
+    "pair": "Pair / Team",
+    "refereeSlot": "Referee {{position}}",
+    "byCoach": "Observed by {{name}}",
+    "toGame": "To the game",
+    "hidden": "This observation has been withdrawn and is no longer visible to the referees it covers."
+  },
+  "coach": {
+    "title": "My observations",
+    "intro": "Submit your coaching forms here. Listed are the games you were appointed to as a referee coach, plus, in competitions without named appointments, the games of your own competition.",
+    "openTitle": "Open games",
+    "openEmpty": "There is currently no game to observe.",
+    "submittedTitle": "Submitted observations",
+    "submittedEmpty": "You have not submitted an observation yet.",
+    "pair": "Referee pair",
+    "noReferees": "No referees recorded, an observation is not possible here.",
+    "notAssigned": "chosen without appointment",
+    "start": "Fill in form"
+  },
+  "received": {
+    "title": "Feedback from my coaches",
+    "intro": "The observations your referee coaches wrote about your games. You see the shared comments, the rating of the pair, and your own individual ratings.",
+    "empty": "There is no observation about you yet."
+  },
+  "form": {
+    "title": "Coaching form",
+    "notAllowed": "You cannot submit a form for this game. Either it is outside your remit, or you have already submitted one.",
+    "back": "Back to the overview",
+    "submit": "Submit observation",
+    "submitting": "Sending …",
+    "cancel": "Cancel",
+    "saved": "The observation has been saved and delivered to the referees.",
+    "incomplete": "Please give every rating and fill in every text field.",
+    "visibilityHint": "Once submitted, the form is visible to the referees it covers and can no longer be changed. Each person sees the shared comments, the rating of the pair, and their own individual ratings, not those of their partner."
+  },
+  "admin": {
+    "title": "Referee coach observations",
+    "empty": "There is no observation for this person.",
+    "count": "Observations",
+    "average": "Avg. own ratings",
+    "hide": "Withdraw",
+    "unhide": "Make visible again",
+    "loadFailed": "The observations could not be loaded."
+  }
+}

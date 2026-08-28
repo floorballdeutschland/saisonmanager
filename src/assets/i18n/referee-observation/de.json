@@ -1,0 +1,88 @@
+{
+  "loading": "Wird geladen …",
+  "loadFailed": "Die Beobachtungen konnten nicht geladen werden.",
+  "dimension": {
+    "stickPlay": "Stocklinie",
+    "physicalPlay": "Körperspiellinie",
+    "penaltyLine": "Strafenlinie",
+    "gameManagement": "Spielleitung",
+    "overall": "Gesamtspielbewertung"
+  },
+  "comment": {
+    "stickPlay": "Ausführungen zur Stocklinie",
+    "physicalPlay": "Ausführungen zur Körperspiellinie",
+    "penaltyLine": "Ausführungen zur Strafenlinie",
+    "gameManagement": "Ausführungen zur Spielleitung"
+  },
+  "field": {
+    "matchDescription": "Spielbeschreibung",
+    "otherMatters": "Sonstiges",
+    "finalComments": "Abschließende Bemerkungen und Entwicklungsmöglichkeiten"
+  },
+  "scale": {
+    "title": "Bewertungsskala 1 bis 7",
+    "hint": "Skala 1 bis 7, dabei ist 7 die beste Bewertung und 4 das erwartete Niveau.",
+    "label": {
+      "7": "Ausgezeichnet",
+      "6": "Sehr gut",
+      "5": "Gut",
+      "4": "Erwartetes Niveau",
+      "3": "Befriedigend",
+      "2": "Schwach",
+      "1": "Ungenügend"
+    },
+    "description": {
+      "7": "Herausragende Gesamtleistung. Spielleitung und Kommunikation sind ausgeprägt vorausschauend, die Führung ist über das gesamte Spiel stark und überzeugend. Die technische Umsetzung ist praktisch fehlerfrei, die Entscheidungen bringen Regeln und Spielfluss durchgehend auf ausgezeichnetem Niveau in Einklang.",
+      "6": "Sehr starke Gesamtleistung. Das Spiel ist klar unter Kontrolle, Führung und Kommunikation sind klar, einheitlich und verlässlich. Nur kleinere Fehler in einem Bereich. Die Entscheidungen sind gut begründet, beziehen den Spielverlauf ein und übertreffen den erwarteten Maßstab.",
+      "5": "Solide und einheitliche Leistung mit einzelnen kleineren Fehlern in verschiedenen Bereichen, ohne nennenswerte Auswirkung auf das Spiel. In mehreren Punkten über dem erwarteten Niveau. Die Strafen sind regelkonform begründbar, die Disziplinarlinie entspricht den Saisonvorgaben.",
+      "4": "Das in den obersten Ligen erwartete Leistungsniveau. Das Spiel ist unter Kontrolle, Entscheidungen und Strafen sind regelkonform begründbar. Die Disziplinarlinie folgt den Saisonvorgaben. Laufwege, Stellungsspiel und Spielleitung entsprechen dem Standard der Ausbildung.",
+      "3": "Die Gesamtleistung ist annehmbar, enthält aber Fehler, die sich teilweise auf das Spiel auswirken. Entscheidungen können uneinheitlich sein, und die Kommunikation im Gespann passt nicht immer zum Charakter des Spiels oder zur konkreten Situation. Das Spiel bleibt unter Kontrolle, der Maßstab liegt jedoch unter dem, was in der obersten Liga erwartet wird.",
+      "2": "Die Leistung reicht nicht aus, mit wiederkehrenden Fehlern und Mängeln in mehreren Bereichen. Die Spielleitung zeigt deutliche Schwierigkeiten, die Entscheidungen der beiden Schiedsrichter weichen erheblich voneinander ab. Die Kontrolle über das Spiel ist brüchig.",
+      "1": "Mangelhafte Gesamtleistung. Das Gespann hat Mühe, die Kontrolle über das Spiel zu behalten, mit vielen klaren Fehlern in unterschiedlichen Bereichen. Vorausschauende Führung und korrekte Regelanwendung fehlen. Mehrere zwingende Strafen werden nicht oder falsch verhängt. Der für die oberste Liga nötige Maßstab wird nicht erreicht."
+    }
+  },
+  "detail": {
+    "pair": "Gespann",
+    "refereeSlot": "Schiedsrichter {{position}}",
+    "byCoach": "Beobachtet von {{name}}",
+    "toGame": "Zum Spiel",
+    "hidden": "Diese Beobachtung wurde zurückgenommen und ist für die beobachteten Schiedsrichter*innen nicht mehr sichtbar."
+  },
+  "coach": {
+    "title": "Meine Beobachtungen",
+    "intro": "Hier gibst du deine Beobachtungsbögen ab. Zur Auswahl stehen die Spiele, für die du als Schiedsrichtercoach angesetzt warst – und in Spielbetrieben ohne namentliche Ansetzung zusätzlich die Spiele deines eigenen Spielbetriebs.",
+    "openTitle": "Offene Spiele",
+    "openEmpty": "Zurzeit steht kein Spiel zur Beobachtung an.",
+    "submittedTitle": "Abgegebene Beobachtungen",
+    "submittedEmpty": "Du hast noch keine Beobachtung abgegeben.",
+    "pair": "Gespann",
+    "noReferees": "Kein Gespann hinterlegt – eine Beobachtung ist hier nicht möglich.",
+    "notAssigned": "ohne Ansetzung gewählt",
+    "start": "Bogen ausfüllen"
+  },
+  "received": {
+    "title": "Rückmeldungen meiner Coaches",
+    "intro": "Die Beobachtungen deiner Schiedsrichtercoaches zu deinen Einsätzen. Du siehst die gemeinsamen Anmerkungen, die Bewertung des Gespanns und deine eigenen Einzelbewertungen.",
+    "empty": "Es liegt noch keine Beobachtung zu dir vor."
+  },
+  "form": {
+    "title": "Beobachtungsbogen",
+    "notAllowed": "Zu diesem Spiel kannst du keinen Bogen abgeben. Entweder liegt es außerhalb deiner Zuständigkeit, oder du hast bereits einen Bogen dazu abgegeben.",
+    "back": "Zurück zur Übersicht",
+    "submit": "Beobachtung absenden",
+    "submitting": "Wird gesendet …",
+    "cancel": "Abbrechen",
+    "saved": "Die Beobachtung wurde gespeichert und den Schiedsrichter*innen zugestellt.",
+    "incomplete": "Bitte alle Bewertungen vergeben und alle Textfelder ausfüllen.",
+    "visibilityHint": "Nach dem Absenden ist der Bogen für die beobachteten Schiedsrichter*innen sichtbar und lässt sich nicht mehr ändern. Jede Person sieht die gemeinsamen Anmerkungen, die Bewertung des Gespanns und ihre eigenen Einzelbewertungen – nicht die des Gespannpartners."
+  },
+  "admin": {
+    "title": "Beobachtungen der Schiedsrichtercoaches",
+    "empty": "Zu dieser Person liegt keine Beobachtung vor.",
+    "count": "Beobachtungen",
+    "average": "Ø eigene Bewertungen",
+    "hide": "Zurücknehmen",
+    "unhide": "Wieder sichtbar machen",
+    "loadFailed": "Die Beobachtungen konnten nicht geladen werden."
+  }
+}
