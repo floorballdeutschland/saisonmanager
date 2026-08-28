@@ -56,6 +56,11 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   // Beobachtung ist Entwicklungsarbeit an einer Person, ein Mittelwert daraus
   // wäre die uninteressanteste Hälfte.
   canViewObservations = false;
+  // Zurücknehmen ist ein eigenes Recht (Admin und Schiedsrichterkommission).
+  // Die Ansetzung liest die Bögen, greift aber nicht in sie ein; hinge der
+  // Knopf am Leserecht, stünde er auch bei ihr in der Maske und liefe beim
+  // Klick in eine Absage.
+  canModerateObservations = false;
   observations?: RefereeObservationAdminResponse;
   observationsLoading = false;
   observationsFailed = false;
@@ -93,6 +98,8 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
           this.canViewFeedback = !!user?.permissions['referee_feedback_view'];
           this.canViewObservations =
             !!user?.permissions['referee_observation_view'];
+          this.canModerateObservations =
+            !!user?.permissions['referee_observation_moderate'];
           this.canManageExclusions =
             !!user?.permissions['menu_item_referee_exclusions'];
           this._maybeLoadFeedback();

@@ -428,12 +428,16 @@
             <span class="text-fb-gray-500">
               {{ "refereeObservation.admin.count" | transloco }}
             </span>
-            <span class="font-bold ml-1">{{ observations?.summary?.count }}</span>
+            <span class="font-bold ml-1">{{
+              observations?.summary?.count
+            }}</span>
           </div>
           @for (dimension of observationDimensions; track dimension.key) {
             <div>
               <span class="text-fb-gray-500">
-                {{ "refereeObservation.dimension." + dimension.key | transloco }}
+                {{
+                  "refereeObservation.dimension." + dimension.key | transloco
+                }}
               </span>
               <span class="font-bold ml-1">
                 {{ averageObservationRating(dimension.ratingKey) }} / 7
@@ -449,25 +453,27 @@
           ) {
             <div>
               <fb-referee-observation-detail [observation]="observation" />
-              <div class="mt-1">
-                <button
-                  type="button"
-                  class="text-xs underline hover:no-underline text-fb-gray-500"
-                  (click)="
-                    toggleObservationStatus(
-                      observation.id,
-                      observation.status !== 'hidden'
-                    )
-                  "
-                >
-                  {{
-                    (observation.status === "hidden"
-                      ? "refereeObservation.admin.unhide"
-                      : "refereeObservation.admin.hide"
-                    ) | transloco
-                  }}
-                </button>
-              </div>
+              @if (canModerateObservations) {
+                <div class="mt-1">
+                  <button
+                    type="button"
+                    class="text-xs underline hover:no-underline text-fb-gray-500"
+                    (click)="
+                      toggleObservationStatus(
+                        observation.id,
+                        observation.status !== 'hidden'
+                      )
+                    "
+                  >
+                    {{
+                      (observation.status === "hidden"
+                        ? "refereeObservation.admin.unhide"
+                        : "refereeObservation.admin.hide"
+                      ) | transloco
+                    }}
+                  </button>
+                </div>
+              }
             </div>
           }
         </div>

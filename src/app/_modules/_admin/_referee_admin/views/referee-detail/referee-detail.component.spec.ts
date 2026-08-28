@@ -1,3 +1,4 @@
+import { Component, Input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -5,11 +6,18 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { Observable, of } from 'rxjs';
 import {
   NotificationService,
+  RefereeObservationService,
   RefereeService,
   SessionService,
 } from '@floorball/core';
 import { getTranslocoTestingModule } from 'src/app/_modules/_core/_i18n/transloco-testing';
-import { RefereeAdmin, RefereeAdminGame, User } from '@floorball/types';
+import {
+  RefereeAdmin,
+  RefereeAdminGame,
+  RefereeObservation,
+  RefereeObservationAdminResponse,
+  User,
+} from '@floorball/types';
 
 import { RefereeDetailComponent } from './referee-detail.component';
 
@@ -36,10 +44,36 @@ const game = (overrides: Partial<RefereeAdminGame> = {}): RefereeAdminGame =>
     ...overrides,
   }) as RefereeAdminGame;
 
+// Der Bogen selbst wird an anderer Stelle geprüft; hier zählt nur, ob die Maske
+// den Knopf zum Zurücknehmen danebenstellt.
+@Component({
+  selector: 'fb-referee-observation-detail',
+  template: '',
+  standalone: false,
+})
+class ObservationDetailStubComponent {
+  @Input() observation!: RefereeObservation;
+}
+
+const observationResponse: RefereeObservationAdminResponse = {
+  summary: {
+    count: 1,
+    stick_play_rating: 5,
+    physical_play_rating: 5,
+    penalty_line_rating: 5,
+    game_management_rating: 5,
+    overall_rating: 5,
+  },
+  observations: [{ id: 3, status: 'visible' } as RefereeObservation],
+};
+
 describe('RefereeDetailComponent', () => {
   let fixture: ComponentFixture<RefereeDetailComponent>;
 
-  async function setUp(games: RefereeAdminGame[]) {
+  async function setUp(
+    games: RefereeAdminGame[],
+    permissions: Record<string, boolean> = { menu_item_referee_admin: true }
+  ) {
     await TestBed.configureTestingModule({
       imports: [
         FormsModule,
@@ -58,7 +92,7 @@ describe('RefereeDetailComponent', () => {
           },
         }),
       ],
-      declarations: [RefereeDetailComponent],
+      declarations: [RefereeDetailComponent, ObservationDetailStubComponent],
       providers: [
         {
           provide: RefereeService,
@@ -71,11 +105,19 @@ describe('RefereeDetailComponent', () => {
         {
           provide: SessionService,
           useValue: {
-            // RSK-Sicht: Zugriff auf den Schiedsrichter, aber ohne Feedback und
-            // ohne Ausschlussliste – die beiden Blöcke laden dann nicht.
+            // Voreinstellung ist die RSK-Sicht: Zugriff auf den Schiedsrichter,
+            // aber ohne Feedback und ohne Ausschlussliste – die beiden Blöcke
+            // laden dann nicht.
             currentUser$: of({
-              permissions: { menu_item_referee_admin: true },
+              permissions,
             } as unknown as User) as Observable<User | null>,
+          },
+        },
+        {
+          provide: RefereeObservationService,
+          useValue: {
+            adminGetForReferee: () => of(observationResponse),
+            adminSetStatus: () => of(null),
           },
         },
         { provide: NotificationService, useValue: { error: () => undefined } },
@@ -134,5 +176,38 @@ describe('RefereeDetailComponent', () => {
     expect(gameLinks().length).toBe(0);
     expect(fixture.nativeElement.textContent).toContain('Heim');
     expect(fixture.nativeElement.textContent).toContain('Gast');
+  });
+
+  // Lesen und Zurücknehmen sind zwei Rechte. Die Ansetzung sieht die Bögen,
+  // darf sie aber nicht zurücknehmen; hinge der Knopf am Leserecht, liefe ihr
+  // Klick in eine Absage der API.
+  const moderationButtons = (): HTMLButtonElement[] =>
+    Array.from(
+      fixture.nativeElement.querySelectorAll('fb-referee-observation-detail')
+    ).map((el) =>
+      (el as HTMLElement).parentElement?.querySelector('button')
+    ) as HTMLButtonElement[];
+
+  it('zeigt den Knopf zum Zurücknehmen nur mit dem Moderationsrecht', async () => {
+    await setUp([], {
+      menu_item_referee_admin: true,
+      referee_observation_view: true,
+      referee_observation_moderate: true,
+    });
+
+    expect(moderationButtons().filter(Boolean).length).toBe(1);
+  });
+
+  it('zeigt der Ansetzung die Bögen, aber nicht den Knopf zum Zurücknehmen', async () => {
+    await setUp([], {
+      menu_item_referee_admin: true,
+      referee_observation_view: true,
+    });
+
+    expect(
+      fixture.nativeElement.querySelectorAll('fb-referee-observation-detail')
+        .length
+    ).toBe(1);
+    expect(moderationButtons().filter(Boolean).length).toBe(0);
   });
 });
