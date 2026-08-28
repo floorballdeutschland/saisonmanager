@@ -236,16 +236,21 @@
                    Zeile, dahinter die Gültigkeit, sofern eine hinterlegt ist. -->
               <td class="py-2 pr-4 whitespace-nowrap">
                 @for (q of r.qualifications; track q.qualification_type_id) {
-                  <div [attr.title]="qualificationTitle(q)">
+                  <div
+                    [attr.title]="qualificationTitle(q)"
+                    [class]="qualificationClass(q)"
+                  >
                     <span class="font-medium">{{
                       q.qualification_type_short_name ||
                         q.qualification_type_name
                     }}</span>
                     @if (q.valid_until) {
-                      <span class="text-fb-gray-500 text-xs">
+                      <span [class]="qualificationValidityClass(q)">
                         {{
-                          "refereeAdmin.index.qualificationValidUntil"
-                            | transloco: { date: q.valid_until }
+                          (q.expired
+                            ? "refereeAdmin.index.qualificationExpiredUntil"
+                            : "refereeAdmin.index.qualificationValidUntil"
+                          ) | transloco: { date: q.valid_until }
                         }}
                       </span>
                     }

@@ -31,6 +31,10 @@ export interface RefereeQualificationEntry {
   // Verwaltungsliste; fehlt es, steht dort der ausgeschriebene Name.
   qualification_type_short_name?: string | null;
   valid_until?: string;
+  // Vom Server gesetzt: Das Ablaufdatum liegt in der Vergangenheit. Der
+  // Stichtag bleibt dort, weil `valid_until` als deutsch formatierte
+  // Zeichenkette kommt und im Browser erst zurueckgeparst werden muesste.
+  expired?: boolean;
 }
 
 /**

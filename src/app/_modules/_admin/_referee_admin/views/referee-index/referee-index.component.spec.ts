@@ -55,6 +55,10 @@ describe('RefereeIndexComponent', () => {
                 colQualificationsTitle: 'Zusatzqualifikation: {{ name }}',
                 colQualificationsValidUntil:
                   'Zusatzqualifikation: {{ name }}, gültig bis {{ date }}',
+                qualificationExpiredUntil: 'abgelaufen {{ date }}',
+                colQualificationsExpiredAt:
+                  'Zusatzqualifikation: {{ name }}, abgelaufen am {{ date }}',
+                csvQualificationExpired: '{{ name }} (abgelaufen {{ date }})',
               },
             },
           },
@@ -130,6 +134,62 @@ describe('RefereeIndexComponent', () => {
     // Kürzel und Gültigkeit stehen zusammen in der Spalte; der volle Name im Titel.
     expect(cell.textContent.replace(/\s+/g, ' ').trim()).toBe(
       'BEO bis 30.06.2028'
+    );
+  });
+
+  // Der Stufenfilter findet bewusst auch den Altbestand. Eine abgelaufene
+  // Qualifikation in derselben Optik wie eine laufende beantwortet die Frage
+  // „wer ist Beobachter?" dann stillschweigend mit ihm mit.
+  it('wertet eine abgelaufene Zusatzqualifikation sichtbar ab', async () => {
+    await setUp({ menu_item_referee_admin: true }, [
+      referee({
+        id: 1,
+        qualifications: [
+          {
+            qualification_type_id: 3,
+            qualification_type_name: 'Beobachter',
+            qualification_type_short_name: 'BEO',
+            valid_until: '30.06.2024',
+            expired: true,
+          },
+        ],
+      }),
+      referee({
+        id: 2,
+        lizenznummer: 4712,
+        qualifications: [
+          {
+            qualification_type_id: 3,
+            qualification_type_name: 'Beobachter',
+            qualification_type_short_name: 'BEO',
+            valid_until: '30.06.2028',
+            expired: false,
+          },
+        ],
+      }),
+    ]);
+
+    const abgelaufen = fixture.nativeElement.querySelector(
+      '[title="Zusatzqualifikation: Beobachter, abgelaufen am 30.06.2024"]'
+    );
+    const laufend = fixture.nativeElement.querySelector(
+      '[title="Zusatzqualifikation: Beobachter, gültig bis 30.06.2028"]'
+    );
+
+    expect(abgelaufen).not.toBeNull();
+    expect(laufend).not.toBeNull();
+    // Der Zustand hängt nicht am Titel allein: Die Zeile ist abgewertet und die
+    // Gültigkeit trägt eine andere Klasse als die der laufenden Qualifikation.
+    expect(abgelaufen.className).not.toBe(laufend.className);
+    expect(abgelaufen.className).toContain('text-fb-gray-400');
+
+    const klasse = (zelle: HTMLElement) =>
+      zelle.querySelector('span:last-of-type')!.className;
+
+    expect(klasse(abgelaufen)).not.toBe(klasse(laufend));
+    expect(klasse(abgelaufen)).toContain('text-red-500');
+    expect(abgelaufen.textContent.replace(/\s+/g, ' ').trim()).toBe(
+      'BEO abgelaufen 30.06.2024'
     );
   });
 
