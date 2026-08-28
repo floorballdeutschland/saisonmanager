@@ -40,6 +40,26 @@ describe('ObservationCoachIndexComponent', () => {
     } as unknown as ChangeDetectorRef);
   });
 
+  /**
+   * Angesetzte Spiele stehen oben: Sie sind der Regelfall und die einzigen, zu
+   * denen eine Erinnerungsmail kommt. Innerhalb beider Gruppen bleibt die
+   * Reihenfolge der API (Datum absteigend) erhalten.
+   */
+  it('sortiert angesetzte Spiele nach oben, ohne die Datumsfolge zu brechen', () => {
+    service.getObservableGames.and.returnValue(
+      of([
+        candidate({ game_id: 1, assigned_as_coach: false }),
+        candidate({ game_id: 2, assigned_as_coach: true }),
+        candidate({ game_id: 3, assigned_as_coach: false }),
+        candidate({ game_id: 4, assigned_as_coach: true }),
+      ])
+    );
+    service.getMyObservations.and.returnValue(of([]));
+    component.ngOnInit();
+
+    expect(component.openCandidates.map((c) => c.game_id)).toEqual([2, 4, 1, 3]);
+  });
+
   it('trennt offene Spiele von bereits abgegebenen', () => {
     service.getObservableGames.and.returnValue(
       of([

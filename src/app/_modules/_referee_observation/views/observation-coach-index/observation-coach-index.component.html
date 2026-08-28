@@ -2,8 +2,11 @@
   <h1 class="text-xl font-bold mb-1">
     {{ "refereeObservation.coach.title" | transloco }}
   </h1>
-  <p class="text-sm text-fb-gray-500 mb-4">
+  <p class="text-sm text-fb-gray-500 mb-1">
     {{ "refereeObservation.coach.intro" | transloco }}
+  </p>
+  <p class="text-sm text-fb-gray-500 mb-4">
+    {{ "refereeObservation.coach.reminderHint" | transloco }}
   </p>
 
   <h2 class="text-base font-bold mb-2">
@@ -25,8 +28,14 @@
           class="border border-fb-gray-600 rounded-[5px] p-3 flex flex-wrap items-center justify-between gap-2"
         >
           <div>
-            <div class="text-sm font-bold">
-              {{ candidate.home_team }} – {{ candidate.guest_team }}
+            <div class="text-sm font-bold flex flex-wrap items-center gap-2">
+              <span>{{ candidate.home_team }} – {{ candidate.guest_team }}</span>
+              @if (candidate.assigned_as_coach) {
+                <span
+                  class="text-xs font-bold uppercase px-2 py-0.5 rounded-[5px] border border-black"
+                  >{{ "refereeObservation.coach.assigned" | transloco }}</span
+                >
+              }
             </div>
             <div class="text-xs text-fb-gray-500">
               {{ formatDate(candidate.date) }}

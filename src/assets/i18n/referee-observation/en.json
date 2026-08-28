@@ -58,7 +58,9 @@
     "pair": "Referee pair",
     "noReferees": "No referees recorded, an observation is not possible here.",
     "notAssigned": "chosen without appointment",
-    "start": "Fill in form"
+    "start": "Fill in form",
+    "assigned": "Appointed",
+    "reminderHint": "You are appointed as referee coach for this game. At kick-off you receive a reminder by email with a link to this form."
   },
   "received": {
     "title": "Feedback from my coaches",

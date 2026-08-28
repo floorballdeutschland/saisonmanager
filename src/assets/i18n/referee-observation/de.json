@@ -58,7 +58,9 @@
     "pair": "Gespann",
     "noReferees": "Kein Gespann hinterlegt – eine Beobachtung ist hier nicht möglich.",
     "notAssigned": "ohne Ansetzung gewählt",
-    "start": "Bogen ausfüllen"
+    "start": "Bogen ausfüllen",
+    "assigned": "Angesetzt",
+    "reminderHint": "Für dieses Spiel bist du als Schiedsrichtercoach angesetzt. Zum Anpfiff bekommst du eine Erinnerung per Mail mit dem Link auf diesen Bogen."
   },
   "received": {
     "title": "Rückmeldungen meiner Coaches",

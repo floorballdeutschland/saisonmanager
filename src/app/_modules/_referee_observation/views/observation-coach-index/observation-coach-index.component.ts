@@ -57,8 +57,22 @@ export class ObservationCoachIndexComponent implements OnInit {
     });
   }
 
+  /**
+   * Offene Spiele, angesetzte zuerst. Innerhalb beider Gruppen bleibt die
+   * Reihenfolge der API erhalten (Datum absteigend).
+   *
+   * Die Sortierung passiert hier und nicht in der API, weil sie eine Frage der
+   * Darstellung ist: Serverseitig steht die fachliche Ordnung nach Datum, und
+   * die bleibt für andere Aufrufer richtig. Wo ein Coach nur angesetzt wird --
+   * der Normalfall -- ändert sich nichts, sichtbar wird es erst bei jemandem,
+   * der zusätzlich Spiele frei wählen darf.
+   */
   get openCandidates(): RefereeObservationCandidate[] {
-    return this.candidates.filter((c) => !c.done);
+    const open = this.candidates.filter((c) => !c.done);
+    return [
+      ...open.filter((c) => c.assigned_as_coach),
+      ...open.filter((c) => !c.assigned_as_coach),
+    ];
   }
 
   formatDate(iso: string | null): string {
