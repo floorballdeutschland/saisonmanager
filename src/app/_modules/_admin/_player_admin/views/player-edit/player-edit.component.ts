@@ -640,23 +640,33 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   public errorMsg(player: Player): string[] {
-    // eslint-disable-next-line prefer-const
-    let msg = [];
+    const msg: string[] = [];
+    const fehlt = (wert: string | null | undefined) => (wert ?? '').length < 1;
 
-    if (player.first_name.length < 1) {
-      msg.push('Es muss ein Vorname gesetzt werden');
+    if (fehlt(player.first_name)) {
+      msg.push(
+        this._transloco.translate('playerAdmin.notifications.errFirstName')
+      );
     }
 
-    if (player.last_name.length < 1) {
-      msg.push('Es muss ein Nachname gesetzt werden');
+    if (fehlt(player.last_name)) {
+      msg.push(
+        this._transloco.translate('playerAdmin.notifications.errLastName')
+      );
     }
 
-    if (player.birthdate.length < 1) {
-      msg.push('Es muss ein Geburtsdatum gesetzt werden');
+    if (fehlt(player.birthdate)) {
+      msg.push(
+        this._transloco.translate('playerAdmin.notifications.errBirthdate')
+      );
     }
 
-    if (player.nation_id <= 0) {
-      msg.push('Es muss ein Nationalität gesetzt werden');
+    // `!(x > 0)` statt `x <= 0`: faengt zusaetzlich null und undefined, und zwar
+    // mit demselben Ergebnis wie vorher (`null <= 0` war in JS bereits true).
+    if (!(player.nation_id > 0)) {
+      msg.push(
+        this._transloco.translate('playerAdmin.notifications.errNationality')
+      );
     }
 
     return msg;
@@ -989,7 +999,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     return this.mergeClubPlayers.find((p) => p.id === this.mergeSecondaryId);
   }
 
-  private _formatBirthdate(birthdate: string | undefined): string {
+  private _formatBirthdate(birthdate: string | null | undefined): string {
     if (!birthdate) return '';
     const [year, month, day] = birthdate.split('-');
     return day ? `${day}.${month}.${year}` : birthdate;

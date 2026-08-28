@@ -10,7 +10,8 @@ export interface Player {
   id: number;
   last_name: string;
   first_name: string;
-  birthdate: string;
+  // Nullable: 292 Profile aus dem Altdaten-Import tragen kein Geburtsdatum.
+  birthdate: string | null;
   gender: GenderKey;
   nation_id: number;
   email?: string;
@@ -121,7 +122,8 @@ export interface PlayerSearchResult {
   id: number;
   last_name: string;
   first_name: string;
-  birthdate: string;
+  // Nullable: 292 Profile aus dem Altdaten-Import tragen kein Geburtsdatum.
+  birthdate: string | null;
   gender: GenderKey;
   club_id: number | null;
   // Gesetzt, wenn der Verein das Profil aus seiner aktiven Liste genommen hat.

@@ -217,7 +217,7 @@ export class LicenseTeamDetailComponent implements OnInit {
     });
   }
 
-  public isMinor(birthdate: string): boolean {
+  public isMinor(birthdate: string | null): boolean {
     if (!birthdate) return false;
     const dob = new Date(birthdate);
     const today = new Date();
