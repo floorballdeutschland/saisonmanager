@@ -9,13 +9,25 @@ import {
 import { Subject, forkJoin, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { ClubService, PlayerService, SessionService } from '@floorball/core';
-import { ClubWithTeams, Player, PlayerCurrentLicense } from '@floorball/types';
+import {
+  ClubWithTeams,
+  Player,
+  PlayerCurrentLicense,
+  PlayerImportReport,
+} from '@floorball/types';
 import { Title } from '@angular/platform-browser';
+import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 
 interface ClubPlayerList {
   club: ClubWithTeams;
   players: Player[];
   showDeactivated: boolean;
+  // Der Import laeuft je Verein, also auch sein Zustand: Wer zwei Vereine
+  // betreut, soll den Bericht des einen nicht am anderen sehen.
+  showImport: boolean;
+  importing: boolean;
+  importReport: PlayerImportReport | null;
+  importError: string | null;
 }
 
 @Component({
@@ -87,6 +99,10 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
                   club,
                   players: playerLists[i],
                   showDeactivated: false,
+                  showImport: false,
+                  importing: false,
+                  importReport: null,
+                  importError: null,
                 }));
                 this.loading = false;
                 this._cdr.markForCheck();
@@ -221,6 +237,219 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
    */
   missingEmailCount(list: ClubPlayerList): number {
     return this.visiblePlayers(list).filter((p) => !this.hasEmail(p)).length;
+  }
+
+  /**
+   * Die Zeilen, die der Export ausgibt: die AKTIVEN Personen aller Vereine
+   * dieser Seite.
+   *
+   * Bewusst nicht `visiblePlayers`: Der Schalter „deaktivierte einblenden"
+   * steuert die Tabelle, nicht die Datei. Die Datei ist die Arbeitsgrundlage
+   * fuer den laufenden Kader, und ein Bestand, dessen Umfang davon abhaengt,
+   * welcher Schalter beim Herunterladen gerade stand, waere als Grundlage
+   * unbrauchbar.
+   */
+  private get exportRows(): { list: ClubPlayerList; player: Player }[] {
+    return this.clubLists.flatMap((list) =>
+      list.players
+        .filter((p) => !p.deactivated_at)
+        .map((player) => ({ list, player }))
+    );
+  }
+
+  /** Fuer den abgeblendeten Knopf: Gibt es ueberhaupt etwas zu exportieren? */
+  get exportablePlayerCount(): number {
+    return this.exportRows.length;
+  }
+
+  exportCsv(): void {
+    const rows = this.exportRows;
+    if (!rows.length) return;
+
+    const t = (key: string) => this._transloco.translate(key);
+    // Die Spaltennamen sind der Vertrag mit dem Import (die API loest die
+    // Spalten ueber ihren Namen auf, nicht ueber die Position). Sie stehen
+    // deshalb bewusst als deutscher Festtext hier und NICHT als
+    // Uebersetzungsschluessel: Eine englische Kopfzeile ergaebe eine Datei, die
+    // der eigene Import nicht mehr lesen kann.
+    const headers = [
+      'ID',
+      'Verein',
+      'Nachname',
+      'Vorname',
+      'Geburtsdatum',
+      'Geschlecht',
+      'Nationalität',
+      'Nation-ID',
+      'E-Mail',
+      'Lizenzen',
+    ];
+
+    downloadCsv(
+      'spieler',
+      headers,
+      rows.map(({ list, player }) => [
+        player.id,
+        list.club.name,
+        player.last_name,
+        player.first_name,
+        this.exportBirthdate(player),
+        this.exportGender(player),
+        player.nation_string ?? '',
+        player.nation_id ?? '',
+        player.email ?? '',
+        this.licenseBadges(player)
+          .map((lic) =>
+            [
+              lic.license_status_id === 1
+                ? t('playerVm.index.licenseLicensed')
+                : lic.license_status_id === 2
+                  ? t('playerVm.index.licenseRequested')
+                  : lic.license_status,
+              lic.league_short_name,
+            ]
+              .filter(Boolean)
+              .join(' ')
+          )
+          .join(' | '),
+      ])
+    );
+  }
+
+  /**
+   * Geburtsdatum als TT.MM.JJJJ, direkt aus dem ISO-String der API.
+   *
+   * Ohne `new Date()`: Ein Datum ohne Zeitanteil liest der Browser als UTC-
+   * Mitternacht, und in einer Zeitzone hinter UTC verschiebt die Ausgabe um
+   * einen Tag. Ein Geburtsdatum, das in der Datei einen Tag verschoben steht,
+   * kaeme ueber den Import genau so zurueck.
+   */
+  private exportBirthdate(player: Player): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(player.birthdate ?? '');
+    return match
+      ? `${match[3]}.${match[2]}.${match[1]}`
+      : (player.birthdate ?? '');
+  }
+
+  /**
+   * Geschlecht als m/w/d.
+   *
+   * Gross-/Kleinschreibung wird ignoriert, und ein unbekannter Wert geht
+   * unveraendert durch. Die Tabelle daneben schreibt jeden Wert ausser 'M' und
+   * 'W' als „d" -- hier waere das falsch: Aus einem Altbestandswert 'm' wuerde
+   * in der Datei ein „d", und der Import traegt ihn (bei leerem Feld) genau so
+   * ein.
+   */
+  private exportGender(player: Player): string {
+    const value = (player.gender ?? '').trim();
+    return ['M', 'W', 'D'].includes(value.toUpperCase())
+      ? value.toLowerCase()
+      : value;
+  }
+
+  toggleImport(list: ClubPlayerList): void {
+    list.showImport = !list.showImport;
+    this._cdr.markForCheck();
+  }
+
+  onImportFile(list: ClubPlayerList, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    list.importing = true;
+    list.importReport = null;
+    list.importError = null;
+    this._cdr.markForCheck();
+
+    this._playerService
+      .vmImportPlayers(list.club.id, file)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (report) => {
+          list.importing = false;
+          // Zuruecksetzen, damit dieselbe Datei nach einer Korrektur erneut
+          // gewaehlt werden kann -- ohne das feuert `change` beim gleichen
+          // Dateinamen nicht wieder.
+          input.value = '';
+          list.importReport = report;
+          // Die eingetragenen Werte stehen sonst bis zum naechsten Seitenaufruf
+          // nicht in der Tabelle, und die Zahl „X ohne E-Mail-Adresse" darueber
+          // widerspraeche dem Bericht darunter.
+          this._reloadPlayers(list);
+          this._cdr.markForCheck();
+        },
+        error: (err) => {
+          list.importing = false;
+          input.value = '';
+          // Die API meldet den Grund unter `message` (fehlende Spalte, kaputtes
+          // Encoding). Er gehoert hierher und nicht in eine allgemeine Absage:
+          // Er benennt, was an der Datei zu aendern ist.
+          list.importError =
+            err?.error?.message ??
+            this._transloco.translate('playerVm.notifications.importError');
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  private _reloadPlayers(list: ClubPlayerList): void {
+    this._playerService
+      .vmGetPlayers(list.club.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (players) => {
+          list.players = players;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  /** „E-Mail: neu@example.org, Geburtsdatum: 01.02.2010" */
+  fieldSummary(fields: Record<string, string>): string {
+    return Object.entries(fields)
+      .map(([field, value]) => `${this.fieldLabel(field)}: ${value}`)
+      .join(', ');
+  }
+
+  /**
+   * Die uebersprungenen Felder einer Zeile mit ihrem Grund. Leerer String, wenn
+   * es keine gibt -- das Template blendet den Zusatz dann aus.
+   */
+  skippedFieldSummary(reasons: Record<string, string>): string {
+    return Object.entries(reasons)
+      .map(([field, reason]) =>
+        field === 'row'
+          ? this.skipReasonLabel(reason)
+          : `${this.fieldLabel(field)}: ${this.skipReasonLabel(reason)}`
+      )
+      .join(', ');
+  }
+
+  private fieldLabel(field: string): string {
+    const keys: Record<string, string> = {
+      email: 'playerVm.index.colEmail',
+      birthdate: 'playerVm.index.colBirthdate',
+      gender: 'playerVm.index.colGender',
+      nation_id: 'playerVm.index.colNation',
+    };
+    // Ein unbekannter Feldname (neueres Feld, aelteres Frontend) wird nicht
+    // uebersetzt, aber auch nicht verschluckt.
+    return keys[field] ? this._transloco.translate(keys[field]) : field;
+  }
+
+  private skipReasonLabel(reason: string): string {
+    const keys: Record<string, string> = {
+      already_set: 'playerVm.index.skipAlreadySet',
+      identical: 'playerVm.index.skipIdentical',
+      no_permission: 'playerVm.index.skipNoPermission',
+      empty: 'playerVm.index.skipEmpty',
+    };
+    return keys[reason] ? this._transloco.translate(keys[reason]) : reason;
+  }
+
+  notFoundIds(report: PlayerImportReport): string {
+    return report.not_found.map((entry) => entry.id).join(', ');
   }
 
   toggleDeactivated(list: ClubPlayerList): void {

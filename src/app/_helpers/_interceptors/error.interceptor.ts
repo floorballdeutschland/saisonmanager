@@ -246,6 +246,33 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Der CSV-Nachtrag der Vereinsspielerliste meldet seine Fehler ebenso
+        // selbst, und zwar an der Stelle, an der hochgeladen wurde: Die Maske
+        // zeigt den Text aus `message` im roten Kasten unter dem Dateifeld
+        // (fehlende Spalte „ID", kaputtes Encoding, zu große Datei — jeder
+        // davon benennt, was an der Datei zu ändern ist). Der generische
+        // 4xx-Zweig weiter unten stellte denselben Satz zusätzlich als Toast
+        // ohne Selbstschließen daneben.
+        //
+        // Der 403 wiegt schwerer als die doppelte Meldung: Er warf über den
+        // generischen Zweig auf die Startseite und nahm den geöffneten
+        // Import-Bereich samt dem Bericht des vorigen Laufs mit. Er ist
+        // erreichbar, ohne dass jemand etwas falsch macht — ein Tab, der offen
+        // stand, während die Vereinsrolle sich änderte, trifft beim Hochladen
+        // auf die Absage von `resolve_vm_club`.
+        //
+        // Bewusst NUR 403 und 422, die beiden Status dieser Action für Absagen
+        // und Dateifehler. Ein früher return für alle Status übersprünge sonst
+        // auch den 401, und eine mitten im Import abgelaufene Sitzung würde
+        // dann nicht mehr abmelden; 400 (fehlende club_id) und 5xx bleiben
+        // ebenfalls bei den Zweigen unten, denn die benennt die Maske nicht.
+        if (
+          [403, 422].includes(err.status) &&
+          request.url.includes('admin/vm/players/import')
+        ) {
+          return throwError(() => err);
+        }
+
         // Die Gespann-Historie ist ein Nachschlag zur bereits geöffneten
         // Ansetzung, genau wie die Lizenzdokumente oben: Sie sortiert im
         // Dropdown von Schiri 2 die Gespannpartner nach oben. Ein 403 darauf

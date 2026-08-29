@@ -842,4 +842,61 @@ describe('ErrorInterceptor', () => {
 
     expect(errorSpy).toHaveBeenCalled();
   });
+
+  // Der CSV-Nachtrag der Vereinsspielerliste zeigt den Text aus `message` selbst
+  // im roten Kasten unter dem Dateifeld. Ohne die Ausnahme stand er zusätzlich
+  // als Toast daneben — und der 403 warf über den generischen Zweig auf die
+  // Startseite, mitsamt dem geöffneten Import-Bereich und dem Bericht darin.
+  const vmImportUrl = `${environment.apiURL}admin/vm/players/import`;
+
+  function vmImportFailsWith(body: object, status: number): unknown {
+    let received: unknown;
+    http.post(vmImportUrl, new FormData()).subscribe({
+      next: () => fail('expected the request to fail'),
+      error: (err) => (received = err),
+    });
+    httpMock.expectOne(vmImportUrl).flush(body, { status, statusText: 'Error' });
+    return received;
+  }
+
+  it('leaves the player CSV import alone on 422 so the file error appears once', () => {
+    const err = vmImportFailsWith(
+      { message: 'Der CSV fehlt die Spalte "ID".' },
+      422
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    // Der Fehler muss die Maske erreichen, sonst hätte die Ausnahme den
+    // Fehlschlag stumm geschaltet statt die doppelte Meldung entfernt.
+    expect((err as HttpErrorResponse).error.message).toBe(
+      'Der CSV fehlt die Spalte "ID".'
+    );
+  });
+
+  it('keeps the player CSV import on its page on 403', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    vmImportFailsWith({ message: 'Keine Berechtigung.' }, 403);
+
+    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  // Die Ausnahme gilt genau zwei Status. Der 401 gehört nicht dazu: Der Import
+  // wird angemeldet bedient, eine mitten darin abgelaufene Sitzung muss
+  // abmelden.
+  it('still logs out when the player CSV import hits an expired session', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+    vmImportFailsWith({ success: false, message: 'Not authenticated' }, 401);
+
+    expect(logoutSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/login'],
+      jasmine.objectContaining({ queryParams: jasmine.anything() })
+    );
+  });
 });

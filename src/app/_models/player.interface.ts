@@ -10,9 +10,13 @@ export interface Player {
   id: number;
   last_name: string;
   first_name: string;
-  birthdate: string;
+  // Nullable: 292 Profile aus dem Altdaten-Import tragen kein Geburtsdatum.
+  birthdate: string | null;
   gender: GenderKey;
   nation_id: number;
+  // Klartextname der Nationalitaet (admin/vm/players.json, full_hash). Nur fuer
+  // die Anzeige und den CSV-Export; geschrieben wird immer die nation_id.
+  nation_string?: string;
   email?: string;
   club_id?: number;
   clubs?: ClubMembership[];
@@ -23,6 +27,62 @@ export interface Player {
   current_license_status?: string;
   current_licenses?: PlayerCurrentLicense[];
   deactivation_reason?: string;
+  /**
+   * Nur in der Antwort zu einem einzelnen Profil (`admin/players/:id`): Darf
+   * der angemeldete Benutzer DIESES Profil deaktivieren und reaktivieren?
+   *
+   * Je Profil und nicht als Rolle im Browser, weil die Freigabe an
+   * Teammanager*innen am einzelnen Verein hängt
+   * (`clubs.team_managers_manage_players`). Ein globales Flag zeigte einem
+   * Teammanager die Knöpfe entweder in jedem Verein oder in keinem.
+   *
+   * Fehlt das Feld, ist die API älter als die Freigabe; dann gilt weiter das
+   * Rollen-Flag `player_deactivate`.
+   */
+  can_deactivate?: boolean;
+}
+
+// Bericht des CSV-Nachtrags in der Vereinssicht (admin/vm/players/import).
+//
+// Die vier Toepfe ergeben zusammen `total_rows`: Jede Datenzeile landet in genau
+// einem. Eine Zeile, in der ein Feld geschrieben und ein zweites uebersprungen
+// wurde, zaehlt als geschrieben und traegt die Gruende der uebersprungenen
+// Felder unter `skipped` am Eintrag.
+export interface PlayerImportReport {
+  total_rows: number;
+  updated: PlayerImportUpdate[];
+  skipped: PlayerImportSkip[];
+  // IDs, die nicht zum Bestand dieses Vereins gehoeren.
+  not_found: { row: number; id: number }[];
+  invalid: PlayerImportInvalidRow[];
+}
+
+// Zeilennummer wie in der Tabellenkalkulation (Kopfzeile ist 1).
+export interface PlayerImportUpdate {
+  row: number;
+  id: number;
+  name: string;
+  // Feldname → geschriebener Wert.
+  fields: Record<string, string>;
+  // Feldname → Grund, warum dieses Feld derselben Zeile NICHT geschrieben wurde.
+  skipped: Record<string, string>;
+}
+
+export interface PlayerImportSkip {
+  row: number;
+  id: number;
+  name: string;
+  // Feldname → Grund ('already_set' | 'identical' | 'no_permission'), oder
+  // { row: 'empty' } fuer eine Zeile, die nichts anzubieten hatte.
+  reasons: Record<string, string>;
+}
+
+export interface PlayerImportInvalidRow {
+  row: number;
+  id?: number;
+  name?: string;
+  value: string;
+  reason: string;
 }
 
 // Lizenz-Badge der VM-Spielerliste: ein Eintrag pro Liga-Lizenz der laufenden
@@ -121,7 +181,8 @@ export interface PlayerSearchResult {
   id: number;
   last_name: string;
   first_name: string;
-  birthdate: string;
+  // Nullable: 292 Profile aus dem Altdaten-Import tragen kein Geburtsdatum.
+  birthdate: string | null;
   gender: GenderKey;
   club_id: number | null;
   // Gesetzt, wenn der Verein das Profil aus seiner aktiven Liste genommen hat.

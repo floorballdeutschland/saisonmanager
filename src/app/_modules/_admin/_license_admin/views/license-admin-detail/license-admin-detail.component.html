@@ -135,18 +135,27 @@
               {{ "licenseAdmin.detail.age" | transloco }}
             </p>
             <div class="grid gap-1">
-              <p class="font-bold text-[14px] leading-[12px]">
-                {{
-                  "licenseAdmin.detail.ageYears"
-                    | transloco: { age: calculateAge(player.birthdate) }
-                }}
-              </p>
-              <p class="text-[12px]">
-                {{
-                  "licenseAdmin.detail.bornOn"
-                    | transloco: { date: player.birthdate | date: "dd.MM.yyyy" }
-                }}
-              </p>
+              <!-- Profile aus dem Altdaten-Import tragen kein Geburtsdatum.
+                   calculateAge zerlegte das in dateString.split('-'), und die
+                   Zeile darunter zeigte ein leeres Datum. Ohne Datum steht hier
+                   ein Strich, statt ein Alter zu erfinden. -->
+              @if (player.birthdate) {
+                <p class="font-bold text-[14px] leading-[12px]">
+                  {{
+                    "licenseAdmin.detail.ageYears"
+                      | transloco: { age: calculateAge(player.birthdate) }
+                  }}
+                </p>
+                <p class="text-[12px]">
+                  {{
+                    "licenseAdmin.detail.bornOn"
+                      | transloco
+                        : { date: player.birthdate | date: "dd.MM.yyyy" }
+                  }}
+                </p>
+              } @else {
+                <p class="font-bold text-[14px] leading-[12px]">&mdash;</p>
+              }
             </div>
           </div>
           <div>
