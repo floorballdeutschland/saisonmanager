@@ -1,0 +1,214 @@
+<div class="p-4 max-w-3xl">
+  <h1 class="text-xl font-bold mb-1">
+    {{ "refereeObservation.form.title" | transloco }}
+  </h1>
+
+  @if (loading) {
+    <p class="text-sm">{{ "refereeObservation.loading" | transloco }}</p>
+  } @else if (notAllowed || !candidate) {
+    <p class="text-sm mb-4">
+      {{ "refereeObservation.form.notAllowed" | transloco }}
+    </p>
+    <fb-button size="small" routerLink="/schiedsrichter/meine-beobachtungen">
+      {{ "refereeObservation.form.back" | transloco }}
+    </fb-button>
+  } @else {
+    <!-- Kopfdaten. Im Formular waren das neun eigene Fragen; hier stehen sie
+         am Spiel und werden nur angezeigt. -->
+    <div class="border border-fb-gray-600 rounded-[5px] p-3 mb-4">
+      <div class="text-sm font-bold">
+        {{ candidate.home_team }} – {{ candidate.guest_team }}
+      </div>
+      <div class="text-xs text-fb-gray-500">
+        {{ formatDate(candidate.date) }}
+        @if (candidate.start_time) {
+          · {{ candidate.start_time }}
+        }
+        @if (candidate.league) {
+          · {{ candidate.league }}
+        }
+        @if (candidate.league_level) {
+          · {{ candidate.league_level }}
+        }
+      </div>
+      <div class="text-xs text-fb-gray-500">
+        {{ "refereeObservation.coach.pair" | transloco }}:
+        @for (
+          referee of candidate.referees;
+          track referee.referee_id;
+          let last = $last
+        ) {
+          {{ referee.name }}{{ last ? "" : " / " }}
+        }
+      </div>
+    </div>
+
+    <!-- Skalenlegende. Sie ist die Kalibrierung des Bogens und gehoert deshalb
+         an den Anfang, nicht in eine Fussnote. -->
+    <div class="border border-fb-gray-600 rounded-[5px] mb-6">
+      <button
+        type="button"
+        (click)="legendOpen = !legendOpen"
+        class="w-full text-left p-3 text-sm font-bold flex items-center justify-between"
+      >
+        {{ "refereeObservation.scale.title" | transloco }}
+        <span aria-hidden="true">{{ legendOpen ? "−" : "+" }}</span>
+      </button>
+      @if (legendOpen) {
+        <dl class="px-3 pb-3 text-xs flex flex-col gap-2">
+          @for (value of scaleLegend; track value) {
+            <div>
+              <dt class="font-bold">
+                {{ "refereeObservation.scale.label." + value | transloco }} ({{
+                  value
+                }})
+              </dt>
+              <dd>
+                {{ "refereeObservation.scale.description." + value | transloco }}
+              </dd>
+            </div>
+          }
+        </dl>
+      }
+    </div>
+
+    <div class="mb-6">
+      <label class="text-sm font-bold block mb-1" for="matchDescription">
+        {{ "refereeObservation.field.matchDescription" | transloco }}
+      </label>
+      <textarea
+        id="matchDescription"
+        [(ngModel)]="matchDescription"
+        name="matchDescription"
+        rows="3"
+        class="w-full text-sm border border-fb-gray-600 rounded-[5px] p-2"
+      ></textarea>
+    </div>
+
+    <!-- Fuenf Bewertungsbloecke, je Block die Matrix des Formulars -->
+    @for (dimension of dimensions; track dimension.key) {
+      <div class="mb-6">
+        <div class="text-sm font-bold mb-2">
+          {{ "refereeObservation.dimension." + dimension.key | transloco }}
+        </div>
+
+        @for (referee of candidate.referees; track referee.referee_id) {
+          <div class="mb-2">
+            <div class="text-xs text-fb-gray-500 mb-1">{{ referee.name }}</div>
+            <div class="flex flex-wrap gap-1">
+              @for (n of scale; track n) {
+                <button
+                  type="button"
+                  (click)="setRefereeRating(referee.referee_id, dimension, n)"
+                  class="w-8 h-8 text-xs font-bold rounded-[5px] border"
+                  [ngClass]="
+                    refereeRatings[referee.referee_id][dimension.key] === n
+                      ? 'bg-black text-white border-black'
+                      : 'border-fb-gray-600 hover:border-black'
+                  "
+                >
+                  {{ n }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="mb-2">
+          <div class="text-xs text-fb-gray-500 mb-1">
+            {{ "refereeObservation.detail.pair" | transloco }}
+          </div>
+          <div class="flex flex-wrap gap-1">
+            @for (n of scale; track n) {
+              <button
+                type="button"
+                (click)="setPairRating(dimension, n)"
+                class="w-8 h-8 text-xs font-bold rounded-[5px] border"
+                [ngClass]="
+                  pairRatings[dimension.key] === n
+                    ? 'bg-black text-white border-black'
+                    : 'border-fb-gray-600 hover:border-black'
+                "
+              >
+                {{ n }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (dimension.commentKey) {
+          <label
+            class="text-xs font-bold block mt-2 mb-1"
+            [attr.for]="'comment-' + dimension.key"
+          >
+            {{ "refereeObservation.comment." + dimension.key | transloco }}
+          </label>
+          <textarea
+            [id]="'comment-' + dimension.key"
+            [(ngModel)]="comments[dimension.key]"
+            [name]="'comment-' + dimension.key"
+            rows="2"
+            class="w-full text-sm border border-fb-gray-600 rounded-[5px] p-2"
+          ></textarea>
+        }
+      </div>
+    }
+
+    <div class="mb-4">
+      <label class="text-sm font-bold block mb-1" for="otherMatters">
+        {{ "refereeObservation.field.otherMatters" | transloco }}
+      </label>
+      <textarea
+        id="otherMatters"
+        [(ngModel)]="otherMatters"
+        name="otherMatters"
+        rows="3"
+        class="w-full text-sm border border-fb-gray-600 rounded-[5px] p-2"
+      ></textarea>
+    </div>
+
+    <div class="mb-4">
+      <label class="text-sm font-bold block mb-1" for="finalComments">
+        {{ "refereeObservation.field.finalComments" | transloco }}
+      </label>
+      <textarea
+        id="finalComments"
+        [(ngModel)]="finalComments"
+        name="finalComments"
+        rows="3"
+        class="w-full text-sm border border-fb-gray-600 rounded-[5px] p-2"
+      ></textarea>
+    </div>
+
+    <p class="text-xs text-fb-gray-500 mb-3">
+      {{ "refereeObservation.form.visibilityHint" | transloco }}
+    </p>
+
+    <div class="flex items-center gap-2">
+      <fb-button
+        variant="success"
+        icon="save"
+        [disabled]="!canSubmit() || submitting"
+        (click)="submit()"
+      >
+        {{
+          (submitting
+            ? "refereeObservation.form.submitting"
+            : "refereeObservation.form.submit"
+          ) | transloco
+        }}
+      </fb-button>
+      <a
+        routerLink="/schiedsrichter/meine-beobachtungen"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+      >
+        {{ "refereeObservation.form.cancel" | transloco }}
+      </a>
+    </div>
+    @if (!canSubmit()) {
+      <p class="text-xs text-fb-gray-500 mt-2">
+        {{ "refereeObservation.form.incomplete" | transloco }}
+      </p>
+    }
+  }
+</div>

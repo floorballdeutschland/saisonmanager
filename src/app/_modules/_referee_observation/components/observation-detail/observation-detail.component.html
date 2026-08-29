@@ -1,0 +1,123 @@
+<div class="border border-fb-gray-600 rounded-[5px] p-4 flex flex-col gap-4">
+  <!-- Kopfdaten: kommen aus dem Spiel, nicht aus dem Bogen -->
+  <div class="flex flex-wrap items-baseline justify-between gap-2">
+    <div>
+      <div class="text-sm font-bold">
+        {{ observation.home_team }} – {{ observation.guest_team }}
+      </div>
+      <div class="text-xs text-fb-gray-500">
+        {{ formatDate(observation.date) }}
+        @if (observation.league) {
+          · {{ observation.league }}
+        }
+        @if (matchLink(); as link) {
+          ·
+          <a [routerLink]="link" class="underline hover:no-underline">
+            {{ "refereeObservation.detail.toGame" | transloco }}
+          </a>
+        }
+      </div>
+    </div>
+    @if (showCoach && observation.coach_name) {
+      <div class="text-xs text-fb-gray-500">
+        {{
+          "refereeObservation.detail.byCoach"
+            | transloco: { name: observation.coach_name }
+        }}
+      </div>
+    }
+  </div>
+
+  @if (observation.status === "hidden") {
+    <p
+      class="text-xs font-bold border border-fb-gray-600 rounded-[5px] p-2 bg-fb-gray-800"
+    >
+      {{ "refereeObservation.detail.hidden" | transloco }}
+    </p>
+  }
+
+  <!-- Bewertungsraster: Dimensionen als Zeilen, Bewertete als Spalten -->
+  <div class="overflow-x-auto">
+    <table class="text-sm w-full">
+      <thead>
+        <tr class="text-left border-b border-fb-gray-600">
+          <th class="py-1 pr-4 font-bold"></th>
+          @for (rating of ratedReferees; track rating.referee_id) {
+            <th class="py-1 px-2 font-bold whitespace-nowrap">
+              {{
+                rating.referee_name ||
+                  ("refereeObservation.detail.refereeSlot"
+                    | transloco: { position: rating.position })
+              }}
+            </th>
+          }
+          <th class="py-1 px-2 font-bold whitespace-nowrap">
+            {{ "refereeObservation.detail.pair" | transloco }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (dimension of dimensions; track dimension.key) {
+          <tr class="border-b border-fb-gray-700">
+            <td class="py-1 pr-4">
+              {{ "refereeObservation.dimension." + dimension.key | transloco }}
+            </td>
+            @for (rating of ratedReferees; track rating.referee_id; let i = $index) {
+              <td class="py-1 px-2 font-bold">
+                {{ ratingFor(i, dimension) ?? "–" }}
+              </td>
+            }
+            <td class="py-1 px-2 font-bold">
+              {{ pairRating(dimension) ?? "–" }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="text-xs text-fb-gray-500 -mt-2">
+    {{ "refereeObservation.scale.hint" | transloco }}
+  </p>
+
+  <!-- Freitexte: erst die Erläuterungen je Linie, dann die Zusammenfassung -->
+  <div class="flex flex-col gap-3">
+    @if (observation.match_description) {
+      <div>
+        <div class="text-xs font-bold">
+          {{ "refereeObservation.field.matchDescription" | transloco }}
+        </div>
+        <p class="text-sm whitespace-pre-line">
+          {{ observation.match_description }}
+        </p>
+      </div>
+    }
+    @for (dimension of dimensions; track dimension.key) {
+      @if (comment(dimension); as text) {
+        <div>
+          <div class="text-xs font-bold">
+            {{
+              "refereeObservation.comment." + dimension.key | transloco
+            }}
+          </div>
+          <p class="text-sm whitespace-pre-line">{{ text }}</p>
+        </div>
+      }
+    }
+    @if (observation.other_matters) {
+      <div>
+        <div class="text-xs font-bold">
+          {{ "refereeObservation.field.otherMatters" | transloco }}
+        </div>
+        <p class="text-sm whitespace-pre-line">{{ observation.other_matters }}</p>
+      </div>
+    }
+    @if (observation.final_comments) {
+      <div>
+        <div class="text-xs font-bold">
+          {{ "refereeObservation.field.finalComments" | transloco }}
+        </div>
+        <p class="text-sm whitespace-pre-line">{{ observation.final_comments }}</p>
+      </div>
+    }
+  </div>
+</div>

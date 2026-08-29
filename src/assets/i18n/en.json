@@ -74,7 +74,9 @@
     "refereeChangeRequests": "Master data corrections",
     "secretaryLinks": "Match secretariat",
     "liveToday": "Live today",
-    "systemHealth": "System"
+    "systemHealth": "System",
+    "myObservations": "My observations",
+    "myReceivedObservations": "Feedback from my coaches"
   },
   "account": {
     "title": "My account",

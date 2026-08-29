@@ -195,6 +195,40 @@
                 }
               </div>
             </div>
+            <!--
+              Nur beim Bearbeiten: Ein gerade angelegter Verein hat noch keine
+              Mannschaften und damit niemanden, für den der Haken etwas
+              bewirkte. Gleiche Wahl wie beim Verteiler darüber.
+            -->
+            @if (editMode) {
+              <div class="bg-white my-[5px] py-[15px] px-[30px]">
+                <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                  {{ "clubAdmin.edit.permissions" | transloco }}
+                </div>
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    data-testid="team-managers-manage-players"
+                    [(ngModel)]="club.team_managers_manage_players"
+                    name="team_managers_manage_players"
+                    class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+                  />
+                  <span class="flex flex-col gap-0.5">
+                    <span class="text-sm font-bold">
+                      {{
+                        "clubAdmin.edit.teamManagersManagePlayers" | transloco
+                      }}
+                    </span>
+                    <span class="text-sm text-gray-500">
+                      {{
+                        "clubAdmin.edit.teamManagersManagePlayersHint"
+                          | transloco
+                      }}
+                    </span>
+                  </span>
+                </label>
+              </div>
+            }
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="uppercase font-bold text-gray-400 text-sm mb-5">
                 {{ "clubAdmin.edit.logo" | transloco }}

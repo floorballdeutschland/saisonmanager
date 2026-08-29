@@ -10,8 +10,11 @@ import {
   NotificationService,
 } from '@floorball/core';
 import { RouterTestingModule } from '@angular/router/testing';
+import { ActivatedRoute } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Club } from '@floorball/types';
 import { environment } from 'src/environments/environment';
+import { of } from 'rxjs';
 
 // Ein echter File-Input braucht DataTransfer; ein Stub mit den beiden Feldern,
 // die onLogoSelected liest und schreibt, genügt hier. PNG, damit die
@@ -346,5 +349,124 @@ describe('ClubEditComponent', () => {
     // keinen zweiten Toast ergänzt, der die erste überdeckt (#228).
     expect(errorSpy).not.toHaveBeenCalled();
     expect(input.value).toBe('');
+  });
+
+  // Der Verein entscheidet, ob seine Teammanager*innen Spieler anlegen,
+  // deaktivieren und reaktivieren dürfen. Der Haken steht im
+  // Vereinsformular, weil dort der Vereinsmanager sitzt: Wer das Recht
+  // bekommt, erreicht diese Maske nicht.
+  it('schickt die Freigabe fuer Teammanager mit', () => {
+    const fixture = TestBed.createComponent(ClubEditComponent);
+    const component = fixture.componentInstance;
+    const club = {
+      id: 42,
+      name: 'Verein',
+      long_name: 'Verein e.V.',
+      short_name: 'VER',
+      team_managers_manage_players: true,
+    } as Club;
+
+    component.submit(club);
+
+    const req = httpMock.expectOne(`${environment.apiURL}admin/clubs.json`);
+    expect((req.request.body as Club).team_managers_manage_players).toBeTrue();
+    req.flush(club);
+  });
+
+  // Gegenprobe: Das Zurücknehmen muss als `false` ankommen und nicht als
+  // fehlendes Feld -- die API würde es sonst gar nicht schreiben und der
+  // Haken käme beim nächsten Laden wieder gesetzt zurück.
+  it('schickt die zurueckgenommene Freigabe als false', () => {
+    const fixture = TestBed.createComponent(ClubEditComponent);
+    const component = fixture.componentInstance;
+    const club = {
+      id: 42,
+      name: 'Verein',
+      long_name: 'Verein e.V.',
+      short_name: 'VER',
+      team_managers_manage_players: false,
+    } as Club;
+
+    component.submit(club);
+
+    const req = httpMock.expectOne(`${environment.apiURL}admin/clubs.json`);
+    expect((req.request.body as Club).team_managers_manage_players).toBeFalse();
+    req.flush(club);
+  });
+
+  // Der Haken erscheint nur beim Bearbeiten: Ein gerade angelegter Verein hat
+  // keine Mannschaften und damit niemanden, für den er etwas bewirkte. Ohne
+  // Routen-Parameter geht die Maske in den Anlege-Modus, das ist also die
+  // Gegenprobe.
+  it('zeigt die Freigabe beim Anlegen noch nicht', () => {
+    const fixture = TestBed.createComponent(ClubEditComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.editMode).toBeFalse();
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="team-managers-manage-players"]'
+      )
+    ).toBeNull();
+  });
+});
+
+// Eigener Block, weil hier ein Routen-Parameter nötig ist: Ohne clubId geht die
+// Maske in den Anlege-Modus, und `editMode` nachträglich umzuschalten wirft
+// NG0100 (die Überschrift hängt ebenfalls daran).
+describe('ClubEditComponent im Bearbeiten-Modus', () => {
+  let httpMock: HttpTestingController;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule,
+        // Das Vereinsformular bindet mit ngModel; ohne FormsModule bleibt die
+        // Bindung wirkungslos und ein Haken stünde im Test immer leer da.
+        FormsModule,
+        getTranslocoTestingModule(),
+      ],
+      declarations: [ClubEditComponent],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: { params: of({ clubId: '42' }) },
+        },
+      ],
+    }).compileComponents();
+
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  it('zeigt die Freigabe fuer Teammanager als Haken', async () => {
+    const fixture = TestBed.createComponent(ClubEditComponent);
+    fixture.detectChanges();
+
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
+      .flush({ notify_user_ids: [], managers: [] });
+    httpMock.expectOne(`${environment.apiURL}admin/clubs/42.json`).flush({
+      id: 42,
+      name: 'Verein',
+      long_name: 'Verein e.V.',
+      short_name: 'VER',
+      // Eingeschränkte Fassung, damit das Suchfeld für den Landesverband gar
+      // nicht gerendert wird: `fb-select-search` ist hier nicht deklariert.
+      // Auf den Haken hat das keinen Einfluss, er steht beiden offen.
+      edit_restricted: true,
+      team_managers_manage_players: true,
+    });
+    fixture.detectChanges();
+    // ngModel schreibt den Wert erst in einer Mikrotask in das Feld; ohne das
+    // Warten stünde der Haken hier noch leer da.
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const haken: HTMLInputElement = fixture.nativeElement.querySelector(
+      '[data-testid="team-managers-manage-players"]'
+    );
+    expect(haken).not.toBeNull();
+    expect(haken.checked).toBeTrue();
   });
 });

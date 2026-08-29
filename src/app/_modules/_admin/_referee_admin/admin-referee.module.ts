@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { RefereeObservationSharedModule } from '@floorball/referee-observation';
 import { AdminRefereeRoutingModule } from './admin-referee-routing.module';
 
 import * as Views from './views';
@@ -12,6 +13,10 @@ import * as Views from './views';
     CommonModule,
     FormsModule,
     AdminRefereeRoutingModule,
+    // Bringt die Detailansicht eines Beobachtungsbogens mit ihrem eigenen
+    // Transloco-Scope mit, damit sie hier dieselben Texte auflöst wie im
+    // Schiedsrichterportal.
+    RefereeObservationSharedModule,
     UikitCommonModule,
   ],
   declarations: [

@@ -2,7 +2,7 @@
   "index": {
     "title": "Players",
     "newPlayer": "Create new",
-    "newPlayerVmOnly": "For this club, creating, deactivating and reactivating players is up to the club manager. The squad stays open to you: opening profiles, requesting licenses and setting line-ups still work. If you have just been made club manager, sign out and back in once.",
+    "newPlayerVmOnly": "For this club the club manager has reserved creating, deactivating and reactivating. They can release it to team managers in the club administration. The squad stays open to you regardless: opening profiles, requesting licences and setting line-ups still work. If you have just been made club manager, sign out and back in once.",
     "loading": "Loading players…",
     "intro": "Players who currently no longer take part in match operations can be deactivated. Deactivated players no longer appear in the dropdown for licence applications and keep the club overview clearer. Players can be reactivated at a later point in time.",
     "countSingular": "player",
@@ -37,10 +37,30 @@
     "confirmDeactivateYes": "Yes, deactivate",
     "cancel": "Cancel",
     "reactivate": "Reactivate",
-    "empty": "No players found for your club."
+    "empty": "No players found for your club.",
+    "exportCsv": "CSV export",
+    "colNation": "Nationality",
+    "importShow": "Import",
+    "importHide": "Close import",
+    "importTitle": "Fill in missing details – {{ club }}",
+    "importHint": "Download the CSV export of this page, fill in the empty cells and upload the file here. The export format is expected; the “ID” column maps each row to its profile and must stay unchanged.\nOnly empty fields are filled – an existing value is never overwritten. Rows belonging to another club are not applied. Date of birth, gender and nationality can only be added by the association responsible for the home club; for the club the route there is the change request on the player profile.\nNationality may be given as plain text (“Deutschland”) or as a nation ID – both fill the same field on the profile, and where a row has both columns the ID wins.",
+    "importChooseFile": "Choose CSV file",
+    "importing": "Reading…",
+    "reportSummary": "{{ rows }} data rows: {{ updated }} applied, {{ skipped }} skipped, {{ notFound }} not found, {{ invalid }} unusable",
+    "reportUpdated": "Applied ({{ count }})",
+    "reportSkipped": "Skipped ({{ count }})",
+    "reportNotFound": "Not found ({{ count }})",
+    "reportNotFoundHint": "These IDs do not belong to this club. If the file covers several clubs, import it at the respective club.",
+    "reportInvalid": "Unusable ({{ count }})",
+    "reportRow": "Row {{ row }}:",
+    "skipAlreadySet": "was already filled",
+    "skipIdentical": "unchanged",
+    "skipNoPermission": "only via the change request",
+    "skipEmpty": "no value in the file"
   },
   "notifications": {
     "deactivateError": "Deactivation failed.",
-    "reactivateError": "Reactivation failed."
+    "reactivateError": "Reactivation failed.",
+    "importError": "The import failed."
   }
 }

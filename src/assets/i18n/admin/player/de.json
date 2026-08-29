@@ -14,7 +14,7 @@
     "backToList": "← Zurück zur Spielerliste",
     "editPlayer": "Spieler bearbeiten",
     "newPlayer": "Neuen Spieler anlegen",
-    "createVmOnly": "Neue Spieler*innen legt der Vereinsmanager dieses Vereins an, hier lässt sich nichts speichern. Wenn du gerade als Vereinsmanager eingetragen wurdest, melde dich einmal ab und wieder an.",
+    "createVmOnly": "Neue Spieler*innen legt der Vereinsmanager dieses Vereins an, hier lässt sich nichts speichern. Er kann das Anlegen in der Vereinsverwaltung für Teammanager*innen freigeben. Wenn du gerade als Vereinsmanager eingetragen wurdest, melde dich einmal ab und wieder an.",
     "noAccess": "Dieses Profil liegt außerhalb deiner Zuständigkeit und lässt sich hier nicht öffnen. Zuständig ist der Spielbetrieb des Heimatvereins; für Rückfragen wende dich bitte dorthin. Wenn sich deine Rolle gerade geändert hat, melde dich einmal ab und wieder an.",
     "backToSearch": "← Zurück zur Spielersuche",
     "playerData": "Spielerdaten",

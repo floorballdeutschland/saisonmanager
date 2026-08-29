@@ -1,0 +1,22 @@
+<div class="p-4 max-w-3xl">
+  <h1 class="text-xl font-bold mb-1">
+    {{ "refereeObservation.received.title" | transloco }}
+  </h1>
+  <p class="text-sm text-fb-gray-500 mb-4">
+    {{ "refereeObservation.received.intro" | transloco }}
+  </p>
+
+  @if (loading) {
+    <p class="text-sm">{{ "refereeObservation.loading" | transloco }}</p>
+  } @else if (failed) {
+    <p class="text-sm">{{ "refereeObservation.loadFailed" | transloco }}</p>
+  } @else if (!observations.length) {
+    <p class="text-sm">{{ "refereeObservation.received.empty" | transloco }}</p>
+  } @else {
+    <div class="flex flex-col gap-4">
+      @for (observation of observations; track observation.id) {
+        <fb-referee-observation-detail [observation]="observation" />
+      }
+    </div>
+  }
+</div>

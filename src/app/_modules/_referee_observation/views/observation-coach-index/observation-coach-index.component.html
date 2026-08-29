@@ -1,0 +1,100 @@
+<div class="p-4 max-w-3xl">
+  <h1 class="text-xl font-bold mb-1">
+    {{ "refereeObservation.coach.title" | transloco }}
+  </h1>
+  <p class="text-sm text-fb-gray-500 mb-1">
+    {{ "refereeObservation.coach.intro" | transloco }}
+  </p>
+  <p class="text-sm text-fb-gray-500 mb-4">
+    {{ "refereeObservation.coach.reminderHint" | transloco }}
+  </p>
+
+  <h2 class="text-base font-bold mb-2">
+    {{ "refereeObservation.coach.openTitle" | transloco }}
+  </h2>
+
+  @if (loading) {
+    <p class="text-sm">{{ "refereeObservation.loading" | transloco }}</p>
+  } @else if (failed) {
+    <p class="text-sm">{{ "refereeObservation.loadFailed" | transloco }}</p>
+  } @else if (!openCandidates.length) {
+    <p class="text-sm mb-6">
+      {{ "refereeObservation.coach.openEmpty" | transloco }}
+    </p>
+  } @else {
+    <div class="flex flex-col gap-2 mb-6">
+      @for (candidate of openCandidates; track candidate.game_id) {
+        <div
+          class="border border-fb-gray-600 rounded-[5px] p-3 flex flex-wrap items-center justify-between gap-2"
+        >
+          <div>
+            <div class="text-sm font-bold flex flex-wrap items-center gap-2">
+              <span>{{ candidate.home_team }} – {{ candidate.guest_team }}</span>
+              @if (candidate.assigned_as_coach) {
+                <span
+                  class="text-xs font-bold uppercase px-2 py-0.5 rounded-[5px] border border-black"
+                  >{{ "refereeObservation.coach.assigned" | transloco }}</span
+                >
+              }
+            </div>
+            <div class="text-xs text-fb-gray-500">
+              {{ formatDate(candidate.date) }}
+              @if (candidate.league) {
+                · {{ candidate.league }}
+              }
+              @if (candidate.league_level) {
+                · {{ candidate.league_level }}
+              }
+            </div>
+            <div class="text-xs text-fb-gray-500">
+              @if (candidate.referees.length) {
+                {{ "refereeObservation.coach.pair" | transloco }}:
+                @for (
+                  referee of candidate.referees;
+                  track referee.referee_id;
+                  let last = $last
+                ) {
+                  {{ referee.name }}{{ last ? "" : " / " }}
+                }
+              } @else {
+                {{ "refereeObservation.coach.noReferees" | transloco }}
+              }
+              @if (!candidate.assigned_as_coach) {
+                · {{ "refereeObservation.coach.notAssigned" | transloco }}
+              }
+            </div>
+          </div>
+          <fb-button
+            size="small"
+            icon="add"
+            [disabled]="!candidate.referees.length"
+            [routerLink]="[
+              '/schiedsrichter/meine-beobachtungen/neu',
+              candidate.game_id,
+            ]"
+          >
+            {{ "refereeObservation.coach.start" | transloco }}
+          </fb-button>
+        </div>
+      }
+    </div>
+  }
+
+  <h2 class="text-base font-bold mb-2">
+    {{ "refereeObservation.coach.submittedTitle" | transloco }}
+  </h2>
+  @if (!observations.length) {
+    <p class="text-sm">
+      {{ "refereeObservation.coach.submittedEmpty" | transloco }}
+    </p>
+  } @else {
+    <div class="flex flex-col gap-4">
+      @for (observation of observations; track observation.id) {
+        <fb-referee-observation-detail
+          [observation]="observation"
+          [showCoach]="false"
+        />
+      }
+    </div>
+  }
+</div>

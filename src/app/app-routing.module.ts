@@ -221,6 +221,24 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permission: 'menu_item_referee_profile' },
       },
+      // Eigener Einstieg neben @floorball/referee: Die Beobachtungsbögen
+      // hängen nicht an menu_item_referee_profile, das nur ein reines
+      // Schiedsrichterkonto bekommt. Die feinere Prüfung je Route (schreiben
+      // vs. lesen) macht das Modul selbst.
+      {
+        path: '',
+        loadChildren: () =>
+          import('@floorball/referee-observation').then(
+            (m) => m.RefereeObservationModule
+          ),
+        canActivate: [permissionGuard],
+        data: {
+          permission: [
+            'menu_item_referee_observations',
+            'show_page_referee_observations',
+          ],
+        },
+      },
       {
         path: '',
         loadChildren: () =>

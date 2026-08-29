@@ -147,6 +147,9 @@
       "@floorball/team-game-days": ["src/app/_modules/_team_game_days"],
       "@floorball/secretary-links": ["src/app/_modules/_secretary_links"],
       "@floorball/referee-feedback": ["src/app/_modules/_referee_feedback"],
+      "@floorball/referee-observation": [
+        "src/app/_modules/_referee_observation"
+      ],
       "@floorball/models": ["src/app/_models"]
     },
     "useDefineForClassFields": false
