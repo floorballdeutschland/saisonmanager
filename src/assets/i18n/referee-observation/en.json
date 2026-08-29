@@ -63,7 +63,7 @@
     "reminderHint": "You are appointed as referee coach for this game. At kick-off you receive a reminder by email with a link to this form."
   },
   "received": {
-    "title": "Feedback from my coaches",
+    "title": "My coaching feedback",
     "intro": "The observations your referee coaches wrote about your games. You see the shared comments, the rating of the pair, and your own individual ratings.",
     "empty": "There is no observation about you yet."
   },
