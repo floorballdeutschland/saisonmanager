@@ -37,10 +37,30 @@
     "confirmDeactivateYes": "Ja, deaktivieren",
     "cancel": "Abbrechen",
     "reactivate": "Reaktivieren",
-    "empty": "Keine Spieler*innen für deinen Verein gefunden."
+    "empty": "Keine Spieler*innen für deinen Verein gefunden.",
+    "exportCsv": "CSV-Export",
+    "colNation": "Nationalität",
+    "importShow": "Import",
+    "importHide": "Import schließen",
+    "importTitle": "Fehlende Angaben nachtragen – {{ club }}",
+    "importHint": "Lade den CSV-Export dieser Seite herunter, fülle die leeren Zellen und lade die Datei hier wieder hoch. Erwartet wird das Format des Exports; die Spalte „ID“ ordnet jede Zeile ihrem Profil zu und muss unverändert bleiben.\nEs werden nur leere Felder gefüllt – ein bereits gepflegter Wert wird nie überschrieben. Zeilen, die zu einem anderen Verein gehören, werden nicht eingetragen. Geburtsdatum, Geschlecht und Nationalität trägt nur der für den Heimatverein zuständige Verband nach; für den Verein führt der Weg dorthin über den Änderungsantrag im Spielerprofil.\nDie Nationalität darf dabei im Klartext („Deutschland“) oder als Nation-ID dastehen – gefüllt wird in beiden Fällen dieselbe Angabe im Profil, und stehen beide Spalten in der Zeile, gilt die ID.",
+    "importChooseFile": "CSV-Datei wählen",
+    "importing": "Wird eingelesen…",
+    "reportSummary": "{{ rows }} Datenzeilen: {{ updated }} eingetragen, {{ skipped }} übersprungen, {{ notFound }} nicht gefunden, {{ invalid }} unbrauchbar",
+    "reportUpdated": "Eingetragen ({{ count }})",
+    "reportSkipped": "Übersprungen ({{ count }})",
+    "reportNotFound": "Nicht gefunden ({{ count }})",
+    "reportNotFoundHint": "Diese IDs gehören nicht zum Bestand dieses Vereins. Enthält die Datei mehrere Vereine, trage sie beim jeweiligen Verein ein.",
+    "reportInvalid": "Unbrauchbar ({{ count }})",
+    "reportRow": "Zeile {{ row }}:",
+    "skipAlreadySet": "war schon gefüllt",
+    "skipIdentical": "unverändert",
+    "skipNoPermission": "nur über den Änderungsantrag",
+    "skipEmpty": "keine Angabe in der Datei"
   },
   "notifications": {
     "deactivateError": "Deaktivierung fehlgeschlagen.",
-    "reactivateError": "Reaktivierung fehlgeschlagen."
+    "reactivateError": "Reaktivierung fehlgeschlagen.",
+    "importError": "Der Import ist fehlgeschlagen."
   }
 }
