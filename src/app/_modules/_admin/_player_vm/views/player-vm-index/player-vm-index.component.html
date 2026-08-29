@@ -265,7 +265,7 @@
          der Begründung daneben statt zu verschwinden; sie gilt für beide Wege,
          weil die Zeilen dann auch keine Aktionen tragen. Die Prüfung selbst
          bleibt serverseitig. -->
-    <div class="mb-6">
+    <div class="mb-6 flex flex-wrap items-center gap-4">
       @if (canManagePlayers(list)) {
         <a
           data-testid="new-player-link"
@@ -296,6 +296,23 @@
           </p>
         </div>
       }
+      <!-- Bewusst als Textlink und nicht als zweiter Knopf: Die Auswertung ist
+           ein Nebenweg, das Anlegen bleibt der Hauptweg. Sie steht auch dem
+           Teammanager offen -- die Rangliste zeigt denselben Bestand, den er
+           in der Tabelle darunter ohnehin sieht. -->
+      <a
+        data-testid="player-stats-link"
+        class="text-sm underline text-fb-gray-500 hover:text-black"
+        [routerLink]="[
+          '/',
+          'verwaltung',
+          'spieler-verein',
+          list.club.id,
+          'spielerdaten',
+        ]"
+      >
+        {{ "playerVm.index.playerStatsLink" | transloco }}
+      </a>
     </div>
     @if (list.players.length > 0) {
       <table class="w-full text-sm mb-10">

@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+import { PlayerStatisticsComponent } from '@floorball/admin/player-stats';
+
 import { permissionGuard } from '../../../_helpers/_guards/permission.guard';
 import * as Views from './views';
 
@@ -27,6 +29,19 @@ const routes: Routes = [
     path: 'verwaltung/spieler/:id/duplikat',
     pathMatch: 'full',
     component: Views.PlayerMergeComponent,
+    canActivate: [permissionGuard],
+    data: {
+      scrollTop: true,
+      permission: PLAYER_ADMIN,
+    },
+  },
+  {
+    // Rangliste ueber den eigenen Spielbetrieb. Ohne :clubId antwortet die API
+    // im Verbandsmodus und laesst nur Admin und SBK herein; Vereins- und
+    // Teammanager kommen ueber spieler-verein an genau ihre Vereine.
+    path: 'verwaltung/spieler/spielerdaten',
+    pathMatch: 'full',
+    component: PlayerStatisticsComponent,
     canActivate: [permissionGuard],
     data: {
       scrollTop: true,
