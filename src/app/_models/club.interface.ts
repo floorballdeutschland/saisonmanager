@@ -32,6 +32,17 @@ export interface Club {
    * Verein, ein Flag am Benutzer kann Mehrfachrollen nicht abbilden.
    */
   edit_restricted?: boolean;
+  /**
+   * Darf der Verein das Anlegen, Deaktivieren und Reaktivieren von
+   * Spieler*innen seinen Teammanager*innen überlassen? Der Verein stellt das
+   * selbst ein; ohne den Haken bleibt es beim Vereinsmanager (api#530).
+   *
+   * Anders als `edit_restricted` und `manage_players` keine benutzerbezogene
+   * Angabe, sondern ein Feld des Vereins: dasselbe für jeden, der den Verein
+   * ansieht. Wer daraus ableiten will, ob der ANGEMELDETE Benutzer anlegen
+   * darf, liest `manage_players` aus `vm/clubs_and_teams`.
+   */
+  team_managers_manage_players?: boolean;
   players?: Player[];
   logo?: string;
   logo_url?: string;
