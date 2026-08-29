@@ -14,7 +14,7 @@
     "backToList": "← Back to player list",
     "editPlayer": "Edit player",
     "newPlayer": "Add new player",
-    "createVmOnly": "New players are created by the club manager of this club, nothing can be saved here. If you have just been made club manager, sign out and back in once.",
+    "createVmOnly": "New players are created by the club manager of this club, nothing can be saved here. They can release creating to team managers in the club administration. If you have just been made club manager, sign out and back in once.",
     "noAccess": "This profile is outside your area of responsibility and cannot be opened here. It is managed by the game operation of the player's home club; please direct any questions there. If your role has just changed, sign out and back in once.",
     "backToSearch": "← Back to player search",
     "playerData": "Player data",

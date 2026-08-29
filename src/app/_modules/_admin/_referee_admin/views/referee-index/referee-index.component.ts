@@ -15,6 +15,7 @@ import {
 } from '@floorball/core';
 import {
   RefereeAdmin,
+  RefereeQualificationEntry,
   RefereeStatusFilter,
   StateAssociation,
 } from '@floorball/types';
@@ -140,6 +141,7 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
       t('refereeAdmin.index.csvLastName'),
       t('refereeAdmin.index.csvFirstName'),
       t('refereeAdmin.index.colLevel'),
+      t('refereeAdmin.index.qualifications'),
       t('refereeAdmin.index.colRegion'),
       t('refereeAdmin.index.colValidity'),
       t('refereeAdmin.index.csvStatus'),
@@ -152,6 +154,7 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
       r.nachname,
       r.vorname,
       r.lizenzstufe,
+      (r.qualifications ?? []).map((q) => this.qualificationCsv(q)).join(', '),
       r.landesverband,
       r.gueltigkeit,
       r.guest ? t('refereeAdmin.index.csvGuest') : t(this.statusLabelKey(r)),
@@ -161,6 +164,57 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     ]);
 
     downloadCsv('schiedsrichter', headers, rows);
+  }
+
+  // Titel der Qualifikations-Marke neben der Stufe. Das Kürzel allein sagt
+  // niemandem etwas, der es nicht ohnehin kennt.
+  qualificationTitle(qualification: RefereeQualificationEntry): string {
+    const name = qualification.qualification_type_name ?? '';
+    if (!qualification.valid_until) {
+      return this._transloco.translate(
+        'refereeAdmin.index.colQualificationsTitle',
+        { name }
+      );
+    }
+
+    return this._transloco.translate(
+      qualification.expired
+        ? 'refereeAdmin.index.colQualificationsExpiredAt'
+        : 'refereeAdmin.index.colQualificationsValidUntil',
+      { name, date: qualification.valid_until }
+    );
+  }
+
+  // Der Stufenfilter findet bewusst auch abgelaufene Zusatzqualifikationen –
+  // die Frage „wer ist Beobachter?" meint den Bestand. Dann muss die Zeile aber
+  // zeigen, dass ihr Treffer aus dem Altbestand kommt, sonst liest sich eine
+  // 2024er Qualifikation wie eine laufende. Gleiche Farbgebung wie bei der
+  // Lizenzgültigkeit daneben (statusClass), damit die Spalten eine Sprache
+  // sprechen.
+  qualificationClass(qualification: RefereeQualificationEntry): string {
+    return qualification.expired ? 'text-fb-gray-400' : '';
+  }
+
+  qualificationValidityClass(qualification: RefereeQualificationEntry): string {
+    return qualification.expired
+      ? 'text-red-500 text-xs font-medium'
+      : 'text-fb-gray-500 text-xs';
+  }
+
+  // Der CSV-Export beantwortet dieselbe Frage wie die Liste und darf den
+  // Altbestand deshalb ebenso wenig verschweigen. Farbe gibt es dort nicht,
+  // also steht es im Text.
+  qualificationCsv(qualification: RefereeQualificationEntry): string {
+    const name = qualification.qualification_type_name ?? '';
+    return qualification.expired
+      ? this._transloco.translate(
+          'refereeAdmin.index.csvQualificationExpired',
+          {
+            name,
+            date: qualification.valid_until,
+          }
+        )
+      : name;
   }
 
   // Fällt die API-Angabe aus (ältere Antwort), bleibt das alte active-Flag die

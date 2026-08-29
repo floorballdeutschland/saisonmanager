@@ -10,7 +10,8 @@ export interface Player {
   id: number;
   last_name: string;
   first_name: string;
-  birthdate: string;
+  // Nullable: 292 Profile aus dem Altdaten-Import tragen kein Geburtsdatum.
+  birthdate: string | null;
   gender: GenderKey;
   nation_id: number;
   // Klartextname der Nationalitaet (admin/vm/players.json, full_hash). Nur fuer
@@ -26,6 +27,19 @@ export interface Player {
   current_license_status?: string;
   current_licenses?: PlayerCurrentLicense[];
   deactivation_reason?: string;
+  /**
+   * Nur in der Antwort zu einem einzelnen Profil (`admin/players/:id`): Darf
+   * der angemeldete Benutzer DIESES Profil deaktivieren und reaktivieren?
+   *
+   * Je Profil und nicht als Rolle im Browser, weil die Freigabe an
+   * Teammanager*innen am einzelnen Verein hängt
+   * (`clubs.team_managers_manage_players`). Ein globales Flag zeigte einem
+   * Teammanager die Knöpfe entweder in jedem Verein oder in keinem.
+   *
+   * Fehlt das Feld, ist die API älter als die Freigabe; dann gilt weiter das
+   * Rollen-Flag `player_deactivate`.
+   */
+  can_deactivate?: boolean;
 }
 
 // Bericht des CSV-Nachtrags in der Vereinssicht (admin/vm/players/import).
@@ -167,7 +181,8 @@ export interface PlayerSearchResult {
   id: number;
   last_name: string;
   first_name: string;
-  birthdate: string;
+  // Nullable: 292 Profile aus dem Altdaten-Import tragen kein Geburtsdatum.
+  birthdate: string | null;
   gender: GenderKey;
   club_id: number | null;
   // Gesetzt, wenn der Verein das Profil aus seiner aktiven Liste genommen hat.
