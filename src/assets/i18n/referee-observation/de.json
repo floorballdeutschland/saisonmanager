@@ -63,7 +63,7 @@
     "reminderHint": "Für dieses Spiel bist du als Schiedsrichtercoach angesetzt. Zum Anpfiff bekommst du eine Erinnerung per Mail mit dem Link auf diesen Bogen."
   },
   "received": {
-    "title": "Rückmeldungen meiner Coaches",
+    "title": "Mein Coaching-Feedback",
     "intro": "Die Beobachtungen deiner Schiedsrichtercoaches zu deinen Einsätzen. Du siehst die gemeinsamen Anmerkungen, die Bewertung des Gespanns und deine eigenen Einzelbewertungen.",
     "empty": "Es liegt noch keine Beobachtung zu dir vor."
   },
