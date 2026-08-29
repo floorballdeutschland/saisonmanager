@@ -11,6 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
   NotificationService,
+  RefereeObservationService,
   RefereeService,
   SessionService,
 } from '@floorball/core';
@@ -22,7 +23,9 @@ import {
   RefereeClubExclusionPayload,
   RefereeClubExclusionRequest,
   RefereeFeedbackProfileResponse,
+  RefereeObservationAdminResponse,
 } from '@floorball/types';
+import { OBSERVATION_DIMENSIONS } from '@floorball/referee-observation';
 
 /**
  * Erst ab dieser Anzahl sichtbarer Rückmeldungen werden die Durchschnitte am
@@ -48,6 +51,21 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   feedbackLoading = false;
   readonly minFeedbackCount = MIN_FEEDBACK_COUNT;
 
+  // Beobachtungen der Schiedsrichtercoaches. Anders als beim Vereins-Feedback
+  // stehen hier die vollständigen Bögen und kein Aggregat allein: Eine
+  // Beobachtung ist Entwicklungsarbeit an einer Person, ein Mittelwert daraus
+  // wäre die uninteressanteste Hälfte.
+  canViewObservations = false;
+  // Zurücknehmen ist ein eigenes Recht (Admin und Schiedsrichterkommission).
+  // Die Ansetzung liest die Bögen, greift aber nicht in sie ein; hinge der
+  // Knopf am Leserecht, stünde er auch bei ihr in der Maske und liefe beim
+  // Klick in eine Absage.
+  canModerateObservations = false;
+  observations?: RefereeObservationAdminResponse;
+  observationsLoading = false;
+  observationsFailed = false;
+  observationDimensions = OBSERVATION_DIMENSIONS;
+
   // Vereins-Ausschlussliste: nur für die Ansetzung sichtbar und pflegbar.
   canManageExclusions = false;
   exclusions: RefereeClubExclusion[] = [];
@@ -64,6 +82,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
 
   constructor(
     private _refereeService: RefereeService,
+    private _observationService: RefereeObservationService,
     private _route: ActivatedRoute,
     private _notificationService: NotificationService,
     private _transloco: TranslocoService,
@@ -77,9 +96,14 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (user) => {
           this.canViewFeedback = !!user?.permissions['referee_feedback_view'];
+          this.canViewObservations =
+            !!user?.permissions['referee_observation_view'];
+          this.canModerateObservations =
+            !!user?.permissions['referee_observation_moderate'];
           this.canManageExclusions =
             !!user?.permissions['menu_item_referee_exclusions'];
           this._maybeLoadFeedback();
+          this._maybeLoadObservations();
           this._maybeLoadExclusions();
           this._cdr.markForCheck();
         },
@@ -101,6 +125,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
             this._cdr.markForCheck();
             this.loadGames(r.id);
             this._maybeLoadFeedback();
+            this._maybeLoadObservations();
             this._maybeLoadExclusions();
           },
           error: () => this._handleLoadError(),
@@ -124,6 +149,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
                     this._cdr.markForCheck();
                     this.loadGames(r.id);
                     this._maybeLoadFeedback();
+                    this._maybeLoadObservations();
                     this._maybeLoadExclusions();
                   },
                   error: () => this._handleLoadError(),
@@ -196,6 +222,63 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
       });
+  }
+
+  // Lädt die Beobachtungen, sobald Berechtigung und Schiri-Datensatz vorliegen.
+  private _maybeLoadObservations(): void {
+    if (
+      !this.canViewObservations ||
+      !this.referee ||
+      this.observations ||
+      this.observationsLoading
+    )
+      return;
+
+    this.observationsLoading = true;
+    this._observationService
+      .adminGetForReferee(this.referee.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.observations = result;
+          this.observationsLoading = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.observationsFailed = true;
+          this.observationsLoading = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  /**
+   * Einen Bogen zurücknehmen oder wieder sichtbar machen. Der Notausgang für
+   * eine entgleiste Rückmeldung; die beobachtete Person sieht den Text sofort
+   * nach dem Absenden, deshalb braucht es einen Weg zurück. Inhalte bleiben
+   * unveränderlich.
+   */
+  toggleObservationStatus(observationId: number, hide: boolean): void {
+    this._observationService
+      .adminSetStatus(observationId, hide ? 'hidden' : 'visible')
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          const entry = this.observations?.observations.find(
+            (o) => o.id === observationId
+          );
+          if (entry) entry.status = hide ? 'hidden' : 'visible';
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  averageObservationRating(key: string): string {
+    const summary = this.observations?.summary as
+      | Record<string, number | null>
+      | undefined;
+    const value = summary?.[key];
+    return value === null || value === undefined ? '–' : String(value);
   }
 
   // Lädt die Ausschlussliste, sobald Berechtigung und Schiri-Datensatz vorliegen.

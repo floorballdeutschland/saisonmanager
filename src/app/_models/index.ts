@@ -42,6 +42,7 @@ export {
   RefereeFeedbackProfileResponse,
 } from './referee-feedback.interface';
 export * from './feedback-comments.interface';
+export * from './referee-observation.interface';
 export * from './referee-feedback-report.interface';
 export { GameScheduleEntry, FinalRound } from './game-schedule-entry.interface';
 export { Game } from './game.interface';
