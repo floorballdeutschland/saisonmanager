@@ -25,6 +25,7 @@
     "section": {
       "gameOperations": "Game operations",
       "referee": "Refereeing",
+      "coaching": "Coaching",
       "transfers": "Transfers and approvals",
       "analysis": "Reports",
       "administration": "Administration",
@@ -76,7 +77,7 @@
     "liveToday": "Live today",
     "systemHealth": "System",
     "myObservations": "My observations",
-    "myReceivedObservations": "Feedback from my coaches"
+    "myReceivedObservations": "My coaching feedback"
   },
   "account": {
     "title": "My account",

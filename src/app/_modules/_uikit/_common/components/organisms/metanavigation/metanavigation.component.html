@@ -180,7 +180,6 @@
     showItem("menu_item_referee_course_import") ||
     showItem("menu_item_referee_course_review") ||
     showItem("menu_item_referee_profile") ||
-    showItem("menu_item_referee_observations") ||
     showItem("show_page_referee_observations") ||
     showItem("menu_item_referee_vm") ||
     showItem("menu_item_referee_exclusions") ||
@@ -258,6 +257,16 @@
             >
           </li>
         }
+        @if (showItem("show_page_referee_observations")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'schiedsrichter', 'beobachtungen']"
+              (click)="closeMenu()"
+              >{{ "nav.myReceivedObservations" | transloco }}</a
+            >
+          </li>
+        }
         @if (showItem("menu_item_referee_profile")) {
           <li class="mt-4 mb-4">
             <a
@@ -265,16 +274,6 @@
               [routerLink]="['/', 'schiedsrichter', 'profil']"
               (click)="closeMenu()"
               >{{ "nav.myProfile" | transloco }}</a
-            >
-          </li>
-        }
-        @if (showItem("menu_item_referee_observations")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'schiedsrichter', 'meine-beobachtungen']"
-              (click)="closeMenu()"
-              >{{ "nav.myObservations" | transloco }}</a
             >
           </li>
         }
@@ -305,16 +304,6 @@
               [routerLink]="['/', 'schiedsrichter', 'verfuegbarkeiten']"
               (click)="closeMenu()"
               >{{ "nav.myAvailability" | transloco }}</a
-            >
-          </li>
-        }
-        @if (showItem("show_page_referee_observations")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'schiedsrichter', 'beobachtungen']"
-              (click)="closeMenu()"
-              >{{ "nav.myReceivedObservations" | transloco }}</a
             >
           </li>
         }
@@ -359,6 +348,27 @@
               ]"
               (click)="closeMenu()"
               >{{ "nav.availability" | transloco }}</a
+            >
+          </li>
+        }
+      </ul>
+    </nav>
+  }
+  <!-- Coaching -->
+  @if (showItem("menu_item_referee_observations")) {
+    <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
+      {{ "nav.section.coaching" | transloco }}
+    </h2>
+    <nav>
+      <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
+      <ul>
+        @if (showItem("menu_item_referee_observations")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'schiedsrichter', 'meine-beobachtungen']"
+              (click)="closeMenu()"
+              >{{ "nav.myObservations" | transloco }}</a
             >
           </li>
         }
