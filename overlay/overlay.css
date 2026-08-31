@@ -181,6 +181,28 @@ body {
   transition: opacity 0.35s ease;
 }
 
+/* Platzierung, umschaltbar im Bedienfeld. Unten links bleibt der Standard und
+   steht deshalb oben in `.ov-scoreboard` selbst: Eine Bühne ohne Dock und ohne
+   gespeicherte Wahl sieht damit aus wie bisher.
+
+   Die Bauchbinde hängt mit dran. Sie sitzt über der Anzeigetafel; steht die
+   oben, ist der Platz unten frei und die Bauchbinde rutscht dorthin. Ohne das
+   klebte sie mitten im Bild, mit der Höhe der Anzeigetafel als Lücke zum
+   unteren Rand. */
+.ov-stage[data-position="bottom-center"] .ov-scoreboard {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ov-stage[data-position="top-left"] .ov-scoreboard {
+  top: 60px;
+  bottom: auto;
+}
+
+.ov-stage[data-position="top-left"] .ov-lower-third {
+  bottom: 60px;
+}
+
 /* Akzentkante als Markenzeichen der Liga. */
 .ov-scoreboard::before {
   content: "";
@@ -193,9 +215,14 @@ body {
 .ov-team {
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 18px 26px;
-  min-width: 300px;
+  gap: 16px;
+  padding: 18px 22px;
+  /* Mindestbreite und nicht nur Inhalt: Sie hält die Ziffern in der Mitte,
+     auch wenn ein Kürzel drei und das andere fünf Zeichen hat. Vorher 300px,
+     und DAS war der Grund, warum die Anzeigetafel ohne Uhrenspalte zu breit
+     wirkte: Zwei kurze Kürzel wie BER und HAM ließen darin je über hundert
+     Pixel leer stehen. 210px trägt „HAMBURG" noch ohne Sprung. */
+  min-width: 210px;
   /* Beide Mannschaftsblöcke schieben ihren Inhalt zum Spielstand hin: links
      ans rechte Ende, rechts (row-reverse, main-end liegt dort links) ans
      linke. Ohne das kleben die Namen an den Außenkanten und zwischen Name und
@@ -204,7 +231,7 @@ body {
 }
 
 .ov-team--home {
-  padding-left: 32px;
+  padding-left: 28px;
 }
 
 .ov-team--guest {
@@ -252,8 +279,8 @@ body {
 .ov-score {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 18px 30px;
+  gap: 14px;
+  padding: 18px 26px;
   background: rgb(0 0 0 / 28%);
   font-family: var(--ov-display);
   font-weight: 700;
