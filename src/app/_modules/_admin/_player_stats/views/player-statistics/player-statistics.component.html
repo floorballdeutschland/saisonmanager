@@ -1,0 +1,511 @@
+<div class="p-4 lg:p-8">
+  <div class="flex items-start justify-between gap-4 mb-2">
+    <div>
+      <h1 class="text-2xl font-bold">
+        {{ "playerStats.title" | transloco }}
+      </h1>
+      @if (scope?.club) {
+        <p class="text-fb-gray-500 mt-1">{{ scope?.club?.name }}</p>
+      } @else if (scope?.mode === "association") {
+        <p class="text-fb-gray-500 mt-1">
+          {{
+            (scope?.global
+              ? "playerStats.scopeGlobal"
+              : "playerStats.scopeAssociation"
+            ) | transloco
+          }}
+        </p>
+      }
+    </div>
+    @if (clubId) {
+      <a
+        data-testid="back-link"
+        class="shrink-0 text-sm underline hover:text-black text-fb-gray-500"
+        [routerLink]="['/', 'verwaltung', 'spieler-verein']"
+      >
+        {{ "playerStats.backToClubList" | transloco }}
+      </a>
+    }
+  </div>
+
+  <p class="text-sm text-fb-gray-500 mb-6 max-w-3xl">
+    {{ "playerStats.intro" | transloco }}
+  </p>
+
+  <!-- Die Auswahlwerte kommen aus der Antwort: angeboten wird nur, worin dieser
+       Blick wirklich Einsaetze hat. -->
+  <section
+    data-testid="filters"
+    class="mb-6 border border-fb-gray-700 rounded-[5px] p-4"
+  >
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-bold mb-1" for="player-stats-search">
+          {{ "playerStats.filters.search" | transloco }}
+        </label>
+        <input
+          id="player-stats-search"
+          data-testid="filter-search"
+          type="text"
+          class="w-full"
+          [placeholder]="'playerStats.filters.searchPlaceholder' | transloco"
+          [ngModel]="search"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </div>
+
+      @if (filterOptions?.game_operations?.length) {
+        <div>
+          <label class="block text-sm font-bold mb-1" for="player-stats-go">
+            {{ "playerStats.filters.gameOperation" | transloco }}
+          </label>
+          <select
+            id="player-stats-go"
+            data-testid="filter-game-operation"
+            class="w-full"
+            [(ngModel)]="gameOperationId"
+            (ngModelChange)="onFilterChange()"
+          >
+            <option [ngValue]="null">
+              {{ "playerStats.filters.all" | transloco }}
+            </option>
+            @for (go of filterOptions?.game_operations; track go.id) {
+              <option [ngValue]="go.id">{{ go.name }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      @if (filterOptions?.league_classes?.length) {
+        <div>
+          <label class="block text-sm font-bold mb-1" for="player-stats-class">
+            {{ "playerStats.filters.leagueClass" | transloco }}
+          </label>
+          <select
+            id="player-stats-class"
+            data-testid="filter-league-class"
+            class="w-full"
+            [(ngModel)]="leagueClassId"
+            (ngModelChange)="onFilterChange()"
+          >
+            <option [ngValue]="null">
+              {{ "playerStats.filters.all" | transloco }}
+            </option>
+            @for (entry of filterOptions?.league_classes; track entry.id) {
+              <option [ngValue]="entry.id">{{ entry.name }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      @if (filterOptions?.leagues?.length) {
+        <div>
+          <label class="block text-sm font-bold mb-1" for="player-stats-league">
+            {{ "playerStats.filters.league" | transloco }}
+          </label>
+          @if (needsSearch(visibleLeagues.length)) {
+            <fb-select-search
+              data-testid="filter-league-search"
+              inputId="player-stats-league"
+              [items]="visibleLeagues"
+              [placeholder]="'playerStats.filters.all' | transloco"
+              [resetLabel]="'playerStats.filters.all' | transloco"
+              [(ngModel)]="leagueId"
+              (ngModelChange)="onFilterChange()"
+            ></fb-select-search>
+          } @else {
+            <select
+              id="player-stats-league"
+              data-testid="filter-league"
+              class="w-full"
+              [(ngModel)]="leagueId"
+              (ngModelChange)="onFilterChange()"
+            >
+              <option [ngValue]="null">
+                {{ "playerStats.filters.all" | transloco }}
+              </option>
+              @for (league of visibleLeagues; track league.id) {
+                <option [ngValue]="league.id">{{ league.name }}</option>
+              }
+            </select>
+          }
+        </div>
+      }
+
+      @if (filterOptions?.teams?.length) {
+        <div>
+          <label class="block text-sm font-bold mb-1" for="player-stats-team">
+            {{ "playerStats.filters.team" | transloco }}
+          </label>
+          @if (needsSearch(filterOptions?.teams?.length ?? 0)) {
+            <fb-select-search
+              data-testid="filter-team-search"
+              inputId="player-stats-team"
+              [items]="filterOptions?.teams ?? []"
+              [placeholder]="'playerStats.filters.all' | transloco"
+              [resetLabel]="'playerStats.filters.all' | transloco"
+              [(ngModel)]="teamId"
+              (ngModelChange)="onFilterChange()"
+            ></fb-select-search>
+          } @else {
+            <select
+              id="player-stats-team"
+              data-testid="filter-team"
+              class="w-full"
+              [(ngModel)]="teamId"
+              (ngModelChange)="onFilterChange()"
+            >
+              <option [ngValue]="null">
+                {{ "playerStats.filters.all" | transloco }}
+              </option>
+              @for (team of filterOptions?.teams; track team.id) {
+                <option [ngValue]="team.id">{{ team.name }}</option>
+              }
+            </select>
+          }
+        </div>
+      }
+
+      @if (filterOptions?.clubs?.length) {
+        <div>
+          <label class="block text-sm font-bold mb-1" for="player-stats-club">
+            {{ "playerStats.filters.club" | transloco }}
+          </label>
+          <fb-select-search
+            data-testid="filter-club"
+            inputId="player-stats-club"
+            [items]="filterOptions?.clubs ?? []"
+            [placeholder]="'playerStats.filters.all' | transloco"
+            [resetLabel]="'playerStats.filters.all' | transloco"
+            [(ngModel)]="clubFilterId"
+            (ngModelChange)="onFilterChange()"
+          ></fb-select-search>
+        </div>
+      }
+
+      <div>
+        <label class="block text-sm font-bold mb-1" for="player-stats-gender">
+          {{ "playerStats.filters.gender" | transloco }}
+        </label>
+        <select
+          id="player-stats-gender"
+          data-testid="filter-gender"
+          class="w-full"
+          [(ngModel)]="gender"
+          (ngModelChange)="onFilterChange()"
+        >
+          <option [ngValue]="null">
+            {{ "playerStats.filters.all" | transloco }}
+          </option>
+          <option [ngValue]="'M'">
+            {{ "playerStats.filters.genderMale" | transloco }}
+          </option>
+          <option [ngValue]="'W'">
+            {{ "playerStats.filters.genderFemale" | transloco }}
+          </option>
+          <option [ngValue]="'D'">
+            {{ "playerStats.filters.genderDiverse" | transloco }}
+          </option>
+        </select>
+      </div>
+
+      <div>
+        <label
+          class="block text-sm font-bold mb-1"
+          for="player-stats-min-games"
+        >
+          {{ "playerStats.filters.minGames" | transloco }}
+        </label>
+        <input
+          id="player-stats-min-games"
+          data-testid="filter-min-games"
+          type="number"
+          min="1"
+          class="w-full"
+          [ngModel]="minGames"
+          (ngModelChange)="onMinGamesChange($event)"
+        />
+      </div>
+    </div>
+
+    <!-- Saisons als Mehrfachauswahl: „alle" ist der Normalfall, deshalb keine
+         Vorbelegung und kein Eintrag „alle Saisons" -- keine Auswahl IST alle. -->
+    @if (filterOptions?.seasons?.length) {
+      <div class="mt-4">
+        <span class="block text-sm font-bold mb-1">
+          {{ "playerStats.filters.seasons" | transloco }}
+        </span>
+        <div data-testid="filter-seasons" class="flex flex-wrap gap-2">
+          @for (season of filterOptions?.seasons; track season.id) {
+            <button
+              type="button"
+              class="px-3 py-1 text-sm border rounded-[5px]"
+              [class.border-fb-gray-600]="!seasonIds.includes(season.id)"
+              [class.bg-black]="seasonIds.includes(season.id)"
+              [class.text-white]="seasonIds.includes(season.id)"
+              [class.border-black]="seasonIds.includes(season.id)"
+              (click)="toggleSeason(season.id)"
+            >
+              {{ season.name }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+      <label class="flex items-center gap-2">
+        <input
+          data-testid="filter-current-members"
+          type="checkbox"
+          [(ngModel)]="onlyCurrentMembers"
+          (ngModelChange)="onFilterChange()"
+        />
+        {{ "playerStats.filters.onlyCurrentMembers" | transloco }}
+      </label>
+      <label class="flex items-center gap-2">
+        <input
+          data-testid="filter-deactivated"
+          type="checkbox"
+          [(ngModel)]="includeDeactivated"
+          (ngModelChange)="onFilterChange()"
+        />
+        {{ "playerStats.filters.includeDeactivated" | transloco }}
+      </label>
+      @if (hasActiveFilters) {
+        <button
+          data-testid="filter-reset"
+          type="button"
+          class="underline hover:text-black text-fb-gray-500"
+          (click)="resetFilters()"
+        >
+          {{ "playerStats.filters.reset" | transloco }}
+        </button>
+      }
+    </div>
+    <p class="mt-2 text-sm text-fb-gray-500">
+      {{ "playerStats.filters.currentMembersHint" | transloco }}
+    </p>
+  </section>
+
+  @if (loadError) {
+    <div
+      data-testid="load-error"
+      class="mb-4 rounded bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"
+    >
+      {{ loadError }}
+      <button
+        data-testid="retry"
+        type="button"
+        class="ml-3 underline font-bold hover:text-red-900"
+        (click)="retry()"
+      >
+        {{ "playerStats.retry" | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (loading) {
+    <div data-testid="loading" class="text-fb-gray-500 text-sm py-8">
+      {{ "playerStats.loading" | transloco }}
+    </div>
+  } @else if (!loadError) {
+    <p class="text-sm text-fb-gray-500 mb-4">
+      <span data-testid="total-count">
+        {{
+          total === 1
+            ? ("playerStats.countSingular" | transloco)
+            : ("playerStats.countPlural" | transloco: { count: total })
+        }}
+      </span>
+      @if (asOf) {
+        &nbsp;·&nbsp;
+        <span data-testid="as-of">
+          {{
+            "playerStats.asOf"
+              | transloco: { date: asOf | date: "dd.MM.yyyy, HH:mm" }
+          }}
+        </span>
+      }
+    </p>
+
+    @if (entries.length === 0) {
+      <div
+        data-testid="empty"
+        class="border border-fb-gray-700 rounded-[5px] p-6 text-sm text-fb-gray-500 max-w-3xl"
+      >
+        {{
+          (hasActiveFilters ? "playerStats.emptyFiltered" : "playerStats.empty")
+            | transloco
+        }}
+      </div>
+    } @else {
+      <!-- Eigener Rollbereich: Auf dem Telefon soll die Tabelle wandern, nicht
+           die Seite. -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm min-w-[900px]">
+          <thead>
+            <tr class="text-left border-b border-fb-gray-700">
+              <th class="py-2 pr-2 font-bold w-12">
+                {{ "playerStats.columns.rank" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                <button
+                  data-testid="sort-name"
+                  type="button"
+                  class="hover:underline"
+                  (click)="sortBy('name')"
+                >
+                  {{ "playerStats.columns.name" | transloco }}
+                  {{ sortIndicator("name") }}
+                </button>
+              </th>
+              @if (isAssociationMode) {
+                <th class="py-2 pr-4 font-bold">
+                  {{ "playerStats.columns.club" | transloco }}
+                </th>
+              }
+              <th class="py-2 pr-4 font-bold text-right">
+                <button
+                  data-testid="sort-games"
+                  type="button"
+                  class="hover:underline"
+                  (click)="sortBy('games')"
+                >
+                  {{ "playerStats.columns.games" | transloco }}
+                  {{ sortIndicator("games") }}
+                </button>
+              </th>
+              <th class="py-2 pr-4 font-bold text-right">
+                <button
+                  type="button"
+                  class="hover:underline"
+                  (click)="sortBy('goals')"
+                >
+                  {{ "playerStats.columns.goals" | transloco }}
+                  {{ sortIndicator("goals") }}
+                </button>
+              </th>
+              <th class="py-2 pr-4 font-bold text-right">
+                <button
+                  type="button"
+                  class="hover:underline"
+                  (click)="sortBy('assists')"
+                >
+                  {{ "playerStats.columns.assists" | transloco }}
+                  {{ sortIndicator("assists") }}
+                </button>
+              </th>
+              <th class="py-2 pr-4 font-bold text-right">
+                <button
+                  data-testid="sort-points"
+                  type="button"
+                  class="hover:underline"
+                  (click)="sortBy('scorer_points')"
+                >
+                  {{ "playerStats.columns.points" | transloco }}
+                  {{ sortIndicator("scorer_points") }}
+                </button>
+              </th>
+              <th class="py-2 pr-4 font-bold text-right">
+                <button
+                  type="button"
+                  class="hover:underline"
+                  (click)="sortBy('scorer_per_game')"
+                >
+                  {{ "playerStats.columns.pointsPerGame" | transloco }}
+                  {{ sortIndicator("scorer_per_game") }}
+                </button>
+              </th>
+              <th class="py-2 pr-4 font-bold text-right">
+                <button
+                  type="button"
+                  class="hover:underline"
+                  (click)="sortBy('penalty_minutes')"
+                >
+                  {{ "playerStats.columns.penaltyMinutes" | transloco }}
+                  {{ sortIndicator("penalty_minutes") }}
+                </button>
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "playerStats.columns.period" | transloco }}
+              </th>
+              <th class="py-2 font-bold"></th>
+            </tr>
+          </thead>
+          <tbody data-testid="rows">
+            @for (entry of entries; track entry.player_id; let i = $index) {
+              <tr class="border-b border-fb-gray-800">
+                <td class="py-2 pr-2 text-fb-gray-500">
+                  {{ firstRank + i }}
+                </td>
+                <td class="py-2 pr-4">
+                  <a
+                    class="underline hover:text-black"
+                    [routerLink]="['/', 'spieler', entry.player_id]"
+                  >
+                    {{ entry.last_name }}, {{ entry.first_name }}
+                  </a>
+                  @if (entry.deactivated_at) {
+                    <span class="ml-2 text-xs text-fb-gray-500">
+                      {{ "playerStats.deactivated" | transloco }}
+                    </span>
+                  }
+                </td>
+                @if (isAssociationMode) {
+                  <td class="py-2 pr-4 text-fb-gray-500">
+                    {{ entry.home_club || "–" }}
+                  </td>
+                }
+                <td class="py-2 pr-4 text-right">{{ entry.games }}</td>
+                <td class="py-2 pr-4 text-right">{{ entry.goals }}</td>
+                <td class="py-2 pr-4 text-right">{{ entry.assists }}</td>
+                <td class="py-2 pr-4 text-right font-bold">
+                  {{ entry.scorer_points }}
+                </td>
+                <td class="py-2 pr-4 text-right">
+                  {{ entry.scorer_per_game | number: "1.2-2" }}
+                </td>
+                <td class="py-2 pr-4 text-right">
+                  {{ entry.penalty_minutes }}
+                </td>
+                <td class="py-2 pr-4 text-fb-gray-500 whitespace-nowrap">
+                  {{ period(entry) }}
+                </td>
+                <td class="py-2 text-right whitespace-nowrap">
+                  @if (editClubId(entry); as editClub) {
+                    <a
+                      data-testid="edit-link"
+                      class="text-xs underline hover:text-black text-fb-gray-500"
+                      [routerLink]="[
+                        '/',
+                        'verwaltung',
+                        'vereine',
+                        editClub,
+                        'spieler',
+                        entry.player_id,
+                        'bearbeiten',
+                      ]"
+                    >
+                      {{ "playerStats.edit" | transloco }}
+                    </a>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (numberOfPages > 1) {
+        <div class="mt-6">
+          <fb-pagination
+            [numberOfPages]="numberOfPages"
+            [currentPage]="page"
+            (changePage)="changePage($event)"
+          ></fb-pagination>
+        </div>
+      }
+    }
+  }
+</div>

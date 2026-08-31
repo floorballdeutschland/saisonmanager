@@ -79,9 +79,15 @@ describe('ErrorInterceptor', () => {
   }
 
   // Wie failWith, nur lesend: Der Profilabruf unten ist ein GET, und ein POST
-  // auf dieselbe Adresse gaebe es gar nicht.
-  function failGetWith(body: object, status: number, url: string): void {
-    http.get(url).subscribe({
+  // auf dieselbe Adresse gaebe es gar nicht. Die Unterscheidung lesend/schreibend
+  // traegt seit der Sekretariats-Drosselung eine eigene Bedeutung, siehe dort.
+  function failGetWith(
+    body: object,
+    status: number,
+    url: string,
+    headers?: Record<string, string>
+  ): void {
+    http.get(url, headers ? { headers } : {}).subscribe({
       next: () => fail('expected the request to fail'),
       error: () => undefined,
     });
@@ -350,6 +356,46 @@ describe('ErrorInterceptor', () => {
     failWith({}, 500, `${environment.apiURL}admin/referees/5/partners`);
 
     expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  // Die Spielerdaten-Rangliste benennt den 503 des Endpunkts in ihrem eigenen
+  // Kasten. Zusaetzlich zeigte der generische 5xx-Zweig einen nicht
+  // selbstschliessenden Toast, und weil die Ansicht die Route nie wechselt,
+  // stapelte jeder Filterklick einen weiteren deckungsgleich darueber.
+  it('stays quiet when the player statistics aggregate is unavailable', () => {
+    failWith(
+      { error: 'Spielerdaten konnten nicht geladen werden.' },
+      503,
+      `${environment.apiURL}admin/player_statistics.json`
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it('stays quiet on a 404 for the player statistics', () => {
+    failWith(
+      { message: 'Verein nicht gefunden.' },
+      404,
+      `${environment.apiURL}admin/player_statistics.json`
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  // Gegenprobe zur Ausnahme: Der fremde Verein MUSS weiter umleiten, sonst
+  // stuende die Maske mit einem roten Kasten da, wo sie gar nicht sein darf.
+  it('still redirects on a 403 for the player statistics', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung.' },
+      403,
+      `${environment.apiURL}admin/player_statistics.json`
+    );
+
+    expect(errorSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/']);
   });
 
   // Gegenprobe: Die Ausnahme gilt nur der Gespann-Historie. Die
@@ -651,14 +697,35 @@ describe('ErrorInterceptor', () => {
 
   // Die Spielansicht fragt die internen Felder alle 30 Sekunden neu ab. Ohne
   // Sperre stapelt ein abgelaufener Link zwei nicht selbstschliessende Meldungen
-  // pro Minute uebereinander.
-  it('reports an expired secretary link only once', () => {
+  // pro Minute uebereinander. Gedrosselt wird deshalb das Nachfragen, also GET.
+  it('reports an expired secretary link only once while polling', () => {
     const url = `${environment.apiURL}user/games/42/additional_fields.json`;
 
-    failWith({}, 401, url, { 'X-Secretary-Token': 'irgendwas' });
-    failWith({}, 401, url, { 'X-Secretary-Token': 'irgendwas' });
+    failGetWith({}, 401, url, { 'X-Secretary-Token': 'irgendwas' });
+    failGetWith({}, 401, url, { 'X-Secretary-Token': 'irgendwas' });
 
     expect(errorSpy).toHaveBeenCalledTimes(1);
+  });
+
+  // Eine Aktion wird dagegen jedes Mal gemeldet, auch wenn das Polling die
+  // Drosselung schon ausgeloest hat. Sonst waere der Knopf stumm: Seit die
+  // generische Meldung "Aktion nicht moeglich." aus dem Spielstart entfernt ist
+  // (sie verdeckte die Serverbegruendung), ist der Interceptor dort die einzige
+  // Stimme. Ein Sekretariats-Link, der mitten im Spiel ablaeuft, verbraucht die
+  // eine erlaubte Meldung binnen 30 Sekunden am Polling.
+  it('reports every rejected write even after the polling notice', () => {
+    const token = { 'X-Secretary-Token': 'irgendwas' };
+    const readUrl = `${environment.apiURL}user/games/42/additional_fields.json`;
+    const writeUrl = `${environment.apiURL}user/games/42/set_flag.json`;
+
+    failGetWith({}, 401, readUrl, token);
+    failGetWith({}, 401, readUrl, token);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+
+    failWith({}, 401, writeUrl, token);
+    failWith({}, 401, writeUrl, token);
+
+    expect(errorSpy).toHaveBeenCalledTimes(3);
   });
 
   it('keeps the secretary in the game report on a 403', () => {
@@ -855,7 +922,9 @@ describe('ErrorInterceptor', () => {
       next: () => fail('expected the request to fail'),
       error: (err) => (received = err),
     });
-    httpMock.expectOne(vmImportUrl).flush(body, { status, statusText: 'Error' });
+    httpMock
+      .expectOne(vmImportUrl)
+      .flush(body, { status, statusText: 'Error' });
     return received;
   }
 

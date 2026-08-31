@@ -31,6 +31,7 @@ describe('PlayerSearchComponent', () => {
           noAccessBadge: 'kein Zugriff',
           noAccessHint: 'Zustaendig ist {{association}}.',
           noAccessHintUnknown: 'Kein Spielbetrieb zustaendig.',
+          playerStatsLink: 'Spielerdaten-Rangliste',
         },
       },
     },
@@ -88,6 +89,19 @@ describe('PlayerSearchComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
+  // Der zweite Weg in dieselbe Frage: Wer hier einen Namen sucht, findet
+  // ueber die Rangliste die Personen mit den meisten Einsaetzen. Ohne :clubId
+  // laeuft die Route in den Verbandsmodus der API (fe#300).
+  it('verweist auf die Spielerdaten-Rangliste des Verbands', async () => {
+    const fixture = await setup([]);
+
+    const link = fixture.nativeElement.querySelector(
+      '[data-testid="player-stats-link"]'
+    );
+    expect(link).toBeTruthy();
+    expect(link.getAttribute('href')).toBe('/verwaltung/spieler/spielerdaten');
+  });
+
   // Deaktivierte Profile sind seit api#472 Teil des Ergebnisses. Ohne einen
   // Hinweis am Treffer waere nicht zu erkennen, warum die Person in der
   // Vereinsliste ihres Vereins fehlt.
@@ -121,7 +135,7 @@ describe('PlayerSearchComponent', () => {
     expect(fixture.nativeElement.textContent).toContain(
       'Zustaendig ist SBK Ost.'
     );
-    expect(fixture.nativeElement.querySelector('a')).toBeNull();
+    expect(fixture.nativeElement.querySelector('li a')).toBeNull();
     expect(
       fixture.nativeElement.querySelector('[data-testid="locked-result"]')
     ).toBeTruthy();
@@ -142,7 +156,7 @@ describe('PlayerSearchComponent', () => {
   it('verlinkt einen Treffer mit Zugriff', async () => {
     const fixture = await setup([treffer({ manageable: true })]);
 
-    const link = fixture.nativeElement.querySelector('a');
+    const link = fixture.nativeElement.querySelector('li a');
     expect(link).toBeTruthy();
     expect(link.getAttribute('href')).toBe(
       '/verwaltung/vereine/202/spieler/1/bearbeiten'
@@ -155,7 +169,7 @@ describe('PlayerSearchComponent', () => {
   it('verlinkt einen Treffer ohne die Angabe wie bisher', async () => {
     const fixture = await setup([treffer()]);
 
-    expect(fixture.nativeElement.querySelector('a')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('li a')).toBeTruthy();
     expect(fixture.nativeElement.textContent).not.toContain('kein Zugriff');
   });
 

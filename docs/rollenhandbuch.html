@@ -4323,8 +4323,19 @@
                 ein
                 <strong>Top-N</strong> an (zum Beispiel die besten 2), und das
                 System legt genau diese Teams in der neuen Liga an.
-                <strong>N = 0 übernimmt alle</strong> Teams. Das funktioniert
-                auch ligaübergreifend, also aus Ligen anderer Landesverbände.
+                <strong>N = 0 übernimmt alle</strong> Teams.
+              </p>
+              <p class="proc-text">
+                Zur Auswahl stehen die Ligen der Spielbetriebe, für die du
+                zuständig bist, und nur aus der
+                <strong>laufenden Saison</strong>. Als Landesverband siehst du
+                dort also keine Ligen anderer Landesverbände, bundesweit
+                Zuständige sehen alle. Für eine Liga, die du zum
+                <strong>Saisonwechsel</strong> neu aufbaust, ist der Import
+                deshalb kein Weg: Dort meldest du die Mannschaften über
+                <em>Neue Mannschaft</em> an. Das ist am Saisonwechsel ohnehin
+                der richtige Weg, weil eine neue Saison neue Mannschaften und
+                damit neue Lizenzen bedeutet.
               </p>
               <p class="proc-text">
                 Die Reihenfolge stammt aus der fertigen Tabelle der Quell-Liga,
@@ -4411,6 +4422,127 @@
                 auf, sonst zählt eine Mannschaft in Auswertungen weiter zu einem
                 längst gespielten Wettbewerb. Für Lizenzanträge ist das
                 unkritisch, dort gilt die Saison der Hauptliga.
+              </div>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb sbk">SBK</span>
+              </div>
+            </div>
+          </details>
+
+          <!-- Verbandsübergreifende Liga -->
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🤝</span>
+              <div>
+                <div class="proc-title">
+                  Verbandsübergreifende Liga aufsetzen
+                </div>
+                <div class="proc-sub">
+                  Eine Liga mit Mannschaften aus mehreren Landesverbänden
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Eine Liga, in der Mannschaften aus mehreren Landesverbänden
+                antreten, ist im Saisonmanager ausdrücklich vorgesehen. Es gibt
+                dafür drei Bauformen, die sich in Dauerhaftigkeit und Aufwand
+                unterscheiden. Die erste ist der Regelfall.
+              </p>
+
+              <div class="proc-h">
+                1. Gastmannschaften über die Vereinsfreigabe
+              </div>
+              <p class="proc-text">
+                Der ausrichtende Verband legt die Liga in seinem
+                <strong>eigenen Spielbetrieb</strong> an. Der Landesverband der
+                Gastvereine erteilt ihm eine
+                <strong>Vereinsfreigabe</strong> für die betreffende Saison.
+                Danach stehen die freigegebenen Vereine in der Vereinsauswahl,
+                und der Ausrichter meldet die Gastmannschaften über
+                <em>Neue Mannschaft</em> in seiner Liga an.
+              </p>
+              <div class="flow">
+                <div class="st start">Liga im eigenen Spielbetrieb</div>
+                <div class="cn act">
+                  <span class="cl">Vereine freigeben (je Saison)</span
+                  ><span class="rb sbk">SBK des Gast-LV</span
+                  ><span class="ar">→</span>
+                </div>
+                <div class="st info">Gastvereine wählbar</div>
+                <div class="cn act">
+                  <span class="cl">Mannschaften anlegen</span
+                  ><span class="rb sbk">SBK des Ausrichters</span
+                  ><span class="ar">→</span>
+                </div>
+                <div class="st success">Liga besetzt</div>
+              </div>
+              <p class="proc-text">
+                Das ist der mit Abstand häufigste Fall. Beide Seiten behalten
+                ihre Zuständigkeiten, es ändert sich nichts an der
+                Verbandsstruktur, und die Freigabe lässt sich jede Saison neu
+                entscheiden.
+              </p>
+
+              <div class="proc-h">
+                2. Spielverbund für einen dauerhaften gemeinsamen Spielbetrieb
+              </div>
+              <p class="proc-text">
+                Wenn mehrere Landesverbände ihren Spielbetrieb nicht nur für
+                einzelne Ligen, sondern
+                <strong>dauerhaft und vollständig</strong> gemeinsam führen,
+                werden sie im Verbandsbaum einem gemeinsamen Verband
+                untergeordnet. Dessen Spielbetrieb ist damit für die Vereine
+                <em>aller</em> untergeordneten Landesverbände zuständig, ganz
+                ohne Freigaben. Seine Ligen und Mannschaften sind für ihn
+                normale eigene Daten.
+              </p>
+              <p class="proc-text">
+                So ist der gemeinsame Spielbetrieb Ost aus Sachsen,
+                Sachsen-Anhalt und Thüringen gebaut, und so hängt der Hamburger
+                Verband unter Schleswig-Holstein. Für eine einzelne gemeinsame
+                Liga ist dieser Weg zu groß, denn er zieht den kompletten
+                Vereinsbestand mit. Einrichten kann ihn nur der Administrator.
+              </p>
+
+              <div class="proc-h">
+                3. Aufnahme in einen bundesweiten Wettbewerb
+              </div>
+              <p class="proc-text">
+                Bei bundesweiten Pokalen und Endrunden nimmt der Ausrichter
+                bestehende Mannschaften über
+                <em>Bestandsmannschaft aufnehmen</em> auf, quer über alle
+                Landesverbände. Das setzt eine
+                <strong>bundesweite Zuständigkeit</strong> voraus. Zwischen zwei
+                Landesverbänden funktioniert dieser Weg nicht, dort gilt Bauform
+                1.
+              </p>
+
+              <div class="note">
+                <strong
+                  >Die Vereinsfreigabe gilt für Vereine, nicht für
+                  Mannschaften.</strong
+                >
+                Sie macht die Vereine des Nachbarverbands wählbar, wenn du eine
+                Mannschaft anlegst. Eine <em>bestehende</em> Mannschaft eines
+                anderen Landesverbands kannst du damit nicht in deine Liga
+                holen, auch nicht deren Mannschaft aus der Vorsaison. Der Grund:
+                Mit einer Mannschaft wandern ihr Kader, ihre Lizenzen und ihre
+                Kontaktdaten mit, und das bleibt bewusst beim zuständigen
+                Verband. Du legst die Gastmannschaft deshalb neu an.
+              </div>
+              <div class="note">
+                <strong
+                  >Lizenzen folgen der Liga, nicht dem Heimatverband des
+                  Vereins.</strong
+                >
+                Eine Gastmannschaft wird über den Spielbetrieb lizenziert, der
+                die Liga führt, und dort fallen auch die Lizenzgebühren an.
+                Richten sich zwei Landesverbände gegenseitig Ligen aus, gleicht
+                sich das in der Regel aus. Sprecht es trotzdem vorher ab, damit
+                es später niemanden überrascht.
               </div>
               <div class="roles-inline">
                 <span class="rb admin">Admin</span>

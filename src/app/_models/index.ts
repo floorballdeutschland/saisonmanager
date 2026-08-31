@@ -105,3 +105,4 @@ export * from './email-template.interface';
 export * from './checklist-veto.interface';
 export * from './secretary-hall-day.interface';
 export * from './live-stream.interface';
+export * from './player-statistics.interface';

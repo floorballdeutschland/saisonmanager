@@ -97,6 +97,9 @@
         "src/app/_modules/_admin/_referee_feedback_report_admin"
       ],
       "@floorball/admin/player-vm": ["src/app/_modules/_admin/_player_vm"],
+      "@floorball/admin/player-stats": [
+        "src/app/_modules/_admin/_player_stats"
+      ],
       "@floorball/admin/assignment": [
         "src/app/_modules/_admin/_assignment_admin"
       ],

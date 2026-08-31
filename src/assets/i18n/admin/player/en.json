@@ -140,6 +140,7 @@
   },
   "search": {
     "globalSearch": "Global player search",
+    "playerStatsLink": "Player statistics ranking",
     "search": "Search",
     "searchPlaceholder": "First or last name (min. 2 characters)",
     "results": "Results",
