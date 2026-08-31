@@ -20,6 +20,7 @@ import {
   League,
 } from '@floorball/types';
 import { GameService, NotificationService } from '@floorball/core';
+import { ErrorHandler } from '@angular/core';
 import { SortTrikotnumbersPipe } from 'src/app/_helpers/_pipes';
 import { FormsModule } from '@angular/forms';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -1084,6 +1085,74 @@ describe('MatchEventFormComponent Schiedsrichter-Auswahl', () => {
 
     expect(component.selectedReferee1).toBeNull();
     expect(gameService.setReferee).toHaveBeenCalledWith(42, 1, 0, '', '');
+  });
+
+  // Der kritische Befund aus dem Review: Ohne diese Behandlung blieb nach einem
+  // gescheiterten Speichern der Name im Feld stehen (samt gruenem Rahmen),
+  // waehrend Schritt 2 daneben "Schiedsrichter 1 fehlt" meldete. Zwei Aussagen,
+  // die sich widersprechen -- und weil der Speichern-Knopf entfallen ist, gab es
+  // keinen Weg, es erneut zu versuchen.
+  describe('gescheiterte Speicherung', () => {
+    beforeEach(() => {
+      (gameService.setReferee as jasmine.Spy).and.returnValue(
+        throwError(() => ({ status: 403, error: { message: 'Kein Zugriff' } }))
+      );
+    });
+
+    it('nimmt die Auswahl zurueck', () => {
+      component.type = 'referee1';
+
+      component.onRefereeSelected(1, schroeder);
+
+      expect(component.selectedReferee1).toBeNull();
+    });
+
+    it('behaelt den vorigen Eintrag, statt das Feld zu leeren', () => {
+      const trosien = {
+        lizenznummer: 5824,
+        nachname: 'Trosien',
+        vorname: 'Max',
+      };
+      component.type = 'referee2';
+      component.selectedReferee2 = trosien;
+
+      component.onRefereeSelected(2, schroeder);
+
+      expect(component.selectedReferee2).toBe(trosien);
+    });
+
+    // Damit die Maske den Serverstand zeigt und nicht den vermuteten.
+    it('laedt das Spiel neu', () => {
+      component.type = 'referee1';
+      const updates = spyOn(component.updateGame, 'emit');
+
+      component.onRefereeSelected(1, schroeder);
+
+      expect(updates).toHaveBeenCalled();
+    });
+
+    // Der ErrorInterceptor zeigt die Begruendung selbst; eine zweite Meldung
+    // wuerde sie nur verdecken (genau der Fehler, den fe#358 behebt).
+    it('zeigt keine eigene Meldung', () => {
+      component.type = 'referee1';
+      const errorToast = spyOn(TestBed.inject(NotificationService), 'error');
+
+      component.onRefereeSelected(1, schroeder);
+
+      expect(errorToast).not.toHaveBeenCalled();
+    });
+
+    // Ein eigener error-Zweig verschluckt den Fehler fuer das Monitoring. Der
+    // ausdrueckliche Weg an den globalen ErrorHandler haelt ihn offen -- in
+    // Produktion ist das der Sentry-Handler.
+    it('gibt den Fehler an den globalen ErrorHandler', () => {
+      component.type = 'referee1';
+      const handled = spyOn(TestBed.inject(ErrorHandler), 'handleError');
+
+      component.onRefereeSelected(1, schroeder);
+
+      expect(handled).toHaveBeenCalled();
+    });
   });
 });
 
