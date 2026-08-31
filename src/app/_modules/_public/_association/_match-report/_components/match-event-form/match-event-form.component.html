@@ -387,7 +387,13 @@
     }
     @if (type === "referee1") {
       <div>
-        <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 1</p>
+        <p class="font-medium text-base text-fb-gray-500">
+          Schiedsrichter 1
+          <span class="text-red-600" aria-hidden="true">*</span>
+          <span class="font-normal text-xs text-fb-gray-400"
+            >Pflichtfeld für den Spielstart</span
+          >
+        </p>
         <fb-referee-autocomplete
           [selectedReferee]="selectedReferee1"
           (refereeSelected)="onRefereeSelected(1, $event)"
@@ -404,7 +410,10 @@
     }
     @if (type === "referee2") {
       <div>
-        <p class="font-medium text-base text-fb-gray-500">Schiedsrichter 2</p>
+        <p class="font-medium text-base text-fb-gray-500">
+          Schiedsrichter 2
+          <span class="font-normal text-xs text-fb-gray-400">optional</span>
+        </p>
         <fb-referee-autocomplete
           [selectedReferee]="selectedReferee2"
           (refereeSelected)="onRefereeSelected(2, $event)"
@@ -417,6 +426,20 @@
         >
           Speichern
         </fb-button>
+        <!--
+          Der Hinweis genau dort, wo der Fehler entsteht: Wer das Gespann hier
+          einträgt und Platz 1 leer lässt, kommt aus der Absage beim Spielstart
+          nicht heraus, weil in der Maske sichtbar ein Schiedsrichter steht (siehe
+          Wernigerode, 30.08.2026). `referee1_present` ist optional; fehlt es
+          (älterer API-Stand), bleibt der Hinweis aus.
+        -->
+        @if (match.referee1_present === false && selectedReferee2) {
+          <p class="mt-2 text-sm text-yellow-800">
+            „Schiedsrichter 1" ist noch leer. Das Spiel lässt sich erst starten,
+            wenn Schiedsrichter 1 eingetragen ist – bei nur einer Person bitte
+            dort statt hier eintragen.
+          </p>
+        }
       </div>
     }
   </div>
