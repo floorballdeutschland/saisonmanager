@@ -140,6 +140,7 @@
   },
   "search": {
     "globalSearch": "Globale Spielersuche",
+    "playerStatsLink": "Spielerdaten-Rangliste",
     "search": "Suche",
     "searchPlaceholder": "Vor- oder Nachname (mind. 2 Zeichen)",
     "results": "Ergebnisse",

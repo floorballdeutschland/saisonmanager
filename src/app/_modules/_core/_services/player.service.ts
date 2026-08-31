@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 import {
   Club,
@@ -10,6 +10,8 @@ import {
   Player,
   PlayerImportReport,
   PlayerSearchResult,
+  PlayerStatisticsQuery,
+  PlayerStatisticsResponse,
   PlayerStats,
   PlayerSuspension,
 } from '@floorball/types';
@@ -250,6 +252,39 @@ export class PlayerService {
     formData.append('document_type', documentType);
     formData.append('file', file);
     return this.http.post<LicenseDocument>(path, formData);
+  }
+
+  /**
+   * Spielerdaten-Rangliste (Verein und Landesverband, api#465).
+   *
+   * Ein Endpunkt fuer beide Modi: Mit `club_id` zaehlt er, was fuer diesen
+   * Verein gespielt wurde, ohne ihn den eigenen Spielbetrieb.
+   *
+   * Leere Werte werden nicht gesendet, damit ein Aufruf ohne Argumente die
+   * Vorbelegungen der API bekommt statt leerer Parameter. `false` und `0` sind
+   * bewusst keine leeren Werte und gehen mit.
+   */
+  public getPlayerStatistics(query: PlayerStatisticsQuery = {}) {
+    const path = environment.apiURL + 'admin/player_statistics.json';
+    return this.http.get<PlayerStatisticsResponse>(path, {
+      params: this._playerStatisticsParams(query),
+    });
+  }
+
+  private _playerStatisticsParams(query: PlayerStatisticsQuery): HttpParams {
+    let params = new HttpParams();
+    Object.entries(query).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === '') return;
+      if (Array.isArray(value)) {
+        // Mehrfachauswahl der Saisons als EIN kommaseparierter Parameter statt
+        // als wiederholtes `season_id[]`, damit die Abfrage-URL lesbar bleibt;
+        // die API nimmt beide Formen.
+        if (value.length) params = params.set(key, value.join(','));
+        return;
+      }
+      params = params.set(key, String(value));
+    });
+    return params;
   }
 
   public deleteLicenseDocument(playerId: number, documentId: number) {

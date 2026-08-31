@@ -273,6 +273,31 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Die Spielerdaten-Rangliste hat einen eigenen Fehlerkasten samt
+        // Wiederholen-Knopf, und sie benennt darin die Meldung der API (der
+        // Endpunkt antwortet bei nicht lesbarem Aggregat bewusst mit 503 und
+        // einem eigenen Text). Ohne diese Ausnahme stünde jeder Vorfall
+        // zweimal da, einmal generisch als Toast.
+        //
+        // Schwerer als die Doppelung wäre das Stapeln: Die Toasts kommen mit
+        // `autoClose: false` und werden nur bei `NavigationStart` geleert (siehe
+        // unten). Diese Ansicht wechselt die Route nie, jeder Filterklick lädt
+        // nur neu — bei liegendem Aggregat also ein deckungsgleicher Toast pro
+        // Klick, deckungsgleich übereinander, einzeln wegzuklicken. Sechster
+        // Fall dieser Bauart.
+        //
+        // Bewusst NICHT 401 und 403: Die Abmeldung und die Umleitung bei einem
+        // fremden Verein sind genau das, was hier passieren soll, und die
+        // Ansicht ist danach zerstört. Die Komponente meldet die übrigen
+        // Fehlschläge selbst an Sentry, weil ihr `catchError` sie aus Angulars
+        // ErrorHandler nimmt.
+        if (
+          ![401, 403].includes(err.status) &&
+          request.url.includes('admin/player_statistics')
+        ) {
+          return throwError(() => err);
+        }
+
         // Die Gespann-Historie ist ein Nachschlag zur bereits geöffneten
         // Ansetzung, genau wie die Lizenzdokumente oben: Sie sortiert im
         // Dropdown von Schiri 2 die Gespannpartner nach oben. Ein 403 darauf

@@ -4,9 +4,21 @@
   >
     {{ "playerAdmin.common.title" | transloco }}
   </h1>
-  <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
-    {{ "playerAdmin.search.globalSearch" | transloco }}
-  </h2>
+  <div class="flex flex-wrap items-baseline justify-between gap-4">
+    <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
+      {{ "playerAdmin.search.globalSearch" | transloco }}
+    </h2>
+    <!-- Die Rangliste beantwortet die andere Haelfte derselben Frage: Wer hier
+         einen Namen sucht, sucht dort die Personen mit den meisten Einsaetzen.
+         Die Route laeuft ohne :clubId in den Verbandsmodus der API. -->
+    <a
+      data-testid="player-stats-link"
+      class="text-sm underline hover:text-black"
+      [routerLink]="['/', 'verwaltung', 'spieler', 'spielerdaten']"
+    >
+      {{ "playerAdmin.search.playerStatsLink" | transloco }}
+    </a>
+  </div>
 </div>
 
 <ng-container>

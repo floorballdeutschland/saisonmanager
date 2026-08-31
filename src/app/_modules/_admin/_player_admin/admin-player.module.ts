@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { AdminPlayerRoutingModule } from './admin-player-routing.module';
+import { AdminPlayerStatsModule } from '@floorball/admin/player-stats';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitTeamModule } from '@floorball/uikit/team';
@@ -19,6 +20,7 @@ import * as Views from './views';
     UikitTeamModule,
     UikitMatchesModule,
     UikitCommonModule,
+    AdminPlayerStatsModule,
   ],
   declarations: [
     Views.PlayerIndexComponent,
