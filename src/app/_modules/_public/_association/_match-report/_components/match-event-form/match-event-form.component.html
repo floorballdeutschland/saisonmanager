@@ -398,14 +398,9 @@
           [selectedReferee]="selectedReferee1"
           (refereeSelected)="onRefereeSelected(1, $event)"
         ></fb-referee-autocomplete>
-        <fb-button
-          class="flex mt-1"
-          [fullWidth]="true"
-          [variant]="'success'"
-          (handleClick)="submitField()"
-        >
-          Speichern
-        </fb-button>
+        <p class="text-fb-gray-400 text-xs">
+          Dieses Feld wird automatisch gespeichert.
+        </p>
       </div>
     }
     @if (type === "referee2") {
@@ -418,14 +413,9 @@
           [selectedReferee]="selectedReferee2"
           (refereeSelected)="onRefereeSelected(2, $event)"
         ></fb-referee-autocomplete>
-        <fb-button
-          class="flex mt-1"
-          [fullWidth]="true"
-          [variant]="'success'"
-          (handleClick)="submitField()"
-        >
-          Speichern
-        </fb-button>
+        <p class="text-fb-gray-400 text-xs">
+          Dieses Feld wird automatisch gespeichert.
+        </p>
         <!--
           Der Hinweis genau dort, wo der Fehler entsteht: Wer das Gespann hier
           einträgt und Platz 1 leer lässt, kommt aus der Absage beim Spielstart

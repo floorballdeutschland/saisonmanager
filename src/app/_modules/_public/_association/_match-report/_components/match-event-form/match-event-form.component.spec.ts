@@ -1013,6 +1013,80 @@ describe('MatchEventFormComponent', () => {
   });
 });
 
+describe('MatchEventFormComponent Schiedsrichter-Auswahl', () => {
+  let component: MatchEventFormComponent;
+  let gameService: GameService;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      declarations: [MatchEventFormComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(MatchEventFormComponent);
+    component = fixture.componentInstance;
+    component.match = { id: 42, referees: [] } as unknown as Game;
+    gameService = TestBed.inject(GameService);
+    spyOn(gameService, 'setReferee').and.returnValue(of({} as unknown as Game));
+  });
+
+  const schroeder = {
+    lizenznummer: 5605,
+    nachname: 'Schröder',
+    vorname: 'Tobias Günter',
+  };
+
+  // Der Kern: Die Auswahl allein war bisher wirkungslos, gespeichert wurde erst
+  // mit einem eigenen Knopf. Wer ihn nicht drückte, sah den Namen im Feld,
+  // während am Spiel nichts stand -- und die Absage beim Spielstart war vor
+  // diesem Bild nicht zu verstehen (Wernigerode, 30.08.2026: 87 Minuten zwischen
+  // Suche und Speichern).
+  it('speichert Schiedsrichter 1 sofort bei der Auswahl', () => {
+    component.type = 'referee1';
+
+    component.onRefereeSelected(1, schroeder);
+
+    expect(gameService.setReferee).toHaveBeenCalledWith(
+      42,
+      1,
+      5605,
+      'Schröder',
+      'Tobias Günter'
+    );
+  });
+
+  it('speichert Schiedsrichter 2 sofort bei der Auswahl', () => {
+    component.type = 'referee2';
+
+    component.onRefereeSelected(2, {
+      lizenznummer: 5824,
+      nachname: 'Trosien',
+      vorname: 'Max',
+    });
+
+    expect(gameService.setReferee).toHaveBeenCalledWith(
+      42,
+      2,
+      5824,
+      'Trosien',
+      'Max'
+    );
+  });
+
+  // Sonst waere das Zuruecknehmen die einzige Aktion des Feldes ohne Wirkung:
+  // Der Name verschwindet aus der Maske, bleibt aber am Spiel stehen.
+  it('speichert auch das Leeren des Feldes', () => {
+    component.type = 'referee1';
+    component.selectedReferee1 = schroeder;
+
+    component.onRefereeSelected(1, null);
+
+    expect(component.selectedReferee1).toBeNull();
+    expect(gameService.setReferee).toHaveBeenCalledWith(42, 1, 0, '', '');
+  });
+});
+
 describe('MatchEventFormComponent startOrEndGame', () => {
   let component: MatchEventFormComponent;
   let notifications: NotificationService;

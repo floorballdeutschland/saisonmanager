@@ -814,12 +814,27 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // Die Auswahl wird sofort gespeichert, wie in den übrigen Feldern dieses
+  // Formulars (Zuschauerzahl, Livestream, Spielsekretariat, Zeitnehmer).
+  //
+  // Vorher war die Auswahl nur ein Zustand in der Maske: Wer den Namen in der
+  // Autocomplete anklickte und den eigenen „Speichern"-Knopf des Feldes nicht
+  // drückte, sah den Schiedsrichter im Feld stehen, während am Spiel nichts
+  // stand. Die Absage beim Spielstart („Schiedsrichter 1 fehlt") ist vor diesem
+  // Bild nicht zu verstehen. Im Prod-Log vom 30.08.2026 (Wernigerode) liegen
+  // zwischen der Suche nach dem Namen um 10:11 und seinem Speichern um 11:38
+  // 87 Minuten mit 23 abgewiesenen Startversuchen dazwischen.
+  //
+  // Das Leeren (referee === null) wird ebenfalls gespeichert, sonst wäre das
+  // Zurücknehmen eines Eintrags die einzige Aktion des Feldes ohne Wirkung.
   public onRefereeSelected(num: 1 | 2, referee: RefereeEntry | null): void {
     if (num === 1) {
       this.selectedReferee1 = referee;
     } else {
       this.selectedReferee2 = referee;
     }
+
+    this.submitField();
   }
 
   public submitField() {
