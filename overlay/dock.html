@@ -102,6 +102,20 @@
         </div>
       </section>
 
+      <!-- Interview nach dem Spiel. Im Steuerzustand landen nur Mannschaft und
+           Trikotnummer; Name, Torbeteiligung und Auszeichnung rechnet die
+           Bühne aus dem Spiel. Sonst müsste das Bedienfeld dieselben Zahlen
+           ein zweites Mal ermitteln, und eine nachgetragene Vorlage käme in
+           der laufenden Einblendung nicht mehr an. -->
+      <section class="dk-card">
+        <div class="dk-label">Interview</div>
+        <select class="dk-select" id="iv-team"></select>
+        <select class="dk-select" id="iv-player"></select>
+        <button class="dk-btn" id="iv-show" type="button">
+          Interview einblenden
+        </button>
+      </section>
+
       <section class="dk-card">
         <div class="dk-row">
           <span class="dk-label">Spielstand übersteuern</span>

@@ -65,6 +65,9 @@
     "lt-text-kicker",
     "lt-text-main",
     "lt-onair",
+    "iv-team",
+    "iv-player",
+    "iv-show",
     "override-toggle",
     "override-controls",
     "override-display",
@@ -87,6 +90,7 @@
     { key: "3", sel: "#lt-venue", badge: "3" },
     { key: "4", sel: "#lt-text", badge: "4" },
     { key: "0", sel: "#lt-off", badge: "0" },
+    { key: "5", sel: "#iv-show", badge: "5" },
     { key: "s", sel: "#scoreboard-toggle", badge: "S" },
     { key: "u", sel: "#clock-visible", badge: "U" },
     { key: " ", sel: "#clock-start", badge: "Leer" },
@@ -107,6 +111,7 @@
     { id: "lt-penalty", kind: "penalty" },
     { id: "lt-venue", kind: "venue" },
     { id: "lt-text", kind: "text" },
+    { id: "iv-show", kind: "interview" },
   ];
 
   if (!token) {
@@ -357,6 +362,7 @@
     renderScoreboard();
     renderClockUi();
     renderLowerThird();
+    renderInterview();
     renderOverride();
   }
 
@@ -394,6 +400,16 @@
     // Der eingeblendete Text, nicht der im Feld: Wer nach dem Einblenden
     // weitertippt, soll sehen, was tatsächlich unten im Bild steht.
     if (lt.kind === "text") return "Bühne: " + (lt.main || "Freitext");
+
+    if (lt.kind === "interview") {
+      var player = rosterPlayer(lt.side, lt.number);
+      // Auch ohne auflösbaren Eintrag die Nummer nennen: Zeigt die Bühne
+      // gerade nichts, weil die Aufstellung nachträglich geändert wurde, ist
+      // das hier die einzige Spur.
+      return (
+        "Bühne: Interview " + (player ? playerName(player) : "Nr. " + lt.number)
+      );
+    }
 
     return "Bühne: Einblendung";
   }
@@ -511,6 +527,117 @@
     return (Number(m[1]) * 60 + Number(m[2])) * 1000;
   }
 
+  // ── Interview ───────────────────────────────────────────────────────────
+
+  // Zwei Auswahlfelder, gefüllt aus der Aufstellung des Spiels. Bewusst keine
+  // Eingabe der Nummer von Hand: Eine Zahl, die in der Aufstellung nicht
+  // vorkommt, ergäbe eine Bauchbinde ohne Namen, und das fiele erst auf
+  // Sendung auf.
+  function renderInterview() {
+    fillInterviewTeams();
+    fillInterviewPlayers();
+
+    el["iv-show"].disabled = !el["iv-player"].value;
+  }
+
+  function fillInterviewTeams() {
+    if (!state.game) return;
+
+    // Neu füllen, sobald ein anderes Spiel gewählt ist: Die Namen stehen in
+    // den Feldern, nicht bloß „Heim" und „Gast".
+    var key = String(state.game.id);
+    if (el["iv-team"].dataset.filledFor === key) return;
+
+    var chosen = el["iv-team"].value === "guest" ? "guest" : "home";
+    el["iv-team"].textContent = "";
+
+    [
+      { side: "home", team: state.game.home, fallback: "Heim" },
+      { side: "guest", team: state.game.guest, fallback: "Gast" },
+    ].forEach(function (entry) {
+      var opt = document.createElement("option");
+      opt.value = entry.side;
+      opt.textContent =
+        (entry.team && (entry.team.name || entry.team.short_name)) ||
+        entry.fallback;
+      el["iv-team"].appendChild(opt);
+    });
+
+    el["iv-team"].value = chosen;
+    el["iv-team"].dataset.filledFor = key;
+  }
+
+  function fillInterviewPlayers() {
+    if (!state.game) return;
+
+    var side = el["iv-team"].value || "home";
+    var roster = rosterFor(side);
+    // Die Anzahl gehört in den Schlüssel: Wird die Aufstellung erst während
+    // des Spiels eingetragen, muss die Liste nachziehen, ohne dass jemand das
+    // Dock neu lädt.
+    var key = state.game.id + ":" + side + ":" + roster.length;
+    if (el["iv-player"].dataset.filledFor === key) return;
+
+    var chosen = el["iv-player"].value;
+    el["iv-player"].textContent = "";
+
+    if (!roster.length) {
+      var empty = document.createElement("option");
+      empty.value = "";
+      empty.textContent = "Keine Aufstellung eingetragen";
+      el["iv-player"].appendChild(empty);
+    } else {
+      roster.forEach(function (player) {
+        var opt = document.createElement("option");
+        opt.value = String(player.trikot_number);
+        // textContent: Die Namen kommen aus der Datenbank.
+        opt.textContent =
+          player.trikot_number +
+          "  " +
+          playerName(player) +
+          (player.position === "Tor" ? " (Tor)" : "");
+        el["iv-player"].appendChild(opt);
+      });
+
+      if (chosen) el["iv-player"].value = chosen;
+    }
+
+    el["iv-player"].dataset.filledFor = key;
+  }
+
+  // Nach Trikotnummer sortiert und ohne die nummernlosen Einträge: Nach der
+  // Nummer sucht die Regie, und ein Eintrag ohne sie ist nicht einblendbar.
+  function rosterFor(side) {
+    var players = (state.game && state.game.players) || {};
+    var list = players[side === "guest" ? "guest" : "home"] || [];
+
+    return list
+      .filter(function (player) {
+        return player && String(player.trikot_number || "").length > 0;
+      })
+      .slice()
+      .sort(function (a, b) {
+        return Number(a.trikot_number) - Number(b.trikot_number);
+      });
+  }
+
+  function rosterPlayer(side, number) {
+    var roster = rosterFor(side);
+    var found = null;
+
+    roster.forEach(function (player) {
+      if (Number(player.trikot_number) === Number(number)) found = player;
+    });
+
+    return found;
+  }
+
+  function playerName(player) {
+    return [player.player_firstname, player.player_name]
+      .filter(Boolean)
+      .join(" ");
+  }
+
   function renderOverride() {
     var ov = state.control.score_override;
     var on = Boolean(ov);
@@ -606,6 +733,27 @@
 
   el["lt-off"].addEventListener("click", function () {
     writeState({ lower_third: null });
+  });
+
+  el["iv-team"].addEventListener("change", renderInterview);
+
+  el["iv-show"].addEventListener("click", function () {
+    var number = el["iv-player"].value;
+    if (!number) {
+      setStatus(
+        "Für das Interview fehlt die Aufstellung dieser Mannschaft.",
+        true
+      );
+      return;
+    }
+
+    writeState({
+      lower_third: {
+        kind: "interview",
+        side: el["iv-team"].value || "home",
+        number: Number(number),
+      },
+    });
   });
 
   el["override-toggle"].addEventListener("click", function () {

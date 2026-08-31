@@ -572,6 +572,8 @@
         return lt.main
           ? { kicker: lt.kicker || "", main: lt.main, sub: lt.sub || "" }
           : null;
+      case "interview":
+        return interviewContent(lt);
       case "venue":
         return venueContent();
       default:
@@ -611,6 +613,157 @@
         .filter(Boolean)
         .join("   ·   "),
     };
+  }
+
+  // Namenseinblendung für ein Interview, etwa nach dem Schlusspfiff.
+  //
+  // Im Steuerzustand stehen nur Mannschaft und Trikotnummer. Name,
+  // Torbeteiligung und Auszeichnung werden HIER gerechnet, aus demselben
+  // Spielstand, den die Anzeigetafel benutzt: Der Zustand bleibt klein, und
+  // trägt das Sekretariat nach dem Einblenden noch eine Vorlage nach, zieht
+  // die laufende Bauchbinde von selbst mit.
+  function interviewContent(lt) {
+    var side = lt.side === "guest" ? "guest" : "home";
+    var number = Number(lt.number);
+    if (!isFinite(number)) return null;
+
+    var player = rosterPlayer(side, number);
+    // Kein Ausweichen auf die Nummer allein: Eine Bauchbinde mit „Nr. 7" ohne
+    // Namen hilft niemandem weiter, und eine geänderte Aufstellung soll
+    // auffallen, statt halb auf Sendung zu gehen.
+    if (!player) return null;
+
+    var tallies = teamTallies(side);
+    var own = tallies[number] || { goals: 0, assists: 0, points: 0 };
+    var parts = [];
+
+    if (player.position === "Tor") parts.push(roleLabel("Torhüter"));
+    if (player.captain) parts.push(roleLabel("Kapitän"));
+    if (own.goals) parts.push(own.goals + (own.goals === 1 ? " Tor" : " Tore"));
+    if (own.assists) {
+      parts.push(own.assists + (own.assists === 1 ? " Vorlage" : " Vorlagen"));
+    }
+
+    var badge = interviewBadge(side, player, own, tallies);
+    if (badge) parts.push(badge);
+
+    // Hier der volle Vereinsname und nicht das Kürzel wie auf der
+    // Anzeigetafel: Dort zählt der Platz, in einer Namenseinblendung die
+    // Lesbarkeit. „BER · Nr. 7" sagt einem Zuschauer nichts.
+    var team = side === "home" ? state.game.home : state.game.guest;
+    var teamText = (team && (team.name || team.short_name)) || "";
+
+    return {
+      kicker: [teamText, "Nr. " + number].filter(Boolean).join("   ·   "),
+      main: playerFullName(player),
+      sub: parts.join("   ·   "),
+    };
+  }
+
+  // Die Auszeichnung, die mehr über die Partie sagt, gewinnt: Wer MVP ist, ist
+  // ausgezeichnet worden; Topscorer ist nur eine Feststellung aus den
+  // Ereignissen. Beides nebeneinander machte die Zeile lang, ohne mehr zu
+  // sagen.
+  function interviewBadge(side, player, own, tallies) {
+    if (isMvp(side, player)) return "MVP des Spiels";
+
+    // Punktgleich zählt mit: „Topscorer" ist hier eine Aussage über diese
+    // Partie, und bei 2:2 Punkten sind es eben zwei.
+    if (own.points > 0 && own.points >= bestPoints(tallies)) {
+      return "Topscorer der Mannschaft";
+    }
+
+    return "";
+  }
+
+  // Tore und Vorlagen dieser Mannschaft in DIESEM Spiel, nach Trikotnummer.
+  function teamTallies(side) {
+    var events = (state.game && state.game.events) || [];
+    var tallies = {};
+
+    events.forEach(function (event) {
+      if (event.event_type !== "goal" || event.event_team !== side) return;
+
+      countFor(tallies, event.number, "goals");
+      countFor(tallies, event.assist, "assists");
+    });
+
+    return tallies;
+  }
+
+  function countFor(tallies, number, key) {
+    var n = Number(number);
+    // 1000 und 2000 stehen im Spielbericht ANSTELLE eines Schützen (Eigentor,
+    // nicht angegeben). Sie dürfen niemandem zugerechnet werden, auch nicht
+    // jemandem, der zufällig diese Nummer trägt.
+    if (!isFinite(n) || n === 1000 || n === 2000) return;
+
+    var entry = tallies[n] || { goals: 0, assists: 0, points: 0 };
+    entry[key] += 1;
+    entry.points += 1;
+    tallies[n] = entry;
+  }
+
+  function bestPoints(tallies) {
+    var best = 0;
+    Object.keys(tallies).forEach(function (number) {
+      if (tallies[number].points > best) best = tallies[number].points;
+    });
+    return best;
+  }
+
+  function isMvp(side, player) {
+    var awards = (state.game && state.game.awards) || {};
+    var list = awards[side] || [];
+    var hit = false;
+
+    list.forEach(function (entry) {
+      if (!entry || entry.award !== "mvp") return;
+
+      // Über die player_id, wo es eine gibt: Trikotnummern werden im
+      // Spielbericht nachträglich geändert, die Kennung nicht. Ohne Kennung
+      // (Eintrag als Freitext) bleibt die Nummer.
+      if (entry.player_id && player.player_id) {
+        if (entry.player_id === player.player_id) hit = true;
+        return;
+      }
+
+      if (
+        String(entry.trikot_number || "") !== "" &&
+        Number(entry.trikot_number) === Number(player.trikot_number)
+      ) {
+        hit = true;
+      }
+    });
+
+    return hit;
+  }
+
+  function rosterPlayer(side, number) {
+    var players = (state.game && state.game.players) || {};
+    var list = players[side] || [];
+    var found = null;
+
+    list.forEach(function (player) {
+      if (!player || String(player.trikot_number || "").length === 0) return;
+      if (Number(player.trikot_number) === Number(number)) found = player;
+    });
+
+    return found;
+  }
+
+  function playerFullName(player) {
+    return [player.player_firstname, player.player_name]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  // Die Bezeichnung folgt der Liga, nicht einer Vermutung über die Person: Das
+  // Geschlecht steht nirgends am Spieler, das Merkmal `female` aber an der
+  // Liga, und danach richtet sich der Rest des Systems auch.
+  function roleLabel(word) {
+    var league = (state.game && state.game.league) || {};
+    return league.female ? word + "in" : word;
   }
 
   function venueContent() {
