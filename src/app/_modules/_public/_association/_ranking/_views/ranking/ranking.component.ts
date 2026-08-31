@@ -2,13 +2,20 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  Inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   ViewEncapsulation,
 } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, shareReplay, Subject, take, takeUntil, tap } from 'rxjs';
 import { GameScheduleEntry, League, TableEntry } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
+import {
+  matchDayFromParams,
+  writeMatchDayToUrl,
+} from 'src/app/_helpers/_utils/match-day-param';
 import { Title } from '@angular/platform-browser';
 
 @Component({
@@ -28,8 +35,11 @@ export class RankingComponent implements OnInit, OnDestroy {
 
   constructor(
     private _leagueService: LeagueService,
+    private _route: ActivatedRoute,
+    private _router: Router,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    @Inject(PLATFORM_ID) private _platformId: object
   ) {}
 
   ngOnInit(): void {
@@ -42,11 +52,21 @@ export class RankingComponent implements OnInit, OnDestroy {
             this._metaTitle.setTitle(
               `${league.name} - Tabelle | Floorball Saisonmanager`
             );
+            // Bei einem Einstieg auf `?spieltag=5` (Zurück-Weg aus einem Spiel)
+            // gilt diese Nummer, sonst bestimmt die API den Spieltag.
+            const requestedMatchDay = matchDayFromParams(
+              this._route.snapshot.queryParamMap
+            );
             // Vorbelegung vor dem Laden, damit der aus den Spielen ermittelte
             // Spieltag sie überschreibt und nicht umgekehrt.
-            this.selectedMatchDay = league.game_day_titles?.[0] ?? null;
+            this.selectedMatchDay =
+              league.game_day_titles?.find(
+                (item) => item.game_day_number === requestedMatchDay
+              ) ??
+              league.game_day_titles?.[0] ??
+              null;
             this.getTeamRanking(league.id);
-            this.getMatches(league);
+            this.getMatches(league, requestedMatchDay);
             this._cdr.markForCheck();
           }
         }),
@@ -64,10 +84,12 @@ export class RankingComponent implements OnInit, OnDestroy {
     this.teamRankings$ = this._leagueService.getTable(leagueNumber);
   }
 
-  getMatches(league: League) {
-    this.matches$ = this._leagueService
-      .getGameScheduleForCurrentGameDay(league.id)
-      .pipe(shareReplay());
+  getMatches(league: League, matchDay?: number) {
+    this.matches$ = (
+      matchDay === undefined
+        ? this._leagueService.getGameScheduleForCurrentGameDay(league.id)
+        : this._leagueService.getGameScheduleForGameDay(league.id, matchDay)
+    ).pipe(shareReplay());
 
     this.matches$
       .pipe(
@@ -96,6 +118,15 @@ export class RankingComponent implements OnInit, OnDestroy {
       league.game_day_titles?.find(
         (_item) => _item.game_day_number === matchDay
       ) ?? null;
+
+    // Wie in der Uebersicht: Der gewaehlte Spieltag gehoert in die Adresse,
+    // sonst ist er nach dem Sprung in ein Spiel verloren.
+    writeMatchDayToUrl(
+      this._router,
+      this._route,
+      this._platformId,
+      matchDay
+    );
 
     this.matches$ = this._leagueService
       .getGameScheduleForGameDay(league.id, matchDay)

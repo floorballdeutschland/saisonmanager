@@ -9,6 +9,7 @@ import {
 import { OverviewComponent } from './overview.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { AssociationService, LeagueService } from '@floorball/core';
 import { GameScheduleEntry, League } from '@floorball/types';
 import { BehaviorSubject, of } from 'rxjs';
@@ -85,9 +86,16 @@ class AssociationServiceStub {
 
 describe('OverviewComponent', () => {
   let leagueService: LeagueServiceStub;
+  // Die Adresse der Ansicht. Nur der Abfrageteil zaehlt hier.
+  let route: { snapshot: { queryParamMap: ReturnType<typeof convertToParamMap> } };
+
+  function withQueryParams(values: Record<string, string>) {
+    route.snapshot.queryParamMap = convertToParamMap(values);
+  }
 
   beforeEach(async () => {
     leagueService = new LeagueServiceStub();
+    route = { snapshot: { queryParamMap: convertToParamMap({}) } };
 
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule],
@@ -95,6 +103,7 @@ describe('OverviewComponent', () => {
       providers: [
         { provide: LeagueService, useValue: leagueService },
         { provide: AssociationService, useValue: new AssociationServiceStub() },
+        { provide: ActivatedRoute, useValue: route },
       ],
       // Die Ansicht besteht fast nur aus fb-Komponenten; hier zählt allein,
       // welchen Spieltag die Komponente nachlädt.
@@ -202,6 +211,99 @@ describe('OverviewComponent', () => {
 
     expect(leagueService.requestedGameDays).toEqual([4]);
     expect(leagueService.currentGameDayCalls).toBe(3);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+  // ---------------------------------------------------------------------------
+  // Der gewaehlte Spieltag steht in der Adresse
+  // ---------------------------------------------------------------------------
+
+  // Der gemeldete Fall: Ein Spiel des 5. Spieltags aufschlagen, zurueckgehen --
+  // und auf dem 1. landen. Uebersicht und Einzelspiel sind Geschwister am
+  // selben Outlet, die Komponente wird beim Klick zerstoert. Ueberlebt hat den
+  // Sprung deshalb nur, was in der Adresse steht.
+  it('laedt den Spieltag aus der Adresse statt des aktuellen', fakeAsync(() => {
+    withQueryParams({ spieltag: '3' });
+
+    const fixture = startWith(leagueWith(1));
+
+    expect(leagueService.requestedGameDays).toEqual([3]);
+    expect(leagueService.currentGameDayCalls).toBe(0);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  it('zeigt den Titel des Spieltags aus der Adresse sofort', fakeAsync(() => {
+    withQueryParams({ spieltag: '3' });
+
+    const fixture = startWith(leagueWith(1));
+
+    expect(fixture.componentInstance.selectedMatchDay?.game_day_number).toBe(3);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  // Eine von Hand verbogene Adresse darf keine Anfrage auf `spieltag=NaN`
+  // ausloesen.
+  it('faellt bei unbrauchbarer Nummer auf den aktuellen Spieltag zurueck', fakeAsync(() => {
+    withQueryParams({ spieltag: 'abc' });
+
+    const fixture = startWith(leagueWith(1));
+
+    expect(leagueService.requestedGameDays).toEqual([]);
+    expect(leagueService.currentGameDayCalls).toBe(1);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  it('schreibt die Auswahl in die Adresse, ohne einen Verlaufseintrag anzulegen', fakeAsync(() => {
+    const navigate = spyOn(TestBed.inject(Router), 'navigate');
+    const league = leagueWith(1);
+    const fixture = startWith(league);
+
+    fixture.componentInstance.selectMatchDay(4, league);
+
+    expect(navigate).toHaveBeenCalledWith([], {
+      relativeTo: route as unknown as ActivatedRoute,
+      queryParams: { spieltag: 4 },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  // Ein Lesezeichen auf einen inzwischen leeren Spieltag: Die Auswahl wird
+  // aufgegeben, und die Adresse darf die Nummer dann nicht weiter behaupten.
+  it('nimmt die Nummer aus der Adresse, wenn der Spieltag leer ist', fakeAsync(() => {
+    leagueService.emptyGameDays = [3];
+    withQueryParams({ spieltag: '3' });
+    const navigate = spyOn(TestBed.inject(Router), 'navigate');
+
+    const fixture = startWith(leagueWith(1));
+
+    expect(navigate).toHaveBeenCalledWith(
+      [],
+      jasmine.objectContaining({ queryParams: { spieltag: null } })
+    );
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  // Ohne Parameter darf kein navigate() laufen: Beim Prerender gibt es keine
+  // Adressleiste, und ein Prerender-Fehler bricht den Produktionsbuild ab.
+  it('schreibt ohne Auswahl nicht in die Adresse', fakeAsync(() => {
+    const navigate = spyOn(TestBed.inject(Router), 'navigate');
+
+    const fixture = startWith(leagueWith(1));
+
+    expect(navigate).not.toHaveBeenCalled();
 
     fixture.componentInstance.ngOnDestroy();
     discardPeriodicTasks();

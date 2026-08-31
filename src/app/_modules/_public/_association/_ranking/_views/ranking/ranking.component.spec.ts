@@ -8,6 +8,8 @@ import {
 
 import { RankingComponent } from './ranking.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { LeagueService } from '@floorball/core';
 import { GameScheduleEntry, League, TableEntry } from '@floorball/types';
 import { BehaviorSubject, config, of } from 'rxjs';
@@ -38,8 +40,15 @@ class LeagueServiceStub {
     return of(this.currentGameDaySchedule);
   }
 
-  getGameScheduleForGameDay() {
-    return of([] as GameScheduleEntry[]);
+  // Der ausdruecklich angeforderte Spieltag: gemerkt fuer die Pruefung, und mit
+  // eigenem Spielplan, damit sich die Antwort von der des aktuellen
+  // unterscheidet.
+  requestedGameDays: number[] = [];
+  requestedGameDaySchedule: GameScheduleEntry[] = [];
+
+  getGameScheduleForGameDay(_leagueId: number, gameDayNumber: number) {
+    this.requestedGameDays.push(gameDayNumber);
+    return of(this.requestedGameDaySchedule);
   }
 }
 
@@ -47,14 +56,25 @@ describe('RankingComponent', () => {
   let component: RankingComponent;
   let fixture: ComponentFixture<RankingComponent>;
   let leagueService: LeagueServiceStub;
+  let route: {
+    snapshot: { queryParamMap: ReturnType<typeof convertToParamMap> };
+  };
+
+  function withQueryParams(values: Record<string, string>) {
+    route.snapshot.queryParamMap = convertToParamMap(values);
+  }
 
   beforeEach(async () => {
     leagueService = new LeagueServiceStub();
+    route = { snapshot: { queryParamMap: convertToParamMap({}) } };
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [RankingComponent],
-      providers: [{ provide: LeagueService, useValue: leagueService }],
+      providers: [
+        { provide: LeagueService, useValue: leagueService },
+        { provide: ActivatedRoute, useValue: route },
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -122,4 +142,50 @@ describe('RankingComponent', () => {
     expect(errors).toEqual([]);
     expect(component.selectedMatchDay).toBeNull();
   }));
+  // ---------------------------------------------------------------------------
+  // Der gewaehlte Spieltag steht in der Adresse
+  // ---------------------------------------------------------------------------
+
+  // Dieselbe Luecke wie in der Uebersicht: Tabelle und Einzelspiel sind
+  // Geschwister am selben Outlet. Ohne den Parameter lud die Rueckkehr aus einem
+  // Spiel wieder den von der API bestimmten Spieltag, und die Auswahl im
+  // Spielbegegnungen-Feld war weg.
+  it('laedt den Spieltag aus der Adresse statt des aktuellen', () => {
+    withQueryParams({ spieltag: '3' });
+    leagueService.requestedGameDaySchedule = [
+      { game_day: 3 },
+    ] as unknown as GameScheduleEntry[];
+
+    leagueService.selectedLeague$.next(leagueWith([1, 2, 3, 4]));
+
+    expect(leagueService.requestedGameDays).toEqual([3]);
+    expect(component.selectedMatchDay?.game_day_number).toBe(3);
+  });
+
+  it('faellt ohne brauchbare Nummer auf den aktuellen Spieltag zurueck', () => {
+    withQueryParams({ spieltag: '0' });
+    leagueService.currentGameDaySchedule = [
+      { game_day: 2 },
+    ] as unknown as GameScheduleEntry[];
+
+    leagueService.selectedLeague$.next(leagueWith([1, 2, 3]));
+
+    expect(leagueService.requestedGameDays).toEqual([]);
+    expect(component.selectedMatchDay?.game_day_number).toBe(2);
+  });
+
+  it('schreibt die Auswahl aus dem Feld in die Adresse', () => {
+    const navigate = spyOn(TestBed.inject(Router), 'navigate');
+    const league = leagueWith([1, 2, 3, 4]);
+    leagueService.selectedLeague$.next(league);
+
+    component.selectMatchDay(4, league);
+
+    expect(navigate).toHaveBeenCalledWith([], {
+      relativeTo: route as unknown as ActivatedRoute,
+      queryParams: { spieltag: 4 },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  });
 });

@@ -2,13 +2,19 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  Inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   ViewEncapsulation,
 } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AssociationService, LeagueService } from '@floorball/core';
+import {
+  matchDayFromParams,
+  writeMatchDayToUrl,
+} from 'src/app/_helpers/_utils/match-day-param';
 import {
   GameOperation,
   GameScheduleEntry,
@@ -53,6 +59,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
   // die API den Spieltag aus (game_days/current). Ohne diese Merkung holte das
   // 30-Sekunden-Polling immer wieder den aktuellen Spieltag und warf die
   // Auswahl damit spätestens nach 30 Sekunden weg.
+  //
+  // Die Auswahl steht zusätzlich als `?spieltag=` in der Adresse, siehe
+  // MATCH_DAY_PARAM.
   private _pinnedMatchDayNumber?: number;
 
   // Die Liga, für die zuletzt geladen wurde. selectedLeague$ meldet dieselbe
@@ -65,8 +74,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
     private _route: ActivatedRoute,
+    private _router: Router,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    @Inject(PLATFORM_ID) private _platformId: object
   ) {}
 
   ngOnInit(): void {
@@ -84,16 +95,25 @@ export class OverviewComponent implements OnInit, OnDestroy {
             this.getSingleLeague(league.id);
 
             // Neue Liga, neue Ansicht: Die Auswahl der vorigen Liga gilt hier
-            // nicht, deren Spieltagsnummer meint einen anderen Spieltag.
+            // nicht, deren Spieltagsnummer meint einen anderen Spieltag. Die
+            // Adresse entscheidet: Bei einem Einstieg auf `?spieltag=5` (etwa
+            // über den Zurück-Weg aus einem Spiel) steht dort die Nummer, beim
+            // Wechsel in eine andere Liga nicht.
             if (league.id !== this._loadedLeagueId) {
               this._loadedLeagueId = league.id;
-              this._pinnedMatchDayNumber = undefined;
+              this._pinnedMatchDayNumber = this._matchDayFromUrl();
             }
 
             if (league.league_type !== 'cup') {
               this.getTeamRanking(league.id);
               this.getMatches(league);
-              this.selectedMatchDay = league.game_day_titles[0];
+              // Bei einem Einstieg auf `?spieltag=5` gleich den richtigen Titel
+              // zeigen. Sonst stand hier bis zur Antwort "1. Spieltag".
+              this.selectedMatchDay =
+                league.game_day_titles.find(
+                  (item) =>
+                    item.game_day_number === this._pinnedMatchDayNumber
+                ) ?? league.game_day_titles[0];
             }
 
             this.getPlayerRanking(league.id);
@@ -183,6 +203,13 @@ export class OverviewComponent implements OnInit, OnDestroy {
           // nächste Nachladen zum aktuellen Spieltag zurückfindet.
           if (!games || !games.length) {
             this._pinnedMatchDayNumber = undefined;
+            // Nur wenn die Nummer wirklich in der Adresse steht (etwa aus einem
+            // alten Lesezeichen auf einen inzwischen leeren Spieltag): Ein
+            // navigate() ohne Anlass wäre beim Prerender ein Seiteneffekt in
+            // einer Umgebung ohne Adressleiste.
+            if (this._matchDayFromUrl() !== undefined) {
+              this._writeMatchDayToUrl(undefined);
+            }
             this._cdr.markForCheck();
             return;
           }
@@ -217,6 +244,15 @@ export class OverviewComponent implements OnInit, OnDestroy {
         (_item) => _item.game_day_number === matchDay
       ) ?? null;
 
+    this._writeMatchDayToUrl(matchDay);
     this.getMatches(league);
+  }
+
+  private _matchDayFromUrl(): number | undefined {
+    return matchDayFromParams(this._route.snapshot.queryParamMap);
+  }
+
+  private _writeMatchDayToUrl(matchDay?: number): void {
+    writeMatchDayToUrl(this._router, this._route, this._platformId, matchDay);
   }
 }
