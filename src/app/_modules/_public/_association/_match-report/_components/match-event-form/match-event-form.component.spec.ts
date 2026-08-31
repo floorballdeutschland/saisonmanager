@@ -19,11 +19,11 @@ import {
   GameEvent,
   League,
 } from '@floorball/types';
-import { GameService } from '@floorball/core';
+import { GameService, NotificationService } from '@floorball/core';
 import { SortTrikotnumbersPipe } from 'src/app/_helpers/_pipes';
 import { FormsModule } from '@angular/forms';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { of } from 'rxjs';
+import { of, throwError, config as rxjsConfig } from 'rxjs';
 
 // 3 Perioden à 20 Minuten, 10 Minuten Verlängerung
 const leagueSettings = {
@@ -167,7 +167,10 @@ describe('personName', () => {
 
 describe('splitPersonName', () => {
   it('zerlegt am Trennzeichen', () => {
-    expect(splitPersonName('Ziegler, Carolina')).toEqual(['Ziegler', 'Carolina']);
+    expect(splitPersonName('Ziegler, Carolina')).toEqual([
+      'Ziegler',
+      'Carolina',
+    ]);
   });
 
   it('laesst den Vornamen Vorname bleiben, wenn der Nachname fehlt', () => {
@@ -1007,5 +1010,60 @@ describe('MatchEventFormComponent', () => {
       // Fassung blendete die Vorlage hier aus, das war falsch.
       expect(selectStartingWith('Kein Assist')).toBeTruthy();
     });
+  });
+});
+
+describe('MatchEventFormComponent startOrEndGame', () => {
+  let component: MatchEventFormComponent;
+  let notifications: NotificationService;
+  let previousUnhandledError: typeof rxjsConfig.onUnhandledError;
+
+  // Ohne eigenen error-Zweig läuft der Fehlschlag weiter -- genau so gehört es
+  // sich, damit der globale ErrorHandler (in Produktion Sentry) ihn sieht. RxJS
+  // meldet ihn deshalb als unbehandelt und würde die Spec-Datei in ein afterAll
+  // reißen; für diesen Block stillgelegt. Dass die Stilllegung nötig ist, ist
+  // zugleich der Beleg, dass der Weg nach Sentry offen ist.
+  beforeAll(() => {
+    previousUnhandledError = rxjsConfig.onUnhandledError;
+    rxjsConfig.onUnhandledError = () => undefined;
+  });
+
+  afterAll(() => {
+    rxjsConfig.onUnhandledError = previousUnhandledError;
+  });
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      declarations: [MatchEventFormComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(MatchEventFormComponent);
+    component = fixture.componentInstance;
+    component.type = 'start';
+    component.match = {
+      id: 42,
+      started: false,
+      referees: [],
+    } as unknown as Game;
+    notifications = TestBed.inject(NotificationService);
+  });
+
+  // Der Kern des Fehlers vom 30.08.2026: Der Interceptor zeigt die Begründung des
+  // Servers ("... Schiedsrichter 1 ...") bereits an. Eine zweite, generische
+  // Meldung der Komponente legte sich deckungsgleich darüber und machte die
+  // Begründung unlesbar -- 23 Startversuche über 88 Minuten.
+  it('zeigt bei einer abgewiesenen Startanfrage keine eigene Meldung', () => {
+    const gameService = TestBed.inject(GameService);
+    spyOn(gameService, 'setGameFlags').and.returnValue(
+      throwError(() => ({ status: 422, error: { message: 'Schiri 1 fehlt.' } }))
+    );
+    const errorToast = spyOn(notifications, 'error');
+
+    component.startOrEndGame(true);
+
+    expect(gameService.setGameFlags).toHaveBeenCalled();
+    expect(errorToast).not.toHaveBeenCalled();
   });
 });

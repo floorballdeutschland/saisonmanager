@@ -280,8 +280,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
             splitPersonName(this.fieldValue);
           break;
         case 'timekeeper':
-          [this.timekeeperLastname, this.timekeeperFirstname] =
-            splitPersonName(this.fieldValue);
+          [this.timekeeperLastname, this.timekeeperFirstname] = splitPersonName(
+            this.fieldValue
+          );
           break;
         case 'referee1':
           // this.refereeNumber1 = parseInt(this.fieldValue || '', 10);
@@ -622,15 +623,20 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
               });
           }
         },
-        error: (err) => {
-          // Der ErrorInterceptor zeigt bei 422 keinen Toast und wirft die
-          // Meldung als String. Blockier-Meldungen beim Spielstart/-ende
-          // (z. B. Schiri-Pflicht oder fehlende Aufstellung) hier anzeigen.
-          this._notificationService.error(
-            typeof err === 'string' ? err : 'Aktion nicht möglich.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
-        },
+        // Bewusst OHNE error-Zweig: Der ErrorInterceptor zeigt die Begründung des
+        // Servers bei 422 selbst an und reicht danach die HttpErrorResponse
+        // weiter. Hier stand eine eigene Meldung mit `typeof err === 'string'`,
+        // aus der Zeit, als der Interceptor bei 422 schwieg und einen String warf.
+        // Seit er beides umgestellt hat, war der String-Zweig toter Code und es
+        // lief immer der Ersatztext "Aktion nicht möglich." -- deckungsgleich
+        // ÜBER der Begründung, denn die Meldungen liegen `fixed` ohne Versatz
+        // übereinander und der spätere gewinnt.
+        //
+        // Was das kostet, ist belegt: Am 30.08.2026 blieb dem Spielsekretariat der
+        // U13 KF RL Ost in Wernigerode 88 Minuten und 23 Startversuche lang
+        // verborgen, dass die Absage das Feld "Schiedsrichter 1" meinte -- das
+        // Gespann stand in Feld 2. Ohne eigenen Zweig läuft der Fehler zudem
+        // weiter in Angulars ErrorHandler und damit nach Sentry.
       });
   }
 
