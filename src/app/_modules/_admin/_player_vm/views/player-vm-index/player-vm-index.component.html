@@ -298,8 +298,12 @@
       }
       <!-- Bewusst als Textlink und nicht als zweiter Knopf: Die Auswertung ist
            ein Nebenweg, das Anlegen bleibt der Hauptweg. Sie steht auch dem
-           Teammanager offen -- die Rangliste zeigt denselben Bestand, den er
-           in der Tabelle darunter ohnehin sieht. -->
+           Teammanager offen, weil `menu_item_player_vm` und die Rechteregel
+           der Vereinsliste (ClubListAccess) beide fuer ihn gelten. Derselbe
+           Bestand ist es aber nicht: Ohne den Haken „nur aktuell gemeldete"
+           zeigt die Rangliste auch Ehemalige, die in der Tabelle darunter
+           fehlen, und mit Haken filtert sie auf den Heimatverein, waehrend die
+           Tabelle jede gueltige Zugehoerigkeit zeigt. -->
       <a
         data-testid="player-stats-link"
         class="text-sm underline text-fb-gray-500 hover:text-black"

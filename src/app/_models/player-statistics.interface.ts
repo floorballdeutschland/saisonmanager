@@ -1,8 +1,8 @@
 /**
  * Spielerdaten-Rangliste (`GET admin/player_statistics`, api#465).
  *
- * Gelesen wird das naechtliche Aggregat, nicht die Spiele selbst — deshalb
- * traegt die Antwort mit `as_of`, wie alt der Stand ist.
+ * Gelesen wird das naechtliche Aggregat und nicht die Spiele selbst; `as_of`
+ * benennt, wann die ausgelieferten Zeilen gerechnet wurden.
  */
 
 /** Eine Zeile der Rangliste: eine Person, ueber alle Saisons summiert. */
@@ -50,7 +50,8 @@ export interface PlayerStatisticsLeagueOption {
   id: number;
   name: string;
   season_id: string;
-  league_class_id: string;
+  /** Nullable: `League` validiert die Spielklasse mit `allow_blank: true`. */
+  league_class_id: string | null;
 }
 
 export interface PlayerStatisticsNamedOption {
@@ -63,8 +64,10 @@ export interface PlayerStatisticsNamedOption {
  * Mannschaft liefert die API nur in der Vereinsansicht, die Vereinsliste nur in
  * der Verbandsansicht.
  *
- * Kommt NUR mit der ersten Seite: Die Werte haengen am Blick und nicht an den
- * gesetzten Filtern, koennen sich beim Blaettern also nicht aendern.
+ * Kommt NUR mit der ersten Seite. Die Werte haengen am Blick, und dazu gehoert
+ * der Vereinsfilter der Verbandsansicht: Mit gesetztem `club_filter_id` sind
+ * sie auf diesen einen Verein eingeengt. Siehe `_applyFilterOptions` in
+ * `PlayerStatisticsComponent`, das sie deshalb nicht uebernimmt.
  */
 export interface PlayerStatisticsFilterOptions {
   seasons: PlayerStatisticsSeasonOption[];
@@ -84,13 +87,29 @@ export interface PlayerStatisticsScope {
 
 export interface PlayerStatisticsResponse {
   scope: PlayerStatisticsScope;
-  /** Zeitpunkt des Aggregats; null, solange nichts gerechnet wurde. */
+  /**
+   * Juengster `computed_at` der Zeilen DIESER Seite. Null, wenn die Seite leer
+   * ist -- das heisst „kein Treffer" oder „noch kein Rechenlauf", die Antwort
+   * unterscheidet beides nicht.
+   */
   as_of: string | null;
   total: number;
   page: number;
   per_page: number;
   players: PlayerStatisticsEntry[];
   filters?: PlayerStatisticsFilterOptions;
+}
+
+/** Die Werte, die die Maske anbietet; die API vergleicht sie kleingeschrieben. */
+export type PlayerStatisticsGenderFilter = 'M' | 'W' | 'D';
+
+/**
+ * Fehlerkoerper des Endpunkts: `error` beim 503 (Aggregat nicht lesbar),
+ * `message` bei 403 und 404. Zwei Schluessel, deshalb hier benannt.
+ */
+export interface PlayerStatisticsErrorBody {
+  error?: string;
+  message?: string;
 }
 
 export type PlayerStatisticsSortKey =
@@ -102,7 +121,12 @@ export type PlayerStatisticsSortKey =
   | 'penalty_minutes'
   | 'name';
 
-/** Alles optional: Ohne `club_id` antwortet die API im Verbandsmodus. */
+/**
+ * Alles optional: Ohne `club_id` antwortet die API im Verbandsmodus.
+ *
+ * `club_filter_id` gilt nur dort. Mit gesetztem `club_id` laesst die API ihn
+ * fallen (und prueft die Rechte daran nicht), er darf dann also nicht mit.
+ */
 export interface PlayerStatisticsQuery {
   club_id?: number | null;
   club_filter_id?: number | null;
@@ -111,7 +135,7 @@ export interface PlayerStatisticsQuery {
   league_id?: number | null;
   league_class_id?: string | null;
   team_id?: number | null;
-  gender?: string | null;
+  gender?: PlayerStatisticsGenderFilter | null;
   min_games?: number;
   include_deactivated?: boolean;
   only_current_members?: boolean;

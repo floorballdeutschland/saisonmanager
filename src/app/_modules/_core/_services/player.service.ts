@@ -258,9 +258,11 @@ export class PlayerService {
    * Spielerdaten-Rangliste (Verein und Landesverband, api#465).
    *
    * Ein Endpunkt fuer beide Modi: Mit `club_id` zaehlt er, was fuer diesen
-   * Verein gespielt wurde, ohne ihn den eigenen Spielbetrieb. Leere Werte
-   * werden gar nicht erst gesendet, damit die Vorbelegungen der API greifen
-   * (`only_current_members` steht dort auf an, `min_games` auf 1).
+   * Verein gespielt wurde, ohne ihn den eigenen Spielbetrieb.
+   *
+   * Leere Werte werden nicht gesendet, damit ein Aufruf ohne Argumente die
+   * Vorbelegungen der API bekommt statt leerer Parameter. `false` und `0` sind
+   * bewusst keine leeren Werte und gehen mit.
    */
   public getPlayerStatistics(query: PlayerStatisticsQuery = {}) {
     const path = environment.apiURL + 'admin/player_statistics.json';
@@ -274,7 +276,9 @@ export class PlayerService {
     Object.entries(query).forEach(([key, value]) => {
       if (value === null || value === undefined || value === '') return;
       if (Array.isArray(value)) {
-        // Mehrfachauswahl der Saisons: kommasepariert, die API zerlegt beides.
+        // Mehrfachauswahl der Saisons als EIN kommaseparierter Parameter statt
+        // als wiederholtes `season_id[]`, damit die Abfrage-URL lesbar bleibt;
+        // die API nimmt beide Formen.
         if (value.length) params = params.set(key, value.join(','));
         return;
       }

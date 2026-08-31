@@ -6,10 +6,11 @@
   "backToClubList": "Zurück zur Spielerliste",
   "loading": "Lade Spielerdaten…",
   "loadError": "Die Spielerdaten konnten nicht geladen werden.",
-  "asOf": "Stand: {{ date }}",
+  "retry": "Erneut versuchen",
+  "asOf": "Zahlen berechnet: {{ date }}",
   "countSingular": "1 Spieler*in",
   "countPlural": "{{ count }} Spieler*innen",
-  "empty": "Hier sind noch keine beendeten Spiele erfasst. Die Rangliste entsteht aus dem nächtlich berechneten Spielerdaten-Bestand und füllt sich, sobald Spiele abgeschlossen sind.",
+  "empty": "Für diesen Blick liegen keine Zahlen vor. Die Rangliste entsteht nicht aus den Spielen selbst, sondern aus einem nächtlich berechneten Bestand: Entweder sind noch keine Spiele beendet, oder dieser Blick wurde noch nicht berechnet.",
   "emptyFiltered": "Zu dieser Auswahl gibt es keine Einträge. Setze die Filter zurück oder erweitere sie.",
   "deactivated": "deaktiviert",
   "edit": "bearbeiten",
@@ -42,7 +43,7 @@
     "minGames": "Mindestens Spiele",
     "onlyCurrentMembers": "nur aktuell gemeldete Spieler*innen",
     "includeDeactivated": "deaktivierte einbeziehen",
-    "currentMembersHint": "Ohne den Haken erscheinen auch Ehemalige mit den Spielen, die sie damals für diesen Verein bestritten haben. An den Zahlen ändert der Schalter nichts, nur an der Auswahl.",
+    "currentMembersHint": "Der Haken zeigt nur Personen, deren laufender Heimatverein im Blick liegt. Ohne ihn erscheinen auch Ehemalige mit den Spielen, die sie damals bestritten haben. An den Zahlen ändert der Schalter nichts, nur an der Auswahl.",
     "reset": "Filter zurücksetzen"
   }
 }

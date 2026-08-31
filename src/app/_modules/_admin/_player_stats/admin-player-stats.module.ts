@@ -14,9 +14,11 @@ import * as Views from './views';
  *
  * Bewusst KEIN eigenes Lazy-Modul mit eigener Route in `app-routing.module.ts`:
  * Die Ansicht haengt an denselben Rollen wie ihr jeweiliger Einstieg, die
- * Routen liegen deshalb in den beiden Modulen und erben deren Gate
- * (`menu_item_player_vm` bzw. `menu_item_player_admin`). Das spart einen
- * dritten Permission-Key, den niemand pflegen wuerde.
+ * Routen liegen deshalb in den beiden Modulen. `spieler-verein/:clubId/
+ * spielerdaten` erbt das Gate der Lazy-Route (`menu_item_player_vm`),
+ * `spieler/spielerdaten` setzt wie alle Kindrouten von `_player_admin` sein
+ * eigenes (`menu_item_player_admin`) -- dort sitzt kein Gate am Modul. Das
+ * spart einen dritten Permission-Key, den niemand pflegen wuerde.
  *
  * Der Transloco-Scope haengt hier und nicht an den aufrufenden Modulen: Die
  * Provider eines importierten Moduls landen im Injector des Lazy-Moduls, damit

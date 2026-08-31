@@ -352,6 +352,46 @@ describe('ErrorInterceptor', () => {
     expect(errorSpy).not.toHaveBeenCalled();
   });
 
+  // Die Spielerdaten-Rangliste benennt den 503 des Endpunkts in ihrem eigenen
+  // Kasten. Zusaetzlich zeigte der generische 5xx-Zweig einen nicht
+  // selbstschliessenden Toast, und weil die Ansicht die Route nie wechselt,
+  // stapelte jeder Filterklick einen weiteren deckungsgleich darueber.
+  it('stays quiet when the player statistics aggregate is unavailable', () => {
+    failWith(
+      { error: 'Spielerdaten konnten nicht geladen werden.' },
+      503,
+      `${environment.apiURL}admin/player_statistics.json`
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it('stays quiet on a 404 for the player statistics', () => {
+    failWith(
+      { message: 'Verein nicht gefunden.' },
+      404,
+      `${environment.apiURL}admin/player_statistics.json`
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  // Gegenprobe zur Ausnahme: Der fremde Verein MUSS weiter umleiten, sonst
+  // stuende die Maske mit einem roten Kasten da, wo sie gar nicht sein darf.
+  it('still redirects on a 403 for the player statistics', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung.' },
+      403,
+      `${environment.apiURL}admin/player_statistics.json`
+    );
+
+    expect(errorSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/']);
+  });
+
   // Gegenprobe: Die Ausnahme gilt nur der Gespann-Historie. Die
   // Schiri-Detailansicht ist ein Seiteneinstieg und muss weiter umleiten.
   it('still redirects on a 403 for the referee detail', () => {
@@ -855,7 +895,9 @@ describe('ErrorInterceptor', () => {
       next: () => fail('expected the request to fail'),
       error: (err) => (received = err),
     });
-    httpMock.expectOne(vmImportUrl).flush(body, { status, statusText: 'Error' });
+    httpMock
+      .expectOne(vmImportUrl)
+      .flush(body, { status, statusText: 'Error' });
     return received;
   }
 

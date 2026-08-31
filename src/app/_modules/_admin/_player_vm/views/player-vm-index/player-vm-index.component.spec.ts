@@ -804,3 +804,70 @@ describe('PlayerVmIndexComponent (CSV)', () => {
     expect(component.clubLists[1].showImport).toBeFalse();
   });
 });
+
+// Der Einstieg in die Spielerdaten-Rangliste (fe#300). Mit echter Vorlage, weil
+// die Zusage im Pfad steckt: Der Link traegt die Vereins-ID, und bei zwei
+// Vereinen fuehrt ein vertauschtes Segment in die Rangliste des FALSCHEN
+// Vereins, ohne dass etwas scheitert -- die API antwortet dann brav.
+describe('PlayerVmIndexComponent (Spielerdaten-Einstieg)', () => {
+  let http: HttpTestingController;
+
+  async function setup(): Promise<void> {
+    await TestBed.configureTestingModule({
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule,
+        FormsModule,
+        UikitCommonModule,
+        getTranslocoTestingModule(),
+      ],
+      declarations: [PlayerVmIndexComponent],
+      providers: [
+        {
+          provide: SessionService,
+          useValue: {
+            currentUser$: of({
+              permissions: {},
+            } as User) as Observable<User | null>,
+          },
+        },
+      ],
+    }).compileComponents();
+
+    http = TestBed.inject(HttpTestingController);
+  }
+
+  afterEach(() => http.verify());
+
+  it('verlinkt je Vereinsblock auf die Rangliste genau dieses Vereins', async () => {
+    await setup();
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    http.expectOne(`${environment.apiURL}vm/clubs_and_teams.json`).flush([
+      { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
+      { id: 114, name: 'SG Partner', teams: [], manage_players: false },
+    ]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
+      .flush([]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=114`)
+      .flush([]);
+    fixture.detectChanges();
+
+    const links = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '[data-testid="player-stats-link"]'
+      )
+    ).map((a) => (a as HTMLAnchorElement).getAttribute('href'));
+
+    // Auch fuer den Verein, in dem dieses Konto nur Teammanager ist
+    // (manage_players false): Die Auswertung haengt an der Leseberechtigung,
+    // nicht am Anlegen.
+    expect(links).toEqual([
+      '/verwaltung/spieler-verein/113/spielerdaten',
+      '/verwaltung/spieler-verein/114/spielerdaten',
+    ]);
+  });
+});
