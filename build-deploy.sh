@@ -1,5 +1,10 @@
 #!/bin/bash
 set -e
+# pipefail, weil `set -e` allein einen Abbruch in einer Pipeline verschluckt.
+# Der naheliegende Aufruf beim Nachsehen ist `./build-deploy.sh 2>&1 | tee log`
+# oder `| grep`, und genau dann waere der harte Abbruch des Routen-Generators
+# wirkungslos gewesen.
+set -o pipefail
 
 # API-Key aus gitignorierter lokaler Datei lesen
 if [ ! -f "src/environments/.api-key" ]; then
@@ -73,11 +78,49 @@ fi
 export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
 
 # Prerender-Routen (öffentliche FD-Ligen der laufenden Saison) frisch generieren.
-# Schlägt der API-Aufruf fehl, bleibt die eingecheckte prerender-routes.txt erhalten.
+# Ist die API nicht erreichbar oder hat die laufende Saison noch keine Ligen,
+# bleibt die eingecheckte prerender-routes.txt erhalten (Warnung). Ein falscher
+# Slug oder ein abgelehnter Key bricht dagegen ab, siehe Kopf des Skripts.
 FRONTEND_API_KEY="${API_KEY}" node scripts/generate-prerender-routes.mjs
 
 # Prerender (SSG) läuft nur hier beim Deploy – nur jetzt liegen API-Key und
 # Routenliste vor. Die CI baut bewusst ohne Prerender (Config "production"),
 # da ihr beides fehlt und der Render sonst an 401ern hängenbliebe.
 ./node_modules/.bin/ng build --configuration production,prerender
+
+# Gegenprobe VOR dem Upload, zwei Stufen.
+#
+# Die Lehre aus dem falschen Spielbetriebs-Pfad: Der Build war zwei Monate lang
+# gruen, waehrend er Seiten unter einer Adresse vorrenderte, die keine Liga
+# aufloest. Die Zeile „Prerendered N static routes" sagt nur, DASS gerendert
+# wurde, nicht WAS.
+#
+# Dass die Datei da ist, reicht dafuer ausdruecklich NICHT: Damals lagen die
+# Dateien ja, sie waren nur leer. Zweite Stufe ist deshalb der Titel. Eine
+# Ligaseite, die ihre Liga aufloest, tragt deren Namen darin („1. FBL Herren -
+# Uebersicht | ..."); bleibt der generische Titel stehen, ist die Seite eine
+# leere Huelle. Start- und Verbandsseite sind davon ausgenommen, die tragen ihn
+# zu Recht.
+GENERISCHER_TITEL='<title>Floorball Saisonmanager</title>'
+while read -r route; do
+  [ -z "$route" ] && continue
+  ziel="dist/saisonmanager/browser${route%/}/index.html"
+  if [ ! -f "$ziel" ]; then
+    echo "Fehler: Route ${route} wurde nicht vorgerendert (${ziel} fehlt)." >&2
+    echo "Nichts hochgeladen. prerender-routes.txt und die Build-Ausgabe pruefen." >&2
+    exit 1
+  fi
+  # Nur Ligaseiten, also ab dem dritten Segment (/<slug>/<id>[/...]).
+  case "$route" in
+    /*/*)
+      if grep -qF "$GENERISCHER_TITEL" "$ziel"; then
+        echo "Fehler: ${route} wurde ohne Ligadaten vorgerendert (generischer Titel)." >&2
+        echo "Meist zeigt prerender-routes.txt auf einen Spielbetriebs-Pfad, den es" >&2
+        echo "nicht gibt. Nichts hochgeladen." >&2
+        exit 1
+      fi
+      ;;
+  esac
+done < prerender-routes.txt
+
 scp -r dist/saisonmanager/browser/* saisonmanager:/opt/saisonmanager/saisonmanager-frontend/
