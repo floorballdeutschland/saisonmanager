@@ -1,4 +1,4 @@
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, Location } from '@angular/common';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 
 // Der gewählte Spieltag gehört in die Adresse, nicht nur in die Komponente.
@@ -28,15 +28,37 @@ export function matchDayFromParams(params: ParamMap): number | undefined {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
 }
 
-// `replaceUrl`, damit jeder Klick auf zurück/weiter nicht einen weiteren
-// Verlaufseintrag anlegt -- sonst müsste man sich durch alle durchgeklickten
-// Spieltage zurückarbeiten. Der bestehende Eintrag wird umgeschrieben, der
-// Zurück-Weg aus dem Spiel findet ihn also mit der Nummer vor.
+// Bewusst `Location.replaceState` und NICHT `Router.navigate`, obwohl der Router
+// die Adresse ebenso umschreiben könnte.
 //
-// `null` entfernt den Parameter (Angular-Idiom bei `merge`). Beim Server-Rendern
-// (Prerender) gibt es keine Adressleiste, dort bleibt der Aufruf ein No-op.
+// Die Anwendung läuft mit `scrollPositionRestoration: 'top'`
+// (`app-routing.module.ts`). Der RouterScroller springt bei JEDER Navigation, die
+// nicht von `popstate` kommt, auf `[0, 0]` -- `replaceUrl` und „nur der
+// Abfrageteil hat sich geändert" ändern daran nichts, es genügt ein
+// `NavigationEnd`. Und eine Navigation auf dieselbe Adresse meldet
+// `NavigationSkipped`, was der Scroller genauso beantwortet. Ein Klick auf
+// „nächster Spieltag" hätte die Seite also an den Anfang geworfen; auf der
+// Tabellenseite steht das Auswahlfeld unter der ganzen Tabelle, dort wäre nach
+// jedem Wechsel die eigene Auswahl aus dem Bild gescrollt. Eine
+// Navigations-Option zum Abschalten gibt es nicht (`NavigationBehaviorOptions`
+// kennt nur onSameUrlNavigation, skipLocationChange, replaceUrl, state, info und
+// browserUrl).
+//
+// `createUrlTree` rechnet die Adresse mit derselben Semantik aus, die
+// `queryParamsHandling: 'merge'` bei einer Navigation hätte (`null` entfernt den
+// Parameter), und `Location.replaceState` schreibt sie in den bestehenden
+// Verlaufseintrag. Kein Router-Vorgang, kein Sprung, und der Zurück-Weg aus dem
+// Spiel findet den Eintrag mit der Nummer vor.
+//
+// Preis dieser Wahl: Der Router weiß von der Änderung nichts, `route.snapshot`
+// wird also nicht nachgeführt. Deshalb liest die Übersicht die Adresse nur
+// einmal beim Aufbau und entscheidet danach aus ihrem eigenen Zustand.
+//
+// Beim Server-Rendern (Prerender) gibt es keine Adressleiste, dort ist der
+// Aufruf ein No-op.
 export function writeMatchDayToUrl(
   router: Router,
+  location: Location,
   route: ActivatedRoute,
   platformId: object,
   matchDay?: number
@@ -45,10 +67,11 @@ export function writeMatchDayToUrl(
     return;
   }
 
-  router.navigate([], {
+  const urlTree = router.createUrlTree([], {
     relativeTo: route,
     queryParams: { [MATCH_DAY_PARAM]: matchDay ?? null },
     queryParamsHandling: 'merge',
-    replaceUrl: true,
   });
+
+  location.replaceState(router.serializeUrl(urlTree));
 }

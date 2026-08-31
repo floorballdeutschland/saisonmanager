@@ -1,4 +1,5 @@
-import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { Location } from '@angular/common';
+import { ActivatedRoute, ParamMap, Router, UrlTree } from '@angular/router';
 
 import {
   MATCH_DAY_PARAM,
@@ -38,15 +39,15 @@ describe('matchDayFromParams', () => {
   });
 
   it('ignoriert andere Parameter', () => {
-    expect(
-      matchDayFromParams(params({ saison: '18', spieltag: '3' }))
-    ).toBe(3);
+    expect(matchDayFromParams(params({ saison: '18', spieltag: '3' }))).toBe(3);
   });
 });
 
 describe('writeMatchDayToUrl', () => {
   let router: jasmine.SpyObj<Router>;
+  let location: jasmine.SpyObj<Location>;
   const route = {} as ActivatedRoute;
+  const urlTree = {} as UrlTree;
 
   // PLATFORM_ID ist als `Object` typisiert, traegt aber die Zeichenketten
   // 'browser' bzw. 'server' -- dieselbe Verrenkung wie in Angulars eigener
@@ -55,39 +56,56 @@ describe('writeMatchDayToUrl', () => {
   const server = 'server' as unknown as object;
 
   beforeEach(() => {
-    router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    router = jasmine.createSpyObj<Router>('Router', [
+      'createUrlTree',
+      'serializeUrl',
+    ]);
+    router.createUrlTree.and.returnValue(urlTree);
+    router.serializeUrl.and.returnValue('/fvbb/2516?spieltag=5');
+    location = jasmine.createSpyObj<Location>('Location', ['replaceState']);
   });
 
-  // `replaceUrl`, damit die durchgeklickten Spieltage keinen Verlauf anhäufen;
-  // `merge`, damit andere Parameter stehen bleiben.
-  it('schreibt die Nummer in die Adresse, ohne einen Verlaufseintrag anzulegen', () => {
-    writeMatchDayToUrl(router, route, browser, 5);
+  // `merge` haelt andere Parameter, `null` entfernt den eigenen -- dieselbe
+  // Semantik, die eine Navigation mit queryParamsHandling haette.
+  it('rechnet die Adresse relativ zur Route aus', () => {
+    writeMatchDayToUrl(router, location, route, browser, 5);
 
-    expect(router.navigate).toHaveBeenCalledWith([], {
+    expect(router.createUrlTree).toHaveBeenCalledWith([], {
       relativeTo: route,
       queryParams: { [MATCH_DAY_PARAM]: 5 },
       queryParamsHandling: 'merge',
-      replaceUrl: true,
     });
   });
 
-  it('entfernt den Parameter mit null', () => {
-    writeMatchDayToUrl(router, route, browser, undefined);
+  // Der Kern der Entscheidung: KEINE Router-Navigation. Die Anwendung laeuft mit
+  // scrollPositionRestoration 'top', jede Navigation wuerde die Seite an den
+  // Anfang werfen -- auf der Tabellenseite steht das Auswahlfeld unter der
+  // ganzen Tabelle.
+  it('schreibt die Adresse ohne Router-Navigation', () => {
+    writeMatchDayToUrl(router, location, route, browser, 5);
 
-    expect(router.navigate).toHaveBeenCalledWith(
+    expect(location.replaceState).toHaveBeenCalledWith('/fvbb/2516?spieltag=5');
+    expect(
+      (router as unknown as { navigate?: unknown }).navigate
+    ).toBeUndefined();
+  });
+
+  it('entfernt den Parameter mit null', () => {
+    writeMatchDayToUrl(router, location, route, browser, undefined);
+
+    expect(router.createUrlTree).toHaveBeenCalledWith(
       [],
-      jasmine.objectContaining({
-        queryParams: { [MATCH_DAY_PARAM]: null },
-      })
+      jasmine.objectContaining({ queryParams: { [MATCH_DAY_PARAM]: null } })
     );
   });
 
-  // Beim Prerender gibt es keine Adressleiste. Ein navigate() dort ist ein
-  // Seiteneffekt in einer Umgebung, die ihn nicht braucht -- und ein
-  // Prerender-Fehler bricht den Produktionsbuild ab, ohne dass CI ihn sieht.
+  // Beim Prerender gibt es keine Adressleiste. Ein Seiteneffekt dort ist ohne
+  // Zweck -- und ein Prerender-Fehler bricht den Produktionsbuild ab, ohne dass
+  // CI ihn sieht.
   it('tut beim Server-Rendern nichts', () => {
-    writeMatchDayToUrl(router, route, server, 5);
+    writeMatchDayToUrl(router, location, route, server, 5);
 
-    expect(router.navigate).not.toHaveBeenCalled();
+    expect(router.createUrlTree).not.toHaveBeenCalled();
+    expect(location.replaceState).not.toHaveBeenCalled();
   });
 });

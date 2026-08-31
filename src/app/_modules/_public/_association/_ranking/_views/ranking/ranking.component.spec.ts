@@ -9,7 +9,8 @@ import {
 import { RankingComponent } from './ranking.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { Location } from '@angular/common';
 import { LeagueService } from '@floorball/core';
 import { GameScheduleEntry, League, TableEntry } from '@floorball/types';
 import { BehaviorSubject, config, of } from 'rxjs';
@@ -82,14 +83,23 @@ describe('RankingComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(RankingComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
+  // ngOnInit liest die Adresse einmal beim Aufbau (Begruendung in der
+  // Komponente). Der Start gehoert deshalb in den Testkoerper, NACH
+  // withQueryParams -- sonst laeuft er, bevor der Parameter da ist.
+  function start() {
+    fixture.detectChanges();
+  }
+
   it('should create', () => {
+    start();
+
     expect(component).toBeTruthy();
   });
 
   it('wählt den Spieltag der ersten Zeile aus', () => {
+    start();
     leagueService.currentGameDaySchedule = [
       { game_day: 3 },
     ] as unknown as GameScheduleEntry[];
@@ -122,6 +132,7 @@ describe('RankingComponent', () => {
     // landet im Fehlerkanal des tap und damit über onUnhandledError in Sentry
     // (2R, 47 Ereignisse); die Seite rendert weiter, aber die Spieltagsauswahl
     // bleibt stehen, wo sie war.
+    start();
     leagueService.currentGameDaySchedule = [];
 
     const errors = unhandledErrorsWhile(() =>
@@ -133,6 +144,7 @@ describe('RankingComponent', () => {
   }));
 
   it('überlebt eine Liga ganz ohne Spieltage', fakeAsync(() => {
+    start();
     leagueService.currentGameDaySchedule = [];
 
     const errors = unhandledErrorsWhile(() =>
@@ -155,6 +167,7 @@ describe('RankingComponent', () => {
     leagueService.requestedGameDaySchedule = [
       { game_day: 3 },
     ] as unknown as GameScheduleEntry[];
+    start();
 
     leagueService.selectedLeague$.next(leagueWith([1, 2, 3, 4]));
 
@@ -167,6 +180,7 @@ describe('RankingComponent', () => {
     leagueService.currentGameDaySchedule = [
       { game_day: 2 },
     ] as unknown as GameScheduleEntry[];
+    start();
 
     leagueService.selectedLeague$.next(leagueWith([1, 2, 3]));
 
@@ -174,18 +188,37 @@ describe('RankingComponent', () => {
     expect(component.selectedMatchDay?.game_day_number).toBe(2);
   });
 
+  // Geprueft wird die Zustaendigkeit dieser Komponente: dass die Auswahl in die
+  // Adresse geschrieben und derselbe Spieltag geladen wird. Wie die Adresse
+  // gebaut wird, nagelt match-day-param.spec.ts fest.
   it('schreibt die Auswahl aus dem Feld in die Adresse', () => {
-    const navigate = spyOn(TestBed.inject(Router), 'navigate');
+    const replaceState = spyOn(TestBed.inject(Location), 'replaceState');
     const league = leagueWith([1, 2, 3, 4]);
+    start();
     leagueService.selectedLeague$.next(league);
 
     component.selectMatchDay(4, league);
 
-    expect(navigate).toHaveBeenCalledWith([], {
-      relativeTo: route as unknown as ActivatedRoute,
-      queryParams: { spieltag: 4 },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
+    expect(replaceState).toHaveBeenCalled();
+    expect(leagueService.requestedGameDays).toEqual([4]);
+  });
+
+  // Diese Seite hat kein Polling, das sich selbst wieder einfaengt: Ohne das
+  // Raeumen behauptete die Adresse dauerhaft eine Nummer, das Auswahlfeld zeigte
+  // den ersten Spieltag und die Liste war leer.
+  it('raeumt die Adresse und laedt nach, wenn der angeforderte Spieltag leer ist', () => {
+    withQueryParams({ spieltag: '99' });
+    const replaceState = spyOn(TestBed.inject(Location), 'replaceState');
+    leagueService.requestedGameDaySchedule = [];
+    leagueService.currentGameDaySchedule = [
+      { game_day: 2 },
+    ] as unknown as GameScheduleEntry[];
+    start();
+
+    leagueService.selectedLeague$.next(leagueWith([1, 2, 3]));
+
+    expect(leagueService.requestedGameDays).toEqual([99]);
+    expect(replaceState).toHaveBeenCalled();
+    expect(component.selectedMatchDay?.game_day_number).toBe(2);
   });
 });

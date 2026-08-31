@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { AssociationService, LeagueService } from '@floorball/core';
 import {
   matchDayFromParams,
@@ -75,12 +76,30 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private _leagueService: LeagueService,
     private _route: ActivatedRoute,
     private _router: Router,
+    private _location: Location,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
     @Inject(PLATFORM_ID) private _platformId: object
   ) {}
 
   ngOnInit(): void {
+    // Die Adresse wird genau einmal gelesen, hier beim Aufbau. Zwei Gründe:
+    //
+    // 1. Ein späteres Lesen erwischt einen veralteten Snapshot. Beim Ligawechsel
+    //    über die Seitenleiste bleibt diese Komponente am Leben (gleiche
+    //    Routen-Konfiguration), und Angular schreibt die Elternroute VOR der
+    //    Kindroute fort. In dem Moment, in dem `selectedLeague$` die neue Liga
+    //    meldet, trägt der Snapshot dieser Ansicht noch die alten
+    //    Abfrageparameter -- die Nummer der vorigen Liga wäre in die neue
+    //    gewandert, ohne dass sie in der Adresse steht.
+    // 2. Der Schreibweg (`Location.replaceState`, Begründung an
+    //    writeMatchDayToUrl) führt den Snapshot ohnehin nicht nach.
+    //
+    // In-App-Links tragen den Parameter nie in eine andere Liga. Für die beiden
+    // Wege, die zählen -- Direkteinstieg und Zurück aus einem Spiel -- ist die
+    // Komponente frisch, und genau dann gilt der Wert.
+    const matchDayFromUrl = this._matchDayFromUrl();
+
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.selectedLeague$ = this._leagueService.selectedLeague$;
     this._associationService.selectAssociation(this._route);
@@ -95,25 +114,21 @@ export class OverviewComponent implements OnInit, OnDestroy {
             this.getSingleLeague(league.id);
 
             // Neue Liga, neue Ansicht: Die Auswahl der vorigen Liga gilt hier
-            // nicht, deren Spieltagsnummer meint einen anderen Spieltag. Die
-            // Adresse entscheidet: Bei einem Einstieg auf `?spieltag=5` (etwa
-            // über den Zurück-Weg aus einem Spiel) steht dort die Nummer, beim
-            // Wechsel in eine andere Liga nicht.
+            // nicht, deren Spieltagsnummer meint einen anderen Spieltag. Nur die
+            // Liga, mit der diese Ansicht aufgebaut wurde, erbt die Nummer aus
+            // der Adresse; jeder Wechsel danach beginnt ohne Auswahl.
             if (league.id !== this._loadedLeagueId) {
+              const firstLeague = this._loadedLeagueId === undefined;
               this._loadedLeagueId = league.id;
-              this._pinnedMatchDayNumber = this._matchDayFromUrl();
+              this._pinnedMatchDayNumber = firstLeague
+                ? matchDayFromUrl
+                : undefined;
             }
 
             if (league.league_type !== 'cup') {
               this.getTeamRanking(league.id);
               this.getMatches(league);
-              // Bei einem Einstieg auf `?spieltag=5` gleich den richtigen Titel
-              // zeigen. Sonst stand hier bis zur Antwort "1. Spieltag".
-              this.selectedMatchDay =
-                league.game_day_titles.find(
-                  (item) =>
-                    item.game_day_number === this._pinnedMatchDayNumber
-                ) ?? league.game_day_titles[0];
+              this.selectedMatchDay = league.game_day_titles[0];
             }
 
             this.getPlayerRanking(league.id);
@@ -203,13 +218,22 @@ export class OverviewComponent implements OnInit, OnDestroy {
           // nächste Nachladen zum aktuellen Spieltag zurückfindet.
           if (!games || !games.length) {
             this._pinnedMatchDayNumber = undefined;
-            // Nur wenn die Nummer wirklich in der Adresse steht (etwa aus einem
-            // alten Lesezeichen auf einen inzwischen leeren Spieltag): Ein
-            // navigate() ohne Anlass wäre beim Prerender ein Seiteneffekt in
-            // einer Umgebung ohne Adressleiste.
-            if (this._matchDayFromUrl() !== undefined) {
+
+            // Nur wenn wirklich ein Spieltag angefordert war. Ohne diese Wache
+            // schriebe eine Liga ganz ohne angesetzte Spiele bei jedem
+            // Polling-Takt die Adresse und lüde sich im Kreis; so terminiert es
+            // nach einem Durchgang. Geprüft wird der eigene Zustand und nicht
+            // die Adresse: die ist über `Location.replaceState` geschrieben, der
+            // Router führt den Snapshot also nicht nach.
+            if (requestedMatchDay !== undefined) {
               this._writeMatchDayToUrl(undefined);
+              // Und gleich den von der API bestimmten Spieltag holen, sonst
+              // stünde die Ansicht bis zum nächsten Takt leer da -- bis zu 30
+              // Sekunden nach einem Lesezeichen auf einen leer gewordenen
+              // Spieltag.
+              this.getMatches(league);
             }
+
             this._cdr.markForCheck();
             return;
           }
@@ -253,6 +277,12 @@ export class OverviewComponent implements OnInit, OnDestroy {
   }
 
   private _writeMatchDayToUrl(matchDay?: number): void {
-    writeMatchDayToUrl(this._router, this._route, this._platformId, matchDay);
+    writeMatchDayToUrl(
+      this._router,
+      this._location,
+      this._route,
+      this._platformId,
+      matchDay
+    );
   }
 }
