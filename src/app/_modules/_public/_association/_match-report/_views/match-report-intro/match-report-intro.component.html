@@ -18,6 +18,15 @@
   >
     Eingabe starten
   </fb-button>
+
+  <!-- Livestream-Overlays schon hier, nicht erst in Schritt 1: Wer die
+       Übertragung einrichtet, ist oft nicht das Spielsekretariat und soll den
+       Zugang erzeugen können, ohne die Eingabe zu starten. Das Starten setzt
+       den Spielstatus und ist öffentlich sichtbar. Ohne Anmeldung blendet
+       sich der Abschnitt selbst aus. -->
+  <div class="mt-6">
+    <fb-overlay-links [game]="game"></fb-overlay-links>
+  </div>
 </div>
 
 <div class="border border-t-4 border-fb-gray-200">
@@ -67,6 +76,14 @@
       Zuschauer für den Stream zu gewinnen. Dieser wird in der Detailansicht
       eines Spiels oben unter dem Ergebnis angezeigt. Wichtig ist, dass sofern
       möglich direkt zum Stream und nicht auf den Account verlinkt wird.
+    </p>
+
+    <h4 class="mt-4 mb-1 font-bold text-lg">Livestream-Overlays</h4>
+    <p class="mb-2">
+      Die <strong>Overlay-Links</strong> für OBS Studio stehen sowohl oben auf
+      dieser Seite als auch in Schritt 1 zur Verfügung. Sie lassen sich also
+      schon erzeugen, bevor die Eingabe des Spielberichts gestartet ist. Der
+      Zugang gilt für den gesamten Spieltag.
     </p>
 
     <h4 class="mt-4 mb-1 font-bold text-lg">Video on Demand Link</h4>

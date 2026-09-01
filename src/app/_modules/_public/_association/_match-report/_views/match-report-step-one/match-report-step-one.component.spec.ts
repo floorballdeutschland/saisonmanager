@@ -20,6 +20,11 @@ class TeamSquadStubComponent {
   @Input() requestedLicensePlayable = false;
 }
 
+@Component({ selector: 'fb-overlay-links', template: '', standalone: false })
+class OverlayLinksStubComponent {
+  @Input() game!: unknown;
+}
+
 describe('MatchReportStepOneComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -31,7 +36,11 @@ describe('MatchReportStepOneComponent', () => {
         RouterTestingModule,
         getTranslocoTestingModule(),
       ],
-      declarations: [MatchReportStepOneComponent, TeamSquadStubComponent],
+      declarations: [
+        MatchReportStepOneComponent,
+        TeamSquadStubComponent,
+        OverlayLinksStubComponent,
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -41,15 +50,31 @@ describe('MatchReportStepOneComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  // Der Spielbericht rendert auch für das Spielsekretariat, das nur einen
-  // Einmal-Token hat. Liefe der Overlay-Abruf dort, antwortete er mit 401 und
-  // der ErrorInterceptor meldete das Sekretariat mitten im Spiel ab.
-  it('bietet die Overlay-Links ohne Anmeldung nicht an', () => {
+  // Der Abschnitt selbst steckt in einer eigenen Komponente, weil es ihn auch
+  // in der Begrüßung gibt. Geprüft wird hier nur, dass die Vorlage ihr das
+  // Spiel reicht: Ohne Spieltags-Kennung findet sie ihren Zugang nicht.
+  it('reicht das Spiel an die Overlay-Links durch', () => {
     const fixture = TestBed.createComponent(MatchReportStepOneComponent);
-    const component = fixture.componentInstance;
-    component.game = { id: 1, game_day_id: 7 } as never;
+    const game = {
+      id: 1,
+      game_day_id: 7,
+      home_team_id: 4,
+      guest_team_id: 5,
+      home_team_name: 'Heim',
+      guest_team_name: 'Gast',
+      players: { home: [], guest: [] },
+      events: [],
+    } as never;
+    fixture.componentInstance.game = game;
+    // Der Abschnitt hängt an den Spielinformationen, die es nur mit den
+    // Zusatzfeldern gibt.
+    fixture.componentInstance.additionalFields = {} as never;
+    fixture.detectChanges();
 
-    expect(component.canManageOverlay).toBeFalse();
+    const overlay = fixture.debugElement.query(
+      By.directive(OverlayLinksStubComponent)
+    ).componentInstance as OverlayLinksStubComponent;
+    expect(overlay.game).toBe(game);
   });
 
   // Die zweite Stufe der Verdrahtung: Das Spiel traegt die Regel, der
