@@ -72,8 +72,10 @@ describe('RefereeDetailComponent', () => {
 
   async function setUp(
     games: RefereeAdminGame[],
-    permissions: Record<string, boolean> = { menu_item_referee_admin: true }
+    permissions: Record<string, boolean> = { menu_item_referee_admin: true },
+    refereeOverrides: Partial<RefereeAdmin> = {}
   ) {
+    const shown = { ...referee, ...refereeOverrides } as RefereeAdmin;
     await TestBed.configureTestingModule({
       imports: [
         FormsModule,
@@ -87,6 +89,9 @@ describe('RefereeDetailComponent', () => {
               detail: {
                 gameHistory: 'Spielhistorie',
                 openMatch: 'Zum Spiel / Spielbericht',
+                phone: 'Telefon',
+                shortNotice: 'Kurzfristig mobil',
+                shortNoticeNoPhone: 'Ja, aber ohne hinterlegte Telefonnummer',
               },
             },
           },
@@ -97,8 +102,8 @@ describe('RefereeDetailComponent', () => {
         {
           provide: RefereeService,
           useValue: {
-            adminGetAll: () => of([referee]),
-            adminGetById: () => of(referee),
+            adminGetAll: () => of([shown]),
+            adminGetById: () => of(shown),
             adminGetGames: () => of(games),
           },
         },
@@ -209,5 +214,87 @@ describe('RefereeDetailComponent', () => {
         .length
     ).toBe(1);
     expect(moderationButtons().filter(Boolean).length).toBe(0);
+  });
+
+  // Die Nummer steht im Profilabschnitt „Ansetzungsinformationen" und ist fuer
+  // die Ansetzung gedacht. Sie stand bisher in keiner Antwort der Verwaltung.
+  const phoneLink = (): HTMLAnchorElement | null =>
+    fixture.nativeElement.querySelector('a[href^="tel:"]');
+
+  it('verlinkt die Telefonnummer waehlbar', async () => {
+    await setUp(
+      [],
+      { menu_item_referee_admin: true },
+      {
+        telefonnummer: '0170 1234567',
+      }
+    );
+
+    // Waehlziel ohne Leerzeichen, Anzeige mit -- ein rohes "tel:0170 1234567"
+    // ist kein gueltiger URI.
+    expect(phoneLink()?.getAttribute('href')).toBe('tel:01701234567');
+    expect(phoneLink()?.textContent?.trim()).toBe('0170 1234567');
+  });
+
+  // Der fuer die Ansetzung einzig interessante Fall: erreichbar UND kurzfristig
+  // verfuegbar. Beide Bindungen sitzen im selben Block, aber getrennt.
+  it('zeigt Nummer und Kennzeichen zusammen', async () => {
+    await setUp(
+      [],
+      { menu_item_referee_admin: true },
+      { telefonnummer: '0170 1234567', kurzfristig_mobil: true }
+    );
+
+    expect(phoneLink()?.textContent?.trim()).toBe('0170 1234567');
+    expect(fixture.nativeElement.textContent).toContain('Kurzfristig mobil');
+  });
+
+  // Eine Nummer aus lauter Leerzeichen ergaebe sonst eine Ueberschrift
+  // „Telefon" ueber einer leeren Zeile mit totem Link. Weder das Profil noch
+  // das Modell schneidet die Eingabe ab.
+  it('behandelt eine Nummer aus Leerzeichen wie keine Nummer', async () => {
+    await setUp(
+      [],
+      { menu_item_referee_admin: true },
+      { telefonnummer: '   ', strasse: 'Musterweg 1' }
+    );
+
+    expect(phoneLink()).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Telefon');
+  });
+
+  // Ohne Nummer darf kein leerer tel:-Link entstehen; das Kennzeichen allein
+  // bleibt aber sichtbar, sonst faellt der Hinweis „kurzfristig mobil" weg.
+  it('zeigt das Kennzeichen auch ohne hinterlegte Nummer', async () => {
+    await setUp(
+      [],
+      { menu_item_referee_admin: true },
+      {
+        kurzfristig_mobil: true,
+      }
+    );
+
+    expect(phoneLink()).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain(
+      'Ja, aber ohne hinterlegte Telefonnummer'
+    );
+  });
+
+  // Gegenprobe zur Zweckbindung: Liefert die API die Felder nicht mit (etwa dem
+  // Vereinsmanager), steht weder Nummer noch Kennzeichen in der Maske. Die
+  // Adresse ist gesetzt, damit der umgebende Block wirklich gerendert wird --
+  // sonst bewiese der Test nur, dass eine leere Maske leer ist.
+  it('zeigt nichts, wenn die API die Ansetzungsdaten nicht mitliefert', async () => {
+    await setUp(
+      [],
+      { menu_item_referee_admin: true },
+      { strasse: 'Musterweg 1' }
+    );
+
+    expect(fixture.nativeElement.textContent).toContain('Musterweg 1');
+    expect(phoneLink()).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Kurzfristig mobil'
+    );
   });
 });

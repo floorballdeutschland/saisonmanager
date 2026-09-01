@@ -1,5 +1,7 @@
 import { getTranslocoTestingModule } from '@floorball/core';
-import { TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import {
   HttpClientTestingModule,
   HttpTestingController,
@@ -563,5 +565,295 @@ describe('AssignmentIndexComponent – Gespann-Kurzliste', () => {
     });
 
     expect(names()).toEqual(['G', 'B', 'C', 'D', 'E', 'Albert', 'F']);
+  });
+});
+
+// Die Telefonnummer steht im Profilabschnitt „Ansetzungsinformationen" und ist
+// genau dafuer gedacht, dass die Ansetzung kurzfristig anrufen kann. Sie kam
+// bisher weder in der Kandidatenliste an noch wurde die Nummer der bereits
+// gespeicherten Ansetzung irgendwo angezeigt.
+describe('AssignmentIndexComponent – Telefonnummer der Ansetzung', () => {
+  let component: AssignmentIndexComponent;
+  let httpMock: HttpTestingController;
+
+  const GAME_ID = 42;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule(), HttpClientTestingModule],
+      declarations: [AssignmentIndexComponent],
+      providers: [provideRouter([])],
+    })
+      .overrideTemplate(AssignmentIndexComponent, '')
+      .compileComponents();
+
+    component = TestBed.createComponent(
+      AssignmentIndexComponent
+    ).componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  function prepareRow(
+    candidates: RefereeAssignmentAvailable[],
+    assignment: RefereeAssignment | null = null
+  ) {
+    const row = { game: { id: GAME_ID, date: '2026-08-01' }, assignment };
+    component.rows = [row];
+    const state = component['_createRowState'](assignment);
+    state.availableReferees = candidates;
+    component.rowStates.set(GAME_ID, state);
+    return { row, state };
+  }
+
+  function candidate(
+    id: number,
+    telefonnummer: string | null
+  ): RefereeAssignmentAvailable {
+    return {
+      id,
+      lizenznummer_display: `${1000 + id}`,
+      vorname: 'Vorname',
+      nachname: `Nachname${id}`,
+      telefonnummer,
+      kurzfristig_mobil: true,
+    };
+  }
+
+  it('liefert die Nummer der gewählten Person aus der Kandidatenliste', () => {
+    const { row, state } = prepareRow([candidate(1, '0170 1234567')]);
+    state.selectedReferee1Id = 1;
+
+    expect(component.selectedRefereePhone(row, 'referee1')).toBe(
+      '0170 1234567'
+    );
+  });
+
+  // Die Kandidatenliste wird erst beim Klick ins Feld geladen. Eine gespeicherte
+  // Ansetzung muss ihre Nummer trotzdem zeigen, sonst steht die Nummer des
+  // angesetzten Gespanns bis zum ersten Klick nicht da.
+  it('greift bei leerer Kandidatenliste auf die gespeicherte Ansetzung zurück', () => {
+    const assignment: RefereeAssignment = {
+      id: 500,
+      game_id: GAME_ID,
+      status: 'published',
+      referee1: {
+        id: 7,
+        lizenznummer_display: '1007',
+        vorname: 'Vorname',
+        nachname: 'Nachname7',
+        telefonnummer: '0151 7654321',
+      },
+    };
+    const { row, state } = prepareRow([], assignment);
+    state.selectedReferee1Id = 7;
+
+    expect(component.selectedRefereePhone(row, 'referee1')).toBe(
+      '0151 7654321'
+    );
+  });
+
+  // Gegenprobe: Die Ansetzung darf nicht die Nummer der zuvor angesetzten Person
+  // zeigen, wenn im Feld inzwischen jemand anderes steht.
+  it('zeigt nichts, wenn die Auswahl von der gespeicherten Ansetzung abweicht', () => {
+    const assignment: RefereeAssignment = {
+      id: 500,
+      game_id: GAME_ID,
+      status: 'published',
+      referee1: {
+        id: 7,
+        lizenznummer_display: '1007',
+        vorname: 'Vorname',
+        nachname: 'Nachname7',
+        telefonnummer: '0151 7654321',
+      },
+    };
+    const { row, state } = prepareRow([], assignment);
+    state.selectedReferee1Id = 8;
+
+    expect(component.selectedRefereePhone(row, 'referee1')).toBeNull();
+  });
+
+  // Ohne hinterlegte Nummer bleibt es bei null, sonst entstuende ein tel:-Link
+  // ins Leere.
+  it('zeigt nichts ohne hinterlegte Nummer', () => {
+    const { row, state } = prepareRow([candidate(1, null)]);
+    state.selectedReferee1Id = 1;
+
+    expect(component.selectedRefereePhone(row, 'referee1')).toBeNull();
+  });
+
+  it('zeigt nichts, solange kein Platz besetzt ist', () => {
+    const { row } = prepareRow([candidate(1, '0170 1234567')]);
+
+    expect(component.selectedRefereePhone(row, 'referee1')).toBeNull();
+    expect(component.selectedRefereePhone(row, 'referee2')).toBeNull();
+    expect(component.selectedRefereePhone(row, 'coach')).toBeNull();
+  });
+
+  it('liest den Coach aus seiner eigenen Kandidatenliste', () => {
+    const { row, state } = prepareRow([candidate(1, '0170 1234567')]);
+    state.availableCoaches = [candidate(9, '0160 1112223')];
+    state.selectedCoachId = 9;
+
+    expect(component.selectedRefereePhone(row, 'coach')).toBe('0160 1112223');
+  });
+});
+
+// Die drei bestehenden describe-Bloecke ersetzen das Template durch '' und
+// pruefen ausschliesslich Methoden. Die Anzeige der Nummer ist aber zur Haelfte
+// reine Template-Logik: Die Kandidatenliste rendert `@if (r.kurzfristig_mobil)`
+// ohne Umweg ueber eine Methode, und die drei tel:-Bloecke fuer Schiri 1,
+// Schiri 2 und Coach sind bis auf den Slot-Namen identisch -- eine Verwechslung
+// beim Kopieren zeigte die Nummer der falschen Person und braeche keinen Test.
+// Deshalb hier mit echtem Template.
+describe('AssignmentIndexComponent – Anzeige der Telefonnummer', () => {
+  let fixture: ComponentFixture<AssignmentIndexComponent>;
+  let component: AssignmentIndexComponent;
+  let httpMock: HttpTestingController;
+
+  const GAME_ID = 42;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        FormsModule,
+        getTranslocoTestingModule({
+          de: {
+            assignmentAdmin: {
+              index: { shortNoticeNoPhone: '(keine Nummer)' },
+            },
+          },
+        }),
+        HttpClientTestingModule,
+      ],
+      declarations: [AssignmentIndexComponent],
+      providers: [provideRouter([])],
+      // Das Template zieht fb-select-search und fb-assignment-club-index nach.
+      // Beide sind fuer die Telefon-Anzeige ohne Belang.
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(AssignmentIndexComponent);
+    component = fixture.componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+
+    // ngOnInit laedt Saisons, Vereine und Spiele. Fuer diese Tests baut der Test
+    // die Zeilen selbst; die Anfragen werden nur abgeraeumt. Leere, aber
+    // formgerechte Antworten -- ein blankes {} laesst die Abonnenten auflaufen.
+    fixture.detectChanges();
+    for (let round = 0; round < 5; round++) {
+      const pending = httpMock.match(() => true);
+      if (pending.length === 0) break;
+      pending.forEach((req) =>
+        req.request.url.includes('settings/seasons')
+          ? req.flush({ seasons: [], current_season_id: 18 })
+          : req.flush([])
+      );
+      fixture.detectChanges();
+    }
+  });
+
+  afterEach(() => httpMock.verify());
+
+  function candidate(
+    id: number,
+    telefonnummer: string | null,
+    kurzfristigMobil = true
+  ): RefereeAssignmentAvailable {
+    return {
+      id,
+      lizenznummer_display: `${1000 + id}`,
+      vorname: 'Vorname',
+      nachname: `Nachname${id}`,
+      telefonnummer,
+      kurzfristig_mobil: kurzfristigMobil,
+    };
+  }
+
+  // Baut eine sichtbare Zeile samt geoeffnetem Dropdown.
+  function render(
+    candidates: RefereeAssignmentAvailable[],
+    setUp: (
+      state: ReturnType<AssignmentIndexComponent['getState']>
+    ) => void = () => undefined
+  ) {
+    component.clubMode = false;
+    component.loading = false;
+    component.activeTab = 'open';
+    const row = {
+      game: { id: GAME_ID, date: '2026-08-01' },
+      assignment: null,
+    };
+    component.rows = [row];
+    const state = component['_createRowState'](null);
+    state.availableReferees = candidates;
+    state.availableCoaches = candidates;
+    component.rowStates.set(GAME_ID, state);
+    setUp(state);
+    fixture.detectChanges();
+    return row;
+  }
+
+  const text = (): string => fixture.nativeElement.textContent ?? '';
+  const telLinks = (): HTMLAnchorElement[] =>
+    Array.from(fixture.nativeElement.querySelectorAll('a[href^="tel:"]'));
+
+  it('zeigt die Nummer im Dropdown nur bei kurzfristig mobil', () => {
+    render(
+      [candidate(1, '0170 1111111', true), candidate(2, '0170 2222222', false)],
+      (state) => {
+        state!.showReferee1Dropdown = true;
+      }
+    );
+
+    expect(text()).toContain('0170 1111111');
+    // Wer nicht kurzfristig einspringt, wird aus dieser Liste heraus auch nicht
+    // angerufen -- die Nummer bleibt dann weg.
+    expect(text()).not.toContain('0170 2222222');
+  });
+
+  // Genau die Lage, die den ganzen Vorgang ausgeloest hat: Blitz gesetzt, aber
+  // kein Weg zum Anruf. Ohne den Hinweis sieht das aus wie ein Ladefehler.
+  it('benennt das Kennzeichen ohne hinterlegte Nummer', () => {
+    render([candidate(1, null, true)], (state) => {
+      state!.showReferee1Dropdown = true;
+    });
+
+    expect(text()).toContain('(keine Nummer)');
+  });
+
+  it('haengt den tel:-Link an den Platz, zu dem die Person gehoert', () => {
+    render(
+      [candidate(1, '0170 1111111'), candidate(2, '0170 2222222')],
+      (s) => {
+        s!.selectedReferee1Id = 1;
+        s!.selectedReferee2Id = 2;
+      }
+    );
+
+    // Reihenfolge der Spalten: Schiri 1, dann Schiri 2. Waere im zweiten Block
+    // versehentlich "referee1" verdrahtet, stuende hier zweimal dieselbe Nummer.
+    const hrefs = telLinks().map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual(['tel:01701111111', 'tel:01702222222']);
+  });
+
+  it('bereinigt die Freitext-Nummer fuer das Waehlziel', () => {
+    render([candidate(1, '030 1234567 (ab 18 Uhr)')], (state) => {
+      state!.selectedReferee1Id = 1;
+    });
+
+    const link = telLinks()[0];
+    // Waehlziel ohne den Zusatz, Anzeige mit -- sonst waere die "18" Teil der
+    // gewaehlten Nummer.
+    expect(link.getAttribute('href')).toBe('tel:0301234567');
+    expect(link.textContent?.trim()).toBe('030 1234567 (ab 18 Uhr)');
+  });
+
+  it('setzt keinen Link, solange kein Platz besetzt ist', () => {
+    render([candidate(1, '0170 1111111')]);
+
+    expect(telLinks().length).toBe(0);
   });
 });
