@@ -218,10 +218,17 @@ body {
   gap: 16px;
   padding: 18px 22px;
   /* Mindestbreite und nicht nur Inhalt: Sie hält die Ziffern in der Mitte,
-     auch wenn ein Kürzel drei und das andere fünf Zeichen hat. Vorher 300px,
-     und DAS war der Grund, warum die Anzeigetafel ohne Uhrenspalte zu breit
-     wirkte: Zwei kurze Kürzel wie BER und HAM ließen darin je über hundert
-     Pixel leer stehen. 210px trägt „HAMBURG" noch ohne Sprung. */
+     solange beide Kürzel kurz sind -- und das ist der Normalfall, `teamLabel`
+     nimmt `short_name`. Vorher 300px, und DAS war der Grund, warum die
+     Anzeigetafel ohne Uhrenspalte zu breit wirkte: Zwei Kürzel wie BER und HAM
+     ließen darin je über hundert Pixel leer stehen.
+
+     Genau zentriert bleibt es nur bis etwa vier Zeichen: Mit hinterlegtem Logo
+     belegt der Chip samt Abständen rund 130 der 210 Pixel, ein längerer Name
+     schiebt seinen Block also breiter als den anderen (nachgemessen: „HAMBURG"
+     ergibt 275px). Abgeschnitten wird dabei nichts (`min-width` ist eine
+     Untergrenze, der Name steht auf `nowrap`), die Ziffern sitzen dann nur
+     nicht mehr in der Mitte der Tafel. */
   min-width: 210px;
   /* Beide Mannschaftsblöcke schieben ihren Inhalt zum Spielstand hin: links
      ans rechte Ende, rechts (row-reverse, main-end liegt dort links) ans
@@ -864,7 +871,9 @@ body {
 .ov-fs-player-badge {
   align-self: center;
   font-family: var(--ov-body);
-  font-size: 15px;
+  /* Relativ (em): Die Verengungsstufen aus `fitBody` setzen `font-size` an
+     `.ov-fs-player`, ein absoluter Wert im Kind käme dort nicht mit. */
+  font-size: 0.5em;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -877,25 +886,46 @@ body {
 /* Startformation: Die Position steht vor der Nummer. Etwas kleiner und enger
    als der Kader darunter, denn sechs Zeilen und ein Kader müssen zusammen in
    die Fläche passen -- sie schneidet unten hart ab (`overflow: hidden`). */
+/* Etwas kleiner als der Kader darunter, aber OHNE eigenen Innenabstand: Die
+   Verengungsstufen setzen `padding` an `.ov-fs-player` und sind
+   spezifitätsgleich, ein eigener Wert von 5px wurde von der ersten Stufe (6px)
+   also nach OBEN korrigiert -- die Leiter war nicht monoton. */
 .ov-fs-group--lineup .ov-fs-player {
-  padding: 5px 0;
-  font-size: 26px;
+  font-size: 0.87em;
 }
 
 .ov-fs-group--lineup .ov-fs-player-position {
   flex: 0 0 240px;
   font-family: var(--ov-body);
-  font-size: 20px;
+  font-size: 0.67em;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ov-text-muted);
 }
 
-/* Torfolge: Stand nach dem Treffer, Mannschaft, Vorlage. Feste Breiten, damit
-   die Spalten untereinander stehen und nicht mit jedem Namen wandern. */
+/* Torfolge: Zeit, Stand nach dem Treffer, Mannschaft, Schütze, Vorlage. Feste
+   Breiten, damit die Spalten untereinander stehen und nicht mit jedem Namen
+   wandern -- `overlay.js` legt Stand und Mannschaft deshalb auch dann an, wenn
+   sie leer bleiben.
+
+   Alle Schriftgrößen hier RELATIV (em). Die Verengungsstufen aus `fitBody`
+   setzen `font-size` an `.ov-fs-player`; absolute Werte in den Kindern kämen
+   dort nicht mit, und auf der letzten Stufe wäre die Vorlage (22px) größer
+   gewesen als der Name daneben (18px). */
+.ov-fs-goal-time {
+  /* Breiter als die Nummernspalte des Kaders: „12:34" in Oswald läuft in
+     62px nach links über, und `fitBody` sieht das nicht -- es misst die Höhe. */
+  flex: 0 0 96px;
+  font-family: var(--ov-display);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ov-text-muted);
+  text-align: right;
+}
+
 .ov-fs-goal-score {
-  flex: 0 0 94px;
+  flex: 0 0 84px;
   font-family: var(--ov-display);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -903,18 +933,99 @@ body {
 }
 
 .ov-fs-goal-team {
-  flex: 0 0 130px;
+  flex: 0 0 118px;
   font-family: var(--ov-body);
-  font-size: 20px;
+  font-size: 0.67em;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ov-text-muted);
 }
 
+/* Der Schütze trägt die Zeile, er darf schrumpfen statt umzubrechen. */
+.ov-fs-goal-scorer {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .ov-fs-goal-assist {
-  font-size: 22px;
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 0.73em;
   color: var(--ov-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Formkurve: Datum, Heim/Auswärts, Gegner, Ergebnis, Wertung. Feste Breiten
+   links und rechts, der Gegner nimmt den Rest -- so stehen Ergebnis und
+   Wertung in beiden Mannschaftsblöcken auf derselben Linie. */
+.ov-fs-group--form .ov-fs-player {
+  padding: 7px 0;
+  font-size: 26px;
+}
+
+.ov-fs-form-date {
+  flex: 0 0 96px;
+  color: var(--ov-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ov-fs-form-where {
+  flex: 0 0 26px;
+  color: var(--ov-text-muted);
+  font-weight: 700;
+}
+
+.ov-fs-form-opponent {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ov-fs-form-score {
+  flex: 0 0 92px;
+  text-align: right;
+  font-family: var(--ov-display);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sieg, Unentschieden, Niederlage. FESTE Farben und nicht der Akzent: Die
+   Wertung ist eine Aussage über das Ergebnis und darf nicht mit der Farbwelt
+   des Wettbewerbs oder einer im Bedienfeld gewählten Vereinsfarbe wandern --
+   sonst stünde in einem Bild ein grünes N oder ein rotes S. */
+.ov-fs-outcome {
+  flex: 0 0 74px;
+  align-self: center;
+  text-align: center;
+  font-family: var(--ov-body);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+  padding: 3px 0;
+  color: var(--ov-text-muted);
+}
+
+.ov-fs-outcome--win {
+  color: #0c2a14;
+  background: #4fc46a;
+}
+
+.ov-fs-outcome--draw {
+  color: var(--ov-text);
+  background: rgb(255 255 255 / 20%);
+}
+
+.ov-fs-outcome--loss {
+  color: #2b0d10;
+  background: #ff8080;
 }
 
 /* Formkurve: Datum, Heim/Auswärts, Gegner, Ergebnis, Wertung. Feste Breiten
