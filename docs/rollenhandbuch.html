@@ -10078,6 +10078,109 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
 
           <div class="sec">
             <span class="num">09</span>
+            <h2>Eigene Grafiken und Fremdsoftware</h2>
+          </div>
+          <p class="proc-text">
+            Wer schon eine eigene Grafikeinrichtung hat, in vMix, in CasparCG
+            oder als selbstgebaute Webseite, muss sie dafür nicht aufgeben. Die
+            Daten, aus denen sich unsere Overlays speisen, liegen hinter einer
+            offenen JSON-Schnittstelle, und der Schlüssel dazu ist dasselbe
+            Token, das du in Schritt 1 des Spielberichts erzeugst. Du brauchst
+            also keinen zweiten Zugang und keinen Antrag. Die Endpunkte im
+            Einzelnen stehen im Kapitel
+            <a href="#panel-entwickler">Entwickler &amp; API</a>.
+          </p>
+          <div class="note">
+            <strong>Nimm dafür nicht den regulären API-Zugang.</strong> Ein
+            beantragter API-Schlüssel liefert die Daten mit zehn Minuten
+            Verzögerung und blendet die Ergebnisse laufender Spiele ganz aus.
+            Für eine Anzeigetafel ist er damit unbrauchbar. Das Overlay-Token
+            hebt die Verzögerung auf. Dafür reicht es nur bis zu deinem eigenen
+            Spieltag und läuft nach 36 Stunden von selbst ab.
+          </div>
+          <p class="proc-text">
+            <strong>Wie oft du fragen darfst.</strong> Die Grenze liegt bei 300
+            Anfragen pro Minute je Token. Unsere eigenen Overlays holen den
+            Spielstand im Sekundentakt, die Vollbilder alle fünf Sekunden und
+            die ligaweiten Ansichten alle 30 Sekunden. Ein Abruf pro Sekunde ist
+            also ausdrücklich vorgesehen und kein Grund zur Zurückhaltung. Noch
+            sparsamer wird es über den Parameter <code>&amp;v=</code>: Gibst du
+            darin die <code>game_version</code> mit, die du schon hast, bleiben
+            die Spieldaten weg und die Antwort schrumpft auf wenige hundert
+            Byte.
+          </p>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🎛️</span>
+              <div>
+                <div class="proc-title">vMix</div>
+                <div class="proc-sub">
+                  Warum ein kleines Hilfsprogramm dazwischen sinnvoll bleibt
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Die JSON-Datenquelle in vMix erwartet laut Hersteller ein
+                Objekt-Array, in dem jedes Element als eine Zeile gilt. Sie ist
+                also auf tabellarische Daten ausgelegt. Unsere Antwort ist das
+                Gegenteil davon: ein einzelnes, verschachteltes Objekt mit einem
+                Heim- und einem Gastblock, einer Ereignisliste, den
+                Aufstellungen und den Angaben zur Liga. Daraus kann vMix keine
+                Zeilen bilden.
+              </p>
+              <p class="proc-text">
+                Das übliche Vorgehen ist deshalb, ein kleines Programm die Daten
+                abholen und in die flache Form bringen zu lassen, die deine
+                Titel brauchen. Das ist kein überflüssiger Umweg, sondern die
+                eigentliche Arbeit. Dass sich in den Datenquellen keine eigenen
+                HTTP-Kopfzeilen setzen lassen, spielt hier ausnahmsweise keine
+                Rolle: Unser Token steht im Adressfeld und nicht im Kopf.
+              </p>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🌐</span>
+              <div>
+                <div class="proc-title">Eigene Grafik im Browser</div>
+                <div class="proc-sub">Hier gibt es eine Hürde</div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Die Endpunkte sind nicht für den Aufruf aus fremden Web-Adressen
+                freigegeben (CORS). Eine selbstgebaute Grafik, die im Browser
+                läuft und von einer anderen Adresse als
+                <code>saisonmanager.de</code> geladen wird, kann sie deshalb
+                nicht direkt abfragen: Der Browser verwirft die Antwort. Das
+                gilt auch für eine lokale HTML-Datei, die du in OBS als
+                Browser-Quelle einbindest.
+              </p>
+              <p class="proc-text">
+                Werkzeuge außerhalb des Browsers kennen diese Regel nicht und
+                sind nicht betroffen, also vMix, ein eigenes Hilfsprogramm oder
+                ein Server, der die Daten für dich abholt. Wer eine
+                Browser-Grafik bauen will, legt sich genau dieses Hilfsprogramm
+                dazwischen und lässt es die Daten auf dem Regierechner
+                bereitstellen. Wenn dir das im Weg steht, melde dich bei der
+                Geschäftsstelle.
+              </p>
+            </div>
+          </details>
+          <div class="note">
+            <strong>Das Token bleibt vertraulich.</strong> Es hebt die
+            Verzögerung für Live-Daten auf, und wer es hat, kommt ohne weitere
+            Anmeldung an die Daten deines Spieltags und kann obendrein den
+            Steuerzustand deiner Overlays überschreiben. Gib es nur an Leute
+            weiter, die an deiner Übertragung mitarbeiten. Ist es doch
+            abhandengekommen, hilft im Spielbericht
+            <em>Zugang zurückziehen</em>.
+          </div>
+          <div class="sec">
+            <span class="num">10</span>
             <h2>Kurzcheckliste für den Spieltag</h2>
           </div>
           <ul class="checklist">
@@ -10464,6 +10567,141 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
   ]
 }</pre
           >
+          <div class="sec">
+            <span class="num">05</span>
+            <h2>Livestream-Daten in Echtzeit</h2>
+          </div>
+          <p style="font-size: 0.85rem; color: #474d5c; line-height: 1.65">
+            Für Übertragungen gibt es einen zweiten, davon getrennten Zugang. Er
+            hängt nicht an einem API-Schlüssel, sondern an einem Token, das der
+            Spielbericht für einen einzelnen Spieltag ausgibt (dort im Abschnitt
+            <em>Livestream-Overlays</em>, siehe Kapitel
+            <a href="#panel-streamer">Für Streamer:innen</a>). Daraus speisen
+            sich unsere eigenen OBS-Overlays, und dieselben Endpunkte stehen
+            eigenen Grafiken und Fremdsoftware offen.
+          </p>
+          <div class="note">
+            <strong>Warum es diesen zweiten Weg gibt.</strong> Ein beantragter
+            API-Schlüssel liefert die Daten mit zehn Minuten Verzögerung und
+            blendet die Ergebnisse laufender Spiele aus. Für eine Anzeigetafel
+            ist er damit unbrauchbar. Das Spieltags-Token hebt die Verzögerung
+            auf und ist dafür eng geschnitten: Es reicht ausschließlich bis zu
+            seinem Spieltag und der zugehörigen Liga. Einen
+            <code>league_id</code>-Parameter gibt es bewusst nicht, sonst wäre
+            daraus ein Generalschlüssel für jede Liga geworden.
+          </div>
+          <div class="matrix-wrap">
+            <table class="matrix endpoints">
+              <thead>
+                <tr>
+                  <th>Methode</th>
+                  <th>Pfad</th>
+                  <th>Beschreibung</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/public/overlay/live</td>
+                  <td>
+                    Steuerzustand und Spieldaten: Stand, Abschnitt, Ereignisse
+                    mit aufgelösten Spielernamen, letztes Tor, Aufstellungen,
+                    Auszeichnungen, dazu <code>server_time</code> für den
+                    Uhrenabgleich (<code>&amp;game_id=</code>,
+                    <code>&amp;v=</code>)
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/public/overlay/game_day</td>
+                  <td>
+                    Alle Spiele des Spieltags samt Ablaufzeitpunkt des Tokens,
+                    Grundlage für den Spielwechsel
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/public/overlay/table</td>
+                  <td>Tabelle der Liga des Spieltags</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/public/overlay/scorer</td>
+                  <td>Torschützenliste der Liga</td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/public/overlay/schedule</td>
+                  <td>
+                    Alle Partien derselben Spieltagsnummer in der Liga, auch die
+                    in anderen Hallen, mit ihren Zwischenständen
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/public/overlay/form</td>
+                  <td>
+                    Formkurve beider Mannschaften des aktiven Spiels, neueste
+                    Partie zuerst
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method post">POST</span></td>
+                  <td class="path">/api/v2/public/overlay/state</td>
+                  <td>
+                    Steuerzustand schreiben (Uhr, Einblendungen, aktives Spiel),
+                    immer vollständig und nicht feldweise
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size: 0.85rem; color: #474d5c; line-height: 1.65">
+            Das Token steht bei allen Aufrufen im Adressfeld und nicht im
+            Header. Damit sind die Endpunkte auch für Werkzeuge erreichbar, die
+            keine eigenen HTTP-Kopfzeilen setzen können:
+          </p>
+          <pre class="code">
+curl "https://saisonmanager.de/api/v2/public/overlay/live?token=DEIN_TOKEN&amp;game_id=12345"</pre
+          >
+          <div class="note">
+            <strong>Eigenschaften des Tokens.</strong> 43 Zeichen, 36 Stunden
+            gültig, ein aktives je Spieltag: Ein erneutes Erzeugen entwertet das
+            vorherige sofort, ebenso <em>Zugang zurückziehen</em> im
+            Spielbericht. Es gilt für alle Spiele des Spieltags; welches gemeint
+            ist, entscheidet <code>game_id</code>, ersatzweise die Wahl des
+            Bedienfelds und zuletzt das erste Spiel. Eine Anmeldung findet nicht
+            statt, wer das Token hat, hat Zugriff.
+          </div>
+          <div class="note">
+            <strong>Grenzen und Statuscodes.</strong> 300 Anfragen pro Minute je
+            Token, darüber <code>429</code>. Ohne Token <code>400</code>, bei
+            ungültigem oder abgelaufenem Token <code>410</code>, und
+            <code>404</code>, wenn der Spieltag kein Spiel oder keine Liga hat.
+            Beim Schreiben des Steuerzustands antwortet <code>409</code>, wenn
+            zwischenzeitlich jemand anderes geschrieben hat (dann erst den
+            aktuellen Stand holen), und <code>413</code> bei mehr als
+            16&nbsp;KB.
+          </div>
+          <div class="note">
+            <strong>Sparsam abrufen.</strong> <code>live</code> nimmt in
+            <code>&amp;v=</code> die <code>game_version</code> entgegen, die der
+            Client schon hat. Stimmt sie noch, bleibt der Spielblock in der
+            Antwort weg und es kommen nur ein paar hundert Byte zurück. Unsere
+            eigenen Overlays fragen damit im Sekundentakt, die Vollbilder alle
+            fünf und die ligaweiten Ansichten alle 30 Sekunden. Tabelle,
+            Torschützen, Spielplan und Formkurve tragen zusätzlich kurze
+            <code>Cache-Control</code>-Zeiten.
+          </div>
+          <div class="note">
+            <strong>Kein Aufruf aus fremden Web-Adressen (CORS).</strong> Aus
+            einem Browser heraus, der die eigene Grafik von einer anderen
+            Adresse als <code>saisonmanager.de</code> geladen hat (auch aus
+            einer Datei auf dem eigenen Rechner), verwirft der Browser die
+            Antwort. Alles außerhalb des Browsers ist davon nicht betroffen,
+            also ein eigenes Programm, ein Server oder eine Grafiksoftware wie
+            vMix.
+          </div>
         </section>
 
         <footer class="page-foot">
