@@ -65,6 +65,7 @@
     "lt-text-kicker",
     "lt-text-main",
     "lt-onair",
+    "sb-position",
     "iv-team",
     "iv-player",
     "iv-show",
@@ -458,6 +459,17 @@
     el["scoreboard-toggle"].textContent = on ? "Sichtbar" : "Ausgeblendet";
     el["scoreboard-toggle"].classList.toggle("dk-toggle--on", on);
 
+    // Ein unbekannter Wert (andere Fassung des Bedienfelds, Tippfehler) laesst
+    // die Auswahl leer stehen. Dann lieber den Standard zeigen, den die Bühne
+    // in dem Fall ohnehin verwendet.
+    // Nicht überschreiben, während die Regie in der Liste steht: Der Abruf
+    // läuft alle zwei Sekunden.
+    if (document.activeElement !== el["sb-position"]) {
+      el["sb-position"].value =
+        state.control.scoreboard_position || "bottom-left";
+      if (!el["sb-position"].value) el["sb-position"].value = "bottom-left";
+    }
+
     el["score-line"].textContent = state.game
       ? teamLabel(state.game.home) +
         " " +
@@ -729,6 +741,10 @@
     writeState({
       scoreboard_visible: state.control.scoreboard_visible === false,
     });
+  });
+
+  on("sb-position", "change", function () {
+    writeState({ scoreboard_position: el["sb-position"].value });
   });
 
   el["clock-visible"].addEventListener("click", function () {

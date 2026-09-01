@@ -486,11 +486,35 @@
         : Boolean(state.control.scoreboard_visible);
 
     el.scoreboard.classList.toggle("ov-hidden", !visible);
+    applyScoreboardPosition();
     // Auch ohne neue Spieldaten: Die Übersteuerung steckt allein im
     // Steuerzustand, sonst wirkte ein Druck im Dock erst beim nächsten
     // Eintrag im Spielbericht.
     if (state.game) renderScore(state.game);
     renderLowerThird();
+  }
+
+  // Platzierung der Anzeigetafel. Weißliste statt Durchreichen: Der Wert kommt
+  // aus dem Steuerzustand, also von außen. Ein Tippfehler oder ein Wert aus
+  // einer späteren Fassung des Bedienfelds setzte sonst ein Attribut, für das
+  // hier keine Regel steht -- und die Anzeigetafel landete an einer Stelle, die
+  // niemand vorgesehen hat. Unbekanntes fällt auf unten links zurück, den
+  // Standard, den auch eine Bühne ohne Dock zeigt.
+  var POSITIONS = {
+    "bottom-left": true,
+    "bottom-center": true,
+    "top-left": true,
+  };
+
+  function applyScoreboardPosition() {
+    var wanted = String(state.control.scoreboard_position || "");
+    // `hasOwnProperty` und nicht bloß ein Zugriff: Bei einem Objektliteral sind
+    // `constructor`, `__proto__` und `toString` wahrheitswertig, ein solcher
+    // Wert wäre also als Attribut durchgereicht worden -- genau das, was die
+    // Weißliste verhindern soll. Der Steuerzustand ist frei beschreibbar.
+    var erlaubt = Object.prototype.hasOwnProperty.call(POSITIONS, wanted);
+
+    el.stage.setAttribute("data-position", erlaubt ? wanted : "bottom-left");
   }
 
   // ── Uhr ─────────────────────────────────────────────────────────────────

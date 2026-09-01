@@ -100,6 +100,15 @@ body {
   font: inherit;
 }
 
+/* Auswahl in einer Zeile neben ihrer Beschriftung, wie die Umschalter
+   daneben. Ohne das nimmt sie die ganze Breite und die Beschriftung rutscht
+   in eine eigene Zeile. */
+.dk-select--inline {
+  width: auto;
+  flex: 0 0 auto;
+  min-width: 146px;
+}
+
 .dk-buttons {
   display: flex;
   flex-wrap: wrap;
