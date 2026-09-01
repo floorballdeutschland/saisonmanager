@@ -2,13 +2,20 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  Inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   ViewEncapsulation,
 } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { AssociationService, LeagueService } from '@floorball/core';
+import {
+  matchDayFromParams,
+  writeMatchDayToUrl,
+} from 'src/app/_helpers/_utils/match-day-param';
 import {
   GameOperation,
   GameScheduleEntry,
@@ -53,6 +60,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
   // die API den Spieltag aus (game_days/current). Ohne diese Merkung holte das
   // 30-Sekunden-Polling immer wieder den aktuellen Spieltag und warf die
   // Auswahl damit spätestens nach 30 Sekunden weg.
+  //
+  // Die Auswahl steht zusätzlich als `?spieltag=` in der Adresse, siehe
+  // MATCH_DAY_PARAM.
   private _pinnedMatchDayNumber?: number;
 
   // Die Liga, für die zuletzt geladen wurde. selectedLeague$ meldet dieselbe
@@ -65,11 +75,31 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
     private _route: ActivatedRoute,
+    private _router: Router,
+    private _location: Location,
     private _cdr: ChangeDetectorRef,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    @Inject(PLATFORM_ID) private _platformId: object
   ) {}
 
   ngOnInit(): void {
+    // Die Adresse wird genau einmal gelesen, hier beim Aufbau. Zwei Gründe:
+    //
+    // 1. Ein späteres Lesen erwischt einen veralteten Snapshot. Beim Ligawechsel
+    //    über die Seitenleiste bleibt diese Komponente am Leben (gleiche
+    //    Routen-Konfiguration), und Angular schreibt die Elternroute VOR der
+    //    Kindroute fort. In dem Moment, in dem `selectedLeague$` die neue Liga
+    //    meldet, trägt der Snapshot dieser Ansicht noch die alten
+    //    Abfrageparameter -- die Nummer der vorigen Liga wäre in die neue
+    //    gewandert, ohne dass sie in der Adresse steht.
+    // 2. Der Schreibweg (`Location.replaceState`, Begründung an
+    //    writeMatchDayToUrl) führt den Snapshot ohnehin nicht nach.
+    //
+    // In-App-Links tragen den Parameter nie in eine andere Liga. Für die beiden
+    // Wege, die zählen -- Direkteinstieg und Zurück aus einem Spiel -- ist die
+    // Komponente frisch, und genau dann gilt der Wert.
+    const matchDayFromUrl = this._matchDayFromUrl();
+
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.selectedLeague$ = this._leagueService.selectedLeague$;
     this._associationService.selectAssociation(this._route);
@@ -84,10 +114,15 @@ export class OverviewComponent implements OnInit, OnDestroy {
             this.getSingleLeague(league.id);
 
             // Neue Liga, neue Ansicht: Die Auswahl der vorigen Liga gilt hier
-            // nicht, deren Spieltagsnummer meint einen anderen Spieltag.
+            // nicht, deren Spieltagsnummer meint einen anderen Spieltag. Nur die
+            // Liga, mit der diese Ansicht aufgebaut wurde, erbt die Nummer aus
+            // der Adresse; jeder Wechsel danach beginnt ohne Auswahl.
             if (league.id !== this._loadedLeagueId) {
+              const firstLeague = this._loadedLeagueId === undefined;
               this._loadedLeagueId = league.id;
-              this._pinnedMatchDayNumber = undefined;
+              this._pinnedMatchDayNumber = firstLeague
+                ? matchDayFromUrl
+                : undefined;
             }
 
             if (league.league_type !== 'cup') {
@@ -183,6 +218,22 @@ export class OverviewComponent implements OnInit, OnDestroy {
           // nächste Nachladen zum aktuellen Spieltag zurückfindet.
           if (!games || !games.length) {
             this._pinnedMatchDayNumber = undefined;
+
+            // Nur wenn wirklich ein Spieltag angefordert war. Ohne diese Wache
+            // schriebe eine Liga ganz ohne angesetzte Spiele bei jedem
+            // Polling-Takt die Adresse und lüde sich im Kreis; so terminiert es
+            // nach einem Durchgang. Geprüft wird der eigene Zustand und nicht
+            // die Adresse: die ist über `Location.replaceState` geschrieben, der
+            // Router führt den Snapshot also nicht nach.
+            if (requestedMatchDay !== undefined) {
+              this._writeMatchDayToUrl(undefined);
+              // Und gleich den von der API bestimmten Spieltag holen, sonst
+              // stünde die Ansicht bis zum nächsten Takt leer da -- bis zu 30
+              // Sekunden nach einem Lesezeichen auf einen leer gewordenen
+              // Spieltag.
+              this.getMatches(league);
+            }
+
             this._cdr.markForCheck();
             return;
           }
@@ -217,6 +268,21 @@ export class OverviewComponent implements OnInit, OnDestroy {
         (_item) => _item.game_day_number === matchDay
       ) ?? null;
 
+    this._writeMatchDayToUrl(matchDay);
     this.getMatches(league);
+  }
+
+  private _matchDayFromUrl(): number | undefined {
+    return matchDayFromParams(this._route.snapshot.queryParamMap);
+  }
+
+  private _writeMatchDayToUrl(matchDay?: number): void {
+    writeMatchDayToUrl(
+      this._router,
+      this._location,
+      this._route,
+      this._platformId,
+      matchDay
+    );
   }
 }
