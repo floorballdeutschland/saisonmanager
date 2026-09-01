@@ -30,7 +30,7 @@ export class MatchHistoryItemComponent {
    * Fehlende EventTypes
    * penalty_shots
    * penalty_shot
-   * http://localhost:4200/fvd/1044/spiel/17098
+   * http://localhost:4200/fd/1044/spiel/17098
    */
 
   @Input()

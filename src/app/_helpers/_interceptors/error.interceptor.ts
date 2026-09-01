@@ -447,7 +447,18 @@ export class ErrorInterceptor implements HttpInterceptor {
             // alle 30 Sekunden neu ab (match.component.ts). Ohne die Sperre
             // stapelt ein abgelaufener Link zwei Meldungen pro Minute
             // übereinander, die sich nicht von selbst schließen.
-            if (!this.secretaryLinkRejected) {
+            //
+            // Die Sperre gilt aber nur für dieses Nachfragen, nicht für eine
+            // Aktion. Eine Eingabe, die ins Leere läuft, muss jedes Mal gemeldet
+            // werden: Sonst verbraucht das Polling die eine erlaubte Meldung —
+            // und weil der Spielstart seine eigene Meldung verloren hat (der
+            // generische Toast verdeckte die Serverbegründung), täte der Knopf
+            // danach sichtbar gar nichts mehr. Lesen wird gedrosselt, Schreiben
+            // nicht.
+            const repeatedRead =
+              request.method === 'GET' && this.secretaryLinkRejected;
+
+            if (!repeatedRead) {
               this.secretaryLinkRejected = true;
               this._notificationService.error(
                 'Der Spielsekretariats-Link gilt nicht mehr. Bitte einen neuen Link anfordern.',

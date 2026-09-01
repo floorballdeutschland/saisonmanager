@@ -179,6 +179,19 @@ export interface Game {
   arena_short: string;
   hosting_club?: string;
   referees: Referee[];
+  // Ist Platz 1 des Gespanns belegt? Der Spielstart verlangt ihn (die API weist
+  // sonst mit 422 ab), Platz 2 bleibt optional.
+  //
+  // Nicht aus `referees` ableitbar, obwohl es danach aussieht: Ein geleertes Feld
+  // speichert den Platzhalter "0 , ", auf den die Regex in Game#referees passt --
+  // er erscheint dort als vollwertiger Eintrag mit Lizenz "0" und leerem Namen.
+  // `referees.length` und `referees[0]` melden dann einen Schiedsrichter, den es
+  // nicht gibt.
+  //
+  // Optional, weil Frontend und API getrennt ausgerollt werden: Zwischen einem
+  // Frontend-Deploy und dem passenden API-Deploy fehlt das Feld. Das Gate in
+  // Schritt 2 lässt dann wie früher durch und die API entscheidet allein.
+  referee1_present?: boolean;
   nominated_referees: string;
   // Markierung „wird personenscharf angesetzt". Nur in der Verwaltungsansicht
   // (meta_hash) enthalten; die oeffentliche Ausgabe leitet daraus einen Hinweis
