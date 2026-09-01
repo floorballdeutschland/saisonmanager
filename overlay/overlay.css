@@ -218,10 +218,17 @@ body {
   gap: 16px;
   padding: 18px 22px;
   /* Mindestbreite und nicht nur Inhalt: Sie hält die Ziffern in der Mitte,
-     auch wenn ein Kürzel drei und das andere fünf Zeichen hat. Vorher 300px,
-     und DAS war der Grund, warum die Anzeigetafel ohne Uhrenspalte zu breit
-     wirkte: Zwei kurze Kürzel wie BER und HAM ließen darin je über hundert
-     Pixel leer stehen. 210px trägt „HAMBURG" noch ohne Sprung. */
+     solange beide Kürzel kurz sind -- und das ist der Normalfall, `teamLabel`
+     nimmt `short_name`. Vorher 300px, und DAS war der Grund, warum die
+     Anzeigetafel ohne Uhrenspalte zu breit wirkte: Zwei Kürzel wie BER und HAM
+     ließen darin je über hundert Pixel leer stehen.
+
+     Genau zentriert bleibt es nur bis etwa vier Zeichen: Mit hinterlegtem Logo
+     belegt der Chip samt Abständen rund 130 der 210 Pixel, ein längerer Name
+     schiebt seinen Block also breiter als den anderen (nachgemessen: „HAMBURG"
+     ergibt 275px). Abgeschnitten wird dabei nichts (`min-width` ist eine
+     Untergrenze, der Name steht auf `nowrap`), die Ziffern sitzen dann nur
+     nicht mehr in der Mitte der Tafel. */
   min-width: 210px;
   /* Beide Mannschaftsblöcke schieben ihren Inhalt zum Spielstand hin: links
      ans rechte Ende, rechts (row-reverse, main-end liegt dort links) ans
@@ -855,7 +862,9 @@ body {
 .ov-fs-player-badge {
   align-self: center;
   font-family: var(--ov-body);
-  font-size: 15px;
+  /* Relativ (em): Die Verengungsstufen aus `fitBody` setzen `font-size` an
+     `.ov-fs-player`, ein absoluter Wert im Kind käme dort nicht mit. */
+  font-size: 0.5em;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -868,15 +877,18 @@ body {
 /* Startformation: Die Position steht vor der Nummer. Etwas kleiner und enger
    als der Kader darunter, denn sechs Zeilen und ein Kader müssen zusammen in
    die Fläche passen -- sie schneidet unten hart ab (`overflow: hidden`). */
+/* Etwas kleiner als der Kader darunter, aber OHNE eigenen Innenabstand: Die
+   Verengungsstufen setzen `padding` an `.ov-fs-player` und sind
+   spezifitätsgleich, ein eigener Wert von 5px wurde von der ersten Stufe (6px)
+   also nach OBEN korrigiert -- die Leiter war nicht monoton. */
 .ov-fs-group--lineup .ov-fs-player {
-  padding: 5px 0;
-  font-size: 26px;
+  font-size: 0.87em;
 }
 
 .ov-fs-group--lineup .ov-fs-player-position {
   flex: 0 0 240px;
   font-family: var(--ov-body);
-  font-size: 20px;
+  font-size: 0.67em;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
