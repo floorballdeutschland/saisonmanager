@@ -462,9 +462,13 @@
     // Ein unbekannter Wert (andere Fassung des Bedienfelds, Tippfehler) laesst
     // die Auswahl leer stehen. Dann lieber den Standard zeigen, den die Bühne
     // in dem Fall ohnehin verwendet.
-    el["sb-position"].value =
-      state.control.scoreboard_position || "bottom-left";
-    if (!el["sb-position"].value) el["sb-position"].value = "bottom-left";
+    // Nicht überschreiben, während die Regie in der Liste steht: Der Abruf
+    // läuft alle zwei Sekunden.
+    if (document.activeElement !== el["sb-position"]) {
+      el["sb-position"].value =
+        state.control.scoreboard_position || "bottom-left";
+      if (!el["sb-position"].value) el["sb-position"].value = "bottom-left";
+    }
 
     el["score-line"].textContent = state.game
       ? teamLabel(state.game.home) +
@@ -739,7 +743,7 @@
     });
   });
 
-  el["sb-position"].addEventListener("change", function () {
+  on("sb-position", "change", function () {
     writeState({ scoreboard_position: el["sb-position"].value });
   });
 

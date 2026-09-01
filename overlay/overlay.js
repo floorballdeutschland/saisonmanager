@@ -508,10 +508,13 @@
 
   function applyScoreboardPosition() {
     var wanted = String(state.control.scoreboard_position || "");
-    el.stage.setAttribute(
-      "data-position",
-      POSITIONS[wanted] ? wanted : "bottom-left"
-    );
+    // `hasOwnProperty` und nicht bloß ein Zugriff: Bei einem Objektliteral sind
+    // `constructor`, `__proto__` und `toString` wahrheitswertig, ein solcher
+    // Wert wäre also als Attribut durchgereicht worden -- genau das, was die
+    // Weißliste verhindern soll. Der Steuerzustand ist frei beschreibbar.
+    var erlaubt = Object.prototype.hasOwnProperty.call(POSITIONS, wanted);
+
+    el.stage.setAttribute("data-position", erlaubt ? wanted : "bottom-left");
   }
 
   // ── Uhr ─────────────────────────────────────────────────────────────────
