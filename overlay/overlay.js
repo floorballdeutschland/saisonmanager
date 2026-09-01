@@ -1425,49 +1425,30 @@
     return lineupContent("guest");
   }
 
+  // Bezeichnung der sechs Positionen der Startformation. `starting_players`
+  // liefert sie immer alle, auch unbesetzte.
+  var STARTING_LABELS = {
+    goal: "Tor",
+    defender1: "Verteidigung",
+    defender2: "Verteidigung",
+    center: "Center",
+    forward1: "Sturm",
+    forward2: "Sturm",
+  };
+
   function lineupContent(side) {
     var game = state.game;
     if (!game) return null;
 
     var squad = (game.players && game.players[side]) || [];
     var team = (side === "home" ? game.home : game.guest) || {};
-
-    // Wer in der Startaufstellung steht, wird hervorgehoben. `starting_players`
-    // liefert immer sechs Positionen, auch unbesetzte; die leeren haben eine
-    // leere player_id und dürfen nichts markieren.
-    var startingIds = (
-      (game.starting_players && game.starting_players[side]) ||
-      []
-    )
-      .map(function (entry) {
-        return entry && entry.player_id;
-      })
-      .filter(Boolean);
-
-    var groups = [
-      { title: "Tor", players: [] },
-      { title: "Feld", players: [] },
-    ];
-    for (var i = 0; i < squad.length; i++) {
-      var player = squad[i];
-      (player.position === "Tor" ? groups[0] : groups[1]).players.push(player);
-    }
+    var startingIds = startingPlayerIds(side);
 
     var body;
     if (!squad.length) {
       body = node("p", "ov-fs-empty", "Noch keine Aufstellung erfasst.");
     } else {
-      body = node("div", "ov-fs-columns");
-      for (var g = 0; g < groups.length; g++) {
-        if (!groups[g].players.length) continue;
-
-        var block = node("div", "ov-fs-group");
-        block.appendChild(node("div", "ov-fs-group-title", groups[g].title));
-        for (var p = 0; p < groups[g].players.length; p++) {
-          block.appendChild(playerRow(groups[g].players[p], startingIds));
-        }
-        body.appendChild(block);
-      }
+      body = fragment([startingBlock(side), squadColumns(squad, startingIds)]);
     }
 
     return {
@@ -1478,28 +1459,134 @@
     };
   }
 
+  function startingPlayerIds(side) {
+    var game = state.game;
+    // Immer sechs Positionen, auch unbesetzte; die leeren haben eine leere
+    // player_id und dürfen nichts markieren.
+    return ((game.starting_players && game.starting_players[side]) || [])
+      .map(function (entry) {
+        return entry && entry.player_id;
+      })
+      .filter(Boolean);
+  }
+
+  // Die Startformation als eigener Block über dem Kader. Sie steht schon im
+  // Spielbericht (`starting_players` mit Tor, zwei Verteidigungen, Center und
+  // zwei Sturmpositionen) und war bisher nur als Hervorhebung im Kader zu
+  // sehen -- die Positionen selbst gingen dabei verloren.
+  //
+  // Weitere Blöcke gibt es im Datenmodell nicht, nur diesen einen.
+  function startingBlock(side) {
+    var entries = (
+      (state.game.starting_players && state.game.starting_players[side]) ||
+      []
+    ).filter(function (entry) {
+      // Unbesetzte Positionen weglassen statt leer zeigen: Eine Zeile
+      // „Verteidigung" ohne Namen sieht auf Sendung nach einem Fehler aus.
+      return entry && entry.player_id;
+    });
+
+    if (!entries.length) {
+      // Eine erfasste, aber nicht auflösbare Startformation sieht im Bild
+      // genauso aus wie eine nicht erfasste: `starting_players_with_numbers`
+      // verknüpft über `player_id` und schreibt bei Misserfolg einen leeren
+      // Eintrag. Ohne diese Spur wäre der Unterschied nirgends zu sehen.
+      var erfasst = (
+        (state.game.starting_players && state.game.starting_players[side]) ||
+        []
+      ).length;
+
+      if (erfasst) {
+        logProblem(
+          "Startformation " +
+            side +
+            ": " +
+            erfasst +
+            " Positionen erfasst, keine auflösbar"
+        );
+      }
+
+      return null;
+    }
+
+    var block = node("div", "ov-fs-group ov-fs-group--lineup");
+    block.appendChild(node("div", "ov-fs-group-title", "Startformation"));
+
+    entries.forEach(function (entry) {
+      var row = node("div", "ov-fs-player ov-fs-player--starting");
+      row.appendChild(
+        node(
+          "span",
+          "ov-fs-player-position",
+          STARTING_LABELS[entry.position] || ""
+        )
+      );
+      row.appendChild(node("span", "ov-fs-player-number", numberText(entry)));
+      row.appendChild(node("span", null, playerFullName(entry)));
+      block.appendChild(row);
+    });
+
+    return block;
+  }
+
+  // EIN Kader in zwei Spalten, nach Trikotnummer sortiert.
+  //
+  // Vorher waren es zwei Gruppen, „Tor" und „Feld", und weil
+  // `.ov-fs-columns` ein Mehrspalter mit `break-inside: avoid` je Gruppe ist,
+  // landeten die Torhüter zwangsläufig allein in der linken Spalte. Genau das
+  // war die Rückmeldung: Torhüter und Kapitän gehören gekennzeichnet, nicht in
+  // eine eigene Spalte sortiert. Die Zeilen liegen jetzt direkt im
+  // Mehrspalter, also füllt der Umbruch beide Spalten gleichmäßig.
+  function squadColumns(squad, startingIds) {
+    var columns = node("div", "ov-fs-columns");
+
+    squad
+      .slice()
+      .sort(function (a, b) {
+        return numberValue(a) - numberValue(b);
+      })
+      .forEach(function (player) {
+        columns.appendChild(playerRow(player, startingIds));
+      });
+
+    return columns;
+  }
+
+  // Einträge ohne Trikotnummer nach hinten, nicht an eine beliebige Stelle:
+  // `Number("")` ist 0 und stellte sie vor die Nummer 1.
+  //
+  // Maßgeblich ist `hasTrikotNumber`, dieselbe Regel wie in der
+  // Interview-Auswahl. Vorher sortierte die ZAHL 0 nach hinten (`0 || ""` ist
+  // "") und die ZEICHENKETTE "0" nach vorn, gedruckt wurde in beiden Fällen
+  // eine sichtbare "0" -- Sortierung und Anzeige waren sich also nicht einig.
+  function numberValue(player) {
+    if (!player || !hasTrikotNumber(player)) return Infinity;
+    return Number(player.trikot_number);
+  }
+
+  function numberText(player) {
+    return player && hasTrikotNumber(player) ? player.trikot_number : "";
+  }
+
   function playerRow(player, startingIds) {
     var starting = startingIds.indexOf(player.player_id) !== -1;
     var row = node(
       "div",
       "ov-fs-player" + (starting ? " ov-fs-player--starting" : "")
     );
-    row.appendChild(
-      node(
-        "span",
-        "ov-fs-player-number",
-        player.trikot_number === undefined || player.trikot_number === null
-          ? ""
-          : player.trikot_number
-      )
-    );
-    row.appendChild(
-      node(
-        "span",
-        null,
-        [player.player_firstname, player.player_name].filter(Boolean).join(" ")
-      )
-    );
+
+    row.appendChild(node("span", "ov-fs-player-number", numberText(player)));
+    row.appendChild(node("span", null, playerFullName(player)));
+
+    // Kennzeichnung statt Sortierung. „Tor" wie im Spielbericht, „C" wie im
+    // Sport üblich.
+    if (player.position === "Tor") {
+      row.appendChild(node("span", "ov-fs-player-badge", "Tor"));
+    }
+    if (player.captain) {
+      row.appendChild(node("span", "ov-fs-player-badge", "C"));
+    }
+
     return row;
   }
 
