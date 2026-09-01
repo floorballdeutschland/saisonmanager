@@ -883,6 +883,31 @@ body {
   color: var(--ov-text-muted);
 }
 
+/* Torfolge: Stand nach dem Treffer, Mannschaft, Vorlage. Feste Breiten, damit
+   die Spalten untereinander stehen und nicht mit jedem Namen wandern. */
+.ov-fs-goal-score {
+  flex: 0 0 94px;
+  font-family: var(--ov-display);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ov-accent);
+}
+
+.ov-fs-goal-team {
+  flex: 0 0 130px;
+  font-family: var(--ov-body);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ov-text-muted);
+}
+
+.ov-fs-goal-assist {
+  font-size: 22px;
+  color: var(--ov-text-muted);
+}
+
 /* Für Zeilen, deren erste Spalte ein Mannschaftsname ist statt einer
    Trikotnummer. Ohne die Breite bricht ein Verein ohne hinterlegtes Kürzel
    über die Spalte. */

@@ -933,6 +933,7 @@
     "aufstellung-heim": { source: null, render: fsLineupHome },
     "aufstellung-gast": { source: null, render: fsLineupGuest },
     drittelpause: { source: null, render: fsIntermission },
+    tore: { source: null, render: fsGoals },
     endstand: { source: null, render: fsFinal },
     tabelle: { source: "table", render: fsTable },
     topscorer: { source: "scorer", render: fsScorer },
@@ -1484,6 +1485,123 @@
     }
 
     return row;
+  }
+
+  // Alle Tore des Spiels in der Reihenfolge, in der sie gefallen sind, nach
+  // Abschnitten gruppiert.
+  //
+  // Die Drittelpause zeigt ebenfalls eine Torliste, aber als eine von drei
+  // Angaben und nur mit der Zeit. Hier ist die Torfolge der Inhalt: dazu der
+  // Stand nach jedem Treffer, die Mannschaft und die Vorlage.
+  //
+  // Nach Abschnitt gruppiert und nicht als eine lange Liste, weil `time` je
+  // Abschnitt gezaehlt wird: Ohne die Gruppentitel stuenden zwei Tore mit
+  // derselben Zeit untereinander, ohne dass jemand den Unterschied sieht. Die
+  // Gruppen fliessen dabei ueber beide Spalten, ein torreiches Spiel passt
+  // also weiterhin.
+  function fsGoals() {
+    var game = state.game;
+    if (!game) return null;
+
+    var frame = {
+      league: (game.league && game.league.name) || "",
+      title: "Tore des Spiels",
+      sub: teamLabel(game.home) + " gegen " + teamLabel(game.guest),
+    };
+
+    var goals = (game.events || [])
+      .filter(function (event) {
+        return event.event_type === "goal";
+      })
+      // `formatted_events` behaelt die Reihenfolge der gespeicherten Ereignisse,
+      // und die ist nicht zugesichert -- ein nachtraeglich eingetragenes Tor
+      // haengt hinten. `sortkey` ist dafuer gebaut (Abschnitt und Zeit, als
+      // Text vergleichbar).
+      .slice()
+      .sort(function (a, b) {
+        var x = String(a.sortkey);
+        var y = String(b.sortkey);
+        return x < y ? -1 : x > y ? 1 : 0;
+      });
+
+    // Benannter Leerzustand statt schwarzem Bild: Fuer einen Vereinsstreamer
+    // ist Schwarz nicht von einem kaputten Overlay zu unterscheiden, siehe
+    // denselben Fall im Endstandbild.
+    if (!goals.length) {
+      frame.center = true;
+      frame.body = node(
+        "p",
+        "ov-fs-empty ov-fs-empty--center",
+        game.started
+          ? "In diesem Spiel ist noch kein Tor gefallen."
+          : "Das Spiel hat noch nicht begonnen: Die Tore stehen hier, sobald sie fallen."
+      );
+      return frame;
+    }
+
+    var columns = node("div", "ov-fs-columns");
+    var block = null;
+    var lastPeriod = null;
+
+    goals.forEach(function (goal) {
+      if (!block || goal.period !== lastPeriod) {
+        block = node("div", "ov-fs-group");
+        block.appendChild(
+          node("div", "ov-fs-group-title", periodTitleFor(goal.period))
+        );
+        columns.appendChild(block);
+        lastPeriod = goal.period;
+      }
+
+      block.appendChild(goalRow(goal));
+    });
+
+    frame.body = columns;
+    return frame;
+  }
+
+  function goalRow(goal) {
+    var row = node("div", "ov-fs-player");
+
+    row.appendChild(node("span", "ov-fs-player-number", goal.time || ""));
+
+    var stand = scoreAt(goal);
+    if (stand) row.appendChild(node("span", "ov-fs-goal-score", stand));
+
+    var team = teamName(goal.event_team);
+    if (team) row.appendChild(node("span", "ov-fs-goal-team", team));
+
+    // Der abgekuerzte Anzeigename, nicht der volle: Zwei Spalten mit Zeit,
+    // Stand, Mannschaft und Vorlage haben keinen Platz fuer "Maximilian".
+    // `goal_type_string` traegt Eigentor und "nicht angegeben".
+    row.appendChild(
+      node("span", null, goal.scorer_name || goal.goal_type_string || "Tor")
+    );
+
+    if (goal.assist_name) {
+      row.appendChild(
+        node("span", "ov-fs-goal-assist", "Vorlage: " + goal.assist_name)
+      );
+    }
+
+    return row;
+  }
+
+  // Titel des Abschnitts aus `period_titles`, in dem auch Verlaengerung und
+  // Penaltyschiessen stehen. Ohne Treffer die Nummer, damit die Gruppe
+  // ueberhaupt eine Ueberschrift hat.
+  function periodTitleFor(period) {
+    var titles = (state.game && state.game.period_titles) || [];
+    var found = "";
+
+    titles.forEach(function (entry) {
+      if (entry && entry.period === period) {
+        found = entry.title || entry.short_title || "";
+      }
+    });
+
+    if (found) return found;
+    return period ? "Abschnitt " + period : "Tore";
   }
 
   function fsIntermission() {

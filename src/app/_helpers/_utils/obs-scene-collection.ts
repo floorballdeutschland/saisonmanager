@@ -27,6 +27,7 @@ const FULLSCREEN_SCENES: { scene: string; label: string }[] = [
   { scene: 'aufstellung-heim', label: 'Aufstellung Heim' },
   { scene: 'aufstellung-gast', label: 'Aufstellung Gast' },
   { scene: 'drittelpause', label: 'Drittelpause' },
+  { scene: 'tore', label: 'Tore des Spiels' },
   { scene: 'endstand', label: 'Endstand' },
   { scene: 'tabelle', label: 'Tabelle' },
   { scene: 'topscorer', label: 'Torschützen' },
