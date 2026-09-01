@@ -43,7 +43,29 @@
   // Das mitgelieferte Ligazeichen. Es steht da, solange die Liga kein eigenes
   // hinterlegt hat, und es steht auch wieder da, sobald das Dock auf ein Spiel
   // ohne eigenes Ligazeichen wechselt.
-  var DEFAULT_LEAGUE_MARK = "img/floorball-bundesliga-weiss.png";
+  // Mitgelieferte Bildmarken je Wettbewerb.
+  //
+  // VORHER LAG HIER DER FEHLER: Es gab genau eine Datei, sie hieß
+  // `floorball-bundesliga-weiss.png`, und sie zeigte das POKALZEICHEN (die
+  // Spielerfigur mit Pokal). Da weder auf Produktion noch auf dem Testsystem
+  // eine einzige Liga ein eigenes Logo hinterlegt hat, lief damit jede
+  // Übertragung mit dem Pokalzeichen -- und die CSS-Regel blendete es
+  // ausgerechnet beim Pokal aus. Gemeldet wurde es aus einer Partie der
+  // 1. Bundesliga.
+  //
+  // Ein Zeichen ist eine Tatsachenbehauptung, deshalb hat nur ein ZUGEORDNETER
+  // Wettbewerb eines: die vier Bundesligen und der Pokal. `damen`, `neutral`
+  // und `regional` sind gerade die Schlüssel für „nicht zuzuordnen" (eine
+  // Meisterschaft, eine Liga ohne pflegbare Klasse, die Unterklassen) -- dort
+  // bleibt die Fläche leer, statt eine fremde Liga auszuweisen. Ein eigenes,
+  // hochgeladenes Ligazeichen sticht das ohnehin.
+  var COMPETITION_MARKS = {
+    "1fbl-m": "img/1-fbl-herren-weiss.png",
+    "1fbl-w": "img/1-fbl-damen-weiss.png",
+    "2fbl-m": "img/2-fbl-herren-weiss.png",
+    "2fbl-w": "img/2-fbl-damen-weiss.png",
+    pokal: "img/pokal-weiss.png",
+  };
 
   var state = {
     lastVersion: null, // game.updated_at der zuletzt geholten Spieldaten
@@ -231,12 +253,19 @@
   // Liga-Kopie zur neuen Saison bekommt eine neue id. Über die id zugeordnet
   // fiele jedes Erscheinungsbild zum Saisonwechsel still auf den Standard
   // zurück, und es fiele erst auf Sendung auf.
-  function applyCompetitionTheme() {
-    var league =
+  // Der Wettbewerb, um den es gerade geht. EINE Quelle für Farbwelt und
+  // Bildmarke, sonst könnten die beiden auseinanderlaufen: Im Vollbild liegt
+  // manchmal nur die ligaweite Antwort vor und noch kein Spiel.
+  function currentLeague() {
+    return (
       (state.game && state.game.league) ||
       (state.league && state.league.league) ||
-      null;
-    var key = competitionKey(league);
+      null
+    );
+  }
+
+  function applyCompetitionTheme() {
+    var key = competitionKey(currentLeague());
 
     if (key) {
       document.documentElement.setAttribute("data-competition", key);
@@ -359,33 +388,34 @@
     el.guestGoals.textContent = numberOr(guest, 0);
   }
 
-  // Eigenes Ligazeichen, falls hinterlegt. Der Server liefert hier nur ein
-  // echtes Liga-Logo; hat die Liga keines, kommt gar nichts, und es steht das
-  // mitgelieferte Bundesliga-Zeichen da. Ein Landesverbandslogo stünde an
-  // dieser Stelle für den falschen Zusammenhang.
+  // Das Zeichen des Wettbewerbs, an BEIDEN Stellen: Anzeigetafel und Vollbild.
+  // Sie zeigen dasselbe Zeichen derselben Übertragung.
+  //
+  // Vorrang hat ein hochgeladenes Ligazeichen. Fehlt es, greift die
+  // mitgelieferte Marke des erkannten Wettbewerbs (COMPETITION_MARKS); ist der
+  // Wettbewerb nicht zuzuordnen, bleibt die Fläche leer. Ein Verbandslogo käme
+  // hier nicht in Frage, es stünde für den falschen Zusammenhang -- deshalb
+  // liefert die API an dieser Stelle auch nur ein echtes Ligazeichen.
   //
   // Der Rückweg zählt genauso wie der Hinweg: Wechselt das Dock von einem
   // Spiel mit eigenem Ligazeichen auf eines ohne, muss das erste wieder
   // verschwinden, sonst sendet der Verein das Zeichen des falschen
   // Wettbewerbs.
-  // Setzt das Ligazeichen an BEIDEN Stellen: Anzeigetafel und Vollbild. Sie
-  // zeigen dasselbe Zeichen derselben Übertragung; ohne das Vollbild lief dort
-  // weiter die mitgelieferte Wortmarke, während die Anzeigetafel schon das
-  // eigene Zeichen zeigte.
-  //
-  // `data-own-mark` sagt der CSS, dass ein GEPFLEGTES Zeichen vorliegt. Sie
-  // blendet die mitgelieferte Wortmarke bei Pokal, Regionalliga und
-  // Meisterschaft aus, weil sie dort eine Falschaussage wäre — ein eigenes
-  // Zeichen ist keine, und genau für diese Wettbewerbe wird es hochgeladen.
   function setLeagueMark(league) {
-    var url = (league && league.logo_url) || DEFAULT_LEAGUE_MARK;
+    // Der Schlüssel wird HIER gerechnet und nicht aus dem Zustand gelesen:
+    // `apply` baut das Spiel auf, BEVOR es die Farbwelt setzt. Aus dem Zustand
+    // gelesen wäre die Marke beim ersten Abruf noch leer und erschiene erst
+    // zwei Sekunden später -- auf Sendung ein Aufblitzen ohne Zeichen.
+    // Nachgestellt und genau so beobachtet.
+    var fallback = COMPETITION_MARKS[competitionKey(currentLeague())] || "";
+    var url = (league && league.logo_url) || fallback;
 
     // Eine Adresse, die schon einmal nicht geladen hat, wird nicht erneut
     // versucht. Sonst fordert sie jede Spielaktualisierung wieder an und das
     // Zeichen flackert auf Sendung zwischen Fehlversuch und Rückfall.
-    if (url === state.failedLeagueMark) url = DEFAULT_LEAGUE_MARK;
+    if (url && url === state.failedLeagueMark) url = fallback;
 
-    applyLeagueMark(url);
+    applyLeagueMark(url, fallback);
   }
 
   // Defensiv, weil das Overlay auch mit einem angepassten oder zwischen-
@@ -395,16 +425,28 @@
     return [el.leagueMark, el.fsMark].filter(Boolean);
   }
 
+  // Die Flächen um die Bilder herum, die mit ausblenden müssen: Sie tragen
+  // Innenabstand und eine Trennlinie, ein bloß leeres `img` ließe in der
+  // Anzeigetafel eine leere Spalte stehen.
+  function markBoxes() {
+    return leagueMarks()
+      .map(function (img) {
+        return img.parentNode;
+      })
+      .filter(Boolean);
+  }
+
   // Beide Zeichen tragen immer dieselbe Adresse, deshalb genügt ein Zuhörer je
   // Wechsel für beide.
   var leagueMarkErrorHandler = null;
 
-  function applyLeagueMark(url) {
-    if (url === DEFAULT_LEAGUE_MARK) {
-      document.documentElement.removeAttribute("data-own-mark");
-    } else {
-      document.documentElement.setAttribute("data-own-mark", "");
-    }
+  function applyLeagueMark(url, fallback) {
+    // Das frühere `data-own-mark` ist mit dieser Änderung entfallen. Es sagte
+    // der CSS, dass ein gepflegtes Zeichen vorliegt, damit die Regel greift,
+    // die die EINE mitgelieferte Wortmarke bei Pokal, Regionalliga und
+    // Meisterschaft ausblendete. Diese Unterscheidung liegt jetzt hier: Für
+    // einen nicht zuzuordnenden Wettbewerb gibt es gar keine mitgelieferte
+    // Marke, also auch nichts auszublenden.
 
     // Der Zuhörer des vorigen Wechsels gehört zu einer Adresse, die nicht mehr
     // auf Sendung ist. Abmelden statt `once`: Ein Zuhörer mit `once`
@@ -417,14 +459,27 @@
       leagueMarkErrorHandler = null;
     }
 
-    if (url !== DEFAULT_LEAGUE_MARK) {
+    // Kein Zeichen für diesen Wettbewerb: Fläche weg, und zwar ganz. Das ist
+    // der Normalfall bei Pokalrunden ohne eigenes Logo, Regionalligen und
+    // Meisterschaften.
+    if (!url) {
+      markBoxes().forEach(function (box) {
+        box.classList.add("ov-mark-empty");
+      });
+      leagueMarks().forEach(function (img) {
+        img.removeAttribute("src");
+      });
+      return;
+    }
+
+    if (url !== fallback) {
       // Die Adresse steckt in der Closure, nicht im Element: Hat der Abruf
       // zwischenzeitlich auf ein anderes Spiel umgestellt, stünde im Element
       // längst eine andere -- und die funktionierende landete auf der
       // Sperrliste, für die Lebensdauer der Seite.
       leagueMarkErrorHandler = function () {
         state.failedLeagueMark = url;
-        applyLeagueMark(DEFAULT_LEAGUE_MARK);
+        applyLeagueMark(fallback, fallback);
       };
 
       leagueMarks().forEach(function (img) {
@@ -432,6 +487,9 @@
       });
     }
 
+    markBoxes().forEach(function (box) {
+      box.classList.remove("ov-mark-empty");
+    });
     leagueMarks().forEach(function (img) {
       if (img.getAttribute("src") !== url) img.src = url;
     });

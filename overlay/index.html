@@ -76,19 +76,14 @@
           </span>
         </div>
 
-        <!-- Zeichen des Wettbewerbs. Hat die Liga ein eigenes Logo
-             hinterlegt, ersetzt overlay.js die Quelle; sonst bleibt das
-             mitgelieferte Bundesliga-Zeichen stehen. Ein Landesverbandslogo
-             kommt hier bewusst nicht in Frage, es stünde für den falschen
-             Zusammenhang. -->
-        <div class="ov-league-mark">
-          <img
-            id="league-mark"
-            src="img/floorball-bundesliga-weiss.png"
-            alt=""
-            width="600"
-            height="563"
-          />
+        <!-- Zeichen des Wettbewerbs, gesetzt von overlay.js: ein hochgeladenes
+             Ligazeichen, sonst die mitgelieferte Marke des erkannten
+             Wettbewerbs, sonst nichts. Ohne `src` und ausgeblendet, bis die
+             Spieldaten da sind -- sonst stünde für einen Moment das Zeichen
+             einer fremden Liga im Bild. Ein Landesverbandslogo kommt hier
+             bewusst nicht in Frage, es stünde für den falschen Zusammenhang. -->
+        <div class="ov-league-mark ov-mark-empty">
+          <img id="league-mark" alt="" width="600" height="600" />
         </div>
       </section>
 
@@ -119,14 +114,8 @@
              Ohne diesen Hinweis sieht das auf Sendung wie ein Fehler aus. -->
         <p class="ov-fs-note ov-hidden" id="fs-note"></p>
 
-        <div class="ov-fs-mark">
-          <img
-            id="fs-mark"
-            src="img/floorball-bundesliga-weiss.png"
-            alt=""
-            width="600"
-            height="563"
-          />
+        <div class="ov-fs-mark ov-mark-empty">
+          <img id="fs-mark" alt="" width="600" height="600" />
         </div>
       </section>
 

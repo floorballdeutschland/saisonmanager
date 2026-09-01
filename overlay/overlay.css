@@ -395,28 +395,18 @@ body {
   object-fit: contain;
 }
 
-/* Die mitgelieferte Bildmarke ist die der Floorball Bundesliga und gilt für
-   die 1. und 2. Liga. Auf einem Pokal- oder Regionalliga-Bild wäre sie schlicht
-   falsch, deshalb fällt sie dort weg statt eine fremde Liga auszuweisen. Ein
-   eigenes Logo je Liga (api#366) ersetzt beides, sobald es da ist. */
-/* `damen` und `neutral` sind die Rueckfaelle fuer einen Wettbewerb, der sich
-   nicht zuordnen laesst (Meisterschaft, oder keine pflegbare Ligaklasse). Die
-   Wortmarke ist eine Tatsachenbehauptung -- ohne diese Regel liefe eine
-   DM-Endrunde mit dem Zeichen der Floorball Bundesliga im Bild. `1fbl-w` teilt
-   sich die Farben mit `damen`, steht hier aber ABSICHTLICH nicht: das ist eine
-   echte Bundesliga, die Wortmarke gehoert dort hin. */
-/* Ausgeblendet wird nur die MITGELIEFERTE Wortmarke. Liegt ein eigenes
-   Ligazeichen vor, setzt overlay.js `data-own-mark` und die Regel greift nicht
-   mehr: Ein gepflegtes Zeichen ist keine Behauptung, sondern genau das Zeichen
-   dieses Wettbewerbs -- und Pokal, Regionalliga und DM sind die Faelle, fuer die
-   es hochgeladen wird. */
-:root:not([data-own-mark]):is(
-    [data-competition="pokal"],
-    [data-competition="regional"],
-    [data-competition="damen"],
-    [data-competition="neutral"]
-  )
-  :is(.ov-league-mark, .ov-fs-mark) {
+/* Ohne Zeichen ist die Fläche weg, und zwar ganz: Sie trägt Innenabstand und
+   in der Anzeigetafel eine Trennlinie, ein bloß leeres Bild ließe dort eine
+   leere Spalte stehen. Gesetzt wird die Klasse von overlay.js, und zwar für
+   jeden Wettbewerb, der sich nicht zuordnen lässt (Meisterschaft, Regionalliga,
+   Liga ohne pflegbare Klasse) und dem auch kein eigenes Ligazeichen hinterlegt
+   ist. Ein Zeichen ist eine Tatsachenbehauptung -- lieber keines als das einer
+   fremden Liga.
+
+   Vorher stand hier eine Regel, die die EINE mitgelieferte Wortmarke bei Pokal,
+   Regionalliga und Meisterschaft ausblendete. Seit es je Wettbewerb eine eigene
+   Marke gibt, liegt diese Entscheidung in overlay.js, wo die Zuordnung steht. */
+.ov-mark-empty {
   display: none;
 }
 
