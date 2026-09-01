@@ -758,6 +758,15 @@ body {
   white-space: nowrap;
 }
 
+/* Spielphase neben dem Stand: „2. Drittel" oder „beendet". Gedeckt und
+   kleiner, sie ordnet den Stand ein und ist nicht selbst die Aussage. */
+.ov-fs-phase {
+  font-size: 0.72em;
+  letter-spacing: 0.04em;
+  color: var(--ov-text-muted);
+  white-space: nowrap;
+}
+
 .ov-fs-table td.ov-fs-strong {
   font-family: var(--ov-display);
   font-weight: 600;
