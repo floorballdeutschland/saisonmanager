@@ -509,10 +509,13 @@
 
   function applyScoreboardPosition() {
     var wanted = String(state.control.scoreboard_position || "");
-    el.stage.setAttribute(
-      "data-position",
-      POSITIONS[wanted] ? wanted : "bottom-left"
-    );
+    // `hasOwnProperty` und nicht bloß ein Zugriff: Bei einem Objektliteral sind
+    // `constructor`, `__proto__` und `toString` wahrheitswertig, ein solcher
+    // Wert wäre also als Attribut durchgereicht worden -- genau das, was die
+    // Weißliste verhindern soll. Der Steuerzustand ist frei beschreibbar.
+    var erlaubt = Object.prototype.hasOwnProperty.call(POSITIONS, wanted);
+
+    el.stage.setAttribute("data-position", erlaubt ? wanted : "bottom-left");
   }
 
   // Eigene Farben aus dem Bedienfeld, damit die Einblendungen zu den übrigen
@@ -529,35 +532,65 @@
   // braucht deshalb nur diese vier Eigenschaften zu entfernen.
   var HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
+  // Der GEPRÜFTE Wert als Zeichenkette, sonst null.
+  //
+  // `String()` erst und dann weiterverwenden: `HEX_COLOR.test(String(x))`
+  // besteht auch ein einelementiges Array (`String(["#ff0000"])` ist
+  // "#ff0000"), und `hexToRgb` rief danach `.slice()` auf dem Array auf --
+  // Ergebnis war `rgb(NaN NaN NaN / 16%)` und die Hinterlegung der eigenen
+  // Mannschaft in Tabelle und Torschützenliste verschwand lautlos. Der
+  // Steuerzustand ist frei beschreibbar, solche Werte sind also möglich.
+  function hexOrNull(raw) {
+    var text = String(raw);
+    return HEX_COLOR.test(text) ? text : null;
+  }
+
   function applyColors() {
     var colors = state.control.colors || {};
-    var accent = HEX_COLOR.test(String(colors.accent)) ? colors.accent : null;
     var style = el.stage.style;
 
-    if (!accent) {
-      style.removeProperty("--ov-accent");
-      style.removeProperty("--ov-accent-alt");
-      style.removeProperty("--ov-grad-accent");
-      style.removeProperty("--ov-accent-soft");
-      return;
+    // ZUERST alles Eigene entfernen, DANN die Farben des Wettbewerbs ablesen.
+    // Ohne diese Reihenfolge läse der nächste Durchlauf die eigene Farbe des
+    // vorigen als "Basis" und die Ligafarbe käme nie wieder zurück. Beides
+    // passiert synchron, es gibt also kein Zwischenbild.
+    style.removeProperty("--ov-accent");
+    style.removeProperty("--ov-accent-alt");
+    style.removeProperty("--ov-grad-accent");
+    style.removeProperty("--ov-accent-soft");
+
+    var accent = hexOrNull(colors.accent);
+    var alt = hexOrNull(colors.accent_alt);
+    if (!accent && !alt) return;
+
+    // Je Feld einzeln zurückfallen, nicht als Paar. Das Bedienfeld schickt nur
+    // das Feld, das die Regie gesetzt hat: Es kennt die Farbwelt des
+    // Wettbewerbs nicht und darf sie deshalb nicht mit einem Standardwert
+    // überschreiben. Vorher tat es genau das -- eine Änderung am Verlauf
+    // schrieb das Markenrot der 1. Herren als Akzent, und eine Damenpartie
+    // sprang auf Sendung ins Rot.
+    var basis = window.getComputedStyle(el.stage);
+    var wirkAccent = accent || basis.getPropertyValue("--ov-accent").trim();
+    var wirkAlt = alt || basis.getPropertyValue("--ov-accent-alt").trim();
+
+    if (accent) style.setProperty("--ov-accent", accent);
+    if (alt) style.setProperty("--ov-accent-alt", alt);
+
+    if (wirkAccent && wirkAlt) {
+      style.setProperty(
+        "--ov-grad-accent",
+        "linear-gradient(135deg, " + wirkAccent + " 0%, " + wirkAlt + " 100%)"
+      );
     }
 
-    // Ohne zweite Farbe ein Verlauf aus derselben: Ein Verlauf, der zur Hälfte
-    // die Ligafarbe trägt, sah nach einem Fehler aus.
-    var alt = HEX_COLOR.test(String(colors.accent_alt))
-      ? colors.accent_alt
-      : accent;
-
-    style.setProperty("--ov-accent", accent);
-    style.setProperty("--ov-accent-alt", alt);
-    style.setProperty(
-      "--ov-grad-accent",
-      "linear-gradient(135deg, " + accent + " 0%, " + alt + " 100%)"
-    );
-    // Dieselbe Schreibweise wie im Stylesheet, nicht color-mix: Die
-    // Browser-Quelle ist ein eingebettetes Chromium, dessen Fassung an der
-    // OBS-Version hängt.
-    style.setProperty("--ov-accent-soft", softColor(accent));
+    // Die weiche Fläche folgt dem Akzent. Nur bei einem eigenen Akzent
+    // anfassen: Für die Ligafarbe steht sie im Stylesheet schon passend, und
+    // ein aus `getComputedStyle` gelesener Wert wäre nicht zwingend Hex.
+    if (accent) {
+      // Dieselbe Schreibweise wie im Stylesheet, nicht color-mix: Die
+      // Browser-Quelle ist ein eingebettetes Chromium, dessen Fassung an der
+      // OBS-Version hängt.
+      style.setProperty("--ov-accent-soft", softColor(accent));
+    }
   }
 
   function softColor(hex) {
@@ -713,6 +746,20 @@
     // auffallen, statt halb auf Sendung zu gehen.
     if (!player) return null;
 
+    // Und dasselbe für einen Eintrag OHNE Namen. Den gibt es wirklich:
+    // `GamesController#add_player_to_lineup` übernimmt im Freitext-Zweig
+    // `player_firstname` und `player_name` ungeprüft aus den Parametern, ein
+    // Eintrag mit Nummer und ohne Namen ist also möglich. Ohne diesen Riegel
+    // ging die Einblendung mit LEERER Hauptzeile auf Sendung; die Prüfung eine
+    // Zeile höher fängt das nicht, sie sieht nur, DASS ein Eintrag da ist.
+    var fullName = playerFullName(player);
+    if (!fullName) {
+      logProblem(
+        "Interview: Aufstellungseintrag ohne Namen (Nr. " + number + ")"
+      );
+      return null;
+    }
+
     var tallies = teamTallies(side);
     var own = tallies[number] || { goals: 0, assists: 0, points: 0 };
     var parts = [];
@@ -735,7 +782,7 @@
 
     return {
       kicker: [teamText, "Nr. " + number].filter(Boolean).join("   ·   "),
-      main: playerFullName(player),
+      main: fullName,
       sub: parts.join("   ·   "),
     };
   }
@@ -749,7 +796,7 @@
 
     // Punktgleich zählt mit: „Topscorer" ist hier eine Aussage über diese
     // Partie, und bei 2:2 Punkten sind es eben zwei.
-    if (own.points > 0 && own.points >= bestPoints(tallies)) {
+    if (own.points > 0 && own.points >= bestPoints(tallies, side)) {
       return "Topscorer der Mannschaft";
     }
 
@@ -784,11 +831,18 @@
     tallies[n] = entry;
   }
 
-  function bestPoints(tallies) {
+  // Nur Nummern, die in der Aufstellung stehen. Ein Tor kann auf eine Nummer
+  // gebucht sein, die dort nicht (mehr) vorkommt -- etwa nach einer nachträglich
+  // geänderten Trikotnummer. Zählte die mit, lag der Bestwert über dem echten
+  // und die Auszeichnung „Topscorer der Mannschaft" fiel still aus.
+  function bestPoints(tallies, side) {
     var best = 0;
+
     Object.keys(tallies).forEach(function (number) {
+      if (!rosterPlayer(side, number)) return;
       if (tallies[number].points > best) best = tallies[number].points;
     });
+
     return best;
   }
 
@@ -800,9 +854,15 @@
     list.forEach(function (entry) {
       if (!entry || entry.award !== "mvp") return;
 
-      // Über die player_id, wo es eine gibt: Trikotnummern werden im
-      // Spielbericht nachträglich geändert, die Kennung nicht. Ohne Kennung
-      // (Eintrag als Freitext) bleibt die Nummer.
+      // Über die player_id, wo BEIDE eine haben: Trikotnummern werden im
+      // Spielbericht nachträglich geändert, die Kennung nicht.
+      //
+      // `Game#awards_with_player_names` füllt `player_id` und `trikot_number`
+      // aus demselben Eintrag, beide sind also entweder gesetzt oder beide
+      // leer. Der Nummern-Zweig darunter greift damit nicht für eine
+      // Auszeichnung ohne Kennung (die gibt es nicht), sondern wenn der
+      // INTERVIEWTE Eintrag keine hat -- ein Freitext-Eintrag in der
+      // Aufstellung.
       if (entry.player_id && player.player_id) {
         if (entry.player_id === player.player_id) hit = true;
         return;
@@ -819,17 +879,41 @@
     return hit;
   }
 
+  // Der ERSTE Treffer, nicht der letzte. Eine Aufstellung kann eine
+  // Trikotnummer doppelt enthalten: `add_player_to_lineup` prüft nur auf
+  // doppelte `player_id`, und `Game` hat keine Validierung. Im Bedienfeld
+  // tragen zwei Einträge derselben Nummer denselben Wert in der Auswahlliste;
+  // die Regie sieht den ZUERST gelisteten. Nahm die Bühne den letzten, ging der
+  // Name des anderen Spielers auf Sendung. Beide Seiten nehmen jetzt den
+  // ersten.
   function rosterPlayer(side, number) {
     var players = (state.game && state.game.players) || {};
     var list = players[side] || [];
-    var found = null;
 
-    list.forEach(function (player) {
-      if (!player || String(player.trikot_number || "").length === 0) return;
-      if (Number(player.trikot_number) === Number(number)) found = player;
-    });
+    for (var i = 0; i < list.length; i++) {
+      var player = list[i];
+      if (!player || !hasTrikotNumber(player)) continue;
+      if (Number(player.trikot_number) === Number(number)) return player;
+    }
 
-    return found;
+    return null;
+  }
+
+  // Eine Trikotnummer im Sinne dieser Anzeige.
+  //
+  // Die 0 zählt bewusst NICHT: `add_player_to_lineup` schreibt
+  // `params[:trikot_number].to_i`, ohne Angabe also die Zahl 0. Sie steht damit
+  // für „keine Nummer erfasst", nicht für die Rückennummer 0. Der Server sieht
+  // das anders (`OverlayPayload#roster` prüft `.present?`, und `0.present?` ist
+  // in Rails true) -- für die Namensauflösung eines Tores ist das dort auch
+  // richtig. Hier geht es um eine Auswahl für die Regie, und ein Eintrag ohne
+  // erfasste Nummer ist darin nicht ansprechbar.
+  function hasTrikotNumber(player) {
+    var raw = player.trikot_number;
+    if (raw === undefined || raw === null || String(raw).length === 0) {
+      return false;
+    }
+    return Number(raw) > 0;
   }
 
   function playerFullName(player) {
