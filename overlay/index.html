@@ -76,19 +76,18 @@
           </span>
         </div>
 
-        <!-- Zeichen des Wettbewerbs. Hat die Liga ein eigenes Logo
-             hinterlegt, ersetzt overlay.js die Quelle; sonst bleibt das
-             mitgelieferte Bundesliga-Zeichen stehen. Ein Landesverbandslogo
-             kommt hier bewusst nicht in Frage, es stünde für den falschen
-             Zusammenhang. -->
-        <div class="ov-league-mark">
-          <img
-            id="league-mark"
-            src="img/floorball-bundesliga-weiss.png"
-            alt=""
-            width="600"
-            height="563"
-          />
+        <!-- Zeichen des Wettbewerbs, gesetzt von overlay.js: ein hochgeladenes
+             Ligazeichen, sonst die mitgelieferte Marke des erkannten
+             Wettbewerbs, sonst nichts. Ohne `src` und ausgeblendet, bis die
+             Spieldaten da sind -- sonst stünde für einen Moment das Zeichen
+             einer fremden Liga im Bild. Ein Landesverbandslogo kommt hier
+             bewusst nicht in Frage, es stünde für den falschen Zusammenhang. -->
+        <div class="ov-league-mark ov-mark-empty">
+          <!-- Ohne `width`/`height`: Die mitgelieferten Zeichen sind 600x600, das
+               Pokalzeichen 600x563, und ein hochgeladenes hat beliebige Maße.
+               Ein festes Verhältnis ergäbe hier nur einen Sprung beim Laden;
+               die Größe steht in der CSS (`height: 54px; width: auto`). -->
+          <img id="league-mark" alt="" />
         </div>
       </section>
 
@@ -119,14 +118,8 @@
              Ohne diesen Hinweis sieht das auf Sendung wie ein Fehler aus. -->
         <p class="ov-fs-note ov-hidden" id="fs-note"></p>
 
-        <div class="ov-fs-mark">
-          <img
-            id="fs-mark"
-            src="img/floorball-bundesliga-weiss.png"
-            alt=""
-            width="600"
-            height="563"
-          />
+        <div class="ov-fs-mark ov-mark-empty">
+          <img id="fs-mark" alt="" />
         </div>
       </section>
 
