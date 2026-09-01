@@ -24,12 +24,12 @@ describe('buildObsSceneCollection', () => {
     }) as unknown as ObsCollection;
   }
 
-  it('legt die Bühne und neun Vollbilder als Szenen an', () => {
+  it('legt die Bühne und zehn Vollbilder als Szenen an', () => {
     const collection = build();
     const scenes = collection.sources.filter((s) => s.id === 'scene');
 
-    expect(scenes.length).toBe(10);
-    expect(collection.scene_order.length).toBe(10);
+    expect(scenes.length).toBe(11);
+    expect(collection.scene_order.length).toBe(11);
   });
 
   it('macht die Bühne zur aktiven Szene', () => {
@@ -45,7 +45,7 @@ describe('buildObsSceneCollection', () => {
   it('setzt jede Browser-Quelle auf 1920 x 1080', () => {
     const browsers = build().sources.filter((s) => s.id === 'browser_source');
 
-    expect(browsers.length).toBe(10);
+    expect(browsers.length).toBe(11);
     browsers.forEach((source) => {
       expect(source.settings['width']).toBe(1920);
       expect(source.settings['height']).toBe(1080);
@@ -66,7 +66,7 @@ describe('buildObsSceneCollection', () => {
     );
 
     expect(stage!.settings['shutdown']).toBeFalse();
-    expect(fullscreens.length).toBe(9);
+    expect(fullscreens.length).toBe(10);
     fullscreens.forEach((source) => {
       expect(source.settings['shutdown']).toBeTrue();
     });
@@ -90,6 +90,7 @@ describe('buildObsSceneCollection', () => {
       'tabelle',
       'topscorer',
       'naechste-spiele',
+      'formkurve',
     ].forEach((slug) => {
       expect(urls).toContain(
         `https://saisonmanager.de/overlay/index.html?token=abc123&only=fullscreen&scene=${slug}`
@@ -124,7 +125,7 @@ describe('buildObsSceneCollection', () => {
       .flatMap((s) => (s.settings['items'] as { name: string }[]) ?? [])
       .map((item) => item.name);
 
-    expect(referenced.length).toBe(10);
+    expect(referenced.length).toBe(11);
     expect(referenced.slice().sort()).toEqual(sourceNames.slice().sort());
   });
 

@@ -1028,6 +1028,73 @@ body {
   background: #ff8080;
 }
 
+/* Formkurve: Datum, Heim/Auswärts, Gegner, Ergebnis, Wertung. Feste Breiten
+   links und rechts, der Gegner nimmt den Rest -- so stehen Ergebnis und
+   Wertung in beiden Mannschaftsblöcken auf derselben Linie. */
+.ov-fs-group--form .ov-fs-player {
+  padding: 7px 0;
+  font-size: 26px;
+}
+
+.ov-fs-form-date {
+  flex: 0 0 96px;
+  color: var(--ov-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ov-fs-form-where {
+  flex: 0 0 26px;
+  color: var(--ov-text-muted);
+  font-weight: 700;
+}
+
+.ov-fs-form-opponent {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ov-fs-form-score {
+  flex: 0 0 92px;
+  text-align: right;
+  font-family: var(--ov-display);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sieg, Unentschieden, Niederlage. FESTE Farben und nicht der Akzent: Die
+   Wertung ist eine Aussage über das Ergebnis und darf nicht mit der Farbwelt
+   des Wettbewerbs oder einer im Bedienfeld gewählten Vereinsfarbe wandern --
+   sonst stünde in einem Bild ein grünes N oder ein rotes S. */
+.ov-fs-outcome {
+  flex: 0 0 74px;
+  align-self: center;
+  text-align: center;
+  font-family: var(--ov-body);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+  padding: 3px 0;
+  color: var(--ov-text-muted);
+}
+
+.ov-fs-outcome--win {
+  color: #0c2a14;
+  background: #4fc46a;
+}
+
+.ov-fs-outcome--draw {
+  color: var(--ov-text);
+  background: rgb(255 255 255 / 20%);
+}
+
+.ov-fs-outcome--loss {
+  color: #2b0d10;
+  background: #ff8080;
+}
+
 /* Für Zeilen, deren erste Spalte ein Mannschaftsname ist statt einer
    Trikotnummer. Ohne die Breite bricht ein Verein ohne hinterlegtes Kürzel
    über die Spalte. */
