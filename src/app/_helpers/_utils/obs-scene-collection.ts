@@ -75,7 +75,7 @@ function browserSource(name: string, url: string, shutdown: boolean): object {
     width: WIDTH,
     height: HEIGHT,
     // „Quelle beim Ausblenden abschalten": Ohne das fragen alle inaktiven
-    // Vollbild-Szenen die ganze Zeit mit — bei acht Szenen also achtfacher
+    // Vollbild-Szenen die ganze Zeit mit — bei neun Szenen also neunfacher
     // Datenverkehr für ein Bild, das niemand sieht. Bei der laufenden Bühne
     // ausdrücklich NICHT gesetzt: Sie soll beim Szenenwechsel nicht neu laden
     // und dabei Uhr und Einblendung verlieren.

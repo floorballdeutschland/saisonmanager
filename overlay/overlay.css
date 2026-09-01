@@ -895,10 +895,28 @@ body {
   color: var(--ov-text-muted);
 }
 
-/* Torfolge: Stand nach dem Treffer, Mannschaft, Vorlage. Feste Breiten, damit
-   die Spalten untereinander stehen und nicht mit jedem Namen wandern. */
+/* Torfolge: Zeit, Stand nach dem Treffer, Mannschaft, Schütze, Vorlage. Feste
+   Breiten, damit die Spalten untereinander stehen und nicht mit jedem Namen
+   wandern -- `overlay.js` legt Stand und Mannschaft deshalb auch dann an, wenn
+   sie leer bleiben.
+
+   Alle Schriftgrößen hier RELATIV (em). Die Verengungsstufen aus `fitBody`
+   setzen `font-size` an `.ov-fs-player`; absolute Werte in den Kindern kämen
+   dort nicht mit, und auf der letzten Stufe wäre die Vorlage (22px) größer
+   gewesen als der Name daneben (18px). */
+.ov-fs-goal-time {
+  /* Breiter als die Nummernspalte des Kaders: „12:34" in Oswald läuft in
+     62px nach links über, und `fitBody` sieht das nicht -- es misst die Höhe. */
+  flex: 0 0 96px;
+  font-family: var(--ov-display);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ov-text-muted);
+  text-align: right;
+}
+
 .ov-fs-goal-score {
-  flex: 0 0 94px;
+  flex: 0 0 84px;
   font-family: var(--ov-display);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -906,18 +924,99 @@ body {
 }
 
 .ov-fs-goal-team {
-  flex: 0 0 130px;
+  flex: 0 0 118px;
   font-family: var(--ov-body);
-  font-size: 20px;
+  font-size: 0.67em;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ov-text-muted);
 }
 
+/* Der Schütze trägt die Zeile, er darf schrumpfen statt umzubrechen. */
+.ov-fs-goal-scorer {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .ov-fs-goal-assist {
-  font-size: 22px;
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 0.73em;
   color: var(--ov-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Formkurve: Datum, Heim/Auswärts, Gegner, Ergebnis, Wertung. Feste Breiten
+   links und rechts, der Gegner nimmt den Rest -- so stehen Ergebnis und
+   Wertung in beiden Mannschaftsblöcken auf derselben Linie. */
+.ov-fs-group--form .ov-fs-player {
+  padding: 7px 0;
+  font-size: 26px;
+}
+
+.ov-fs-form-date {
+  flex: 0 0 96px;
+  color: var(--ov-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ov-fs-form-where {
+  flex: 0 0 26px;
+  color: var(--ov-text-muted);
+  font-weight: 700;
+}
+
+.ov-fs-form-opponent {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ov-fs-form-score {
+  flex: 0 0 92px;
+  text-align: right;
+  font-family: var(--ov-display);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sieg, Unentschieden, Niederlage. FESTE Farben und nicht der Akzent: Die
+   Wertung ist eine Aussage über das Ergebnis und darf nicht mit der Farbwelt
+   des Wettbewerbs oder einer im Bedienfeld gewählten Vereinsfarbe wandern --
+   sonst stünde in einem Bild ein grünes N oder ein rotes S. */
+.ov-fs-outcome {
+  flex: 0 0 74px;
+  align-self: center;
+  text-align: center;
+  font-family: var(--ov-body);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+  padding: 3px 0;
+  color: var(--ov-text-muted);
+}
+
+.ov-fs-outcome--win {
+  color: #0c2a14;
+  background: #4fc46a;
+}
+
+.ov-fs-outcome--draw {
+  color: var(--ov-text);
+  background: rgb(255 255 255 / 20%);
+}
+
+.ov-fs-outcome--loss {
+  color: #2b0d10;
+  background: #ff8080;
 }
 
 /* Für Zeilen, deren erste Spalte ein Mannschaftsname ist statt einer

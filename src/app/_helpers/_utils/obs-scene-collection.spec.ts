@@ -112,7 +112,7 @@ describe('buildObsSceneCollection', () => {
   // Der Name der Quelle steht an zwei Stellen und wird an beiden aus derselben
   // Vorlage gebaut, aber getrennt. Laeuft eine der beiden auseinander -- ein
   // umbenanntes Label, ein Halbgeviertstrich, der zum Bindestrich wird --,
-  // enthaelt die Datei weiter neun Quellen und neun Szenen, und trotzdem sind
+  // enthaelt die Datei weiter zehn Quellen und zehn Szenen, und trotzdem sind
   // beim Verein alle Szenen leer. Das faellt erst auf Sendung auf.
   it('verweist jede Szene auf eine Quelle, die es gibt', () => {
     const collection = build();
