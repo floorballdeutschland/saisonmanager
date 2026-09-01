@@ -842,6 +842,47 @@ body {
   color: var(--ov-accent);
 }
 
+/* Die Spielerzeilen des Kaders liegen direkt im Mehrspalter, nicht mehr in
+   einer Gruppe je Position. Ohne das reißt der Spaltenumbruch eine Zeile
+   mitten durch. */
+.ov-fs-columns .ov-fs-player {
+  break-inside: avoid;
+}
+
+/* Kennzeichnung am Spieler (Torhüter, Kapitän) statt einer eigenen Spalte.
+   Gedeckt und nicht im Akzent: Der Akzent gehört hier der Startformation, und
+   zwei hervorgehobene Dinge in einer Zeile heben nichts mehr hervor. */
+.ov-fs-player-badge {
+  align-self: center;
+  font-family: var(--ov-body);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ov-text-muted);
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+
+/* Startformation: Die Position steht vor der Nummer. Etwas kleiner und enger
+   als der Kader darunter, denn sechs Zeilen und ein Kader müssen zusammen in
+   die Fläche passen -- sie schneidet unten hart ab (`overflow: hidden`). */
+.ov-fs-group--lineup .ov-fs-player {
+  padding: 5px 0;
+  font-size: 26px;
+}
+
+.ov-fs-group--lineup .ov-fs-player-position {
+  flex: 0 0 240px;
+  font-family: var(--ov-body);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ov-text-muted);
+}
+
 /* Für Zeilen, deren erste Spalte ein Mannschaftsname ist statt einer
    Trikotnummer. Ohne die Breite bricht ein Verein ohne hinterlegtes Kürzel
    über die Spalte. */
