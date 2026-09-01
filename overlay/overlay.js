@@ -1486,7 +1486,28 @@
       return entry && entry.player_id;
     });
 
-    if (!entries.length) return null;
+    if (!entries.length) {
+      // Eine erfasste, aber nicht auflösbare Startformation sieht im Bild
+      // genauso aus wie eine nicht erfasste: `starting_players_with_numbers`
+      // verknüpft über `player_id` und schreibt bei Misserfolg einen leeren
+      // Eintrag. Ohne diese Spur wäre der Unterschied nirgends zu sehen.
+      var erfasst = (
+        (state.game.starting_players && state.game.starting_players[side]) ||
+        []
+      ).length;
+
+      if (erfasst) {
+        logProblem(
+          "Startformation " +
+            side +
+            ": " +
+            erfasst +
+            " Positionen erfasst, keine auflösbar"
+        );
+      }
+
+      return null;
+    }
 
     var block = node("div", "ov-fs-group ov-fs-group--lineup");
     block.appendChild(node("div", "ov-fs-group-title", "Startformation"));
@@ -1500,9 +1521,7 @@
           STARTING_LABELS[entry.position] || ""
         )
       );
-      row.appendChild(
-        node("span", "ov-fs-player-number", numberText(entry.trikot_number))
-      );
+      row.appendChild(node("span", "ov-fs-player-number", numberText(entry)));
       row.appendChild(node("span", null, playerFullName(entry)));
       block.appendChild(row);
     });
@@ -1535,15 +1554,18 @@
 
   // Einträge ohne Trikotnummer nach hinten, nicht an eine beliebige Stelle:
   // `Number("")` ist 0 und stellte sie vor die Nummer 1.
+  //
+  // Maßgeblich ist `hasTrikotNumber`, dieselbe Regel wie in der
+  // Interview-Auswahl. Vorher sortierte die ZAHL 0 nach hinten (`0 || ""` ist
+  // "") und die ZEICHENKETTE "0" nach vorn, gedruckt wurde in beiden Fällen
+  // eine sichtbare "0" -- Sortierung und Anzeige waren sich also nicht einig.
   function numberValue(player) {
-    var n = Number(player && player.trikot_number);
-    return isFinite(n) && String(player.trikot_number || "").length
-      ? n
-      : Infinity;
+    if (!player || !hasTrikotNumber(player)) return Infinity;
+    return Number(player.trikot_number);
   }
 
-  function numberText(value) {
-    return value === undefined || value === null ? "" : value;
+  function numberText(player) {
+    return player && hasTrikotNumber(player) ? player.trikot_number : "";
   }
 
   function playerRow(player, startingIds) {
@@ -1553,9 +1575,7 @@
       "ov-fs-player" + (starting ? " ov-fs-player--starting" : "")
     );
 
-    row.appendChild(
-      node("span", "ov-fs-player-number", numberText(player.trikot_number))
-    );
+    row.appendChild(node("span", "ov-fs-player-number", numberText(player)));
     row.appendChild(node("span", null, playerFullName(player)));
 
     // Kennzeichnung statt Sortierung. „Tor" wie im Spielbericht, „C" wie im
