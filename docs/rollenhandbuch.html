@@ -8572,7 +8572,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 Bauchbinde ein, etwa <em>Paarung</em>, und schau parallel auf
                 die Bühnen-Szene in OBS. Taucht sie im Programmbild auf, ist
                 alles verbunden. Danach wieder <em>Ausblenden</em>. Zum Schluss
-                einmal durch alle neun Szenen klicken und prüfen, ob jede lädt.
+                einmal durch alle elf Szenen klicken und prüfen, ob jede lädt.
                 Vollbilder brauchen beim ersten Aufruf manchmal einen Moment.
               </p>
             </div>
@@ -9126,8 +9126,8 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             in den Pausen.
           </div>
           <p class="proc-text">
-            <strong>Jedes Bedienelement hat ein Tastenkürzel</strong>, es steht
-            als kleines Zeichen auf dem Knopf selbst. Ein einzelner Tastendruck
+            <strong>Fast jeder Knopf hat ein Tastenkürzel</strong>, es steht als
+            kleines Zeichen auf dem Knopf selbst. Ein einzelner Tastendruck
             genügt, ohne Zusatztaste, damit sich die Bedienung auf ein Stream
             Deck oder ein ähnliches Pult legen lässt.
           </p>
@@ -9193,11 +9193,11 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             >
             Sitzt es als Dock in OBS, klick einmal hinein, dann greifen sie; hat
             gerade das Programmbild oder eine andere Anwendung den Fokus, gehen
-            die Tasten dorthin. Während du in einem Textfeld tippst, sind die
-            Kürzel aus, eine <code>1</code> im Freitext bleibt also eine
-            <code>1</code>. Nicht zu verwechseln mit den OBS-Hotkeys für den
-            Szenenwechsel, die sind davon unabhängig und liegen in den
-            OBS-Einstellungen.
+            die Tasten dorthin. Während du in einem Textfeld tippst oder in
+            einer Auswahlliste blätterst, sind die Kürzel aus, eine
+            <code>1</code> im Freitext bleibt also eine <code>1</code>. Nicht zu
+            verwechseln mit den OBS-Hotkeys für den Szenenwechsel, die sind
+            davon unabhängig und liegen in den OBS-Einstellungen.
           </div>
           <details class="proc">
             <summary>
@@ -9257,8 +9257,9 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 Darunter das Auswahlfeld <strong>Platzierung</strong> mit
                 <em>unten links</em>, <em>unten mittig</em> und
                 <em>oben links</em>. Es verschiebt die Tafel in der Bühne, und
-                die Bauchbinden ziehen mit, damit sich nichts überdeckt. Die
-                Wahl gilt für alle Browser-Quellen dieser Übertragung.
+                bei <em>oben links</em> ziehen die Bauchbinden nach unten mit,
+                damit sich nichts überdeckt. Die Wahl gilt für alle
+                Browser-Quellen dieser Übertragung.
               </p>
             </div>
           </details>
@@ -9375,17 +9376,6 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                       </td>
                     </tr>
                     <tr>
-                      <td><strong>Interview einblenden</strong></td>
-                      <td>
-                        Name, Verein und Rückennummer, dazu Tore und Vorlagen
-                        aus diesem Spiel
-                      </td>
-                      <td>
-                        Nach dem Spiel oder in der Pause, wenn jemand vor der
-                        Kamera steht
-                      </td>
-                    </tr>
-                    <tr>
                       <td><strong>Ausblenden</strong></td>
                       <td>Beendet die aktuelle Einblendung</td>
                       <td>
@@ -9435,6 +9425,43 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
           </details>
           <details class="proc">
             <summary>
+              <span class="proc-icon">🎨</span>
+              <div>
+                <div class="proc-title">Block Farben</div>
+                <div class="proc-sub">
+                  Optional, wirkt auf alle Bilder dieser Übertragung
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Zwei Farbfelder, <strong>Akzent</strong> und
+                <strong>Verlauf</strong>, dazu der Knopf
+                <em>Farben der Liga</em>, der wieder auf die Voreinstellung des
+                Spielbetriebs zurückstellt. Der Akzent trägt die farbigen
+                Vorzeilen und Spaltentitel, der Verlauf die Akzentkante.
+                Darunter steht, was gerade gilt.
+              </p>
+              <p class="proc-text">
+                Gedacht ist das für Produktionen mit eigenem Erscheinungsbild:
+                Wenn deine übrigen Szenen in den Vereinsfarben liegen, passen
+                sich die Overlays an. Die Wahl gilt nur für diese Übertragung
+                und läuft mit dem Zugang ab.
+              </p>
+              <div class="note">
+                <strong>Beachte den Kontrasthinweis.</strong> Wählst du einen
+                dunklen Akzent, meldet das Bedienfeld den gemessenen Kontrast
+                auf dem dunklen Grund. Das ist keine Sperre, sondern eine
+                Warnung: Der Akzent trägt kleine Versalien, und was auf dem
+                Bildschirm gerade noch zu lesen ist, verschwindet nach der
+                Videokompression eines Streams zuerst. Ein dunkles Marineblau
+                etwa kommt auf 1,1:1 und ist im Stream praktisch unsichtbar.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
               <span class="proc-icon">🎤</span>
               <div>
                 <div class="proc-title">Block Interview</div>
@@ -9470,43 +9497,6 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 nach, zieht die laufende Einblendung von selbst mit, du musst
                 nicht neu drücken. Fehlt die Aufstellung einer Mannschaft ganz,
                 sagt das Feld das und der Knopf ist gesperrt.
-              </div>
-            </div>
-          </details>
-          <details class="proc">
-            <summary>
-              <span class="proc-icon">🎨</span>
-              <div>
-                <div class="proc-title">Block Farben</div>
-                <div class="proc-sub">
-                  Optional, wirkt auf alle Bilder dieser Übertragung
-                </div>
-              </div>
-              <span class="proc-chev">▾</span>
-            </summary>
-            <div class="proc-body">
-              <p class="proc-text">
-                Zwei Farbfelder, <strong>Akzent</strong> und
-                <strong>Verlauf</strong>, dazu der Knopf
-                <em>Farben der Liga</em>, der wieder auf die Voreinstellung des
-                Spielbetriebs zurückstellt. Der Akzent trägt die farbigen
-                Vorzeilen und Spaltentitel, der Verlauf die Akzentkante.
-                Darunter steht, was gerade gilt.
-              </p>
-              <p class="proc-text">
-                Gedacht ist das für Produktionen mit eigenem Erscheinungsbild:
-                Wenn deine übrigen Szenen in den Vereinsfarben liegen, passen
-                sich die Overlays an. Die Wahl gilt nur für diese Übertragung
-                und läuft mit dem Zugang ab.
-              </p>
-              <div class="note">
-                <strong>Beachte den Kontrasthinweis.</strong> Wählst du einen
-                dunklen Akzent, meldet das Bedienfeld den gemessenen Kontrast
-                auf dem dunklen Grund. Das ist keine Sperre, sondern eine
-                Warnung: Der Akzent trägt kleine Versalien, und was auf dem
-                Bildschirm gerade noch zu lesen ist, verschwindet nach der
-                Videokompression eines Streams zuerst. Ein dunkles Marineblau
-                etwa kommt auf 1,1:1 und ist im Stream praktisch unsichtbar.
               </div>
             </div>
           </details>
@@ -9967,7 +9957,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 <em>URL</em> die neue Adresse einsetzen. Bei der Bühne genügt
                 der reine Link, bei den Vollbildern musst du die Anhängsel
                 <code>&amp;only=fullscreen&amp;scene=…</code> aus der alten
-                Adresse übernehmen. Das sind neun Quellen, also etwas
+                Adresse übernehmen. Das sind elf Quellen, also etwas
                 Fleißarbeit.
               </p>
               <p class="proc-text">
@@ -10051,6 +10041,14 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                     <tr>
                       <td><code>naechste-spiele</code></td>
                       <td>Nächste Spiele</td>
+                    </tr>
+                    <tr>
+                      <td><code>tore</code></td>
+                      <td>Tore des Spiels</td>
+                    </tr>
+                    <tr>
+                      <td><code>formkurve</code></td>
+                      <td>Formkurve</td>
                     </tr>
                   </tbody>
                 </table>
