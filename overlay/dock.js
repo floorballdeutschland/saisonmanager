@@ -375,11 +375,20 @@
   // gerade ein Vollbild darüber, entscheidet OBS. Das Bedienfeld erfährt davon
   // nichts und darf es deshalb nicht behaupten.
   function renderLowerThird() {
+    // Das Bedienfeld muss auch mit einem älteren, zwischengespeicherten
+    // dock.html laufen (`Cache-Control` für /overlay/ ist noch offen). Fehlt
+    // ein Element, würde der Zugriff werfen -- und weil `render` aus dem Poll
+    // heraus läuft, landete der Fehler in der Statuszeile und das Bedienfeld
+    // rendert bis zum Neuladen NIE mehr. `bindHotkeys` hält es genauso.
+    if (!el["lt-onair"] || !el["lt-off"]) return;
+
     var lt = state.control.lower_third || null;
     var kind = lt && lt.kind;
 
     LT_BUTTONS.forEach(function (entry) {
-      el[entry.id].classList.toggle("dk-btn--live", kind === entry.kind);
+      if (el[entry.id]) {
+        el[entry.id].classList.toggle("dk-btn--live", kind === entry.kind);
+      }
     });
 
     // textContent, nicht innerHTML: Der Freitext kommt aus dem Feld daneben.
@@ -542,6 +551,9 @@
   // vorkommt, ergäbe eine Bauchbinde ohne Namen, und das fiele erst auf
   // Sendung auf.
   function renderInterview() {
+    // Siehe renderLowerThird: ältere Fassung des dock.html im Cache.
+    if (!el["iv-team"] || !el["iv-player"] || !el["iv-show"]) return;
+
     fillInterviewTeams();
     fillInterviewPlayers();
 
@@ -578,6 +590,12 @@
   function fillInterviewPlayers() {
     if (!state.game) return;
 
+    // Nicht neu bauen, während die Liste geöffnet ist: Chromium schließt sie,
+    // wenn ihre Einträge ersetzt werden, und der Klick der Regie landete im
+    // Leeren. Passiert, sobald das Sekretariat währenddessen einen Spieler
+    // nachträgt.
+    if (document.activeElement === el["iv-player"]) return;
+
     var side = el["iv-team"].value || "home";
     var roster = rosterFor(side);
     // Die Anzahl gehört in den Schlüssel: Wird die Aufstellung erst während
@@ -586,7 +604,15 @@
     var key = state.game.id + ":" + side + ":" + roster.length;
     if (el["iv-player"].dataset.filledFor === key) return;
 
-    var chosen = el["iv-player"].value;
+    // Die Wahl nur innerhalb DERSELBEN Mannschaft halten. Nach einem
+    // Seitenwechsel wäre sie entweder wirkungslos (die andere Mannschaft hat die
+    // Nummer nicht, das Feld stünde leer und der Knopf gesperrt, ohne
+    // Erklärung) oder still falsch: Hat sie die Nummer auch, wäre plötzlich ein
+    // Spieler vorgewählt, den niemand ausgesucht hat.
+    var vorherigeSeite = String(el["iv-player"].dataset.filledFor || "").split(
+      ":"
+    )[1];
+    var chosen = vorherigeSeite === side ? el["iv-player"].value : "";
     el["iv-player"].textContent = "";
 
     if (!roster.length) {
@@ -603,7 +629,12 @@
           player.trikot_number +
           "  " +
           playerName(player) +
-          (player.position === "Tor" ? " (Tor)" : "");
+          (player.position === "Tor" ? " (Tor)" : "") +
+          // Kommt eine Nummer doppelt vor, tragen beide Einträge denselben Wert
+          // in dieser Liste und nur der erste ist ansprechbar (Bühne und Chip
+          // lösen beide auf ihn auf). Ohne diesen Zusatz wählt die Regie den
+          // zweiten und bekommt ohne Erklärung den Namen des ersten.
+          (mehrfacheNummer(roster, player) ? " – Nummer doppelt erfasst" : "");
         el["iv-player"].appendChild(opt);
       });
 
@@ -613,15 +644,23 @@
     el["iv-player"].dataset.filledFor = key;
   }
 
-  // Nach Trikotnummer sortiert und ohne die nummernlosen Einträge: Nach der
-  // Nummer sucht die Regie, und ein Eintrag ohne sie ist nicht einblendbar.
+  // Nach Trikotnummer sortiert, ohne Einträge ohne Nummer und ohne solche ohne
+  // Namen.
+  //
+  // Nach der Nummer sucht die Regie, ein Eintrag ohne sie ist also nicht
+  // ansprechbar. Und einen Eintrag ohne NAMEN blendet die Bühne bewusst nicht
+  // ein (eine Bauchbinde mit leerer Namenszeile wäre schlimmer als keine),
+  // deshalb gehört er auch nicht in die Auswahl -- sonst führte ein Druck auf
+  // Taste 5 sichtbar zu nichts. Beide Fälle gibt es wirklich:
+  // `add_player_to_lineup` schreibt `params[:trikot_number].to_i` (ohne Angabe
+  // also 0) und übernimmt im Freitext-Zweig die Namen ungeprüft.
   function rosterFor(side) {
     var players = (state.game && state.game.players) || {};
     var list = players[side === "guest" ? "guest" : "home"] || [];
 
     return list
       .filter(function (player) {
-        return player && String(player.trikot_number || "").length > 0;
+        return player && Number(player.trikot_number) > 0 && playerName(player);
       })
       .slice()
       .sort(function (a, b) {
@@ -629,15 +668,30 @@
       });
   }
 
-  function rosterPlayer(side, number) {
-    var roster = rosterFor(side);
-    var found = null;
+  function mehrfacheNummer(roster, player) {
+    var treffer = 0;
 
-    roster.forEach(function (player) {
-      if (Number(player.trikot_number) === Number(number)) found = player;
+    roster.forEach(function (anderer) {
+      if (Number(anderer.trikot_number) === Number(player.trikot_number)) {
+        treffer += 1;
+      }
     });
 
-    return found;
+    return treffer > 1;
+  }
+
+  // Der erste Treffer, wie auf der Bühne: Eine Aufstellung kann eine
+  // Trikotnummer doppelt enthalten, und beide Einträge tragen in der
+  // Auswahlliste denselben Wert. Beide Seiten müssen sich für denselben
+  // entscheiden, sonst nennt der Chip einen anderen Namen als das Bild.
+  function rosterPlayer(side, number) {
+    var roster = rosterFor(side);
+
+    for (var i = 0; i < roster.length; i++) {
+      if (Number(roster[i].trikot_number) === Number(number)) return roster[i];
+    }
+
+    return null;
   }
 
   function playerName(player) {
@@ -747,9 +801,17 @@
     writeState({ lower_third: null });
   });
 
-  el["iv-team"].addEventListener("change", renderInterview);
+  // `on` statt `el[...].addEventListener`: Bei einem älteren,
+  // zwischengespeicherten dock.html fehlt ein Element, und ein Zugriff hier
+  // oben braeche die Einrichtung des Bedienfelds ab -- samt aller Zuhörer, die
+  // danach kämen.
+  function on(id, typ, fn) {
+    if (el[id]) el[id].addEventListener(typ, fn);
+  }
 
-  el["iv-show"].addEventListener("click", function () {
+  on("iv-team", "change", renderInterview);
+
+  on("iv-show", "click", function () {
     var number = el["iv-player"].value;
     if (!number) {
       setStatus(
@@ -846,6 +908,44 @@
       if (event.detail > 0 && target && target.tagName === "BUTTON") {
         target.blur();
       }
+    });
+
+    releaseSelectFocus();
+  }
+
+  // DIESE FUNKTION IST DER GRUND, WARUM DIE KÜRZEL BENUTZBAR SIND.
+  //
+  // Eine Auswahlliste behält nach der Wahl den Fokus -- in Chromium bleibt
+  // `document.activeElement` das `select`. `isTypingTarget` zählt sie
+  // (richtigerweise) zu den Tippzielen, damit Pfeiltasten und Buchstaben in der
+  // offenen Liste funktionieren. Zusammen ergab das eine Falle: Wer die
+  // Spielauswahl benutzt, hatte danach TOTE Tastenkürzel, ohne jede
+  // Rückmeldung. Nachgestellt: `activeElement` bleibt SELECT, Leertaste und
+  // Ziffern wirken nicht mehr.
+  //
+  // Deshalb: nach einer Wahl PER ZEIGER den Fokus abgeben, wie bei den Knöpfen.
+  // Nicht bei Tastaturbedienung -- dort feuert `change` schon beim Blättern mit
+  // den Pfeiltasten, und ein Blur mitten darin nähme der Regie die Liste weg.
+  function releaseSelectFocus() {
+    var zeigerWahl = false;
+
+    el.dock.addEventListener("pointerdown", function (event) {
+      if (event.target && event.target.tagName === "SELECT") zeigerWahl = true;
+    });
+
+    el.dock.addEventListener("keydown", function (event) {
+      if (event.target && event.target.tagName === "SELECT") zeigerWahl = false;
+    });
+
+    // In der Bubble-Phase, also NACH den eigentlichen Zuhörern des Feldes: Sie
+    // lesen `value` und schreiben den Zustand, das darf ein Blur nicht
+    // unterbrechen.
+    el.dock.addEventListener("change", function (event) {
+      if (!zeigerWahl) return;
+      if (!event.target || event.target.tagName !== "SELECT") return;
+
+      zeigerWahl = false;
+      event.target.blur();
     });
   }
 
