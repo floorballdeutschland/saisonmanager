@@ -61,7 +61,15 @@
       </section>
 
       <section class="dk-card">
-        <div class="dk-label">Bauchbinde</div>
+        <div class="dk-row">
+          <span class="dk-label">Bauchbinde</span>
+          <!-- Rückmeldung, was von diesem Bereich gerade in der Bühne steht.
+               Ohne sie ist nach einem Druck nicht zu erkennen, ob überhaupt
+               und welche Einblendung läuft. Absichtlich „Bühne“ und nicht
+               „auf Sendung“: Welche Szene im Programm liegt, entscheidet OBS,
+               das Bedienfeld weiß es nicht. -->
+          <span class="dk-onair" id="lt-onair">aus</span>
+        </div>
         <div class="dk-buttons">
           <button class="dk-btn" id="lt-goal" type="button">Letztes Tor</button>
           <button class="dk-btn" id="lt-penalty" type="button">
@@ -112,6 +120,16 @@
           Der angezeigte Stand kommt nicht aus dem Spielbericht.
         </div>
       </section>
+
+      <!-- Die Kürzel auf den Knöpfen setzt dock.js aus derselben Tabelle, aus
+           der es sie auch auslöst. Legende und Wirkung können so nicht
+           auseinanderlaufen. -->
+      <p class="dk-hint">
+        Die Zeichen auf den Knöpfen sind Tastenkürzel. Sie wirken, sobald dieses
+        Fenster den Fokus hat (in OBS also nach einem Klick ins Dock), und sind
+        aus, solange du in einem Textfeld tippst oder in einer Auswahlliste
+        blätterst. Damit lässt sich das Bedienfeld auf ein Stream Deck legen.
+      </p>
     </div>
 
     <script src="dock.js"></script>

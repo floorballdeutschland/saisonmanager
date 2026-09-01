@@ -64,6 +64,7 @@
     "lt-text",
     "lt-text-kicker",
     "lt-text-main",
+    "lt-onair",
     "override-toggle",
     "override-controls",
     "override-display",
@@ -71,6 +72,42 @@
   ].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
+
+  // Tastenkürzel. EINE Tabelle für Wirkung und Beschriftung: `bindHotkeys`
+  // löst die Taste über dieselbe Zeile aus, aus der es das Zeichen an den Knopf
+  // schreibt. Eine Legende, die daneben pflegbar wäre, liefe irgendwann
+  // auseinander.
+  //
+  // Nur einzelne Tasten ohne Zusatztaste, denn ein Stream Deck schickt genau
+  // das. Ziffern für die Bauchbinde, weil sie in einer Reihe liegen; Buchstaben
+  // dort, wo sie zum Wort passen.
+  var HOTKEYS = [
+    { key: "1", sel: "#lt-goal", badge: "1" },
+    { key: "2", sel: "#lt-penalty", badge: "2" },
+    { key: "3", sel: "#lt-venue", badge: "3" },
+    { key: "4", sel: "#lt-text", badge: "4" },
+    { key: "0", sel: "#lt-off", badge: "0" },
+    { key: "s", sel: "#scoreboard-toggle", badge: "S" },
+    { key: "u", sel: "#clock-visible", badge: "U" },
+    { key: " ", sel: "#clock-start", badge: "Leer" },
+    { key: "-", sel: "#clock-minus", badge: "−" },
+    { key: "+", sel: "#clock-plus", badge: "+" },
+    { key: "r", sel: "#clock-reset", badge: "R" },
+    { key: "x", sel: "#override-toggle", badge: "X" },
+    { key: "q", sel: '[data-ov="home-1"]', badge: "Q" },
+    { key: "w", sel: '[data-ov="home+1"]', badge: "W" },
+    { key: "o", sel: '[data-ov="guest-1"]', badge: "O" },
+    { key: "p", sel: '[data-ov="guest+1"]', badge: "P" },
+  ];
+
+  // Bauchbinden-Knopf zu der Art, die er einblendet. Grundlage der
+  // Rückmeldung, welcher Knopf gerade in der Bühne steht.
+  var LT_BUTTONS = [
+    { id: "lt-goal", kind: "goal" },
+    { id: "lt-penalty", kind: "penalty" },
+    { id: "lt-venue", kind: "venue" },
+    { id: "lt-text", kind: "text" },
+  ];
 
   if (!token) {
     setStatus(
@@ -319,7 +356,55 @@
     renderGameSelect();
     renderScoreboard();
     renderClockUi();
+    renderLowerThird();
     renderOverride();
+  }
+
+  // Welche Einblendung steht gerade in der Bühne? Der Zustand liegt auf dem
+  // Server, also weiß das Bedienfeld es auch dann, wenn eine zweite Regie
+  // gedrückt hat oder dieses Fenster neu geladen wurde.
+  //
+  // „Bühne“ und nicht „auf Sendung“: Ob die Bühne im Programm liegt oder
+  // gerade ein Vollbild darüber, entscheidet OBS. Das Bedienfeld erfährt davon
+  // nichts und darf es deshalb nicht behaupten.
+  function renderLowerThird() {
+    // Das Bedienfeld muss auch mit einem älteren, zwischengespeicherten
+    // dock.html laufen (`Cache-Control` für /overlay/ ist noch offen). Fehlt
+    // ein Element, würde der Zugriff werfen -- und weil `render` aus dem Poll
+    // heraus läuft, landete der Fehler in der Statuszeile und das Bedienfeld
+    // rendert bis zum Neuladen NIE mehr. `bindHotkeys` hält es genauso.
+    if (!el["lt-onair"] || !el["lt-off"]) return;
+
+    var lt = state.control.lower_third || null;
+    var kind = lt && lt.kind;
+
+    LT_BUTTONS.forEach(function (entry) {
+      if (el[entry.id]) {
+        el[entry.id].classList.toggle("dk-btn--live", kind === entry.kind);
+      }
+    });
+
+    // textContent, nicht innerHTML: Der Freitext kommt aus dem Feld daneben.
+    el["lt-onair"].textContent = lowerThirdLabel(lt);
+    el["lt-onair"].classList.toggle("dk-onair--live", Boolean(kind));
+
+    // Ohne Einblendung gibt es nichts auszublenden. Der abgeschaltete Knopf ist
+    // die zweite Rückmeldung: Er zeigt auch ohne Lesen des Textes, dass dieser
+    // Bereich gerade nichts in der Bühne hat.
+    el["lt-off"].disabled = !kind;
+  }
+
+  function lowerThirdLabel(lt) {
+    if (!lt || !lt.kind) return "aus";
+
+    if (lt.kind === "goal") return "Bühne: letztes Tor";
+    if (lt.kind === "penalty") return "Bühne: letzte Strafe";
+    if (lt.kind === "venue") return "Bühne: Paarung";
+    // Der eingeblendete Text, nicht der im Feld: Wer nach dem Einblenden
+    // weitertippt, soll sehen, was tatsächlich unten im Bild steht.
+    if (lt.kind === "text") return "Bühne: " + (lt.main || "Freitext");
+
+    return "Bühne: Einblendung";
   }
 
   function renderGameSelect() {
@@ -562,6 +647,107 @@
     writeState({ score_override: next });
   });
 
+  // ── Tastenkürzel ────────────────────────────────────────────────────────
+
+  // Löst den bestehenden Knopf aus statt die Wirkung ein zweites Mal zu
+  // beschreiben: Jede Taste ruft `click()` auf ihrem Knopf, und die Prüfungen
+  // dort (kein Tor eingetragen, keine Übersteuerung aktiv, Hauptzeile fehlt)
+  // gelten damit für Maus und Taste gleich.
+  function bindHotkeys() {
+    var lookup = {};
+
+    HOTKEYS.forEach(function (entry) {
+      var node = document.querySelector(entry.sel);
+      // Ein Knopf, den es nicht gibt, darf den Rest nicht mitnehmen: Das
+      // Bedienfeld läuft auch mit einem älteren, zwischengespeicherten
+      // dock.html.
+      if (!node) return;
+
+      lookup[entry.key] = node;
+      node.setAttribute("data-key", entry.badge);
+    });
+
+    document.addEventListener("keydown", function (event) {
+      // Mit Zusatztaste gehören die Tasten dem Browser und dem Betriebssystem
+      // (Neuladen, Suchen, Fenster wechseln).
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+      // Eine gehaltene Taste würde sonst zwanzigmal pro Sekunde schreiben.
+      if (event.repeat) return;
+      // Im Freitextfeld ist eine 1 eine 1 und keine Bauchbinde.
+      if (isTypingTarget(event.target)) return;
+
+      var node = lookup[String(event.key).toLowerCase()];
+      if (!node) return;
+
+      // Muss VOR dem Auslösen kommen: Ohne das drückte die Leertaste
+      // zusätzlich den Knopf, der gerade den Fokus hat, und beim Blättern
+      // sprang das Dock weg.
+      event.preventDefault();
+      node.click();
+    });
+
+    // Ein mit der Maus gedrückter Knopf behält den Fokus. Die Leertaste hätte
+    // danach ihn ausgelöst und nicht die Uhr gestartet -- also den Fokus nach
+    // einem Zeigerklick wieder abgeben. `detail` ist 0, wenn `click()` aus dem
+    // Code kommt (Tastenkürzel), und größer, wenn ein Zeiger dahinter steckt.
+    el.dock.addEventListener("click", function (event) {
+      var target = event.target;
+      if (event.detail > 0 && target && target.tagName === "BUTTON") {
+        target.blur();
+      }
+    });
+
+    releaseSelectFocus();
+  }
+
+  // DIESE FUNKTION IST DER GRUND, WARUM DIE KÜRZEL BENUTZBAR SIND.
+  //
+  // Eine Auswahlliste behält nach der Wahl den Fokus -- in Chromium bleibt
+  // `document.activeElement` das `select`. `isTypingTarget` zählt sie
+  // (richtigerweise) zu den Tippzielen, damit Pfeiltasten und Buchstaben in der
+  // offenen Liste funktionieren. Zusammen ergab das eine Falle: Wer die
+  // Spielauswahl benutzt, hatte danach TOTE Tastenkürzel, ohne jede
+  // Rückmeldung. Nachgestellt: `activeElement` bleibt SELECT, Leertaste und
+  // Ziffern wirken nicht mehr.
+  //
+  // Deshalb: nach einer Wahl PER ZEIGER den Fokus abgeben, wie bei den Knöpfen.
+  // Nicht bei Tastaturbedienung -- dort feuert `change` schon beim Blättern mit
+  // den Pfeiltasten, und ein Blur mitten darin nähme der Regie die Liste weg.
+  function releaseSelectFocus() {
+    var zeigerWahl = false;
+
+    el.dock.addEventListener("pointerdown", function (event) {
+      if (event.target && event.target.tagName === "SELECT") zeigerWahl = true;
+    });
+
+    el.dock.addEventListener("keydown", function (event) {
+      if (event.target && event.target.tagName === "SELECT") zeigerWahl = false;
+    });
+
+    // In der Bubble-Phase, also NACH den eigentlichen Zuhörern des Feldes: Sie
+    // lesen `value` und schreiben den Zustand, das darf ein Blur nicht
+    // unterbrechen.
+    el.dock.addEventListener("change", function (event) {
+      if (!zeigerWahl) return;
+      if (!event.target || event.target.tagName !== "SELECT") return;
+
+      zeigerWahl = false;
+      event.target.blur();
+    });
+  }
+
+  function isTypingTarget(node) {
+    if (!node || !node.tagName) return false;
+
+    var tag = node.tagName.toLowerCase();
+    return (
+      tag === "input" ||
+      tag === "textarea" ||
+      tag === "select" ||
+      node.isContentEditable === true
+    );
+  }
+
   function lastPenalty() {
     if (!state.game || !state.game.events) return null;
 
@@ -593,6 +779,7 @@
       setStatus("Spieltag nicht geladen: " + err.message, true);
     });
 
+  bindHotkeys();
   poll();
   window.setInterval(renderClockUi, 100);
 })();
