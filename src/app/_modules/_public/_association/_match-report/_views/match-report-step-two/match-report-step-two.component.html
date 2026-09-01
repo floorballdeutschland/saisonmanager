@@ -22,7 +22,43 @@
             <span class="font-bold underline">nach Abpfiff</span> ein,
             deaktiviere bitte die Checkbox "Live eintragen".
           </p>
-          @if (bothLineupsPresent()) {
+          @if (!bothLineupsPresent()) {
+            <div
+              class="rounded-md border border-yellow-300 bg-yellow-50 p-4 text-yellow-800"
+            >
+              <p class="font-bold">Kader unvollständig</p>
+              <p class="mt-1 text-sm">
+                Das Spiel kann erst gestartet werden, wenn beide Teams
+                mindestens einen Spieler im Kader eingetragen haben. Bitte
+                zuerst die Kader in Schritt 1 befüllen.
+              </p>
+            </div>
+          } @else if (!referee1Present()) {
+            <div
+              class="rounded-md border border-yellow-300 bg-yellow-50 p-4 text-yellow-800"
+            >
+              @if (onlyReferee2Present()) {
+                <p class="font-bold">Schiedsrichter 1 fehlt</p>
+                <p class="mt-1 text-sm">
+                  Es ist nur „Schiedsrichter 2" eingetragen, das Feld
+                  „Schiedsrichter 1" ist leer. Das Spiel kann erst gestartet
+                  werden, wenn Schiedsrichter 1 eingetragen ist. Leitet nur eine
+                  Person das Spiel, gehört sie in das Feld
+                  <span class="font-bold">Schiedsrichter 1</span> – bitte in
+                  Schritt 1 umtragen.
+                </p>
+              } @else {
+                <p class="font-bold">Schiedsrichter 1 fehlt</p>
+                <p class="mt-1 text-sm">
+                  Das Spiel kann erst gestartet werden, wenn mindestens
+                  Schiedsrichter 1 eingetragen ist. Bitte zuerst in Schritt 1 im
+                  Bereich „Schiedsrichter" das Feld
+                  <span class="font-bold">Schiedsrichter 1</span> befüllen.
+                  Schiedsrichter 2 bleibt optional.
+                </p>
+              }
+            </div>
+          } @else {
             <fb-match-event-form
               class="col-span-2"
               type="start"
@@ -36,17 +72,6 @@
               [match]="game"
               [noBackground]="true"
             ></fb-match-event-form>
-          } @else {
-            <div
-              class="rounded-md border border-yellow-300 bg-yellow-50 p-4 text-yellow-800"
-            >
-              <p class="font-bold">Kader unvollständig</p>
-              <p class="mt-1 text-sm">
-                Das Spiel kann erst gestartet werden, wenn beide Teams
-                mindestens einen Spieler im Kader eingetragen haben. Bitte
-                zuerst die Kader in Schritt 1 befüllen.
-              </p>
-            </div>
           }
         </div>
       }
