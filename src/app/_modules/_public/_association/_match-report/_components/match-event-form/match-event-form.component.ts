@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
+  ErrorHandler,
   ElementRef,
   EventEmitter,
   Input,
@@ -139,6 +140,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   selectedReferee1: RefereeEntry | null = null;
   selectedReferee2: RefereeEntry | null = null;
 
+  // Der Stand vor der laufenden Auswahl, siehe _revertRefereeSelection.
+  private _refereeBeforeEdit: RefereeEntry | null = null;
+
   protest?: boolean;
   specialevent?: boolean;
   specialEventString?: string;
@@ -155,7 +159,8 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     private _gameService: GameService,
     private _leagueService: LeagueService,
     private _notificationService: NotificationService,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private _errorHandler: ErrorHandler
   ) {}
 
   public ngOnInit(): void {
@@ -280,8 +285,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
             splitPersonName(this.fieldValue);
           break;
         case 'timekeeper':
-          [this.timekeeperLastname, this.timekeeperFirstname] =
-            splitPersonName(this.fieldValue);
+          [this.timekeeperLastname, this.timekeeperFirstname] = splitPersonName(
+            this.fieldValue
+          );
           break;
         case 'referee1':
           // this.refereeNumber1 = parseInt(this.fieldValue || '', 10);
@@ -622,15 +628,20 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
               });
           }
         },
-        error: (err) => {
-          // Der ErrorInterceptor zeigt bei 422 keinen Toast und wirft die
-          // Meldung als String. Blockier-Meldungen beim Spielstart/-ende
-          // (z. B. Schiri-Pflicht oder fehlende Aufstellung) hier anzeigen.
-          this._notificationService.error(
-            typeof err === 'string' ? err : 'Aktion nicht möglich.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
-        },
+        // Bewusst OHNE error-Zweig: Der ErrorInterceptor zeigt die Begründung des
+        // Servers bei 422 selbst an und reicht danach die HttpErrorResponse
+        // weiter. Hier stand eine eigene Meldung mit `typeof err === 'string'`,
+        // aus der Zeit, als der Interceptor bei 422 schwieg und einen String warf.
+        // Seit er beides umgestellt hat, war der String-Zweig toter Code und es
+        // lief immer der Ersatztext "Aktion nicht möglich." -- deckungsgleich
+        // ÜBER der Begründung, denn die Meldungen liegen `fixed` ohne Versatz
+        // übereinander und der spätere gewinnt.
+        //
+        // Was das kostet, ist belegt: Am 30.08.2026 blieb dem Spielsekretariat der
+        // U13 KF RL Ost in Wernigerode 88 Minuten und 23 Startversuche lang
+        // verborgen, dass die Absage das Feld "Schiedsrichter 1" meinte -- das
+        // Gespann stand in Feld 2. Ohne eigenen Zweig läuft der Fehler zudem
+        // weiter in Angulars ErrorHandler und damit nach Sentry.
       });
   }
 
@@ -808,12 +819,54 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // Die Auswahl wird sofort gespeichert, wie in den übrigen Feldern dieses
+  // Formulars (Zuschauerzahl, Livestream, Spielsekretariat, Zeitnehmer).
+  //
+  // Vorher war die Auswahl nur ein Zustand in der Maske: Wer den Namen in der
+  // Autocomplete anklickte und den eigenen „Speichern"-Knopf des Feldes nicht
+  // drückte, sah den Schiedsrichter im Feld stehen, während am Spiel nichts
+  // stand. Die Absage beim Spielstart („Schiedsrichter 1 fehlt") ist vor diesem
+  // Bild nicht zu verstehen. Im Prod-Log vom 30.08.2026 (Wernigerode) liegen
+  // zwischen der Suche nach dem Namen um 10:11 und seinem Speichern um 11:38
+  // 87 Minuten mit 23 abgewiesenen Startversuchen dazwischen.
+  //
+  // Das Leeren (referee === null) wird ebenfalls gespeichert, sonst wäre das
+  // Zurücknehmen eines Eintrags die einzige Aktion des Feldes ohne Wirkung.
   public onRefereeSelected(num: 1 | 2, referee: RefereeEntry | null): void {
+    // Fuer den Fehlerfall gemerkt: Scheitert das Speichern, muss die Maske auf
+    // den Serverstand zurueckfallen, statt einen Schiedsrichter zu behaupten,
+    // den das Spiel nicht hat.
+    this._refereeBeforeEdit =
+      num === 1 ? this.selectedReferee1 : this.selectedReferee2;
+
     if (num === 1) {
       this.selectedReferee1 = referee;
     } else {
       this.selectedReferee2 = referee;
     }
+
+    this.submitField();
+  }
+
+  // Nimmt die Auswahl zurueck und laesst den Fehler weiterlaufen. Ohne das blieb
+  // nach einem gescheiterten Speichern der Name samt gruenem Rahmen im Feld
+  // stehen, waehrend Schritt 2 daneben "Schiedsrichter 1 fehlt" meldete -- zwei
+  // Aussagen, die sich widersprechen, und genau der Zustand, den die
+  // Autospeicherung beheben soll.
+  //
+  // Der ErrorInterceptor zeigt die Begruendung schon an, hier wird also nichts
+  // gemeldet. Der ausdrueckliche Weg an den globalen ErrorHandler haelt den Weg
+  // nach Sentry offen, den ein eigener error-Zweig sonst zumauert.
+  private _revertRefereeSelection(slot: 1 | 2, err: unknown): void {
+    if (slot === 1) {
+      this.selectedReferee1 = this._refereeBeforeEdit;
+    } else {
+      this.selectedReferee2 = this._refereeBeforeEdit;
+    }
+
+    this.updateGame.emit();
+    this._cdr.markForCheck();
+    this._errorHandler.handleError(err);
   }
 
   public submitField() {
@@ -904,6 +957,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
               );
               this.updateGame.emit();
             },
+            error: (err) => this._revertRefereeSelection(1, err),
           });
         break;
       case 'referee2':
@@ -926,6 +980,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
               );
               this.updateGame.emit();
             },
+            error: (err) => this._revertRefereeSelection(2, err),
           });
         break;
     }
