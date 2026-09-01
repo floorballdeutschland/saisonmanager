@@ -218,10 +218,17 @@ body {
   gap: 16px;
   padding: 18px 22px;
   /* Mindestbreite und nicht nur Inhalt: Sie hält die Ziffern in der Mitte,
-     auch wenn ein Kürzel drei und das andere fünf Zeichen hat. Vorher 300px,
-     und DAS war der Grund, warum die Anzeigetafel ohne Uhrenspalte zu breit
-     wirkte: Zwei kurze Kürzel wie BER und HAM ließen darin je über hundert
-     Pixel leer stehen. 210px trägt „HAMBURG" noch ohne Sprung. */
+     solange beide Kürzel kurz sind -- und das ist der Normalfall, `teamLabel`
+     nimmt `short_name`. Vorher 300px, und DAS war der Grund, warum die
+     Anzeigetafel ohne Uhrenspalte zu breit wirkte: Zwei Kürzel wie BER und HAM
+     ließen darin je über hundert Pixel leer stehen.
+
+     Genau zentriert bleibt es nur bis etwa vier Zeichen: Mit hinterlegtem Logo
+     belegt der Chip samt Abständen rund 130 der 210 Pixel, ein längerer Name
+     schiebt seinen Block also breiter als den anderen (nachgemessen: „HAMBURG"
+     ergibt 275px). Abgeschnitten wird dabei nichts (`min-width` ist eine
+     Untergrenze, der Name steht auf `nowrap`), die Ziffern sitzen dann nur
+     nicht mehr in der Mitte der Tafel. */
   min-width: 210px;
   /* Beide Mannschaftsblöcke schieben ihren Inhalt zum Spielstand hin: links
      ans rechte Ende, rechts (row-reverse, main-end liegt dort links) ans
