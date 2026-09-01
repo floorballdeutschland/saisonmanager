@@ -124,6 +124,38 @@ export class MatchReportStepTwoComponent implements OnInit {
     );
   }
 
+  // Dieselbe Bedingung, die die API beim Spielstart prüft (set_flag). Sie wurde
+  // bisher erst am Klick sichtbar, und die Absage lag unter einer generischen
+  // Meldung: Am 30.08.2026 drückte das Spielsekretariat der U13 KF RL Ost in
+  // Wernigerode deshalb 88 Minuten lang 23-mal auf "Spiel starten", ohne zu
+  // erfahren, dass Platz 1 des Gespanns leer war. Deshalb hier vorab, mit
+  // demselben Muster wie bothLineupsPresent().
+  //
+  // `!== false` und nicht `=== true`: Fehlt das Feld (älterer API-Stand), bleibt
+  // der Knopf sichtbar und die API entscheidet wie bisher allein.
+  public referee1Present(): boolean {
+    return this.game?.referee1_present !== false;
+  }
+
+  // Trennt "gar kein Schiedsrichter" von "im falschen Feld". Der zweite Fall ist
+  // der, der in Wernigerode passierte, und er braucht einen anderen Satz: In der
+  // Maske steht dann ein Schiedsrichter, nur eben auf Platz 2.
+  //
+  // `referees.length` allein reicht dafür nicht: Ein geleertes Feld hinterlässt
+  // den Platzhalter "0 , ", der in der Liste als Eintrag mit Lizenz "0" und
+  // leerem Namen mitläuft. Gezählt wird deshalb nur, was einen Namen oder eine
+  // echte Lizenz trägt.
+  public onlyReferee2Present(): boolean {
+    if (this.referee1Present()) return false;
+
+    return (this.game?.referees ?? []).some(
+      (referee) =>
+        !!referee?.last_name?.trim() ||
+        !!referee?.first_name?.trim() ||
+        parseInt(referee?.license_id ?? '0', 10) > 0
+    );
+  }
+
   // Befindet sich das Spiel aktuell im Penalty-Schießen?
   public isShootout(): boolean {
     return this.game?.current_period_title?.status_id === 'penalty_shots';
