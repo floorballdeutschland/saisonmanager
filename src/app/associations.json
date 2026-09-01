@@ -1,12 +1,12 @@
 [
   {
     "id": 1,
-    "path": "fvd",
+    "path": "fd",
     "gradient": "linear-gradient(90deg, #000000 33%, #B21917 33% 66%, #F8D628 66%)"
   },
   {
     "id": 2,
-    "path": "fvn",
+    "path": "fvnb",
     "gradient": "linear-gradient(90deg, #C01010 33%, #FFFFFF 33% 66%, #C01010 66%)"
   },
   {
@@ -26,7 +26,7 @@
   },
   {
     "id": 6,
-    "path": "sbkost",
+    "path": "ost",
     "gradient": "linear-gradient(90deg, #203911 50%, #F1E26D 50%)"
   },
   {
@@ -41,7 +41,7 @@
   },
   {
     "id": 10,
-    "path": "nwuv",
+    "path": "nwfv",
     "gradient": "linear-gradient(90deg, #139139 33%, #FFFFFF 33% 66%, #E2061B 66%)"
   },
   {
