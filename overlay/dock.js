@@ -374,11 +374,20 @@
   // gerade ein Vollbild darüber, entscheidet OBS. Das Bedienfeld erfährt davon
   // nichts und darf es deshalb nicht behaupten.
   function renderLowerThird() {
+    // Das Bedienfeld muss auch mit einem älteren, zwischengespeicherten
+    // dock.html laufen (`Cache-Control` für /overlay/ ist noch offen). Fehlt
+    // ein Element, würde der Zugriff werfen -- und weil `render` aus dem Poll
+    // heraus läuft, landete der Fehler in der Statuszeile und das Bedienfeld
+    // rendert bis zum Neuladen NIE mehr. `bindHotkeys` hält es genauso.
+    if (!el["lt-onair"] || !el["lt-off"]) return;
+
     var lt = state.control.lower_third || null;
     var kind = lt && lt.kind;
 
     LT_BUTTONS.forEach(function (entry) {
-      el[entry.id].classList.toggle("dk-btn--live", kind === entry.kind);
+      if (el[entry.id]) {
+        el[entry.id].classList.toggle("dk-btn--live", kind === entry.kind);
+      }
     });
 
     // textContent, nicht innerHTML: Der Freitext kommt aus dem Feld daneben.
@@ -834,6 +843,44 @@
       if (event.detail > 0 && target && target.tagName === "BUTTON") {
         target.blur();
       }
+    });
+
+    releaseSelectFocus();
+  }
+
+  // DIESE FUNKTION IST DER GRUND, WARUM DIE KÜRZEL BENUTZBAR SIND.
+  //
+  // Eine Auswahlliste behält nach der Wahl den Fokus -- in Chromium bleibt
+  // `document.activeElement` das `select`. `isTypingTarget` zählt sie
+  // (richtigerweise) zu den Tippzielen, damit Pfeiltasten und Buchstaben in der
+  // offenen Liste funktionieren. Zusammen ergab das eine Falle: Wer die
+  // Spielauswahl benutzt, hatte danach TOTE Tastenkürzel, ohne jede
+  // Rückmeldung. Nachgestellt: `activeElement` bleibt SELECT, Leertaste und
+  // Ziffern wirken nicht mehr.
+  //
+  // Deshalb: nach einer Wahl PER ZEIGER den Fokus abgeben, wie bei den Knöpfen.
+  // Nicht bei Tastaturbedienung -- dort feuert `change` schon beim Blättern mit
+  // den Pfeiltasten, und ein Blur mitten darin nähme der Regie die Liste weg.
+  function releaseSelectFocus() {
+    var zeigerWahl = false;
+
+    el.dock.addEventListener("pointerdown", function (event) {
+      if (event.target && event.target.tagName === "SELECT") zeigerWahl = true;
+    });
+
+    el.dock.addEventListener("keydown", function (event) {
+      if (event.target && event.target.tagName === "SELECT") zeigerWahl = false;
+    });
+
+    // In der Bubble-Phase, also NACH den eigentlichen Zuhörern des Feldes: Sie
+    // lesen `value` und schreiben den Zustand, das darf ein Blur nicht
+    // unterbrechen.
+    el.dock.addEventListener("change", function (event) {
+      if (!zeigerWahl) return;
+      if (!event.target || event.target.tagName !== "SELECT") return;
+
+      zeigerWahl = false;
+      event.target.blur();
     });
   }
 
