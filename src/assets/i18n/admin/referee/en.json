@@ -135,6 +135,7 @@
     "tagsHint": "Tags help pre-filtering in assignment (e.g. \"Top referee\").",
     "noTags": "No tags created yet. Tags can be managed under \"Tags\".",
     "validUntilPlaceholder": "Valid until",
+    "validUntilRequiredHint": "The validity is mandatory: an additional qualification without an expiry date does not count.",
     "removeQualificationTitle": "Remove qualification",
     "homeAddress": "Home address",
     "homeAddressHint": "Used only for calculating the distance for assignments.",

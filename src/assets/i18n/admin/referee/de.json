@@ -135,6 +135,7 @@
     "tagsHint": "Tags helfen bei der Vorfilterung in der Ansetzung (z. B. „Spitzenschiri\").",
     "noTags": "Noch keine Tags angelegt. Tags können unter „Tags\" verwaltet werden.",
     "validUntilPlaceholder": "Gültig bis",
+    "validUntilRequiredHint": "Die Gültigkeit ist Pflicht: Eine Zusatzqualifikation ohne Ablaufdatum gilt nicht.",
     "removeQualificationTitle": "Qualifikation entfernen",
     "homeAddress": "Heimadresse",
     "homeAddressHint": "Wird nur bei Ansetzungen für die Berechnung der Kilometer genutzt.",
