@@ -1017,6 +1017,7 @@
     "aufstellung-heim": { source: null, render: fsLineupHome },
     "aufstellung-gast": { source: null, render: fsLineupGuest },
     drittelpause: { source: null, render: fsIntermission },
+    tore: { source: null, render: fsGoals },
     endstand: { source: null, render: fsFinal },
     tabelle: { source: "table", render: fsTable },
     topscorer: { source: "scorer", render: fsScorer },
@@ -1588,6 +1589,158 @@
     }
 
     return row;
+  }
+
+  // Alle Tore des Spiels in der Reihenfolge, in der sie gefallen sind, nach
+  // Abschnitten gruppiert.
+  //
+  // Die Drittelpause zeigt ebenfalls eine Torliste, aber als eine von drei
+  // Angaben und nur mit der Zeit. Hier ist die Torfolge der Inhalt: dazu der
+  // Stand nach jedem Treffer, die Mannschaft und die Vorlage.
+  //
+  // Nach Abschnitt gruppiert und nicht als eine lange Liste, weil `time` je
+  // Abschnitt gezaehlt wird: Ohne die Gruppentitel stuenden zwei Tore mit
+  // derselben Zeit untereinander, ohne dass jemand den Unterschied sieht.
+  //
+  // Der Mehrspalter verteilt die Gruppen ALS GANZE auf die beiden Spalten, er
+  // teilt keine auf (`.ov-fs-group` trägt `break-inside: avoid`). Ein Spiel mit
+  // 15 Toren über vier Abschnitte passt damit; ein einzelner Abschnitt mit
+  // einem Dutzend Toren ist ein unteilbarer Block, für den die Dichtestufen
+  // aus `fitBody` greifen müssen.
+  function fsGoals() {
+    var game = state.game;
+    if (!game) return null;
+
+    var frame = {
+      league: (game.league && game.league.name) || "",
+      title: "Tore des Spiels",
+      sub: teamLabel(game.home) + " gegen " + teamLabel(game.guest),
+    };
+
+    var goals = (game.events || [])
+      .filter(function (event) {
+        return event.event_type === "goal";
+      })
+      // `formatted_events` behaelt die Reihenfolge der gespeicherten Ereignisse,
+      // und die ist nicht zugesichert -- ein nachtraeglich eingetragenes Tor
+      // haengt hinten. `sortkey` ist dafuer gebaut (Abschnitt und Zeit, als
+      // Text vergleichbar).
+      .slice()
+      .sort(function (a, b) {
+        var x = String(a.sortkey);
+        var y = String(b.sortkey);
+        return x < y ? -1 : x > y ? 1 : 0;
+      });
+
+    // Benannter Leerzustand statt schwarzem Bild: Fuer einen Vereinsstreamer
+    // ist Schwarz nicht von einem kaputten Overlay zu unterscheiden, siehe
+    // denselben Fall im Endstandbild.
+    if (!goals.length) {
+      frame.center = true;
+      frame.body = node(
+        "p",
+        "ov-fs-empty ov-fs-empty--center",
+        game.started
+          ? "In diesem Spiel ist noch kein Tor gefallen."
+          : "Das Spiel hat noch nicht begonnen: Die Tore stehen hier, sobald sie fallen."
+      );
+      return frame;
+    }
+
+    var columns = node("div", "ov-fs-columns");
+    var block = null;
+    var lastPeriod = null;
+
+    goals.forEach(function (goal) {
+      // NORMALISIERT vergleichen, nicht typstreng. `games_controller` speichert
+      // `period` unverändert aus den Parametern, und `valid_period?` lässt Zahl
+      // UND Zeichenkette zu; `formatted_events` gibt den Wert roh weiter,
+      // während das Modell selbst überall `.to_i` benutzt. Ein Tor mit "1"
+      // zwischen Toren mit 1 hätte sonst eine zweite Gruppe für dasselbe
+      // Drittel geöffnet -- mit anderer Überschrift, weil auch der
+      // Titelnachschlag typstreng war.
+      var period = periodValue(goal.period);
+
+      if (!block || period !== lastPeriod) {
+        block = node("div", "ov-fs-group");
+        block.appendChild(
+          node("div", "ov-fs-group-title", periodTitleFor(period))
+        );
+        columns.appendChild(block);
+        lastPeriod = period;
+      }
+
+      block.appendChild(goalRow(goal));
+    });
+
+    frame.body = columns;
+    return frame;
+  }
+
+  function goalRow(goal) {
+    var row = node("div", "ov-fs-player");
+
+    // Eigene Klasse für die Zeit: Die Spalte der Trikotnummern ist 62 px breit
+    // und rechtsbündig, eine Angabe wie "12:34" in Oswald 30 px läuft darin
+    // nach links über. `fitBody` sieht das nicht, es misst nur die Höhe.
+    row.appendChild(node("span", "ov-fs-goal-time", goal.time || ""));
+
+    // Stand und Mannschaft IMMER anlegen, notfalls leer. Beide Spalten haben
+    // feste Breiten (damit sie untereinander stehen); ein weggelassenes Element
+    // zog die ganze Zeile um seine Breite nach links, und nur diese eine Zeile.
+    // Vorkommen: `home_goals` als Zeichenkette gespeichert (dieselbe Quelle wie
+    // bei `period`), oder `event_team` leer bei Altdaten.
+    row.appendChild(node("span", "ov-fs-goal-score", scoreAt(goal)));
+    row.appendChild(node("span", "ov-fs-goal-team", teamName(goal.event_team)));
+
+    // Der abgekuerzte Anzeigename, nicht der volle: Zwei Spalten mit Zeit,
+    // Stand, Mannschaft und Vorlage haben keinen Platz fuer "Maximilian".
+    // `goal_type_string` traegt Eigentor und "nicht angegeben".
+    row.appendChild(
+      node(
+        "span",
+        "ov-fs-goal-scorer",
+        goal.scorer_name || goal.goal_type_string || "Tor"
+      )
+    );
+
+    row.appendChild(
+      node(
+        "span",
+        "ov-fs-goal-assist",
+        goal.assist_name ? "Vorlage: " + goal.assist_name : ""
+      )
+    );
+
+    return row;
+  }
+
+  // Der Abschnitt als Zahl, oder null. `Number(undefined)` ist NaN, und NaN
+  // ist mit sich selbst nicht gleich -- ohne diese Umsetzung öffnete jedes Tor
+  // ohne Abschnitt seine eigene Gruppe.
+  function periodValue(raw) {
+    var n = Number(raw);
+    return isFinite(n) ? n : null;
+  }
+
+  // Titel des Abschnitts aus `period_titles`, in dem auch Verlaengerung und
+  // Penaltyschiessen stehen. Ohne Treffer die Nummer, damit die Gruppe
+  // ueberhaupt eine Ueberschrift hat.
+  function periodTitleFor(period) {
+    if (period === null) return "Tore";
+
+    var titles = (state.game && state.game.period_titles) || [];
+    var found = "";
+
+    titles.forEach(function (entry) {
+      // Auch hier normalisiert: `period_titles` trägt echte Zahlen, die
+      // Ereignisse nicht zwingend.
+      if (entry && periodValue(entry.period) === period) {
+        found = entry.title || entry.short_title || "";
+      }
+    });
+
+    return found || "Abschnitt " + period;
   }
 
   function fsIntermission() {
