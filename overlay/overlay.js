@@ -938,6 +938,7 @@
     tabelle: { source: "table", render: fsTable },
     topscorer: { source: "scorer", render: fsScorer },
     "naechste-spiele": { source: "schedule", render: fsSchedule },
+    formkurve: { source: "form", render: fsForm },
   };
 
   // Tabelle und Torschützenliste ändern sich nur, wenn ein Spiel endet. Der
@@ -2044,6 +2045,129 @@
   // international übliche Zeichen dafür, dass er noch nicht endgültig ist.
   // Vorher stand hier "läuft" ohne Zahl, weil die API die Zwischenstände
   // paralleler Partien gestrichen hat.
+  // ── Formkurve ───────────────────────────────────────────────────────────
+
+  // Die letzten Partien beider Mannschaften, neueste zuerst. Je Mannschaft ein
+  // Block; `.ov-fs-group` traegt `break-inside: avoid`, die beiden Blöcke landen
+  // also je in einer Spalte und werden nicht auseinandergerissen.
+  function fsForm() {
+    var form = (state.league && state.league.form) || null;
+    // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
+    if (!form) return null;
+
+    var teams = [form.home, form.guest].filter(Boolean);
+    var frame = {
+      league: leagueName(),
+      title: "Letzte Spiele",
+      sub:
+        teamLabel(state.game && state.game.home) +
+        " gegen " +
+        teamLabel(state.game && state.game.guest),
+    };
+
+    // Beide Mannschaften unbekannt: Das ist ein eigener Zustand und muss
+    // dastehen, sonst gingen zwei leere Spalten auf Sendung.
+    if (!teams.length) {
+      frame.body = node(
+        "p",
+        "ov-fs-empty",
+        "Zu diesem Spiel sind keine Mannschaften hinterlegt."
+      );
+      return frame;
+    }
+
+    var columns = node("div", "ov-fs-columns");
+    var gewertet = false;
+
+    teams.forEach(function (team) {
+      columns.appendChild(formBlock(team));
+      (team.games || []).forEach(function (game) {
+        if (game.forfait) gewertet = true;
+      });
+    });
+
+    frame.body = columns;
+    // Nur wenn es wirklich vorkommt: Ein „W" ohne Erklaerung ist auf Sendung
+    // Rauschen, und die Erklaerung ohne Anlass ebenfalls.
+    if (gewertet) {
+      frame.note =
+        "Mit „W“ gekennzeichnete Partien wurden am grünen Tisch gewertet.";
+    }
+
+    return frame;
+  }
+
+  function formBlock(team) {
+    var block = node("div", "ov-fs-group ov-fs-group--form");
+    block.appendChild(
+      node("div", "ov-fs-group-title", team.name || team.short_name || "")
+    );
+
+    var games = team.games || [];
+    if (!games.length) {
+      block.appendChild(
+        node("p", "ov-fs-empty", "Noch keine beendete Partie.")
+      );
+      return block;
+    }
+
+    games.forEach(function (game) {
+      var row = node("div", "ov-fs-player");
+      row.appendChild(node("span", "ov-fs-form-date", formDate(game.date)));
+      // Heim oder auswaerts: Fuer die Einordnung einer Niederlage macht das den
+      // Unterschied.
+      row.appendChild(node("span", "ov-fs-form-where", game.home ? "H" : "A"));
+      row.appendChild(
+        node(
+          "span",
+          "ov-fs-form-opponent",
+          game.opponent_short || game.opponent || ""
+        )
+      );
+      row.appendChild(node("span", "ov-fs-form-score", formScore(game)));
+      row.appendChild(outcomeBadge(game));
+      block.appendChild(row);
+    });
+
+    return block;
+  }
+
+  // „2026-09-12" wird „12.09.". Ueber ein Muster und nicht ueber `new Date`:
+  // `game_days.date` ist eine Zeichenkette, und ein Altwert in anderer
+  // Schreibweise ergaebe „Invalid Date" im Bild. Passt das Muster nicht, steht
+  // der Wert da, wie er ist.
+  function formDate(value) {
+    var match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ""));
+    if (!match) return value || "";
+    return match[3] + "." + match[2] + ".";
+  }
+
+  function formScore(game) {
+    if (
+      typeof game.goals !== "number" ||
+      typeof game.opponent_goals !== "number"
+    ) {
+      // Beendet, Ergebnis unbekannt. Der Gedankenstrich sagt das; eine 0:0
+      // waere eine Falschaussage.
+      return "—";
+    }
+    return game.goals + ":" + game.opponent_goals;
+  }
+
+  var OUTCOME_LABELS = { win: "S", draw: "U", loss: "N" };
+
+  function outcomeBadge(game) {
+    var label = OUTCOME_LABELS[game.outcome] || "";
+    // Ohne Wertung ein leerer Platzhalter, damit die Spalte darunter nicht
+    // verrutscht.
+    var badge = node(
+      "span",
+      "ov-fs-outcome" + (label ? " ov-fs-outcome--" + game.outcome : ""),
+      game.forfait ? (label ? label + " W" : "W") : label
+    );
+    return badge;
+  }
+
   function scheduleScore(row) {
     if (row.result_string) {
       return isRunningRow(row)
