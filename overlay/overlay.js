@@ -2139,7 +2139,10 @@
           "ov-fs-empty",
           "Keine weiteren Partien an diesem Spieltag."
         ),
-        note: runningNote(),
+        // Kein `runningNote()`, wie im gefüllten Zweig auch nicht: Der Hinweis
+        // gehört Tabelle und Torschützenliste. Er wäre hier ohnehin immer leer
+        // (`running_games` kommt aus demselben, dann leeren Spielplan), stand
+        // aber im Widerspruch zur Begründung weiter unten.
       };
     }
 
@@ -2201,9 +2204,14 @@
       );
       return "—";
     }
-    // Angepfiffen, aber noch kein Tor gefallen: Die Phase in der Spalte daneben
-    // sagt, dass gespielt wird, hier gehört der Stand hin.
-    if (row.started) return "0:0";
+    // KEIN "0:0" für ein angepfiffenes Spiel ohne Stand. Der Fall sieht
+    // naheliegend aus, ist aber oben schon erledigt: `Game#schedule_item` setzt
+    // `result_string`, sobald `started?`, und `Game#result` liefert für ein
+    // angepfiffenes Spiel ohne Ereignisse 0:0 -- die Zeile bekommt also "(0:0)"
+    // aus dem ersten Zweig. Hier unten landen nur Zeilen, für die `result` nil
+    // ist, und das ist ausschließlich Altbestand ohne Ereignisse. Genau dort
+    // kennt niemand den Stand, und "0:0" wäre eine Behauptung.
+    if (row.started) return "—";
     return "";
   }
 
@@ -2218,10 +2226,14 @@
       text = period.title || period.short_title || "läuft";
     } else if (row.ended) {
       text = "beendet";
+    } else if (!row.time) {
+      // Sonst steht für "noch nicht angepfiffen" bewusst kein Wort da, weil die
+      // Anstoßzeit in der ersten Spalte es schon sagt. `games.start_time` ist
+      // aber nullable: Ohne Zeit trug die Zeile nur die Mannschaftsnamen, und
+      // nichts sagte, dass die Partie noch aussteht.
+      text = "angesetzt";
     }
 
-    // Kein Wort für "noch nicht angepfiffen": Die Anstoßzeit steht in der
-    // ersten Spalte und sagt es schon.
     if (!text) return "";
 
     // Als Element und nicht als Text, damit die Spalte gedeckt bleibt:
