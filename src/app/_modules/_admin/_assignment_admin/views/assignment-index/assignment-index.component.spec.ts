@@ -1,5 +1,7 @@
 import { getTranslocoTestingModule } from '@floorball/core';
-import { TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import {
   HttpClientTestingModule,
   HttpTestingController,
@@ -696,5 +698,162 @@ describe('AssignmentIndexComponent – Telefonnummer der Ansetzung', () => {
     state.selectedCoachId = 9;
 
     expect(component.selectedRefereePhone(row, 'coach')).toBe('0160 1112223');
+  });
+});
+
+// Die drei bestehenden describe-Bloecke ersetzen das Template durch '' und
+// pruefen ausschliesslich Methoden. Die Anzeige der Nummer ist aber zur Haelfte
+// reine Template-Logik: Die Kandidatenliste rendert `@if (r.kurzfristig_mobil)`
+// ohne Umweg ueber eine Methode, und die drei tel:-Bloecke fuer Schiri 1,
+// Schiri 2 und Coach sind bis auf den Slot-Namen identisch -- eine Verwechslung
+// beim Kopieren zeigte die Nummer der falschen Person und braeche keinen Test.
+// Deshalb hier mit echtem Template.
+describe('AssignmentIndexComponent – Anzeige der Telefonnummer', () => {
+  let fixture: ComponentFixture<AssignmentIndexComponent>;
+  let component: AssignmentIndexComponent;
+  let httpMock: HttpTestingController;
+
+  const GAME_ID = 42;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        FormsModule,
+        getTranslocoTestingModule({
+          de: {
+            assignmentAdmin: {
+              index: { shortNoticeNoPhone: '(keine Nummer)' },
+            },
+          },
+        }),
+        HttpClientTestingModule,
+      ],
+      declarations: [AssignmentIndexComponent],
+      providers: [provideRouter([])],
+      // Das Template zieht fb-select-search und fb-assignment-club-index nach.
+      // Beide sind fuer die Telefon-Anzeige ohne Belang.
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(AssignmentIndexComponent);
+    component = fixture.componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+
+    // ngOnInit laedt Saisons, Vereine und Spiele. Fuer diese Tests baut der Test
+    // die Zeilen selbst; die Anfragen werden nur abgeraeumt. Leere, aber
+    // formgerechte Antworten -- ein blankes {} laesst die Abonnenten auflaufen.
+    fixture.detectChanges();
+    for (let round = 0; round < 5; round++) {
+      const pending = httpMock.match(() => true);
+      if (pending.length === 0) break;
+      pending.forEach((req) =>
+        req.request.url.includes('settings/seasons')
+          ? req.flush({ seasons: [], current_season_id: 18 })
+          : req.flush([])
+      );
+      fixture.detectChanges();
+    }
+  });
+
+  afterEach(() => httpMock.verify());
+
+  function candidate(
+    id: number,
+    telefonnummer: string | null,
+    kurzfristigMobil = true
+  ): RefereeAssignmentAvailable {
+    return {
+      id,
+      lizenznummer_display: `${1000 + id}`,
+      vorname: 'Vorname',
+      nachname: `Nachname${id}`,
+      telefonnummer,
+      kurzfristig_mobil: kurzfristigMobil,
+    };
+  }
+
+  // Baut eine sichtbare Zeile samt geoeffnetem Dropdown.
+  function render(
+    candidates: RefereeAssignmentAvailable[],
+    setUp: (
+      state: ReturnType<AssignmentIndexComponent['getState']>
+    ) => void = () => undefined
+  ) {
+    component.clubMode = false;
+    component.loading = false;
+    component.activeTab = 'open';
+    const row = {
+      game: { id: GAME_ID, date: '2026-08-01' },
+      assignment: null,
+    };
+    component.rows = [row];
+    const state = component['_createRowState'](null);
+    state.availableReferees = candidates;
+    state.availableCoaches = candidates;
+    component.rowStates.set(GAME_ID, state);
+    setUp(state);
+    fixture.detectChanges();
+    return row;
+  }
+
+  const text = (): string => fixture.nativeElement.textContent ?? '';
+  const telLinks = (): HTMLAnchorElement[] =>
+    Array.from(fixture.nativeElement.querySelectorAll('a[href^="tel:"]'));
+
+  it('zeigt die Nummer im Dropdown nur bei kurzfristig mobil', () => {
+    render(
+      [candidate(1, '0170 1111111', true), candidate(2, '0170 2222222', false)],
+      (state) => {
+        state!.showReferee1Dropdown = true;
+      }
+    );
+
+    expect(text()).toContain('0170 1111111');
+    // Wer nicht kurzfristig einspringt, wird aus dieser Liste heraus auch nicht
+    // angerufen -- die Nummer bleibt dann weg.
+    expect(text()).not.toContain('0170 2222222');
+  });
+
+  // Genau die Lage, die den ganzen Vorgang ausgeloest hat: Blitz gesetzt, aber
+  // kein Weg zum Anruf. Ohne den Hinweis sieht das aus wie ein Ladefehler.
+  it('benennt das Kennzeichen ohne hinterlegte Nummer', () => {
+    render([candidate(1, null, true)], (state) => {
+      state!.showReferee1Dropdown = true;
+    });
+
+    expect(text()).toContain('(keine Nummer)');
+  });
+
+  it('haengt den tel:-Link an den Platz, zu dem die Person gehoert', () => {
+    render(
+      [candidate(1, '0170 1111111'), candidate(2, '0170 2222222')],
+      (s) => {
+        s!.selectedReferee1Id = 1;
+        s!.selectedReferee2Id = 2;
+      }
+    );
+
+    // Reihenfolge der Spalten: Schiri 1, dann Schiri 2. Waere im zweiten Block
+    // versehentlich "referee1" verdrahtet, stuende hier zweimal dieselbe Nummer.
+    const hrefs = telLinks().map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual(['tel:01701111111', 'tel:01702222222']);
+  });
+
+  it('bereinigt die Freitext-Nummer fuer das Waehlziel', () => {
+    render([candidate(1, '030 1234567 (ab 18 Uhr)')], (state) => {
+      state!.selectedReferee1Id = 1;
+    });
+
+    const link = telLinks()[0];
+    // Waehlziel ohne den Zusatz, Anzeige mit -- sonst waere die "18" Teil der
+    // gewaehlten Nummer.
+    expect(link.getAttribute('href')).toBe('tel:0301234567');
+    expect(link.textContent?.trim()).toBe('030 1234567 (ab 18 Uhr)');
+  });
+
+  it('setzt keinen Link, solange kein Platz besetzt ist', () => {
+    render([candidate(1, '0170 1111111')]);
+
+    expect(telLinks().length).toBe(0);
   });
 });

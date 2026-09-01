@@ -26,6 +26,7 @@ import {
   RefereeObservationAdminResponse,
 } from '@floorball/types';
 import { OBSERVATION_DIMENSIONS } from '@floorball/referee-observation';
+import { phoneText, telHref } from 'src/app/_helpers/_utils/phone-link';
 
 /**
  * Erst ab dieser Anzahl sichtbarer Rückmeldungen werden die Durchschnitte am
@@ -40,6 +41,11 @@ const MIN_FEEDBACK_COUNT = 5;
   standalone: false,
 })
 export class RefereeDetailComponent implements OnInit, OnDestroy {
+  // In der Vorlage gebraucht: Anzeigetext und bereinigtes Wählziel zur
+  // Freitext-Nummer. Warum beides getrennt sein muss, steht in phone-link.ts.
+  phoneText = phoneText;
+  telHref = telHref;
+
   referee?: RefereeAdmin;
   games: RefereeAdminGame[] = [];
   loading = false;

@@ -140,8 +140,9 @@
     </div>
     <!-- Ansetzungsinformationen (nur reguläre Schiedsrichter). Telefonnummer und
          „kurzfristig mobil" liefert die API nur an Rollen mit Zugriff auf die
-         Kontaktdaten (Verwaltung, RSK, Ansetzung); einem Vereinsmanager fehlen
-         die Felder in der Antwort und der Block bleibt entsprechend leer. -->
+         Kontaktdaten (Admin, RSK, Ansetzung); einem Vereinsmanager fehlen beide
+         Felder in der Antwort, er sieht in diesem Block dann nur Heimadresse
+         und bevorzugten Partner. -->
     @if (
       !referee.guest &&
       (referee.strasse ||
@@ -150,16 +151,16 @@
         referee.partner_lizenznummer)
     ) {
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        @if (referee.telefonnummer) {
+        @if (phoneText(referee.telefonnummer); as phone) {
           <div>
             <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
               {{ "refereeAdmin.detail.phone" | transloco }}
             </p>
             <p class="font-medium">
               <a
-                [href]="'tel:' + referee.telefonnummer"
+                [href]="telHref(phone)"
                 class="text-blue-700 hover:underline"
-                >{{ referee.telefonnummer }}</a
+                >{{ phone }}</a
               >
               @if (referee.kurzfristig_mobil) {
                 <span
@@ -179,7 +180,7 @@
               class="font-medium text-amber-600"
               [title]="'refereeAdmin.detail.shortNoticeHint' | transloco"
             >
-              ⚡ {{ "refereeAdmin.detail.shortNotice" | transloco }}
+              ⚡ {{ "refereeAdmin.detail.shortNoticeNoPhone" | transloco }}
             </p>
           </div>
         }

@@ -34,10 +34,6 @@
     "csvFirstName": "Vorname",
     "csvStatus": "Status",
     "csvEmail": "E-Mail",
-    "csvPhone": "Telefon",
-    "csvShortNotice": "Kurzfristig mobil",
-    "csvYes": "Ja",
-    "csvNo": "Nein",
     "csvGuest": "Gast",
     "statusFilter": "Lizenzstatus",
     "statusFilterOption": {
@@ -79,6 +75,7 @@
     "phone": "Telefon",
     "shortNotice": "Kurzfristig mobil",
     "shortNoticeHint": "Steht laut eigenem Profil kurzfristig für Ansetzungen zur Verfügung.",
+    "shortNoticeNoPhone": "Ja, aber ohne hinterlegte Telefonnummer",
     "preferredPartner": "Bevorzugter Partner",
     "gameHistory": "Spielhistorie",
     "gamesLoading": "Lade Spiele…",

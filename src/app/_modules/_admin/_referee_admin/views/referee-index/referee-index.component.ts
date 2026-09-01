@@ -147,8 +147,6 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
       t('refereeAdmin.index.csvStatus'),
       t('refereeAdmin.index.colClub'),
       t('refereeAdmin.index.csvEmail'),
-      t('refereeAdmin.index.csvPhone'),
-      t('refereeAdmin.index.csvShortNotice'),
       t('refereeAdmin.index.colSeasonGames'),
     ];
     const rows = this.referees.map((r) => [
@@ -162,17 +160,6 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
       r.guest ? t('refereeAdmin.index.csvGuest') : t(this.statusLabelKey(r)),
       r.club_name,
       r.email,
-      r.telefonnummer,
-      // Leer statt „nein": Fehlt das Feld in der Antwort (Rolle ohne Zugriff
-      // auf die Kontaktdaten), waere ein „nein" eine Aussage ueber die Person,
-      // die die Datei gar nicht treffen kann.
-      r.kurzfristig_mobil == null
-        ? ''
-        : t(
-            r.kurzfristig_mobil
-              ? 'refereeAdmin.index.csvYes'
-              : 'refereeAdmin.index.csvNo'
-          ),
       r.season_game_count ?? 0,
     ]);
 

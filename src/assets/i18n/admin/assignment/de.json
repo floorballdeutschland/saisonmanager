@@ -53,6 +53,8 @@
     "filterTags": "Tags",
     "shortNoticeBadge": "Kurzfristig mobil",
     "phoneTitle": "Telefonnummer für die Ansetzung",
+    "shortNoticeNoPhone": "(keine Nummer)",
+    "shortNoticeNoPhoneTitle": "Kurzfristig mobil, aber ohne hinterlegte Telefonnummer im Profil.",
     "partnerDeclaredBadge": "hinterlegt",
     "partnerDeclaredTitle": "Von Schiri 1 im Profil als Partner hinterlegt",
     "partnerGamesTitle": "Gemeinsame Einsätze laut Spielberichten: {{total}} (davon {{season}} in dieser Saison). Für zurückliegende Saisons sind die Altdaten nicht lückenlos.",

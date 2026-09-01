@@ -103,9 +103,10 @@ export interface RefereeAdmin {
   license_status?: RefereeLicenseStatus;
   qualifications?: RefereeQualificationEntry[];
   season_game_count?: number;
-  // Konto-Badge. Nur in der LISTEN-Antwort und nur fuer Rollen mit Zugriff auf
-  // Kontaktdaten (Verwaltung, RSK, Ansetzer); die Detailansicht fuehrt statt
-  // dessen user_id/user_name. Fehlt das Feld, wird kein Badge gezeigt.
+  // Konto-Badge. Nur fuer Rollen mit Zugriff auf Kontaktdaten (Admin, RSK,
+  // Ansetzer). Ausgewertet wird es allein in der Liste; die Detailantwort
+  // fuehrt es seit api#591 zwar mit, hat dafuer aber user_id/user_name.
+  // Fehlt das Feld, wird kein Badge gezeigt.
   has_user?: boolean;
   user_id?: number | null;
   user_name?: string | null;
@@ -117,8 +118,10 @@ export interface RefereeAdmin {
   ort?: string;
   partner_lizenznummer?: number | null;
   // Ansetzungsinformationen aus dem Schiri-Profil. Wie has_user an die
-  // Kontaktdaten-Rollen gebunden (Verwaltung, RSK, Ansetzer) und deshalb in
-  // Liste UND Detail optional: Einem Vereinsmanager liefert die API sie nicht.
+  // Kontaktdaten-Rollen gebunden (Admin, RSK, Ansetzer) und deshalb in Liste
+  // UND Detail optional: Einem Vereinsmanager liefert die API sie nicht.
+  // Angezeigt werden sie nur in der Detailansicht -- die Listen-Tabelle hat
+  // keine Telefonspalte, und der CSV-Export bewusst auch nicht.
   telefonnummer?: string | null;
   kurzfristig_mobil?: boolean;
   tags?: RefereeTag[];
@@ -223,7 +226,7 @@ export interface RefereeProfile {
   // Login-Adresse des verknüpften Benutzerkontos (read-only Anzeige; die
   // Pflege läuft über „Mein Konto" und zieht die Schiri-Adresse mit).
   account_email?: string | null;
-  telefonnummer?: string;
+  telefonnummer?: string | null;
   lizenzstufe?: string;
   gueltigkeit?: string;
   geburtsdatum?: string;
@@ -455,9 +458,11 @@ export interface RefereeAssignmentAvailable {
   vorname: string;
   nachname: string;
   lizenzstufe?: string;
+  // Beide Auswahl-Endpunkte (#available und #available_coaches) liefern das
+  // Kennzeichen und die Nummer. Die Oberflaeche zeigt die Nummer nur zum
+  // gesetzten Kennzeichen: Wer nicht kurzfristig einspringt, wird aus dieser
+  // Liste heraus auch nicht angerufen.
   kurzfristig_mobil?: boolean;
-  // Gehoert zum Kennzeichen: Wer kurzfristig einspringt, wird angerufen und
-  // nicht angeschrieben.
   telefonnummer?: string | null;
   partner_lizenznummer?: number | null;
   club_id?: number | null;

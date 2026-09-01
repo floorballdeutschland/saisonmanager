@@ -91,6 +91,7 @@ describe('RefereeDetailComponent', () => {
                 openMatch: 'Zum Spiel / Spielbericht',
                 phone: 'Telefon',
                 shortNotice: 'Kurzfristig mobil',
+                shortNoticeNoPhone: 'Ja, aber ohne hinterlegte Telefonnummer',
               },
             },
           },
@@ -229,8 +230,37 @@ describe('RefereeDetailComponent', () => {
       }
     );
 
-    expect(phoneLink()?.getAttribute('href')).toBe('tel:0170 1234567');
+    // Waehlziel ohne Leerzeichen, Anzeige mit -- ein rohes "tel:0170 1234567"
+    // ist kein gueltiger URI.
+    expect(phoneLink()?.getAttribute('href')).toBe('tel:01701234567');
     expect(phoneLink()?.textContent?.trim()).toBe('0170 1234567');
+  });
+
+  // Der fuer die Ansetzung einzig interessante Fall: erreichbar UND kurzfristig
+  // verfuegbar. Beide Bindungen sitzen im selben Block, aber getrennt.
+  it('zeigt Nummer und Kennzeichen zusammen', async () => {
+    await setUp(
+      [],
+      { menu_item_referee_admin: true },
+      { telefonnummer: '0170 1234567', kurzfristig_mobil: true }
+    );
+
+    expect(phoneLink()?.textContent?.trim()).toBe('0170 1234567');
+    expect(fixture.nativeElement.textContent).toContain('Kurzfristig mobil');
+  });
+
+  // Eine Nummer aus lauter Leerzeichen ergaebe sonst eine Ueberschrift
+  // „Telefon" ueber einer leeren Zeile mit totem Link. Weder das Profil noch
+  // das Modell schneidet die Eingabe ab.
+  it('behandelt eine Nummer aus Leerzeichen wie keine Nummer', async () => {
+    await setUp(
+      [],
+      { menu_item_referee_admin: true },
+      { telefonnummer: '   ', strasse: 'Musterweg 1' }
+    );
+
+    expect(phoneLink()).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Telefon');
   });
 
   // Ohne Nummer darf kein leerer tel:-Link entstehen; das Kennzeichen allein
@@ -245,14 +275,23 @@ describe('RefereeDetailComponent', () => {
     );
 
     expect(phoneLink()).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Kurzfristig mobil');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Ja, aber ohne hinterlegte Telefonnummer'
+    );
   });
 
   // Gegenprobe zur Zweckbindung: Liefert die API die Felder nicht mit (etwa dem
-  // Vereinsmanager), steht weder Nummer noch Kennzeichen in der Maske.
+  // Vereinsmanager), steht weder Nummer noch Kennzeichen in der Maske. Die
+  // Adresse ist gesetzt, damit der umgebende Block wirklich gerendert wird --
+  // sonst bewiese der Test nur, dass eine leere Maske leer ist.
   it('zeigt nichts, wenn die API die Ansetzungsdaten nicht mitliefert', async () => {
-    await setUp([]);
+    await setUp(
+      [],
+      { menu_item_referee_admin: true },
+      { strasse: 'Musterweg 1' }
+    );
 
+    expect(fixture.nativeElement.textContent).toContain('Musterweg 1');
     expect(phoneLink()).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain(
       'Kurzfristig mobil'

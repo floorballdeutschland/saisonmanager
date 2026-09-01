@@ -26,10 +26,10 @@ import {
   RefereeTag,
 } from '@floorball/types';
 import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
+import { phoneText, telHref } from 'src/app/_helpers/_utils/phone-link';
 
 type AssignmentMode = 'referees' | 'club';
 type AssignmentTab = 'open' | 'history';
-// Die drei besetzbaren Plaetze einer Zeile.
 type RefereeSlot = 'referee1' | 'referee2' | 'coach';
 
 // Herkunft eines im Verlauf angezeigten Namens: aus dem Spielbericht (wer
@@ -392,17 +392,30 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     return this.rowStates.get(gameId);
   }
 
+  // In den Vorlagen gebraucht: Anzeigetext und bereinigtes Wählziel zur
+  // Freitext-Nummer. Warum beides getrennt sein muss, steht in phone-link.ts.
+  phoneText = phoneText;
+  telHref = telHref;
+
   // Telefonnummer der aktuell in diesem Slot gewählten Person, oder null.
   //
   // Die Nummer stammt aus dem Profilabschnitt „Ansetzungsinformationen", den
   // die Schiedsrichter genau dafür ausfüllen, dass die Ansetzung sie erreicht.
-  // Sie steht hier neben dem Namen, weil das Kennzeichen „kurzfristig mobil"
-  // ohne einen Weg zum Anruf folgenlos bleibt.
+  // Sie steht unter dem besetzten Feld, damit die Ansetzung die Person, die sie
+  // gerade einteilt, ohne Umweg über deren Profil anrufen kann.
   //
-  // Quelle ist bevorzugt die Auswahlliste des Spieltags; die ist aber erst nach
-  // dem ersten Klick ins Feld geladen. Für eine bereits gespeicherte Ansetzung
-  // greift deshalb der Schiedsrichter der Ansetzung selbst. Ohne hinterlegte
-  // Nummer bleibt es bei null, damit kein leerer tel:-Link entsteht.
+  // Quelle ist die Auswahlliste des Spieltags, ersatzweise die gespeicherte
+  // Ansetzung. Der zweite Weg ist dabei nicht der Ausnahme-, sondern der
+  // Regelfall: #available wirft tagesgleich bereits Angesetzte per
+  // `where.not(id: assigned_ids)` aus der Kandidatenliste, für ein gesetztes
+  // Gespann steht die Person dort also gar nicht mehr drin. Der Pool-Zweig
+  // greift für die noch offene Auswahl, der Ansetzungs-Zweig für die bereits
+  // gespeicherte.
+  //
+  // Der Vergleich `assigned?.id === id` ist der Riegel gegen die falsche
+  // Nummer: Ohne ihn zeigte eine gewechselte Auswahl weiter die Nummer der
+  // zuvor angesetzten Person. Ohne hinterlegte Nummer bleibt es bei null, damit
+  // kein leerer tel:-Link entsteht.
   selectedRefereePhone(row: MergedGame, slot: RefereeSlot): string | null {
     const state = this.rowStates.get(row.game.id);
     if (!state) return null;
@@ -418,7 +431,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     const pool =
       slot === 'coach' ? state.availableCoaches : state.availableReferees;
     const candidate = pool.find((r) => r.id === id);
-    if (candidate) return candidate.telefonnummer?.trim() || null;
+    if (candidate) return phoneText(candidate.telefonnummer);
 
     const assignment = row.assignment;
     const assigned =
@@ -427,7 +440,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
         : slot === 'referee2'
           ? assignment?.referee2
           : assignment?.referee1;
-    return assigned?.id === id ? assigned.telefonnummer?.trim() || null : null;
+    return assigned?.id === id ? phoneText(assigned.telefonnummer) : null;
   }
 
   // Umschalten zwischen „2 Schiedsrichter" und „Verein". Beim Wechsel wird die
