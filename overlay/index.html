@@ -83,7 +83,11 @@
              einer fremden Liga im Bild. Ein Landesverbandslogo kommt hier
              bewusst nicht in Frage, es stünde für den falschen Zusammenhang. -->
         <div class="ov-league-mark ov-mark-empty">
-          <img id="league-mark" alt="" width="600" height="600" />
+          <!-- Ohne `width`/`height`: Die mitgelieferten Zeichen sind 600x600, das
+               Pokalzeichen 600x563, und ein hochgeladenes hat beliebige Maße.
+               Ein festes Verhältnis ergäbe hier nur einen Sprung beim Laden;
+               die Größe steht in der CSS (`height: 54px; width: auto`). -->
+          <img id="league-mark" alt="" />
         </div>
       </section>
 
@@ -115,7 +119,7 @@
         <p class="ov-fs-note ov-hidden" id="fs-note"></p>
 
         <div class="ov-fs-mark ov-mark-empty">
-          <img id="fs-mark" alt="" width="600" height="600" />
+          <img id="fs-mark" alt="" />
         </div>
       </section>
 

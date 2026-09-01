@@ -472,6 +472,22 @@
       return;
     }
 
+    // Auch für die MITGELIEFERTE Marke einen Zuhörer: Fehlt eine der Dateien
+    // auf dem Server (Deploy-Fehler), blieb in der Anzeigetafel sonst die
+    // gepolsterte Spalte samt Trennlinie und Bruchbild stehen -- während der
+    // leere Fall die Fläche ganz entfernt. Ohne eigene Adresse ist der Rückfall
+    // das Ausblenden, deshalb hier `applyLeagueMark("", "")`.
+    if (url === fallback) {
+      leagueMarkErrorHandler = function () {
+        logProblem("Mitgelieferte Bildmarke nicht geladen: " + url);
+        applyLeagueMark("", "");
+      };
+
+      leagueMarks().forEach(function (img) {
+        img.addEventListener("error", leagueMarkErrorHandler);
+      });
+    }
+
     if (url !== fallback) {
       // Die Adresse steckt in der Closure, nicht im Element: Hat der Abruf
       // zwischenzeitlich auf ein anderes Spiel umgestellt, stünde im Element
