@@ -59,7 +59,7 @@ export class AssociationHostComponent implements OnInit, OnDestroy {
       startWith(!!this._route.snapshot.firstChild)
     );
 
-    // Landesverband-Werbebanner – auf der Verbands-Startseite (z. B. /fvd) auf
+    // Landesverband-Werbebanner – auf der Verbands-Startseite (z. B. /fd) auf
     // dem Desktop oben rechts in der Kopfzeile. Mobil bleibt es im Menü.
     this.activeBanner$ =
       this._associationService.selectedStateAssociation$.pipe(
