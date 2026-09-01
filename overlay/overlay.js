@@ -2198,13 +2198,26 @@
     if (!form) return null;
 
     var teams = [form.home, form.guest].filter(Boolean);
+    // Die Unterzeile kommt aus DERSELBEN Nutzlast wie die Blöcke, nicht aus
+    // `state.game`. Zwei Gründe:
+    //
+    //   1. Die Abrufe laufen unterschiedlich schnell (Spiel alle 5 s, Liga alle
+    //      30 s). Schaltet das Dock auf ein anderes Spiel, stand in der
+    //      Unterzeile bis zu 30 Sekunden die neue Paarung über den Blöcken der
+    //      alten -- zwei verschiedene Spiele in einem Bild.
+    //   2. Ohne Spieldaten (Vollbild vor dem ersten Spielabruf, oder Zeit-
+    //      überschreitung) ergaben die leeren Namen die nackte Zeichenkette
+    //      " gegen ". `:empty` greift dagegen nicht, der Text ist nicht leer.
+    var namen = teams
+      .map(function (team) {
+        return team.name || team.short_name || "";
+      })
+      .filter(Boolean);
+
     var frame = {
       league: leagueName(),
       title: "Letzte Spiele",
-      sub:
-        teamLabel(state.game && state.game.home) +
-        " gegen " +
-        teamLabel(state.game && state.game.guest),
+      sub: namen.length === 2 ? namen.join(" gegen ") : namen.join(""),
     };
 
     // Beide Mannschaften unbekannt: Das ist ein eigener Zustand und muss
@@ -2293,13 +2306,33 @@
       // waere eine Falschaussage.
       return "—";
     }
-    return game.goals + ":" + game.opponent_goals;
+
+    // Negative Tore sind kein Ergebnis, sondern die beidseitige Wertung am
+    // grünen Tisch: `League#forfait_goals` setzt dort BEIDE Seiten negativ. Die
+    // API gibt dafür keine Wertung aus und leert die Tore inzwischen selbst;
+    // der Riegel bleibt, weil die Bühne auch mit einer älteren API läuft.
+    if (game.goals < 0 || game.opponent_goals < 0) return "—";
+
+    var stand = game.goals + ":" + game.opponent_goals;
+    // Verlängerung und Penaltyschießen gehören in eine Formkurve: Ein Sieg
+    // n. V. ist ein anderer als ein regulärer.
+    return game.postfix ? stand + " " + game.postfix : stand;
   }
 
   var OUTCOME_LABELS = { win: "S", draw: "U", loss: "N" };
 
   function outcomeBadge(game) {
-    var label = OUTCOME_LABELS[game.outcome] || "";
+    // `hasOwnProperty`, nicht bloß ein Zugriff: `outcome` kommt von außen, und
+    // ein Wert wie "constructor" oder "toString" hätte eine geerbte Funktion
+    // als Beschriftung geliefert, samt Funktionsquelltext im Bild. Die API kann
+    // das heute nicht senden; `FS_SCENES` wird aus demselben Grund schon so
+    // abgefragt.
+    var label = Object.prototype.hasOwnProperty.call(
+      OUTCOME_LABELS,
+      String(game.outcome)
+    )
+      ? OUTCOME_LABELS[game.outcome]
+      : "";
     // Ohne Wertung ein leerer Platzhalter, damit die Spalte darunter nicht
     // verrutscht.
     var badge = node(
