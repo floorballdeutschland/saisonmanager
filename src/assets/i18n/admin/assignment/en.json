@@ -52,6 +52,7 @@
     "filterLicense": "License level",
     "filterTags": "Tags",
     "shortNoticeBadge": "Available on short notice",
+    "phoneTitle": "Phone number for assignment purposes",
     "partnerDeclaredBadge": "declared",
     "partnerDeclaredTitle": "Declared as partner in referee 1's profile",
     "partnerGamesTitle": "Joint appearances according to the game reports: {{total}} ({{season}} of them this season). Legacy data for past seasons is incomplete.",

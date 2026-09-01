@@ -29,6 +29,8 @@ import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 
 type AssignmentMode = 'referees' | 'club';
 type AssignmentTab = 'open' | 'history';
+// Die drei besetzbaren Plaetze einer Zeile.
+type RefereeSlot = 'referee1' | 'referee2' | 'coach';
 
 // Herkunft eines im Verlauf angezeigten Namens: aus dem Spielbericht (wer
 // wirklich gepfiffen hat), ersatzweise aus der Ansetzung oder der angesetzte
@@ -388,6 +390,44 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
 
   getState(gameId: number): RowState | undefined {
     return this.rowStates.get(gameId);
+  }
+
+  // Telefonnummer der aktuell in diesem Slot gewählten Person, oder null.
+  //
+  // Die Nummer stammt aus dem Profilabschnitt „Ansetzungsinformationen", den
+  // die Schiedsrichter genau dafür ausfüllen, dass die Ansetzung sie erreicht.
+  // Sie steht hier neben dem Namen, weil das Kennzeichen „kurzfristig mobil"
+  // ohne einen Weg zum Anruf folgenlos bleibt.
+  //
+  // Quelle ist bevorzugt die Auswahlliste des Spieltags; die ist aber erst nach
+  // dem ersten Klick ins Feld geladen. Für eine bereits gespeicherte Ansetzung
+  // greift deshalb der Schiedsrichter der Ansetzung selbst. Ohne hinterlegte
+  // Nummer bleibt es bei null, damit kein leerer tel:-Link entsteht.
+  selectedRefereePhone(row: MergedGame, slot: RefereeSlot): string | null {
+    const state = this.rowStates.get(row.game.id);
+    if (!state) return null;
+
+    const id =
+      slot === 'coach'
+        ? state.selectedCoachId
+        : slot === 'referee2'
+          ? state.selectedReferee2Id
+          : state.selectedReferee1Id;
+    if (id == null) return null;
+
+    const pool =
+      slot === 'coach' ? state.availableCoaches : state.availableReferees;
+    const candidate = pool.find((r) => r.id === id);
+    if (candidate) return candidate.telefonnummer?.trim() || null;
+
+    const assignment = row.assignment;
+    const assigned =
+      slot === 'coach'
+        ? assignment?.coach
+        : slot === 'referee2'
+          ? assignment?.referee2
+          : assignment?.referee1;
+    return assigned?.id === id ? assigned.telefonnummer?.trim() || null : null;
   }
 
   // Umschalten zwischen „2 Schiedsrichter" und „Verein". Beim Wechsel wird die

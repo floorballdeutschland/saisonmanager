@@ -138,9 +138,51 @@
         </div>
       }
     </div>
-    <!-- Adresse & Partner (nur reguläre Schiedsrichter) -->
-    @if (!referee.guest && (referee.strasse || referee.partner_lizenznummer)) {
+    <!-- Ansetzungsinformationen (nur reguläre Schiedsrichter). Telefonnummer und
+         „kurzfristig mobil" liefert die API nur an Rollen mit Zugriff auf die
+         Kontaktdaten (Verwaltung, RSK, Ansetzung); einem Vereinsmanager fehlen
+         die Felder in der Antwort und der Block bleibt entsprechend leer. -->
+    @if (
+      !referee.guest &&
+      (referee.strasse ||
+        referee.telefonnummer ||
+        referee.kurzfristig_mobil ||
+        referee.partner_lizenznummer)
+    ) {
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        @if (referee.telefonnummer) {
+          <div>
+            <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+              {{ "refereeAdmin.detail.phone" | transloco }}
+            </p>
+            <p class="font-medium">
+              <a
+                [href]="'tel:' + referee.telefonnummer"
+                class="text-blue-700 hover:underline"
+                >{{ referee.telefonnummer }}</a
+              >
+              @if (referee.kurzfristig_mobil) {
+                <span
+                  class="ml-1 text-amber-600"
+                  [title]="'refereeAdmin.detail.shortNoticeHint' | transloco"
+                  >⚡ {{ "refereeAdmin.detail.shortNotice" | transloco }}</span
+                >
+              }
+            </p>
+          </div>
+        } @else if (referee.kurzfristig_mobil) {
+          <div>
+            <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+              {{ "refereeAdmin.detail.shortNotice" | transloco }}
+            </p>
+            <p
+              class="font-medium text-amber-600"
+              [title]="'refereeAdmin.detail.shortNoticeHint' | transloco"
+            >
+              ⚡ {{ "refereeAdmin.detail.shortNotice" | transloco }}
+            </p>
+          </div>
+        }
         @if (referee.strasse) {
           <div>
             <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">

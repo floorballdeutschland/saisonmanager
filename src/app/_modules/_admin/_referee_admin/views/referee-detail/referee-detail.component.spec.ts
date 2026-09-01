@@ -72,8 +72,10 @@ describe('RefereeDetailComponent', () => {
 
   async function setUp(
     games: RefereeAdminGame[],
-    permissions: Record<string, boolean> = { menu_item_referee_admin: true }
+    permissions: Record<string, boolean> = { menu_item_referee_admin: true },
+    refereeOverrides: Partial<RefereeAdmin> = {}
   ) {
+    const shown = { ...referee, ...refereeOverrides } as RefereeAdmin;
     await TestBed.configureTestingModule({
       imports: [
         FormsModule,
@@ -87,6 +89,8 @@ describe('RefereeDetailComponent', () => {
               detail: {
                 gameHistory: 'Spielhistorie',
                 openMatch: 'Zum Spiel / Spielbericht',
+                phone: 'Telefon',
+                shortNotice: 'Kurzfristig mobil',
               },
             },
           },
@@ -97,8 +101,8 @@ describe('RefereeDetailComponent', () => {
         {
           provide: RefereeService,
           useValue: {
-            adminGetAll: () => of([referee]),
-            adminGetById: () => of(referee),
+            adminGetAll: () => of([shown]),
+            adminGetById: () => of(shown),
             adminGetGames: () => of(games),
           },
         },
@@ -209,5 +213,49 @@ describe('RefereeDetailComponent', () => {
         .length
     ).toBe(1);
     expect(moderationButtons().filter(Boolean).length).toBe(0);
+  });
+
+  // Die Nummer steht im Profilabschnitt „Ansetzungsinformationen" und ist fuer
+  // die Ansetzung gedacht. Sie stand bisher in keiner Antwort der Verwaltung.
+  const phoneLink = (): HTMLAnchorElement | null =>
+    fixture.nativeElement.querySelector('a[href^="tel:"]');
+
+  it('verlinkt die Telefonnummer waehlbar', async () => {
+    await setUp(
+      [],
+      { menu_item_referee_admin: true },
+      {
+        telefonnummer: '0170 1234567',
+      }
+    );
+
+    expect(phoneLink()?.getAttribute('href')).toBe('tel:0170 1234567');
+    expect(phoneLink()?.textContent?.trim()).toBe('0170 1234567');
+  });
+
+  // Ohne Nummer darf kein leerer tel:-Link entstehen; das Kennzeichen allein
+  // bleibt aber sichtbar, sonst faellt der Hinweis „kurzfristig mobil" weg.
+  it('zeigt das Kennzeichen auch ohne hinterlegte Nummer', async () => {
+    await setUp(
+      [],
+      { menu_item_referee_admin: true },
+      {
+        kurzfristig_mobil: true,
+      }
+    );
+
+    expect(phoneLink()).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Kurzfristig mobil');
+  });
+
+  // Gegenprobe zur Zweckbindung: Liefert die API die Felder nicht mit (etwa dem
+  // Vereinsmanager), steht weder Nummer noch Kennzeichen in der Maske.
+  it('zeigt nichts, wenn die API die Ansetzungsdaten nicht mitliefert', async () => {
+    await setUp([]);
+
+    expect(phoneLink()).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Kurzfristig mobil'
+    );
   });
 });

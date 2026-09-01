@@ -565,3 +565,136 @@ describe('AssignmentIndexComponent – Gespann-Kurzliste', () => {
     expect(names()).toEqual(['G', 'B', 'C', 'D', 'E', 'Albert', 'F']);
   });
 });
+
+// Die Telefonnummer steht im Profilabschnitt „Ansetzungsinformationen" und ist
+// genau dafuer gedacht, dass die Ansetzung kurzfristig anrufen kann. Sie kam
+// bisher weder in der Kandidatenliste an noch wurde die Nummer der bereits
+// gespeicherten Ansetzung irgendwo angezeigt.
+describe('AssignmentIndexComponent – Telefonnummer der Ansetzung', () => {
+  let component: AssignmentIndexComponent;
+  let httpMock: HttpTestingController;
+
+  const GAME_ID = 42;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule(), HttpClientTestingModule],
+      declarations: [AssignmentIndexComponent],
+      providers: [provideRouter([])],
+    })
+      .overrideTemplate(AssignmentIndexComponent, '')
+      .compileComponents();
+
+    component = TestBed.createComponent(
+      AssignmentIndexComponent
+    ).componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  function prepareRow(
+    candidates: RefereeAssignmentAvailable[],
+    assignment: RefereeAssignment | null = null
+  ) {
+    const row = { game: { id: GAME_ID, date: '2026-08-01' }, assignment };
+    component.rows = [row];
+    const state = component['_createRowState'](assignment);
+    state.availableReferees = candidates;
+    component.rowStates.set(GAME_ID, state);
+    return { row, state };
+  }
+
+  function candidate(
+    id: number,
+    telefonnummer: string | null
+  ): RefereeAssignmentAvailable {
+    return {
+      id,
+      lizenznummer_display: `${1000 + id}`,
+      vorname: 'Vorname',
+      nachname: `Nachname${id}`,
+      telefonnummer,
+      kurzfristig_mobil: true,
+    };
+  }
+
+  it('liefert die Nummer der gewählten Person aus der Kandidatenliste', () => {
+    const { row, state } = prepareRow([candidate(1, '0170 1234567')]);
+    state.selectedReferee1Id = 1;
+
+    expect(component.selectedRefereePhone(row, 'referee1')).toBe(
+      '0170 1234567'
+    );
+  });
+
+  // Die Kandidatenliste wird erst beim Klick ins Feld geladen. Eine gespeicherte
+  // Ansetzung muss ihre Nummer trotzdem zeigen, sonst steht die Nummer des
+  // angesetzten Gespanns bis zum ersten Klick nicht da.
+  it('greift bei leerer Kandidatenliste auf die gespeicherte Ansetzung zurück', () => {
+    const assignment: RefereeAssignment = {
+      id: 500,
+      game_id: GAME_ID,
+      status: 'published',
+      referee1: {
+        id: 7,
+        lizenznummer_display: '1007',
+        vorname: 'Vorname',
+        nachname: 'Nachname7',
+        telefonnummer: '0151 7654321',
+      },
+    };
+    const { row, state } = prepareRow([], assignment);
+    state.selectedReferee1Id = 7;
+
+    expect(component.selectedRefereePhone(row, 'referee1')).toBe(
+      '0151 7654321'
+    );
+  });
+
+  // Gegenprobe: Die Ansetzung darf nicht die Nummer der zuvor angesetzten Person
+  // zeigen, wenn im Feld inzwischen jemand anderes steht.
+  it('zeigt nichts, wenn die Auswahl von der gespeicherten Ansetzung abweicht', () => {
+    const assignment: RefereeAssignment = {
+      id: 500,
+      game_id: GAME_ID,
+      status: 'published',
+      referee1: {
+        id: 7,
+        lizenznummer_display: '1007',
+        vorname: 'Vorname',
+        nachname: 'Nachname7',
+        telefonnummer: '0151 7654321',
+      },
+    };
+    const { row, state } = prepareRow([], assignment);
+    state.selectedReferee1Id = 8;
+
+    expect(component.selectedRefereePhone(row, 'referee1')).toBeNull();
+  });
+
+  // Ohne hinterlegte Nummer bleibt es bei null, sonst entstuende ein tel:-Link
+  // ins Leere.
+  it('zeigt nichts ohne hinterlegte Nummer', () => {
+    const { row, state } = prepareRow([candidate(1, null)]);
+    state.selectedReferee1Id = 1;
+
+    expect(component.selectedRefereePhone(row, 'referee1')).toBeNull();
+  });
+
+  it('zeigt nichts, solange kein Platz besetzt ist', () => {
+    const { row } = prepareRow([candidate(1, '0170 1234567')]);
+
+    expect(component.selectedRefereePhone(row, 'referee1')).toBeNull();
+    expect(component.selectedRefereePhone(row, 'referee2')).toBeNull();
+    expect(component.selectedRefereePhone(row, 'coach')).toBeNull();
+  });
+
+  it('liest den Coach aus seiner eigenen Kandidatenliste', () => {
+    const { row, state } = prepareRow([candidate(1, '0170 1234567')]);
+    state.availableCoaches = [candidate(9, '0160 1112223')];
+    state.selectedCoachId = 9;
+
+    expect(component.selectedRefereePhone(row, 'coach')).toBe('0160 1112223');
+  });
+});

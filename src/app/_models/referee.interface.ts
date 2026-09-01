@@ -116,6 +116,11 @@ export interface RefereeAdmin {
   plz?: string;
   ort?: string;
   partner_lizenznummer?: number | null;
+  // Ansetzungsinformationen aus dem Schiri-Profil. Wie has_user an die
+  // Kontaktdaten-Rollen gebunden (Verwaltung, RSK, Ansetzer) und deshalb in
+  // Liste UND Detail optional: Einem Vereinsmanager liefert die API sie nicht.
+  telefonnummer?: string | null;
+  kurzfristig_mobil?: boolean;
   tags?: RefereeTag[];
   tag_ids?: number[];
 }
@@ -395,6 +400,8 @@ export interface RefereeAssignmentStub {
   nachname: string;
   lizenzstufe?: string;
   partner_lizenznummer?: number | null;
+  // Kontakt zum angesetzten Gespann fuer den dringenden Fall am Spieltag.
+  telefonnummer?: string | null;
 }
 
 export interface RefereeAssignmentGame {
@@ -449,6 +456,9 @@ export interface RefereeAssignmentAvailable {
   nachname: string;
   lizenzstufe?: string;
   kurzfristig_mobil?: boolean;
+  // Gehoert zum Kennzeichen: Wer kurzfristig einspringt, wird angerufen und
+  // nicht angeschrieben.
+  telefonnummer?: string | null;
   partner_lizenznummer?: number | null;
   club_id?: number | null;
   // Vereine, für die die Person nicht angesetzt werden möchte (eigener Verein
