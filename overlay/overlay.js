@@ -34,8 +34,8 @@
   var ERROR_BACKOFF_MAX_MS = 30000;
   // Ein Abruf, der nie zurueckkommt, plant auch keinen naechsten ein. Genau das
   // passiert nach einem WLAN-Wechsel in der Halle: Die Verbindung bleibt halb
-  // offen, fetch wartet ewig, und das Overlay friert fuer den Rest der
-  // Uebertragung ein. Deshalb harte Frist statt Vertrauen.
+  // offen, fetch wartet ewig, und das Overlay friert für den Rest der
+  // Übertragung ein. Deshalb harte Frist statt Vertrauen.
   var REQUEST_TIMEOUT_MS = 4000;
   // Ab wann die Anzeige zugibt, dass sie nichts Neues mehr weiss. Der Live-Punkt
   // geht dann aus, statt einen alten Stand als aktuell auszugeben.
@@ -323,7 +323,7 @@
   }
 
   // Der Live-Punkt behauptet, die Anzeige sei aktuell. Kommt seit einer Weile
-  // nichts mehr durch (totes Token, Netz weg), waere das eine Falschaussage:
+  // nichts mehr durch (totes Token, Netz weg), wäre das eine Falschaussage:
   // Dann geht der Punkt aus, und der Regie faellt es auf.
   function renderLiveState(game) {
     game = game || state.game;
@@ -487,6 +487,7 @@
 
     el.scoreboard.classList.toggle("ov-hidden", !visible);
     applyScoreboardPosition();
+    applyColors();
     // Auch ohne neue Spieldaten: Die Übersteuerung steckt allein im
     // Steuerzustand, sonst wirkte ein Druck im Dock erst beim nächsten
     // Eintrag im Spielbericht.
@@ -512,6 +513,64 @@
       "data-position",
       POSITIONS[wanted] ? wanted : "bottom-left"
     );
+  }
+
+  // Eigene Farben aus dem Bedienfeld, damit die Einblendungen zu den übrigen
+  // Szenen einer Produktion passen (Vereinsfarben).
+  //
+  // NUR sechsstelliges Hex, sonst gilt weiter die Farbwelt des Wettbewerbs.
+  // Das ist keine Formsache: Der Wert kommt aus dem Steuerzustand, landet in
+  // einer CSS-Variablen und diese in `background`. Ohne Prüfung könnte dort
+  // ein `url(...)` stehen, und die Bühne holte auf Sendung eine fremde Datei.
+  //
+  // Gesetzt wird am `.ov-stage` und nicht am Wurzelelement: Dort liegt schon
+  // `--ov-scale`, die Variablen erben nach innen, und die Regeln je Wettbewerb
+  // an `:root[data-competition]` bleiben unangetastet -- ein Rücksetzen
+  // braucht deshalb nur diese vier Eigenschaften zu entfernen.
+  var HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
+  function applyColors() {
+    var colors = state.control.colors || {};
+    var accent = HEX_COLOR.test(String(colors.accent)) ? colors.accent : null;
+    var style = el.stage.style;
+
+    if (!accent) {
+      style.removeProperty("--ov-accent");
+      style.removeProperty("--ov-accent-alt");
+      style.removeProperty("--ov-grad-accent");
+      style.removeProperty("--ov-accent-soft");
+      return;
+    }
+
+    // Ohne zweite Farbe ein Verlauf aus derselben: Ein Verlauf, der zur Hälfte
+    // die Ligafarbe trägt, sah nach einem Fehler aus.
+    var alt = HEX_COLOR.test(String(colors.accent_alt))
+      ? colors.accent_alt
+      : accent;
+
+    style.setProperty("--ov-accent", accent);
+    style.setProperty("--ov-accent-alt", alt);
+    style.setProperty(
+      "--ov-grad-accent",
+      "linear-gradient(135deg, " + accent + " 0%, " + alt + " 100%)"
+    );
+    // Dieselbe Schreibweise wie im Stylesheet, nicht color-mix: Die
+    // Browser-Quelle ist ein eingebettetes Chromium, dessen Fassung an der
+    // OBS-Version hängt.
+    style.setProperty("--ov-accent-soft", softColor(accent));
+  }
+
+  function softColor(hex) {
+    var rgb = hexToRgb(hex);
+    return "rgb(" + rgb.join(" ") + " / 16%)";
+  }
+
+  function hexToRgb(hex) {
+    return [
+      parseInt(hex.slice(1, 3), 16),
+      parseInt(hex.slice(3, 5), 16),
+      parseInt(hex.slice(5, 7), 16),
+    ];
   }
 
   // ── Uhr ─────────────────────────────────────────────────────────────────
@@ -1630,7 +1689,7 @@
     // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
     if (!rows) return null;
     // Abruf da, aber leer: DAS ist ein eigener Zustand und muss dastehen. Die
-    // Pruefung oben faengt ihn nicht, weil `[]` wahr ist -- uebrig blieben die
+    // Prüfung oben fängt ihn nicht, weil `[]` wahr ist -- übrig blieben die
     // Spaltenkoepfe ueber einer leeren Flaeche. Auf Sendung liest sich das als
     // Aussage ("diese Liga hat keine Mannschaften") statt als "noch nichts
     // gespielt". Nachgestellt mit leerer Liste: genau diese Kopfzeile ging raus.
@@ -1686,7 +1745,7 @@
     // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
     if (!rows) return null;
     // Abruf da, aber leer: DAS ist ein eigener Zustand und muss dastehen. Die
-    // Pruefung oben faengt ihn nicht, weil `[]` wahr ist -- uebrig blieben die
+    // Prüfung oben fängt ihn nicht, weil `[]` wahr ist -- übrig blieben die
     // Spaltenkoepfe ueber einer leeren Flaeche. Auf Sendung liest sich das als
     // Aussage ("diese Liga hat keine Mannschaften") statt als "noch nichts
     // gespielt". Nachgestellt mit leerer Liste: genau diese Kopfzeile ging raus.
@@ -1742,7 +1801,7 @@
     // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
     if (!rows) return null;
     // Abruf da, aber leer: DAS ist ein eigener Zustand und muss dastehen. Die
-    // Pruefung oben faengt ihn nicht, weil `[]` wahr ist -- uebrig blieben die
+    // Prüfung oben fängt ihn nicht, weil `[]` wahr ist -- übrig blieben die
     // Spaltenkoepfe ueber einer leeren Flaeche. Auf Sendung liest sich das als
     // Aussage ("diese Liga hat keine Mannschaften") statt als "noch nichts
     // gespielt". Nachgestellt mit leerer Liste: genau diese Kopfzeile ging raus.

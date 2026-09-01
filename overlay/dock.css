@@ -236,6 +236,33 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.dk-colors {
+  display: flex;
+  gap: 10px;
+}
+
+.dk-color {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--dk-muted);
+}
+
+/* Große Farbfläche: Getroffen wird sie mit der Maus in Eile, und die Farbe
+   selbst ist die Beschriftung. */
+.dk-color input[type="color"] {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 30px;
+  padding: 2px;
+  border: 1px solid var(--dk-line);
+  border-radius: 6px;
+  background: var(--dk-bg);
+  cursor: pointer;
+}
+
 .dk-freetext {
   display: grid;
   gap: 6px;
