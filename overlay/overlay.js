@@ -2009,6 +2009,7 @@
       { label: "Zeit", numeric: true },
       { label: "Begegnung" },
       { label: "Stand", numeric: true, strong: true },
+      { label: "" },
     ];
 
     return {
@@ -2023,19 +2024,33 @@
               row.time || "",
               (row.home_team_name || "") + " – " + (row.guest_team_name || ""),
               scheduleScore(row),
+              schedulePhase(row),
             ],
           };
         })
       ),
+      // KEIN `runningNote()` hier. Der Hinweis sagt "läuft noch und ist hier
+      // noch nicht enthalten" und gilt Tabelle und Torschützenliste, die nur
+      // beendete Spiele zählen. In DIESER Tabelle stehen die laufenden Partien
+      // samt Stand -- der Hinweis wäre eine Falschaussage.
     };
   }
 
   // Parallel laufende Partien kommen ohne Zwischenstand: Das Token hebt die
   // Verzögerung nur für den eigenen Spieltag auf. „läuft" ist dann die
   // ehrliche Auskunft, ein 0:0 wäre eine falsche.
+  // Der Stand einer Zeile. Laufende Partien in KLAMMERN: Sie sind der Grund,
+  // warum die Übersicht überhaupt Stände zeigt, und der Klammerstand ist das
+  // international übliche Zeichen dafür, dass er noch nicht endgültig ist.
+  // Vorher stand hier "läuft" ohne Zahl, weil die API die Zwischenstände
+  // paralleler Partien gestrichen hat.
   function scheduleScore(row) {
-    if (row.result_string) return row.result_string;
-    if (row.started && !row.ended) return "läuft";
+    if (row.result_string) {
+      return isRunningRow(row)
+        ? "(" + row.result_string + ")"
+        : row.result_string;
+    }
+
     // `ended` ohne Stand heißt: beendet, Ergebnis kennen wir nicht. Der
     // Gedankenstrich sagt das. Leer bleibt nur, was noch nicht angepfiffen ist --
     // und dafür MUSS `started` auch vorhanden sein. Fehlte das Feld, landete ein
@@ -2047,7 +2062,38 @@
       );
       return "—";
     }
+    // Angepfiffen, aber noch kein Tor gefallen: Die Phase in der Spalte daneben
+    // sagt, dass gespielt wird, hier gehört der Stand hin.
+    if (row.started) return "0:0";
     return "";
+  }
+
+  // Läuft, beendet oder noch nicht angepfiffen -- als Wort neben dem Stand.
+  // Bei laufenden Partien der Spielabschnitt, denn zwischen "(1:0) 1. Drittel"
+  // und "(1:0) 3. Drittel" liegt für den Zuschauer alles.
+  function schedulePhase(row) {
+    var text = "";
+
+    if (isRunningRow(row)) {
+      var period = row.current_period_title || {};
+      text = period.title || period.short_title || "läuft";
+    } else if (row.ended) {
+      text = "beendet";
+    }
+
+    // Kein Wort für "noch nicht angepfiffen": Die Anstoßzeit steht in der
+    // ersten Spalte und sagt es schon.
+    if (!text) return "";
+
+    // Als Element und nicht als Text, damit die Spalte gedeckt bleibt:
+    // `dataTable` kann je Spalte nur zwischen Zahl und Hervorhebung
+    // unterscheiden, und der laufende Abschnitt soll neben dem Stand nicht
+    // um Aufmerksamkeit streiten.
+    return node("span", "ov-fs-phase", text);
+  }
+
+  function isRunningRow(row) {
+    return Boolean(row.started) && !row.ended;
   }
 
   poll();
