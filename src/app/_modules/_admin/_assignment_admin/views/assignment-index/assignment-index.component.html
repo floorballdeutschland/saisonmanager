@@ -389,6 +389,28 @@
                                     "
                                     >⚡</span
                                   >
+                                  @if (phoneText(r.telefonnummer); as phone) {
+                                    <span
+                                      class="text-fb-gray-500 ml-1 font-mono text-[10px]"
+                                      [title]="
+                                        'assignmentAdmin.index.phoneTitle'
+                                          | transloco
+                                      "
+                                      >{{ phone }}</span
+                                    >
+                                  } @else {
+                                    <span
+                                      class="text-fb-gray-400 ml-1 text-[10px]"
+                                      [title]="
+                                        'assignmentAdmin.index.shortNoticeNoPhoneTitle'
+                                          | transloco
+                                      "
+                                      >{{
+                                        "assignmentAdmin.index.shortNoticeNoPhone"
+                                          | transloco
+                                      }}</span
+                                    >
+                                  }
                                 }
                                 @for (t of r.tags; track t.id) {
                                   <span
@@ -406,6 +428,16 @@
                               </li>
                             }
                           </ul>
+                        }
+                        @if (selectedRefereePhone(row, "referee1"); as phone) {
+                          <a
+                            [href]="telHref(phone)"
+                            class="block mt-0.5 text-[10px] font-mono text-blue-700 hover:underline"
+                            [title]="
+                              'assignmentAdmin.index.phoneTitle' | transloco
+                            "
+                            >{{ phone }}</a
+                          >
                         }
                       </div>
                     } @else {
@@ -552,6 +584,28 @@
                                     "
                                     >⚡</span
                                   >
+                                  @if (phoneText(r.telefonnummer); as phone) {
+                                    <span
+                                      class="text-fb-gray-500 ml-1 font-mono text-[10px]"
+                                      [title]="
+                                        'assignmentAdmin.index.phoneTitle'
+                                          | transloco
+                                      "
+                                      >{{ phone }}</span
+                                    >
+                                  } @else {
+                                    <span
+                                      class="text-fb-gray-400 ml-1 text-[10px]"
+                                      [title]="
+                                        'assignmentAdmin.index.shortNoticeNoPhoneTitle'
+                                          | transloco
+                                      "
+                                      >{{
+                                        "assignmentAdmin.index.shortNoticeNoPhone"
+                                          | transloco
+                                      }}</span
+                                    >
+                                  }
                                 }
                                 @for (t of r.tags; track t.id) {
                                   <span
@@ -569,6 +623,16 @@
                               </li>
                             }
                           </ul>
+                        }
+                        @if (selectedRefereePhone(row, "referee2"); as phone) {
+                          <a
+                            [href]="telHref(phone)"
+                            class="block mt-0.5 text-[10px] font-mono text-blue-700 hover:underline"
+                            [title]="
+                              'assignmentAdmin.index.phoneTitle' | transloco
+                            "
+                            >{{ phone }}</a
+                          >
                         }
                       </div>
                     } @else {
@@ -653,9 +717,39 @@
                                   >({{ r.lizenzstufe }})</span
                                 >
                               }
+                              @if (r.kurzfristig_mobil) {
+                                <span
+                                  class="text-amber-600 ml-1"
+                                  [title]="
+                                    'assignmentAdmin.index.shortNoticeBadge'
+                                      | transloco
+                                  "
+                                  >⚡</span
+                                >
+                                @if (phoneText(r.telefonnummer); as phone) {
+                                  <span
+                                    class="text-fb-gray-500 ml-1 font-mono text-[10px]"
+                                    [title]="
+                                      'assignmentAdmin.index.phoneTitle'
+                                        | transloco
+                                    "
+                                    >{{ phone }}</span
+                                  >
+                                }
+                              }
                             </li>
                           }
                         </ul>
+                      }
+                      @if (selectedRefereePhone(row, "coach"); as phone) {
+                        <a
+                          [href]="telHref(phone)"
+                          class="block mt-0.5 text-[10px] font-mono text-blue-700 hover:underline"
+                          [title]="
+                            'assignmentAdmin.index.phoneTitle' | transloco
+                          "
+                          >{{ phone }}</a
+                        >
                       }
                     </div>
                   </td>
