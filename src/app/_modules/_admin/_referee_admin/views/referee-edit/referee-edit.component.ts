@@ -266,6 +266,24 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
       });
       return;
     }
+    // api#585: Die Gültigkeit einer Zusatzqualifikation ist Pflicht. Das
+    // `required` am Datumsfeld allein reicht dafür nicht: Angular setzt
+    // `novalidate` auf das Formular, die Browserprüfung hält das Absenden also
+    // nicht auf. Ohne diese Abfrage käme statt eines Hinweises der 422 der
+    // Schnittstelle zurück, und der landet in der Sammelmeldung „Fehler beim
+    // Speichern." ohne zu sagen, welches Feld gemeint ist.
+    //
+    // Nur für die volle Bearbeitung: Bei `isRestricted` beachtet die
+    // Schnittstelle die mitgeschickten Qualifikationen gar nicht, ein
+    // Altbestand ohne Datum würde diesen Nutzern sonst das Speichern der
+    // Felder sperren, die sie tatsächlich pflegen dürfen.
+    if (!this.isRestricted && this.qualifications.some((q) => !q.valid_until)) {
+      this._notificationService.error(
+        'Bitte für jede Zusatzqualifikation ein Ablaufdatum angeben.',
+        { autoClose: false, keepAfterRouteChange: false }
+      );
+      return;
+    }
 
     this.saving = true;
 

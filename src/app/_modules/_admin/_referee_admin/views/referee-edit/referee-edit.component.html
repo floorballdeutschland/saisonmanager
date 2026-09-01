@@ -239,6 +239,11 @@
                 {{ "refereeAdmin.edit.noQualificationTypes" | transloco }}
               </p>
             }
+            @if (qualifications.length > 0) {
+              <p class="text-xs text-fb-gray-500">
+                {{ "refereeAdmin.edit.validUntilRequiredHint" | transloco }}
+              </p>
+            }
             @for (q of qualifications; track q; let i = $index) {
               <div class="flex items-center gap-3">
                 <select
@@ -258,12 +263,16 @@
                 </select>
                 <input
                   type="date"
+                  required
                   [(ngModel)]="q.valid_until"
                   [name]="'qual_valid_' + i"
+                  [attr.aria-invalid]="!q.valid_until"
                   [attr.placeholder]="
                     'refereeAdmin.edit.validUntilPlaceholder' | transloco
                   "
-                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-40"
+                  class="border rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black w-40"
+                  [class.border-fb-gray-600]="!!q.valid_until"
+                  [class.border-red-500]="!q.valid_until"
                 />
                 <button
                   type="button"
