@@ -9,10 +9,17 @@ import associationJson from '../../../../associations.json';
 export class GradientPipe implements PipeTransform {
   associations = associationJson;
 
+  /**
+   * Zugeordnet wird ueber die `id` und nicht ueber `path`: Der Pfad ist in der
+   * Verbandsmaske aenderbar, die Zuordnung braeche dann still und der Verband
+   * bekaeme den schwarzen Rueckfall statt seiner Farben. Genau so war es hier
+   * schon: Die Datei trug die Slugs des Altsystems (`fvd`, `fvn`, `sbkost`,
+   * `nwuv`), und vier von zehn Verbaenden liefen deshalb ohne Verlauf.
+   */
   transform(association: GameOperation | null | undefined): string {
     if (association) {
       const associationWithColor = this.associations.find(
-        (a) => a.path === association.path
+        (a) => a.id === association.id
       );
 
       return associationWithColor

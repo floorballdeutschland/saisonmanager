@@ -5,9 +5,11 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -17,7 +19,6 @@ import {
   Subject,
   catchError,
   debounceTime,
-  distinctUntilChanged,
   of,
   switchMap,
   takeUntil,
@@ -30,7 +31,9 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
-export class RefereeAutocompleteComponent implements OnInit, OnDestroy {
+export class RefereeAutocompleteComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input() placeholder = 'Name oder Lizenznummer';
   @Input() selectedReferee: RefereeEntry | null = null;
 
@@ -54,8 +57,14 @@ export class RefereeAutocompleteComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this._search$
       .pipe(
+        // Bewusst ohne distinctUntilChanged: Wer denselben Namen erneut eintippt,
+        // will die Suche wiederholen -- etwa nachdem das Speichern gescheitert
+        // ist. Vorher verwarf der Vergleich diese Eingabe, es kam nie eine
+        // Antwort, und `loading` blieb dauerhaft stehen. Damit verschwand auch
+        // das Kreuz zum Leeren (Vorlage: `@if (query && !loading)`) und das Feld
+        // war ohne Neuladen der Seite nicht mehr zu bedienen. Die Entprellung
+        // haelt die Zahl der Anfragen weiter in Grenzen.
         debounceTime(250),
-        distinctUntilChanged(),
         switchMap((q) =>
           this._refereeService.search(q).pipe(catchError(() => of([])))
         ),
@@ -68,9 +77,35 @@ export class RefereeAutocompleteComponent implements OnInit, OnDestroy {
         this._cdr.markForCheck();
       });
 
-    if (this.selectedReferee) {
-      this.query = `${this.selectedReferee.nachname}, ${this.selectedReferee.vorname}`;
+    this._syncQueryFromSelection();
+  }
+
+  // Die Anzeige folgt dem Input, nicht nur dem Klick in der Vorschlagsliste.
+  // Vorher wurde `selectedReferee` ausschliesslich in ngOnInit gelesen: Nahm die
+  // Elternkomponente die Auswahl zurueck -- etwa weil das Speichern gescheitert
+  // war --, blieb der Name samt gruenem Rahmen stehen und behauptete einen
+  // Schiedsrichter, den das Spiel nicht hat.
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['selectedReferee']) {
+      return;
     }
+
+    this._syncQueryFromSelection();
+    this._cdr.markForCheck();
+  }
+
+  private _syncQueryFromSelection(): void {
+    this.query = this.selectedReferee ? this._label(this.selectedReferee) : '';
+    this.suggestions = [];
+    this.showDropdown = false;
+    this.loading = false;
+  }
+
+  // Eine Schreibweise fuer die Anzeige. Vorher zeigte ngOnInit den Namen ohne
+  // Lizenznummer und onBlur mit -- der Text sprang also beim ersten Verlassen
+  // des Feldes.
+  private _label(referee: RefereeEntry): string {
+    return `${referee.nachname}, ${referee.vorname} (${referee.lizenznummer})`;
   }
 
   ngOnDestroy(): void {
@@ -91,7 +126,7 @@ export class RefereeAutocompleteComponent implements OnInit, OnDestroy {
 
   select(referee: RefereeEntry): void {
     this.selectedReferee = referee;
-    this.query = `${referee.nachname}, ${referee.vorname} (${referee.lizenznummer})`;
+    this.query = this._label(referee);
     this.showDropdown = false;
     this.suggestions = [];
     this.refereeSelected.emit(referee);
@@ -115,7 +150,7 @@ export class RefereeAutocompleteComponent implements OnInit, OnDestroy {
       if (!this.selectedReferee) {
         this.query = '';
       } else {
-        this.query = `${this.selectedReferee.nachname}, ${this.selectedReferee.vorname} (${this.selectedReferee.lizenznummer})`;
+        this.query = this._label(this.selectedReferee);
       }
       this._cdr.markForCheck();
     }, 200);

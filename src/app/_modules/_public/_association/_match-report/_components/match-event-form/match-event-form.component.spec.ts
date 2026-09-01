@@ -19,11 +19,12 @@ import {
   GameEvent,
   League,
 } from '@floorball/types';
-import { GameService } from '@floorball/core';
+import { GameService, NotificationService } from '@floorball/core';
+import { ErrorHandler } from '@angular/core';
 import { SortTrikotnumbersPipe } from 'src/app/_helpers/_pipes';
 import { FormsModule } from '@angular/forms';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { of } from 'rxjs';
+import { of, throwError, config as rxjsConfig } from 'rxjs';
 
 // 3 Perioden à 20 Minuten, 10 Minuten Verlängerung
 const leagueSettings = {
@@ -167,7 +168,10 @@ describe('personName', () => {
 
 describe('splitPersonName', () => {
   it('zerlegt am Trennzeichen', () => {
-    expect(splitPersonName('Ziegler, Carolina')).toEqual(['Ziegler', 'Carolina']);
+    expect(splitPersonName('Ziegler, Carolina')).toEqual([
+      'Ziegler',
+      'Carolina',
+    ]);
   });
 
   it('laesst den Vornamen Vorname bleiben, wenn der Nachname fehlt', () => {
@@ -1007,5 +1011,202 @@ describe('MatchEventFormComponent', () => {
       // Fassung blendete die Vorlage hier aus, das war falsch.
       expect(selectStartingWith('Kein Assist')).toBeTruthy();
     });
+  });
+});
+
+describe('MatchEventFormComponent Schiedsrichter-Auswahl', () => {
+  let component: MatchEventFormComponent;
+  let gameService: GameService;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      declarations: [MatchEventFormComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(MatchEventFormComponent);
+    component = fixture.componentInstance;
+    component.match = { id: 42, referees: [] } as unknown as Game;
+    gameService = TestBed.inject(GameService);
+    spyOn(gameService, 'setReferee').and.returnValue(of({} as unknown as Game));
+  });
+
+  const schroeder = {
+    lizenznummer: 5605,
+    nachname: 'Schröder',
+    vorname: 'Tobias Günter',
+  };
+
+  // Der Kern: Die Auswahl allein war bisher wirkungslos, gespeichert wurde erst
+  // mit einem eigenen Knopf. Wer ihn nicht drückte, sah den Namen im Feld,
+  // während am Spiel nichts stand -- und die Absage beim Spielstart war vor
+  // diesem Bild nicht zu verstehen (Wernigerode, 30.08.2026: 87 Minuten zwischen
+  // Suche und Speichern).
+  it('speichert Schiedsrichter 1 sofort bei der Auswahl', () => {
+    component.type = 'referee1';
+
+    component.onRefereeSelected(1, schroeder);
+
+    expect(gameService.setReferee).toHaveBeenCalledWith(
+      42,
+      1,
+      5605,
+      'Schröder',
+      'Tobias Günter'
+    );
+  });
+
+  it('speichert Schiedsrichter 2 sofort bei der Auswahl', () => {
+    component.type = 'referee2';
+
+    component.onRefereeSelected(2, {
+      lizenznummer: 5824,
+      nachname: 'Trosien',
+      vorname: 'Max',
+    });
+
+    expect(gameService.setReferee).toHaveBeenCalledWith(
+      42,
+      2,
+      5824,
+      'Trosien',
+      'Max'
+    );
+  });
+
+  // Sonst waere das Zuruecknehmen die einzige Aktion des Feldes ohne Wirkung:
+  // Der Name verschwindet aus der Maske, bleibt aber am Spiel stehen.
+  it('speichert auch das Leeren des Feldes', () => {
+    component.type = 'referee1';
+    component.selectedReferee1 = schroeder;
+
+    component.onRefereeSelected(1, null);
+
+    expect(component.selectedReferee1).toBeNull();
+    expect(gameService.setReferee).toHaveBeenCalledWith(42, 1, 0, '', '');
+  });
+
+  // Der kritische Befund aus dem Review: Ohne diese Behandlung blieb nach einem
+  // gescheiterten Speichern der Name im Feld stehen (samt gruenem Rahmen),
+  // waehrend Schritt 2 daneben "Schiedsrichter 1 fehlt" meldete. Zwei Aussagen,
+  // die sich widersprechen -- und weil der Speichern-Knopf entfallen ist, gab es
+  // keinen Weg, es erneut zu versuchen.
+  describe('gescheiterte Speicherung', () => {
+    beforeEach(() => {
+      (gameService.setReferee as jasmine.Spy).and.returnValue(
+        throwError(() => ({ status: 403, error: { message: 'Kein Zugriff' } }))
+      );
+    });
+
+    it('nimmt die Auswahl zurueck', () => {
+      component.type = 'referee1';
+
+      component.onRefereeSelected(1, schroeder);
+
+      expect(component.selectedReferee1).toBeNull();
+    });
+
+    it('behaelt den vorigen Eintrag, statt das Feld zu leeren', () => {
+      const trosien = {
+        lizenznummer: 5824,
+        nachname: 'Trosien',
+        vorname: 'Max',
+      };
+      component.type = 'referee2';
+      component.selectedReferee2 = trosien;
+
+      component.onRefereeSelected(2, schroeder);
+
+      expect(component.selectedReferee2).toBe(trosien);
+    });
+
+    // Damit die Maske den Serverstand zeigt und nicht den vermuteten.
+    it('laedt das Spiel neu', () => {
+      component.type = 'referee1';
+      const updates = spyOn(component.updateGame, 'emit');
+
+      component.onRefereeSelected(1, schroeder);
+
+      expect(updates).toHaveBeenCalled();
+    });
+
+    // Der ErrorInterceptor zeigt die Begruendung selbst; eine zweite Meldung
+    // wuerde sie nur verdecken (genau der Fehler, den fe#358 behebt).
+    it('zeigt keine eigene Meldung', () => {
+      component.type = 'referee1';
+      const errorToast = spyOn(TestBed.inject(NotificationService), 'error');
+
+      component.onRefereeSelected(1, schroeder);
+
+      expect(errorToast).not.toHaveBeenCalled();
+    });
+
+    // Ein eigener error-Zweig verschluckt den Fehler fuer das Monitoring. Der
+    // ausdrueckliche Weg an den globalen ErrorHandler haelt ihn offen -- in
+    // Produktion ist das der Sentry-Handler.
+    it('gibt den Fehler an den globalen ErrorHandler', () => {
+      component.type = 'referee1';
+      const handled = spyOn(TestBed.inject(ErrorHandler), 'handleError');
+
+      component.onRefereeSelected(1, schroeder);
+
+      expect(handled).toHaveBeenCalled();
+    });
+  });
+});
+
+describe('MatchEventFormComponent startOrEndGame', () => {
+  let component: MatchEventFormComponent;
+  let notifications: NotificationService;
+  let previousUnhandledError: typeof rxjsConfig.onUnhandledError;
+
+  // Ohne eigenen error-Zweig läuft der Fehlschlag weiter -- genau so gehört es
+  // sich, damit der globale ErrorHandler (in Produktion Sentry) ihn sieht. RxJS
+  // meldet ihn deshalb als unbehandelt und würde die Spec-Datei in ein afterAll
+  // reißen; für diesen Block stillgelegt. Dass die Stilllegung nötig ist, ist
+  // zugleich der Beleg, dass der Weg nach Sentry offen ist.
+  beforeAll(() => {
+    previousUnhandledError = rxjsConfig.onUnhandledError;
+    rxjsConfig.onUnhandledError = () => undefined;
+  });
+
+  afterAll(() => {
+    rxjsConfig.onUnhandledError = previousUnhandledError;
+  });
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      declarations: [MatchEventFormComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(MatchEventFormComponent);
+    component = fixture.componentInstance;
+    component.type = 'start';
+    component.match = {
+      id: 42,
+      started: false,
+      referees: [],
+    } as unknown as Game;
+    notifications = TestBed.inject(NotificationService);
+  });
+
+  // Der Kern des Fehlers vom 30.08.2026: Der Interceptor zeigt die Begründung des
+  // Servers ("... Schiedsrichter 1 ...") bereits an. Eine zweite, generische
+  // Meldung der Komponente legte sich deckungsgleich darüber und machte die
+  // Begründung unlesbar -- 23 Startversuche über 88 Minuten.
+  it('zeigt bei einer abgewiesenen Startanfrage keine eigene Meldung', () => {
+    const gameService = TestBed.inject(GameService);
+    spyOn(gameService, 'setGameFlags').and.returnValue(
+      throwError(() => ({ status: 422, error: { message: 'Schiri 1 fehlt.' } }))
+    );
+    const errorToast = spyOn(notifications, 'error');
+
+    component.startOrEndGame(true);
+
+    expect(gameService.setGameFlags).toHaveBeenCalled();
+    expect(errorToast).not.toHaveBeenCalled();
   });
 });
