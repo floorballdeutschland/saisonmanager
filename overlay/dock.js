@@ -66,6 +66,11 @@
     "lt-text-main",
     "lt-onair",
     "sb-position",
+    "col-accent",
+    "col-accent-alt",
+    "col-reset",
+    "col-state",
+    "col-warn",
     "iv-team",
     "iv-player",
     "iv-show",
@@ -363,6 +368,7 @@
     renderScoreboard();
     renderClockUi();
     renderLowerThird();
+    renderColors();
     renderInterview();
     renderOverride();
   }
@@ -546,6 +552,133 @@
     var m = /^(\d{1,3}):(\d{2})$/.exec(String(text).trim());
     if (!m) return null;
     return (Number(m[1]) * 60 + Number(m[2])) * 1000;
+  }
+
+  // ── Farben ──────────────────────────────────────────────────────────────
+
+  // Die Grundfarben des Stylesheets. Nur als Startwert der Farbwähler: Welche
+  // Farbwelt gerade gilt, weiß die Bühne (sie leitet sie aus Ligaklasse und
+  // Wettbewerb ab), nicht das Bedienfeld. Deshalb steht darunter im Klartext,
+  // ob eigene Farben aktiv sind -- ein Farbfeld allein wäre eine Behauptung.
+  var DEFAULT_ACCENT = "#e94560";
+  var DEFAULT_ACCENT_ALT = "#ff6b35";
+
+  // Beide Enden des dunklen Hintergrundverlaufs. Der Akzent trägt darauf
+  // kleine Versalien, gemessen wird gegen das SCHLECHTERE Ende.
+  var DARK_ENDS = ["#1a1a2e", "#16213e"];
+  // Der Wert des Markenrots der 1. Herren, das gegen das schlechtere Ende des
+  // Verlaufs 4,15:1 erreicht und im Stylesheet ausdrücklich als Markenfarbe so
+  // stehenbleibt. Gewarnt wird damit genau dann, wenn eine Farbe schlechter ist
+  // als der schwächste Wert, den die Gestaltung selbst zulässt. Vorher standen
+  // hier 4,0, und das Band dazwischen blieb stumm, obwohl der Kommentar etwas
+  // anderes versprach -- ein plausibles Vereinsblau wie #0088cc liegt bei
+  // 4,08:1. Die WCAG-Schwelle für Text dieser Größe (4,5:1) steht im Warntext,
+  // damit die Zahl einordbar bleibt.
+  var MIN_CONTRAST = 4.15;
+
+  var HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
+  function colorState() {
+    var colors = state.control.colors || {};
+    var accent = HEX_COLOR.test(String(colors.accent)) ? colors.accent : null;
+
+    return {
+      accent: accent,
+      // Die zweite Farbe gilt auch ohne die erste: Die Bühne fällt je Feld
+      // einzeln auf die Farbe des Wettbewerbs zurück, ein alleiniger Verlauf
+      // ist also wirksam. Vorher verwarf das Bedienfeld ihn hier, während die
+      // Bühne ihn anwandte.
+      alt: HEX_COLOR.test(String(colors.accent_alt))
+        ? String(colors.accent_alt)
+        : null,
+    };
+  }
+
+  function renderColors() {
+    // Siehe renderLowerThird: ältere Fassung des dock.html im Cache.
+    if (!el["col-accent"] || !el["col-accent-alt"] || !el["col-reset"]) return;
+
+    var chosen = colorState();
+
+    // Nur setzen, wenn nicht gerade jemand darin wählt: Ein Farbwähler, dem
+    // der Abruf zwei Sekunden später den Wert zurückstellt, ist nicht
+    // bedienbar.
+    if (document.activeElement !== el["col-accent"]) {
+      el["col-accent"].value = chosen.accent || DEFAULT_ACCENT;
+    }
+    if (document.activeElement !== el["col-accent-alt"]) {
+      el["col-accent-alt"].value =
+        chosen.alt || chosen.accent || DEFAULT_ACCENT_ALT;
+    }
+
+    // Gesperrt UND grün wäre widersprüchlich: Grün heißt bei den Umschaltern
+    // „eingeschaltet", der Knopf sah damit drückbar aus und tat nichts. Was
+    // gilt, steht in der Zeile darunter.
+    var eigene = Boolean(chosen.accent || chosen.alt);
+    el["col-reset"].disabled = !eigene;
+    el["col-reset"].classList.toggle("dk-toggle--on", eigene);
+    el["col-state"].textContent = eigene
+      ? "Eigene Farben sind aktiv."
+      : "Es gelten die Farben des Wettbewerbs.";
+
+    renderContrastWarning(chosen);
+  }
+
+  // Kein Riegel, sondern eine Auskunft: Die Farbe eines Vereins ist gesetzt,
+  // und ob sie trotz schwachem Kontrast benutzt wird, entscheidet die Regie.
+  //
+  // Geprüft wird NUR der Akzent. Er trägt die kleinen Versalien (Kicker,
+  // Spaltentitel), und Kontrast ist ein Maßstab für Text. Die zweite Farbe
+  // kommt im Stylesheet an keiner Textstelle vor, sie ist allein der zweite
+  // Halt des Akzentverlaufs, also Zierfläche -- eine Warnung dafür wäre
+  // Rauschen und würde die eine Zahl entwerten, auf die es ankommt.
+  function renderContrastWarning(chosen) {
+    if (!chosen.accent) {
+      el["col-warn"].classList.add("dk-hidden");
+      return;
+    }
+
+    var wert = worstContrast(chosen.accent);
+    if (wert >= MIN_CONTRAST) {
+      el["col-warn"].classList.add("dk-hidden");
+      return;
+    }
+
+    el["col-warn"].textContent =
+      "Akzent: nur " +
+      wert.toFixed(2).replace(".", ",") +
+      ":1 Kontrast auf dem dunklen Grund. Er trägt die kleinen Versalien," +
+      " lesbar gilt ab 4,5:1, und nach der Videokompression eines Streams" +
+      " verschwinden schwache Farben zuerst.";
+    el["col-warn"].classList.remove("dk-hidden");
+  }
+
+  function worstContrast(hex) {
+    var werte = DARK_ENDS.map(function (dark) {
+      return contrastRatio(hex, dark);
+    });
+    return Math.min.apply(null, werte);
+  }
+
+  // WCAG 2.1: (heller + 0,05) / (dunkler + 0,05) auf Basis der relativen
+  // Leuchtdichte.
+  function contrastRatio(a, b) {
+    var la = luminance(a);
+    var lb = luminance(b);
+    var hell = Math.max(la, lb);
+    var dunkel = Math.min(la, lb);
+    return (hell + 0.05) / (dunkel + 0.05);
+  }
+
+  function luminance(hex) {
+    var anteile = [1, 3, 5].map(function (start) {
+      var kanal = parseInt(hex.slice(start, start + 2), 16) / 255;
+      return kanal <= 0.03928
+        ? kanal / 12.92
+        : Math.pow((kanal + 0.055) / 1.055, 2.4);
+    });
+
+    return 0.2126 * anteile[0] + 0.7152 * anteile[1] + 0.0722 * anteile[2];
   }
 
   // ── Interview ───────────────────────────────────────────────────────────
@@ -807,11 +940,43 @@
 
   // `on` statt `el[...].addEventListener`: Bei einem älteren,
   // zwischengespeicherten dock.html fehlt ein Element, und ein Zugriff hier
-  // oben braeche die Einrichtung des Bedienfelds ab -- samt aller Zuhörer, die
+  // oben bräche die Einrichtung des Bedienfelds ab -- samt aller Zuhörer, die
   // danach kämen.
   function on(id, typ, fn) {
     if (el[id]) el[id].addEventListener(typ, fn);
   }
+
+  // `change` und nicht `input`: Beim Ziehen im Farbwähler feuert `input`
+  // dutzende Male, und jedes Mal ginge ein Schreibvorgang zum Server.
+  //
+  // Und NUR das geänderte Feld schreiben. Vorher gingen immer beide hinaus, und
+  // das unberührte trug den Startwert der Felder -- das Markenrot der
+  // 1. Herren. Wer in einer Damen-, Zweitliga- oder Pokalpartie nur den Verlauf
+  // änderte, schrieb damit unbemerkt Rot als Akzent, und die Bühne sprang auf
+  // Sendung in die Farbwelt der 1. Herren. Das Bedienfeld kennt die Farben des
+  // Wettbewerbs nicht; das unberührte Feld bleibt deshalb leer, und die Bühne
+  // fällt dafür je Feld einzeln auf die Ligafarbe zurück.
+  ["col-accent", "col-accent-alt"].forEach(function (id) {
+    on(id, "change", function () {
+      var bestehend = colorState();
+      var neu = {
+        accent: id === "col-accent" ? el["col-accent"].value : bestehend.accent,
+        accent_alt:
+          id === "col-accent-alt" ? el["col-accent-alt"].value : bestehend.alt,
+      };
+
+      // Nicht gesetzte Felder gar nicht mitschicken: Der Zustand bleibt klein,
+      // und die Bühne behandelt fehlend und ungültig ohnehin gleich.
+      if (!neu.accent) delete neu.accent;
+      if (!neu.accent_alt) delete neu.accent_alt;
+
+      writeState({ colors: neu });
+    });
+  });
+
+  on("col-reset", "click", function () {
+    writeState({ colors: null });
+  });
 
   on("iv-team", "change", renderInterview);
 
@@ -930,15 +1095,23 @@
   // Deshalb: nach einer Wahl PER ZEIGER den Fokus abgeben, wie bei den Knöpfen.
   // Nicht bei Tastaturbedienung -- dort feuert `change` schon beim Blättern mit
   // den Pfeiltasten, und ein Blur mitten darin nähme der Regie die Liste weg.
+  // Gilt für Auswahllisten UND Farbfelder. Ein Textfeld ausdrücklich NICHT:
+  // Dort tippt die Regie weiter, und `change` feuert dort erst beim Verlassen.
+  function gibtFokusFrei(node) {
+    if (!node) return false;
+    if (node.tagName === "SELECT") return true;
+    return node.tagName === "INPUT" && node.type === "color";
+  }
+
   function releaseSelectFocus() {
     var zeigerWahl = false;
 
     el.dock.addEventListener("pointerdown", function (event) {
-      if (event.target && event.target.tagName === "SELECT") zeigerWahl = true;
+      if (gibtFokusFrei(event.target)) zeigerWahl = true;
     });
 
     el.dock.addEventListener("keydown", function (event) {
-      if (event.target && event.target.tagName === "SELECT") zeigerWahl = false;
+      if (gibtFokusFrei(event.target)) zeigerWahl = false;
     });
 
     // In der Bubble-Phase, also NACH den eigentlichen Zuhörern des Feldes: Sie
@@ -946,7 +1119,7 @@
     // unterbrechen.
     el.dock.addEventListener("change", function (event) {
       if (!zeigerWahl) return;
-      if (!event.target || event.target.tagName !== "SELECT") return;
+      if (!gibtFokusFrei(event.target)) return;
 
       zeigerWahl = false;
       event.target.blur();
