@@ -8222,9 +8222,10 @@
             <p>
               Der Saisonmanager stellt fertige Grafiken für OBS Studio bereit:
               eine Anzeigetafel mit Spielstand und Abschnitt, Bauchbinden für
-              Torschützen, Strafen und Paarung, acht Vollbilder für Startbild,
-              Aufstellungen, Drittelpause, Endstand, Tabelle, Torschützen und
-              weitere Spiele, dazu ein Bedienfeld, über das du im Spiel alles
+              Torschützen, Strafen, Paarung und Interviews, zehn Vollbilder für
+              Startbild, Aufstellungen, Drittelpause, Endstand, Tabelle,
+              Torschützen der Liga, Tore des Spiels, weitere Spiele und
+              Formkurve, dazu ein Bedienfeld, über das du im Spiel alles
               steuerst. Alles speist sich aus dem digitalen Spielbericht,
               niemand muss also nebenher Zahlen abtippen. Du brauchst weder ein
               Zusatzprogramm noch eine Installation, es genügt, was der
@@ -8324,7 +8325,7 @@
                 </tr>
                 <tr>
                   <td><strong>Szenensammlung herunterladen</strong></td>
-                  <td>Eine JSON-Datei mit allen neun Szenen</td>
+                  <td>Eine JSON-Datei mit allen elf Szenen</td>
                   <td>Ja, wenn du den bequemen Weg gehst</td>
                 </tr>
               </tbody>
@@ -8335,7 +8336,7 @@
             Browser-Quelle mit 1920 × 1080 Pixeln einfügen“. Das ist die
             Anleitung für den manuellen Weg und stammt aus der Zeit, als es die
             Szenensammlung noch nicht gab. Importierst du die Sammlung, musst du
-            mit diesem Link nichts tun: Er steckt bereits darin, neunmal, einmal
+            mit diesem Link nichts tun: Er steckt bereits darin, elfmal, einmal
             pro Szene, mit eingesetztem Token. Genau deshalb funktionieren die
             Overlays nach dem Import sofort. Die
             <code>1920 × 1080</code> sind übrigens nicht die Größe, in der die
@@ -8409,7 +8410,7 @@
               <div>
                 <div class="proc-title">Szenensammlung importieren</div>
                 <div class="proc-sub">
-                  Neun fertige Szenen, Token schon eingesetzt
+                  Elf fertige Szenen, Token schon eingesetzt
                 </div>
               </div>
               <span class="proc-chev">▾</span>
@@ -8427,13 +8428,13 @@
               <p class="proc-text">
                 Deine bisherige Szenensammlung bleibt unangetastet. Der Import
                 legt eine zusätzliche an, du kannst also jederzeit
-                zurückwechseln. Was du danach hast, sind neun Szenen mit je
-                einer Browser-Quelle in <code>1920 × 1080</code>.
+                zurückwechseln. Was du danach hast, sind elf Szenen mit je einer
+                Browser-Quelle in <code>1920 × 1080</code>.
                 <strong>In der Sammlung sind nur die Grafiken</strong>, Kamera
                 und Ton fehlen und ergänzt du selbst.
               </p>
               <div class="note">
-                Bei den acht Vollbildern ist
+                Bei den zehn Vollbildern ist
                 <em>Quelle beenden, wenn nicht sichtbar</em> bereits gesetzt,
                 sonst fragen alle inaktiven Szenen die ganze Zeit mit. Bei der
                 Bühne ist es absichtlich nicht gesetzt: Sie soll beim
@@ -8571,7 +8572,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 Bauchbinde ein, etwa <em>Paarung</em>, und schau parallel auf
                 die Bühnen-Szene in OBS. Taucht sie im Programmbild auf, ist
                 alles verbunden. Danach wieder <em>Ausblenden</em>. Zum Schluss
-                einmal durch alle neun Szenen klicken und prüfen, ob jede lädt.
+                einmal durch alle elf Szenen klicken und prüfen, ob jede lädt.
                 Vollbilder brauchen beim ersten Aufruf manchmal einen Moment.
               </p>
             </div>
@@ -8579,7 +8580,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
 
           <div class="sec">
             <span class="num">04</span>
-            <h2>Die neun Szenen</h2>
+            <h2>Die elf Szenen</h2>
           </div>
           <p class="proc-text">
             Alle Overlays folgen demselben Aufbau: dunkelblauer Hintergrund mit
@@ -8589,10 +8590,25 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             Spielbetrieb, und für beide musst du nichts einstellen: die
             <strong>Akzentfarbe</strong> (in der 1. Bundesliga Herren rot, in
             der Regionalliga Nordwest blau) und das
-            <strong>Ligazeichen</strong>, das oben rechts und zusätzlich als
-            dezentes Wasserzeichen am linken Rand erscheint, sofern für den
-            Spielbetrieb eines hinterlegt ist. Gibt es keines, bleiben die
-            Flächen leer und die Grafik funktioniert trotzdem.
+            <strong>Ligazeichen</strong> oben rechts. Mitgeliefert sind die
+            Zeichen der vier Bundesligen und des Pokals, die Overlays wählen das
+            passende selbst. Hat der Verband für die Liga ein eigenes
+            Ligazeichen hochgeladen, gilt dieses. Für Wettbewerbe, die sich
+            keiner Ligaklasse zuordnen lassen, etwa Regionalligen oder eine
+            DM-Endrunde, bleibt die Fläche leer statt das Zeichen einer fremden
+            Liga zu zeigen; die Grafik funktioniert trotzdem.
+          </p>
+          <p class="proc-text">
+            Die Akzentfarbe kannst du im Bedienfeld auf deine Vereinsfarben
+            umstellen, wenn die Einblendungen zu den übrigen Szenen deiner
+            Produktion passen sollen. Das gilt dann für alle Bilder dieser
+            Übertragung, siehe den Block <em>Farben</em> weiter unten.
+          </p>
+          <p class="proc-text">
+            Die Akzentfarbe kannst du im Bedienfeld auf deine Vereinsfarben
+            umstellen, wenn die Einblendungen zu den übrigen Szenen deiner
+            Produktion passen sollen. Das gilt dann für alle Bilder dieser
+            Übertragung, siehe den Block <em>Farben</em> weiter unten.
           </p>
           <div class="note">
             <strong>Wichtig für die Vorbereitung:</strong> Die meisten Szenen
@@ -8617,10 +8633,10 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             <div class="proc-body">
               <p class="proc-text">
                 Im Ruhezustand enthält die Bühne nur die Anzeigetafel: eine
-                flache, dunkle Leiste im
-                <strong>unteren linken Bildbereich</strong> mit einem farbigen
-                Akzentstreifen an der linken Kante. Sie ist von links nach
-                rechts in Felder unterteilt.
+                flache, dunkle Leiste mit einem farbigen Akzentstreifen an der
+                linken Kante, in der Voreinstellung im
+                <strong>unteren linken Bildbereich</strong>. Sie ist von links
+                nach rechts in Felder unterteilt.
               </p>
               <div class="matrix-wrap">
                 <table class="matrix">
@@ -8677,12 +8693,24 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 entfällt das letzte Feld. Bauchbinden erscheinen zusätzlich,
                 sobald du sie im Bedienfeld auslöst.
               </p>
+              <p class="proc-text">
+                <strong>Die Platzierung kannst du wählen:</strong> Im Bedienfeld
+                steht im Block <em>Anzeigetafel</em> ein Auswahlfeld mit
+                <em>unten links</em> (Voreinstellung), <em>unten mittig</em> und
+                <em>oben links</em>. Die Wahl gilt für alle Browser-Quellen
+                dieser Übertragung und übersteht das Neuladen einer Quelle, du
+                kannst also auf Sendung ausprobieren, was zu deiner
+                Kameraführung passt. Stellst du die Tafel nach oben, rutschen
+                die Bauchbinden nach unten an ihren Platz, sie überdecken sich
+                also nicht.
+              </p>
               <div class="note">
-                <strong>Fürs Kamerabild heißt das:</strong> Der untere linke
-                Bildbereich muss frei bleiben. Setz dort keine eigenen Grafiken
-                hin und achte bei der Kameraführung darauf, dass dort nichts
-                Wichtiges passiert. Der rechte untere Bereich bleibt frei und
-                eignet sich für ein Vereins- oder Sponsorenlogo.
+                <strong>Fürs Kamerabild heißt das:</strong> Der Bereich, in dem
+                die Tafel steht, muss frei bleiben. Setz dort keine eigenen
+                Grafiken hin und achte bei der Kameraführung darauf, dass dort
+                nichts Wichtiges passiert. Bei der Voreinstellung unten links
+                bleibt der rechte untere Bereich frei und eignet sich für ein
+                Vereins- oder Sponsorenlogo.
               </div>
             </div>
           </details>
@@ -8733,11 +8761,23 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
               <p class="proc-text">
                 Zwei Szenen im selben Aufbau, jeweils für eine Mannschaft.
                 Kopfzeile ist der Vereinsname, darunter klein
-                <em>Aufstellung</em>. Der Kader steht in zwei Spalten:
-                <strong>Tor</strong> mit den Torhütern und
-                <strong>Feld</strong> mit den Feldspielern, jeweils mit
-                Rückennummer. Wer in der Startaufstellung steht, ist
-                hervorgehoben.
+                <em>Aufstellung</em>.
+              </p>
+              <p class="proc-text">
+                Oben steht die <strong>Startformation</strong> mit ihren
+                Positionen: Tor, zweimal Verteidigung, Center und zweimal Sturm,
+                jeweils mit Rückennummer und Namen. Positionen, die im
+                Spielbericht nicht gesetzt sind, fallen weg; ist keine einzige
+                gesetzt, bleibt der Block ganz aus. Weitere Blöcke, also zweite
+                und dritte Reihe, kennt der Spielbericht nicht, die kann das
+                Overlay deshalb auch nicht zeigen.
+              </p>
+              <p class="proc-text">
+                Darunter der <strong>komplette Kader</strong>, nach Rückennummer
+                sortiert und gleichmäßig auf zwei Spalten verteilt. Torhüter
+                tragen die Kennzeichnung <code>Tor</code>, die Kapitänin oder
+                der Kapitän ein <code>C</code>. Wer in der Startformation steht,
+                hat eine farbig hervorgehobene Nummer.
               </p>
               <p class="proc-text">
                 Die Kader werden erfahrungsgemäß erst kurz vor Anpfiff erfasst.
@@ -8781,6 +8821,44 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 Zwischenbilanz. Es lohnt sich, die Szene in der Pause länger
                 stehen zu lassen und den Kommentar daran entlangzuführen. Vor
                 Spielbeginn zeigt sie nur die Überschrift.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🥍</span>
+              <div>
+                <div class="proc-title">Vollbild: Tore des Spiels</div>
+                <div class="proc-sub">
+                  Gefüllt, sobald das erste Tor eingetragen ist
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Alle Tore der Partie in der Reihenfolge, in der sie gefallen
+                sind, gruppiert nach Abschnitt. Je Zeile stehen Zeit, der Stand
+                nach dem Treffer, die Mannschaft, der Schütze und die Vorlage.
+                Eigentore und Treffer ohne benannten Schützen stehen mit dem
+                Vermerk aus dem Spielbericht da.
+              </p>
+              <p class="proc-text">
+                Die Gruppierung nach Abschnitt ist kein Schmuck: Die Zeiten
+                werden je Abschnitt gezählt, ohne die Überschriften stünden zwei
+                Tore mit derselben Zeit untereinander. Verlängerung und
+                Penaltyschießen tragen ihre eigenen Überschriften.
+              </p>
+              <p class="proc-text">
+                Solange kein Tor gefallen ist, steht das im Bild („In diesem
+                Spiel ist noch kein Tor gefallen.“), vor dem Anpfiff ein
+                entsprechender Hinweis. Das Bild ist damit nie schwarz, du
+                kannst es also gefahrlos anschneiden.
+              </p>
+              <div class="note">
+                Nicht zu verwechseln mit <em>Vollbild: Torschützen</em>, das ist
+                die Torschützenliste des ganzen Spielbetriebs. Dieses Bild zeigt
+                nur die Tore dieser einen Partie.
               </div>
             </div>
           </details>
@@ -8881,9 +8959,49 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             <div class="proc-body">
               <p class="proc-text">
                 Trotz des Szenennamens trägt das Bild die Überschrift
-                <strong>Weitere Spiele</strong> und zeigt Anstoßzeit, Begegnung
-                und Stand. Die eigene Partie ist hervorgehoben und trägt den
-                laufenden Zwischenstand.
+                <strong>Weitere Spiele</strong> und zeigt Anstoßzeit, Begegnung,
+                Stand und den Zustand der Partie. Die eigene ist hervorgehoben.
+              </p>
+              <div class="matrix-wrap">
+                <table class="matrix">
+                  <thead>
+                    <tr>
+                      <th>Zustand</th>
+                      <th>Stand</th>
+                      <th>daneben</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>läuft</td>
+                      <td><code>(4:1)</code></td>
+                      <td><code>3. Drittel</code></td>
+                    </tr>
+                    <tr>
+                      <td>läuft, noch kein Tor</td>
+                      <td><code>0:0</code></td>
+                      <td><code>1. Drittel</code></td>
+                    </tr>
+                    <tr>
+                      <td>beendet</td>
+                      <td><code>3:1</code></td>
+                      <td><code>beendet</code></td>
+                    </tr>
+                    <tr>
+                      <td>noch nicht angepfiffen</td>
+                      <td>leer</td>
+                      <td>leer, die Anstoßzeit sagt es schon</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="proc-text">
+                Die <strong>Klammern</strong> bedeuten, dass der Stand noch
+                nicht endgültig ist, so wie es international übliche Praxis ist.
+                Der Abschnitt daneben ordnet ihn ein: Zwischen
+                <code>(1:0)</code> im ersten und im dritten Drittel liegt für
+                den Zuschauer alles. Die Zwischenstände der parallelen Partien
+                sind dieselben, die auf der öffentlichen Live-Seite stehen.
               </p>
               <p class="proc-text">
                 Was hier gezeigt wird, ist erklärungsbedürftig: Die Szene folgt
@@ -8917,6 +9035,43 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 sicher wissen, welche Partien tatsächlich am selben Tag laufen,
                 schau vorher in die Spieltagsansicht im Saisonmanager.
               </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📈</span>
+              <div>
+                <div class="proc-title">Vollbild: Formkurve</div>
+                <div class="proc-sub">
+                  Gefüllt, sobald eine Mannschaft ein Spiel beendet hat
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Die Überschrift lautet <strong>Letzte Spiele</strong>. Je
+                Mannschaft eine Spalte mit den letzten fünf beendeten Partien,
+                die neueste oben, jeweils mit Datum, <code>H</code> für Heim
+                oder <code>A</code> für auswärts, Gegner, Ergebnis aus Sicht
+                dieser Mannschaft und der Wertung: <code>S</code> für Sieg
+                (grün), <code>U</code> für Unentschieden (grau),
+                <code>N</code> für Niederlage (rot).
+              </p>
+              <p class="proc-text">
+                Zwei Sonderfälle: Ist ein Spiel am grünen Tisch gewertet worden,
+                steht ein <code>W</code> dabei und unter dem Bild die Erklärung
+                dazu. Fehlt zu einer beendeten Partie das Ergebnis, steht ein
+                Gedankenstrich und keine Wertung; ein 0:0 wäre an der Stelle
+                eine Falschaussage.
+              </p>
+              <p class="proc-text">
+                Zu Saisonbeginn ist die Szene naturgemäß leer und meldet das je
+                Mannschaft („Noch keine beendete Partie.“). Ab dem zweiten
+                Spieltag ist sie ein guter Pausenfüller, weil sie ohne
+                Kommentarvorbereitung eine Aussage über beide Mannschaften
+                trägt.
+              </p>
             </div>
           </details>
 
@@ -8959,6 +9114,14 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                   <td>Mannschaften und Logos</td>
                   <td>Spielwechsel bei Doppelspieltagen</td>
                 </tr>
+                <tr>
+                  <td>Kader und Startformation</td>
+                  <td>Interview-Einblendungen</td>
+                </tr>
+                <tr>
+                  <td>Tabelle und Torschützenliste</td>
+                  <td>Platzierung der Anzeigetafel und die Farben</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -8970,6 +9133,80 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             in Rot, etwa „Spieltag nicht geladen: HTTP 410“, stimmt etwas nicht.
             Wirf während der Sendung gelegentlich einen Blick darauf, besonders
             in den Pausen.
+          </div>
+          <p class="proc-text">
+            <strong>Fast jeder Knopf hat ein Tastenkürzel</strong>, es steht als
+            kleines Zeichen auf dem Knopf selbst. Ein einzelner Tastendruck
+            genügt, ohne Zusatztaste, damit sich die Bedienung auf ein Stream
+            Deck oder ein ähnliches Pult legen lässt.
+          </p>
+          <div class="matrix-wrap">
+            <table class="matrix">
+              <thead>
+                <tr>
+                  <th>Taste</th>
+                  <th>Wirkung</th>
+                  <th>Taste</th>
+                  <th>Wirkung</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>1</code></td>
+                  <td>Bauchbinde letztes Tor</td>
+                  <td><code>S</code></td>
+                  <td>Anzeigetafel ein und aus</td>
+                </tr>
+                <tr>
+                  <td><code>2</code></td>
+                  <td>Bauchbinde letzte Strafe</td>
+                  <td><code>U</code></td>
+                  <td>Spielzeit ein und aus</td>
+                </tr>
+                <tr>
+                  <td><code>3</code></td>
+                  <td>Bauchbinde Paarung</td>
+                  <td><code>Leertaste</code></td>
+                  <td>Uhr starten und anhalten</td>
+                </tr>
+                <tr>
+                  <td><code>4</code></td>
+                  <td>Freitext einblenden</td>
+                  <td><code>−</code> / <code>+</code></td>
+                  <td>Uhr um zehn Sekunden</td>
+                </tr>
+                <tr>
+                  <td><code>5</code></td>
+                  <td>Interview einblenden</td>
+                  <td><code>R</code></td>
+                  <td>Uhr zurücksetzen</td>
+                </tr>
+                <tr>
+                  <td><code>0</code></td>
+                  <td>Bauchbinde ausblenden</td>
+                  <td><code>X</code></td>
+                  <td>Übersteuerung ein und aus</td>
+                </tr>
+                <tr>
+                  <td><code>Q</code> / <code>W</code></td>
+                  <td>Heim ein Tor weniger oder mehr</td>
+                  <td><code>O</code> / <code>P</code></td>
+                  <td>Gast ein Tor weniger oder mehr</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="note">
+            <strong
+              >Die Tasten wirken nur, wenn das Bedienfeld den Fokus hat.</strong
+            >
+            Sitzt es als Dock in OBS, klick einmal hinein, dann greifen sie; hat
+            gerade das Programmbild oder eine andere Anwendung den Fokus, gehen
+            die Tasten dorthin. Während du in einem Textfeld tippst oder in
+            einer Auswahlliste blätterst, sind die Kürzel aus, eine
+            <code>1</code> im Freitext bleibt also eine <code>1</code>. Nicht zu
+            verwechseln mit den OBS-Hotkeys für den Szenenwechsel, die sind
+            davon unabhängig und liegen in den OBS-Einstellungen.
           </div>
           <details class="proc">
             <summary>
@@ -9024,6 +9261,14 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 Ausblenden lohnt sich, wenn du bewusst ein sauberes Bild willst:
                 bei Nahaufnahmen, in Interviews, beim Einlaufen der Mannschaften
                 oder wenn du längere Zeit auf das Publikum schwenkst.
+              </p>
+              <p class="proc-text">
+                Darunter das Auswahlfeld <strong>Platzierung</strong> mit
+                <em>unten links</em>, <em>unten mittig</em> und
+                <em>oben links</em>. Es verschiebt die Tafel in der Bühne, und
+                bei <em>oben links</em> ziehen die Bauchbinden nach unten mit,
+                damit sich nichts überdeckt. Die Wahl gilt für alle
+                Browser-Quellen dieser Übertragung.
               </p>
             </div>
           </details>
@@ -9151,6 +9396,16 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 </table>
               </div>
               <p class="proc-text">
+                <strong>Du siehst, was gerade eingeblendet ist.</strong> Der
+                auslösende Knopf ist rot markiert, und oben rechts im Block
+                steht, was in der Bühne liegt, beim Freitext samt Text. Läuft
+                nichts, steht dort <em>aus</em> und der Knopf
+                <em>Ausblenden</em> ist gesperrt. Bewusst „Bühne“ und nicht „auf
+                Sendung“: Ob die Bühne im Programm liegt oder ein Vollbild
+                darüber, entscheidest du in OBS, davon weiß das Bedienfeld
+                nichts.
+              </p>
+              <p class="proc-text">
                 <strong>Zum Timing:</strong> Blende eine Bauchbinde etwa zehn
                 bis fünfzehn Sekunden ein, dann wieder aus, länger wirkt sie wie
                 vergessen. Und blende nichts ein, während der Ball im Spiel ist
@@ -9175,6 +9430,83 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 einem Klick einblenden. Ausgeblendet wird über denselben
                 <em>Ausblenden</em>-Knopf wie bei den anderen Bauchbinden.
               </p>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🎨</span>
+              <div>
+                <div class="proc-title">Block Farben</div>
+                <div class="proc-sub">
+                  Optional, wirkt auf alle Bilder dieser Übertragung
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Zwei Farbfelder, <strong>Akzent</strong> und
+                <strong>Verlauf</strong>, dazu der Knopf
+                <em>Farben der Liga</em>, der wieder auf die Voreinstellung des
+                Spielbetriebs zurückstellt. Der Akzent trägt die farbigen
+                Vorzeilen und Spaltentitel, der Verlauf die Akzentkante.
+                Darunter steht, was gerade gilt.
+              </p>
+              <p class="proc-text">
+                Gedacht ist das für Produktionen mit eigenem Erscheinungsbild:
+                Wenn deine übrigen Szenen in den Vereinsfarben liegen, passen
+                sich die Overlays an. Die Wahl gilt nur für diese Übertragung
+                und läuft mit dem Zugang ab.
+              </p>
+              <div class="note">
+                <strong>Beachte den Kontrasthinweis.</strong> Wählst du einen
+                dunklen Akzent, meldet das Bedienfeld den gemessenen Kontrast
+                auf dem dunklen Grund. Das ist keine Sperre, sondern eine
+                Warnung: Der Akzent trägt kleine Versalien, und was auf dem
+                Bildschirm gerade noch zu lesen ist, verschwindet nach der
+                Videokompression eines Streams zuerst. Ein dunkles Marineblau
+                etwa kommt auf 1,1:1 und ist im Stream praktisch unsichtbar.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🎤</span>
+              <div>
+                <div class="proc-title">Block Interview</div>
+                <div class="proc-sub">
+                  Namenseinblendung mit Torbeteiligung, Kürzel
+                  <code>5</code>
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Zwei Auswahlfelder, Mannschaft und Person, darunter der Knopf
+                <strong>Interview einblenden</strong>. Die Personenliste kommt
+                aus der erfassten Aufstellung, in der Form
+                <code>7 Max Mustermann</code>, Torhüter mit dem Zusatz
+                <code>(Tor)</code>. Du wählst also aus, statt eine Nummer zu
+                tippen: Eine Nummer, die im Kader nicht vorkommt, ergäbe eine
+                Einblendung ohne Namen, und das fällt erst auf Sendung auf.
+              </p>
+              <p class="proc-text">
+                Die Einblendung baut sich selbst zusammen: Verein und
+                Rückennummer als Vorzeile, der Name groß, darunter Tore und
+                Vorlagen aus <em>diesem</em> Spiel. Wurde die Person zum
+                wertvollsten Spieler des Spiels gewählt, steht
+                <em>MVP des Spiels</em> dabei; ist sie ohne diese Auszeichnung
+                die punktbeste ihrer Mannschaft, steht
+                <em>Topscorer der Mannschaft</em> dort. In einer Damenliga heißt
+                die Kennzeichnung von Torhüterin und Kapitänin entsprechend.
+              </p>
+              <div class="note">
+                Trägt das Sekretariat nach dem Einblenden noch eine Vorlage
+                nach, zieht die laufende Einblendung von selbst mit, du musst
+                nicht neu drücken. Fehlt die Aufstellung einer Mannschaft ganz,
+                sagt das Feld das und der Knopf ist gesperrt.
+              </div>
             </div>
           </details>
           <details class="proc">
@@ -9290,6 +9622,14 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                       <td>&nbsp;</td>
                     </tr>
                     <tr>
+                      <td>Interview</td>
+                      <td>Bühne, Anzeigetafel ausgeblendet</td>
+                      <td>
+                        Im Block Interview Mannschaft und Person wählen, Taste
+                        <code>5</code>, nach dem Gespräch <code>0</code>
+                      </td>
+                    </tr>
+                    <tr>
                       <td>Abspann</td>
                       <td>Vollbild: Nächste Spiele</td>
                       <td>Kommentator-Bauchbinde zur Verabschiedung</td>
@@ -9298,11 +9638,16 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 </table>
               </div>
               <div class="note">
-                Für schnelles Umschalten lohnen sich Hotkeys: unter
-                <em>Einstellungen › Hotkeys</em> steht bei jeder Szene der
-                Eintrag <em>Zu Szene wechseln</em>. Leg dir zumindest für Bühne
-                und Drittelpause je eine Taste. Das Bedienfeld selbst kennt
-                keine Tastenkürzel, die Knöpfe klickst du mit der Maus.
+                Für schnelles Umschalten lohnen sich
+                <strong>zwei</strong> Sorten Tasten, und sie liegen an
+                verschiedenen Stellen: Der <em>Szenenwechsel</em> gehört zu OBS,
+                unter <em>Einstellungen › Hotkeys</em> steht bei jeder Szene der
+                Eintrag <em>Zu Szene wechseln</em>; leg dir zumindest für Bühne
+                und Drittelpause je eine Taste. Die
+                <em>Bedienelemente</em> haben ihre eigenen Kürzel, sie stehen
+                auf den Knöpfen und wirken, sobald das Bedienfeld den Fokus hat
+                (siehe die Tabelle am Anfang dieses Abschnitts). Beides zusammen
+                lässt sich vollständig auf ein Stream Deck legen.
               </div>
             </div>
           </details>
@@ -9366,6 +9711,32 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                   <td>Anzeigetafel zeigt keine Uhr</td>
                   <td>Spielzeit ist im Bedienfeld auf unsichtbar gestellt</td>
                   <td>Im Block Spielzeit auf sichtbar schalten</td>
+                </tr>
+                <tr>
+                  <td>Tastenkürzel tun nichts</td>
+                  <td>
+                    Das Bedienfeld hat nicht den Fokus, oder der Zeiger steht in
+                    einem Textfeld
+                  </td>
+                  <td>
+                    Einmal in das Dock klicken, aber nicht in ein Eingabefeld
+                  </td>
+                </tr>
+                <tr>
+                  <td>Interview-Knopf ist gesperrt</td>
+                  <td>Für diese Mannschaft ist keine Aufstellung erfasst</td>
+                  <td>
+                    Auf die andere Mannschaft wechseln oder den Freitext nehmen
+                  </td>
+                </tr>
+                <tr>
+                  <td>Formkurve ist leer</td>
+                  <td>
+                    Keine der beiden Mannschaften hat schon ein Spiel beendet
+                  </td>
+                  <td>
+                    Zu Saisonbeginn normal, ab dem zweiten Spieltag gefüllt
+                  </td>
                 </tr>
                 <tr>
                   <td>Ein Vereinslogo erscheint als leeres helles Feld</td>
@@ -9492,11 +9863,15 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             Anzeigetafel zeigt beide Vereinslogos klein auf hellem Feld, das
             Startbild beide groß auf hellen abgerundeten Feldern, die Tabelle
             alle Vereinslogos der Liga als kleine Zeichen, und überall erscheint
-            das Ligazeichen oben rechts sowie als Wasserzeichen. Vereins- und
-            Teamlogos pflegen die Vereine selbst im Saisonmanager, das
-            Ligazeichen pflegt der zuständige Verband. Fehlt eines, bleiben die
-            entsprechenden Flächen leer und der Mannschaftsname steht allein.
-            Die Anzeige bleibt also brauchbar, schöner ist es mit.
+            das Ligazeichen oben rechts. Vereins- und Teamlogos pflegen die
+            Vereine selbst im Saisonmanager. Das Ligazeichen kommt für die vier
+            Bundesligen und den Pokal mit den Overlays; darüber hinaus kann der
+            zuständige Verband je <strong>Liga</strong> ein eigenes hinterlegen,
+            das dann Vorrang hat. Gemeint ist die Liga einer Saison: Wird sie zur
+            neuen Saison kopiert, muss das Zeichen erneut hochgeladen werden.
+            Fehlt eines, bleiben die entsprechenden Flächen leer und der
+            Mannschaftsname steht allein. Die Anzeige bleibt also
+            brauchbar, schöner ist es mit.
           </p>
           <p class="proc-text">
             Die Vereinslogos stehen im Overlay
@@ -9595,7 +9970,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 <em>URL</em> die neue Adresse einsetzen. Bei der Bühne genügt
                 der reine Link, bei den Vollbildern musst du die Anhängsel
                 <code>&amp;only=fullscreen&amp;scene=…</code> aus der alten
-                Adresse übernehmen. Das sind neun Quellen, also etwas
+                Adresse übernehmen. Das sind elf Quellen, also etwas
                 Fleißarbeit.
               </p>
               <p class="proc-text">
@@ -9680,6 +10055,14 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                       <td><code>naechste-spiele</code></td>
                       <td>Nächste Spiele</td>
                     </tr>
+                    <tr>
+                      <td><code>tore</code></td>
+                      <td>Tore des Spiels</td>
+                    </tr>
+                    <tr>
+                      <td><code>formkurve</code></td>
+                      <td>Formkurve</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -9716,6 +10099,12 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             <li class="good">Bedienfeld angelegt, keine rote Meldung</li>
             <li class="good">Vollbild-Test im Browser bestanden</li>
             <li class="good">Bauchbinde probeweise ein- und ausgeblendet</li>
+            <li class="good">
+              Tastenkürzel einmal geprüft, nachdem du ins Dock geklickt hast
+            </li>
+            <li class="good">
+              Platzierung der Anzeigetafel passt zur Kameraführung
+            </li>
             <li class="good">Spielstand-Übersteuerung steht auf inaktiv</li>
             <li class="good">Statuszeile im Bedienfeld zeigt „Verbunden“</li>
             <li class="good">

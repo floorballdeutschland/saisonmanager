@@ -31,6 +31,15 @@
           </button>
         </div>
         <div class="dk-score" id="score-line">–</div>
+
+        <div class="dk-row">
+          <span class="dk-label">Platzierung</span>
+          <select class="dk-select dk-select--inline" id="sb-position">
+            <option value="bottom-left">unten links</option>
+            <option value="bottom-center">unten mittig</option>
+            <option value="top-left">oben links</option>
+          </select>
+        </div>
       </section>
 
       <section class="dk-card">
@@ -61,7 +70,15 @@
       </section>
 
       <section class="dk-card">
-        <div class="dk-label">Bauchbinde</div>
+        <div class="dk-row">
+          <span class="dk-label">Bauchbinde</span>
+          <!-- Rückmeldung, was von diesem Bereich gerade in der Bühne steht.
+               Ohne sie ist nach einem Druck nicht zu erkennen, ob überhaupt
+               und welche Einblendung läuft. Absichtlich „Bühne“ und nicht
+               „auf Sendung“: Welche Szene im Programm liegt, entscheidet OBS,
+               das Bedienfeld weiß es nicht. -->
+          <span class="dk-onair" id="lt-onair">aus</span>
+        </div>
         <div class="dk-buttons">
           <button class="dk-btn" id="lt-goal" type="button">Letztes Tor</button>
           <button class="dk-btn" id="lt-penalty" type="button">
@@ -94,6 +111,52 @@
         </div>
       </section>
 
+      <!-- Farben der Einblendungen, damit sie zu den übrigen Szenen einer
+           Produktion passen. Sie liegen im Steuerzustand am Token, gelten also
+           für alle Browser-Quellen dieser Übertragung und nur für sie.
+
+           Die Warnung daneben ist kein Schmuck: Das Stylesheet hält die
+           Farben je Wettbewerb bewusst fest, damit niemand eine Farbe wählt,
+           die nach der Videokompression eines Streams verschwindet. Wer sie
+           trotzdem selbst setzt, soll wenigstens sehen, wenn es zu dunkel
+           wird. -->
+      <section class="dk-card">
+        <div class="dk-row">
+          <span class="dk-label">Farben</span>
+          <button class="dk-toggle" id="col-reset" type="button">
+            Farben der Liga
+          </button>
+        </div>
+
+        <div class="dk-colors">
+          <label class="dk-color">
+            <input type="color" id="col-accent" />
+            <span>Akzent</span>
+          </label>
+          <label class="dk-color">
+            <input type="color" id="col-accent-alt" />
+            <span>Verlauf</span>
+          </label>
+        </div>
+
+        <div class="dk-hint" id="col-state"></div>
+        <div class="dk-warn dk-hidden" id="col-warn"></div>
+      </section>
+
+      <!-- Interview nach dem Spiel. Im Steuerzustand landen nur Mannschaft und
+           Trikotnummer; Name, Torbeteiligung und Auszeichnung rechnet die
+           Bühne aus dem Spiel. Sonst müsste das Bedienfeld dieselben Zahlen
+           ein zweites Mal ermitteln, und eine nachgetragene Vorlage käme in
+           der laufenden Einblendung nicht mehr an. -->
+      <section class="dk-card">
+        <div class="dk-label">Interview</div>
+        <select class="dk-select" id="iv-team"></select>
+        <select class="dk-select" id="iv-player"></select>
+        <button class="dk-btn" id="iv-show" type="button">
+          Interview einblenden
+        </button>
+      </section>
+
       <section class="dk-card">
         <div class="dk-row">
           <span class="dk-label">Spielstand übersteuern</span>
@@ -112,6 +175,16 @@
           Der angezeigte Stand kommt nicht aus dem Spielbericht.
         </div>
       </section>
+
+      <!-- Die Kürzel auf den Knöpfen setzt dock.js aus derselben Tabelle, aus
+           der es sie auch auslöst. Legende und Wirkung können so nicht
+           auseinanderlaufen. -->
+      <p class="dk-hint">
+        Die Zeichen auf den Knöpfen sind Tastenkürzel. Sie wirken, sobald dieses
+        Fenster den Fokus hat (in OBS also nach einem Klick ins Dock), und sind
+        aus, solange du in einem Textfeld tippst oder in einer Auswahlliste
+        blätterst. Damit lässt sich das Bedienfeld auf ein Stream Deck legen.
+      </p>
     </div>
 
     <script src="dock.js"></script>

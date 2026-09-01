@@ -64,6 +64,16 @@
     "lt-text",
     "lt-text-kicker",
     "lt-text-main",
+    "lt-onair",
+    "sb-position",
+    "col-accent",
+    "col-accent-alt",
+    "col-reset",
+    "col-state",
+    "col-warn",
+    "iv-team",
+    "iv-player",
+    "iv-show",
     "override-toggle",
     "override-controls",
     "override-display",
@@ -71,6 +81,44 @@
   ].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
+
+  // Tastenkürzel. EINE Tabelle für Wirkung und Beschriftung: `bindHotkeys`
+  // löst die Taste über dieselbe Zeile aus, aus der es das Zeichen an den Knopf
+  // schreibt. Eine Legende, die daneben pflegbar wäre, liefe irgendwann
+  // auseinander.
+  //
+  // Nur einzelne Tasten ohne Zusatztaste, denn ein Stream Deck schickt genau
+  // das. Ziffern für die Bauchbinde, weil sie in einer Reihe liegen; Buchstaben
+  // dort, wo sie zum Wort passen.
+  var HOTKEYS = [
+    { key: "1", sel: "#lt-goal", badge: "1" },
+    { key: "2", sel: "#lt-penalty", badge: "2" },
+    { key: "3", sel: "#lt-venue", badge: "3" },
+    { key: "4", sel: "#lt-text", badge: "4" },
+    { key: "0", sel: "#lt-off", badge: "0" },
+    { key: "5", sel: "#iv-show", badge: "5" },
+    { key: "s", sel: "#scoreboard-toggle", badge: "S" },
+    { key: "u", sel: "#clock-visible", badge: "U" },
+    { key: " ", sel: "#clock-start", badge: "Leer" },
+    { key: "-", sel: "#clock-minus", badge: "−" },
+    { key: "+", sel: "#clock-plus", badge: "+" },
+    { key: "r", sel: "#clock-reset", badge: "R" },
+    { key: "x", sel: "#override-toggle", badge: "X" },
+    { key: "q", sel: '[data-ov="home-1"]', badge: "Q" },
+    { key: "w", sel: '[data-ov="home+1"]', badge: "W" },
+    { key: "o", sel: '[data-ov="guest-1"]', badge: "O" },
+    { key: "p", sel: '[data-ov="guest+1"]', badge: "P" },
+  ];
+
+  // Bauchbinden-Knopf zu der Art, die er einblendet. Grundlage der
+  // Rückmeldung, welcher Knopf gerade in der Bühne steht.
+  var LT_BUTTONS = [
+    { id: "lt-goal", kind: "goal" },
+    { id: "lt-penalty", kind: "penalty" },
+    { id: "lt-venue", kind: "venue" },
+    { id: "lt-text", kind: "text" },
+    { id: "iv-show", kind: "interview" },
+  ];
 
   if (!token) {
     setStatus(
@@ -319,7 +367,67 @@
     renderGameSelect();
     renderScoreboard();
     renderClockUi();
+    renderLowerThird();
+    renderColors();
+    renderInterview();
     renderOverride();
+  }
+
+  // Welche Einblendung steht gerade in der Bühne? Der Zustand liegt auf dem
+  // Server, also weiß das Bedienfeld es auch dann, wenn eine zweite Regie
+  // gedrückt hat oder dieses Fenster neu geladen wurde.
+  //
+  // „Bühne“ und nicht „auf Sendung“: Ob die Bühne im Programm liegt oder
+  // gerade ein Vollbild darüber, entscheidet OBS. Das Bedienfeld erfährt davon
+  // nichts und darf es deshalb nicht behaupten.
+  function renderLowerThird() {
+    // Das Bedienfeld muss auch mit einem älteren, zwischengespeicherten
+    // dock.html laufen (`Cache-Control` für /overlay/ ist noch offen). Fehlt
+    // ein Element, würde der Zugriff werfen -- und weil `render` aus dem Poll
+    // heraus läuft, landete der Fehler in der Statuszeile und das Bedienfeld
+    // rendert bis zum Neuladen NIE mehr. `bindHotkeys` hält es genauso.
+    if (!el["lt-onair"] || !el["lt-off"]) return;
+
+    var lt = state.control.lower_third || null;
+    var kind = lt && lt.kind;
+
+    LT_BUTTONS.forEach(function (entry) {
+      if (el[entry.id]) {
+        el[entry.id].classList.toggle("dk-btn--live", kind === entry.kind);
+      }
+    });
+
+    // textContent, nicht innerHTML: Der Freitext kommt aus dem Feld daneben.
+    el["lt-onair"].textContent = lowerThirdLabel(lt);
+    el["lt-onair"].classList.toggle("dk-onair--live", Boolean(kind));
+
+    // Ohne Einblendung gibt es nichts auszublenden. Der abgeschaltete Knopf ist
+    // die zweite Rückmeldung: Er zeigt auch ohne Lesen des Textes, dass dieser
+    // Bereich gerade nichts in der Bühne hat.
+    el["lt-off"].disabled = !kind;
+  }
+
+  function lowerThirdLabel(lt) {
+    if (!lt || !lt.kind) return "aus";
+
+    if (lt.kind === "goal") return "Bühne: letztes Tor";
+    if (lt.kind === "penalty") return "Bühne: letzte Strafe";
+    if (lt.kind === "venue") return "Bühne: Paarung";
+    // Der eingeblendete Text, nicht der im Feld: Wer nach dem Einblenden
+    // weitertippt, soll sehen, was tatsächlich unten im Bild steht.
+    if (lt.kind === "text") return "Bühne: " + (lt.main || "Freitext");
+
+    if (lt.kind === "interview") {
+      var player = rosterPlayer(lt.side, lt.number);
+      // Auch ohne auflösbaren Eintrag die Nummer nennen: Zeigt die Bühne
+      // gerade nichts, weil die Aufstellung nachträglich geändert wurde, ist
+      // das hier die einzige Spur.
+      return (
+        "Bühne: Interview " + (player ? playerName(player) : "Nr. " + lt.number)
+      );
+    }
+
+    return "Bühne: Einblendung";
   }
 
   function renderGameSelect() {
@@ -356,6 +464,17 @@
     var on = state.control.scoreboard_visible !== false;
     el["scoreboard-toggle"].textContent = on ? "Sichtbar" : "Ausgeblendet";
     el["scoreboard-toggle"].classList.toggle("dk-toggle--on", on);
+
+    // Ein unbekannter Wert (andere Fassung des Bedienfelds, Tippfehler) laesst
+    // die Auswahl leer stehen. Dann lieber den Standard zeigen, den die Bühne
+    // in dem Fall ohnehin verwendet.
+    // Nicht überschreiben, während die Regie in der Liste steht: Der Abruf
+    // läuft alle zwei Sekunden.
+    if (document.activeElement !== el["sb-position"]) {
+      el["sb-position"].value =
+        state.control.scoreboard_position || "bottom-left";
+      if (!el["sb-position"].value) el["sb-position"].value = "bottom-left";
+    }
 
     el["score-line"].textContent = state.game
       ? teamLabel(state.game.home) +
@@ -435,6 +554,289 @@
     return (Number(m[1]) * 60 + Number(m[2])) * 1000;
   }
 
+  // ── Farben ──────────────────────────────────────────────────────────────
+
+  // Die Grundfarben des Stylesheets. Nur als Startwert der Farbwähler: Welche
+  // Farbwelt gerade gilt, weiß die Bühne (sie leitet sie aus Ligaklasse und
+  // Wettbewerb ab), nicht das Bedienfeld. Deshalb steht darunter im Klartext,
+  // ob eigene Farben aktiv sind -- ein Farbfeld allein wäre eine Behauptung.
+  var DEFAULT_ACCENT = "#e94560";
+  var DEFAULT_ACCENT_ALT = "#ff6b35";
+
+  // Beide Enden des dunklen Hintergrundverlaufs. Der Akzent trägt darauf
+  // kleine Versalien, gemessen wird gegen das SCHLECHTERE Ende.
+  var DARK_ENDS = ["#1a1a2e", "#16213e"];
+  // Der Wert des Markenrots der 1. Herren, das gegen das schlechtere Ende des
+  // Verlaufs 4,15:1 erreicht und im Stylesheet ausdrücklich als Markenfarbe so
+  // stehenbleibt. Gewarnt wird damit genau dann, wenn eine Farbe schlechter ist
+  // als der schwächste Wert, den die Gestaltung selbst zulässt. Vorher standen
+  // hier 4,0, und das Band dazwischen blieb stumm, obwohl der Kommentar etwas
+  // anderes versprach -- ein plausibles Vereinsblau wie #0088cc liegt bei
+  // 4,08:1. Die WCAG-Schwelle für Text dieser Größe (4,5:1) steht im Warntext,
+  // damit die Zahl einordbar bleibt.
+  var MIN_CONTRAST = 4.15;
+
+  var HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
+  function colorState() {
+    var colors = state.control.colors || {};
+    var accent = HEX_COLOR.test(String(colors.accent)) ? colors.accent : null;
+
+    return {
+      accent: accent,
+      // Die zweite Farbe gilt auch ohne die erste: Die Bühne fällt je Feld
+      // einzeln auf die Farbe des Wettbewerbs zurück, ein alleiniger Verlauf
+      // ist also wirksam. Vorher verwarf das Bedienfeld ihn hier, während die
+      // Bühne ihn anwandte.
+      alt: HEX_COLOR.test(String(colors.accent_alt))
+        ? String(colors.accent_alt)
+        : null,
+    };
+  }
+
+  function renderColors() {
+    // Siehe renderLowerThird: ältere Fassung des dock.html im Cache.
+    if (!el["col-accent"] || !el["col-accent-alt"] || !el["col-reset"]) return;
+
+    var chosen = colorState();
+
+    // Nur setzen, wenn nicht gerade jemand darin wählt: Ein Farbwähler, dem
+    // der Abruf zwei Sekunden später den Wert zurückstellt, ist nicht
+    // bedienbar.
+    if (document.activeElement !== el["col-accent"]) {
+      el["col-accent"].value = chosen.accent || DEFAULT_ACCENT;
+    }
+    if (document.activeElement !== el["col-accent-alt"]) {
+      el["col-accent-alt"].value =
+        chosen.alt || chosen.accent || DEFAULT_ACCENT_ALT;
+    }
+
+    // Gesperrt UND grün wäre widersprüchlich: Grün heißt bei den Umschaltern
+    // „eingeschaltet", der Knopf sah damit drückbar aus und tat nichts. Was
+    // gilt, steht in der Zeile darunter.
+    var eigene = Boolean(chosen.accent || chosen.alt);
+    el["col-reset"].disabled = !eigene;
+    el["col-reset"].classList.toggle("dk-toggle--on", eigene);
+    el["col-state"].textContent = eigene
+      ? "Eigene Farben sind aktiv."
+      : "Es gelten die Farben des Wettbewerbs.";
+
+    renderContrastWarning(chosen);
+  }
+
+  // Kein Riegel, sondern eine Auskunft: Die Farbe eines Vereins ist gesetzt,
+  // und ob sie trotz schwachem Kontrast benutzt wird, entscheidet die Regie.
+  //
+  // Geprüft wird NUR der Akzent. Er trägt die kleinen Versalien (Kicker,
+  // Spaltentitel), und Kontrast ist ein Maßstab für Text. Die zweite Farbe
+  // kommt im Stylesheet an keiner Textstelle vor, sie ist allein der zweite
+  // Halt des Akzentverlaufs, also Zierfläche -- eine Warnung dafür wäre
+  // Rauschen und würde die eine Zahl entwerten, auf die es ankommt.
+  function renderContrastWarning(chosen) {
+    if (!chosen.accent) {
+      el["col-warn"].classList.add("dk-hidden");
+      return;
+    }
+
+    var wert = worstContrast(chosen.accent);
+    if (wert >= MIN_CONTRAST) {
+      el["col-warn"].classList.add("dk-hidden");
+      return;
+    }
+
+    el["col-warn"].textContent =
+      "Akzent: nur " +
+      wert.toFixed(2).replace(".", ",") +
+      ":1 Kontrast auf dem dunklen Grund. Er trägt die kleinen Versalien," +
+      " lesbar gilt ab 4,5:1, und nach der Videokompression eines Streams" +
+      " verschwinden schwache Farben zuerst.";
+    el["col-warn"].classList.remove("dk-hidden");
+  }
+
+  function worstContrast(hex) {
+    var werte = DARK_ENDS.map(function (dark) {
+      return contrastRatio(hex, dark);
+    });
+    return Math.min.apply(null, werte);
+  }
+
+  // WCAG 2.1: (heller + 0,05) / (dunkler + 0,05) auf Basis der relativen
+  // Leuchtdichte.
+  function contrastRatio(a, b) {
+    var la = luminance(a);
+    var lb = luminance(b);
+    var hell = Math.max(la, lb);
+    var dunkel = Math.min(la, lb);
+    return (hell + 0.05) / (dunkel + 0.05);
+  }
+
+  function luminance(hex) {
+    var anteile = [1, 3, 5].map(function (start) {
+      var kanal = parseInt(hex.slice(start, start + 2), 16) / 255;
+      return kanal <= 0.03928
+        ? kanal / 12.92
+        : Math.pow((kanal + 0.055) / 1.055, 2.4);
+    });
+
+    return 0.2126 * anteile[0] + 0.7152 * anteile[1] + 0.0722 * anteile[2];
+  }
+
+  // ── Interview ───────────────────────────────────────────────────────────
+
+  // Zwei Auswahlfelder, gefüllt aus der Aufstellung des Spiels. Bewusst keine
+  // Eingabe der Nummer von Hand: Eine Zahl, die in der Aufstellung nicht
+  // vorkommt, ergäbe eine Bauchbinde ohne Namen, und das fiele erst auf
+  // Sendung auf.
+  function renderInterview() {
+    // Siehe renderLowerThird: ältere Fassung des dock.html im Cache.
+    if (!el["iv-team"] || !el["iv-player"] || !el["iv-show"]) return;
+
+    fillInterviewTeams();
+    fillInterviewPlayers();
+
+    el["iv-show"].disabled = !el["iv-player"].value;
+  }
+
+  function fillInterviewTeams() {
+    if (!state.game) return;
+
+    // Neu füllen, sobald ein anderes Spiel gewählt ist: Die Namen stehen in
+    // den Feldern, nicht bloß „Heim" und „Gast".
+    var key = String(state.game.id);
+    if (el["iv-team"].dataset.filledFor === key) return;
+
+    var chosen = el["iv-team"].value === "guest" ? "guest" : "home";
+    el["iv-team"].textContent = "";
+
+    [
+      { side: "home", team: state.game.home, fallback: "Heim" },
+      { side: "guest", team: state.game.guest, fallback: "Gast" },
+    ].forEach(function (entry) {
+      var opt = document.createElement("option");
+      opt.value = entry.side;
+      opt.textContent =
+        (entry.team && (entry.team.name || entry.team.short_name)) ||
+        entry.fallback;
+      el["iv-team"].appendChild(opt);
+    });
+
+    el["iv-team"].value = chosen;
+    el["iv-team"].dataset.filledFor = key;
+  }
+
+  function fillInterviewPlayers() {
+    if (!state.game) return;
+
+    // Nicht neu bauen, während die Liste geöffnet ist: Chromium schließt sie,
+    // wenn ihre Einträge ersetzt werden, und der Klick der Regie landete im
+    // Leeren. Passiert, sobald das Sekretariat währenddessen einen Spieler
+    // nachträgt.
+    if (document.activeElement === el["iv-player"]) return;
+
+    var side = el["iv-team"].value || "home";
+    var roster = rosterFor(side);
+    // Die Anzahl gehört in den Schlüssel: Wird die Aufstellung erst während
+    // des Spiels eingetragen, muss die Liste nachziehen, ohne dass jemand das
+    // Dock neu lädt.
+    var key = state.game.id + ":" + side + ":" + roster.length;
+    if (el["iv-player"].dataset.filledFor === key) return;
+
+    // Die Wahl nur innerhalb DERSELBEN Mannschaft halten. Nach einem
+    // Seitenwechsel wäre sie entweder wirkungslos (die andere Mannschaft hat die
+    // Nummer nicht, das Feld stünde leer und der Knopf gesperrt, ohne
+    // Erklärung) oder still falsch: Hat sie die Nummer auch, wäre plötzlich ein
+    // Spieler vorgewählt, den niemand ausgesucht hat.
+    var vorherigeSeite = String(el["iv-player"].dataset.filledFor || "").split(
+      ":"
+    )[1];
+    var chosen = vorherigeSeite === side ? el["iv-player"].value : "";
+    el["iv-player"].textContent = "";
+
+    if (!roster.length) {
+      var empty = document.createElement("option");
+      empty.value = "";
+      empty.textContent = "Keine Aufstellung eingetragen";
+      el["iv-player"].appendChild(empty);
+    } else {
+      roster.forEach(function (player) {
+        var opt = document.createElement("option");
+        opt.value = String(player.trikot_number);
+        // textContent: Die Namen kommen aus der Datenbank.
+        opt.textContent =
+          player.trikot_number +
+          "  " +
+          playerName(player) +
+          (player.position === "Tor" ? " (Tor)" : "") +
+          // Kommt eine Nummer doppelt vor, tragen beide Einträge denselben Wert
+          // in dieser Liste und nur der erste ist ansprechbar (Bühne und Chip
+          // lösen beide auf ihn auf). Ohne diesen Zusatz wählt die Regie den
+          // zweiten und bekommt ohne Erklärung den Namen des ersten.
+          (mehrfacheNummer(roster, player) ? " – Nummer doppelt erfasst" : "");
+        el["iv-player"].appendChild(opt);
+      });
+
+      if (chosen) el["iv-player"].value = chosen;
+    }
+
+    el["iv-player"].dataset.filledFor = key;
+  }
+
+  // Nach Trikotnummer sortiert, ohne Einträge ohne Nummer und ohne solche ohne
+  // Namen.
+  //
+  // Nach der Nummer sucht die Regie, ein Eintrag ohne sie ist also nicht
+  // ansprechbar. Und einen Eintrag ohne NAMEN blendet die Bühne bewusst nicht
+  // ein (eine Bauchbinde mit leerer Namenszeile wäre schlimmer als keine),
+  // deshalb gehört er auch nicht in die Auswahl -- sonst führte ein Druck auf
+  // Taste 5 sichtbar zu nichts. Beide Fälle gibt es wirklich:
+  // `add_player_to_lineup` schreibt `params[:trikot_number].to_i` (ohne Angabe
+  // also 0) und übernimmt im Freitext-Zweig die Namen ungeprüft.
+  function rosterFor(side) {
+    var players = (state.game && state.game.players) || {};
+    var list = players[side === "guest" ? "guest" : "home"] || [];
+
+    return list
+      .filter(function (player) {
+        return player && Number(player.trikot_number) > 0 && playerName(player);
+      })
+      .slice()
+      .sort(function (a, b) {
+        return Number(a.trikot_number) - Number(b.trikot_number);
+      });
+  }
+
+  function mehrfacheNummer(roster, player) {
+    var treffer = 0;
+
+    roster.forEach(function (anderer) {
+      if (Number(anderer.trikot_number) === Number(player.trikot_number)) {
+        treffer += 1;
+      }
+    });
+
+    return treffer > 1;
+  }
+
+  // Der erste Treffer, wie auf der Bühne: Eine Aufstellung kann eine
+  // Trikotnummer doppelt enthalten, und beide Einträge tragen in der
+  // Auswahlliste denselben Wert. Beide Seiten müssen sich für denselben
+  // entscheiden, sonst nennt der Chip einen anderen Namen als das Bild.
+  function rosterPlayer(side, number) {
+    var roster = rosterFor(side);
+
+    for (var i = 0; i < roster.length; i++) {
+      if (Number(roster[i].trikot_number) === Number(number)) return roster[i];
+    }
+
+    return null;
+  }
+
+  function playerName(player) {
+    return [player.player_firstname, player.player_name]
+      .filter(Boolean)
+      .join(" ");
+  }
+
   function renderOverride() {
     var ov = state.control.score_override;
     var on = Boolean(ov);
@@ -472,6 +874,10 @@
     writeState({
       scoreboard_visible: state.control.scoreboard_visible === false,
     });
+  });
+
+  on("sb-position", "change", function () {
+    writeState({ scoreboard_position: el["sb-position"].value });
   });
 
   el["clock-visible"].addEventListener("click", function () {
@@ -532,6 +938,67 @@
     writeState({ lower_third: null });
   });
 
+  // `on` statt `el[...].addEventListener`: Bei einem älteren,
+  // zwischengespeicherten dock.html fehlt ein Element, und ein Zugriff hier
+  // oben bräche die Einrichtung des Bedienfelds ab -- samt aller Zuhörer, die
+  // danach kämen.
+  function on(id, typ, fn) {
+    if (el[id]) el[id].addEventListener(typ, fn);
+  }
+
+  // `change` und nicht `input`: Beim Ziehen im Farbwähler feuert `input`
+  // dutzende Male, und jedes Mal ginge ein Schreibvorgang zum Server.
+  //
+  // Und NUR das geänderte Feld schreiben. Vorher gingen immer beide hinaus, und
+  // das unberührte trug den Startwert der Felder -- das Markenrot der
+  // 1. Herren. Wer in einer Damen-, Zweitliga- oder Pokalpartie nur den Verlauf
+  // änderte, schrieb damit unbemerkt Rot als Akzent, und die Bühne sprang auf
+  // Sendung in die Farbwelt der 1. Herren. Das Bedienfeld kennt die Farben des
+  // Wettbewerbs nicht; das unberührte Feld bleibt deshalb leer, und die Bühne
+  // fällt dafür je Feld einzeln auf die Ligafarbe zurück.
+  ["col-accent", "col-accent-alt"].forEach(function (id) {
+    on(id, "change", function () {
+      var bestehend = colorState();
+      var neu = {
+        accent: id === "col-accent" ? el["col-accent"].value : bestehend.accent,
+        accent_alt:
+          id === "col-accent-alt" ? el["col-accent-alt"].value : bestehend.alt,
+      };
+
+      // Nicht gesetzte Felder gar nicht mitschicken: Der Zustand bleibt klein,
+      // und die Bühne behandelt fehlend und ungültig ohnehin gleich.
+      if (!neu.accent) delete neu.accent;
+      if (!neu.accent_alt) delete neu.accent_alt;
+
+      writeState({ colors: neu });
+    });
+  });
+
+  on("col-reset", "click", function () {
+    writeState({ colors: null });
+  });
+
+  on("iv-team", "change", renderInterview);
+
+  on("iv-show", "click", function () {
+    var number = el["iv-player"].value;
+    if (!number) {
+      setStatus(
+        "Für das Interview fehlt die Aufstellung dieser Mannschaft.",
+        true
+      );
+      return;
+    }
+
+    writeState({
+      lower_third: {
+        kind: "interview",
+        side: el["iv-team"].value || "home",
+        number: Number(number),
+      },
+    });
+  });
+
   el["override-toggle"].addEventListener("click", function () {
     if (state.control.score_override) {
       writeState({ score_override: null });
@@ -561,6 +1028,115 @@
     next[key] = Math.max(0, next[key] + (action.indexOf("+1") > -1 ? 1 : -1));
     writeState({ score_override: next });
   });
+
+  // ── Tastenkürzel ────────────────────────────────────────────────────────
+
+  // Löst den bestehenden Knopf aus statt die Wirkung ein zweites Mal zu
+  // beschreiben: Jede Taste ruft `click()` auf ihrem Knopf, und die Prüfungen
+  // dort (kein Tor eingetragen, keine Übersteuerung aktiv, Hauptzeile fehlt)
+  // gelten damit für Maus und Taste gleich.
+  function bindHotkeys() {
+    var lookup = {};
+
+    HOTKEYS.forEach(function (entry) {
+      var node = document.querySelector(entry.sel);
+      // Ein Knopf, den es nicht gibt, darf den Rest nicht mitnehmen: Das
+      // Bedienfeld läuft auch mit einem älteren, zwischengespeicherten
+      // dock.html.
+      if (!node) return;
+
+      lookup[entry.key] = node;
+      node.setAttribute("data-key", entry.badge);
+    });
+
+    document.addEventListener("keydown", function (event) {
+      // Mit Zusatztaste gehören die Tasten dem Browser und dem Betriebssystem
+      // (Neuladen, Suchen, Fenster wechseln).
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+      // Eine gehaltene Taste würde sonst zwanzigmal pro Sekunde schreiben.
+      if (event.repeat) return;
+      // Im Freitextfeld ist eine 1 eine 1 und keine Bauchbinde.
+      if (isTypingTarget(event.target)) return;
+
+      var node = lookup[String(event.key).toLowerCase()];
+      if (!node) return;
+
+      // Muss VOR dem Auslösen kommen: Ohne das drückte die Leertaste
+      // zusätzlich den Knopf, der gerade den Fokus hat, und beim Blättern
+      // sprang das Dock weg.
+      event.preventDefault();
+      node.click();
+    });
+
+    // Ein mit der Maus gedrückter Knopf behält den Fokus. Die Leertaste hätte
+    // danach ihn ausgelöst und nicht die Uhr gestartet -- also den Fokus nach
+    // einem Zeigerklick wieder abgeben. `detail` ist 0, wenn `click()` aus dem
+    // Code kommt (Tastenkürzel), und größer, wenn ein Zeiger dahinter steckt.
+    el.dock.addEventListener("click", function (event) {
+      var target = event.target;
+      if (event.detail > 0 && target && target.tagName === "BUTTON") {
+        target.blur();
+      }
+    });
+
+    releaseSelectFocus();
+  }
+
+  // DIESE FUNKTION IST DER GRUND, WARUM DIE KÜRZEL BENUTZBAR SIND.
+  //
+  // Eine Auswahlliste behält nach der Wahl den Fokus -- in Chromium bleibt
+  // `document.activeElement` das `select`. `isTypingTarget` zählt sie
+  // (richtigerweise) zu den Tippzielen, damit Pfeiltasten und Buchstaben in der
+  // offenen Liste funktionieren. Zusammen ergab das eine Falle: Wer die
+  // Spielauswahl benutzt, hatte danach TOTE Tastenkürzel, ohne jede
+  // Rückmeldung. Nachgestellt: `activeElement` bleibt SELECT, Leertaste und
+  // Ziffern wirken nicht mehr.
+  //
+  // Deshalb: nach einer Wahl PER ZEIGER den Fokus abgeben, wie bei den Knöpfen.
+  // Nicht bei Tastaturbedienung -- dort feuert `change` schon beim Blättern mit
+  // den Pfeiltasten, und ein Blur mitten darin nähme der Regie die Liste weg.
+  // Gilt für Auswahllisten UND Farbfelder. Ein Textfeld ausdrücklich NICHT:
+  // Dort tippt die Regie weiter, und `change` feuert dort erst beim Verlassen.
+  function gibtFokusFrei(node) {
+    if (!node) return false;
+    if (node.tagName === "SELECT") return true;
+    return node.tagName === "INPUT" && node.type === "color";
+  }
+
+  function releaseSelectFocus() {
+    var zeigerWahl = false;
+
+    el.dock.addEventListener("pointerdown", function (event) {
+      if (gibtFokusFrei(event.target)) zeigerWahl = true;
+    });
+
+    el.dock.addEventListener("keydown", function (event) {
+      if (gibtFokusFrei(event.target)) zeigerWahl = false;
+    });
+
+    // In der Bubble-Phase, also NACH den eigentlichen Zuhörern des Feldes: Sie
+    // lesen `value` und schreiben den Zustand, das darf ein Blur nicht
+    // unterbrechen.
+    el.dock.addEventListener("change", function (event) {
+      if (!zeigerWahl) return;
+      if (!gibtFokusFrei(event.target)) return;
+
+      zeigerWahl = false;
+      event.target.blur();
+    });
+  }
+
+  function isTypingTarget(node) {
+    if (!node || !node.tagName) return false;
+
+    var tag = node.tagName.toLowerCase();
+    return (
+      tag === "input" ||
+      tag === "textarea" ||
+      tag === "select" ||
+      node.isContentEditable === true
+    );
+  }
 
   function lastPenalty() {
     if (!state.game || !state.game.events) return null;
@@ -593,6 +1169,7 @@
       setStatus("Spieltag nicht geladen: " + err.message, true);
     });
 
+  bindHotkeys();
   poll();
   window.setInterval(renderClockUi, 100);
 })();

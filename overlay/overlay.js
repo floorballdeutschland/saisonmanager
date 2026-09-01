@@ -34,8 +34,8 @@
   var ERROR_BACKOFF_MAX_MS = 30000;
   // Ein Abruf, der nie zurueckkommt, plant auch keinen naechsten ein. Genau das
   // passiert nach einem WLAN-Wechsel in der Halle: Die Verbindung bleibt halb
-  // offen, fetch wartet ewig, und das Overlay friert fuer den Rest der
-  // Uebertragung ein. Deshalb harte Frist statt Vertrauen.
+  // offen, fetch wartet ewig, und das Overlay friert für den Rest der
+  // Übertragung ein. Deshalb harte Frist statt Vertrauen.
   var REQUEST_TIMEOUT_MS = 4000;
   // Ab wann die Anzeige zugibt, dass sie nichts Neues mehr weiss. Der Live-Punkt
   // geht dann aus, statt einen alten Stand als aktuell auszugeben.
@@ -43,7 +43,29 @@
   // Das mitgelieferte Ligazeichen. Es steht da, solange die Liga kein eigenes
   // hinterlegt hat, und es steht auch wieder da, sobald das Dock auf ein Spiel
   // ohne eigenes Ligazeichen wechselt.
-  var DEFAULT_LEAGUE_MARK = "img/floorball-bundesliga-weiss.png";
+  // Mitgelieferte Bildmarken je Wettbewerb.
+  //
+  // VORHER LAG HIER DER FEHLER: Es gab genau eine Datei, sie hieß
+  // `floorball-bundesliga-weiss.png`, und sie zeigte das POKALZEICHEN (die
+  // Spielerfigur mit Pokal). Da weder auf Produktion noch auf dem Testsystem
+  // eine einzige Liga ein eigenes Logo hinterlegt hat, lief damit jede
+  // Übertragung mit dem Pokalzeichen -- und die CSS-Regel blendete es
+  // ausgerechnet beim Pokal aus. Gemeldet wurde es aus einer Partie der
+  // 1. Bundesliga.
+  //
+  // Ein Zeichen ist eine Tatsachenbehauptung, deshalb hat nur ein ZUGEORDNETER
+  // Wettbewerb eines: die vier Bundesligen und der Pokal. `damen`, `neutral`
+  // und `regional` sind gerade die Schlüssel für „nicht zuzuordnen" (eine
+  // Meisterschaft, eine Liga ohne pflegbare Klasse, die Unterklassen) -- dort
+  // bleibt die Fläche leer, statt eine fremde Liga auszuweisen. Ein eigenes,
+  // hochgeladenes Ligazeichen sticht das ohnehin.
+  var COMPETITION_MARKS = {
+    "1fbl-m": "img/1-fbl-herren-weiss.png",
+    "1fbl-w": "img/1-fbl-damen-weiss.png",
+    "2fbl-m": "img/2-fbl-herren-weiss.png",
+    "2fbl-w": "img/2-fbl-damen-weiss.png",
+    pokal: "img/pokal-weiss.png",
+  };
 
   var state = {
     lastVersion: null, // game.updated_at der zuletzt geholten Spieldaten
@@ -231,12 +253,19 @@
   // Liga-Kopie zur neuen Saison bekommt eine neue id. Über die id zugeordnet
   // fiele jedes Erscheinungsbild zum Saisonwechsel still auf den Standard
   // zurück, und es fiele erst auf Sendung auf.
-  function applyCompetitionTheme() {
-    var league =
+  // Der Wettbewerb, um den es gerade geht. EINE Quelle für Farbwelt und
+  // Bildmarke, sonst könnten die beiden auseinanderlaufen: Im Vollbild liegt
+  // manchmal nur die ligaweite Antwort vor und noch kein Spiel.
+  function currentLeague() {
+    return (
       (state.game && state.game.league) ||
       (state.league && state.league.league) ||
-      null;
-    var key = competitionKey(league);
+      null
+    );
+  }
+
+  function applyCompetitionTheme() {
+    var key = competitionKey(currentLeague());
 
     if (key) {
       document.documentElement.setAttribute("data-competition", key);
@@ -323,7 +352,7 @@
   }
 
   // Der Live-Punkt behauptet, die Anzeige sei aktuell. Kommt seit einer Weile
-  // nichts mehr durch (totes Token, Netz weg), waere das eine Falschaussage:
+  // nichts mehr durch (totes Token, Netz weg), wäre das eine Falschaussage:
   // Dann geht der Punkt aus, und der Regie faellt es auf.
   function renderLiveState(game) {
     game = game || state.game;
@@ -359,33 +388,34 @@
     el.guestGoals.textContent = numberOr(guest, 0);
   }
 
-  // Eigenes Ligazeichen, falls hinterlegt. Der Server liefert hier nur ein
-  // echtes Liga-Logo; hat die Liga keines, kommt gar nichts, und es steht das
-  // mitgelieferte Bundesliga-Zeichen da. Ein Landesverbandslogo stünde an
-  // dieser Stelle für den falschen Zusammenhang.
+  // Das Zeichen des Wettbewerbs, an BEIDEN Stellen: Anzeigetafel und Vollbild.
+  // Sie zeigen dasselbe Zeichen derselben Übertragung.
+  //
+  // Vorrang hat ein hochgeladenes Ligazeichen. Fehlt es, greift die
+  // mitgelieferte Marke des erkannten Wettbewerbs (COMPETITION_MARKS); ist der
+  // Wettbewerb nicht zuzuordnen, bleibt die Fläche leer. Ein Verbandslogo käme
+  // hier nicht in Frage, es stünde für den falschen Zusammenhang -- deshalb
+  // liefert die API an dieser Stelle auch nur ein echtes Ligazeichen.
   //
   // Der Rückweg zählt genauso wie der Hinweg: Wechselt das Dock von einem
   // Spiel mit eigenem Ligazeichen auf eines ohne, muss das erste wieder
   // verschwinden, sonst sendet der Verein das Zeichen des falschen
   // Wettbewerbs.
-  // Setzt das Ligazeichen an BEIDEN Stellen: Anzeigetafel und Vollbild. Sie
-  // zeigen dasselbe Zeichen derselben Übertragung; ohne das Vollbild lief dort
-  // weiter die mitgelieferte Wortmarke, während die Anzeigetafel schon das
-  // eigene Zeichen zeigte.
-  //
-  // `data-own-mark` sagt der CSS, dass ein GEPFLEGTES Zeichen vorliegt. Sie
-  // blendet die mitgelieferte Wortmarke bei Pokal, Regionalliga und
-  // Meisterschaft aus, weil sie dort eine Falschaussage wäre — ein eigenes
-  // Zeichen ist keine, und genau für diese Wettbewerbe wird es hochgeladen.
   function setLeagueMark(league) {
-    var url = (league && league.logo_url) || DEFAULT_LEAGUE_MARK;
+    // Der Schlüssel wird HIER gerechnet und nicht aus dem Zustand gelesen:
+    // `apply` baut das Spiel auf, BEVOR es die Farbwelt setzt. Aus dem Zustand
+    // gelesen wäre die Marke beim ersten Abruf noch leer und erschiene erst
+    // zwei Sekunden später -- auf Sendung ein Aufblitzen ohne Zeichen.
+    // Nachgestellt und genau so beobachtet.
+    var fallback = COMPETITION_MARKS[competitionKey(currentLeague())] || "";
+    var url = (league && league.logo_url) || fallback;
 
     // Eine Adresse, die schon einmal nicht geladen hat, wird nicht erneut
     // versucht. Sonst fordert sie jede Spielaktualisierung wieder an und das
     // Zeichen flackert auf Sendung zwischen Fehlversuch und Rückfall.
-    if (url === state.failedLeagueMark) url = DEFAULT_LEAGUE_MARK;
+    if (url && url === state.failedLeagueMark) url = fallback;
 
-    applyLeagueMark(url);
+    applyLeagueMark(url, fallback);
   }
 
   // Defensiv, weil das Overlay auch mit einem angepassten oder zwischen-
@@ -395,16 +425,28 @@
     return [el.leagueMark, el.fsMark].filter(Boolean);
   }
 
+  // Die Flächen um die Bilder herum, die mit ausblenden müssen: Sie tragen
+  // Innenabstand und eine Trennlinie, ein bloß leeres `img` ließe in der
+  // Anzeigetafel eine leere Spalte stehen.
+  function markBoxes() {
+    return leagueMarks()
+      .map(function (img) {
+        return img.parentNode;
+      })
+      .filter(Boolean);
+  }
+
   // Beide Zeichen tragen immer dieselbe Adresse, deshalb genügt ein Zuhörer je
   // Wechsel für beide.
   var leagueMarkErrorHandler = null;
 
-  function applyLeagueMark(url) {
-    if (url === DEFAULT_LEAGUE_MARK) {
-      document.documentElement.removeAttribute("data-own-mark");
-    } else {
-      document.documentElement.setAttribute("data-own-mark", "");
-    }
+  function applyLeagueMark(url, fallback) {
+    // Das frühere `data-own-mark` ist mit dieser Änderung entfallen. Es sagte
+    // der CSS, dass ein gepflegtes Zeichen vorliegt, damit die Regel greift,
+    // die die EINE mitgelieferte Wortmarke bei Pokal, Regionalliga und
+    // Meisterschaft ausblendete. Diese Unterscheidung liegt jetzt hier: Für
+    // einen nicht zuzuordnenden Wettbewerb gibt es gar keine mitgelieferte
+    // Marke, also auch nichts auszublenden.
 
     // Der Zuhörer des vorigen Wechsels gehört zu einer Adresse, die nicht mehr
     // auf Sendung ist. Abmelden statt `once`: Ein Zuhörer mit `once`
@@ -417,14 +459,28 @@
       leagueMarkErrorHandler = null;
     }
 
-    if (url !== DEFAULT_LEAGUE_MARK) {
-      // Die Adresse steckt in der Closure, nicht im Element: Hat der Abruf
-      // zwischenzeitlich auf ein anderes Spiel umgestellt, stünde im Element
-      // längst eine andere -- und die funktionierende landete auf der
-      // Sperrliste, für die Lebensdauer der Seite.
+    // Kein Zeichen für diesen Wettbewerb: Fläche weg, und zwar ganz. Das ist
+    // der Normalfall bei Pokalrunden ohne eigenes Logo, Regionalligen und
+    // Meisterschaften.
+    if (!url) {
+      markBoxes().forEach(function (box) {
+        box.classList.add("ov-mark-empty");
+      });
+      leagueMarks().forEach(function (img) {
+        img.removeAttribute("src");
+      });
+      return;
+    }
+
+    // Auch für die MITGELIEFERTE Marke einen Zuhörer: Fehlt eine der Dateien
+    // auf dem Server (Deploy-Fehler), blieb in der Anzeigetafel sonst die
+    // gepolsterte Spalte samt Trennlinie und Bruchbild stehen -- während der
+    // leere Fall die Fläche ganz entfernt. Ohne eigene Adresse ist der Rückfall
+    // das Ausblenden, deshalb hier `applyLeagueMark("", "")`.
+    if (url === fallback) {
       leagueMarkErrorHandler = function () {
-        state.failedLeagueMark = url;
-        applyLeagueMark(DEFAULT_LEAGUE_MARK);
+        logProblem("Mitgelieferte Bildmarke nicht geladen: " + url);
+        applyLeagueMark("", "");
       };
 
       leagueMarks().forEach(function (img) {
@@ -432,6 +488,24 @@
       });
     }
 
+    if (url !== fallback) {
+      // Die Adresse steckt in der Closure, nicht im Element: Hat der Abruf
+      // zwischenzeitlich auf ein anderes Spiel umgestellt, stünde im Element
+      // längst eine andere -- und die funktionierende landete auf der
+      // Sperrliste, für die Lebensdauer der Seite.
+      leagueMarkErrorHandler = function () {
+        state.failedLeagueMark = url;
+        applyLeagueMark(fallback, fallback);
+      };
+
+      leagueMarks().forEach(function (img) {
+        img.addEventListener("error", leagueMarkErrorHandler);
+      });
+    }
+
+    markBoxes().forEach(function (box) {
+      box.classList.remove("ov-mark-empty");
+    });
     leagueMarks().forEach(function (img) {
       if (img.getAttribute("src") !== url) img.src = url;
     });
@@ -486,11 +560,124 @@
         : Boolean(state.control.scoreboard_visible);
 
     el.scoreboard.classList.toggle("ov-hidden", !visible);
+    applyScoreboardPosition();
+    applyColors();
     // Auch ohne neue Spieldaten: Die Übersteuerung steckt allein im
     // Steuerzustand, sonst wirkte ein Druck im Dock erst beim nächsten
     // Eintrag im Spielbericht.
     if (state.game) renderScore(state.game);
     renderLowerThird();
+  }
+
+  // Platzierung der Anzeigetafel. Weißliste statt Durchreichen: Der Wert kommt
+  // aus dem Steuerzustand, also von außen. Ein Tippfehler oder ein Wert aus
+  // einer späteren Fassung des Bedienfelds setzte sonst ein Attribut, für das
+  // hier keine Regel steht -- und die Anzeigetafel landete an einer Stelle, die
+  // niemand vorgesehen hat. Unbekanntes fällt auf unten links zurück, den
+  // Standard, den auch eine Bühne ohne Dock zeigt.
+  var POSITIONS = {
+    "bottom-left": true,
+    "bottom-center": true,
+    "top-left": true,
+  };
+
+  function applyScoreboardPosition() {
+    var wanted = String(state.control.scoreboard_position || "");
+    // `hasOwnProperty` und nicht bloß ein Zugriff: Bei einem Objektliteral sind
+    // `constructor`, `__proto__` und `toString` wahrheitswertig, ein solcher
+    // Wert wäre also als Attribut durchgereicht worden -- genau das, was die
+    // Weißliste verhindern soll. Der Steuerzustand ist frei beschreibbar.
+    var erlaubt = Object.prototype.hasOwnProperty.call(POSITIONS, wanted);
+
+    el.stage.setAttribute("data-position", erlaubt ? wanted : "bottom-left");
+  }
+
+  // Eigene Farben aus dem Bedienfeld, damit die Einblendungen zu den übrigen
+  // Szenen einer Produktion passen (Vereinsfarben).
+  //
+  // NUR sechsstelliges Hex, sonst gilt weiter die Farbwelt des Wettbewerbs.
+  // Das ist keine Formsache: Der Wert kommt aus dem Steuerzustand, landet in
+  // einer CSS-Variablen und diese in `background`. Ohne Prüfung könnte dort
+  // ein `url(...)` stehen, und die Bühne holte auf Sendung eine fremde Datei.
+  //
+  // Gesetzt wird am `.ov-stage` und nicht am Wurzelelement: Dort liegt schon
+  // `--ov-scale`, die Variablen erben nach innen, und die Regeln je Wettbewerb
+  // an `:root[data-competition]` bleiben unangetastet -- ein Rücksetzen
+  // braucht deshalb nur diese vier Eigenschaften zu entfernen.
+  var HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
+  // Der GEPRÜFTE Wert als Zeichenkette, sonst null.
+  //
+  // `String()` erst und dann weiterverwenden: `HEX_COLOR.test(String(x))`
+  // besteht auch ein einelementiges Array (`String(["#ff0000"])` ist
+  // "#ff0000"), und `hexToRgb` rief danach `.slice()` auf dem Array auf --
+  // Ergebnis war `rgb(NaN NaN NaN / 16%)` und die Hinterlegung der eigenen
+  // Mannschaft in Tabelle und Torschützenliste verschwand lautlos. Der
+  // Steuerzustand ist frei beschreibbar, solche Werte sind also möglich.
+  function hexOrNull(raw) {
+    var text = String(raw);
+    return HEX_COLOR.test(text) ? text : null;
+  }
+
+  function applyColors() {
+    var colors = state.control.colors || {};
+    var style = el.stage.style;
+
+    // ZUERST alles Eigene entfernen, DANN die Farben des Wettbewerbs ablesen.
+    // Ohne diese Reihenfolge läse der nächste Durchlauf die eigene Farbe des
+    // vorigen als "Basis" und die Ligafarbe käme nie wieder zurück. Beides
+    // passiert synchron, es gibt also kein Zwischenbild.
+    style.removeProperty("--ov-accent");
+    style.removeProperty("--ov-accent-alt");
+    style.removeProperty("--ov-grad-accent");
+    style.removeProperty("--ov-accent-soft");
+
+    var accent = hexOrNull(colors.accent);
+    var alt = hexOrNull(colors.accent_alt);
+    if (!accent && !alt) return;
+
+    // Je Feld einzeln zurückfallen, nicht als Paar. Das Bedienfeld schickt nur
+    // das Feld, das die Regie gesetzt hat: Es kennt die Farbwelt des
+    // Wettbewerbs nicht und darf sie deshalb nicht mit einem Standardwert
+    // überschreiben. Vorher tat es genau das -- eine Änderung am Verlauf
+    // schrieb das Markenrot der 1. Herren als Akzent, und eine Damenpartie
+    // sprang auf Sendung ins Rot.
+    var basis = window.getComputedStyle(el.stage);
+    var wirkAccent = accent || basis.getPropertyValue("--ov-accent").trim();
+    var wirkAlt = alt || basis.getPropertyValue("--ov-accent-alt").trim();
+
+    if (accent) style.setProperty("--ov-accent", accent);
+    if (alt) style.setProperty("--ov-accent-alt", alt);
+
+    if (wirkAccent && wirkAlt) {
+      style.setProperty(
+        "--ov-grad-accent",
+        "linear-gradient(135deg, " + wirkAccent + " 0%, " + wirkAlt + " 100%)"
+      );
+    }
+
+    // Die weiche Fläche folgt dem Akzent. Nur bei einem eigenen Akzent
+    // anfassen: Für die Ligafarbe steht sie im Stylesheet schon passend, und
+    // ein aus `getComputedStyle` gelesener Wert wäre nicht zwingend Hex.
+    if (accent) {
+      // Dieselbe Schreibweise wie im Stylesheet, nicht color-mix: Die
+      // Browser-Quelle ist ein eingebettetes Chromium, dessen Fassung an der
+      // OBS-Version hängt.
+      style.setProperty("--ov-accent-soft", softColor(accent));
+    }
+  }
+
+  function softColor(hex) {
+    var rgb = hexToRgb(hex);
+    return "rgb(" + rgb.join(" ") + " / 16%)";
+  }
+
+  function hexToRgb(hex) {
+    return [
+      parseInt(hex.slice(1, 3), 16),
+      parseInt(hex.slice(3, 5), 16),
+      parseInt(hex.slice(5, 7), 16),
+    ];
   }
 
   // ── Uhr ─────────────────────────────────────────────────────────────────
@@ -572,6 +759,8 @@
         return lt.main
           ? { kicker: lt.kicker || "", main: lt.main, sub: lt.sub || "" }
           : null;
+      case "interview":
+        return interviewContent(lt);
       case "venue":
         return venueContent();
       default:
@@ -611,6 +800,208 @@
         .filter(Boolean)
         .join("   ·   "),
     };
+  }
+
+  // Namenseinblendung für ein Interview, etwa nach dem Schlusspfiff.
+  //
+  // Im Steuerzustand stehen nur Mannschaft und Trikotnummer. Name,
+  // Torbeteiligung und Auszeichnung werden HIER gerechnet, aus demselben
+  // Spielstand, den die Anzeigetafel benutzt: Der Zustand bleibt klein, und
+  // trägt das Sekretariat nach dem Einblenden noch eine Vorlage nach, zieht
+  // die laufende Bauchbinde von selbst mit.
+  function interviewContent(lt) {
+    var side = lt.side === "guest" ? "guest" : "home";
+    var number = Number(lt.number);
+    if (!isFinite(number)) return null;
+
+    var player = rosterPlayer(side, number);
+    // Kein Ausweichen auf die Nummer allein: Eine Bauchbinde mit „Nr. 7" ohne
+    // Namen hilft niemandem weiter, und eine geänderte Aufstellung soll
+    // auffallen, statt halb auf Sendung zu gehen.
+    if (!player) return null;
+
+    // Und dasselbe für einen Eintrag OHNE Namen. Den gibt es wirklich:
+    // `GamesController#add_player_to_lineup` übernimmt im Freitext-Zweig
+    // `player_firstname` und `player_name` ungeprüft aus den Parametern, ein
+    // Eintrag mit Nummer und ohne Namen ist also möglich. Ohne diesen Riegel
+    // ging die Einblendung mit LEERER Hauptzeile auf Sendung; die Prüfung eine
+    // Zeile höher fängt das nicht, sie sieht nur, DASS ein Eintrag da ist.
+    var fullName = playerFullName(player);
+    if (!fullName) {
+      logProblem(
+        "Interview: Aufstellungseintrag ohne Namen (Nr. " + number + ")"
+      );
+      return null;
+    }
+
+    var tallies = teamTallies(side);
+    var own = tallies[number] || { goals: 0, assists: 0, points: 0 };
+    var parts = [];
+
+    if (player.position === "Tor") parts.push(roleLabel("Torhüter"));
+    if (player.captain) parts.push(roleLabel("Kapitän"));
+    if (own.goals) parts.push(own.goals + (own.goals === 1 ? " Tor" : " Tore"));
+    if (own.assists) {
+      parts.push(own.assists + (own.assists === 1 ? " Vorlage" : " Vorlagen"));
+    }
+
+    var badge = interviewBadge(side, player, own, tallies);
+    if (badge) parts.push(badge);
+
+    // Hier der volle Vereinsname und nicht das Kürzel wie auf der
+    // Anzeigetafel: Dort zählt der Platz, in einer Namenseinblendung die
+    // Lesbarkeit. „BER · Nr. 7" sagt einem Zuschauer nichts.
+    var team = side === "home" ? state.game.home : state.game.guest;
+    var teamText = (team && (team.name || team.short_name)) || "";
+
+    return {
+      kicker: [teamText, "Nr. " + number].filter(Boolean).join("   ·   "),
+      main: fullName,
+      sub: parts.join("   ·   "),
+    };
+  }
+
+  // Die Auszeichnung, die mehr über die Partie sagt, gewinnt: Wer MVP ist, ist
+  // ausgezeichnet worden; Topscorer ist nur eine Feststellung aus den
+  // Ereignissen. Beides nebeneinander machte die Zeile lang, ohne mehr zu
+  // sagen.
+  function interviewBadge(side, player, own, tallies) {
+    if (isMvp(side, player)) return "MVP des Spiels";
+
+    // Punktgleich zählt mit: „Topscorer" ist hier eine Aussage über diese
+    // Partie, und bei 2:2 Punkten sind es eben zwei.
+    if (own.points > 0 && own.points >= bestPoints(tallies, side)) {
+      return "Topscorer der Mannschaft";
+    }
+
+    return "";
+  }
+
+  // Tore und Vorlagen dieser Mannschaft in DIESEM Spiel, nach Trikotnummer.
+  function teamTallies(side) {
+    var events = (state.game && state.game.events) || [];
+    var tallies = {};
+
+    events.forEach(function (event) {
+      if (event.event_type !== "goal" || event.event_team !== side) return;
+
+      countFor(tallies, event.number, "goals");
+      countFor(tallies, event.assist, "assists");
+    });
+
+    return tallies;
+  }
+
+  function countFor(tallies, number, key) {
+    var n = Number(number);
+    // 1000 und 2000 stehen im Spielbericht ANSTELLE eines Schützen (Eigentor,
+    // nicht angegeben). Sie dürfen niemandem zugerechnet werden, auch nicht
+    // jemandem, der zufällig diese Nummer trägt.
+    if (!isFinite(n) || n === 1000 || n === 2000) return;
+
+    var entry = tallies[n] || { goals: 0, assists: 0, points: 0 };
+    entry[key] += 1;
+    entry.points += 1;
+    tallies[n] = entry;
+  }
+
+  // Nur Nummern, die in der Aufstellung stehen. Ein Tor kann auf eine Nummer
+  // gebucht sein, die dort nicht (mehr) vorkommt -- etwa nach einer nachträglich
+  // geänderten Trikotnummer. Zählte die mit, lag der Bestwert über dem echten
+  // und die Auszeichnung „Topscorer der Mannschaft" fiel still aus.
+  function bestPoints(tallies, side) {
+    var best = 0;
+
+    Object.keys(tallies).forEach(function (number) {
+      if (!rosterPlayer(side, number)) return;
+      if (tallies[number].points > best) best = tallies[number].points;
+    });
+
+    return best;
+  }
+
+  function isMvp(side, player) {
+    var awards = (state.game && state.game.awards) || {};
+    var list = awards[side] || [];
+    var hit = false;
+
+    list.forEach(function (entry) {
+      if (!entry || entry.award !== "mvp") return;
+
+      // Über die player_id, wo BEIDE eine haben: Trikotnummern werden im
+      // Spielbericht nachträglich geändert, die Kennung nicht.
+      //
+      // `Game#awards_with_player_names` füllt `player_id` und `trikot_number`
+      // aus demselben Eintrag, beide sind also entweder gesetzt oder beide
+      // leer. Der Nummern-Zweig darunter greift damit nicht für eine
+      // Auszeichnung ohne Kennung (die gibt es nicht), sondern wenn der
+      // INTERVIEWTE Eintrag keine hat -- ein Freitext-Eintrag in der
+      // Aufstellung.
+      if (entry.player_id && player.player_id) {
+        if (entry.player_id === player.player_id) hit = true;
+        return;
+      }
+
+      if (
+        String(entry.trikot_number || "") !== "" &&
+        Number(entry.trikot_number) === Number(player.trikot_number)
+      ) {
+        hit = true;
+      }
+    });
+
+    return hit;
+  }
+
+  // Der ERSTE Treffer, nicht der letzte. Eine Aufstellung kann eine
+  // Trikotnummer doppelt enthalten: `add_player_to_lineup` prüft nur auf
+  // doppelte `player_id`, und `Game` hat keine Validierung. Im Bedienfeld
+  // tragen zwei Einträge derselben Nummer denselben Wert in der Auswahlliste;
+  // die Regie sieht den ZUERST gelisteten. Nahm die Bühne den letzten, ging der
+  // Name des anderen Spielers auf Sendung. Beide Seiten nehmen jetzt den
+  // ersten.
+  function rosterPlayer(side, number) {
+    var players = (state.game && state.game.players) || {};
+    var list = players[side] || [];
+
+    for (var i = 0; i < list.length; i++) {
+      var player = list[i];
+      if (!player || !hasTrikotNumber(player)) continue;
+      if (Number(player.trikot_number) === Number(number)) return player;
+    }
+
+    return null;
+  }
+
+  // Eine Trikotnummer im Sinne dieser Anzeige.
+  //
+  // Die 0 zählt bewusst NICHT: `add_player_to_lineup` schreibt
+  // `params[:trikot_number].to_i`, ohne Angabe also die Zahl 0. Sie steht damit
+  // für „keine Nummer erfasst", nicht für die Rückennummer 0. Der Server sieht
+  // das anders (`OverlayPayload#roster` prüft `.present?`, und `0.present?` ist
+  // in Rails true) -- für die Namensauflösung eines Tores ist das dort auch
+  // richtig. Hier geht es um eine Auswahl für die Regie, und ein Eintrag ohne
+  // erfasste Nummer ist darin nicht ansprechbar.
+  function hasTrikotNumber(player) {
+    var raw = player.trikot_number;
+    if (raw === undefined || raw === null || String(raw).length === 0) {
+      return false;
+    }
+    return Number(raw) > 0;
+  }
+
+  function playerFullName(player) {
+    return [player.player_firstname, player.player_name]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  // Die Bezeichnung folgt der Liga, nicht einer Vermutung über die Person: Das
+  // Geschlecht steht nirgends am Spieler, das Merkmal `female` aber an der
+  // Liga, und danach richtet sich der Rest des Systems auch.
+  function roleLabel(word) {
+    var league = (state.game && state.game.league) || {};
+    return league.female ? word + "in" : word;
   }
 
   function venueContent() {
@@ -700,10 +1091,12 @@
     "aufstellung-heim": { source: null, render: fsLineupHome },
     "aufstellung-gast": { source: null, render: fsLineupGuest },
     drittelpause: { source: null, render: fsIntermission },
+    tore: { source: null, render: fsGoals },
     endstand: { source: null, render: fsFinal },
     tabelle: { source: "table", render: fsTable },
     topscorer: { source: "scorer", render: fsScorer },
     "naechste-spiele": { source: "schedule", render: fsSchedule },
+    formkurve: { source: "form", render: fsForm },
   };
 
   // Tabelle und Torschützenliste ändern sich nur, wenn ein Spiel endet. Der
@@ -1108,49 +1501,30 @@
     return lineupContent("guest");
   }
 
+  // Bezeichnung der sechs Positionen der Startformation. `starting_players`
+  // liefert sie immer alle, auch unbesetzte.
+  var STARTING_LABELS = {
+    goal: "Tor",
+    defender1: "Verteidigung",
+    defender2: "Verteidigung",
+    center: "Center",
+    forward1: "Sturm",
+    forward2: "Sturm",
+  };
+
   function lineupContent(side) {
     var game = state.game;
     if (!game) return null;
 
     var squad = (game.players && game.players[side]) || [];
     var team = (side === "home" ? game.home : game.guest) || {};
-
-    // Wer in der Startaufstellung steht, wird hervorgehoben. `starting_players`
-    // liefert immer sechs Positionen, auch unbesetzte; die leeren haben eine
-    // leere player_id und dürfen nichts markieren.
-    var startingIds = (
-      (game.starting_players && game.starting_players[side]) ||
-      []
-    )
-      .map(function (entry) {
-        return entry && entry.player_id;
-      })
-      .filter(Boolean);
-
-    var groups = [
-      { title: "Tor", players: [] },
-      { title: "Feld", players: [] },
-    ];
-    for (var i = 0; i < squad.length; i++) {
-      var player = squad[i];
-      (player.position === "Tor" ? groups[0] : groups[1]).players.push(player);
-    }
+    var startingIds = startingPlayerIds(side);
 
     var body;
     if (!squad.length) {
       body = node("p", "ov-fs-empty", "Noch keine Aufstellung erfasst.");
     } else {
-      body = node("div", "ov-fs-columns");
-      for (var g = 0; g < groups.length; g++) {
-        if (!groups[g].players.length) continue;
-
-        var block = node("div", "ov-fs-group");
-        block.appendChild(node("div", "ov-fs-group-title", groups[g].title));
-        for (var p = 0; p < groups[g].players.length; p++) {
-          block.appendChild(playerRow(groups[g].players[p], startingIds));
-        }
-        body.appendChild(block);
-      }
+      body = fragment([startingBlock(side), squadColumns(squad, startingIds)]);
     }
 
     return {
@@ -1161,29 +1535,287 @@
     };
   }
 
+  function startingPlayerIds(side) {
+    var game = state.game;
+    // Immer sechs Positionen, auch unbesetzte; die leeren haben eine leere
+    // player_id und dürfen nichts markieren.
+    return ((game.starting_players && game.starting_players[side]) || [])
+      .map(function (entry) {
+        return entry && entry.player_id;
+      })
+      .filter(Boolean);
+  }
+
+  // Die Startformation als eigener Block über dem Kader. Sie steht schon im
+  // Spielbericht (`starting_players` mit Tor, zwei Verteidigungen, Center und
+  // zwei Sturmpositionen) und war bisher nur als Hervorhebung im Kader zu
+  // sehen -- die Positionen selbst gingen dabei verloren.
+  //
+  // Weitere Blöcke gibt es im Datenmodell nicht, nur diesen einen.
+  function startingBlock(side) {
+    var entries = (
+      (state.game.starting_players && state.game.starting_players[side]) ||
+      []
+    ).filter(function (entry) {
+      // Unbesetzte Positionen weglassen statt leer zeigen: Eine Zeile
+      // „Verteidigung" ohne Namen sieht auf Sendung nach einem Fehler aus.
+      return entry && entry.player_id;
+    });
+
+    if (!entries.length) {
+      // Eine erfasste, aber nicht auflösbare Startformation sieht im Bild
+      // genauso aus wie eine nicht erfasste: `starting_players_with_numbers`
+      // verknüpft über `player_id` und schreibt bei Misserfolg einen leeren
+      // Eintrag. Ohne diese Spur wäre der Unterschied nirgends zu sehen.
+      var erfasst = (
+        (state.game.starting_players && state.game.starting_players[side]) ||
+        []
+      ).length;
+
+      if (erfasst) {
+        logProblem(
+          "Startformation " +
+            side +
+            ": " +
+            erfasst +
+            " Positionen erfasst, keine auflösbar"
+        );
+      }
+
+      return null;
+    }
+
+    var block = node("div", "ov-fs-group ov-fs-group--lineup");
+    block.appendChild(node("div", "ov-fs-group-title", "Startformation"));
+
+    entries.forEach(function (entry) {
+      var row = node("div", "ov-fs-player ov-fs-player--starting");
+      row.appendChild(
+        node(
+          "span",
+          "ov-fs-player-position",
+          STARTING_LABELS[entry.position] || ""
+        )
+      );
+      row.appendChild(node("span", "ov-fs-player-number", numberText(entry)));
+      row.appendChild(node("span", null, playerFullName(entry)));
+      block.appendChild(row);
+    });
+
+    return block;
+  }
+
+  // EIN Kader in zwei Spalten, nach Trikotnummer sortiert.
+  //
+  // Vorher waren es zwei Gruppen, „Tor" und „Feld", und weil
+  // `.ov-fs-columns` ein Mehrspalter mit `break-inside: avoid` je Gruppe ist,
+  // landeten die Torhüter zwangsläufig allein in der linken Spalte. Genau das
+  // war die Rückmeldung: Torhüter und Kapitän gehören gekennzeichnet, nicht in
+  // eine eigene Spalte sortiert. Die Zeilen liegen jetzt direkt im
+  // Mehrspalter, also füllt der Umbruch beide Spalten gleichmäßig.
+  function squadColumns(squad, startingIds) {
+    var columns = node("div", "ov-fs-columns");
+
+    squad
+      .slice()
+      .sort(function (a, b) {
+        return numberValue(a) - numberValue(b);
+      })
+      .forEach(function (player) {
+        columns.appendChild(playerRow(player, startingIds));
+      });
+
+    return columns;
+  }
+
+  // Einträge ohne Trikotnummer nach hinten, nicht an eine beliebige Stelle:
+  // `Number("")` ist 0 und stellte sie vor die Nummer 1.
+  //
+  // Maßgeblich ist `hasTrikotNumber`, dieselbe Regel wie in der
+  // Interview-Auswahl. Vorher sortierte die ZAHL 0 nach hinten (`0 || ""` ist
+  // "") und die ZEICHENKETTE "0" nach vorn, gedruckt wurde in beiden Fällen
+  // eine sichtbare "0" -- Sortierung und Anzeige waren sich also nicht einig.
+  function numberValue(player) {
+    if (!player || !hasTrikotNumber(player)) return Infinity;
+    return Number(player.trikot_number);
+  }
+
+  function numberText(player) {
+    return player && hasTrikotNumber(player) ? player.trikot_number : "";
+  }
+
   function playerRow(player, startingIds) {
     var starting = startingIds.indexOf(player.player_id) !== -1;
     var row = node(
       "div",
       "ov-fs-player" + (starting ? " ov-fs-player--starting" : "")
     );
-    row.appendChild(
-      node(
-        "span",
-        "ov-fs-player-number",
-        player.trikot_number === undefined || player.trikot_number === null
-          ? ""
-          : player.trikot_number
-      )
-    );
-    row.appendChild(
-      node(
-        "span",
-        null,
-        [player.player_firstname, player.player_name].filter(Boolean).join(" ")
-      )
-    );
+
+    row.appendChild(node("span", "ov-fs-player-number", numberText(player)));
+    row.appendChild(node("span", null, playerFullName(player)));
+
+    // Kennzeichnung statt Sortierung. „Tor" wie im Spielbericht, „C" wie im
+    // Sport üblich.
+    if (player.position === "Tor") {
+      row.appendChild(node("span", "ov-fs-player-badge", "Tor"));
+    }
+    if (player.captain) {
+      row.appendChild(node("span", "ov-fs-player-badge", "C"));
+    }
+
     return row;
+  }
+
+  // Alle Tore des Spiels in der Reihenfolge, in der sie gefallen sind, nach
+  // Abschnitten gruppiert.
+  //
+  // Die Drittelpause zeigt ebenfalls eine Torliste, aber als eine von drei
+  // Angaben und nur mit der Zeit. Hier ist die Torfolge der Inhalt: dazu der
+  // Stand nach jedem Treffer, die Mannschaft und die Vorlage.
+  //
+  // Nach Abschnitt gruppiert und nicht als eine lange Liste, weil `time` je
+  // Abschnitt gezaehlt wird: Ohne die Gruppentitel stuenden zwei Tore mit
+  // derselben Zeit untereinander, ohne dass jemand den Unterschied sieht.
+  //
+  // Der Mehrspalter verteilt die Gruppen ALS GANZE auf die beiden Spalten, er
+  // teilt keine auf (`.ov-fs-group` trägt `break-inside: avoid`). Ein Spiel mit
+  // 15 Toren über vier Abschnitte passt damit; ein einzelner Abschnitt mit
+  // einem Dutzend Toren ist ein unteilbarer Block, für den die Dichtestufen
+  // aus `fitBody` greifen müssen.
+  function fsGoals() {
+    var game = state.game;
+    if (!game) return null;
+
+    var frame = {
+      league: (game.league && game.league.name) || "",
+      title: "Tore des Spiels",
+      sub: teamLabel(game.home) + " gegen " + teamLabel(game.guest),
+    };
+
+    var goals = (game.events || [])
+      .filter(function (event) {
+        return event.event_type === "goal";
+      })
+      // `formatted_events` behaelt die Reihenfolge der gespeicherten Ereignisse,
+      // und die ist nicht zugesichert -- ein nachtraeglich eingetragenes Tor
+      // haengt hinten. `sortkey` ist dafuer gebaut (Abschnitt und Zeit, als
+      // Text vergleichbar).
+      .slice()
+      .sort(function (a, b) {
+        var x = String(a.sortkey);
+        var y = String(b.sortkey);
+        return x < y ? -1 : x > y ? 1 : 0;
+      });
+
+    // Benannter Leerzustand statt schwarzem Bild: Fuer einen Vereinsstreamer
+    // ist Schwarz nicht von einem kaputten Overlay zu unterscheiden, siehe
+    // denselben Fall im Endstandbild.
+    if (!goals.length) {
+      frame.center = true;
+      frame.body = node(
+        "p",
+        "ov-fs-empty ov-fs-empty--center",
+        game.started
+          ? "In diesem Spiel ist noch kein Tor gefallen."
+          : "Das Spiel hat noch nicht begonnen: Die Tore stehen hier, sobald sie fallen."
+      );
+      return frame;
+    }
+
+    var columns = node("div", "ov-fs-columns");
+    var block = null;
+    var lastPeriod = null;
+
+    goals.forEach(function (goal) {
+      // NORMALISIERT vergleichen, nicht typstreng. `games_controller` speichert
+      // `period` unverändert aus den Parametern, und `valid_period?` lässt Zahl
+      // UND Zeichenkette zu; `formatted_events` gibt den Wert roh weiter,
+      // während das Modell selbst überall `.to_i` benutzt. Ein Tor mit "1"
+      // zwischen Toren mit 1 hätte sonst eine zweite Gruppe für dasselbe
+      // Drittel geöffnet -- mit anderer Überschrift, weil auch der
+      // Titelnachschlag typstreng war.
+      var period = periodValue(goal.period);
+
+      if (!block || period !== lastPeriod) {
+        block = node("div", "ov-fs-group");
+        block.appendChild(
+          node("div", "ov-fs-group-title", periodTitleFor(period))
+        );
+        columns.appendChild(block);
+        lastPeriod = period;
+      }
+
+      block.appendChild(goalRow(goal));
+    });
+
+    frame.body = columns;
+    return frame;
+  }
+
+  function goalRow(goal) {
+    var row = node("div", "ov-fs-player");
+
+    // Eigene Klasse für die Zeit: Die Spalte der Trikotnummern ist 62 px breit
+    // und rechtsbündig, eine Angabe wie "12:34" in Oswald 30 px läuft darin
+    // nach links über. `fitBody` sieht das nicht, es misst nur die Höhe.
+    row.appendChild(node("span", "ov-fs-goal-time", goal.time || ""));
+
+    // Stand und Mannschaft IMMER anlegen, notfalls leer. Beide Spalten haben
+    // feste Breiten (damit sie untereinander stehen); ein weggelassenes Element
+    // zog die ganze Zeile um seine Breite nach links, und nur diese eine Zeile.
+    // Vorkommen: `home_goals` als Zeichenkette gespeichert (dieselbe Quelle wie
+    // bei `period`), oder `event_team` leer bei Altdaten.
+    row.appendChild(node("span", "ov-fs-goal-score", scoreAt(goal)));
+    row.appendChild(node("span", "ov-fs-goal-team", teamName(goal.event_team)));
+
+    // Der abgekuerzte Anzeigename, nicht der volle: Zwei Spalten mit Zeit,
+    // Stand, Mannschaft und Vorlage haben keinen Platz fuer "Maximilian".
+    // `goal_type_string` traegt Eigentor und "nicht angegeben".
+    row.appendChild(
+      node(
+        "span",
+        "ov-fs-goal-scorer",
+        goal.scorer_name || goal.goal_type_string || "Tor"
+      )
+    );
+
+    row.appendChild(
+      node(
+        "span",
+        "ov-fs-goal-assist",
+        goal.assist_name ? "Vorlage: " + goal.assist_name : ""
+      )
+    );
+
+    return row;
+  }
+
+  // Der Abschnitt als Zahl, oder null. `Number(undefined)` ist NaN, und NaN
+  // ist mit sich selbst nicht gleich -- ohne diese Umsetzung öffnete jedes Tor
+  // ohne Abschnitt seine eigene Gruppe.
+  function periodValue(raw) {
+    var n = Number(raw);
+    return isFinite(n) ? n : null;
+  }
+
+  // Titel des Abschnitts aus `period_titles`, in dem auch Verlaengerung und
+  // Penaltyschiessen stehen. Ohne Treffer die Nummer, damit die Gruppe
+  // ueberhaupt eine Ueberschrift hat.
+  function periodTitleFor(period) {
+    if (period === null) return "Tore";
+
+    var titles = (state.game && state.game.period_titles) || [];
+    var found = "";
+
+    titles.forEach(function (entry) {
+      // Auch hier normalisiert: `period_titles` trägt echte Zahlen, die
+      // Ereignisse nicht zwingend.
+      if (entry && periodValue(entry.period) === period) {
+        found = entry.title || entry.short_title || "";
+      }
+    });
+
+    return found || "Abschnitt " + period;
   }
 
   function fsIntermission() {
@@ -1456,7 +2088,7 @@
     // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
     if (!rows) return null;
     // Abruf da, aber leer: DAS ist ein eigener Zustand und muss dastehen. Die
-    // Pruefung oben faengt ihn nicht, weil `[]` wahr ist -- uebrig blieben die
+    // Prüfung oben fängt ihn nicht, weil `[]` wahr ist -- übrig blieben die
     // Spaltenkoepfe ueber einer leeren Flaeche. Auf Sendung liest sich das als
     // Aussage ("diese Liga hat keine Mannschaften") statt als "noch nichts
     // gespielt". Nachgestellt mit leerer Liste: genau diese Kopfzeile ging raus.
@@ -1512,7 +2144,7 @@
     // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
     if (!rows) return null;
     // Abruf da, aber leer: DAS ist ein eigener Zustand und muss dastehen. Die
-    // Pruefung oben faengt ihn nicht, weil `[]` wahr ist -- uebrig blieben die
+    // Prüfung oben fängt ihn nicht, weil `[]` wahr ist -- übrig blieben die
     // Spaltenkoepfe ueber einer leeren Flaeche. Auf Sendung liest sich das als
     // Aussage ("diese Liga hat keine Mannschaften") statt als "noch nichts
     // gespielt". Nachgestellt mit leerer Liste: genau diese Kopfzeile ging raus.
@@ -1568,7 +2200,7 @@
     // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
     if (!rows) return null;
     // Abruf da, aber leer: DAS ist ein eigener Zustand und muss dastehen. Die
-    // Pruefung oben faengt ihn nicht, weil `[]` wahr ist -- uebrig blieben die
+    // Prüfung oben fängt ihn nicht, weil `[]` wahr ist -- übrig blieben die
     // Spaltenkoepfe ueber einer leeren Flaeche. Auf Sendung liest sich das als
     // Aussage ("diese Liga hat keine Mannschaften") statt als "noch nichts
     // gespielt". Nachgestellt mit leerer Liste: genau diese Kopfzeile ging raus.
@@ -1582,7 +2214,10 @@
           "ov-fs-empty",
           "Keine weiteren Partien an diesem Spieltag."
         ),
-        note: runningNote(),
+        // Kein `runningNote()`, wie im gefüllten Zweig auch nicht: Der Hinweis
+        // gehört Tabelle und Torschützenliste. Er wäre hier ohnehin immer leer
+        // (`running_games` kommt aus demselben, dann leeren Spielplan), stand
+        // aber im Widerspruch zur Begründung weiter unten.
       };
     }
 
@@ -1591,6 +2226,7 @@
       { label: "Zeit", numeric: true },
       { label: "Begegnung" },
       { label: "Stand", numeric: true, strong: true },
+      { label: "" },
     ];
 
     return {
@@ -1605,19 +2241,189 @@
               row.time || "",
               (row.home_team_name || "") + " – " + (row.guest_team_name || ""),
               scheduleScore(row),
+              schedulePhase(row),
             ],
           };
         })
       ),
+      // KEIN `runningNote()` hier. Der Hinweis sagt "läuft noch und ist hier
+      // noch nicht enthalten" und gilt Tabelle und Torschützenliste, die nur
+      // beendete Spiele zählen. In DIESER Tabelle stehen die laufenden Partien
+      // samt Stand -- der Hinweis wäre eine Falschaussage.
     };
   }
 
   // Parallel laufende Partien kommen ohne Zwischenstand: Das Token hebt die
   // Verzögerung nur für den eigenen Spieltag auf. „läuft" ist dann die
   // ehrliche Auskunft, ein 0:0 wäre eine falsche.
+  // Der Stand einer Zeile. Laufende Partien in KLAMMERN: Sie sind der Grund,
+  // warum die Übersicht überhaupt Stände zeigt, und der Klammerstand ist das
+  // international übliche Zeichen dafür, dass er noch nicht endgültig ist.
+  // Vorher stand hier "läuft" ohne Zahl, weil die API die Zwischenstände
+  // paralleler Partien gestrichen hat.
+  // ── Formkurve ───────────────────────────────────────────────────────────
+
+  // Die letzten Partien beider Mannschaften, neueste zuerst. Je Mannschaft ein
+  // Block; `.ov-fs-group` traegt `break-inside: avoid`, die beiden Blöcke landen
+  // also je in einer Spalte und werden nicht auseinandergerissen.
+  function fsForm() {
+    var form = (state.league && state.league.form) || null;
+    // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
+    if (!form) return null;
+
+    var teams = [form.home, form.guest].filter(Boolean);
+    // Die Unterzeile kommt aus DERSELBEN Nutzlast wie die Blöcke, nicht aus
+    // `state.game`. Zwei Gründe:
+    //
+    //   1. Die Abrufe laufen unterschiedlich schnell (Spiel alle 5 s, Liga alle
+    //      30 s). Schaltet das Dock auf ein anderes Spiel, stand in der
+    //      Unterzeile bis zu 30 Sekunden die neue Paarung über den Blöcken der
+    //      alten -- zwei verschiedene Spiele in einem Bild.
+    //   2. Ohne Spieldaten (Vollbild vor dem ersten Spielabruf, oder Zeit-
+    //      überschreitung) ergaben die leeren Namen die nackte Zeichenkette
+    //      " gegen ". `:empty` greift dagegen nicht, der Text ist nicht leer.
+    var namen = teams
+      .map(function (team) {
+        return team.name || team.short_name || "";
+      })
+      .filter(Boolean);
+
+    var frame = {
+      league: leagueName(),
+      title: "Letzte Spiele",
+      sub: namen.length === 2 ? namen.join(" gegen ") : namen.join(""),
+    };
+
+    // Beide Mannschaften unbekannt: Das ist ein eigener Zustand und muss
+    // dastehen, sonst gingen zwei leere Spalten auf Sendung.
+    if (!teams.length) {
+      frame.body = node(
+        "p",
+        "ov-fs-empty",
+        "Zu diesem Spiel sind keine Mannschaften hinterlegt."
+      );
+      return frame;
+    }
+
+    var columns = node("div", "ov-fs-columns");
+    var gewertet = false;
+
+    teams.forEach(function (team) {
+      columns.appendChild(formBlock(team));
+      (team.games || []).forEach(function (game) {
+        if (game.forfait) gewertet = true;
+      });
+    });
+
+    frame.body = columns;
+    // Nur wenn es wirklich vorkommt: Ein „W" ohne Erklaerung ist auf Sendung
+    // Rauschen, und die Erklaerung ohne Anlass ebenfalls.
+    if (gewertet) {
+      frame.note =
+        "Mit „W“ gekennzeichnete Partien wurden am grünen Tisch gewertet.";
+    }
+
+    return frame;
+  }
+
+  function formBlock(team) {
+    var block = node("div", "ov-fs-group ov-fs-group--form");
+    block.appendChild(
+      node("div", "ov-fs-group-title", team.name || team.short_name || "")
+    );
+
+    var games = team.games || [];
+    if (!games.length) {
+      block.appendChild(
+        node("p", "ov-fs-empty", "Noch keine beendete Partie.")
+      );
+      return block;
+    }
+
+    games.forEach(function (game) {
+      var row = node("div", "ov-fs-player");
+      row.appendChild(node("span", "ov-fs-form-date", formDate(game.date)));
+      // Heim oder auswaerts: Fuer die Einordnung einer Niederlage macht das den
+      // Unterschied.
+      row.appendChild(node("span", "ov-fs-form-where", game.home ? "H" : "A"));
+      row.appendChild(
+        node(
+          "span",
+          "ov-fs-form-opponent",
+          game.opponent_short || game.opponent || ""
+        )
+      );
+      row.appendChild(node("span", "ov-fs-form-score", formScore(game)));
+      row.appendChild(outcomeBadge(game));
+      block.appendChild(row);
+    });
+
+    return block;
+  }
+
+  // „2026-09-12" wird „12.09.". Ueber ein Muster und nicht ueber `new Date`:
+  // `game_days.date` ist eine Zeichenkette, und ein Altwert in anderer
+  // Schreibweise ergaebe „Invalid Date" im Bild. Passt das Muster nicht, steht
+  // der Wert da, wie er ist.
+  function formDate(value) {
+    var match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ""));
+    if (!match) return value || "";
+    return match[3] + "." + match[2] + ".";
+  }
+
+  function formScore(game) {
+    if (
+      typeof game.goals !== "number" ||
+      typeof game.opponent_goals !== "number"
+    ) {
+      // Beendet, Ergebnis unbekannt. Der Gedankenstrich sagt das; eine 0:0
+      // waere eine Falschaussage.
+      return "—";
+    }
+
+    // Negative Tore sind kein Ergebnis, sondern die beidseitige Wertung am
+    // grünen Tisch: `League#forfait_goals` setzt dort BEIDE Seiten negativ. Die
+    // API gibt dafür keine Wertung aus und leert die Tore inzwischen selbst;
+    // der Riegel bleibt, weil die Bühne auch mit einer älteren API läuft.
+    if (game.goals < 0 || game.opponent_goals < 0) return "—";
+
+    var stand = game.goals + ":" + game.opponent_goals;
+    // Verlängerung und Penaltyschießen gehören in eine Formkurve: Ein Sieg
+    // n. V. ist ein anderer als ein regulärer.
+    return game.postfix ? stand + " " + game.postfix : stand;
+  }
+
+  var OUTCOME_LABELS = { win: "S", draw: "U", loss: "N" };
+
+  function outcomeBadge(game) {
+    // `hasOwnProperty`, nicht bloß ein Zugriff: `outcome` kommt von außen, und
+    // ein Wert wie "constructor" oder "toString" hätte eine geerbte Funktion
+    // als Beschriftung geliefert, samt Funktionsquelltext im Bild. Die API kann
+    // das heute nicht senden; `FS_SCENES` wird aus demselben Grund schon so
+    // abgefragt.
+    var label = Object.prototype.hasOwnProperty.call(
+      OUTCOME_LABELS,
+      String(game.outcome)
+    )
+      ? OUTCOME_LABELS[game.outcome]
+      : "";
+    // Ohne Wertung ein leerer Platzhalter, damit die Spalte darunter nicht
+    // verrutscht.
+    var badge = node(
+      "span",
+      "ov-fs-outcome" + (label ? " ov-fs-outcome--" + game.outcome : ""),
+      game.forfait ? (label ? label + " W" : "W") : label
+    );
+    return badge;
+  }
+
   function scheduleScore(row) {
-    if (row.result_string) return row.result_string;
-    if (row.started && !row.ended) return "läuft";
+    if (row.result_string) {
+      return isRunningRow(row)
+        ? "(" + row.result_string + ")"
+        : row.result_string;
+    }
+
     // `ended` ohne Stand heißt: beendet, Ergebnis kennen wir nicht. Der
     // Gedankenstrich sagt das. Leer bleibt nur, was noch nicht angepfiffen ist --
     // und dafür MUSS `started` auch vorhanden sein. Fehlte das Feld, landete ein
@@ -1629,7 +2435,47 @@
       );
       return "—";
     }
+    // KEIN "0:0" für ein angepfiffenes Spiel ohne Stand. Der Fall sieht
+    // naheliegend aus, ist aber oben schon erledigt: `Game#schedule_item` setzt
+    // `result_string`, sobald `started?`, und `Game#result` liefert für ein
+    // angepfiffenes Spiel ohne Ereignisse 0:0 -- die Zeile bekommt also "(0:0)"
+    // aus dem ersten Zweig. Hier unten landen nur Zeilen, für die `result` nil
+    // ist, und das ist ausschließlich Altbestand ohne Ereignisse. Genau dort
+    // kennt niemand den Stand, und "0:0" wäre eine Behauptung.
+    if (row.started) return "—";
     return "";
+  }
+
+  // Läuft, beendet oder noch nicht angepfiffen -- als Wort neben dem Stand.
+  // Bei laufenden Partien der Spielabschnitt, denn zwischen "(1:0) 1. Drittel"
+  // und "(1:0) 3. Drittel" liegt für den Zuschauer alles.
+  function schedulePhase(row) {
+    var text = "";
+
+    if (isRunningRow(row)) {
+      var period = row.current_period_title || {};
+      text = period.title || period.short_title || "läuft";
+    } else if (row.ended) {
+      text = "beendet";
+    } else if (!row.time) {
+      // Sonst steht für "noch nicht angepfiffen" bewusst kein Wort da, weil die
+      // Anstoßzeit in der ersten Spalte es schon sagt. `games.start_time` ist
+      // aber nullable: Ohne Zeit trug die Zeile nur die Mannschaftsnamen, und
+      // nichts sagte, dass die Partie noch aussteht.
+      text = "angesetzt";
+    }
+
+    if (!text) return "";
+
+    // Als Element und nicht als Text, damit die Spalte gedeckt bleibt:
+    // `dataTable` kann je Spalte nur zwischen Zahl und Hervorhebung
+    // unterscheiden, und der laufende Abschnitt soll neben dem Stand nicht
+    // um Aufmerksamkeit streiten.
+    return node("span", "ov-fs-phase", text);
+  }
+
+  function isRunningRow(row) {
+    return Boolean(row.started) && !row.ended;
   }
 
   poll();

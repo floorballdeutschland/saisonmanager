@@ -24,12 +24,12 @@ describe('buildObsSceneCollection', () => {
     }) as unknown as ObsCollection;
   }
 
-  it('legt die Bühne und acht Vollbilder als Szenen an', () => {
+  it('legt die Bühne und zehn Vollbilder als Szenen an', () => {
     const collection = build();
     const scenes = collection.sources.filter((s) => s.id === 'scene');
 
-    expect(scenes.length).toBe(9);
-    expect(collection.scene_order.length).toBe(9);
+    expect(scenes.length).toBe(11);
+    expect(collection.scene_order.length).toBe(11);
   });
 
   it('macht die Bühne zur aktiven Szene', () => {
@@ -45,7 +45,7 @@ describe('buildObsSceneCollection', () => {
   it('setzt jede Browser-Quelle auf 1920 x 1080', () => {
     const browsers = build().sources.filter((s) => s.id === 'browser_source');
 
-    expect(browsers.length).toBe(9);
+    expect(browsers.length).toBe(11);
     browsers.forEach((source) => {
       expect(source.settings['width']).toBe(1920);
       expect(source.settings['height']).toBe(1080);
@@ -66,7 +66,7 @@ describe('buildObsSceneCollection', () => {
     );
 
     expect(stage!.settings['shutdown']).toBeFalse();
-    expect(fullscreens.length).toBe(8);
+    expect(fullscreens.length).toBe(10);
     fullscreens.forEach((source) => {
       expect(source.settings['shutdown']).toBeTrue();
     });
@@ -85,10 +85,12 @@ describe('buildObsSceneCollection', () => {
       'aufstellung-heim',
       'aufstellung-gast',
       'drittelpause',
+      'tore',
       'endstand',
       'tabelle',
       'topscorer',
       'naechste-spiele',
+      'formkurve',
     ].forEach((slug) => {
       expect(urls).toContain(
         `https://saisonmanager.de/overlay/index.html?token=abc123&only=fullscreen&scene=${slug}`
@@ -111,7 +113,7 @@ describe('buildObsSceneCollection', () => {
   // Der Name der Quelle steht an zwei Stellen und wird an beiden aus derselben
   // Vorlage gebaut, aber getrennt. Laeuft eine der beiden auseinander -- ein
   // umbenanntes Label, ein Halbgeviertstrich, der zum Bindestrich wird --,
-  // enthaelt die Datei weiter neun Quellen und neun Szenen, und trotzdem sind
+  // enthaelt die Datei weiter zehn Quellen und zehn Szenen, und trotzdem sind
   // beim Verein alle Szenen leer. Das faellt erst auf Sendung auf.
   it('verweist jede Szene auf eine Quelle, die es gibt', () => {
     const collection = build();
@@ -123,7 +125,7 @@ describe('buildObsSceneCollection', () => {
       .flatMap((s) => (s.settings['items'] as { name: string }[]) ?? [])
       .map((item) => item.name);
 
-    expect(referenced.length).toBe(9);
+    expect(referenced.length).toBe(11);
     expect(referenced.slice().sort()).toEqual(sourceNames.slice().sort());
   });
 
