@@ -58,8 +58,10 @@
     "requestType": "Art des Antrags",
     "typeTransfer": "Transfer",
     "typeTransferHint": "Spieler wechselt dauerhaft zu deinem Verein. Bestehende Lizenzen werden ungültig.",
+    "typeTransferBlocked": "Für diesen Spieler läuft bereits ein Transferantrag. Ein zweiter ist erst möglich, wenn dieser abgeschlossen oder annulliert ist.",
     "typeRelease": "Spielerfreigabe",
     "typeReleaseHint": "Spieler bleibt beim abgebenden Verein, darf aber bis zum 15.07. auch für deinen Verein spielen. Bestehende Lizenzen bleiben gültig.",
+    "typeReleaseBlocked": "Für diesen Spieler läuft bereits ein Freigabeantrag für diesen Verein. Freigaben für andere Vereine sind davon nicht betroffen.",
     "transferDate": "Transferdatum",
     "immediate": "Nächstmöglich",
     "scheduled": "Wunschdatum (mind. 7 Tage in der Zukunft)",
@@ -68,7 +70,8 @@
     "submitting": "Wird gesendet…",
     "submitRelease": "Freigabeantrag stellen",
     "submitTransfer": "Transferantrag stellen",
-    "deactivatedHint": "Dieses Profil ist von seinem Verein deaktiviert. Das ist kein Hindernis: Mit der Aufnahme entfällt die Kennzeichnung."
+    "deactivatedHint": "Dieses Profil ist von seinem Verein deaktiviert. Das ist kein Hindernis: Mit der Aufnahme entfällt die Kennzeichnung.",
+    "allTypesBlocked": "Für diesen Spieler und diesen Verein ist derzeit kein Antrag möglich."
   },
   "detail": {
     "back": "← Zurück",

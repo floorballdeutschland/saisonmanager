@@ -58,8 +58,10 @@
     "requestType": "Type of request",
     "typeTransfer": "Transfer",
     "typeTransferHint": "Player moves permanently to your club. Existing licenses become invalid.",
+    "typeTransferBlocked": "A transfer request for this player is already running. A second one is only possible once it has been completed or cancelled.",
     "typeRelease": "Player release",
     "typeReleaseHint": "Player stays with the releasing club but may also play for your club until 15 July. Existing licenses remain valid.",
+    "typeReleaseBlocked": "A release request for this player and this club is already running. Release requests for other clubs are not affected.",
     "transferDate": "Transfer date",
     "immediate": "As soon as possible",
     "scheduled": "Preferred date (at least 7 days in the future)",
@@ -68,7 +70,8 @@
     "submitting": "Sending…",
     "submitRelease": "Submit release request",
     "submitTransfer": "Submit transfer request",
-    "deactivatedHint": "This profile has been deactivated by its club. That is not an obstacle: the marking is removed when the player joins."
+    "deactivatedHint": "This profile has been deactivated by its club. That is not an obstacle: the marking is removed when the player joins.",
+    "allTypesBlocked": "No request is currently possible for this player and this club."
   },
   "detail": {
     "back": "← Back",

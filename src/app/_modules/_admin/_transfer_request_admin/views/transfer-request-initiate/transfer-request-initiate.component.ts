@@ -38,6 +38,10 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
   managedClubs: { id: number; name: string }[] = [];
 
   requestType: TransferRequestType = 'transfer';
+  // Antragsarten, die fuer den gefundenen Spieler gerade nicht gehen: ein
+  // laufender Transfer sperrt den naechsten Transfer, eine laufende Freigabe
+  // die naechste Freigabe auf DENSELBEN Verein. Ueber Kreuz sperrt nichts.
+  blockedRequestTypes: TransferRequestType[] = [];
   effectiveDateMode: 'immediate' | 'scheduled' = 'immediate';
   effectiveDate = '';
 
@@ -119,6 +123,14 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           this.foundPlayer = result.player;
+          this.blockedRequestTypes = result.blocked_request_types ?? [];
+          // Die gesperrte Art nicht bloss abschalten, sondern die Auswahl
+          // umlegen: Sonst steht der Knopf unter einer nicht waehlbaren
+          // Vorauswahl und die Absage kaeme erst beim Absenden.
+          if (this.isTypeBlocked(this.requestType)) {
+            this.requestType =
+              this.requestType === 'transfer' ? 'release' : 'transfer';
+          }
           if (!result.player) {
             this.searchError = this._transloco.translate(
               'transferRequestAdmin.notifications.playerNotFound'
@@ -128,6 +140,7 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: (err) => {
+          this.blockedRequestTypes = [];
           // err.message wäre nur der technische HTTP-Text – die fachliche
           // Meldung (z.B. Geburtsdatum-Format, 422) steckt in err.error.error.
           this.searchError =
@@ -143,8 +156,32 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Der Treffer gilt nur fuer den Verein, mit dem gesucht wurde: Die Suche
+  // prueft gegen ihn (Zustaendigkeit, Deaktivierung, laufende Freigabe auf
+  // genau diesen Verein). Nach einem Vereinswechsel steht deshalb wieder die
+  // Suche an, statt einer Antwort, die zu einem anderen Verein gehoert.
+  onRequestingClubChange(clubId: number): void {
+    this.selectedClubId = clubId;
+    this.foundPlayer = null;
+    this.blockedRequestTypes = [];
+    this.searchError = '';
+  }
+
+  isTypeBlocked(type: TransferRequestType): boolean {
+    return this.blockedRequestTypes.includes(type);
+  }
+
+  // Beide Arten gesperrt: Der Antrag ist fuer diesen Spieler und diesen Verein
+  // gerade nicht moeglich. Die Suche selbst weist diesen Fall bereits ab, die
+  // Maske faengt ihn trotzdem — die Antwort koennte aus einem aelteren Aufruf
+  // stammen, dessen Vereinsauswahl inzwischen eine andere ist.
+  get allTypesBlocked(): boolean {
+    return this.isTypeBlocked('transfer') && this.isTypeBlocked('release');
+  }
+
   submit(): void {
     if (!this.foundPlayer || !this.selectedClubId) return;
+    if (this.isTypeBlocked(this.requestType)) return;
     if (
       this.requestType === 'transfer' &&
       this.effectiveDateMode === 'scheduled' &&

@@ -21,23 +21,27 @@ export class TransferRequestService {
     return this.http.get<TransferRequest>(`${this.base}/${id}.json`);
   }
 
+  // `blocked_request_types` nennt die Antragsarten, die fuer diesen Spieler
+  // gerade gesperrt sind (laufender Transfer, oder laufende Freigabe auf genau
+  // diesen Verein). Die Maske waehlt die Art erst am gefundenen Spieler, die
+  // Suche kann sie deshalb nicht mitschicken und liefert stattdessen beides.
   searchPlayer(
     firstName: string,
     lastName: string,
     birthdate: string,
     requestingClubId: number
   ) {
-    return this.http.get<{ player: PlayerSearchResult | null }>(
-      `${this.base}/search_player.json`,
-      {
-        params: {
-          first_name: firstName,
-          last_name: lastName,
-          birthdate,
-          requesting_club_id: requestingClubId.toString(),
-        },
-      }
-    );
+    return this.http.get<{
+      player: PlayerSearchResult | null;
+      blocked_request_types?: TransferRequestType[];
+    }>(`${this.base}/search_player.json`, {
+      params: {
+        first_name: firstName,
+        last_name: lastName,
+        birthdate,
+        requesting_club_id: requestingClubId.toString(),
+      },
+    });
   }
 
   create(

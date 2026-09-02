@@ -22,8 +22,13 @@
           <label class="block text-xs font-bold text-fb-gray-500 mb-1">{{
             "transferRequestAdmin.initiate.requestingClub" | transloco
           }}</label>
+          <!-- Nicht [(ngModel)]: Der Wechsel des Vereins verwirft den Treffer.
+               Die Suche prueft gegen genau diesen Verein (Zustaendigkeit,
+               Deaktivierung, laufende Freigabe auf ihn), ihr Ergebnis gilt fuer
+               einen anderen also nicht. -->
           <fb-select-search
-            [(ngModel)]="selectedClubId"
+            [ngModel]="selectedClubId"
+            (ngModelChange)="onRequestingClubChange($event)"
             [items]="managedClubs"
             [placeholder]="
               'transferRequestAdmin.initiate.chooseClub' | transloco
@@ -119,11 +124,16 @@
           {{ "transferRequestAdmin.initiate.requestType" | transloco }}
         </p>
         <div class="flex flex-col gap-2 mb-4">
-          <label class="flex items-start gap-2 text-sm cursor-pointer">
+          <label
+            class="flex items-start gap-2 text-sm"
+            [class.cursor-pointer]="!isTypeBlocked('transfer')"
+            [class.opacity-50]="isTypeBlocked('transfer')"
+          >
             <input
               type="radio"
               [(ngModel)]="requestType"
               value="transfer"
+              [disabled]="isTypeBlocked('transfer')"
               class="mt-0.5"
             />
             <span class="flex flex-col gap-0.5">
@@ -133,13 +143,24 @@
               <span class="text-xs text-fb-gray-500">{{
                 "transferRequestAdmin.initiate.typeTransferHint" | transloco
               }}</span>
+              @if (isTypeBlocked("transfer")) {
+                <span class="text-xs text-red-600">{{
+                  "transferRequestAdmin.initiate.typeTransferBlocked"
+                    | transloco
+                }}</span>
+              }
             </span>
           </label>
-          <label class="flex items-start gap-2 text-sm cursor-pointer">
+          <label
+            class="flex items-start gap-2 text-sm"
+            [class.cursor-pointer]="!isTypeBlocked('release')"
+            [class.opacity-50]="isTypeBlocked('release')"
+          >
             <input
               type="radio"
               [(ngModel)]="requestType"
               value="release"
+              [disabled]="isTypeBlocked('release')"
               class="mt-0.5"
             />
             <span class="flex flex-col gap-0.5">
@@ -149,6 +170,11 @@
               <span class="text-xs text-fb-gray-500">{{
                 "transferRequestAdmin.initiate.typeReleaseHint" | transloco
               }}</span>
+              @if (isTypeBlocked("release")) {
+                <span class="text-xs text-red-600">{{
+                  "transferRequestAdmin.initiate.typeReleaseBlocked" | transloco
+                }}</span>
+              }
             </span>
           </label>
         </div>
@@ -187,6 +213,11 @@
         </div>
       }
       <div class="pt-4 border-t border-fb-gray-600">
+        @if (allTypesBlocked) {
+          <p class="text-sm text-red-600 mb-3">
+            {{ "transferRequestAdmin.initiate.allTypesBlocked" | transloco }}
+          </p>
+        }
         <p class="text-sm text-fb-gray-500 mb-3">
           @if (requestType === "transfer") {
             {{ "transferRequestAdmin.initiate.noteTransfer" | transloco }}
@@ -199,6 +230,7 @@
           (click)="submit()"
           [disabled]="
             submitting ||
+            isTypeBlocked(requestType) ||
             (requestType === 'transfer' &&
               effectiveDateMode === 'scheduled' &&
               !effectiveDate)
