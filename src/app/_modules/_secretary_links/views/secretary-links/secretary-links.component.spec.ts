@@ -356,12 +356,16 @@ describe('SecretaryLinksComponent', () => {
     it('zeigt den Kopieren-Button erst nach dem Erzeugen', () => {
       gameService.createSecretaryLink.and.returnValue(of(createResponse));
       fixture.detectChanges();
-      expect(fixture.nativeElement.textContent).not.toContain('Link kopieren');
+      expect(fixture.nativeElement.textContent).not.toContain(
+        'Spielsekretariats-Link kopieren'
+      );
 
       component.generate(component.hallDays[0]);
       fixture.detectChanges();
 
-      expect(fixture.nativeElement.textContent).toContain('Link kopieren');
+      expect(fixture.nativeElement.textContent).toContain(
+        'Spielsekretariats-Link kopieren'
+      );
     });
   });
 });
