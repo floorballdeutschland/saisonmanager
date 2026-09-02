@@ -1,6 +1,6 @@
 @if (event | normalizeEvent: match : additionalFields; as gameEvent) {
   <div
-    class="grid grid-cols-[36px_1fr_30px_fit-content(96px)_60px] md:grid-cols-[36px_1fr_30px_80px_30px_20px_60px_20px_30px_80px_30px_1fr_36px] items-center text-sm min-h-[78px] md:h-[78px]"
+    class="grid grid-cols-[36px_1fr_30px_fit-content(96px)_60px] md:grid-cols-[36px_1fr_30px_104px_30px_20px_60px_20px_30px_104px_30px_1fr_36px] items-center text-sm min-h-[78px] md:h-[78px]"
     [ngClass]="
       !allowCancel
         ? 'md:grid-rows-2'
@@ -68,7 +68,7 @@
         }
       </div>
       <div
-        class="font-bold md:text-right px-1.5 md:px-3 text-xs md:text-sm max-md:break-words"
+        class="font-bold md:text-right px-1.5 md:px-3 text-xs md:text-sm break-words"
       >
         @switch (gameEvent.event_type) {
           @case ("goal") {
@@ -161,7 +161,7 @@
         }
       </div>
       <div
-        class="font-bold px-1.5 md:px-3 text-xs md:text-sm max-md:break-words row-start-1 col-start-4 md:col-start-10"
+        class="font-bold px-1.5 md:px-3 text-xs md:text-sm break-words row-start-1 col-start-4 md:col-start-10"
       >
         @switch (gameEvent.event_type) {
           @case ("goal") {
