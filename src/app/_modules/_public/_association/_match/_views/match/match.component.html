@@ -83,6 +83,22 @@
     ></fb-match-report>
   }
   <!--
+    Thumbnails für YouTube. In der öffentlichen Ansicht und nicht nur im
+    Spielbericht, weil beides zu verschiedenen Zeiten gebraucht wird: das
+    Livestream-Bild beim Einrichten der Übertragung, das Highlight-Bild Tage
+    danach, wenn der Spielbericht längst geschlossen ist und seine Ansicht die
+    Kontrolle zeigt.
+
+    Die Rechtefrage steht hier UND in der Komponente: Die Komponente blendet nur
+    sich selbst aus, der Abstand dieser Hülle bliebe sonst als Lücke stehen.
+  -->
+  @if (isTabActive("public") && game && canEdit(game)) {
+    <div class="container mx-auto px-4 lg:px-8 py-6 max-w-2xl">
+      <fb-stream-graphics [game]="game"></fb-stream-graphics>
+    </div>
+  }
+
+  <!--
     Schiri: Berichtsformular-Upload. Nur für eingeloggte User, nur nach
     Abschluss des Spielberichts (reportClosed) und nur in der öffentlichen
     Ansicht – nicht während der Spielberichtseingabe. Dies ist das Upload-Ziel

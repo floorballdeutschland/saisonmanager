@@ -29,7 +29,12 @@ jobs:
       # deshalb bisher durch die komplette CI und wäre erst in der Halle
       # aufgefallen — nachgestellt und bestätigt. Diese Dateien gehen live auf
       # Sendung und sind dort nicht reparierbar.
-      - name: Overlay-Syntax
+      #
+      # Derselbe Schritt hält seit den Streaming-Grafiken auch die Wettbewerbe
+      # zusammen: Farben und Bildmarken stehen in `overlay/overlay.css` und in
+      # `competition-theme.ts`, die Übergangsgrafiken als Dateien daneben. Karma
+      # liefert `overlay/` nicht aus, eine Abweichung bliebe sonst unsichtbar.
+      - name: Overlay prüfen
         run: npm run check:overlay
 
       - name: Test

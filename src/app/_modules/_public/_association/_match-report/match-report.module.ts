@@ -14,13 +14,17 @@ import { MatchEventFormModule } from './_components/match-event-form/match-event
   declarations: [
     Components.AwardsComponent,
     Components.StartingPlayerComponent,
+    Components.StreamGraphicsComponent,
     Views.MatchReportComponent,
     Views.MatchReportIntroComponent,
     Views.MatchReportStepOneComponent,
     Views.MatchReportStepTwoComponent,
     Views.MatchReportStepThreeComponent,
   ],
-  exports: [Views.MatchReportComponent],
+  // Die Thumbnails stehen auch in der öffentlichen Spielansicht, also außerhalb
+  // dieses Moduls: Ein Highlightvideo entsteht Tage nach dem Spiel, wenn der
+  // Spielbericht längst geschlossen ist.
+  exports: [Views.MatchReportComponent, Components.StreamGraphicsComponent],
   imports: [
     CommonModule,
     UikitCommonModule,
