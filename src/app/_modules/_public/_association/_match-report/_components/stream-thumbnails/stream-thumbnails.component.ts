@@ -6,7 +6,9 @@ import {
   ElementRef,
   HostBinding,
   Input,
+  OnChanges,
   OnInit,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import * as Sentry from '@sentry/angular';
@@ -19,6 +21,7 @@ import {
 } from 'src/app/_helpers/_utils/competition-theme';
 import {
   ThumbnailInput,
+  ThumbnailResult,
   ThumbnailVariant,
   downloadThumbnail,
   renderStreamThumbnail,
@@ -47,7 +50,9 @@ const WEEKDAYS = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
-export class StreamThumbnailsComponent implements OnInit, AfterViewInit {
+export class StreamThumbnailsComponent
+  implements OnInit, OnChanges, AfterViewInit
+{
   @Input()
   game!: Game;
 
@@ -69,6 +74,14 @@ export class StreamThumbnailsComponent implements OnInit, AfterViewInit {
 
   private _league: League | null = null;
   private _leagueLoaded = false;
+  // Steht ein fertig gezeichnetes Bild auf der Leinwand? Ohne diese Frage ließe
+  // sich eine leere oder halb gezeichnete Leinwand herunterladen: `toBlob`
+  // gelingt darauf anstandslos, die Datei ist trotzdem unbrauchbar.
+  private _rendered = false;
+  // Zeichenaufträge laufen nacheinander. Zwei gleichzeitige Läufe malen sonst
+  // auf dieselbe Leinwand, und welcher zuletzt fertig wird, hängt an der
+  // Ladezeit der Bilder statt an der zuletzt gewählten Variante.
+  private _queue: Promise<void> = Promise.resolve();
 
   constructor(
     private _leagueService: LeagueService,
@@ -119,8 +132,22 @@ export class StreamThumbnailsComponent implements OnInit, AfterViewInit {
     const canvas = this.previewRef?.nativeElement;
     if (!canvas || this.busy) return;
 
+    // Ohne fertiges Bild gibt es nichts zu speichern. `toBlob` würde auch eine
+    // leere Leinwand anstandslos ausliefern, und im Download-Ordner läge dann
+    // ein durchsichtiges Bild, das erst bei YouTube auffällt.
+    if (!this._rendered) {
+      this.error =
+        'Es steht noch kein fertiges Bild bereit. Bitte die Seite neu laden.';
+      this._cdr.markForCheck();
+      return;
+    }
+
     try {
       await downloadThumbnail(canvas, thumbnailFilename(this.input()));
+      // Eine Meldung des vorigen, gescheiterten Versuchs darf nicht stehen
+      // bleiben, während die Datei längst im Ordner liegt.
+      this.error = '';
+      this._cdr.markForCheck();
     } catch (error) {
       Sentry.captureException(error);
       this.error =
@@ -129,17 +156,26 @@ export class StreamThumbnailsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  public async render(): Promise<void> {
+  public render(): Promise<void> {
+    this._queue = this._queue.then(() => this.renderNow());
+
+    return this._queue;
+  }
+
+  private async renderNow(): Promise<void> {
     const canvas = this.previewRef?.nativeElement;
     if (!canvas || !this.canCreate || !this._leagueLoaded) return;
 
     this.busy = true;
     this.error = '';
+    this.hint = '';
+    this._rendered = false;
     this._cdr.markForCheck();
 
     try {
       const result = await renderStreamThumbnail(canvas, this.input());
-      this.hint = this.buildHint(result.missing);
+      this.hint = this.buildHint(result);
+      this._rendered = true;
     } catch (error) {
       Sentry.captureException(error);
       this.error = 'Die Vorschau konnte nicht gezeichnet werden.';
@@ -156,6 +192,57 @@ export class StreamThumbnailsComponent implements OnInit, AfterViewInit {
     // Livestream-Bild.
     if (this.resultAvailable) this.variant = 'highlights';
 
+    this.loadLeague();
+  }
+
+  // Die öffentliche Spielansicht lädt alle 30 Sekunden nach und ersetzt `game`,
+  // und ein Wechsel auf ein anderes Spiel derselben Route erzeugt die
+  // Komponente ebenfalls nicht neu. Ohne diese Prüfung zeigte das
+  // Highlight-Bild nach einer Ergebniskorrektur weiter den alten Stand, und
+  // nach einem Spielwechsel die Paarung des neuen Spiels in der Farbwelt des
+  // alten.
+  ngOnChanges(changes: SimpleChanges): void {
+    const change = changes['game'];
+    if (!change || change.firstChange || !this.canCreate) return;
+
+    const previous = change.previousValue as Game | undefined;
+    const current = change.currentValue as Game | undefined;
+    if (!current) return;
+
+    if (previous?.league_id !== current.league_id) {
+      this._league = null;
+      this._leagueLoaded = false;
+      this._rendered = false;
+      this.loadLeague();
+      return;
+    }
+
+    if (this.signature(previous) !== this.signature(current))
+      void this.render();
+  }
+
+  // Was das Bild überhaupt zeigt. Ein Abruf, der nur `updated_at` ändert, soll
+  // die Leinwand nicht neu zeichnen.
+  private signature(game?: Game): string {
+    if (!game) return '';
+
+    return [
+      game.home_team_name,
+      game.guest_team_name,
+      game.home_team_logo,
+      game.guest_team_logo,
+      game.league_name,
+      game.arena_name,
+      game.date,
+      game.start_time,
+      game.ended,
+      game.result?.home_goals,
+      game.result?.guest_goals,
+      game.result?.postfix?.short,
+    ].join('|');
+  }
+
+  private loadLeague(): void {
     // Das Bild trägt Ligazeichen und Ligafarbe, und beides steht nicht im
     // Spielabruf: Der öffentliche Spielhash nennt nur Name und Kürzel der Liga,
     // nicht ihre Klasse, ihr Geschlecht und ihr Logo.
@@ -237,7 +324,7 @@ export class StreamThumbnailsComponent implements OnInit, AfterViewInit {
       : line;
   }
 
-  private buildHint(missing: string[]): string {
+  private buildHint(result: ThumbnailResult): string {
     const notes: string[] = [];
 
     if (!this._league) {
@@ -246,15 +333,30 @@ export class StreamThumbnailsComponent implements OnInit, AfterViewInit {
       );
     }
 
-    const crests = missing.filter((entry) => entry !== 'mark');
+    // Beide Wappen einzeln benennen: „Ein Vereinswappen fehlt" schickt zum
+    // Nachsehen, sagt aber nicht wohin, und bei zwei fehlenden prüft man eines
+    // und übersieht das andere.
+    const crests = [
+      result.missing.includes('home') ? 'der Heimmannschaft' : '',
+      result.missing.includes('guest') ? 'der Gastmannschaft' : '',
+    ].filter(Boolean);
+
     if (crests.length) {
       notes.push(
-        'Ein Vereinswappen ließ sich nicht laden, an seiner Stelle steht das Kürzel.'
+        `Das Wappen ${crests.join(' und ')} ließ sich nicht laden, an seiner Stelle steht das Kürzel.`
       );
     }
 
-    if (missing.includes('mark')) {
+    if (result.missing.includes('mark')) {
       notes.push('Das Ligazeichen ließ sich nicht laden.');
+    }
+
+    // Ein Bild in der Ersatzschrift passt sichtbar nicht mehr zu den Overlays
+    // derselben Übertragung. Ohne Hinweis fällt das erst auf YouTube auf.
+    if (!result.fontsLoaded) {
+      notes.push(
+        'Die Schriften ließen sich nicht laden, das Bild weicht deshalb von den Overlays ab.'
+      );
     }
 
     return notes.join(' ');

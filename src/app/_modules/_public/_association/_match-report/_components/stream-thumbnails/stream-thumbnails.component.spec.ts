@@ -117,6 +117,107 @@ describe('StreamThumbnailsComponent', () => {
     expect(fixture.componentInstance.error).toBe('');
   });
 
+  // Das Datum kommt als reiner Tag (`YYYY-MM-DD`), die Anstoßzeit getrennt als
+  // Zeichenkette. Über `new Date(raw)` gelesen wäre das Mitternacht UTC, und
+  // westlich von Greenwich stünde der Vortag im Bild. Der handgeschriebene
+  // Parser ist der einzige Schutz davor, deshalb wird er hier festgehalten.
+  it('setzt Wochentag und Datum ohne Zeitzonenumweg', async () => {
+    const texts: string[] = [];
+    spyOn(CanvasRenderingContext2D.prototype, 'fillText').and.callFake(
+      function (this: CanvasRenderingContext2D, text: string) {
+        texts.push(text);
+      }
+    );
+
+    const fixture = create({
+      date: '2026-01-11' as unknown as Date,
+      start_time: '18:00',
+    });
+    expectLeagueRequest().flush({ id: 42 });
+    await fixture.componentInstance.render();
+
+    expect(texts).toContain('So. 11.01.2026 · 18:00 Uhr');
+  });
+
+  it('fällt ohne verwertbares Datum auf die Anstoßzeit zurück', async () => {
+    const texts: string[] = [];
+    spyOn(CanvasRenderingContext2D.prototype, 'fillText').and.callFake(
+      function (this: CanvasRenderingContext2D, text: string) {
+        texts.push(text);
+      }
+    );
+
+    const fixture = create({ date: '' as unknown as Date });
+    expectLeagueRequest().flush({ id: 42 });
+    await fixture.componentInstance.render();
+
+    expect(texts).toContain('18:00 Uhr');
+  });
+
+  // Die öffentliche Spielansicht lädt alle 30 Sekunden nach und ersetzt `game`.
+  // Ohne diese Reaktion trüge das Highlight-Bild nach einer Ergebniskorrektur
+  // weiter den alten Stand -- und das Bild ist genau dann längst gespeichert.
+  it('zeichnet nach einer Ergebniskorrektur neu', async () => {
+    const fixture = create({
+      ended: true,
+      result: { home_goals: 5, guest_goals: 3 },
+    } as Partial<Game>);
+    expectLeagueRequest().flush({ id: 42 });
+    await fixture.componentInstance.render();
+
+    const texts: string[] = [];
+    spyOn(CanvasRenderingContext2D.prototype, 'fillText').and.callFake(
+      function (this: CanvasRenderingContext2D, text: string) {
+        texts.push(text);
+      }
+    );
+
+    const corrected = {
+      ...fixture.componentInstance.game,
+      result: { home_goals: 5, guest_goals: 4 },
+    } as Game;
+    fixture.componentInstance.game = corrected;
+    fixture.componentInstance.ngOnChanges({
+      game: {
+        previousValue: game({
+          ended: true,
+          result: { home_goals: 5, guest_goals: 3 },
+        } as Partial<Game>),
+        currentValue: corrected,
+        firstChange: false,
+        isFirstChange: () => false,
+      },
+    });
+    await fixture.componentInstance.render();
+
+    expect(texts).toContain('5:4');
+  });
+
+  // Ein Spielwechsel auf derselben Route erzeugt die Komponente nicht neu. Ohne
+  // erneuten Ligaabruf trüge das Bild die Paarung des neuen Spiels in der
+  // Farbwelt des alten.
+  it('holt die Liga nach einem Spielwechsel erneut', () => {
+    const fixture = create();
+    expectLeagueRequest().flush({ id: 42, league_class_id: '2fbl' });
+
+    const other = { ...fixture.componentInstance.game, league_id: 43 } as Game;
+    fixture.componentInstance.game = other;
+    fixture.componentInstance.ngOnChanges({
+      game: {
+        previousValue: game(),
+        currentValue: other,
+        firstChange: false,
+        isFirstChange: () => false,
+      },
+    });
+
+    http
+      .expectOne((req) => req.url.indexOf('leagues/43') !== -1)
+      .flush({
+        id: 43,
+      });
+  });
+
   it('zeichnet die Vorschau in voller Größe', async () => {
     const fixture = create();
     expectLeagueRequest().flush({

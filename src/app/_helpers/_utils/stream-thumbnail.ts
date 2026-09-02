@@ -8,12 +8,17 @@
  * serverseitigen Renderer; beides für zwei Bildaufbauten zu viel.
  *
  * WARUM DAS OHNE CORS-ÄRGER GEHT: Wappen und Ligazeichen liegen hinter
- * `/api/storage` (ActiveStorage mit `routes_prefix`), also auf demselben Host
- * wie die Anwendung, und die mitgelieferten Bildmarken unter `/overlay/img/`
- * kommen ohnehin aus dem eigenen Verzeichnis. Die Leinwand wird damit nicht
- * „tainted" und `toBlob` bleibt erlaubt. In der Entwicklung laufen Frontend und
- * API auf verschiedenen Ports; dafür steht `crossOrigin`, und `cors.rb` lässt
- * localhost:4200 zu.
+ * `/api/storage` (ActiveStorage mit `routes_prefix`), die mitgelieferten
+ * Bildmarken unter `/overlay/img/` im eigenen Verzeichnis. In Produktion ist
+ * das dieselbe Herkunft wie die Seite: `environment.prod.ts` zeigt auf
+ * saisonmanager.de, und dort läuft auch die Oberfläche -- saisonmanager.org
+ * leitet im nginx mit 301 dorthin um, ist also nie die Herkunft eines
+ * geladenen Bildes. Die Leinwand wird damit nicht „tainted" und `toBlob` bleibt
+ * erlaubt.
+ *
+ * `crossOrigin` steht trotzdem an jedem Bild, und es ist nicht entbehrlich: In
+ * der Entwicklung laufen Frontend (4200) und API (3001) auf verschiedenen
+ * Ports, und dort trägt allein die Freigabe in `cors.rb`.
  *
  * Format: 1280 × 720, das von YouTube empfohlene Maß. PNG, weil Wappen harte
  * Kanten haben; die Dateien liegen bei wenigen hundert Kilobyte und damit weit
@@ -29,6 +34,13 @@ import {
 
 export const THUMBNAIL_WIDTH = 1280;
 export const THUMBNAIL_HEIGHT = 720;
+
+/**
+ * Wartezeit auf den Rückruf von `toBlob`. Kein Browser braucht für ein Bild
+ * dieser Größe annähernd so lange; die Frist gibt es nur, damit ein
+ * ausbleibender Rückruf als Fehler ankommt statt als ewiges Warten.
+ */
+const TO_BLOB_TIMEOUT_MS = 15000;
 
 /**
  * Zwei Bildaufbauten, nicht mehr: Vor und während der Übertragung steht die
@@ -64,8 +76,15 @@ export interface ThumbnailInput {
 }
 
 export interface ThumbnailResult {
-  /** Was nicht geladen werden konnte. Die Oberfläche sagt das dazu, statt es zu verschweigen. */
+  /**
+   * Was im fertigen Bild FEHLT. Nicht „was nicht geladen hat": Ein Wappen, das
+   * lädt, aber keine Maße hat (defekte Datei), wird ebenso durch das Kürzel
+   * ersetzt, und auch das gehört benannt. Die Oberfläche sagt es dazu, statt es
+   * zu verschweigen.
+   */
   missing: ('home' | 'guest' | 'mark')[];
+  /** Standen Oswald und Inter zur Verfügung? Sonst weicht das Bild von den Overlays ab. */
+  fontsLoaded: boolean;
 }
 
 const DISPLAY_FAMILY = '"Oswald Thumbnail", Impact, "Arial Black", sans-serif';
@@ -80,7 +99,7 @@ function body(size: number, weight = 400): string {
   return `${weight} ${size}px ${BODY_FAMILY}`;
 }
 
-let fontsPromise: Promise<void> | null = null;
+let fontsPromise: Promise<boolean> | null = null;
 
 /**
  * Lädt Oswald und Inter aus `overlay/fonts/` nach.
@@ -91,14 +110,22 @@ let fontsPromise: Promise<void> | null = null;
  *
  * Schlägt das Laden fehl, wird trotzdem gezeichnet: Ein Thumbnail in Impact ist
  * unschöner als eines in Oswald, aber weit besser als keines. Deshalb wirft
- * diese Funktion nie.
+ * diese Funktion nie -- sie gibt statt dessen zurück, ob die Schriften
+ * tatsächlich da sind, damit die Oberfläche es sagen kann. Ein Bild in der
+ * Ersatzschrift passt sichtbar nicht mehr zu den Overlays derselben
+ * Übertragung, und das darf niemandem erst auf YouTube auffallen.
+ *
+ * Ein Fehlschlag wird NICHT zwischengespeichert: `fontsPromise` überlebt als
+ * Modulvariable jede Navigation, ein einziges kurzes Netzproblem beim ersten
+ * Aufruf hätte sonst die Ersatzschrift für die ganze Registerkarte
+ * festgeschrieben.
  */
-export function loadThumbnailFonts(): Promise<void> {
+export function loadThumbnailFonts(): Promise<boolean> {
   if (fontsPromise) return fontsPromise;
 
   fontsPromise = (async () => {
     try {
-      if (typeof FontFace === 'undefined' || !document.fonts) return;
+      if (typeof FontFace === 'undefined' || !document.fonts) return false;
 
       const faces = [
         new FontFace(
@@ -113,19 +140,27 @@ export function loadThumbnailFonts(): Promise<void> {
         ),
       ];
 
-      await Promise.all(
+      const loaded = await Promise.all(
         faces.map(async (face) => {
           try {
             document.fonts.add(await face.load());
+            return true;
           } catch {
             // Einzelne Schrift nicht da: Der Rückfall in der Schriftliste greift.
+            return false;
           }
         })
       );
+
+      return loaded.every(Boolean);
     } catch {
       // Kein FontFace im Browser: derselbe Rückfall.
+      return false;
     }
-  })();
+  })().then((ok) => {
+    if (!ok) fontsPromise = null;
+    return ok;
+  });
 
   return fontsPromise;
 }
@@ -562,6 +597,11 @@ function drawFooter(
   }
 }
 
+/** Trägt das Bild etwas bei? Ein geladenes Bild ohne Maße zeichnet nichts. */
+function usable(img: HTMLImageElement | null): boolean {
+  return Boolean(img && img.naturalWidth && img.naturalHeight);
+}
+
 /**
  * Zeichnet das Thumbnail in die übergebene Leinwand.
  *
@@ -578,7 +618,7 @@ export async function renderStreamThumbnail(
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Die Leinwand steht nicht zur Verfügung.');
 
-  await loadThumbnailFonts();
+  const fontsLoaded = await loadThumbnailFonts();
 
   const [homeLogo, guestLogo, mark] = await Promise.all([
     loadImage(input.home.logoUrl),
@@ -586,10 +626,13 @@ export async function renderStreamThumbnail(
     loadImage(input.markUrl),
   ]);
 
+  // Gefragt ist, was am Ende im BILD steht, nicht was der Abruf gemeldet hat:
+  // `drawCrest` und `drawHeader` verwerfen ein Bild ohne Maße ebenfalls, und
+  // eine defekte, aber ausgelieferte Datei kommt genau so an.
   const missing: ThumbnailResult['missing'] = [];
-  if (input.home.logoUrl && !homeLogo) missing.push('home');
-  if (input.guest.logoUrl && !guestLogo) missing.push('guest');
-  if (input.markUrl && !mark) missing.push('mark');
+  if (input.home.logoUrl && !usable(homeLogo)) missing.push('home');
+  if (input.guest.logoUrl && !usable(guestLogo)) missing.push('guest');
+  if (input.markUrl && !usable(mark)) missing.push('mark');
 
   const { accent, accentAlt } = competitionPalette(input.competition);
 
@@ -608,7 +651,7 @@ export async function renderStreamThumbnail(
   drawCenter(ctx, input, accent);
   drawFooter(ctx, input);
 
-  return { missing };
+  return { missing, fontsLoaded };
 }
 
 /** Dateiname des Downloads, aus Paarung und Bildaufbau. */
@@ -650,33 +693,56 @@ export function downloadThumbnail(
   return new Promise((resolve, reject) => {
     let done = false;
 
+    const fail = (error: unknown) => {
+      if (done) return;
+      done = true;
+      window.clearTimeout(watchdog);
+      reject(error instanceof Error ? error : new Error(String(error)));
+    };
+
+    // Kommt der Rückruf gar nicht, bliebe das Versprechen für immer offen: Der
+    // Aufrufer wartet dann mit `await`, sein `catch` greift nie, und es gibt
+    // weder Datei noch Meldung. Genau der stille Fehlschlag, den die Meldung
+    // unten verhindern soll.
+    const watchdog = window.setTimeout(
+      () => fail(new Error('Das Bild konnte nicht erzeugt werden.')),
+      TO_BLOB_TIMEOUT_MS
+    );
+
     try {
       canvas.toBlob((blob) => {
         if (done) return;
-        done = true;
 
         if (!blob) {
-          reject(new Error('Das Bild konnte nicht erzeugt werden.'));
+          fail(new Error('Das Bild konnte nicht erzeugt werden.'));
           return;
         }
 
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = filename;
-        document.body.appendChild(anchor);
-        anchor.click();
-        document.body.removeChild(anchor);
-        // Erst freigeben, wenn der Browser den Download angenommen hat.
-        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        // Ab hier ein eigener Riegel: Der äußere `try` deckt nur den
+        // SYNCHRONEN Aufruf von `toBlob` ab. Wirft eine dieser Zeilen
+        // (`createObjectURL` in einem eingeschränkten Kontext, ein `removeChild`
+        // auf einem inzwischen entfernten Knoten), wäre das Versprechen sonst
+        // nie erfüllt worden.
+        try {
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = filename;
+          document.body.appendChild(anchor);
+          anchor.click();
+          anchor.remove();
+          // Erst freigeben, wenn der Browser den Download angenommen hat.
+          window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        resolve();
+          done = true;
+          window.clearTimeout(watchdog);
+          resolve();
+        } catch (error) {
+          fail(error);
+        }
       }, 'image/png');
     } catch (error) {
-      if (!done) {
-        done = true;
-        reject(error instanceof Error ? error : new Error(String(error)));
-      }
+      fail(error);
     }
   });
 }

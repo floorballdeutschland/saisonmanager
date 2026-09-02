@@ -77,12 +77,19 @@ describe('monogram', () => {
 });
 
 describe('wrapText', () => {
+  // Geprüft wird, DASS umgebrochen wurde und wo: Eine Zeile darf die Breite
+  // nicht überschreiten, und kein Wort darf verschwinden.
   it('bricht wortweise um', () => {
     const ctx = context();
-    const lines = wrapText(ctx, 'EIN ZWEI DREI VIER', 120, 2);
+    const text = 'EINS ZWEI DREI';
+    const maxWidth = ctx.measureText('EINS ZWEI').width;
 
-    expect(lines.length).toBeLessThanOrEqual(2);
-    expect(lines.join(' ').replace(/…/g, '')).toContain('EIN');
+    const lines = wrapText(ctx, text, maxWidth, 2);
+
+    expect(lines.length).toBe(2);
+    expect(lines[0]).toBe('EINS ZWEI');
+    expect(lines[1]).toBe('DREI');
+    expect(ctx.measureText(lines[0]).width).toBeLessThanOrEqual(maxWidth);
   });
 
   // Was nicht mehr passt, wird gekürzt und nicht weggelassen: Ein
@@ -130,6 +137,18 @@ describe('thumbnailFilename', () => {
         guest: { name: 'MFBC Grimma' },
       })
     ).toBe('thumbnail-highlights-uhc-sparkasse-weissenfels-mfbc-grimma.png');
+  });
+
+  // Alle vier Umsetzungen, nicht nur das ß: Ein Dateiname mit Prozentzeichen
+  // oder rohem Umlaut ist je nach Betriebssystem des Streamers unhandlich.
+  it('setzt auch ä, ö und ü um', () => {
+    expect(
+      thumbnailFilename({
+        variant: 'livestream',
+        home: { name: 'Grün-Weiß Köln' },
+        guest: { name: 'TV Bad Dürkheim' },
+      })
+    ).toBe('thumbnail-livestream-gruen-weiss-koeln-tv-bad-duerkheim.png');
   });
 });
 
@@ -226,18 +245,61 @@ describe('renderStreamThumbnail', () => {
 
     expect(result.missing).toEqual([]);
   });
+
+  // Der einzige Test, der ein Wappen wirklich lädt und zeichnet: Ohne ihn liefe
+  // `drawCrest` mit seiner Einpassungsrechnung in keinem Lauf, und ob sich die
+  // fertige Leinwand überhaupt noch ausgeben lässt, wäre ebenfalls ungeprüft.
+  // Die CORS-Frage beantwortet er nicht (dazu bräuchte es einen fremden Host),
+  // wohl aber den Weg vom geladenen Bild bis zur Datei.
+  it('zeichnet ein geladenes Wappen und bleibt exportierbar', async () => {
+    const source = document.createElement('canvas');
+    source.width = 8;
+    source.height = 8;
+    const sourceCtx = source.getContext('2d');
+    sourceCtx!.fillStyle = '#ff0000';
+    sourceCtx!.fillRect(0, 0, 8, 8);
+
+    const result = await renderStreamThumbnail(
+      canvas,
+      input({
+        home: { name: 'ETV Hamburg', logoUrl: source.toDataURL('image/png') },
+      })
+    );
+
+    expect(result.missing).toEqual([]);
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/png')
+    );
+    expect(blob).not.toBeNull();
+    expect(blob!.size).toBeGreaterThan(0);
+  });
+
+  // Unter Karma liegt `overlay/fonts` nicht bereit, hier ist der Fehlschlag also
+  // der Normalfall -- und genau der muss gemeldet werden, statt ein Bild in der
+  // Ersatzschrift für gleichwertig auszugeben.
+  it('sagt, ob die Schriften zur Verfügung standen', async () => {
+    const result = await renderStreamThumbnail(canvas, input());
+
+    expect(result.fontsLoaded).toBeFalse();
+  });
 });
 
 describe('downloadThumbnail', () => {
   it('speichert unter dem übergebenen Namen', async () => {
-    const click = spyOn(HTMLAnchorElement.prototype, 'click');
+    let saved = '';
+    spyOn(HTMLAnchorElement.prototype, 'click').and.callFake(function (
+      this: HTMLAnchorElement
+    ) {
+      saved = this.download;
+    });
     const canvas = document.createElement('canvas');
     canvas.width = 4;
     canvas.height = 4;
 
     await downloadThumbnail(canvas, 'thumbnail-test.png');
 
-    expect(click).toHaveBeenCalled();
+    expect(saved).toBe('thumbnail-test.png');
   });
 
   // Eine verunreinigte Leinwand (fremde Herkunft ohne CORS) lässt `toBlob`
