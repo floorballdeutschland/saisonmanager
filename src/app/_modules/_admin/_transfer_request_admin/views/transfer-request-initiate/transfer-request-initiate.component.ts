@@ -42,6 +42,10 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
   // laufender Transfer sperrt den naechsten Transfer, eine laufende Freigabe
   // die naechste Freigabe auf DENSELBEN Verein. Ueber Kreuz sperrt nichts.
   blockedRequestTypes: TransferRequestType[] = [];
+  // Der Grund je gesperrter Art, wie ihn die API nennt. Fehlt er (aeltere
+  // Antwort), zeigt die Maske ihren eigenen Text -- der deckt den haeufigen
+  // Fall ab, nicht aber die Sperrfrist mit ihrem Datum.
+  blockedRequestReasons: Partial<Record<TransferRequestType, string>> = {};
   effectiveDateMode: 'immediate' | 'scheduled' = 'immediate';
   effectiveDate = '';
 
@@ -111,6 +115,19 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
     this.searching = true;
     this.foundPlayer = null;
     this.searchError = '';
+    // Jede Suche fängt bei der Vorauswahl an, mit der die Maske aufgeht. Ohne
+    // das Zurücksetzen bliebe die Umlegung des vorigen Treffers stehen: Wer
+    // einen Spieler mit laufendem Transferantrag sucht, danach den Namen
+    // korrigiert und einen anderen findet, stellte für den zweiten einen
+    // Freigabeantrag statt eines Transfers — die Auswahl stand auf
+    // „Spielerfreigabe", ohne dass für diesen Spieler etwas gesperrt war.
+    this.requestType = 'transfer';
+    this.blockedRequestTypes = [];
+    this.blockedRequestReasons = {};
+    // Der Verein, mit dem gesucht wird: Die Antwort gilt nur für ihn, die
+    // gesperrte Freigabe hängt am Zielverein. Wird währenddessen umgestellt,
+    // gehört die Antwort nicht mehr zur Auswahl und wird verworfen.
+    const searchedClubId = this.selectedClubId;
 
     this._transferService
       .searchPlayer(
@@ -122,8 +139,11 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
+          if (searchedClubId !== this.selectedClubId) return;
+
           this.foundPlayer = result.player;
           this.blockedRequestTypes = result.blocked_request_types ?? [];
+          this.blockedRequestReasons = result.blocked_request_reasons ?? {};
           // Die gesperrte Art nicht bloss abschalten, sondern die Auswahl
           // umlegen: Sonst steht der Knopf unter einer nicht waehlbaren
           // Vorauswahl und die Absage kaeme erst beim Absenden.
@@ -140,7 +160,10 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: (err) => {
+          if (searchedClubId !== this.selectedClubId) return;
+
           this.blockedRequestTypes = [];
+          this.blockedRequestReasons = {};
           // err.message wäre nur der technische HTTP-Text – die fachliche
           // Meldung (z.B. Geburtsdatum-Format, 422) steckt in err.error.error.
           this.searchError =
@@ -160,15 +183,34 @@ export class TransferRequestInitiateComponent implements OnInit, OnDestroy {
   // prueft gegen ihn (Zustaendigkeit, Deaktivierung, laufende Freigabe auf
   // genau diesen Verein). Nach einem Vereinswechsel steht deshalb wieder die
   // Suche an, statt einer Antwort, die zu einem anderen Verein gehoert.
-  onRequestingClubChange(clubId: number): void {
-    this.selectedClubId = clubId;
+  // Der Typ ist der Wertebereich von fb-select-search (`SelectSearchValue`,
+  // dort nicht über @floorball/uikit/common exportiert): Die Maske rechnet mit
+  // einer Zahl, und 0 ist hier „kein Verein gewählt" (siehe resetValue).
+  onRequestingClubChange(clubId: string | number | null): void {
+    this.selectedClubId = Number(clubId) || 0;
     this.foundPlayer = null;
     this.blockedRequestTypes = [];
+    this.blockedRequestReasons = {};
+    this.requestType = 'transfer';
     this.searchError = '';
+    this._cdr.markForCheck();
   }
 
   isTypeBlocked(type: TransferRequestType): boolean {
     return this.blockedRequestTypes.includes(type);
+  }
+
+  // Der Grund der API, sonst der eigene Text. Die API nennt bei der Sperrfrist
+  // das Datum, ab dem es wieder geht -- das kann die Maske nicht wissen.
+  blockedReason(type: TransferRequestType): string {
+    return (
+      this.blockedRequestReasons[type] ??
+      this._transloco.translate(
+        type === 'release'
+          ? 'transferRequestAdmin.initiate.typeReleaseBlocked'
+          : 'transferRequestAdmin.initiate.typeTransferBlocked'
+      )
+    );
   }
 
   // Beide Arten gesperrt: Der Antrag ist fuer diesen Spieler und diesen Verein

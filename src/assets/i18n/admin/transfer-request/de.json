@@ -151,7 +151,8 @@
     "bornPrefix": "geb. {{ date }}",
     "submitting": "Wird zugewiesen…",
     "assignDirectly": "Direkt zuweisen",
-    "deactivatedHint": "Dieses Profil ist von seinem Verein deaktiviert. Das ist kein Hindernis: Mit der Aufnahme entfällt die Kennzeichnung."
+    "deactivatedHint": "Dieses Profil ist von seinem Verein deaktiviert. Das ist kein Hindernis: Mit der Aufnahme entfällt die Kennzeichnung.",
+    "transferBlocked": "Für diesen Spieler läuft bereits ein Transfer. Er muss zuerst annulliert werden."
   },
   "notifications": {
     "loadError": "Transferanträge konnten nicht geladen werden.",

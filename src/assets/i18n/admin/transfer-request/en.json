@@ -151,7 +151,8 @@
     "bornPrefix": "b. {{ date }}",
     "submitting": "Assigning…",
     "assignDirectly": "Assign directly",
-    "deactivatedHint": "This profile has been deactivated by its club. That is not an obstacle: the marking is removed when the player joins."
+    "deactivatedHint": "This profile has been deactivated by its club. That is not an obstacle: the marking is removed when the player joins.",
+    "transferBlocked": "A transfer for this player is already running. It has to be cancelled first."
   },
   "notifications": {
     "loadError": "Transfer requests could not be loaded.",

@@ -127,7 +127,6 @@
           <label
             class="flex items-start gap-2 text-sm"
             [class.cursor-pointer]="!isTypeBlocked('transfer')"
-            [class.opacity-50]="isTypeBlocked('transfer')"
           >
             <input
               type="radio"
@@ -137,16 +136,26 @@
               class="mt-0.5"
             />
             <span class="flex flex-col gap-0.5">
-              <span class="font-medium">{{
-                "transferRequestAdmin.initiate.typeTransfer" | transloco
-              }}</span>
-              <span class="text-xs text-fb-gray-500">{{
-                "transferRequestAdmin.initiate.typeTransferHint" | transloco
-              }}</span>
+              <!-- Abgedunkelt wird nur die Beschreibung der Antragsart, nicht
+                   der Sperrgrund darunter: Der ist die Auskunft, auf die es in
+                   diesem Zustand ankommt. -->
+              <span
+                class="font-medium"
+                [class.opacity-50]="isTypeBlocked('transfer')"
+                >{{
+                  "transferRequestAdmin.initiate.typeTransfer" | transloco
+                }}</span
+              >
+              <span
+                class="text-xs text-fb-gray-500"
+                [class.opacity-50]="isTypeBlocked('transfer')"
+                >{{
+                  "transferRequestAdmin.initiate.typeTransferHint" | transloco
+                }}</span
+              >
               @if (isTypeBlocked("transfer")) {
                 <span class="text-xs text-red-600">{{
-                  "transferRequestAdmin.initiate.typeTransferBlocked"
-                    | transloco
+                  blockedReason("transfer")
                 }}</span>
               }
             </span>
@@ -154,7 +163,6 @@
           <label
             class="flex items-start gap-2 text-sm"
             [class.cursor-pointer]="!isTypeBlocked('release')"
-            [class.opacity-50]="isTypeBlocked('release')"
           >
             <input
               type="radio"
@@ -164,15 +172,23 @@
               class="mt-0.5"
             />
             <span class="flex flex-col gap-0.5">
-              <span class="font-medium">{{
-                "transferRequestAdmin.initiate.typeRelease" | transloco
-              }}</span>
-              <span class="text-xs text-fb-gray-500">{{
-                "transferRequestAdmin.initiate.typeReleaseHint" | transloco
-              }}</span>
+              <span
+                class="font-medium"
+                [class.opacity-50]="isTypeBlocked('release')"
+                >{{
+                  "transferRequestAdmin.initiate.typeRelease" | transloco
+                }}</span
+              >
+              <span
+                class="text-xs text-fb-gray-500"
+                [class.opacity-50]="isTypeBlocked('release')"
+                >{{
+                  "transferRequestAdmin.initiate.typeReleaseHint" | transloco
+                }}</span
+              >
               @if (isTypeBlocked("release")) {
                 <span class="text-xs text-red-600">{{
-                  "transferRequestAdmin.initiate.typeReleaseBlocked" | transloco
+                  blockedReason("release")
                 }}</span>
               }
             </span>

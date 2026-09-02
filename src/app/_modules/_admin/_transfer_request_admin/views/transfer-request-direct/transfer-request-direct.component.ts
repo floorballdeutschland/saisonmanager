@@ -79,6 +79,14 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  // Die Suche wies bis api#597 JEDEN Spieler mit laufendem Vorgang ab. Seit sie
+  // nur noch abweist, wenn gar keine Antragsart mehr geht, muss diese Maske den
+  // laufenden Transfer selbst kennen: Sonst zeigt sie Treffer und Knopf, und
+  // die Absage („Bitte zuerst annullieren") kommt erst nach dem Klick — also
+  // genau die spaete Absage, die dieselbe Aenderung an der Antragsmaske
+  // beseitigt.
+  transferBlockedReason = '';
+
   search(): void {
     if (
       !this.firstName ||
@@ -91,6 +99,7 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
     this.searching = true;
     this.foundPlayer = null;
     this.searchError = '';
+    this.transferBlockedReason = '';
 
     this._transferService
       .searchPlayer(
@@ -103,6 +112,17 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           this.foundPlayer = result.player;
+          // Die Direktzuweisung IST ein Transfer; eine laufende Freigabe steht
+          // ihr nicht entgegen (sie endet mit dem Vollzug), ein laufender
+          // Transfer und die Sperrfrist schon.
+          this.transferBlockedReason = result.blocked_request_types?.includes(
+            'transfer'
+          )
+            ? (result.blocked_request_reasons?.transfer ??
+              this._transloco.translate(
+                'transferRequestAdmin.direct.transferBlocked'
+              ))
+            : '';
           if (!result.player) {
             this.searchError = this._transloco.translate(
               'transferRequestAdmin.notifications.playerNotFound'
@@ -112,6 +132,7 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: (err) => {
+          this.transferBlockedReason = '';
           this.searchError =
             (typeof err === 'string' ? err : err?.error?.error) ||
             this._transloco.translate(
@@ -125,6 +146,7 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
 
   submit(): void {
     if (!this.foundPlayer || !this.selectedClubId) return;
+    if (this.transferBlockedReason) return;
 
     this.submitting = true;
     this._transferService

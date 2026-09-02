@@ -22,9 +22,14 @@ export class TransferRequestService {
   }
 
   // `blocked_request_types` nennt die Antragsarten, die fuer diesen Spieler
-  // gerade gesperrt sind (laufender Transfer, oder laufende Freigabe auf genau
-  // diesen Verein). Die Maske waehlt die Art erst am gefundenen Spieler, die
+  // gerade gesperrt sind (laufender Transfer, Transfersperrfrist, oder laufende
+  // Freigabe auf genau diesen Verein), `blocked_request_reasons` je Art den
+  // Grund im Klartext. Die Maske waehlt die Art erst am gefundenen Spieler, die
   // Suche kann sie deshalb nicht mitschicken und liefert stattdessen beides.
+  //
+  // Der Grund kommt vom Server, weil nur er ihn kennt: „bereits ein Antrag
+  // aktiv" und „Sperrfrist bis zum TT.MM.JJJJ" sind verschiedene Sachverhalte
+  // mit verschiedenen Folgen (annullieren lassen gegen abwarten).
   searchPlayer(
     firstName: string,
     lastName: string,
@@ -34,6 +39,7 @@ export class TransferRequestService {
     return this.http.get<{
       player: PlayerSearchResult | null;
       blocked_request_types?: TransferRequestType[];
+      blocked_request_reasons?: Partial<Record<TransferRequestType, string>>;
     }>(`${this.base}/search_player.json`, {
       params: {
         first_name: firstName,
