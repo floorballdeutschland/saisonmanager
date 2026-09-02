@@ -167,9 +167,16 @@ describe('renderStreamThumbnail', () => {
       }
     );
 
-    await renderStreamThumbnail(canvas, input());
+    await renderStreamThumbnail(
+      canvas,
+      // Kurze Namen: Ob ein langer Name ein- oder zweizeilig gesetzt wird,
+      // hängt an den Maßen der Schrift, und die Schriftdateien liegen unter
+      // Karma nicht bereit. Der Umbruch selbst ist bei `wrapText` geprüft, hier
+      // geht es darum, DASS Paarung, Liga und Kennzeichen im Bild stehen.
+      input({ home: { name: 'ETV Hamburg' }, guest: { name: 'MFBC Grimma' } })
+    );
 
-    expect(texts).toContain('UHC SPARKASSE WEISSENFELS');
+    expect(texts).toContain('ETV HAMBURG');
     expect(texts).toContain('MFBC GRIMMA');
     expect(texts).toContain('2. FLOORBALL-BUNDESLIGA HERREN');
     expect(texts).toContain('LIVESTREAM');
@@ -189,6 +196,8 @@ describe('renderStreamThumbnail', () => {
       canvas,
       input({
         variant: 'highlights',
+        home: { name: 'ETV Hamburg' },
+        guest: { name: 'MFBC Grimma' },
         score: { home: 5, guest: 3, postfix: 'n.V.' },
       })
     );
