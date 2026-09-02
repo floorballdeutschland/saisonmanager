@@ -24,8 +24,9 @@
        Zugang erzeugen können, ohne die Eingabe zu starten. Das Starten setzt
        den Spielstatus und ist öffentlich sichtbar. Ohne Anmeldung blendet
        sich der Abschnitt selbst aus. -->
-  <div class="mt-6">
+  <div class="mt-6 grid gap-4">
     <fb-overlay-links [game]="game"></fb-overlay-links>
+    <fb-stream-thumbnails [game]="game"></fb-stream-thumbnails>
   </div>
 </div>
 
