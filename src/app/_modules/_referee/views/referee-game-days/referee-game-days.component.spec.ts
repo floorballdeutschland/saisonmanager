@@ -66,6 +66,22 @@ describe('RefereeGameDaysComponent (Bestätigungsstatus)', () => {
     ).toBe('pending');
   });
 
+  // Der einzige Fall, an dem das Vorzeichen des Vergleichs zählt: genau am
+  // Freischaltzeitpunkt. Die API sperrt mit `Time.current < threshold`, ist
+  // also in derselben Sekunde offen – ein `>=` hier statt `>` würde die Maske
+  // eine Sekunde lang „Noch nicht offen" sagen lassen, obwohl die Bestätigung
+  // durchgeht.
+  it('meldet genau am Freischaltzeitpunkt "pending"', () => {
+    const jetzt = new Date('2026-09-12T18:00:00Z').getTime();
+    spyOn(Date, 'now').and.returnValue(jetzt);
+
+    expect(
+      component.confirmationStatus(
+        spieltag({ confirmable_from: new Date(jetzt).toISOString() })
+      )
+    ).toBe('pending');
+  });
+
   it('meldet ohne Freischaltzeitpunkt "pending"', () => {
     expect(component.confirmationStatus(spieltag())).toBe('pending');
   });
