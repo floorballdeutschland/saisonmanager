@@ -171,6 +171,7 @@
     "confirmedProperlyAt": "Ordnungsgemäß bestätigt am {{ date }}",
     "autoConfirmed": "Automatisch bestätigt",
     "pending": "Ausstehend",
+    "notYetOpen": "Noch nicht offen",
     "reportedImproperAt": "Als nicht ordnungsgemäß gemeldet am {{ date }}",
     "partner": "Partner:",
     "notesTitle": "Zusätzliche Spielinformationen der Ansetzung",
