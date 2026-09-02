@@ -20,6 +20,7 @@ import {
   leagueMarkUrl,
 } from 'src/app/_helpers/_utils/competition-theme';
 import {
+  STINGER_TRANSITION_POINT_MS,
   ThumbnailInput,
   ThumbnailResult,
   ThumbnailVariant,
@@ -31,7 +32,12 @@ import {
 const WEEKDAYS = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
 
 /**
- * Thumbnails für YouTube, im Bild des Wettbewerbs.
+ * Grafiken einer Übertragung, im Bild des Wettbewerbs: Thumbnails für YouTube
+ * und die Übergangsgrafik (Stinger) für Wiederholungen.
+ *
+ * Beides in EINER Karte, weil beides dieselbe Auskunft braucht -- welcher
+ * Wettbewerb das ist -- und die steht nicht im Spielabruf. Getrennt gebaut,
+ * fragten zwei Komponenten dieselbe Liga zweimal ab.
  *
  * Steht neben den Overlay-Adressen im Spielbericht UND in der öffentlichen
  * Spielansicht. Das zweite ist kein Beiwerk: Der Zugang zu den Overlays hängt
@@ -45,12 +51,12 @@ const WEEKDAYS = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
  * als 401 auf und der ErrorInterceptor meldete es mitten im Spiel ab.
  */
 @Component({
-  selector: 'fb-stream-thumbnails',
-  templateUrl: './stream-thumbnails.component.html',
+  selector: 'fb-stream-graphics',
+  templateUrl: './stream-graphics.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
-export class StreamThumbnailsComponent
+export class StreamGraphicsComponent
   implements OnInit, OnChanges, AfterViewInit
 {
   @Input()
@@ -95,6 +101,35 @@ export class StreamThumbnailsComponent
    */
   public get canCreate(): boolean {
     return Boolean(this.game?.permission?.includes('edit_game_report'));
+  }
+
+  /**
+   * Der Wettbewerb, um den es geht. EINE Quelle für Farbwelt, Bildmarke und
+   * Übergangsgrafik, damit die drei nicht auseinanderlaufen können.
+   */
+  public get competition(): CompetitionKey {
+    return competitionKey(this._league);
+  }
+
+  /**
+   * Die Übergangsgrafik zum Wettbewerb. Es gibt für jeden Schlüssel eine Datei,
+   * auch für die nicht zuzuordnenden -- ein Übergang darf nie ins Leere zeigen.
+   */
+  public get stingerUrl(): string {
+    return `/overlay/stinger/${this.competition}.webm`;
+  }
+
+  public get stingerTransitionPoint(): number {
+    return STINGER_TRANSITION_POINT_MS;
+  }
+
+  /**
+   * Name der gespeicherten Datei. Nicht `neutral.webm` im Download-Ordner: Wer
+   * mehrere Wettbewerbe überträgt, hat sonst mehrere gleich benannte Dateien
+   * und trägt in OBS die falsche ein.
+   */
+  public get stingerFilename(): string {
+    return `saisonmanager-uebergang-${this.competition}.webm`;
   }
 
   /**
@@ -269,7 +304,7 @@ export class StreamThumbnailsComponent
   }
 
   private input(): ThumbnailInput {
-    const key: CompetitionKey = competitionKey(this._league);
+    const key: CompetitionKey = this.competition;
     const result = this.game.result;
 
     return {

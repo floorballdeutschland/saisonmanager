@@ -161,6 +161,15 @@ export function competitionKey(
   return league.female ? 'damen' : 'neutral';
 }
 
+/**
+ * Alle Wettbewerbsschlüssel.
+ *
+ * Gebraucht, weil an jedem eine DATEI hängt: `overlay/stinger/<key>.webm`. Wer
+ * hier einen Schlüssel hinzufügt, muss ihn in `scripts/build-stinger.sh`
+ * mitführen, sonst zeigt der Download ins Leere.
+ */
+export const COMPETITION_KEYS = Object.keys(PALETTES) as CompetitionKey[];
+
 export function competitionPalette(key: CompetitionKey): CompetitionPalette {
   return PALETTES[key] ?? PALETTES.neutral;
 }

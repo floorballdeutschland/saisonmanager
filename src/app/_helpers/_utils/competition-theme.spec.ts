@@ -1,4 +1,5 @@
 import {
+  COMPETITION_KEYS,
   competitionKey,
   competitionMarkUrl,
   competitionPalette,
@@ -98,6 +99,25 @@ describe('competitionPalette', () => {
       competitionPalette('1fbl-m').accent
     );
     expect(competitionPalette('damen')).toEqual(competitionPalette('1fbl-w'));
+  });
+});
+
+// An jedem Schlüssel hängt eine Datei (`overlay/stinger/<key>.webm`). Diese
+// Liste ist die Stelle, an der ein neuer Wettbewerb auffällt.
+describe('COMPETITION_KEYS', () => {
+  it('führt jeden Wettbewerb, für den es eine Farbwelt gibt', () => {
+    expect(COMPETITION_KEYS.sort()).toEqual(
+      [
+        '1fbl-m',
+        '1fbl-w',
+        '2fbl-m',
+        '2fbl-w',
+        'damen',
+        'neutral',
+        'pokal',
+        'regional',
+      ].sort() as never
+    );
   });
 });
 

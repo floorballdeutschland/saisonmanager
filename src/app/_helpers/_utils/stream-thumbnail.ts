@@ -43,6 +43,17 @@ export const THUMBNAIL_HEIGHT = 720;
 const TO_BLOB_TIMEOUT_MS = 15000;
 
 /**
+ * Übergangszeitpunkt der Stinger aus `overlay/stinger/`, in Millisekunden.
+ *
+ * Der Wert gehört in OBS ins Feld „Übergangspunkt (ms)" und muss zur Datei
+ * passen: Er liegt in der Mitte der gedeckten Phase, dort ist der Schnitt
+ * verdeckt. Steht hier, weil ihn die Oberfläche nennt; erzeugt wird er von
+ * `scripts/build-stinger.sh`, und wer die Zeitmarken dort ändert, ändert ihn
+ * hier mit.
+ */
+export const STINGER_TRANSITION_POINT_MS = 500;
+
+/**
  * Zwei Bildaufbauten, nicht mehr: Vor und während der Übertragung steht die
  * Paarung im Bild, danach das Ergebnis. Ein drittes „live" unterschiede sich
  * allein durch das Wort im Kennzeichen und wäre eine Wahl ohne Folgen.

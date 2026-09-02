@@ -9942,6 +9942,107 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
 
           <div class="sec">
             <span class="num">08</span>
+            <h2>Thumbnails und Übergangsgrafik</h2>
+          </div>
+          <p class="proc-text">
+            Zwei Grafiken gehören nicht in OBS, sondern daneben: das Thumbnail,
+            unter dem dein Video bei YouTube steht, und die Übergangsgrafik für
+            Wiederholungen. Beide findest du im Abschnitt
+            <strong>Grafiken für die Übertragung</strong>, im Spielbericht unter
+            den Overlay-Adressen und zusätzlich in der öffentlichen Ansicht des
+            Spiels. Die öffentliche Ansicht ist der Weg nach dem Spiel: Das
+            Overlay-Token läuft nach 36 Stunden ab, ein Highlightvideo
+            schneidest du oft später.
+          </p>
+          <details class="proc" open>
+            <summary>
+              <span class="proc-icon">🖼️</span>
+              <div>
+                <div class="proc-title">Thumbnail für YouTube</div>
+                <div class="proc-sub">
+                  Zwei Bildaufbauten, fertig zum Hochladen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Das Bild misst <code>1280 × 720</code> und trägt Farben und
+                Zeichen deines Wettbewerbs, dieselben wie die Overlays. Wähle
+                <em>Livestream</em> für die Übertragung selbst, das ist die
+                Paarung mit Anstoß und Halle, oder <em>Highlights</em> für das
+                Video danach, dasselbe Bild mit dem Endstand an der Stelle des
+                „VS“. Das Highlight-Bild gibt es erst nach dem Schlusspfiff,
+                vorher gäbe es kein Ergebnis zu zeigen. Ein Druck auf
+                <em>Thumbnail herunterladen</em> legt eine PNG-Datei in deinen
+                Download-Ordner, die du bei YouTube als Vorschaubild hochlädst.
+              </p>
+              <div class="note">
+                <strong>Die rechte untere Ecke bleibt frei</strong>, dort legt
+                YouTube die Laufzeit über das Bild. Fehlt einem Verein das
+                Wappen, steht an seiner Stelle sein Kürzel; nachtragen kann es
+                nur der Verein selbst, siehe
+                <a href="#panel-streamer">Abschnitt 07</a>.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🎬</span>
+              <div>
+                <div class="proc-title">Übergangsgrafik für Wiederholungen</div>
+                <div class="proc-sub">Eine Datei, kein Link</div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Eine Sekunde Wischblende mit dem Ligazeichen, freigestellt. Sie
+                deckt den Schnitt, wenn du auf eine Wiederholung gehst und
+                wieder zurück. Anders als alles andere in diesem Kapitel ist sie
+                eine <strong>Datei</strong> und keine Adresse: Ein Stinger ist
+                in OBS ein Übergang, und Übergänge sind dort immer Videodateien.
+              </p>
+              <p class="proc-text">
+                Lade sie mit <em>Übergangsgrafik herunterladen</em> und lege sie
+                an einen Ort, an dem sie liegen bleibt, etwa neben deine
+                OBS-Profile. Dann in OBS unten rechts im Feld
+                <em>Szenenübergänge</em> auf <em>+</em>, <em>Stinger</em>
+                wählen, einen Namen vergeben und im Fenster darauf:
+              </p>
+              <ul class="checklist">
+                <li class="good">
+                  <em>Videodatei</em>: die heruntergeladene
+                  <code>.webm</code>-Datei.
+                </li>
+                <li class="good">
+                  <em>Übergangspunkt</em>: <code>500</code>, Typ
+                  <em>Zeit (Millisekunden)</em>.
+                </li>
+                <li class="good">
+                  <em>Audio-Überwachung</em> und <em>Spurabgleich</em> bleiben,
+                  wie sie sind. Die Datei hat keinen Ton.
+                </li>
+              </ul>
+              <div class="note">
+                <strong>Der Übergangspunkt gehört dazu.</strong> Bei 500
+                Millisekunden schneidet OBS genau dann, wenn die Grafik das Bild
+                deckt. Bleibt der Wert auf dem Vorschlag von OBS, schneidet es
+                zu früh oder zu spät und der Schnitt ist trotz Grafik zu sehen.
+              </div>
+              <div class="note">
+                Die Datei gehört zum Wettbewerb: Jede Liga bekommt ihre Farben,
+                die vier Bundesligen und der Pokal zusätzlich ihr Zeichen. Ein
+                Wettbewerb ohne eigenes Zeichen, etwa eine Meisterschaft,
+                bekommt die neutrale Fassung. Überträgst du in mehreren
+                Wettbewerben, lade sie einzeln herunter, die Dateinamen halten
+                sie auseinander.
+              </div>
+            </div>
+          </details>
+
+          <div class="sec">
+            <span class="num">09</span>
             <h2>Der nächste Spieltag</h2>
           </div>
           <p class="proc-text">
@@ -10105,7 +10206,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
           </details>
 
           <div class="sec">
-            <span class="num">09</span>
+            <span class="num">10</span>
             <h2>Eigene Grafiken und Fremdsoftware</h2>
           </div>
           <p class="proc-text">
@@ -10208,7 +10309,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             <em>Zugang zurückziehen</em>.
           </div>
           <div class="sec">
-            <span class="num">10</span>
+            <span class="num">11</span>
             <h2>Kurzcheckliste für den Spieltag</h2>
           </div>
           <ul class="checklist">
