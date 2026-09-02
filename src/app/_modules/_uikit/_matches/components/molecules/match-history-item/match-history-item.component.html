@@ -1,6 +1,6 @@
 @if (event | normalizeEvent: match : additionalFields; as gameEvent) {
   <div
-    class="grid grid-cols-[36px_1fr_30px_auto_60px] md:grid-cols-[36px_1fr_30px_80px_30px_20px_60px_20px_30px_80px_30px_1fr_36px] items-center text-sm min-h-[78px] md:h-[78px]"
+    class="grid grid-cols-[36px_1fr_30px_fit-content(96px)_60px] md:grid-cols-[36px_1fr_30px_80px_30px_20px_60px_20px_30px_80px_30px_1fr_36px] items-center text-sm min-h-[78px] md:h-[78px]"
     [ngClass]="
       !allowCancel
         ? 'md:grid-rows-2'
@@ -32,7 +32,7 @@
           </svg>
         }
       </div>
-      <div class="min-w-0">
+      <div class="max-md:min-w-0 max-md:break-words">
         <div class="ml-3.5">
           @if (
             gameEvent.event_type === "goal" &&
@@ -67,14 +67,18 @@
           {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
         }
       </div>
-      <div class="font-bold md:text-right px-1.5 md:px-3 text-xs md:text-sm">
+      <div
+        class="font-bold md:text-right px-1.5 md:px-3 text-xs md:text-sm max-md:break-words"
+      >
         @switch (gameEvent.event_type) {
           @case ("goal") {
             Tor
           }
           @case ("penalty") {
-            <span class="hidden md:inline">Strafe&nbsp;</span
-            >{{ gameEvent.penalty_type_string }}
+            <span class="hidden md:inline">{{
+              "Strafe " + gameEvent.penalty_type_string
+            }}</span>
+            <span class="md:hidden">{{ gameEvent.penalty_type_string }}</span>
           }
           @case ("timeout") {
             {{ "Auszeit" }}
@@ -157,15 +161,17 @@
         }
       </div>
       <div
-        class="font-bold px-1.5 md:px-3 text-xs md:text-sm row-start-1 col-start-4 md:col-start-10"
+        class="font-bold px-1.5 md:px-3 text-xs md:text-sm max-md:break-words row-start-1 col-start-4 md:col-start-10"
       >
         @switch (gameEvent.event_type) {
           @case ("goal") {
             Tor
           }
           @case ("penalty") {
-            <span class="hidden md:inline">Strafe&nbsp;</span
-            >{{ gameEvent.penalty_type_string }}
+            <span class="hidden md:inline">{{
+              "Strafe " + gameEvent.penalty_type_string
+            }}</span>
+            <span class="md:hidden">{{ gameEvent.penalty_type_string }}</span>
           }
           @case ("timeout") {
             {{ "Auszeit" }}
@@ -178,7 +184,7 @@
         }
       </div>
       <div
-        class="md:text-right row-start-1 col-start-2 md:col-start-12 min-w-0"
+        class="md:text-right row-start-1 col-start-2 md:col-start-12 max-md:min-w-0 max-md:break-words"
       >
         <div class="ml-3.5 md:mr-3.5">
           @if (
