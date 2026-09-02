@@ -194,6 +194,7 @@
       <ng-container *ngIf="canEditGame(); else permissionDenied">
         <fb-match-report-intro
           *ngIf="game.game_status === null"
+          [game]="game"
           (handleGameStatusChange)="handleGameStatusChange(PREGAME)"
         >
         </fb-match-report-intro>
@@ -349,9 +350,7 @@
             </p>
             <p class="text-sm text-gray-600 mt-1">
               Hochgeladen am
-              {{
-                existingScan.uploaded_at | date: "dd.MM.yyyy, HH:mm"
-              }}
+              {{ existingScan.uploaded_at | date: "dd.MM.yyyy, HH:mm" }}
               Uhr<span *ngIf="existingScan.uploaded_by_name">
                 von {{ existingScan.uploaded_by_name }}</span
               >

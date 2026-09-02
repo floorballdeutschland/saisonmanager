@@ -103,9 +103,14 @@
             </div>
           }
         </div>
+        @if (transferBlockedReason) {
+          <div class="text-sm text-red-600">
+            {{ transferBlockedReason }}
+          </div>
+        }
         <button
           type="button"
-          [disabled]="submitting"
+          [disabled]="submitting || !!transferBlockedReason"
           (click)="submit()"
           class="self-start px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
         >
