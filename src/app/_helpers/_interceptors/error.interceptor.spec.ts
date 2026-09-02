@@ -277,6 +277,24 @@ describe('ErrorInterceptor', () => {
   // Lizenzdokumente sind ein Nachschlag zu einer offenen Seite, keine eigene
   // Ansicht. Der generische 403-Zweig warf die Nutzerin bzw. den Nutzer mitten
   // aus der Spielerbearbeitung auf die Startseite (SAISONMANAGER-2D): Der
+  // Der Overlay-Zustand wird still im Hintergrund abgerufen, sobald der
+  // Abschnitt „Livestream-Overlays" rendert. Seine Rechteregel endet beim
+  // Ausrichter, während der Gastverein den Spielbericht sehr wohl mitführen
+  // darf -- ein Gast-Teammanager bekommt dort also planmäßig 403 und flog
+  // dafür aus dem geöffneten Bericht auf die Startseite.
+  it('leaves the page alone when the overlay link state is forbidden', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { error: 'Nicht berechtigt.' },
+      403,
+      `${environment.apiURL}user/game_days/512/overlay_link`
+    );
+
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
   // Spieler ist sichtbar, seine Unterlagen aber nicht. Geprüft wird beides —
   // kein Toast UND keine Navigation, denn der Rauswurf war das eigentliche
   // Ärgernis, nicht die Meldung.
@@ -629,17 +647,20 @@ describe('ErrorInterceptor', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/']);
   });
 
-  // Zweite Gegenprobe, der schaerfere Rand: Der Spieltags-Link liegt unter
-  // user/game_days/ und wird beim Oeffnen des Berichts geladen. Wuerde die
-  // Ausnahme spaeter auf `user/game` verkuerzt, faenge sie ihn mit ein.
-  it('still redirects on a 403 for the game day overlay link', () => {
+  // Zweite Gegenprobe, der schaerfere Rand: Sie stand frueher auf dem
+  // Overlay-Zugang und haelt jetzt den Nachbarendpunkt fest. Der Overlay-Zustand
+  // hat seit dem Abschnitt in der Sekretariats-Uebersicht eine EIGENE Ausnahme
+  // (siehe oben), der Sekretariatslink dagegen nicht: Er wird nur auf
+  // ausdruecklichen Druck geholt, nicht still beim Oeffnen einer Seite. Wuerde
+  // die Ausnahme spaeter auf `user/game_days/` verkuerzt, fienge sie ihn mit ein.
+  it('still redirects on a 403 for the game day secretary link', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigate');
 
     failWith(
       { message: 'Keine Berechtigung' },
       403,
-      `${environment.apiURL}user/game_days/42/overlay_link.json`
+      `${environment.apiURL}user/game_days/42/secretary_link.json`
     );
 
     expect(errorSpy).toHaveBeenCalled();

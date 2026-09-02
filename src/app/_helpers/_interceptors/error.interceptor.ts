@@ -372,6 +372,23 @@ export class ErrorInterceptor implements HttpInterceptor {
         // aus einem laufenden Spielbericht werfen, gleich aus welchem Grund.
         const matchReportRequest = request.url.includes('user/games/');
 
+        // Der Overlay-Zugang hängt am SPIELTAG (`user/game_days/:id/overlay_link`)
+        // und fällt deshalb nicht unter `user/games/` darüber. Der Zustandsabruf
+        // läuft still im Hintergrund, sobald der Abschnitt „Livestream-Overlays"
+        // gerendert wird, und seine Rechteregel ist mit Absicht enger als die am
+        // Spielbericht: Der Gastverein darf seine Aufstellung führen
+        // (`pregame_edit_guest`), einen Overlay-Zugang aber nicht erzeugen (siehe
+        // GameDayLinkAuthorization in der API, die Linie endet am Ausrichter).
+        //
+        // Ein Gast-Teammanager im geöffneten Spielbericht bekommt auf diesen
+        // Abruf also planmäßig 403 -- und flog dafür bisher auf die Startseite,
+        // mitten aus dem Bericht heraus, ohne je einen Knopf gedrückt zu haben.
+        // Mit dem Abschnitt in der Sekretariats-Übersicht steht die Komponente
+        // zusätzlich je Spieltag in einer Liste, dort wäre es dasselbe Bild.
+        const overlayLinkRequest = /user\/game_days\/\d+\/overlay_link/.test(
+          request.url
+        );
+
         // Anlegen, Deaktivieren und Reaktivieren einer Person sind Aktionen aus
         // einer bereits geöffneten Arbeitsfläche heraus: aus der Zeile der
         // Vereinsspielerliste oder aus dem geöffneten Formular. Ein 403 darauf
@@ -485,6 +502,7 @@ export class ErrorInterceptor implements HttpInterceptor {
           // Stapelproblem löst der 401-Zweig oben über `secretaryLinkRejected`.
           const staysOnPage =
             matchReportRequest ||
+            overlayLinkRequest ||
             playerClubDecision ||
             licenseDecision ||
             gfRoleDecision;

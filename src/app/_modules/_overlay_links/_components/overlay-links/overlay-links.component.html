@@ -37,6 +37,18 @@
       </p>
     }
 
+    <!-- Dritter Zustand: Der Abruf ist fehlgeschlagen, es ist also nicht
+         bekannt, ob schon ein Zugang läuft. Das muss dastehen, denn „Neu
+         erzeugen" entwertet einen bestehenden Zugang samt der bereits in OBS
+         eingetragenen Adressen. -->
+    @if (overlayStateUnknown) {
+      <p class="text-sm text-fb-gray-500 mt-3">
+        Ob für diesen Spieltag bereits ein Zugang läuft, ließ sich nicht
+        feststellen. Bitte die Seite neu laden, bevor du einen neuen erzeugst:
+        Ein neuer Zugang entwertet einen bestehenden.
+      </p>
+    }
+
     @if (overlayLink?.active && !overlayUrls) {
       <!-- Der Klartext existiert nur in der Antwort auf das Erzeugen.
            Besteht schon ein Zugang, lässt er sich nicht nachreichen. -->

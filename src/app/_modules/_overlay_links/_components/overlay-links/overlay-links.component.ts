@@ -67,6 +67,9 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
   // serverseitig bloß der Digest, sie lassen sich also nicht nachladen.
   public overlayUrls: { overlay_url: string; dock_url: string } | null = null;
   public overlayBusy = false;
+  // Der Zustand ließ sich nicht feststellen (Abruf fehlgeschlagen). Weder
+  // „Zugang läuft" noch „kein Zugang", und die Oberfläche sagt das auch so.
+  public overlayStateUnknown = false;
   public overlayError = '';
   public overlayCopied = '';
   // Aufgeräumt beim Zerstören der Komponente: Ein Timer, der danach noch
@@ -96,12 +99,18 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
     this._gameService.getOverlayLink(this.gameDayId!).subscribe({
       next: (link) => {
         this.overlayLink = link;
+        this.overlayStateUnknown = false;
         this._cdr.markForCheck();
       },
-      // Kein Fehlerhinweis: Der Abruf klärt nur, ob schon ein Zugang besteht.
-      // Schlägt er fehl, bleibt der Knopf zum Erzeugen stehen.
+      // Ein Fehlschlag heißt NICHT „kein Zugang". Genau das behauptete die
+      // Oberfläche vorher: „Zugang zurückziehen" verschwand, der zweite Knopf
+      // hieß wieder „Overlay-Links erzeugen", und der Hinweis auf den
+      // bestehenden Zugang fiel weg. Wer sein Token längst als Browser-Quelle
+      // in OBS stehen hat, drückt darauf -- und entwertet damit den laufenden
+      // Zugang mitten in der Übertragung. Deshalb ein dritter Zustand.
       error: () => {
         this.overlayLink = null;
+        this.overlayStateUnknown = true;
         this._cdr.markForCheck();
       },
     });
@@ -118,6 +127,7 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
           overlay_url: res.overlay_url,
           dock_url: res.dock_url,
         };
+        this.overlayStateUnknown = false;
         this.overlayLink = {
           active: true,
           expires_at: res.expires_at,
@@ -146,6 +156,7 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
     this._gameService.revokeOverlayLink(this.gameDayId!).subscribe({
       next: () => {
         this.overlayLink = { active: false };
+        this.overlayStateUnknown = false;
         this.overlayUrls = null;
         this.overlayBusy = false;
         this._cdr.markForCheck();
@@ -204,6 +215,9 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
       // Kurze Rückmeldung am Knopf, damit erkennbar ist, welcher der beiden
       // Links gerade in der Zwischenablage liegt.
       this.overlayCopied = kind;
+      // Eine Meldung des vorigen, gescheiterten Versuchs darf nicht über einem
+      // Knopf stehen bleiben, der gerade „Kopiert" anzeigt.
+      this.overlayError = '';
       window.clearTimeout(this._copyResetTimer);
       this._copyResetTimer = window.setTimeout(() => {
         this.overlayCopied = '';

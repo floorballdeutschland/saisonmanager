@@ -27,6 +27,14 @@ describe('OverlayLinksComponent', () => {
     http = TestBed.inject(HttpTestingController);
   });
 
+  // `SessionService` liest im Konstruktor `localStorage['user']`, und der
+  // Speicher überlebt im Karma-Browser jeden Spec. Ohne dieses Aufräumen kippt
+  // ausgerechnet die Prüfung „ohne Anmeldung kein Abruf" ins Gegenteil, sobald
+  // ein anderer Spec eine Anmeldung hinterlässt -- und wegen der zufälligen
+  // Spec-Reihenfolge nur manchmal.
+  beforeEach(() => localStorage.removeItem('user'));
+  afterEach(() => localStorage.removeItem('user'));
+
   function create(loggedIn: boolean) {
     if (loggedIn) {
       TestBed.inject(SessionService).currentUser = { id: 1 } as never;
@@ -122,6 +130,89 @@ describe('OverlayLinksComponent', () => {
       'darfst du keinen Overlay-Zugang erzeugen'
     );
     expect(fixture.componentInstance.overlayBusy).toBeFalse();
+  });
+
+  // Ein fehlgeschlagener Abruf ist keine Auskunft. Vorher stand danach
+  // „Overlay-Links erzeugen" da, als liefe keiner -- ein Druck darauf entwertet
+  // aber einen bestehenden Zugang samt der schon in OBS eingetragenen Adressen.
+  it('behauptet nach einem fehlgeschlagenen Abruf nicht, es laufe kein Zugang', () => {
+    const fixture = create(true);
+
+    http
+      .expectOne((r) => r.url.indexOf('game_days/7/overlay_link') !== -1)
+      .flush(null, { status: 500, statusText: 'Server Error' });
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.overlayStateUnknown).toBeTrue();
+    expect(fixture.componentInstance.overlayLink).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain(
+      'ließ sich nicht feststellen'
+    );
+  });
+
+  // Das Zurückziehen ist der Notausgang, wenn ein Link im Vereinschat gelandet
+  // ist. Ohne diesen Test fiele ein hängendes `overlayBusy` niemandem auf, und
+  // der Knopf wäre danach dauerhaft tot.
+  it('zieht einen Zugang zurück und räumt die angezeigten Adressen weg', () => {
+    const fixture = create(true);
+    http
+      .expectOne((r) => r.url.indexOf('game_days/7/overlay_link') !== -1)
+      .flush({ active: true });
+
+    fixture.componentInstance.generateOverlayLink();
+    http
+      .expectOne((r) => r.method === 'POST')
+      .flush({
+        overlay_url: 'https://example.org/overlay',
+        dock_url: 'https://example.org/dock',
+        expires_at: '2026-01-13T12:00:00Z',
+        created_by: 'Wer Auchimmer',
+      });
+    expect(fixture.componentInstance.overlayUrls).not.toBeNull();
+
+    fixture.componentInstance.revokeOverlayLink();
+    http.expectOne((r) => r.method === 'DELETE').flush({});
+
+    expect(fixture.componentInstance.overlayUrls).toBeNull();
+    expect(fixture.componentInstance.overlayLink?.active).toBeFalse();
+    expect(fixture.componentInstance.overlayBusy).toBeFalse();
+  });
+
+  it('meldet einen gescheiterten Widerruf, statt den Knopf zu sperren', () => {
+    const fixture = create(true);
+    http
+      .expectOne((r) => r.url.indexOf('game_days/7/overlay_link') !== -1)
+      .flush({ active: true });
+
+    fixture.componentInstance.revokeOverlayLink();
+    http
+      .expectOne((r) => r.method === 'DELETE')
+      .flush(null, { status: 500, statusText: 'Server Error' });
+
+    expect(fixture.componentInstance.overlayError).toContain(
+      'nicht zurückgezogen werden'
+    );
+    expect(fixture.componentInstance.overlayBusy).toBeFalse();
+  });
+
+  // Der Klartext des Tokens erscheint genau einmal. Wer „Kopiert" liest, obwohl
+  // nichts in der Zwischenablage liegt, fügt in OBS etwas Altes ein.
+  it('meldet einen Fehlschlag der Zwischenablage, statt Kopiert zu behaupten', async () => {
+    const fixture = create(true);
+    http
+      .expectOne((r) => r.url.indexOf('game_days/7/overlay_link') !== -1)
+      .flush({ active: false });
+
+    spyOnProperty(navigator, 'clipboard', 'get').and.returnValue(
+      undefined as never
+    );
+
+    await fixture.componentInstance.copyOverlayUrl('overlay', 'https://x');
+
+    expect(fixture.componentInstance.overlayCopied).toBe('');
+    expect(fixture.componentInstance.overlayError).toContain(
+      'Kopieren war nicht möglich'
+    );
   });
 
   afterEach(() => http.verify());
