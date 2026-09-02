@@ -1,6 +1,6 @@
 @if (event | normalizeEvent: match : additionalFields; as gameEvent) {
   <div
-    class="grid grid-cols-[36px_1fr_30px_80px_60px] md:grid-cols-[36px_1fr_30px_80px_30px_20px_60px_20px_30px_80px_30px_1fr_36px] items-center text-sm h-[78px]"
+    class="grid grid-cols-[36px_1fr_30px_80px_60px] md:grid-cols-[36px_1fr_30px_104px_30px_20px_60px_20px_30px_104px_30px_1fr_36px] items-center text-sm h-[78px]"
     [ngClass]="!allowCancel ? 'grid-rows-2' : 'grid-rows-3 h-[119px]'"
   >
     @if (gameEvent.event_team === "home") {
@@ -63,7 +63,7 @@
           {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
         }
       </div>
-      <div class="font-bold md:text-right px-3">
+      <div class="font-bold md:text-right px-3 break-words">
         @switch (gameEvent.event_type) {
           @case ("goal") {
             Tor
@@ -151,7 +151,9 @@
           }
         }
       </div>
-      <div class="font-bold px-3 row-start-1 col-start-4 md:col-start-10">
+      <div
+        class="font-bold px-3 break-words row-start-1 col-start-4 md:col-start-10"
+      >
         @switch (gameEvent.event_type) {
           @case ("goal") {
             Tor
