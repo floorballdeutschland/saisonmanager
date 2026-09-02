@@ -1,11 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, Input, NO_ERRORS_SCHEMA } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { of, throwError } from 'rxjs';
 import { GameService, NotificationService } from '@floorball/core';
-import { SecretaryHallDay } from '@floorball/types';
+import { OverlayLinkState, SecretaryHallDay } from '@floorball/types';
 
 import { SecretaryLinksComponent } from './secretary-links.component';
+
+@Component({ selector: 'fb-overlay-links', template: '', standalone: false })
+class OverlayLinksStubComponent {
+  @Input() gameDayId?: number | null;
+  @Input() label = '';
+  @Input() knownLink?: OverlayLinkState | null;
+}
 
 describe('SecretaryLinksComponent', () => {
   let component: SecretaryLinksComponent;
@@ -66,7 +74,7 @@ describe('SecretaryLinksComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      declarations: [SecretaryLinksComponent],
+      declarations: [SecretaryLinksComponent, OverlayLinksStubComponent],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
         { provide: GameService, useValue: gameService },
@@ -241,6 +249,61 @@ describe('SecretaryLinksComponent', () => {
       component.generate(component.hallDays[0]);
 
       expect(component.copiedKey).toBeNull();
+    });
+  });
+
+  // Der eigentliche Anlass der Seite war der Sekretariatslink; der
+  // Overlay-Zugang steht seit fe#386 daneben, weil Sekretariat und Übertragung
+  // nicht dieselbe Person sind.
+  describe('Overlay-Zugang', () => {
+    const overlayStubs = () =>
+      fixture.debugElement
+        .queryAll(By.directive(OverlayLinksStubComponent))
+        .map((de) => de.componentInstance as OverlayLinksStubComponent);
+
+    // Ein Sekretariatslink deckt die ganze Halle ab, ein Overlay-Token immer
+    // nur seinen Spieltag. Ein Abschnitt je Gruppe ließe die zweite Liga
+    // ohne Zugang.
+    it('bietet je Spieltag der Gruppe einen eigenen Zugang an', () => {
+      fixture.detectChanges();
+
+      expect(overlayStubs().map((s) => s.gameDayId)).toEqual([1, 2]);
+    });
+
+    it('benennt die Szenensammlung nach der Liga', () => {
+      fixture.detectChanges();
+
+      expect(overlayStubs().map((s) => s.label)).toEqual(['U15', 'U17']);
+    });
+
+    it('nimmt den Spieltag, wenn die Liga fehlt', () => {
+      expect(
+        component.overlayLabel({
+          id: 4,
+          number: 3,
+          date: '2026-01-10',
+          league: null,
+          league_id: null,
+          games_count: 1,
+        })
+      ).toBe('Spieltag 3');
+    });
+
+    // Der Zustand kommt aus derselben Antwort wie die Liste. Ohne ihn müsste
+    // die Seite ihn je Spieltag einzeln nachfragen.
+    it('reicht den bekannten Zustand durch, statt ihn nachzuladen', () => {
+      const group = hallDay();
+      group.game_days[0].overlay_link = {
+        active: true,
+        expires_at: '2026-01-11T20:00:00Z',
+        created_by: 'Mia Berg',
+      };
+      gameService.getSecretaryGameDays.and.returnValue(of([group]));
+
+      fixture.detectChanges();
+
+      expect(overlayStubs()[0].knownLink?.created_by).toBe('Mia Berg');
+      expect(overlayStubs()[1].knownLink).toBeUndefined();
     });
   });
 

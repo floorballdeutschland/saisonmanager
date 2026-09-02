@@ -5,6 +5,7 @@ import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitTeamModule } from '@floorball/uikit/team';
+import { OverlayLinksModule } from '@floorball/overlay-links';
 import * as Views from './_views';
 import * as Components from './_components';
 import { MatchEventFormModule } from './_components/match-event-form/match-event-form.module';
@@ -12,7 +13,6 @@ import { MatchEventFormModule } from './_components/match-event-form/match-event
 @NgModule({
   declarations: [
     Components.AwardsComponent,
-    Components.OverlayLinksComponent,
     Components.StartingPlayerComponent,
     Views.MatchReportComponent,
     Views.MatchReportIntroComponent,
@@ -29,6 +29,7 @@ import { MatchEventFormModule } from './_components/match-event-form/match-event
     UikitPlayerModule,
     FormsModule,
     MatchEventFormModule,
+    OverlayLinksModule,
   ],
 })
 export class MatchReportModule {}

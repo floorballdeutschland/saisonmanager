@@ -1,3 +1,5 @@
+import { OverlayLinkState } from './overlay-link.interface';
+
 /**
  * Mindestens ein Element. Der Server liefert nie eine leere Spieltagsliste
  * (Gruppen ohne abgedeckten Spieltag werden gar nicht erst ausgegeben) – mit
@@ -11,6 +13,11 @@ export type NonEmptyArray<T> = [T, ...T[]];
  *
  * Nullable statt optional: Rails' `render json:` lässt keine Schlüssel weg, ein
  * fehlender Wert kommt als `null` an, nicht als `undefined`.
+ *
+ * `overlay_link` ist die Ausnahme und wirklich optional: Der Server hängt ihn
+ * nur an die eigenen Spieltage einer Gruppe, nicht an `other_game_days_in_hall`
+ * – für fremde Spieltage gibt es hier nichts zu vergeben und niemand muss
+ * erfahren, wer dort einen Zugang erzeugt hat.
  */
 export interface SecretaryGameDayStub {
   id: number;
@@ -19,6 +26,7 @@ export interface SecretaryGameDayStub {
   league: string | null;
   league_id: number | null;
   games_count: number;
+  overlay_link?: OverlayLinkState | null;
 }
 
 export interface SecretaryLinkInfo {

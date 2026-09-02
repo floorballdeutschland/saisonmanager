@@ -9,20 +9,21 @@ import {
 } from '@angular/core';
 import * as Sentry from '@sentry/angular';
 import { GameService, SessionService } from '@floorball/core';
-import { Game } from '@floorball/types';
+import { OverlayLinkState } from '@floorball/types';
 import {
   buildObsSceneCollection,
   downloadObsSceneCollection,
 } from 'src/app/_helpers/_utils/obs-scene-collection';
 
 // Livestream-Overlays. Der Zugang gilt für den ganzen Spieltag, nicht nur
-// für dieses Spiel: Eine Übertragung zeigt in der Regel mehrere Partien
+// für ein Spiel: Eine Übertragung zeigt in der Regel mehrere Partien
 // hintereinander.
 //
-// Eigene Komponente, weil der Abschnitt an zwei Stellen des Spielberichts
-// steht: in der Begrüßung und in Schritt 1. Wer nur überträgt, soll den
-// Zugang erzeugen können, ohne vorher die Eingabe zu starten. Das Starten
-// setzt den Spielstatus und ist öffentlich sichtbar.
+// Eigene Komponente in einem eigenen Modul, weil der Abschnitt inzwischen an
+// drei Stellen steht: in der Begrüßung des Spielberichts, in dessen Schritt 1
+// und auf der Seite „Spielsekretariat", wo der Verein seine Links ausgibt.
+// Deshalb hängt sie an einer Spieltags-ID und nicht am Spiel: Auf der
+// Sekretariatsseite gibt es gar kein Spiel, nur den Spieltag.
 @Component({
   selector: 'fb-overlay-links',
   templateUrl: './overlay-links.component.html',
@@ -31,7 +32,27 @@ import {
 })
 export class OverlayLinksComponent implements OnInit, OnDestroy {
   @Input()
-  game!: Game;
+  gameDayId?: number | null;
+
+  // Benennt die Szenensammlung und ihre Datei. Wer an einem Tag zwei Spieltage
+  // überträgt, unterscheidet die beiden Downloads sonst nur am Zeitstempel.
+  @Input()
+  label = 'Spieltag';
+
+  // Vorbelegter Zustand für Aufrufer, die ihn schon kennen. Die
+  // Sekretariats-Übersicht liefert ihn je Spieltag mit; ohne diesen Weg
+  // fragte die Seite ihn für jeden gelisteten Spieltag einzeln nach.
+  @Input()
+  set knownLink(link: OverlayLinkState | null | undefined) {
+    // `undefined` heißt „nicht mitgeliefert", nicht „kein Zugang": Frontend und
+    // API werden getrennt ausgerollt, und eine ältere API kennt das Feld noch
+    // nicht. Dann bleibt es beim eigenen Abruf, sonst behauptete die Seite bis
+    // zum API-Deploy, es liefe nirgends ein Zugang.
+    if (link === undefined) return;
+
+    this._knownLinkSet = true;
+    this.overlayLink = link;
+  }
 
   // Ohne Anmeldung bleibt der Abschnitt leer. Das Ausblenden gehört an die
   // Komponente selbst: In Schritt 1 sitzt sie in einem Raster, und ein leeres
@@ -41,11 +62,7 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
     return !this.canManageOverlay;
   }
 
-  public overlayLink: {
-    active: boolean;
-    expires_at?: string;
-    created_by?: string;
-  } | null = null;
+  public overlayLink: OverlayLinkState | null = null;
   // Klartext-URLs gibt es nur direkt nach dem Erzeugen. Danach liegt
   // serverseitig bloß der Digest, sie lassen sich also nicht nachladen.
   public overlayUrls: { overlay_url: string; dock_url: string } | null = null;
@@ -55,6 +72,7 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
   // Aufgeräumt beim Zerstören der Komponente: Ein Timer, der danach noch
   // markForCheck aufruft, arbeitet auf einer View, die es nicht mehr gibt.
   private _copyResetTimer = 0;
+  private _knownLinkSet = false;
 
   constructor(
     private _gameService: GameService,
@@ -69,13 +87,13 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
   // und leitet auf die Anmeldeseite um. Das Sekretariat flöge also mitten im
   // Spiel aus dem Spielbericht.
   public get canManageOverlay(): boolean {
-    return Boolean(this._sessionService.currentUser && this.game?.game_day_id);
+    return Boolean(this._sessionService.currentUser && this.gameDayId);
   }
 
   public loadOverlayLink(): void {
     if (!this.canManageOverlay) return;
 
-    this._gameService.getOverlayLink(this.game.game_day_id!).subscribe({
+    this._gameService.getOverlayLink(this.gameDayId!).subscribe({
       next: (link) => {
         this.overlayLink = link;
         this._cdr.markForCheck();
@@ -94,7 +112,7 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
 
     this.overlayBusy = true;
     this.overlayError = '';
-    this._gameService.createOverlayLink(this.game.game_day_id!).subscribe({
+    this._gameService.createOverlayLink(this.gameDayId!).subscribe({
       next: (res) => {
         this.overlayUrls = {
           overlay_url: res.overlay_url,
@@ -125,7 +143,7 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
 
     this.overlayBusy = true;
     this.overlayError = '';
-    this._gameService.revokeOverlayLink(this.game.game_day_id!).subscribe({
+    this._gameService.revokeOverlayLink(this.gameDayId!).subscribe({
       next: () => {
         this.overlayLink = { active: false };
         this.overlayUrls = null;
@@ -150,10 +168,6 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
   public downloadSceneCollection(): void {
     if (!this.overlayUrls) return;
 
-    const label = this.game?.game_number
-      ? `Spiel ${this.game.game_number}`
-      : 'Spieltag';
-
     // Genau deshalb darf ein Fehlschlag hier nicht stumm bleiben: Wer nichts im
     // Download-Ordner findet und keine Meldung sieht, klickt weiter und muss am
     // Ende den ganzen Zugang neu erzeugen -- mitten im Spieltag, womit die
@@ -162,9 +176,9 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
       downloadObsSceneCollection(
         buildObsSceneCollection({
           overlayUrl: this.overlayUrls.overlay_url,
-          collectionName: `Saisonmanager – ${label}`,
+          collectionName: `Saisonmanager – ${this.label}`,
         }),
-        `saisonmanager-obs-szenen-${this.game?.game_day_id ?? 'spieltag'}.json`
+        `saisonmanager-obs-szenen-${this.gameDayId ?? 'spieltag'}.json`
       );
     } catch (error) {
       Sentry.captureException(error);
@@ -204,6 +218,8 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (this._knownLinkSet) return;
+
     this.loadOverlayLink();
   }
 

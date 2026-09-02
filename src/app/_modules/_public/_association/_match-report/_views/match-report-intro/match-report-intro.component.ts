@@ -19,6 +19,15 @@ export class MatchReportIntroComponent {
   @Input()
   game!: Game;
 
+  // Benennt die Szenensammlung, die der Overlay-Abschnitt zum Herunterladen
+  // anbietet. Der Zugang gilt für den ganzen Spieltag; die Spielnummer steht
+  // trotzdem dran, weil man von hier aus genau dieses Spiel überträgt.
+  public get overlayLabel(): string {
+    return this.game?.game_number
+      ? `Spiel ${this.game.game_number}`
+      : 'Spieltag';
+  }
+
   @Output()
   handleGameStatusChange = new EventEmitter<void>();
 

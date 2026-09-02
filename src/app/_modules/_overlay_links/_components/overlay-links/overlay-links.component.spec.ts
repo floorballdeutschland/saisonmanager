@@ -32,7 +32,7 @@ describe('OverlayLinksComponent', () => {
       TestBed.inject(SessionService).currentUser = { id: 1 } as never;
     }
     const fixture = TestBed.createComponent(OverlayLinksComponent);
-    fixture.componentInstance.game = { id: 1, game_day_id: 7 } as never;
+    fixture.componentInstance.gameDayId = 7;
     fixture.detectChanges();
 
     return fixture;
@@ -66,6 +66,62 @@ describe('OverlayLinksComponent', () => {
     // einem Raster, in dem ein leeres Feld eine Lücke hinterließe.
     expect(fixture.nativeElement.classList).not.toContain('hidden');
     expect(fixture.nativeElement.textContent).toContain('Livestream-Overlays');
+  });
+
+  // Die Sekretariats-Übersicht kennt den Zustand schon aus ihrer eigenen
+  // Antwort. Ohne diesen Weg fragte sie ihn für jeden gelisteten Spieltag
+  // einzeln nach – bei einem Verein mit vollem Hallenkalender sind das leicht
+  // Dutzende Abrufe für eine Seite.
+  it('fragt den Zustand nicht ab, wenn der Aufrufer ihn mitliefert', () => {
+    TestBed.inject(SessionService).currentUser = { id: 1 } as never;
+    const fixture = TestBed.createComponent(OverlayLinksComponent);
+    fixture.componentInstance.gameDayId = 7;
+    fixture.componentInstance.knownLink = {
+      active: true,
+      expires_at: '2026-09-03T20:00:00Z',
+      created_by: 'Mia Berg',
+    };
+    fixture.detectChanges();
+
+    http.expectNone((r) => r.url.indexOf('game_days/7/overlay_link') !== -1);
+    expect(fixture.nativeElement.textContent).toContain('Mia Berg');
+  });
+
+  // Frontend und API werden getrennt ausgerollt: Bis die API das Feld liefert,
+  // kommt hier `undefined` an. Das ist keine Auskunft „kein Zugang", sonst böte
+  // die Seite an, einen bestehenden Zugang zu erzeugen, und entwertete ihn.
+  it('fragt den Zustand ab, wenn das Feld fehlt', () => {
+    TestBed.inject(SessionService).currentUser = { id: 1 } as never;
+    const fixture = TestBed.createComponent(OverlayLinksComponent);
+    fixture.componentInstance.gameDayId = 7;
+    fixture.componentInstance.knownLink = undefined;
+    fixture.detectChanges();
+
+    http
+      .expectOne((r) => r.url.indexOf('game_days/7/overlay_link') !== -1)
+      .flush({ active: false });
+  });
+
+  // Die Rechteprüfung des Servers endet beim Ausrichter. Ohne eigene Meldung
+  // stünde dort der allgemeine Text, und der schickt in die falsche Richtung.
+  it('nennt die fehlende Berechtigung als Grund', () => {
+    const fixture = create(true);
+    http
+      .expectOne((r) => r.url.indexOf('game_days/7/overlay_link') !== -1)
+      .flush({ active: false });
+
+    fixture.componentInstance.generateOverlayLink();
+    http
+      .expectOne((r) => r.method === 'POST')
+      .flush(
+        { error: 'Nicht berechtigt.' },
+        { status: 403, statusText: 'Forbidden' }
+      );
+
+    expect(fixture.componentInstance.overlayError).toContain(
+      'darfst du keinen Overlay-Zugang erzeugen'
+    );
+    expect(fixture.componentInstance.overlayBusy).toBeFalse();
   });
 
   afterEach(() => http.verify());

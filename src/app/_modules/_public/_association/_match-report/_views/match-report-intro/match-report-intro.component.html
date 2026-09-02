@@ -25,7 +25,10 @@
        den Spielstatus und ist öffentlich sichtbar. Ohne Anmeldung blendet
        sich der Abschnitt selbst aus. -->
   <div class="mt-6">
-    <fb-overlay-links [game]="game"></fb-overlay-links>
+    <fb-overlay-links
+      [gameDayId]="game.game_day_id"
+      [label]="overlayLabel"
+    ></fb-overlay-links>
   </div>
 </div>
 
