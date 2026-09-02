@@ -1,7 +1,11 @@
 @if (event | normalizeEvent: match : additionalFields; as gameEvent) {
   <div
-    class="grid grid-cols-[36px_1fr_30px_80px_60px] md:grid-cols-[36px_1fr_30px_104px_30px_20px_60px_20px_30px_104px_30px_1fr_36px] items-center text-sm h-[78px]"
-    [ngClass]="!allowCancel ? 'grid-rows-2' : 'grid-rows-3 h-[119px]'"
+    class="grid grid-cols-[36px_1fr_30px_fit-content(96px)_60px] md:grid-cols-[36px_1fr_30px_104px_30px_20px_60px_20px_30px_104px_30px_1fr_36px] items-center text-sm min-h-[78px] md:h-[78px]"
+    [ngClass]="
+      !allowCancel
+        ? 'md:grid-rows-2'
+        : 'md:grid-rows-3 md:h-[119px] min-h-[119px]'
+    "
   >
     @if (gameEvent.event_team === "home") {
       <div>
@@ -28,7 +32,7 @@
           </svg>
         }
       </div>
-      <div>
+      <div class="max-md:min-w-0 max-md:break-words">
         <div class="ml-3.5">
           @if (
             gameEvent.event_type === "goal" &&
@@ -63,13 +67,18 @@
           {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
         }
       </div>
-      <div class="font-bold md:text-right px-3 break-words">
+      <div
+        class="font-bold md:text-right px-1.5 md:px-3 text-xs md:text-sm break-words"
+      >
         @switch (gameEvent.event_type) {
           @case ("goal") {
             Tor
           }
           @case ("penalty") {
-            {{ "Strafe " + gameEvent.penalty_type_string }}
+            <span class="hidden md:inline">{{
+              "Strafe " + gameEvent.penalty_type_string
+            }}</span>
+            <span class="md:hidden">{{ gameEvent.penalty_type_string }}</span>
           }
           @case ("timeout") {
             {{ "Auszeit" }}
@@ -152,14 +161,17 @@
         }
       </div>
       <div
-        class="font-bold px-3 break-words row-start-1 col-start-4 md:col-start-10"
+        class="font-bold px-1.5 md:px-3 text-xs md:text-sm break-words row-start-1 col-start-4 md:col-start-10"
       >
         @switch (gameEvent.event_type) {
           @case ("goal") {
             Tor
           }
           @case ("penalty") {
-            {{ "Strafe " + gameEvent.penalty_type_string }}
+            <span class="hidden md:inline">{{
+              "Strafe " + gameEvent.penalty_type_string
+            }}</span>
+            <span class="md:hidden">{{ gameEvent.penalty_type_string }}</span>
           }
           @case ("timeout") {
             {{ "Auszeit" }}
@@ -171,7 +183,9 @@
           {{ gameEvent.home.goals }}:{{ gameEvent.guest.goals }}
         }
       </div>
-      <div class="md:text-right row-start-1 col-start-2 md:col-start-12">
+      <div
+        class="md:text-right row-start-1 col-start-2 md:col-start-12 max-md:min-w-0 max-md:break-words"
+      >
         <div class="ml-3.5 md:mr-3.5">
           @if (
             gameEvent.event_type === "goal" &&
@@ -227,7 +241,9 @@
       </div>
     }
     @if (gameEvent.home.assist) {
-      <div class="row-start-2 col-start-2 text-fb-gray-400 self-start ml-3.5">
+      <div
+        class="row-start-2 col-start-2 col-end-6 md:col-end-3 pr-3 md:pr-0 text-fb-gray-400 self-start ml-3.5"
+      >
         <span class="text-xs font-bold">Vorl.</span>
         @if (showTrikotNumber) {
           <span class="mr-1">#{{ gameEvent.home.assist?.trikot_number }}</span>
@@ -249,7 +265,7 @@
       </div>
     }
     <div
-      class="row-start-2 col-start-4 text-fb-gray-400 text-right whitespace-nowrap px-3 self-start justify-self-end"
+      class="row-start-3 col-start-2 col-end-6 ml-3.5 pr-3 text-fb-gray-400 self-start md:row-start-2 md:col-start-4 md:col-end-5 md:ml-0 md:px-3 md:text-right md:whitespace-nowrap md:justify-self-end"
     >
       @if (gameEvent.penalty_reason_string && gameEvent.home.scorer) {
         {{ gameEvent.penalty_reason_string }}
@@ -259,7 +275,12 @@
       }
     </div>
     @if (allowCancel) {
-      <div class="md:hidden mb-2 col-span-5 flex gap-2">
+      <!--
+        Ausdruecklich in Zeile 4, nicht per Auto-Platzierung: Vergehen und
+        Torart stehen mobil in Zeile 3, und ohne Vorlage waere Zeile 2 leer.
+        Die Knoepfe wuerden dann davor einsortiert.
+      -->
+      <div class="md:hidden mb-2 row-start-4 col-start-1 col-end-6 flex gap-2">
         <div
           (click)="handleDelete(gameEvent)"
           class="flex-1 text-center px-2 py-1 text-[11px] bg-red-100 text-red-700 cursor-pointer rounded-[30px] border border-red-500"
@@ -307,7 +328,7 @@
       </div>
     }
     <div
-      class="row-start-2 col-start-4 md:col-start-10 text-fb-gray-400 whitespace-nowrap px-3 self-start justify-self-end md:justify-self-start"
+      class="row-start-3 col-start-2 col-end-6 ml-3.5 pr-3 text-fb-gray-400 self-start md:row-start-2 md:col-start-10 md:col-end-11 md:ml-0 md:px-3 md:whitespace-nowrap md:justify-self-start"
     >
       @if (gameEvent.penalty_reason_string && gameEvent.guest.scorer) {
         {{ gameEvent.penalty_reason_string }}
@@ -318,7 +339,7 @@
     </div>
     @if (gameEvent.guest.assist) {
       <div
-        class="row-start-2 col-start-2 md:col-start-12 text-fb-gray-400 md:text-right self-start ml-3.5 md:mr-3.5"
+        class="row-start-2 col-start-2 col-end-6 md:col-start-12 md:col-end-13 pr-3 md:pr-0 text-fb-gray-400 md:text-right self-start ml-3.5 md:mr-3.5"
       >
         <span class="text-xs font-bold">Vorl.</span>
         @if (showTrikotNumber) {
