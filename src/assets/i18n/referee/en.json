@@ -171,6 +171,7 @@
     "confirmedProperlyAt": "Confirmed as proper on {{ date }}",
     "autoConfirmed": "Automatically confirmed",
     "pending": "Pending",
+    "notYetOpen": "Not yet open",
     "reportedImproperAt": "Reported as not properly conducted on {{ date }}",
     "partner": "Partner:",
     "notesTitle": "Additional game information from the assigner",

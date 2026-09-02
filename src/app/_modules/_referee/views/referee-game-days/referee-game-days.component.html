@@ -220,6 +220,11 @@
                     {{ "refereeSelf.gameDays.autoConfirmed" | transloco }}
                   </span>
                 }
+                @if (confirmationStatus(gd) === "not_yet") {
+                  <span class="text-fb-gray-500">
+                    {{ "refereeSelf.gameDays.notYetOpen" | transloco }}
+                  </span>
+                }
                 @if (confirmationStatus(gd) === "pending") {
                   <span class="text-amber-600">
                     {{ "refereeSelf.gameDays.pending" | transloco }}
@@ -288,7 +293,20 @@
                     {{ "refereeSelf.gameDays.autoConfirmed" | transloco }}
                   </span>
                 }
-                @if (!gd.partner_confirmed_at && !gd.auto_confirmed) {
+                @if (
+                  !gd.partner_confirmed_at &&
+                  !gd.auto_confirmed &&
+                  notYetConfirmable(gd)
+                ) {
+                  <span class="text-fb-gray-500">
+                    {{ "refereeSelf.gameDays.notYetOpen" | transloco }}
+                  </span>
+                }
+                @if (
+                  !gd.partner_confirmed_at &&
+                  !gd.auto_confirmed &&
+                  !notYetConfirmable(gd)
+                ) {
                   <span class="text-amber-600">
                     {{ "refereeSelf.gameDays.pending" | transloco }}
                   </span>

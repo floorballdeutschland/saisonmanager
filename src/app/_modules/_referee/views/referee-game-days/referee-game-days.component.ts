@@ -109,6 +109,9 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
       return gd.properly_conducted === false ? 'not_ok' : 'confirmed';
     }
     if (gd.auto_confirmed) return 'auto';
+    // Vor dem Freischaltzeitpunkt ist die Bestätigung technisch gar nicht
+    // möglich – das ist kein „Ausstehend", sondern ein eigener Zustand.
+    if (this.notYetConfirmable(gd)) return 'not_yet';
     return 'pending';
   }
 
