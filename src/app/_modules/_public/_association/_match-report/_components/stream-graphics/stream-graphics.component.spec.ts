@@ -6,16 +6,16 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 
-import { StreamThumbnailsComponent } from './stream-thumbnails.component';
+import { StreamGraphicsComponent } from './stream-graphics.component';
 import { Game } from '@floorball/types';
 
-describe('StreamThumbnailsComponent', () => {
+describe('StreamGraphicsComponent', () => {
   let http: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CommonModule, HttpClientTestingModule],
-      declarations: [StreamThumbnailsComponent],
+      declarations: [StreamGraphicsComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
@@ -40,8 +40,8 @@ describe('StreamThumbnailsComponent', () => {
 
   function create(
     overrides: Partial<Game> = {}
-  ): ComponentFixture<StreamThumbnailsComponent> {
-    const fixture = TestBed.createComponent(StreamThumbnailsComponent);
+  ): ComponentFixture<StreamGraphicsComponent> {
+    const fixture = TestBed.createComponent(StreamGraphicsComponent);
     fixture.componentInstance.game = game(overrides);
     fixture.detectChanges();
 
@@ -216,6 +216,94 @@ describe('StreamThumbnailsComponent', () => {
       .flush({
         id: 43,
       });
+  });
+
+  // Die Übergangsgrafik liegt als fertige Datei je Wettbewerb im Repo, erzeugt
+  // von scripts/build-stinger.sh.
+  it('wählt die Übergangsgrafik nach dem Wettbewerb', () => {
+    const fixture = create();
+    expectLeagueRequest().flush({
+      id: 42,
+      league_class_id: '2fbl',
+      female: false,
+      league_type: 'league',
+    });
+
+    expect(fixture.componentInstance.stingerUrl).toBe(
+      '/overlay/stinger/2fbl-m.webm'
+    );
+    expect(fixture.componentInstance.stingerFilename).toBe(
+      'saisonmanager-uebergang-2fbl-m.webm'
+    );
+    expect(fixture.componentInstance.stingerTransitionPoint).toBe(500);
+  });
+
+  // Ein Übergang darf nie ins Leere zeigen: Ohne Ligadaten gibt es die neutrale
+  // Fassung, und die Datei dazu gibt es.
+  it('fällt ohne Ligadaten auf die neutrale Übergangsgrafik zurück', () => {
+    const fixture = create();
+    expectLeagueRequest().error(new ProgressEvent('error'));
+
+    expect(fixture.componentInstance.stingerUrl).toBe(
+      '/overlay/stinger/neutral.webm'
+    );
+  });
+
+  // Unter `/overlay/` greift im nginx der Auffangpfad in die index.html der
+  // Anwendung: Eine fehlende Datei käme als HTML mit Status 200 zurück, der
+  // Browser legte sie als `.webm` ab, und OBS nähme sie später nicht an -- ohne
+  // dass irgendwo ein Fehler erschienen wäre.
+  it('lehnt eine Übergangsgrafik ab, die als HTML zurückkommt', async () => {
+    const fixture = create();
+    expectLeagueRequest().flush({ id: 42, league_class_id: '2fbl' });
+
+    spyOn(window, 'fetch').and.resolveTo(
+      new Response('<!doctype html>', {
+        status: 200,
+        headers: { 'content-type': 'text/html' },
+      })
+    );
+
+    await fixture.componentInstance.downloadStinger();
+
+    expect(fixture.componentInstance.stingerError).toContain(
+      'konnte nicht geladen werden'
+    );
+  });
+
+  it('speichert eine ausgelieferte Übergangsgrafik', async () => {
+    const fixture = create();
+    expectLeagueRequest().flush({ id: 42, league_class_id: '2fbl' });
+
+    let saved = '';
+    spyOn(HTMLAnchorElement.prototype, 'click').and.callFake(function (
+      this: HTMLAnchorElement
+    ) {
+      saved = this.download;
+    });
+    spyOn(window, 'fetch').and.resolveTo(
+      new Response(new Blob(['x'], { type: 'video/webm' }), {
+        status: 200,
+        headers: { 'content-type': 'video/webm' },
+      })
+    );
+
+    await fixture.componentInstance.downloadStinger();
+
+    expect(saved).toBe('saisonmanager-uebergang-2fbl-m.webm');
+    expect(fixture.componentInstance.stingerError).toBe('');
+  });
+
+  // Vor dem Eintreffen der Ligadaten zeigt `competition` auf `neutral`. Wer in
+  // diesem Moment klickt, sendete ein Bundesligaspiel mit der neutralen Blende.
+  it('bietet die Übergangsgrafik erst mit den Ligadaten an', () => {
+    const fixture = create();
+
+    expect(fixture.componentInstance.stingerReady).toBeFalse();
+
+    expectLeagueRequest().flush({ id: 42, league_class_id: '2fbl' });
+
+    expect(fixture.componentInstance.stingerReady).toBeTrue();
   });
 
   it('zeichnet die Vorschau in voller Größe', async () => {
