@@ -22,7 +22,8 @@ class TeamSquadStubComponent {
 
 @Component({ selector: 'fb-overlay-links', template: '', standalone: false })
 class OverlayLinksStubComponent {
-  @Input() game!: unknown;
+  @Input() gameDayId?: number | null;
+  @Input() label = '';
 }
 
 describe('MatchReportStepOneComponent', () => {
@@ -51,13 +52,15 @@ describe('MatchReportStepOneComponent', () => {
   });
 
   // Der Abschnitt selbst steckt in einer eigenen Komponente, weil es ihn auch
-  // in der Begrüßung gibt. Geprüft wird hier nur, dass die Vorlage ihr das
-  // Spiel reicht: Ohne Spieltags-Kennung findet sie ihren Zugang nicht.
-  it('reicht das Spiel an die Overlay-Links durch', () => {
+  // in der Begrüßung und auf der Sekretariatsseite gibt. Geprüft wird hier nur,
+  // dass die Vorlage ihr die Spieltags-Kennung reicht: ohne sie findet sie
+  // ihren Zugang nicht.
+  it('reicht den Spieltag an die Overlay-Links durch', () => {
     const fixture = TestBed.createComponent(MatchReportStepOneComponent);
     const game = {
       id: 1,
       game_day_id: 7,
+      game_number: '4711',
       home_team_id: 4,
       guest_team_id: 5,
       home_team_name: 'Heim',
@@ -74,7 +77,8 @@ describe('MatchReportStepOneComponent', () => {
     const overlay = fixture.debugElement.query(
       By.directive(OverlayLinksStubComponent)
     ).componentInstance as OverlayLinksStubComponent;
-    expect(overlay.game).toBe(game);
+    expect(overlay.gameDayId).toBe(7);
+    expect(overlay.label).toBe('Spiel 4711');
   });
 
   // Die zweite Stufe der Verdrahtung: Das Spiel traegt die Regel, der
