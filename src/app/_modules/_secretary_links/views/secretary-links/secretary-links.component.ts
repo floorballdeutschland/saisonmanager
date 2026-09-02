@@ -8,7 +8,11 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { GameService, NotificationService } from '@floorball/core';
-import { SecretaryHallDay, SecretaryLinkInfo } from '@floorball/types';
+import {
+  SecretaryGameDayStub,
+  SecretaryHallDay,
+  SecretaryLinkInfo,
+} from '@floorball/types';
 
 /**
  * „Spielsekretariat“ für Vereins- und Teammanager:innen: der Einmal-Link für
@@ -100,6 +104,15 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
       .map((gd) => gd.league)
       .filter((name): name is string => !!name)
       .join(', ');
+  }
+
+  /**
+   * Benennt die OBS-Szenensammlung des Spieltags. Die Liga ist dafür die
+   * brauchbarste Angabe: Laufen an einem Tag in derselben Halle zwei Spieltage,
+   * liegen sonst zwei gleichnamige Dateien im Download-Ordner.
+   */
+  overlayLabel(gameDay: SecretaryGameDayStub): string {
+    return gameDay.league ?? `Spieltag ${gameDay.number ?? gameDay.id}`;
   }
 
   gamesCount(hallDay: SecretaryHallDay): number {

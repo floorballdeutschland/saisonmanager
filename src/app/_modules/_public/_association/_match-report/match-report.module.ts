@@ -5,6 +5,7 @@ import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitMatchesModule } from '@floorball/uikit/matches';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { UikitTeamModule } from '@floorball/uikit/team';
+import { OverlayLinksModule } from '@floorball/overlay-links';
 import * as Views from './_views';
 import * as Components from './_components';
 import { MatchEventFormModule } from './_components/match-event-form/match-event-form.module';
@@ -12,15 +13,18 @@ import { MatchEventFormModule } from './_components/match-event-form/match-event
 @NgModule({
   declarations: [
     Components.AwardsComponent,
-    Components.OverlayLinksComponent,
     Components.StartingPlayerComponent,
+    Components.StreamGraphicsComponent,
     Views.MatchReportComponent,
     Views.MatchReportIntroComponent,
     Views.MatchReportStepOneComponent,
     Views.MatchReportStepTwoComponent,
     Views.MatchReportStepThreeComponent,
   ],
-  exports: [Views.MatchReportComponent],
+  // Die Thumbnails stehen auch in der öffentlichen Spielansicht, also außerhalb
+  // dieses Moduls: Ein Highlightvideo entsteht Tage nach dem Spiel, wenn der
+  // Spielbericht längst geschlossen ist.
+  exports: [Views.MatchReportComponent, Components.StreamGraphicsComponent],
   imports: [
     CommonModule,
     UikitCommonModule,
@@ -29,6 +33,7 @@ import { MatchEventFormModule } from './_components/match-event-form/match-event
     UikitPlayerModule,
     FormsModule,
     MatchEventFormModule,
+    OverlayLinksModule,
   ],
 })
 export class MatchReportModule {}
