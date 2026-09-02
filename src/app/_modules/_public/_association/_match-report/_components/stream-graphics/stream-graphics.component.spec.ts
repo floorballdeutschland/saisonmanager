@@ -249,6 +249,63 @@ describe('StreamGraphicsComponent', () => {
     );
   });
 
+  // Unter `/overlay/` greift im nginx der Auffangpfad in die index.html der
+  // Anwendung: Eine fehlende Datei käme als HTML mit Status 200 zurück, der
+  // Browser legte sie als `.webm` ab, und OBS nähme sie später nicht an -- ohne
+  // dass irgendwo ein Fehler erschienen wäre.
+  it('lehnt eine Übergangsgrafik ab, die als HTML zurückkommt', async () => {
+    const fixture = create();
+    expectLeagueRequest().flush({ id: 42, league_class_id: '2fbl' });
+
+    spyOn(window, 'fetch').and.resolveTo(
+      new Response('<!doctype html>', {
+        status: 200,
+        headers: { 'content-type': 'text/html' },
+      })
+    );
+
+    await fixture.componentInstance.downloadStinger();
+
+    expect(fixture.componentInstance.stingerError).toContain(
+      'konnte nicht geladen werden'
+    );
+  });
+
+  it('speichert eine ausgelieferte Übergangsgrafik', async () => {
+    const fixture = create();
+    expectLeagueRequest().flush({ id: 42, league_class_id: '2fbl' });
+
+    let saved = '';
+    spyOn(HTMLAnchorElement.prototype, 'click').and.callFake(function (
+      this: HTMLAnchorElement
+    ) {
+      saved = this.download;
+    });
+    spyOn(window, 'fetch').and.resolveTo(
+      new Response(new Blob(['x'], { type: 'video/webm' }), {
+        status: 200,
+        headers: { 'content-type': 'video/webm' },
+      })
+    );
+
+    await fixture.componentInstance.downloadStinger();
+
+    expect(saved).toBe('saisonmanager-uebergang-2fbl-m.webm');
+    expect(fixture.componentInstance.stingerError).toBe('');
+  });
+
+  // Vor dem Eintreffen der Ligadaten zeigt `competition` auf `neutral`. Wer in
+  // diesem Moment klickt, sendete ein Bundesligaspiel mit der neutralen Blende.
+  it('bietet die Übergangsgrafik erst mit den Ligadaten an', () => {
+    const fixture = create();
+
+    expect(fixture.componentInstance.stingerReady).toBeFalse();
+
+    expectLeagueRequest().flush({ id: 42, league_class_id: '2fbl' });
+
+    expect(fixture.componentInstance.stingerReady).toBeTrue();
+  });
+
   it('zeichnet die Vorschau in voller Größe', async () => {
     const fixture = create();
     expectLeagueRequest().flush({

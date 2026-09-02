@@ -79,12 +79,16 @@
         Phase, dort verdeckt die Grafik den Schnitt.
       </p>
 
-      <a
-        class="inline-flex items-center px-4 py-2 bg-black text-white text-xs font-bold rounded-[5px] hover:bg-fb-gray-500"
-        [href]="stingerUrl"
-        [download]="stingerFilename"
-        >Übergangsgrafik herunterladen</a
+      <fb-button
+        size="small"
+        [disabled]="stingerBusy || !stingerReady"
+        (handleClick)="downloadStinger()"
+        >Übergangsgrafik herunterladen</fb-button
       >
+
+      @if (stingerError) {
+        <p class="text-sm text-red-700 mt-2">{{ stingerError }}</p>
+      }
 
       <p class="text-xs text-fb-gray-500 mt-2">
         Ein Wettbewerb ohne eigenes Zeichen, etwa eine Meisterschaft, bekommt

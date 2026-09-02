@@ -21,6 +21,7 @@ import {
 } from 'src/app/_helpers/_utils/competition-theme';
 import {
   STINGER_TRANSITION_POINT_MS,
+  saveBlob,
   ThumbnailInput,
   ThumbnailResult,
   ThumbnailVariant,
@@ -77,6 +78,19 @@ export class StreamGraphicsComponent
   public busy = false;
   public error = '';
   public hint = '';
+  public stingerBusy = false;
+  public stingerError = '';
+  /**
+   * Steht der Wettbewerb fest? Erst dann wird die Übergangsgrafik angeboten:
+   * Vorher (und nach einem gescheiterten Ligaabruf) zeigt `competition` auf
+   * `neutral`, und wer in diesem Moment klickt, sendet ein Bundesligaspiel mit
+   * der neutralen Blende, ohne den Unterschied zu bemerken.
+   *
+   * Ein Feld und kein Getter: Der Getter läse während eines Prüflaufs einen
+   * Zustand, den der Ligaabruf gerade nebenher verändert, und Angular meldete
+   * das als ExpressionChangedAfterItHasBeenChecked.
+   */
+  public stingerReady = false;
 
   private _league: League | null = null;
   private _leagueLoaded = false;
@@ -121,6 +135,43 @@ export class StreamGraphicsComponent
 
   public get stingerTransitionPoint(): number {
     return STINGER_TRANSITION_POINT_MS;
+  }
+
+  /**
+   * Holt die Übergangsgrafik und legt sie in den Download-Ordner.
+   *
+   * Bewusst über `fetch` statt als schlichter `<a download>`: Unter `/overlay/`
+   * greift im nginx der Auffangpfad in die index.html der Anwendung. Eine
+   * fehlende Datei käme damit als HTML mit Status 200 zurück, der Browser legte
+   * sie als `.webm` ab, und OBS nähme sie später nicht an -- ohne dass irgendwo
+   * ein Fehler erschienen wäre. Deshalb Status UND Inhaltstyp prüfen.
+   */
+  public async downloadStinger(): Promise<void> {
+    if (this.stingerBusy || !this.stingerReady) return;
+
+    this.stingerBusy = true;
+    this.stingerError = '';
+    this._cdr.markForCheck();
+
+    try {
+      const response = await fetch(this.stingerUrl);
+      const type = response.headers.get('content-type') ?? '';
+
+      if (!response.ok || !type.toLowerCase().startsWith('video/')) {
+        throw new Error(
+          `Übergangsgrafik nicht ausgeliefert: ${response.status} ${type}`
+        );
+      }
+
+      saveBlob(await response.blob(), this.stingerFilename);
+    } catch (error) {
+      Sentry.captureException(error);
+      this.stingerError =
+        'Die Übergangsgrafik konnte nicht geladen werden. Bitte später erneut versuchen.';
+    }
+
+    this.stingerBusy = false;
+    this._cdr.markForCheck();
   }
 
   /**
@@ -248,6 +299,7 @@ export class StreamGraphicsComponent
       this._league = null;
       this._leagueLoaded = false;
       this._rendered = false;
+      this.stingerReady = false;
       this.loadLeague();
       return;
     }
@@ -285,6 +337,8 @@ export class StreamGraphicsComponent
       next: (league) => {
         this._league = league;
         this._leagueLoaded = true;
+        this.stingerReady = Boolean(league);
+        this._cdr.markForCheck();
         void this.render();
       },
       // Kein Abbruch: Ohne Liga fehlen Zeichen und Farbwelt, die Paarung steht
@@ -294,6 +348,8 @@ export class StreamGraphicsComponent
       error: () => {
         this._league = null;
         this._leagueLoaded = true;
+        this.stingerReady = false;
+        this._cdr.markForCheck();
         void this.render();
       },
     });
@@ -364,7 +420,7 @@ export class StreamGraphicsComponent
 
     if (!this._league) {
       notes.push(
-        'Die Ligadaten ließen sich nicht laden, das Bild trägt deshalb weder Ligazeichen noch Ligafarben.'
+        'Die Ligadaten ließen sich nicht laden: Das Bild trägt deshalb weder Ligazeichen noch Ligafarben, und die Übergangsgrafik steht so lange nicht bereit.'
       );
     }
 

@@ -691,6 +691,24 @@ export function thumbnailFilename(
 }
 
 /**
+ * Legt einen Blob als Datei in den Download-Ordner.
+ *
+ * Eigene Funktion, weil zwei Wege sie brauchen: das gezeichnete Thumbnail und
+ * die geholte Übergangsgrafik. Wirft weiter, der Aufrufer meldet.
+ */
+export function saveBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  // Erst freigeben, wenn der Browser den Download angenommen hat.
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/**
  * Speichert die Leinwand als PNG.
  *
  * `toBlob` wirft bei einer verunreinigten Leinwand SecurityError. Das darf
@@ -735,15 +753,7 @@ export function downloadThumbnail(
         // auf einem inzwischen entfernten Knoten), wäre das Versprechen sonst
         // nie erfüllt worden.
         try {
-          const url = URL.createObjectURL(blob);
-          const anchor = document.createElement('a');
-          anchor.href = url;
-          anchor.download = filename;
-          document.body.appendChild(anchor);
-          anchor.click();
-          anchor.remove();
-          // Erst freigeben, wenn der Browser den Download angenommen hat.
-          window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+          saveBlob(blob, filename);
 
           done = true;
           window.clearTimeout(watchdog);
