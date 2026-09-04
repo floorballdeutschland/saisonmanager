@@ -175,7 +175,7 @@ describe('MatchReportIndexComponent', () => {
     );
 
     component.openScan(row({ id: 42 }));
-    expect(openSpy).toHaveBeenCalledWith('', '_blank', 'noopener');
+    expect(openSpy).toHaveBeenCalledWith('', '_blank');
 
     httpMock
       .expectOne(environment.apiURL + 'user/games/42/scan.json')
@@ -184,6 +184,34 @@ describe('MatchReportIndexComponent', () => {
     expect(tab.location.href).toBe('https://example.test/scan.pdf');
     expect(tab.close).not.toHaveBeenCalled();
     expect(component.scanLoadingGameId).toBeNull();
+  });
+
+  it('öffnet den Tab ohne noopener und kappt den Verweis selbst', () => {
+    // Mit dem Feature `noopener` gibt window.open laut Spezifikation null
+    // zurück: Die Registerkarte geht auf, der Code hält aber keinen Verweis
+    // darauf. Er lief deshalb in den Ersatzzweig für den Popup-Blocker,
+    // navigierte die aktuelle Seite und ließ die leere Registerkarte stehen.
+    const tab = {
+      location: { href: '' },
+      opener: window,
+      close: jasmine.createSpy('close'),
+    };
+    const openSpy = spyOn(window, 'open').and.returnValue(
+      tab as unknown as Window
+    );
+
+    component.openScan(row({ id: 42 }));
+
+    expect(openSpy.calls.mostRecent().args[2]).toBeUndefined();
+    // Der Schutz, den noopener gebracht hätte, wird von Hand hergestellt.
+    expect(tab.opener).toBeNull();
+
+    httpMock
+      .expectOne(environment.apiURL + 'user/games/42/scan.json')
+      .flush({ url: 'https://example.test/scan.pdf' });
+
+    expect(tab.location.href).toBe('https://example.test/scan.pdf');
+    expect(tab.close).not.toHaveBeenCalled();
   });
 
   it('schließt den leeren Tab, wenn kein Scan vorliegt', () => {

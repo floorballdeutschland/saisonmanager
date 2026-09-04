@@ -255,7 +255,18 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
     // Das Fenster muss synchron im Klick-Handler geöffnet werden. Erst im
     // HTTP-Callback zu öffnen, kostet die Nutzerinteraktion – der Popup-Blocker
     // schluckt den Aufruf dann kommentarlos, und der Knopf tut scheinbar nichts.
-    const tab = window.open('', '_blank', 'noopener');
+    //
+    // Bewusst OHNE das Feature `noopener`: Damit gibt window.open laut
+    // Spezifikation `null` zurück – die Registerkarte geht auf, aber es gibt
+    // keinen Verweis darauf. Der Code lief deshalb in den Ersatzzweig für den
+    // Popup-Blocker, navigierte die aktuelle Seite, und die leere Registerkarte
+    // blieb stehen, weil weder die Zuweisung noch close() je einen Empfänger
+    // hatten. Der Schutz, den noopener bringt, wird eine Zeile später von Hand
+    // hergestellt.
+    const tab = window.open('', '_blank');
+    if (tab) {
+      tab.opener = null;
+    }
     this._gameService
       .getGameScan(row.id)
       .pipe(takeUntil(this._destroy$))
