@@ -100,6 +100,17 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
    * zweiten Endpunkt, und die Tabelle soll dabei stehenbleiben.
    */
   exporting = false;
+
+  /**
+   * Steht eine Filteraenderung noch im Debounce-Fenster? Such- und
+   * Mindestspielfeld wirken erst nach 300 ms auf `search` bzw. `minGames`. In
+   * diesem Fenster zeigte der Export-Knopf keinen Ladezustand und lieferte die
+   * Datei zum VORIGEN Filterstand: „10" tippen, sofort klicken, und im CSV
+   * standen alle Personen mit einem Einsatz, waehrend die Tabelle 300 ms
+   * spaeter die Auswahl mit 10 zeigte. Eine Datei, die vollstaendig aussieht
+   * und nicht zur Maske passt, ist schlimmer als ein kurz gesperrter Knopf.
+   */
+  filterPending = false;
   exportError: string | null = null;
   /** Die Datei endet an der Obergrenze der API -- darunter liegt noch etwas. */
   exportTruncated = false;
@@ -184,6 +195,7 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
     this._search$
       .pipe(debounceTime(300), takeUntil(this._destroy$))
       .subscribe((value) => {
+        this.filterPending = false;
         this.search = value;
         this.reload();
       });
@@ -194,6 +206,7 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
     this._minGames$
       .pipe(debounceTime(300), takeUntil(this._destroy$))
       .subscribe((value) => {
+        this.filterPending = false;
         const parsed = Number(value);
         // Der geklemmte Wert geht zurueck in das Feld (`[ngModel]` ist einwegig,
         // die Zuweisung plus markForCheck schreibt ihn), damit dort nicht eine
@@ -331,6 +344,7 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
   }
 
   onSearchChange(value: string): void {
+    this.filterPending = true;
     this._search$.next(value);
   }
 
@@ -345,6 +359,7 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
    * einen HOEHEREN Wert in diesem Feld, nicht hier.
    */
   onMinGamesChange(value: string): void {
+    this.filterPending = true;
     this._minGames$.next(value);
   }
 
@@ -412,7 +427,7 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
    * 50 Zeilen, in einer Verbandsansicht koennen es fuenfstellig viele sein.
    */
   exportCsv(): void {
-    if (this.exporting) return;
+    if (this.exporting || this.filterPending) return;
 
     this.exporting = true;
     this.exportError = null;

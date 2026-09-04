@@ -1,6 +1,7 @@
 import {
   ComponentFixture,
   TestBed,
+  discardPeriodicTasks,
   fakeAsync,
   tick,
 } from '@angular/core/testing';
@@ -675,6 +676,33 @@ describe('PlayerStatisticsComponent', () => {
     async function csvLines(blob: Blob): Promise<string[]> {
       return (await blob.text()).replace(/^\uFEFF/, '').split('\r\n');
     }
+
+    // Such- und Mindestspielfeld wirken erst nach 300 ms auf `search` bzw.
+    // `minGames`. In diesem Fenster lieferte der Export die Datei zum VORIGEN
+    // Filterstand, ohne Ladezustand und ohne Hinweis: eine vollstaendig
+    // aussehende Datei, die nicht zur Maske passt.
+    it('exportiert nicht, solange eine Filteraenderung im Debounce haengt', fakeAsync(() => {
+      const fixture = setupExport('113');
+      lastRequest().flush(response({ total: 120 }));
+      const component = fixture.componentInstance;
+
+      component.onMinGamesChange('10');
+      expect(component.filterPending).toBeTrue();
+
+      component.exportCsv();
+      http.expectNone((req) => req.url === EXPORT_URL);
+
+      tick(300);
+      expect(component.filterPending).toBeFalse();
+      lastRequest().flush(response({ total: 3 }));
+
+      // Jetzt traegt der Export den neuen Stand.
+      component.exportCsv();
+      const req = lastExportRequest();
+      expect(req.request.params.get('min_games')).toBe('10');
+      req.flush(exportResponse());
+      discardPeriodicTasks();
+    }));
 
     // Die Blaetterung darf NICHT mitgehen: Mit `per_page` im Export bekaeme die
     // Datei genau die Seite, die man auch abschreiben koennte.
