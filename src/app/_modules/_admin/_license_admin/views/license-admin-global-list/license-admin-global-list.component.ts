@@ -11,12 +11,14 @@ import {
   LeagueService,
   NotificationService,
   PlayerService,
+  SessionService,
   StorageService,
 } from '@floorball/core';
 import { Title } from '@angular/platform-browser';
-import { Subject, finalize, takeUntil } from 'rxjs';
+import { Subject, finalize, take, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
+import { licenseStatusBadgeClass } from 'src/app/_helpers/_utils/license-status';
 import { readUploadedAt } from '../../_utils/document-upload-date';
 
 interface FilterOption {
@@ -137,6 +139,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     private _leagueService: LeagueService,
     private _associationService: AssociationService,
     private _playerService: PlayerService,
+    private _sessionService: SessionService,
     private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
@@ -201,6 +204,13 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this._sessionService.currentUser$.pipe(take(1)).subscribe((user) => {
+      this.canLiftSuspension = !!(
+        user?.permissions['player_suspend'] || user?.permissions['admin']
+      );
+      this._cdr.markForCheck();
+    });
+
     // Warten, bis der lazy geladene Scope 'admin/license' wirklich da ist.
     // selectTranslate() lädt scope-korrekt ('admin/license/<lang>') und emittiert
     // erst nach dem Laden; selectTranslation('admin/license') dagegen fehlinterpretiert
@@ -427,11 +437,39 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     downloadCsv('lizenzen', headers, rows);
   }
 
-  public statusBadgeClass(statusId: number): string {
-    if (statusId === 1) return 'bg-green-100 text-green-800';
-    if (statusId === 2) return 'bg-yellow-100 text-yellow-800';
-    if (statusId === 3) return 'bg-red-100 text-red-800';
-    return 'bg-gray-100 text-gray-600';
+  // Gemeinsam mit der Lizenzliste einer Liga, damit `gesperrt` in beiden
+  // Ansichten dieselbe Farbe traegt (api#605).
+  public statusBadgeClass = licenseStatusBadgeClass;
+
+  // Sperren aufheben darf, wer sperren darf.
+  public canLiftSuspension = false;
+
+  /**
+   * Sperre aufheben. Danach neu laden, statt die Zeile im Speicher zu
+   * korrigieren: Der wirksame Status entsteht serverseitig je Liga, und eine
+   * Sperre kann mehrere Zeilen betreffen.
+   */
+  public liftSuspension(entry: AdminLicenseEntry, suspensionId: number): void {
+    if (!this.canLiftSuspension) return;
+
+    this._playerService
+      .liftSuspension(entry.player_id, suspensionId)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this._notificationService.success(
+            this._transloco.translate('licenseAdmin.globalList.liftedNotice')
+          );
+          this.load();
+        },
+        error: () => {
+          // 403 und 422 zeigt der globale ErrorInterceptor nicht an.
+          this._notificationService.error(
+            this._transloco.translate('licenseAdmin.globalList.liftError')
+          );
+          this._cdr.markForCheck();
+        },
+      });
   }
 
   public fieldSizeLabel(fieldSize: string): string {
