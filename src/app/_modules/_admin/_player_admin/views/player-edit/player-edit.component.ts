@@ -35,6 +35,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { PLAYER_GENDERS } from '@floorball/types';
 
+// License::DELETED in der API. Der Endpunkt handle_license_request nimmt die
+// Statusnummer entgegen; eine nackte 4 im Aufruf sagte nicht, worum es geht.
+const LICENSE_STATUS_DELETED = 4;
+
 // Lizenzen des Spielers, nach Saison gruppiert (aktuelle Saison zuerst).
 export interface LicenseSeasonGroup {
   seasonId?: string;
@@ -128,6 +132,11 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   suspensions: PlayerSuspension[] = [];
   // Ebene 1: id der Lizenz, für die gerade das Sperr-Formular offen ist
   suspendLicenseId: string | null = null;
+
+  // Dasselbe Muster für das Lösch-Formular: Es ist immer nur für eine Lizenz
+  // offen, und der Freitext gehört genau zu dieser.
+  deleteLicenseId: string | null = null;
+  licenseDeleteReason = '';
   licenseSuspendUntil = '';
   licenseSuspendReason = '';
   // Ebene 2: Beantragungssperre
@@ -924,36 +933,48 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       });
   }
 
-  public setLicenseToTransfer(license: PlayerLicense) {
-    const licenseId = license.id;
+  // --- Lizenz löschen -------------------------------------------------------
 
-    if (this.player) {
-      this._playerService
-        .updateLicenseStatus(
-          this.player.id,
-          licenseId,
-          6,
-          'für Transfer ungültig gesetzt'
-        )
-        .subscribe({
-          next: () => {
-            this._notificationService.success(
-              'Lizenz für Spieler ' +
-                this.player?.first_name +
-                ' ' +
-                this.player?.last_name +
-                ' (' +
-                this.player?.id +
-                ') für Transfer ungültig gesetzt',
-              {
-                autoClose: true,
-                keepAfterRouteChange: false,
-              }
-            );
-            this.getPlayer('' + this.player?.id);
-          },
-        });
-    }
+  // Ob überhaupt gelöscht werden darf, entscheidet die API und liefert es je
+  // Lizenz als `delete_allowed` mit (License.deletable?). Hier steht nur, ob
+  // dieses Konto die Fähigkeit hat.
+  public canDeleteLicense(license: PlayerLicense): boolean {
+    return this.can('player_delete_license') && license.delete_allowed === true;
+  }
+
+  public openLicenseDelete(license: PlayerLicense): void {
+    this.deleteLicenseId = license.id;
+    this.licenseDeleteReason = '';
+  }
+
+  public cancelLicenseDelete(): void {
+    this.deleteLicenseId = null;
+    this.licenseDeleteReason = '';
+  }
+
+  public submitLicenseDelete(license: PlayerLicense): void {
+    // Getrimmt, weil die API dasselbe tut: Eine Begründung aus Leerzeichen
+    // zählt dort nicht und käme als 422 zurück.
+    const reason = this.licenseDeleteReason.trim();
+    if (!this.player?.id || !reason) return;
+
+    this._playerService
+      .updateLicenseStatus(
+        this.player.id,
+        license.id,
+        LICENSE_STATUS_DELETED,
+        reason
+      )
+      .subscribe({
+        next: () => {
+          this._notificationService.success('Lizenz wurde gelöscht.', {
+            autoClose: true,
+            keepAfterRouteChange: false,
+          });
+          this.cancelLicenseDelete();
+          this.getPlayer('' + this.player?.id);
+        },
+      });
   }
 
   // --- Saison-gruppierte Lizenzhistorie ------------------------------------
