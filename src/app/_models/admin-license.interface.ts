@@ -1,3 +1,5 @@
+import { LeagueType } from './league.interface';
+
 export interface AdminLicenseEntry {
   player_id: number;
   player_last_name: string;
@@ -17,7 +19,7 @@ export interface AdminLicenseEntry {
   league_category_name: string | null;
   league_class_id: string | null;
   league_class_name: string | null;
-  league_type: 'cup' | 'league' | 'champ' | null;
+  league_type: LeagueType | null;
   league_modus: string | null;
   game_operation_id: number | null;
   game_operation_name: string | null;
