@@ -75,6 +75,57 @@ describe('buildSentryOptions', () => {
     expect(buildSentryOptions()?.ignoreErrors).not.toContain('ChunkLoadError');
   });
 
+  // Der Test darüber war zu schwach: Er sucht die Zeichenkette
+  // „ChunkLoadError" in der Liste und war grün, während `Failed to fetch`
+  // Chromes Meldung „Failed to fetch dynamically imported module" als
+  // Teilstring verschluckte. `ignoreErrors` vergleicht Zeichenketten
+  // ausdrücklich als Teilstring, Ausdrücke per `test` — genau so prüft dieser
+  // Test, statt die Liste anzusehen.
+  //
+  // Sichtbar war der Schaden in Sentry: SAISONMANAGER-2B besteht fast nur aus
+  // Safari- und iOS-Meldungen, Chrome fehlte dort.
+  it('lässt die Chunk-Meldung jedes Browsers durch', () => {
+    environment.sentryDsn = dsn;
+    const patterns = buildSentryOptions()?.ignoreErrors ?? [];
+
+    const gefiltert = (message: string) =>
+      patterns.some((pattern) =>
+        typeof pattern === 'string'
+          ? message.includes(pattern)
+          : pattern.test(message)
+      );
+
+    expect(gefiltert('Importing a module script failed.')).toBeFalse();
+    expect(
+      gefiltert(
+        'Failed to fetch dynamically imported module: https://saisonmanager.de/chunk-Ds7N3Bw5.js'
+      )
+    ).toBeFalse();
+    expect(
+      gefiltert(
+        'error loading dynamically imported module: https://saisonmanager.de/chunk-Ds7N3Bw5.js'
+      )
+    ).toBeFalse();
+  });
+
+  // Gegenprobe: Der Netzabbruch, um dessentwillen `Failed to fetch` in der
+  // Liste steht, muss weiter gefiltert werden. Sonst hätte der Fix oben den
+  // Filter nur aufgehoben.
+  it('filtert den gewöhnlichen Netzabbruch weiterhin', () => {
+    environment.sentryDsn = dsn;
+    const patterns = buildSentryOptions()?.ignoreErrors ?? [];
+
+    const gefiltert = (message: string) =>
+      patterns.some((pattern) =>
+        typeof pattern === 'string'
+          ? message.includes(pattern)
+          : pattern.test(message)
+      );
+
+    expect(gefiltert('TypeError: Failed to fetch')).toBeTrue();
+    expect(gefiltert('Load failed')).toBeTrue();
+  });
+
   // Ohne diese Angaben schickt Sentry Nutzerdaten, Cookies, Kopfzeilen,
   // Query-Parameter und Nachrichtenrümpfe mit — bei uns durchweg mit
   // personenbezogenem Inhalt.

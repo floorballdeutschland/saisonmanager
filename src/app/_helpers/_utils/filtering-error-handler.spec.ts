@@ -16,6 +16,7 @@ import {
   FilteringErrorHandler,
   isHandledHttpNoise,
 } from './filtering-error-handler';
+import { ChunkRecoveryEnv } from './chunk-load-recovery';
 
 // Der entscheidende Test ist nicht der auf isHandledHttpNoise, sondern der auf
 // den Handler: Geprüft wird, ob Sentrys Handler aufgerufen wird oder nicht.
@@ -85,6 +86,95 @@ describe('FilteringErrorHandler', () => {
   });
 });
 
+// Der häufigste Fehler des Frontends (SAISONMANAGER-2B, rund 18.600 Ereignisse)
+// endet für den Nutzer in einer weißen Seite. Geprüft wird hier die
+// Verdrahtung: dass der Handler das Neuladen anstößt UND die Meldung trotzdem
+// abschickt. Die Entscheidungslogik selbst steht in chunk-load-recovery.spec.
+describe('FilteringErrorHandler beim Chunk-Ladefehler', () => {
+  let delegate: jasmine.SpyObj<ErrorHandler>;
+  let reload: jasmine.Spy;
+  let recovery: ChunkRecoveryEnv;
+
+  beforeEach(() => {
+    delegate = jasmine.createSpyObj<ErrorHandler>('ErrorHandler', [
+      'handleError',
+    ]);
+    reload = jasmine.createSpy('reload');
+    const values: Record<string, string> = {};
+    recovery = {
+      now: () => 1_000_000,
+      storage: {
+        getItem: (key: string) => values[key] ?? null,
+        setItem: (key: string, value: string) => {
+          values[key] = value;
+        },
+      },
+      reload,
+    };
+  });
+
+  it('lädt die Seite neu, wenn ein Programmteil nicht nachgeladen werden kann', () => {
+    const handler = new FilteringErrorHandler(delegate, recovery);
+
+    handler.handleError(new TypeError('Importing a module script failed.'));
+
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  // Das Neuladen darf die Meldung nicht verschlucken: Ein Chunk-Ladefehler ist
+  // der wichtigste Hinweis auf ein schiefgegangenes Deploy, und ohne ihn wäre
+  // eine weiße Seite gegen einen blinden Fleck getauscht.
+  it('meldet den Ladefehler trotz Neuladen an Sentry', () => {
+    const handler = new FilteringErrorHandler(delegate, recovery);
+    const boom = new TypeError('Importing a module script failed.');
+
+    handler.handleError(boom);
+
+    expect(delegate.handleError).toHaveBeenCalledOnceWith(boom);
+  });
+
+  it('meldet vor dem Neuladen, nicht danach', () => {
+    const reihenfolge: string[] = [];
+    delegate.handleError.and.callFake(() => reihenfolge.push('gemeldet'));
+    reload.and.callFake(() => reihenfolge.push('neu geladen'));
+    const handler = new FilteringErrorHandler(delegate, recovery);
+
+    handler.handleError(new TypeError('Importing a module script failed.'));
+
+    expect(reihenfolge).toEqual(['gemeldet', 'neu geladen']);
+  });
+
+  it('lädt bei einem gewöhnlichen Fehler nicht neu', () => {
+    const handler = new FilteringErrorHandler(delegate, recovery);
+
+    handler.handleError(new TypeError('x is not a function'));
+
+    expect(reload).not.toHaveBeenCalled();
+    expect(delegate.handleError).toHaveBeenCalledTimes(1);
+  });
+
+  // Ein Netzabbruch fliegt vorher aus dem Filter. Er darf kein Neuladen
+  // auslösen, sonst lädt jedes Funkloch die Seite neu.
+  it('lädt bei einem abgebrochenen Request nicht neu', () => {
+    const handler = new FilteringErrorHandler(delegate, recovery);
+
+    handler.handleError(new HttpErrorResponse({ status: 0 }));
+
+    expect(reload).not.toHaveBeenCalled();
+    expect(delegate.handleError).not.toHaveBeenCalled();
+  });
+
+  it('lädt beim zweiten Ladefehler kurz danach nicht erneut', () => {
+    const handler = new FilteringErrorHandler(delegate, recovery);
+
+    handler.handleError(new TypeError('Importing a module script failed.'));
+    handler.handleError(new TypeError('Importing a module script failed.'));
+
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(delegate.handleError).toHaveBeenCalledTimes(2);
+  });
+});
+
 // Die eine Annahme, die der Filter noch macht: dass in der Fehlerkette
 // tatsächlich eine HttpErrorResponse ankommt und nicht schon irgendwo eine
 // Zeichenkette daraus geworden ist. Genau diese Annahme war beim ersten Versuch
@@ -124,12 +214,10 @@ describe('FilteringErrorHandler am echten HTTP-Weg', () => {
       next: () => fail('erwartet war ein Fehlschlag'),
       error: (err) => (caught = err),
     });
-    httpMock
-      .expectOne('/api/v2/init.json')
-      .error(new ProgressEvent('error'), {
-        status: 0,
-        statusText: 'Unknown Error',
-      });
+    httpMock.expectOne('/api/v2/init.json').error(new ProgressEvent('error'), {
+      status: 0,
+      statusText: 'Unknown Error',
+    });
 
     expect(caught instanceof HttpErrorResponse).toBeTrue();
     expect((caught as HttpErrorResponse).status).toBe(0);
