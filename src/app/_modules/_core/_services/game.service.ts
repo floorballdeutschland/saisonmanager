@@ -32,8 +32,15 @@ export interface SecretaryLicenseList {
   team_name: string;
   // Die Liga des Spieltags, in dem die Mannschaft an diesem Tag antritt. Fehlt
   // bei einer älteren API; die Ansicht bleibt dann bei einer flachen Liste.
+  //
+  // `leagues` trägt ALLE Ligen, in denen die Mannschaft an diesem Link
+  // beteiligt ist: Vormittags Ligaspiel, nachmittags Pokal in derselben Halle
+  // ist ein realer Fall, und dann gehört ihre Lizenzliste unter beide
+  // Überschriften. `league_id`/`league_name` bleiben die erste davon und
+  // bedienen ältere Leser der Antwort.
   league_id?: number;
   league_name?: string;
+  leagues?: { id?: number; name?: string }[];
   players: {
     name: string;
     birthdate?: string;

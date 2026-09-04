@@ -182,6 +182,51 @@ describe('SpielSekretariatComponent', () => {
       expect(groups[1].entries.map((e) => e.team_name)).toEqual(['U13 Gast']);
     });
 
+    it('zeigt eine Mannschaft unter jeder Liga, in der sie antritt', () => {
+      // Vormittags Ligaspiel, nachmittags Pokal in derselben Halle. Mit nur
+      // einer Liga fehlte die Lizenzliste unter der zweiten Ueberschrift
+      // vollstaendig, und das Sekretariat des zweiten Spiels suchte sie dort
+      // vergeblich.
+      const groups = build(
+        [
+          day({ id: 1, league: 'Herren', league_id: 10 }),
+          day({ id: 2, league: 'Pokal', league_id: 30 }),
+        ],
+        {
+          '100': {
+            team_name: 'Doppel Heim',
+            league_id: 10,
+            leagues: [
+              { id: 10, name: 'Herren' },
+              { id: 30, name: 'Pokal' },
+            ],
+            players: [],
+          },
+          '200': { team_name: 'Nur Pokal', league_id: 30, players: [] },
+        }
+      );
+
+      expect(groups.map((g) => g.leagueName)).toEqual(['Herren', 'Pokal']);
+      expect(groups[0].entries.map((e) => e.team_name)).toEqual([
+        'Doppel Heim',
+      ]);
+      expect(groups[1].entries.map((e) => e.team_name)).toEqual([
+        'Doppel Heim',
+        'Nur Pokal',
+      ]);
+    });
+
+    it('faellt ohne leagues auf league_id zurueck', () => {
+      // Aeltere API: kennt `leagues` noch nicht, die Gruppierung muss trotzdem
+      // stehen.
+      const groups = build([day({ id: 1, league: 'Herren', league_id: 10 })], {
+        '100': { team_name: 'Heim', league_id: 10, players: [] },
+      });
+
+      expect(groups.length).toBe(1);
+      expect(groups[0].entries.map((e) => e.team_name)).toEqual(['Heim']);
+    });
+
     it('laesst Ligen ohne Lizenzliste weg', () => {
       const groups = build(
         [
