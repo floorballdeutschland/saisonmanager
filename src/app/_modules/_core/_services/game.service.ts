@@ -28,8 +28,12 @@ import {
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
-interface SecretaryLicenseList {
+export interface SecretaryLicenseList {
   team_name: string;
+  // Die Liga des Spieltags, in dem die Mannschaft an diesem Tag antritt. Fehlt
+  // bei einer älteren API; die Ansicht bleibt dann bei einer flachen Liste.
+  league_id?: number;
+  league_name?: string;
   players: {
     name: string;
     birthdate?: string;

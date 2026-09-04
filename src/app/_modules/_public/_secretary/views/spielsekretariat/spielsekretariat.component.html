@@ -131,77 +131,88 @@
     <!-- Licenses tab -->
     @if (activeTab === "licenses") {
       <div>
-        @for (entry of licenseEntries(); track entry) {
-          <div class="mb-8">
-            <h2 class="text-lg font-bold mb-3">{{ entry.team_name }}</h2>
-            @if (entry.players.length === 0) {
-              <div class="text-sm text-fb-gray-400">
-                Keine lizenzierten Spieler gefunden.
-              </div>
-            }
-            @if (entry.players.length > 0) {
-              <div
-                class="border border-fb-gray-600 rounded-[5px] overflow-hidden"
-              >
-                <table class="w-full text-sm">
-                  <thead
-                    class="bg-fb-gray-100 text-fb-gray-400 text-xs uppercase"
-                  >
-                    <tr>
-                      <th class="px-4 py-2 text-left font-normal">Name</th>
-                      <th class="px-4 py-2 text-left font-normal">
-                        Geburtsdatum
-                      </th>
-                      <th class="px-4 py-2 text-left font-normal">Status</th>
-                      <th class="px-4 py-2 text-left font-normal">
-                        Genehmigt am
-                      </th>
-                      <th class="px-4 py-2 text-left font-normal">
-                        Gültig bis
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-fb-gray-200">
-                    @for (p of entry.players; track p) {
+        @for (group of licenseGroups; track group.leagueId) {
+          <!-- Deckt der Link nur eine Liga ab, bleibt die Ansicht wie gehabt:
+               eine Überschrift über einer einzigen Gruppe sagt nichts. -->
+          @if (multipleLicenseLeagues && group.leagueName) {
+            <h2
+              class="text-sm font-bold uppercase text-fb-gray-400 mb-3 pb-1 border-b border-fb-gray-600"
+            >
+              {{ group.leagueName }}
+            </h2>
+          }
+          @for (entry of group.entries; track entry) {
+            <div class="mb-8">
+              <h3 class="text-lg font-bold mb-3">{{ entry.team_name }}</h3>
+              @if (entry.players.length === 0) {
+                <div class="text-sm text-fb-gray-400">
+                  Keine lizenzierten Spieler gefunden.
+                </div>
+              }
+              @if (entry.players.length > 0) {
+                <div
+                  class="border border-fb-gray-600 rounded-[5px] overflow-hidden"
+                >
+                  <table class="w-full text-sm">
+                    <thead
+                      class="bg-fb-gray-100 text-fb-gray-400 text-xs uppercase"
+                    >
                       <tr>
-                        <td class="px-4 py-2 font-medium">{{ p.name }}</td>
-                        <td class="px-4 py-2 text-fb-gray-400">
-                          {{ p.birthdate ?? "–" }}
-                        </td>
-                        <td
-                          class="px-4 py-2"
-                          [ngClass]="statusClass(p.license_status)"
-                        >
-                          {{ p.license_status }}
-                        </td>
-                        <td class="px-4 py-2 text-fb-gray-400">
-                          {{
-                            p.approved_at
-                              ? (p.approved_at | date: "dd.MM.yyyy")
-                              : "–"
-                          }}
-                        </td>
-                        <td
-                          class="px-4 py-2"
-                          [ngClass]="
-                            p.valid_until && p.valid_until < today
-                              ? 'text-red-600 font-medium'
-                              : 'text-fb-gray-400'
-                          "
-                        >
-                          {{
-                            p.valid_until
-                              ? (p.valid_until | date: "dd.MM.yyyy")
-                              : "–"
-                          }}
-                        </td>
+                        <th class="px-4 py-2 text-left font-normal">Name</th>
+                        <th class="px-4 py-2 text-left font-normal">
+                          Geburtsdatum
+                        </th>
+                        <th class="px-4 py-2 text-left font-normal">Status</th>
+                        <th class="px-4 py-2 text-left font-normal">
+                          Genehmigt am
+                        </th>
+                        <th class="px-4 py-2 text-left font-normal">
+                          Gültig bis
+                        </th>
                       </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            }
-          </div>
+                    </thead>
+                    <tbody class="divide-y divide-fb-gray-200">
+                      @for (p of entry.players; track p) {
+                        <tr>
+                          <td class="px-4 py-2 font-medium">{{ p.name }}</td>
+                          <td class="px-4 py-2 text-fb-gray-400">
+                            {{ p.birthdate ?? "–" }}
+                          </td>
+                          <td
+                            class="px-4 py-2"
+                            [ngClass]="statusClass(p.license_status)"
+                          >
+                            {{ p.license_status }}
+                          </td>
+                          <td class="px-4 py-2 text-fb-gray-400">
+                            {{
+                              p.approved_at
+                                ? (p.approved_at | date: "dd.MM.yyyy")
+                                : "–"
+                            }}
+                          </td>
+                          <td
+                            class="px-4 py-2"
+                            [ngClass]="
+                              p.valid_until && p.valid_until < today
+                                ? 'text-red-600 font-medium'
+                                : 'text-fb-gray-400'
+                            "
+                          >
+                            {{
+                              p.valid_until
+                                ? (p.valid_until | date: "dd.MM.yyyy")
+                                : "–"
+                            }}
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          }
         }
       </div>
     }
