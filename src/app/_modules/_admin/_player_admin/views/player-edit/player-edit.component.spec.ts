@@ -43,7 +43,19 @@ describe('PlayerEditComponent', () => {
         // Die Anlege-Maske rendert die Eingabefelder mit ngModel; ohne
         // FormsModule protokolliert Angular dafür eine unbekannte Bindung.
         FormsModule,
-        getTranslocoTestingModule(),
+        getTranslocoTestingModule({
+          de: {
+            playerAdmin: {
+              edit: {
+                scopeSummaryCompetition:
+                  '{{ ageGroup }} {{ fieldSize }} im Spielbetrieb {{ gameOperation }}, davon: {{ groups }}',
+                group_liga: 'Ligaspielbetrieb (inkl. Playoffs)',
+                group_meisterschaft: 'DM/Endrunde',
+                group_pokal: 'Pokal',
+              },
+            },
+          },
+        }),
         UikitCommonModule,
         UikitPlayerModule,
         UikitTeamModule,
@@ -1057,6 +1069,146 @@ describe('PlayerEditComponent', () => {
 
       expect(component.deleteLicenseId).toBe(null);
       expect(component.licenseDeleteReason).toBe('');
+    });
+  });
+
+  // fe#395: Dauer in Spielen und waehlbarer Geltungsbereich.
+  describe('Sperrformular', () => {
+    function licenseWithLeague(): PlayerLicense {
+      return {
+        id: 'L1',
+        team_id: 5,
+        history: [],
+        team: { id: 5, name: 'Team A' },
+        league: {
+          id: 9,
+          name: '1. FBL Herren',
+          season_id: '18',
+          age_group: 'Herren',
+          field_size: 'GF',
+          competition_group: 'liga',
+          game_operation_name: 'Floorball Deutschland',
+        },
+      } as unknown as PlayerLicense;
+    }
+
+    function build(): PlayerEditComponent {
+      const component =
+        TestBed.createComponent(PlayerEditComponent).componentInstance;
+      component.player = { id: 1 } as unknown as Player;
+      component.openLicenseSuspend(licenseWithLeague());
+      return component;
+    }
+
+    it('legt eine Sperre auf die Mannschaft vor, nicht auf alles', () => {
+      // Eine zu weit gefasste Sperre blockiert mehr, als der Anlass hergibt.
+      const component = build();
+      expect(component.licenseSuspendScope).toBe('team');
+      expect(component.licenseSuspendMode).toBe('date');
+    });
+
+    it('hakt Ligaspielbetrieb und DM vor, den Pokal nicht', () => {
+      const component = build();
+      expect(component.selectedSuspendGroups).toEqual([
+        'liga',
+        'meisterschaft',
+      ]);
+    });
+
+    it('benennt den Geltungsbereich im Klartext samt Spielbetrieb', () => {
+      const component = build();
+      component.licenseSuspendScope = 'competition';
+
+      const summary = component.suspendScopeSummary(licenseWithLeague());
+
+      expect(summary).toContain('Herren');
+      expect(summary).toContain('GF');
+      expect(summary).toContain('Floorball Deutschland');
+    });
+
+    it('sperrt den Knopf ohne Dauer und ohne Wettbewerb', () => {
+      const component = build();
+      const license = licenseWithLeague();
+      expect(component.licenseSuspendBlocked(license)).toBe(true);
+
+      component.licenseSuspendUntil = '2026-12-31';
+      expect(component.licenseSuspendBlocked(license)).toBe(false);
+
+      component.licenseSuspendMode = 'games';
+      expect(component.licenseSuspendBlocked(license)).toBe(true);
+      component.licenseSuspendGames = 3;
+      expect(component.licenseSuspendBlocked(license)).toBe(false);
+
+      // Alles abgewaehlt lehnt die API ab, statt still die Vorbelegung zu
+      // nehmen -- der Knopf bleibt deshalb schon hier aus.
+      component.licenseSuspendScope = 'competition';
+      component.toggleSuspendGroup('liga');
+      component.toggleSuspendGroup('meisterschaft');
+      expect(component.selectedSuspendGroups).toEqual([]);
+      expect(component.licenseSuspendBlocked(license)).toBe(true);
+    });
+
+    it('schickt Spiele und Wettbewerb an die API', () => {
+      const component = build();
+      const http = TestBed.inject(HttpTestingController);
+      component.licenseSuspendMode = 'games';
+      component.licenseSuspendGames = 2;
+      component.licenseSuspendScope = 'competition';
+
+      component.submitLicenseSuspend(licenseWithLeague());
+
+      const req = http.expectOne(
+        (r) => r.method === 'POST' && r.url.includes('/suspensions')
+      );
+      expect(req.request.body.scope_kind).toBe('competition');
+      expect(req.request.body.games_total).toBe(2);
+      expect(req.request.body.valid_until).toBeNull();
+      expect(req.request.body.league_id).toBe(9);
+      expect(req.request.body.competition_groups).toEqual([
+        'liga',
+        'meisterschaft',
+      ]);
+      req.flush({});
+    });
+
+    it('erkennt eine Wettbewerbssperre auf einer Lizenz, nicht nur die Mannschaft', () => {
+      // Vor fe#395 verglich die Anzeige allein die team_id und uebersah damit
+      // jede Sperre, die einen ganzen Wettbewerb erfasst.
+      const component = build();
+      component.suspensions = [
+        {
+          id: 1,
+          scope_kind: 'competition',
+          competition_groups: ['liga'],
+          age_group: 'Herren',
+          field_size: 'GF',
+          season_id: '18',
+          team_id: null,
+          active: true,
+          games_served: 0,
+        },
+      ] as unknown as PlayerEditComponent['suspensions'];
+
+      expect(component.isLicenseSuspended(licenseWithLeague())).toBe(true);
+    });
+
+    it('eine Sperre in einer anderen Altersklasse trifft die Lizenz nicht', () => {
+      const component = build();
+      component.suspensions = [
+        {
+          id: 1,
+          scope_kind: 'competition',
+          competition_groups: ['liga'],
+          age_group: 'U13 Juniorinnen',
+          field_size: 'KF',
+          season_id: '18',
+          team_id: null,
+          active: true,
+          games_served: 0,
+        },
+      ] as unknown as PlayerEditComponent['suspensions'];
+
+      expect(component.isLicenseSuspended(licenseWithLeague())).toBe(false);
     });
   });
 });
