@@ -462,10 +462,15 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
           );
           this.load();
         },
-        error: () => {
-          // 403 und 422 zeigt der globale ErrorInterceptor nicht an.
+        error: (err) => {
+          // 403 und 422 zeigt der globale ErrorInterceptor nicht an, die
+          // Meldung muss also von hier kommen. Die API benennt die Absage
+          // genauer, als es ein Sammeltext kann: Eine Landes-SBK sieht in
+          // dieser Liste auch Sperren fremder Verbände, und „Keine
+          // Berechtigung." sagt ihr mehr als „konnte nicht aufgehoben werden".
           this._notificationService.error(
-            this._transloco.translate('licenseAdmin.globalList.liftError')
+            err?.error?.message ??
+              this._transloco.translate('licenseAdmin.globalList.liftError')
           );
           this._cdr.markForCheck();
         },

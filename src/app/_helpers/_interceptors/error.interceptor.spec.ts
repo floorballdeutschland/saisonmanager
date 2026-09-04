@@ -989,4 +989,74 @@ describe('ErrorInterceptor', () => {
       jasmine.objectContaining({ queryParams: jasmine.anything() })
     );
   });
+  // Sperren anlegen und aufheben (api#609). Die API prueft den Geltungsbereich
+  // schaerfer, als die Oberflaeche ihn kennt: Der Knopf haengt nur am Recht
+  // `player_suspend`, der Endpunkt haelt zusaetzlich Heimatverband, Liga und
+  // Spielbetrieb der Sperre gegen die eigene Rolle. Eine Landes-SBK sieht in
+  // der Verbandsliste also Sperren, die sie nicht aufheben darf, und flog
+  // dafuer bisher aus der Liste auf die Startseite.
+  const suspensionUrl = `${environment.apiURL}admin/players/42/suspensions/7.json`;
+
+  function suspensionFailsWith(body: object, status: number): unknown {
+    let received: unknown;
+    http.delete(suspensionUrl).subscribe({
+      next: () => fail('expected the request to fail'),
+      error: (err) => (received = err),
+    });
+    httpMock
+      .expectOne(suspensionUrl)
+      .flush(body, { status, statusText: 'Error' });
+    return received;
+  }
+
+  it('keeps the licence list on its page when lifting a suspension is refused', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    const err = suspensionFailsWith({ message: 'Keine Berechtigung.' }, 403);
+
+    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(errorSpy).not.toHaveBeenCalled();
+    // Die Absage muss die Komponente erreichen, sonst waere der Klick stumm.
+    expect((err as HttpErrorResponse).error.message).toBe(
+      'Keine Berechtigung.'
+    );
+  });
+
+  it('shows no second toast when creating a suspension is rejected with 422', () => {
+    const createUrl = `${environment.apiURL}admin/players/42/suspensions.json`;
+    let received: unknown;
+    http.post(createUrl, {}).subscribe({
+      next: () => fail('expected the request to fail'),
+      error: (err) => (received = err),
+    });
+    httpMock.expectOne(createUrl).flush(
+      { message: 'Spieler ist bereits gesperrt.' },
+      {
+        status: 422,
+        statusText: 'Error',
+      }
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect((received as HttpErrorResponse).error.message).toBe(
+      'Spieler ist bereits gesperrt.'
+    );
+  });
+
+  // Die Ausnahme gilt genau zwei Status. Eine mitten im Sperrformular
+  // abgelaufene Sitzung muss weiterhin abmelden.
+  it('still logs out when a suspension request hits an expired session', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+    suspensionFailsWith({ success: false, message: 'Not authenticated' }, 401);
+
+    expect(logoutSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/login'],
+      jasmine.objectContaining({ queryParams: jasmine.anything() })
+    );
+  });
 });

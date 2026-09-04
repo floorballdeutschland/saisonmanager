@@ -298,6 +298,38 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Anlegen und Aufheben einer Spielersperre sind Aktionen aus einer
+        // bereits geöffneten Arbeitsfläche heraus: aus dem Sperrformular im
+        // Spielerprofil oder aus der Zeile der Lizenzliste. Beide können
+        // planmäßig 403 bekommen, denn die API prüft den Geltungsbereich
+        // schärfer, als die Oberfläche ihn kennt: Der Knopf hängt nur am Recht
+        // `player_suspend` (Admin oder SBK), während der Endpunkt zusätzlich
+        // Heimatverband, Liga und Spielbetrieb der Sperre gegen die eigene
+        // Rolle hält. Eine Landes-SBK sieht in der Verbandsliste also durchaus
+        // Sperren, die sie nicht aufheben darf.
+        //
+        // Ohne diese Ausnahme warf jeder solche Klick auf die Startseite: aus
+        // der Lizenzliste heraus samt Filterzustand — die laut Projektnotizen
+        // schon einmal über zehn Sekunden brauchte — oder aus dem halb
+        // ausgefüllten Sperrformular. Die eigene Meldung der Komponente ging
+        // dabei unter, weil sie mit `keepAfterRouteChange: false` kommt und
+        // dieselbe Navigation sie löscht. Beide Komponenten benennen die
+        // Absage selbst, ein Toast von hier wäre zusätzlich die zweite Meldung
+        // zum selben Vorfall.
+        //
+        // Bewusst NUR 403 und 422, die beiden Status dieser Actions für Absagen
+        // und Regelverstöße. Der 401 bleibt bei den Zweigen unten, damit eine
+        // mitten im Formular abgelaufene Sitzung weiterhin abmeldet; 5xx und
+        // `status === 0` ebenfalls, die benennt die Maske nicht. Siebter Fall
+        // dieser Bauart nach #240, api#437, Gespann-Historie, Spielersuche,
+        // VM-Import und Spielerdaten-Rangliste.
+        if (
+          [403, 422].includes(err.status) &&
+          /admin\/players\/\d+\/suspensions(\/\d+)?(\.json)?$/.test(request.url)
+        ) {
+          return throwError(() => err);
+        }
+
         // Die Gespann-Historie ist ein Nachschlag zur bereits geöffneten
         // Ansetzung, genau wie die Lizenzdokumente oben: Sie sortiert im
         // Dropdown von Schiri 2 die Gespannpartner nach oben. Ein 403 darauf

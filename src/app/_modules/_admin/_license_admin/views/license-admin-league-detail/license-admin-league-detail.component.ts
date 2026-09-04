@@ -160,11 +160,15 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
           // Zeilen betreffen.
           this.getGameOperations();
         },
-        error: () => {
+        error: (err) => {
           this.liftingSuspensionId = undefined;
-          // 403 und 422 zeigt der globale ErrorInterceptor nicht an.
+          // 403 und 422 zeigt der globale ErrorInterceptor nicht an, die
+          // Meldung muss also von hier kommen. Die Begründung der API bevorzugen:
+          // sie benennt, warum die Sperre außerhalb der eigenen Zuständigkeit
+          // liegt, der Sammeltext sagt nur, dass es nicht ging.
           this._notificationService.error(
-            this._transloco.translate('licenseAdmin.leagueDetail.liftError')
+            err?.error?.message ??
+              this._transloco.translate('licenseAdmin.leagueDetail.liftError')
           );
           this._cdr.markForCheck();
         },
