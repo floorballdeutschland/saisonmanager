@@ -10,6 +10,7 @@ import {
   Player,
   PlayerImportReport,
   PlayerSearchResult,
+  PlayerStatisticsExportResponse,
   PlayerStatisticsQuery,
   PlayerStatisticsResponse,
   PlayerStats,
@@ -267,6 +268,17 @@ export class PlayerService {
   public getPlayerStatistics(query: PlayerStatisticsQuery = {}) {
     const path = environment.apiURL + 'admin/player_statistics.json';
     return this.http.get<PlayerStatisticsResponse>(path, {
+      params: this._playerStatisticsParams(query),
+    });
+  }
+
+  /**
+   * Die ganze Filterauswahl fuer den CSV-Export, ungeblaettert. `page` und
+   * `per_page` gehoeren nicht in die Abfrage -- der Endpunkt kennt sie nicht.
+   */
+  public exportPlayerStatistics(query: PlayerStatisticsQuery = {}) {
+    const path = environment.apiURL + 'admin/player_statistics/export.json';
+    return this.http.get<PlayerStatisticsExportResponse>(path, {
       params: this._playerStatisticsParams(query),
     });
   }

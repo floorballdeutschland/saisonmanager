@@ -100,6 +100,23 @@ export interface PlayerStatisticsResponse {
   filters?: PlayerStatisticsFilterOptions;
 }
 
+/**
+ * Antwort des Export-Endpunkts (`GET admin/player_statistics/export`).
+ *
+ * Derselbe Blick wie die Liste, mit denselben Filtern und derselben Sortierung,
+ * nur ungeblaettert -- deshalb ohne `page`, `per_page` und ohne die
+ * Auswahllisten. `total` ist hier die Zahl der GELIEFERTEN Zeilen; erreicht sie
+ * die Obergrenze der API (50.000), sagt `truncated`, dass darunter noch etwas
+ * liegt.
+ */
+export interface PlayerStatisticsExportResponse {
+  scope: PlayerStatisticsScope;
+  as_of: string | null;
+  total: number;
+  truncated: boolean;
+  players: PlayerStatisticsEntry[];
+}
+
 /** Die Werte, die die Maske anbietet; die API vergleicht sie kleingeschrieben. */
 export type PlayerStatisticsGenderFilter = 'M' | 'W' | 'D';
 

@@ -16,6 +16,7 @@ import * as Sentry from '@sentry/angular';
 import { PlayerService } from '@floorball/core';
 import {
   PlayerStatisticsEntry,
+  PlayerStatisticsExportResponse,
   PlayerStatisticsErrorBody,
   PlayerStatisticsFilterOptions,
   PlayerStatisticsGenderFilter,
@@ -25,6 +26,7 @@ import {
   PlayerStatisticsSortKey,
 } from '@floorball/types';
 import { isHandledHttpNoise } from 'src/app/_helpers/_utils/filtering-error-handler';
+import { CsvCell, downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 
 /**
  * Vorbelegung der Filter, an einer Stelle.
@@ -92,6 +94,15 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
   loading = false;
   /** Gescheiterter Abruf -- von „keine Treffer" zu unterscheiden. */
   loadError: string | null = null;
+
+  /**
+   * Laufender Export. Der eigene Zustand statt `loading`: Der Export ruft einen
+   * zweiten Endpunkt, und die Tabelle soll dabei stehenbleiben.
+   */
+  exporting = false;
+  exportError: string | null = null;
+  /** Die Datei endet an der Obergrenze der API -- darunter liegt noch etwas. */
+  exportTruncated = false;
 
   seasonIds: string[] = [];
   gameOperationId: number | null = null;
@@ -371,12 +382,112 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
   /** Jede Aenderung an Filter oder Sortierung beginnt wieder bei Seite 1. */
   reload(): void {
     this.page = 1;
+    // Beide Meldungen gehoeren zur vorigen Auswahl und wuerden ueber einer
+    // anderen Liste etwas Falsches behaupten.
+    this.exportError = null;
+    this.exportTruncated = false;
     this._load$.next();
   }
 
   changePage(page: number): void {
     this.page = page;
     this._load$.next();
+  }
+
+  /**
+   * Die Abfrage des Exports: dieselbe wie die der Liste, ohne die Blaetterung.
+   * Der Endpunkt kennt `page`/`per_page` nicht, und mitgeschickt behaupteten sie,
+   * die Datei bekaeme nur die sichtbare Seite.
+   */
+  get exportQuery(): PlayerStatisticsQuery {
+    const query = { ...this.query };
+    delete query.page;
+    delete query.per_page;
+    return query;
+  }
+
+  /**
+   * Die aktuelle Filterauswahl als CSV -- alle Treffer, nicht die sichtbare
+   * Seite. Deshalb ein eigener Abruf und nicht `entries`: Auf dem Schirm stehen
+   * 50 Zeilen, in einer Verbandsansicht koennen es fuenfstellig viele sein.
+   */
+  exportCsv(): void {
+    if (this.exporting) return;
+
+    this.exporting = true;
+    this.exportError = null;
+    this.exportTruncated = false;
+    this._cdr.markForCheck();
+
+    this._playerService
+      .exportPlayerStatistics(this.exportQuery)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (response) => {
+          this.exporting = false;
+          this.exportTruncated = response.truncated === true;
+          this._downloadCsv(response);
+          this._cdr.markForCheck();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.exporting = false;
+          this.exportError = this._errorMessage(err, 'playerStats.exportError');
+          this._reportFailure(err, 'export');
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  /**
+   * Spalten wie die Tabelle, mit drei Zugaben, die im Tabellenblatt zaehlen:
+   * Vor- und Nachname getrennt (sortierbar), der Zeitraum als zwei Spalten
+   * (filterbar) und die Spieler-ID, ueber die eine Zeile eindeutig bleibt, wenn
+   * zwei Personen gleich heissen.
+   */
+  private _downloadCsv(response: PlayerStatisticsExportResponse): void {
+    const t = (key: string) => this._transloco.translate(key);
+    const headers = [
+      t('playerStats.csv.lastName'),
+      t('playerStats.csv.firstName'),
+      ...(this.isAssociationMode ? [t('playerStats.columns.club')] : []),
+      t('playerStats.columns.games'),
+      t('playerStats.columns.goals'),
+      t('playerStats.columns.assists'),
+      t('playerStats.columns.points'),
+      t('playerStats.columns.pointsPerGame'),
+      t('playerStats.csv.penaltyMinutes'),
+      t('playerStats.csv.firstSeason'),
+      t('playerStats.csv.lastSeason'),
+      t('playerStats.csv.deactivated'),
+      t('playerStats.csv.playerId'),
+    ];
+
+    const rows: CsvCell[][] = response.players.map((entry) => [
+      entry.last_name,
+      entry.first_name,
+      ...(this.isAssociationMode ? [entry.home_club ?? ''] : []),
+      entry.games,
+      entry.goals,
+      entry.assists,
+      entry.scorer_points,
+      this._decimal(entry.scorer_per_game),
+      entry.penalty_minutes,
+      this.seasonName(entry.first_season_id),
+      this.seasonName(entry.last_season_id),
+      entry.deactivated_at ? t('playerStats.csv.yes') : t('playerStats.csv.no'),
+      entry.player_id,
+    ]);
+
+    downloadCsv('spielerdaten', headers, rows);
+  }
+
+  /**
+   * Dezimalkomma statt Punkt. Die Datei ist auf die deutsche Locale gebaut
+   * (Semikolon als Trennzeichen, siehe `csv-export`), und dort liest Excel
+   * „1.75" als Text und macht aus „1.5" ein Datum.
+   */
+  private _decimal(value: number): string {
+    return (Number(value) || 0).toFixed(2).replace('.', ',');
   }
 
   /**
@@ -402,12 +513,15 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
    * „[object Object]". Beides ist im ErrorInterceptor schon einmal gelernt
    * worden (`readableDetail`).
    */
-  private _errorMessage(err: HttpErrorResponse): string {
+  private _errorMessage(
+    err: HttpErrorResponse,
+    fallbackKey = 'playerStats.loadError'
+  ): string {
     const body = err?.error as PlayerStatisticsErrorBody | null | undefined;
     const detail = body?.error ?? body?.message;
     return typeof detail === 'string' && detail.trim()
       ? detail
-      : this._transloco.translate('playerStats.loadError');
+      : this._transloco.translate(fallbackKey);
   }
 
   /**
@@ -419,8 +533,10 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
    * Stapelspur (`Sentry.capture_exception` in `PlayerStatisticsController`),
    * und beide Seiten teilen ein Sentry-Projekt.
    */
-  private _reportFailure(err: HttpErrorResponse): void {
-    console.error(`HTTP ${err?.status}: GET admin/player_statistics`);
+  private _reportFailure(err: HttpErrorResponse, action = 'index'): void {
+    console.error(
+      `HTTP ${err?.status}: GET admin/player_statistics (${action})`
+    );
     if (err?.status === 503 || isHandledHttpNoise(err)) return;
 
     Sentry.captureException(err);
