@@ -104,6 +104,116 @@ describe('MatchReportIndexComponent', () => {
     expect(component.groups[0].commentCount).toBe(1);
   });
 
+  it('sortiert aufsteigend nach Datum, Anwurf und Spielnummer', () => {
+    // Der Server liefert absteigend (beim Deckeln sollen die ältesten Spieltage
+    // wegfallen); gearbeitet wird die Liste von vorn ab.
+    loadWith([
+      row({
+        id: 3,
+        date: '2026-02-08',
+        start_time: '10:00',
+        game_number: '30',
+      }),
+      row({
+        id: 2,
+        date: '2026-02-01',
+        start_time: '16:00',
+        game_number: '20',
+      }),
+      row({
+        id: 1,
+        date: '2026-02-01',
+        start_time: '14:00',
+        game_number: '10',
+      }),
+    ]);
+
+    expect(component.rows.map((r) => r.id)).toEqual([1, 2, 3]);
+  });
+
+  it('haengt leere und nicht deutbare Werte hinten an', () => {
+    loadWith([
+      row({ id: 3, date: '', start_time: '' }),
+      row({ id: 2, date: '2026-02-01', start_time: '' }),
+      row({ id: 1, date: '2026-02-01', start_time: '14:00' }),
+    ]);
+
+    expect(component.rows.map((r) => r.id)).toEqual([1, 2, 3]);
+  });
+
+  it('sortiert die Spielnummer numerisch und stellt K.-o.-Kuerzel hinten an', () => {
+    loadWith([
+      row({ id: 3, game_number: 'HF1' }),
+      row({ id: 2, game_number: '100' }),
+      row({ id: 1, game_number: '9' }),
+    ]);
+
+    expect(component.rows.map((r) => r.id)).toEqual([1, 2, 3]);
+  });
+
+  it('filtert nach Liga und nimmt fremde Spieltage ganz heraus', () => {
+    loadWith([
+      row({
+        id: 1,
+        game_day_id: 100,
+        league_id: 5,
+        league_name: 'Regionalliga',
+      }),
+      row({ id: 2, game_day_id: 200, league_id: 7, league_name: 'U13' }),
+    ]);
+
+    component.filterLeagueId = '7';
+    component.applyFilter();
+
+    expect(component.rows.map((r) => r.id)).toEqual([2]);
+    expect(component.groups.map((g) => g.gameDayId)).toEqual([200]);
+    // Kein zweiter Abruf: Die Liga wird clientseitig ausgewertet.
+    httpMock.expectNone(
+      (r) =>
+        r.url === environment.apiURL + 'admin/game_days/report_overview.json'
+    );
+  });
+
+  it('bietet die Ligen der ungefilterten Antwort alphabetisch an', () => {
+    loadWith([
+      row({ id: 1, league_id: 7, league_name: 'U13' }),
+      row({ id: 2, league_id: 5, league_name: 'Regionalliga' }),
+      row({ id: 3, league_id: 5, league_name: 'Regionalliga' }),
+    ]);
+
+    expect(component.leagues).toEqual([
+      { id: 5, name: 'Regionalliga' },
+      { id: 7, name: 'U13' },
+    ]);
+
+    // Nach dem Setzen des Filters bleibt die Auswahl vollstaendig, sonst
+    // gaebe es keinen Weg zurueck.
+    component.filterLeagueId = '5';
+    component.applyFilter();
+    expect(component.leagues.length).toBe(2);
+  });
+
+  it('faellt auf Alle zurueck, wenn die gewaehlte Liga verschwindet', () => {
+    loadWith([row({ id: 1, league_id: 5, league_name: 'Regionalliga' })]);
+    component.filterLeagueId = '5';
+
+    // Neuer Zeitraum, in dem diese Liga nicht mehr vorkommt.
+    component.filterDateFrom = '2026-03-01';
+    component.applyFilter();
+    httpMock
+      .expectOne(
+        (r) =>
+          r.url === environment.apiURL + 'admin/game_days/report_overview.json'
+      )
+      .flush({
+        truncated: false,
+        games: [row({ id: 2, league_id: 7, league_name: 'U13' })],
+      });
+
+    expect(component.filterLeagueId).toBe('');
+    expect(component.rows.map((r) => r.id)).toEqual([2]);
+  });
+
   it('filtert auf offene Berichte', () => {
     component.filterStatus = 'open';
     loadWith([
