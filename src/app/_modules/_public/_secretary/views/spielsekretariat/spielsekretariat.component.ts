@@ -63,8 +63,12 @@ export class SpielSekretariatComponent implements OnInit {
     this._gameService.getSecretaryGameDay(this.token).subscribe({
       next: (data) => {
         this.data = data;
-        this.licenseGroups = this._buildLicenseGroups(data);
+        // `loading` VOR dem Gruppenaufbau zurücksetzen: Wirft der Aufbau, trägt
+        // RxJS die Ausnahme asynchron weiter und der error-Zweig unten greift
+        // nicht mehr. Die Seite bliebe sonst dauerhaft im Ladezustand stehen,
+        // ohne Meldung und ohne dass ein neuer Link etwas ändert.
         this.loading = false;
+        this.licenseGroups = this._buildLicenseGroups(data);
         this._cdr.markForCheck();
       },
       // err.message stammt aus normalizeSecretaryPayload und meldet eine
@@ -177,8 +181,10 @@ export class SpielSekretariatComponent implements OnInit {
       .filter((group) => group.entries.length > 0)
       .map((group) => ({
         ...group,
+        // `teams.name` ist in der Datenbank nullable und nur modellseitig
+        // geprüft: Eine Altmannschaft ohne Namen darf den Aufbau nicht werfen.
         entries: [...group.entries].sort((a, b) =>
-          a.team_name.localeCompare(b.team_name, 'de')
+          (a.team_name ?? '').localeCompare(b.team_name ?? '', 'de')
         ),
       }));
   }
