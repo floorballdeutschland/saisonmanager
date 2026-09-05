@@ -950,4 +950,113 @@ describe('PlayerEditComponent', () => {
       expect(dom.querySelector('button')).toBe(null);
     });
   });
+  // Löschen ist der einzige Statuswechsel mit Pflicht-Begründung. Ob eine Lizenz
+  // überhaupt löschbar ist, entscheidet die API je Lizenz (License.deletable?:
+  // laufende Saison, Status erteilt oder beantragt) und liefert es als
+  // `delete_allowed` mit. Die Maske baut die Regel nicht nach, sie liest sie.
+  describe('Lizenz löschen', () => {
+    function license(deleteAllowed?: boolean): PlayerLicense {
+      return {
+        id: 'lizenz-1',
+        team_id: 1,
+        season_id: 18,
+        league_class_id: '',
+        requested_at: '',
+        history: [{ license_status_id: 1 }],
+        delete_allowed: deleteAllowed,
+      } as unknown as PlayerLicense;
+    }
+
+    function build(
+      permissions: Record<string, boolean>,
+      licenses: PlayerLicense[]
+    ): PlayerEditComponent {
+      currentUser$.next({ permissions } as unknown as User);
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.componentInstance.player = { id: 7, licenses } as Player;
+      fixture.detectChanges(false);
+      return fixture.componentInstance;
+    }
+
+    it('bietet das Löschen an, wenn Recht und Auskunft der API zusammenkommen', () => {
+      const lic = license(true);
+      const component = build({ player_delete_license: true }, [lic]);
+
+      expect(component.canDeleteLicense(lic)).toBe(true);
+    });
+
+    it('bietet es ohne das Recht nicht an', () => {
+      const lic = license(true);
+      const component = build({}, [lic]);
+
+      expect(component.canDeleteLicense(lic)).toBe(false);
+    });
+
+    // Eine gesperrte, abgelehnte oder abgelaufene Lizenz kommt mit
+    // delete_allowed: false. Der Knopf darf dort nicht stehen, sonst führte er
+    // in ein 422.
+    it('bietet es nicht an, wenn die API die Lizenz nicht freigibt', () => {
+      const lic = license(false);
+      const component = build({ player_delete_license: true }, [lic]);
+
+      expect(component.canDeleteLicense(lic)).toBe(false);
+    });
+
+    // Frontend-Deploy vor API-Deploy: Fehlt das Feld, ist die API älter. Dann
+    // lieber kein Knopf als einer, dessen Endpunkt den Status noch nicht kennt.
+    it('bietet es nicht an, wenn die API das Feld nicht liefert', () => {
+      const lic = license(undefined);
+      const component = build({ player_delete_license: true }, [lic]);
+
+      expect(component.canDeleteLicense(lic)).toBe(false);
+    });
+
+    it('schickt den Status 4 mit der Begründung', () => {
+      const lic = license(true);
+      const component = build({ player_delete_license: true }, [lic]);
+
+      component.openLicenseDelete(lic);
+      component.licenseDeleteReason = '  auf der falschen Mannschaft  ';
+      component.submitLicenseDelete(lic);
+
+      const req = TestBed.inject(HttpTestingController).expectOne(
+        `${environment.apiURL}admin/players/7/handle_license_request.json`
+      );
+      expect(req.request.body.license_id).toBe('lizenz-1');
+      expect(req.request.body.license_status_id).toBe(4);
+      // Getrimmt wie in der API, sonst stünde die Begründung mit Leerzeichen
+      // in der Historie.
+      expect(req.request.body.reason).toBe('auf der falschen Mannschaft');
+      req.flush({ success: true });
+
+      expect(component.deleteLicenseId).toBe(null);
+    });
+
+    // Die API weist eine Begründung aus lauter Leerzeichen ab. Die Maske soll
+    // dafür gar nicht erst losschicken.
+    it('schickt ohne Begründung nichts', () => {
+      const lic = license(true);
+      const component = build({ player_delete_license: true }, [lic]);
+
+      component.openLicenseDelete(lic);
+      component.licenseDeleteReason = '   ';
+      component.submitLicenseDelete(lic);
+
+      TestBed.inject(HttpTestingController).expectNone(
+        `${environment.apiURL}admin/players/7/handle_license_request.json`
+      );
+    });
+
+    it('räumt das Formular beim Abbrechen ab', () => {
+      const lic = license(true);
+      const component = build({ player_delete_license: true }, [lic]);
+
+      component.openLicenseDelete(lic);
+      component.licenseDeleteReason = 'Tippfehler';
+      component.cancelLicenseDelete();
+
+      expect(component.deleteLicenseId).toBe(null);
+      expect(component.licenseDeleteReason).toBe('');
+    });
+  });
 });
