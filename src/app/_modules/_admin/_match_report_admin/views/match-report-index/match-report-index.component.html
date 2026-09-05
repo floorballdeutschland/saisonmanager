@@ -28,6 +28,22 @@
     </div>
     <div class="flex flex-col gap-1">
       <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "matchReportAdmin.index.filterLeague" | transloco
+      }}</label>
+      <select
+        [(ngModel)]="filterLeagueId"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      >
+        <option value="">
+          {{ "matchReportAdmin.index.filterLeagueAll" | transloco }}
+        </option>
+        @for (league of leagues; track league.id) {
+          <option [value]="league.id.toString()">{{ league.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
         "matchReportAdmin.index.filterFrom" | transloco
       }}</label>
       <input

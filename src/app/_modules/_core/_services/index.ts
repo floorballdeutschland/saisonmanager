@@ -2,7 +2,11 @@ export { LeagueService } from './league.service';
 export { ClubService } from './club.service';
 export { MetaService } from './meta.service';
 export { GameService } from './game.service';
-export type { GameSchedulingConflict, SecretaryPayload } from './game.service';
+export type {
+  GameSchedulingConflict,
+  SecretaryLicenseList,
+  SecretaryPayload,
+} from './game.service';
 export { PlayerService } from './player.service';
 export { DocumentTypeService } from './document-type.service';
 export { TeamService } from './team.service';

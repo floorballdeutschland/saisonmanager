@@ -14,6 +14,21 @@
   "emptyFiltered": "Zu dieser Auswahl gibt es keine Einträge. Setze die Filter zurück oder erweitere sie.",
   "deactivated": "deaktiviert",
   "edit": "bearbeiten",
+  "exportCsv": "CSV-Export",
+  "exporting": "Export läuft…",
+  "exportError": "Der Export konnte nicht erstellt werden.",
+  "exportTruncated": "Die Datei endet bei 50.000 Zeilen. Grenze die Auswahl weiter ein, etwa auf eine Saison oder einen Verein, um den Rest zu bekommen.",
+  "csv": {
+    "lastName": "Nachname",
+    "firstName": "Vorname",
+    "penaltyMinutes": "Strafminuten",
+    "firstSeason": "Erste Saison",
+    "lastSeason": "Letzte Saison",
+    "deactivated": "Deaktiviert",
+    "playerId": "Spieler-ID",
+    "yes": "Ja",
+    "no": "Nein"
+  },
   "columns": {
     "rank": "#",
     "name": "Name",

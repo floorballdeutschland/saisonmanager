@@ -402,41 +402,17 @@
     <h2 class="text-xl font-bold mb-2">Spieltagscheckliste</h2>
     <p class="text-sm text-fb-gray-400 mb-5">
       Bitte beantworte alle Fragen, bevor der Spielbericht abgeschlossen wird.
+      Was in der Spielvorbereitung schon eingetragen wurde, steht hier vorbelegt
+      und kann noch geändert werden.
     </p>
 
-    <div class="flex flex-col gap-4 mb-6">
-      <div
-        *ngFor="let item of game.checklist_items"
-        class="border border-fb-gray-600 rounded-[5px] p-3"
-      >
-        <p class="text-sm font-medium mb-2">{{ item.question }}</p>
-        <div class="flex gap-3">
-          <button
-            type="button"
-            (click)="checklistAnswers[item.id] = true"
-            class="px-4 py-1.5 text-sm font-bold rounded-[5px] border"
-            [ngClass]="
-              checklistAnswers[item.id] === true
-                ? 'bg-green-600 text-white border-green-600'
-                : 'bg-white text-black border-fb-gray-600 hover:border-black'
-            "
-          >
-            Ja
-          </button>
-          <button
-            type="button"
-            (click)="checklistAnswers[item.id] = false"
-            class="px-4 py-1.5 text-sm font-bold rounded-[5px] border"
-            [ngClass]="
-              checklistAnswers[item.id] === false
-                ? 'bg-red-500 text-white border-red-500'
-                : 'bg-white text-black border-fb-gray-600 hover:border-black'
-            "
-          >
-            Nein
-          </button>
-        </div>
-      </div>
+    <div class="mb-6">
+      <fb-checklist-questions
+        [items]="game.checklist_items || []"
+        [answers]="checklistAnswers"
+        [disabled]="checklistSaving"
+        (answerSet)="setChecklistAnswer($event)"
+      ></fb-checklist-questions>
     </div>
 
     <div class="flex gap-3">

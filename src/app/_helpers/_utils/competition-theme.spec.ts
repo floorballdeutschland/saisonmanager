@@ -25,6 +25,21 @@ describe('competitionKey', () => {
     expect(competitionKey({ name: 'Floorball Deutschland Cup' })).toBe('pokal');
   });
 
+  it('ein Playoff trägt die Marke seiner Liga und nicht die des Pokals', () => {
+    // Playoffs und Playdowns sind die Fortsetzung einer Liga (api#603). Sie
+    // laufen im K.-o.-System, gehören aber demselben Wettbewerb wie die
+    // Hauptrunde -- das Playoff der 1. Bundesliga darf nicht im Pokalbild
+    // erscheinen.
+    expect(
+      competitionKey({
+        league_type: 'playoff',
+        league_class_id: '1fbl',
+        female: false,
+        name: '1. FBL Herren - Playoffs',
+      })
+    ).toBe('1fbl-m');
+  });
+
   // Ein gesetzter league_type sticht den Namen: Eine Liga, die zufällig „Cup"
   // heißt, ist deshalb kein Pokal.
   it('zieht den league_type dem Namen vor', () => {

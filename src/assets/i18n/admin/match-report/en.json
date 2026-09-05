@@ -4,6 +4,8 @@
     "subtitle": "Overview of submitted match reports for the current season, with status, editing time and notes for the game operations committee.",
     "filterGameOperation": "Game operation",
     "filterGameOperationAll": "All",
+    "filterLeague": "League",
+    "filterLeagueAll": "All",
     "filterFrom": "From",
     "filterTo": "To",
     "filterStatus": "Status",

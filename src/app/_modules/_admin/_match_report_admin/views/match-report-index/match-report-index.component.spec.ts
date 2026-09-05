@@ -104,6 +104,177 @@ describe('MatchReportIndexComponent', () => {
     expect(component.groups[0].commentCount).toBe(1);
   });
 
+  it('sortiert aufsteigend nach Datum, Anwurf und Spielnummer', () => {
+    // Der Server liefert absteigend (beim Deckeln sollen die ältesten Spieltage
+    // wegfallen); gearbeitet wird die Liste von vorn ab.
+    loadWith([
+      row({
+        id: 3,
+        date: '2026-02-08',
+        start_time: '10:00',
+        game_number: '30',
+      }),
+      row({
+        id: 2,
+        date: '2026-02-01',
+        start_time: '16:00',
+        game_number: '20',
+      }),
+      row({
+        id: 1,
+        date: '2026-02-01',
+        start_time: '14:00',
+        game_number: '10',
+      }),
+    ]);
+
+    expect(component.rows.map((r) => r.id)).toEqual([1, 2, 3]);
+  });
+
+  it('haengt leere und nicht deutbare Werte hinten an', () => {
+    loadWith([
+      row({ id: 3, date: '', start_time: '' }),
+      row({ id: 2, date: '2026-02-01', start_time: '' }),
+      row({ id: 1, date: '2026-02-01', start_time: '14:00' }),
+    ]);
+
+    expect(component.rows.map((r) => r.id)).toEqual([1, 2, 3]);
+  });
+
+  it('sortiert die Spielnummer numerisch und stellt K.-o.-Kuerzel hinten an', () => {
+    loadWith([
+      row({ id: 3, game_number: 'HF1' }),
+      row({ id: 2, game_number: '100' }),
+      row({ id: 1, game_number: '9' }),
+    ]);
+
+    expect(component.rows.map((r) => r.id)).toEqual([1, 2, 3]);
+  });
+
+  it('filtert nach Liga und nimmt fremde Spieltage ganz heraus', () => {
+    loadWith([
+      row({
+        id: 1,
+        game_day_id: 100,
+        league_id: 5,
+        league_name: 'Regionalliga',
+      }),
+      row({ id: 2, game_day_id: 200, league_id: 7, league_name: 'U13' }),
+    ]);
+
+    component.filterLeagueId = '7';
+    component.applyFilter();
+
+    // Die Liga filtert der Server. Clientseitig traefe der Filter nur den bei
+    // 2000 Zeilen behaltenen Ausschnitt, und dort fehlt gerade der aelteste
+    // Bestand.
+    httpMock
+      .expectOne(
+        (r) =>
+          r.url === environment.apiURL + 'admin/game_days/report_overview.json'
+      )
+      .flush({
+        truncated: false,
+        leagues: [
+          { id: 5, name: 'Regionalliga' },
+          { id: 7, name: 'U13' },
+        ],
+        games: [
+          row({ id: 2, game_day_id: 200, league_id: 7, league_name: 'U13' }),
+        ],
+      });
+
+    // Ein Spieltag gehoert genau zu einer Liga, faellt also ganz heraus oder
+    // ganz hinein -- die Kennzahlen des Spieltags bleiben richtig.
+    expect(component.rows.map((r) => r.id)).toEqual([2]);
+    expect(component.groups.map((g) => g.gameDayId)).toEqual([200]);
+  });
+
+  // Rueckfall fuer eine API ohne `leagues`: dann aus den Zeilen, wie vorher.
+  it('leitet die Ligen aus den Zeilen ab, wenn die API keine Liste liefert', () => {
+    loadWith([
+      row({ id: 1, league_id: 7, league_name: 'U13' }),
+      row({ id: 2, league_id: 5, league_name: 'Regionalliga' }),
+      row({ id: 3, league_id: 5, league_name: 'Regionalliga' }),
+    ]);
+
+    expect(component.leagues).toEqual([
+      { id: 5, name: 'Regionalliga' },
+      { id: 7, name: 'U13' },
+    ]);
+  });
+
+  // Die Liste kommt vom Server, denn beim Deckeln faellt der aelteste Bestand
+  // weg: Eine Liga, die nur dort vorkommt, stuende sonst nicht zur Auswahl.
+  it('nimmt die Ligenliste der API und nicht die der Zeilen', () => {
+    component['_load']();
+    httpMock
+      .expectOne(
+        (r) =>
+          r.url === environment.apiURL + 'admin/game_days/report_overview.json'
+      )
+      .flush({
+        truncated: true,
+        leagues: [
+          { id: 5, name: 'Regionalliga' },
+          { id: 7, name: 'U13' },
+          { id: 9, name: 'Nur im abgeschnittenen Teil' },
+        ],
+        games: [row({ id: 1, league_id: 5, league_name: 'Regionalliga' })],
+      });
+
+    expect(component.leagues.map((l) => l.id)).toEqual([5, 7, 9]);
+  });
+
+  // Die Liga filtert der Server, nicht die Ansicht: Clientseitig traefe der
+  // Filter nur den behaltenen Ausschnitt, und gerade die liegen gebliebenen
+  // Berichte vom Saisonstart fehlten.
+  it('schickt die gewaehlte Liga an den Server und laedt neu', () => {
+    loadWith([row({ id: 1, league_id: 5, league_name: 'Regionalliga' })]);
+
+    component.filterLeagueId = '5';
+    component.applyFilter();
+
+    const req = httpMock.expectOne(
+      (r) =>
+        r.url === environment.apiURL + 'admin/game_days/report_overview.json'
+    );
+    expect(req.request.params.get('league_id')).toBe('5');
+    req.flush({
+      truncated: false,
+      leagues: [
+        { id: 5, name: 'Regionalliga' },
+        { id: 7, name: 'U13' },
+      ],
+      games: [row({ id: 1, league_id: 5, league_name: 'Regionalliga' })],
+    });
+
+    // Die Auswahl bleibt vollstaendig, sonst gaebe es keinen Weg zurueck.
+    expect(component.leagues.length).toBe(2);
+    expect(component.filterLeagueId).toBe('5');
+  });
+
+  it('faellt auf Alle zurueck, wenn die gewaehlte Liga verschwindet', () => {
+    loadWith([row({ id: 1, league_id: 5, league_name: 'Regionalliga' })]);
+    component.filterLeagueId = '5';
+
+    // Neuer Zeitraum, in dem diese Liga nicht mehr vorkommt.
+    component.filterDateFrom = '2026-03-01';
+    component.applyFilter();
+    httpMock
+      .expectOne(
+        (r) =>
+          r.url === environment.apiURL + 'admin/game_days/report_overview.json'
+      )
+      .flush({
+        truncated: false,
+        games: [row({ id: 2, league_id: 7, league_name: 'U13' })],
+      });
+
+    expect(component.filterLeagueId).toBe('');
+    expect(component.rows.map((r) => r.id)).toEqual([2]);
+  });
+
   it('filtert auf offene Berichte', () => {
     component.filterStatus = 'open';
     loadWith([
@@ -175,7 +346,7 @@ describe('MatchReportIndexComponent', () => {
     );
 
     component.openScan(row({ id: 42 }));
-    expect(openSpy).toHaveBeenCalledWith('', '_blank', 'noopener');
+    expect(openSpy).toHaveBeenCalledWith('', '_blank');
 
     httpMock
       .expectOne(environment.apiURL + 'user/games/42/scan.json')
@@ -184,6 +355,34 @@ describe('MatchReportIndexComponent', () => {
     expect(tab.location.href).toBe('https://example.test/scan.pdf');
     expect(tab.close).not.toHaveBeenCalled();
     expect(component.scanLoadingGameId).toBeNull();
+  });
+
+  it('öffnet den Tab ohne noopener und kappt den Verweis selbst', () => {
+    // Mit dem Feature `noopener` gibt window.open laut Spezifikation null
+    // zurück: Die Registerkarte geht auf, der Code hält aber keinen Verweis
+    // darauf. Er lief deshalb in den Ersatzzweig für den Popup-Blocker,
+    // navigierte die aktuelle Seite und ließ die leere Registerkarte stehen.
+    const tab = {
+      location: { href: '' },
+      opener: window,
+      close: jasmine.createSpy('close'),
+    };
+    const openSpy = spyOn(window, 'open').and.returnValue(
+      tab as unknown as Window
+    );
+
+    component.openScan(row({ id: 42 }));
+
+    expect(openSpy.calls.mostRecent().args[2]).toBeUndefined();
+    // Der Schutz, den noopener gebracht hätte, wird von Hand hergestellt.
+    expect(tab.opener).toBeNull();
+
+    httpMock
+      .expectOne(environment.apiURL + 'user/games/42/scan.json')
+      .flush({ url: 'https://example.test/scan.pdf' });
+
+    expect(tab.location.href).toBe('https://example.test/scan.pdf');
+    expect(tab.close).not.toHaveBeenCalled();
   });
 
   it('schließt den leeren Tab, wenn kein Scan vorliegt', () => {
@@ -197,6 +396,38 @@ describe('MatchReportIndexComponent', () => {
 
     expect(tab.close).toHaveBeenCalled();
     expect(component.scanLoadingGameId).toBeNull();
+  });
+
+  it('schliesst den leeren Tab, wenn die Seite waehrend des Abrufs verlassen wird', () => {
+    // takeUntil beendet das Abo ohne next und ohne error. Ohne den
+    // finalize-Zweig haette hier niemand mehr geschlossen, und die leere
+    // Registerkarte blieb genau so stehen, wie dieser PR es abstellt.
+    const tab = { location: { href: '' }, close: jasmine.createSpy('close') };
+    spyOn(window, 'open').and.returnValue(tab as unknown as Window);
+
+    component.openScan(row({ id: 42 }));
+    httpMock.expectOne(environment.apiURL + 'user/games/42/scan.json');
+
+    component.ngOnDestroy();
+
+    expect(tab.close).toHaveBeenCalled();
+  });
+
+  it('laesst den uebergebenen Tab beim Verlassen der Seite offen', () => {
+    // Gegenprobe: Ist die Adresse schon zugewiesen, gehoert die Registerkarte
+    // der Nutzerin. Ein spaeteres Aufraeumen duerfte sie ihr nicht wegnehmen.
+    const tab = { location: { href: '' }, close: jasmine.createSpy('close') };
+    spyOn(window, 'open').and.returnValue(tab as unknown as Window);
+
+    component.openScan(row({ id: 42 }));
+    httpMock
+      .expectOne(environment.apiURL + 'user/games/42/scan.json')
+      .flush({ url: 'https://example.test/scan.pdf' });
+
+    component.ngOnDestroy();
+
+    expect(tab.close).not.toHaveBeenCalled();
+    expect(tab.location.href).toBe('https://example.test/scan.pdf');
   });
 
   it('baut den Link auf den Spielbericht nur mit Slug und Liga', () => {

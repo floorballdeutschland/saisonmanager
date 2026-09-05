@@ -16,6 +16,7 @@ import {
   matchDayFromParams,
   writeMatchDayToUrl,
 } from 'src/app/_helpers/_utils/match-day-param';
+import { isKnockout } from 'src/app/_helpers/_utils/league-type';
 import {
   GameOperation,
   GameScheduleEntry,
@@ -71,6 +72,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
   // Ligawechsel ist das nur, wenn sich die Kennung ändert.
   private _loadedLeagueId?: number;
 
+  // Turnierbaum statt Tabelle: Pokal und Playoffs/Playdowns. Als Feld, damit
+  // das Template dieselbe Ableitung benutzt wie ngOnInit.
+  public isKnockout = isKnockout;
+
   constructor(
     private _associationService: AssociationService,
     private _leagueService: LeagueService,
@@ -125,7 +130,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
                 : undefined;
             }
 
-            if (league.league_type !== 'cup') {
+            if (!isKnockout(league)) {
               this.getTeamRanking(league.id);
               this.getMatches(league);
               this.selectedMatchDay = league.game_day_titles[0];

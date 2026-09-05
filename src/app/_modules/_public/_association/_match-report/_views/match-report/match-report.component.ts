@@ -257,6 +257,17 @@ export class MatchReportComponent implements OnInit, OnChanges {
     this.handleGameStatusChange(this.MATCH_RECORD_CLOSED);
   }
 
+  // Der Stand wird als neues Objekt gesetzt, nicht in place geändert: Die
+  // Fragenliste ist inzwischen eine eigene Komponente und bekommt ihn als
+  // Eingabe gereicht.
+  public setChecklistAnswer(event: { itemId: number; answer: boolean }): void {
+    this.checklistAnswers = {
+      ...this.checklistAnswers,
+      [event.itemId]: event.answer,
+    };
+    this._cdr.markForCheck();
+  }
+
   public allChecklistAnswered(): boolean {
     return (this.game.checklist_items ?? []).every(
       (item) =>

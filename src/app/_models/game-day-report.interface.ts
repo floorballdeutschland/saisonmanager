@@ -68,6 +68,15 @@ export interface GameDayReportRow {
 export interface GameDayReportOverview {
   // true, wenn die Serverobergrenze griff und die Liste gekürzt wurde.
   truncated: boolean;
+  /**
+   * Alle Ligen des Zeitraums, unabhängig von der Ligaauswahl UND von der
+   * Zeilendeckelung. Aus `games` ließe sich die Liste nicht ehrlich bauen: Beim
+   * Deckeln fällt der älteste Bestand weg, und eine Liga, die nur dort
+   * vorkommt, stünde sonst nicht einmal zur Auswahl.
+   *
+   * Optional, damit die Ansicht auch gegen eine ältere API läuft.
+   */
+  leagues?: { id: number; name?: string }[];
   games: GameDayReportRow[];
 }
 

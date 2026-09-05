@@ -1,6 +1,17 @@
 import { Team } from './team.interface';
 import { LeagueQualification } from './league-qualification.interface';
 
+/**
+ * Wettbewerbstyp einer Liga, wie ihn die API in `league_type` liefert (für
+ * neue Ligen identisch mit `league_modus`, für Altligen aus
+ * `league_category_id` abgeleitet).
+ *
+ * `playoff` ist der jüngste Wert (api#603): Playoffs und Playdowns sind
+ * Ausscheidungswettbewerbe wie der Pokal, aber die Fortsetzung einer
+ * bestehenden Liga und kein eigener Wettbewerb.
+ */
+export type LeagueType = 'league' | 'cup' | 'playoff' | 'champ';
+
 export interface League {
   id: number;
   game_operation_id: number;
@@ -17,7 +28,7 @@ export interface League {
   short_name: string;
   season_id: string;
   order_key: string;
-  league_type: 'cup' | 'league' | 'champ';
+  league_type: LeagueType;
 
   legacy_league: boolean;
   field_size: string;

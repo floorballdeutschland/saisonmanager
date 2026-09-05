@@ -223,7 +223,11 @@ export interface PlayerLicense {
   league?: League;
   league_class_id: string;
   requested_at: string;
-  set_transfer_allowed?: boolean;
+  // Darf DIESE Lizenz gelöscht werden? Die Regel dahinter steht in der API an
+  // einer Stelle (License.deletable?): laufende Saison, Status erteilt oder
+  // beantragt. Sie hier nachzubauen hieße, einen Knopf anzubieten, der in ein
+  // 422 läuft. Fehlt das Feld, ist die API älter, dann erscheint kein Knopf.
+  delete_allowed?: boolean;
   // Manuelle Erst-/Zweitlizenz-Zuordnung im GF-Erwachsenenbereich.
   gf_role?: GfRole | null;
   gf_role_history?: GfRoleHistoryEntry[];

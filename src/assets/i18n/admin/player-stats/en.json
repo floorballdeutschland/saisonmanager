@@ -14,6 +14,21 @@
   "emptyFiltered": "No entries match this selection. Reset the filters or widen them.",
   "deactivated": "deactivated",
   "edit": "edit",
+  "exportCsv": "Export CSV",
+  "exporting": "Exporting…",
+  "exportError": "The export could not be created.",
+  "exportTruncated": "The file stops at 50,000 rows. Narrow the selection further, e.g. to one season or one club, to get the rest.",
+  "csv": {
+    "lastName": "Last name",
+    "firstName": "First name",
+    "penaltyMinutes": "Penalty minutes",
+    "firstSeason": "First season",
+    "lastSeason": "Last season",
+    "deactivated": "Deactivated",
+    "playerId": "Player ID",
+    "yes": "Yes",
+    "no": "No"
+  },
   "columns": {
     "rank": "#",
     "name": "Name",
