@@ -26,6 +26,8 @@ import {
   Player,
   PlayerLicense,
   PlayerSuspension,
+  SuspensionScopeKind,
+  CompetitionGroup,
   Season,
 } from '@floorball/models';
 import { Subject } from 'rxjs';
@@ -141,6 +143,32 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   deletingLicenseId?: string;
   licenseSuspendUntil = '';
   licenseSuspendReason = '';
+  // Dauer der Sperre: bis zu einem Datum oder über eine Anzahl von Spielen
+  // (api#604). Das Datum bleibt die Vorbelegung: Die Sperren im Bestand sind
+  // Einschränkungen der Spielberechtigung (Altersklasse, Mindestalter) und
+  // laufen bis zu einem Termin, nie über Spiele.
+  licenseSuspendMode: 'date' | 'games' = 'date';
+  licenseSuspendGames: number | null = null;
+  // Geltungsbereich. Vorbelegt ist die engste Stufe: Eine zu weit gefasste
+  // Sperre blockiert mehr, als der Anlass hergibt.
+  licenseSuspendScope: SuspensionScopeKind = 'team';
+  // Wettbewerbsgruppen. Ligaspielbetrieb und DM/Endrunde sind angehakt, der
+  // Pokal nicht: DM und Endrunden sind Fortführungen des Ligaspielbetriebs,
+  // der Pokal ist ein eigener Wettbewerb.
+  licenseSuspendGroups: Record<CompetitionGroup, boolean> = {
+    liga: true,
+    meisterschaft: true,
+    pokal: false,
+  };
+  // Typisiert und nicht als Literal im Template: Ein `@for` über
+  // ['liga', ...] liefert dort `string`, und der Zugriff auf
+  // Record<CompetitionGroup, boolean> scheitert dann im Produktionsbau
+  // (TS7053) -- was `ng test` durchlässt und erst `ng build` findet.
+  readonly suspendGroupOptions: CompetitionGroup[] = [
+    'liga',
+    'meisterschaft',
+    'pokal',
+  ];
   // Ebene 2: Beantragungssperre
   showApplicationBlockForm = false;
   blockFrom = '';
@@ -1197,39 +1225,194 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     return this.activeSuspensions.some((s) => s.kind === 'application_block');
   }
 
+  /**
+   * Liegt auf dieser Lizenz eine aktive Sperre?
+   *
+   * REINE ANZEIGE. Maßgeblich entscheidet die API je Liga (Player#suspend! und
+   * League#build_license_items); hier wird dieselbe Regel nur nachgezeichnet,
+   * um das Abzeichen zu setzen und den Sperr-Knopf wegzulassen. Vor api#604
+   * verglich diese Stelle allein die team_id und übersah damit jede Sperre, die
+   * einen ganzen Wettbewerb erfasst.
+   */
+  public licenseSuspension(license: PlayerLicense): PlayerSuspension | null {
+    const league = license.league;
+
+    return (
+      this.activeSuspensions.find((s) => {
+        if (s.scope_kind === 'all') return true;
+        if (s.scope_kind === 'team') return s.team_id === license.team_id;
+        if (!league) return false;
+        if (s.scope_kind === 'league') return s.league_id === league.id;
+
+        // Wettbewerb: Altersklasse, Feldgröße und Gruppe. Ein leerer Wert auf
+        // einer der beiden Seiten gilt wie serverseitig als Treffer.
+        const sameSeason =
+          !s.season_id || String(s.season_id) === String(league.season_id);
+        const sameAge =
+          !s.age_group || !league.age_group || s.age_group === league.age_group;
+        const sameField =
+          !s.field_size ||
+          !league.field_size ||
+          s.field_size === league.field_size;
+        // `competition_group` liefert erst api#608 im Liga-Hash. Fehlt es (noch
+        // nicht ausgerolltes Backend), NICHT auf „trifft zu" zurückfallen:
+        // Sonst trüge jede Lizenz derselben Altersklasse das Sperr-Abzeichen,
+        // also falsch statt bloß unvollständig.
+        const group = league.competition_group;
+        const sameGroup = !!group && s.competition_groups.includes(group);
+
+        // Die Spielbetriebs-Grenze gehört dazu (PlayerSuspension#
+        // competition_covers?). Ohne sie behauptete das Profil eine Sperre, die
+        // es nicht gibt: Eine Sperre der SBK Ost trüge sich auch an einer
+        // Bundesliga-Lizenz desselben Spielers ein, während die Lizenzliste der
+        // Bundesliga sie korrekt als erteilt zeigt. Zwei Ansichten, zwei
+        // Antworten.
+        //
+        // Anders als bei Altersklasse und Feldgröße gilt hier NICHT „leer ist
+        // ein Treffer": Leer an der SPERRE heißt „alle Spielbetriebe" (das darf
+        // nur die Bundesadministration setzen), leer an der LIGA ist ein
+        // Datenfehler und darf keine fremde Sperre einfangen.
+        const sameOperation =
+          s.game_operation_id == null ||
+          String(s.game_operation_id) === String(league.game_operation_id);
+
+        return sameSeason && sameAge && sameField && sameGroup && sameOperation;
+      }) ?? null
+    );
+  }
+
   public isLicenseSuspended(license: PlayerLicense): boolean {
-    return this.activeSuspensions.some((s) => s.team_id === license.team_id);
+    return this.licenseSuspension(license) !== null;
   }
 
   public openLicenseSuspend(license: PlayerLicense): void {
     this.suspendLicenseId = license.id;
     this.licenseSuspendUntil = '';
     this.licenseSuspendReason = '';
+    this.licenseSuspendMode = 'date';
+    this.licenseSuspendGames = null;
+    this.licenseSuspendScope = 'team';
+    this.licenseSuspendGroups = {
+      liga: true,
+      meisterschaft: true,
+      pokal: false,
+    };
   }
 
   public cancelLicenseSuspend(): void {
     this.suspendLicenseId = null;
     this.licenseSuspendUntil = '';
     this.licenseSuspendReason = '';
+    this.licenseSuspendGames = null;
+  }
+
+  public toggleSuspendGroup(group: CompetitionGroup): void {
+    this.licenseSuspendGroups[group] = !this.licenseSuspendGroups[group];
+  }
+
+  public get selectedSuspendGroups(): CompetitionGroup[] {
+    return (['liga', 'meisterschaft', 'pokal'] as CompetitionGroup[]).filter(
+      (g) => this.licenseSuspendGroups[g]
+    );
+  }
+
+  /**
+   * Der Geltungsbereich im Klartext.
+   *
+   * Ohne diesen Satz ist die Auswahl nicht bedienbar: „Wettbewerb" allein sagt
+   * nicht, dass damit auch die Playoffs erfasst sind und der Pokal nicht.
+   */
+  public suspendScopeSummary(license: PlayerLicense): string {
+    const league = license.league;
+
+    if (this.licenseSuspendScope === 'team') {
+      return this._transloco.translate('playerAdmin.edit.scopeSummaryTeam', {
+        team: license.team?.name ?? '',
+      });
+    }
+    if (this.licenseSuspendScope === 'league') {
+      return this._transloco.translate('playerAdmin.edit.scopeSummaryLeague', {
+        league: league?.name ?? '',
+      });
+    }
+    if (this.licenseSuspendScope === 'all') {
+      return this._transloco.translate('playerAdmin.edit.scopeSummaryAll');
+    }
+
+    const groups = this.selectedSuspendGroups
+      .map((g) => this._transloco.translate('playerAdmin.edit.group_' + g))
+      .join(', ');
+    // Der Spielbetrieb gehört in den Satz: Bundesliga und Regionalliga sind
+    // beide „Herren Großfeld, Ligaspielbetrieb", und die Sperre endet an der
+    // Grenze des Spielbetriebs, aus dem sie stammt (Weisungsbefugnis der
+    // Spielkommission).
+    return this._transloco.translate(
+      'playerAdmin.edit.scopeSummaryCompetition',
+      {
+        ageGroup: league?.age_group ?? '?',
+        fieldSize: league?.field_size ?? '?',
+        groups: groups || '–',
+        gameOperation: league?.game_operation_name ?? '?',
+      }
+    );
+  }
+
+  /** Fehlt etwas, das die API ablehnen würde? */
+  public licenseSuspendBlocked(license: PlayerLicense): boolean {
+    if (this.licenseSuspendMode === 'date' && !this.licenseSuspendUntil) {
+      return true;
+    }
+    if (
+      this.licenseSuspendMode === 'games' &&
+      !(this.licenseSuspendGames && this.licenseSuspendGames > 0)
+    ) {
+      return true;
+    }
+    if (this.licenseSuspendScope === 'competition') {
+      // Alles abgewählt lehnt die API ab, statt still die Vorbelegung zu
+      // nehmen. Der Knopf bleibt deshalb schon hier aus.
+      if (!this.selectedSuspendGroups.length) return true;
+      if (!license.league) return true;
+    }
+    if (this.licenseSuspendScope === 'league' && !license.league) return true;
+
+    return false;
   }
 
   public submitLicenseSuspend(license: PlayerLicense): void {
-    if (!this.player?.id || !this.licenseSuspendUntil) return;
+    if (!this.player?.id || this.licenseSuspendBlocked(license)) return;
 
+    const scope = this.licenseSuspendScope;
     this._playerService
       .createSuspension(this.player.id, {
         team_id: license.team_id,
-        valid_until: this.licenseSuspendUntil,
+        scope_kind: scope,
+        league_id: license.league?.id ?? null,
+        competition_groups:
+          scope === 'competition' ? this.selectedSuspendGroups : undefined,
+        valid_until:
+          this.licenseSuspendMode === 'date' ? this.licenseSuspendUntil : null,
+        games_total:
+          this.licenseSuspendMode === 'games' ? this.licenseSuspendGames : null,
         reason: this.licenseSuspendReason || null,
       })
       .subscribe({
         next: () => {
-          this._notificationService.success('Lizenz wurde gesperrt.', {
+          this._notificationService.success('Sperre wurde eingerichtet.', {
             autoClose: true,
             keepAfterRouteChange: false,
           });
           this.cancelLicenseSuspend();
           this.getPlayer('' + this.player?.id);
+        },
+        error: (err) => {
+          // 422 zeigt der globale ErrorInterceptor nicht an – die Absage der
+          // API (fehlende Dauer, leere Wettbewerbsauswahl, kein Recht) bliebe
+          // sonst unsichtbar.
+          this._notificationService.error(
+            err?.error?.message ?? 'Die Sperre konnte nicht angelegt werden.',
+            { autoClose: false, keepAfterRouteChange: false }
+          );
         },
       });
   }

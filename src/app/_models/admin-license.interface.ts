@@ -1,4 +1,5 @@
 import { LeagueType } from './league.interface';
+import { LicenseRowSuspension } from './player.interface';
 
 export interface AdminLicenseEntry {
   player_id: number;
@@ -32,6 +33,11 @@ export interface AdminLicenseEntry {
   gf_role: 'erstlizenz' | 'zweitlizenz' | null;
   license_status_id: number;
   license_status: string;
+  // Der Status ohne Sperre und die Sperre selbst (api#605). Bis dahin
+  // verschwand eine gesperrte Lizenz ganz aus der Übersicht.
+  base_status_id?: number;
+  base_status?: string | null;
+  suspension?: LicenseRowSuspension | null;
   express: boolean;
   requested_at: string | null;
   approved_at: string | null;

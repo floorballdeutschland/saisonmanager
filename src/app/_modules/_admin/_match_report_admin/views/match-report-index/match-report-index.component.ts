@@ -14,6 +14,7 @@ import {
   NotificationService,
 } from '@floorball/core';
 import {
+  GameDayReportOverview,
   GameDayReportRow,
   GameOperation,
   GameReportStatus,
@@ -47,6 +48,39 @@ const CLOSED_STATUSES: GameReportStatus[] = [
   'finalized',
 ];
 
+// Der Server sortiert absteigend, und das bleibt auch so: Beim Deckeln auf
+// MAX_ROWS sollen die ältesten Spieltage wegfallen, nicht die aktuellen.
+// Gearbeitet wird die Liste aber von vorn ab, der älteste offene Bericht ist
+// der dringendste – deshalb wird sie hier gedreht.
+//
+// Datum und Anwurfzeit sind Textspalten, die Spielnummer ebenfalls und in
+// K.-o.-Runden auch mal „HF1" oder „FIN". Leere und nicht deutbare Werte hängen
+// sich hinten an, statt die Liste anzuführen.
+function byDateAscending(a: GameDayReportRow, b: GameDayReportRow): number {
+  return (
+    compareText(a.date, b.date) ||
+    compareText(a.start_time, b.start_time) ||
+    compareNumeric(a.game_number, b.game_number) ||
+    a.id - b.id
+  );
+}
+
+function compareText(a: string | null, b: string | null): number {
+  const left = a || '';
+  const right = b || '';
+  if (!left || !right) return (left ? 0 : 1) - (right ? 0 : 1);
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function compareNumeric(a: string | null, b: string | null): number {
+  const left = /^\d+$/.test(a ?? '') ? Number(a) : null;
+  const right = /^\d+$/.test(b ?? '') ? Number(b) : null;
+  if (left === null || right === null) {
+    return (left === null ? 1 : 0) - (right === null ? 1 : 0);
+  }
+  return left - right;
+}
+
 @Component({
   templateUrl: './match-report-index.component.html',
   encapsulation: ViewEncapsulation.None,
@@ -63,9 +97,16 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
   truncated = false;
 
   filterGameOperationId = '';
+  filterLeagueId = '';
   filterDateFrom = '';
   filterDateTo = '';
   filterStatus = '';
+
+  // Die Ligen der geladenen Antwort, für den Filter. Bewusst aus den Zeilen
+  // statt aus einem eigenen Abruf: Die Übersicht hat die Liste ohnehin schon
+  // vollständig da, und so kann der Filter gar keine Liga anbieten, zu der es
+  // im aktuellen Zeitraum nichts zu sehen gibt.
+  leagues: { id: number; name: string }[] = [];
 
   expandedGameIds = new Set<number>();
   expandedGameDayIds = new Set<number>();
@@ -134,11 +175,15 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
     this._load();
   }
 
+  // Die Liga gehört dazu: Sie wird serverseitig gefiltert, ein Wechsel muss
+  // also neu laden. Der Status bleibt draußen, den wertet die Ansicht selbst
+  // aus.
   private _serverFilterKey(): string {
     return [
       this.filterGameOperationId,
       this.filterDateFrom,
       this.filterDateTo,
+      this.filterLeagueId,
     ].join('|');
   }
 
@@ -391,13 +436,15 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
         game_operation_id: this.filterGameOperationId || undefined,
         date_from: this.filterDateFrom || undefined,
         date_to: this.filterDateTo || undefined,
+        league_id: this.filterLeagueId || undefined,
       })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
           this.truncated = result.truncated;
-          this._allRows = result.games ?? [];
+          this._allRows = [...(result.games ?? [])].sort(byDateAscending);
           this._loadedKey = key;
+          this._collectLeagues(result);
           this._applyFilterAndGroup();
           this.loading = false;
           this._cdr.markForCheck();
@@ -413,6 +460,80 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
       });
+  }
+
+  // Die Ligenliste kommt vom Server (`leagues`), nicht aus den ausgelieferten
+  // Zeilen. Zwei Gründe, und beide zählen erst zusammen:
+  //
+  // Der Server deckelt bei 2000 Zeilen und lässt dabei die ÄLTESTEN Spieltage
+  // weg. Aus den Zeilen gebaut fehlte im Auswahlfeld also genau die Liga, die
+  // nur im abgeschnittenen Teil vorkommt — sie wäre nicht auszuwählen, und ihr
+  // Fehlen nicht zu erklären. Und da die Liga jetzt serverseitig gefiltert
+  // wird, enthielte die Antwort nach dem ersten Setzen ohnehin nur noch diese
+  // eine Liga.
+  //
+  // Rückfall auf die Zeilen, solange die API `leagues` nicht liefert: Dann
+  // verhält sich die Ansicht wie vorher, statt ein leeres Auswahlfeld zu
+  // zeigen.
+  private _collectLeagues(result: GameDayReportOverview): void {
+    const vomServer = result.leagues;
+    if (vomServer?.length) {
+      this.leagues = vomServer.map((liga) => ({
+        id: liga.id,
+        name: liga.name ?? String(liga.id),
+      }));
+
+      // Verschwindet die gewählte Liga durch einen neuen Zeitraum, zurück auf
+      // „Alle" — und dann neu laden, denn der Server hat die eben geholte
+      // Antwort noch nach dieser Liga gefiltert. Ohne das Nachladen bliebe eine
+      // leere Liste stehen, deren Grund im Auswahlfeld nicht mehr abzulesen
+      // wäre. Eine Schleife entsteht nicht: Der zweite Lauf schickt keine
+      // Ligaauswahl mehr.
+      if (
+        this.filterLeagueId &&
+        !this.leagues.some((l) => String(l.id) === this.filterLeagueId)
+      ) {
+        this.filterLeagueId = '';
+        this._load();
+      }
+      return;
+    }
+
+    const byId = new Map<number, string>();
+    for (const row of this._allRows) {
+      if (row.league_id != null) {
+        byId.set(row.league_id, row.league_name ?? String(row.league_id));
+      }
+    }
+
+    this.leagues = [...byId.entries()]
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'de'));
+
+    // Verschwindet die gewählte Liga durch einen neuen Zeitraum, fällt der
+    // Filter zurück auf „Alle". Kein Nachladen: Eine API ohne `leagues` kennt
+    // auch den `league_id`-Parameter nicht, die vorliegende Antwort ist also
+    // bereits die ungefilterte.
+    if (this.filterLeagueId && !byId.has(Number(this.filterLeagueId))) {
+      this.filterLeagueId = '';
+    }
+  }
+
+  // Die Liga filtert der SERVER (`league_id`), nicht diese Methode. Sie bleibt
+  // als zweite Schranke stehen, falls die Antwort noch einem älteren Filter
+  // entstammt, und für den Fall, dass die API den Parameter nicht kennt.
+  //
+  // Clientseitig allein ginge es nicht: Der Server deckelt bei 2000 Zeilen und
+  // lässt dabei den ältesten Bestand weg. Ein Filter danach zeigte deren Spiele
+  // nur aus dem jüngsten Fenster, während gerade die liegen gebliebenen
+  // Berichte vom Saisonstart fehlten — genau die, für die es diese Ansicht
+  // gibt.
+  //
+  // Ein Spieltag gehört genau zu einer Liga, fällt also ganz heraus oder ganz
+  // hinein; die Kennzahlen des Spieltags bleiben damit richtig.
+  private _matchesLeague(row: GameDayReportRow): boolean {
+    if (!this.filterLeagueId) return true;
+    return String(row.league_id ?? '') === this.filterLeagueId;
   }
 
   // Der Status wird clientseitig gefiltert: Die Serverantwort ist ohnehin schon
@@ -433,10 +554,11 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
   // Würde über die gefilterte Menge gruppiert, meldete ein Spieltag unter dem
   // Filter „Noch nicht abgeschlossen" stets „0/n abgeschlossen".
   private _applyFilterAndGroup(): void {
-    this.rows = this._allRows.filter((row) => this._matchesStatus(row));
+    const inScope = this._allRows.filter((row) => this._matchesLeague(row));
+    this.rows = inScope.filter((row) => this._matchesStatus(row));
 
     const byGameDay = new Map<number, GameDayReportRow[]>();
-    for (const row of this._allRows) {
+    for (const row of inScope) {
       const bucket = byGameDay.get(row.game_day_id);
       if (bucket) {
         bucket.push(row);

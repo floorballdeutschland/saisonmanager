@@ -143,7 +143,14 @@
     "revokeRejectionTitle": "Resets the request to \"requested\" so it can be decided again",
     "revokeRejectionConfirm": "Really revoke the rejection?",
     "revokeRejectionYes": "Revoke",
-    "revokeRejectionCancel": "Cancel"
+    "revokeRejectionCancel": "Cancel",
+    "gamesRemaining": "{{ remaining }} of {{ total }} games remaining",
+    "lift": "Lift suspension",
+    "liftConfirmTitle": "Lift suspension",
+    "liftConfirmContent": "The suspension is lifted and the licence is valid again. The action stays in the licence history.",
+    "liftConfirmSubmit": "Lift suspension",
+    "liftedNotice": "The suspension has been lifted.",
+    "liftError": "The suspension could not be lifted."
   },
   "leagueDetail": {
     "title": "License management",
@@ -175,7 +182,16 @@
     "docViewUploaded": "View {{ doc }} (uploaded on {{ date }})",
     "docMissing": "{{ doc }} missing",
     "docLabelIdCopy": "ID card",
-    "metaTitle": "Floorball Saisonmanager License Management"
+    "metaTitle": "Floorball Saisonmanager License Management",
+    "suspendedLabel": "Suspended:",
+    "gamesRemaining": "{{ remaining }} of {{ total }} games remaining",
+    "suspendedUntil": "until",
+    "lift": "Lift suspension",
+    "liftConfirmTitle": "Lift suspension",
+    "liftConfirmContent": "The suspension is lifted and the licence is valid again. The action stays in the licence history.",
+    "liftConfirmSubmit": "Lift suspension",
+    "liftedNotice": "The suspension has been lifted.",
+    "liftError": "The suspension could not be lifted."
   },
   "clubIndex": {
     "title": "My licenses",

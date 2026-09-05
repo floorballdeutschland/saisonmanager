@@ -110,6 +110,18 @@ export interface PlayerWithLicense extends Player {
     };
     last_status_id: number;
     last_status_code: string;
+    /**
+     * Der Status, den die Lizenz OHNE Sperre hätte (api#605). Liegt eine
+     * Sperre auf der Zeile, steht in `last_status_id` die 9 und hier der
+     * Status, auf den die Lizenz nach dem Ablauf zurückfällt.
+     */
+    base_status_id?: number;
+    /**
+     * Die Sperre, die in DIESER Liga auf der Lizenz liegt -- oder leer. Eine
+     * Mannschaft hängt auch an ihren Pokalligen, dieselbe Lizenz kann also in
+     * der Ligaliste gesperrt und in der Pokalliste erteilt sein.
+     */
+    suspension?: LicenseRowSuspension | null;
 
     approved_at?: string;
     requested_at: string;
@@ -234,17 +246,67 @@ export interface PlayerLicense {
   league_name?: string | null;
 }
 
+/**
+ * Geltungsbereich einer Sperre (api#604).
+ *
+ * `all` sperrt den Spieler und blockiert jeden Lizenzantrag, `competition`
+ * eine Altersklasse samt Feldgröße in den gewählten Wettbewerbsgruppen,
+ * `league` genau eine Liga, `team` eine einzelne Team-Lizenz.
+ */
+export type SuspensionScopeKind = 'all' | 'competition' | 'league' | 'team';
+
+/** Wettbewerbsgruppen, auf die sich eine Wettbewerbssperre bezieht. */
+export type CompetitionGroup = 'liga' | 'pokal' | 'meisterschaft';
+
 export interface PlayerSuspension {
   id: number;
   player_id: number;
   team_id: number | null;
   team_name?: string | null;
   kind: 'application_block' | 'license_suspension';
+  scope_kind: SuspensionScopeKind;
+  /** Geltungsbereich im Klartext, von der API formuliert. */
+  scope_summary: string;
+  league_id?: number | null;
+  league_name?: string | null;
+  season_id?: string | null;
+  age_group?: string | null;
+  field_size?: string | null;
+  competition_groups: CompetitionGroup[];
+  /**
+   * Spielbetriebs-Grenze der Sperre. `null` heißt „alle Spielbetriebe" und darf
+   * nur die Bundesadministration setzen (PlayerSuspension#competition_covers?).
+   */
+  game_operation_id?: number | null;
+  /** Dauer in Spielen; leer bei einer Datumssperre. */
+  games_total?: number | null;
+  games_served: number;
+  remaining_games?: number | null;
   valid_from: string;
-  valid_until: string;
+  /** Leer bei einer Sperre über Spiele ohne zusätzliche Obergrenze. */
+  valid_until?: string | null;
   reason?: string | null;
   active: boolean;
   lifted_at?: string | null;
   affected_licenses_count: number;
   created_at: string;
+}
+
+/**
+ * Die Sperre, die auf einer Lizenzzeile liegt (api#605).
+ *
+ * Knapper als PlayerSuspension: Die Lizenzliste zeigt damit den Grund und den
+ * Geltungsbereich und kann die Sperre aufheben, ohne das Spielerprofil zu
+ * öffnen.
+ */
+export interface LicenseRowSuspension {
+  id: number;
+  scope_kind: SuspensionScopeKind;
+  scope_summary: string;
+  valid_from: string;
+  valid_until?: string | null;
+  games_total?: number | null;
+  games_served: number;
+  remaining_games?: number | null;
+  reason?: string | null;
 }

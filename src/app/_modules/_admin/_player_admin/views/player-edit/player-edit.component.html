@@ -605,20 +605,144 @@
                                   | transloco
                               }}
                             </p>
+                            <!-- Dauer: Datum oder Anzahl Spiele (api#604).
+                                 Das Datum bleibt die Vorbelegung, weil die
+                                 Sperren im Bestand Einschränkungen der
+                                 Spielberechtigung sind und bis zu einem Termin
+                                 laufen. -->
                             <div class="mb-2">
                               <label
                                 class="block text-xs font-semibold text-amber-800 mb-1"
                                 >{{
-                                  "playerAdmin.edit.suspendedUntil" | transloco
+                                  "playerAdmin.edit.duration" | transloco
                                 }}</label
                               >
-                              <input
-                                type="date"
-                                [(ngModel)]="licenseSuspendUntil"
-                                [min]="today()"
-                                class="border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
-                              />
+                              <div class="flex flex-wrap gap-4 items-center">
+                                <label class="text-sm flex items-center gap-1">
+                                  <input
+                                    type="radio"
+                                    name="suspendMode"
+                                    value="date"
+                                    [(ngModel)]="licenseSuspendMode"
+                                  />
+                                  {{
+                                    "playerAdmin.edit.durationDate" | transloco
+                                  }}
+                                </label>
+                                <label class="text-sm flex items-center gap-1">
+                                  <input
+                                    type="radio"
+                                    name="suspendMode"
+                                    value="games"
+                                    [(ngModel)]="licenseSuspendMode"
+                                  />
+                                  {{
+                                    "playerAdmin.edit.durationGames" | transloco
+                                  }}
+                                </label>
+                              </div>
                             </div>
+                            @if (licenseSuspendMode === "date") {
+                              <div class="mb-2">
+                                <label
+                                  class="block text-xs font-semibold text-amber-800 mb-1"
+                                  >{{
+                                    "playerAdmin.edit.suspendedUntil"
+                                      | transloco
+                                  }}</label
+                                >
+                                <input
+                                  type="date"
+                                  [(ngModel)]="licenseSuspendUntil"
+                                  [min]="today()"
+                                  class="border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
+                                />
+                              </div>
+                            } @else {
+                              <div class="mb-2">
+                                <label
+                                  class="block text-xs font-semibold text-amber-800 mb-1"
+                                  >{{
+                                    "playerAdmin.edit.gamesCount" | transloco
+                                  }}</label
+                                >
+                                <input
+                                  type="number"
+                                  min="1"
+                                  step="1"
+                                  [(ngModel)]="licenseSuspendGames"
+                                  class="w-24 border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
+                                />
+                                <p class="text-xs text-amber-700 mt-1">
+                                  {{ "playerAdmin.edit.gamesHint" | transloco }}
+                                </p>
+                              </div>
+                            }
+                            <!-- Geltungsbereich. Vorbelegt ist die engste
+                                 Stufe; eine zu weit gefasste Sperre blockiert
+                                 mehr, als der Anlass hergibt. -->
+                            <div class="mb-2">
+                              <label
+                                class="block text-xs font-semibold text-amber-800 mb-1"
+                                >{{
+                                  "playerAdmin.edit.scope" | transloco
+                                }}</label
+                              >
+                              <select
+                                [(ngModel)]="licenseSuspendScope"
+                                class="border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
+                              >
+                                <option value="team">
+                                  {{ "playerAdmin.edit.scopeTeam" | transloco }}
+                                </option>
+                                <option value="competition">
+                                  {{
+                                    "playerAdmin.edit.scopeCompetition"
+                                      | transloco
+                                  }}
+                                </option>
+                                <option value="league">
+                                  {{
+                                    "playerAdmin.edit.scopeLeague" | transloco
+                                  }}
+                                </option>
+                                <option value="all">
+                                  {{ "playerAdmin.edit.scopeAll" | transloco }}
+                                </option>
+                              </select>
+                            </div>
+                            @if (licenseSuspendScope === "competition") {
+                              <div class="mb-2 flex flex-wrap gap-4">
+                                @for (
+                                  group of suspendGroupOptions;
+                                  track group
+                                ) {
+                                  <label
+                                    class="text-sm flex items-center gap-1"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      [checked]="licenseSuspendGroups[group]"
+                                      (change)="toggleSuspendGroup(group)"
+                                    />
+                                    {{
+                                      "playerAdmin.edit.group_" + group
+                                        | transloco
+                                    }}
+                                  </label>
+                                }
+                              </div>
+                            }
+                            <!-- Ohne diesen Satz ist die Auswahl nicht
+                                 bedienbar: „Wettbewerb" allein sagt nicht,
+                                 dass die Playoffs mit erfasst sind und der
+                                 Pokal nicht. -->
+                            <p
+                              class="mb-2 text-sm text-amber-900 bg-white border border-amber-200 rounded px-2 py-1"
+                            >
+                              {{ "playerAdmin.edit.scopeLabel" | transloco }}
+                              {{ suspendScopeSummary(license) }}
+                            </p>
                             <div class="mb-2">
                               <label
                                 class="block text-xs font-semibold text-amber-800 mb-1"
@@ -639,7 +763,7 @@
                             <div class="flex gap-3">
                               <button
                                 (click)="submitLicenseSuspend(license)"
-                                [disabled]="!licenseSuspendUntil"
+                                [disabled]="licenseSuspendBlocked(license)"
                                 class="font-bold text-white leading-[17px] text-sm px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 {{ "playerAdmin.edit.suspend" | transloco }}
@@ -1268,8 +1392,36 @@
                         <span> – {{ s.team_name }}</span>
                       }
                       <br />
-                      {{ s.valid_from | date: "dd.MM.yyyy" }} –
-                      {{ s.valid_until | date: "dd.MM.yyyy" }}
+                      <!-- Der Geltungsbereich kommt als Klartext von der API,
+                           damit Formular und Anzeige nicht zwei Fassungen
+                           derselben Regel bilden. -->
+                      <span class="text-gray-600">{{ s.scope_summary }}</span>
+                      <br />
+                      @if (s.games_total) {
+                        <!-- Der Reststand zählt Spiele und keine Termine:
+                             Erst- und Zweitlizenz im selben Wettbewerb sitzen
+                             zwei Spiele an einem Wochenende ab. -->
+                        <span>{{
+                          "playerAdmin.edit.gamesRemaining"
+                            | transloco
+                              : {
+                                  remaining: s.remaining_games,
+                                  total: s.games_total,
+                                }
+                        }}</span>
+                        @if (s.valid_until) {
+                          <span>
+                            ·
+                            {{ "playerAdmin.edit.atTheLatest" | transloco }}
+                            {{ s.valid_until | date: "dd.MM.yyyy" }}</span
+                          >
+                        }
+                      } @else {
+                        <span
+                          >{{ s.valid_from | date: "dd.MM.yyyy" }} –
+                          {{ s.valid_until | date: "dd.MM.yyyy" }}</span
+                        >
+                      }
                       @if (s.reason) {
                         <span>· {{ s.reason }}</span>
                       }

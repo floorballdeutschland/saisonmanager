@@ -143,7 +143,14 @@
     "revokeRejectionTitle": "Setzt den Antrag zurück auf „beantragt\", danach ist er wieder entscheidbar",
     "revokeRejectionConfirm": "Ablehnung wirklich widerrufen?",
     "revokeRejectionYes": "Widerrufen",
-    "revokeRejectionCancel": "Abbrechen"
+    "revokeRejectionCancel": "Abbrechen",
+    "gamesRemaining": "noch {{ remaining }} von {{ total }} Spielen",
+    "lift": "Sperre aufheben",
+    "liftConfirmTitle": "Sperre aufheben",
+    "liftConfirmContent": "Die Sperre wird aufgehoben und die Lizenz gilt wieder. Der Vorgang bleibt im Lizenzverlauf stehen.",
+    "liftConfirmSubmit": "Sperre aufheben",
+    "liftedNotice": "Die Sperre wurde aufgehoben.",
+    "liftError": "Die Sperre konnte nicht aufgehoben werden."
   },
   "leagueDetail": {
     "title": "Lizenzverwaltung",
@@ -175,7 +182,16 @@
     "docViewUploaded": "{{ doc }} ansehen (hochgeladen am {{ date }})",
     "docMissing": "{{ doc }} fehlt",
     "docLabelIdCopy": "Ausweis",
-    "metaTitle": "Floorball Saisonmanager Lizenzverwaltung"
+    "metaTitle": "Floorball Saisonmanager Lizenzverwaltung",
+    "suspendedLabel": "Gesperrt:",
+    "gamesRemaining": "noch {{ remaining }} von {{ total }} Spielen",
+    "suspendedUntil": "bis",
+    "lift": "Sperre aufheben",
+    "liftConfirmTitle": "Sperre aufheben",
+    "liftConfirmContent": "Die Sperre wird aufgehoben und die Lizenz gilt wieder. Der Vorgang bleibt im Lizenzverlauf stehen.",
+    "liftConfirmSubmit": "Sperre aufheben",
+    "liftedNotice": "Die Sperre wurde aufgehoben.",
+    "liftError": "Die Sperre konnte nicht aufgehoben werden."
   },
   "clubIndex": {
     "title": "Meine Lizenzen",

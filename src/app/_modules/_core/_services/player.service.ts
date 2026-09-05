@@ -15,6 +15,8 @@ import {
   PlayerStatisticsResponse,
   PlayerStats,
   PlayerSuspension,
+  SuspensionScopeKind,
+  CompetitionGroup,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -127,12 +129,24 @@ export class PlayerService {
     return this.http.get<PlayerSuspension[]>(path);
   }
 
+  /**
+   * Sperre anlegen (api#604).
+   *
+   * `valid_until` ODER `games_total` ist Pflicht, beides zusammen ist erlaubt
+   * (das Datum wirkt dann als Obergrenze). `competition_groups` gehoert zum
+   * Geltungsbereich `competition`; eine LEERE Liste ist ein Fehler und keine
+   * Vorbelegung -- sonst wuerde gesperrt, was gerade abgewaehlt wurde.
+   */
   public createSuspension(
     playerId: number,
     payload: {
       team_id?: number | null;
+      scope_kind?: SuspensionScopeKind;
+      league_id?: number | null;
+      competition_groups?: CompetitionGroup[];
       valid_from?: string | null;
-      valid_until: string;
+      valid_until?: string | null;
+      games_total?: number | null;
       reason?: string | null;
     }
   ) {
@@ -141,7 +155,12 @@ export class PlayerService {
     return this.http.post<PlayerSuspension>(path, payload);
   }
 
-  public liftSuspension(playerId: number, suspensionId: number) {
+  /** Sperre aufheben; die Begruendung landet in der Lizenzhistorie. */
+  public liftSuspension(
+    playerId: number,
+    suspensionId: number,
+    reason?: string | null
+  ) {
     const path =
       environment.apiURL +
       'admin/players/' +
@@ -149,7 +168,9 @@ export class PlayerService {
       '/suspensions/' +
       suspensionId +
       '.json';
-    return this.http.delete<PlayerSuspension>(path);
+    return this.http.delete<PlayerSuspension>(path, {
+      body: reason ? { reason } : undefined,
+    });
   }
 
   public globalSearch(query: string) {

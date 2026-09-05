@@ -424,7 +424,10 @@ describe('LicenseAdminGlobalListComponent', () => {
       const { root } = render([
         rejected('lic-1'),
         { ...entry('Erteilt'), license_id: 'lic-2' } as AdminLicenseEntry,
-        { ...entry('Zurueckgezogen'), license_status_id: 8 } as AdminLicenseEntry,
+        {
+          ...entry('Zurueckgezogen'),
+          license_status_id: 8,
+        } as AdminLicenseEntry,
       ]);
 
       const rows = Array.from(root.querySelectorAll('tbody tr'));
@@ -688,6 +691,76 @@ describe('LicenseAdminGlobalListComponent', () => {
       );
       expect(requests.length).toBe(1);
       requests[0].flush({});
+    });
+  });
+  // ---------------------------------------------------------------------------
+  // Sperren (api#605)
+  // ---------------------------------------------------------------------------
+
+  describe('Sperren', () => {
+    function suspendedEntry(): AdminLicenseEntry {
+      return {
+        player_id: 42,
+        player_last_name: 'Gesperrt',
+        player_first_name: 'Test',
+        league_id: 1,
+        league_name: 'Liga',
+        team_name: 'Team',
+        license_status_id: 9,
+        license_status: 'gesperrt',
+        base_status_id: 1,
+        base_status: 'erteilt',
+        suspension: {
+          id: 7,
+          scope_kind: 'competition',
+          scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+          valid_from: '2026-09-01',
+          valid_until: null,
+          games_total: 3,
+          games_served: 1,
+          remaining_games: 2,
+          reason: 'Tätlichkeit',
+        },
+      } as AdminLicenseEntry;
+    }
+
+    it('färbt gesperrt rot wie eine Ablehnung', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+
+      expect(component.statusBadgeClass(9)).toContain('red');
+      expect(component.statusBadgeClass(1)).toContain('green');
+    });
+
+    it('hebt eine Sperre auf und lädt danach neu', () => {
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      const component = fixture.componentInstance;
+      const http = TestBed.inject(HttpTestingController);
+      component.canLiftSuspension = true;
+      const load = spyOn(component, 'load');
+
+      component.liftSuspension(suspendedEntry(), 7);
+
+      const req = http.expectOne((r) =>
+        r.url.includes('admin/players/42/suspensions/7')
+      );
+      expect(req.request.method).toBe('DELETE');
+      req.flush({});
+      expect(load).toHaveBeenCalled();
+    });
+
+    it('ohne Recht wird nicht aufgehoben', () => {
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      const component = fixture.componentInstance;
+      const http = TestBed.inject(HttpTestingController);
+      component.canLiftSuspension = false;
+
+      component.liftSuspension(suspendedEntry(), 7);
+
+      // Kein Aufruf: Ohne Recht faellt der Knopf im Template weg, und die
+      // Methode faellt zusaetzlich zu -- der Endpunkt selbst prueft ohnehin.
+      http.expectNone((r) => r.url.includes('suspensions'));
     });
   });
 });

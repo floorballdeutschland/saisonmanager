@@ -1,5 +1,6 @@
 import { Team } from './team.interface';
 import { LeagueQualification } from './league-qualification.interface';
+import { CompetitionGroup } from './player.interface';
 
 /**
  * Wettbewerbstyp einer Liga, wie ihn die API in `league_type` liefert (für
@@ -33,6 +34,11 @@ export interface League {
   legacy_league: boolean;
   field_size: string;
   league_modus: string;
+  /**
+   * Wettbewerbsgruppe (api#603): `liga` (Liga und Playoffs), `pokal`,
+   * `meisterschaft`. Der Geltungsbereich einer Spielersperre steht darauf.
+   */
+  competition_group?: CompetitionGroup;
   league_id_preseason?: number;
   league_id_preround?: number;
   has_preround: boolean;
