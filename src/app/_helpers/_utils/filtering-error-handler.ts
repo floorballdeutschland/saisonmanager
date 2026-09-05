@@ -1,6 +1,12 @@
 import { ErrorHandler } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import * as Sentry from '@sentry/angular';
+import {
+  ChunkRecoveryEnv,
+  isChunkLoadError,
+  recoverFromChunkLoadError,
+  safeSessionStorage,
+} from './chunk-load-recovery';
 
 /**
  * HTTP-Antwortstatus, die nichts über den Code aussagen.
@@ -56,19 +62,44 @@ export function isHandledHttpNoise(error: unknown): boolean {
  * Ein Test, der `beforeSend` eine selbst gebaute `HttpErrorResponse` reicht,
  * bestätigt dabei nur die eigene Annahme über das SDK. Deshalb prüft der Test
  * zu dieser Klasse, ob der echte Sentry-Handler aufgerufen wird oder nicht.
+ *
+ * Zusätzlich die Stelle, an der ein fehlgeschlagenes Nachladen eines
+ * Programmteils die Seite neu lädt (siehe chunk-load-recovery.ts). Das gehört
+ * hierher und nicht in den Router: Ein solcher Fehler entsteht nicht nur beim
+ * Wechsel in einen noch nicht geladenen Bereich, sondern auch bei jedem
+ * `import()` innerhalb einer Komponente, und beide Wege enden hier.
  */
 export class FilteringErrorHandler implements ErrorHandler {
   private readonly delegate: ErrorHandler;
+  private readonly recovery: ChunkRecoveryEnv;
 
   constructor(
-    delegate: ErrorHandler = Sentry.createErrorHandler({ showDialog: false })
+    delegate: ErrorHandler = Sentry.createErrorHandler({ showDialog: false }),
+    recovery: ChunkRecoveryEnv = {
+      now: () => Date.now(),
+      storage: safeSessionStorage(),
+      // `navigator.onLine` ist in jedem unterstuetzten Browser vorhanden; der
+      // Rueckfall auf true haelt das Verhalten dort unveraendert, wo es fehlt.
+      online: () => navigator.onLine ?? true,
+      reload: () => window.location.reload(),
+    }
   ) {
     this.delegate = delegate;
+    this.recovery = recovery;
   }
 
   handleError(error: unknown): void {
     if (isHandledHttpNoise(error)) return;
 
+    // Erst melden, dann neu laden – nicht umgekehrt. Das Neuladen bricht
+    // laufende Anfragen ab, und ein Chunk-Ladefehler ist der wichtigste
+    // Hinweis auf ein schiefgegangenes Deploy (Begründung in sentry-init.ts).
+    // Ginge er dabei verloren, tauschte der Fix eine weiße Seite gegen einen
+    // blinden Fleck im Monitoring.
     this.delegate.handleError(error);
+
+    if (isChunkLoadError(error)) {
+      recoverFromChunkLoadError(this.recovery);
+    }
   }
 }
