@@ -164,17 +164,31 @@ export class SpielSekretariatComponent implements OnInit {
     }
 
     for (const entry of Object.values(data.license_lists ?? {})) {
-      const key = entry.league_id ?? null;
-      let group = groups.get(key);
-      if (!group) {
-        group = {
-          leagueId: key,
-          leagueName: entry.league_name ?? null,
-          entries: [],
-        };
-        groups.set(key, group);
+      // Eine Mannschaft kann am selben Tag in derselben Halle in mehreren Ligen
+      // antreten, vormittags im Ligaspiel und nachmittags im Pokal. Dann gehört
+      // ihre Lizenzliste unter JEDE dieser Überschriften: Mit nur einer fehlte
+      // sie unter der zweiten vollständig, und das Sekretariat des zweiten
+      // Spiels suchte sie dort vergeblich.
+      //
+      // `leagues` liefert erst api#616. Eine ältere API kennt nur `league_id`,
+      // deshalb der Rückfall darauf; kennt sie auch das nicht, landet alles in
+      // einer namenlosen Gruppe und die Ansicht sieht aus wie vorher.
+      const zugehoerig = entry.leagues?.length
+        ? entry.leagues.map((l) => ({ id: l.id ?? null, name: l.name ?? null }))
+        : [{ id: entry.league_id ?? null, name: entry.league_name ?? null }];
+
+      for (const liga of zugehoerig) {
+        let group = groups.get(liga.id);
+        if (!group) {
+          group = {
+            leagueId: liga.id,
+            leagueName: liga.name,
+            entries: [],
+          };
+          groups.set(liga.id, group);
+        }
+        group.entries.push(entry);
       }
-      group.entries.push(entry);
     }
 
     return [...groups.values()]
