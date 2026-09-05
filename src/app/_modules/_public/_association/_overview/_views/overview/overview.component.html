@@ -135,7 +135,7 @@
       </div>
     </div>
   }
-  @if (selectedLeague.league_type === "cup") {
+  @if (isKnockout(selectedLeague)) {
     <fb-matches-with-rounds></fb-matches-with-rounds>
   }
   @if (selectedLeague.league_type === "champ") {

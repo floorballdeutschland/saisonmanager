@@ -130,6 +130,9 @@
           <option value="cup">
             {{ "licenseAdmin.globalList.cup" | transloco }}
           </option>
+          <option value="playoff">
+            {{ "licenseAdmin.globalList.playoff" | transloco }}
+          </option>
           <option value="champ">
             {{ "licenseAdmin.globalList.champ" | transloco }}
           </option>
@@ -437,6 +440,14 @@
                         class="inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold bg-gray-100 text-gray-500"
                         >{{
                           "licenseAdmin.globalList.cupBadge" | transloco
+                        }}</span
+                      >
+                    }
+                    @if (e.league_type === "playoff") {
+                      <span
+                        class="inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold bg-gray-100 text-gray-500"
+                        >{{
+                          "licenseAdmin.globalList.playoffBadge" | transloco
                         }}</span
                       >
                     }

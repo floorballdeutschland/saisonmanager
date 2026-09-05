@@ -286,7 +286,16 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   }
 
   public onLeagueModusChange(league: League, modus: string): void {
-    league.league_class_id = modus === 'league' ? 'll' : '';
+    // Ein Playoff setzt eine Liga fort und trägt deren Ligaklasse (auf Prod
+    // durchgängig rl/vl/1fbl/2fbl). Beim Wechsel darauf bleibt die Klasse
+    // deshalb stehen, statt geleert zu werden; Pflicht ist sie weiterhin nur
+    // beim Modus "Liga".
+    if (modus === 'playoff') return;
+    if (modus === 'league') {
+      league.league_class_id = league.league_class_id || 'll';
+      return;
+    }
+    league.league_class_id = '';
   }
 
   public ngOnInit(): void {

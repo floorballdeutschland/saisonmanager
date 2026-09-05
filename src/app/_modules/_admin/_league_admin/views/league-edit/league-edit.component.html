@@ -120,12 +120,18 @@
                     <option value="cup">
                       {{ "leagueAdmin.edit.modusCup" | transloco }}
                     </option>
+                    <option value="playoff">
+                      {{ "leagueAdmin.edit.modusPlayoff" | transloco }}
+                    </option>
                     <option value="champ">
                       {{ "leagueAdmin.edit.modusChamp" | transloco }}
                     </option>
                   </select>
                 </div>
-                @if (league.league_modus === "league") {
+                @if (
+                  league.league_modus === "league" ||
+                  league.league_modus === "playoff"
+                ) {
                   <div class="font-bold">
                     {{ "leagueAdmin.edit.leagueClass" | transloco }}
                   </div>
