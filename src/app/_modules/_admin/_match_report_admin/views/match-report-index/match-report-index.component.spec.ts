@@ -165,16 +165,33 @@ describe('MatchReportIndexComponent', () => {
     component.filterLeagueId = '7';
     component.applyFilter();
 
+    // Die Liga filtert der Server. Clientseitig traefe der Filter nur den bei
+    // 2000 Zeilen behaltenen Ausschnitt, und dort fehlt gerade der aelteste
+    // Bestand.
+    httpMock
+      .expectOne(
+        (r) =>
+          r.url === environment.apiURL + 'admin/game_days/report_overview.json'
+      )
+      .flush({
+        truncated: false,
+        leagues: [
+          { id: 5, name: 'Regionalliga' },
+          { id: 7, name: 'U13' },
+        ],
+        games: [
+          row({ id: 2, game_day_id: 200, league_id: 7, league_name: 'U13' }),
+        ],
+      });
+
+    // Ein Spieltag gehoert genau zu einer Liga, faellt also ganz heraus oder
+    // ganz hinein -- die Kennzahlen des Spieltags bleiben richtig.
     expect(component.rows.map((r) => r.id)).toEqual([2]);
     expect(component.groups.map((g) => g.gameDayId)).toEqual([200]);
-    // Kein zweiter Abruf: Die Liga wird clientseitig ausgewertet.
-    httpMock.expectNone(
-      (r) =>
-        r.url === environment.apiURL + 'admin/game_days/report_overview.json'
-    );
   });
 
-  it('bietet die Ligen der ungefilterten Antwort alphabetisch an', () => {
+  // Rueckfall fuer eine API ohne `leagues`: dann aus den Zeilen, wie vorher.
+  it('leitet die Ligen aus den Zeilen ab, wenn die API keine Liste liefert', () => {
     loadWith([
       row({ id: 1, league_id: 7, league_name: 'U13' }),
       row({ id: 2, league_id: 5, league_name: 'Regionalliga' }),
@@ -185,12 +202,56 @@ describe('MatchReportIndexComponent', () => {
       { id: 5, name: 'Regionalliga' },
       { id: 7, name: 'U13' },
     ]);
+  });
 
-    // Nach dem Setzen des Filters bleibt die Auswahl vollstaendig, sonst
-    // gaebe es keinen Weg zurueck.
+  // Die Liste kommt vom Server, denn beim Deckeln faellt der aelteste Bestand
+  // weg: Eine Liga, die nur dort vorkommt, stuende sonst nicht zur Auswahl.
+  it('nimmt die Ligenliste der API und nicht die der Zeilen', () => {
+    component['_load']();
+    httpMock
+      .expectOne(
+        (r) =>
+          r.url === environment.apiURL + 'admin/game_days/report_overview.json'
+      )
+      .flush({
+        truncated: true,
+        leagues: [
+          { id: 5, name: 'Regionalliga' },
+          { id: 7, name: 'U13' },
+          { id: 9, name: 'Nur im abgeschnittenen Teil' },
+        ],
+        games: [row({ id: 1, league_id: 5, league_name: 'Regionalliga' })],
+      });
+
+    expect(component.leagues.map((l) => l.id)).toEqual([5, 7, 9]);
+  });
+
+  // Die Liga filtert der Server, nicht die Ansicht: Clientseitig traefe der
+  // Filter nur den behaltenen Ausschnitt, und gerade die liegen gebliebenen
+  // Berichte vom Saisonstart fehlten.
+  it('schickt die gewaehlte Liga an den Server und laedt neu', () => {
+    loadWith([row({ id: 1, league_id: 5, league_name: 'Regionalliga' })]);
+
     component.filterLeagueId = '5';
     component.applyFilter();
+
+    const req = httpMock.expectOne(
+      (r) =>
+        r.url === environment.apiURL + 'admin/game_days/report_overview.json'
+    );
+    expect(req.request.params.get('league_id')).toBe('5');
+    req.flush({
+      truncated: false,
+      leagues: [
+        { id: 5, name: 'Regionalliga' },
+        { id: 7, name: 'U13' },
+      ],
+      games: [row({ id: 1, league_id: 5, league_name: 'Regionalliga' })],
+    });
+
+    // Die Auswahl bleibt vollstaendig, sonst gaebe es keinen Weg zurueck.
     expect(component.leagues.length).toBe(2);
+    expect(component.filterLeagueId).toBe('5');
   });
 
   it('faellt auf Alle zurueck, wenn die gewaehlte Liga verschwindet', () => {

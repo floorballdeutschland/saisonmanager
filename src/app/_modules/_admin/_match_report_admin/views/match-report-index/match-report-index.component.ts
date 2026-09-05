@@ -14,6 +14,7 @@ import {
   NotificationService,
 } from '@floorball/core';
 import {
+  GameDayReportOverview,
   GameDayReportRow,
   GameOperation,
   GameReportStatus,
@@ -174,11 +175,15 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
     this._load();
   }
 
+  // Die Liga gehört dazu: Sie wird serverseitig gefiltert, ein Wechsel muss
+  // also neu laden. Der Status bleibt draußen, den wertet die Ansicht selbst
+  // aus.
   private _serverFilterKey(): string {
     return [
       this.filterGameOperationId,
       this.filterDateFrom,
       this.filterDateTo,
+      this.filterLeagueId,
     ].join('|');
   }
 
@@ -407,6 +412,7 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
         game_operation_id: this.filterGameOperationId || undefined,
         date_from: this.filterDateFrom || undefined,
         date_to: this.filterDateTo || undefined,
+        league_id: this.filterLeagueId || undefined,
       })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
@@ -414,7 +420,7 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
           this.truncated = result.truncated;
           this._allRows = [...(result.games ?? [])].sort(byDateAscending);
           this._loadedKey = key;
-          this._collectLeagues();
+          this._collectLeagues(result);
           this._applyFilterAndGroup();
           this.loading = false;
           this._cdr.markForCheck();
@@ -432,14 +438,43 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Die Ligenliste stammt aus der ungefilterten Antwort, nicht aus der
-  // angezeigten Menge: Sonst bliebe nach dem Setzen des Filters nur noch die
-  // eine gewählte Liga zur Auswahl.
+  // Die Ligenliste kommt vom Server (`leagues`), nicht aus den ausgelieferten
+  // Zeilen. Zwei Gründe, und beide zählen erst zusammen:
   //
-  // Verschwindet die gewählte Liga durch einen neuen Zeitraum, fällt der Filter
-  // zurück auf „Alle". Ohne das stünde eine leere Liste da, deren Grund im
-  // Auswahlfeld nicht mehr abzulesen wäre.
-  private _collectLeagues(): void {
+  // Der Server deckelt bei 2000 Zeilen und lässt dabei die ÄLTESTEN Spieltage
+  // weg. Aus den Zeilen gebaut fehlte im Auswahlfeld also genau die Liga, die
+  // nur im abgeschnittenen Teil vorkommt — sie wäre nicht auszuwählen, und ihr
+  // Fehlen nicht zu erklären. Und da die Liga jetzt serverseitig gefiltert
+  // wird, enthielte die Antwort nach dem ersten Setzen ohnehin nur noch diese
+  // eine Liga.
+  //
+  // Rückfall auf die Zeilen, solange die API `leagues` nicht liefert: Dann
+  // verhält sich die Ansicht wie vorher, statt ein leeres Auswahlfeld zu
+  // zeigen.
+  private _collectLeagues(result: GameDayReportOverview): void {
+    const vomServer = result.leagues;
+    if (vomServer?.length) {
+      this.leagues = vomServer.map((liga) => ({
+        id: liga.id,
+        name: liga.name ?? String(liga.id),
+      }));
+
+      // Verschwindet die gewählte Liga durch einen neuen Zeitraum, zurück auf
+      // „Alle" — und dann neu laden, denn der Server hat die eben geholte
+      // Antwort noch nach dieser Liga gefiltert. Ohne das Nachladen bliebe eine
+      // leere Liste stehen, deren Grund im Auswahlfeld nicht mehr abzulesen
+      // wäre. Eine Schleife entsteht nicht: Der zweite Lauf schickt keine
+      // Ligaauswahl mehr.
+      if (
+        this.filterLeagueId &&
+        !this.leagues.some((l) => String(l.id) === this.filterLeagueId)
+      ) {
+        this.filterLeagueId = '';
+        this._load();
+      }
+      return;
+    }
+
     const byId = new Map<number, string>();
     for (const row of this._allRows) {
       if (row.league_id != null) {
@@ -451,17 +486,27 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       .map(([id, name]) => ({ id, name }))
       .sort((a, b) => a.name.localeCompare(b.name, 'de'));
 
+    // Verschwindet die gewählte Liga durch einen neuen Zeitraum, fällt der
+    // Filter zurück auf „Alle". Kein Nachladen: Eine API ohne `leagues` kennt
+    // auch den `league_id`-Parameter nicht, die vorliegende Antwort ist also
+    // bereits die ungefilterte.
     if (this.filterLeagueId && !byId.has(Number(this.filterLeagueId))) {
       this.filterLeagueId = '';
     }
   }
 
-  // Wie der Status clientseitig: Die Serverantwort ist ohnehin schon geladen,
-  // und der `league_id`-Parameter der API würde nur einen zweiten Abruf kosten.
+  // Die Liga filtert der SERVER (`league_id`), nicht diese Methode. Sie bleibt
+  // als zweite Schranke stehen, falls die Antwort noch einem älteren Filter
+  // entstammt, und für den Fall, dass die API den Parameter nicht kennt.
   //
-  // Anders als der Status wirkt die Liga VOR der Gruppierung. Ein Spieltag
-  // gehört genau zu einer Liga, fällt also ganz heraus oder ganz hinein – die
-  // Kennzahlen des Spieltags bleiben damit richtig.
+  // Clientseitig allein ginge es nicht: Der Server deckelt bei 2000 Zeilen und
+  // lässt dabei den ältesten Bestand weg. Ein Filter danach zeigte deren Spiele
+  // nur aus dem jüngsten Fenster, während gerade die liegen gebliebenen
+  // Berichte vom Saisonstart fehlten — genau die, für die es diese Ansicht
+  // gibt.
+  //
+  // Ein Spieltag gehört genau zu einer Liga, fällt also ganz heraus oder ganz
+  // hinein; die Kennzahlen des Spieltags bleiben damit richtig.
   private _matchesLeague(row: GameDayReportRow): boolean {
     if (!this.filterLeagueId) return true;
     return String(row.league_id ?? '') === this.filterLeagueId;
