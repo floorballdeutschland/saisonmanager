@@ -1008,7 +1008,12 @@ describe('PlayerStatisticsComponent', () => {
 
       fixture.componentInstance.changePage(2);
       lastRequest().flush(
-        response({ players: [zeile()], total: 120, page: 2, filters: undefined })
+        response({
+          players: [zeile()],
+          total: 120,
+          page: 2,
+          filters: undefined,
+        })
       );
       fixture.detectChanges();
       expect(knopf().disabled).toBeFalse();

@@ -217,8 +217,9 @@ describe('ChecklistSectionComponent', () => {
     component.ngOnDestroy();
 
     const req = expectSave();
-    expect(req.request.body.answers.map((a: { item_id: number }) => a.item_id))
-      .toEqual([7]);
+    expect(
+      req.request.body.answers.map((a: { item_id: number }) => a.item_id)
+    ).toEqual([7]);
     req.flush({ success: true });
     discardPeriodicTasks();
   }));

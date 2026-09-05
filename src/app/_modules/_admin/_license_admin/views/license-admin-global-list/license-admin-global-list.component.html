@@ -472,6 +472,57 @@
                     [ngClass]="statusBadgeClass(e.license_status_id)"
                     >{{ e.license_status }}</span
                   >
+                  @if (e.suspension; as sperre) {
+                    <!-- Die Sperre steht am Status, nicht in einer eigenen
+                         Spalte: Sie IST der Status dieser Zeile, und der
+                         Geltungsbereich gehoert dazu, weil dieselbe Lizenz im
+                         Pokal erteilt sein kann (api#605). -->
+                    <span
+                      class="mt-1 block text-[11px] text-red-700"
+                      [title]="sperre.reason || ''"
+                    >
+                      {{ sperre.scope_summary }}
+                      @if (sperre.games_total) {
+                        ·
+                        {{
+                          "licenseAdmin.globalList.gamesRemaining"
+                            | transloco
+                              : {
+                                  remaining: sperre.remaining_games,
+                                  total: sperre.games_total,
+                                }
+                        }}
+                      }
+                      @if (sperre.valid_until) {
+                        · {{ sperre.valid_until | date: "dd.MM.yyyy" }}
+                      }
+                    </span>
+                    @if (canLiftSuspension) {
+                      <fb-confirmation
+                        [title]="
+                          'licenseAdmin.globalList.liftConfirmTitle' | transloco
+                        "
+                        [content]="
+                          'licenseAdmin.globalList.liftConfirmContent'
+                            | transloco
+                        "
+                        [submitButtonTitle]="
+                          'licenseAdmin.globalList.liftConfirmSubmit'
+                            | transloco
+                        "
+                        buttonVariant="error"
+                        (handleSubmit)="liftSuspension(e, sperre.id)"
+                      >
+                        <button
+                          type="button"
+                          data-testid="lift-suspension"
+                          class="mt-1 block text-[11px] text-fb-gray-500 hover:text-black hover:underline"
+                        >
+                          {{ "licenseAdmin.globalList.lift" | transloco }}
+                        </button>
+                      </fb-confirmation>
+                    }
+                  }
                   @if (isRejected(e)) {
                     @if (confirmRevokeLicenseId !== e.license_id) {
                       <button

@@ -211,15 +211,11 @@
                             }
                             <div>
                               <p
-                                class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-green-800 text-[13px]"
+                                class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-[13px]"
                                 [ngClass]="
-                                  p.team_license.last_status
-                                    .license_status_id === 3
-                                    ? 'bg-red-100 text-red-800'
-                                    : p.team_license.last_status
-                                          .license_status_id === 1
-                                      ? 'bg-green-100 text-green-800'
-                                      : 'bg-gray-100 text-gray-800'
+                                  statusBadgeClass(
+                                    p.team_license.last_status_id
+                                  )
                                 "
                               >
                                 {{ p.team_license.last_status_code }}
@@ -227,6 +223,74 @@
                             </div>
                           </div>
                         </div>
+                        @if (p.team_license.suspension; as sperre) {
+                          <!-- Die Sperre steht an der Zeile, weil die
+                               Lizenzverwaltung der Ort ist, an dem die SBK
+                               arbeitet (api#605). Sie nennt den
+                               Geltungsbereich, denn dieselbe Lizenz kann in
+                               dieser Liga gesperrt und im Pokal erteilt
+                               sein. -->
+                          <div
+                            class="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 flex flex-wrap items-center justify-between gap-2"
+                          >
+                            <div>
+                              <b>{{
+                                "licenseAdmin.leagueDetail.suspendedLabel"
+                                  | transloco
+                              }}</b>
+                              {{ sperre.scope_summary }}
+                              @if (sperre.games_total) {
+                                ·
+                                {{
+                                  "licenseAdmin.leagueDetail.gamesRemaining"
+                                    | transloco
+                                      : {
+                                          remaining: sperre.remaining_games,
+                                          total: sperre.games_total,
+                                        }
+                                }}
+                              }
+                              @if (sperre.valid_until) {
+                                ·
+                                {{
+                                  "licenseAdmin.leagueDetail.suspendedUntil"
+                                    | transloco
+                                }}
+                                {{ sperre.valid_until | date: "dd.MM.yyyy" }}
+                              }
+                              @if (sperre.reason) {
+                                · {{ sperre.reason }}
+                              }
+                            </div>
+                            @if (canLiftSuspension) {
+                              <fb-confirmation
+                                [title]="
+                                  'licenseAdmin.leagueDetail.liftConfirmTitle'
+                                    | transloco
+                                "
+                                [content]="
+                                  'licenseAdmin.leagueDetail.liftConfirmContent'
+                                    | transloco
+                                "
+                                [submitButtonTitle]="
+                                  'licenseAdmin.leagueDetail.liftConfirmSubmit'
+                                    | transloco
+                                "
+                                buttonVariant="error"
+                                (handleSubmit)="liftSuspension(p.id, sperre.id)"
+                              >
+                                <button
+                                  [disabled]="liftingSuspensionId === sperre.id"
+                                  class="font-bold text-red-700 leading-[17px] text-xs px-2 py-1.5 border bg-white hover:bg-red-100 border-red-300 rounded-[5px] cursor-pointer disabled:opacity-50"
+                                >
+                                  {{
+                                    "licenseAdmin.leagueDetail.lift" | transloco
+                                  }}
+                                </button>
+                              </fb-confirmation>
+                            }
+                          </div>
+                        }
                         <div class="mt-2 sm:flex sm:justify-between">
                           <div class="sm:flex sm:flex-wrap sm:gap-x-4">
                             <p class="flex items-start text-sm text-gray-500">

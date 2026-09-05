@@ -13,12 +13,22 @@ import {
   PlayerWithLicense,
   TeamWithPlayers,
 } from '@floorball/types';
-import { ClubService, LeagueService } from '@floorball/core';
+import {
+  ClubService,
+  LeagueService,
+  NotificationService,
+  PlayerService,
+  SessionService,
+} from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, take, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { readUploadedAt } from '../../_utils/document-upload-date';
+import {
+  isSuspendedStatus,
+  licenseStatusBadgeClass,
+} from 'src/app/_helpers/_utils/license-status';
 
 @Component({
   selector: 'fb-license-admin-league-detail',
@@ -43,6 +53,14 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
   copyLoading = false;
   copyResult?: { copied: number };
 
+  // Sperren aufheben darf, wer sperren darf (Admin und SBK). Die Zeile zeigt
+  // die Sperre auch allen anderen, aber ohne Knopf.
+  canLiftSuspension = false;
+  liftingSuspensionId?: number;
+
+  public statusBadgeClass = licenseStatusBadgeClass;
+  public isSuspendedStatus = isSuspendedStatus;
+
   allOpen = false;
   toggleAll(): void {
     this.allOpen = !this.allOpen;
@@ -53,6 +71,9 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
   constructor(
     private _leagueService: LeagueService,
     private _clubService: ClubService,
+    private _playerService: PlayerService,
+    private _sessionService: SessionService,
+    private _notificationService: NotificationService,
     private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
@@ -99,12 +120,59 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
         }
       });
 
+    this._sessionService.currentUser$.pipe(take(1)).subscribe((user) => {
+      this.canLiftSuspension = !!(
+        user?.permissions['player_suspend'] || user?.permissions['admin']
+      );
+      this._cdr.markForCheck();
+    });
+
     this._route.params.pipe(takeUntil(this._destroy$)).subscribe((params) => {
       const parsed = parseInt(params['leagueId'], 10);
       this._leagueId = Number.isNaN(parsed) ? undefined : parsed;
       this.getGameOperations();
     });
     this.getAllClubs();
+  }
+
+  /**
+   * Sperre aufheben, ohne die Ansicht zu wechseln.
+   *
+   * Bis api#605 fiel die gesperrte Zeile aus der Liste, und aufheben liess sich
+   * die Sperre nur im Spielerprofil -- also genau dort nicht, wo die SBK
+   * arbeitet. Der Endpunkt selbst besteht seit api#508.
+   */
+  public liftSuspension(playerId: number, suspensionId: number): void {
+    if (!this.canLiftSuspension || this.liftingSuspensionId) return;
+
+    this.liftingSuspensionId = suspensionId;
+    this._playerService
+      .liftSuspension(playerId, suspensionId)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.liftingSuspensionId = undefined;
+          this._notificationService.success(
+            this._transloco.translate('licenseAdmin.leagueDetail.liftedNotice')
+          );
+          // Neu laden statt die Zeile im Speicher zu korrigieren: Der wirksame
+          // Status entsteht serverseitig je Liga, und eine Sperre kann mehrere
+          // Zeilen betreffen.
+          this.getGameOperations();
+        },
+        error: (err) => {
+          this.liftingSuspensionId = undefined;
+          // 403 und 422 zeigt der globale ErrorInterceptor nicht an, die
+          // Meldung muss also von hier kommen. Die Begründung der API bevorzugen:
+          // sie benennt, warum die Sperre außerhalb der eigenen Zuständigkeit
+          // liegt, der Sammeltext sagt nur, dass es nicht ging.
+          this._notificationService.error(
+            err?.error?.message ??
+              this._transloco.translate('licenseAdmin.leagueDetail.liftError')
+          );
+          this._cdr.markForCheck();
+        },
+      });
   }
 
   ngOnDestroy(): void {
