@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
   ComponentFixture,
   TestBed,
+  discardPeriodicTasks,
   fakeAsync,
   tick,
 } from '@angular/core/testing';
@@ -199,5 +200,56 @@ describe('ChecklistSectionComponent', () => {
     expectSave().flush({ success: true });
 
     expect(component.openCount).toBe(0);
+  }));
+  // Der engste Fall am Spieltisch: letzte Antwort setzen und sofort
+  // "Spiel starten" druecken. Der Statuswechsel entfernt den Abschnitt aus der
+  // Ansicht, die Komponente wird zerstoert -- und der anstehende Debounce-Wert
+  // waere ersatzlos verworfen. debounceTime gibt ihn nur bei einem regulaeren
+  // Ende der Quelle heraus, nicht beim Abbestellen.
+  it('schickt eine Antwort aus dem Debounce-Fenster beim Abmelden nach', fakeAsync(() => {
+    create();
+
+    component.onAnswerSet({ itemId: 7, answer: true });
+    // Bewusst NICHT abwarten: Die Antwort steht noch im Fenster.
+    tick(100);
+    http.expectNone((req) => req.url.indexOf('checklist_answers') !== -1);
+
+    component.ngOnDestroy();
+
+    const req = expectSave();
+    expect(req.request.body.answers.map((a: { item_id: number }) => a.item_id))
+      .toEqual([7]);
+    req.flush({ success: true });
+    discardPeriodicTasks();
+  }));
+
+  // Gegenprobe: Ist alles gespeichert, wird beim Abmelden nichts nachgeschickt.
+  it('schickt beim Abmelden nichts nach, wenn nichts offen ist', fakeAsync(() => {
+    create();
+
+    component.onAnswerSet({ itemId: 7, answer: true });
+    tick(600);
+    expectSave().flush({ success: true });
+
+    component.ngOnDestroy();
+
+    http.expectNone((req) => req.url.indexOf('checklist_answers') !== -1);
+    discardPeriodicTasks();
+  }));
+
+  // Ein bereits laufender POST darf beim Abmelden nicht abgebrochen werden:
+  // takeUntil sitzt deshalb VOR dem switchMap.
+  it('fuehrt einen laufenden Schreibweg beim Abmelden zu Ende', fakeAsync(() => {
+    create();
+
+    component.onAnswerSet({ itemId: 7, answer: true });
+    tick(600);
+    const req = expectSave();
+
+    component.ngOnDestroy();
+
+    expect(req.cancelled).toBeFalse();
+    req.flush({ success: true });
+    discardPeriodicTasks();
   }));
 });

@@ -68,6 +68,9 @@ export class ChecklistSectionComponent implements OnInit, OnChanges, OnDestroy {
   // gerade getroffene, aber noch nicht geschriebene Auswahl.
   private readonly _touched = new Set<number>();
 
+  /** Steht eine Antwort noch im Debounce-Fenster oder im Flug? */
+  private _pendingSave = false;
+
   constructor(
     private _gameService: GameService,
     private _notificationService: NotificationService,
@@ -92,9 +95,20 @@ export class ChecklistSectionComponent implements OnInit, OnChanges, OnDestroy {
     this._save
       .pipe(
         debounceTime(SAVE_DEBOUNCE_MS),
+        // `takeUntil` bewusst VOR dem switchMap: Dahinter bräche es einen
+        // bereits laufenden POST mit ab, und die letzte Antwort wäre still
+        // verloren. So startet nach dem Abmelden nur kein NEUER Speichervorgang
+        // mehr, während der laufende zu Ende geführt wird (switchMap schließt
+        // erst, wenn auch der innere Strom fertig ist).
+        takeUntil(this._destroy),
         switchMap(() => {
           const answers = this._collectAnswers();
           this.saving = true;
+          // Ab hier sind die Antworten unterwegs, nicht mehr "anstehend": Sonst
+          // schickte ngOnDestroy sie ein zweites Mal hinterher, waehrend der
+          // erste Schreibweg noch laeuft. Scheitert er, meldet der Fehlerzweig
+          // das sichtbar; ein stiller zweiter Versuch waere kein Gewinn.
+          this._pendingSave = false;
           this._cdr.markForCheck();
 
           // Der Fehler wird hier abgefangen und nicht im subscribe: Ein Fehler
@@ -106,11 +120,11 @@ export class ChecklistSectionComponent implements OnInit, OnChanges, OnDestroy {
               map(() => answers),
               catchError(() => of(null))
             );
-        }),
-        takeUntil(this._destroy)
+        })
       )
       .subscribe((answers) => {
         this.saving = false;
+        this._pendingSave = false;
 
         if (answers) {
           this.game.checklist_answers = answers;
@@ -133,14 +147,43 @@ export class ChecklistSectionComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Eine Antwort, die noch im Debounce-Fenster steht, würde beim Abmelden
+    // ersatzlos verworfen: `debounceTime` gibt den anstehenden Wert nur bei
+    // einem regulären Ende der Quelle heraus, nicht beim Abbestellen.
+    //
+    // Genau das trifft den engsten Fall am Spieltisch: letzte Antwort setzen
+    // und sofort „Spiel starten" drücken. Der Statuswechsel entfernt diesen
+    // Abschnitt aus der Ansicht, die Komponente wird zerstört, und die Antwort
+    // wäre still weg — ohne Meldung, und erst im Abschlussdialog würde
+    // auffallen, dass sie fehlt.
+    this._flushPendingSave();
+
     this._destroy.next();
     this._destroy.complete();
+  }
+
+  /**
+   * Schickt eine noch nicht gespeicherte Antwort ohne Debounce hinterher.
+   *
+   * Bewusst ohne `takeUntil`: Das Abo hängt an keiner Komponente mehr, es soll
+   * gerade ihren Abbau überdauern. Ohne Rückmeldung an die Ansicht, die es zu
+   * diesem Zeitpunkt nicht mehr gibt; scheitert es, bleibt der Fehler bei
+   * Sentry, weil kein eigener error-Zweig ihn verbraucht.
+   */
+  private _flushPendingSave(): void {
+    if (!this._pendingSave || !this.game?.id) return;
+
+    this._pendingSave = false;
+    this._gameService
+      .setChecklistAnswers(this.game.id, this._collectAnswers())
+      .subscribe();
   }
 
   public onAnswerSet(event: { itemId: number; answer: boolean }): void {
     this.answers = { ...this.answers, [event.itemId]: event.answer };
     this._touched.add(event.itemId);
     this.saved = false;
+    this._pendingSave = true;
     this._save.next();
   }
 
