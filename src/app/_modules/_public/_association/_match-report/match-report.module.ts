@@ -13,6 +13,8 @@ import { MatchEventFormModule } from './_components/match-event-form/match-event
 @NgModule({
   declarations: [
     Components.AwardsComponent,
+    Components.ChecklistQuestionsComponent,
+    Components.ChecklistSectionComponent,
     Components.StartingPlayerComponent,
     Components.StreamGraphicsComponent,
     Views.MatchReportComponent,

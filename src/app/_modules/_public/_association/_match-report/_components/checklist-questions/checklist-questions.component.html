@@ -1,0 +1,35 @@
+<div class="flex flex-col gap-4">
+  @for (item of items; track item.id) {
+    <div class="border border-fb-gray-600 rounded-[5px] p-3 bg-white">
+      <p class="text-sm font-medium mb-2">{{ item.question }}</p>
+      <div class="flex gap-3">
+        <button
+          type="button"
+          [disabled]="disabled"
+          (click)="select(item.id, true)"
+          class="px-4 py-1.5 text-sm font-bold rounded-[5px] border disabled:opacity-50"
+          [ngClass]="
+            answers[item.id] === true
+              ? 'bg-green-600 text-white border-green-600'
+              : 'bg-white text-black border-fb-gray-600 hover:border-black'
+          "
+        >
+          Ja
+        </button>
+        <button
+          type="button"
+          [disabled]="disabled"
+          (click)="select(item.id, false)"
+          class="px-4 py-1.5 text-sm font-bold rounded-[5px] border disabled:opacity-50"
+          [ngClass]="
+            answers[item.id] === false
+              ? 'bg-red-500 text-white border-red-500'
+              : 'bg-white text-black border-fb-gray-600 hover:border-black'
+          "
+        >
+          Nein
+        </button>
+      </div>
+    </div>
+  }
+</div>
