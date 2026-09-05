@@ -1254,9 +1254,29 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           !s.field_size ||
           !league.field_size ||
           s.field_size === league.field_size;
+        // `competition_group` liefert erst api#608 im Liga-Hash. Fehlt es (noch
+        // nicht ausgerolltes Backend), NICHT auf „trifft zu" zurückfallen:
+        // Sonst trüge jede Lizenz derselben Altersklasse das Sperr-Abzeichen,
+        // also falsch statt bloß unvollständig.
         const group = league.competition_group;
-        const sameGroup = !group || s.competition_groups.includes(group);
-        return sameSeason && sameAge && sameField && sameGroup;
+        const sameGroup = !!group && s.competition_groups.includes(group);
+
+        // Die Spielbetriebs-Grenze gehört dazu (PlayerSuspension#
+        // competition_covers?). Ohne sie behauptete das Profil eine Sperre, die
+        // es nicht gibt: Eine Sperre der SBK Ost trüge sich auch an einer
+        // Bundesliga-Lizenz desselben Spielers ein, während die Lizenzliste der
+        // Bundesliga sie korrekt als erteilt zeigt. Zwei Ansichten, zwei
+        // Antworten.
+        //
+        // Anders als bei Altersklasse und Feldgröße gilt hier NICHT „leer ist
+        // ein Treffer": Leer an der SPERRE heißt „alle Spielbetriebe" (das darf
+        // nur die Bundesadministration setzen), leer an der LIGA ist ein
+        // Datenfehler und darf keine fremde Sperre einfangen.
+        const sameOperation =
+          s.game_operation_id == null ||
+          String(s.game_operation_id) === String(league.game_operation_id);
+
+        return sameSeason && sameAge && sameField && sameGroup && sameOperation;
       }) ?? null
     );
   }

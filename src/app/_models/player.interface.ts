@@ -273,6 +273,11 @@ export interface PlayerSuspension {
   age_group?: string | null;
   field_size?: string | null;
   competition_groups: CompetitionGroup[];
+  /**
+   * Spielbetriebs-Grenze der Sperre. `null` heißt „alle Spielbetriebe" und darf
+   * nur die Bundesadministration setzen (PlayerSuspension#competition_covers?).
+   */
+  game_operation_id?: number | null;
   /** Dauer in Spielen; leer bei einer Datumssperre. */
   games_total?: number | null;
   games_served: number;

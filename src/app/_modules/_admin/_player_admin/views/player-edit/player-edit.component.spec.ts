@@ -1087,6 +1087,7 @@ describe('PlayerEditComponent', () => {
           age_group: 'Herren',
           field_size: 'GF',
           competition_group: 'liga',
+          game_operation_id: 1,
           game_operation_name: 'Floorball Deutschland',
         },
       } as unknown as PlayerLicense;
@@ -1209,6 +1210,80 @@ describe('PlayerEditComponent', () => {
       ] as unknown as PlayerEditComponent['suspensions'];
 
       expect(component.isLicenseSuspended(licenseWithLeague())).toBe(false);
+    });
+    // Die Spielbetriebs-Grenze gehoert zur Serverregel (competition_covers?).
+    // Ohne sie behauptete das Profil eine Sperre, die es nicht gibt: Eine
+    // Sperre der SBK Ost truege sich auch an einer Bundesliga-Lizenz desselben
+    // Spielers ein, waehrend die Lizenzliste der Bundesliga sie korrekt als
+    // erteilt zeigt.
+    it('eine Sperre eines anderen Spielbetriebs trifft die Lizenz nicht', () => {
+      const component = build();
+      component.suspensions = [
+        {
+          id: 1,
+          scope_kind: 'competition',
+          competition_groups: ['liga'],
+          age_group: 'Herren',
+          field_size: 'GF',
+          season_id: '18',
+          game_operation_id: 42,
+          team_id: null,
+          active: true,
+          games_served: 0,
+        },
+      ] as unknown as PlayerEditComponent['suspensions'];
+
+      expect(component.isLicenseSuspended(licenseWithLeague())).toBe(false);
+    });
+
+    // Gegenprobe: Ohne Grenze gilt die Sperre ueberall (das darf nur die
+    // Bundesadministration setzen).
+    it('eine Sperre ohne Spielbetriebs-Grenze trifft die Lizenz', () => {
+      const component = build();
+      component.suspensions = [
+        {
+          id: 1,
+          scope_kind: 'competition',
+          competition_groups: ['liga'],
+          age_group: 'Herren',
+          field_size: 'GF',
+          season_id: '18',
+          game_operation_id: null,
+          team_id: null,
+          active: true,
+          games_served: 0,
+        },
+      ] as unknown as PlayerEditComponent['suspensions'];
+
+      expect(component.isLicenseSuspended(licenseWithLeague())).toBe(true);
+    });
+
+    // Ohne `competition_group` (Backend noch nicht ausgerollt) NICHT auf
+    // "trifft zu" zurueckfallen: Sonst truege jede Lizenz derselben
+    // Altersklasse das Abzeichen, also falsch statt bloss unvollstaendig.
+    it('ohne competition_group der Liga bleibt das Abzeichen aus', () => {
+      const component = build();
+      component.suspensions = [
+        {
+          id: 1,
+          scope_kind: 'competition',
+          competition_groups: ['liga'],
+          age_group: 'Herren',
+          field_size: 'GF',
+          season_id: '18',
+          game_operation_id: 1,
+          team_id: null,
+          active: true,
+          games_served: 0,
+        },
+      ] as unknown as PlayerEditComponent['suspensions'];
+
+      const lizenz = licenseWithLeague();
+      delete (lizenz.league as unknown as Record<string, unknown>)[
+        'competition_group'
+      ];
+
+      expect(component.isLicenseSuspended(lizenz)).toBe(false);
     });
   });
 });
