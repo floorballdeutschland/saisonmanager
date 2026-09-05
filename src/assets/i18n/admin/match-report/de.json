@@ -4,6 +4,8 @@
     "subtitle": "Übersicht der abgegebenen Spielberichte der laufenden Saison, mit Status, Bearbeitungszeitpunkt und Hinweisen an die SBK.",
     "filterGameOperation": "Spielbetrieb",
     "filterGameOperationAll": "Alle",
+    "filterLeague": "Liga",
+    "filterLeagueAll": "Alle",
     "filterFrom": "Von",
     "filterTo": "Bis",
     "filterStatus": "Status",
