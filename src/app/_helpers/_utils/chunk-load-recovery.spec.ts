@@ -23,6 +23,7 @@ function env(overrides: Partial<ChunkRecoveryEnv> = {}): ChunkRecoveryEnv {
   return {
     now: () => 1_000_000,
     storage: fakeStorage(),
+    online: () => true,
     reload: () => undefined,
     ...overrides,
   };
@@ -167,5 +168,47 @@ describe('recoverFromChunkLoadError', () => {
 
     expect(reloaded).toBeFalse();
     expect(reload).not.toHaveBeenCalled();
+  });
+  // Chrome meldet ein Funkloch beim Nachladen mit derselben Zeichenkette wie
+  // einen nach dem Deploy verschwundenen Chunk. Der Unterschied liegt in der
+  // Folge: Nach einem Deploy behebt das Neuladen alles, ohne Netz ersetzt es
+  // eine stehende Ansicht durch die Fehlerseite des Browsers.
+  it('laedt ohne Netz nicht neu', () => {
+    const reload = jasmine.createSpy('reload');
+
+    const reloaded = recoverFromChunkLoadError(
+      env({ reload, online: () => false })
+    );
+
+    expect(reloaded).toBeFalse();
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  // Gegenprobe: Mit Netz bleibt es beim bisherigen Verhalten.
+  it('laedt mit Netz weiterhin neu', () => {
+    const reload = jasmine.createSpy('reload');
+
+    const reloaded = recoverFromChunkLoadError(
+      env({ reload, online: () => true })
+    );
+
+    expect(reloaded).toBeTrue();
+    expect(reload).toHaveBeenCalled();
+  });
+
+  // Der Merker darf ohne Netz NICHT gesetzt werden: Sonst verbraucht ein
+  // Funkloch das Zeitfenster, und das erste echte Deploy-Problem danach
+  // bekaeme innerhalb der Minute kein Neuladen mehr.
+  it('verbraucht ohne Netz das Zeitfenster nicht', () => {
+    const storage = fakeStorage();
+    const reload = jasmine.createSpy('reload');
+
+    recoverFromChunkLoadError(env({ reload, storage, online: () => false }));
+    expect(storage.getItem(CHUNK_RELOAD_MARKER)).toBeNull();
+
+    const reloaded = recoverFromChunkLoadError(
+      env({ reload, storage, online: () => true })
+    );
+    expect(reloaded).toBeTrue();
   });
 });

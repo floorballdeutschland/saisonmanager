@@ -110,6 +110,8 @@ export interface ChunkRecoveryEnv {
   now: () => number;
   /** `sessionStorage`, oder `null`, wenn der Browser keinen hergibt. */
   storage: Pick<Storage, 'getItem' | 'setItem'> | null;
+  /** Ist der Browser nach eigener Auskunft online? */
+  online: () => boolean;
   /** Löst das Neuladen aus. */
   reload: () => void;
 }
@@ -122,6 +124,8 @@ export interface ChunkRecoveryEnv {
  * ein Deploy schiefgegangen ist (siehe die Begründung in sentry-init.ts), und
  * diese Meldung soll das Neuladen nicht verschlucken.
  *
+ * Ohne Netz wird ebenfalls NICHT neu geladen, siehe die Begründung unten.
+ *
  * Ohne nutzbaren Speicher wird NICHT neu geladen. Das trifft den privaten Modus
  * und Browser mit gesperrtem Sitzungsspeicher, ist aber die richtige Seite zum
  * Irren: Ohne Merker ließe sich die Schleife nicht verhindern, und ein Tab, der
@@ -130,6 +134,21 @@ export interface ChunkRecoveryEnv {
  */
 export function recoverFromChunkLoadError(env: ChunkRecoveryEnv): boolean {
   if (!env.storage) return false;
+
+  // Offline NICHT neu laden. Chrome meldet ein Funkloch beim Nachladen mit
+  // derselben Zeichenkette wie einen nach dem Deploy verschwundenen Chunk
+  // („Failed to fetch dynamically imported module"), die Erkennung oben kann
+  // beide also nicht auseinanderhalten. Der Unterschied liegt in der Folge:
+  // Nach einem Deploy holt das Neuladen die frische index.html und behebt
+  // alles, ohne Netz ersetzt es eine stehende Ansicht durch die Fehlerseite des
+  // Browsers -- im Hallen-WLAN mitten aus einem offenen Spielbericht heraus.
+  //
+  // `navigator.onLine` ist nur ein Hinweis und kein Beweis (true heisst
+  // lediglich „irgendeine Verbindung besteht"), aber es irrt in die richtige
+  // Richtung: false ist verlaesslich, true kann daneben liegen. Wir verzichten
+  // also nur dort auf das Neuladen, wo der Browser sicher weiss, dass er nicht
+  // kann.
+  if (!env.online()) return false;
 
   const now = env.now();
 

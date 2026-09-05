@@ -78,6 +78,9 @@ export class FilteringErrorHandler implements ErrorHandler {
     recovery: ChunkRecoveryEnv = {
       now: () => Date.now(),
       storage: safeSessionStorage(),
+      // `navigator.onLine` ist in jedem unterstuetzten Browser vorhanden; der
+      // Rueckfall auf true haelt das Verhalten dort unveraendert, wo es fehlt.
+      online: () => navigator.onLine ?? true,
       reload: () => window.location.reload(),
     }
   ) {

@@ -109,6 +109,7 @@ describe('FilteringErrorHandler beim Chunk-Ladefehler', () => {
           values[key] = value;
         },
       },
+      online: () => true,
       reload,
     };
   });
