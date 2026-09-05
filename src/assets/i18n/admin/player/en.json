@@ -61,7 +61,7 @@
     "licenseSuspendReasonPlaceholder": "e.g. match ban after red card",
     "deleteLicense": "Delete license",
     "deleteThisLicense": "Delete this license",
-    "deleteLicenseHint": "The reason stays in the licence history permanently and is visible to the club as well. The licence remains part of the fee calculation.",
+    "deleteLicenseHint": "The reason stays in the licence history permanently and is visible to the club as well. The licence remains part of the fee calculation. If it was classified as a first or second licence in the adult large-field area, that classification is removed as well; restoring the status to \"granted\" does not bring it back.",
     "licenseDeleteReasonPlaceholder": "e.g. requested for the wrong team by mistake",
     "delete": "Delete",
     "suspend": "Suspend",
@@ -140,7 +140,8 @@
     "gfRoleMakeZweit": "Make second license",
     "gfRoleClear": "Remove assignment",
     "gfRoleSwapCount": "Already swapped this season: {{count}}×.",
-    "gfRoleSwapHint": "One swap per season is allowed; further swaps only by the FD administration."
+    "gfRoleSwapHint": "One swap per season is allowed; further swaps only by the FD administration.",
+    "licenseDeleted": "Licence deleted."
   },
   "search": {
     "globalSearch": "Global player search",

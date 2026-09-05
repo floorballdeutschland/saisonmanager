@@ -29,7 +29,7 @@ import {
   Season,
 } from '@floorball/models';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
@@ -137,6 +137,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   // offen, und der Freitext gehört genau zu dieser.
   deleteLicenseId: string | null = null;
   licenseDeleteReason = '';
+  /** Lizenz, deren Löschung gerade läuft (Doppelklick-Riegel). */
+  deletingLicenseId?: string;
   licenseSuspendUntil = '';
   licenseSuspendReason = '';
   // Ebene 2: Beantragungssperre
@@ -957,6 +959,12 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     // zählt dort nicht und käme als 422 zurück.
     const reason = this.licenseDeleteReason.trim();
     if (!this.player?.id || !reason) return;
+    // Doppelklick-Riegel: `[disabled]` hängt nur am Freitext, zwei schnelle
+    // Klicks schickten also zwei Anfragen. Die zweite trifft eine bereits
+    // gelöschte Lizenz und liefert eine Absage direkt hinter der
+    // Erfolgsmeldung. Vorbild: revokingLicenseId in der Lizenzübersicht.
+    if (this.deletingLicenseId) return;
+    this.deletingLicenseId = license.id;
 
     this._playerService
       .updateLicenseStatus(
@@ -965,12 +973,13 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         LICENSE_STATUS_DELETED,
         reason
       )
+      .pipe(finalize(() => (this.deletingLicenseId = undefined)))
       .subscribe({
         next: () => {
-          this._notificationService.success('Lizenz wurde gelöscht.', {
-            autoClose: true,
-            keepAfterRouteChange: false,
-          });
+          this._notificationService.success(
+            this._transloco.translate('playerAdmin.edit.licenseDeleted'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
           this.cancelLicenseDelete();
           this.getPlayer('' + this.player?.id);
         },

@@ -61,7 +61,7 @@
     "licenseSuspendReasonPlaceholder": "z. B. Spielsperre nach roter Karte",
     "deleteLicense": "Lizenz löschen",
     "deleteThisLicense": "Diese Lizenz löschen",
-    "deleteLicenseHint": "Die Begründung bleibt dauerhaft im Verlauf der Lizenz stehen und ist auch für den Verein sichtbar. Die Lizenz bleibt der Gebührenrechnung erhalten.",
+    "deleteLicenseHint": "Die Begründung bleibt dauerhaft im Verlauf der Lizenz stehen und ist auch für den Verein sichtbar. Die Lizenz bleibt der Gebührenrechnung erhalten. War sie im GF-Erwachsenenbereich als Erst- oder Zweitlizenz eingeordnet, entfällt diese Zuordnung mit; das Zurücksetzen auf „erteilt\" stellt sie nicht wieder her.",
     "licenseDeleteReasonPlaceholder": "z. B. versehentlich auf der falschen Mannschaft beantragt",
     "delete": "Löschen",
     "suspend": "Sperren",
@@ -140,7 +140,8 @@
     "gfRoleMakeZweit": "Zur Zweitlizenz machen",
     "gfRoleClear": "Zuordnung entfernen",
     "gfRoleSwapCount": "In dieser Saison bereits getauscht: {{count}}×.",
-    "gfRoleSwapHint": "Ein Tausch ist einmal pro Saison möglich, danach nur durch die FD-Administration."
+    "gfRoleSwapHint": "Ein Tausch ist einmal pro Saison möglich, danach nur durch die FD-Administration.",
+    "licenseDeleted": "Lizenz wurde gelöscht."
   },
   "search": {
     "globalSearch": "Globale Spielersuche",
