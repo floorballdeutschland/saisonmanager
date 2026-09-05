@@ -146,6 +146,132 @@ describe('SpielSekretariatComponent', () => {
     });
   });
 
+  describe('Lizenzlisten nach Liga', () => {
+    const build = (
+      days: [ReturnType<typeof day>, ...ReturnType<typeof day>[]],
+      licenseLists: Record<string, unknown>
+    ) =>
+      component['_buildLicenseGroups']({
+        game_days: days,
+        games: [],
+        license_lists: licenseLists,
+        expires_at: '2026-01-02T00:00:00Z',
+      } as unknown as NonNullable<(typeof component)['data']>);
+
+    it('gruppiert nach Liga in der Reihenfolge der Spieltage', () => {
+      // Die Schlüssel stehen absichtlich in der „falschen" Reihenfolge: Auf die
+      // Reihenfolge in einem Objekt mit zahlenartigen Schlüsseln ist kein
+      // Verlass, maßgeblich sind die Spieltage.
+      const groups = build(
+        [
+          day({ id: 1, league: 'Herren', league_id: 10 }),
+          day({ id: 2, league: 'U13', league_id: 20 }),
+        ],
+        {
+          '900': { team_name: 'U13 Gast', league_id: 20, players: [] },
+          '100': { team_name: 'Herren Heim', league_id: 10, players: [] },
+          '200': { team_name: 'Herren Gast', league_id: 10, players: [] },
+        }
+      );
+
+      expect(groups.map((g) => g.leagueName)).toEqual(['Herren', 'U13']);
+      expect(groups[0].entries.map((e) => e.team_name)).toEqual([
+        'Herren Gast',
+        'Herren Heim',
+      ]);
+      expect(groups[1].entries.map((e) => e.team_name)).toEqual(['U13 Gast']);
+    });
+
+    it('zeigt eine Mannschaft unter jeder Liga, in der sie antritt', () => {
+      // Vormittags Ligaspiel, nachmittags Pokal in derselben Halle. Mit nur
+      // einer Liga fehlte die Lizenzliste unter der zweiten Ueberschrift
+      // vollstaendig, und das Sekretariat des zweiten Spiels suchte sie dort
+      // vergeblich.
+      const groups = build(
+        [
+          day({ id: 1, league: 'Herren', league_id: 10 }),
+          day({ id: 2, league: 'Pokal', league_id: 30 }),
+        ],
+        {
+          '100': {
+            team_name: 'Doppel Heim',
+            league_id: 10,
+            leagues: [
+              { id: 10, name: 'Herren' },
+              { id: 30, name: 'Pokal' },
+            ],
+            players: [],
+          },
+          '200': { team_name: 'Nur Pokal', league_id: 30, players: [] },
+        }
+      );
+
+      expect(groups.map((g) => g.leagueName)).toEqual(['Herren', 'Pokal']);
+      expect(groups[0].entries.map((e) => e.team_name)).toEqual([
+        'Doppel Heim',
+      ]);
+      expect(groups[1].entries.map((e) => e.team_name)).toEqual([
+        'Doppel Heim',
+        'Nur Pokal',
+      ]);
+    });
+
+    it('faellt ohne leagues auf league_id zurueck', () => {
+      // Aeltere API: kennt `leagues` noch nicht, die Gruppierung muss trotzdem
+      // stehen.
+      const groups = build([day({ id: 1, league: 'Herren', league_id: 10 })], {
+        '100': { team_name: 'Heim', league_id: 10, players: [] },
+      });
+
+      expect(groups.length).toBe(1);
+      expect(groups[0].entries.map((e) => e.team_name)).toEqual(['Heim']);
+    });
+
+    it('laesst Ligen ohne Lizenzliste weg', () => {
+      const groups = build(
+        [
+          day({ id: 1, league: 'Herren', league_id: 10 }),
+          day({ id: 2, league: 'U13', league_id: 20 }),
+        ],
+        { '100': { team_name: 'Herren Heim', league_id: 10, players: [] } }
+      );
+
+      expect(groups.length).toBe(1);
+      expect(groups[0].leagueName).toBe('Herren');
+    });
+
+    it('bleibt bei einer flachen Liste, wenn die API keine Liga liefert', () => {
+      const groups = build([day({ id: 1, league: 'Herren', league_id: 10 })], {
+        '100': { team_name: 'Heim', players: [] },
+        '200': { team_name: 'Gast', players: [] },
+      });
+
+      expect(groups.length).toBe(1);
+      expect(groups[0].leagueName).toBeNull();
+      expect(groups[0].entries.length).toBe(2);
+    });
+
+    it('zeigt die Ueberschrift erst ab der zweiten Liga', () => {
+      component.licenseGroups = build(
+        [day({ id: 1, league: 'Herren', league_id: 10 })],
+        { '100': { team_name: 'Heim', league_id: 10, players: [] } }
+      );
+      expect(component.multipleLicenseLeagues).toBe(false);
+
+      component.licenseGroups = build(
+        [
+          day({ id: 1, league: 'Herren', league_id: 10 }),
+          day({ id: 2, league: 'U13', league_id: 20 }),
+        ],
+        {
+          '100': { team_name: 'Heim', league_id: 10, players: [] },
+          '900': { team_name: 'U13', league_id: 20, players: [] },
+        }
+      );
+      expect(component.multipleLicenseLeagues).toBe(true);
+    });
+  });
+
   describe('mit einem einzelnen Spieltag', () => {
     it('nennt nur dessen Liga und blendet die Liga je Spiel aus', () => {
       setData([

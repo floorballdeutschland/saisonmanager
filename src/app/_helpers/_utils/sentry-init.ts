@@ -23,7 +23,14 @@ const IGNORED_ERRORS = [
   'ResizeObserver loop completed with undelivered notifications',
   // Netzwerkabbrüche: sagen etwas über die Leitung, nicht über den Code. Der
   // ErrorInterceptor zeigt dem Nutzer dafür bereits eine Meldung.
-  'Failed to fetch',
+  //
+  // `Failed to fetch` als Ausdruck und nicht als Zeichenkette, weil
+  // `ignoreErrors` Zeichenketten als Teilstring vergleicht: Chromes
+  // Chunk-Ladefehler heißt „Failed to fetch dynamically imported module" und
+  // fiel damit unter diesen Filter, obwohl er ausdrücklich drinbleiben soll
+  // (siehe unten). Das erklärt, warum SAISONMANAGER-2B fast nur aus Safari-
+  // und iOS-Meldungen besteht — Chrome kam dort nie an.
+  /Failed to fetch(?! dynamically imported module)/,
   'NetworkError',
   'Network request failed',
   'Load failed',
@@ -34,6 +41,11 @@ const IGNORED_ERRORS = [
 // bei einem abgebrochenen `scp` — und das ist der wichtigste Hinweis darauf,
 // dass ein Deploy schiefgegangen ist. Deshalb kein Filter, sondern niedrigere
 // Gewichtung durch den Nutzer im Dashboard.
+//
+// Behoben wird ein solcher Fehler seit chunk-load-recovery.ts durch ein
+// einmaliges Neuladen. Die Meldung läuft davor, nicht danach — sonst wäre der
+// Hinweis auf ein schiefgegangenes Deploy genau dann weg, wenn er gebraucht
+// wird.
 
 // Fehler, deren Stacktrace ausschließlich aus fremdem Code besteht: Erweiterungen,
 // injizierte Skripte, Übersetzungsdienste. Nichts davon können wir beheben.

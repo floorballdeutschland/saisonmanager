@@ -190,6 +190,15 @@
             [match]="game"
           ></fb-match-event-form>
         </div>
+
+        <!-- Spieltagscheckliste: steht hier, weil ein Teil der Fragen die
+             Vorbereitung und die Halle betrifft und vor dem ersten Bully
+             beantwortbar ist. Der Riegel bleibt das Fenster beim Abschließen
+             des Spielberichts, das den hier gesetzten Stand vorbelegt. -->
+        <fb-checklist-section
+          class="md:col-span-2"
+          [game]="game"
+        ></fb-checklist-section>
       </div>
     } @else {
       <div class="bg-white my-[5px] py-[15px] px-[30px]">

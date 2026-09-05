@@ -1,3 +1,7 @@
+// Die Fragen der Spieltagscheckliste gehören dem Landesverband, der Typ steht
+// deshalb bei ihm.
+import { ChecklistItem } from './state-association.interface';
+
 export interface GameEventLegacy {
   row: number;
   time: string;
@@ -219,8 +223,8 @@ export interface Game {
   guest_team_filling_parameter?: number | null;
 
   checklist_active?: boolean;
-  checklist_items?: { id: number; question: string; position: number }[];
-  checklist_answers?: { item_id: number; question: string; answer: boolean }[];
+  checklist_items?: ChecklistItem[];
+  checklist_answers?: ChecklistAnswer[];
 
   post_submission_edited?: boolean;
   record_updated_at?: string;
@@ -278,4 +282,16 @@ export interface GameScan {
   uploaded_by_name: string | null;
   expires_at: string;
   url: string;
+}
+
+/**
+ * Die Antwort der Spielleitung auf eine Frage der Spieltagscheckliste. `question` steht
+ * bewusst mit in der Antwort: Der Landesverband darf seine Fragen jederzeit
+ * umformulieren oder löschen, und ein gespeicherter Spielbericht soll später
+ * noch zeigen, was tatsächlich gefragt wurde.
+ */
+export interface ChecklistAnswer {
+  item_id: number;
+  question: string;
+  answer: boolean;
 }

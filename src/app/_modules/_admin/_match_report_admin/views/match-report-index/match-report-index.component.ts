@@ -6,7 +6,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, finalize, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
   GameOperationService,
@@ -255,22 +255,47 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
     // Das Fenster muss synchron im Klick-Handler geöffnet werden. Erst im
     // HTTP-Callback zu öffnen, kostet die Nutzerinteraktion – der Popup-Blocker
     // schluckt den Aufruf dann kommentarlos, und der Knopf tut scheinbar nichts.
-    const tab = window.open('', '_blank', 'noopener');
+    //
+    // Bewusst OHNE das Feature `noopener`: Damit gibt window.open laut
+    // Spezifikation `null` zurück – die Registerkarte geht auf, aber es gibt
+    // keinen Verweis darauf. Der Code lief deshalb in den Ersatzzweig für den
+    // Popup-Blocker, navigierte die aktuelle Seite, und die leere Registerkarte
+    // blieb stehen, weil weder die Zuweisung noch close() je einen Empfänger
+    // hatten. Der Schutz, den noopener bringt, wird eine Zeile später von Hand
+    // hergestellt.
+    const tab = window.open('', '_blank');
+    if (tab) {
+      tab.opener = null;
+    }
+    // Wer das Fenster aufmacht, muss es auch wieder zumachen – auf JEDEM Weg
+    // hier heraus. `takeUntil` beendet das Abo beim Verlassen der Seite ohne
+    // `next` und ohne `error`: Ein Wechsel ins Menü, während der Abruf der
+    // signierten Adresse noch läuft, ließe die leere Registerkarte sonst genau
+    // so stehen, wie es dieser PR eigentlich abstellt. `finalize` deckt
+    // zusätzlich den Fall ab, dass jemand später einen weiteren Ausstieg
+    // einbaut und den Aufräumschritt vergisst.
+    let tabHandedOver = false;
     this._gameService
       .getGameScan(row.id)
-      .pipe(takeUntil(this._destroy$))
+      .pipe(
+        takeUntil(this._destroy$),
+        finalize(() => {
+          if (!tabHandedOver) tab?.close();
+        })
+      )
       .subscribe({
         next: (scan) => {
           this.scanLoadingGameId = null;
           if (scan?.url) {
             if (tab) {
+              tabHandedOver = true;
               tab.location.href = scan.url;
             } else {
               // Popup-Blocker war schneller: im selben Tab öffnen.
               window.location.href = scan.url;
             }
           } else {
-            tab?.close();
+            // Schliessen uebernimmt finalize oben, auf allen Wegen gleich.
             this._notificationService.error(
               this._transloco.translate(
                 'matchReportAdmin.notifications.scanMissing'
@@ -280,7 +305,6 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: () => {
-          tab?.close();
           this.scanLoadingGameId = null;
           this._notificationService.error(
             this._transloco.translate(
