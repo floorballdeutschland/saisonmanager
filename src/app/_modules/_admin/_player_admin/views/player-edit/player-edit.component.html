@@ -1271,8 +1271,22 @@
                  laufenden Saison: Die spielerweite Sperre verhindert neue
                  Lizenzantraege, und gerade dann gibt es keine Lizenz. Die
                  engeren Geltungsbereiche brauchen eine und sind ohne
-                 Auswahl nicht waehlbar. -->
-            @if (!showSuspendForm) {
+                 Auswahl nicht waehlbar.
+
+                 `!hasApplicationBlock` ist kein Schoenheitsriegel: Laeuft
+                 schon eine Sperre auf alle Wettbewerbe, tragen alle Lizenzen
+                 den Status gesperrt, `suspendableLicenses` ist leer und der
+                 Geltungsbereich stuende zwingend auf „alle Wettbewerbe" --
+                 dieser Knopf koennte dort ausschliesslich ein Duplikat
+                 anlegen. Und das Duplikat waere nicht bloss doppelt:
+                 `Player#write_suspended_status!` ueberspringt Lizenzen, die
+                 schon auf gesperrt stehen, die zweite Sperre bekaeme also
+                 eine leere Liste betroffener Lizenzen. Das Aufheben der
+                 ersten stellte danach alle Lizenzen wieder her, waehrend die
+                 zweite weiterlaeuft und jeden Antrag blockiert -- ohne eine
+                 Lizenz, an der die Sperre noch sichtbar waere. Erst
+                 aufheben, dann neu setzen. -->
+            @if (!showSuspendForm && !hasApplicationBlock) {
               <div>
                 <button
                   (click)="openSuspendForm()"
@@ -1354,8 +1368,16 @@
           }
         </select>
         @if (!suspendableLicenses.length) {
-          <p class="text-xs text-amber-700 mt-1">
-            {{ "playerAdmin.edit.suspendNoLicenseHint" | transloco }}
+          <!-- Zwei verschiedene Lagen, zwei Saetze: „keine Lizenz" und „alle
+               Lizenzen schon gesperrt". Ein Sammeltext behauptete dem Verband
+               gegenueber, es gebe keine Lizenz, waehrend sie mit ihrem
+               Abzeichen ein paar Zeilen weiter oben steht. -->
+          <p class="text-xs text-amber-700 mt-1" data-testid="suspend-hint">
+            @if (hasCurrentSeasonLicense) {
+              {{ "playerAdmin.edit.suspendAllSuspendedHint" | transloco }}
+            } @else {
+              {{ "playerAdmin.edit.suspendNoLicenseHint" | transloco }}
+            }
           </p>
         }
       </div>
@@ -1364,11 +1386,9 @@
         {{ "playerAdmin.edit.suspendThisLicense" | transloco }}
       </p>
     }
-    <!-- Dauer: Datum oder Anzahl Spiele (api#604).
-                                 Das Datum bleibt die Vorbelegung, weil die
-                                 Sperren im Bestand Einschränkungen der
-                                 Spielberechtigung sind und bis zu einem Termin
-                                 laufen. -->
+    <!-- Dauer: Datum oder Anzahl Spiele (api#604). Das Datum bleibt die
+         Vorbelegung, weil die Sperren im Bestand Einschränkungen der
+         Spielberechtigung sind und bis zu einem Termin laufen. -->
     <div class="mb-2">
       <label class="block text-xs font-semibold text-amber-800 mb-1">{{
         "playerAdmin.edit.duration" | transloco
@@ -1402,6 +1422,7 @@
         <input
           type="date"
           [(ngModel)]="licenseSuspendUntil"
+          data-testid="suspend-until"
           [min]="today()"
           class="border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
         />
@@ -1423,15 +1444,18 @@
         </p>
       </div>
     }
-    <!-- Geltungsbereich. Vorbelegt ist die engste
-                                 Stufe; eine zu weit gefasste Sperre blockiert
-                                 mehr, als der Anlass hergibt. -->
+    <!-- Geltungsbereich. Die Vorbelegung haengt am Einstieg und steht
+         deshalb nicht hier, sondern in `openLicenseSuspend` (engste Stufe:
+         eine zu weit gefasste Sperre blockiert mehr, als der Anlass hergibt)
+         und `openSuspendForm` (alle Wettbewerbe: der einzige Bereich, der
+         ohne Lizenz auskommt). -->
     <div class="mb-2">
       <label class="block text-xs font-semibold text-amber-800 mb-1">{{
         "playerAdmin.edit.scope" | transloco
       }}</label>
       <select
         [(ngModel)]="licenseSuspendScope"
+        data-testid="suspend-scope"
         class="border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
       >
         <option value="team" [disabled]="!license">
@@ -1462,10 +1486,9 @@
         }
       </div>
     }
-    <!-- Ohne diesen Satz ist die Auswahl nicht
-                                 bedienbar: „Wettbewerb" allein sagt nicht,
-                                 dass die Playoffs mit erfasst sind und der
-                                 Pokal nicht. -->
+    <!-- Ohne diesen Satz ist die Auswahl nicht bedienbar: „Wettbewerb"
+         allein sagt nicht, dass die Playoffs mit erfasst sind und der Pokal
+         nicht. -->
     <p
       class="mb-2 text-sm text-amber-900 bg-white border border-amber-200 rounded px-2 py-1"
     >
@@ -1488,6 +1511,7 @@
     <div class="flex gap-3">
       <button
         (click)="submitLicenseSuspend(license)"
+        data-testid="submit-suspend"
         [disabled]="licenseSuspendBlocked(license)"
         class="font-bold text-white leading-[17px] text-sm px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >

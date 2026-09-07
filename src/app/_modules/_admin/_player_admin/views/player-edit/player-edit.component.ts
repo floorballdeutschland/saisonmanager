@@ -1351,6 +1351,20 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Gibt es überhaupt eine Lizenz der laufenden Saison?
+   *
+   * Trennt die beiden Lagen, in denen die Auswahl leer bleibt: kein
+   * Lizenzantrag der Saison, oder alle vorhandenen schon von einer Sperre
+   * erfasst. Der frühere Sammeltext behauptete das Erste auch im Zweiten --
+   * und die Lizenz stand mit ihrem Abzeichen sichtbar weiter oben.
+   */
+  public get hasCurrentSeasonLicense(): boolean {
+    return (this.player?.licenses ?? []).some((l) =>
+      this.isCurrentSeasonLicense(l)
+    );
+  }
+
   /** Die im Abschnittsformular gewählte Lizenz -- oder keine. */
   public get suspendFormLicense(): PlayerLicense | null {
     if (!this.suspendPickedLicenseId) return null;

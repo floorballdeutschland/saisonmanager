@@ -161,7 +161,8 @@
     "setupSuspension": "Set up suspension",
     "suspendLicenseChoice": "Licence the suspension refers to",
     "suspendNoLicense": "none – only “all competitions” possible",
-    "suspendNoLicenseHint": "This player has no open licence for the current season. That leaves only the scope “all competitions”, which also blocks new licence applications."
+    "suspendNoLicenseHint": "This player has no open licence for the current season. That leaves only the scope “all competitions”, which also blocks new licence applications.",
+    "suspendAllSuspendedHint": "Every licence of the current season is already covered by a suspension. That leaves only the scope “all competitions”, which also blocks new licence applications."
   },
   "search": {
     "globalSearch": "Global player search",

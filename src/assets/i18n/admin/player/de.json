@@ -161,7 +161,8 @@
     "setupSuspension": "Sperre einrichten",
     "suspendLicenseChoice": "Lizenz, auf die sich die Sperre bezieht",
     "suspendNoLicense": "keine – nur „alle Wettbewerbe\" möglich",
-    "suspendNoLicenseHint": "Dieser Spieler hat keine offene Lizenz der laufenden Saison. Möglich ist damit nur der Geltungsbereich „alle Wettbewerbe\", der zugleich neue Lizenzanträge verhindert."
+    "suspendNoLicenseHint": "Dieser Spieler hat keine offene Lizenz der laufenden Saison. Möglich ist damit nur der Geltungsbereich „alle Wettbewerbe\", der zugleich neue Lizenzanträge verhindert.",
+    "suspendAllSuspendedHint": "Alle Lizenzen der laufenden Saison sind bereits von einer Sperre erfasst. Möglich ist damit nur der Geltungsbereich „alle Wettbewerbe\", der zugleich neue Lizenzanträge verhindert."
   },
   "search": {
     "globalSearch": "Globale Spielersuche",

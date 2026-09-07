@@ -1299,11 +1299,7 @@ describe('PlayerEditComponent', () => {
   // Geltungsbereich „alle Wettbewerbe" -- nur ohne Spielezaehler. Jetzt gibt
   // es ein Formular und zwei Wege hinein.
   describe('Ein Sperrformular fuer beide Wege', () => {
-    function license(
-      id: string,
-      seasonId: string,
-      teamId = 5
-    ): PlayerLicense {
+    function license(id: string, seasonId: string, teamId = 5): PlayerLicense {
       return {
         id,
         team_id: teamId,
@@ -1331,7 +1327,9 @@ describe('PlayerEditComponent', () => {
      * Verbandsdienst emittiert seine Saison zudem nachtraeglich, was ein
      * zweites detectChanges() mit NG0100 auffliegen laesst.
      */
-    function renderWithLicense(): {
+    function renderWithLicense(
+      setup: { licenses?: PlayerLicense[]; suspensions?: unknown[] } = {}
+    ): {
       fixture: ComponentFixture<PlayerEditComponent>;
       component: PlayerEditComponent;
     } {
@@ -1348,6 +1346,10 @@ describe('PlayerEditComponent', () => {
                   setupSuspension: 'Sperre einrichten',
                   suspendLicenseChoice: 'Lizenz der Sperre',
                   suspendNoLicense: 'keine',
+                  suspendNoLicenseHint:
+                    'Dieser Spieler hat keine offene Lizenz der laufenden Saison.',
+                  suspendAllSuspendedHint:
+                    'Alle Lizenzen der laufenden Saison sind bereits von einer Sperre erfasst.',
                   scopeSummaryAll:
                     'alle Wettbewerbe; zusätzlich sind keine neuen Lizenzanträge möglich',
                 },
@@ -1388,11 +1390,30 @@ describe('PlayerEditComponent', () => {
       component.editMode = true;
       component.player = {
         id: 1,
-        licenses: [license('L1', '18')],
+        licenses: setup.licenses ?? [license('L1', '18')],
       } as unknown as Player;
+      // Vor dem ersten Prueflauf, nicht danach: Eine Zustandsaenderung nach
+      // dem Rendern laesst Angular im Entwicklungsmodus mit NG0100
+      // auffliegen, und der Test prueft dann eine Maske, die es so nie gibt.
+      component.suspensions = (setup.suspensions ??
+        []) as unknown as PlayerEditComponent['suspensions'];
       fixture.detectChanges();
 
       return { fixture, component };
+    }
+
+    /** Wert eines Bedienelements setzen, wie ein Mensch es tun wuerde. */
+    function setControl(
+      el: HTMLElement,
+      testid: string,
+      value: string,
+      event: 'change' | 'input'
+    ): void {
+      const control = el.querySelector(`[data-testid="${testid}"]`) as
+        | HTMLInputElement
+        | HTMLSelectElement;
+      control.value = value;
+      control.dispatchEvent(new Event(event));
     }
 
     function build(licenses: PlayerLicense[] = []): PlayerEditComponent {
@@ -1560,6 +1581,161 @@ describe('PlayerEditComponent', () => {
       // Der Geltungsbereich steht im Klartext daneben, sonst ist „alle
       // Wettbewerbe" nicht als Beantragungssperre erkennbar.
       expect(el.textContent).toContain('keine neuen Lizenzanträge');
+    });
+
+    // Die Vorlage bekommt die Lizenz ueber den `ngTemplateOutlet`-Kontext.
+    // Genau diese Verdrahtung ist neu, und sie laesst sich auf `null` setzen,
+    // ohne dass ein Test der Methoden es merkt: Der Weg von der Lizenz aus
+    // schickte dann eine Sperre ohne Mannschaft und Liga los, bzw. der Knopf
+    // bliebe dauerhaft aus. Deshalb laeuft dieser Test durch die
+    // Bedienelemente und nicht ueber die Felder der Komponente.
+    it('schickt vom Lizenzknopf aus Mannschaft und Liga der Zeile mit', () => {
+      const { fixture } = renderWithLicense();
+      const el = fixture.nativeElement as HTMLElement;
+      const http = TestBed.inject(HttpTestingController);
+
+      (
+        el.querySelector('[data-testid="open-license-suspend"]') as HTMLElement
+      ).click();
+      fixture.detectChanges();
+      setControl(el, 'suspend-until', '2026-12-31', 'input');
+      fixture.detectChanges();
+      (
+        el.querySelector('[data-testid="submit-suspend"]') as HTMLElement
+      ).click();
+
+      const req = http.expectOne(
+        (r) => r.method === 'POST' && r.url.includes('/suspensions')
+      );
+      expect(req.request.body.scope_kind).toBe('team');
+      expect(req.request.body.team_id).toBe(5);
+      expect(req.request.body.league_id).toBe(9);
+      expect(req.request.body.valid_until).toBe('2026-12-31');
+      // Das Feld „Beginn" ist bewusst weg: Player#suspend! stempelt den Status
+      // sofort, ein spaeterer Beginn liess die Lizenz vor dem Fenster als
+      // gesperrt erscheinen.
+      expect('valid_from' in req.request.body).toBe(false);
+      req.flush({});
+    });
+
+    // Der Gegenweg: aus dem Abschnitt heraus mit gewaehlter Lizenz und einem
+    // engeren Geltungsbereich. Das ist die neue Faehigkeit dieses PRs, und sie
+    // laeuft ueber `suspendFormLicense` im Kontext derselben Vorlage.
+    it('schickt aus dem Abschnitt heraus die gewaehlte Lizenz mit', () => {
+      const { fixture, component } = renderWithLicense();
+      const el = fixture.nativeElement as HTMLElement;
+      const http = TestBed.inject(HttpTestingController);
+
+      (
+        el.querySelector('[data-testid="open-suspend-form"]') as HTMLElement
+      ).click();
+      fixture.detectChanges();
+
+      const select = el.querySelector(
+        '[data-testid="suspend-license-choice"]'
+      ) as HTMLSelectElement;
+      setControl(
+        el,
+        'suspend-license-choice',
+        select.options[1].value,
+        'change'
+      );
+      fixture.detectChanges();
+      expect(component.suspendPickedLicenseId).toBe('L1');
+
+      setControl(el, 'suspend-scope', 'league', 'change');
+      fixture.detectChanges();
+      setControl(el, 'suspend-until', '2026-12-31', 'input');
+      fixture.detectChanges();
+      (
+        el.querySelector('[data-testid="submit-suspend"]') as HTMLElement
+      ).click();
+
+      const req = http.expectOne(
+        (r) => r.method === 'POST' && r.url.includes('/suspensions')
+      );
+      expect(req.request.body.scope_kind).toBe('league');
+      expect(req.request.body.team_id).toBe(5);
+      expect(req.request.body.league_id).toBe(9);
+      req.flush({});
+    });
+
+    // Laeuft schon eine Sperre auf alle Wettbewerbe, darf es keinen Einstieg
+    // geben: Alle Lizenzen stehen dann auf gesperrt, die Auswahl ist leer, der
+    // Geltungsbereich zwingend „alle Wettbewerbe" -- der Knopf koennte dort nur
+    // ein Duplikat anlegen. Und das Duplikat bekaeme eine leere Liste
+    // betroffener Lizenzen, weil write_suspended_status! bereits gesperrte
+    // Lizenzen ueberspringt: Das Aufheben der ersten Sperre stellte danach alle
+    // Lizenzen wieder her, waehrend die zweite weiter jeden Antrag blockiert.
+    it('bietet keinen Einstieg, solange eine Sperre auf alle Wettbewerbe laeuft', () => {
+      const { fixture } = renderWithLicense({
+        suspensions: [
+          {
+            id: 1,
+            kind: 'application_block',
+            scope_kind: 'all',
+            team_id: null,
+            active: true,
+            games_served: 0,
+            competition_groups: [],
+          },
+        ],
+      });
+
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('[data-testid="open-suspend-form"]')).toBeNull();
+      // Die Lizenzzeile bietet ihn ebenfalls nicht an, weil die Sperre jede
+      // Lizenz erfasst -- der Weg zurueck ist das Aufheben.
+      expect(
+        el.querySelector('[data-testid="open-license-suspend"]')
+      ).toBeNull();
+      expect(el.textContent).toContain('Beantragungssperre aktiv');
+    });
+
+    // Der Sammeltext behauptete „keine Lizenz" auch dann, wenn eine offene
+    // Lizenz nur von einer Liga- oder Wettbewerbssperre erfasst ist -- sie
+    // steht mit ihrem Abzeichen sichtbar weiter oben in derselben Maske.
+    it('nennt bei gesperrter Lizenz nicht „keine Lizenz"', () => {
+      const { fixture, component } = renderWithLicense({
+        suspensions: [
+          {
+            id: 1,
+            scope_kind: 'league',
+            league_id: 9,
+            team_id: null,
+            active: true,
+            games_served: 0,
+            competition_groups: [],
+          },
+        ],
+      });
+      const el = fixture.nativeElement as HTMLElement;
+
+      (
+        el.querySelector('[data-testid="open-suspend-form"]') as HTMLElement
+      ).click();
+      fixture.detectChanges();
+
+      expect(component.suspendableLicenses).toEqual([]);
+      expect(component.hasCurrentSeasonLicense).toBe(true);
+      expect(
+        el.querySelector('[data-testid="suspend-hint"]')?.textContent
+      ).toContain('bereits von einer Sperre erfasst');
+    });
+
+    it('nennt ohne Lizenz der laufenden Saison den anderen Satz', () => {
+      const { fixture, component } = renderWithLicense({ licenses: [] });
+      const el = fixture.nativeElement as HTMLElement;
+
+      (
+        el.querySelector('[data-testid="open-suspend-form"]') as HTMLElement
+      ).click();
+      fixture.detectChanges();
+
+      expect(component.hasCurrentSeasonLicense).toBe(false);
+      expect(
+        el.querySelector('[data-testid="suspend-hint"]')?.textContent
+      ).toContain('keine offene Lizenz');
     });
 
     // Beide Wege rendern dieselbe Vorlage. Von der Lizenz aus ohne die
