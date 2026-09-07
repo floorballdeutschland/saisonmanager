@@ -151,6 +151,13 @@ export interface PlayerWithLicense extends Player {
     created_by_name: string;
     license_status: string;
   };
+  /**
+   * Die Sperre auf dieser Lizenz -- ohne Begründung: Der Verein sieht, DASS
+   * und wie lange gesperrt ist, das Warum bleibt beim Verband. Nötig, weil
+   * eine Sperre auf einen Wettbewerb oder eine Liga den Lizenzstatus gar
+   * nicht anfasst (api#605) und `current_status` dann „erteilt" bleibt.
+   */
+  suspension?: ClubLicenseSuspension | null;
   can_withdraw: boolean;
   grace_period_ends_at?: string;
   other_licenses?: PlayerOtherLicense[];
@@ -299,6 +306,14 @@ export interface PlayerSuspension {
  * Geltungsbereich und kann die Sperre aufheben, ohne das Spielerprofil zu
  * öffnen.
  */
+/** Sperre auf einer Lizenzzeile der Vereinsansicht (ohne Begründung). */
+export interface ClubLicenseSuspension {
+  scope_summary: string;
+  valid_until?: string | null;
+  games_total?: number | null;
+  remaining_games?: number | null;
+}
+
 export interface LicenseRowSuspension {
   id: number;
   scope_kind: SuspensionScopeKind;

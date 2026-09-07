@@ -243,7 +243,10 @@
     "noRequests": "noch keine Lizenzanträge hinterlegt",
     "loadingData": "Daten werden geladen...",
     "docLabelIdCopy": "Ausweis",
-    "metaTitle": "Floorball Saisonmanager Meine Lizenzen"
+    "metaTitle": "Floorball Saisonmanager Meine Lizenzen",
+    "suspendedLabel": "Gesperrt:",
+    "gamesRemaining": "noch {{ remaining }} von {{ total }} Spielen",
+    "suspendedUntil": "bis"
   },
   "userLeagueDetail": {
     "title": "Lizenzlisten",
@@ -264,7 +267,10 @@
     "erstlizenzBadge": "Erstlizenz",
     "zweitlizenzBadge": "Zweitlizenz",
     "erstlizenzTitle": "Erstlizenz im GF-Erwachsenenbereich – volle Spielberechtigung",
-    "zweitlizenzTitle": "Zweitlizenz im GF-Erwachsenenbereich – eingeschränkte Spielberechtigung (z. B. kein FD-Pokal)"
+    "zweitlizenzTitle": "Zweitlizenz im GF-Erwachsenenbereich – eingeschränkte Spielberechtigung (z. B. kein FD-Pokal)",
+    "suspendedLabel": "Gesperrt:",
+    "gamesRemaining": "noch {{ remaining }} von {{ total }} Spielen",
+    "suspendedUntil": "bis"
   },
   "userLeagueIndex": {
     "title": "Lizenzlisten",
