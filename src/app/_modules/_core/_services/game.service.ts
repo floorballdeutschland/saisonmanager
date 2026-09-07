@@ -45,6 +45,16 @@ export interface SecretaryLicenseList {
     name: string;
     birthdate?: string;
     license_status: string;
+    /**
+     * Ligen dieses Links, in denen die Lizenz gesperrt ist. Nicht ein
+     * fertiges „gesperrt": Tritt eine Mannschaft am selben Tag in derselben
+     * Halle in Liga und Pokal an, steht ihre Lizenzliste unter BEIDEN
+     * Überschriften, und eine Ligasperre gilt nur unter einer von beiden.
+     * Fehlt bei einer älteren API.
+     */
+    suspended_league_ids?: number[];
+    /** Geltungsbereich der Sperre im Klartext, ohne Begründung. */
+    suspension_scope?: string | null;
     approved_at?: string;
     valid_until?: string;
   }[];

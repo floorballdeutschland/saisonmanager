@@ -10,6 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { TranslocoService } from '@jsverse/transloco';
 import { take } from 'rxjs';
+import { licenseStatusBadgeClass } from 'src/app/_helpers/_utils/license-status';
 
 // Schreibweise wie die Nachbarschlüssel des Moduls (license_admin_page_size).
 const SHOW_DATES_STORAGE_KEY = 'license_list_show_dates';
@@ -34,6 +35,10 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
   // nachgeschlagen werden; abwählbar für einen schlanken Spieltagsbeleg. Die
   // Wahl gilt auch für den Ausdruck.
   showDates = true;
+
+  // Dieselbe Farbregel wie in der Lizenzverwaltung des Verbands, damit
+  // `gesperrt` in jeder Lizenzliste dasselbe Bild ergibt (api#605).
+  public statusBadgeClass = licenseStatusBadgeClass;
 
   constructor(
     private _leagueService: LeagueService,

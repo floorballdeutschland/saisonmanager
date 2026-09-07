@@ -272,6 +272,88 @@ describe('SpielSekretariatComponent', () => {
     });
   });
 
+  // Am Spieltisch wird an dieser Spalte die Spielberechtigung abgelesen. Eine
+  // Sperre auf einen Wettbewerb oder eine Liga steht nicht in der
+  // Lizenzhistorie (api#605), der Gesperrte stand hier also auf „erteilt".
+  describe('Sperre je Liga-Ueberschrift', () => {
+    const eintrag = (ids?: number[]) =>
+      ({
+        name: 'Anna Meier',
+        license_status: 'erteilt',
+        suspended_league_ids: ids,
+        suspension_scope: 'Herren Großfeld, Ligaspielbetrieb',
+      }) as unknown as Parameters<(typeof component)['licenseStatus']>[0];
+
+    it('gilt nur unter der Liga, die die Sperre erfasst', () => {
+      // Dieselbe Lizenzliste steht unter der Liga- und der Pokal-Ueberschrift:
+      // Die Mannschaft spielt vormittags Liga, nachmittags Pokal.
+      const p = eintrag([10]);
+
+      expect(component.licenseStatus(p, 10)).toBe('gesperrt');
+      expect(component.licenseStatus(p, 30)).toBe('erteilt');
+      expect(component.isSuspended(p, 30)).toBe(false);
+    });
+
+    it('bleibt bei erteilt, wenn die API keine Sperren nennt', () => {
+      expect(component.licenseStatus(eintrag(undefined), 10)).toBe('erteilt');
+    });
+
+    // Ohne Liga-Zuordnung (aeltere API, flache Liste) ist die Frage nicht
+    // beantwortbar; dann lieber der gespeicherte Status als eine geratene
+    // Sperre.
+    it('entscheidet ohne Liga-Id nicht auf gesperrt', () => {
+      expect(component.isSuspended(eintrag([10]), null)).toBe(false);
+    });
+
+    it('faerbt die Status aus License::NAMES, gesperrt rot', () => {
+      expect(component.statusClass('erteilt')).toContain('text-green-700');
+      expect(component.statusClass('beantragt')).toContain('text-yellow-700');
+      expect(component.statusClass('gesperrt')).toContain('text-red-700');
+      expect(component.statusClass('zurückgezogen')).toContain(
+        'text-fb-gray-400'
+      );
+    });
+
+    it('zeigt gesperrt samt Geltungsbereich nur unter der betroffenen Liga', () => {
+      // Der Kopf der Seite haengt an `data`, die Registerkarten an `loading`:
+      // Ohne beides rendert das Template nur „Lade Daten…".
+      setData([day({ id: 1, league: 'Herren', league_id: 10 })]);
+      component.loading = false;
+      component.activeTab = 'licenses';
+      component.licenseGroups = [
+        {
+          leagueId: 10,
+          leagueName: 'Herren',
+          entries: [
+            {
+              team_name: 'Musterstadt',
+              players: [eintrag([10])],
+            } as unknown as (typeof component)['licenseGroups'][0]['entries'][0],
+          ],
+        },
+        {
+          leagueId: 30,
+          leagueName: 'Pokal',
+          entries: [
+            {
+              team_name: 'Musterstadt',
+              players: [eintrag([10])],
+            } as unknown as (typeof component)['licenseGroups'][0]['entries'][0],
+          ],
+        },
+      ];
+      fixture.detectChanges();
+
+      const spalten = Array.from(
+        fixture.nativeElement.querySelectorAll('tbody tr td:nth-child(3)')
+      ).map((el) => (el as HTMLElement).textContent?.trim() ?? '');
+
+      expect(spalten[0]).toContain('gesperrt');
+      expect(spalten[0]).toContain('Herren Großfeld, Ligaspielbetrieb');
+      expect(spalten[1]).toBe('erteilt');
+    });
+  });
+
   describe('mit einem einzelnen Spieltag', () => {
     it('nennt nur dessen Liga und blendet die Liga je Spiel aus', () => {
       setData([

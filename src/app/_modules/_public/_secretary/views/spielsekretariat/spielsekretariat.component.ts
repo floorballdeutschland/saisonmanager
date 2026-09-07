@@ -203,9 +203,40 @@ export class SpielSekretariatComponent implements OnInit {
       }));
   }
 
+  /**
+   * Ist diese Lizenz unter DIESER Überschrift gesperrt?
+   *
+   * Die Antwort nennt die betroffenen Ligen und nicht einen fertigen Status:
+   * Eine Mannschaft, die vormittags in der Liga und nachmittags im Pokal
+   * antritt, steht mit derselben Lizenzliste unter zwei Überschriften, und
+   * eine Ligasperre gilt nur unter einer von beiden.
+   */
+  isSuspended(
+    player: SecretaryLicenseList['players'][number],
+    leagueId: number | null
+  ): boolean {
+    if (leagueId === null) return false;
+
+    return (player.suspended_league_ids ?? []).includes(leagueId);
+  }
+
+  licenseStatus(
+    player: SecretaryLicenseList['players'][number],
+    leagueId: number | null
+  ): string {
+    return this.isSuspended(player, leagueId)
+      ? 'gesperrt'
+      : player.license_status;
+  }
+
+  // Die Bezeichnungen kommen aus License::NAMES, also klein geschrieben.
+  // Verglichen wurde hier mit „Genehmigt"/„Beantragt" -- Schreibweisen, die
+  // die API nie geschickt hat, weshalb jede Zeile in der grauen Sammelfarbe
+  // landete.
   statusClass(status: string): string {
-    if (status === 'Genehmigt') return 'text-green-700';
-    if (status === 'Beantragt') return 'text-yellow-700';
+    if (status === 'erteilt') return 'text-green-700';
+    if (status === 'beantragt') return 'text-yellow-700';
+    if (status === 'gesperrt') return 'text-red-700 font-semibold';
     return 'text-fb-gray-400';
   }
 

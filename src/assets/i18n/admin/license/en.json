@@ -243,7 +243,10 @@
     "noRequests": "no license requests added yet",
     "loadingData": "Loading data...",
     "docLabelIdCopy": "ID card",
-    "metaTitle": "Floorball Saisonmanager My Licenses"
+    "metaTitle": "Floorball Saisonmanager My Licenses",
+    "suspendedLabel": "Suspended:",
+    "gamesRemaining": "{{ remaining }} of {{ total }} games remaining",
+    "suspendedUntil": "until"
   },
   "userLeagueDetail": {
     "title": "License lists",
@@ -264,7 +267,10 @@
     "erstlizenzBadge": "First license",
     "zweitlizenzBadge": "Second license",
     "erstlizenzTitle": "First license in adult large-field play – full eligibility",
-    "zweitlizenzTitle": "Second license in adult large-field play – restricted eligibility (e.g. no FD cup)"
+    "zweitlizenzTitle": "Second license in adult large-field play – restricted eligibility (e.g. no FD cup)",
+    "suspendedLabel": "Suspended:",
+    "gamesRemaining": "{{ remaining }} of {{ total }} games remaining",
+    "suspendedUntil": "until"
   },
   "userLeagueIndex": {
     "title": "License lists",

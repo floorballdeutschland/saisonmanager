@@ -140,16 +140,21 @@
                         >
                           <div class="ml-2 flex flex-shrink-0">
                             <div class="">
+                              <!-- `last_status_id` und nicht
+                                   `last_status.license_status_id`: Der erste
+                                   ist der WIRKSAME Status dieser Liga
+                                   (api#605), der zweite der gespeicherte. Bei
+                                   einer Sperre auf einen Wettbewerb oder eine
+                                   Liga bleibt der gespeicherte auf „erteilt",
+                                   weil dieselbe Lizenz im Pokal weiter gilt --
+                                   die Zeile stand deshalb gruen da und trug
+                                   daneben den Text „gesperrt". -->
                               <p
-                                class="license-status block rounded-full px-2 text-[13px] font-semibold leading-5 text-green-800 print:mt-[3px] print:text-[10px] print:leading-4"
+                                class="license-status block rounded-full px-2 text-[13px] font-semibold leading-5 print:mt-[3px] print:text-[10px] print:leading-4"
                                 [ngClass]="
-                                  p.team_license.last_status
-                                    .license_status_id === 3
-                                    ? 'bg-red-100 text-red-800'
-                                    : p.team_license.last_status
-                                          .license_status_id === 1
-                                      ? 'bg-green-100 text-green-800'
-                                      : 'bg-gray-100 text-gray-800'
+                                  statusBadgeClass(
+                                    p.team_license.last_status_id
+                                  )
                                 "
                               >
                                 {{ p.team_license.last_status_code }}
@@ -278,6 +283,42 @@
                                   }
                                 </span>
                               </div>
+                            }
+                            <!-- Der Geltungsbereich gehoert zur Sperre: Eine
+                                 Mannschaft haengt auch an ihren Pokalligen,
+                                 und diese Liste ist ein Beleg fuer EINEN
+                                 Spieltag. Die Begruendung steht bewusst nicht
+                                 dabei -- die Liste lesen Verein und
+                                 Mannschaft, das Warum bleibt beim Verband. -->
+                            @if (p.team_license.suspension; as sperre) {
+                              <p
+                                class="basis-full text-[11px] print:text-[9px] font-medium text-red-700 leading-5"
+                              >
+                                {{
+                                  "licenseAdmin.userLeagueDetail.suspendedLabel"
+                                    | transloco
+                                }}
+                                {{ sperre.scope_summary }}
+                                @if (sperre.games_total) {
+                                  ·
+                                  {{
+                                    "licenseAdmin.userLeagueDetail.gamesRemaining"
+                                      | transloco
+                                        : {
+                                            remaining: sperre.remaining_games,
+                                            total: sperre.games_total,
+                                          }
+                                  }}
+                                }
+                                @if (sperre.valid_until) {
+                                  ·
+                                  {{
+                                    "licenseAdmin.userLeagueDetail.suspendedUntil"
+                                      | transloco
+                                  }}
+                                  {{ sperre.valid_until | date: "dd.MM.yyyy" }}
+                                }
+                              </p>
                             }
                           </div>
                         </div>
