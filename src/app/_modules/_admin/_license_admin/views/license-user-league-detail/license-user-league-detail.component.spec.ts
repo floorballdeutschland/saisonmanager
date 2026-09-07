@@ -258,6 +258,49 @@ describe('LicenseUserLeagueDetailComponent', () => {
       expect(fixture.nativeElement.textContent).not.toContain('Unsportliches');
     });
 
+    // Eine Sperre traegt entweder ein Enddatum oder eine Anzahl Spiele; beides
+    // zugleich ist die Ausnahme. Mit einer Vorgabe, die immer beides setzt,
+    // waeren die zwei Bedingungen im Template nicht auseinanderzuhalten.
+    it('nennt bei einer Sperre über Spiele kein Datum', () => {
+      const fixture = render(9, {
+        scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+        games_total: 3,
+        games_served: 1,
+        remaining_games: 2,
+        valid_until: null,
+      });
+      const text = fixture.nativeElement.textContent ?? '';
+
+      expect(text).toContain('noch 2 von 3 Spielen');
+      expect(text).not.toContain('bis');
+    });
+
+    it('nennt bei einer Sperre bis zu einem Datum keine Spiele', () => {
+      const fixture = render(9, {
+        scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+        games_total: null,
+        remaining_games: null,
+        valid_until: '2026-10-31',
+      });
+      const text = fixture.nativeElement.textContent ?? '';
+
+      expect(text).toContain('31.10.2026');
+      expect(text).not.toContain('Spielen');
+    });
+
+    // Die letzte Partie einer Sperre: Der Reststand steht auf null und die
+    // Sperre laeuft noch, bis der Bericht abgeschlossen ist.
+    it('zeigt den Reststand auch bei null', () => {
+      const fixture = render(9, {
+        scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+        games_total: 3,
+        remaining_games: 0,
+        valid_until: null,
+      });
+
+      expect(fixture.nativeElement.textContent).toContain('noch 0 von 3 Spielen');
+    });
+
     it('lässt eine erteilte Zeile grün und ohne Hinweis', () => {
       const fixture = render(1, null);
       const badge = fixture.nativeElement.querySelector('.license-status');

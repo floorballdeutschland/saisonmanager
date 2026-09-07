@@ -44,7 +44,19 @@ export interface SecretaryLicenseList {
   players: {
     name: string;
     birthdate?: string;
+    /**
+     * Der Status, den die Ansicht zeigt, wenn sie die Sperren nicht je
+     * Überschrift auswerten kann: Er trägt die Sperre, sobald sie EINE Liga
+     * dieses Links erfasst. Lieber übermarkiert als „erteilt" behauptet.
+     */
     license_status: string;
+    /**
+     * Der Status ohne jede Sperre. Damit entscheidet die Ansicht je
+     * Überschrift: dieselbe Lizenzliste steht unter der Liga- und der
+     * Pokal-Überschrift, und eine Ligasperre gilt nur unter einer von beiden.
+     * Fehlt bei einer älteren API.
+     */
+    base_license_status?: string;
     /**
      * Ligen dieses Links, in denen die Lizenz gesperrt ist. Nicht ein
      * fertiges „gesperrt": Tritt eine Mannschaft am selben Tag in derselben

@@ -276,10 +276,15 @@ describe('SpielSekretariatComponent', () => {
   // Sperre auf einen Wettbewerb oder eine Liga steht nicht in der
   // Lizenzhistorie (api#605), der Gesperrte stand hier also auf „erteilt".
   describe('Sperre je Liga-Ueberschrift', () => {
+    // So schickt es die API: `license_status` traegt die Sperre schon, sobald
+    // sie IRGENDEINE Liga des Links erfasst (sichere Vorgabe fuer Leser, die
+    // nicht je Ueberschrift unterscheiden), `base_license_status` ist der
+    // Status ohne Sperre.
     const eintrag = (ids?: number[]) =>
       ({
         name: 'Anna Meier',
-        license_status: 'erteilt',
+        license_status: ids?.length ? 'gesperrt' : 'erteilt',
+        base_license_status: 'erteilt',
         suspended_league_ids: ids,
         suspension_scope: 'Herren Großfeld, Ligaspielbetrieb',
       }) as unknown as Parameters<(typeof component)['licenseStatus']>[0];
@@ -296,6 +301,20 @@ describe('SpielSekretariatComponent', () => {
 
     it('bleibt bei erteilt, wenn die API keine Sperren nennt', () => {
       expect(component.licenseStatus(eintrag(undefined), 10)).toBe('erteilt');
+    });
+
+    // Ohne `base_license_status` (aeltere API) bleibt es beim gelieferten
+    // Status. Uebermarkieren ist die Richtung, in die eine Lizenzliste irren
+    // darf -- „erteilt" fuer einen Gesperrten ist es nicht.
+    it('faellt ohne Basis-Status auf den gelieferten zurueck', () => {
+      const alt = {
+        name: 'Anna Meier',
+        license_status: 'gesperrt',
+        suspended_league_ids: [10],
+      } as unknown as Parameters<(typeof component)['licenseStatus']>[0];
+
+      expect(component.licenseStatus(alt, 10)).toBe('gesperrt');
+      expect(component.licenseStatus(alt, 30)).toBe('gesperrt');
     });
 
     // Ohne Liga-Zuordnung (aeltere API, flache Liste) ist die Frage nicht

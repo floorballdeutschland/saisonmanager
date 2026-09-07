@@ -133,7 +133,17 @@
               <ul role="list" class="divide-y divide-gray-200">
                 @for (p of team.players; track p; let last = $last) {
                   <li [ngClass]="last ? '' : ''">
-                    <div class="block hover:bg-gray-50 print:h-[22px]">
+                    <!-- Die feste Zeilenhoehe haelt den Beleg kompakt und den
+                         Seitenumbruch berechenbar. Eine gesperrte Zeile traegt
+                         eine zweite Zeile und braucht deshalb ihre eigene
+                         Hoehe -- sonst liefe der Sperrhinweis im Druck in die
+                         naechste Person hinein. -->
+                    <div
+                      class="block hover:bg-gray-50"
+                      [ngClass]="
+                        p.team_license.suspension ? '' : 'print:h-[22px]'
+                      "
+                    >
                       <div class="py-3 print:py-0">
                         <div
                           class="license-direction grid grid-cols-[140px_40px_1fr] print:grid-cols-[115px_40px_1fr]"
@@ -284,43 +294,52 @@
                                 </span>
                               </div>
                             }
-                            <!-- Der Geltungsbereich gehoert zur Sperre: Eine
-                                 Mannschaft haengt auch an ihren Pokalligen,
-                                 und diese Liste ist ein Beleg fuer EINEN
-                                 Spieltag. Die Begruendung steht bewusst nicht
-                                 dabei -- die Liste lesen Verein und
-                                 Mannschaft, das Warum bleibt beim Verband. -->
-                            @if (p.team_license.suspension; as sperre) {
-                              <p
-                                class="basis-full text-[11px] print:text-[9px] font-medium text-red-700 leading-5"
-                              >
+                          </div>
+                          <!-- Der Geltungsbereich gehoert zur Sperre: Eine
+                               Mannschaft haengt auch an ihren Pokalligen, und
+                               diese Liste ist ein Beleg fuer EINEN Spieltag.
+                               Die Begruendung steht bewusst nicht dabei -- die
+                               Liste lesen Verein und Mannschaft, das Warum
+                               bleibt beim Verband.
+
+                               Eigene Rasterzeile ueber die volle Breite und
+                               NICHT im Namensblock: Der laeuft im Druck
+                               `flex-nowrap`, damit Name und Daten auf einer
+                               Zeile bleiben. Dort haette die Sperrzeile keine
+                               eigene Zeile mehr erzwingen koennen, waere
+                               zusammengedrueckt worden und innerhalb
+                               umgebrochen -- quer ueber die feste Zeilenhoehe
+                               des Belegs hinaus. -->
+                          @if (p.team_license.suspension; as sperre) {
+                            <p
+                              class="col-span-3 text-[11px] print:text-[9px] font-medium text-red-700 leading-5 print:leading-4"
+                            >
+                              {{
+                                "licenseAdmin.userLeagueDetail.suspendedLabel"
+                                  | transloco
+                              }}
+                              {{ sperre.scope_summary }}
+                              @if (sperre.games_total) {
+                                ·
                                 {{
-                                  "licenseAdmin.userLeagueDetail.suspendedLabel"
+                                  "licenseAdmin.userLeagueDetail.gamesRemaining"
+                                    | transloco
+                                      : {
+                                          remaining: sperre.remaining_games,
+                                          total: sperre.games_total,
+                                        }
+                                }}
+                              }
+                              @if (sperre.valid_until) {
+                                ·
+                                {{
+                                  "licenseAdmin.userLeagueDetail.suspendedUntil"
                                     | transloco
                                 }}
-                                {{ sperre.scope_summary }}
-                                @if (sperre.games_total) {
-                                  ·
-                                  {{
-                                    "licenseAdmin.userLeagueDetail.gamesRemaining"
-                                      | transloco
-                                        : {
-                                            remaining: sperre.remaining_games,
-                                            total: sperre.games_total,
-                                          }
-                                  }}
-                                }
-                                @if (sperre.valid_until) {
-                                  ·
-                                  {{
-                                    "licenseAdmin.userLeagueDetail.suspendedUntil"
-                                      | transloco
-                                  }}
-                                  {{ sperre.valid_until | date: "dd.MM.yyyy" }}
-                                }
-                              </p>
-                            }
-                          </div>
+                                {{ sperre.valid_until | date: "dd.MM.yyyy" }}
+                              }
+                            </p>
+                          }
                         </div>
                       </div>
                     </div>

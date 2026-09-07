@@ -260,6 +260,46 @@ describe('LicenseTeamDetailComponent', () => {
       expect(text).toContain('31.10.2026');
     });
 
+    it('nennt bei einer Sperre über Spiele kein Datum', () => {
+      const text = render({
+        suspension: {
+          scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+          games_total: 3,
+          remaining_games: 2,
+          valid_until: null,
+        },
+      } as unknown as Partial<PlayerWithLicense>).nativeElement.textContent;
+
+      expect(text).toContain('noch 2 von 3 Spielen');
+      expect(text).not.toContain('bis');
+    });
+
+    it('nennt bei einer Sperre bis zu einem Datum keine Spiele', () => {
+      const text = render({
+        suspension: {
+          scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+          games_total: null,
+          remaining_games: null,
+          valid_until: '2026-10-31',
+        },
+      } as unknown as Partial<PlayerWithLicense>).nativeElement.textContent;
+
+      expect(text).toContain('31.10.2026');
+      expect(text).not.toContain('Spielen');
+    });
+
+    // Diese Ansicht liest der Verein. Der Grund einer Sperre gehört dem
+    // Verband -- die API schickt ihn hier gar nicht mit, und die Ansicht darf
+    // ihn auch dann nicht zeigen, wenn er doch im Payload landet.
+    it('zeigt die Begründung der Sperre nicht', () => {
+      const text = render({
+        suspension: { ...sperre, reason: 'Unsportliches Verhalten' },
+      } as unknown as Partial<PlayerWithLicense>).nativeElement.textContent;
+
+      expect(text).toContain('Gesperrt:');
+      expect(text).not.toContain('Unsportliches');
+    });
+
     it('zeigt ohne Sperre keinen Hinweis', () => {
       const text = render({ suspension: null }).nativeElement.textContent;
 

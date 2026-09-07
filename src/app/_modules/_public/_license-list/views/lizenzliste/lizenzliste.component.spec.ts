@@ -34,11 +34,16 @@ describe('LizenzlisteComponent', () => {
     component = fixture.componentInstance;
   });
 
-  const render = (entries: Partial<PublicLicenseEntry>[]) => {
+  // Die Tabelle steht zweimal im Template, einmal je Mannschaft. Der Test
+  // fuellt deshalb beide Seiten und liest die Statusspalten aller Zeilen.
+  const statusCells = (
+    home: Partial<PublicLicenseEntry>[],
+    guest: Partial<PublicLicenseEntry>[] = []
+  ): HTMLElement[] => {
     component.data = {
       game: { date: '2026-01-01', league_name: 'Herren GF' },
-      home_team_licenses: entries as PublicLicenseEntry[],
-      guest_team_licenses: [],
+      home_team_licenses: home as PublicLicenseEntry[],
+      guest_team_licenses: guest as PublicLicenseEntry[],
       expires_at: '2026-01-02T00:00:00Z',
     } as (typeof component)['data'];
     component.loading = false;
@@ -46,8 +51,13 @@ describe('LizenzlisteComponent', () => {
 
     return Array.from(
       fixture.nativeElement.querySelectorAll('tbody tr td:nth-child(3)')
-    ).map((el) => (el as HTMLElement).textContent?.trim() ?? '');
+    ) as HTMLElement[];
   };
+
+  const render = (
+    entries: Partial<PublicLicenseEntry>[],
+    guest: Partial<PublicLicenseEntry>[] = []
+  ) => statusCells(entries, guest).map((el) => el.textContent?.trim() ?? '');
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -99,6 +109,39 @@ describe('LizenzlisteComponent', () => {
       ]);
 
       expect(zeile).toBe('Lizenziert');
+    });
+
+    // Am Kampfgericht wird an dieser Spalte abgelesen, ob gespielt werden
+    // darf: Die Farbe muss im DOM ankommen, nicht nur aus der Methode
+    // zurueckkommen.
+    it('faerbt die gesperrte Zeile rot, die erteilte gruen', () => {
+      const [gesperrt, erteilt] = statusCells([
+        { name: 'Anna Meier', license_status: 'gesperrt' },
+        { name: 'Bea Mueller', license_status: 'erteilt' },
+      ]);
+
+      expect(gesperrt.className).toContain('text-red-700');
+      expect(erteilt.className).toContain('text-green-700');
+    });
+
+    // Die Tabelle der Gastmannschaft ist eine zweite, von Hand doppelte
+    // Fassung derselben Zeilen -- eine Aenderung an nur einer der beiden faellt
+    // sonst niemandem auf.
+    it('nennt die Sperre auch in der Liste der Gastmannschaft', () => {
+      const zeilen = render(
+        [{ name: 'Anna Meier', license_status: 'erteilt' }],
+        [
+          {
+            name: 'Carla Gast',
+            license_status: 'gesperrt',
+            suspension_scope: 'Herren Großfeld, Ligaspielbetrieb',
+          },
+        ]
+      );
+
+      expect(zeilen[0]).toBe('Lizenziert');
+      expect(zeilen[1]).toContain('Gesperrt');
+      expect(zeilen[1]).toContain('Herren Großfeld, Ligaspielbetrieb');
     });
   });
 });

@@ -220,13 +220,23 @@ export class SpielSekretariatComponent implements OnInit {
     return (player.suspended_league_ids ?? []).includes(leagueId);
   }
 
+  /**
+   * Der Status unter DIESER Überschrift.
+   *
+   * `license_status` trägt die Sperre bereits, sobald sie irgendeine Liga des
+   * Links erfasst — das ist die sichere Vorgabe für Leser, die nicht je
+   * Überschrift unterscheiden können. Diese Ansicht kann es, und nimmt
+   * deshalb den Status ohne Sperre als Grundlage: Sonst stünde eine
+   * Ligasperre auch über der Pokal-Liste, in der die Lizenz weiter gilt.
+   * Ältere API ohne `base_license_status`: dann bleibt es beim gelieferten.
+   */
   licenseStatus(
     player: SecretaryLicenseList['players'][number],
     leagueId: number | null
   ): string {
-    return this.isSuspended(player, leagueId)
-      ? 'gesperrt'
-      : player.license_status;
+    if (this.isSuspended(player, leagueId)) return 'gesperrt';
+
+    return player.base_license_status ?? player.license_status;
   }
 
   // Die Bezeichnungen kommen aus License::NAMES, also klein geschrieben.
