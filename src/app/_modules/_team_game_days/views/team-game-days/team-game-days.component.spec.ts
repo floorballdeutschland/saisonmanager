@@ -12,7 +12,11 @@ describe('TeamGameDaysComponent', () => {
   let fixture: ComponentFixture<TeamGameDaysComponent>;
   let teamService: jasmine.SpyObj<TeamService>;
 
-  const gameDay = (id: number, date: string): TeamGameDay => ({
+  const gameDay = (
+    id: number,
+    date: string,
+    overrides: Partial<TeamGameDay> = {}
+  ): TeamGameDay => ({
     id,
     date,
     auto_confirmed: false,
@@ -21,7 +25,23 @@ describe('TeamGameDaysComponent', () => {
     checklist_items: [],
     my_teams: [],
     games: [],
+    ...overrides,
   });
+
+  /** Spieltag mit einer Gastmannschaft, deren Bestaetigung noch aussteht. */
+  const openGameDay = (id: number, date: string): TeamGameDay =>
+    gameDay(id, date, {
+      confirmable_from: `${date}T18:00:00`,
+      my_teams: [
+        {
+          team_id: id * 10,
+          team_name: `Team ${id}`,
+          confirmed_at: null,
+          properly_conducted: null,
+          checklist_answers: [],
+        },
+      ],
+    });
 
   function setup(days: TeamGameDay[]) {
     teamService = jasmine.createSpyObj('TeamService', [
@@ -78,10 +98,31 @@ describe('TeamGameDaysComponent', () => {
     expect(component.gameDays.map((gd) => gd.id)).toEqual([3, 4, 5, 2, 1]);
   });
 
-  it('behaelt bei gleichem Datum die Reihenfolge der API', () => {
+  it('sortiert mehrere Ligen desselben Tages nach Spieltags-ID', () => {
+    // Die API sortiert nur nach Datum, die Reihenfolge gleicher Tage ist offen.
     const date = isoDaysFromToday(-1);
-    setup([gameDay(11, date), gameDay(12, date), gameDay(13, date)]);
+    setup([gameDay(13, date), gameDay(11, date), gameDay(12, date)]);
 
     expect(component.gameDays.map((gd) => gd.id)).toEqual([11, 12, 13]);
+  });
+
+  it('zieht einen offenen Spieltag ueber den heutigen ohne Handlungsbedarf', () => {
+    // Heute laeuft der Spieltag noch (Bestaetigung erst ab Anpfiff des letzten
+    // Spiels), gestern steht dagegen eine Bestaetigung offen.
+    const today = gameDay(20, isoDaysFromToday(0), {
+      confirmable_from: isoDaysFromToday(1) + 'T18:00:00',
+      my_teams: [
+        {
+          team_id: 200,
+          team_name: 'Heute',
+          confirmed_at: null,
+          properly_conducted: null,
+          checklist_answers: [],
+        },
+      ],
+    });
+    setup([today, openGameDay(21, isoDaysFromToday(-1))]);
+
+    expect(component.gameDays.map((gd) => gd.id)).toEqual([21, 20]);
   });
 });

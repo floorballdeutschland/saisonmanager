@@ -176,27 +176,46 @@ export class TeamGameDaysComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Reihenfolge der Liste: erst alles bis einschliesslich heute, neuester
-   * Spieltag oben – dort steht eine Bestaetigung an. Kuenftige Spieltage folgen
-   * darunter aufsteigend, der naechste also zuerst.
+   * Reihenfolge der Liste: erst die Spieltage, bei denen jetzt eine
+   * Bestaetigung abgegeben werden kann, dann alles uebrige bis einschliesslich
+   * heute (neuester oben), zuletzt die kuenftigen aufsteigend – der naechste
+   * also zuerst.
    *
    * Die API sortiert nur nach Datum absteigend. Damit stand der am weitesten in
    * der Zukunft liegende Spieltag ganz oben und schob die zu bestaetigenden
    * nach unten, obwohl er nur „Bestaetigung ab …“ anzeigt.
    *
-   * `date` kommt als „YYYY-MM-DD“, deshalb genuegt der Stringvergleich; bei
-   * gleichem Datum bleibt die Reihenfolge der API erhalten (stabiler Sort).
+   * Die erste Stufe ist noetig, weil ein Spieltag erst 48 h nach Ende des Tages
+   * automatisch als bestaetigt gilt: Ein offener Fall von gestern wuerde sonst
+   * unter dem heutigen Spieltag stehen, an dem das erste Spiel noch nicht
+   * angepfiffen ist und deshalb gar nichts zu tun ist.
+   *
+   * `date` kommt als „YYYY-MM-DD“, deshalb genuegt der Stringvergleich. Bei
+   * gleichem Datum entscheidet die Spieltags-ID, denn die API sortiert
+   * ausschliesslich nach Datum und darf mehrere Ligen desselben Tages in
+   * beliebiger Reihenfolge liefern.
    */
   private _sortByRelevance(days: TeamGameDay[]): TeamGameDay[] {
     const today = this._todayIso();
     return [...days].sort((a, b) => {
+      const aOpen = this._awaitsConfirmation(a);
+      const bOpen = this._awaitsConfirmation(b);
+      if (aOpen !== bOpen) return aOpen ? -1 : 1;
+
       const aFuture = a.date > today;
       const bFuture = b.date > today;
       if (aFuture !== bFuture) return aFuture ? 1 : -1;
-      return aFuture
+
+      const byDate = aFuture
         ? a.date.localeCompare(b.date)
         : b.date.localeCompare(a.date);
+      return byDate !== 0 ? byDate : a.id - b.id;
     });
+  }
+
+  /** Mindestens eine verantwortete Mannschaft kann jetzt bestaetigen. */
+  private _awaitsConfirmation(gd: TeamGameDay): boolean {
+    return gd.my_teams.some((team) => this.canConfirm(gd, team));
   }
 
   /** Heutiges Datum als „YYYY-MM-DD“ in lokaler Zeit (nicht UTC). */
