@@ -33,6 +33,9 @@ describe('LicenseUserLeagueDetailComponent', () => {
                 requested: 'Beantragt',
                 approved: 'Erteilt',
                 released: 'Freigabe',
+                suspendedLabel: 'Gesperrt:',
+                gamesRemaining: 'noch {{ remaining }} von {{ total }} Spielen',
+                suspendedUntil: 'bis',
               },
             },
           },
@@ -64,9 +67,7 @@ describe('LicenseUserLeagueDetailComponent', () => {
     // Die Feldvorgabe wird vor detectChanges() weggenommen: Sonst wäre der Test
     // auch dann grün, wenn ngOnInit den gespeicherten Wert gar nicht liest.
     const createWithoutDefault = () => {
-      const fixture = TestBed.createComponent(
-        LicenseUserLeagueDetailComponent
-      );
+      const fixture = TestBed.createComponent(LicenseUserLeagueDetailComponent);
       fixture.componentInstance.showDates = false;
       fixture.detectChanges();
       return fixture.componentInstance;
@@ -142,9 +143,7 @@ describe('LicenseUserLeagueDetailComponent', () => {
     // der Test erzeugt keinen NG0100 aus einer nachträglichen Änderung.
     const render = (releasedAt: string | null, showDates = true): string => {
       if (!showDates) localStorage.setItem(STORAGE_KEY, 'false');
-      const fixture = TestBed.createComponent(
-        LicenseUserLeagueDetailComponent
-      );
+      const fixture = TestBed.createComponent(LicenseUserLeagueDetailComponent);
       fixture.componentInstance.setGamedayDate(0);
       fixture.componentInstance.teams = teams(releasedAt);
       fixture.detectChanges();
@@ -181,6 +180,133 @@ describe('LicenseUserLeagueDetailComponent', () => {
       expect(text).not.toContain('Beantragt');
       expect(text).not.toContain('Erteilt');
       expect(text).not.toContain('Freigabe');
+    });
+  });
+
+  // Der wirksame Status einer Zeile ist `last_status_id`; `last_status` bleibt
+  // der GESPEICHERTE Eintrag. Bei einer Sperre auf einen Wettbewerb oder eine
+  // Liga steht dort weiter „erteilt", weil dieselbe Lizenz im Pokal gilt --
+  // die Zeile war deshalb grün und trug daneben den Text „gesperrt".
+  describe('Markierung einer Sperre', () => {
+    const teams = (
+      lastStatusId: number,
+      suspension: unknown
+    ): TeamWithPlayers[] =>
+      [
+        {
+          id: 1,
+          name: 'Musterstadt',
+          players: [
+            {
+              id: 7,
+              last_name: 'Meier',
+              first_name: 'Anna',
+              birthdate: '1990-01-01',
+              team_license: {
+                // Der gespeicherte Status bleibt bewusst erteilt.
+                last_status: { license_status_id: 1 },
+                last_status_id: lastStatusId,
+                last_status_code: lastStatusId === 9 ? 'gesperrt' : 'erteilt',
+                license: {},
+                requested_at: '2026-01-05T10:00:00Z',
+                approved_at: '2026-01-08T10:00:00Z',
+                suspension,
+              },
+            },
+          ],
+        },
+      ] as unknown as TeamWithPlayers[];
+
+    const render = (lastStatusId: number, suspension: unknown) => {
+      const fixture = TestBed.createComponent(LicenseUserLeagueDetailComponent);
+      fixture.componentInstance.setGamedayDate(0);
+      fixture.componentInstance.teams = teams(lastStatusId, suspension);
+      fixture.detectChanges();
+      return fixture;
+    };
+
+    const sperre = {
+      scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+      games_total: 3,
+      games_served: 1,
+      remaining_games: 2,
+      valid_until: '2026-10-31',
+    };
+
+    it('färbt die gesperrte Zeile rot und nennt Geltungsbereich und Dauer', () => {
+      const fixture = render(9, sperre);
+      const badge = fixture.nativeElement.querySelector('.license-status');
+      const text = fixture.nativeElement.textContent ?? '';
+
+      expect(badge.className).toContain('bg-red-100');
+      expect(badge.className).not.toContain('bg-green-100');
+      expect(text).toContain('Gesperrt:');
+      expect(text).toContain('Herren Großfeld, Ligaspielbetrieb');
+      expect(text).toContain('noch 2 von 3 Spielen');
+      expect(text).toContain('bis');
+      expect(text).toContain('31.10.2026');
+    });
+
+    // Die Liste lesen Verein und Mannschaft. Warum jemand gesperrt ist, bleibt
+    // der Verbandsansicht vorbehalten.
+    it('nennt die Begründung der Sperre nicht', () => {
+      const fixture = render(9, {
+        ...sperre,
+        reason: 'Unsportliches Verhalten',
+      });
+
+      expect(fixture.nativeElement.textContent).not.toContain('Unsportliches');
+    });
+
+    // Eine Sperre traegt entweder ein Enddatum oder eine Anzahl Spiele; beides
+    // zugleich ist die Ausnahme. Mit einer Vorgabe, die immer beides setzt,
+    // waeren die zwei Bedingungen im Template nicht auseinanderzuhalten.
+    it('nennt bei einer Sperre über Spiele kein Datum', () => {
+      const fixture = render(9, {
+        scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+        games_total: 3,
+        games_served: 1,
+        remaining_games: 2,
+        valid_until: null,
+      });
+      const text = fixture.nativeElement.textContent ?? '';
+
+      expect(text).toContain('noch 2 von 3 Spielen');
+      expect(text).not.toContain('bis');
+    });
+
+    it('nennt bei einer Sperre bis zu einem Datum keine Spiele', () => {
+      const fixture = render(9, {
+        scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+        games_total: null,
+        remaining_games: null,
+        valid_until: '2026-10-31',
+      });
+      const text = fixture.nativeElement.textContent ?? '';
+
+      expect(text).toContain('31.10.2026');
+      expect(text).not.toContain('Spielen');
+    });
+
+    // Die letzte Partie einer Sperre: Der Reststand steht auf null und die
+    // Sperre laeuft noch, bis der Bericht abgeschlossen ist.
+    it('zeigt den Reststand auch bei null', () => {
+      const fixture = render(9, {
+        scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+        games_total: 3,
+        remaining_games: 0,
+        valid_until: null,
+      });
+
+      expect(fixture.nativeElement.textContent).toContain('noch 0 von 3 Spielen');
+    });
+
+    it('lässt eine erteilte Zeile grün und ohne Hinweis', () => {
+      const fixture = render(1, null);
+      const badge = fixture.nativeElement.querySelector('.license-status');
+
+      expect(badge.className).toContain('bg-green-100');
+      expect(fixture.nativeElement.textContent).not.toContain('Gesperrt:');
     });
   });
 });

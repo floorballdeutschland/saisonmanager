@@ -175,13 +175,66 @@ export class TeamGameDaysComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Reihenfolge der Liste: erst die Spieltage, bei denen jetzt eine
+   * Bestaetigung abgegeben werden kann, dann alles uebrige bis einschliesslich
+   * heute (neuester oben), zuletzt die kuenftigen aufsteigend – der naechste
+   * also zuerst.
+   *
+   * Die API sortiert nur nach Datum absteigend. Damit stand der am weitesten in
+   * der Zukunft liegende Spieltag ganz oben und schob die zu bestaetigenden
+   * nach unten, obwohl er nur „Bestaetigung ab …“ anzeigt.
+   *
+   * Die erste Stufe ist noetig, weil ein Spieltag erst 48 h nach Ende des Tages
+   * automatisch als bestaetigt gilt: Ein offener Fall von gestern wuerde sonst
+   * unter dem heutigen Spieltag stehen, an dem das erste Spiel noch nicht
+   * angepfiffen ist und deshalb gar nichts zu tun ist.
+   *
+   * `date` kommt als „YYYY-MM-DD“, deshalb genuegt der Stringvergleich. Bei
+   * gleichem Datum entscheidet die Spieltags-ID, denn die API sortiert
+   * ausschliesslich nach Datum und darf mehrere Ligen desselben Tages in
+   * beliebiger Reihenfolge liefern.
+   */
+  private _sortByRelevance(days: TeamGameDay[]): TeamGameDay[] {
+    const today = this._todayIso();
+    return [...days].sort((a, b) => {
+      const aOpen = this._awaitsConfirmation(a);
+      const bOpen = this._awaitsConfirmation(b);
+      if (aOpen !== bOpen) return aOpen ? -1 : 1;
+
+      const aFuture = a.date > today;
+      const bFuture = b.date > today;
+      if (aFuture !== bFuture) return aFuture ? 1 : -1;
+
+      const byDate = aFuture
+        ? a.date.localeCompare(b.date)
+        : b.date.localeCompare(a.date);
+      return byDate !== 0 ? byDate : a.id - b.id;
+    });
+  }
+
+  /** Mindestens eine verantwortete Mannschaft kann jetzt bestaetigen. */
+  private _awaitsConfirmation(gd: TeamGameDay): boolean {
+    return gd.my_teams.some((team) => this.canConfirm(gd, team));
+  }
+
+  /** Heutiges Datum als „YYYY-MM-DD“ in lokaler Zeit (nicht UTC). */
+  private _todayIso(): string {
+    const now = new Date();
+    return [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+    ].join('-');
+  }
+
   private _load(): void {
     this._teamService
       .getTeamGameDays()
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (days) => {
-          this.gameDays = days;
+          this.gameDays = this._sortByRelevance(days);
           this.loading = false;
           this._cdr.markForCheck();
         },

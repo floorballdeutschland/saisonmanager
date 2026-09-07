@@ -196,4 +196,130 @@ describe('LicenseTeamDetailComponent', () => {
       expect(text).not.toContain('FD-Pokal');
     });
   });
+
+  // Eine Sperre auf einen Wettbewerb oder eine Liga fasst den Lizenzstatus
+  // nicht an (api#605). Die Zeile stand hier deshalb weiter auf „erteilt", und
+  // der Verein sah von der Sperre nichts.
+  describe('Sperre in der Antragsliste', () => {
+    function render(player: Partial<PlayerWithLicense>) {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [
+          HttpClientTestingModule,
+          RouterTestingModule,
+          UikitCommonModule,
+          FormsModule,
+          getTranslocoTestingModule({
+            de: {
+              licenseAdmin: {
+                teamDetail: {
+                  suspendedLabel: 'Gesperrt:',
+                  gamesRemaining:
+                    'noch {{ remaining }} von {{ total }} Spielen',
+                  suspendedUntil: 'bis',
+                },
+              },
+            },
+          }),
+        ],
+        declarations: [LicenseTeamDetailComponent],
+      });
+      const fixture = TestBed.createComponent(LicenseTeamDetailComponent);
+      fixture.componentInstance.licenseHash = {
+        team: { id: 1, name: 'Musterstadt' },
+        current_requests: [
+          {
+            id: 7,
+            last_name: 'Meier',
+            first_name: 'Anna',
+            birthdate: '1990-01-01',
+            team_license: { id: 'abc', license: {} },
+            current_status: { license_status_id: 1, license_status: 'erteilt' },
+            ...player,
+          },
+        ],
+        other_players: [],
+      } as unknown as LicenseHash;
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    const sperre = {
+      scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+      games_total: 3,
+      remaining_games: 2,
+      valid_until: '2026-10-31',
+    };
+
+    it('nennt Geltungsbereich und Dauer, obwohl der Status erteilt bleibt', () => {
+      const text = render({ suspension: sperre }).nativeElement.textContent;
+
+      expect(text).toContain('Gesperrt:');
+      expect(text).toContain('Herren Großfeld, Ligaspielbetrieb');
+      expect(text).toContain('noch 2 von 3 Spielen');
+      expect(text).toContain('31.10.2026');
+    });
+
+    it('nennt bei einer Sperre über Spiele kein Datum', () => {
+      const text = render({
+        suspension: {
+          scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+          games_total: 3,
+          remaining_games: 2,
+          valid_until: null,
+        },
+      } as unknown as Partial<PlayerWithLicense>).nativeElement.textContent;
+
+      expect(text).toContain('noch 2 von 3 Spielen');
+      expect(text).not.toContain('bis');
+    });
+
+    it('nennt bei einer Sperre bis zu einem Datum keine Spiele', () => {
+      const text = render({
+        suspension: {
+          scope_summary: 'Herren Großfeld, Ligaspielbetrieb',
+          games_total: null,
+          remaining_games: null,
+          valid_until: '2026-10-31',
+        },
+      } as unknown as Partial<PlayerWithLicense>).nativeElement.textContent;
+
+      expect(text).toContain('31.10.2026');
+      expect(text).not.toContain('Spielen');
+    });
+
+    // Diese Ansicht liest der Verein. Der Grund einer Sperre gehört dem
+    // Verband -- die API schickt ihn hier gar nicht mit, und die Ansicht darf
+    // ihn auch dann nicht zeigen, wenn er doch im Payload landet.
+    it('zeigt die Begründung der Sperre nicht', () => {
+      const text = render({
+        suspension: { ...sperre, reason: 'Unsportliches Verhalten' },
+      } as unknown as Partial<PlayerWithLicense>).nativeElement.textContent;
+
+      expect(text).toContain('Gesperrt:');
+      expect(text).not.toContain('Unsportliches');
+    });
+
+    it('zeigt ohne Sperre keinen Hinweis', () => {
+      const text = render({ suspension: null }).nativeElement.textContent;
+
+      expect(text).toContain('Meier');
+      expect(text).not.toContain('Gesperrt:');
+    });
+
+    // Eine mannschaftsweite Sperre schreibt den Status 9 in die Historie. Der
+    // fiel hier in die graue Sammelfarbe und war von „zurückgezogen" nicht zu
+    // unterscheiden.
+    it('färbt den Status gesperrt rot', () => {
+      const fixture = render({
+        current_status: { license_status_id: 9, license_status: 'gesperrt' },
+        suspension: sperre,
+      } as unknown as Partial<PlayerWithLicense>);
+      const badge = Array.from(
+        fixture.nativeElement.querySelectorAll('p')
+      ).find((el) => (el as HTMLElement).textContent?.trim() === 'gesperrt');
+
+      expect((badge as HTMLElement).className).toContain('bg-red-100');
+    });
+  });
 });

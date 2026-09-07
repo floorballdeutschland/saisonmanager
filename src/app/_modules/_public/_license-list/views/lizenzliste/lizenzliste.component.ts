@@ -53,15 +53,22 @@ export class LizenzlisteComponent implements OnInit {
     });
   }
 
+  // Die Bezeichnungen kommen aus License::NAMES, also klein geschrieben:
+  // „erteilt", „beantragt", „gesperrt". Verglichen wurde hier mit
+  // „Genehmigt"/„Beantragt" -- Schreibweisen, die die API nie geschickt hat,
+  // weshalb jede Zeile in der grauen Sammelfarbe landete und der Status
+  // ungeprueft durchlief.
   statusLabel(status: string): string {
-    if (status === 'Genehmigt') return 'Lizenziert';
-    if (status === 'Beantragt') return 'Beantragt';
+    if (status === 'erteilt') return 'Lizenziert';
+    if (status === 'beantragt') return 'Beantragt';
+    if (status === 'gesperrt') return 'Gesperrt';
     return status;
   }
 
   statusClass(status: string): string {
-    if (status === 'Genehmigt') return 'text-green-700';
-    if (status === 'Beantragt') return 'text-yellow-700';
+    if (status === 'erteilt') return 'text-green-700';
+    if (status === 'beantragt') return 'text-yellow-700';
+    if (status === 'gesperrt') return 'text-red-700 font-semibold';
     return 'text-fb-gray-400';
   }
 

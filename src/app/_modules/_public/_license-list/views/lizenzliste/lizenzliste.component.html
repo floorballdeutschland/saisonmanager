@@ -69,6 +69,15 @@
                     [ngClass]="statusClass(p.license_status)"
                   >
                     {{ statusLabel(p.license_status) }}
+                    <!-- Nur der Geltungsbereich, nicht der Grund: Am
+                         Spieltisch zaehlt, WO die Sperre gilt -- dieselbe
+                         Lizenz kann in der Liga gesperrt und im Pokal erteilt
+                         sein. -->
+                    @if (p.suspension_scope) {
+                      <span class="block text-[11px] font-normal">{{
+                        p.suspension_scope
+                      }}</span>
+                    }
                   </td>
                   <td class="px-4 py-2 text-fb-gray-400">
                     {{
@@ -128,6 +137,15 @@
                     [ngClass]="statusClass(p.license_status)"
                   >
                     {{ statusLabel(p.license_status) }}
+                    <!-- Nur der Geltungsbereich, nicht der Grund: Am
+                         Spieltisch zaehlt, WO die Sperre gilt -- dieselbe
+                         Lizenz kann in der Liga gesperrt und im Pokal erteilt
+                         sein. -->
+                    @if (p.suspension_scope) {
+                      <span class="block text-[11px] font-normal">{{
+                        p.suspension_scope
+                      }}</span>
+                    }
                   </td>
                   <td class="px-4 py-2 text-fb-gray-400">
                     {{
