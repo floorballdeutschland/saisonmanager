@@ -169,11 +169,12 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     'meisterschaft',
     'pokal',
   ];
-  // Ebene 2: Beantragungssperre
-  showApplicationBlockForm = false;
-  blockFrom = '';
-  blockUntil = '';
-  blockReason = '';
+  // Zweiter Weg in DASSELBE Formular: aus dem Abschnitt „Sperren" heraus,
+  // ohne von einer Lizenz auszugehen. Nötig für die spielerweite Sperre, die
+  // neue Lizenzanträge verhindert -- gerade dann gibt es keine Lizenz.
+  // Ersetzt die frühere Beantragungssperre, die nur ein Datumsfenster kannte.
+  showSuspendForm = false;
+  suspendPickedLicenseId: string | null = null;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -1286,17 +1287,49 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   public openLicenseSuspend(license: PlayerLicense): void {
-    this.suspendLicenseId = license.id;
-    this.licenseSuspendUntil = '';
-    this.licenseSuspendReason = '';
-    this.licenseSuspendMode = 'date';
-    this.licenseSuspendGames = null;
+    this.resetSuspendForm();
+    // Von der Lizenz aus ist die engste Stufe die richtige Vorbelegung: Eine
+    // zu weit gefasste Sperre blockiert mehr, als der Anlass hergibt.
     this.licenseSuspendScope = 'team';
-    this.licenseSuspendGroups = {
-      liga: true,
-      meisterschaft: true,
-      pokal: false,
-    };
+    this.licenseSuspendGroups = this.defaultSuspendGroups(license);
+    this.suspendLicenseId = license.id;
+  }
+
+  /**
+   * Vorbelegung der Wettbewerbsgruppen zu einer Lizenz.
+   *
+   * Ligaspielbetrieb und DM/Endrunde sind die Vorgabe, weil beide
+   * Fortführungen desselben Wettbewerbs sind. Kommt die Sperre aber aus einer
+   * POKAL-Liga, ist genau die nicht dabei: Die Sperre erfasste dann nicht
+   * einmal die Liga, aus der sie stammt — sie würde angelegt, zählte Spiele ab
+   * und wirkte nirgends. Die API lehnt das seit api#627 ab; hier steht die
+   * Vorbelegung, damit man gar nicht erst hineinläuft.
+   *
+   * Der Pokal ersetzt die Vorgabe und ergänzt sie nicht: Eine Matchstrafe im
+   * Pokalspiel sperrt den Pokal, nicht zusätzlich den Ligaspielbetrieb.
+   */
+  private defaultSuspendGroups(
+    license: PlayerLicense | null
+  ): Record<CompetitionGroup, boolean> {
+    if (license?.league?.competition_group === 'pokal') {
+      return { liga: false, meisterschaft: false, pokal: true };
+    }
+
+    return { liga: true, meisterschaft: true, pokal: false };
+  }
+
+  /**
+   * Dasselbe Formular aus dem Abschnitt „Sperren" heraus.
+   *
+   * Vorbelegt ist hier „alle Wettbewerbe": Das ist der Geltungsbereich, für
+   * den es diesen Weg gibt, und der einzige, der ohne Lizenz auskommt. Wer
+   * eine Mannschaft oder einen Wettbewerb sperren will, wählt darunter die
+   * Lizenz -- oder nimmt gleich den Knopf an der Lizenz.
+   */
+  public openSuspendForm(): void {
+    this.resetSuspendForm();
+    this.licenseSuspendScope = 'all';
+    this.showSuspendForm = true;
   }
 
   public cancelLicenseSuspend(): void {
@@ -1304,6 +1337,81 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     this.licenseSuspendUntil = '';
     this.licenseSuspendReason = '';
     this.licenseSuspendGames = null;
+  }
+
+  /** Schließt das Formular, egal über welchen Weg es offen ist. */
+  public cancelSuspendForm(): void {
+    this.cancelLicenseSuspend();
+    this.showSuspendForm = false;
+    this.suspendPickedLicenseId = null;
+  }
+
+  // Beide Wege zeigen dieselbe Maske. Sie darf nur einmal offen sein, sonst
+  // stünden zwei Formulare auf denselben Feldern und das zweite überschriebe
+  // stillschweigend die Eingaben im ersten.
+  private resetSuspendForm(): void {
+    this.suspendLicenseId = null;
+    this.showSuspendForm = false;
+    this.suspendPickedLicenseId = null;
+    this.licenseSuspendUntil = '';
+    this.licenseSuspendReason = '';
+    this.licenseSuspendMode = 'date';
+    this.licenseSuspendGames = null;
+    this.licenseSuspendGroups = this.defaultSuspendGroups(null);
+  }
+
+  /**
+   * Lizenzen, auf die sich eine Sperre stützen kann: laufende Saison und noch
+   * nicht gesperrt. Eine ältere Saison taugt nicht als Vorlage -- der
+   * Geltungsbereich einer Wettbewerbssperre trägt die Saison der Liga.
+   */
+  public get suspendableLicenses(): PlayerLicense[] {
+    return (this.player?.licenses ?? []).filter(
+      (l) => this.isCurrentSeasonLicense(l) && !this.isLicenseSuspended(l)
+    );
+  }
+
+  /**
+   * Gibt es überhaupt eine Lizenz der laufenden Saison?
+   *
+   * Trennt die beiden Lagen, in denen die Auswahl leer bleibt: kein
+   * Lizenzantrag der Saison, oder alle vorhandenen schon von einer Sperre
+   * erfasst. Der frühere Sammeltext behauptete das Erste auch im Zweiten --
+   * und die Lizenz stand mit ihrem Abzeichen sichtbar weiter oben.
+   */
+  public get hasCurrentSeasonLicense(): boolean {
+    return (this.player?.licenses ?? []).some((l) =>
+      this.isCurrentSeasonLicense(l)
+    );
+  }
+
+  /** Die im Abschnittsformular gewählte Lizenz -- oder keine. */
+  public get suspendFormLicense(): PlayerLicense | null {
+    if (!this.suspendPickedLicenseId) return null;
+
+    return (
+      this.suspendableLicenses.find(
+        (l) => l.id === this.suspendPickedLicenseId
+      ) ?? null
+    );
+  }
+
+  /**
+   * Ohne Lizenz ist „alle Wettbewerbe" der einzige mögliche Geltungsbereich,
+   * und die Auswahl der engeren ist gesperrt. Wird die Lizenz wieder
+   * abgewählt, muss der Geltungsbereich mitgehen -- sonst bliebe eine
+   * Auswahl stehen, die das Formular selbst nicht mehr anbietet, und der
+   * Knopf wäre ohne sichtbaren Grund aus.
+   */
+  public onSuspendLicensePicked(): void {
+    if (!this.suspendPickedLicenseId && this.licenseSuspendScope !== 'all') {
+      this.licenseSuspendScope = 'all';
+    }
+    // Die gewählte Lizenz bestimmt, welcher Wettbewerb überhaupt gemeint sein
+    // kann -- siehe defaultSuspendGroups.
+    this.licenseSuspendGroups = this.defaultSuspendGroups(
+      this.suspendFormLicense
+    );
   }
 
   public toggleSuspendGroup(group: CompetitionGroup): void {
@@ -1322,12 +1430,12 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
    * Ohne diesen Satz ist die Auswahl nicht bedienbar: „Wettbewerb" allein sagt
    * nicht, dass damit auch die Playoffs erfasst sind und der Pokal nicht.
    */
-  public suspendScopeSummary(license: PlayerLicense): string {
-    const league = license.league;
+  public suspendScopeSummary(license: PlayerLicense | null): string {
+    const league = license?.league;
 
     if (this.licenseSuspendScope === 'team') {
       return this._transloco.translate('playerAdmin.edit.scopeSummaryTeam', {
-        team: license.team?.name ?? '',
+        team: license?.team?.name ?? '',
       });
     }
     if (this.licenseSuspendScope === 'league') {
@@ -1358,7 +1466,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   }
 
   /** Fehlt etwas, das die API ablehnen würde? */
-  public licenseSuspendBlocked(license: PlayerLicense): boolean {
+  public licenseSuspendBlocked(license: PlayerLicense | null): boolean {
     if (this.licenseSuspendMode === 'date' && !this.licenseSuspendUntil) {
       return true;
     }
@@ -1368,26 +1476,31 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     ) {
       return true;
     }
+    // Ohne Lizenz gibt es keine Mannschaft und keine Liga, auf die sich ein
+    // engerer Geltungsbereich stützen könnte. Die API lehnt das ab; der Knopf
+    // bleibt deshalb schon hier aus.
+    if (this.licenseSuspendScope !== 'all' && !license) return true;
+
     if (this.licenseSuspendScope === 'competition') {
       // Alles abgewählt lehnt die API ab, statt still die Vorbelegung zu
       // nehmen. Der Knopf bleibt deshalb schon hier aus.
       if (!this.selectedSuspendGroups.length) return true;
-      if (!license.league) return true;
+      if (!license?.league) return true;
     }
-    if (this.licenseSuspendScope === 'league' && !license.league) return true;
+    if (this.licenseSuspendScope === 'league' && !license?.league) return true;
 
     return false;
   }
 
-  public submitLicenseSuspend(license: PlayerLicense): void {
+  public submitLicenseSuspend(license: PlayerLicense | null): void {
     if (!this.player?.id || this.licenseSuspendBlocked(license)) return;
 
     const scope = this.licenseSuspendScope;
     this._playerService
       .createSuspension(this.player.id, {
-        team_id: license.team_id,
+        team_id: license?.team_id ?? null,
         scope_kind: scope,
-        league_id: license.league?.id ?? null,
+        league_id: license?.league?.id ?? null,
         competition_groups:
           scope === 'competition' ? this.selectedSuspendGroups : undefined,
         valid_until:
@@ -1398,11 +1511,13 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       })
       .subscribe({
         next: () => {
-          this._notificationService.success('Sperre wurde eingerichtet.', {
-            autoClose: true,
-            keepAfterRouteChange: false,
-          });
-          this.cancelLicenseSuspend();
+          this._notificationService.success(
+            scope === 'all'
+              ? 'Sperre wurde eingerichtet. Alle aktiven Lizenzen wurden gesperrt, neue Lizenzanträge sind nicht möglich.'
+              : 'Sperre wurde eingerichtet.',
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this.cancelSuspendForm();
           this.getPlayer('' + this.player?.id);
         },
         error: (err) => {
@@ -1413,42 +1528,6 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             err?.error?.message ?? 'Die Sperre konnte nicht angelegt werden.',
             { autoClose: false, keepAfterRouteChange: false }
           );
-        },
-      });
-  }
-
-  public openApplicationBlock(): void {
-    this.showApplicationBlockForm = true;
-    this.blockFrom = this.today();
-    this.blockUntil = '';
-    this.blockReason = '';
-  }
-
-  public cancelApplicationBlock(): void {
-    this.showApplicationBlockForm = false;
-    this.blockFrom = '';
-    this.blockUntil = '';
-    this.blockReason = '';
-  }
-
-  public submitApplicationBlock(): void {
-    if (!this.player?.id || !this.blockUntil) return;
-
-    this._playerService
-      .createSuspension(this.player.id, {
-        team_id: null,
-        valid_from: this.blockFrom || null,
-        valid_until: this.blockUntil,
-        reason: this.blockReason || null,
-      })
-      .subscribe({
-        next: () => {
-          this._notificationService.success(
-            'Beantragungssperre wurde eingerichtet. Alle aktiven Lizenzen wurden gesperrt.',
-            { autoClose: true, keepAfterRouteChange: false }
-          );
-          this.cancelApplicationBlock();
-          this.getPlayer('' + this.player?.id);
         },
       });
   }
