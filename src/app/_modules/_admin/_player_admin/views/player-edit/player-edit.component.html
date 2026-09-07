@@ -523,6 +523,7 @@
                         ) {
                           <a
                             class="font-bold text-amber-700 leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
+                            data-testid="open-license-suspend"
                             (click)="openLicenseSuspend(license)"
                           >
                             {{ "playerAdmin.edit.suspendLicense" | transloco }}
@@ -594,188 +595,16 @@
                           </div>
                         }
                         @if (suspendLicenseId === license.id) {
-                          <div
-                            class="border border-amber-300 rounded p-3 bg-amber-50 my-2"
-                          >
-                            <p
-                              class="text-sm font-semibold text-amber-800 mb-2"
-                            >
-                              {{
-                                "playerAdmin.edit.suspendThisLicense"
-                                  | transloco
-                              }}
-                            </p>
-                            <!-- Dauer: Datum oder Anzahl Spiele (api#604).
-                                 Das Datum bleibt die Vorbelegung, weil die
-                                 Sperren im Bestand Einschränkungen der
-                                 Spielberechtigung sind und bis zu einem Termin
-                                 laufen. -->
-                            <div class="mb-2">
-                              <label
-                                class="block text-xs font-semibold text-amber-800 mb-1"
-                                >{{
-                                  "playerAdmin.edit.duration" | transloco
-                                }}</label
-                              >
-                              <div class="flex flex-wrap gap-4 items-center">
-                                <label class="text-sm flex items-center gap-1">
-                                  <input
-                                    type="radio"
-                                    name="suspendMode"
-                                    value="date"
-                                    [(ngModel)]="licenseSuspendMode"
-                                  />
-                                  {{
-                                    "playerAdmin.edit.durationDate" | transloco
-                                  }}
-                                </label>
-                                <label class="text-sm flex items-center gap-1">
-                                  <input
-                                    type="radio"
-                                    name="suspendMode"
-                                    value="games"
-                                    [(ngModel)]="licenseSuspendMode"
-                                  />
-                                  {{
-                                    "playerAdmin.edit.durationGames" | transloco
-                                  }}
-                                </label>
-                              </div>
-                            </div>
-                            @if (licenseSuspendMode === "date") {
-                              <div class="mb-2">
-                                <label
-                                  class="block text-xs font-semibold text-amber-800 mb-1"
-                                  >{{
-                                    "playerAdmin.edit.suspendedUntil"
-                                      | transloco
-                                  }}</label
-                                >
-                                <input
-                                  type="date"
-                                  [(ngModel)]="licenseSuspendUntil"
-                                  [min]="today()"
-                                  class="border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
-                                />
-                              </div>
-                            } @else {
-                              <div class="mb-2">
-                                <label
-                                  class="block text-xs font-semibold text-amber-800 mb-1"
-                                  >{{
-                                    "playerAdmin.edit.gamesCount" | transloco
-                                  }}</label
-                                >
-                                <input
-                                  type="number"
-                                  min="1"
-                                  step="1"
-                                  [(ngModel)]="licenseSuspendGames"
-                                  class="w-24 border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
-                                />
-                                <p class="text-xs text-amber-700 mt-1">
-                                  {{ "playerAdmin.edit.gamesHint" | transloco }}
-                                </p>
-                              </div>
-                            }
-                            <!-- Geltungsbereich. Vorbelegt ist die engste
-                                 Stufe; eine zu weit gefasste Sperre blockiert
-                                 mehr, als der Anlass hergibt. -->
-                            <div class="mb-2">
-                              <label
-                                class="block text-xs font-semibold text-amber-800 mb-1"
-                                >{{
-                                  "playerAdmin.edit.scope" | transloco
-                                }}</label
-                              >
-                              <select
-                                [(ngModel)]="licenseSuspendScope"
-                                class="border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
-                              >
-                                <option value="team">
-                                  {{ "playerAdmin.edit.scopeTeam" | transloco }}
-                                </option>
-                                <option value="competition">
-                                  {{
-                                    "playerAdmin.edit.scopeCompetition"
-                                      | transloco
-                                  }}
-                                </option>
-                                <option value="league">
-                                  {{
-                                    "playerAdmin.edit.scopeLeague" | transloco
-                                  }}
-                                </option>
-                                <option value="all">
-                                  {{ "playerAdmin.edit.scopeAll" | transloco }}
-                                </option>
-                              </select>
-                            </div>
-                            @if (licenseSuspendScope === "competition") {
-                              <div class="mb-2 flex flex-wrap gap-4">
-                                @for (
-                                  group of suspendGroupOptions;
-                                  track group
-                                ) {
-                                  <label
-                                    class="text-sm flex items-center gap-1"
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      [checked]="licenseSuspendGroups[group]"
-                                      (change)="toggleSuspendGroup(group)"
-                                    />
-                                    {{
-                                      "playerAdmin.edit.group_" + group
-                                        | transloco
-                                    }}
-                                  </label>
-                                }
-                              </div>
-                            }
-                            <!-- Ohne diesen Satz ist die Auswahl nicht
-                                 bedienbar: „Wettbewerb" allein sagt nicht,
-                                 dass die Playoffs mit erfasst sind und der
-                                 Pokal nicht. -->
-                            <p
-                              class="mb-2 text-sm text-amber-900 bg-white border border-amber-200 rounded px-2 py-1"
-                            >
-                              {{ "playerAdmin.edit.scopeLabel" | transloco }}
-                              {{ suspendScopeSummary(license) }}
-                            </p>
-                            <div class="mb-2">
-                              <label
-                                class="block text-xs font-semibold text-amber-800 mb-1"
-                                >{{
-                                  "playerAdmin.edit.reason" | transloco
-                                }}</label
-                              >
-                              <input
-                                type="text"
-                                [(ngModel)]="licenseSuspendReason"
-                                [placeholder]="
-                                  'playerAdmin.edit.licenseSuspendReasonPlaceholder'
-                                    | transloco
-                                "
-                                class="w-full xl:w-2/3 border border-amber-300 rounded-[5px] px-3 py-2 text-sm"
-                              />
-                            </div>
-                            <div class="flex gap-3">
-                              <button
-                                (click)="submitLicenseSuspend(license)"
-                                [disabled]="licenseSuspendBlocked(license)"
-                                class="font-bold text-white leading-[17px] text-sm px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                {{ "playerAdmin.edit.suspend" | transloco }}
-                              </button>
-                              <button
-                                (click)="cancelLicenseSuspend()"
-                                class="font-bold text-gray-600 leading-[17px] text-sm px-4 py-2 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                              >
-                                {{ "playerAdmin.edit.cancel" | transloco }}
-                              </button>
-                            </div>
-                          </div>
+                          <!-- Dieselbe Vorlage wie im Abschnitt „Sperren":
+                               ein Sperrvorgang, eine Maske, zwei Wege
+                               hinein. Von hier aus ist die Lizenz gesetzt,
+                               dort wird sie gewaehlt. -->
+                          <ng-container
+                            *ngTemplateOutlet="
+                              suspendForm;
+                              context: { license: license, showPicker: false }
+                            "
+                          ></ng-container>
                         }
                         @if (deleteLicenseId === license.id) {
                           <div
@@ -1368,9 +1197,11 @@
               }
             </div>
             <p class="text-sm text-gray-500 mb-4">
-              Eine einzelne Lizenz wird oben pro Team gesperrt. Eine
-              Beantragungssperre setzt alle aktiven Lizenzen aus und verhindert
-              neue Lizenzanträge bis zum Ablaufdatum.
+              Eine Sperre gilt für eine Mannschaft, einen Wettbewerb, eine Liga
+              oder alle Wettbewerbe. „Alle Wettbewerbe" setzt zusätzlich jede
+              aktive Lizenz aus und verhindert neue Lizenzanträge – das ist die
+              frühere Beantragungssperre. Dieselbe Maske steht oben an jeder
+              Lizenz der laufenden Saison.
             </p>
             <!-- Aktive Sperren -->
             @if (activeSuspensions.length) {
@@ -1436,83 +1267,43 @@
                 }
               </div>
             }
-            <!-- Beantragungssperre einrichten -->
-            @if (!showApplicationBlockForm && !hasApplicationBlock) {
+            <!-- Sperre einrichten. Erreichbar auch ohne Lizenz der
+                 laufenden Saison: Die spielerweite Sperre verhindert neue
+                 Lizenzantraege, und gerade dann gibt es keine Lizenz. Die
+                 engeren Geltungsbereiche brauchen eine und sind ohne
+                 Auswahl nicht waehlbar.
+
+                 `!hasApplicationBlock` ist kein Schoenheitsriegel: Laeuft
+                 schon eine Sperre auf alle Wettbewerbe, tragen alle Lizenzen
+                 den Status gesperrt, `suspendableLicenses` ist leer und der
+                 Geltungsbereich stuende zwingend auf „alle Wettbewerbe" --
+                 dieser Knopf koennte dort ausschliesslich ein Duplikat
+                 anlegen. Und das Duplikat waere nicht bloss doppelt:
+                 `Player#write_suspended_status!` ueberspringt Lizenzen, die
+                 schon auf gesperrt stehen, die zweite Sperre bekaeme also
+                 eine leere Liste betroffener Lizenzen. Das Aufheben der
+                 ersten stellte danach alle Lizenzen wieder her, waehrend die
+                 zweite weiterlaeuft und jeden Antrag blockiert -- ohne eine
+                 Lizenz, an der die Sperre noch sichtbar waere. Erst
+                 aufheben, dann neu setzen. -->
+            @if (!showSuspendForm && !hasApplicationBlock) {
               <div>
                 <button
-                  (click)="openApplicationBlock()"
-                  class="font-bold text-red-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-red-50 border-red-400 rounded-[5px] cursor-pointer"
+                  (click)="openSuspendForm()"
+                  data-testid="open-suspend-form"
+                  class="font-bold text-amber-700 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
                 >
-                  Beantragungssperre einrichten
+                  {{ "playerAdmin.edit.setupSuspension" | transloco }}
                 </button>
               </div>
             }
-            @if (showApplicationBlockForm) {
-              <div class="border border-red-300 rounded p-4 bg-red-50">
-                <p class="text-sm font-semibold text-red-800 mb-1">
-                  Beantragungssperre einrichten
-                </p>
-                <p class="text-sm text-red-700 mb-4">
-                  Alle aktuell aktiven Lizenzen des Spielers werden gesperrt.
-                  Neue Lizenzanträge sind bis zum Ablaufdatum nicht möglich.
-                </p>
-                <div class="mb-3 flex flex-wrap gap-4">
-                  <div>
-                    <label
-                      class="block text-sm font-semibold text-red-800 mb-1"
-                      >{{ "playerAdmin.edit.start" | transloco }}</label
-                    >
-                    <input
-                      type="date"
-                      [(ngModel)]="blockFrom"
-                      class="border border-red-300 rounded-[5px] px-3 py-2 text-sm bg-white"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      class="block text-sm font-semibold text-red-800 mb-1"
-                      >{{
-                        "playerAdmin.edit.suspendedUntil" | transloco
-                      }}</label
-                    >
-                    <input
-                      type="date"
-                      [(ngModel)]="blockUntil"
-                      [min]="blockFrom || today()"
-                      class="border border-red-300 rounded-[5px] px-3 py-2 text-sm bg-white"
-                    />
-                  </div>
-                </div>
-                <div class="mb-4">
-                  <label
-                    class="block text-sm font-semibold text-red-800 mb-1"
-                    >{{ "playerAdmin.edit.reason" | transloco }}</label
-                  >
-                  <input
-                    type="text"
-                    [(ngModel)]="blockReason"
-                    [placeholder]="
-                      'playerAdmin.edit.blockReasonPlaceholder' | transloco
-                    "
-                    class="w-full xl:w-2/3 border border-red-300 rounded-[5px] px-3 py-2 text-sm"
-                  />
-                </div>
-                <div class="flex gap-3">
-                  <button
-                    (click)="submitApplicationBlock()"
-                    [disabled]="!blockUntil"
-                    class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Sperre einrichten
-                  </button>
-                  <button
-                    (click)="cancelApplicationBlock()"
-                    class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                  >
-                    Abbrechen
-                  </button>
-                </div>
-              </div>
+            @if (showSuspendForm) {
+              <ng-container
+                *ngTemplateOutlet="
+                  suspendForm;
+                  context: { license: suspendFormLicense, showPicker: true }
+                "
+              ></ng-container>
             }
           </div>
         }
@@ -1544,3 +1335,195 @@
     </div>
   </div>
 </ng-container>
+
+<!-- Sperrformular, einmal beschrieben. Aufgerufen an einer Lizenz (dort
+       ist sie gesetzt) und im Abschnitt „Sperren" (dort wird sie gewaehlt
+       oder weggelassen). -->
+<ng-template #suspendForm let-license="license" let-showPicker="showPicker">
+  <div class="border border-amber-300 rounded p-3 bg-amber-50 my-2">
+    @if (showPicker) {
+      <p class="text-sm font-semibold text-amber-800 mb-2">
+        {{ "playerAdmin.edit.setupSuspension" | transloco }}
+      </p>
+      <!-- Die Lizenz bestimmt Mannschaft und Liga der Sperre. Ohne eine
+             bleibt nur „alle Wettbewerbe" -- genau die Sperre, die keine
+             Lizenz voraussetzt. -->
+      <div class="mb-2">
+        <label class="block text-xs font-semibold text-amber-800 mb-1">{{
+          "playerAdmin.edit.suspendLicenseChoice" | transloco
+        }}</label>
+        <select
+          [(ngModel)]="suspendPickedLicenseId"
+          (ngModelChange)="onSuspendLicensePicked()"
+          data-testid="suspend-license-choice"
+          class="w-full xl:w-2/3 border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
+        >
+          <option [ngValue]="null">
+            {{ "playerAdmin.edit.suspendNoLicense" | transloco }}
+          </option>
+          @for (option of suspendableLicenses; track option.id) {
+            <option [ngValue]="option.id">
+              {{ option.team?.name }} – {{ option.league?.name }}
+            </option>
+          }
+        </select>
+        @if (!suspendableLicenses.length) {
+          <!-- Zwei verschiedene Lagen, zwei Saetze: „keine Lizenz" und „alle
+               Lizenzen schon gesperrt". Ein Sammeltext behauptete dem Verband
+               gegenueber, es gebe keine Lizenz, waehrend sie mit ihrem
+               Abzeichen ein paar Zeilen weiter oben steht. -->
+          <p class="text-xs text-amber-700 mt-1" data-testid="suspend-hint">
+            @if (hasCurrentSeasonLicense) {
+              {{ "playerAdmin.edit.suspendAllSuspendedHint" | transloco }}
+            } @else {
+              {{ "playerAdmin.edit.suspendNoLicenseHint" | transloco }}
+            }
+          </p>
+        }
+      </div>
+    } @else {
+      <p class="text-sm font-semibold text-amber-800 mb-2">
+        {{ "playerAdmin.edit.suspendThisLicense" | transloco }}
+      </p>
+    }
+    <!-- Dauer: Datum oder Anzahl Spiele (api#604). Das Datum bleibt die
+         Vorbelegung, weil die Sperren im Bestand Einschränkungen der
+         Spielberechtigung sind und bis zu einem Termin laufen. -->
+    <div class="mb-2">
+      <label class="block text-xs font-semibold text-amber-800 mb-1">{{
+        "playerAdmin.edit.duration" | transloco
+      }}</label>
+      <div class="flex flex-wrap gap-4 items-center">
+        <label class="text-sm flex items-center gap-1">
+          <input
+            type="radio"
+            name="suspendMode"
+            value="date"
+            [(ngModel)]="licenseSuspendMode"
+          />
+          {{ "playerAdmin.edit.durationDate" | transloco }}
+        </label>
+        <label class="text-sm flex items-center gap-1">
+          <input
+            type="radio"
+            name="suspendMode"
+            value="games"
+            [(ngModel)]="licenseSuspendMode"
+          />
+          {{ "playerAdmin.edit.durationGames" | transloco }}
+        </label>
+      </div>
+    </div>
+    @if (licenseSuspendMode === "date") {
+      <div class="mb-2">
+        <label class="block text-xs font-semibold text-amber-800 mb-1">{{
+          "playerAdmin.edit.suspendedUntil" | transloco
+        }}</label>
+        <input
+          type="date"
+          [(ngModel)]="licenseSuspendUntil"
+          data-testid="suspend-until"
+          [min]="today()"
+          class="border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
+        />
+      </div>
+    } @else {
+      <div class="mb-2">
+        <label class="block text-xs font-semibold text-amber-800 mb-1">{{
+          "playerAdmin.edit.gamesCount" | transloco
+        }}</label>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          [(ngModel)]="licenseSuspendGames"
+          class="w-24 border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
+        />
+        <p class="text-xs text-amber-700 mt-1">
+          {{ "playerAdmin.edit.gamesHint" | transloco }}
+        </p>
+      </div>
+    }
+    <!-- Geltungsbereich. Die Vorbelegung haengt am Einstieg und steht
+         deshalb nicht hier, sondern in `openLicenseSuspend` (engste Stufe:
+         eine zu weit gefasste Sperre blockiert mehr, als der Anlass hergibt)
+         und `openSuspendForm` (alle Wettbewerbe: der einzige Bereich, der
+         ohne Lizenz auskommt). -->
+    <div class="mb-2">
+      <label class="block text-xs font-semibold text-amber-800 mb-1">{{
+        "playerAdmin.edit.scope" | transloco
+      }}</label>
+      <select
+        [(ngModel)]="licenseSuspendScope"
+        data-testid="suspend-scope"
+        class="border border-amber-300 rounded-[5px] px-3 py-2 text-sm bg-white"
+      >
+        <option value="team" [disabled]="!license">
+          {{ "playerAdmin.edit.scopeTeam" | transloco }}
+        </option>
+        <option value="competition" [disabled]="!license">
+          {{ "playerAdmin.edit.scopeCompetition" | transloco }}
+        </option>
+        <option value="league" [disabled]="!license">
+          {{ "playerAdmin.edit.scopeLeague" | transloco }}
+        </option>
+        <option value="all">
+          {{ "playerAdmin.edit.scopeAll" | transloco }}
+        </option>
+      </select>
+    </div>
+    @if (licenseSuspendScope === "competition") {
+      <div class="mb-2 flex flex-wrap gap-4">
+        @for (group of suspendGroupOptions; track group) {
+          <label class="text-sm flex items-center gap-1">
+            <input
+              type="checkbox"
+              [checked]="licenseSuspendGroups[group]"
+              (change)="toggleSuspendGroup(group)"
+            />
+            {{ "playerAdmin.edit.group_" + group | transloco }}
+          </label>
+        }
+      </div>
+    }
+    <!-- Ohne diesen Satz ist die Auswahl nicht bedienbar: „Wettbewerb"
+         allein sagt nicht, dass die Playoffs mit erfasst sind und der Pokal
+         nicht. -->
+    <p
+      class="mb-2 text-sm text-amber-900 bg-white border border-amber-200 rounded px-2 py-1"
+    >
+      {{ "playerAdmin.edit.scopeLabel" | transloco }}
+      {{ suspendScopeSummary(license) }}
+    </p>
+    <div class="mb-2">
+      <label class="block text-xs font-semibold text-amber-800 mb-1">{{
+        "playerAdmin.edit.reason" | transloco
+      }}</label>
+      <input
+        type="text"
+        [(ngModel)]="licenseSuspendReason"
+        [placeholder]="
+          'playerAdmin.edit.licenseSuspendReasonPlaceholder' | transloco
+        "
+        class="w-full xl:w-2/3 border border-amber-300 rounded-[5px] px-3 py-2 text-sm"
+      />
+    </div>
+    <div class="flex gap-3">
+      <button
+        (click)="submitLicenseSuspend(license)"
+        data-testid="submit-suspend"
+        [disabled]="licenseSuspendBlocked(license)"
+        class="font-bold text-white leading-[17px] text-sm px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {{ "playerAdmin.edit.suspend" | transloco }}
+      </button>
+      <button
+        (click)="cancelSuspendForm()"
+        data-testid="cancel-suspend"
+        class="font-bold text-gray-600 leading-[17px] text-sm px-4 py-2 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+      >
+        {{ "playerAdmin.edit.cancel" | transloco }}
+      </button>
+    </div>
+  </div>
+</ng-template>

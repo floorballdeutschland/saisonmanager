@@ -557,6 +557,12 @@ export interface PublicLicenseEntry {
   name: string;
   birthdate?: string;
   license_status: string;
+  /**
+   * Geltungsbereich der Sperre im Klartext, wenn die Lizenz in der Liga
+   * DIESES Spiels gesperrt ist. Die Begründung steht bewusst nicht in der
+   * Antwort – am Spieltisch zählt, wo die Sperre gilt.
+   */
+  suspension_scope?: string | null;
   approved_at?: string;
   valid_until?: string;
 }

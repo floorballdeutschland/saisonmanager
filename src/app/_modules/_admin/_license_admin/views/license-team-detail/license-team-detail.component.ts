@@ -22,6 +22,7 @@ import { Observable, take } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
+import { licenseStatusBadgeClass } from 'src/app/_helpers/_utils/license-status';
 
 @Component({
   templateUrl: './license-team-detail.component.html',
@@ -33,6 +34,11 @@ export class LicenseTeamDetailComponent implements OnInit {
   associations$: Observable<GameOperation[]>;
 
   licenseHash!: LicenseHash;
+
+  // Dieselbe Farbregel wie in den Verbandsansichten (api#605): `gesperrt` fiel
+  // hier in den grauen Rest und war von „zurueckgezogen" nicht zu
+  // unterscheiden.
+  public statusBadgeClass = licenseStatusBadgeClass;
   teamId = 0;
   playerId = 0;
   expressLicense = false;
