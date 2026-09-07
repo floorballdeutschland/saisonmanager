@@ -1291,7 +1291,31 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     // Von der Lizenz aus ist die engste Stufe die richtige Vorbelegung: Eine
     // zu weit gefasste Sperre blockiert mehr, als der Anlass hergibt.
     this.licenseSuspendScope = 'team';
+    this.licenseSuspendGroups = this.defaultSuspendGroups(license);
     this.suspendLicenseId = license.id;
+  }
+
+  /**
+   * Vorbelegung der Wettbewerbsgruppen zu einer Lizenz.
+   *
+   * Ligaspielbetrieb und DM/Endrunde sind die Vorgabe, weil beide
+   * Fortführungen desselben Wettbewerbs sind. Kommt die Sperre aber aus einer
+   * POKAL-Liga, ist genau die nicht dabei: Die Sperre erfasste dann nicht
+   * einmal die Liga, aus der sie stammt — sie würde angelegt, zählte Spiele ab
+   * und wirkte nirgends. Die API lehnt das seit api#627 ab; hier steht die
+   * Vorbelegung, damit man gar nicht erst hineinläuft.
+   *
+   * Der Pokal ersetzt die Vorgabe und ergänzt sie nicht: Eine Matchstrafe im
+   * Pokalspiel sperrt den Pokal, nicht zusätzlich den Ligaspielbetrieb.
+   */
+  private defaultSuspendGroups(
+    license: PlayerLicense | null
+  ): Record<CompetitionGroup, boolean> {
+    if (license?.league?.competition_group === 'pokal') {
+      return { liga: false, meisterschaft: false, pokal: true };
+    }
+
+    return { liga: true, meisterschaft: true, pokal: false };
   }
 
   /**
@@ -1333,11 +1357,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     this.licenseSuspendReason = '';
     this.licenseSuspendMode = 'date';
     this.licenseSuspendGames = null;
-    this.licenseSuspendGroups = {
-      liga: true,
-      meisterschaft: true,
-      pokal: false,
-    };
+    this.licenseSuspendGroups = this.defaultSuspendGroups(null);
   }
 
   /**
@@ -1387,6 +1407,11 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     if (!this.suspendPickedLicenseId && this.licenseSuspendScope !== 'all') {
       this.licenseSuspendScope = 'all';
     }
+    // Die gewählte Lizenz bestimmt, welcher Wettbewerb überhaupt gemeint sein
+    // kann -- siehe defaultSuspendGroups.
+    this.licenseSuspendGroups = this.defaultSuspendGroups(
+      this.suspendFormLicense
+    );
   }
 
   public toggleSuspendGroup(group: CompetitionGroup): void {

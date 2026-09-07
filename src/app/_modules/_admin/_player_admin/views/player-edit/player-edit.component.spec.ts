@@ -1123,6 +1123,21 @@ describe('PlayerEditComponent', () => {
       ]);
     });
 
+    // Aus einer Pokal-Lizenz heraus ist die Vorgabe falsch herum: Sie erfasst
+    // nicht einmal die Liga, aus der die Sperre stammt. Die API lehnt das seit
+    // api#627 ab; die Maske soll gar nicht erst hineinlaufen.
+    it('hakt bei einer Pokal-Lizenz den Pokal vor und sonst nichts', () => {
+      const component =
+        TestBed.createComponent(PlayerEditComponent).componentInstance;
+      component.player = { id: 1 } as unknown as Player;
+      const pokalLizenz = licenseWithLeague();
+      pokalLizenz.league!.competition_group = 'pokal';
+
+      component.openLicenseSuspend(pokalLizenz);
+
+      expect(component.selectedSuspendGroups).toEqual(['pokal']);
+    });
+
     it('benennt den Geltungsbereich im Klartext samt Spielbetrieb', () => {
       const component = build();
       component.licenseSuspendScope = 'competition';
@@ -1523,6 +1538,21 @@ describe('PlayerEditComponent', () => {
       ] as unknown as PlayerEditComponent['suspensions'];
 
       expect(component.suspendableLicenses.map((l) => l.id)).toEqual(['L1']);
+    });
+
+    // Dieselbe Regel, wenn die Lizenz im Abschnitt gewaehlt wird.
+    it('richtet die Wettbewerbe nach der gewaehlten Lizenz', () => {
+      const pokalLizenz = license('L1', '18');
+      pokalLizenz.league!.competition_group = 'pokal';
+      const component = build([pokalLizenz]);
+
+      component.openSuspendForm();
+      expect(component.selectedSuspendGroups).toEqual(['liga', 'meisterschaft']);
+
+      component.suspendPickedLicenseId = 'L1';
+      component.onSuspendLicensePicked();
+
+      expect(component.selectedSuspendGroups).toEqual(['pokal']);
     });
 
     it('loest die gewaehlte Lizenz auf', () => {
