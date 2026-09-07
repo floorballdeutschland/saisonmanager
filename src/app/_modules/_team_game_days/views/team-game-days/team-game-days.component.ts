@@ -175,13 +175,47 @@ export class TeamGameDaysComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Reihenfolge der Liste: erst alles bis einschliesslich heute, neuester
+   * Spieltag oben – dort steht eine Bestaetigung an. Kuenftige Spieltage folgen
+   * darunter aufsteigend, der naechste also zuerst.
+   *
+   * Die API sortiert nur nach Datum absteigend. Damit stand der am weitesten in
+   * der Zukunft liegende Spieltag ganz oben und schob die zu bestaetigenden
+   * nach unten, obwohl er nur „Bestaetigung ab …“ anzeigt.
+   *
+   * `date` kommt als „YYYY-MM-DD“, deshalb genuegt der Stringvergleich; bei
+   * gleichem Datum bleibt die Reihenfolge der API erhalten (stabiler Sort).
+   */
+  private _sortByRelevance(days: TeamGameDay[]): TeamGameDay[] {
+    const today = this._todayIso();
+    return [...days].sort((a, b) => {
+      const aFuture = a.date > today;
+      const bFuture = b.date > today;
+      if (aFuture !== bFuture) return aFuture ? 1 : -1;
+      return aFuture
+        ? a.date.localeCompare(b.date)
+        : b.date.localeCompare(a.date);
+    });
+  }
+
+  /** Heutiges Datum als „YYYY-MM-DD“ in lokaler Zeit (nicht UTC). */
+  private _todayIso(): string {
+    const now = new Date();
+    return [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+    ].join('-');
+  }
+
   private _load(): void {
     this._teamService
       .getTeamGameDays()
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (days) => {
-          this.gameDays = days;
+          this.gameDays = this._sortByRelevance(days);
           this.loading = false;
           this._cdr.markForCheck();
         },
