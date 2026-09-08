@@ -4,6 +4,7 @@ import { NgModule } from '@angular/core';
 import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { AdminLeagueRoutingModule } from './admin-schedule-routing.module';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { StreamThumbnailsModule } from '@floorball/stream-thumbnails';
 
 import * as Views from './views';
 import { GameEditComponent } from './views/game-edit/game-edit.component';
@@ -16,6 +17,7 @@ import { GameEditComponent } from './views/game-edit/game-edit.component';
     UikitCommonModule,
     FormsModule,
     ReactiveFormsModule,
+    StreamThumbnailsModule,
   ],
   declarations: [
     Views.ScheduleIndexComponent,
