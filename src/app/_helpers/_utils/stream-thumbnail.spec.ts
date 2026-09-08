@@ -5,10 +5,12 @@ import {
   ThumbnailInput,
   downloadThumbnail,
   ellipsize,
+  filenameSlug,
   hexWithAlpha,
   monogram,
   renderStreamThumbnail,
   resolveMediaUrl,
+  thumbnailDateLine,
   thumbnailFilename,
   wrapText,
 } from './stream-thumbnail';
@@ -277,11 +279,14 @@ describe('renderStreamThumbnail', () => {
 
   // Unter Karma liegt `overlay/fonts` nicht bereit, hier ist der Fehlschlag also
   // der Normalfall -- und genau der muss gemeldet werden, statt ein Bild in der
-  // Ersatzschrift für gleichwertig auszugeben.
+  // Die Schriften liegen im Prüflauf bereit (`overlay` ist in angular.json auch
+  // für das Test-Target als Asset eingetragen). Das ist kein Beiwerk: Ohne sie
+  // lief jeder Prüfsatz durch den Zweig „Schriften fehlen", und ein Bild in der
+  // Ersatzschrift war von einem richtigen nicht zu unterscheiden.
   it('sagt, ob die Schriften zur Verfügung standen', async () => {
     const result = await renderStreamThumbnail(canvas, input());
 
-    expect(result.fontsLoaded).toBeFalse();
+    expect(result.fontsLoaded).toBeTrue();
   });
 });
 
@@ -325,5 +330,97 @@ describe('downloadThumbnail', () => {
     await expectAsync(
       downloadThumbnail(canvas, 'thumbnail-test.png')
     ).toBeRejected();
+  });
+
+  // Ein Blob OHNE INHALT ist der heimtückischere Fall: Er ist nicht `null`, und
+  // ohne Prüfung landete eine 0-Byte-Datei im Download-Ordner bzw. im Archiv
+  // des Stapels -- dort sieht sie niemand an, und sie fällt erst bei YouTube auf.
+  it('meldet einen Blob ohne Inhalt als Fehlschlag', async () => {
+    const canvas = {
+      toBlob: (callback: (blob: Blob | null) => void) =>
+        callback(new Blob([], { type: 'image/png' })),
+    } as unknown as HTMLCanvasElement;
+
+    await expectAsync(
+      downloadThumbnail(canvas, 'thumbnail-test.png')
+    ).toBeRejected();
+  });
+});
+
+describe('filenameSlug', () => {
+  it('setzt Umlaute um, statt sie zu entfernen', () => {
+    expect(filenameSlug('SG Grün-Weiß Königsbrunn')).toBe(
+      'sg-gruen-weiss-koenigsbrunn'
+    );
+  });
+
+  // Die Kürzung auf 40 Zeichen ist der Grund, warum der Stapel eine laufende
+  // Nummer voranstellt: Zwei lange Vereinsnamen können sich gekürzt gleichen,
+  // und zwei gleiche Namen in einem Archiv überschreiben sich beim Auspacken.
+  it('kürzt auf 40 Zeichen', () => {
+    const slug = filenameSlug(
+      'Floorball Vereinigung Ostwestfalen-Lippe Zweite Mannschaft'
+    );
+
+    expect(slug.length).toBe(40);
+    expect(slug).toBe('floorball-vereinigung-ostwestfalen-lippe');
+  });
+
+  it('lässt nichts als Bindestriche stehen', () => {
+    expect(filenameSlug('   ')).toBe('');
+    expect(filenameSlug('...')).toBe('');
+  });
+});
+
+/**
+ * Die Datumszeile hängt an ZWEI Wegen: dem einzelnen Bild im Spielbericht und
+ * dem Stapel eines Spieltags. Genau deshalb steht sie hier und nicht in einer
+ * Komponente -- und deshalb gehört ihr Prüfsatz ebenfalls hierher, statt in dem
+ * einer der beiden Komponenten zu hängen.
+ */
+describe('thumbnailDateLine', () => {
+  it('setzt Wochentag und Datum ohne Zeitzonenumweg', () => {
+    expect(thumbnailDateLine('2026-01-11', '18:00', 'livestream')).toBe(
+      'So. 11.01.2026 · 18:00 Uhr'
+    );
+  });
+
+  // Das Highlight-Bild trägt den Endstand; die Anwurfzeit ist dort ohne Belang.
+  // Die Regel gehört zum Bildaufbau, nicht zum Aufrufer.
+  it('lässt beim Highlight-Bild die Anwurfzeit weg', () => {
+    expect(thumbnailDateLine('2026-01-11', '18:00', 'highlights')).toBe(
+      'So. 11.01.2026'
+    );
+  });
+
+  it('fällt beim Livestream-Bild auf die Anwurfzeit zurück', () => {
+    expect(thumbnailDateLine('', '18:00', 'livestream')).toBe('18:00 Uhr');
+    expect(thumbnailDateLine('kein Datum', '18:00', 'livestream')).toBe(
+      '18:00 Uhr'
+    );
+  });
+
+  // Beim Highlight-Bild bleibt die Zeile in diesem Fall LEER: Eine Uhrzeit ohne
+  // Datum ist neben einem Endstand keine Auskunft, sondern eine Irritation.
+  it('bleibt beim Highlight-Bild ohne lesbares Datum leer', () => {
+    expect(thumbnailDateLine('', '18:00', 'highlights')).toBe('');
+  });
+
+  it('kommt ohne beide Angaben zurecht', () => {
+    expect(thumbnailDateLine(null, null, 'livestream')).toBe('');
+    expect(thumbnailDateLine(undefined, undefined, 'livestream')).toBe('');
+  });
+
+  // `Game.date` ist im Modell als `Date` deklariert, obwohl die API Text
+  // liefert. Ein tatsächlich übergebenes `Date` darf das Datum nicht
+  // stillschweigend verschlucken -- über `String(date)` täte es das, denn
+  // „Sun Jan 11 2026 …" passt auf keine Datumsregel.
+  it('nimmt auch ein echtes Date', () => {
+    expect(
+      thumbnailDateLine(new Date(2026, 0, 11), '18:00', 'livestream')
+    ).toBe('So. 11.01.2026 · 18:00 Uhr');
+    expect(thumbnailDateLine(new Date(NaN), '18:00', 'livestream')).toBe(
+      '18:00 Uhr'
+    );
   });
 });

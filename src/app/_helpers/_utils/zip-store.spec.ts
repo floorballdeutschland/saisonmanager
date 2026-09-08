@@ -42,12 +42,15 @@ describe('zip-store', () => {
   // Vor 1980 gibt es im DOS-Format nicht. Ein negatives Jahresfeld liefe im
   // Kopfsatz über und machte das Archiv unbrauchbar -- wegen einer verstellten
   // Uhr.
-  it('setzt Datumsangaben vor 1980 auf den 1.1.1980', () => {
-    expect(dosDateTime(new Date(1970, 0, 1))).toEqual({
-      time: 0,
-      date: (1 << 5) | 1,
-    });
-    expect(dosDateTime(new Date(NaN))).toEqual({ time: 0, date: (1 << 5) | 1 });
+  it('setzt Datumsangaben außerhalb der Reichweite auf den 1.1.1980', () => {
+    const fallback = { time: 0, date: (1 << 5) | 1 };
+
+    expect(dosDateTime(new Date(1970, 0, 1))).toEqual(fallback);
+    expect(dosDateTime(new Date(NaN))).toEqual(fallback);
+    // Nach oben ebenso: Ab 2108 läuft der 7-Bit-Jahresanteil über, und
+    // `setUint16` schnitte ihn stillschweigend ab.
+    expect(dosDateTime(new Date(2108, 0, 1))).toEqual(fallback);
+    expect(dosDateTime(new Date(2107, 11, 31)).date).not.toEqual(fallback.date);
   });
 
   it('legt Kopfsätze, Verzeichnis und Abschlusssatz an', async () => {
@@ -95,15 +98,80 @@ describe('zip-store', () => {
     expect(view.getUint32(localOffset + 14, true)).toBe(crc32(second));
   });
 
-  // Der Dateiname steht im Klartext im Archiv. Wird er als UTF-8
-  // gekennzeichnet (Flag-Bit 11), lesen ihn auch Packer außerhalb von
-  // Westeuropa richtig.
-  it('kennzeichnet die Namen als UTF-8', async () => {
+  // Angezeigt und ausgepackt wird der Name aus dem zentralen Verzeichnis. Ein
+  // nur im lokalen Kopfsatz gesetztes UTF-8-Bit hilft dort nichts -- deshalb
+  // wird es in BEIDEN geprüft.
+  it('kennzeichnet die Namen in beiden Kopfsätzen als UTF-8', async () => {
     const view = await read(
       buildZip([{ name: 'ümläut.png', data: bytes('x') }])
     );
 
     expect(view.getUint16(6, true) & 0x0800).toBe(0x0800);
+
+    const directoryOffset = view.getUint32(view.byteLength - 22 + 16, true);
+    expect(view.getUint16(directoryOffset + 8, true) & 0x0800).toBe(0x0800);
+  });
+
+  // Das Verzeichnis trägt Prüfsumme und Größen ein zweites Mal. Stimmen sie
+  // dort nicht, weisen Packer das Archiv mit „CRC-Fehler" ab oder packen leere
+  // Dateien aus -- je nach Werkzeug, und ohne dass die Datei auffällig wäre.
+  it('trägt Prüfsumme und Größen auch ins Verzeichnis ein', async () => {
+    const data = bytes('hallo welt');
+    const view = await read(buildZip([{ name: 'a.txt', data }]));
+    const directoryOffset = view.getUint32(view.byteLength - 22 + 16, true);
+
+    expect(view.getUint16(directoryOffset + 10, true)).toBe(0); // ohne Komprimierung
+    expect(view.getUint32(directoryOffset + 16, true)).toBe(crc32(data));
+    expect(view.getUint32(directoryOffset + 20, true)).toBe(data.length);
+    expect(view.getUint32(directoryOffset + 24, true)).toBe(data.length);
+  });
+
+  // Zwei gleiche Namen ergeben ein gültiges Archiv, das beim Auspacken die
+  // erste Datei überschreibt. Im Stapel eines Spieltags ist das der erreichbare
+  // Fall: Zwei lange Vereinsnamen können sich auf 40 Zeichen gekürzt gleichen.
+  it('weist zwei gleiche Namen ab', () => {
+    expect(() =>
+      buildZip([
+        { name: 'a.png', data: bytes('x') },
+        { name: 'a.png', data: bytes('y') },
+      ])
+    ).toThrowError(/Zwei Einträge/);
+  });
+
+  // Ein führender Schrägstrich oder ein `..` im Pfad ist der bekannte Weg, beim
+  // Auspacken aus dem Zielordner auszubrechen.
+  it('weist Namen ab, die aus dem Zielordner führen', () => {
+    for (const name of [
+      '/a.png',
+      '../a.png',
+      'ordner/../../a.png',
+      'a\\b.png',
+      '',
+    ]) {
+      expect(() => buildZip([{ name, data: bytes('x') }])).toThrowError(
+        /Unzulässiger Name/
+      );
+    }
+  });
+
+  it('lässt Ordner im Namen zu', async () => {
+    const view = await read(
+      buildZip([{ name: 'spieltag-3/01-bild.png', data: bytes('x') }])
+    );
+
+    expect(view.getUint16(26, true)).toBe('spieltag-3/01-bild.png'.length);
+  });
+
+  // Der Zähler im Abschlusssatz ist 16 Bit breit. Ohne diesen Riegel entstünde
+  // ein Archiv, dessen Einträge niemand zählen kann.
+  it('weist mehr Einträge ab, als der Abschlusssatz zählen kann', () => {
+    const data = bytes('x');
+    const entries = Array.from({ length: 65536 }, (_unused, index) => ({
+      name: `${index}.png`,
+      data,
+    }));
+
+    expect(() => buildZip(entries)).toThrowError(/Zu viele Dateien/);
   });
 
   it('verpackt einen leeren Stapel zu einem leeren Archiv', async () => {

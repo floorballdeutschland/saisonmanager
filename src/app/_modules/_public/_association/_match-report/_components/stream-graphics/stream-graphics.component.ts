@@ -389,14 +389,15 @@ export class StreamGraphicsComponent
   }
 
   /**
-   * Die Fußzeile mit Datum und Anwurf. Beim Highlight-Bild ohne Uhrzeit: Die
-   * Anwurfzeit ist dort ohne Belang, im Bild steht der Endstand.
+   * Die Fußzeile mit Datum und Anwurf. Ob die Uhrzeit dazugehört, entscheidet
+   * der Bildaufbau und nicht diese Komponente -- `thumbnailDateLine` liest es
+   * aus der Variante.
    */
   private dateLine(): string {
     return thumbnailDateLine(
       this.game?.date,
       this.game?.start_time,
-      this.variant === 'livestream'
+      this.variant
     );
   }
 

@@ -4,18 +4,20 @@
  * WARUM VON HAND UND NICHT MIT EINER BIBLIOTHEK: Gepackt wird hier
  * ausschließlich, was schon gepackt IST -- PNG-Dateien. Ein Deflate-Durchlauf
  * darüber gewinnt nichts und ist der einzige Grund, warum man für ein ZIP sonst
- * eine Bibliothek nimmt. Übrig bleiben knapp hundert Zeilen Kopfsätze, und die
- * sind weniger Gewicht als eine Abhängigkeit im Bündel.
+ * eine Bibliothek nimmt. Übrig bleiben die Kopfsätze, und die sind weniger
+ * Gewicht als eine Abhängigkeit im Bündel.
  *
  * WARUM ÜBERHAUPT EIN ARCHIV: Ein Spieltag hat regelmäßig ein halbes Dutzend
  * Spiele. Nacheinander ausgelöste Einzeldownloads beantwortet Chrome mit der
  * Rückfrage „Mehrere Dateien herunterladen?“, und wer sie abweist, hat genau
  * eine Datei und keinen Hinweis darauf, dass die anderen fehlen.
  *
- * GRENZEN: Kein ZIP64. Das Archiv darf also weder 4 GB noch 65.535 Einträge
- * überschreiten -- bei Thumbnails von je einigen hundert Kilobyte liegen beide
- * Grenzen außer Reichweite, aber sie werden geprüft statt still überschritten:
- * Ein überlaufener Kopfsatz erzeugt ein Archiv, das erst beim Auspacken auffällt.
+ * GRENZEN: Kein ZIP64. Geprüft werden deshalb vier Dinge, und zwar mit einem
+ * Wurf statt mit einem stillen Überlauf -- ein übergelaufener Kopfsatz erzeugt
+ * ein Archiv, das vollständig aussieht und erst beim Auspacken auffällt:
+ * höchstens 65.535 Einträge, Abstände unter 4 GB (geprüft wird der Abstand des
+ * Verzeichnisses, nicht die Dateigröße auf dem Datenträger), ein Datum in der
+ * Reichweite des DOS-Formats und Namen, die eindeutig und unverfänglich sind.
  */
 
 const LOCAL_HEADER_SIZE = 30;
@@ -25,10 +27,22 @@ const END_OF_DIRECTORY_SIZE = 22;
 const MAX_ENTRIES = 0xffff;
 const MAX_SIZE = 0xffffffff;
 
-/** Dateiname im Archiv, mit UTF-8-Kennzeichnung (Flag-Bit 11). */
+/**
+ * Bit 11 im Flag-Feld: „der Dateiname ist UTF-8".
+ *
+ * Gesetzt wird es in BEIDEN Kopfsätzen, und das ist kein Fleiß: Angezeigt wird
+ * der Name aus dem zentralen Verzeichnis, ein nur lokal gesetztes Bit hilft
+ * dort also nichts. (Info-ZIP, das `unzip` auf macOS, entstellt Umlaute
+ * trotzdem; Python, Windows und die Archivverwaltung von macOS lesen sie
+ * richtig. Für die Thumbnails belanglos, weil `filenameSlug` reines ASCII
+ * erzeugt -- aber `ZipEntry.name` nimmt beliebige Namen an.)
+ */
 const FLAG_UTF8 = 0x0800;
 const METHOD_STORE = 0;
-/** Fassung 2.0. Für „store“ genügte 1.0; 2.0 ist der Wert, den alle Packer schreiben. */
+/**
+ * Fassung 2.0, im Verzeichnis zusätzlich als „version made by". Für „store"
+ * genügte 1.0; 2.0 ist verbreiteter und schadet nicht.
+ */
 const VERSION = 20;
 
 const CRC_TABLE = (() => {
@@ -58,15 +72,17 @@ export function crc32(data: Uint8Array): number {
 /**
  * Zeitstempel im MS-DOS-Format, das ein ZIP je Eintrag trägt.
  *
- * Die Auflösung beträgt zwei Sekunden, und das Jahr zählt ab 1980: Ein Rechner
- * mit verstellter Uhr vor 1980 ergäbe ein negatives Feld und damit einen
- * kaputten Kopfsatz. Solche Datumsangaben werden auf den 1.1.1980 gesetzt --
- * ein falsches Änderungsdatum ist harmlos, ein falscher Kopfsatz nicht.
+ * Die Auflösung beträgt zwei Sekunden, das Jahr zählt ab 1980 und reicht mit
+ * sieben Bit bis 2107. Beide Grenzen zählen, und beide erreicht nur eine
+ * verstellte Uhr: darunter wäre das Jahresfeld negativ, darüber liefe es über,
+ * und `setUint16` schnitte es stillschweigend ab. Solche Datumsangaben werden
+ * auf den 1.1.1980 gesetzt -- ein falsches Änderungsdatum ist harmlos, ein
+ * falscher Kopfsatz nicht.
  */
 export function dosDateTime(date: Date): { time: number; date: number } {
   const year = date.getFullYear();
 
-  if (!Number.isFinite(date.getTime()) || year < 1980) {
+  if (!Number.isFinite(date.getTime()) || year < 1980 || year > 2107) {
     return { time: 0, date: (1 << 5) | 1 };
   }
 
@@ -110,10 +126,31 @@ export function buildZip(entries: ZipEntry[], modified = new Date()): Blob {
   const stamp = dosDateTime(modified);
   const parts: BlobPart[] = [];
   const directory: BlobPart[] = [];
+  const seen = new Set<string>();
   let offset = 0;
   let directorySize = 0;
 
   for (const entry of entries) {
+    // Zwei gleiche Namen ergeben ein gültiges Archiv, das beim Auspacken die
+    // erste Datei überschreibt -- dieselbe Klasse Fehler wie ein
+    // übergelaufener Kopfsatz, nur die erreichbare. Ein führender
+    // Schrägstrich, ein `..` oder ein Backslash im Pfad ist der bekannte Weg,
+    // beim Auspacken aus dem Zielordner auszubrechen; ein Archiv von hier soll
+    // das nie können.
+    const segments = entry.name.split('/');
+    if (
+      entry.name.includes('\\') ||
+      segments.includes('..') ||
+      segments.includes('.') ||
+      segments.some((segment) => !segment)
+    ) {
+      throw new Error(`Unzulässiger Name im Archiv: „${entry.name}".`);
+    }
+    if (seen.has(entry.name)) {
+      throw new Error(`Zwei Einträge heißen „${entry.name}".`);
+    }
+    seen.add(entry.name);
+
     const name = encoder.encode(entry.name);
     const size = entry.data.length;
     const crc = crc32(entry.data);

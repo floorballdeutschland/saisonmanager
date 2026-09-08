@@ -65,6 +65,19 @@ export const VARIANT_LABELS: Record<ThumbnailVariant, string> = {
   highlights: 'Highlights',
 };
 
+/**
+ * Trägt der Bildaufbau die Anwurfzeit?
+ *
+ * Beim Highlight-Bild nicht: Dort steht der Endstand im Bild, die Anwurfzeit
+ * ist ohne Belang. Als `Record` und nicht als Bedingung beim Aufrufer, weil die
+ * Regel zum Bildaufbau gehört und nicht zum Aufrufer -- so muss eine dritte
+ * Variante die Frage beantworten, statt sie an zwei Stellen neu herzuleiten.
+ */
+export const VARIANT_SHOWS_TIME: Record<ThumbnailVariant, boolean> = {
+  livestream: true,
+  highlights: false,
+};
+
 export interface ThumbnailTeam {
   name: string;
   logoUrl?: string | null;
@@ -112,6 +125,36 @@ function body(size: number, weight = 400): string {
 
 let fontsPromise: Promise<boolean> | null = null;
 
+/** Frist je Schriftdatei, siehe `loadThumbnailFonts`. */
+const FONT_TIMEOUT_MS = 8000;
+
+/**
+ * Verliert das Rennen gegen die Uhr, statt für immer zu warten.
+ *
+ * Wirft nach Ablauf, damit der Aufrufer denselben Weg nimmt wie bei einem
+ * echten Fehlschlag -- ein Stillstand soll sich nicht anders verhalten als ein
+ * Fehler, sonst braucht er eine zweite Behandlung, die niemand schreibt.
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const watchdog = window.setTimeout(
+      () => reject(new Error(`Abruf nach ${ms} ms ohne Antwort.`)),
+      ms
+    );
+
+    promise.then(
+      (value) => {
+        window.clearTimeout(watchdog);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(watchdog);
+        reject(error);
+      }
+    );
+  });
+}
+
 /**
  * Lädt Oswald und Inter aus `overlay/fonts/` nach.
  *
@@ -130,6 +173,12 @@ let fontsPromise: Promise<boolean> | null = null;
  * Modulvariable jede Navigation, ein einziges kurzes Netzproblem beim ersten
  * Aufruf hätte sonst die Ersatzschrift für die ganze Registerkarte
  * festgeschrieben.
+ *
+ * Dieselbe Modulvariable ist der Grund für die Frist: Ein `face.load()`, das
+ * hängt statt zu scheitern, löst nie auf. Der Rückfall eine Zeile weiter unten
+ * greift dann nicht (er behandelt den Fehlschlag, nicht den Stillstand), und
+ * jeder weitere Aufruf in dieser Registerkarte -- auch der des einzelnen
+ * Thumbnails -- wartete an demselben toten Versprechen.
  */
 export function loadThumbnailFonts(): Promise<boolean> {
   if (fontsPromise) return fontsPromise;
@@ -154,10 +203,11 @@ export function loadThumbnailFonts(): Promise<boolean> {
       const loaded = await Promise.all(
         faces.map(async (face) => {
           try {
-            document.fonts.add(await face.load());
+            document.fonts.add(await withTimeout(face.load(), FONT_TIMEOUT_MS));
             return true;
           } catch {
-            // Einzelne Schrift nicht da: Der Rückfall in der Schriftliste greift.
+            // Einzelne Schrift nicht da oder zu langsam: Der Rückfall in der
+            // Schriftliste greift.
             return false;
           }
         })
@@ -199,19 +249,46 @@ export function resolveMediaUrl(path?: string | null): string | null {
   }
 }
 
+/**
+ * Frist für ein einzelnes Wappen oder Ligazeichen.
+ *
+ * Ohne sie gibt es einen Weg, auf dem NICHTS mehr passiert: Ein Abruf, der
+ * angenommen, aber nicht beantwortet wird (hängender Proxy, tote
+ * Storage-Route), feuert weder `onload` noch `onerror`. Das Versprechen bliebe
+ * offen, `renderStreamThumbnail` wartete für immer, und der Aufrufer stünde mit
+ * gesperrtem Knopf und der Anzeige „wird erzeugt" da -- ohne Meldung, ohne
+ * Sentry-Vorfall, bis zum Neuladen. Im Stapel eines Spieltags nimmt ein
+ * einziges solches Wappen alle übrigen Bilder mit.
+ *
+ * Nach Ablauf gilt das Bild als nicht vorhanden, und das ist ein VORGESEHENER
+ * Zustand: An seiner Stelle steht das Kürzel, und `missing` benennt es.
+ */
+const IMAGE_TIMEOUT_MS = 10000;
+
 function loadImage(url?: string | null): Promise<HTMLImageElement | null> {
   const resolved = resolveMediaUrl(url);
   if (!resolved) return Promise.resolve(null);
 
   return new Promise((resolve) => {
     const img = new Image();
+    let settled = false;
+
+    const settle = (value: HTMLImageElement | null) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(watchdog);
+      resolve(value);
+    };
+
+    const watchdog = window.setTimeout(() => settle(null), IMAGE_TIMEOUT_MS);
+
     // Für den Fall, dass Seite und Bild verschiedener Herkunft sind: ohne
     // dieses Attribut lädt das Bild zwar, verunreinigt aber die Leinwand, und
     // `toBlob` wirft danach SecurityError. Lieber hier scheitern, wo ein
     // Ersatzzeichen einspringt, als beim Herunterladen.
     img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
+    img.onload = () => settle(img);
+    img.onerror = () => settle(null);
     img.src = resolved;
   });
 }
@@ -616,8 +693,10 @@ function usable(img: HTMLImageElement | null): boolean {
 /**
  * Zeichnet das Thumbnail in die übergebene Leinwand.
  *
- * Die Leinwand gehört dem Aufrufer: Sie steht als Vorschau in der Seite und ist
- * zugleich die Quelle des Downloads, damit beides nicht auseinanderlaufen kann.
+ * Die Leinwand gehört dem Aufrufer, und es gibt zwei Arten von Aufrufern: Im
+ * Spielbericht ist es die ANGEZEIGTE Vorschau, damit Bild und Download nicht
+ * auseinanderlaufen können; im Stapel eines Spieltags eine frei stehende, weil
+ * dort niemand sechs Vorschauen braucht (`renderThumbnailPng`).
  */
 export async function renderStreamThumbnail(
   canvas: HTMLCanvasElement,
@@ -678,23 +757,39 @@ const WEEKDAYS = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
  * Hier und nicht in der Komponente, weil zwei Wege dieselbe Zeile brauchen: das
  * einzelne Thumbnail im Spielbericht und der Stapel eines ganzen Spieltags.
  * Liefen die beiden auseinander, trüge dasselbe Spiel je nach Weg ein anderes
- * Datum.
+ * Datum. Dass beide Wege dabei dieselbe Angabe einspeisen, hängt an der API:
+ * Ein Spiel hat keine eigene Datumsspalte, `Game#schedule_item` gibt das Datum
+ * des Spieltags aus -- genau das, was der Stapel direkt vom Spieltag nimmt.
+ *
+ * `date` nimmt auch ein echtes `Date`, und der Zweig dafür ist nicht
+ * entbehrlich: `Game.date` ist im Modell als `Date` deklariert, obwohl die API
+ * Text liefert (`game_days.date` ist eine Textspalte). Ohne den Zweig fiele ein
+ * tatsächlich übergebenes `Date` durch die Regex -- „Mon Oct 12 2026 …" passt
+ * nicht -- und das Datum verschwände stillschweigend aus dem Bild.
+ *
+ * Ohne lesbares Datum bleibt die Zeile beim Highlight-Bild LEER, statt allein
+ * die Anwurfzeit zu zeigen: In einem Bild, das den Endstand trägt, ist eine
+ * Uhrzeit ohne Datum keine Auskunft, sondern eine Irritation.
  */
 export function thumbnailDateLine(
-  date?: string | Date | null,
-  time?: string | null,
-  withTime = true
+  date: string | Date | null | undefined,
+  time: string | null | undefined,
+  variant: ThumbnailVariant
 ): string {
-  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(date ? String(date) : '');
+  const withTime = VARIANT_SHOWS_TIME[variant];
+  const day =
+    date instanceof Date && Number.isFinite(date.getTime())
+      ? [
+          String(date.getFullYear()),
+          String(date.getMonth() + 1).padStart(2, '0'),
+          String(date.getDate()).padStart(2, '0'),
+        ]
+      : /^(\d{4})-(\d{2})-(\d{2})/.exec(date ? String(date) : '')?.slice(1);
 
-  if (!parts) return withTime && time ? `${time} Uhr` : '';
+  if (!day) return withTime && time ? `${time} Uhr` : '';
 
-  const parsed = new Date(
-    Number(parts[1]),
-    Number(parts[2]) - 1,
-    Number(parts[3])
-  );
-  const line = `${WEEKDAYS[parsed.getDay()]} ${parts[3]}.${parts[2]}.${parts[1]}`;
+  const parsed = new Date(Number(day[0]), Number(day[1]) - 1, Number(day[2]));
+  const line = `${WEEKDAYS[parsed.getDay()]} ${day[2]}.${day[1]}.${day[0]}`;
 
   return withTime && time ? `${line} · ${time} Uhr` : line;
 }
@@ -752,11 +847,15 @@ export function saveBlob(blob: Blob, filename: string): void {
 }
 
 /**
- * Die Leinwand als PNG-Blob.
+ * Die Leinwand als PNG-Blob. Kodiert nur, gezeichnet wird in
+ * `renderStreamThumbnail`.
  *
  * `toBlob` wirft bei einer verunreinigten Leinwand SecurityError. Das darf
  * nicht stumm bleiben: Wer nichts im Download-Ordner findet und keine Meldung
- * sieht, klickt weiter und hält am Ende die Funktion für kaputt.
+ * sieht, klickt weiter und hält am Ende die Funktion für kaputt. Aus demselben
+ * Grund gilt ein Blob ohne Inhalt als Fehlschlag -- eine 0-Byte-Datei ist im
+ * Download-Ordner nicht von einem Bild zu unterscheiden und im Stapel erst
+ * recht nicht, wo niemand die Bilder vorher ansieht.
  */
 export function canvasToPngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
@@ -782,7 +881,7 @@ export function canvasToPngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
       canvas.toBlob((blob) => {
         if (done) return;
 
-        if (!blob) {
+        if (!blob || !blob.size) {
           fail(new Error('Das Bild konnte nicht erzeugt werden.'));
           return;
         }
@@ -799,19 +898,22 @@ export function canvasToPngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
 
 /**
  * Speichert die Leinwand als PNG.
+ *
+ * `saveBlob` kann synchron werfen (`createObjectURL` in einem eingeschränkten
+ * Kontext, `anchor.remove()` auf einem bereits entfernten Knoten). Weil diese
+ * Funktion `async` ist, kommt das beim Aufrufer als abgewiesenes Versprechen an
+ * und damit in seinem `catch` -- er muss es melden, sonst sucht der Benutzer
+ * eine Datei, die nie entstanden ist. Ein eigenes `try` braucht es dafür nicht.
+ *
+ * Zu beachten nach der Aufteilung: Der Wächter in `canvasToPngBlob` deckt das
+ * Ablegen NICHT mehr mit ab. Er muss es auch nicht -- eine Ausnahme hier kann
+ * das Versprechen nicht mehr offen lassen, weil sie außerhalb davon fliegt.
  */
 export async function downloadThumbnail(
   canvas: HTMLCanvasElement,
   filename: string
 ): Promise<void> {
-  const blob = await canvasToPngBlob(canvas);
-
-  // Eigener Riegel um das Ablegen: `canvasToPngBlob` deckt nur das Zeichnen ab.
-  // Wirft eine dieser Zeilen (`createObjectURL` in einem eingeschränkten
-  // Kontext, ein `removeChild` auf einem inzwischen entfernten Knoten), muss
-  // der Aufrufer das als Fehlschlag sehen -- er meldet dem Benutzer sonst
-  // nichts, obwohl keine Datei entstanden ist.
-  saveBlob(blob, filename);
+  saveBlob(await canvasToPngBlob(canvas), filename);
 }
 
 /**
