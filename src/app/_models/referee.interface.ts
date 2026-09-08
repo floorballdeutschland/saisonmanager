@@ -81,6 +81,27 @@ export type RefereeStatusFilter =
   | 'beendet'
   | 'ohne_nachweis';
 
+/**
+ * Sortierbare Spalten der Verwaltungsliste, in der Reihenfolge der Tabelle.
+ * Die Schluessel sind die Namen der Spalten, nicht die der Datenbank.
+ *
+ * Gegenstueck in der API ist `Admin::RefereesController::SORT_COLUMNS`. Die
+ * beiden Listen muessen uebereinstimmen; einen dort unbekannten Schluessel
+ * weist die API mit 422 ab, statt still nach Namen zu sortieren.
+ */
+export const REFEREE_SORT_COLUMNS = [
+  'lizenznummer',
+  'name',
+  'lizenzstufe',
+  'qualifikationen',
+  'landesverband',
+  'gueltigkeit',
+  'verein',
+  'spiele',
+] as const;
+
+export type RefereeSortColumn = (typeof REFEREE_SORT_COLUMNS)[number];
+
 export interface RefereeAdmin {
   id: number;
   lizenznummer: number | null;
@@ -402,6 +423,7 @@ export interface RefereeAssignmentStub {
   vorname: string;
   nachname: string;
   lizenzstufe?: string;
+  guest?: boolean;
   partner_lizenznummer?: number | null;
   // Kontakt zum angesetzten Gespann fuer den dringenden Fall am Spieltag.
   telefonnummer?: string | null;
@@ -458,6 +480,11 @@ export interface RefereeAssignmentAvailable {
   vorname: string;
   nachname: string;
   lizenzstufe?: string;
+  // Gastschiedsrichter: Aushilfe ohne eigene Zuständigkeit im Verband. Trägt
+  // weder Lizenznummer noch Lizenzstufe und steht ohne hinterlegte
+  // Verfügbarkeit in der Auswahl – die Oberfläche kennzeichnet ihn und nimmt
+  // ihn aus der Lizenzstufen-Vorauswahl heraus.
+  guest?: boolean;
   // Beide Auswahl-Endpunkte (#available und #available_coaches) liefern das
   // Kennzeichen und die Nummer. Die Oberflaeche zeigt die Nummer nur zum
   // gesetzten Kennzeichen: Wer nicht kurzfristig einspringt, wird aus dieser
@@ -535,6 +562,7 @@ export interface RefereeAvailabilityReferee {
   vorname: string;
   nachname: string;
   lizenzstufe?: string;
+  guest?: boolean;
   states: { [weekendKey: string]: RefereeAvailabilityState };
 }
 

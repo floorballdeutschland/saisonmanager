@@ -1,6 +1,14 @@
 // Deckungsgleich mit RefereeCourseImport::STATUSES in der API. `completed`
 // stand hier, ohne dass die API den Zustand je erzeugt.
-export type RefereeCourseImportStatus = 'in_review' | 'submitted' | 'cancelled';
+//
+// `partially_submitted`: Ein Teil ist eingereicht, der Importeur hat Zeilen
+// zurückgestellt. Der Import bleibt bearbeitbar, bis sie geklärt (und
+// nachgereicht) oder verworfen sind.
+export type RefereeCourseImportStatus =
+  | 'in_review'
+  | 'partially_submitted'
+  | 'submitted'
+  | 'cancelled';
 
 export type RefereeCourseResultStatus =
   | 'pending_review'
@@ -32,8 +40,14 @@ export interface RefereeCourseCsvFields {
 
 export interface RefereeCourseImportProgress {
   total: number;
+  /** Offen — enthält beides: beim LV wartend und vom Importeur zurückgestellt. */
   pending_review: number;
   applied: number;
+  rejected: number;
+  /** Vom Importeur zurückgestellt, wartet auf eine Klärung. */
+  deferred: number;
+  /** Zeilen, die ein Einreichen jetzt anwenden würde. */
+  submittable: number;
 }
 
 export interface RefereeCourseImport {
@@ -60,10 +74,35 @@ export interface RefereeSnapshot {
   gueltigkeit?: string | null;
 }
 
+/**
+ * Woran der Vereinsname aus der Datei gehangen hat. Die Reihenfolge der
+ * Auflösung ist verbindlich (RefereeClubLookup in der API): Namensliste,
+ * exakter Vereinsname, exakter Langname, dann beide ohne „e.V." und
+ * Satzzeichen. Alles außer `name` ist eine Schlussfolgerung und keine
+ * Gleichheit — die Masken sagen das.
+ */
+export type RefereeCourseClubMatchType =
+  | 'alias'
+  | 'name'
+  | 'long_name'
+  | 'normalized_name'
+  | 'normalized_long_name';
+
 export interface MatchedClub {
   id: number;
   name: string;
   state_association_id: number | null;
+}
+
+/**
+ * Der Verein, den der Name aus der Datei trifft — mit der Herkunft des
+ * Treffers. Eigener Typ und nicht ein optionales Feld an `MatchedClub`: An
+ * `matched_club` (dem Zielwert der Zeile) liefert die API die Herkunft nie,
+ * und `match_type` heißt am Ergebnis selbst etwas völlig anderes
+ * (`exact_match` …).
+ */
+export interface CsvClubMatch extends MatchedClub {
+  match_type?: RefereeCourseClubMatchType;
 }
 
 export interface RefereeCourseResult {
@@ -72,6 +111,13 @@ export interface RefereeCourseResult {
   referee_id: number | null;
   state_association_id: number | null;
   status: RefereeCourseResultStatus;
+  /** Vom Importeur zurückgestellt: Das Einreichen überspringt die Zeile. */
+  deferred: boolean;
+  /**
+   * Gesetzt, sobald das Einreichen die Zeile angewendet hat. Ab dann gehört sie
+   * dem Landesverband, der Importeur kann sie nicht mehr bearbeiten.
+   */
+  submitted_at: string | null;
   match_type: RefereeCourseMatchType;
   match_field_count: number;
   lizenzstufe: string | null;
@@ -102,6 +148,11 @@ export interface RefereeCourseResult {
   reviewed_by_user_id: number | null;
   reviewed_at: string | null;
   applied_at: string | null;
+  /**
+   * Begründung des Landesverbands beim Zurückweisen — und beim Verwerfen durch
+   * den Importeur der feste Vermerk, dass er es war.
+   */
+  rejection_reason?: string | null;
   referee_snapshot?: RefereeSnapshot | null;
   /**
    * Der Verein, den Import bzw. Freigabe als Zielwert führen
@@ -111,10 +162,19 @@ export interface RefereeCourseResult {
    */
   matched_club?: MatchedClub | null;
   /**
-   * Der Verein, den der Vereinsname aus der Datei trifft, oder `null`. Nur die
-   * Freigabeübersicht liefert das Feld.
+   * Der Verein, den der Vereinsname aus der Datei trifft, oder `null` — samt
+   * `match_type`. Maßgeblich für die Frage „trifft der Name überhaupt?":
+   * `matched_club` fällt beim Import auf den Verein des Schiedsrichters zurück
+   * und meldet damit ausgerechnet für den häufigsten Nicht-Treffer Gleichheit.
    */
-  csv_club_match?: MatchedClub | null;
+  csv_club_match?: CsvClubMatch | null;
+  /**
+   * Die Herkunft auch ohne Treffer: `ambiguous` (zwei Vereine tragen dieselbe
+   * Schreibweise — hier braucht es einen Eintrag in der Namensliste), `none`
+   * (unbekannt), `placeholder` („Karriere beendet" und Ähnliches), `blank`.
+   * Ohne diese Angabe sahen alle vier in der Maske gleich aus.
+   */
+  csv_club_match_type?: RefereeCourseClubMatchType | 'ambiguous' | 'none' | 'placeholder' | 'blank' | 'alias_target_missing' | null;
   age_at_kursstichtag?: number | null;
   previous_season_game_count?: number;
   state_association?: { id: number; name: string } | null;

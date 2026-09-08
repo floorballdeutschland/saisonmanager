@@ -10,16 +10,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
+  ClubService,
   NotificationService,
   RefereeCourseImportService,
   RefereeService,
 } from '@floorball/core';
 import {
+  Club,
   RefereeCourseImportWithResults,
   RefereeCourseMasterFields,
   RefereeCourseResult,
   RefereeLicenseLevel,
 } from '@floorball/types';
+
+import { clubMatchHintKey, csvClubUnmatched } from '../../club-match-hint';
 
 type MasterField = keyof RefereeCourseMasterFields;
 
@@ -32,6 +36,11 @@ type MasterField = keyof RefereeCourseMasterFields;
 export class CourseImportDetailComponent implements OnInit, OnDestroy {
   importData: RefereeCourseImportWithResults | null = null;
   licenseLevels: RefereeLicenseLevel[] = [];
+  clubs: Club[] = [];
+  // Ohne Vereinsliste zeigt das Auswahlfeld nichts an, auch wenn ein Verein
+  // gesetzt ist. Dann bleibt es gesperrt und der gesetzte Wert steht daneben —
+  // sonst schriebe ein Enter im leeren Suchfeld ein `club_id: null`.
+  clubsUnavailable = false;
   loading = false;
   submitting = false;
 
@@ -53,6 +62,7 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _service: RefereeCourseImportService,
     private _refereeService: RefereeService,
+    private _clubService: ClubService,
     private _notify: NotificationService,
     private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
@@ -71,6 +81,29 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
           this._notify.error(
             this._transloco.translate(
               'refereeCourseAdmin.notifications.licenseLevelsLoadError'
+            )
+          );
+          this._cdr.markForCheck();
+        },
+      });
+
+    // `getAdminClubAll` und nicht `getAdminClubs`: Letzteres wertet nur
+    // `ph[:admin]` und `ph[:sbk]` aus, ein reiner RSK bekäme 200 mit leerer
+    // Liste — und ein leeres Auswahlfeld schreibt beim Enter ein `club_id: null`.
+    this._clubService
+      .getAdminClubAll()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (clubs) => {
+          this.clubs = clubs;
+          this.clubsUnavailable = clubs.length === 0;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.clubsUnavailable = true;
+          this._notify.error(
+            this._transloco.translate(
+              'refereeCourseAdmin.notifications.loadClubsError'
             )
           );
           this._cdr.markForCheck();
@@ -112,6 +145,144 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  // --- Zurückstellen -----------------------------------------------------
+
+  /**
+   * Ein teilweise eingereichter Import ist weiter bearbeitbar — seine
+   * zurückgestellten Zeilen sollen ja geklärt und nachgereicht werden.
+   */
+  isEditable(): boolean {
+    return (
+      this.importData?.status === 'in_review' ||
+      this.importData?.status === 'partially_submitted'
+    );
+  }
+
+  /**
+   * Eine eingereichte Zeile gehört dem Landesverband, nicht mehr dem
+   * Importeur. Der Zeilenstatus zählt mit: Eine verworfene Zeile
+   * (`rejected`, nie eingereicht) trägt kein `submitted_at` und wäre sonst
+   * weiter bedienbar — ihr Lizenzstufen-Feld sowieso, und die Konflikt-Knöpfe
+   * einer eingereichten Zeile liefen in einen 403, der über den
+   * ErrorInterceptor auf die Startseite führt.
+   */
+  isRowEditable(result: RefereeCourseResult): boolean {
+    return (
+      this.isEditable() &&
+      !result.submitted_at &&
+      result.status === 'pending_review'
+    );
+  }
+
+  /** Die Zeilen, die „Einreichen" jetzt anwenden würde. */
+  submittableResults(): RefereeCourseResult[] {
+    if (!this.importData) return [];
+    return this.importData.results.filter(
+      (r) => !r.deferred && !r.submitted_at && r.status === 'pending_review'
+    );
+  }
+
+  deferredCount(): number {
+    if (!this.importData) return 0;
+    return this.importData.results.filter(
+      (r) => r.deferred && !r.submitted_at && r.status === 'pending_review'
+    ).length;
+  }
+
+  isDiscarded(result: RefereeCourseResult): boolean {
+    return result.status === 'rejected' && !result.submitted_at;
+  }
+
+  toggleDeferred(result: RefereeCourseResult): void {
+    this.patchResult(result, { deferred: !result.deferred });
+  }
+
+  discard(result: RefereeCourseResult): void {
+    // Der Aufrufer blendet den Knopf während eines laufenden PATCH aus; kommt
+    // der Klick trotzdem an (Dialog war schon offen), bleibt die Meldung
+    // statt eines stillen Ausstiegs — der Dialog schließt sich selbst, es sähe
+    // sonst wie ein erfolgtes Verwerfen aus.
+    if (this.saving.has(result.id)) {
+      this._notify.error(
+        this._transloco.translate(
+          'refereeCourseAdmin.notifications.rowBusy',
+          { row: this.rowLabel(result) }
+        )
+      );
+      return;
+    }
+    this.saving.add(result.id);
+    const rowLabel = this.rowLabel(result);
+    this._service
+      .discardResult(result.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.saving.delete(result.id);
+          // Neu laden statt die Zeile zu ersetzen: Das Verwerfen der letzten
+          // offenen Zeile schließt den Import ab, der Status im Kopf der Seite
+          // ändert sich also mit. `markForCheck` davor, damit der Ladezustand
+          // unter OnPush überhaupt gerendert wird — `load()` setzt nur das Feld.
+          this._cdr.markForCheck();
+          this.load(result.referee_course_import_id);
+        },
+        error: (err) => {
+          this.saving.delete(result.id);
+          this._notify.error(
+            err?.error?.error ??
+              this._transloco.translate(
+                'refereeCourseAdmin.notifications.discardFailedForRow',
+                { row: rowLabel }
+              )
+          );
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  // --- Verein ------------------------------------------------------------
+
+  /** Siehe `csvClubUnmatched` — die Regel teilen beide Masken. */
+  clubUnmatched(result: RefereeCourseResult): boolean {
+    return csvClubUnmatched(result);
+  }
+
+  /**
+   * Worüber der Verein zugeordnet wurde, wenn nicht exakt über den Namen.
+   *
+   * Nur, wenn der Hinweis den angezeigten Verein auch erklärt: `matched_club`
+   * ist der beim Import gespeicherte Zielwert, `csv_club_match` wird pro
+   * Anfrage neu aufgelöst. Für einen Import, der vor der besseren Auflösung
+   * angelegt wurde und noch offen ist, fällt das auseinander — dann stünde
+   * „über den Langnamen zugeordnet" unter einem „—" oder unter dem Verein des
+   * Schiedsrichters.
+   */
+  clubMatchHint(result: RefereeCourseResult): string | null {
+    if (result.csv_club_match && result.csv_club_match.id !== result.matched_club?.id) {
+      return null;
+    }
+    const key = clubMatchHintKey(result);
+    return key ? this._transloco.translate(key) : null;
+  }
+
+  // --- Verein setzen -----------------------------------------------------
+
+  /**
+   * Der Verein der Zeile, wie er beim Einreichen geschrieben würde. Der
+   * Importeur kann ihn hier setzen: Ein nicht zugeordneter Vereinsname ist in
+   * der Regel ein Tippfehler oder eine Schreibweise, die die Datenbank anders
+   * führt — die Korrektur lief bisher nur über die Freigabe des
+   * Landesverbands oder über eine neue Datei.
+   */
+  selectedClubId(result: RefereeCourseResult): number | null {
+    return result.master_by_importer.club_id ?? null;
+  }
+
+  setClub(result: RefereeCourseResult, clubId: number | null): void {
+    if (this.selectedClubId(result) === clubId) return;
+    this.patchMaster(result, { club_id: clubId });
+  }
+
   // --- Master-Auswahl ----------------------------------------------------
 
   fieldsDiffer(result: RefereeCourseResult, field: MasterField): boolean {
@@ -144,10 +315,10 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     field: MasterField,
     source: 'csv' | 'db'
   ): void {
-    // club_id ist aktuell kein Konflikt-Feld (Verein-Match erfolgt exakt-
-    // namentlich beim Import). csvValue() würde hier den Vereinsnamen aus
-    // dem CSV als String zurückgeben, das Backend erwartet number | null —
-    // daher explizit ausschließen.
+    // club_id ist kein Konflikt-Feld: csvValue() würde hier den Vereinsnamen
+    // aus der Datei als String zurückgeben, das Backend erwartet
+    // number | null. Der Verein hat deshalb sein eigenes Auswahlfeld
+    // (setClub) statt zweier Knöpfe.
     if (field === 'club_id') return;
     const value =
       source === 'csv'
@@ -162,13 +333,23 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     result: RefereeCourseResult,
     patch: Partial<RefereeCourseMasterFields>
   ): void {
+    this.patchResult(result, { master_by_importer: patch });
+  }
+
+  private patchResult(
+    result: RefereeCourseResult,
+    patch: {
+      deferred?: boolean;
+      master_by_importer?: Partial<RefereeCourseMasterFields>;
+    }
+  ): void {
     // Skip wenn für diese Zeile bereits ein PATCH in flight ist — sonst
     // können Responses out-of-order kommen und ältere überschreiben neuere.
     if (this.saving.has(result.id)) return;
     this.saving.add(result.id);
     const rowLabel = this.rowLabel(result);
     this._service
-      .updateResult(result.id, { master_by_importer: patch })
+      .updateResult(result.id, patch)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (updated) => {
@@ -218,7 +399,8 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  private rowLabel(result: RefereeCourseResult): string {
+  // Nicht privat: Die Verwerfen-Bestätigung nennt die Zeile im Text.
+  rowLabel(result: RefereeCourseResult): string {
     const name = [
       result.master_by_importer.vorname,
       result.master_by_importer.nachname,
@@ -246,35 +428,64 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
   // --- Submit ------------------------------------------------------------
 
   canSubmit(): boolean {
-    if (!this.importData) return false;
-    if (this.importData.status !== 'in_review') return false;
+    if (!this.isEditable()) return false;
+    // Siehe submit(): erst die offenen Zeilen-PATCHes, dann einreichen.
+    if (this.saving.size > 0) return false;
     // Ohne geladene Lizenzstufen kann der User die Select-Werte nicht (mehr) anpassen –
     // dann Submit blockieren, damit der Stand nicht aus alten Daten heraus eingereicht wird.
     if (this.licenseLevels.length === 0) return false;
-    return this.importData.results.every((r) => !!r.lizenzstufe);
+    const rows = this.submittableResults();
+    // Nur die einreichbaren Zeilen: Eine zurückgestellte Zeile ohne Lizenzstufe
+    // ist ja genau der Fall, den das Zurückstellen aus dem Weg räumt.
+    return rows.length > 0 && rows.every((r) => !!r.lizenzstufe);
+  }
+
+  submittableCount(): number {
+    return this.submittableResults().length;
+  }
+
+  /**
+   * Bezugsgröße für „X von Y einreichen": nur die Zeilen, die noch zur Debatte
+   * stehen. Die Gesamtzahl der Zeilen läse sich im teilweise eingereichten
+   * Import als „der Rest bleibt liegen", während er längst durch ist.
+   */
+  pendingCount(): number {
+    return this.submittableCount() + this.deferredCount();
+  }
+
+  /** Eine vom Landesverband zurückgewiesene Zeile — nicht vom Importeur verworfen. */
+  isRejectedByLv(result: RefereeCourseResult): boolean {
+    return result.status === 'rejected' && !!result.submitted_at;
   }
 
   missingLicenseLevelCount(): number {
-    if (!this.importData) return 0;
-    return this.importData.results.filter((r) => !r.lizenzstufe).length;
+    return this.submittableResults().filter((r) => !r.lizenzstufe).length;
   }
 
   submit(): void {
     if (!this.importData) return;
+    // Kein Submit, während für eine Zeile noch ein PATCH läuft: Wer eine Zeile
+    // zurückstellt und sofort einreicht, könnte sie sonst doch angewendet
+    // bekommen — der Server liest den Stand vor dem Commit des PATCH, und für
+    // eine angewendete Lizenz gibt es keine Rücknahme.
+    if (this.submitting || this.saving.size > 0) return;
     this.submitting = true;
     this._service
       .submitImport(this.importData.id)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (data) => {
-          this.importData = data;
           this.submitting = false;
           this._notify.success(
             this._transloco.translate(
-              'refereeCourseAdmin.notifications.submitted'
+              data.status === 'partially_submitted'
+                ? 'refereeCourseAdmin.notifications.partiallySubmitted'
+                : 'refereeCourseAdmin.notifications.submitted'
             )
           );
-          this._cdr.markForCheck();
+          // Die Submit-Antwort trägt den Import ohne seine Zeilen. Direkt
+          // zugewiesen stand die Tabelle ohne `results` da.
+          this.load(data.id);
         },
         error: (err) => {
           this.submitting = false;

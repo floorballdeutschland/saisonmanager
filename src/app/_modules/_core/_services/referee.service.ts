@@ -32,6 +32,7 @@ import {
   RefereeProfile,
   RefereePublicLicense,
   RefereeQualificationType,
+  RefereeSortColumn,
   RefereeStatusFilter,
   RefereeTag,
   RefereeVm,
@@ -212,7 +213,7 @@ export class RefereeService {
     lizenzstufe?: string;
     active?: boolean;
     status?: RefereeStatusFilter;
-    sort?: 'name' | 'lizenznummer';
+    sort?: RefereeSortColumn;
     sort_dir?: 'asc' | 'desc';
   }) {
     let query = '';

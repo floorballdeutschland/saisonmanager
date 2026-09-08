@@ -196,6 +196,31 @@ describe('CourseReviewIndexComponent', () => {
     });
   });
 
+  describe('Herkunft des Vereinstreffers', () => {
+    // Der Reviewer muss einen nicht-exakten Treffer als solchen erkennen: Über
+    // den Langnamen zugeordnet heißt „das System hat geschlossen", nicht „die
+    // Datei sagt dasselbe".
+    it('nennt einen Treffer über den Langnamen', () => {
+      const r = zeile({
+        csv_club_match: { ...ZWIGGE, match_type: 'long_name' },
+      });
+
+      expect(component.clubMatchHint(r)).not.toBeNull();
+    });
+
+    it('sagt zum exakten Vereinsnamen nichts', () => {
+      const r = zeile({ csv_club_match: { ...ZWIGGE, match_type: 'name' } });
+
+      expect(component.clubMatchHint(r)).toBeNull();
+    });
+
+    it('sagt ohne Treffer nichts', () => {
+      expect(
+        component.clubMatchHint(zeile({ csv_club_match: null }))
+      ).toBeNull();
+    });
+  });
+
   describe('Verein', () => {
     // Der häufigste Grund für einen Teilmatch: Der Abgleich beim Import nimmt
     // den Vereinsnamen exakt, „Unihockeyverein Zwigge 07 e.V." findet den

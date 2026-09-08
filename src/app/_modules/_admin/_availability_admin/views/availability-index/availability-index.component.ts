@@ -204,12 +204,18 @@ export class AvailabilityIndexComponent implements OnInit, OnDestroy {
     this.weekends.forEach((w) => {
       totals[w.key] = { available: 0, assigned: 0, unavailable: 0 };
     });
-    this.displayReferees.forEach((r) => {
-      this.weekends.forEach((w) => {
-        const state = r.states[w.key] ?? 'unavailable';
-        totals[w.key][state] += 1;
+    // Gäste bleiben in der Liste, aber aus den Summen heraus: Sie können keine
+    // Verfügbarkeit hinterlegen (kein Selbstverwaltungskonto), ihr Zustand ist
+    // an jedem Wochenende ohne Ansetzung „nicht verfügbar" — und niemand hat
+    // etwas versäumt. Mitgezählt läsen sich die Spalten dauerhaft zu hoch.
+    this.displayReferees
+      .filter((r) => !r.guest)
+      .forEach((r) => {
+        this.weekends.forEach((w) => {
+          const state = r.states[w.key] ?? 'unavailable';
+          totals[w.key][state] += 1;
+        });
       });
-    });
     this.totals = totals;
   }
 }
