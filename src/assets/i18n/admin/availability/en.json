@@ -9,6 +9,8 @@
     "filterApply": "Apply",
     "filterLevels": "License levels",
     "colReferee": "Referee",
+    "guestBadge": "Guest",
+    "guestTitle": "Guest referee – stand-in without a licence level; usually declares no availability.",
     "colLevel": "Level",
     "gamesCount": "{{ count }} games",
     "stateAvailable": "Available",

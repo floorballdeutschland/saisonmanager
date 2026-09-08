@@ -142,6 +142,15 @@
                 class="sticky left-0 z-10 bg-white py-1.5 px-3 whitespace-nowrap"
               >
                 {{ refereeName(r) }}
+                @if (r.guest) {
+                  <span
+                    class="ml-1 inline-block bg-fb-gray-700 text-fb-gray-500 text-[10px] font-bold px-1 rounded"
+                    [title]="'availabilityAdmin.index.guestTitle' | transloco"
+                    >{{
+                      "availabilityAdmin.index.guestBadge" | transloco
+                    }}</span
+                  >
+                }
               </td>
               <td class="py-1.5 px-2 text-fb-gray-500 whitespace-nowrap">
                 {{ r.lizenzstufe || "–" }}
