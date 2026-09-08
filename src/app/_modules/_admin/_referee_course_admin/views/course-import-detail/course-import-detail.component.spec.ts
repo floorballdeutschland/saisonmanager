@@ -4,12 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { of } from 'rxjs';
 import {
+  ClubService,
   getTranslocoTestingModule,
   NotificationService,
   RefereeCourseImportService,
   RefereeService,
 } from '@floorball/core';
 import {
+  Club,
   RefereeCourseImport,
   RefereeCourseImportWithResults,
   RefereeCourseResult,
@@ -74,6 +76,8 @@ function zeile(overrides: Partial<RefereeCourseResult> = {}) {
 // Der Stand in der Datenbank. Ohne ihn zeigt die Maske keinen Konflikt, denn
 // „Abweichung" heisst: Datei und Datenbank tragen beide etwas, und es ist
 // verschieden.
+const ZWIGGE = { id: 143, name: 'UV Zwigge 07', state_association_id: 3 };
+
 const SCHIRI = {
   id: 500,
   lizenznummer: 7940,
@@ -112,6 +116,7 @@ describe('CourseImportDetailComponent', () => {
   let importService: jasmine.SpyObj<RefereeCourseImportService>;
   let refereeService: jasmine.SpyObj<RefereeService>;
   let notify: jasmine.SpyObj<NotificationService>;
+  let clubService: jasmine.SpyObj<ClubService>;
 
   beforeEach(() => {
     importService = jasmine.createSpyObj('RefereeCourseImportService', [
@@ -127,6 +132,8 @@ describe('CourseImportDetailComponent', () => {
     ]);
     refereeService.adminGetLicenseLevels.and.returnValue(of([STUFE_G]));
     notify = jasmine.createSpyObj('NotificationService', ['success', 'error']);
+    clubService = jasmine.createSpyObj('ClubService', ['getAdminClubAll']);
+    clubService.getAdminClubAll.and.returnValue(of([ZWIGGE as Club]));
 
     TestBed.configureTestingModule({
       imports: [
@@ -155,6 +162,7 @@ describe('CourseImportDetailComponent', () => {
       providers: [
         { provide: RefereeCourseImportService, useValue: importService },
         { provide: RefereeService, useValue: refereeService },
+        { provide: ClubService, useValue: clubService },
         { provide: NotificationService, useValue: notify },
         { provide: ActivatedRoute, useValue: { params: of({ id: '9' }) } },
         {
@@ -310,12 +318,97 @@ describe('CourseImportDetailComponent', () => {
       expect(select.disabled).toBeTrue();
     });
 
+    it('zeigt das Vereinsfeld nur auf einer offenen Zeile', () => {
+      const offen = render(importMit([zeile({ id: 1 })]));
+      expect(offen.nativeElement.querySelector('fb-select-search')).toBeTruthy();
+
+      const eingereicht = render(
+        importMit([zeile({ id: 2, submitted_at: '2026-09-08T11:00:00Z' })], {
+          status: 'partially_submitted',
+        })
+      );
+      expect(
+        eingereicht.nativeElement.querySelector('fb-select-search')
+      ).toBeNull();
+    });
+
     it('lässt das Lizenzstufen-Feld einer offenen Zeile bedienbar', () => {
       const fixture = render(importMit([zeile({ id: 1 })]));
 
       const select: HTMLSelectElement =
         fixture.nativeElement.querySelector('select');
       expect(select.disabled).toBeFalse();
+    });
+  });
+
+  // Ein nicht zugeordneter Vereinsname ist meist ein Tippfehler oder eine
+  // Schreibweise, die die Datenbank anders führt. Die Korrektur lief bisher
+  // nur über die Freigabe des Landesverbands oder über eine neue Datei.
+  describe('Verein der Zeile', () => {
+    it('schickt den gewählten Verein als Änderung der Zeile', () => {
+      // Die Lage, um die es geht: Der Name aus der Datei traf nichts, die
+      // Zeile trägt keinen Verein.
+      const r = zeile({
+        id: 7,
+        csv_club_match: null,
+        master_by_importer: { ...zeile().master_by_importer, club_id: null },
+      });
+      component.importData = importMit([r]);
+      importService.updateResult.and.returnValue(of(r));
+
+      component.setClub(r, 143);
+
+      expect(importService.updateResult).toHaveBeenCalledWith(7, {
+        master_by_importer: { club_id: 143 },
+      });
+    });
+
+    it('schickt nichts, wenn sich der Verein nicht ändert', () => {
+      const r = zeile({
+        id: 7,
+        master_by_importer: { ...zeile().master_by_importer, club_id: 143 },
+      });
+      component.importData = importMit([r]);
+
+      component.setClub(r, 143);
+
+      expect(importService.updateResult).not.toHaveBeenCalled();
+    });
+
+    it('meldet einen Namen ohne Treffer, auch wenn ein Zielverein steht', () => {
+      // Genau die Lage, die vorher wie ein Treffer aussah: Der Zielwert fällt
+      // beim Import auf den Verein des Schiedsrichters zurück.
+      const r = zeile({
+        id: 1,
+        matched_club: ZWIGGE,
+        csv_club_match: null,
+      });
+
+      expect(component.clubUnmatched(r)).toBeTrue();
+    });
+
+    // `matched_club` ist der beim Import gespeicherte Zielwert,
+    // `csv_club_match` wird pro Anfrage neu aufgelöst. Für einen alten,
+    // noch offenen Import fällt das auseinander — dann erklärt der Hinweis
+    // den angezeigten Verein nicht.
+    it('verschweigt die Herkunft, wenn sie den angezeigten Verein nicht erklärt', () => {
+      const r = zeile({
+        id: 1,
+        matched_club: null,
+        csv_club_match: { ...ZWIGGE, match_type: 'long_name' },
+      });
+
+      expect(component.clubMatchHint(r)).toBeNull();
+    });
+
+    it('nennt die Herkunft zum angezeigten Verein', () => {
+      const r = zeile({
+        id: 1,
+        matched_club: ZWIGGE,
+        csv_club_match: { ...ZWIGGE, match_type: 'long_name' },
+      });
+
+      expect(component.clubMatchHint(r)).not.toBeNull();
     });
   });
 

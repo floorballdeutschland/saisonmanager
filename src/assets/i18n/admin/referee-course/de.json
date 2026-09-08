@@ -78,7 +78,17 @@
     "allDeferred": "Alle offenen Zeilen sind zurückgestellt — es gibt nichts einzureichen.",
     "partiallySubmittedInfo": "Teilweise eingereicht. {{ count }} zurückgestellte Zeile(n) warten noch auf eine Klärung: Nimm sie nach der Klärung wieder auf und reiche sie ein, oder verwirf sie. Danach ist der Import abgeschlossen.",
     "nothingOpen": "Keine offene Zeile mehr — alle Zeilen sind eingereicht oder verworfen. Der Import kann abgebrochen werden.",
-    "rejectedByLvBadge": "✕ Vom Landesverband zurückgewiesen"
+    "rejectedByLvBadge": "✕ Vom Landesverband zurückgewiesen",
+    "clubMatchAlias": "über die Namensliste zugeordnet",
+    "clubMatchLongName": "über den Langnamen zugeordnet",
+    "clubMatchNormalized": "über die bereinigte Schreibweise zugeordnet",
+    "clubMatchAmbiguous": "mehrdeutige Schreibweise — nicht zugeordnet",
+    "clubMatchAliasBroken": "Eintrag in der Namensliste zeigt auf keinen Verein",
+    "clubMatchOther": "zugeordnet, nicht wortgleich",
+    "clubSelect": "Verein der Zeile",
+    "clubPlaceholder": "Verein suchen",
+    "clubReset": "kein Verein",
+    "clubUnavailable": "Vereinsliste nicht verfügbar, Auswahl gesperrt."
   },
   "review": {
     "title": "Schiedsrichter-Kursergebnisse: Freigabe",

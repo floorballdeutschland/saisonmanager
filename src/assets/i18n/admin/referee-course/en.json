@@ -78,7 +78,17 @@
     "allDeferred": "All open rows are deferred — there is nothing to submit.",
     "partiallySubmittedInfo": "Partially submitted. {{ count }} deferred row(s) are still waiting to be clarified: resume and submit them once clarified, or discard them. The import is complete after that.",
     "nothingOpen": "No open row left — every row has been submitted or discarded. The import can be cancelled.",
-    "rejectedByLvBadge": "✕ Rejected by the state association"
+    "rejectedByLvBadge": "✕ Rejected by the state association",
+    "clubMatchAlias": "matched via the name list",
+    "clubMatchLongName": "matched via the long name",
+    "clubMatchNormalized": "matched via the cleaned-up spelling",
+    "clubMatchAmbiguous": "ambiguous spelling — not matched",
+    "clubMatchAliasBroken": "name-list entry points to no club",
+    "clubMatchOther": "matched, not an exact wording",
+    "clubSelect": "Club for this row",
+    "clubPlaceholder": "Search club",
+    "clubReset": "no club",
+    "clubUnavailable": "Club list unavailable, selection disabled."
   },
   "review": {
     "title": "Referee course results: approval",

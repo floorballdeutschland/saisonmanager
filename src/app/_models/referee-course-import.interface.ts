@@ -74,10 +74,35 @@ export interface RefereeSnapshot {
   gueltigkeit?: string | null;
 }
 
+/**
+ * Woran der Vereinsname aus der Datei gehangen hat. Die Reihenfolge der
+ * Auflösung ist verbindlich (RefereeClubLookup in der API): Namensliste,
+ * exakter Vereinsname, exakter Langname, dann beide ohne „e.V." und
+ * Satzzeichen. Alles außer `name` ist eine Schlussfolgerung und keine
+ * Gleichheit — die Masken sagen das.
+ */
+export type RefereeCourseClubMatchType =
+  | 'alias'
+  | 'name'
+  | 'long_name'
+  | 'normalized_name'
+  | 'normalized_long_name';
+
 export interface MatchedClub {
   id: number;
   name: string;
   state_association_id: number | null;
+}
+
+/**
+ * Der Verein, den der Name aus der Datei trifft — mit der Herkunft des
+ * Treffers. Eigener Typ und nicht ein optionales Feld an `MatchedClub`: An
+ * `matched_club` (dem Zielwert der Zeile) liefert die API die Herkunft nie,
+ * und `match_type` heißt am Ergebnis selbst etwas völlig anderes
+ * (`exact_match` …).
+ */
+export interface CsvClubMatch extends MatchedClub {
+  match_type?: RefereeCourseClubMatchType;
 }
 
 export interface RefereeCourseResult {
@@ -137,10 +162,19 @@ export interface RefereeCourseResult {
    */
   matched_club?: MatchedClub | null;
   /**
-   * Der Verein, den der Vereinsname aus der Datei trifft, oder `null`. Nur die
-   * Freigabeübersicht liefert das Feld.
+   * Der Verein, den der Vereinsname aus der Datei trifft, oder `null` — samt
+   * `match_type`. Maßgeblich für die Frage „trifft der Name überhaupt?":
+   * `matched_club` fällt beim Import auf den Verein des Schiedsrichters zurück
+   * und meldet damit ausgerechnet für den häufigsten Nicht-Treffer Gleichheit.
    */
-  csv_club_match?: MatchedClub | null;
+  csv_club_match?: CsvClubMatch | null;
+  /**
+   * Die Herkunft auch ohne Treffer: `ambiguous` (zwei Vereine tragen dieselbe
+   * Schreibweise — hier braucht es einen Eintrag in der Namensliste), `none`
+   * (unbekannt), `placeholder` („Karriere beendet" und Ähnliches), `blank`.
+   * Ohne diese Angabe sahen alle vier in der Maske gleich aus.
+   */
+  csv_club_match_type?: RefereeCourseClubMatchType | 'ambiguous' | 'none' | 'placeholder' | 'blank' | 'alias_target_missing' | null;
   age_at_kursstichtag?: number | null;
   previous_season_game_count?: number;
   state_association?: { id: number; name: string } | null;

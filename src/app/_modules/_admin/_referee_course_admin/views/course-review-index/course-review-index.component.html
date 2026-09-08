@@ -302,10 +302,12 @@
           </tr>
           <!--
             Der Verein ist das sechste Merkmal und das, an dem die meisten
-            Teilmatches hängen: Der Abgleich beim Import trifft nur exakte
-            Namen, „Unihockeyverein X e.V." in der Datei findet den Verein
-            „UV X" also nicht. Ohne diese Zeile war der häufigste Grund für
-            einen Teilmatch in der Maske gar nicht zu sehen.
+            Teilmatches hingen: „Unihockeyverein X e.V." in der Datei fand den
+            Verein „UV X" nicht. Der Abgleich nimmt inzwischen den Langnamen
+            und die bereinigte Schreibweise mit — ein Name ohne Treffer bleibt
+            aber möglich (unbekannt oder mehrdeutig), und ohne diese Zeile war
+            der häufigste Grund für einen Teilmatch in der Maske gar nicht zu
+            sehen.
           -->
           <tr
             class="border-b border-fb-gray-50"
@@ -339,6 +341,11 @@
                 {{
                   r.csv.verein ?? ("refereeCourseAdmin.detail.dash" | transloco)
                 }}
+                @if (clubMatchHint(r)) {
+                  <div class="text-xs text-fb-gray-600">
+                    {{ clubMatchHint(r) }}
+                  </div>
+                }
               }
             </td>
             <td>
