@@ -41,11 +41,17 @@ export class RefereeCourseImportService {
     return this.http.delete<void>(BASE + 'referee_course_imports/' + id);
   }
 
+  /**
+   * Reicht die nicht zurückgestellten Zeilen ein. Die Antwort trägt den Import
+   * **ohne** seine Zeilen (`full_hash`), der Aufrufer lädt danach neu.
+   */
   submitImport(id: number) {
-    return this.http.post<RefereeCourseImportWithResults>(
-      BASE + 'referee_course_imports/' + id + '/submit',
-      {}
-    );
+    return this.http.post<
+      RefereeCourseImport & {
+        license_notifications?: number;
+        license_notifications_unreachable?: number;
+      }
+    >(BASE + 'referee_course_imports/' + id + '/submit', {});
   }
 
   updateResult(
@@ -54,12 +60,24 @@ export class RefereeCourseImportService {
       lizenzstufe?: string | null;
       gueltigkeit?: string | null;
       referee_id?: number | null;
+      deferred?: boolean;
       master_by_importer?: Partial<RefereeCourseMasterFields>;
     }
   ) {
     return this.http.patch<RefereeCourseResult>(
       BASE + 'referee_course_results/' + id,
       patch
+    );
+  }
+
+  /**
+   * Verwirft eine noch nicht eingereichte Zeile — die Doppelmeldung, die
+   * zurückgezogene Teilnahme. Angewendet wurde für sie nichts.
+   */
+  discardResult(id: number) {
+    return this.http.post<RefereeCourseResult>(
+      BASE + 'referee_course_results/' + id + '/discard',
+      {}
     );
   }
 
