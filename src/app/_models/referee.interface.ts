@@ -81,6 +81,27 @@ export type RefereeStatusFilter =
   | 'beendet'
   | 'ohne_nachweis';
 
+/**
+ * Sortierbare Spalten der Verwaltungsliste, in der Reihenfolge der Tabelle.
+ * Die Schluessel sind die Namen der Spalten, nicht die der Datenbank.
+ *
+ * Gegenstueck in der API ist `Admin::RefereesController::SORT_COLUMNS`. Die
+ * beiden Listen muessen uebereinstimmen; einen dort unbekannten Schluessel
+ * weist die API mit 422 ab, statt still nach Namen zu sortieren.
+ */
+export const REFEREE_SORT_COLUMNS = [
+  'lizenznummer',
+  'name',
+  'lizenzstufe',
+  'qualifikationen',
+  'landesverband',
+  'gueltigkeit',
+  'verein',
+  'spiele',
+] as const;
+
+export type RefereeSortColumn = (typeof REFEREE_SORT_COLUMNS)[number];
+
 export interface RefereeAdmin {
   id: number;
   lizenznummer: number | null;

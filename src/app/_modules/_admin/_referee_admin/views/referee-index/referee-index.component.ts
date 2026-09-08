@@ -16,6 +16,8 @@ import {
 import {
   RefereeAdmin,
   RefereeQualificationEntry,
+  REFEREE_SORT_COLUMNS,
+  RefereeSortColumn,
   RefereeStatusFilter,
   StateAssociation,
 } from '@floorball/types';
@@ -50,10 +52,37 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     'ohne_nachweis',
     'alle',
   ];
-  sortBy: 'name' | 'lizenznummer' = 'name';
+  sortBy: RefereeSortColumn = 'name';
   sortDir: 'asc' | 'desc' = 'asc';
+  // Die Spalten der Kopfzeile, in der Reihenfolge der Tabelle. Sie MUSS der
+  // Reihenfolge der <td> im Template entsprechen – die Zellen sind von Hand
+  // geschrieben, weil jede eigene Auszeichnung traegt (Gast-Marke, Konto-Badge,
+  // Qualifikationsliste, Karriere-Ende). Ein Spec haelt die Reihenfolge fest,
+  // damit ein Umsortieren hier nicht lautlos jede Ueberschrift verschiebt.
+  //
+  // Sortiert wird auf dem Server: Die Einsatzzahl der Saison zaehlt er ohnehin
+  // selbst, und zwei Sortierwege (halb hier, halb dort) waeren zwei
+  // Reihenfolgen.
+  readonly sortableColumns = REFEREE_SORT_COLUMNS.map((key) => ({
+    key,
+    labelKey: RefereeIndexComponent.COLUMN_LABEL_KEYS[key],
+  }));
+  // Als Record ueber den Spaltentyp: Eine neue Spalte ohne Beschriftung ist ein
+  // Compilerfehler und keine leere Ueberschrift.
+  private static readonly COLUMN_LABEL_KEYS: Record<RefereeSortColumn, string> =
+    {
+      lizenznummer: 'refereeAdmin.index.colLicenseNumber',
+      name: 'refereeAdmin.index.colName',
+      lizenzstufe: 'refereeAdmin.index.colLevel',
+      qualifikationen: 'refereeAdmin.index.colQualifications',
+      landesverband: 'refereeAdmin.index.colRegion',
+      gueltigkeit: 'refereeAdmin.index.colValidity',
+      verein: 'refereeAdmin.index.colClub',
+      spiele: 'refereeAdmin.index.colSeasonGames',
+    };
 
   private _destroy$ = new Subject<void>();
+  private _latestRequest = 0;
 
   constructor(
     private _refereeService: RefereeService,
@@ -91,35 +120,64 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
-  toggleSort(col: 'name' | 'lizenznummer'): void {
+  toggleSort(col: RefereeSortColumn): void {
     if (this.sortBy === col) {
-      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+      this.load(col, this.sortDir === 'asc' ? 'desc' : 'asc');
     } else {
-      this.sortBy = col;
-      this.sortDir = 'asc';
+      // Die Einsatzzahl der Saison ist die einzige Spalte, nach der man
+      // absteigend sucht: Die Frage lautet „wer pfeift viel?", nicht „wer gar
+      // nicht?". Alle anderen beginnen aufsteigend.
+      this.load(col, col === 'spiele' ? 'desc' : 'asc');
     }
-    this.load();
   }
 
-  load(): void {
+  sortIndicator(col: RefereeSortColumn): string {
+    if (this.sortBy !== col) return '\u2195';
+
+    return this.sortDir === 'asc' ? '\u2191' : '\u2193';
+  }
+
+  // Screenreader lesen die Sortierung aus dem Tabellenkopf, nicht aus dem Pfeil
+  // daneben – der ist fuer sie ausgeblendet.
+  ariaSort(col: RefereeSortColumn): 'ascending' | 'descending' | 'none' {
+    if (this.sortBy !== col) return 'none';
+
+    return this.sortDir === 'asc' ? 'ascending' : 'descending';
+  }
+
+  // Die gewuenschte Sortierung wird erst uebernommen, wenn die passende Antwort
+  // da ist. Sonst behauptete der Kopf – seit dem aria-sort auch gegenueber
+  // Screenreadern – eine Reihenfolge, die die angezeigte Liste nicht hat: nach
+  // einem Fehlschlag dauerhaft, und bei zwei schnellen Klicks auf verschiedene
+  // Spalten auch ohne jeden Fehler, weil die Antworten sich ueberholen koennen.
+  // Deshalb zaehlt jede Anfrage mit; nur die zuletzt gestellte darf schreiben.
+  load(
+    sort: RefereeSortColumn = this.sortBy,
+    sortDir: 'asc' | 'desc' = this.sortDir
+  ): void {
     this.loading = true;
+    const request = ++this._latestRequest;
     this._refereeService
       .adminGetAll({
         q: this.searchQuery || undefined,
         landesverband: this.filterLandesverband || undefined,
         lizenzstufe: this.filterLizenzstufe || undefined,
         status: this.filterStatus || undefined,
-        sort: this.sortBy,
-        sort_dir: this.sortDir,
+        sort,
+        sort_dir: sortDir,
       })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
+          if (request !== this._latestRequest) return;
           this.referees = result;
+          this.sortBy = sort;
+          this.sortDir = sortDir;
           this.loading = false;
           this._cdr.markForCheck();
         },
         error: () => {
+          if (request !== this._latestRequest) return;
           this.loading = false;
           this._cdr.markForCheck();
         },
@@ -243,8 +301,6 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     this.filterLandesverband = '';
     this.filterLizenzstufe = '';
     this.filterStatus = '';
-    this.sortBy = 'name';
-    this.sortDir = 'asc';
-    this.load();
+    this.load('name', 'asc');
   }
 }
