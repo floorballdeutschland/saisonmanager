@@ -138,9 +138,10 @@
         <thead>
           <tr class="border-b border-fb-gray-700 text-left">
             <!-- Kopfzeile aus sortableColumns: Jede Spalte der Tabelle ist
-                 sortierbar, und die Reihenfolge der Liste ist die der Zellen
-                 darunter. Die letzte Spalte traegt den Bearbeiten-Link und hat
-                 keine Ueberschrift. -->
+                 sortierbar. Die Reihenfolge dort muss der Reihenfolge der <td>
+                 unten entsprechen – die Zellen sind von Hand geschrieben. Die
+                 letzte Spalte traegt den Bearbeiten-Link und hat keine
+                 Ueberschrift; deshalb colspan = Spalten + 1 in der Leerzeile. -->
             @for (col of sortableColumns; track col.key) {
               <th
                 class="py-2 pr-4 font-bold"
@@ -291,7 +292,10 @@
           }
           @if (referees.length === 0) {
             <tr>
-              <td colspan="9" class="py-8 text-center text-fb-gray-500">
+              <td
+                [attr.colspan]="sortableColumns.length + 1"
+                class="py-8 text-center text-fb-gray-500"
+              >
                 {{ "refereeAdmin.index.empty" | transloco }}
               </td>
             </tr>

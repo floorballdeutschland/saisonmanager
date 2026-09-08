@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Observable, of } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import {
   AssociationService,
   RefereeService,
@@ -26,8 +26,16 @@ const referee = (overrides: Partial<RefereeAdmin>): RefereeAdmin =>
 describe('RefereeIndexComponent', () => {
   let fixture: ComponentFixture<RefereeIndexComponent>;
   let adminGetAllCalls: unknown[];
+  // Steuert, was der naechste adminGetAll-Aufruf liefert: standardmaessig die
+  // Liste, fuer den Fehlerpfad ein Fehler, fuer das Ueberholen ein Subject.
+  let adminGetAllResponse: (
+    referees: RefereeAdmin[]
+  ) => Observable<RefereeAdmin[]>;
 
-  beforeEach(() => (adminGetAllCalls = []));
+  beforeEach(() => {
+    adminGetAllCalls = [];
+    adminGetAllResponse = (referees) => of(referees);
+  });
 
   const accountBadges = (): HTMLElement[] =>
     Array.from(
@@ -56,7 +64,16 @@ describe('RefereeIndexComponent', () => {
                 accounts: 'Benutzerkonten',
                 hasAccountBadge: 'Konto',
                 hasAccountTitle: 'Hat ein Benutzerkonto',
+                // Alle Spaltenkoepfe, damit eine vertauschte Beschriftung
+                // auffaellt statt als Rohschluessel durchzurutschen.
+                colLicenseNumber: 'Lizenznr.',
+                colName: 'Name',
+                colLevel: 'Stufe',
                 colQualifications: 'Zusatzq.',
+                colRegion: 'Region',
+                colValidity: 'Gueltig bis',
+                colClub: 'Verein',
+                colSeasonGames: 'Einsaetze',
                 qualificationValidUntil: 'bis {{ date }}',
                 colQualificationsTitle: 'Zusatzqualifikation: {{ name }}',
                 colQualificationsValidUntil:
@@ -77,7 +94,7 @@ describe('RefereeIndexComponent', () => {
           useValue: {
             adminGetAll: (params?: unknown) => {
               adminGetAllCalls.push(params);
-              return of(referees);
+              return adminGetAllResponse(referees);
             },
           },
         },
@@ -280,11 +297,44 @@ describe('RefereeIndexComponent', () => {
     await setUp({ menu_item_referee_admin: true }, [referee({ id: 1 })]);
 
     const kopf = fixture.nativeElement.querySelectorAll('thead th');
-    const zellen = fixture.nativeElement.querySelectorAll('tbody tr td');
+    const zellen = fixture.nativeElement.querySelectorAll(
+      'tbody tr:first-child td'
+    );
 
     // Die letzte Spalte traegt den Bearbeiten-Link und wird nicht sortiert.
     expect(sortHeaders().length).toBe(kopf.length - 1);
     expect(kopf.length).toBe(zellen.length);
+  });
+
+  // Die <td> sind von Hand geschrieben und positionsgebunden: Ein Umsortieren
+  // der Kopfliste verschoebe sonst lautlos jede Ueberschrift gegen ihre Spalte.
+  it('haelt die Reihenfolge der Spalten fest', async () => {
+    await setUp({ menu_item_referee_admin: true }, [referee({ id: 1 })]);
+
+    expect(fixture.componentInstance.sortableColumns.map((c) => c.key)).toEqual(
+      [
+        'lizenznummer',
+        'name',
+        'lizenzstufe',
+        'qualifikationen',
+        'landesverband',
+        'gueltigkeit',
+        'verein',
+        'spiele',
+      ]
+    );
+    expect(
+      sortHeaders().map((b) => b.textContent!.trim().split(/\s+/)[0])
+    ).toEqual([
+      'Lizenznr.',
+      'Name',
+      'Stufe',
+      'Zusatzq.',
+      'Region',
+      'Gueltig',
+      'Verein',
+      'Einsaetze',
+    ]);
   });
 
   it('sortiert beim ersten Klick aufsteigend und beim zweiten absteigend', async () => {
@@ -318,6 +368,24 @@ describe('RefereeIndexComponent', () => {
     );
   });
 
+  // Filter und Suche duerfen beim Sortieren nicht verloren gehen – sonst
+  // sortierte der Klick eine andere Liste als die angezeigte.
+  it('nimmt die gesetzten Filter in die Sortieranfrage mit', async () => {
+    await setUp({ menu_item_referee_admin: true }, [referee({ id: 1 })]);
+    fixture.componentInstance.searchQuery = 'Muster';
+    fixture.componentInstance.filterStatus = 'aktiv';
+
+    sortHeaders()[5].click();
+
+    expect(adminGetAllCalls.at(-1)).toEqual(
+      jasmine.objectContaining({
+        q: 'Muster',
+        status: 'aktiv',
+        sort: 'gueltigkeit',
+      })
+    );
+  });
+
   // Der Pfeil ist fuer Screenreader ausgeblendet; die Sortierung steht am
   // Spaltenkopf selbst.
   it('meldet die sortierte Spalte ueber aria-sort', async () => {
@@ -334,5 +402,62 @@ describe('RefereeIndexComponent', () => {
 
     expect(kopf()[0].getAttribute('aria-sort')).toBe('ascending');
     expect(kopf()[1].getAttribute('aria-sort')).toBe('none');
+  });
+
+  // Schlaegt der Abruf fehl, bleibt die alte Liste stehen – dann darf der Kopf
+  // nicht die neue Sortierung behaupten. Das aria-sort macht daraus sonst eine
+  // maschinenlesbare Falschaussage.
+  it('uebernimmt die Sortierung nicht, wenn der Abruf fehlschlaegt', async () => {
+    await setUp({ menu_item_referee_admin: true }, [referee({ id: 1 })]);
+    adminGetAllResponse = () => throwError(() => new Error('kaputt'));
+
+    sortHeaders()[6].click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.sortBy).toBe('name');
+    expect(fixture.componentInstance.sortDir).toBe('asc');
+    const kopf = fixture.nativeElement.querySelectorAll('thead th');
+    expect(kopf[6].getAttribute('aria-sort')).toBe('none');
+    expect(kopf[1].getAttribute('aria-sort')).toBe('ascending');
+  });
+
+  // Zwei schnelle Klicks: Ueberholt die erste Antwort die zweite, gehoert der
+  // Kopf trotzdem zur angezeigten Liste. Fehler gibt es hier keinen – die
+  // Abweichung waere sonst durch nichts zu bemerken.
+  it('laesst die zuerst gestellte Anfrage die spaetere nicht ueberschreiben', async () => {
+    await setUp({ menu_item_referee_admin: true }, [referee({ id: 1 })]);
+    const erste = new Subject<RefereeAdmin[]>();
+    const zweite = new Subject<RefereeAdmin[]>();
+    adminGetAllResponse = () => erste;
+    sortHeaders()[6].click();
+    adminGetAllResponse = () => zweite;
+    sortHeaders()[7].click();
+
+    zweite.next([referee({ id: 2, lizenznummer: 4712 })]);
+    erste.next([referee({ id: 1 })]);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.sortBy).toBe('spiele');
+    expect(fixture.componentInstance.referees.map((r) => r.id)).toEqual([2]);
+  });
+
+  it('laedt beim Start nach Namen aufsteigend', async () => {
+    await setUp({ menu_item_referee_admin: true }, []);
+
+    expect(adminGetAllCalls[0]).toEqual(
+      jasmine.objectContaining({ sort: 'name', sort_dir: 'asc' })
+    );
+  });
+
+  // Die Leerzeile spannt ueber alle Spalten; ihre Breite haengt an derselben
+  // Liste wie die Kopfzeile und nicht an einer getippten Zahl.
+  it('spannt die Leerzeile ueber alle Spalten', async () => {
+    await setUp({ menu_item_referee_admin: true }, []);
+
+    const leer = fixture.nativeElement.querySelector('tbody td[colspan]');
+
+    expect(leer.getAttribute('colspan')).toBe(
+      String(fixture.componentInstance.sortableColumns.length + 1)
+    );
   });
 });

@@ -16,6 +16,7 @@ import {
 import {
   RefereeAdmin,
   RefereeQualificationEntry,
+  REFEREE_SORT_COLUMNS,
   RefereeSortColumn,
   RefereeStatusFilter,
   StateAssociation,
@@ -53,26 +54,35 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
   ];
   sortBy: RefereeSortColumn = 'name';
   sortDir: 'asc' | 'desc' = 'asc';
-  // Kopfzeile und Datenzeile aus einer Quelle: Die Reihenfolge hier ist die
-  // Reihenfolge der Spalten in der Tabelle, jede von ihnen ist sortierbar.
-  // Sortiert wird auf dem Server – die Liste kommt vollstaendig, aber die
-  // Einsatzzahl der Saison zaehlt er ohnehin selbst, und zwei Sortierwege
-  // (halb hier, halb dort) waeren zwei Reihenfolgen.
-  readonly sortableColumns: { key: RefereeSortColumn; labelKey: string }[] = [
-    { key: 'lizenznummer', labelKey: 'refereeAdmin.index.colLicenseNumber' },
-    { key: 'name', labelKey: 'refereeAdmin.index.colName' },
-    { key: 'lizenzstufe', labelKey: 'refereeAdmin.index.colLevel' },
+  // Die Spalten der Kopfzeile, in der Reihenfolge der Tabelle. Sie MUSS der
+  // Reihenfolge der <td> im Template entsprechen – die Zellen sind von Hand
+  // geschrieben, weil jede eigene Auszeichnung traegt (Gast-Marke, Konto-Badge,
+  // Qualifikationsliste, Karriere-Ende). Ein Spec haelt die Reihenfolge fest,
+  // damit ein Umsortieren hier nicht lautlos jede Ueberschrift verschiebt.
+  //
+  // Sortiert wird auf dem Server: Die Einsatzzahl der Saison zaehlt er ohnehin
+  // selbst, und zwei Sortierwege (halb hier, halb dort) waeren zwei
+  // Reihenfolgen.
+  readonly sortableColumns = REFEREE_SORT_COLUMNS.map((key) => ({
+    key,
+    labelKey: RefereeIndexComponent.COLUMN_LABEL_KEYS[key],
+  }));
+  // Als Record ueber den Spaltentyp: Eine neue Spalte ohne Beschriftung ist ein
+  // Compilerfehler und keine leere Ueberschrift.
+  private static readonly COLUMN_LABEL_KEYS: Record<RefereeSortColumn, string> =
     {
-      key: 'qualifikationen',
-      labelKey: 'refereeAdmin.index.colQualifications',
-    },
-    { key: 'landesverband', labelKey: 'refereeAdmin.index.colRegion' },
-    { key: 'gueltigkeit', labelKey: 'refereeAdmin.index.colValidity' },
-    { key: 'verein', labelKey: 'refereeAdmin.index.colClub' },
-    { key: 'spiele', labelKey: 'refereeAdmin.index.colSeasonGames' },
-  ];
+      lizenznummer: 'refereeAdmin.index.colLicenseNumber',
+      name: 'refereeAdmin.index.colName',
+      lizenzstufe: 'refereeAdmin.index.colLevel',
+      qualifikationen: 'refereeAdmin.index.colQualifications',
+      landesverband: 'refereeAdmin.index.colRegion',
+      gueltigkeit: 'refereeAdmin.index.colValidity',
+      verein: 'refereeAdmin.index.colClub',
+      spiele: 'refereeAdmin.index.colSeasonGames',
+    };
 
   private _destroy$ = new Subject<void>();
+  private _latestRequest = 0;
 
   constructor(
     private _refereeService: RefereeService,
@@ -112,15 +122,13 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
 
   toggleSort(col: RefereeSortColumn): void {
     if (this.sortBy === col) {
-      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+      this.load(col, this.sortDir === 'asc' ? 'desc' : 'asc');
     } else {
-      this.sortBy = col;
       // Die Einsatzzahl der Saison ist die einzige Spalte, nach der man
       // absteigend sucht: Die Frage lautet „wer pfeift viel?", nicht „wer gar
       // nicht?". Alle anderen beginnen aufsteigend.
-      this.sortDir = col === 'spiele' ? 'desc' : 'asc';
+      this.load(col, col === 'spiele' ? 'desc' : 'asc');
     }
-    this.load();
   }
 
   sortIndicator(col: RefereeSortColumn): string {
@@ -137,25 +145,39 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     return this.sortDir === 'asc' ? 'ascending' : 'descending';
   }
 
-  load(): void {
+  // Die gewuenschte Sortierung wird erst uebernommen, wenn die passende Antwort
+  // da ist. Sonst behauptete der Kopf – seit dem aria-sort auch gegenueber
+  // Screenreadern – eine Reihenfolge, die die angezeigte Liste nicht hat: nach
+  // einem Fehlschlag dauerhaft, und bei zwei schnellen Klicks auf verschiedene
+  // Spalten auch ohne jeden Fehler, weil die Antworten sich ueberholen koennen.
+  // Deshalb zaehlt jede Anfrage mit; nur die zuletzt gestellte darf schreiben.
+  load(
+    sort: RefereeSortColumn = this.sortBy,
+    sortDir: 'asc' | 'desc' = this.sortDir
+  ): void {
     this.loading = true;
+    const request = ++this._latestRequest;
     this._refereeService
       .adminGetAll({
         q: this.searchQuery || undefined,
         landesverband: this.filterLandesverband || undefined,
         lizenzstufe: this.filterLizenzstufe || undefined,
         status: this.filterStatus || undefined,
-        sort: this.sortBy,
-        sort_dir: this.sortDir,
+        sort,
+        sort_dir: sortDir,
       })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
+          if (request !== this._latestRequest) return;
           this.referees = result;
+          this.sortBy = sort;
+          this.sortDir = sortDir;
           this.loading = false;
           this._cdr.markForCheck();
         },
         error: () => {
+          if (request !== this._latestRequest) return;
           this.loading = false;
           this._cdr.markForCheck();
         },
@@ -279,8 +301,6 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     this.filterLandesverband = '';
     this.filterLizenzstufe = '';
     this.filterStatus = '';
-    this.sortBy = 'name';
-    this.sortDir = 'asc';
-    this.load();
+    this.load('name', 'asc');
   }
 }
