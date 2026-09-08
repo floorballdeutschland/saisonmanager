@@ -1,6 +1,14 @@
 // Deckungsgleich mit RefereeCourseImport::STATUSES in der API. `completed`
 // stand hier, ohne dass die API den Zustand je erzeugt.
-export type RefereeCourseImportStatus = 'in_review' | 'submitted' | 'cancelled';
+//
+// `partially_submitted`: Ein Teil ist eingereicht, der Importeur hat Zeilen
+// zurückgestellt. Der Import bleibt bearbeitbar, bis sie geklärt (und
+// nachgereicht) oder verworfen sind.
+export type RefereeCourseImportStatus =
+  | 'in_review'
+  | 'partially_submitted'
+  | 'submitted'
+  | 'cancelled';
 
 export type RefereeCourseResultStatus =
   | 'pending_review'
@@ -32,8 +40,14 @@ export interface RefereeCourseCsvFields {
 
 export interface RefereeCourseImportProgress {
   total: number;
+  /** Offen — enthält beides: beim LV wartend und vom Importeur zurückgestellt. */
   pending_review: number;
   applied: number;
+  rejected: number;
+  /** Vom Importeur zurückgestellt, wartet auf eine Klärung. */
+  deferred: number;
+  /** Zeilen, die ein Einreichen jetzt anwenden würde. */
+  submittable: number;
 }
 
 export interface RefereeCourseImport {
@@ -88,6 +102,13 @@ export interface RefereeCourseResult {
   referee_id: number | null;
   state_association_id: number | null;
   status: RefereeCourseResultStatus;
+  /** Vom Importeur zurückgestellt: Das Einreichen überspringt die Zeile. */
+  deferred: boolean;
+  /**
+   * Gesetzt, sobald das Einreichen die Zeile angewendet hat. Ab dann gehört sie
+   * dem Landesverband, der Importeur kann sie nicht mehr bearbeiten.
+   */
+  submitted_at: string | null;
   match_type: RefereeCourseMatchType;
   match_field_count: number;
   lizenzstufe: string | null;
@@ -118,6 +139,11 @@ export interface RefereeCourseResult {
   reviewed_by_user_id: number | null;
   reviewed_at: string | null;
   applied_at: string | null;
+  /**
+   * Begründung des Landesverbands beim Zurückweisen — und beim Verwerfen durch
+   * den Importeur der feste Vermerk, dass er es war.
+   */
+  rejection_reason?: string | null;
   referee_snapshot?: RefereeSnapshot | null;
   /**
    * Der Verein, den Import bzw. Freigabe als Zielwert führen
