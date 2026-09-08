@@ -114,6 +114,22 @@
                   {{ "refereeCourseAdmin.detail.discardedBadge" | transloco }}
                 </div>
               }
+              <!--
+                Vom Landesverband zurückgewiesen ist etwas anderes als vom
+                Importeur verworfen: Die Zeile war eingereicht. Ohne dieses
+                Merkmal trug sie gar keines — durch das neue „Verworfen" fällt
+                die Lücke auf.
+              -->
+              @if (isRejectedByLv(r)) {
+                <div class="text-xs text-red-700 mt-1">
+                  {{ "refereeCourseAdmin.detail.rejectedByLvBadge" | transloco }}
+                </div>
+                @if (r.rejection_reason) {
+                  <div class="text-xs text-fb-gray-600">
+                    {{ r.rejection_reason }}
+                  </div>
+                }
+              }
             </td>
             <td class="py-3 px-2">
               <div class="space-y-1">
@@ -168,11 +184,18 @@
                   }}
                 </div>
               </div>
-              <!-- Konflikte: Master-Wahl pro abweichendem Feld -->
-              @if (r.match_type === "partial_match") {
+              <!--
+                Konflikte: Master-Wahl pro abweichendem Feld. Nur auf einer
+                Zeile, die dem Importeur noch gehört: Auf einer eingereichten
+                antwortet die API mit 403, und ein 403 führt über den
+                ErrorInterceptor auf die Startseite — die Maske wäre weg. Vor
+                dem zeilenweisen Einreichen war der Import entweder ganz
+                bearbeitbar oder ganz gesperrt, der gemischte Zustand ist neu.
+              -->
+              @if (isRowEditable(r) && r.match_type === "partial_match") {
                 @for (field of conflictFields; track field) {
                   @if (fieldsDiffer(r, field)) {
-                    <div class="mt-2 p-2 bg-yellow-50 rounded text-xs">
+                    <div class="mt-2 p-2 bg-amber-100 rounded text-xs">
                       <strong>{{
                         "refereeCourseAdmin.detail.conflictLabel"
                           | transloco: { field: field }
@@ -332,7 +355,7 @@
                         ) | transloco
                       }}
                     </button>
-                    @if (r.deferred) {
+                    @if (r.deferred && !saving.has(r.id)) {
                       <fb-confirmation
                         [title]="
                           'refereeCourseAdmin.detail.discardTitle' | transloco
@@ -396,9 +419,14 @@
               }}
             </div>
           }
-          @if (deferredCount() > 0 && submittableCount() === 0) {
+          @if (submittableCount() === 0) {
             <div class="text-yellow-800 text-sm mb-2">
-              {{ "refereeCourseAdmin.detail.allDeferred" | transloco }}
+              {{
+                (deferredCount() > 0
+                  ? "refereeCourseAdmin.detail.allDeferred"
+                  : "refereeCourseAdmin.detail.nothingOpen"
+                ) | transloco
+              }}
             </div>
           }
           <button
@@ -413,10 +441,7 @@
               {{
                 "refereeCourseAdmin.detail.submitCount"
                   | transloco
-                    : {
-                        count: submittableCount(),
-                        total: importData.results.length,
-                      }
+                    : { count: submittableCount(), total: pendingCount() }
               }}
             }
           </button>

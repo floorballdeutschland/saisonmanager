@@ -59,7 +59,6 @@
     "cancelButton": "Cancel import",
     "missingLevels": "The license level is still missing for {{ count }} records.",
     "submitting": "Submitting...",
-    "submit": "Submit",
     "submittedInfo": "Import submitted. Records without correction are applied directly. Records with corrections wait — provided the state association has enabled the control process — for approval by the state association's RSK.",
     "badgeExact": "Exact match (6/6)",
     "badgePartial": "Partial match ({{ count }}/6)",
@@ -77,7 +76,9 @@
     "discardSubmitTitle": "Discard row",
     "submitCount": "Submit {{ count }} of {{ total }}",
     "allDeferred": "All open rows are deferred — there is nothing to submit.",
-    "partiallySubmittedInfo": "Partially submitted. {{ count }} deferred row(s) are still waiting to be clarified: resume and submit them once clarified, or discard them. The import is complete after that."
+    "partiallySubmittedInfo": "Partially submitted. {{ count }} deferred row(s) are still waiting to be clarified: resume and submit them once clarified, or discard them. The import is complete after that.",
+    "nothingOpen": "No open row left — every row has been submitted or discarded. The import can be cancelled.",
+    "rejectedByLvBadge": "✕ Rejected by the state association"
   },
   "review": {
     "title": "Referee course results: approval",
@@ -136,6 +137,7 @@
     "approveFailed": "Approval failed",
     "loadClubsError": "Could not load the list of clubs. The club selection stays disabled.",
     "partiallySubmitted": "Import partially submitted — the deferred rows are still open",
-    "discardFailedForRow": "Could not discard {{ row }}"
+    "discardFailedForRow": "Could not discard {{ row }}",
+    "rowBusy": "A change is still running for {{ row }} — please wait a moment."
   }
 }

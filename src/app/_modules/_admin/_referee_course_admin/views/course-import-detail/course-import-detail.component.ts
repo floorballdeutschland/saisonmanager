@@ -125,9 +125,20 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     );
   }
 
-  /** Eine eingereichte Zeile gehört dem Landesverband, nicht mehr dem Importeur. */
+  /**
+   * Eine eingereichte Zeile gehört dem Landesverband, nicht mehr dem
+   * Importeur. Der Zeilenstatus zählt mit: Eine verworfene Zeile
+   * (`rejected`, nie eingereicht) trägt kein `submitted_at` und wäre sonst
+   * weiter bedienbar — ihr Lizenzstufen-Feld sowieso, und die Konflikt-Knöpfe
+   * einer eingereichten Zeile liefen in einen 403, der über den
+   * ErrorInterceptor auf die Startseite führt.
+   */
   isRowEditable(result: RefereeCourseResult): boolean {
-    return this.isEditable() && !result.submitted_at;
+    return (
+      this.isEditable() &&
+      !result.submitted_at &&
+      result.status === 'pending_review'
+    );
   }
 
   /** Die Zeilen, die „Einreichen" jetzt anwenden würde. */
@@ -154,7 +165,19 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
   }
 
   discard(result: RefereeCourseResult): void {
-    if (this.saving.has(result.id)) return;
+    // Der Aufrufer blendet den Knopf während eines laufenden PATCH aus; kommt
+    // der Klick trotzdem an (Dialog war schon offen), bleibt die Meldung
+    // statt eines stillen Ausstiegs — der Dialog schließt sich selbst, es sähe
+    // sonst wie ein erfolgtes Verwerfen aus.
+    if (this.saving.has(result.id)) {
+      this._notify.error(
+        this._transloco.translate(
+          'refereeCourseAdmin.notifications.rowBusy',
+          { row: this.rowLabel(result) }
+        )
+      );
+      return;
+    }
     this.saving.add(result.id);
     const rowLabel = this.rowLabel(result);
     this._service
@@ -165,7 +188,9 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
           this.saving.delete(result.id);
           // Neu laden statt die Zeile zu ersetzen: Das Verwerfen der letzten
           // offenen Zeile schließt den Import ab, der Status im Kopf der Seite
-          // ändert sich also mit.
+          // ändert sich also mit. `markForCheck` davor, damit der Ladezustand
+          // unter OnPush überhaupt gerendert wird — `load()` setzt nur das Feld.
+          this._cdr.markForCheck();
           this.load(result.referee_course_import_id);
         },
         error: (err) => {
@@ -328,6 +353,8 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
 
   canSubmit(): boolean {
     if (!this.isEditable()) return false;
+    // Siehe submit(): erst die offenen Zeilen-PATCHes, dann einreichen.
+    if (this.saving.size > 0) return false;
     // Ohne geladene Lizenzstufen kann der User die Select-Werte nicht (mehr) anpassen –
     // dann Submit blockieren, damit der Stand nicht aus alten Daten heraus eingereicht wird.
     if (this.licenseLevels.length === 0) return false;
@@ -341,12 +368,31 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     return this.submittableResults().length;
   }
 
+  /**
+   * Bezugsgröße für „X von Y einreichen": nur die Zeilen, die noch zur Debatte
+   * stehen. Die Gesamtzahl der Zeilen läse sich im teilweise eingereichten
+   * Import als „der Rest bleibt liegen", während er längst durch ist.
+   */
+  pendingCount(): number {
+    return this.submittableCount() + this.deferredCount();
+  }
+
+  /** Eine vom Landesverband zurückgewiesene Zeile — nicht vom Importeur verworfen. */
+  isRejectedByLv(result: RefereeCourseResult): boolean {
+    return result.status === 'rejected' && !!result.submitted_at;
+  }
+
   missingLicenseLevelCount(): number {
     return this.submittableResults().filter((r) => !r.lizenzstufe).length;
   }
 
   submit(): void {
     if (!this.importData) return;
+    // Kein Submit, während für eine Zeile noch ein PATCH läuft: Wer eine Zeile
+    // zurückstellt und sofort einreicht, könnte sie sonst doch angewendet
+    // bekommen — der Server liest den Stand vor dem Commit des PATCH, und für
+    // eine angewendete Lizenz gibt es keine Rücknahme.
+    if (this.submitting || this.saving.size > 0) return;
     this.submitting = true;
     this._service
       .submitImport(this.importData.id)

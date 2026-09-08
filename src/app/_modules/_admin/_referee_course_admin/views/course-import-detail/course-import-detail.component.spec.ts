@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { of } from 'rxjs';
 import {
   getTranslocoTestingModule,
@@ -71,6 +71,19 @@ function zeile(overrides: Partial<RefereeCourseResult> = {}) {
   } as RefereeCourseResult;
 }
 
+// Der Stand in der Datenbank. Ohne ihn zeigt die Maske keinen Konflikt, denn
+// „Abweichung" heisst: Datei und Datenbank tragen beide etwas, und es ist
+// verschieden.
+const SCHIRI = {
+  id: 500,
+  lizenznummer: 7940,
+  vorname: 'Paul',
+  nachname: 'Morgenroth',
+  geburtsdatum: '2000-07-18',
+  email: 'paul@example.org',
+  club_id: 143,
+};
+
 const STUFE_G: RefereeLicenseLevel = {
   id: 1,
   name: 'G',
@@ -98,6 +111,7 @@ describe('CourseImportDetailComponent', () => {
   let component: CourseImportDetailComponent;
   let importService: jasmine.SpyObj<RefereeCourseImportService>;
   let refereeService: jasmine.SpyObj<RefereeService>;
+  let notify: jasmine.SpyObj<NotificationService>;
 
   beforeEach(() => {
     importService = jasmine.createSpyObj('RefereeCourseImportService', [
@@ -112,25 +126,36 @@ describe('CourseImportDetailComponent', () => {
       'adminGetLicenseLevels',
     ]);
     refereeService.adminGetLicenseLevels.and.returnValue(of([STUFE_G]));
+    notify = jasmine.createSpyObj('NotificationService', ['success', 'error']);
 
     TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
         FormsModule,
         UikitCommonModule,
-        getTranslocoTestingModule(),
+        // Der „zurück"-Link im Kopf der Maske: ohne die Direktive protokolliert
+        // jeder Render-Test NG0303.
+        RouterLink,
+        // Echte Texte für die Konflikt-Knöpfe: Der geprüfte Wert steckt in
+        // einem Übersetzungsparameter, ohne hinterlegten Schlüssel rendert
+        // Transloco nur den Schlüssel und der Wert taucht nirgends auf.
+        getTranslocoTestingModule({
+          de: {
+            refereeCourseAdmin: {
+              detail: {
+                conflictLabel: 'Abweichung „{{ field }}":',
+                csvOption: 'CSV: {{ value }}',
+                dbOption: 'DB: {{ value }}',
+              },
+            },
+          },
+        }),
       ],
       declarations: [CourseImportDetailComponent],
       providers: [
         { provide: RefereeCourseImportService, useValue: importService },
         { provide: RefereeService, useValue: refereeService },
-        {
-          provide: NotificationService,
-          useValue: jasmine.createSpyObj('NotificationService', [
-            'success',
-            'error',
-          ]),
-        },
+        { provide: NotificationService, useValue: notify },
         { provide: ActivatedRoute, useValue: { params: of({ id: '9' }) } },
         {
           provide: Router,
@@ -224,6 +249,76 @@ describe('CourseImportDetailComponent', () => {
     });
   });
 
+  // Die Fälle, die die Maske tatsächlich rendern — die Getter darüber prüfen
+  // die Logik, hier geht es um die Riegel im Template. Ein 403 der API führt
+  // über den ErrorInterceptor auf die Startseite; ein Knopf, der einen
+  // auslösen kann, ist deshalb kein kosmetisches Problem.
+  describe('Riegel in der Maske', () => {
+    function render(data: RefereeCourseImportWithResults) {
+      const fixture = TestBed.createComponent(CourseImportDetailComponent);
+      fixture.componentInstance.licenseLevels = [STUFE_G];
+      importService.getImport.and.returnValue(of(data));
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('zeigt die Konflikt-Knöpfe einer eingereichten Zeile nicht', () => {
+      const fixture = render(
+        importMit(
+          [
+            zeile({
+              id: 1,
+              match_type: 'partial_match',
+              match_field_count: 5,
+              submitted_at: '2026-09-08T11:00:00Z',
+              csv: { ...zeile().csv, nachname: 'Abweichler' },
+              referee_snapshot: SCHIRI,
+            }),
+          ],
+          { status: 'partially_submitted' }
+        )
+      );
+
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).not.toContain('Abweichler');
+    });
+
+    it('zeigt die Konflikt-Knöpfe einer offenen Zeile', () => {
+      const fixture = render(
+        importMit([
+          zeile({
+            id: 1,
+            match_type: 'partial_match',
+            match_field_count: 5,
+            csv: { ...zeile().csv, nachname: 'Abweichler' },
+            referee_snapshot: SCHIRI,
+          }),
+        ])
+      );
+
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain('Abweichler');
+    });
+
+    it('sperrt das Lizenzstufen-Feld einer verworfenen Zeile', () => {
+      const fixture = render(
+        importMit([zeile({ id: 1, status: 'rejected' })])
+      );
+
+      const select: HTMLSelectElement =
+        fixture.nativeElement.querySelector('select');
+      expect(select.disabled).toBeTrue();
+    });
+
+    it('lässt das Lizenzstufen-Feld einer offenen Zeile bedienbar', () => {
+      const fixture = render(importMit([zeile({ id: 1 })]));
+
+      const select: HTMLSelectElement =
+        fixture.nativeElement.querySelector('select');
+      expect(select.disabled).toBeFalse();
+    });
+  });
+
   describe('Bearbeitbarkeit je Zeile', () => {
     it('lässt die zurückgestellte Zeile eines teilweise eingereichten Imports bearbeiten', () => {
       const offen = zeile({ id: 2, deferred: true });
@@ -300,6 +395,56 @@ describe('CourseImportDetailComponent', () => {
 
       expect(importService.discardResult).toHaveBeenCalledWith(4);
       expect(importService.getImport).toHaveBeenCalledWith(9);
+    });
+
+    // Der zweite Klick, während der erste noch läuft: Vorher stieg `discard`
+    // still aus, der Dialog schloss sich, und es sah wie ein erfolgtes
+    // Verwerfen aus.
+    it('meldet einen Klick auf eine Zeile mit laufender Änderung', () => {
+      const r = zeile({ id: 5, deferred: true });
+      component.importData = importMit([r]);
+      component.saving.add(5);
+
+      component.discard(r);
+
+      expect(importService.discardResult).not.toHaveBeenCalled();
+      expect(notify.error).toHaveBeenCalled();
+    });
+
+    it('reicht nicht ein, während für eine Zeile ein PATCH läuft', () => {
+      component.importData = importMit([zeile({ id: 1 })]);
+      component.saving.add(1);
+
+      expect(component.canSubmit()).toBeFalse();
+      component.submit();
+      expect(importService.submitImport).not.toHaveBeenCalled();
+    });
+
+    it('erkennt eine vom Landesverband zurückgewiesene Zeile', () => {
+      expect(
+        component.isRejectedByLv(
+          zeile({ status: 'rejected', submitted_at: '2026-09-08T11:00:00Z' })
+        )
+      ).toBeTrue();
+      // Vom Importeur verworfen: nie eingereicht.
+      expect(
+        component.isRejectedByLv(zeile({ status: 'rejected' }))
+      ).toBeFalse();
+    });
+
+    it('zählt für den Knopf nur die Zeilen, die noch zur Debatte stehen', () => {
+      component.importData = importMit(
+        [
+          zeile({ id: 1, submitted_at: '2026-09-08T11:00:00Z' }),
+          zeile({ id: 2, status: 'rejected' }),
+          zeile({ id: 3, deferred: true }),
+          zeile({ id: 4 }),
+        ],
+        { status: 'partially_submitted' }
+      );
+
+      expect(component.submittableCount()).toBe(1);
+      expect(component.pendingCount()).toBe(2);
     });
 
     it('erkennt eine verworfene Zeile', () => {

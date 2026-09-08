@@ -59,7 +59,6 @@
     "cancelButton": "Import abbrechen",
     "missingLevels": "Für {{ count }} Datensätze fehlt noch die Lizenzstufe.",
     "submitting": "Reiche ein...",
-    "submit": "Einreichen",
     "submittedInfo": "Import eingereicht. Datensätze ohne Korrektur sind direkt angewendet. Datensätze mit Korrektur warten – sofern der Landesverband den Kontrollprozess aktiviert hat – auf eine Freigabe durch den RSK des Landesverbands.",
     "badgeExact": "Exakter Match (6/6)",
     "badgePartial": "Teilmatch ({{ count }}/6)",
@@ -77,7 +76,9 @@
     "discardSubmitTitle": "Zeile verwerfen",
     "submitCount": "{{ count }} von {{ total }} einreichen",
     "allDeferred": "Alle offenen Zeilen sind zurückgestellt — es gibt nichts einzureichen.",
-    "partiallySubmittedInfo": "Teilweise eingereicht. {{ count }} zurückgestellte Zeile(n) warten noch auf eine Klärung: Nimm sie nach der Klärung wieder auf und reiche sie ein, oder verwirf sie. Danach ist der Import abgeschlossen."
+    "partiallySubmittedInfo": "Teilweise eingereicht. {{ count }} zurückgestellte Zeile(n) warten noch auf eine Klärung: Nimm sie nach der Klärung wieder auf und reiche sie ein, oder verwirf sie. Danach ist der Import abgeschlossen.",
+    "nothingOpen": "Keine offene Zeile mehr — alle Zeilen sind eingereicht oder verworfen. Der Import kann abgebrochen werden.",
+    "rejectedByLvBadge": "✕ Vom Landesverband zurückgewiesen"
   },
   "review": {
     "title": "Schiedsrichter-Kursergebnisse: Freigabe",
@@ -136,6 +137,7 @@
     "approveFailed": "Freigabe fehlgeschlagen",
     "loadClubsError": "Vereinsliste konnte nicht geladen werden. Die Vereinsauswahl bleibt gesperrt.",
     "partiallySubmitted": "Import teilweise eingereicht — die zurückgestellten Zeilen liegen weiter offen",
-    "discardFailedForRow": "Verwerfen fehlgeschlagen für {{ row }}"
+    "discardFailedForRow": "Verwerfen fehlgeschlagen für {{ row }}",
+    "rowBusy": "Für {{ row }} läuft noch eine Änderung — bitte kurz warten."
   }
 }

@@ -123,6 +123,11 @@ export interface RefereeCourseResult {
   reviewed_by_user_id: number | null;
   reviewed_at: string | null;
   applied_at: string | null;
+  /**
+   * Begründung des Landesverbands beim Zurückweisen — und beim Verwerfen durch
+   * den Importeur der feste Vermerk, dass er es war.
+   */
+  rejection_reason?: string | null;
   referee_snapshot?: RefereeSnapshot | null;
   /**
    * Der Verein, den Import bzw. Freigabe als Zielwert führen
