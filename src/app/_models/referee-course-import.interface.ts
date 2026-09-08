@@ -92,7 +92,16 @@ export interface MatchedClub {
   id: number;
   name: string;
   state_association_id: number | null;
-  /** Nur an `csv_club_match`: Herkunft des Treffers. */
+}
+
+/**
+ * Der Verein, den der Name aus der Datei trifft — mit der Herkunft des
+ * Treffers. Eigener Typ und nicht ein optionales Feld an `MatchedClub`: An
+ * `matched_club` (dem Zielwert der Zeile) liefert die API die Herkunft nie,
+ * und `match_type` heißt am Ergebnis selbst etwas völlig anderes
+ * (`exact_match` …).
+ */
+export interface CsvClubMatch extends MatchedClub {
   match_type?: RefereeCourseClubMatchType;
 }
 
@@ -158,7 +167,14 @@ export interface RefereeCourseResult {
    * `matched_club` fällt beim Import auf den Verein des Schiedsrichters zurück
    * und meldet damit ausgerechnet für den häufigsten Nicht-Treffer Gleichheit.
    */
-  csv_club_match?: MatchedClub | null;
+  csv_club_match?: CsvClubMatch | null;
+  /**
+   * Die Herkunft auch ohne Treffer: `ambiguous` (zwei Vereine tragen dieselbe
+   * Schreibweise — hier braucht es einen Eintrag in der Namensliste), `none`
+   * (unbekannt), `placeholder` („Karriere beendet" und Ähnliches), `blank`.
+   * Ohne diese Angabe sahen alle vier in der Maske gleich aus.
+   */
+  csv_club_match_type?: RefereeCourseClubMatchType | 'ambiguous' | 'none' | 'placeholder' | 'blank' | 'alias_target_missing' | null;
   age_at_kursstichtag?: number | null;
   previous_season_game_count?: number;
   state_association?: { id: number; name: string } | null;

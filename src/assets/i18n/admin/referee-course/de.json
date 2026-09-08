@@ -81,7 +81,14 @@
     "rejectedByLvBadge": "✕ Vom Landesverband zurückgewiesen",
     "clubMatchAlias": "über die Namensliste zugeordnet",
     "clubMatchLongName": "über den Langnamen zugeordnet",
-    "clubMatchNormalized": "über die bereinigte Schreibweise zugeordnet"
+    "clubMatchNormalized": "über die bereinigte Schreibweise zugeordnet",
+    "clubMatchAmbiguous": "mehrdeutige Schreibweise — nicht zugeordnet",
+    "clubMatchAliasBroken": "Eintrag in der Namensliste zeigt auf keinen Verein",
+    "clubMatchOther": "zugeordnet, nicht wortgleich",
+    "clubSelect": "Verein der Zeile",
+    "clubPlaceholder": "Verein suchen",
+    "clubReset": "kein Verein",
+    "clubUnavailable": "Vereinsliste nicht verfügbar, Auswahl gesperrt."
   },
   "review": {
     "title": "Schiedsrichter-Kursergebnisse: Freigabe",

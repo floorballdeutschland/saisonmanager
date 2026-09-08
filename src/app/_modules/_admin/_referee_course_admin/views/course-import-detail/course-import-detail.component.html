@@ -187,6 +187,44 @@
                       {{ clubMatchHint(r) }}
                     </div>
                   }
+                  <!--
+                    Verein setzen, solange die Zeile dem Importeur gehört: Ein
+                    nicht zugeordneter Name ist meist ein Tippfehler oder eine
+                    Schreibweise, die die Datenbank anders führt. Bisher lief
+                    die Korrektur nur über die Freigabe des Landesverbands
+                    oder über eine neue Datei.
+                  -->
+                  @if (isRowEditable(r)) {
+                    <div class="mt-1">
+                      <label class="sr-only" [attr.for]="'club-' + r.id">
+                        {{ "refereeCourseAdmin.detail.clubSelect" | transloco }}
+                      </label>
+                      <fb-select-search
+                        [items]="clubs"
+                        labelKey="name"
+                        valueKey="id"
+                        [inputId]="'club-' + r.id"
+                        [disabled]="clubsUnavailable || saving.has(r.id)"
+                        [placeholder]="
+                          'refereeCourseAdmin.detail.clubPlaceholder'
+                            | transloco
+                        "
+                        [resetLabel]="
+                          'refereeCourseAdmin.detail.clubReset' | transloco
+                        "
+                        [ngModel]="selectedClubId(r)"
+                        (ngModelChange)="setClub(r, $event)"
+                      ></fb-select-search>
+                      @if (clubsUnavailable) {
+                        <div class="text-xs text-fb-gray-600 mt-1">
+                          {{
+                            "refereeCourseAdmin.detail.clubUnavailable"
+                              | transloco
+                          }}
+                        </div>
+                      }
+                    </div>
+                  }
                 </div>
                 <div>
                   <strong>{{

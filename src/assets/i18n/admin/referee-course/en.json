@@ -81,7 +81,14 @@
     "rejectedByLvBadge": "✕ Rejected by the state association",
     "clubMatchAlias": "matched via the name list",
     "clubMatchLongName": "matched via the long name",
-    "clubMatchNormalized": "matched via the cleaned-up spelling"
+    "clubMatchNormalized": "matched via the cleaned-up spelling",
+    "clubMatchAmbiguous": "ambiguous spelling — not matched",
+    "clubMatchAliasBroken": "name-list entry points to no club",
+    "clubMatchOther": "matched, not an exact wording",
+    "clubSelect": "Club for this row",
+    "clubPlaceholder": "Search club",
+    "clubReset": "no club",
+    "clubUnavailable": "Club list unavailable, selection disabled."
   },
   "review": {
     "title": "Referee course results: approval",

@@ -10,18 +10,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
+  ClubService,
   NotificationService,
   RefereeCourseImportService,
   RefereeService,
 } from '@floorball/core';
 import {
+  Club,
   RefereeCourseImportWithResults,
   RefereeCourseMasterFields,
   RefereeCourseResult,
   RefereeLicenseLevel,
 } from '@floorball/types';
 
-import { clubMatchHintKey } from '../../club-match-hint';
+import { clubMatchHintKey, csvClubUnmatched } from '../../club-match-hint';
 
 type MasterField = keyof RefereeCourseMasterFields;
 
@@ -34,6 +36,11 @@ type MasterField = keyof RefereeCourseMasterFields;
 export class CourseImportDetailComponent implements OnInit, OnDestroy {
   importData: RefereeCourseImportWithResults | null = null;
   licenseLevels: RefereeLicenseLevel[] = [];
+  clubs: Club[] = [];
+  // Ohne Vereinsliste zeigt das Auswahlfeld nichts an, auch wenn ein Verein
+  // gesetzt ist. Dann bleibt es gesperrt und der gesetzte Wert steht daneben —
+  // sonst schriebe ein Enter im leeren Suchfeld ein `club_id: null`.
+  clubsUnavailable = false;
   loading = false;
   submitting = false;
 
@@ -55,6 +62,7 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _service: RefereeCourseImportService,
     private _refereeService: RefereeService,
+    private _clubService: ClubService,
     private _notify: NotificationService,
     private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
@@ -73,6 +81,29 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
           this._notify.error(
             this._transloco.translate(
               'refereeCourseAdmin.notifications.licenseLevelsLoadError'
+            )
+          );
+          this._cdr.markForCheck();
+        },
+      });
+
+    // `getAdminClubAll` und nicht `getAdminClubs`: Letzteres wertet nur
+    // `ph[:admin]` und `ph[:sbk]` aus, ein reiner RSK bekäme 200 mit leerer
+    // Liste — und ein leeres Auswahlfeld schreibt beim Enter ein `club_id: null`.
+    this._clubService
+      .getAdminClubAll()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (clubs) => {
+          this.clubs = clubs;
+          this.clubsUnavailable = clubs.length === 0;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.clubsUnavailable = true;
+          this._notify.error(
+            this._transloco.translate(
+              'refereeCourseAdmin.notifications.loadClubsError'
             )
           );
           this._cdr.markForCheck();
@@ -211,21 +242,45 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
 
   // --- Verein ------------------------------------------------------------
 
-  /**
-   * Hat der Vereinsname aus der Datei überhaupt einen Verein getroffen?
-   * Maßgeblich ist `csv_club_match`, nicht `matched_club`: Letzteres ist der
-   * Zielwert der Zeile und fällt beim Import auf den Verein des
-   * Schiedsrichters zurück — daran gemessen sah der häufigste Nicht-Treffer
-   * wie ein Treffer aus.
-   */
+  /** Siehe `csvClubUnmatched` — die Regel teilen beide Masken. */
   clubUnmatched(result: RefereeCourseResult): boolean {
-    return !!result.csv.verein && !result.csv_club_match;
+    return csvClubUnmatched(result);
   }
 
-  /** Worüber der Verein zugeordnet wurde, wenn nicht exakt über den Namen. */
+  /**
+   * Worüber der Verein zugeordnet wurde, wenn nicht exakt über den Namen.
+   *
+   * Nur, wenn der Hinweis den angezeigten Verein auch erklärt: `matched_club`
+   * ist der beim Import gespeicherte Zielwert, `csv_club_match` wird pro
+   * Anfrage neu aufgelöst. Für einen Import, der vor der besseren Auflösung
+   * angelegt wurde und noch offen ist, fällt das auseinander — dann stünde
+   * „über den Langnamen zugeordnet" unter einem „—" oder unter dem Verein des
+   * Schiedsrichters.
+   */
   clubMatchHint(result: RefereeCourseResult): string | null {
+    if (result.csv_club_match && result.csv_club_match.id !== result.matched_club?.id) {
+      return null;
+    }
     const key = clubMatchHintKey(result);
     return key ? this._transloco.translate(key) : null;
+  }
+
+  // --- Verein setzen -----------------------------------------------------
+
+  /**
+   * Der Verein der Zeile, wie er beim Einreichen geschrieben würde. Der
+   * Importeur kann ihn hier setzen: Ein nicht zugeordneter Vereinsname ist in
+   * der Regel ein Tippfehler oder eine Schreibweise, die die Datenbank anders
+   * führt — die Korrektur lief bisher nur über die Freigabe des
+   * Landesverbands oder über eine neue Datei.
+   */
+  selectedClubId(result: RefereeCourseResult): number | null {
+    return result.master_by_importer.club_id ?? null;
+  }
+
+  setClub(result: RefereeCourseResult, clubId: number | null): void {
+    if (this.selectedClubId(result) === clubId) return;
+    this.patchMaster(result, { club_id: clubId });
   }
 
   // --- Master-Auswahl ----------------------------------------------------
@@ -260,10 +315,10 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     field: MasterField,
     source: 'csv' | 'db'
   ): void {
-    // club_id ist aktuell kein Konflikt-Feld (Verein-Match erfolgt exakt-
-    // namentlich beim Import). csvValue() würde hier den Vereinsnamen aus
-    // dem CSV als String zurückgeben, das Backend erwartet number | null —
-    // daher explizit ausschließen.
+    // club_id ist kein Konflikt-Feld: csvValue() würde hier den Vereinsnamen
+    // aus der Datei als String zurückgeben, das Backend erwartet
+    // number | null. Der Verein hat deshalb sein eigenes Auswahlfeld
+    // (setClub) statt zweier Knöpfe.
     if (field === 'club_id') return;
     const value =
       source === 'csv'
