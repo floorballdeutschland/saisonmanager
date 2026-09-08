@@ -27,10 +27,9 @@ import {
   ThumbnailVariant,
   downloadThumbnail,
   renderStreamThumbnail,
+  thumbnailDateLine,
   thumbnailFilename,
 } from 'src/app/_helpers/_utils/stream-thumbnail';
-
-const WEEKDAYS = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
 
 /**
  * Grafiken einer Übertragung, im Bild des Wettbewerbs: Thumbnails für YouTube
@@ -390,29 +389,15 @@ export class StreamGraphicsComponent
   }
 
   /**
-   * „Sa. 12.10.2026 · 18:00 Uhr". Von Hand gesetzt und nicht über die
-   * DatePipe: Die Anstoßzeit ist in der API eine Zeichenkette ohne Datum, und
-   * das Datum kommt als reiner Tag (`YYYY-MM-DD`). Über `new Date` gelesen wäre
-   * das Mitternacht UTC, und in einer westlichen Zeitzone stünde der Vortag im
-   * Bild.
+   * Die Fußzeile mit Datum und Anwurf. Beim Highlight-Bild ohne Uhrzeit: Die
+   * Anwurfzeit ist dort ohne Belang, im Bild steht der Endstand.
    */
   private dateLine(): string {
-    const raw = this.game?.date ? String(this.game.date) : '';
-    const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
-    const time = this.game?.start_time;
-
-    if (!parts) return time ? `${time} Uhr` : '';
-
-    const date = new Date(
-      Number(parts[1]),
-      Number(parts[2]) - 1,
-      Number(parts[3])
+    return thumbnailDateLine(
+      this.game?.date,
+      this.game?.start_time,
+      this.variant === 'livestream'
     );
-    const line = `${WEEKDAYS[date.getDay()]} ${parts[3]}.${parts[2]}.${parts[1]}`;
-
-    return this.variant === 'livestream' && time
-      ? `${line} · ${time} Uhr`
-      : line;
   }
 
   private buildHint(result: ThumbnailResult): string {

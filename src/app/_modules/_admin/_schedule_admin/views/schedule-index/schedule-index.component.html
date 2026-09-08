@@ -205,6 +205,16 @@
                       </button>
                     </div>
                   }
+                  <!-- Livestream-Thumbnails des ganzen Spieltags. Steht hier
+                       und nicht nur an der einzelnen Partie, weil die Streams
+                       zentral eingerichtet werden: Ein Spieltag, ein Archiv. -->
+                  <fb-thumbnail-batch
+                    [games]="gameDay.games"
+                    [leagueId]="leagueId"
+                    [gameDayNumber]="gameDay.number"
+                    [date]="gameDay.date"
+                    [arenaName]="gameDay.arena?.name"
+                  ></fb-thumbnail-batch>
                   <button
                     type="button"
                     (click)="generateSecretaryLink(gameDay.id)"

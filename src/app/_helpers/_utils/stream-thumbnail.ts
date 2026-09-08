@@ -665,26 +665,69 @@ export async function renderStreamThumbnail(
   return { missing, fontsLoaded };
 }
 
+const WEEKDAYS = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
+
+/**
+ * Die erste Fußzeile: „Sa. 12.10.2026 · 18:00 Uhr".
+ *
+ * Von Hand gesetzt und nicht über die DatePipe: Die Anstoßzeit ist in der API
+ * eine Zeichenkette ohne Datum, und das Datum kommt als reiner Tag
+ * (`YYYY-MM-DD`). Über `new Date` gelesen wäre das Mitternacht UTC, und in einer
+ * westlichen Zeitzone stünde der Vortag im Bild.
+ *
+ * Hier und nicht in der Komponente, weil zwei Wege dieselbe Zeile brauchen: das
+ * einzelne Thumbnail im Spielbericht und der Stapel eines ganzen Spieltags.
+ * Liefen die beiden auseinander, trüge dasselbe Spiel je nach Weg ein anderes
+ * Datum.
+ */
+export function thumbnailDateLine(
+  date?: string | Date | null,
+  time?: string | null,
+  withTime = true
+): string {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(date ? String(date) : '');
+
+  if (!parts) return withTime && time ? `${time} Uhr` : '';
+
+  const parsed = new Date(
+    Number(parts[1]),
+    Number(parts[2]) - 1,
+    Number(parts[3])
+  );
+  const line = `${WEEKDAYS[parsed.getDay()]} ${parts[3]}.${parts[2]}.${parts[1]}`;
+
+  return withTime && time ? `${line} · ${time} Uhr` : line;
+}
+
+/**
+ * Teil eines Dateinamens aus einem beliebigen Text.
+ *
+ * Nur Kleinbuchstaben, Ziffern und Bindestriche: Die Dateien landen im
+ * Download-Ordner und im Stapel zusätzlich in einem ZIP, das auch unter Windows
+ * ausgepackt wird. Umlaute werden umgeschrieben statt entfernt, sonst wird aus
+ * „Grün-Weiß" ein „grn-wei".
+ */
+export function filenameSlug(value: string): string {
+  return (value || '')
+    .toLowerCase()
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+}
+
 /** Dateiname des Downloads, aus Paarung und Bildaufbau. */
 export function thumbnailFilename(
   input: Pick<ThumbnailInput, 'variant' | 'home' | 'guest'>
 ): string {
-  const slug = (value: string) =>
-    (value || '')
-      .toLowerCase()
-      .replace(/ä/g, 'ae')
-      .replace(/ö/g, 'oe')
-      .replace(/ü/g, 'ue')
-      .replace(/ß/g, 'ss')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 40);
-
   const parts = [
     'thumbnail',
     input.variant,
-    slug(input.home.name),
-    slug(input.guest.name),
+    filenameSlug(input.home.name),
+    filenameSlug(input.guest.name),
   ].filter(Boolean);
 
   return `${parts.join('-')}.png`;
@@ -709,16 +752,13 @@ export function saveBlob(blob: Blob, filename: string): void {
 }
 
 /**
- * Speichert die Leinwand als PNG.
+ * Die Leinwand als PNG-Blob.
  *
  * `toBlob` wirft bei einer verunreinigten Leinwand SecurityError. Das darf
  * nicht stumm bleiben: Wer nichts im Download-Ordner findet und keine Meldung
  * sieht, klickt weiter und hält am Ende die Funktion für kaputt.
  */
-export function downloadThumbnail(
-  canvas: HTMLCanvasElement,
-  filename: string
-): Promise<void> {
+export function canvasToPngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     let done = false;
 
@@ -747,23 +787,49 @@ export function downloadThumbnail(
           return;
         }
 
-        // Ab hier ein eigener Riegel: Der äußere `try` deckt nur den
-        // SYNCHRONEN Aufruf von `toBlob` ab. Wirft eine dieser Zeilen
-        // (`createObjectURL` in einem eingeschränkten Kontext, ein `removeChild`
-        // auf einem inzwischen entfernten Knoten), wäre das Versprechen sonst
-        // nie erfüllt worden.
-        try {
-          saveBlob(blob, filename);
-
-          done = true;
-          window.clearTimeout(watchdog);
-          resolve();
-        } catch (error) {
-          fail(error);
-        }
+        done = true;
+        window.clearTimeout(watchdog);
+        resolve(blob);
       }, 'image/png');
     } catch (error) {
       fail(error);
     }
   });
+}
+
+/**
+ * Speichert die Leinwand als PNG.
+ */
+export async function downloadThumbnail(
+  canvas: HTMLCanvasElement,
+  filename: string
+): Promise<void> {
+  const blob = await canvasToPngBlob(canvas);
+
+  // Eigener Riegel um das Ablegen: `canvasToPngBlob` deckt nur das Zeichnen ab.
+  // Wirft eine dieser Zeilen (`createObjectURL` in einem eingeschränkten
+  // Kontext, ein `removeChild` auf einem inzwischen entfernten Knoten), muss
+  // der Aufrufer das als Fehlschlag sehen -- er meldet dem Benutzer sonst
+  // nichts, obwohl keine Datei entstanden ist.
+  saveBlob(blob, filename);
+}
+
+/**
+ * Zeichnet ein Thumbnail auf eine eigene, nicht angezeigte Leinwand und gibt es
+ * als PNG zurück.
+ *
+ * Für den Stapel eines ganzen Spieltags: Dort gibt es keine Vorschau, auf die
+ * gezeichnet werden könnte, und es soll auch keine geben -- sechs Vorschauen
+ * gleichzeitig im Bild nützen niemandem, der sie ohnehin nur hochlädt.
+ *
+ * Die Leinwand hängt bewusst nicht am Dokument: `toBlob` verlangt das nicht,
+ * und was nie eingehängt ist, kann auch nicht kurz aufblitzen.
+ */
+export async function renderThumbnailPng(
+  input: ThumbnailInput
+): Promise<{ blob: Blob; result: ThumbnailResult }> {
+  const canvas = document.createElement('canvas');
+  const result = await renderStreamThumbnail(canvas, input);
+
+  return { blob: await canvasToPngBlob(canvas), result };
 }
