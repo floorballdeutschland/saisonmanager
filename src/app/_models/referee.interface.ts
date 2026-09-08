@@ -81,6 +81,21 @@ export type RefereeStatusFilter =
   | 'beendet'
   | 'ohne_nachweis';
 
+/**
+ * Sortierbare Spalten der Verwaltungsliste. Die Schluessel sind die Namen der
+ * Spalten, nicht die der Datenbank – sortiert wird auf dem Server, damit die
+ * Liste in jeder Rolle dieselbe Reihenfolge hat.
+ */
+export type RefereeSortColumn =
+  | 'lizenznummer'
+  | 'name'
+  | 'lizenzstufe'
+  | 'qualifikationen'
+  | 'landesverband'
+  | 'gueltigkeit'
+  | 'verein'
+  | 'spiele';
+
 export interface RefereeAdmin {
   id: number;
   lizenznummer: number | null;

@@ -137,56 +137,27 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b border-fb-gray-700 text-left">
-            <th class="py-2 pr-4 font-bold">
-              <button
-                (click)="toggleSort('lizenznummer')"
-                class="flex items-center gap-1 hover:text-fb-gray-400"
+            <!-- Kopfzeile aus sortableColumns: Jede Spalte der Tabelle ist
+                 sortierbar, und die Reihenfolge der Liste ist die der Zellen
+                 darunter. Die letzte Spalte traegt den Bearbeiten-Link und hat
+                 keine Ueberschrift. -->
+            @for (col of sortableColumns; track col.key) {
+              <th
+                class="py-2 pr-4 font-bold"
+                [attr.aria-sort]="ariaSort(col.key)"
               >
-                {{ "refereeAdmin.index.colLicenseNumber" | transloco }}
-                <span class="text-xs">
-                  @if (sortBy === "lizenznummer") {
-                    {{ sortDir === "asc" ? "↑" : "↓" }}
-                  }
-                  @if (sortBy !== "lizenznummer") {
-                    ↕
-                  }
-                </span>
-              </button>
-            </th>
-            <th class="py-2 pr-4 font-bold">
-              <button
-                (click)="toggleSort('name')"
-                class="flex items-center gap-1 hover:text-fb-gray-400"
-              >
-                {{ "refereeAdmin.index.colName" | transloco }}
-                <span class="text-xs">
-                  @if (sortBy === "name") {
-                    {{ sortDir === "asc" ? "↑" : "↓" }}
-                  }
-                  @if (sortBy !== "name") {
-                    ↕
-                  }
-                </span>
-              </button>
-            </th>
-            <th class="py-2 pr-4 font-bold">
-              {{ "refereeAdmin.index.colLevel" | transloco }}
-            </th>
-            <th class="py-2 pr-4 font-bold">
-              {{ "refereeAdmin.index.colQualifications" | transloco }}
-            </th>
-            <th class="py-2 pr-4 font-bold">
-              {{ "refereeAdmin.index.colRegion" | transloco }}
-            </th>
-            <th class="py-2 pr-4 font-bold">
-              {{ "refereeAdmin.index.colValidity" | transloco }}
-            </th>
-            <th class="py-2 pr-4 font-bold">
-              {{ "refereeAdmin.index.colClub" | transloco }}
-            </th>
-            <th class="py-2 pr-4 font-bold">
-              {{ "refereeAdmin.index.colSeasonGames" | transloco }}
-            </th>
+                <button
+                  type="button"
+                  (click)="toggleSort(col.key)"
+                  class="flex items-center gap-1 hover:text-fb-gray-400"
+                >
+                  {{ col.labelKey | transloco }}
+                  <span class="text-xs" aria-hidden="true">{{
+                    sortIndicator(col.key)
+                  }}</span>
+                </button>
+              </th>
+            }
             <th class="py-2"></th>
           </tr>
         </thead>

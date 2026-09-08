@@ -25,11 +25,17 @@ const referee = (overrides: Partial<RefereeAdmin>): RefereeAdmin =>
 
 describe('RefereeIndexComponent', () => {
   let fixture: ComponentFixture<RefereeIndexComponent>;
+  let adminGetAllCalls: unknown[];
+
+  beforeEach(() => (adminGetAllCalls = []));
 
   const accountBadges = (): HTMLElement[] =>
     Array.from(
       fixture.nativeElement.querySelectorAll('[title="Hat ein Benutzerkonto"]')
     );
+
+  const sortHeaders = (): HTMLElement[] =>
+    Array.from(fixture.nativeElement.querySelectorAll('thead th button'));
 
   async function setUp(
     permissions: Record<string, boolean>,
@@ -68,7 +74,12 @@ describe('RefereeIndexComponent', () => {
       providers: [
         {
           provide: RefereeService,
-          useValue: { adminGetAll: () => of(referees) },
+          useValue: {
+            adminGetAll: (params?: unknown) => {
+              adminGetAllCalls.push(params);
+              return of(referees);
+            },
+          },
         },
         {
           provide: AssociationService,
@@ -261,5 +272,67 @@ describe('RefereeIndexComponent', () => {
 
     expect(fixture.componentInstance.canManageAccounts).toBeTrue();
     expect(fixture.nativeElement.textContent).toContain('Benutzerkonten');
+  });
+  // Bis fe#417 waren nur Lizenznummer und Name sortierbar. Die Kopfzeile kommt
+  // seitdem aus einer Liste, damit Spalte und Sortierknopf nicht auseinander
+  // laufen koennen – jede Spalte der Tabelle traegt einen.
+  it('macht jede Spalte der Tabelle sortierbar', async () => {
+    await setUp({ menu_item_referee_admin: true }, [referee({ id: 1 })]);
+
+    const kopf = fixture.nativeElement.querySelectorAll('thead th');
+    const zellen = fixture.nativeElement.querySelectorAll('tbody tr td');
+
+    // Die letzte Spalte traegt den Bearbeiten-Link und wird nicht sortiert.
+    expect(sortHeaders().length).toBe(kopf.length - 1);
+    expect(kopf.length).toBe(zellen.length);
+  });
+
+  it('sortiert beim ersten Klick aufsteigend und beim zweiten absteigend', async () => {
+    await setUp({ menu_item_referee_admin: true }, [referee({ id: 1 })]);
+    const verein = sortHeaders()[6];
+
+    verein.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.sortBy).toBe('verein');
+    expect(adminGetAllCalls.at(-1)).toEqual(
+      jasmine.objectContaining({ sort: 'verein', sort_dir: 'asc' })
+    );
+
+    verein.click();
+    fixture.detectChanges();
+
+    expect(adminGetAllCalls.at(-1)).toEqual(
+      jasmine.objectContaining({ sort: 'verein', sort_dir: 'desc' })
+    );
+  });
+
+  // „Wer pfeift viel?" ist die Frage an diese Spalte, nicht „wer gar nicht?".
+  it('beginnt bei den Einsaetzen absteigend', async () => {
+    await setUp({ menu_item_referee_admin: true }, [referee({ id: 1 })]);
+
+    sortHeaders()[7].click();
+
+    expect(adminGetAllCalls.at(-1)).toEqual(
+      jasmine.objectContaining({ sort: 'spiele', sort_dir: 'desc' })
+    );
+  });
+
+  // Der Pfeil ist fuer Screenreader ausgeblendet; die Sortierung steht am
+  // Spaltenkopf selbst.
+  it('meldet die sortierte Spalte ueber aria-sort', async () => {
+    await setUp({ menu_item_referee_admin: true }, [referee({ id: 1 })]);
+    const kopf = (): HTMLElement[] =>
+      Array.from(fixture.nativeElement.querySelectorAll('thead th'));
+
+    // Voreinstellung ist der Name, aufsteigend.
+    expect(kopf()[1].getAttribute('aria-sort')).toBe('ascending');
+    expect(kopf()[0].getAttribute('aria-sort')).toBe('none');
+
+    sortHeaders()[0].click();
+    fixture.detectChanges();
+
+    expect(kopf()[0].getAttribute('aria-sort')).toBe('ascending');
+    expect(kopf()[1].getAttribute('aria-sort')).toBe('none');
   });
 });

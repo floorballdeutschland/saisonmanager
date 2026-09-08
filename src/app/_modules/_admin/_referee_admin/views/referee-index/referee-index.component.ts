@@ -16,6 +16,7 @@ import {
 import {
   RefereeAdmin,
   RefereeQualificationEntry,
+  RefereeSortColumn,
   RefereeStatusFilter,
   StateAssociation,
 } from '@floorball/types';
@@ -50,8 +51,26 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     'ohne_nachweis',
     'alle',
   ];
-  sortBy: 'name' | 'lizenznummer' = 'name';
+  sortBy: RefereeSortColumn = 'name';
   sortDir: 'asc' | 'desc' = 'asc';
+  // Kopfzeile und Datenzeile aus einer Quelle: Die Reihenfolge hier ist die
+  // Reihenfolge der Spalten in der Tabelle, jede von ihnen ist sortierbar.
+  // Sortiert wird auf dem Server – die Liste kommt vollstaendig, aber die
+  // Einsatzzahl der Saison zaehlt er ohnehin selbst, und zwei Sortierwege
+  // (halb hier, halb dort) waeren zwei Reihenfolgen.
+  readonly sortableColumns: { key: RefereeSortColumn; labelKey: string }[] = [
+    { key: 'lizenznummer', labelKey: 'refereeAdmin.index.colLicenseNumber' },
+    { key: 'name', labelKey: 'refereeAdmin.index.colName' },
+    { key: 'lizenzstufe', labelKey: 'refereeAdmin.index.colLevel' },
+    {
+      key: 'qualifikationen',
+      labelKey: 'refereeAdmin.index.colQualifications',
+    },
+    { key: 'landesverband', labelKey: 'refereeAdmin.index.colRegion' },
+    { key: 'gueltigkeit', labelKey: 'refereeAdmin.index.colValidity' },
+    { key: 'verein', labelKey: 'refereeAdmin.index.colClub' },
+    { key: 'spiele', labelKey: 'refereeAdmin.index.colSeasonGames' },
+  ];
 
   private _destroy$ = new Subject<void>();
 
@@ -91,14 +110,31 @@ export class RefereeIndexComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
-  toggleSort(col: 'name' | 'lizenznummer'): void {
+  toggleSort(col: RefereeSortColumn): void {
     if (this.sortBy === col) {
       this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortBy = col;
-      this.sortDir = 'asc';
+      // Die Einsatzzahl der Saison ist die einzige Spalte, nach der man
+      // absteigend sucht: Die Frage lautet „wer pfeift viel?", nicht „wer gar
+      // nicht?". Alle anderen beginnen aufsteigend.
+      this.sortDir = col === 'spiele' ? 'desc' : 'asc';
     }
     this.load();
+  }
+
+  sortIndicator(col: RefereeSortColumn): string {
+    if (this.sortBy !== col) return '\u2195';
+
+    return this.sortDir === 'asc' ? '\u2191' : '\u2193';
+  }
+
+  // Screenreader lesen die Sortierung aus dem Tabellenkopf, nicht aus dem Pfeil
+  // daneben – der ist fuer sie ausgeblendet.
+  ariaSort(col: RefereeSortColumn): 'ascending' | 'descending' | 'none' {
+    if (this.sortBy !== col) return 'none';
+
+    return this.sortDir === 'asc' ? 'ascending' : 'descending';
   }
 
   load(): void {
