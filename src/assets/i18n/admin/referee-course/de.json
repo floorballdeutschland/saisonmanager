@@ -62,7 +62,10 @@
     "submittedInfo": "Import eingereicht. Datensätze ohne Korrektur sind direkt angewendet. Datensätze mit Korrektur warten – sofern der Landesverband den Kontrollprozess aktiviert hat – auf eine Freigabe durch den RSK des Landesverbands.",
     "badgeExact": "Exakter Match (6/6)",
     "badgePartial": "Teilmatch ({{ count }}/6)",
-    "badgeNew": "Neuanlage"
+    "badgeNew": "Neuanlage",
+    "clubMatchAlias": "über die Namensliste zugeordnet",
+    "clubMatchLongName": "über den Langnamen zugeordnet",
+    "clubMatchNormalized": "über die bereinigte Schreibweise zugeordnet"
   },
   "review": {
     "title": "Schiedsrichter-Kursergebnisse: Freigabe",

@@ -339,6 +339,11 @@
                 {{
                   r.csv.verein ?? ("refereeCourseAdmin.detail.dash" | transloco)
                 }}
+                @if (clubMatchHint(r)) {
+                  <div class="text-xs text-fb-gray-600">
+                    {{ clubMatchHint(r) }}
+                  </div>
+                }
               }
             </td>
             <td>

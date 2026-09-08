@@ -18,6 +18,7 @@ import {
   RefereeCourseMasterFields,
   RefereeCourseResult,
 } from '@floorball/types';
+import { clubMatchHintKey } from '../../club-match-hint';
 
 /**
  * Die sechs Merkmale, aus denen sich der Match-Score einer Zeile zusammensetzt.
@@ -194,8 +195,9 @@ export class CourseReviewIndexComponent implements OnInit, OnDestroy {
   /**
    * Der Vereinsname aus der Datei ließ sich keinem Verein zuordnen. Das ist
    * keine Abweichung zwischen zwei Werten, sondern ein fehlender Treffer, und
-   * der häufigste Grund für einen Teilmatch, weil der Abgleich den Namen exakt
-   * nimmt. Die Maske sagt das deshalb ausdrücklich.
+   * der häufigste Grund für einen Teilmatch. Die Maske sagt das deshalb
+   * ausdrücklich — auch wenn der Abgleich inzwischen den Langnamen und die
+   * bereinigte Schreibweise mitnimmt, bleibt ein Name ohne Treffer möglich.
    *
    * Maßgeblich ist `csv_club_match` und nicht `matched_club`: Letzteres fällt
    * beim Import auf den Verein des Schiedsrichters zurück, wenn der Name nicht
@@ -203,6 +205,15 @@ export class CourseReviewIndexComponent implements OnInit, OnDestroy {
    */
   clubUnmatched(result: RefereeCourseResult): boolean {
     return !!result.csv.verein && !result.csv_club_match;
+  }
+
+  /**
+   * Worüber der Verein zugeordnet wurde, wenn nicht exakt über den Namen — der
+   * Reviewer soll eine Schlussfolgerung des Systems als solche erkennen.
+   */
+  clubMatchHint(result: RefereeCourseResult): string | null {
+    const key = clubMatchHintKey(result);
+    return key ? this._transloco.translate(key) : null;
   }
 
   /**

@@ -60,10 +60,26 @@ export interface RefereeSnapshot {
   gueltigkeit?: string | null;
 }
 
+/**
+ * Woran der Vereinsname aus der Datei gehangen hat. Die Reihenfolge der
+ * Auflösung ist verbindlich (RefereeClubLookup in der API): Namensliste,
+ * exakter Vereinsname, exakter Langname, dann beide ohne „e.V." und
+ * Satzzeichen. Alles außer `name` ist eine Schlussfolgerung und keine
+ * Gleichheit — die Masken sagen das.
+ */
+export type RefereeCourseClubMatchType =
+  | 'alias'
+  | 'name'
+  | 'long_name'
+  | 'normalized_name'
+  | 'normalized_long_name';
+
 export interface MatchedClub {
   id: number;
   name: string;
   state_association_id: number | null;
+  /** Nur an `csv_club_match`: Herkunft des Treffers. */
+  match_type?: RefereeCourseClubMatchType;
 }
 
 export interface RefereeCourseResult {
@@ -111,8 +127,10 @@ export interface RefereeCourseResult {
    */
   matched_club?: MatchedClub | null;
   /**
-   * Der Verein, den der Vereinsname aus der Datei trifft, oder `null`. Nur die
-   * Freigabeübersicht liefert das Feld.
+   * Der Verein, den der Vereinsname aus der Datei trifft, oder `null` — samt
+   * `match_type`. Maßgeblich für die Frage „trifft der Name überhaupt?":
+   * `matched_club` fällt beim Import auf den Verein des Schiedsrichters zurück
+   * und meldet damit ausgerechnet für den häufigsten Nicht-Treffer Gleichheit.
    */
   csv_club_match?: MatchedClub | null;
   age_at_kursstichtag?: number | null;

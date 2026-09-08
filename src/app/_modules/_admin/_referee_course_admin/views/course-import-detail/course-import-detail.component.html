@@ -116,19 +116,33 @@
                   <strong>{{
                     "refereeCourseAdmin.detail.club" | transloco
                   }}</strong>
+                  <!--
+                    Zwei verschiedene Dinge, deshalb zwei Zeilen: oben der
+                    Verein, den die Zeile schreiben würde (Zielwert), darunter
+                    die Meldung, wenn der Name aus der Datei gar keinen Verein
+                    getroffen hat. Der Zielwert fällt auf den Verein des
+                    Schiedsrichters zurück — an ihm allein war der häufigste
+                    Nicht-Treffer nicht zu erkennen.
+                  -->
                   @if (r.matched_club) {
                     <span>{{ r.matched_club.name }}</span>
-                  }
-                  @if (!r.matched_club && r.csv.verein) {
-                    <span class="text-red-600">{{
-                      "refereeCourseAdmin.detail.clubUnmatched"
-                        | transloco: { name: r.csv.verein }
-                    }}</span>
-                  }
-                  @if (!r.matched_club && !r.csv.verein) {
+                  } @else {
                     <span>{{
                       "refereeCourseAdmin.detail.dash" | transloco
                     }}</span>
+                  }
+                  @if (clubUnmatched(r)) {
+                    <div class="text-red-600 text-xs">
+                      {{
+                        "refereeCourseAdmin.detail.clubUnmatched"
+                          | transloco: { name: r.csv.verein }
+                      }}
+                    </div>
+                  }
+                  @if (clubMatchHint(r)) {
+                    <div class="text-xs text-fb-gray-600">
+                      {{ clubMatchHint(r) }}
+                    </div>
                   }
                 </div>
                 <div>

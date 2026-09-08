@@ -62,7 +62,10 @@
     "submittedInfo": "Import submitted. Records without correction are applied directly. Records with corrections wait — provided the state association has enabled the control process — for approval by the state association's RSK.",
     "badgeExact": "Exact match (6/6)",
     "badgePartial": "Partial match ({{ count }}/6)",
-    "badgeNew": "New entry"
+    "badgeNew": "New entry",
+    "clubMatchAlias": "matched via the name list",
+    "clubMatchLongName": "matched via the long name",
+    "clubMatchNormalized": "matched via the cleaned-up spelling"
   },
   "review": {
     "title": "Referee course results: approval",

@@ -21,6 +21,8 @@ import {
   RefereeLicenseLevel,
 } from '@floorball/types';
 
+import { clubMatchHintKey } from '../../club-match-hint';
+
 type MasterField = keyof RefereeCourseMasterFields;
 
 @Component({
@@ -110,6 +112,25 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
       });
+  }
+
+  // --- Verein ------------------------------------------------------------
+
+  /**
+   * Hat der Vereinsname aus der Datei überhaupt einen Verein getroffen?
+   * Maßgeblich ist `csv_club_match`, nicht `matched_club`: Letzteres ist der
+   * Zielwert der Zeile und fällt beim Import auf den Verein des
+   * Schiedsrichters zurück — daran gemessen sah der häufigste Nicht-Treffer
+   * wie ein Treffer aus.
+   */
+  clubUnmatched(result: RefereeCourseResult): boolean {
+    return !!result.csv.verein && !result.csv_club_match;
+  }
+
+  /** Worüber der Verein zugeordnet wurde, wenn nicht exakt über den Namen. */
+  clubMatchHint(result: RefereeCourseResult): string | null {
+    const key = clubMatchHintKey(result);
+    return key ? this._transloco.translate(key) : null;
   }
 
   // --- Master-Auswahl ----------------------------------------------------
