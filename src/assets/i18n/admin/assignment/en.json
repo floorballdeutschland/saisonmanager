@@ -51,6 +51,8 @@
     "filterShortNotice": "Short-notice mobile only",
     "filterLicense": "License level",
     "filterTags": "Tags",
+    "guestBadge": "Guest",
+    "guestTitle": "Guest referee – stand-in without a licence level; selectable without a declared availability.",
     "shortNoticeBadge": "Available on short notice",
     "phoneTitle": "Phone number for assignment purposes",
     "shortNoticeNoPhone": "(no number)",

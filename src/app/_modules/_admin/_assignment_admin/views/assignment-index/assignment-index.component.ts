@@ -566,7 +566,12 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   // Lizenzstufe = keine Lizenz-Einschränkung (alle anzeigen).
   private _passesPrefilters(r: RefereeAssignmentAvailable): boolean {
     if (this.filterShortNotice && !r.kurzfristig_mobil) return false;
-    if (this.selectedLicenseLevels.size > 0) {
+    // Gäste tragen keine Lizenzstufe des Verbands und fielen durch jeden
+    // Stufenfilter – auch durch die automatische Vorauswahl „N" an nationalen
+    // Spieltagen, also genau dort, wo eine Aushilfe am ehesten gebraucht wird.
+    // Sie bleiben deshalb von diesem Filter unberührt; Tags und „kurzfristig
+    // mobil" sind bewusst ausgenommen, die wählt der Ansetzer selbst.
+    if (this.selectedLicenseLevels.size > 0 && !r.guest) {
       // Eine gewählte Stufe matcht per Präfix: „N" trifft N1/N2/N3, „L" trifft
       // L1/L2/… – eine konkrete Stufe wie „N1" trifft weiterhin nur exakt N1.
       const level = r.lizenzstufe;
@@ -1153,14 +1158,28 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     )})`;
   }
 
+  // Der Klammerzusatz ist die Lizenzstufe – ein Gast hat im Regelfall keine,
+  // und ohne Zusatz wäre eine gesetzte Gast-Ansetzung im geschlossenen Feld
+  // von jeder anderen nicht zu unterscheiden (das Kennzeichen der Auswahlliste
+  // ist dann ja weg). Deshalb steht dort „Gast".
+  //
+  // Beides und nicht das eine oder das andere: „Gast trägt keine Lizenzstufe"
+  // ist Konvention, keine Invariante – die Spalte ist ein freies Feld ohne
+  // Kopplung an das Kennzeichen, und ein zum Gast umgestellter Altbestand
+  // behält seine Stufe. Als Entweder-oder verlor genau der sein Kennzeichen.
   private _refereeName(r: {
     vorname: string;
     nachname: string;
     lizenzstufe?: string;
+    guest?: boolean;
   }): string {
-    return `${r.nachname}, ${r.vorname}${
-      r.lizenzstufe ? ' (' + r.lizenzstufe + ')' : ''
-    }`;
+    const suffix = [
+      r.lizenzstufe,
+      r.guest ? this._transloco.translate('assignmentAdmin.index.guestBadge') : null,
+    ]
+      .filter(Boolean)
+      .join(', ');
+    return `${r.nachname}, ${r.vorname}${suffix ? ' (' + suffix + ')' : ''}`;
   }
 
   private _load(): void {

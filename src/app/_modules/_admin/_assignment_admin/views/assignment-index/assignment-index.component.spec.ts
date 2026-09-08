@@ -857,3 +857,118 @@ describe('AssignmentIndexComponent – Anzeige der Telefonnummer', () => {
     expect(telLinks().length).toBe(0);
   });
 });
+
+// Gastschiedsrichter: Aushilfe ohne Lizenzstufe. Der Server liefert sie ohne
+// hinterlegte Verfügbarkeit mit; die Vorfilter der Oberfläche dürfen sie nicht
+// gleich wieder wegnehmen.
+describe('AssignmentIndexComponent – Gastschiedsrichter', () => {
+  const GAME_ID = 7;
+  let component: AssignmentIndexComponent;
+  let httpMock: HttpTestingController;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        getTranslocoTestingModule({
+          de: { assignmentAdmin: { index: { guestBadge: 'Gast' } } },
+        }),
+        HttpClientTestingModule,
+      ],
+      declarations: [AssignmentIndexComponent],
+      providers: [provideRouter([])],
+    })
+      .overrideTemplate(AssignmentIndexComponent, '')
+      .compileComponents();
+
+    component = TestBed.createComponent(
+      AssignmentIndexComponent
+    ).componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  function candidate(
+    id: number,
+    nachname: string,
+    lizenzstufe?: string,
+    guest = false
+  ): RefereeAssignmentAvailable {
+    return {
+      id,
+      lizenznummer: guest ? null : 1000 + id,
+      lizenznummer_display: guest ? `G-${id}` : `${1000 + id}`,
+      vorname: 'Vorname',
+      nachname,
+      lizenzstufe,
+      guest,
+    };
+  }
+
+  function prepareRow(candidates: RefereeAssignmentAvailable[]) {
+    component.rows = [
+      { game: { id: GAME_ID, date: '2026-08-01' }, assignment: null },
+    ];
+    const state = component['_createRowState'](null);
+    state.availableReferees = candidates;
+    component.rowStates.set(GAME_ID, state);
+    return state;
+  }
+
+  function names(query = ''): string[] {
+    return component.filteredReferees(GAME_ID, query).map((r) => r.nachname);
+  }
+
+  // Die Lizenzstufen-Vorauswahl setzt sich an nationalen Spieltagen selbst auf
+  // „N" – ein Gast hat keine Stufe und wäre damit genau dort weggefiltert, wo
+  // eine Aushilfe am ehesten gebraucht wird.
+  it('lässt den Gast trotz gewählter Lizenzstufe stehen', () => {
+    prepareRow([
+      candidate(1, 'Albert', 'N2'),
+      candidate(2, 'Bauer', 'L2'),
+      candidate(3, 'Gastner', undefined, true),
+    ]);
+
+    component.toggleLicenseLevel('N');
+
+    expect(names()).toEqual(['Albert', 'Gastner']);
+  });
+
+  // Die Ausnahme hängt am Gast-Kennzeichen, nicht an der fehlenden Stufe: Ein
+  // regulärer Schiedsrichter ohne Lizenzstufe bleibt gefiltert.
+  it('nimmt einen regulären Schiri ohne Lizenzstufe nicht mit', () => {
+    prepareRow([candidate(1, 'Albert', 'N2'), candidate(2, 'Ohne')]);
+
+    component.toggleLicenseLevel('N');
+
+    expect(names()).toEqual(['Albert']);
+  });
+
+  it('kennzeichnet den gesetzten Gast im geschlossenen Feld', () => {
+    const state = prepareRow([candidate(3, 'Gastner', undefined, true)]);
+
+    component.selectReferee1(GAME_ID, state.availableReferees[0]);
+    httpMock
+      .expectOne(environment.apiURL + 'admin/referees/3/partners')
+      .flush({ partners: [] });
+
+    // Ohne den Zusatz wäre die Ansetzung eines Gastes im zugeklappten Feld von
+    // jeder anderen nicht zu unterscheiden.
+    expect(state.referee1Query).toBe('Gastner, Vorname (Gast)');
+  });
+
+  // „Gast trägt keine Lizenzstufe" ist Konvention, keine Invariante: Die Spalte
+  // ist ein freies Feld ohne Kopplung an das Kennzeichen, und ein zum Gast
+  // umgestellter Altbestand behält seine Stufe. Als Entweder-oder verlor genau
+  // der sein Kennzeichen — im zugeklappten Feld also dort, wo es hin sollte.
+  it('nennt bei einem Gast mit Lizenzstufe beides', () => {
+    const state = prepareRow([candidate(4, 'Gastner', 'N2', true)]);
+
+    component.selectReferee1(GAME_ID, state.availableReferees[0]);
+    httpMock
+      .expectOne(environment.apiURL + 'admin/referees/4/partners')
+      .flush({ partners: [] });
+
+    expect(state.referee1Query).toBe('Gastner, Vorname (N2, Gast)');
+  });
+});

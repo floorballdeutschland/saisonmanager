@@ -9,6 +9,8 @@
     "filterApply": "Anwenden",
     "filterLevels": "Lizenzstufen",
     "colReferee": "Schiedsrichter*in",
+    "guestBadge": "Gast",
+    "guestTitle": "Gastschiedsrichter – Aushilfe ohne Lizenzstufe; hinterlegt in der Regel keine Verfügbarkeit.",
     "colLevel": "Stufe",
     "gamesCount": "{{ count }} Sp.",
     "stateAvailable": "Verfügbar",

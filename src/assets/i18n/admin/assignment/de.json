@@ -51,6 +51,8 @@
     "filterShortNotice": "Nur kurzfristig mobil",
     "filterLicense": "Lizenzstufe",
     "filterTags": "Tags",
+    "guestBadge": "Gast",
+    "guestTitle": "Gastschiedsrichter – Aushilfe ohne Lizenzstufe; ohne hinterlegte Verfügbarkeit wählbar.",
     "shortNoticeBadge": "Kurzfristig mobil",
     "phoneTitle": "Telefonnummer für die Ansetzung",
     "shortNoticeNoPhone": "(keine Nummer)",

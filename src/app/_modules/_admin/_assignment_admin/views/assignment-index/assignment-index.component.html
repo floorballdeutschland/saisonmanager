@@ -380,6 +380,19 @@
                                     >({{ r.lizenzstufe }})</span
                                   >
                                 }
+                                @if (r.guest) {
+                                  <span
+                                    class="ml-1 inline-block bg-fb-gray-700 text-fb-gray-500 text-[10px] font-bold px-1 rounded"
+                                    [title]="
+                                      'assignmentAdmin.index.guestTitle'
+                                        | transloco
+                                    "
+                                    >{{
+                                      "assignmentAdmin.index.guestBadge"
+                                        | transloco
+                                    }}</span
+                                  >
+                                }
                                 @if (r.kurzfristig_mobil) {
                                   <span
                                     class="text-amber-600 ml-1"
@@ -541,6 +554,19 @@
                                 @if (r.lizenzstufe) {
                                   <span class="text-fb-gray-400 ml-1"
                                     >({{ r.lizenzstufe }})</span
+                                  >
+                                }
+                                @if (r.guest) {
+                                  <span
+                                    class="ml-1 inline-block bg-fb-gray-700 text-fb-gray-500 text-[10px] font-bold px-1 rounded"
+                                    [title]="
+                                      'assignmentAdmin.index.guestTitle'
+                                        | transloco
+                                    "
+                                    >{{
+                                      "assignmentAdmin.index.guestBadge"
+                                        | transloco
+                                    }}</span
                                   >
                                 }
                                 <!-- Gespann-Kurzliste: hinterlegte Nummer
@@ -715,6 +741,19 @@
                               @if (r.lizenzstufe) {
                                 <span class="text-fb-gray-400 ml-1"
                                   >({{ r.lizenzstufe }})</span
+                                >
+                              }
+                              @if (r.guest) {
+                                <span
+                                  class="ml-1 inline-block bg-fb-gray-700 text-fb-gray-500 text-[10px] font-bold px-1 rounded"
+                                  [title]="
+                                    'assignmentAdmin.index.guestTitle'
+                                      | transloco
+                                  "
+                                  >{{
+                                    "assignmentAdmin.index.guestBadge"
+                                      | transloco
+                                  }}</span
                                 >
                               }
                               @if (r.kurzfristig_mobil) {
