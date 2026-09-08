@@ -956,4 +956,19 @@ describe('AssignmentIndexComponent – Gastschiedsrichter', () => {
     // jeder anderen nicht zu unterscheiden.
     expect(state.referee1Query).toBe('Gastner, Vorname (Gast)');
   });
+
+  // „Gast trägt keine Lizenzstufe" ist Konvention, keine Invariante: Die Spalte
+  // ist ein freies Feld ohne Kopplung an das Kennzeichen, und ein zum Gast
+  // umgestellter Altbestand behält seine Stufe. Als Entweder-oder verlor genau
+  // der sein Kennzeichen — im zugeklappten Feld also dort, wo es hin sollte.
+  it('nennt bei einem Gast mit Lizenzstufe beides', () => {
+    const state = prepareRow([candidate(4, 'Gastner', 'N2', true)]);
+
+    component.selectReferee1(GAME_ID, state.availableReferees[0]);
+    httpMock
+      .expectOne(environment.apiURL + 'admin/referees/4/partners')
+      .flush({ partners: [] });
+
+    expect(state.referee1Query).toBe('Gastner, Vorname (N2, Gast)');
+  });
 });

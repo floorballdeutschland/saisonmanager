@@ -1158,21 +1158,27 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     )})`;
   }
 
-  // Der Klammerzusatz ist die Lizenzstufe – ein Gast hat keine, und ohne
-  // Zusatz wäre eine gesetzte Gast-Ansetzung im geschlossenen Feld von jeder
-  // anderen nicht zu unterscheiden (das Kennzeichen der Auswahlliste ist dann
-  // ja weg). Deshalb tritt dort „Gast" an ihre Stelle.
+  // Der Klammerzusatz ist die Lizenzstufe – ein Gast hat im Regelfall keine,
+  // und ohne Zusatz wäre eine gesetzte Gast-Ansetzung im geschlossenen Feld
+  // von jeder anderen nicht zu unterscheiden (das Kennzeichen der Auswahlliste
+  // ist dann ja weg). Deshalb steht dort „Gast".
+  //
+  // Beides und nicht das eine oder das andere: „Gast trägt keine Lizenzstufe"
+  // ist Konvention, keine Invariante – die Spalte ist ein freies Feld ohne
+  // Kopplung an das Kennzeichen, und ein zum Gast umgestellter Altbestand
+  // behält seine Stufe. Als Entweder-oder verlor genau der sein Kennzeichen.
   private _refereeName(r: {
     vorname: string;
     nachname: string;
     lizenzstufe?: string;
     guest?: boolean;
   }): string {
-    const suffix = r.lizenzstufe
-      ? r.lizenzstufe
-      : r.guest
-        ? this._transloco.translate('assignmentAdmin.index.guestBadge')
-        : '';
+    const suffix = [
+      r.lizenzstufe,
+      r.guest ? this._transloco.translate('assignmentAdmin.index.guestBadge') : null,
+    ]
+      .filter(Boolean)
+      .join(', ');
     return `${r.nachname}, ${r.vorname}${suffix ? ' (' + suffix + ')' : ''}`;
   }
 
