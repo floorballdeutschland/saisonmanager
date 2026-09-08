@@ -101,7 +101,7 @@
         </div>
       }
       @if (!loading && gameDays.length) {
-        @for (gameDay of gameDays; track gameDay) {
+        @for (gameDay of gameDays; track gameDay.id) {
           <div>
             <div class="bg-white md:h-[80px]">
               <div class="flex my-2.5 lg:my-5 px-[30px] py-[20px]">
@@ -205,6 +205,10 @@
                       </button>
                     </div>
                   }
+                  <!-- Livestream-Thumbnails des ganzen Spieltags. Steht hier
+                       und nicht nur an der einzelnen Partie, weil die Streams
+                       zentral eingerichtet werden: Ein Spieltag, ein Archiv. -->
+                  <fb-thumbnail-batch [gameDay]="gameDay"></fb-thumbnail-batch>
                   <button
                     type="button"
                     (click)="generateSecretaryLink(gameDay.id)"
