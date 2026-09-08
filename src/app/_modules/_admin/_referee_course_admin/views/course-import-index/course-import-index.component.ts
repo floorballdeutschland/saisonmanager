@@ -155,6 +155,10 @@ export class CourseImportIndexComponent implements OnInit, OnDestroy {
         return this._transloco.translate(
           'refereeCourseAdmin.import.statusInReview'
         );
+      case 'partially_submitted':
+        return this._transloco.translate(
+          'refereeCourseAdmin.import.statusPartiallySubmitted'
+        );
       case 'submitted':
         return this._transloco.translate(
           'refereeCourseAdmin.import.statusSubmitted'

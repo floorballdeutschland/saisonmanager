@@ -17,7 +17,8 @@
     "statusInReview": "In progress",
     "statusSubmitted": "Submitted",
     "statusCompleted": "Completed",
-    "statusCancelled": "Cancelled"
+    "statusCancelled": "Cancelled",
+    "statusPartiallySubmitted": "Partially submitted"
   },
   "detail": {
     "back": "← back to overview",
@@ -62,7 +63,21 @@
     "submittedInfo": "Import submitted. Records without correction are applied directly. Records with corrections wait — provided the state association has enabled the control process — for approval by the state association's RSK.",
     "badgeExact": "Exact match (6/6)",
     "badgePartial": "Partial match ({{ count }}/6)",
-    "badgeNew": "New entry"
+    "badgeNew": "New entry",
+    "progressDeferred": "• {{ count }} deferred",
+    "deferHint": "Rows with an open question can be deferred — they stay behind while the others are submitted, and can be added later or discarded.",
+    "colRowAction": "Row",
+    "deferredBadge": "⏸ Deferred",
+    "discardedBadge": "✕ Discarded",
+    "deferRow": "Defer",
+    "resumeRow": "Resume",
+    "discardRow": "Discard",
+    "discardTitle": "Discard row",
+    "discardContent": "Discard {{ row }} for good? The row will not be imported. Nothing has been written to the referee yet.",
+    "discardSubmitTitle": "Discard row",
+    "submitCount": "Submit {{ count }} of {{ total }}",
+    "allDeferred": "All open rows are deferred — there is nothing to submit.",
+    "partiallySubmittedInfo": "Partially submitted. {{ count }} deferred row(s) are still waiting to be clarified: resume and submit them once clarified, or discard them. The import is complete after that."
   },
   "review": {
     "title": "Referee course results: approval",
@@ -119,6 +134,8 @@
     "loadPendingError": "Open cases could not be loaded",
     "approved": "Approved",
     "approveFailed": "Approval failed",
-    "loadClubsError": "Could not load the list of clubs. The club selection stays disabled."
+    "loadClubsError": "Could not load the list of clubs. The club selection stays disabled.",
+    "partiallySubmitted": "Import partially submitted — the deferred rows are still open",
+    "discardFailedForRow": "Could not discard {{ row }}"
   }
 }

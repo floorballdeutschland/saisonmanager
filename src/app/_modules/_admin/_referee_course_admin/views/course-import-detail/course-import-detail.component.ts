@@ -112,6 +112,76 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  // --- Zurückstellen -----------------------------------------------------
+
+  /**
+   * Ein teilweise eingereichter Import ist weiter bearbeitbar — seine
+   * zurückgestellten Zeilen sollen ja geklärt und nachgereicht werden.
+   */
+  isEditable(): boolean {
+    return (
+      this.importData?.status === 'in_review' ||
+      this.importData?.status === 'partially_submitted'
+    );
+  }
+
+  /** Eine eingereichte Zeile gehört dem Landesverband, nicht mehr dem Importeur. */
+  isRowEditable(result: RefereeCourseResult): boolean {
+    return this.isEditable() && !result.submitted_at;
+  }
+
+  /** Die Zeilen, die „Einreichen" jetzt anwenden würde. */
+  submittableResults(): RefereeCourseResult[] {
+    if (!this.importData) return [];
+    return this.importData.results.filter(
+      (r) => !r.deferred && !r.submitted_at && r.status === 'pending_review'
+    );
+  }
+
+  deferredCount(): number {
+    if (!this.importData) return 0;
+    return this.importData.results.filter(
+      (r) => r.deferred && !r.submitted_at && r.status === 'pending_review'
+    ).length;
+  }
+
+  isDiscarded(result: RefereeCourseResult): boolean {
+    return result.status === 'rejected' && !result.submitted_at;
+  }
+
+  toggleDeferred(result: RefereeCourseResult): void {
+    this.patchResult(result, { deferred: !result.deferred });
+  }
+
+  discard(result: RefereeCourseResult): void {
+    if (this.saving.has(result.id)) return;
+    this.saving.add(result.id);
+    const rowLabel = this.rowLabel(result);
+    this._service
+      .discardResult(result.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.saving.delete(result.id);
+          // Neu laden statt die Zeile zu ersetzen: Das Verwerfen der letzten
+          // offenen Zeile schließt den Import ab, der Status im Kopf der Seite
+          // ändert sich also mit.
+          this.load(result.referee_course_import_id);
+        },
+        error: (err) => {
+          this.saving.delete(result.id);
+          this._notify.error(
+            err?.error?.error ??
+              this._transloco.translate(
+                'refereeCourseAdmin.notifications.discardFailedForRow',
+                { row: rowLabel }
+              )
+          );
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
   // --- Master-Auswahl ----------------------------------------------------
 
   fieldsDiffer(result: RefereeCourseResult, field: MasterField): boolean {
@@ -162,13 +232,23 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     result: RefereeCourseResult,
     patch: Partial<RefereeCourseMasterFields>
   ): void {
+    this.patchResult(result, { master_by_importer: patch });
+  }
+
+  private patchResult(
+    result: RefereeCourseResult,
+    patch: {
+      deferred?: boolean;
+      master_by_importer?: Partial<RefereeCourseMasterFields>;
+    }
+  ): void {
     // Skip wenn für diese Zeile bereits ein PATCH in flight ist — sonst
     // können Responses out-of-order kommen und ältere überschreiben neuere.
     if (this.saving.has(result.id)) return;
     this.saving.add(result.id);
     const rowLabel = this.rowLabel(result);
     this._service
-      .updateResult(result.id, { master_by_importer: patch })
+      .updateResult(result.id, patch)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (updated) => {
@@ -218,7 +298,8 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  private rowLabel(result: RefereeCourseResult): string {
+  // Nicht privat: Die Verwerfen-Bestätigung nennt die Zeile im Text.
+  rowLabel(result: RefereeCourseResult): string {
     const name = [
       result.master_by_importer.vorname,
       result.master_by_importer.nachname,
@@ -246,17 +327,22 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
   // --- Submit ------------------------------------------------------------
 
   canSubmit(): boolean {
-    if (!this.importData) return false;
-    if (this.importData.status !== 'in_review') return false;
+    if (!this.isEditable()) return false;
     // Ohne geladene Lizenzstufen kann der User die Select-Werte nicht (mehr) anpassen –
     // dann Submit blockieren, damit der Stand nicht aus alten Daten heraus eingereicht wird.
     if (this.licenseLevels.length === 0) return false;
-    return this.importData.results.every((r) => !!r.lizenzstufe);
+    const rows = this.submittableResults();
+    // Nur die einreichbaren Zeilen: Eine zurückgestellte Zeile ohne Lizenzstufe
+    // ist ja genau der Fall, den das Zurückstellen aus dem Weg räumt.
+    return rows.length > 0 && rows.every((r) => !!r.lizenzstufe);
+  }
+
+  submittableCount(): number {
+    return this.submittableResults().length;
   }
 
   missingLicenseLevelCount(): number {
-    if (!this.importData) return 0;
-    return this.importData.results.filter((r) => !r.lizenzstufe).length;
+    return this.submittableResults().filter((r) => !r.lizenzstufe).length;
   }
 
   submit(): void {
@@ -267,14 +353,17 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (data) => {
-          this.importData = data;
           this.submitting = false;
           this._notify.success(
             this._transloco.translate(
-              'refereeCourseAdmin.notifications.submitted'
+              data.status === 'partially_submitted'
+                ? 'refereeCourseAdmin.notifications.partiallySubmitted'
+                : 'refereeCourseAdmin.notifications.submitted'
             )
           );
-          this._cdr.markForCheck();
+          // Die Submit-Antwort trägt den Import ohne seine Zeilen. Direkt
+          // zugewiesen stand die Tabelle ohne `results` da.
+          this.load(data.id);
         },
         error: (err) => {
           this.submitting = false;
