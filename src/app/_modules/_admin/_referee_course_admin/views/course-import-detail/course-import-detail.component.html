@@ -122,7 +122,9 @@
               -->
               @if (isRejectedByLv(r)) {
                 <div class="text-xs text-red-700 mt-1">
-                  {{ "refereeCourseAdmin.detail.rejectedByLvBadge" | transloco }}
+                  {{
+                    "refereeCourseAdmin.detail.rejectedByLvBadge" | transloco
+                  }}
                 </div>
                 @if (r.rejection_reason) {
                   <div class="text-xs text-fb-gray-600">
@@ -369,14 +371,27 @@
               }}
             </td>
             <td class="py-3 px-2">
+              <!--
+                `ngModel` und nicht `[value]`: Ein Wertbinding am `select` wird
+                gesetzt, bevor die `option`-Liste darunter existiert. Der
+                Browser verwirft einen Wert ohne passende Option, und Angular
+                schreibt ihn nie nach — der gebundene Wert hat sich ja nicht
+                geaendert. Jede gespeicherte Lizenzstufe stand deshalb nach
+                jedem Neuzeichnen der Tabelle (Neuladen, Verwerfen, Einreichen,
+                Fehler bei einem Zeilen-PATCH) wieder auf „bitte waehlen", was
+                wie ein Datenverlust aussieht. Der Wertzugriff von `ngModel`
+                kennt seine Optionen und traegt den Wert nach, sobald sie da
+                sind.
+              -->
               <select
                 [attr.aria-label]="
                   'refereeCourseAdmin.detail.selectLicenseLevel' | transloco
                 "
                 class="border rounded px-2 py-1 w-full"
-                [value]="r.lizenzstufe ?? ''"
+                [ngModel]="r.lizenzstufe ?? ''"
+                [ngModelOptions]="{ standalone: true }"
                 [disabled]="!isRowEditable(r) || saving.has(r.id)"
-                (change)="updateLizenzstufe(r, $any($event.target).value)"
+                (ngModelChange)="updateLizenzstufe(r, $event)"
               >
                 <option value="">
                   {{
