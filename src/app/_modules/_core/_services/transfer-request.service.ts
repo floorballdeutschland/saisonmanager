@@ -13,8 +13,30 @@ export class TransferRequestService {
 
   constructor(private http: HttpClient) {}
 
-  getAll() {
-    return this.http.get<TransferRequest[]>(`${this.base}.json`);
+  /**
+   * Standardmäßig nur die laufende Saison. Beide Listen kannten vorher keinen
+   * Saisonbezug, und der Saisonwechsel fasst die Vorgänge nicht an — nach dem
+   * ersten Wechsel wäre die Vorsaison einfach stehen geblieben und die neue
+   * Saison obendrauf.
+   *
+   * Gefiltert wird serverseitig: Ohne den Parameter liefert die API die
+   * laufende Saison, nicht alles. Ein vergessenes Flag im Browser zeigt damit
+   * zu wenig statt zu viel.
+   */
+  getAll(allSeasons = false) {
+    return this.http.get<TransferRequest[]>(`${this.base}.json`, {
+      params: allSeasons ? { all_seasons: 'true' } : {},
+    });
+  }
+
+  // Eingehende Transfers und Freigaben: abgeschlossene Vorgaenge in Vereine des
+  // eigenen Landesverbands, deren abgebender Verein ausserhalb liegt. Eigener
+  // Endpunkt und nicht ein Parameter an `getAll`, weil er einer anderen Regel
+  // folgt: Die Hauptliste haengt am abgebenden Verein, diese am aufnehmenden.
+  getIncoming(allSeasons = false) {
+    return this.http.get<TransferRequest[]>(`${this.base}/incoming.json`, {
+      params: allSeasons ? { all_seasons: 'true' } : {},
+    });
   }
 
   get(id: number) {

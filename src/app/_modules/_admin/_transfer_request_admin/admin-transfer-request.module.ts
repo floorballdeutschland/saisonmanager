@@ -20,6 +20,7 @@ import * as Views from './views';
     Views.TransferRequestInitiateComponent,
     Views.TransferRequestDetailComponent,
     Views.TransferRequestDirectComponent,
+    Views.TransferRequestIncomingComponent,
   ],
   providers: [
     {

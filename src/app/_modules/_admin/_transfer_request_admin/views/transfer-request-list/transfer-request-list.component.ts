@@ -15,7 +15,13 @@ import {
   TransferRequestService,
 } from '@floorball/core';
 import { TransferRequest } from '@floorball/types';
-import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
+import {
+  exportTransferCsv,
+  transferStatusClass,
+  transferStatusLabel,
+  transferTypeClass,
+  transferTypeLabel,
+} from '../../transfer-request-presentation';
 
 @Component({
   templateUrl: './transfer-request-list.component.html',
@@ -60,14 +66,42 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  /**
+   * Vergangene Saisons sind standardmäßig ausgeblendet. Der Saisonwechsel räumt
+   * die Vorgänge nicht ab — ohne diesen Riegel wüchse die Liste über die Jahre
+   * unbegrenzt. Ausgeblendet, nicht weggeworfen: Die Gebühren für erteilte
+   * Freigaben werden am Saisonende gestellt.
+   */
+  allSeasons = false;
+
+  /** Welcher Umfang tatsächlich in `requests` steht. */
+  private _loadedAllSeasons = false;
+
+  toggleAllSeasons(): void {
+    if (this.loading) return;
+
+    this.allSeasons = !this.allSeasons;
+    this.loadRequests();
+  }
+
+  /**
+   * Der Abruf ist gescheitert. Ohne diese Unterscheidung rendert das Template
+   * den Leer-Hinweis und behauptet damit, es gebe keine Vorgänge — obwohl
+   * niemand das weiß.
+   */
+  loadFailed = false;
+
   loadRequests(): void {
     this.loading = true;
+    this.loadFailed = false;
+    this._cdr.markForCheck();
     this._transferService
-      .getAll()
+      .getAll(this.allSeasons)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
           this.requests = result;
+          this._loadedAllSeasons = this.allSeasons;
           this.loading = false;
           this._cdr.markForCheck();
         },
@@ -77,7 +111,16 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
               'transferRequestAdmin.notifications.loadError'
             )
           );
+          // Die alten Zeilen mit weg: Sonst stehen Tabelle und Fehlerkasten
+          // uebereinander, und der Landesverband liest die stehengebliebenen
+          // Zeilen als vollstaendiges Ergebnis.
+          this.requests = [];
+          // Und der Schalter zurueck auf das, was tatsaechlich geladen ist --
+          // sonst behauptet seine Beschriftung, die Vergangenheit sei
+          // eingeblendet.
+          this.allSeasons = this._loadedAllSeasons;
           this.loading = false;
+          this.loadFailed = true;
           this._cdr.markForCheck();
         },
       });
@@ -93,6 +136,10 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
 
   directAssign(): void {
     this._router.navigate(['/verwaltung/transfer-anfragen/direktzuweisung']);
+  }
+
+  openIncoming(): void {
+    this._router.navigate(['/verwaltung/transfer-anfragen/eingehend']);
   }
 
   canWithdraw(r: TransferRequest): boolean {
@@ -149,91 +196,57 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   }
 
   statusLabel(status: string): string {
-    const keys: { [key: string]: string } = {
-      pending_club: 'statusPendingClub',
-      pending_player: 'statusPendingPlayer',
-      pending_lv: 'statusPendingLv',
-      scheduled: 'statusScheduled',
-      approved: 'statusApproved',
-      rejected_by_club: 'statusRejectedByClub',
-      rejected_by_player: 'statusRejectedByPlayer',
-      rejected_by_lv: 'statusRejectedByLv',
-      revoked: 'statusRevoked',
-      withdrawn: 'statusWithdrawn',
-      expired: 'statusExpired',
-    };
-    return keys[status]
-      ? this._transloco.translate(`transferRequestAdmin.list.${keys[status]}`)
-      : status;
+    return transferStatusLabel(this._transloco, status);
   }
 
   statusClass(status: string): string {
-    if (status === 'approved') return 'text-green-600 font-medium';
-    if (status === 'scheduled') return 'text-yellow-600 font-medium';
-    if (
-      status.startsWith('rejected') ||
-      status === 'revoked' ||
-      status === 'withdrawn' ||
-      status === 'expired'
-    )
-      return 'text-red-500';
-    return 'text-primary font-medium';
+    return transferStatusClass(status);
   }
 
   typeLabel(r: TransferRequest): string {
-    return this._transloco.translate(
-      r.request_type === 'release'
-        ? 'transferRequestAdmin.list.typeRelease'
-        : 'transferRequestAdmin.list.typeTransfer'
-    );
+    return transferTypeLabel(this._transloco, r);
   }
 
   typeClass(r: TransferRequest): string {
-    return r.request_type === 'release'
-      ? 'text-xs font-semibold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800'
-      : 'text-xs font-semibold px-1.5 py-0.5 rounded bg-fb-gray-200 text-fb-gray-500';
+    return transferTypeClass(r);
   }
 
   get canInitiate(): boolean {
     return this.currentUserClubIds.length > 0;
   }
 
-  get approvedRequests(): TransferRequest[] {
-    return this.requests.filter((r) => r.status === 'approved');
+  /**
+   * Vorgänge, die der Landesverband genehmigt hat und die nicht nachträglich
+   * annulliert wurden — Grundlage der Gebührenabrechnung, die einmal am
+   * Saisonende läuft.
+   *
+   * Maßgeblich ist `lv_approved_at` und nicht der Status: Eine Spielerfreigabe,
+   * die später widerrufen wurde, steht auf `revoked` und fiel damit aus der
+   * Ausfuhr — obwohl sie erteilt war und die Gebühr ausgelöst hat. Der Widerruf
+   * lässt Genehmigungszeitpunkt und genehmigendes Konto ausdrücklich stehen,
+   * die Angabe ist also belastbar.
+   *
+   * `withdrawn` und `expired` fallen trotz gesetztem `lv_approved_at` heraus:
+   * `cancel` und `TransferRequest.end_for_deactivated_club` lassen den
+   * Zeitstempel stehen, wenn sie einen bereits terminierten Vorgang annullieren
+   * — der Wechsel hat dann nie stattgefunden, und eine Gebühr dafür wäre
+   * schlicht falsch.
+   *
+   * Enthalten ist dagegen `scheduled`: beschlossen und genehmigt, nur das
+   * Wirksamkeitsdatum steht noch aus. Ob dafür schon abgerechnet wird,
+   * entscheidet der Verband — die Statusspalte der CSV weist die Zeile aus.
+   * Das ist der Punkt dieser Auswahl: Was aus einem Vorgang wurde, steht in
+   * der Datei, statt von einem Filter verschluckt zu werden.
+   */
+  get grantedRequests(): TransferRequest[] {
+    return this.requests.filter(
+      (r) =>
+        !!r.lv_approved_at && r.status !== 'withdrawn' && r.status !== 'expired'
+    );
   }
 
   exportCsv(): void {
-    const headers = [
-      this._transloco.translate('transferRequestAdmin.list.csvLastName'),
-      this._transloco.translate('transferRequestAdmin.list.csvFirstName'),
-      this._transloco.translate('transferRequestAdmin.list.csvBirthdate'),
-      this._transloco.translate('transferRequestAdmin.list.csvType'),
-      this._transloco.translate('transferRequestAdmin.list.csvDirect'),
-      this._transloco.translate('transferRequestAdmin.list.csvFormerClub'),
-      this._transloco.translate('transferRequestAdmin.list.csvRequestingClub'),
-      this._transloco.translate('transferRequestAdmin.list.csvApprovedAt'),
-    ];
-    const rows = this.approvedRequests.map((r) => [
-      r.player.last_name,
-      r.player.first_name,
-      r.player.birthdate ? this._formatDate(r.player.birthdate) : '',
-      this.typeLabel(r),
-      r.direct
-        ? this._transloco.translate('transferRequestAdmin.list.csvYes')
-        : this._transloco.translate('transferRequestAdmin.list.csvNo'),
-      r.former_club.name,
-      r.requesting_club.name,
-      r.lv_approved_at ? this._formatDate(r.lv_approved_at) : '',
-    ]);
-
-    downloadCsv('transfers', headers, rows);
-  }
-
-  private _formatDate(dateStr: string): string {
-    const d = new Date(dateStr);
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    return `${dd}.${mm}.${d.getFullYear()}`;
+    exportTransferCsv(this._transloco, 'transfers', this.grantedRequests);
   }
 
   get pendingRequests(): TransferRequest[] {
