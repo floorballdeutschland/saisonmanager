@@ -131,6 +131,11 @@
       "withdrawn": "Process cancelled on",
       "rejected": "Rejected on"
     },
+    "clubAddresses": "Club details for invoicing",
+    "clubAddressesHint": "The releasing state association invoices the receiving club. Anything a club has not filled in yet stays empty here.",
+    "addressReceiving": "Receiving club",
+    "addressReleasing": "Releasing club",
+    "addressMissing": "No address on file",
     "notFound": "Transfer request not found.",
     "statusPendingClub": "Awaiting releasing club",
     "statusReleasePendingLv": "Awaiting LV approval",
