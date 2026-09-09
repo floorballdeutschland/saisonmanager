@@ -7,6 +7,7 @@ import {
   ClubWithTeams,
   LicenseHash,
   StateAssociationWithClubs,
+  Team,
 } from '@floorball/types';
 
 @Injectable({
@@ -108,6 +109,22 @@ export class ClubService {
       path,
       formData
     );
+  }
+
+  // Mannschaften des Vereins in der laufenden Saison – Grundlage fuer die
+  // abweichenden Mannschaftslogos in der Vereinsmaske. Eigener Endpunkt und
+  // nicht Teil des Vereins-Datensatzes: Der reist serverseitig durch jede
+  // Spieltags-Antwort, dort haben die Mannschaften nichts zu suchen.
+  public getAdminClubTeams(clubId: number) {
+    const path = environment.apiURL + 'admin/clubs/' + clubId + '/teams.json';
+    return this.http.get<Team[]>(path);
+  }
+
+  // Abweichendes Mannschaftslogo zuruecknehmen. Die Antwort nennt, was danach
+  // gilt – in aller Regel das Vereinslogo (Team#logo_url_fallback).
+  public deleteTeamLogo(teamId: number) {
+    const path = environment.apiURL + 'admin/teams/' + teamId + '/logo.json';
+    return this.http.delete<{ logo_url: string; logo_small_url: string }>(path);
   }
 
   public uploadTeamLogo(teamId: number, file: File) {

@@ -335,6 +335,107 @@
                 </div>
               }
             </div>
+            <!-- Abweichende Logos pro Team. Nur am gespeicherten Verein:
+                 Mannschaften haengen an ihm, vor dem Speichern gibt es keine. -->
+            @if (club.id > 0) {
+              <div class="bg-white my-[5px] py-[15px] px-[30px]">
+                <div class="uppercase font-bold text-gray-400 text-sm mb-3">
+                  {{ "clubAdmin.edit.teamLogos" | transloco }}
+                </div>
+                <p class="text-sm text-gray-500 mb-5">
+                  {{ "clubAdmin.edit.teamLogosHint" | transloco }}
+                </p>
+                @if (clubTeamsFailed) {
+                  <div class="text-sm text-red-600">
+                    {{ "clubAdmin.edit.teamLogosLoadError" | transloco }}
+                    <button
+                      type="button"
+                      (click)="loadClubTeams(club.id)"
+                      class="ml-2 underline"
+                    >
+                      {{ "clubAdmin.edit.teamLogosRetry" | transloco }}
+                    </button>
+                  </div>
+                } @else if (!clubTeams.length) {
+                  <span class="text-gray-400 text-sm">{{
+                    "clubAdmin.edit.teamLogosEmpty" | transloco
+                  }}</span>
+                } @else {
+                  @for (team of clubTeams; track team.id) {
+                    <div
+                      class="flex flex-wrap items-center gap-4 py-3 border-t border-gray-100 first:border-t-0"
+                    >
+                      <div class="w-14 shrink-0">
+                        @if (team.logo_url) {
+                          <img
+                            [src]="team.logo_url"
+                            [alt]="'clubAdmin.edit.teamLogoAlt' | transloco"
+                            class="h-14 w-14 object-contain"
+                          />
+                        } @else {
+                          <span class="text-gray-400 text-xs">{{
+                            "clubAdmin.edit.noLogo" | transloco
+                          }}</span>
+                        }
+                      </div>
+                      <div class="grow min-w-[12rem]">
+                        <div class="font-bold">{{ team.name }}</div>
+                        <div class="text-sm text-gray-500">
+                          {{ team.league_name }}
+                          <span
+                            class="ml-1 text-xs font-semibold px-2 py-0.5 rounded"
+                            [class]="
+                              team.logo
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-gray-100 text-gray-600'
+                            "
+                          >
+                            {{
+                              (team.logo
+                                ? "clubAdmin.edit.teamLogoOwn"
+                                : "clubAdmin.edit.teamLogoFromClub"
+                              ) | transloco
+                            }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="shrink-0">
+                        @if (team.manage_logo) {
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            #teamLogoInput
+                            (change)="onTeamLogoSelected(team, teamLogoInput)"
+                          />
+                          @if (team.logo) {
+                            <button
+                              type="button"
+                              (click)="removeTeamLogo(team)"
+                              [disabled]="removingTeamLogoId === team.id"
+                              class="block mt-1 text-sm text-red-500 underline disabled:opacity-50"
+                            >
+                              {{
+                                (removingTeamLogoId === team.id
+                                  ? "clubAdmin.edit.removingTeamLogo"
+                                  : "clubAdmin.edit.removeTeamLogo"
+                                ) | transloco
+                              }}
+                            </button>
+                          }
+                        } @else {
+                          <span class="text-sm text-gray-400">{{
+                            "clubAdmin.edit.teamLogoForeignLeague" | transloco
+                          }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                  <small class="block text-gray-500 mt-4">{{
+                    "clubAdmin.edit.logoHint" | transloco
+                  }}</small>
+                }
+              </div>
+            }
             <!-- Deaktivierung -->
             @if (
               canDeactivate(club) || canReactivate(club) || club.deactivated_at
