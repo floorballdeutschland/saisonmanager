@@ -187,6 +187,11 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       short_name: '',
       long_name: '',
       state: 'de-sh',
+      street: '',
+      house_number: '',
+      postcode: '',
+      city: '',
+      contact_email: '',
     };
 
     this.club$ = of(club);
@@ -262,21 +267,57 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   public errorMsg(club: Club): string[] {
     const msg = [];
 
-    if (!club.name?.length) {
+    // `trim()` wie serverseitig in missing_required_fields_message: Ohne ihn
+    // passierte ein Name aus lauter Leerzeichen die Maske, der Speichern-Knopf
+    // erschien, und erst der Server wies ihn mit 422 ab.
+    if (!club.name?.trim().length) {
       msg.push(
         this._transloco.translate('clubAdmin.notifications.nameRequired')
       );
     }
 
-    if (!club.long_name?.length) {
+    if (!club.long_name?.trim().length) {
       msg.push(
         this._transloco.translate('clubAdmin.notifications.longNameRequired')
       );
     }
 
-    if (!club.short_name?.length) {
+    if (!club.short_name?.trim().length) {
       msg.push(
         this._transloco.translate('clubAdmin.notifications.shortNameRequired')
+      );
+    }
+
+    // Die Rechnungsanschrift (api#641). Der abgebende Landesverband stellt bei
+    // einem Transfer eine Rechnung an den aufnehmenden Verein und kann das ohne
+    // Anschrift nicht. Geprüft wird jedes Feld einzeln, damit die Meldung sagt,
+    // welches fehlt -- dieselbe Aufteilung wie serverseitig in
+    // ClubsController::REQUIRED_CLUB_FIELDS.
+    //
+    // Das trifft bewusst auch einen Verein aus dem Altbestand, der eigentlich
+    // nur seinen Namen ändern wollte: Es gibt keinen Datenlauf, der die
+    // Anschrift nachträgt, und diese Maske ist die einzige Stelle, an der das
+    // Fehlen auffällt.
+    const anschrift: [keyof Club, string][] = [
+      ['street', 'streetRequired'],
+      ['house_number', 'houseNumberRequired'],
+      ['postcode', 'postcodeRequired'],
+      ['city', 'cityRequired'],
+    ];
+
+    for (const [feld, schluessel] of anschrift) {
+      if (!String(club[feld] ?? '').trim().length) {
+        msg.push(
+          this._transloco.translate(`clubAdmin.notifications.${schluessel}`)
+        );
+      }
+    }
+
+    if (!club.contact_email?.trim().length) {
+      msg.push(
+        this._transloco.translate(
+          'clubAdmin.notifications.contactEmailRequired'
+        )
       );
     }
 
@@ -466,15 +507,13 @@ export class ClubEditComponent implements OnInit, OnDestroy {
         });
         this._router.navigate(['verwaltung', 'vereine']);
       },
-      error: (error) => {
-        this._notificationService.error(
-          error?.error?.message ?? 'Fehler beim Speichern.',
-          {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          }
-        );
-      },
+      // Kein eigener Toast: Die Fehlermeldung zeigt der globale
+      // ErrorInterceptor, und der liest `message` aus der Antwort -- bei den
+      // Pflichtangaben also genau die Liste der fehlenden Felder. Ein zweiter,
+      // wortgleicher Toast lag bisher darüber und musste einzeln weggeklickt
+      // werden (beide ohne autoClose). Gleiche Entscheidung wie beim
+      // Logo-Upload darüber (#84, #228).
+      error: () => {},
     });
   }
 }

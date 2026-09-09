@@ -42,6 +42,27 @@ export interface TransferRequestClub {
   name: string;
 }
 
+/**
+ * Anschrift und Kontakt eines beteiligten Vereins, für die Transferrechnung
+ * (api#641). Kommt nur im abgeschlossenen Vorgang mit.
+ *
+ * Jedes Feld einzeln optional: Der Bestand ist unvollständig, es gab keinen
+ * Datenlauf. Was nicht gepflegt ist, kommt als `null` und wird leer angezeigt.
+ */
+export interface TransferRequestClubAddress {
+  long_name?: string | null;
+  street?: string | null;
+  house_number?: string | null;
+  postcode?: string | null;
+  city?: string | null;
+  contact_email?: string | null;
+}
+
+export interface TransferRequestClubAddresses {
+  requesting_club: TransferRequestClubAddress;
+  former_club: TransferRequestClubAddress;
+}
+
 export interface TransferRequest {
   id: number;
   status: TransferRequestStatus;
@@ -83,4 +104,16 @@ export interface TransferRequest {
   withdrawn_at?: string | null;
   withdrawn_by?: number | null;
   withdrawn_by_name?: string | null;
+
+  /**
+   * Anschrift und Kontakt beider beteiligten Vereine. Der abgebende
+   * Landesverband stellt die Transferrechnung an den aufnehmenden Verein und
+   * braucht dafür dessen ladungsfähige Anschrift; der aufnehmende Verein
+   * braucht die Gegenseite, um die Rechnung einzuordnen.
+   *
+   * Nur am abgeschlossenen Vorgang und nur in der Antwort zum einzelnen
+   * Vorgang -- die Übersicht rendert denselben Hash, und dort haben Anschriften
+   * nichts zu suchen. Fehlt der Block, ist der Vorgang nicht abgeschlossen.
+   */
+  club_addresses?: TransferRequestClubAddresses | null;
 }

@@ -1,0 +1,129 @@
+<div class="p-4 lg:p-8">
+  <a
+    routerLink="/verwaltung/transfer-anfragen"
+    class="text-sm text-primary hover:underline"
+    >{{ "transferRequestAdmin.incoming.back" | transloco }}</a
+  >
+
+  <div class="flex items-center justify-between mt-4 mb-2">
+    <h1 class="text-2xl font-bold">
+      {{ "transferRequestAdmin.incoming.title" | transloco }}
+    </h1>
+    <div class="flex items-center gap-2">
+      <!-- Auch bei leerer Liste sichtbar: Genau dann ist die Frage „stehen die
+           Vorgaenge vielleicht in einer frueheren Saison?" am naheliegendsten.
+           Der CSV-Knopf haengt dagegen an vorhandenen Zeilen. -->
+      <button
+        (click)="toggleAllSeasons()"
+        [disabled]="loading"
+        class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {{
+          (allSeasons
+            ? "transferRequestAdmin.list.currentSeasonOnly"
+            : "transferRequestAdmin.list.showPastSeasons"
+          ) | transloco
+        }}
+      </button>
+      @if (!loading && requests.length > 0) {
+        <button
+          (click)="exportCsv()"
+          class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
+        >
+          {{ "transferRequestAdmin.list.exportCsv" | transloco }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <p class="text-sm text-fb-gray-500 mb-6 max-w-3xl">
+    {{ "transferRequestAdmin.incoming.hint" | transloco }}
+  </p>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "transferRequestAdmin.list.loading" | transloco }}
+    </div>
+  }
+
+  <!-- Ohne Zeilen-Klick und ohne Aktionsspalte: Über den Vorgang entscheidet der
+       abgebende Landesverband. Der Einzelabruf prüft dieselbe Regel und
+       antwortete hier mit 403, ein Link führte also ins Leere. -->
+  @if (!loading && requests.length > 0) {
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-fb-gray-700 text-left">
+            <th class="py-2 pr-4 font-bold">
+              {{ "transferRequestAdmin.list.colPlayer" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "transferRequestAdmin.list.colFrom" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "transferRequestAdmin.list.colTo" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "transferRequestAdmin.list.colType" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "transferRequestAdmin.list.colStatus" | transloco }}
+            </th>
+            <th class="py-2 pr-4 font-bold">
+              {{ "transferRequestAdmin.list.colApprovedAt" | transloco }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of requests; track r.id) {
+            <tr class="border-b border-fb-gray-700">
+              <td class="py-2 pr-4 font-medium">
+                {{ r.player.last_name }}, {{ r.player.first_name }}
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{ r.former_club.name }}
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{ r.requesting_club.name }}
+              </td>
+              <td class="py-2 pr-4">
+                <span [class]="typeClass(r)">{{ typeLabel(r) }}</span>
+              </td>
+              <td class="py-2 pr-4">
+                <span [class]="statusClass(r.status)">{{
+                  statusLabel(r.status)
+                }}</span>
+              </td>
+              <td class="py-2 pr-4 text-fb-gray-500">
+                {{ r.lv_approved_at | date: "dd.MM.yyyy" }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Der Fehlerfall vor dem Leer-Hinweis: Ohne diese Unterscheidung stand
+       dort „Keine eingehenden Transfers vorhanden", obwohl der Abruf gescheitert
+       ist -- also eine Tatsachenbehauptung, die niemand geprueft hat. -->
+  @if (!loading && loadFailed) {
+    <div class="py-8 text-center">
+      <p class="text-red-600 text-sm">
+        {{ "transferRequestAdmin.list.loadFailed" | transloco }}
+      </p>
+      <button
+        (click)="retry()"
+        class="mt-3 bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
+      >
+        {{ "transferRequestAdmin.list.retry" | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (!loading && !loadFailed && requests.length === 0) {
+    <p class="text-fb-gray-500 text-sm py-8 text-center">
+      {{ "transferRequestAdmin.incoming.none" | transloco }}
+    </p>
+  }
+</div>

@@ -17,6 +17,23 @@ export interface Club {
   game_operation_id?: number | null;
   contact_email?: string;
   /**
+   * Rechnungsanschrift des Vereins. Der abgebende Landesverband stellt bei
+   * einem Transfer eine Rechnung an den aufnehmenden Verein und braucht dafür
+   * eine ladungsfähige Anschrift (api#641).
+   *
+   * Nur in der Antwort zu einem einzelnen Verein (`admin/clubs/:id`) und im
+   * abgeschlossenen Transfervorgang, nicht im vollen Vereins-Hash: Der reist
+   * serverseitig durch jede Spieltags-Antwort, und Straße und Hausnummer eines
+   * Vereins sind häufig die Privatanschrift eines Vorstandsmitglieds.
+   *
+   * Der Bestand ist unvollständig — es gab keinen Datenlauf. Leer heißt
+   * „noch nicht gepflegt" und wird leer angezeigt.
+   */
+  street?: string;
+  house_number?: string;
+  postcode?: string;
+  city?: string;
+  /**
 
 
    * Vereinsmanager, die die Vereinspost zusätzlich zur Kontakt-E-Mail

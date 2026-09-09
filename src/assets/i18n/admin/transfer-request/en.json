@@ -2,6 +2,8 @@
   "list": {
     "title": "Transfer requests",
     "exportCsv": "Export CSV",
+    "showPastSeasons": "Show past seasons",
+    "currentSeasonOnly": "Current season only",
     "directAssign": "Direct assignment",
     "newRequest": "New transfer request",
     "loading": "Loading transfer requests…",
@@ -18,6 +20,8 @@
     "withdrawing": "…",
     "withdraw": "Withdraw",
     "noRequests": "No transfer requests.",
+    "loadFailed": "The list could not be loaded.",
+    "retry": "Try again",
     "typeRelease": "Release",
     "typeTransfer": "Transfer",
     "statusPendingClub": "Awaiting releasing club",
@@ -39,8 +43,10 @@
     "csvFormerClub": "Releasing club",
     "csvRequestingClub": "Receiving club",
     "csvApprovedAt": "Approved on",
+    "csvStatus": "Status",
     "csvYes": "Yes",
-    "csvNo": "No"
+    "csvNo": "No",
+    "incoming": "Incoming transfers & releases"
   },
   "initiate": {
     "back": "← Back",
@@ -125,6 +131,11 @@
       "withdrawn": "Process cancelled on",
       "rejected": "Rejected on"
     },
+    "clubAddresses": "Club details for invoicing",
+    "clubAddressesHint": "The releasing state association invoices the receiving club. Anything a club has not filled in yet stays empty here.",
+    "addressReceiving": "Receiving club",
+    "addressReleasing": "Releasing club",
+    "addressMissing": "No address on file",
     "notFound": "Transfer request not found.",
     "statusPendingClub": "Awaiting releasing club",
     "statusReleasePendingLv": "Awaiting LV approval",
@@ -185,5 +196,11 @@
     "executeError": "Transfer could not be executed.",
     "directAssignSuccess": "Direct assignment completed.",
     "directAssignError": "Direct assignment failed."
+  },
+  "incoming": {
+    "title": "Incoming transfers & releases",
+    "back": "← Back to transfer requests",
+    "hint": "Completed transfers and releases into clubs of your state association where the former club is outside it. These are decided by the former club’s state association – this list is for information only and offers no actions. Transfers within your own association are listed under transfer requests.",
+    "none": "No incoming transfers or releases."
   }
 }
