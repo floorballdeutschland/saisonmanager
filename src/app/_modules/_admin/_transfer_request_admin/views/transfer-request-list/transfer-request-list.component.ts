@@ -66,10 +66,24 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  /**
+   * Vergangene Saisons sind standardmäßig ausgeblendet. Der Saisonwechsel räumt
+   * die Vorgänge nicht ab — ohne diesen Riegel wüchse die Liste über die Jahre
+   * unbegrenzt. Ausgeblendet, nicht weggeworfen: Die Gebühren für erteilte
+   * Freigaben werden am Saisonende gestellt.
+   */
+  allSeasons = false;
+
+  toggleAllSeasons(): void {
+    this.allSeasons = !this.allSeasons;
+    this.loadRequests();
+  }
+
   loadRequests(): void {
     this.loading = true;
+    this._cdr.markForCheck();
     this._transferService
-      .getAll()
+      .getAll(this.allSeasons)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {

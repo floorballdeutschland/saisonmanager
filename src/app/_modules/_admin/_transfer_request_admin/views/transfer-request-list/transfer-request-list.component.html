@@ -4,6 +4,19 @@
       {{ "transferRequestAdmin.list.title" | transloco }}
     </h1>
     <div class="flex items-center gap-2">
+      <!-- Auch bei leerer Liste sichtbar: Genau dann ist die Frage „stehen die
+           Vorgaenge vielleicht in einer frueheren Saison?" am naheliegendsten. -->
+      <button
+        (click)="toggleAllSeasons()"
+        class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
+      >
+        {{
+          (allSeasons
+            ? "transferRequestAdmin.list.currentSeasonOnly"
+            : "transferRequestAdmin.list.showPastSeasons"
+          ) | transloco
+        }}
+      </button>
       @if (isSbk && !loading && approvedRequests.length > 0) {
         <button
           (click)="exportCsv()"

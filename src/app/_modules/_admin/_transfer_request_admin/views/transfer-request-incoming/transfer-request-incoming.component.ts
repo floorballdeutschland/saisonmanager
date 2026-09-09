@@ -49,10 +49,31 @@ export class TransferRequestIncomingComponent implements OnInit, OnDestroy {
     private _cdr: ChangeDetectorRef
   ) {}
 
+  /**
+   * Vergangene Saisons sind standardmäßig ausgeblendet. Der Saisonwechsel räumt
+   * die Vorgänge nicht ab — ohne diesen Riegel wüchse die Liste über die Jahre
+   * unbegrenzt, und die laufende Saison stünde zwischen Altbestand.
+   *
+   * Ausgeblendet, nicht weggeworfen: Der Landesverband stellt seine Gebühren
+   * für erteilte Freigaben am Saisonende und braucht die Vorsaison dafür
+   * vollständig.
+   */
+  allSeasons = false;
+
   ngOnInit(): void {
+    this.load();
+  }
+
+  toggleAllSeasons(): void {
+    this.allSeasons = !this.allSeasons;
+    this.load();
+  }
+
+  private load(): void {
     this.loading = true;
+    this._cdr.markForCheck();
     this._transferService
-      .getIncoming()
+      .getIncoming(this.allSeasons)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {

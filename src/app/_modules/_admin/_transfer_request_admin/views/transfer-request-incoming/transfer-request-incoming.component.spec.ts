@@ -154,4 +154,37 @@ describe('TransferRequestIncomingComponent', () => {
     expect(clicked.length).toBe(1);
     expect(clicked[0]).toMatch(/^eingehende-transfers-\d{4}-\d{2}-\d{2}\.csv$/);
   });
+
+  // Standard ist die laufende Saison, und der Server entscheidet das: Ohne den
+  // Parameter liefert er sie, nicht alles. Ein vergessenes Flag im Browser
+  // zeigt damit zu wenig statt zu viel.
+  it('fragt ohne Parameter und damit nur die laufende Saison ab', () => {
+    const fixture = TestBed.createComponent(TransferRequestIncomingComponent);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne((r) => r.url.includes('incoming.json'));
+    expect(req.request.params.get('all_seasons')).toBeNull();
+    req.flush([]);
+  });
+
+  it('laedt mit all_seasons nach, wenn die Vergangenheit eingeblendet wird', () => {
+    const fixture = TestBed.createComponent(TransferRequestIncomingComponent);
+    fixture.detectChanges();
+    httpMock.expectOne((r) => r.url.includes('incoming.json')).flush([]);
+
+    fixture.componentInstance.toggleAllSeasons();
+
+    const zweiter = httpMock.expectOne((r) => r.url.includes('incoming.json'));
+    expect(zweiter.request.params.get('all_seasons')).toBe('true');
+    zweiter.flush([request()]);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.requests.length).toBe(1);
+
+    // Und wieder zurueck: Der Knopf schaltet in beide Richtungen.
+    fixture.componentInstance.toggleAllSeasons();
+    const dritter = httpMock.expectOne((r) => r.url.includes('incoming.json'));
+    expect(dritter.request.params.get('all_seasons')).toBeNull();
+    dritter.flush([]);
+  });
 });

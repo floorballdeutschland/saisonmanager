@@ -9,14 +9,30 @@
     <h1 class="text-2xl font-bold">
       {{ "transferRequestAdmin.incoming.title" | transloco }}
     </h1>
-    @if (!loading && requests.length > 0) {
+    <div class="flex items-center gap-2">
+      <!-- Auch bei leerer Liste sichtbar: Genau dann ist die Frage „stehen die
+           Vorgaenge vielleicht in einer frueheren Saison?" am naheliegendsten.
+           Der CSV-Knopf haengt dagegen an vorhandenen Zeilen. -->
       <button
-        (click)="exportCsv()"
+        (click)="toggleAllSeasons()"
         class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
       >
-        {{ "transferRequestAdmin.list.exportCsv" | transloco }}
+        {{
+          (allSeasons
+            ? "transferRequestAdmin.list.currentSeasonOnly"
+            : "transferRequestAdmin.list.showPastSeasons"
+          ) | transloco
+        }}
       </button>
-    }
+      @if (!loading && requests.length > 0) {
+        <button
+          (click)="exportCsv()"
+          class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
+        >
+          {{ "transferRequestAdmin.list.exportCsv" | transloco }}
+        </button>
+      }
+    </div>
   </div>
 
   <p class="text-sm text-fb-gray-500 mb-6 max-w-3xl">

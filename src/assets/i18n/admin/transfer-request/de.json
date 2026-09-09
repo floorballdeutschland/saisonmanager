@@ -2,6 +2,8 @@
   "list": {
     "title": "Transferanträge",
     "exportCsv": "CSV exportieren",
+    "showPastSeasons": "Vergangene Saisons anzeigen",
+    "currentSeasonOnly": "Nur laufende Saison",
     "directAssign": "Direktzuweisung",
     "newRequest": "Neuer Transferantrag",
     "loading": "Lade Transferanträge…",
