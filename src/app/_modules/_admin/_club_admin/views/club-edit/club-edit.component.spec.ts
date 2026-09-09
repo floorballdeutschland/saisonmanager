@@ -25,6 +25,23 @@ function pngInput(): HTMLInputElement {
   return { files: [file], value: 'logo.png' } as unknown as HTMLInputElement;
 }
 
+// Ein Verein, dessen Pflichtangaben vollstaendig sind. Seit api#641 gehoeren
+// die Rechnungsanschrift und die Kontakt-E-Mail dazu; ohne sie meldet errorMsg
+// fuenf Luecken, und jeder Test zu einer anderen Regel liefe gegen die.
+function vollstaendigerVerein(overrides: Partial<Club> = {}): Club {
+  return {
+    name: 'Verein',
+    long_name: 'Verein e.V.',
+    short_name: 'VER',
+    street: 'Musterweg',
+    house_number: '1',
+    postcode: '30159',
+    city: 'Hannover',
+    contact_email: 'verein@example.org',
+    ...overrides,
+  } as Club;
+}
+
 describe('ClubEditComponent', () => {
   let httpMock: HttpTestingController;
 
@@ -134,20 +151,64 @@ describe('ClubEditComponent', () => {
   it('errorMsg weist zwei Adressen im Kontaktfeld ab', () => {
     const component =
       TestBed.createComponent(ClubEditComponent).componentInstance;
-    const club = {
-      name: 'Verein',
-      long_name: 'Verein e.V.',
-      short_name: 'VER',
+    const club = vollstaendigerVerein({
       contact_email: 'a@example.org; b@example.org',
-    } as Club;
+    });
 
     expect(component.errorMsg(club).length).toBe(1);
 
     club.contact_email = 'a@example.org';
     expect(component.errorMsg(club)).toEqual([]);
+  });
 
-    club.contact_email = '';
+  // Seit api#641 ist die Kontaktadresse Pflicht: Ohne sie erreicht der
+  // abgebende Landesverband den aufnehmenden Verein nicht, wenn er die
+  // Transferrechnung stellt. Vorher war ein leeres Feld ausdruecklich erlaubt.
+  it('errorMsg verlangt eine Kontakt-E-Mail', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const club = vollstaendigerVerein({ contact_email: '' });
+
+    expect(component.errorMsg(club).length).toBe(1);
+
+    club.contact_email = 'a@example.org';
     expect(component.errorMsg(club)).toEqual([]);
+  });
+
+  // Die Rechnungsanschrift. Jedes Feld einzeln, damit die Meldung sagt, welches
+  // fehlt -- eine Sammelmeldung laesst den Verein raten.
+  it('errorMsg verlangt jedes Feld der Anschrift einzeln', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+
+    expect(
+      component.errorMsg(
+        vollstaendigerVerein({
+          street: '',
+          house_number: '',
+          postcode: '',
+          city: '',
+        })
+      ).length
+    ).toBe(4);
+
+    // Leerzeichen sind keine Angabe.
+    expect(
+      component.errorMsg(vollstaendigerVerein({ postcode: '   ' })).length
+    ).toBe(1);
+
+    expect(component.errorMsg(vollstaendigerVerein())).toEqual([]);
+  });
+
+  // Der Bestand ist unvollstaendig, es gibt keinen Datenlauf. Ein Verein aus
+  // dem Altbestand kommt an der Maske erst wieder vorbei, wenn er die Anschrift
+  // nachtraegt -- auch wenn er eigentlich nur den Namen aendern wollte.
+  it('errorMsg haelt einen Bestandsverein ohne Anschrift zurueck', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const club = { name: 'Verein', short_name: 'VER' } as Club;
+
+    expect(component.error(club)).toBeTrue();
   });
 
   // Der Landesverband bestimmt, welcher Spielbetrieb den Verein verwaltet. Ohne
@@ -157,11 +218,7 @@ describe('ClubEditComponent', () => {
     const component =
       TestBed.createComponent(ClubEditComponent).componentInstance;
     component.editMode = false;
-    const club = {
-      name: 'Verein',
-      long_name: 'Verein e.V.',
-      short_name: 'VER',
-    } as Club;
+    const club = vollstaendigerVerein();
 
     expect(component.errorMsg(club).length).toBe(1);
 
@@ -176,11 +233,7 @@ describe('ClubEditComponent', () => {
   it('errorMsg laesst den Landesverband beim Bearbeiten leer', () => {
     const component =
       TestBed.createComponent(ClubEditComponent).componentInstance;
-    const club = {
-      name: 'Verein',
-      long_name: 'Verein e.V.',
-      short_name: 'VER',
-    } as Club;
+    const club = vollstaendigerVerein();
 
     expect(component.editMode).toBeTrue();
     expect(component.errorMsg(club)).toEqual([]);

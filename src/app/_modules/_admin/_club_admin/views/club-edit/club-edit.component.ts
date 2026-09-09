@@ -187,6 +187,11 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       short_name: '',
       long_name: '',
       state: 'de-sh',
+      street: '',
+      house_number: '',
+      postcode: '',
+      city: '',
+      contact_email: '',
     };
 
     this.club$ = of(club);
@@ -277,6 +282,39 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     if (!club.short_name?.length) {
       msg.push(
         this._transloco.translate('clubAdmin.notifications.shortNameRequired')
+      );
+    }
+
+    // Die Rechnungsanschrift (api#641). Der abgebende Landesverband stellt bei
+    // einem Transfer eine Rechnung an den aufnehmenden Verein und kann das ohne
+    // Anschrift nicht. Geprüft wird jedes Feld einzeln, damit die Meldung sagt,
+    // welches fehlt -- dieselbe Aufteilung wie serverseitig in
+    // ClubsController::REQUIRED_CLUB_FIELDS.
+    //
+    // Das trifft bewusst auch einen Verein aus dem Altbestand, der eigentlich
+    // nur seinen Namen ändern wollte: Es gibt keinen Datenlauf, der die
+    // Anschrift nachträgt, und diese Maske ist die einzige Stelle, an der das
+    // Fehlen auffällt.
+    const anschrift: [keyof Club, string][] = [
+      ['street', 'streetRequired'],
+      ['house_number', 'houseNumberRequired'],
+      ['postcode', 'postcodeRequired'],
+      ['city', 'cityRequired'],
+    ];
+
+    for (const [feld, schluessel] of anschrift) {
+      if (!String(club[feld] ?? '').trim().length) {
+        msg.push(
+          this._transloco.translate(`clubAdmin.notifications.${schluessel}`)
+        );
+      }
+    }
+
+    if (!club.contact_email?.trim().length) {
+      msg.push(
+        this._transloco.translate(
+          'clubAdmin.notifications.contactEmailRequired'
+        )
       );
     }
 

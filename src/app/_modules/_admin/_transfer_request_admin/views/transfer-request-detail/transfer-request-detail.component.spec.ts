@@ -1,6 +1,9 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { getTranslocoTestingModule } from 'src/app/_modules/_core/_i18n/transloco-testing';
@@ -38,15 +41,21 @@ describe('TransferRequestDetailComponent – Chronik', () => {
   function componentWith(
     request: Partial<TransferRequest>
   ): TransferRequestDetailComponent {
-    const component = TestBed.createComponent(TransferRequestDetailComponent)
-      .componentInstance;
+    const component = TestBed.createComponent(
+      TransferRequestDetailComponent
+    ).componentInstance;
     component.request = {
       id: 1,
       status: 'pending_club',
       request_type: 'transfer',
       season_id: 18,
       created_at: '2026-08-01T10:00:00.000Z',
-      player: { id: 1, first_name: 'Max', last_name: 'Muster', birthdate: '1995-03-15' },
+      player: {
+        id: 1,
+        first_name: 'Max',
+        last_name: 'Muster',
+        birthdate: '1995-03-15',
+      },
       requesting_club: { id: 2, name: 'Aufnehmend' },
       former_club: { id: 3, name: 'Abgebend' },
       ...request,
@@ -108,9 +117,9 @@ describe('TransferRequestDetailComponent – Chronik', () => {
       rejection_reason: 'Beitrag offen',
     });
     expect(byClub.protocolSteps.map((s) => s.key)).toContain('rejectedByClub');
-    expect(
-      byClub.protocolSteps.find((s) => s.kind === 'rejected')?.note
-    ).toBe('Beitrag offen');
+    expect(byClub.protocolSteps.find((s) => s.kind === 'rejected')?.note).toBe(
+      'Beitrag offen'
+    );
 
     const byLv = componentWith({
       status: 'rejected_by_lv',
@@ -219,6 +228,116 @@ describe('TransferRequestDetailComponent – Chronik', () => {
       expect(
         component.actorLabel({ key: 'submitted', kind: 'done' })
       ).toBeNull();
+    });
+  });
+
+  // Der abgebende Landesverband stellt die Transferrechnung an den aufnehmenden
+  // Verein und braucht dafuer dessen Anschrift (api#641). Der Bestand ist
+  // unvollstaendig, es gibt keinen Datenlauf -- die Ansicht muss halbe und
+  // fehlende Angaben aushalten.
+  describe('Anschriften der beteiligten Vereine', () => {
+    it('setzt die Anschrift zu Briefzeilen zusammen', () => {
+      const component = componentWith({});
+
+      expect(
+        component.addressLines({
+          long_name: 'Verein e.V.',
+          street: 'Musterweg',
+          house_number: '1',
+          postcode: '30159',
+          city: 'Hannover',
+        })
+      ).toEqual(['Verein e.V.', 'Musterweg 1', '30159 Hannover']);
+    });
+
+    // Eine halb gepflegte Anschrift darf keine leere Zeile hinterlassen: Ein
+    // Verein mit Ort, aber ohne Strasse ist der Normalfall und kein Fehler.
+    it('laesst fehlende Teile weg statt leere Zeilen zu erzeugen', () => {
+      const component = componentWith({});
+
+      expect(
+        component.addressLines({ city: 'Hannover', house_number: '  ' })
+      ).toEqual(['Hannover']);
+      expect(component.addressLines(null)).toEqual([]);
+      expect(component.addressLines(undefined)).toEqual([]);
+    });
+
+    // Ein Verein, von dem nur die Kontaktadresse gepflegt ist, hat trotzdem
+    // etwas zu zeigen -- sonst behauptete die Ansicht, es liege nichts vor.
+    it('zaehlt die Kontaktadresse als gepflegte Angabe', () => {
+      const component = componentWith({});
+
+      expect(
+        component.hasAddress({ contact_email: 'a@example.org' })
+      ).toBeTrue();
+      expect(component.hasAddress({})).toBeFalse();
+      expect(component.hasAddress(null)).toBeFalse();
+    });
+
+    // Ueber die echte Antwort geladen und nicht per Zuweisung: Die Komponente
+    // laeuft auf OnPush, nur ihr eigenes markForCheck im Abonnement bringt die
+    // Anzeige nach.
+    function geladenerVorgang(
+      club_addresses?: TransferRequest['club_addresses']
+    ) {
+      const fixture = TestBed.createComponent(TransferRequestDetailComponent);
+      fixture.detectChanges();
+
+      TestBed.inject(HttpTestingController)
+        .expectOne((req) => req.url.includes('admin/transfer_requests'))
+        .flush({
+          id: 1,
+          status: 'approved',
+          request_type: 'transfer',
+          season_id: 18,
+          created_at: '2026-08-01T10:00:00.000Z',
+          player: {
+            id: 1,
+            first_name: 'Max',
+            last_name: 'Muster',
+            birthdate: '1995-03-15',
+          },
+          requesting_club: { id: 2, name: 'Aufnehmend' },
+          former_club: { id: 3, name: 'Abgebend' },
+          club_addresses,
+        });
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    // Fehlt der Block, ist der Vorgang nicht abgeschlossen -- dann gibt es auch
+    // keine Rechnung, zu der eine Anschrift gehoerte.
+    it('zeigt nichts, wenn der Vorgang keine Anschriften mitbringt', () => {
+      expect(geladenerVorgang().nativeElement.textContent).not.toContain(
+        'transferRequestAdmin.detail.clubAddresses'
+      );
+    });
+
+    it('zeigt Anschrift und Kontakt des aufnehmenden Vereins', () => {
+      const fixture = geladenerVorgang({
+        requesting_club: {
+          long_name: 'Aufnehmend e.V.',
+          street: 'Zielweg',
+          house_number: '12b',
+          postcode: '20095',
+          city: 'Hamburg',
+          contact_email: 'aufnehmend@example.org',
+        },
+        former_club: {},
+      });
+
+      const text = fixture.nativeElement.textContent;
+      expect(text).toContain('Aufnehmend e.V.');
+      expect(text).toContain('Zielweg 12b');
+      expect(text).toContain('20095 Hamburg');
+      expect(
+        fixture.nativeElement.querySelector(
+          'a[href="mailto:aufnehmend@example.org"]'
+        )
+      ).toBeTruthy();
+
+      // Der abgebende Verein hat nichts gepflegt: benannt statt leer gelassen.
+      expect(text).toContain('transferRequestAdmin.detail.addressMissing');
     });
   });
 });

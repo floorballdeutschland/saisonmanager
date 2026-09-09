@@ -14,7 +14,11 @@ import {
   SessionService,
   TransferRequestService,
 } from '@floorball/core';
-import { TransferProtocolStep, TransferRequest } from '@floorball/types';
+import {
+  TransferProtocolStep,
+  TransferRequest,
+  TransferRequestClubAddress,
+} from '@floorball/types';
 
 @Component({
   templateUrl: './transfer-request-detail.component.html',
@@ -35,6 +39,38 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
   currentUserClubIds: number[] = [];
   isAdmin = false;
   isSbk = false;
+
+  /**
+   * Die Anschrift eines beteiligten Vereins als Zeilen, wie sie auf einem
+   * Briefumschlag stehen (api#641). Leere Angaben fallen weg statt eine leere
+   * Zeile zu hinterlassen: Der Bestand ist unvollständig, es gab keinen
+   * Datenlauf, und ein Verein mit Ort aber ohne Straße ist der Normalfall und
+   * kein Fehler.
+   *
+   * Ein leeres Ergebnis heißt „nichts gepflegt" und wird in der Ansicht als
+   * solches benannt -- eine leere Karte ließe offen, ob die Daten fehlen oder
+   * das Laden schiefging.
+   */
+  public addressLines(address?: TransferRequestClubAddress | null): string[] {
+    if (!address) return [];
+
+    const strasse = [address.street, address.house_number]
+      .map((teil) => teil?.trim())
+      .filter(Boolean)
+      .join(' ');
+    const ort = [address.postcode, address.city]
+      .map((teil) => teil?.trim())
+      .filter(Boolean)
+      .join(' ');
+
+    return [address.long_name?.trim(), strasse, ort].filter(
+      (zeile): zeile is string => !!zeile
+    );
+  }
+
+  public hasAddress(address?: TransferRequestClubAddress | null): boolean {
+    return this.addressLines(address).length > 0 || !!address?.contact_email;
+  }
 
   private _destroy$ = new Subject<void>();
 
@@ -497,7 +533,10 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
     // ein noch laufender Vorgang. Der Schritt erscheint deshalb auch ohne
     // Datum, ausdrücklich als "Zeitpunkt nicht erfasst" statt mit einem
     // erfundenen.
-    if (r.status === 'withdrawn' && !visible.some((s) => s.key === 'withdrawn')) {
+    if (
+      r.status === 'withdrawn' &&
+      !visible.some((s) => s.key === 'withdrawn')
+    ) {
       visible.push({ key: 'withdrawn', kind: 'rejected', timeUnknown: true });
     }
 

@@ -82,6 +82,63 @@
                     required
                   />
                 </div>
+                <!-- Anschrift des Vereins: Der abgebende Landesverband stellt
+                     bei einem Transfer eine Rechnung an den aufnehmenden Verein
+                     und braucht dafür eine ladungsfähige Anschrift (api#641).
+                     Sie steht bei den Angaben zum Vereinsregister, weil sie
+                     dieselbe Frage beantwortet: wer der Verein rechtlich ist
+                     und wohin Post an ihn geht. -->
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.street" | transloco }}
+                </div>
+                <div>
+                  <input
+                    [(ngModel)]="club.street"
+                    type="text"
+                    id="street"
+                    class="w-full"
+                    required
+                  />
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ "clubAdmin.edit.addressHint" | transloco }}
+                  </p>
+                </div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.houseNumber" | transloco }}
+                </div>
+                <div>
+                  <input
+                    [(ngModel)]="club.house_number"
+                    type="text"
+                    id="house_number"
+                    class="w-full"
+                    required
+                  />
+                </div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.postcode" | transloco }}
+                </div>
+                <div>
+                  <input
+                    [(ngModel)]="club.postcode"
+                    type="text"
+                    id="postcode"
+                    class="w-full"
+                    required
+                  />
+                </div>
+                <div class="font-bold">
+                  {{ "clubAdmin.edit.city" | transloco }}
+                </div>
+                <div>
+                  <input
+                    [(ngModel)]="club.city"
+                    type="text"
+                    id="city"
+                    class="w-full"
+                    required
+                  />
+                </div>
                 <div class="font-bold">
                   {{ "clubAdmin.edit.state" | transloco }}
                 </div>
@@ -146,6 +203,7 @@
                     type="email"
                     id="contact_email"
                     class="w-full"
+                    required
                     [placeholder]="
                       'clubAdmin.edit.contactEmailPlaceholder' | transloco
                     "

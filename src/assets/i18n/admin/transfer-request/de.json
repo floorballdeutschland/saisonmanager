@@ -125,6 +125,11 @@
       "withdrawn": "Vorgang abgebrochen am",
       "rejected": "Abgelehnt am"
     },
+    "clubAddresses": "Vereinsdaten für die Rechnung",
+    "clubAddressesHint": "Der abgebende Landesverband stellt die Rechnung an den aufnehmenden Verein. Was ein Verein noch nicht gepflegt hat, bleibt hier leer.",
+    "addressReceiving": "Aufnehmender Verein",
+    "addressReleasing": "Abgebender Verein",
+    "addressMissing": "Keine Anschrift gepflegt",
     "notFound": "Transferantrag nicht gefunden.",
     "statusPendingClub": "Warten auf abgebenden Verein",
     "statusReleasePendingLv": "Warten auf LV-Genehmigung",
