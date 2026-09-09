@@ -99,6 +99,38 @@ describe('RefereeEditComponent', () => {
 
   // fe#318: Das Feld „Verein" weist zu, `clubs` benennt daneben aber auch den
   // bereits eingetragenen Verein — fb-select-search liest sein Label aus
+  // Ein Gast trägt keine Lizenznummer. Das Formular belegt das Feld aber mit
+  // der nächsten freien Nummer vor und blendet es beim Haken nur aus — der
+  // Wert ging trotzdem mit und belegte eine Nummer aus dem laufenden Bestand
+  // (api#646).
+  describe('Gast-Haken und Lizenznummer', () => {
+    function build(): RefereeEditComponent {
+      const component =
+        TestBed.createComponent(RefereeEditComponent).componentInstance;
+      component.referee = { vorname: 'Gast', lizenznummer: 8725 };
+      return component;
+    }
+
+    it('nimmt die vorbelegte Nummer aus dem Formular', () => {
+      const component = build();
+
+      component.setGuest(true);
+
+      expect(component.referee.guest).toBeTrue();
+      expect(component.referee.lizenznummer).toBeNull();
+    });
+
+    it('legt die Vorbelegung beim Abwählen zurück', () => {
+      const component = build();
+
+      component.setGuest(true);
+      component.setGuest(false);
+
+      expect(component.referee.guest).toBeFalse();
+      expect(component.referee.lizenznummer).toBe(8725);
+    });
+  });
+
   // `items`. Eingegrenzt wird deshalb nur die Auswahl.
   describe('selectableClubs', () => {
     function build(clubId?: number): RefereeEditComponent {

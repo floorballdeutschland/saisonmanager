@@ -26,7 +26,8 @@
       <label class="flex items-center gap-3 cursor-pointer select-none">
         <input
           type="checkbox"
-          [(ngModel)]="referee.guest"
+          [ngModel]="referee.guest"
+          (ngModelChange)="setGuest($event)"
           name="guest"
           class="w-4 h-4"
         />

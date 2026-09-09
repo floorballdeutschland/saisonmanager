@@ -35,6 +35,8 @@ import {
 })
 export class RefereeEditComponent implements OnInit, OnDestroy {
   referee: Partial<RefereeAdmin> = {};
+  // Zuletzt bekannte Lizenznummer der Neuanlage, siehe setGuest().
+  private _lizenznummerVorbelegung: number | null = null;
   editMode = false;
   loading = false;
   saving = false;
@@ -119,9 +121,12 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this._destroy$))
         .subscribe({
           next: (res) => {
+            this._lizenznummerVorbelegung = res.next_lizenznummer;
             // Nur vorbefüllen, wenn der Nutzer noch nichts eingegeben hat
-            // (Antwort kann nach manueller Eingabe eintreffen).
-            if (this.referee.lizenznummer) return;
+            // (Antwort kann nach manueller Eingabe eintreffen) — und nicht bei
+            // einem Gast: Der trägt keine Nummer, und der Haken kann schon
+            // gesetzt sein, bevor die Antwort da ist (siehe setGuest).
+            if (this.referee.lizenznummer || this.referee.guest) return;
             this.referee = {
               ...this.referee,
               lizenznummer: res.next_lizenznummer,
@@ -255,6 +260,31 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
 
   trackById(_index: number, item: { id: number }): number {
     return item.id;
+  }
+
+  /**
+   * Ein Gast trägt keine Lizenznummer — er wird als „G-<id>" geführt. Das Feld
+   * verschwindet beim Haken aus der Maske, der vorbelegte Wert blieb aber im
+   * Formular stehen und wurde mitgeschickt: Der Gast belegte damit eine Nummer
+   * aus dem laufenden Bestand, und weil die automatische Vergabe ihr Maximum
+   * unter den Nicht-Gästen suchte, bekam die nächste Neuanlage genau diese
+   * Nummer und lief in die Eindeutigkeit (api#646, dort auch der Riegel in der
+   * Schnittstelle).
+   *
+   * Die Vorbelegung wird gemerkt und beim Abwählen zurückgelegt: Sonst stünde
+   * das wieder eingeblendete Pflichtfeld leer da, obwohl die Maske die Nummer
+   * beim Öffnen schon einmal geholt hat.
+   */
+  setGuest(guest: boolean): void {
+    if (guest) {
+      this._lizenznummerVorbelegung =
+        this.referee.lizenznummer ?? this._lizenznummerVorbelegung;
+    }
+    this.referee = {
+      ...this.referee,
+      guest,
+      lizenznummer: guest ? null : this._lizenznummerVorbelegung,
+    };
   }
 
   submit(): void {
