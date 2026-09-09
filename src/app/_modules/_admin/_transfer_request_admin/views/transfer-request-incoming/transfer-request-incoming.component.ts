@@ -68,7 +68,12 @@ export class TransferRequestIncomingComponent implements OnInit, OnDestroy {
     this.load();
   }
 
+  /** Welcher Umfang tatsächlich in `requests` steht. */
+  private _loadedAllSeasons = false;
+
   toggleAllSeasons(): void {
+    if (this.loading) return;
+
     this.allSeasons = !this.allSeasons;
     this.load();
   }
@@ -91,6 +96,7 @@ export class TransferRequestIncomingComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           this.requests = result;
+          this._loadedAllSeasons = this.allSeasons;
           this.loading = false;
           this._cdr.markForCheck();
         },
@@ -100,6 +106,11 @@ export class TransferRequestIncomingComponent implements OnInit, OnDestroy {
               'transferRequestAdmin.notifications.loadError'
             )
           );
+          // Alte Zeilen mit weg, sonst stehen Tabelle und Fehlerkasten
+          // uebereinander; und der Schalter zurueck auf das, was tatsaechlich
+          // geladen ist.
+          this.requests = [];
+          this.allSeasons = this._loadedAllSeasons;
           this.loading = false;
           this.loadFailed = true;
           this._cdr.markForCheck();

@@ -15,7 +15,8 @@
            Der CSV-Knopf haengt dagegen an vorhandenen Zeilen. -->
       <button
         (click)="toggleAllSeasons()"
-        class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
+        [disabled]="loading"
+        class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {{
           (allSeasons
