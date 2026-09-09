@@ -418,43 +418,50 @@
                     }
                   </div>
                 }
-                @if (!error(club)) {
-                  <div class="flex items-center mb-4">
+                <!-- Nur der Speichern-Knopf haengt am Fehlerzustand. Die
+                     Anschrift ist seit api#641 Pflicht und im Bestand nirgends
+                     gepflegt, der Riegel greift also zunaechst bei JEDEM
+                     Verein: Klammerte er weiter die ganze Leiste, verschwaenden
+                     mit dem Speichern auch der Weg in die Spielerliste und der
+                     Abbrechen-Link, und die Maske haette bis zum Nachtragen der
+                     Anschrift ueberhaupt keinen Knopf mehr. -->
+                <div class="flex items-center mb-4">
+                  @if (!error(club)) {
                     <a
                       class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                       (click)="submit(club)"
                     >
                       {{ "clubAdmin.edit.saveChanges" | transloco }}
                     </a>
-                    <!-- Die Spielerliste des Vereins liegt hinter
+                  }
+                  <!-- Die Spielerliste des Vereins liegt hinter
                          menu_item_player_admin. Ohne diese Klammer landete ein
                          Vereinsmanager beim Klick ohne Meldung auf der
                          Startseite (permissionGuard leitet stumm um). Seine
                          eigene Spielerliste erreicht er über „Meine
                          Spieler*innen". -->
-                    @if (canEditPlayers) {
-                      <a
-                        class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                        [routerLink]="[
-                          '/',
-                          'verwaltung',
-                          'vereine',
-                          club.id,
-                          'spieler',
-                        ]"
-                      >
-                        {{ "clubAdmin.edit.editPlayers" | transloco }}
-                      </a>
-                    }
+                  @if (canEditPlayers) {
                     <a
-                      class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                      deactivated="true"
-                      [routerLink]="['/', 'verwaltung', 'vereine']"
+                      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                      [routerLink]="[
+                        '/',
+                        'verwaltung',
+                        'vereine',
+                        club.id,
+                        'spieler',
+                      ]"
                     >
-                      {{ "clubAdmin.edit.cancel" | transloco }}
+                      {{ "clubAdmin.edit.editPlayers" | transloco }}
                     </a>
-                  </div>
-                }
+                  }
+                  <a
+                    class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 border bg-red-400 hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    deactivated="true"
+                    [routerLink]="['/', 'verwaltung', 'vereine']"
+                  >
+                    {{ "clubAdmin.edit.cancel" | transloco }}
+                  </a>
+                </div>
               </div>
             </div>
           </div>

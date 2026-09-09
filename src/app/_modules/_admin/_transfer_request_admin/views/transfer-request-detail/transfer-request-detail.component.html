@@ -372,15 +372,11 @@
               ) {
                 <p>{{ zeile }}</p>
               }
-              @if (anschriften.requesting_club.contact_email) {
+              @if (contactEmail(anschriften.requesting_club); as kontakt) {
                 <p class="mt-1">
-                  <a
-                    class="underline"
-                    [href]="
-                      'mailto:' + anschriften.requesting_club.contact_email
-                    "
-                    >{{ anschriften.requesting_club.contact_email }}</a
-                  >
+                  <a class="underline" [href]="'mailto:' + kontakt">{{
+                    kontakt
+                  }}</a>
                 </p>
               }
             } @else {
@@ -401,13 +397,11 @@
               ) {
                 <p>{{ zeile }}</p>
               }
-              @if (anschriften.former_club.contact_email) {
+              @if (contactEmail(anschriften.former_club); as kontakt) {
                 <p class="mt-1">
-                  <a
-                    class="underline"
-                    [href]="'mailto:' + anschriften.former_club.contact_email"
-                    >{{ anschriften.former_club.contact_email }}</a
-                  >
+                  <a class="underline" [href]="'mailto:' + kontakt">{{
+                    kontakt
+                  }}</a>
                 </p>
               }
             } @else {

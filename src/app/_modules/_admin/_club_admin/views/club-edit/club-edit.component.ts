@@ -267,19 +267,22 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   public errorMsg(club: Club): string[] {
     const msg = [];
 
-    if (!club.name?.length) {
+    // `trim()` wie serverseitig in missing_required_fields_message: Ohne ihn
+    // passierte ein Name aus lauter Leerzeichen die Maske, der Speichern-Knopf
+    // erschien, und erst der Server wies ihn mit 422 ab.
+    if (!club.name?.trim().length) {
       msg.push(
         this._transloco.translate('clubAdmin.notifications.nameRequired')
       );
     }
 
-    if (!club.long_name?.length) {
+    if (!club.long_name?.trim().length) {
       msg.push(
         this._transloco.translate('clubAdmin.notifications.longNameRequired')
       );
     }
 
-    if (!club.short_name?.length) {
+    if (!club.short_name?.trim().length) {
       msg.push(
         this._transloco.translate('clubAdmin.notifications.shortNameRequired')
       );
@@ -504,15 +507,13 @@ export class ClubEditComponent implements OnInit, OnDestroy {
         });
         this._router.navigate(['verwaltung', 'vereine']);
       },
-      error: (error) => {
-        this._notificationService.error(
-          error?.error?.message ?? 'Fehler beim Speichern.',
-          {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          }
-        );
-      },
+      // Kein eigener Toast: Die Fehlermeldung zeigt der globale
+      // ErrorInterceptor, und der liest `message` aus der Antwort -- bei den
+      // Pflichtangaben also genau die Liste der fehlenden Felder. Ein zweiter,
+      // wortgleicher Toast lag bisher darüber und musste einzeln weggeklickt
+      // werden (beide ohne autoClose). Gleiche Entscheidung wie beim
+      // Logo-Upload darüber (#84, #228).
+      error: () => {},
     });
   }
 }

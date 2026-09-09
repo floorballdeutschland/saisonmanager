@@ -522,4 +522,60 @@ describe('ClubEditComponent im Bearbeiten-Modus', () => {
     expect(haken).not.toBeNull();
     expect(haken.checked).toBeTrue();
   });
+
+  // Der Verein pflegt seine Anschrift selbst -- auch mit dem eingeschraenkten
+  // Formular des Vereinsmanagers, das Bundesland und Landesverband nur als
+  // Klartext zeigt. Stuende der Anschriftsblock im gesperrten Zweig, waere ein
+  // Vereinsmanager dauerhaft ausgesperrt: `errorMsg()` verlangt die Felder
+  // unabhaengig davon, ob die Maske sie ueberhaupt anbietet.
+  it('laesst den eingeschraenkten VM die Anschrift eingeben', async () => {
+    const fixture = TestBed.createComponent(ClubEditComponent);
+    fixture.detectChanges();
+
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
+      .flush({ notify_user_ids: [], managers: [] });
+    httpMock.expectOne(`${environment.apiURL}admin/clubs/42.json`).flush({
+      id: 42,
+      name: 'Verein',
+      long_name: 'Verein e.V.',
+      short_name: 'VER',
+      edit_restricted: true,
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    for (const feld of ['street', 'house_number', 'postcode', 'city']) {
+      expect(fixture.nativeElement.querySelector(`input#${feld}`))
+        .withContext(feld)
+        .not.toBeNull();
+    }
+  });
+
+  // Der Bestand traegt keine Anschrift, der Fehlerzustand gilt also zunaechst
+  // fuer jeden Verein. Bliebe er die Klammer der ganzen Knopfleiste, haette die
+  // Maske bis zum Nachtragen ueberhaupt keinen Knopf mehr -- auch keinen
+  // Abbrechen.
+  it('nimmt nur den Speichern-Knopf weg, nicht die ganze Leiste', async () => {
+    const fixture = TestBed.createComponent(ClubEditComponent);
+    fixture.detectChanges();
+
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
+      .flush({ notify_user_ids: [], managers: [] });
+    httpMock.expectOne(`${environment.apiURL}admin/clubs/42.json`).flush({
+      id: 42,
+      name: 'Verein',
+      short_name: 'VER',
+      edit_restricted: true,
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).not.toContain('clubAdmin.edit.saveChanges');
+    expect(text).toContain('clubAdmin.edit.cancel');
+  });
 });

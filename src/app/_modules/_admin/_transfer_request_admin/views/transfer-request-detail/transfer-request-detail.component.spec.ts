@@ -274,6 +274,18 @@ describe('TransferRequestDetailComponent – Chronik', () => {
       expect(component.hasAddress(null)).toBeFalse();
     });
 
+    // Ein Feld aus lauter Leerzeichen ist keine Angabe: Sonst meldete die Karte
+    // „gepflegt", zeigte keine Zeile und einen mailto-Link ins Leere.
+    it('zaehlt eine Kontaktadresse aus Leerzeichen nicht', () => {
+      const component = componentWith({});
+
+      expect(component.contactEmail({ contact_email: '   ' })).toBeNull();
+      expect(component.hasAddress({ contact_email: '   ' })).toBeFalse();
+      expect(component.contactEmail({ contact_email: ' a@example.org ' })).toBe(
+        'a@example.org'
+      );
+    });
+
     // Ueber die echte Antwort geladen und nicht per Zuweisung: Die Komponente
     // laeuft auf OnPush, nur ihr eigenes markForCheck im Abonnement bringt die
     // Anzeige nach.

@@ -68,8 +68,21 @@ export class TransferRequestDetailComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Die Kontaktadresse, sofern sie eine ist. `trim()`, weil ein Feld aus
+   * lauter Leerzeichen sonst als gepflegt zaehlt: Die Karte behauptete dann
+   * „gepflegt", zeigte keine Zeile und einen mailto-Link ins Leere.
+   */
+  public contactEmail(
+    address?: TransferRequestClubAddress | null
+  ): string | null {
+    return address?.contact_email?.trim() || null;
+  }
+
   public hasAddress(address?: TransferRequestClubAddress | null): boolean {
-    return this.addressLines(address).length > 0 || !!address?.contact_email;
+    return (
+      this.addressLines(address).length > 0 || !!this.contactEmail(address)
+    );
   }
 
   private _destroy$ = new Subject<void>();
