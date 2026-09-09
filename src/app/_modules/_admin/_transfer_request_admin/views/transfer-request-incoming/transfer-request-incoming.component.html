@@ -103,7 +103,24 @@
     </div>
   }
 
-  @if (!loading && requests.length === 0) {
+  <!-- Der Fehlerfall vor dem Leer-Hinweis: Ohne diese Unterscheidung stand
+       dort „Keine eingehenden Transfers vorhanden", obwohl der Abruf gescheitert
+       ist -- also eine Tatsachenbehauptung, die niemand geprueft hat. -->
+  @if (!loading && loadFailed) {
+    <div class="py-8 text-center">
+      <p class="text-red-600 text-sm">
+        {{ "transferRequestAdmin.list.loadFailed" | transloco }}
+      </p>
+      <button
+        (click)="retry()"
+        class="mt-3 bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
+      >
+        {{ "transferRequestAdmin.list.retry" | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (!loading && !loadFailed && requests.length === 0) {
     <p class="text-fb-gray-500 text-sm py-8 text-center">
       {{ "transferRequestAdmin.incoming.none" | transloco }}
     </p>

@@ -20,6 +20,8 @@
     "withdrawing": "…",
     "withdraw": "Withdraw",
     "noRequests": "No transfer requests.",
+    "loadFailed": "The list could not be loaded.",
+    "retry": "Try again",
     "typeRelease": "Release",
     "typeTransfer": "Transfer",
     "statusPendingClub": "Awaiting releasing club",
@@ -41,6 +43,7 @@
     "csvFormerClub": "Releasing club",
     "csvRequestingClub": "Receiving club",
     "csvApprovedAt": "Approved on",
+    "csvStatus": "Status",
     "csvYes": "Yes",
     "csvNo": "No",
     "incoming": "Incoming transfers & releases"

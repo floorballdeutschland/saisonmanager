@@ -20,6 +20,8 @@
     "withdrawing": "…",
     "withdraw": "Zurückziehen",
     "noRequests": "Keine Transferanträge vorhanden.",
+    "loadFailed": "Die Liste konnte nicht geladen werden.",
+    "retry": "Erneut versuchen",
     "typeRelease": "Freigabe",
     "typeTransfer": "Transfer",
     "statusPendingClub": "Warten auf abgebenden Verein",
@@ -41,6 +43,7 @@
     "csvFormerClub": "Abgebender Verein",
     "csvRequestingClub": "Aufnehmender Verein",
     "csvApprovedAt": "Genehmigt am",
+    "csvStatus": "Status",
     "csvYes": "Ja",
     "csvNo": "Nein",
     "incoming": "Eingehende Transfers & Freigaben"

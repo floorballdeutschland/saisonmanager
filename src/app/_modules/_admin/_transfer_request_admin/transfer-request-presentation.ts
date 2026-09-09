@@ -84,6 +84,7 @@ export function exportTransferCsv(
     transloco.translate('transferRequestAdmin.list.csvFormerClub'),
     transloco.translate('transferRequestAdmin.list.csvRequestingClub'),
     transloco.translate('transferRequestAdmin.list.csvApprovedAt'),
+    transloco.translate('transferRequestAdmin.list.csvStatus'),
   ];
   const rows = requests.map((r) => [
     r.player.last_name,
@@ -96,6 +97,11 @@ export function exportTransferCsv(
     r.former_club.name,
     r.requesting_club.name,
     r.lv_approved_at ? formatTransferDate(r.lv_approved_at) : '',
+    // Der Status gehoert in die Ausfuhr, weil aus ihr abgerechnet wird: Eine
+    // Freigabe, die spaeter widerrufen wurde, war trotzdem erteilt und hat die
+    // Gebuehr ausgeloest. Ohne diese Spalte stuende sie ununterscheidbar neben
+    // den bestehenden -- und ohne die Zeile fehlte sie ganz.
+    transferStatusLabel(transloco, r.status),
   ]);
 
   downloadCsv(basename, headers, rows);

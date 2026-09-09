@@ -58,6 +58,8 @@ describe('TransferRequestIncomingComponent', () => {
                 colStatus: 'Status',
                 colApprovedAt: 'Genehmigt am',
                 exportCsv: 'CSV exportieren',
+                loadFailed: 'Laden fehlgeschlagen',
+                retry: 'Erneut versuchen',
                 loading: 'Lade…',
                 typeTransfer: 'Transfer',
                 typeRelease: 'Freigabe',
@@ -153,6 +155,41 @@ describe('TransferRequestIncomingComponent', () => {
 
     expect(clicked.length).toBe(1);
     expect(clicked[0]).toMatch(/^eingehende-transfers-\d{4}-\d{2}-\d{2}\.csv$/);
+  });
+
+  // Vorher setzte der Fehlerzweig nur `requests = []`, und das Template kannte
+  // drei Zustaende: laedt, hat Zeilen, leer. Ein 500 rendert damit den
+  // Leer-Hinweis -- eine Tatsachenbehauptung, die niemand geprueft hat.
+  it('sagt bei einem Serverfehler nicht, es gebe keine Vorgaenge', () => {
+    const fixture = TestBed.createComponent(TransferRequestIncomingComponent);
+    fixture.detectChanges();
+    httpMock
+      .expectOne((r) => r.url.includes('incoming.json'))
+      .flush('', { status: 500, statusText: 'Server Error' });
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).not.toContain('Keine eingehenden Transfers');
+    expect(text).toContain('Laden fehlgeschlagen');
+    expect(fixture.componentInstance.loadFailed).toBeTrue();
+  });
+
+  it('laedt auf Wiederholen erneut', () => {
+    const fixture = TestBed.createComponent(TransferRequestIncomingComponent);
+    fixture.detectChanges();
+    httpMock
+      .expectOne((r) => r.url.includes('incoming.json'))
+      .flush('', { status: 500, statusText: 'Server Error' });
+    fixture.detectChanges();
+
+    fixture.componentInstance.retry();
+    httpMock
+      .expectOne((r) => r.url.includes('incoming.json'))
+      .flush([request()]);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.loadFailed).toBeFalse();
+    expect(fixture.componentInstance.requests.length).toBe(1);
   });
 
   // Standard ist die laufende Saison, und der Server entscheidet das: Ohne den

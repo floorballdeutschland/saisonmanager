@@ -64,13 +64,26 @@ export class TransferRequestIncomingComponent implements OnInit, OnDestroy {
     this.load();
   }
 
+  retry(): void {
+    this.load();
+  }
+
   toggleAllSeasons(): void {
     this.allSeasons = !this.allSeasons;
     this.load();
   }
 
+  /**
+   * Der Abruf ist gescheitert. Ohne diese Unterscheidung rendert das Template
+   * den Leer-Hinweis — die Anzeige behauptet dann als Tatsache, es gebe keine
+   * eingehenden Vorgänge, obwohl niemand das weiß. Für einen Landesverband ist
+   * genau das die Aussage, wegen der er die Seite geöffnet hat.
+   */
+  loadFailed = false;
+
   private load(): void {
     this.loading = true;
+    this.loadFailed = false;
     this._cdr.markForCheck();
     this._transferService
       .getIncoming(this.allSeasons)
@@ -88,6 +101,7 @@ export class TransferRequestIncomingComponent implements OnInit, OnDestroy {
             )
           );
           this.loading = false;
+          this.loadFailed = true;
           this._cdr.markForCheck();
         },
       });

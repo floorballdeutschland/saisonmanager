@@ -79,8 +79,16 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     this.loadRequests();
   }
 
+  /**
+   * Der Abruf ist gescheitert. Ohne diese Unterscheidung rendert das Template
+   * den Leer-Hinweis und behauptet damit, es gebe keine Vorgänge — obwohl
+   * niemand das weiß.
+   */
+  loadFailed = false;
+
   loadRequests(): void {
     this.loading = true;
+    this.loadFailed = false;
     this._cdr.markForCheck();
     this._transferService
       .getAll(this.allSeasons)
@@ -98,6 +106,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
             )
           );
           this.loading = false;
+          this.loadFailed = true;
           this._cdr.markForCheck();
         },
       });
@@ -192,12 +201,26 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     return this.currentUserClubIds.length > 0;
   }
 
-  get approvedRequests(): TransferRequest[] {
-    return this.requests.filter((r) => r.status === 'approved');
+  /**
+   * Alle Vorgänge, die der Landesverband je genehmigt hat — Grundlage der
+   * Gebührenabrechnung, die einmal am Saisonende läuft.
+   *
+   * Maßgeblich ist `lv_approved_at` und nicht der Status: Eine Spielerfreigabe,
+   * die später widerrufen wurde, steht auf `revoked` und fiel damit aus der
+   * Ausfuhr — obwohl sie erteilt war und die Gebühr ausgelöst hat. Der Widerruf
+   * lässt Genehmigungszeitpunkt und genehmigendes Konto ausdrücklich stehen,
+   * die Angabe ist also belastbar.
+   *
+   * Was aus einem Vorgang später wurde, sagt die Statusspalte der CSV. Die
+   * Entscheidung, ob eine widerrufene Freigabe berechnet wird, trifft der
+   * Verband — sie darf nur nicht stillschweigend verschwinden.
+   */
+  get grantedRequests(): TransferRequest[] {
+    return this.requests.filter((r) => !!r.lv_approved_at);
   }
 
   exportCsv(): void {
-    exportTransferCsv(this._transloco, 'transfers', this.approvedRequests);
+    exportTransferCsv(this._transloco, 'transfers', this.grantedRequests);
   }
 
   get pendingRequests(): TransferRequest[] {
