@@ -40,7 +40,8 @@
     "csvRequestingClub": "Aufnehmender Verein",
     "csvApprovedAt": "Genehmigt am",
     "csvYes": "Ja",
-    "csvNo": "Nein"
+    "csvNo": "Nein",
+    "incoming": "Eingehende Transfers & Freigaben"
   },
   "initiate": {
     "back": "← Zurück",
@@ -185,5 +186,11 @@
     "executeError": "Transfer konnte nicht vollzogen werden.",
     "directAssignSuccess": "Direktzuweisung durchgeführt.",
     "directAssignError": "Direktzuweisung fehlgeschlagen."
+  },
+  "incoming": {
+    "title": "Eingehende Transfers & Freigaben",
+    "back": "← Zurück zu den Transferanträgen",
+    "hint": "Abgeschlossene Transfers und Freigaben in Vereine deines Landesverbands, bei denen der abgebende Verein außerhalb liegt. Über diese Vorgänge entscheidet der abgebende Landesverband – die Liste ist Auskunft und enthält deshalb keine Aktionen. Verbandsinterne Wechsel stehen in der Transferliste.",
+    "none": "Keine eingehenden Transfers oder Freigaben vorhanden."
   }
 }

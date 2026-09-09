@@ -40,7 +40,8 @@
     "csvRequestingClub": "Receiving club",
     "csvApprovedAt": "Approved on",
     "csvYes": "Yes",
-    "csvNo": "No"
+    "csvNo": "No",
+    "incoming": "Incoming transfers & releases"
   },
   "initiate": {
     "back": "← Back",
@@ -185,5 +186,11 @@
     "executeError": "Transfer could not be executed.",
     "directAssignSuccess": "Direct assignment completed.",
     "directAssignError": "Direct assignment failed."
+  },
+  "incoming": {
+    "title": "Incoming transfers & releases",
+    "back": "← Back to transfer requests",
+    "hint": "Completed transfers and releases into clubs of your state association where the former club is outside it. These are decided by the former club’s state association – this list is for information only and offers no actions. Transfers within your own association are listed under transfer requests.",
+    "none": "No incoming transfers or releases."
   }
 }

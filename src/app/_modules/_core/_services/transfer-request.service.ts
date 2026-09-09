@@ -17,6 +17,14 @@ export class TransferRequestService {
     return this.http.get<TransferRequest[]>(`${this.base}.json`);
   }
 
+  // Eingehende Transfers und Freigaben: abgeschlossene Vorgaenge in Vereine des
+  // eigenen Landesverbands, deren abgebender Verein ausserhalb liegt. Eigener
+  // Endpunkt und nicht ein Parameter an `getAll`, weil er einer anderen Regel
+  // folgt: Die Hauptliste haengt am abgebenden Verein, diese am aufnehmenden.
+  getIncoming() {
+    return this.http.get<TransferRequest[]>(`${this.base}/incoming.json`);
+  }
+
   get(id: number) {
     return this.http.get<TransferRequest>(`${this.base}/${id}.json`);
   }

@@ -14,6 +14,14 @@
       }
       @if (isSbk) {
         <button
+          (click)="openIncoming()"
+          class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
+        >
+          {{ "transferRequestAdmin.list.incoming" | transloco }}
+        </button>
+      }
+      @if (isSbk) {
+        <button
           (click)="directAssign()"
           class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
         >

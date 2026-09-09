@@ -15,7 +15,13 @@ import {
   TransferRequestService,
 } from '@floorball/core';
 import { TransferRequest } from '@floorball/types';
-import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
+import {
+  exportTransferCsv,
+  transferStatusClass,
+  transferStatusLabel,
+  transferTypeClass,
+  transferTypeLabel,
+} from '../../transfer-request-presentation';
 
 @Component({
   templateUrl: './transfer-request-list.component.html',
@@ -95,6 +101,10 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     this._router.navigate(['/verwaltung/transfer-anfragen/direktzuweisung']);
   }
 
+  openIncoming(): void {
+    this._router.navigate(['/verwaltung/transfer-anfragen/eingehend']);
+  }
+
   canWithdraw(r: TransferRequest): boolean {
     return (
       (r.status === 'pending_club' || r.status === 'pending_lv') &&
@@ -149,49 +159,19 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   }
 
   statusLabel(status: string): string {
-    const keys: { [key: string]: string } = {
-      pending_club: 'statusPendingClub',
-      pending_player: 'statusPendingPlayer',
-      pending_lv: 'statusPendingLv',
-      scheduled: 'statusScheduled',
-      approved: 'statusApproved',
-      rejected_by_club: 'statusRejectedByClub',
-      rejected_by_player: 'statusRejectedByPlayer',
-      rejected_by_lv: 'statusRejectedByLv',
-      revoked: 'statusRevoked',
-      withdrawn: 'statusWithdrawn',
-      expired: 'statusExpired',
-    };
-    return keys[status]
-      ? this._transloco.translate(`transferRequestAdmin.list.${keys[status]}`)
-      : status;
+    return transferStatusLabel(this._transloco, status);
   }
 
   statusClass(status: string): string {
-    if (status === 'approved') return 'text-green-600 font-medium';
-    if (status === 'scheduled') return 'text-yellow-600 font-medium';
-    if (
-      status.startsWith('rejected') ||
-      status === 'revoked' ||
-      status === 'withdrawn' ||
-      status === 'expired'
-    )
-      return 'text-red-500';
-    return 'text-primary font-medium';
+    return transferStatusClass(status);
   }
 
   typeLabel(r: TransferRequest): string {
-    return this._transloco.translate(
-      r.request_type === 'release'
-        ? 'transferRequestAdmin.list.typeRelease'
-        : 'transferRequestAdmin.list.typeTransfer'
-    );
+    return transferTypeLabel(this._transloco, r);
   }
 
   typeClass(r: TransferRequest): string {
-    return r.request_type === 'release'
-      ? 'text-xs font-semibold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800'
-      : 'text-xs font-semibold px-1.5 py-0.5 rounded bg-fb-gray-200 text-fb-gray-500';
+    return transferTypeClass(r);
   }
 
   get canInitiate(): boolean {
@@ -203,37 +183,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   }
 
   exportCsv(): void {
-    const headers = [
-      this._transloco.translate('transferRequestAdmin.list.csvLastName'),
-      this._transloco.translate('transferRequestAdmin.list.csvFirstName'),
-      this._transloco.translate('transferRequestAdmin.list.csvBirthdate'),
-      this._transloco.translate('transferRequestAdmin.list.csvType'),
-      this._transloco.translate('transferRequestAdmin.list.csvDirect'),
-      this._transloco.translate('transferRequestAdmin.list.csvFormerClub'),
-      this._transloco.translate('transferRequestAdmin.list.csvRequestingClub'),
-      this._transloco.translate('transferRequestAdmin.list.csvApprovedAt'),
-    ];
-    const rows = this.approvedRequests.map((r) => [
-      r.player.last_name,
-      r.player.first_name,
-      r.player.birthdate ? this._formatDate(r.player.birthdate) : '',
-      this.typeLabel(r),
-      r.direct
-        ? this._transloco.translate('transferRequestAdmin.list.csvYes')
-        : this._transloco.translate('transferRequestAdmin.list.csvNo'),
-      r.former_club.name,
-      r.requesting_club.name,
-      r.lv_approved_at ? this._formatDate(r.lv_approved_at) : '',
-    ]);
-
-    downloadCsv('transfers', headers, rows);
-  }
-
-  private _formatDate(dateStr: string): string {
-    const d = new Date(dateStr);
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    return `${dd}.${mm}.${d.getFullYear()}`;
+    exportTransferCsv(this._transloco, 'transfers', this.approvedRequests);
   }
 
   get pendingRequests(): TransferRequest[] {
