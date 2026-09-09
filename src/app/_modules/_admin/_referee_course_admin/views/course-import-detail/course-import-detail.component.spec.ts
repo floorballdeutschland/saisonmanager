@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import {
   ClubService,
   getTranslocoTestingModule,
@@ -308,10 +308,12 @@ describe('CourseImportDetailComponent', () => {
       expect(text).toContain('Abweichler');
     });
 
-    it('sperrt das Lizenzstufen-Feld einer verworfenen Zeile', () => {
-      const fixture = render(
-        importMit([zeile({ id: 1, status: 'rejected' })])
-      );
+    // `await whenStable()`: Das Lizenzstufen-Feld haengt an `ngModel`, und das
+    // traegt sowohl den Wert als auch den gesperrten Zustand erst im
+    // Microtask nach dem Zeichnen ein.
+    it('sperrt das Lizenzstufen-Feld einer verworfenen Zeile', async () => {
+      const fixture = render(importMit([zeile({ id: 1, status: 'rejected' })]));
+      await fixture.whenStable();
 
       const select: HTMLSelectElement =
         fixture.nativeElement.querySelector('select');
@@ -320,7 +322,9 @@ describe('CourseImportDetailComponent', () => {
 
     it('zeigt das Vereinsfeld nur auf einer offenen Zeile', () => {
       const offen = render(importMit([zeile({ id: 1 })]));
-      expect(offen.nativeElement.querySelector('fb-select-search')).toBeTruthy();
+      expect(
+        offen.nativeElement.querySelector('fb-select-search')
+      ).toBeTruthy();
 
       const eingereicht = render(
         importMit([zeile({ id: 2, submitted_at: '2026-09-08T11:00:00Z' })], {
@@ -332,12 +336,78 @@ describe('CourseImportDetailComponent', () => {
       ).toBeNull();
     });
 
-    it('lässt das Lizenzstufen-Feld einer offenen Zeile bedienbar', () => {
+    it('lässt das Lizenzstufen-Feld einer offenen Zeile bedienbar', async () => {
       const fixture = render(importMit([zeile({ id: 1 })]));
+      await fixture.whenStable();
 
       const select: HTMLSelectElement =
         fixture.nativeElement.querySelector('select');
       expect(select.disabled).toBeFalse();
+    });
+  });
+
+  // Die gespeicherte Lizenzstufe muss im Auswahlfeld auch stehen. Mit einem
+  // reinen Wertbinding tat sie das nicht: Der Wert wird gesetzt, bevor die
+  // Optionen existieren, der Browser verwirft ihn, und nachgeschrieben wird
+  // er nie. Sichtbar wurde das nach jedem Neuzeichnen der Tabelle — sämtliche
+  // Stufen standen wieder auf „bitte wählen", obwohl sie gespeichert waren.
+  describe('Anzeige der gespeicherten Lizenzstufe', () => {
+    function render(data: RefereeCourseImportWithResults) {
+      const fixture = TestBed.createComponent(CourseImportDetailComponent);
+      importService.getImport.and.returnValue(of(data));
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('zeigt sie beim ersten Zeichnen', async () => {
+      const fixture = render(importMit([zeile({ id: 1, lizenzstufe: 'G' })]));
+      await fixture.whenStable();
+
+      const select: HTMLSelectElement =
+        fixture.nativeElement.querySelector('select');
+      expect(select.value).toBe('G');
+    });
+
+    it('zeigt sie nach einem Neuladen der Tabelle weiter', async () => {
+      const fixture = render(importMit([zeile({ id: 1, lizenzstufe: 'G' })]));
+      await fixture.whenStable();
+
+      // Neuladen passiert im Betrieb nach dem Verwerfen einer Zeile, nach dem
+      // Einreichen und im Fehlerfall eines Zeilen-PATCH.
+      fixture.componentInstance.load(9);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const select: HTMLSelectElement =
+        fixture.nativeElement.querySelector('select');
+      expect(select.value).toBe('G');
+    });
+
+    // Der zweite Weg in denselben Fehler: Die Stufenliste kommt aus einer
+    // eigenen Anfrage und kann NACH den Importdaten eintreffen. Dann existiert
+    // beim Setzen des Werts nicht einmal die Option, auf die er zeigt.
+    it('zeigt sie auch, wenn die Stufenliste erst danach eintrifft', async () => {
+      const stufen$ = new Subject<RefereeLicenseLevel[]>();
+      refereeService.adminGetLicenseLevels.and.returnValue(stufen$);
+      const fixture = render(importMit([zeile({ id: 1, lizenzstufe: 'G' })]));
+      await fixture.whenStable();
+
+      stufen$.next([STUFE_G]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const select: HTMLSelectElement =
+        fixture.nativeElement.querySelector('select');
+      expect(select.value).toBe('G');
+    });
+
+    it('zeigt den Platzhalter, solange keine Stufe gesetzt ist', async () => {
+      const fixture = render(importMit([zeile({ id: 1, lizenzstufe: null })]));
+      await fixture.whenStable();
+
+      const select: HTMLSelectElement =
+        fixture.nativeElement.querySelector('select');
+      expect(select.value).toBe('');
     });
   });
 
