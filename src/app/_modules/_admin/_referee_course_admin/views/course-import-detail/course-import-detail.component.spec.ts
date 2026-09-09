@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import {
   ClubService,
   getTranslocoTestingModule,
@@ -375,6 +375,24 @@ describe('CourseImportDetailComponent', () => {
       // Neuladen passiert im Betrieb nach dem Verwerfen einer Zeile, nach dem
       // Einreichen und im Fehlerfall eines Zeilen-PATCH.
       fixture.componentInstance.load(9);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const select: HTMLSelectElement =
+        fixture.nativeElement.querySelector('select');
+      expect(select.value).toBe('G');
+    });
+
+    // Der zweite Weg in denselben Fehler: Die Stufenliste kommt aus einer
+    // eigenen Anfrage und kann NACH den Importdaten eintreffen. Dann existiert
+    // beim Setzen des Werts nicht einmal die Option, auf die er zeigt.
+    it('zeigt sie auch, wenn die Stufenliste erst danach eintrifft', async () => {
+      const stufen$ = new Subject<RefereeLicenseLevel[]>();
+      refereeService.adminGetLicenseLevels.and.returnValue(stufen$);
+      const fixture = render(importMit([zeile({ id: 1, lizenzstufe: 'G' })]));
+      await fixture.whenStable();
+
+      stufen$.next([STUFE_G]);
       fixture.detectChanges();
       await fixture.whenStable();
 
