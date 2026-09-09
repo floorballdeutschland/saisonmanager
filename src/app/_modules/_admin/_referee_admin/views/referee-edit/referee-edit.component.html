@@ -50,7 +50,7 @@
                 type="number"
                 [(ngModel)]="referee.lizenznummer"
                 name="lizenznummer"
-                [disabled]="editMode"
+                [disabled]="licenseNumberLocked"
                 [required]="!referee.guest"
                 class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-200 disabled:text-gray-700"
               />

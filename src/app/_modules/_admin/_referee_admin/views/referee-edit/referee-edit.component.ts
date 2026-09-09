@@ -35,7 +35,19 @@ import {
 })
 export class RefereeEditComponent implements OnInit, OnDestroy {
   referee: Partial<RefereeAdmin> = {};
-  // Zuletzt bekannte Lizenznummer der Neuanlage, siehe setGuest().
+  /**
+   * Eine einmal vergebene Lizenznummer bleibt, wie sie ist — das Feld ist
+   * deshalb im Bearbeiten-Modus gesperrt. Nur wenn der Datensatz gar keine
+   * trägt (ein Gast, oder ein Gast, dem sie beim Haken abgenommen wurde),
+   * muss sie eintragbar bleiben: Sonst gäbe es keinen Weg zurück aus dem
+   * Gast-Zustand, weil die Nummer für einen Nicht-Gast Pflicht ist.
+   *
+   * Beim Laden gesetzt und danach fest: Am `lizenznummer`-Feld selbst
+   * ausgewertet, würde sich das Feld beim Tippen der ersten Ziffer sperren.
+   */
+  licenseNumberLocked = false;
+  // Zuletzt im Nummernfeld stehender Wert: die Vorbelegung der Neuanlage oder
+  // die Nummer des geladenen Datensatzes. Siehe setGuest().
   private _lizenznummerVorbelegung: number | null = null;
   editMode = false;
   loading = false;
@@ -264,16 +276,17 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
 
   /**
    * Ein Gast trägt keine Lizenznummer — er wird als „G-<id>" geführt. Das Feld
-   * verschwindet beim Haken aus der Maske, der vorbelegte Wert blieb aber im
-   * Formular stehen und wurde mitgeschickt: Der Gast belegte damit eine Nummer
-   * aus dem laufenden Bestand, und weil die automatische Vergabe ihr Maximum
-   * unter den Nicht-Gästen suchte, bekam die nächste Neuanlage genau diese
-   * Nummer und lief in die Eindeutigkeit (api#646, dort auch der Riegel in der
+   * verschwindet mit dem Haken aus der Maske (`@if (!referee.guest)`),
+   * `referee.lizenznummer` blieb aber im Modell stehen und ging in `submit()`
+   * über `{ ...this.referee }` mit: Der Gast belegte damit eine Nummer aus dem
+   * laufenden Bestand, und weil die automatische Vergabe ihr Maximum unter den
+   * Nicht-Gästen suchte, bekam die nächste Neuanlage genau diese Nummer und
+   * lief in die Eindeutigkeit (api#646, dort auch der Riegel in der
    * Schnittstelle).
    *
-   * Die Vorbelegung wird gemerkt und beim Abwählen zurückgelegt: Sonst stünde
-   * das wieder eingeblendete Pflichtfeld leer da, obwohl die Maske die Nummer
-   * beim Öffnen schon einmal geholt hat.
+   * Der Wert wird gemerkt und beim Abwählen zurückgelegt: Sonst stünde das
+   * wieder eingeblendete Pflichtfeld leer da, obwohl die Maske die Nummer beim
+   * Öffnen schon geholt hat bzw. sie aus dem geladenen Datensatz stammt.
    */
   setGuest(guest: boolean): void {
     if (guest) {
@@ -485,6 +498,8 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
       valid_until: this._toInputDate(q.valid_until),
     }));
     this.selectedTagIds = r.tag_ids ?? (r.tags ?? []).map((t) => t.id);
+    this.licenseNumberLocked = !!r.lizenznummer;
+    this._lizenznummerVorbelegung = r.lizenznummer ?? null;
     this._recomputeAvailableTypes();
     this.loading = false;
     this._cdr.markForCheck();
