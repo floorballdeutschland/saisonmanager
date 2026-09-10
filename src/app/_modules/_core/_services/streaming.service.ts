@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   StreamingBroadcastInput,
+  StreamingBroadcastResult,
   StreamingFilter,
   StreamingGame,
   StreamingTemplates,
@@ -77,8 +78,8 @@ export class StreamingService {
   public recordBroadcast(
     gameId: number,
     input: StreamingBroadcastInput
-  ): Observable<StreamingGame> {
-    return this.http.post<StreamingGame>(
+  ): Observable<StreamingBroadcastResult> {
+    return this.http.post<StreamingBroadcastResult>(
       `${environment.apiURL}admin/streaming/games/${gameId}/broadcast`,
       input
     );

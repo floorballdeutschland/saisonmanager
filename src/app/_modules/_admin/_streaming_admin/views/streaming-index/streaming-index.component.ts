@@ -5,12 +5,14 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import * as Sentry from '@sentry/angular';
 import {
   LeagueService,
   NotificationService,
   StreamingService,
+  YoutubeOrphanError,
   YoutubeService,
   YoutubeStatusError,
 } from '@floorball/core';
@@ -34,6 +36,21 @@ import {
 import { buildZip } from 'src/app/_helpers/_utils/zip-store';
 
 type Mode = 'range' | 'matchday';
+
+/**
+ * Gründe, nach denen jeder weitere Versuch genauso scheitert -- Zustände, keine
+ * Einzelereignisse. Der leere Grund steht für eine 403 ohne erkennbaren Grund:
+ * Auch die wiederholt sich.
+ */
+const ABBRUCH_GRUENDE = [
+  'quotaExceeded',
+  'rateLimitExceeded',
+  'forbidden',
+  'insufficientPermissions',
+  'authError',
+  'liveStreamingNotEnabled',
+  '',
+];
 
 /** Was aus einem Anlauf je Spiel geworden ist. */
 export interface CreationResult {
@@ -105,6 +122,13 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
 
   public creating = false;
   public createdDone = 0;
+  /**
+   * Wie viele Spiele der laufende Durchgang umfasst.
+   *
+   * Eingefroren, weil `creatable` während des Laufs schrumpft (`_angelegt`
+   * wächst mit) -- die Anzeige lief sonst „1 / 3", „2 / 2", „3 / 1", „4 / 0".
+   */
+  public createdTotal = 0;
   public results = new Map<number, CreationResult>();
   /** Der Vorlagenabruf ist gescheitert -- ohne Vorlage wird nichts angelegt. */
   public templatesFailed = false;
@@ -119,6 +143,10 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
    * verbrauchtem Kontingent.
    */
   private _angelegt = new Set<number>();
+  /** Warum im Spielplan kein Link steht, je Spiel -- vom Server begründet. */
+  private _linkHinweise = new Map<number, string>();
+  /** Die Kennung hängt schon an einem anderen Spiel (409). */
+  private _konflikte = new Map<number, string>();
 
   public readonly placeholders = STREAM_PLACEHOLDERS;
   public readonly titleMax = STREAM_TITLE_MAX;
@@ -382,13 +410,12 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   /**
    * Legt für die Auswahl die Übertragungen bei YouTube an.
    *
-   * REIHENFOLGE JE SPIEL: anlegen, an den Stream binden, **beim Saisonmanager
-   * melden**, dann Thumbnail und Playlist. Das Melden steht bewusst vor den
-   * beiden letzten Schritten: Danach existiert die Übertragung, und ginge die
-   * Meldung erst am Ende raus, wäre sie nach einem Fehlschlag beim Thumbnail
-   * verloren -- der Wächter kennte die Übertragung nicht, und der nächste Klick
-   * legte eine zweite an. Thumbnail und Playlist sind Beiwerk und werden als
-   * Warnung gemeldet, nicht als Fehlschlag.
+   * REIHENFOLGE JE SPIEL: anlegen, **beim Saisonmanager melden**, an den Stream
+   * binden, Thumbnail, Playlist. Das Melden steht direkt hinter dem Anlegen:
+   * Ab da existiert die Übertragung, und ginge die Meldung später raus, wäre sie
+   * nach einem Fehlschlag beim Binden verloren -- der Wächter kennte die
+   * Übertragung nicht, und der nächste Klick legte eine zweite an. Thumbnail und
+   * Playlist sind Beiwerk und werden als Warnung gemeldet, nicht als Fehlschlag.
    *
    * Nacheinander und nicht parallel: YouTube zählt jeden Aufruf gegen ein
    * Tageskontingent, und bei einem Fehlschlag soll erkennbar bleiben, welches
@@ -418,8 +445,11 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
 
     this.creating = true;
     this.createdDone = 0;
+    this.createdTotal = auswahl.length;
     this.results.clear();
     this._leagueFailed.clear();
+    this._linkHinweise.clear();
+    this._konflikte.clear();
     this._cdr.markForCheck();
 
     try {
@@ -460,17 +490,23 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
 
       if (this._destroyed) return;
 
-      const erfolge = [...this.results.values()].filter(
-        (result) => result.level === 'success'
-      ).length;
-      const warnungen = [...this.results.values()].filter(
-        (result) => result.level === 'warning'
-      ).length;
+      // Gezählt wird, was bei YouTube WIRKLICH entstanden ist -- auch das, was
+      // sich nicht vermerken ließ. Sonst widerspricht die Summenzeile („0 von 1
+      // angelegt") der Zeile darüber, die „Angelegt, aber …" sagt.
+      const stufen = [...this.results.values()].map((result) => result.level);
+      const fehler = stufen.filter((level) => level === 'error').length;
+      const angelegt = this._angelegt.size;
       const versucht = this.results.size;
-      const stufe = erfolge === versucht ? 'success' : 'warning';
-      const zusatz = warnungen ? ` ${warnungen} mit Einschränkung.` : '';
+      const einschraenkungen = stufen.filter(
+        (level) => level !== 'success'
+      ).length;
+
+      const stufe = fehler ? 'error' : einschraenkungen ? 'warning' : 'success';
+      const zusatz = einschraenkungen
+        ? ` ${einschraenkungen} mit Einschränkung -- bitte die Zeilen prüfen.`
+        : '';
       this._notificationService[stufe](
-        `${erfolge + warnungen} von ${versucht} Übertragungen angelegt.${zusatz}`,
+        `${angelegt} von ${versucht} Übertragungen angelegt.${zusatz}`,
         { keepAfterRouteChange: true }
       );
 
@@ -548,6 +584,21 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
       });
     } catch (error) {
       this._capture(error);
+
+      // Die Übertragung EXISTIERT, nur ihre Kennung ist verloren. Ein zweiter
+      // Anlauf legte eine zweite auf demselben Schlüssel an -- deshalb sperrt
+      // dieser Fall das Spiel genauso wie ein Erfolg, und die Zeile sagt, dass
+      // von Hand nachgesehen werden muss.
+      if (error instanceof YoutubeOrphanError) {
+        this._angelegt.add(game.id);
+        this._result(
+          game,
+          'error',
+          `${this._fehlertext(error, 'Anlegen unklar.')} Bitte auf dem Kanal nachsehen, bevor erneut angelegt wird.`
+        );
+        return true;
+      }
+
       this._result(
         game,
         'error',
@@ -559,20 +610,18 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     // Ab hier existiert die Übertragung. Sie darf in keinem Fall mehr aus dem
     // Blick geraten.
     this._angelegt.add(game.id);
-    const gemeldet = await this._report(
+    // Erste Meldung: nur registrieren, damit der Wächter sie kennt. Der Link
+    // für den öffentlichen Spielplan kommt erst nach dem Binden.
+    let gemeldet = await this._report(
       game,
       broadcastId,
       stream.id,
       titel,
-      lauf.privacy
+      lauf.privacy,
+      false
     );
 
     const hinweise: string[] = [];
-    if (!gemeldet) {
-      hinweise.push(
-        `im Saisonmanager nicht vermerkt (Kennung ${broadcastId}) -- der Wächter kennt sie nicht`
-      );
-    }
 
     let gebunden = true;
     try {
@@ -584,6 +633,17 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     }
 
     if (gebunden) {
+      // Zweite Meldung: jetzt darf der Link in den Spielplan.
+      const veroeffentlicht = await this._report(
+        game,
+        broadcastId,
+        stream.id,
+        titel,
+        lauf.privacy,
+        true
+      );
+      gemeldet = gemeldet && veroeffentlicht;
+
       const thumbnail = await this._thumbnail(game, broadcastId);
       if (thumbnail !== true) hinweise.push(thumbnail);
       if (!(await this._playlist(game, broadcastId))) {
@@ -591,10 +651,27 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Eine nicht gemeldete Übertragung ist schlechter als eine nicht angelegte:
-    // Sie existiert, kostet Kontingent, belegt den Schlüssel -- und niemand
-    // weiß davon. Das ist ein Fehler und keine Warnung.
-    const stufe: CreationResult['level'] = gemeldet ? 'warning' : 'error';
+    const konflikt = this._konflikte.get(game.id);
+    if (konflikt) {
+      // Der Satz IST vermerkt, nur am falschen Spiel. „Nicht vermerkt" wäre
+      // hier eine Falschaussage, und die eigentliche Ursache (kopierte Kennung)
+      // bliebe verborgen.
+      hinweise.push(`${konflikt} (Kennung ${broadcastId})`);
+    } else if (!gemeldet) {
+      hinweise.push(
+        `im Saisonmanager nicht vermerkt (Kennung ${broadcastId}) -- der Wächter kennt sie nicht`
+      );
+    }
+
+    const linkHinweis = this._linkHinweise.get(game.id);
+    if (linkHinweis) hinweise.push(`kein Link im Spielplan: ${linkHinweis}`);
+
+    // Zwei Lagen sind schlechter als eine nicht angelegte Übertragung, weil
+    // etwas existiert, das niemand mehr einfängt: die nicht gemeldete (der
+    // Wächter kennt sie nicht) und die ungebundene (sie empfängt nie Signal und
+    // wird deshalb vom Wächter übersprungen). Beides ist ein Fehler.
+    const stufe: CreationResult['level'] =
+      gemeldet && gebunden ? 'warning' : 'error';
     if (hinweise.length)
       this._result(game, stufe, `Angelegt, aber ${hinweise.join('; ')}.`);
     else this._result(game, 'success', 'Angelegt.');
@@ -609,13 +686,20 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
    * Zustände, keine Einzelereignisse.
    */
   private _abbruchwuerdig(error: unknown): boolean {
+    // Die Anmeldung ist weg: `_headers()` wirft ab jetzt für JEDES Folgespiel,
+    // und zwar einen schlichten YoutubeError ohne Status. Ohne diesen Zweig
+    // liefe der Stapel mit N identischen Fehlzeilen weiter.
+    if (!this._youtubeService.signedIn) return true;
     if (!(error instanceof YoutubeStatusError)) return false;
 
+    // Auf den ROHEN Grund prüfen, nicht auf die übersetzte Meldung: Ein Text
+    // wie „Dieses Konto darf auf dem Kanal nichts anlegen." enthält keines der
+    // früher gesuchten Schlüsselwörter und liefe als Einzelfehler durch,
+    // obwohl er den Dauerzustand „falsches Konto" beschreibt.
     return (
       error.status === 429 ||
       error.status === 401 ||
-      (error.status === 403 &&
-        /Kontingent|Rechte|Livestreaming/.test(error.message))
+      (error.status === 403 && ABBRUCH_GRUENDE.includes(error.reason))
     );
   }
 
@@ -630,37 +714,62 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
    * Übertragung trotzdem, aber der Wächter kennt sie nicht und beendet sie nie.
    * Das steht als Fehler in der Zeile, mit der YouTube-Kennung zum Nachtragen.
    */
+  /**
+   * Meldet die Übertragung beim Saisonmanager.
+   *
+   * Der Rückgabewert sagt, ob der Server sie kennt -- scheitert das, existiert
+   * die Übertragung trotzdem, aber der Wächter beendet sie nie. Das steht als
+   * Fehler in der Zeile, mit der YouTube-Kennung zum Nachtragen.
+   *
+   * ZWEI ANTWORTEN BRAUCHEN EIGENE WORTE, sonst ebnet die Oberfläche wieder ein,
+   * was der Server sauber trennt:
+   *   * 409 -- die Kennung hängt schon an einem ANDEREN Spiel. Der Satz ist
+   *     vermerkt, nur am falschen Ort; „nicht vermerkt" wäre schlicht falsch.
+   *   * `link_skipped_reason` -- der Grund, warum im Spielplan kein Link steht.
+   *     Ohne ihn ist die Frage von außen nicht zu beantworten.
+   */
   private async _report(
     game: StreamingGame,
     broadcastId: string,
     streamId: string,
     titel: string,
-    privacy: 'public' | 'unlisted'
+    privacy: 'public' | 'unlisted',
+    bound: boolean
   ): Promise<boolean> {
     try {
-      await firstValueFrom(
+      const antwort = await firstValueFrom(
         this._streamingService.recordBroadcast(game.id, {
           broadcast_id: broadcastId,
           privacy_status: privacy,
           title: titel,
           stream_id: streamId,
+          bound,
         })
       );
+
+      // Nur beim abschließenden Aufruf: Vorher ist „noch nicht gebunden" die
+      // erwartete Antwort und kein Hinweis wert.
+      if (
+        bound &&
+        antwort.link_written === false &&
+        antwort.link_skipped_reason
+      ) {
+        this._linkHinweise.set(game.id, antwort.link_skipped_reason);
+      }
       return true;
     } catch (error) {
       this._capture(error);
+      if (error instanceof HttpErrorResponse && error.status === 409) {
+        this._konflikte.set(
+          game.id,
+          error.error?.error ??
+            'Diese Übertragung ist bereits einem anderen Spiel zugeordnet.'
+        );
+      }
       return false;
     }
   }
 
-  /**
-   * Zeichnet das Thumbnail und lädt es hoch.
-   *
-   * `true` bei Erfolg, sonst der Hinweis für die Ergebniszeile. Ein fehlendes
-   * Ligazeichen wird ausdrücklich gemeldet: Das Bild geht auf einen
-   * öffentlichen Kanal und lässt sich dort nicht mehr eben nachbessern -- anders
-   * als beim ZIP, das im Download-Ordner liegt.
-   */
   private async _thumbnail(
     game: StreamingGame,
     broadcastId: string

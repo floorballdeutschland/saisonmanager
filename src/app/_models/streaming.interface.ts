@@ -38,6 +38,17 @@ export interface StreamingBroadcast {
   ended_reason: string | null;
 }
 
+/**
+ * Was der Server nach einer gemeldeten Übertragung zurückgibt.
+ *
+ * `link_written` beantwortet die Frage, die sonst niemand beantworten kann:
+ * warum im öffentlichen Spielplan (k)ein Link steht.
+ */
+export interface StreamingBroadcastResult extends StreamingGame {
+  link_written?: boolean;
+  link_skipped_reason?: string | null;
+}
+
 export interface StreamingGame {
   id: number;
   game_number: string | null;
@@ -72,6 +83,14 @@ export interface StreamingBroadcastInput {
   privacy_status: string;
   title?: string;
   stream_id?: string;
+  /**
+   * Ist die Übertragung an ihren Stream gebunden?
+   *
+   * Erst dann gibt der Server den Link für den öffentlichen Spielplan frei --
+   * eine ungebundene Übertragung empfängt kein Signal, ihr Link wäre dort tot,
+   * und der Wächter überspringt sie, beendet sie also auch nie.
+   */
+  bound?: boolean;
 }
 
 /**

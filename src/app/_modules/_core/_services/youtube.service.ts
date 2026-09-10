@@ -57,6 +57,15 @@ export interface YoutubeBroadcastInput {
 
 export class YoutubeError extends Error {}
 
+/**
+ * Die Übertragung ist bei YouTube entstanden, ihre Kennung aber verloren.
+ *
+ * Eigene Klasse, weil der Aufrufer daraus etwas anderes schließen muss als aus
+ * einem gewöhnlichen Fehlschlag: Ein zweiter Versuch legte eine ZWEITE
+ * Übertragung auf demselben Schlüssel an. Die hier muss von Hand gesucht werden.
+ */
+export class YoutubeOrphanError extends YoutubeError {}
+
 const GIS_SRC = 'https://accounts.google.com/gsi/client';
 /**
  * Frist für den Anmeldedialog. Google ruft für die üblichen Abbrüche
@@ -286,7 +295,7 @@ export class YoutubeService {
     // Übertragung existiert dann, ihre Kennung ist verloren, und niemand kann
     // sie mehr zuordnen oder beenden. Das ist der Waisenfall in Reinform.
     if (!antwort.id) {
-      throw new YoutubeError(
+      throw new YoutubeOrphanError(
         'YouTube hat die Übertragung ohne Kennung angelegt. Sie muss von Hand gesucht werden.'
       );
     }
@@ -421,7 +430,8 @@ export class YoutubeService {
       // Ein abgelaufenes Token wird hier verworfen, damit der nächste Anlauf den
       // Anmeldedialog zeigt statt endlos 401 zu bekommen.
       if (antwort.status === 401) this._token = null;
-      throw new YoutubeStatusError(antwort.status, await lesegrund(antwort));
+      const { text, reason } = await lesegrund(antwort);
+      throw new YoutubeStatusError(antwort.status, text, reason);
     }
 
     const text = await antwort.text();
@@ -441,11 +451,20 @@ export class YoutubeService {
   }
 }
 
-/** Ein Fehler der Schnittstelle samt HTTP-Status, für gezielte Wiederholungen. */
+/**
+ * Ein Fehler der Schnittstelle samt HTTP-Status und ROHEM Grund.
+ *
+ * Der rohe Grund (`quotaExceeded`, `forbidden`, …) gehört mit an die Ausnahme:
+ * Wer entscheiden muss, ob ein Stapel weiterlaufen darf, darf das nicht an einer
+ * übersetzten Meldung festmachen -- die ändert sich mit jeder Textpflege, und
+ * ein Text wie „Dieses Konto darf auf dem Kanal nichts anlegen." enthält kein
+ * Schlüsselwort, das man suchen könnte.
+ */
 export class YoutubeStatusError extends YoutubeError {
   constructor(
     public readonly status: number,
-    message: string
+    message: string,
+    public readonly reason = ''
   ) {
     super(message);
   }
@@ -486,19 +505,24 @@ export function youtubeGrundText(reason: string): string | null {
   return GRUND_TEXTE[reason] ?? null;
 }
 
-async function lesegrund(antwort: Response): Promise<string> {
+async function lesegrund(
+  antwort: Response
+): Promise<{ text: string; reason: string }> {
   try {
-    const text = await antwort.text();
-    const daten = text ? JSON.parse(text) : null;
-    const reason = daten?.error?.errors?.[0]?.reason ?? '';
+    const body = await antwort.text();
+    const daten = body ? JSON.parse(body) : null;
+    const reason: string = daten?.error?.errors?.[0]?.reason ?? '';
     const handlungssatz = youtubeGrundText(reason);
-    if (handlungssatz) return handlungssatz;
+    if (handlungssatz) return { text: handlungssatz, reason };
 
     const grund = reason || daten?.error?.message || '';
-    return grund ? `${antwort.status}: ${grund}` : `${antwort.status}`;
+    return {
+      text: grund ? `${antwort.status}: ${grund}` : `${antwort.status}`,
+      reason,
+    };
   } catch {
     // Auch ein unlesbarer Körper darf nicht nur eine nackte Zahl hinterlassen.
-    return `${antwort.status} (Antwort nicht lesbar)`;
+    return { text: `${antwort.status} (Antwort nicht lesbar)`, reason: '' };
   }
 }
 

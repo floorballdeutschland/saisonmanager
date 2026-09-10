@@ -5,7 +5,12 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { YoutubeService, getTranslocoTestingModule } from '@floorball/core';
+import {
+  YoutubeOrphanError,
+  YoutubeService,
+  YoutubeStatusError,
+  getTranslocoTestingModule,
+} from '@floorball/core';
 import { StreamingGame } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -19,6 +24,8 @@ describe('StreamingIndexComponent', () => {
   let fixture: ComponentFixture<StreamingIndexComponent>;
   let component: StreamingIndexComponent;
   let youtube: FakeYoutube;
+  /** Die Rümpfe aller Meldungen an den Saisonmanager, in Reihenfolge. */
+  let broadcastCalls: Record<string, unknown>[];
 
   /**
    * Ersetzt den echten YouTube-Zugang. Hält fest, was angelegt worden wäre --
@@ -55,7 +62,16 @@ describe('StreamingIndexComponent', () => {
       title: string;
       description: string;
     }): Promise<string> {
-      if (this.createError) throw this.createError;
+      if (this.createError) {
+        // Wie der echte Dienst: Bei 401 ist die Anmeldung weg.
+        if (
+          this.createError instanceof YoutubeStatusError &&
+          this.createError.status === 401
+        ) {
+          this.signedIn = false;
+        }
+        throw this.createError;
+      }
       this.created.push(input);
       return `yt-${this.created.length}`;
     }
@@ -93,6 +109,7 @@ describe('StreamingIndexComponent', () => {
 
     http = TestBed.inject(HttpTestingController);
     youtube = TestBed.inject(YoutubeService) as unknown as FakeYoutube;
+    broadcastCalls = [];
     fixture = TestBed.createComponent(StreamingIndexComponent);
     component = fixture.componentInstance;
   });
@@ -128,24 +145,51 @@ describe('StreamingIndexComponent', () => {
    * was an den Server geht. Der Anlauf besteht aus mehreren `await`s
    * nacheinander; ohne diese Schleife stünde er nach dem ersten still.
    */
-  async function drain(runden = 12): Promise<void> {
+  /**
+   * Lässt die angefangenen Zusagen weiterlaufen und beantwortet unterwegs, was
+   * an den Server geht.
+   *
+   * HÄLT DIE MELDUNGEN FEST, statt sie nur wegzuwinken: Ohne `broadcastCalls`
+   * kann kein Prüfsatz belegen, DASS gemeldet wurde -- und genau darauf kommt
+   * es an, seit die Meldung vor dem Binden steht. `reloadWith` beantwortet die
+   * Neuladung mit einer echten Liste; mit `[]` wäre jede Zusicherung auf
+   * `creatable` tautologisch, weil `load()` die Auswahl ohnehin leert.
+   */
+  async function drain(
+    options: {
+      runden?: number;
+      reloadWith?: StreamingGame[];
+      broadcastStatus?: number;
+    } = {}
+  ): Promise<void> {
+    const { runden = 24, reloadWith = [], broadcastStatus } = options;
+
     for (let i = 0; i < runden; i++) {
       await new Promise((resolve) => setTimeout(resolve, 0));
       http
         .match(() => true)
         .forEach((request) => {
-          if (request.request.url.includes('leagues/')) {
-            // Eine echte Liga: Ohne sie trägt das Bild weder Liganamen noch
-            // Ligazeichen, und genau das meldet der Anlegevorgang seit dem
-            // Review als Einschränkung.
+          if (request.request.url.includes('/broadcast')) {
+            broadcastCalls.push(request.request.body);
+            if (broadcastStatus) {
+              request.flush('kaputt', {
+                status: broadcastStatus,
+                statusText: 'Fehler',
+              });
+            } else {
+              request.flush({});
+            }
+          } else if (request.request.url.includes('leagues/')) {
             request.flush({
               id: 5,
               name: '1. FBL Herren',
               short_name: '1. FBL',
             });
-          } else if (request.request.url.endsWith('admin/streaming/games'))
-            request.flush([]);
-          else request.flush({});
+          } else if (request.request.url.endsWith('admin/streaming/games')) {
+            request.flush(reloadWith);
+          } else {
+            request.flush({});
+          }
         });
     }
   }
@@ -414,6 +458,129 @@ describe('StreamingIndexComponent', () => {
       expect(component.results.get(1)?.text).toContain('Thumbnail');
     });
 
+    // Ein erschöpftes Kontingent ist ein Zustand: Ab da scheitert alles Weitere.
+    // Weiterzulaufen erzeugte nur N identische Fehlzeilen.
+    it('bricht den Stapel bei erschöpftem Kontingent ab', async () => {
+      youtube.createError = new YoutubeStatusError(
+        403,
+        'Das YouTube-Tageskontingent ist erschöpft.',
+        'quotaExceeded'
+      );
+      start([game(1), game(2), game(3)]);
+      component.toggleAll();
+
+      const lauf = component.createStreams();
+      await drain({ reloadWith: [game(1)] });
+      await lauf;
+
+      expect(component.results.size).toBe(1);
+    });
+
+    // `forbidden` enthält keines der früher gesuchten Schlüsselwörter -- die
+    // Prüfung auf übersetzte Prosa hätte hier weiterlaufen lassen.
+    it('bricht auch bei fehlenden Rechten ab', async () => {
+      youtube.createError = new YoutubeStatusError(
+        403,
+        'Dieses Konto darf auf dem Kanal nichts anlegen.',
+        'forbidden'
+      );
+      start([game(1), game(2)]);
+      component.toggleAll();
+
+      const lauf = component.createStreams();
+      await drain({ reloadWith: [game(1)] });
+      await lauf;
+
+      expect(component.results.size).toBe(1);
+    });
+
+    // Die Übertragung EXISTIERT, nur ihre Kennung ist verloren. Ein zweiter
+    // Anlauf legte eine zweite auf demselben Schlüssel an.
+    it('sperrt ein Spiel, dessen Übertragung ohne Kennung entstanden ist', async () => {
+      youtube.createError = new YoutubeOrphanError('ohne Kennung angelegt');
+      start([game(1)]);
+      component.toggleAll();
+
+      const lauf = component.createStreams();
+      await drain({ reloadWith: [game(1)] });
+      await lauf;
+
+      expect(component.results.get(1)?.level).toBe('error');
+      expect(component.results.get(1)?.text).toContain('nachsehen');
+      component.toggleAll();
+      expect(component.creatable).toEqual([]);
+    });
+
+    // Der Satz IST vermerkt, nur am falschen Spiel. „Nicht vermerkt" wäre eine
+    // Falschaussage, und die Ursache (kopierte Kennung) bliebe verborgen.
+    it('unterscheidet einen Zuordnungskonflikt von einer fehlgeschlagenen Meldung', async () => {
+      start([game(1)]);
+      component.toggleAll();
+
+      const lauf = component.createStreams();
+      for (let i = 0; i < 14; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        http
+          .match(() => true)
+          .forEach((request) => {
+            if (request.request.url.includes('/broadcast')) {
+              request.flush(
+                {
+                  error:
+                    'Diese Übertragung ist bereits einem anderen Spiel zugeordnet.',
+                },
+                { status: 409, statusText: 'Conflict' }
+              );
+            } else if (request.request.url.includes('leagues/')) {
+              request.flush({ id: 5, name: '1. FBL Herren' });
+            } else if (request.request.url.endsWith('admin/streaming/games')) {
+              request.flush([game(1)]);
+            } else {
+              request.flush({});
+            }
+          });
+      }
+      await lauf;
+
+      const text = component.results.get(1)?.text ?? '';
+      expect(text).toContain('bereits einem anderen Spiel zugeordnet');
+      expect(text).not.toContain('nicht vermerkt');
+    });
+
+    // „Warum steht im Spielplan kein Link" ist sonst von außen nicht zu
+    // beantworten -- der Server begründet es, und die Zeile sagt es weiter.
+    it('nennt den Grund, wenn kein Link im Spielplan landet', async () => {
+      start([game(1)]);
+      component.toggleAll();
+
+      const lauf = component.createStreams();
+      for (let i = 0; i < 14; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        http
+          .match(() => true)
+          .forEach((request) => {
+            if (request.request.url.includes('/broadcast')) {
+              broadcastCalls.push(request.request.body);
+              request.flush({
+                link_written: false,
+                link_skipped_reason: 'am Spiel steht bereits ein Link',
+              });
+            } else if (request.request.url.includes('leagues/')) {
+              request.flush({ id: 5, name: '1. FBL Herren' });
+            } else if (request.request.url.endsWith('admin/streaming/games')) {
+              request.flush([game(1)]);
+            } else {
+              request.flush({});
+            }
+          });
+      }
+      await lauf;
+
+      expect(component.results.get(1)?.text).toContain(
+        'am Spiel steht bereits ein Link'
+      );
+    });
+
     it('ohne Google-Zugang steht das Anlegen nicht zur Verfügung', () => {
       youtube.configured = false;
       start([game(1)]);
@@ -429,61 +596,79 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      // Alles beantworten -- die Meldung an den Saisonmanager scheitert.
-      for (let i = 0; i < 12; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        http
-          .match(() => true)
-          .forEach((request) => {
-            if (request.request.url.includes('broadcast')) {
-              request.flush('kaputt', {
-                status: 500,
-                statusText: 'Server Error',
-              });
-            } else if (request.request.url.includes('leagues/')) {
-              request.flush({ id: 5, name: '1. FBL Herren' });
-            } else {
-              request.flush({});
-            }
-          });
-      }
+      await drain({ reloadWith: [game(1)], broadcastStatus: 500 });
       await lauf;
 
       expect(youtube.created.length).toBe(1);
+      expect(broadcastCalls.length).toBeGreaterThan(0);
       expect(component.results.get(1)?.level).toBe('error');
       expect(component.results.get(1)?.text).toContain('yt-1');
     });
 
     // Zweiter Riegel neben `game.broadcast`: Nach einer gescheiterten Meldung
     // weiß die neu geladene Liste nichts von der Übertragung.
+    // Die Neuladung liefert das Spiel UNVERÄNDERT zurück (ohne `broadcast`) --
+    // so wie es käme, wenn die Meldung an den Server gescheitert ist. Nur dann
+    // belegt der Prüfsatz wirklich den Riegel `_angelegt`: Mit einer leeren
+    // Liste wäre `creatable` ohnehin leer, weil `load()` die Auswahl räumt.
     it('bietet ein Spiel nach dem Anlegen nicht erneut an', async () => {
       start([game(1)]);
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain();
+      await drain({ reloadWith: [game(1)], broadcastStatus: 500 });
       await lauf;
 
       expect(youtube.created.length).toBe(1);
+      // Der Server weiß nichts von der Übertragung, das Spiel steht wieder
+      // ohne `broadcast` in der Liste -- trotzdem darf es nicht erneut
+      // angeboten werden.
+      component.toggleAll();
+      expect(component.selected.size).toBe(1);
       expect(component.creatable).toEqual([]);
     });
 
     // Scheitert das Binden, existiert die Übertragung schon -- sie ist gemeldet
     // und darf nicht als "nicht angelegt" dastehen.
-    it('meldet die Übertragung auch, wenn das Binden scheitert', async () => {
+    // DIE REIHENFOLGE IST DER FIX: gemeldet wird VOR dem Binden. Ohne diesen
+    // Prüfsatz bliebe eine Rückkehr zu "erst binden, dann melden" unbemerkt --
+    // und dann wäre die Übertragung nach einem Bind-Fehlschlag wieder eine
+    // Waise, die der Wächter nie beendet.
+    it('meldet die Übertragung, BEVOR sie gebunden wird', async () => {
       youtube.bindFails = true;
       start([game(1)]);
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain();
+      await drain({ reloadWith: [game(1)] });
       await lauf;
 
       expect(youtube.created.length).toBe(1);
+      // Trotz gescheitertem Binden ist die Meldung raus -- genau einmal, denn
+      // die zweite (den Link freigebende) unterbleibt ohne Bindung.
+      expect(broadcastCalls.length).toBe(1);
+      expect(broadcastCalls[0]['bound']).toBeFalse();
       expect(component.results.get(1)?.text).toContain(
         'nicht an den Stream gebunden'
       );
-      expect(component.creatable).toEqual([]);
+      // Ungebunden heißt: empfängt nie Signal, wird vom Wächter übersprungen.
+      expect(component.results.get(1)?.level).toBe('error');
+    });
+
+    // Der Link darf erst in den öffentlichen Spielplan, wenn die Übertragung
+    // gebunden ist -- sonst steht dort ein Link auf eine Sendung ohne Signal.
+    it('gibt den Link erst nach dem Binden frei', async () => {
+      start([game(1)]);
+      component.toggleAll();
+
+      const lauf = component.createStreams();
+      await drain({ reloadWith: [game(1)] });
+      await lauf;
+
+      expect(broadcastCalls.length).toBe(2);
+      expect(broadcastCalls[0]['bound']).toBeFalse();
+      expect(broadcastCalls[1]['bound']).toBeTrue();
+      expect(youtube.bound.length).toBe(1);
     });
 
     // Sonst bekäme jedes Spiel "Streamschlüssel nicht vorhanden" -- eine
@@ -530,25 +715,13 @@ describe('StreamingIndexComponent', () => {
 
       const lauf = component.createStreams();
       component.privacy = 'public';
-      let gemeldet: string | undefined;
-      for (let i = 0; i < 12; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        http
-          .match(() => true)
-          .forEach((request) => {
-            if (request.request.url.includes('broadcast')) {
-              gemeldet = request.request.body.privacy_status;
-            }
-            if (request.request.url.includes('leagues/')) {
-              request.flush({ id: 5, name: '1. FBL Herren' });
-            } else {
-              request.flush({});
-            }
-          });
-      }
+      await drain({ reloadWith: [game(1)] });
       await lauf;
 
-      expect(gemeldet).toBe('unlisted');
+      expect(broadcastCalls.length).toBeGreaterThan(0);
+      expect(
+        broadcastCalls.every((body) => body['privacy_status'] === 'unlisted')
+      ).toBeTrue();
     });
   });
 
