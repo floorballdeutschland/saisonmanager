@@ -312,6 +312,22 @@ export class LeagueService {
     }>(path);
   }
 
+  // Adresse des Spielplan-Exports. Bewusst nur die URL statt eines Abrufs: Der
+  // Knopf ist ein gewöhnlicher Link, den der Browser selbst herunterlädt. Ein
+  // Abruf über HttpClient müsste die Datei als Blob durch den Speicher reichen
+  // und den Download von Hand auslösen, ohne dafür etwas zu gewinnen –
+  // angemeldet ist die Sitzung über das Cookie, das der Browser auch beim
+  // Navigieren mitschickt.
+  public adminScheduleExportUrl(leagueId: number, format: 'xlsx' | 'csv') {
+    return (
+      environment.apiURL +
+      'admin/leagues/' +
+      leagueId +
+      '/schedule_export.' +
+      format
+    );
+  }
+
   public adminImportGameSchedule(data: FormData) {
     const path = environment.apiURL + 'admin/leagues/import_schedule.json';
     return this.http.post<{ errors: [string]; warnings: [string] }>(path, data);

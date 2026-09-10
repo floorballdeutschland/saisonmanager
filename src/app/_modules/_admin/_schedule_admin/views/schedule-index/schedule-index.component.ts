@@ -78,6 +78,13 @@ export class ScheduleIndexComponent implements OnInit {
     });
   }
 
+  // Adresse des Spielplan-Exports (Excel oder CSV). Der Knopf ist ein
+  // gewöhnlicher Link: Den Download erledigt der Browser, angemeldet ist er
+  // über das Sitzungs-Cookie.
+  public exportUrl(format: 'xlsx' | 'csv'): string {
+    return this._leagueService.adminScheduleExportUrl(this.leagueId, format);
+  }
+
   public getSchdule(leagueId: number) {
     this._leagueService.getAdminGameSchedule(leagueId).subscribe({
       next: (result) => {
