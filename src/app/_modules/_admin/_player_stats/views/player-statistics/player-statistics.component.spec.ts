@@ -98,7 +98,8 @@ function exportResponse(
     as_of: '2026-08-29T01:15:00.000Z',
     total: 1,
     truncated: false,
-    players: [zeile()],
+    // Nur die Ausfuhr liefert das Geburtsdatum; die Liste (`response`) nicht.
+    players: [zeile({ birthdate: '2004-03-17' })],
     ...overrides,
   };
 }
@@ -624,6 +625,7 @@ describe('PlayerStatisticsComponent', () => {
                 csv: {
                   lastName: 'Nachname',
                   firstName: 'Vorname',
+                  birthdate: 'Geburtsdatum',
                   penaltyMinutes: 'Strafminuten',
                   firstSeason: 'Erste Saison',
                   lastSeason: 'Letzte Saison',
@@ -743,21 +745,28 @@ describe('PlayerStatisticsComponent', () => {
       fixture.componentInstance.exportCsv();
       lastExportRequest().flush(
         exportResponse({
-          players: [zeile({ scorer_per_game: 0.7, deactivated_at: null })],
+          players: [
+            zeile({
+              birthdate: '2004-03-17',
+              scorer_per_game: 0.7,
+              deactivated_at: null,
+            }),
+          ],
         })
       );
 
       expect(blobs.length).toBe(1);
       const [header, row] = await csvLines(blobs[0]);
       expect(header).toBe(
-        '"Nachname";"Vorname";"Spiele";"Tore";"Vorlagen";"Punkte";' +
-          '"Punkte/Spiel";"Strafminuten";"Erste Saison";"Letzte Saison";' +
-          '"Deaktiviert";"Spieler-ID"'
+        '"Nachname";"Vorname";"Geburtsdatum";"Spiele";"Tore";"Vorlagen";' +
+          '"Punkte";"Punkte/Spiel";"Strafminuten";"Erste Saison";' +
+          '"Letzte Saison";"Deaktiviert";"Spieler-ID"'
       );
-      // Dezimalkomma, Saisonnamen statt IDs -- beides fuer die Tabellenkalkulation.
+      // Dezimalkomma, Saisonnamen statt IDs, deutsches Datum -- alles drei fuer
+      // die Tabellenkalkulation.
       expect(row).toBe(
-        '"Beispiel";"Alex";"10";"4";"3";"7";"0,70";"6";"2025/2026";' +
-          '"2026/2027";"Nein";"42"'
+        '"Beispiel";"Alex";"17.03.2004";"10";"4";"3";"7";"0,70";"6";' +
+          '"2025/2026";"2026/2027";"Nein";"42"'
       );
     });
 
@@ -778,8 +787,31 @@ describe('PlayerStatisticsComponent', () => {
       );
 
       const [header, row] = await csvLines(blobs[0]);
-      expect(header.split(';')[2]).toBe('"Verein"');
-      expect(row.split(';')[2]).toBe('"SC Beispiel"');
+      expect(header.split(';')[3]).toBe('"Verein"');
+      expect(row.split(';')[3]).toBe('"SC Beispiel"');
+    });
+
+    // Verlangt fuer die Weiterverarbeitung: Zwei namensgleiche Personen trennt
+    // erst das Geburtsdatum, und die Spieler-ID hilft nur, solange die
+    // Gegenliste sie auch fuehrt.
+    it('schreibt das Geburtsdatum deutsch und laesst es leer, wenn keines steht', async () => {
+      const fixture = setupExport('113');
+      lastRequest().flush(response({ total: 2 }));
+
+      fixture.componentInstance.exportCsv();
+      lastExportRequest().flush(
+        exportResponse({
+          total: 2,
+          players: [
+            zeile({ birthdate: '2004-03-17' }),
+            zeile({ player_id: 43, last_name: 'Ohne', birthdate: null }),
+          ],
+        })
+      );
+
+      const [, mitDatum, ohneDatum] = await csvLines(blobs[0]);
+      expect(mitDatum.split(';')[2]).toBe('"17.03.2004"');
+      expect(ohneDatum.split(';')[2]).toBe('""');
     });
 
     it('markiert deaktivierte Personen', async () => {

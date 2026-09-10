@@ -23,6 +23,11 @@ export interface PlayerStatisticsEntry {
   first_season_id: string | null;
   last_season_id: string | null;
   /**
+   * Nur in der Ausfuhr (`.../export`): Die Ansicht selbst zeigt kein
+   * Geburtsdatum und bekommt es deshalb auch nicht geliefert.
+   */
+  birthdate?: string | null;
+  /**
    * Nur in der Verbandsansicht: In der Vereinsansicht ist der Verein fuer jede
    * Zeile derselbe und steht in `scope.club`.
    */

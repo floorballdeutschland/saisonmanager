@@ -21,6 +21,7 @@
   "csv": {
     "lastName": "Last name",
     "firstName": "First name",
+    "birthdate": "Date of birth",
     "penaltyMinutes": "Penalty minutes",
     "firstSeason": "First season",
     "lastSeason": "Last season",
