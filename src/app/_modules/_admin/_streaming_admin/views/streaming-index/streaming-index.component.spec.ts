@@ -141,13 +141,13 @@ describe('StreamingIndexComponent', () => {
   }
 
   /**
-   * Lässt die angefangenen Zusagen weiterlaufen und beantwortet unterwegs alles,
-   * was an den Server geht. Der Anlauf besteht aus mehreren `await`s
-   * nacheinander; ohne diese Schleife stünde er nach dem ersten still.
-   */
-  /**
-   * Lässt die angefangenen Zusagen weiterlaufen und beantwortet unterwegs, was
-   * an den Server geht.
+   * Beantwortet, was an den Server geht, bis der übergebene Vorgang fertig ist.
+   *
+   * ADAPTIV UND NICHT MIT FESTER RUNDENZAHL: Der Anlegevorgang besteht aus
+   * mehreren `await`s hintereinander, und wie viele Warteschleifen dazwischen
+   * liegen, hängt von der Maschine ab. Eine feste Zahl bestand hier lokal und
+   * fiel auf CI -- und hätte, zu hoch gewählt, stillschweigend auch dann
+   * bestanden, wenn ein Aufruf gar nicht mehr kommt.
    *
    * HÄLT DIE MELDUNGEN FEST, statt sie nur wegzuwinken: Ohne `broadcastCalls`
    * kann kein Prüfsatz belegen, DASS gemeldet wurde -- und genau darauf kommt
@@ -155,29 +155,34 @@ describe('StreamingIndexComponent', () => {
    * Neuladung mit einer echten Liste; mit `[]` wäre jede Zusicherung auf
    * `creatable` tautologisch, weil `load()` die Auswahl ohnehin leert.
    */
-  async function drain(
+  async function settle(
+    lauf: Promise<unknown>,
     options: {
-      runden?: number;
       reloadWith?: StreamingGame[];
       broadcastStatus?: number;
+      broadcastBody?: Record<string, unknown>;
     } = {}
   ): Promise<void> {
-    const { runden = 24, reloadWith = [], broadcastStatus } = options;
+    const { reloadWith = [], broadcastStatus, broadcastBody } = options;
+    let fertig = false;
+    lauf.then(
+      () => (fertig = true),
+      () => (fertig = true)
+    );
 
-    for (let i = 0; i < runden; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 0));
+    const antworten = () =>
       http
         .match(() => true)
         .forEach((request) => {
           if (request.request.url.includes('/broadcast')) {
             broadcastCalls.push(request.request.body);
             if (broadcastStatus) {
-              request.flush('kaputt', {
+              request.flush(broadcastBody ?? { error: 'kaputt' }, {
                 status: broadcastStatus,
                 statusText: 'Fehler',
               });
             } else {
-              request.flush({});
+              request.flush(broadcastBody ?? {});
             }
           } else if (request.request.url.includes('leagues/')) {
             request.flush({
@@ -191,6 +196,19 @@ describe('StreamingIndexComponent', () => {
             request.flush({});
           }
         });
+
+    // Bis der Vorgang fertig ist -- die Obergrenze ist nur ein Riegel gegen
+    // eine Endlosschleife, kein Teil der Erwartung.
+    for (let i = 0; i < 200 && !fertig; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      antworten();
+    }
+
+    // Danach noch die Nachzügler: `createStreams` stößt zum Schluss ein
+    // `load()` an, auf das niemand mehr wartet.
+    for (let i = 0; i < 5; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      antworten();
     }
   }
 
@@ -399,8 +417,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain();
-      await lauf;
+      await settle(lauf);
 
       expect(youtube.signedIn).toBeTrue();
       expect(youtube.created.length).toBe(1);
@@ -421,8 +438,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain();
-      await lauf;
+      await settle(lauf);
 
       expect(youtube.created).toEqual([]);
       expect(component.results.get(1)?.level).toBe('error');
@@ -434,8 +450,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain();
-      await lauf;
+      await settle(lauf);
 
       expect(youtube.created).toEqual([]);
       expect(component.results.get(1)?.level).toBe('error');
@@ -450,8 +465,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain();
-      await lauf;
+      await settle(lauf);
 
       expect(youtube.bound.length).toBe(1);
       expect(component.results.get(1)?.level).toBe('warning');
@@ -470,8 +484,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain({ reloadWith: [game(1)] });
-      await lauf;
+      await settle(lauf, { reloadWith: [game(1)] });
 
       expect(component.results.size).toBe(1);
     });
@@ -488,8 +501,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain({ reloadWith: [game(1)] });
-      await lauf;
+      await settle(lauf, { reloadWith: [game(1)] });
 
       expect(component.results.size).toBe(1);
     });
@@ -502,8 +514,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain({ reloadWith: [game(1)] });
-      await lauf;
+      await settle(lauf, { reloadWith: [game(1)] });
 
       expect(component.results.get(1)?.level).toBe('error');
       expect(component.results.get(1)?.text).toContain('nachsehen');
@@ -518,29 +529,14 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      for (let i = 0; i < 14; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        http
-          .match(() => true)
-          .forEach((request) => {
-            if (request.request.url.includes('/broadcast')) {
-              request.flush(
-                {
-                  error:
-                    'Diese Übertragung ist bereits einem anderen Spiel zugeordnet.',
-                },
-                { status: 409, statusText: 'Conflict' }
-              );
-            } else if (request.request.url.includes('leagues/')) {
-              request.flush({ id: 5, name: '1. FBL Herren' });
-            } else if (request.request.url.endsWith('admin/streaming/games')) {
-              request.flush([game(1)]);
-            } else {
-              request.flush({});
-            }
-          });
-      }
-      await lauf;
+      await settle(lauf, {
+        reloadWith: [game(1)],
+        broadcastStatus: 409,
+        broadcastBody: {
+          error:
+            'Diese Übertragung ist bereits einem anderen Spiel zugeordnet.',
+        },
+      });
 
       const text = component.results.get(1)?.text ?? '';
       expect(text).toContain('bereits einem anderen Spiel zugeordnet');
@@ -554,27 +550,13 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      for (let i = 0; i < 14; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        http
-          .match(() => true)
-          .forEach((request) => {
-            if (request.request.url.includes('/broadcast')) {
-              broadcastCalls.push(request.request.body);
-              request.flush({
-                link_written: false,
-                link_skipped_reason: 'am Spiel steht bereits ein Link',
-              });
-            } else if (request.request.url.includes('leagues/')) {
-              request.flush({ id: 5, name: '1. FBL Herren' });
-            } else if (request.request.url.endsWith('admin/streaming/games')) {
-              request.flush([game(1)]);
-            } else {
-              request.flush({});
-            }
-          });
-      }
-      await lauf;
+      await settle(lauf, {
+        reloadWith: [game(1)],
+        broadcastBody: {
+          link_written: false,
+          link_skipped_reason: 'am Spiel steht bereits ein Link',
+        },
+      });
 
       expect(component.results.get(1)?.text).toContain(
         'am Spiel steht bereits ein Link'
@@ -596,8 +578,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain({ reloadWith: [game(1)], broadcastStatus: 500 });
-      await lauf;
+      await settle(lauf, { reloadWith: [game(1)], broadcastStatus: 500 });
 
       expect(youtube.created.length).toBe(1);
       expect(broadcastCalls.length).toBeGreaterThan(0);
@@ -616,8 +597,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain({ reloadWith: [game(1)], broadcastStatus: 500 });
-      await lauf;
+      await settle(lauf, { reloadWith: [game(1)], broadcastStatus: 500 });
 
       expect(youtube.created.length).toBe(1);
       // Der Server weiß nichts von der Übertragung, das Spiel steht wieder
@@ -640,8 +620,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain({ reloadWith: [game(1)] });
-      await lauf;
+      await settle(lauf, { reloadWith: [game(1)] });
 
       expect(youtube.created.length).toBe(1);
       // Trotz gescheitertem Binden ist die Meldung raus -- genau einmal, denn
@@ -662,8 +641,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain({ reloadWith: [game(1)] });
-      await lauf;
+      await settle(lauf, { reloadWith: [game(1)] });
 
       expect(broadcastCalls.length).toBe(2);
       expect(broadcastCalls[0]['bound']).toBeFalse();
@@ -679,8 +657,7 @@ describe('StreamingIndexComponent', () => {
       component.toggleAll();
 
       const lauf = component.createStreams();
-      await drain();
-      await lauf;
+      await settle(lauf);
 
       expect(youtube.created).toEqual([]);
       expect(component.results.size).toBe(0);
@@ -715,8 +692,7 @@ describe('StreamingIndexComponent', () => {
 
       const lauf = component.createStreams();
       component.privacy = 'public';
-      await drain({ reloadWith: [game(1)] });
-      await lauf;
+      await settle(lauf, { reloadWith: [game(1)] });
 
       expect(broadcastCalls.length).toBeGreaterThan(0);
       expect(
