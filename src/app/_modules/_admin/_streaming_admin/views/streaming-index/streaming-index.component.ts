@@ -12,6 +12,7 @@ import {
   NotificationService,
   StreamingService,
   YoutubeService,
+  YoutubeStatusError,
 } from '@floorball/core';
 import { League, StreamingGame, StreamingTemplates } from '@floorball/types';
 import {
@@ -105,12 +106,34 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   public creating = false;
   public createdDone = 0;
   public results = new Map<number, CreationResult>();
+  /** Der Vorlagenabruf ist gescheitert -- ohne Vorlage wird nichts angelegt. */
+  public templatesFailed = false;
+
+  /**
+   * Spiele, für die in dieser Sitzung schon eine Übertragung bei YouTube
+   * entstanden ist.
+   *
+   * Zweiter Riegel neben `game.broadcast`: Scheitert die Meldung an den
+   * Saisonmanager, weiß die neu geladene Liste nichts von der Übertragung, und
+   * ein zweiter Klick legte eine weitere an -- auf demselben Schlüssel, mit
+   * verbrauchtem Kontingent.
+   */
+  private _angelegt = new Set<number>();
 
   public readonly placeholders = STREAM_PLACEHOLDERS;
   public readonly titleMax = STREAM_TITLE_MAX;
 
   private _leagueCache = new Map<number, League | null>();
   private _playlistCache = new Map<string, string>();
+  /**
+   * Ligen, deren Abruf in DIESEM Durchgang gescheitert ist.
+   *
+   * Ein Fehlschlag wird nicht dauerhaft behalten (ein zweiter Klick soll es
+   * erneut versuchen), aber innerhalb eines Stapels auch nicht je Spiel
+   * wiederholt -- sonst feuert ein Wochenende über sechs Partien sechs
+   * Ligaabrufe und sechs Sentry-Ereignisse für dieselbe Störung.
+   */
+  private _leagueFailed = new Set<number>();
   private _destroyed = false;
 
   constructor(
@@ -215,19 +238,25 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
    */
   public async downloadThumbnails(): Promise<void> {
     const auswahl = this.selectedGames;
-    if (this.busy || !auswahl.length) return;
+    if (this.busy || this.creating || !auswahl.length) return;
 
     this.busy = true;
     this.done = 0;
+    this._leagueFailed.clear();
     this._cdr.markForCheck();
 
     try {
-      const items: ThumbnailBatchItem[] = auswahl
-        // Ohne Spieltag fehlen Datum und Halle, und beides steht im Bild. Das
-        // kommt nur bei kaputten Daten vor, ist aber kein Grund, den ganzen
-        // Stapel abzubrechen.
-        .filter((game) => !!game.game_day)
-        .map((game) => ({ game, gameDay: game.game_day! }));
+      // Ohne Spieltag fehlen Datum und Halle, und beides steht im Bild. Das
+      // kommt nur bei kaputten Daten vor, ist aber kein Grund, den ganzen
+      // Stapel abzubrechen -- verschwiegen werden dürfen sie trotzdem nicht:
+      // Sie zählen im Nenner der Meldung mit, und „4 von 5" ohne Begründung
+      // lässt den Benutzer fünf Dateien durchsehen, um die eine zu finden.
+      const brauchbar = auswahl.filter((game) => !!game.game_day);
+      const ohneSpieltag = auswahl.length - brauchbar.length;
+      const items: ThumbnailBatchItem[] = brauchbar.map((game) => ({
+        game,
+        gameDay: game.game_day!,
+      }));
 
       const { entries, report, aborted } = await renderThumbnailBatch(items, {
         league: (leagueId) => this._league(leagueId),
@@ -251,7 +280,13 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
 
       saveBlob(buildZip(entries), this._zipName());
       const { level, text } = report.result(entries.length, auswahl.length);
-      this._notificationService[level](text, { keepAfterRouteChange: true });
+      const nachtrag = ohneSpieltag
+        ? ` ${ohneSpieltag} Spiel(e) ohne Spieltag übersprungen.`
+        : '';
+      this._notificationService[nachtrag ? 'warning' : level](
+        `${text}${nachtrag}`,
+        { keepAfterRouteChange: true }
+      );
     } catch (error) {
       this._capture(error);
       this._notificationService.error(
@@ -277,7 +312,9 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     const beispiel = this.selectedGames[0] ?? this.games[0];
     if (!beispiel) return '';
 
-    return sanitizeStreamTitle(applyStreamTemplate(this.titleTemplate, beispiel));
+    return sanitizeStreamTitle(
+      applyStreamTemplate(this.titleTemplate, beispiel)
+    );
   }
 
   public get descriptionPreview(): string {
@@ -330,7 +367,15 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   /** Die Spiele, für die ein Anlauf überhaupt etwas täte. */
   public get creatable(): StreamingGame[] {
     return this.selectedGames.filter(
-      (game) => game.streamable && !game.broadcast
+      (game) =>
+        game.streamable && !game.broadcast && !this._angelegt.has(game.id)
+    );
+  }
+
+  /** Ohne Vorlage entstünden titellose Übertragungen auf dem Verbandskanal. */
+  public get canCreate(): boolean {
+    return (
+      this.youtubeReady && !this.templatesFailed && !!this.titleTemplate.trim()
     );
   }
 
@@ -351,35 +396,87 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
    */
   public async createStreams(): Promise<void> {
     const auswahl = this.creatable;
-    if (this.creating || !auswahl.length) return;
+    if (this.creating || this.busy || !auswahl.length) return;
+
+    if (!this.canCreate) {
+      this._notificationService.error(
+        'Ohne geladene Titelvorlage werden keine Übertragungen angelegt. Bitte die Seite neu laden.'
+      );
+      return;
+    }
+
+    // Die Einstellungen des Laufs werden EINMAL festgehalten. Vorlagen- und
+    // Sichtbarkeitsfeld sind während des Laufs bedienbar; wer mitten im Stapel
+    // von „nicht gelistet" auf „öffentlich" umstellt, meldete dem Server sonst
+    // `public` für eine tatsächlich ungelistete Übertragung -- und der schreibt
+    // ihren Link dann in den öffentlichen Spielplan, wo er tot ist.
+    const lauf = {
+      titel: this.titleTemplate,
+      beschreibung: this.descriptionTemplate,
+      privacy: this.privacy,
+    };
 
     this.creating = true;
     this.createdDone = 0;
     this.results.clear();
+    this._leagueFailed.clear();
     this._cdr.markForCheck();
 
     try {
       await this._youtubeService.signIn();
       const streams = await this._youtubeService.streamsByKey();
 
-      for (const game of auswahl) {
-        if (this._destroyed) return;
-        await this._createOne(game, streams);
-        this.createdDone += 1;
-        this._cdr.markForCheck();
+      if (this._youtubeService.keineStreamsVorhanden(streams)) {
+        // Sonst bekäme jedes Spiel „Streamschlüssel ist auf dem Kanal nicht
+        // vorhanden" -- eine Meldung, die die Vereinsdaten beschuldigt, obwohl
+        // die Ursache der Kanalzugang ist.
+        this._notificationService.error(
+          'Auf dem angemeldeten Kanal ist kein einziger Streamschlüssel hinterlegt. ' +
+            'Vermutlich ist das falsche Google-Konto angemeldet.',
+          { keepAfterRouteChange: true }
+        );
+        return;
       }
 
+      for (const game of auswahl) {
+        if (this._destroyed) return;
+
+        const weiter = await this._createOne(game, streams, lauf);
+        this.createdDone += 1;
+        this._cdr.markForCheck();
+
+        if (!weiter) {
+          // Ein erschöpftes Kontingent ist ein Zustand, kein Einzelereignis:
+          // Ab hier scheitert alles Weitere. Weiterzulaufen erzeugte nur N
+          // identische Sentry-Ereignisse und verschleierte die Ursache.
+          const offen = auswahl.length - this.createdDone;
+          this._notificationService.error(
+            `Abgebrochen. ${offen} Spiel(e) wurden nicht mehr versucht.`,
+            { keepAfterRouteChange: true }
+          );
+          break;
+        }
+      }
+
+      if (this._destroyed) return;
+
       const erfolge = [...this.results.values()].filter(
-        (result) => result.level !== 'error'
+        (result) => result.level === 'success'
       ).length;
-      const meldung = `${erfolge} von ${auswahl.length} Übertragungen angelegt.`;
-      this._notificationService[erfolge === auswahl.length ? 'success' : 'warning'](
-        meldung,
+      const warnungen = [...this.results.values()].filter(
+        (result) => result.level === 'warning'
+      ).length;
+      const versucht = this.results.size;
+      const stufe = erfolge === versucht ? 'success' : 'warning';
+      const zusatz = warnungen ? ` ${warnungen} mit Einschränkung.` : '';
+      this._notificationService[stufe](
+        `${erfolge + warnungen} von ${versucht} Übertragungen angelegt.${zusatz}`,
         { keepAfterRouteChange: true }
       );
 
       // Neu laden, damit die angelegten Übertragungen mit Link in der Liste
-      // stehen -- und damit ein zweiter Klick sie nicht noch einmal anlegt.
+      // stehen. Der Riegel gegen ein zweites Anlegen hängt aber nicht daran:
+      // `_angelegt` merkt sie sich auch dann, wenn die Meldung scheiterte.
       this.load();
     } catch (error) {
       this._capture(error);
@@ -395,93 +492,185 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Legt die Übertragung für ein Spiel an.
+   *
+   * Gibt `false` zurück, wenn der Stapel abgebrochen werden muss (Kontingent
+   * erschöpft, Anmeldung endgültig weg) -- alles Weitere scheiterte sonst
+   * genauso, nur lauter.
+   *
+   * REIHENFOLGE: anlegen -> **melden** -> binden -> Thumbnail -> Playlist.
+   * Gemeldet wird direkt nach dem Anlegen und VOR dem Binden: Ab dem Anlegen
+   * existiert die Übertragung, und scheitert das Binden, wäre sie ohne die
+   * Meldung eine Waise -- der Wächter kennte sie nicht, der Benutzer läse
+   * „Anlegen fehlgeschlagen" und schlösse daraus das Gegenteil dessen, was
+   * passiert ist.
+   */
   private async _createOne(
     game: StreamingGame,
-    streams: Map<string, { id: string }>
-  ): Promise<void> {
+    streams: Map<string, { id: string }>,
+    lauf: {
+      titel: string;
+      beschreibung: string;
+      privacy: 'public' | 'unlisted';
+    }
+  ): Promise<boolean> {
     const stream = game.stream_key ? streams.get(game.stream_key) : undefined;
     if (!stream) {
       // Der Schlüssel steht am Verein, aber auf dem Kanal gibt es ihn nicht --
       // meist ein Tippfehler beim Eintragen oder ein bei YouTube gelöschter
       // Stream. Ohne diesen Riegel entstünde eine Übertragung, die an nichts
       // gebunden ist und auf die niemand senden kann.
-      this._result(game, 'error', 'Streamschlüssel ist auf dem Kanal nicht vorhanden.');
-      return;
+      this._result(
+        game,
+        'error',
+        'Streamschlüssel ist auf dem Kanal nicht vorhanden.'
+      );
+      return true;
     }
     if (!game.start_at) {
-      this._result(game, 'error', 'Ohne Anwurfzeit lässt sich kein Termin setzen.');
-      return;
+      this._result(
+        game,
+        'error',
+        'Ohne Anwurfzeit lässt sich kein Termin setzen.'
+      );
+      return true;
     }
 
+    const titel = sanitizeStreamTitle(applyStreamTemplate(lauf.titel, game));
     let broadcastId: string;
     try {
       broadcastId = await this._youtubeService.createBroadcast({
-        title: sanitizeStreamTitle(applyStreamTemplate(this.titleTemplate, game)),
-        description: applyStreamTemplate(this.descriptionTemplate, game),
+        title: titel,
+        description: applyStreamTemplate(lauf.beschreibung, game),
         scheduledStartTime: game.start_at,
-        privacyStatus: this.privacy,
+        privacyStatus: lauf.privacy,
       });
-      await this._youtubeService.bind(broadcastId, stream.id);
     } catch (error) {
       this._capture(error);
       this._result(
         game,
         'error',
-        error instanceof Error ? error.message : 'Anlegen fehlgeschlagen.'
+        this._fehlertext(error, 'Anlegen fehlgeschlagen.')
       );
-      return;
+      return !this._abbruchwuerdig(error);
     }
 
-    await this._report(game, broadcastId, stream.id);
+    // Ab hier existiert die Übertragung. Sie darf in keinem Fall mehr aus dem
+    // Blick geraten.
+    this._angelegt.add(game.id);
+    const gemeldet = await this._report(
+      game,
+      broadcastId,
+      stream.id,
+      titel,
+      lauf.privacy
+    );
 
     const hinweise: string[] = [];
-    if (!(await this._thumbnail(game, broadcastId))) {
-      hinweise.push('Thumbnail nicht hochgeladen');
-    }
-    if (!(await this._playlist(game, broadcastId))) {
-      hinweise.push('nicht in die Playlist eingetragen');
+    if (!gemeldet) {
+      hinweise.push(
+        `im Saisonmanager nicht vermerkt (Kennung ${broadcastId}) -- der Wächter kennt sie nicht`
+      );
     }
 
-    if (hinweise.length) this._result(game, 'warning', `Angelegt, aber ${hinweise.join(' und ')}.`);
+    let gebunden = true;
+    try {
+      await this._youtubeService.bind(broadcastId, stream.id);
+    } catch (error) {
+      this._capture(error);
+      gebunden = false;
+      hinweise.push('nicht an den Stream gebunden -- sie empfängt kein Signal');
+    }
+
+    if (gebunden) {
+      const thumbnail = await this._thumbnail(game, broadcastId);
+      if (thumbnail !== true) hinweise.push(thumbnail);
+      if (!(await this._playlist(game, broadcastId))) {
+        hinweise.push('nicht in die Playlist eingetragen');
+      }
+    }
+
+    // Eine nicht gemeldete Übertragung ist schlechter als eine nicht angelegte:
+    // Sie existiert, kostet Kontingent, belegt den Schlüssel -- und niemand
+    // weiß davon. Das ist ein Fehler und keine Warnung.
+    const stufe: CreationResult['level'] = gemeldet ? 'warning' : 'error';
+    if (hinweise.length)
+      this._result(game, stufe, `Angelegt, aber ${hinweise.join('; ')}.`);
     else this._result(game, 'success', 'Angelegt.');
+
+    return true;
+  }
+
+  /**
+   * Fehler, nach denen jeder weitere Versuch genauso scheitert.
+   *
+   * Ein erschöpftes Tageskontingent oder eine widerrufene Anmeldung sind
+   * Zustände, keine Einzelereignisse.
+   */
+  private _abbruchwuerdig(error: unknown): boolean {
+    if (!(error instanceof YoutubeStatusError)) return false;
+
+    return (
+      error.status === 429 ||
+      error.status === 401 ||
+      (error.status === 403 &&
+        /Kontingent|Rechte|Livestreaming/.test(error.message))
+    );
+  }
+
+  private _fehlertext(error: unknown, rueckfall: string): string {
+    return error instanceof Error && error.message ? error.message : rueckfall;
   }
 
   /**
    * Meldet die Übertragung beim Saisonmanager.
    *
-   * Scheitert das, existiert die Übertragung trotzdem -- deshalb eine Warnung
-   * und kein Fehlschlag. Der Preis ist allerdings hoch genug, um ihn zu nennen:
-   * Der Wächter kennt sie dann nicht, und der nächste Klick legte eine zweite an.
+   * Der Rückgabewert wird ausgewertet: Scheitert die Meldung, existiert die
+   * Übertragung trotzdem, aber der Wächter kennt sie nicht und beendet sie nie.
+   * Das steht als Fehler in der Zeile, mit der YouTube-Kennung zum Nachtragen.
    */
   private async _report(
     game: StreamingGame,
     broadcastId: string,
-    streamId: string
-  ): Promise<void> {
+    streamId: string,
+    titel: string,
+    privacy: 'public' | 'unlisted'
+  ): Promise<boolean> {
     try {
       await firstValueFrom(
         this._streamingService.recordBroadcast(game.id, {
           broadcast_id: broadcastId,
-          privacy_status: this.privacy,
-          title: sanitizeStreamTitle(applyStreamTemplate(this.titleTemplate, game)),
+          privacy_status: privacy,
+          title: titel,
           stream_id: streamId,
         })
       );
+      return true;
     } catch (error) {
       this._capture(error);
-      this._notificationService.warning(
-        `Die Übertragung für ${game.home_team_name} – ${game.guest_team_name} ist angelegt, ` +
-          'ließ sich aber nicht im Saisonmanager vermerken. Bitte den Link von Hand eintragen.',
-        { keepAfterRouteChange: true }
-      );
+      return false;
     }
   }
 
+  /**
+   * Zeichnet das Thumbnail und lädt es hoch.
+   *
+   * `true` bei Erfolg, sonst der Hinweis für die Ergebniszeile. Ein fehlendes
+   * Ligazeichen wird ausdrücklich gemeldet: Das Bild geht auf einen
+   * öffentlichen Kanal und lässt sich dort nicht mehr eben nachbessern -- anders
+   * als beim ZIP, das im Download-Ordner liegt.
+   */
   private async _thumbnail(
     game: StreamingGame,
     broadcastId: string
-  ): Promise<boolean> {
-    if (!game.game_day) return false;
+  ): Promise<true | string> {
+    if (!game.game_day) {
+      this._capture(
+        new Error(`Spiel ${game.id} ohne Spieltag -- kein Thumbnail`)
+      );
+      return 'ohne Thumbnail (dem Spiel fehlt der Spieltag)';
+    }
 
     try {
       const league = await this._league(game.game_day.league_id);
@@ -489,10 +678,13 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
         thumbnailInput({ game, gameDay: game.game_day }, league)
       );
       await this._youtubeService.uploadThumbnail(broadcastId, blob);
-      return true;
+
+      return league
+        ? true
+        : 'Thumbnail ohne Liganamen und Ligazeichen (Ligadaten nicht ladbar)';
     } catch (error) {
       this._capture(error);
-      return false;
+      return `Thumbnail nicht hochgeladen (${this._fehlertext(error, 'unbekannter Grund')})`;
     }
   }
 
@@ -528,14 +720,31 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
+  /**
+   * Die Vorlagen für Titel und Beschreibung.
+   *
+   * EIN FEHLSCHLAG DARF HIER NICHT STILL SEIN. Ohne Vorlage bleiben die Felder
+   * leer, der Vorlagenblock ist zugeklappt, und niemand sieht es -- der nächste
+   * Stapel ginge mit leeren Titeln an YouTube. Deshalb Meldung, Sentry und ein
+   * Riegel vor dem Anlegen.
+   */
   private _loadTemplates(): void {
-    this._streamingService
-      .getTemplates()
-      .pipe(catchError(() => of(null)))
-      .subscribe((templates) => {
-        if (templates) this._applyTemplates(templates);
+    this._streamingService.getTemplates().subscribe({
+      next: (templates) => {
+        this.templatesFailed = false;
+        this._applyTemplates(templates);
         this._cdr.markForCheck();
-      });
+      },
+      error: (error) => {
+        this._capture(error);
+        this.templatesFailed = true;
+        this._notificationService.error(
+          'Die Vorlagen für Titel und Beschreibung ließen sich nicht laden. ' +
+            'Vor dem Anlegen von Übertragungen bitte die Seite neu laden.'
+        );
+        this._cdr.markForCheck();
+      },
+    });
   }
 
   private _applyTemplates(templates: StreamingTemplates): void {
@@ -555,6 +764,8 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   private async _league(leagueId: number): Promise<League | null> {
     const gemerkt = this._leagueCache.get(leagueId);
     if (gemerkt) return gemerkt;
+    // Innerhalb eines Durchgangs nicht je Spiel wiederholen.
+    if (this._leagueFailed.has(leagueId)) return null;
 
     const league = await firstValueFrom(
       this._leagueService.getSingleLeague(leagueId).pipe(
@@ -566,20 +777,30 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     );
 
     if (league) this._leagueCache.set(leagueId, league);
+    else this._leagueFailed.add(leagueId);
     return league;
   }
 
   private _loadLeagues(): void {
-    this._leagueService
-      .getAdminLeagues()
-      .pipe(catchError(() => of([])))
-      .subscribe((operations) => {
+    this._leagueService.getAdminLeagues().subscribe({
+      next: (operations) => {
         this.leagues = (operations ?? [])
           .flatMap((operation) => operation.leagues ?? [])
           .map((league) => ({ id: league.id, name: league.name }))
           .sort((a, b) => a.name.localeCompare(b.name, 'de'));
         this._cdr.markForCheck();
-      });
+      },
+      error: (error) => {
+        // Ohne Meldung sähe der Zuschnitt „Spieltag einer Liga" aus, als gäbe
+        // es für diese Person keine Ligen: leeres Auswahlfeld, dauerhaft
+        // ausgegrauter Knopf, kein Grund irgendwo.
+        this._capture(error);
+        this._notificationService.error(
+          'Die Ligen ließen sich nicht laden. Der Zuschnitt nach Spieltag steht deshalb nicht zur Verfügung.'
+        );
+        this._cdr.markForCheck();
+      },
+    });
   }
 
   private _zipName(): string {

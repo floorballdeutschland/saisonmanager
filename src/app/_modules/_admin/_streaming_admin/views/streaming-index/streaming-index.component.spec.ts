@@ -36,6 +36,8 @@ describe('StreamingIndexComponent', () => {
     public thumbnails: string[] = [];
     public playlisted: [string, string][] = [];
     public thumbnailFails = false;
+    public bindFails = false;
+    public createError: unknown = null;
 
     async signIn(): Promise<void> {
       this.signedIn = true;
@@ -45,15 +47,21 @@ describe('StreamingIndexComponent', () => {
       return this.streams;
     }
 
+    keineStreamsVorhanden(streams: Map<string, { id: string }>): boolean {
+      return streams.size === 0;
+    }
+
     async createBroadcast(input: {
       title: string;
       description: string;
     }): Promise<string> {
+      if (this.createError) throw this.createError;
       this.created.push(input);
       return `yt-${this.created.length}`;
     }
 
     async bind(broadcastId: string, streamId: string): Promise<void> {
+      if (this.bindFails) throw new Error('bind kaputt');
       this.bound.push([broadcastId, streamId]);
     }
 
@@ -123,11 +131,22 @@ describe('StreamingIndexComponent', () => {
   async function drain(runden = 12): Promise<void> {
     for (let i = 0; i < runden; i++) {
       await new Promise((resolve) => setTimeout(resolve, 0));
-      http.match(() => true).forEach((request) => {
-        if (request.request.url.includes('leagues/')) request.flush(null);
-        else if (request.request.url.endsWith('admin/streaming/games')) request.flush([]);
-        else request.flush({});
-      });
+      http
+        .match(() => true)
+        .forEach((request) => {
+          if (request.request.url.includes('leagues/')) {
+            // Eine echte Liga: Ohne sie trägt das Bild weder Liganamen noch
+            // Ligazeichen, und genau das meldet der Anlegevorgang seit dem
+            // Review als Einschränkung.
+            request.flush({
+              id: 5,
+              name: '1. FBL Herren',
+              short_name: '1. FBL',
+            });
+          } else if (request.request.url.endsWith('admin/streaming/games'))
+            request.flush([]);
+          else request.flush({});
+        });
     }
   }
 
@@ -145,7 +164,10 @@ describe('StreamingIndexComponent', () => {
     answerGames(games);
   }
 
-  function game(id: number, overrides: Partial<StreamingGame> = {}): StreamingGame {
+  function game(
+    id: number,
+    overrides: Partial<StreamingGame> = {}
+  ): StreamingGame {
     return {
       id,
       game_number: String(id),
@@ -397,6 +419,136 @@ describe('StreamingIndexComponent', () => {
       start([game(1)]);
 
       expect(component.youtubeReady).toBeFalse();
+    });
+
+    // Der teuerste Fall überhaupt: Die Übertragung existiert, der Saisonmanager
+    // weiß nichts davon, der Wächter beendet sie nie -- und ein zweiter Klick
+    // legte eine weitere an. Das darf keine grüne Erfolgsmeldung sein.
+    it('meldet eine nicht vermerkte Übertragung als Fehler, nicht als Erfolg', async () => {
+      start([game(1)]);
+      component.toggleAll();
+
+      const lauf = component.createStreams();
+      // Alles beantworten -- die Meldung an den Saisonmanager scheitert.
+      for (let i = 0; i < 12; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        http
+          .match(() => true)
+          .forEach((request) => {
+            if (request.request.url.includes('broadcast')) {
+              request.flush('kaputt', {
+                status: 500,
+                statusText: 'Server Error',
+              });
+            } else if (request.request.url.includes('leagues/')) {
+              request.flush({ id: 5, name: '1. FBL Herren' });
+            } else {
+              request.flush({});
+            }
+          });
+      }
+      await lauf;
+
+      expect(youtube.created.length).toBe(1);
+      expect(component.results.get(1)?.level).toBe('error');
+      expect(component.results.get(1)?.text).toContain('yt-1');
+    });
+
+    // Zweiter Riegel neben `game.broadcast`: Nach einer gescheiterten Meldung
+    // weiß die neu geladene Liste nichts von der Übertragung.
+    it('bietet ein Spiel nach dem Anlegen nicht erneut an', async () => {
+      start([game(1)]);
+      component.toggleAll();
+
+      const lauf = component.createStreams();
+      await drain();
+      await lauf;
+
+      expect(youtube.created.length).toBe(1);
+      expect(component.creatable).toEqual([]);
+    });
+
+    // Scheitert das Binden, existiert die Übertragung schon -- sie ist gemeldet
+    // und darf nicht als "nicht angelegt" dastehen.
+    it('meldet die Übertragung auch, wenn das Binden scheitert', async () => {
+      youtube.bindFails = true;
+      start([game(1)]);
+      component.toggleAll();
+
+      const lauf = component.createStreams();
+      await drain();
+      await lauf;
+
+      expect(youtube.created.length).toBe(1);
+      expect(component.results.get(1)?.text).toContain(
+        'nicht an den Stream gebunden'
+      );
+      expect(component.creatable).toEqual([]);
+    });
+
+    // Sonst bekäme jedes Spiel "Streamschlüssel nicht vorhanden" -- eine
+    // Meldung, die die Vereinsdaten beschuldigt, obwohl der Kanalzugang schuld ist.
+    it('meldet einen Kanal ohne Streamschlüssel einmal statt je Spiel', async () => {
+      youtube.streams = new Map();
+      start([game(1), game(2)]);
+      component.toggleAll();
+
+      const lauf = component.createStreams();
+      await drain();
+      await lauf;
+
+      expect(youtube.created).toEqual([]);
+      expect(component.results.size).toBe(0);
+    });
+
+    // Ohne geladene Vorlage entstünden titellose Übertragungen auf dem
+    // Verbandskanal.
+    it('legt ohne geladene Titelvorlage nichts an', async () => {
+      fixture.detectChanges();
+      answerLeagues();
+      http
+        .expectOne((req) => req.url.endsWith('admin/streaming/settings'))
+        .flush('kaputt', { status: 500, statusText: 'Server Error' });
+      answerGames([game(1)]);
+      component.toggleAll();
+
+      expect(component.templatesFailed).toBeTrue();
+      expect(component.canCreate).toBeFalse();
+
+      await component.createStreams();
+
+      expect(youtube.created).toEqual([]);
+    });
+
+    // Wer mitten im Stapel umstellt, meldete dem Server sonst `public` für eine
+    // ungelistete Übertragung -- und der schreibt ihren Link in den
+    // öffentlichen Spielplan, wo er tot ist.
+    it('friert die Sichtbarkeit für den ganzen Lauf ein', async () => {
+      start([game(1)]);
+      component.toggleAll();
+      component.privacy = 'unlisted';
+
+      const lauf = component.createStreams();
+      component.privacy = 'public';
+      let gemeldet: string | undefined;
+      for (let i = 0; i < 12; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        http
+          .match(() => true)
+          .forEach((request) => {
+            if (request.request.url.includes('broadcast')) {
+              gemeldet = request.request.body.privacy_status;
+            }
+            if (request.request.url.includes('leagues/')) {
+              request.flush({ id: 5, name: '1. FBL Herren' });
+            } else {
+              request.flush({});
+            }
+          });
+      }
+      await lauf;
+
+      expect(gemeldet).toBe('unlisted');
     });
   });
 

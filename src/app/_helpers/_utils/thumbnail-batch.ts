@@ -33,7 +33,7 @@ export interface ThumbnailBatchGame {
 }
 
 /**
- * Der Spieltag als Ganzes, EIN Eingang statt fünf.
+ * Der Spieltag als Ganzes, EIN Eingang statt vier.
  *
  * Die Angaben (Liga, Nummer, Datum, Halle) gehören zusammen, und an den
  * Aufrufstellen kommen sie ohnehin aus einem Objekt. Getrennt übergeben ließen
@@ -239,10 +239,12 @@ export function pairing(game: ThumbnailBatchGame): string {
  * muss also benannt werden, und zwar mit dem Spiel, sonst prüft man sechs
  * Dateien, um die eine zu finden.
  *
- * EIN Ausgang: Wer den Text bekommt, bekommt die Stufe dazu. Getrennt liefen die
- * beiden auseinander, und in der ersten Fassung taten sie es -- ein Durchgang
- * ohne Ligadaten wurde als grüner Erfolg gemeldet, mit dem Problemsatz mitten
- * darin.
+ * EIN AUSGANG FÜR DEN ERFOLGSFALL: `result()` gibt Text und Stufe zusammen aus.
+ * Getrennt liefen die beiden auseinander, und in der ersten Fassung taten sie es
+ * -- ein Durchgang ohne Ligadaten wurde als grüner Erfolg gemeldet, mit dem
+ * Problemsatz mitten darin. `problems()` ist daneben absichtlich öffentlich: Wenn
+ * gar kein Bild entstanden ist, gibt es keinen Erfolgsfall, und die
+ * Fehlermeldung braucht die Beanstandungen ohne Kopfzeile.
  */
 export class ThumbnailBatchReport {
   // Je Liga nur einmal: Ein Stapel über vier Ligen, von denen eine nicht lädt,

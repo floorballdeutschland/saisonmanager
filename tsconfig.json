@@ -107,7 +107,9 @@
         "src/app/_modules/_admin/_availability_admin"
       ],
       "@floorball/admin/contacts": ["src/app/_modules/_admin/_contact_admin"],
-      "@floorball/admin/streaming": ["src/app/_modules/_admin/_streaming_admin"],
+      "@floorball/admin/streaming": [
+        "src/app/_modules/_admin/_streaming_admin"
+      ],
       "@floorball/admin/state-associations": [
         "src/app/_modules/_admin/_state_association_admin"
       ],

@@ -121,7 +121,8 @@
           <input
             type="text"
             [(ngModel)]="titleTemplate"
-            class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2"
+            [disabled]="creating"
+            class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 disabled:opacity-50"
           />
         </label>
 
@@ -132,7 +133,8 @@
           <textarea
             rows="6"
             [(ngModel)]="descriptionTemplate"
-            class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 font-mono text-xs"
+            [disabled]="creating"
+            class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 font-mono text-xs disabled:opacity-50"
           ></textarea>
         </label>
 
@@ -222,7 +224,7 @@
         <button
           type="button"
           (click)="downloadThumbnails()"
-          [disabled]="busy || !selected.size"
+          [disabled]="busy || creating || !selected.size"
           class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200 disabled:opacity-40"
         >
           {{
@@ -240,7 +242,8 @@
             </span>
             <select
               [(ngModel)]="privacy"
-              class="border border-fb-gray-600 rounded-[5px] px-2 py-1.5"
+              [disabled]="creating"
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1.5 disabled:opacity-50"
             >
               <option value="public">
                 {{ "streamingAdmin.actions.privacyPublic" | transloco }}
@@ -258,7 +261,7 @@
           <button
             type="button"
             (click)="createStreams()"
-            [disabled]="creating || !creatable.length"
+            [disabled]="creating || busy || !creatable.length || !canCreate"
             class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
           >
             {{
@@ -268,6 +271,11 @@
               ) | transloco: { count: creatable.length }
             }}
           </button>
+          @if (templatesFailed) {
+            <span class="text-xs text-fb-red-500 font-bold">
+              {{ "streamingAdmin.actions.templatesFailed" | transloco }}
+            </span>
+          }
         } @else {
           <span class="text-xs text-fb-gray-500">
             {{ "streamingAdmin.actions.noGoogle" | transloco }}
@@ -364,8 +372,12 @@
                     <div
                       class="text-xs mt-1"
                       [class.text-fb-red-500]="result.level === 'error'"
-                      [class.text-fb-gray-500]="result.level !== 'error'"
+                      [class.font-bold]="result.level !== 'success'"
+                      [class.text-fb-gray-500]="result.level === 'success'"
                     >
+                      @if (result.level !== "success") {
+                        <span aria-hidden="true">⚠ </span>
+                      }
                       {{ result.text }}
                     </div>
                   }

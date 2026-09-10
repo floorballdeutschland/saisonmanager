@@ -38,7 +38,8 @@
     "privacy": "Visibility",
     "privacyPublic": "Public",
     "privacyUnlisted": "Unlisted",
-    "noGoogle": "No Google access is configured for this system – creating is unavailable."
+    "noGoogle": "No Google access is configured for this system – creating is unavailable.",
+    "templatesFailed": "The title template failed to load – creating is blocked."
   },
   "templates": {
     "heading": "Title and description",

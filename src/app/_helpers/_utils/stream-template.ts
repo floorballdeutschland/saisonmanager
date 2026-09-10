@@ -1,8 +1,8 @@
 import { StreamingGame } from '@floorball/types';
 
 /**
- * YouTube schneidet längere Titel ab. Der Zähler in der Maske warnt vorher,
- * abgeschnitten wird trotzdem hier -- ein abgeschnittener Titel ist immer noch
+ * YouTube weist längere Titel ab (`invalidTitle`). Der Zähler in der Maske warnt
+ * vorher, gekürzt wird trotzdem hier -- ein gekürzter Titel ist immer noch
  * besser als eine abgewiesene Anlage mitten im Stapel.
  */
 export const STREAM_TITLE_MAX = 100;
@@ -95,7 +95,9 @@ export function sanitizeStreamTitle(title: string): string {
 
   const gekuerzt = bereinigt.slice(0, STREAM_TITLE_MAX);
   const grenze = gekuerzt.lastIndexOf(' ');
-  return (grenze > STREAM_TITLE_MAX - 25 ? gekuerzt.slice(0, grenze) : gekuerzt).trim();
+  return (
+    grenze > STREAM_TITLE_MAX - 25 ? gekuerzt.slice(0, grenze) : gekuerzt
+  ).trim();
 }
 
 /**
@@ -109,7 +111,11 @@ function parseIsoDate(value?: string | null): Date | null {
   const treffer = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value ?? '');
   if (!treffer) return null;
 
-  return new Date(Number(treffer[1]), Number(treffer[2]) - 1, Number(treffer[3]));
+  return new Date(
+    Number(treffer[1]),
+    Number(treffer[2]) - 1,
+    Number(treffer[3])
+  );
 }
 
 function formatDate(date: Date, jahresstellen: 2 | 4): string {

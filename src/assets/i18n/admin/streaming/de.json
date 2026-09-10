@@ -38,7 +38,8 @@
     "privacy": "Sichtbarkeit",
     "privacyPublic": "Öffentlich",
     "privacyUnlisted": "Nicht gelistet",
-    "noGoogle": "Für dieses System ist kein Google-Zugang hinterlegt – Anlegen ist nicht möglich."
+    "noGoogle": "Für dieses System ist kein Google-Zugang hinterlegt – Anlegen ist nicht möglich.",
+    "templatesFailed": "Die Titelvorlage ist nicht geladen – Anlegen gesperrt."
   },
   "templates": {
     "heading": "Titel und Beschreibung",

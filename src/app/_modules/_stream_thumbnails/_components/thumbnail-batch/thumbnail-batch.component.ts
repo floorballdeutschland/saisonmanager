@@ -10,7 +10,10 @@ import { catchError, firstValueFrom, of } from 'rxjs';
 import * as Sentry from '@sentry/angular';
 import { LeagueService, NotificationService } from '@floorball/core';
 import { League } from '@floorball/types';
-import { filenameSlug, saveBlob } from 'src/app/_helpers/_utils/stream-thumbnail';
+import {
+  filenameSlug,
+  saveBlob,
+} from 'src/app/_helpers/_utils/stream-thumbnail';
 import {
   ThumbnailBatchGame,
   ThumbnailBatchGameDayWithGames,

@@ -85,7 +85,9 @@ describe('ThumbnailBatchComponent', () => {
     female: false,
   };
 
-  function gameDay(games: ThumbnailBatchGame[]): ThumbnailBatchGameDayWithGames {
+  function gameDay(
+    games: ThumbnailBatchGame[]
+  ): ThumbnailBatchGameDayWithGames {
     return {
       number: 3,
       date: '2026-01-11',

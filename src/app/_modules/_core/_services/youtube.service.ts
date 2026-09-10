@@ -58,6 +58,12 @@ export interface YoutubeBroadcastInput {
 export class YoutubeError extends Error {}
 
 const GIS_SRC = 'https://accounts.google.com/gsi/client';
+/**
+ * Frist für den Anmeldedialog. Google ruft für die üblichen Abbrüche
+ * `error_callback` -- aber nicht garantiert für jeden Fall. Bleibt er aus,
+ * hinge der Anlegevorgang mit „wird angelegt …" bis zum Neuladen der Seite.
+ */
+const SIGN_IN_TIMEOUT_MS = 120000;
 const SCOPE = 'https://www.googleapis.com/auth/youtube.force-ssl';
 const API_ROOT = 'https://www.googleapis.com/youtube/v3';
 const UPLOAD_ROOT = 'https://www.googleapis.com/upload/youtube/v3';
@@ -125,10 +131,26 @@ export class YoutubeService {
     }
 
     this._token = await new Promise<string>((resolve, reject) => {
+      const frist = setTimeout(
+        () =>
+          reject(
+            new YoutubeError(
+              'Die Google-Anmeldung wurde nicht abgeschlossen. Wurde das Fenster geschlossen?'
+            )
+          ),
+        SIGN_IN_TIMEOUT_MS
+      );
+      const fertig =
+        <T>(fn: (wert: T) => void) =>
+        (wert: T) => {
+          clearTimeout(frist);
+          fn(wert);
+        };
+
       this._tokenClient = oauth2.initTokenClient({
         client_id: environment.googleClientId,
         scope: SCOPE,
-        callback: (response) => {
+        callback: fertig((response: TokenResponse) => {
           if (response.access_token) resolve(response.access_token);
           else {
             reject(
@@ -139,13 +161,14 @@ export class YoutubeService {
               )
             );
           }
-        },
-        error_callback: (error) =>
+        }),
+        error_callback: fertig((error: { type?: string }) =>
           reject(
             new YoutubeError(
               `Die Anmeldung wurde abgebrochen (${error.type || 'unbekannt'}).`
             )
-          ),
+          )
+        ),
       });
 
       this._tokenClient.requestAccessToken();
@@ -179,12 +202,24 @@ export class YoutubeService {
 
       for (const item of antwort.items ?? []) {
         const key = item.cdn?.ingestionInfo?.streamName;
-        if (key) gefunden.set(key, { id: item.id, title: item.snippet?.title ?? '' });
+        if (key)
+          gefunden.set(key, { id: item.id, title: item.snippet?.title ?? '' });
       }
       seite = antwort.nextPageToken;
     } while (seite);
 
     return gefunden;
+  }
+
+  /**
+   * True, wenn der Kanal überhaupt keine Streamschlüssel führt.
+   *
+   * Dann liegt die Ursache am Kanalzugang und nicht an den Vereinsdaten -- ohne
+   * diese Unterscheidung meldet die Oberfläche für jedes Spiel „Streamschlüssel
+   * ist auf dem Kanal nicht vorhanden" und beschuldigt damit die falschen Daten.
+   */
+  public keineStreamsVorhanden(streams: Map<string, YoutubeStream>): boolean {
+    return streams.size === 0;
   }
 
   /** Die Playlist mit diesem Namen, oder eine neu angelegte. */
@@ -214,7 +249,9 @@ export class YoutubeService {
         status: { privacyStatus: 'public' },
       }
     );
-    return angelegt.id ?? '';
+    if (!angelegt.id)
+      throw new YoutubeError('Die Playlist wurde ohne Kennung angelegt.');
+    return angelegt.id;
   }
 
   public async createBroadcast(input: YoutubeBroadcastInput): Promise<string> {
@@ -245,7 +282,15 @@ export class YoutubeService {
       }
     );
 
-    return antwort.id ?? '';
+    // Ohne Kennung liefe die leere Zeichenkette in `bind('')` weiter -- die
+    // Übertragung existiert dann, ihre Kennung ist verloren, und niemand kann
+    // sie mehr zuordnen oder beenden. Das ist der Waisenfall in Reinform.
+    if (!antwort.id) {
+      throw new YoutubeError(
+        'YouTube hat die Übertragung ohne Kennung angelegt. Sie muss von Hand gesucht werden.'
+      );
+    }
+    return antwort.id;
   }
 
   public async bind(broadcastId: string, streamId: string): Promise<void> {
@@ -265,10 +310,7 @@ export class YoutubeService {
    * drei Minuten Nichtstun. Zwei kurze Wiederholungen erledigen dasselbe und
    * kosten im Normalfall nichts.
    */
-  public async uploadThumbnail(
-    broadcastId: string,
-    blob: Blob
-  ): Promise<void> {
+  public async uploadThumbnail(broadcastId: string, blob: Blob): Promise<void> {
     for (let versuch = 0; ; versuch++) {
       try {
         await this._upload(broadcastId, blob);
@@ -349,7 +391,10 @@ export class YoutubeService {
     });
   }
 
-  private async _upload(videoId: string, blob: Blob): Promise<YoutubeApiResponse> {
+  private async _upload(
+    videoId: string,
+    blob: Blob
+  ): Promise<YoutubeApiResponse> {
     const url = `${UPLOAD_ROOT}/thumbnails?videoId=${encodeURIComponent(
       videoId
     )}&uploadType=media`;
@@ -380,7 +425,19 @@ export class YoutubeService {
     }
 
     const text = await antwort.text();
-    return text ? (JSON.parse(text) as YoutubeApiResponse) : {};
+    if (!text) return {};
+
+    try {
+      return JSON.parse(text) as YoutubeApiResponse;
+    } catch {
+      // Sonst stünde ein "Unexpected token < in JSON…" in der Ergebniszeile --
+      // und wenn es die Antwort auf `createBroadcast` trifft, ist die
+      // Übertragung angelegt und ihre Kennung verloren.
+      throw new YoutubeStatusError(
+        antwort.status,
+        'YouTube hat eine unlesbare Antwort geschickt.'
+      );
+    }
   }
 }
 
@@ -401,15 +458,47 @@ export class YoutubeStatusError extends YoutubeError {
  * zwischen „Kontingent erschöpft" und „keine Rechte auf diesem Kanal" ist genau
  * der zwischen Abwarten und Handeln.
  */
+/**
+ * Deutsche Handlungssätze zu den Gründen, die wirklich vorkommen.
+ *
+ * Der rohe Bezeichner der Schnittstelle (`quotaExceeded`, `forbidden`) landet
+ * sonst unübersetzt in der Oberfläche, und der Unterschied zwischen "morgen
+ * wiederkommen" und "Kanalzugang klären" -- genau der, auf den es ankommt --
+ * bliebe dem Anwender verborgen.
+ */
+const GRUND_TEXTE: Record<string, string> = {
+  quotaExceeded:
+    'Das YouTube-Tageskontingent ist erschöpft. Es füllt sich um 9 Uhr deutscher Zeit wieder auf.',
+  rateLimitExceeded:
+    'YouTube bremst gerade ab. In ein paar Minuten noch einmal versuchen.',
+  forbidden: 'Dieses Konto darf auf dem Kanal nichts anlegen.',
+  insufficientPermissions:
+    'Dem angemeldeten Konto fehlen die Rechte auf dem Verbandskanal.',
+  authError: 'Die Anmeldung ist abgelaufen. Bitte neu anmelden.',
+  liveStreamingNotEnabled:
+    'Für diesen Kanal ist Livestreaming nicht freigeschaltet.',
+  invalidTitle: 'Der Titel wird von YouTube abgewiesen (Länge oder Zeichen).',
+  liveBroadcastBindingNotAllowed:
+    'Die Übertragung lässt sich in ihrem Zustand nicht mehr an den Stream binden.',
+};
+
+export function youtubeGrundText(reason: string): string | null {
+  return GRUND_TEXTE[reason] ?? null;
+}
+
 async function lesegrund(antwort: Response): Promise<string> {
   try {
     const text = await antwort.text();
     const daten = text ? JSON.parse(text) : null;
-    const grund =
-      daten?.error?.errors?.[0]?.reason ?? daten?.error?.message ?? '';
+    const reason = daten?.error?.errors?.[0]?.reason ?? '';
+    const handlungssatz = youtubeGrundText(reason);
+    if (handlungssatz) return handlungssatz;
+
+    const grund = reason || daten?.error?.message || '';
     return grund ? `${antwort.status}: ${grund}` : `${antwort.status}`;
   } catch {
-    return `${antwort.status}`;
+    // Auch ein unlesbarer Körper darf nicht nur eine nackte Zahl hinterlassen.
+    return `${antwort.status} (Antwort nicht lesbar)`;
   }
 }
 

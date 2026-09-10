@@ -84,9 +84,9 @@ describe('stream-template', () => {
   });
 
   it('setzt N.N. für eine noch nicht ausgeloste Mannschaft', () => {
-    expect(applyStreamTemplate('{heim} vs {gast}', game({ home_team_name: '' }))).toBe(
-      'N.N. vs Floor Fighters Chemnitz'
-    );
+    expect(
+      applyStreamTemplate('{heim} vs {gast}', game({ home_team_name: '' }))
+    ).toBe('N.N. vs Floor Fighters Chemnitz');
   });
 
   // `new Date('2026-09-12')` liest die Form als UTC-Mitternacht; der Wochentag
