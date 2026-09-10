@@ -396,9 +396,10 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   public exportCsv(): void {
     const t = (key: string) => this._transloco.translate(key);
     const headers = [
+      t('licenseAdmin.globalList.csvPlayerId'),
       t('licenseAdmin.globalList.csvLastName'),
       t('licenseAdmin.globalList.csvFirstName'),
-      t('licenseAdmin.globalList.csvBirthYear'),
+      t('licenseAdmin.globalList.csvBirthdate'),
       t('licenseAdmin.globalList.csvClub'),
       t('licenseAdmin.globalList.csvTeam'),
       t('licenseAdmin.globalList.csvGameOperation'),
@@ -411,9 +412,14 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       t('licenseAdmin.globalList.csvApproved'),
     ];
     const rows = this.filteredEntries.map((e) => [
+      // Nummer und volles Geburtsdatum nur in der Ausfuhr, nicht in der
+      // Tabelle: Die Datei wird weiterverarbeitet (Abrechnung, Meldung an den
+      // Landesverband) und braucht dafuer einen eindeutigen Schluessel und ein
+      // Merkmal, das zwei namensgleiche Personen desselben Jahrgangs trennt.
+      e.player_id,
       e.player_last_name,
       e.player_first_name,
-      this._safeYear(e.player_birthdate),
+      this._formatBirthdate(e.player_birthdate),
       e.club_name ?? '',
       e.team_name,
       e.game_operation_name ?? '',
@@ -516,18 +522,24 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     return !!entry.required_documents?.includes('parental_consent');
   }
 
+  // Das Geburtsdatum liefert die API als reines Datum (JJJJ-MM-TT). Es wird
+  // deshalb zerlegt und nicht über `new Date` gelesen: Letzteres deutet ein
+  // Datum ohne Zeitzone als UTC-Mitternacht und verschiebt es westlich von
+  // Greenwich um einen Tag -- beim Geburtsdatum ist das ein anderes Datum.
+  private _formatBirthdate(dateStr: string | null | undefined): string {
+    if (!dateStr) return '';
+    const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateStr);
+    return parts
+      ? `${parts[3]}.${parts[2]}.${parts[1]}`
+      : this._formatDate(dateStr);
+  }
+
   private _formatDate(dateStr: string): string {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return '';
     return `${String(d.getDate()).padStart(2, '0')}.${String(
       d.getMonth() + 1
     ).padStart(2, '0')}.${d.getFullYear()}`;
-  }
-
-  private _safeYear(dateStr: string | null | undefined): string {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? '' : d.getFullYear().toString();
   }
 
   private buildFilterOptions(): void {
