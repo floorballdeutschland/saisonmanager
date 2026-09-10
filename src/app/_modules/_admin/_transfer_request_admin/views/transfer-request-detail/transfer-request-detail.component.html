@@ -19,6 +19,9 @@
       <div class="flex items-start justify-between mb-3">
         <h2 class="font-semibold">
           {{ request.player.last_name }}, {{ request.player.first_name }}
+          <span class="font-normal text-fb-gray-500"
+            >({{ request.player.id }})</span
+          >
         </h2>
         <div class="flex items-center gap-2">
           <span
