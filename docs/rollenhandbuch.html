@@ -4444,6 +4444,80 @@
             </div>
           </details>
 
+          <!-- Spielplan exportieren -->
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📤</span>
+              <div>
+                <div class="proc-title">Spielplan exportieren</div>
+                <div class="proc-sub">
+                  Den fertigen Spielplan als Excel- oder CSV-Datei
+                  herunterladen, zur Weitergabe nach außen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Der Spielplan einer Liga lässt sich als Datei herunterladen –
+                <strong>Excel</strong> oder <strong>CSV</strong>. Gedacht ist
+                das für alles, was <strong>außerhalb</strong> des Saisonmanagers
+                damit passiert: die Vereinsseite, ein Programmheft, eine eigene
+                Auswertung in der Tabellenkalkulation. Bisher blieb dafür nur
+                Abtippen. Die Knöpfe stehen in der Spielplanverwaltung neben
+                „Spielplan importieren“ und erscheinen, sobald die Liga
+                Spieltage hat.
+              </p>
+              <p class="proc-text">
+                Die Datei trägt
+                <strong
+                  >dieselben Spalten in derselben Reihenfolge wie die
+                  Importvorlage</strong
+                >: Spieltag, Spielnummer, Gruppierung, Datum, Anpfiff, die
+                Kennungen von Halle, Ausrichter, Heim- und Gastteam, die
+                angesetzten Schiedsrichter sowie Serien-Titel und Nummer in
+                Serie. Rechts davon stehen zusätzlich die
+                <strong>Klartextnamen</strong> von Heimteam, Gastteam, Halle und
+                Ausrichter und die <strong>Spiel-ID</strong>. Ohne die Namen
+                wäre die Datei außerhalb des Saisonmanagers eine reine
+                Zahlenwüste, und über die Spiel-ID findet ein anderes System zum
+                Spiel zurück.
+              </p>
+              <div class="proc-h">Wer macht das?</div>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb sbk">SBK (mit Import-Recht)</span>
+              </div>
+              <div class="proc-h">Welche Fassung nehme ich?</div>
+              <dl class="kv">
+                <dt>Excel (.xlsx)</dt>
+                <dd>
+                  Für die Hand. Das Datum ist ein
+                  <strong>echter Datumswert</strong>, mit dem sich sortieren und
+                  rechnen lässt, die Überschriftenzeile bleibt beim Blättern
+                  stehen. Zusätzliche Blätter nennen Liga, Verband, Saison, den
+                  <strong>Stand des Exports</strong> und die Teamliste.
+                </dd>
+                <dt>CSV</dt>
+                <dd>
+                  Für die Maschine. Dieselben Spalten flach, Datumsangaben nach
+                  <strong>ISO 8601</strong> (2026-04-06), damit „03.04.“ nicht
+                  mit „04.03.“ verwechselt wird.
+                </dd>
+              </dl>
+              <div class="note">
+                <strong>Kein Rückweg in den Saisonmanager:</strong> Die
+                exportierte Datei ist <strong>nicht</strong> dafür gedacht,
+                wieder importiert zu werden – ihr fehlen der Blattname und die
+                Liga-Kennung, die der Import erwartet. Willst du einen
+                bestehenden Spielplan ändern, nimm die
+                <strong>Importvorlage</strong> aus der Ligenverwaltung. Und
+                bedenke: Ein erneuter Import ersetzt den Plan vollständig und
+                ist nur möglich, solange kein Spiel begonnen hat.
+              </div>
+            </div>
+          </details>
+
           <!-- Teams importieren -->
           <details class="proc">
             <summary>
