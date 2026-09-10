@@ -41,6 +41,9 @@ import { PLAYER_GENDERS } from '@floorball/types';
 // Statusnummer entgegen; eine nackte 4 im Aufruf sagte nicht, worum es geht.
 const LICENSE_STATUS_DELETED = 4;
 
+// License::REQUESTED in der API, das Ziel des Zuruecksetzens.
+const LICENSE_STATUS_REQUESTED = 2;
+
 // Lizenzen des Spielers, nach Saison gruppiert (aktuelle Saison zuerst).
 export interface LicenseSeasonGroup {
   seasonId?: string;
@@ -141,6 +144,14 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   licenseDeleteReason = '';
   /** Lizenz, deren Löschung gerade läuft (Doppelklick-Riegel). */
   deletingLicenseId?: string;
+
+  // Und dasselbe Muster ein drittes Mal für das Zurücksetzen auf „beantragt".
+  // Eigene Felder und nicht die des Lösch-Formulars mitbenutzt: Sonst stünde
+  // die Begründung für das Löschen im Formular zum Zurücksetzen.
+  resetLicenseId: string | null = null;
+  licenseResetReason = '';
+  /** Lizenz, deren Zurücksetzen gerade läuft (Doppelklick-Riegel). */
+  resettingLicenseId?: string;
   licenseSuspendUntil = '';
   licenseSuspendReason = '';
   // Dauer der Sperre: bis zu einem Datum oder über eine Anzahl von Spielen
@@ -1012,6 +1023,64 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           this.cancelLicenseDelete();
           this.getPlayer('' + this.player?.id);
         },
+      });
+  }
+
+  // --- Lizenz auf „beantragt" zurücksetzen ---------------------------------
+  //
+  // Der Fall: erteilt, obwohl noch etwas fehlte. Löschen wäre zu viel — der
+  // Verein müsste neu und kostenpflichtig beantragen —, also geht der Antrag
+  // zurück in die Entscheidungsliste der Liga.
+
+  // Ob überhaupt zurückgesetzt werden darf, entscheidet die API und liefert es
+  // je Lizenz als `reset_allowed` mit (License.resettable?, eingeschränkt auf
+  // den eigenen Spielbetrieb). Hier steht nur, ob dieses Konto die Fähigkeit
+  // hat.
+  public canResetLicense(license: PlayerLicense): boolean {
+    return this.can('player_reset_license') && license.reset_allowed === true;
+  }
+
+  public openLicenseReset(license: PlayerLicense): void {
+    this.resetLicenseId = license.id;
+    this.licenseResetReason = '';
+  }
+
+  public cancelLicenseReset(): void {
+    this.resetLicenseId = null;
+    this.licenseResetReason = '';
+  }
+
+  public submitLicenseReset(license: PlayerLicense): void {
+    // Getrimmt, weil die API dasselbe tut: Eine Begründung aus Leerzeichen
+    // zählt dort nicht und käme als 422 zurück.
+    const reason = this.licenseResetReason.trim();
+    if (!this.player?.id || !reason) return;
+    // Doppelklick-Riegel wie beim Löschen: `[disabled]` hängt nur am Freitext.
+    // Die zweite Anfrage träfe eine Lizenz, die schon auf „beantragt" steht,
+    // und die API schreibt dafür nichts mehr — die Erfolgsmeldung erschiene
+    // aber zweimal.
+    if (this.resettingLicenseId) return;
+    this.resettingLicenseId = license.id;
+
+    this._playerService
+      .updateLicenseStatus(
+        this.player.id,
+        license.id,
+        LICENSE_STATUS_REQUESTED,
+        reason
+      )
+      .pipe(finalize(() => (this.resettingLicenseId = undefined)))
+      .subscribe({
+        next: () => {
+          this._notificationService.success(
+            this._transloco.translate('playerAdmin.edit.licenseReset'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this.cancelLicenseReset();
+          this.getPlayer('' + this.player?.id);
+        },
+        // Kein eigener error-Zweig: Der ErrorInterceptor zeigt die Meldung der
+        // API schon selbst an, eine zweite stapelte sich nur darüber.
       });
   }
 
