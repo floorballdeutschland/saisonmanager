@@ -77,7 +77,8 @@
     "liveToday": "Heute live",
     "systemHealth": "System",
     "myObservations": "Meine Beobachtungen",
-    "myReceivedObservations": "Mein Coaching-Feedback"
+    "myReceivedObservations": "Mein Coaching-Feedback",
+    "streamingAdmin": "Streaming"
   },
   "account": {
     "title": "Mein Konto",

@@ -1,0 +1,37 @@
+{
+  "title": "Streaming",
+  "intro": "The games for which live streams are set up on the federation channel.",
+  "loading": "Loading games …",
+  "loadError": "The games could not be loaded.",
+  "retry": "Try again",
+  "empty": "No game of a streamed league is scheduled in this period.",
+  "selectedCount": "{{selected}} of {{total}} selected",
+  "filter": {
+    "modeRange": "Date range",
+    "modeMatchday": "Match day of a league",
+    "from": "From",
+    "to": "To",
+    "league": "League",
+    "leaguePlaceholder": "Select league",
+    "matchday": "Match day",
+    "apply": "Show"
+  },
+  "table": {
+    "selectAll": "Select all",
+    "kickoff": "Start",
+    "league": "League",
+    "matchdayShort": "Match day {{number}}",
+    "pairing": "Fixture",
+    "venue": "Venue",
+    "status": "Broadcast"
+  },
+  "status": {
+    "created": "Created",
+    "ready": "Ready",
+    "noKey": "No stream key"
+  },
+  "actions": {
+    "thumbnails": "Thumbnails (ZIP)",
+    "thumbnailsBusy": "Creating thumbnails …"
+  }
+}
