@@ -32,6 +32,22 @@
   },
   "actions": {
     "thumbnails": "Thumbnails (ZIP)",
-    "thumbnailsBusy": "Creating thumbnails …"
+    "thumbnailsBusy": "Creating thumbnails …",
+    "create": "Create streams ({{count}})",
+    "createBusy": "Creating streams …",
+    "privacy": "Visibility",
+    "privacyPublic": "Public",
+    "privacyUnlisted": "Unlisted",
+    "noGoogle": "No Google access is configured for this system – creating is unavailable."
+  },
+  "templates": {
+    "heading": "Title and description",
+    "intro": "The templates apply to every broadcast created here. Placeholders:",
+    "title": "Title",
+    "description": "Description",
+    "preview": "Preview for the first selected game",
+    "length": "{{count}} of {{max}} characters",
+    "save": "Save templates",
+    "reset": "Restore default"
   }
 }

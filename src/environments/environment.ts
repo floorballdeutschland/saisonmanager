@@ -10,6 +10,12 @@ export const environment = {
   // Lokal bewusst leer: ohne DSN bleibt Sentry aus, damit Fehler beim
   // Entwickeln nicht im Dashboard des Produktivsystems landen.
   sentryDsn: '',
+  // OAuth-Client-Kennung fuer das Anlegen der YouTube-Uebertragungen im
+  // Browser. KEIN Geheimnis -- eine Client-ID ist oeffentlich und liegt ohnehin
+  // im Bundle; geschuetzt ist der Zugang durch die zugelassenen Herkuenfte im
+  // Google-Cloud-Projekt und durch die Anmeldung des Benutzers.
+  // Lokal leer: ohne Kennung bleibt der Knopf 'Streams anlegen' aus.
+  googleClientId: '',
 };
 
 /*

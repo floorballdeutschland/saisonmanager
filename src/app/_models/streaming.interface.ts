@@ -50,6 +50,8 @@ export interface StreamingGame {
   home_team_small_logo?: string | null;
   guest_team_logo?: string | null;
   guest_team_small_logo?: string | null;
+  /** Öffentliche Spielseite; vom Server gebaut (Game#url), nicht hier. */
+  public_url: string | null;
   live_stream_link: string | null;
   vod_link: string | null;
   /** Streamschlüssel des AUSRICHTERS, nicht der Heimmannschaft. */
@@ -70,4 +72,17 @@ export interface StreamingBroadcastInput {
   privacy_status: string;
   title?: string;
   stream_id?: string;
+}
+
+/**
+ * Titel- und Beschreibungsvorlage samt der jeweiligen Vorgabe.
+ *
+ * Die Vorgaben kommen mit, damit die Maske ein „zurücksetzen" anbieten kann,
+ * ohne den Text ein zweites Mal zu kennen.
+ */
+export interface StreamingTemplates {
+  title: string;
+  description: string;
+  default_title: string;
+  default_description: string;
 }

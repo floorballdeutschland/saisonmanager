@@ -92,6 +92,93 @@
     </div>
   </div>
 
+  <!-- Vorlagen -->
+  <div class="border border-fb-gray-700 rounded-[5px] mb-6">
+    <button
+      type="button"
+      (click)="templatesOpen = !templatesOpen"
+      class="w-full flex items-center justify-between p-4 text-sm font-bold"
+    >
+      <span>{{ "streamingAdmin.templates.heading" | transloco }}</span>
+      <span aria-hidden="true">{{ templatesOpen ? "−" : "+" }}</span>
+    </button>
+
+    @if (templatesOpen) {
+      <div class="p-4 pt-0">
+        <p class="text-sm text-fb-gray-500 mb-3">
+          {{ "streamingAdmin.templates.intro" | transloco }}
+        </p>
+        <p class="text-xs text-fb-gray-500 mb-4">
+          @for (name of placeholders; track name) {
+            <code class="mr-2">{{ "{" + name + "}" }}</code>
+          }
+        </p>
+
+        <label class="block text-sm mb-4">
+          <span class="block font-bold mb-1">
+            {{ "streamingAdmin.templates.title" | transloco }}
+          </span>
+          <input
+            type="text"
+            [(ngModel)]="titleTemplate"
+            class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2"
+          />
+        </label>
+
+        <label class="block text-sm mb-4">
+          <span class="block font-bold mb-1">
+            {{ "streamingAdmin.templates.description" | transloco }}
+          </span>
+          <textarea
+            rows="6"
+            [(ngModel)]="descriptionTemplate"
+            class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 font-mono text-xs"
+          ></textarea>
+        </label>
+
+        @if (titlePreview) {
+          <div class="text-sm mb-4">
+            <span class="block font-bold mb-1">
+              {{ "streamingAdmin.templates.preview" | transloco }}
+            </span>
+            <div class="border border-fb-gray-700 rounded-[5px] p-3">
+              <div [class.text-fb-red-500]="titleTooLong">
+                {{ titlePreview }}
+              </div>
+              <div class="text-xs text-fb-gray-500 mt-1">
+                {{
+                  "streamingAdmin.templates.length"
+                    | transloco: { count: titlePreview.length, max: titleMax }
+                }}
+              </div>
+              <pre class="text-xs whitespace-pre-wrap mt-3 text-fb-gray-500">{{
+                descriptionPreview
+              }}</pre>
+            </div>
+          </div>
+        }
+
+        <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            (click)="saveTemplates()"
+            [disabled]="savingTemplates"
+            class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+          >
+            {{ "streamingAdmin.templates.save" | transloco }}
+          </button>
+          <button
+            type="button"
+            (click)="resetTemplates()"
+            class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200"
+          >
+            {{ "streamingAdmin.templates.reset" | transloco }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-8 text-center">
       {{ "streamingAdmin.loading" | transloco }}
@@ -145,6 +232,47 @@
             ) | transloco
           }}
         </button>
+
+        @if (youtubeReady) {
+          <label class="text-sm flex items-center gap-2">
+            <span class="text-fb-gray-500">
+              {{ "streamingAdmin.actions.privacy" | transloco }}
+            </span>
+            <select
+              [(ngModel)]="privacy"
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1.5"
+            >
+              <option value="public">
+                {{ "streamingAdmin.actions.privacyPublic" | transloco }}
+              </option>
+              <option value="unlisted">
+                {{ "streamingAdmin.actions.privacyUnlisted" | transloco }}
+              </option>
+            </select>
+          </label>
+          @if (creating) {
+            <span class="text-xs text-fb-gray-400">
+              {{ createdDone }} / {{ creatable.length }}
+            </span>
+          }
+          <button
+            type="button"
+            (click)="createStreams()"
+            [disabled]="creating || !creatable.length"
+            class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+          >
+            {{
+              (creating
+                ? "streamingAdmin.actions.createBusy"
+                : "streamingAdmin.actions.create"
+              ) | transloco: { count: creatable.length }
+            }}
+          </button>
+        } @else {
+          <span class="text-xs text-fb-gray-500">
+            {{ "streamingAdmin.actions.noGoogle" | transloco }}
+          </span>
+        }
       </div>
 
       <div class="overflow-x-auto">
@@ -231,6 +359,15 @@
                     </span>
                   } @else {
                     <span>{{ "streamingAdmin.status.ready" | transloco }}</span>
+                  }
+                  @if (results.get(game.id); as result) {
+                    <div
+                      class="text-xs mt-1"
+                      [class.text-fb-red-500]="result.level === 'error'"
+                      [class.text-fb-gray-500]="result.level !== 'error'"
+                    >
+                      {{ result.text }}
+                    </div>
                   }
                 </td>
               </tr>

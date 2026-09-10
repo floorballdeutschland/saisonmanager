@@ -5,6 +5,7 @@ import {
   StreamingBroadcastInput,
   StreamingFilter,
   StreamingGame,
+  StreamingTemplates,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -40,6 +41,28 @@ export class StreamingService {
     return this.http.get<StreamingGame[]>(
       `${environment.apiURL}admin/streaming/games`,
       { params }
+    );
+  }
+
+  /**
+   * Die Vorlagen für Titel und Beschreibung.
+   *
+   * Sie liegen in den Einstellungen und nicht im Browser-Speicher: Die Titel
+   * sind öffentlich und sollen einheitlich sein, unabhängig davon, wer sie
+   * anlegt.
+   */
+  public getTemplates(): Observable<StreamingTemplates> {
+    return this.http.get<StreamingTemplates>(
+      `${environment.apiURL}admin/streaming/settings`
+    );
+  }
+
+  public saveTemplates(
+    templates: Pick<StreamingTemplates, 'title' | 'description'>
+  ): Observable<StreamingTemplates> {
+    return this.http.put<StreamingTemplates>(
+      `${environment.apiURL}admin/streaming/settings`,
+      templates
     );
   }
 

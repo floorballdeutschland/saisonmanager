@@ -32,6 +32,22 @@
   },
   "actions": {
     "thumbnails": "Thumbnails (ZIP)",
-    "thumbnailsBusy": "Thumbnails werden erzeugt …"
+    "thumbnailsBusy": "Thumbnails werden erzeugt …",
+    "create": "Streams anlegen ({{count}})",
+    "createBusy": "Streams werden angelegt …",
+    "privacy": "Sichtbarkeit",
+    "privacyPublic": "Öffentlich",
+    "privacyUnlisted": "Nicht gelistet",
+    "noGoogle": "Für dieses System ist kein Google-Zugang hinterlegt – Anlegen ist nicht möglich."
+  },
+  "templates": {
+    "heading": "Titel und Beschreibung",
+    "intro": "Die Vorlagen gelten für alle angelegten Übertragungen. Platzhalter:",
+    "title": "Titel",
+    "description": "Beschreibung",
+    "preview": "Vorschau am ersten ausgewählten Spiel",
+    "length": "{{count}} von {{max}} Zeichen",
+    "save": "Vorlagen speichern",
+    "reset": "Vorgabe wiederherstellen"
   }
 }

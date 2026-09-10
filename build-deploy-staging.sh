@@ -65,6 +65,35 @@ else
   echo "Hinweis: src/environments/.sentry-dsn fehlt – Frontend-Sentry bleibt aus."
 fi
 
+
+# Google-Client-Kennung einsetzen, sofern hinterlegt. Wie beim Sentry-DSN
+# optional: Ohne die Datei bleibt der Platzhalter stehen, und der Streaming-
+# Bereich blendet das Anlegen der Uebertragungen aus, statt in einen
+# Anmeldefehler zu laufen. Die Kennung ist kein Geheimnis (sie liegt ohnehin im
+# Bundle); die Datei ist nur der Weg, sie nicht ins Repository zu schreiben,
+# solange sie sich noch aendern kann.
+if [ -f "src/environments/.google-client-id" ]; then
+  GOOGLE_CLIENT_ID=$(head -n1 src/environments/.google-client-id | tr -d '[:space:]')
+  if [ -z "$GOOGLE_CLIENT_ID" ]; then
+    echo "Fehler: src/environments/.google-client-id ist leer." >&2
+    exit 1
+  fi
+  if ! echo "$GOOGLE_CLIENT_ID" | grep -qE '^[0-9]+-[A-Za-z0-9_]+\.apps\.googleusercontent\.com$'; then
+    echo "Fehler: Inhalt von .google-client-id sieht nicht wie eine Client-ID aus." >&2
+    echo "Erwartet: <nummer>-<kennung>.apps.googleusercontent.com" >&2
+    exit 1
+  fi
+  if ! grep -q "GOOGLE_CLIENT_ID_PLACEHOLDER" src/environments/environment.staging.ts; then
+    echo "Fehler: GOOGLE_CLIENT_ID_PLACEHOLDER nicht in src/environments/environment.staging.ts gefunden." >&2
+    exit 1
+  fi
+  sed -i.sedbak "s|GOOGLE_CLIENT_ID_PLACEHOLDER|${GOOGLE_CLIENT_ID}|" src/environments/environment.staging.ts
+  rm -f src/environments/environment.staging.ts.sedbak
+  echo "Google-Client-Kennung eingesetzt."
+else
+  echo "Hinweis: src/environments/.google-client-id fehlt - Streams anlegen bleibt aus."
+fi
+
 # Build + Deploy
 export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
 
