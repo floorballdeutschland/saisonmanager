@@ -60,8 +60,8 @@ export class RefereeFeedbackComponent implements OnInit, OnDestroy {
     return `${game.game_id}:${game.team_id}`;
   }
 
-  // Die Übersicht listet ein Spiel schon, während die 24-Stunden-Frist nach dem
-  // Spiel noch läuft. Ohne verwertbaren Zeitpunkt (fillable_from null oder nicht
+  // Die Übersicht listet ein Spiel schon, während die Sperrfrist nach dem Spiel
+  // noch läuft. Ohne verwertbaren Zeitpunkt (fillable_from null oder nicht
   // parsebar) gilt allein der abgeschlossene Bericht, das Spiel ist dann
   // ausfüllbar.
   notYetFillable(game: RefereeFeedbackGame): boolean {

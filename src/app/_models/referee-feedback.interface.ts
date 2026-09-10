@@ -23,9 +23,10 @@ export interface RefereeFeedbackGame {
   referees: string[];
   /**
    * ISO-Zeitpunkt, ab dem das Feedback abgegeben werden darf: das spätere von
-   * Spielbericht-Abschluss und Anpfiff + 24 Stunden. Ein Ende gibt es bewusst
-   * nicht, die erwarteten 24 Stunden für die Abgabe sind nur ein Hinweis im Text
-   * und in der Benachrichtigungsmail.
+   * Spielbericht-Abschluss und Anpfiff + Sperrfrist (12 Stunden, API-seitig in
+   * RefereeFeedbackWindow). Ein Ende gibt es bewusst nicht, die erwarteten 24
+   * Stunden für die Abgabe sind nur ein Hinweis im Text und in der
+   * Benachrichtigungsmail.
    *
    * null, wenn die API keinen Zeitpunkt ermitteln kann (Altspiel ohne
    * gepflegtes Datum). Dann gilt allein der abgeschlossene Bericht, das Spiel ist
