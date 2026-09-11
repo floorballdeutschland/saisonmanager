@@ -56,6 +56,17 @@
     "uploadLogo": "Logo hochladen",
     "logoHint": "PNG, JPG oder WebP · quadratisch (Breite = Höhe) · max. 3 MB · wird auf 100×100 Pixel verkleinert",
     "logoTransparencyHint": "Am besten freigestellt hochladen, also ein PNG mit transparentem Hintergrund. Das Logo wird künftig auch auf dunklem Grund erscheinen, etwa in Livestream-Einblendungen; ein weißer Kasten ist dort deutlich zu sehen.",
+    "teamLogos": "Abweichende Logos pro Team",
+    "teamLogosHint": "Ohne eigenes Logo trägt eine Mannschaft immer das Vereinslogo. Ein eigenes Logo lohnt sich für Mannschaften, die anders auftreten – etwa eine Spielgemeinschaft oder eine Zweitvertretung mit eigenem Zeichen.",
+    "teamLogosEmpty": "Für die laufende Saison ist keine Mannschaft gemeldet.",
+    "teamLogosLoadError": "Die Mannschaften konnten nicht geladen werden.",
+    "teamLogosRetry": "Erneut versuchen",
+    "teamLogoAlt": "Mannschaftslogo",
+    "teamLogoOwn": "eigenes Logo",
+    "teamLogoFromClub": "Vereinslogo",
+    "teamLogoForeignLeague": "Das Logo pflegt der Verband dieser Liga.",
+    "removeTeamLogo": "Auf Vereinslogo zurücksetzen",
+    "removingTeamLogo": "Wird zurückgesetzt …",
     "clubStatus": "Vereinsstatus",
     "deactivatedOn": "Deaktiviert am {{ date }}",
     "deactivateClub": "Verein deaktivieren",
@@ -90,6 +101,9 @@
     "shortNameRequired": "Es muss ein Kürzel gesetzt werden",
     "shortNameTooLong": "Das Kürzel darf höchstens 4 Zeichen lang sein",
     "contactEmailInvalid": "Die Kontakt-E-Mail muss genau eine gültige Adresse sein",
-    "stateAssociationRequired": "Bitte einen Landesverband auswählen."
+    "stateAssociationRequired": "Bitte einen Landesverband auswählen.",
+    "teamLogoUploadSuccess": "Mannschaftslogo erfolgreich hochgeladen.",
+    "teamLogoRemoved": "Mannschaftslogo entfernt – es gilt wieder das Vereinslogo.",
+    "confirmRemoveTeamLogo": "Eigenes Logo dieser Mannschaft entfernen? Danach trägt sie wieder das Vereinslogo."
   }
 }

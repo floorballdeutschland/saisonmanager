@@ -56,6 +56,17 @@
     "uploadLogo": "Upload logo",
     "logoHint": "PNG, JPG or WebP · square (width = height) · max. 3 MB · resized to 100×100 pixels",
     "logoTransparencyHint": "Ideally upload a cut-out image, i.e. a PNG with a transparent background. The logo will also appear on dark backgrounds, for example in livestream overlays, where a white box is clearly visible.",
+    "teamLogos": "Team-specific logos",
+    "teamLogosHint": "Without its own logo, a team always shows the club logo. A separate logo makes sense for teams that appear differently – a joint team or a second squad with its own emblem, for example.",
+    "teamLogosEmpty": "No team registered for the current season.",
+    "teamLogosLoadError": "The teams could not be loaded.",
+    "teamLogosRetry": "Try again",
+    "teamLogoAlt": "Team logo",
+    "teamLogoOwn": "own logo",
+    "teamLogoFromClub": "club logo",
+    "teamLogoForeignLeague": "This logo is maintained by the association running that league.",
+    "removeTeamLogo": "Reset to club logo",
+    "removingTeamLogo": "Resetting …",
     "clubStatus": "Club status",
     "deactivatedOn": "Deactivated on {{ date }}",
     "deactivateClub": "Deactivate club",
@@ -90,6 +101,9 @@
     "shortNameRequired": "An abbreviation must be set",
     "shortNameTooLong": "The abbreviation must not exceed 4 characters",
     "contactEmailInvalid": "The contact email must be exactly one valid address",
-    "stateAssociationRequired": "Please select a state federation."
+    "stateAssociationRequired": "Please select a state federation.",
+    "teamLogoUploadSuccess": "Team logo uploaded successfully.",
+    "teamLogoRemoved": "Team logo removed – the club logo applies again.",
+    "confirmRemoveTeamLogo": "Remove this team's own logo? It will show the club logo again."
   }
 }
