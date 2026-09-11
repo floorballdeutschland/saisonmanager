@@ -352,4 +352,39 @@ describe('TransferRequestDetailComponent – Chronik', () => {
       expect(text).toContain('transferRequestAdmin.detail.addressMissing');
     });
   });
+
+  // Die Spieler-ID ist die Angabe, mit der der abgebende Landesverband den
+  // Vorgang in der Transferrechnung und in seiner eigenen Ablage wiederfindet.
+  // Namensgleiche Personen gibt es, eine zweite ID nicht.
+  describe('Spieler-ID hinter dem Namen', () => {
+    it('zeigt die ID des Spielers in Klammern hinter dem Namen', () => {
+      const fixture = TestBed.createComponent(TransferRequestDetailComponent);
+      fixture.detectChanges();
+
+      TestBed.inject(HttpTestingController)
+        .expectOne((req) => req.url.includes('admin/transfer_requests'))
+        .flush({
+          id: 1,
+          status: 'approved',
+          request_type: 'transfer',
+          season_id: 18,
+          created_at: '2026-08-01T10:00:00.000Z',
+          player: {
+            id: 4711,
+            first_name: 'Max',
+            last_name: 'Muster',
+            birthdate: '1995-03-15',
+          },
+          requesting_club: { id: 2, name: 'Aufnehmend' },
+          former_club: { id: 3, name: 'Abgebend' },
+        });
+      fixture.detectChanges();
+
+      expect(
+        fixture.nativeElement
+          .querySelector('h2')
+          .textContent.replace(/\s+/g, ' ')
+      ).toContain('Muster, Max (4711)');
+    });
+  });
 });
