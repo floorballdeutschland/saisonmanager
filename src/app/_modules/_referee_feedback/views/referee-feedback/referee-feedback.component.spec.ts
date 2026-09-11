@@ -5,7 +5,7 @@ import { RefereeFeedbackGame } from '@floorball/types';
 import { RefereeFeedbackComponent } from './referee-feedback.component';
 
 /**
- * Die 24-Stunden-Sperre nach dem Spiel erzwingt die API. Die Übersicht listet ein
+ * Die Sperrfrist nach dem Spiel erzwingt die API. Die Übersicht listet ein
  * noch gesperrtes Spiel aber bereits und muss es als „Möglich ab" ausweisen statt
  * mit Abgabe-Knopf, sonst läuft die Abgabe in eine Fehlermeldung.
  *

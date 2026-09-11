@@ -454,16 +454,19 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Spalten wie die Tabelle, mit drei Zugaben, die im Tabellenblatt zaehlen:
+   * Spalten wie die Tabelle, mit vier Zugaben, die im Tabellenblatt zaehlen:
    * Vor- und Nachname getrennt (sortierbar), der Zeitraum als zwei Spalten
-   * (filterbar) und die Spieler-ID, ueber die eine Zeile eindeutig bleibt, wenn
-   * zwei Personen gleich heissen.
+   * (filterbar), die Spieler-ID und das Geburtsdatum. Die beiden letzten machen
+   * eine Zeile eindeutig, wenn zwei Personen gleich heissen: Die ID hilft nur,
+   * solange die Gegenliste sie auch fuehrt, das Geburtsdatum immer. Beides
+   * steht nur in der Datei, die Tabelle zeigt es nicht.
    */
   private _downloadCsv(response: PlayerStatisticsExportResponse): void {
     const t = (key: string) => this._transloco.translate(key);
     const headers = [
       t('playerStats.csv.lastName'),
       t('playerStats.csv.firstName'),
+      t('playerStats.csv.birthdate'),
       ...(this.isAssociationMode ? [t('playerStats.columns.club')] : []),
       t('playerStats.columns.games'),
       t('playerStats.columns.goals'),
@@ -480,6 +483,7 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
     const rows: CsvCell[][] = response.players.map((entry) => [
       entry.last_name,
       entry.first_name,
+      this._birthdate(entry.birthdate),
       ...(this.isAssociationMode ? [entry.home_club ?? ''] : []),
       entry.games,
       entry.goals,
@@ -494,6 +498,18 @@ export class PlayerStatisticsComponent implements OnInit, OnDestroy {
     ]);
 
     downloadCsv('spielerdaten', headers, rows);
+  }
+
+  /**
+   * Das Geburtsdatum kommt als reines Datum (JJJJ-MM-TT) und wird zerlegt statt
+   * ueber `new Date` gelesen: Letzteres deutet ein Datum ohne Zeitzone als
+   * UTC-Mitternacht und verschiebt es westlich von Greenwich um einen Tag --
+   * beim Geburtsdatum ist das ein anderes Datum. Leer bleibt leer: Der
+   * Altbestand kennt Profile ohne Geburtsdatum.
+   */
+  private _birthdate(value: string | null | undefined): string {
+    const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '');
+    return parts ? `${parts[3]}.${parts[2]}.${parts[1]}` : '';
   }
 
   /**

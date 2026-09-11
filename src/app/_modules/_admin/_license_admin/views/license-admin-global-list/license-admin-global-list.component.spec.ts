@@ -21,7 +21,20 @@ describe('LicenseAdminGlobalListComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
-        getTranslocoTestingModule(),
+        getTranslocoTestingModule({
+          de: {
+            licenseAdmin: {
+              globalList: {
+                // Nur die Kopfzeilen der Ausfuhr, damit eine vertauschte
+                // Spalte auffaellt statt als Rohschluessel durchzurutschen.
+                csvPlayerId: 'Spieler-ID',
+                csvLastName: 'Nachname',
+                csvFirstName: 'Vorname',
+                csvBirthdate: 'Geburtsdatum',
+              },
+            },
+          },
+        }),
       ],
       declarations: [LicenseAdminGlobalListComponent],
       schemas: [NO_ERRORS_SCHEMA],
@@ -761,6 +774,67 @@ describe('LicenseAdminGlobalListComponent', () => {
       // Kein Aufruf: Ohne Recht faellt der Knopf im Template weg, und die
       // Methode faellt zusaetzlich zu -- der Endpunkt selbst prueft ohnehin.
       http.expectNone((r) => r.url.includes('suspensions'));
+    });
+  });
+
+  // Die Datei ist die Arbeitsgrundlage fuer Abrechnung und Meldungen an den
+  // Landesverband. Ohne Nummer laesst sich eine Zeile nicht eindeutig einem
+  // Profil zuordnen, und das Geburtsjahr allein trennt zwei namensgleiche
+  // Personen desselben Jahrgangs nicht.
+  describe('CSV-Ausfuhr', () => {
+    let blobs: Blob[];
+
+    beforeEach(() => {
+      // downloadCsv haengt die Datei an ein <a> und klickt es an. Der Klick
+      // bleibt hier stumm, der Inhalt wird ueber den Blob gelesen.
+      blobs = [];
+      spyOn(URL, 'createObjectURL').and.callFake((blob: Blob | MediaSource) => {
+        blobs.push(blob as Blob);
+        return 'blob:test';
+      });
+      spyOn(URL, 'revokeObjectURL');
+      spyOn(HTMLAnchorElement.prototype, 'click');
+    });
+
+    function exportRows(entries: AdminLicenseEntry[]): Promise<string[]> {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+      component.allEntries = entries;
+      component.applyFilters();
+      component.exportCsv();
+
+      expect(blobs.length).toBe(1);
+      return blobs[0].text().then((text) => text.split('\r\n'));
+    }
+
+    it('fuehrt Spielernummer und volles Geburtsdatum vorne', async () => {
+      const [header, row] = await exportRows([
+        {
+          ...entry('Muster'),
+          player_id: 4711,
+          player_birthdate: '2012-05-04',
+        } as AdminLicenseEntry,
+      ]);
+
+      expect(
+        header.startsWith('"Spieler-ID";"Nachname";"Vorname";"Geburtsdatum";')
+      ).toBeTrue();
+      expect(row.startsWith('"4711";"Muster";"Test";"04.05.2012";')).toBeTrue();
+    });
+
+    // Das Geburtsdatum ist ein Pflichtfeld am Profil, aber der Altbestand
+    // kennt Luecken. Eine leere Zelle ist dort richtig -- kein "NaN.NaN.NaN".
+    it('laesst die Spalte leer, wenn kein Geburtsdatum vorliegt', async () => {
+      const [, row] = await exportRows([
+        {
+          ...entry('Ohne'),
+          player_id: 12,
+          player_birthdate: null,
+        } as unknown as AdminLicenseEntry,
+      ]);
+
+      expect(row.startsWith('"12";"Ohne";"Test";"";')).toBeTrue();
     });
   });
 });
