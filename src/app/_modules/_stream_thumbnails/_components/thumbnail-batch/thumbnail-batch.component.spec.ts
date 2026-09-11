@@ -9,7 +9,7 @@ import { NotificationService } from '@floorball/core';
 import {
   ThumbnailBatchComponent,
   ThumbnailBatchGame,
-  ThumbnailBatchGameDay,
+  ThumbnailBatchGameDayWithGames,
 } from './thumbnail-batch.component';
 
 describe('ThumbnailBatchComponent', () => {
@@ -85,7 +85,9 @@ describe('ThumbnailBatchComponent', () => {
     female: false,
   };
 
-  function gameDay(games: ThumbnailBatchGame[]): ThumbnailBatchGameDay {
+  function gameDay(
+    games: ThumbnailBatchGame[]
+  ): ThumbnailBatchGameDayWithGames {
     return {
       number: 3,
       date: '2026-01-11',

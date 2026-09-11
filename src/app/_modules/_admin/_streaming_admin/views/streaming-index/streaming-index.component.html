@@ -1,0 +1,392 @@
+<div class="p-4 lg:p-8">
+  <h1 class="text-2xl font-bold mb-2">
+    {{ "streamingAdmin.title" | transloco }}
+  </h1>
+  <p class="text-sm text-fb-gray-500 mb-6">
+    {{ "streamingAdmin.intro" | transloco }}
+  </p>
+
+  <!-- Zuschnitt -->
+  <div class="border border-fb-gray-700 rounded-[5px] p-4 mb-6">
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button
+        type="button"
+        (click)="setMode('range')"
+        [class.bg-black]="mode === 'range'"
+        [class.text-white]="mode === 'range'"
+        class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px]"
+      >
+        {{ "streamingAdmin.filter.modeRange" | transloco }}
+      </button>
+      <button
+        type="button"
+        (click)="setMode('matchday')"
+        [class.bg-black]="mode === 'matchday'"
+        [class.text-white]="mode === 'matchday'"
+        class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px]"
+      >
+        {{ "streamingAdmin.filter.modeMatchday" | transloco }}
+      </button>
+    </div>
+
+    <div class="flex flex-wrap items-end gap-4">
+      @if (mode === "range") {
+        <label class="text-sm">
+          <span class="block font-bold mb-1">
+            {{ "streamingAdmin.filter.from" | transloco }}
+          </span>
+          <input
+            type="date"
+            [(ngModel)]="from"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2"
+          />
+        </label>
+        <label class="text-sm">
+          <span class="block font-bold mb-1">
+            {{ "streamingAdmin.filter.to" | transloco }}
+          </span>
+          <input
+            type="date"
+            [(ngModel)]="to"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2"
+          />
+        </label>
+      } @else {
+        <label class="text-sm">
+          <span class="block font-bold mb-1">
+            {{ "streamingAdmin.filter.league" | transloco }}
+          </span>
+          <select
+            [(ngModel)]="leagueId"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 max-w-[20rem]"
+          >
+            <option [ngValue]="null">
+              {{ "streamingAdmin.filter.leaguePlaceholder" | transloco }}
+            </option>
+            @for (league of leagues; track league.id) {
+              <option [ngValue]="league.id">{{ league.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="text-sm">
+          <span class="block font-bold mb-1">
+            {{ "streamingAdmin.filter.matchday" | transloco }}
+          </span>
+          <input
+            type="number"
+            min="1"
+            [(ngModel)]="gameDayNumber"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 w-24"
+          />
+        </label>
+      }
+
+      <button
+        type="button"
+        (click)="load()"
+        [disabled]="loading || (mode === 'matchday' && !leagueId)"
+        class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+      >
+        {{ "streamingAdmin.filter.apply" | transloco }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Vorlagen -->
+  <div class="border border-fb-gray-700 rounded-[5px] mb-6">
+    <button
+      type="button"
+      (click)="templatesOpen = !templatesOpen"
+      class="w-full flex items-center justify-between p-4 text-sm font-bold"
+    >
+      <span>{{ "streamingAdmin.templates.heading" | transloco }}</span>
+      <span aria-hidden="true">{{ templatesOpen ? "−" : "+" }}</span>
+    </button>
+
+    @if (templatesOpen) {
+      <div class="p-4 pt-0">
+        <p class="text-sm text-fb-gray-500 mb-3">
+          {{ "streamingAdmin.templates.intro" | transloco }}
+        </p>
+        <p class="text-xs text-fb-gray-500 mb-4">
+          @for (name of placeholders; track name) {
+            <code class="mr-2">{{ "{" + name + "}" }}</code>
+          }
+        </p>
+
+        <label class="block text-sm mb-4">
+          <span class="block font-bold mb-1">
+            {{ "streamingAdmin.templates.title" | transloco }}
+          </span>
+          <input
+            type="text"
+            [(ngModel)]="titleTemplate"
+            [disabled]="creating"
+            class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 disabled:opacity-50"
+          />
+        </label>
+
+        <label class="block text-sm mb-4">
+          <span class="block font-bold mb-1">
+            {{ "streamingAdmin.templates.description" | transloco }}
+          </span>
+          <textarea
+            rows="6"
+            [(ngModel)]="descriptionTemplate"
+            [disabled]="creating"
+            class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 font-mono text-xs disabled:opacity-50"
+          ></textarea>
+        </label>
+
+        @if (titlePreview) {
+          <div class="text-sm mb-4">
+            <span class="block font-bold mb-1">
+              {{ "streamingAdmin.templates.preview" | transloco }}
+            </span>
+            <div class="border border-fb-gray-700 rounded-[5px] p-3">
+              <div [class.text-fb-red-500]="titleTooLong">
+                {{ titlePreview }}
+              </div>
+              <div class="text-xs text-fb-gray-500 mt-1">
+                {{
+                  "streamingAdmin.templates.length"
+                    | transloco: { count: titlePreview.length, max: titleMax }
+                }}
+              </div>
+              <pre class="text-xs whitespace-pre-wrap mt-3 text-fb-gray-500">{{
+                descriptionPreview
+              }}</pre>
+            </div>
+          </div>
+        }
+
+        <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            (click)="saveTemplates()"
+            [disabled]="savingTemplates"
+            class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+          >
+            {{ "streamingAdmin.templates.save" | transloco }}
+          </button>
+          <button
+            type="button"
+            (click)="resetTemplates()"
+            class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200"
+          >
+            {{ "streamingAdmin.templates.reset" | transloco }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8 text-center">
+      {{ "streamingAdmin.loading" | transloco }}
+    </div>
+  }
+
+  @if (!loading && loadError) {
+    <div
+      class="border border-fb-red-500 text-sm rounded-[5px] p-4 flex flex-wrap items-center justify-between gap-3"
+    >
+      <span>{{ "streamingAdmin.loadError" | transloco }}</span>
+      <button
+        type="button"
+        (click)="load()"
+        class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200"
+      >
+        {{ "streamingAdmin.retry" | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (!loading && !loadError && loaded) {
+    @if (!games.length) {
+      <div class="text-fb-gray-500 text-sm py-8 text-center">
+        {{ "streamingAdmin.empty" | transloco }}
+      </div>
+    } @else {
+      <!-- Sammelaktionen -->
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <span class="text-sm text-fb-gray-500">
+          {{
+            "streamingAdmin.selectedCount"
+              | transloco: { selected: selected.size, total: games.length }
+          }}
+        </span>
+        @if (busy) {
+          <span class="text-xs text-fb-gray-400">
+            {{ done }} / {{ selected.size }}
+          </span>
+        }
+        <button
+          type="button"
+          (click)="downloadThumbnails()"
+          [disabled]="busy || creating || !selected.size"
+          class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200 disabled:opacity-40"
+        >
+          {{
+            (busy
+              ? "streamingAdmin.actions.thumbnailsBusy"
+              : "streamingAdmin.actions.thumbnails"
+            ) | transloco
+          }}
+        </button>
+
+        @if (youtubeReady) {
+          <label class="text-sm flex items-center gap-2">
+            <span class="text-fb-gray-500">
+              {{ "streamingAdmin.actions.privacy" | transloco }}
+            </span>
+            <select
+              [(ngModel)]="privacy"
+              [disabled]="creating"
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1.5 disabled:opacity-50"
+            >
+              <option value="public">
+                {{ "streamingAdmin.actions.privacyPublic" | transloco }}
+              </option>
+              <option value="unlisted">
+                {{ "streamingAdmin.actions.privacyUnlisted" | transloco }}
+              </option>
+            </select>
+          </label>
+          @if (creating) {
+            <span class="text-xs text-fb-gray-400">
+              {{ createdDone }} / {{ createdTotal }}
+            </span>
+          }
+          <button
+            type="button"
+            (click)="createStreams()"
+            [disabled]="creating || busy || !creatable.length || !canCreate"
+            class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+          >
+            {{
+              (creating
+                ? "streamingAdmin.actions.createBusy"
+                : "streamingAdmin.actions.create"
+              ) | transloco: { count: creatable.length }
+            }}
+          </button>
+          @if (templatesFailed) {
+            <span class="text-xs text-fb-red-500 font-bold">
+              {{ "streamingAdmin.actions.templatesFailed" | transloco }}
+            </span>
+          }
+        } @else {
+          <span class="text-xs text-fb-gray-500">
+            {{ "streamingAdmin.actions.noGoogle" | transloco }}
+          </span>
+        }
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-fb-gray-700 text-left">
+              <th class="py-2 pr-3">
+                <input
+                  type="checkbox"
+                  [checked]="allSelected"
+                  (change)="toggleAll()"
+                  [attr.aria-label]="
+                    'streamingAdmin.table.selectAll' | transloco
+                  "
+                />
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "streamingAdmin.table.kickoff" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "streamingAdmin.table.league" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "streamingAdmin.table.pairing" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "streamingAdmin.table.venue" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
+                {{ "streamingAdmin.table.status" | transloco }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (game of games; track game.id) {
+              <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
+                <td class="py-2 pr-3 align-top">
+                  <input
+                    type="checkbox"
+                    [checked]="selected.has(game.id)"
+                    (change)="toggle(game)"
+                    [attr.aria-label]="
+                      game.home_team_name + ' – ' + game.guest_team_name
+                    "
+                  />
+                </td>
+                <td class="py-2 pr-4 align-top whitespace-nowrap">
+                  <div class="font-medium">
+                    {{ game.game_day?.date | date: "EE dd.MM." }}
+                  </div>
+                  <div class="text-fb-gray-500">{{ game.start_time }}</div>
+                </td>
+                <td class="py-2 pr-4 align-top">
+                  <div>{{ game.league?.short_name || game.league?.name }}</div>
+                  <div class="text-fb-gray-500">
+                    {{
+                      "streamingAdmin.table.matchdayShort"
+                        | transloco: { number: game.game_day?.number }
+                    }}
+                  </div>
+                </td>
+                <td class="py-2 pr-4 align-top font-medium">
+                  {{ game.home_team_name }} – {{ game.guest_team_name }}
+                </td>
+                <td class="py-2 pr-4 align-top text-fb-gray-500">
+                  <div>{{ game.game_day?.arena?.name || "–" }}</div>
+                  @if (game.game_day?.hosting_club) {
+                    <div class="text-xs">{{ game.game_day?.hosting_club }}</div>
+                  }
+                </td>
+                <td class="py-2 pr-4 align-top">
+                  @if (game.broadcast) {
+                    <a
+                      [href]="game.broadcast.watch_url"
+                      target="_blank"
+                      rel="noopener"
+                      class="font-bold underline"
+                    >
+                      {{ "streamingAdmin.status.created" | transloco }}
+                    </a>
+                  } @else if (!game.streamable) {
+                    <span class="text-fb-gray-500">
+                      {{ "streamingAdmin.status.noKey" | transloco }}
+                    </span>
+                  } @else {
+                    <span>{{ "streamingAdmin.status.ready" | transloco }}</span>
+                  }
+                  @if (results.get(game.id); as result) {
+                    <div
+                      class="text-xs mt-1"
+                      [class.text-fb-red-500]="result.level === 'error'"
+                      [class.font-bold]="result.level !== 'success'"
+                      [class.text-fb-gray-500]="result.level === 'success'"
+                    >
+                      @if (result.level !== "success") {
+                        <span aria-hidden="true">⚠ </span>
+                      }
+                      {{ result.text }}
+                    </div>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

@@ -11,57 +11,25 @@ import * as Sentry from '@sentry/angular';
 import { LeagueService, NotificationService } from '@floorball/core';
 import { League } from '@floorball/types';
 import {
-  CompetitionKey,
-  competitionKey,
-  leagueMarkUrl,
-} from 'src/app/_helpers/_utils/competition-theme';
-import {
-  ThumbnailInput,
-  ThumbnailResult,
   filenameSlug,
-  renderThumbnailPng,
   saveBlob,
-  thumbnailDateLine,
 } from 'src/app/_helpers/_utils/stream-thumbnail';
+import {
+  ThumbnailBatchGame,
+  ThumbnailBatchGameDayWithGames,
+  ThumbnailBatchItem,
+  ThumbnailBatchReport,
+  folderName,
+  pairing,
+  renderThumbnailBatch,
+} from 'src/app/_helpers/_utils/thumbnail-batch';
 import { ZipEntry, buildZip } from 'src/app/_helpers/_utils/zip-store';
 
-/**
- * Was der Stapel aus einem Spiel liest.
- *
- * Absichtlich weniger als `Game`: Der Spieltagsabruf der Verwaltung liefert
- * `Game#meta_hash`, und darin steht weder `league_name` noch `date` noch
- * `arena_name`. Stünde hier `Game`, sähe ein Rückfall auf eines dieser Felder
- * richtig aus und wäre zur Laufzeit `undefined` -- genau der Fehler, der in der
- * ersten Fassung dieser Komponente steckte.
- */
-export interface ThumbnailBatchGame {
-  start_time: string;
-  home_team_name: string;
-  guest_team_name: string;
-  home_team_logo?: string | null;
-  home_team_small_logo?: string | null;
-  guest_team_logo?: string | null;
-  guest_team_small_logo?: string | null;
-}
-
-/**
- * Der Spieltag als Ganzes, EIN Eingang statt fünf.
- *
- * Die fünf Angaben (Spiele, Liga, Nummer, Datum, Halle) gehören zusammen, und
- * an der Aufrufstelle kommen sie ohnehin aus einem Objekt: `GamedayWithGames`
- * erfüllt diese Form ohne Umweg. Getrennt übergeben ließen sie sich mischen --
- * Spiele der einen Liga mit der Kennung einer anderen, das Datum eines fremden
- * Spieltags --, und das Bild trüge die falsche Wortmarke, ohne dass irgendwo
- * ein Fehler erschiene.
- */
-export interface ThumbnailBatchGameDay {
-  number: number;
-  /** Spieltagsdatum als `YYYY-MM-DD`; alles andere ergibt eine Fußzeile ohne Datum. */
-  date: string;
-  league_id: number;
-  arena?: { name?: string | null } | null;
-  games: ThumbnailBatchGame[];
-}
+export {
+  ThumbnailBatchGame,
+  ThumbnailBatchGameDay,
+  ThumbnailBatchGameDayWithGames,
+} from 'src/app/_helpers/_utils/thumbnail-batch';
 
 /**
  * Alle Livestream-Thumbnails eines Spieltags in einem Archiv.
@@ -72,12 +40,10 @@ export interface ThumbnailBatchGameDay {
  * die Spielansicht öffnen, warten, herunterladen -- bei einem Spieltag mit sechs
  * Partien sechs Runden durch die Oberfläche. Ein Archiv macht daraus einen Klick.
  *
- * Gezeichnet wird derselbe Bildaufbau wie im Spielbericht, und zwar von
- * demselben Code: `renderStreamThumbnail`, hier über die Hülle
- * `renderThumbnailPng`, die eine frei stehende Leinwand mitbringt. Das ist der
- * Grund, warum diese Komponente das Bild nicht selbst malt -- zwei Zeichenwege
- * liefen unweigerlich auseinander, und der Unterschied fiele erst auf YouTube
- * auf.
+ * Diese Komponente ist der Knopf für EINEN Spieltag; die Schleife selbst steht
+ * in `renderThumbnailBatch`, und der Streaming-Bereich benutzt dieselbe für eine
+ * Auswahl über mehrere Spieltage und Ligen. Zwei Schleifen nebeneinander liefen
+ * unweigerlich auseinander.
  *
  * NUR DER BILDAUFBAU „livestream": Das Highlight-Bild trägt den Endstand und
  * ist damit erst nach dem Spiel sinnvoll, der Stapel wird aber vorher gebraucht.
@@ -96,7 +62,7 @@ export interface ThumbnailBatchGameDay {
 })
 export class ThumbnailBatchComponent implements OnDestroy {
   @Input({ required: true })
-  gameDay!: ThumbnailBatchGameDay;
+  gameDay!: ThumbnailBatchGameDayWithGames;
 
   public busy = false;
   /**
@@ -137,15 +103,7 @@ export class ThumbnailBatchComponent implements OnDestroy {
     this._destroyed = true;
   }
 
-  /**
-   * Zeichnet alle Bilder und legt sie als ZIP in den Download-Ordner.
-   *
-   * Nacheinander und nicht mit `Promise.all`: Jedes Bild lädt zwei Wappen und
-   * ein Ligazeichen, parallel wären das bei sechs Spielen achtzehn gleichzeitige
-   * Abrufe an denselben Server. Der Zeitgewinn wäre gering (das Ligazeichen ist
-   * für alle Spiele dasselbe und liegt ab dem zweiten im Zwischenspeicher des
-   * Browsers), der Fortschritt aber nicht mehr anzeigbar.
-   */
+  /** Zeichnet alle Bilder und legt sie als ZIP in den Download-Ordner. */
   public async download(): Promise<void> {
     if (this.busy || !this.gameDay?.games?.length) return;
 
@@ -153,42 +111,26 @@ export class ThumbnailBatchComponent implements OnDestroy {
     this.done = 0;
     this._cdr.markForCheck();
 
-    const report = new ThumbnailBatchReport();
-
     try {
-      const league = await this._league$(report);
-      const competition = competitionKey(league);
-      const markUrl = leagueMarkUrl(league, competition);
-      const entries: ZipEntry[] = [];
+      const items: ThumbnailBatchItem[] = this.gameDay.games.map((game) => ({
+        game,
+        gameDay: this.gameDay,
+      }));
 
-      for (const [index, game] of this.gameDay.games.entries()) {
-        // Nach jedem `await` kann die Komponente zerstört worden sein.
-        if (this._destroyed) return;
+      const { entries, report, aborted } = await renderThumbnailBatch(items, {
+        league: () => this._league$(),
+        progress: (done) => {
+          this.done = done;
+          this._cdr.markForCheck();
+        },
+        capture: (error, item) => this._capture(error, item?.game),
+        cancelled: () => this._destroyed,
+      });
 
-        try {
-          const input = this._input(game, league, competition, markUrl);
-          const { blob, result } = await renderThumbnailPng(input);
-
-          entries.push({
-            name: this._entryName(index, game, input),
-            data: new Uint8Array(await blob.arrayBuffer()),
-          });
-          report.recordRendered(game, result);
-        } catch (error) {
-          // Ein einzelnes Spiel darf den Stapel nicht abbrechen: Fünf von sechs
-          // Bildern sind fünf gesparte Runden, und welches fehlt, steht in der
-          // Meldung.
-          this._capture(error, game);
-          report.recordFailure(game);
-        }
-
-        this.done = index + 1;
-        this._cdr.markForCheck();
-      }
-
-      this._finish(entries, league, report);
+      if (aborted) return;
+      this._finish(entries, report);
     } catch (error) {
-      // Alles außerhalb der Spiel-Schleife: der Ligaabruf, das Verpacken, ein
+      // Alles außerhalb der Spiel-Schleife: das Verpacken, ein
       // Programmierfehler. Ohne diesen Riegel bliebe `busy` hängen und der
       // Knopf stünde bis zum Neuladen auf „wird erzeugt", ohne jede Meldung.
       this._capture(error);
@@ -202,11 +144,7 @@ export class ThumbnailBatchComponent implements OnDestroy {
     }
   }
 
-  private _finish(
-    entries: ZipEntry[],
-    league: League | null,
-    report: ThumbnailBatchReport
-  ): void {
+  private _finish(entries: ZipEntry[], report: ThumbnailBatchReport): void {
     if (!entries.length) {
       // Was schon erfasst ist, gehört auch in die Fehlermeldung: Die Ursache
       // (Rechte, Wappen, Schriften) steht in `report`, und ohne sie liest der
@@ -219,7 +157,7 @@ export class ThumbnailBatchComponent implements OnDestroy {
     }
 
     try {
-      saveBlob(buildZip(entries), this._zipName(league));
+      saveBlob(buildZip(entries), this._zipName());
     } catch (error) {
       // Bis hierher sind alle Bilder fertig; scheitert erst das Verpacken oder
       // das Ablegen, liegt trotzdem keine Datei im Ordner. Der Grund von
@@ -254,7 +192,7 @@ export class ThumbnailBatchComponent implements OnDestroy {
    * Ligaabruf erzeugt sonst beliebig lange Bilder ohne Wortmarke, ohne dass es
    * jemand erfährt.
    */
-  private async _league$(report: ThumbnailBatchReport): Promise<League | null> {
+  private async _league$(): Promise<League | null> {
     if (this._leagueLoaded) return this._league;
 
     const league = await firstValueFrom(
@@ -269,93 +207,16 @@ export class ThumbnailBatchComponent implements OnDestroy {
     if (league) {
       this._league = league;
       this._leagueLoaded = true;
-    } else {
-      report.recordLeagueMissing();
     }
 
     return league;
   }
 
-  private _input(
-    game: ThumbnailBatchGame,
-    league: League | null,
-    competition: CompetitionKey,
-    markUrl: string | null
-  ): ThumbnailInput {
-    return {
-      variant: 'livestream',
-      // Ohne Liga bleibt die Kopfzeile leer. Ein Rückfall auf das Spiel gibt es
-      // nicht: `meta_hash` nennt die Liga nicht, siehe `ThumbnailBatchGame`.
-      leagueName: league?.name ?? '',
-      competition,
-      markUrl,
-      home: {
-        // Vor der Auslosung einer K.-o.-Runde steht die Mannschaft noch nicht
-        // fest. Der Stream wird trotzdem vorher eingerichtet, also gibt es ein
-        // Bild mit Platzhalter statt keines.
-        name: game.home_team_name || 'N.N.',
-        logoUrl: game.home_team_logo || game.home_team_small_logo,
-      },
-      guest: {
-        name: game.guest_team_name || 'N.N.',
-        logoUrl: game.guest_team_logo || game.guest_team_small_logo,
-      },
-      // Datum und Halle kommen vom Spieltag und nicht vom Spiel -- ein Spiel
-      // hat keine eigene Datumsspalte, `Game#schedule_item` gibt für den
-      // Einzelweg dieselbe Angabe des Spieltags aus.
-      dateLine: thumbnailDateLine(
-        this.gameDay.date,
-        game.start_time,
-        'livestream'
-      ),
-      venue: this.gameDay.arena?.name || null,
-    };
-  }
-
-  /**
-   * Name im Archiv, etwa
-   * `spieltag-3-2026-10-12/01-18-00-uhc-sparkasse-weissenfels-mfbc-grimma.png`.
-   *
-   * Ein Ordner, damit das Auspacken nicht sechs Bilder frei in den
-   * Download-Ordner streut. Die laufende Nummer steht vorn, damit die
-   * Dateisortierung im Ordner der Reihenfolge des Spieltags entspricht: Danach
-   * werden die Streams angelegt. Die Spielnummer taugt dafür nicht -- sie ist
-   * Text, in K.-o.-Runden auch mal „HF1", und alphabetisch sortiert stünde
-   * „1000" vor „999". Sie ist zugleich der Schutz vor zwei gleichen Namen: Zwei
-   * lange Vereinsnamen können sich auf 40 Zeichen gekürzt gleichen, und ein
-   * doppelter Name wird von `buildZip` abgewiesen.
-   */
-  private _entryName(
-    index: number,
-    game: ThumbnailBatchGame,
-    input: ThumbnailInput
-  ): string {
-    const parts = [
-      String(index + 1).padStart(2, '0'),
-      filenameSlug(game.start_time || '') || 'ohne-zeit',
-      filenameSlug(input.home.name),
-      filenameSlug(input.guest.name),
-    ];
-
-    return `${this._folderName()}/${parts.join('-')}.png`;
-  }
-
-  private _folderName(): string {
-    return (
-      [
-        this.gameDay.number ? `spieltag-${this.gameDay.number}` : '',
-        filenameSlug(this.gameDay.date || ''),
-      ]
-        .filter(Boolean)
-        .join('-') || 'spieltag'
-    );
-  }
-
-  private _zipName(league: League | null): string {
+  private _zipName(): string {
     const parts = [
       'thumbnails',
-      filenameSlug(league?.name || ''),
-      this._folderName(),
+      filenameSlug(this._league?.name || ''),
+      folderName(this.gameDay),
     ].filter(Boolean);
 
     return `${parts.join('-')}.zip`;
@@ -377,99 +238,4 @@ export class ThumbnailBatchComponent implements OnDestroy {
       },
     });
   }
-}
-
-/**
- * Sammelt, was an den fertigen Bildern nicht stimmt, und fasst es zu EINER
- * Meldung samt Stufe zusammen.
- *
- * Eigene Klasse, weil hier zwei Dinge zusammenkommen, die getrennt nichts
- * aussagen: Bei einem einzelnen Bild steht der Hinweis neben der Vorschau, die
- * man ohnehin ansieht. Im Stapel sieht niemand die sechs Bilder an -- was fehlt,
- * muss also benannt werden, und zwar mit dem Spiel, sonst prüft man sechs
- * Dateien, um die eine zu finden.
- *
- * EIN Ausgang: Wer den Text bekommt, bekommt die Stufe dazu. Getrennt liefen
- * die beiden auseinander, und in der ersten Fassung taten sie es -- ein
- * Durchgang ohne Ligadaten wurde als grüner Erfolg gemeldet, mit dem
- * Problemsatz mitten darin.
- */
-class ThumbnailBatchReport {
-  private _leagueMissing = false;
-  private _missingCrest: string[] = [];
-  private _missingMark = false;
-  private _fallbackFonts = false;
-  private _failed: string[] = [];
-
-  public recordLeagueMissing(): void {
-    this._leagueMissing = true;
-  }
-
-  public recordRendered(
-    game: ThumbnailBatchGame,
-    result: ThumbnailResult
-  ): void {
-    if (result.missing.includes('home') || result.missing.includes('guest')) {
-      this._missingCrest.push(pairing(game));
-    }
-    if (result.missing.includes('mark')) this._missingMark = true;
-    if (!result.fontsLoaded) this._fallbackFonts = true;
-  }
-
-  public recordFailure(game: ThumbnailBatchGame): void {
-    this._failed.push(pairing(game));
-  }
-
-  /** Nur die Beanstandungen, ohne Kopfzeile. Leer, wenn alles stimmte. */
-  public problems(): string {
-    const notes: string[] = [];
-
-    if (this._failed.length) {
-      notes.push(
-        `Nicht erzeugt: ${this._failed.join(', ')}. Diese Bilder lassen sich einzeln in der Spielansicht holen.`
-      );
-    }
-
-    if (this._leagueMissing) {
-      notes.push(
-        'Die Ligadaten ließen sich nicht laden: Die Bilder tragen deshalb weder Liganamen noch Ligazeichen und Ligafarben.'
-      );
-    } else if (this._missingMark) {
-      notes.push('Das Ligazeichen ließ sich nicht laden.');
-    }
-
-    if (this._missingCrest.length) {
-      notes.push(
-        `Ein Vereinswappen fehlt bei: ${this._missingCrest.join(', ')}. Dort steht das Kürzel.`
-      );
-    }
-
-    if (this._fallbackFonts) {
-      notes.push(
-        'Die Schriften ließen sich nicht laden, die Bilder weichen deshalb von den Overlays ab.'
-      );
-    }
-
-    return notes.join(' ');
-  }
-
-  public result(
-    written: number,
-    total: number
-  ): { level: 'success' | 'warning'; text: string } {
-    const head =
-      written === total
-        ? `${written} ${written === 1 ? 'Thumbnail' : 'Thumbnails'} als ZIP gespeichert.`
-        : `${written} von ${total} Thumbnails als ZIP gespeichert.`;
-    const problems = this.problems();
-
-    return {
-      level: problems ? 'warning' : 'success',
-      text: problems ? `${head} ${problems}` : head,
-    };
-  }
-}
-
-function pairing(game: ThumbnailBatchGame): string {
-  return `${game.home_team_name || 'N.N.'} – ${game.guest_team_name || 'N.N.'}`;
 }

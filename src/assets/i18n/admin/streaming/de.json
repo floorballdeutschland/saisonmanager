@@ -1,0 +1,54 @@
+{
+  "title": "Streaming",
+  "intro": "Die Spiele, für die Livestreams auf dem Verbandskanal eingerichtet werden.",
+  "loading": "Spiele werden geladen …",
+  "loadError": "Die Spiele ließen sich nicht laden.",
+  "retry": "Erneut versuchen",
+  "empty": "In diesem Zeitraum steht kein Spiel einer Liga an, in der gestreamt wird.",
+  "selectedCount": "{{selected}} von {{total}} ausgewählt",
+  "filter": {
+    "modeRange": "Zeitraum",
+    "modeMatchday": "Spieltag einer Liga",
+    "from": "Von",
+    "to": "Bis",
+    "league": "Liga",
+    "leaguePlaceholder": "Liga wählen",
+    "matchday": "Spieltag",
+    "apply": "Anzeigen"
+  },
+  "table": {
+    "selectAll": "Alle auswählen",
+    "kickoff": "Anwurf",
+    "league": "Liga",
+    "matchdayShort": "{{number}}. Spieltag",
+    "pairing": "Partie",
+    "venue": "Halle",
+    "status": "Übertragung"
+  },
+  "status": {
+    "created": "Angelegt",
+    "ready": "Bereit",
+    "noKey": "Kein Streamschlüssel"
+  },
+  "actions": {
+    "thumbnails": "Thumbnails (ZIP)",
+    "thumbnailsBusy": "Thumbnails werden erzeugt …",
+    "create": "Streams anlegen ({{count}})",
+    "createBusy": "Streams werden angelegt …",
+    "privacy": "Sichtbarkeit",
+    "privacyPublic": "Öffentlich",
+    "privacyUnlisted": "Nicht gelistet",
+    "noGoogle": "Für dieses System ist kein Google-Zugang hinterlegt – Anlegen ist nicht möglich.",
+    "templatesFailed": "Die Titelvorlage ist nicht geladen – Anlegen gesperrt."
+  },
+  "templates": {
+    "heading": "Titel und Beschreibung",
+    "intro": "Die Vorlagen gelten für alle angelegten Übertragungen. Platzhalter:",
+    "title": "Titel",
+    "description": "Beschreibung",
+    "preview": "Vorschau am ersten ausgewählten Spiel",
+    "length": "{{count}} von {{max}} Zeichen",
+    "save": "Vorlagen speichern",
+    "reset": "Vorgabe wiederherstellen"
+  }
+}
