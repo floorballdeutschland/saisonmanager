@@ -1540,8 +1540,16 @@ describe('PlayerEditComponent', () => {
             },
           },
           {
+            // `selectedSeasonId$` steht bewusst auf einer VORsaison: Das ist
+            // die Lage, in der der Saison-Umschalter der Seitenleiste zurueck
+            // gestellt ist. Die Maske muss trotzdem die laufende Saison
+            // zugrunde legen -- siehe den Fall weiter unten.
             provide: AssociationService,
-            useValue: { seasons$: of([]), currentSeasonId$: of(18) },
+            useValue: {
+              seasons$: of([]),
+              selectedSeasonId$: of(17),
+              realCurrentSeasonId$: of(18),
+            },
           },
         ],
       });
@@ -1738,6 +1746,34 @@ describe('PlayerEditComponent', () => {
       expect(component.suspendLicenseId).toBeNull();
       expect(component.suspendPickedLicenseId).toBeNull();
       expect(component.licenseSuspendUntil).toBe('');
+    });
+
+    // Der Saison-Umschalter der Seitenleiste ist eine Ansicht, keine Regel.
+    // Solange beides an derselben Quelle hing, genuegte ein Blick ins Archiv
+    // einer Vorsaison: Danach galt der Maske die Vorsaison als laufend, die
+    // Lizenz der laufenden Saison stand in keiner Auswahl mehr, und statt
+    // eines Grundes zeigte die Seite den Satz fuer „gar keine Lizenz".
+    // Deshalb laeuft der Fall durch die gerenderte Maske und nicht ueber
+    // `component.currentSeasonId`: Nur so faellt die Verdrahtung auf, wenn
+    // jemand hier wieder `selectedSeasonId$` abonniert.
+    it('bleibt bei zurueckgestelltem Saison-Umschalter auf der laufenden Saison', () => {
+      const { fixture, component } = renderWithLicense();
+      const el = fixture.nativeElement as HTMLElement;
+
+      (
+        el.querySelector('[data-testid="open-suspend-form"]') as HTMLElement
+      ).click();
+      fixture.detectChanges();
+
+      expect(component.currentSeasonId).toBe(18);
+      expect(component.suspendableLicenses.map((l) => l.id)).toEqual(['L1']);
+      const options = Array.from(
+        el.querySelectorAll('[data-testid="suspend-license-choice"] option')
+      );
+      expect(options.length).toBe(2);
+      expect(el.textContent).not.toContain(
+        'keine offene Lizenz der laufenden Saison'
+      );
     });
 
     it('zeigt im Abschnitt ein Formular mit Lizenzauswahl statt der Beantragungssperre', () => {

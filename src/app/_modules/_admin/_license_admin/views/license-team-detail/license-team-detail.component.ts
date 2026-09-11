@@ -78,7 +78,11 @@ export class LicenseTeamDetailComponent implements OnInit {
         )
       );
 
-    this._associationService.currentSeasonId$.subscribe((seasonId) => {
+    // Die laufende Saison, nicht die im Umschalter gewählte: Sie entscheidet
+    // hier, ob ein `per_season`-Dokument als vorliegend gilt (siehe #getDoc),
+    // und muss dieselbe Antwort geben wie die API (LicenseDocumentPresentation
+    // liest Setting.current_season_id).
+    this._associationService.realCurrentSeasonId$.subscribe((seasonId) => {
       this.currentSeasonId = seasonId;
       this._cdr.markForCheck();
     });

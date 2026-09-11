@@ -132,7 +132,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   confirmDeleteDocumentId: number | null = null;
 
   seasons: Season[] = [];
-  currentSeasonId?: number;
+  /** Die laufende Saison laut Backend (AssociationService#realCurrentSeasonId$). */
+  currentSeasonId?: number | null;
 
   suspensions: PlayerSuspension[] = [];
   // Ebene 1: id der Lizenz, für die gerade das Sperr-Formular offen ist
@@ -234,7 +235,14 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         this.seasons = seasons ?? [];
         this._cdr.markForCheck();
       });
-    this._associationService.currentSeasonId$
+    // Die LAUFENDE Saison, nicht die im Saison-Umschalter gewählte: An ihr
+    // hängen hier Regeln (sperren, löschen, auf beantragt zurücksetzen), keine
+    // Ansicht. Mit `selectedSeasonId$` genügte ein Blick ins Archiv einer
+    // Vorsaison, damit das Profil die Lizenz der laufenden Saison nicht mehr
+    // als solche erkannte: kein Abzeichen, keine Knöpfe an der Lizenz und im
+    // Sperrformular keine Lizenz zur Auswahl -- alles ohne sichtbaren Grund
+    // und geheilt erst durch ein Neuladen der Seite.
+    this._associationService.realCurrentSeasonId$
       .pipe(takeUntil(this._destroy$))
       .subscribe((id) => {
         this.currentSeasonId = id;

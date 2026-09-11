@@ -65,14 +65,14 @@ export class FavoriteService {
   getFavorites(): void {
     const storageLeagues = this._storageService.getItem('fav');
 
-    this._associationService.currentSeasonId$
+    this._associationService.selectedSeasonId$
       .pipe(
-        tap((currentSeasonId) => {
+        tap((selectedSeasonId) => {
           if (storageLeagues) {
             // filter favorites by current season id; leagues of previous seasons are not accessible anymore
             const filteredStorageLeagues = JSON.parse(storageLeagues).filter(
               (league: { league: League; operation: GameOperation }) => {
-                return league.league.season_id === currentSeasonId.toString();
+                return league.league.season_id === selectedSeasonId.toString();
               }
             );
 

@@ -29,7 +29,26 @@ export class AssociationService {
   selectedStateAssociation$: Observable<StateAssociation | null>;
   stateAssociations$: Observable<StateAssociation[]>;
 
-  currentSeasonId$: Observable<number>;
+  /**
+   * Die im Saison-Umschalter der Seitenleiste GEWÄHLTE Saison – eine reine
+   * Ansichtsangabe. Sie startet auf der laufenden Saison, folgt danach aber
+   * jeder Nutzerwahl und jeder geöffneten Liga vergangener Saisons
+   * (LeagueService, selectedLeague$).
+   *
+   * Wer eine REGEL an der laufenden Saison festmacht – ob eine Lizenz noch
+   * bearbeitet werden darf, ob ein Dokument dieser Saison vorliegt –, nimmt
+   * `realCurrentSeasonId$`. Solange diese Quelle `currentSeasonId$` hiess,
+   * griffen beide danach: Wer im Archiv einer Vorsaison gewesen war, sah im
+   * Spielerprofil danach keine Lizenz der laufenden Saison mehr und konnte den
+   * Spieler nicht sperren, ohne dass die Seite einen Grund genannt hätte.
+   */
+  selectedSeasonId$: Observable<number>;
+  /**
+   * Die tatsächlich laufende Saison, wie das Backend sie führt
+   * (`Setting.current_season_id` über `init.json`). Unabhängig davon, was
+   * gerade angesehen wird, und deshalb der Wert für jede fachliche Regel.
+   */
+  realCurrentSeasonId$: Observable<number | null>;
   selectedSeason$: Observable<Season | null>;
   seasons$: Observable<Season[]>;
 
@@ -58,8 +77,18 @@ export class AssociationService {
       .pipe(tap((d) => this._selectedSeasonId$.next(d.current_season_id)))
       .subscribe();
 
-    this.currentSeasonId$ = this._selectedSeasonId$.pipe(
+    this.selectedSeasonId$ = this._selectedSeasonId$.pipe(
       switchMap((id) => (id !== null ? of(id) : of(0)))
+    );
+
+    // Aus `init` und nur von dort: Der Umschalter schreibt ausschliesslich in
+    // `_selectedSeasonId$`, diese Quelle bleibt davon unberührt. `null`, solange
+    // `init` nicht beantwortet ist – ein 0 wie oben wäre hier eine Behauptung
+    // („Saison 0 läuft") statt einer offenen Frage, und die Regeln darauf
+    // entschieden dann gegen eine Saison, die es nicht gibt.
+    this.realCurrentSeasonId$ = initData$.pipe(
+      map((_result) => _result.current_season_id ?? null),
+      shareReplay(1)
     );
 
     this.selectedSeason$ = combineLatest([

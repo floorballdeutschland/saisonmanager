@@ -66,11 +66,11 @@ describe('AssociationService', () => {
   // ihre Daten jedes Mal neu. Der Kommentar an der Methode benennt genau diese
   // Regression, ein Test dafür fehlte.
   describe('selectSeason', () => {
-    // Beobachtet wird ueber currentSeasonId$: die Id-Quelle selbst ist privat,
+    // Beobachtet wird ueber selectedSeasonId$: die Id-Quelle selbst ist privat,
     // und dieser Strom gibt sie unveraendert weiter (nur null wird zu 0).
     function watchEmissions(): number[] {
       const seen: number[] = [];
-      service.currentSeasonId$.subscribe((id) => seen.push(id));
+      service.selectedSeasonId$.subscribe((id) => seen.push(id));
       return seen;
     }
 
@@ -96,6 +96,36 @@ describe('AssociationService', () => {
 
       expect(seen.length - before).toBe(2);
       expect(seen[seen.length - 1]).toBe(18);
+    });
+  });
+
+  // Der Umschalter darf die laufende Saison nicht umdefinieren. Genau das war
+  // der Fehler: Beide Fragen hingen an derselben Quelle, und wer eine Liga der
+  // Vorsaison angesehen hatte, dem galt im Spielerprofil danach die Vorsaison
+  // als laufend -- die Lizenz der laufenden Saison war dort weder zu sperren
+  // noch zu loeschen, ohne dass die Seite einen Grund genannt haette.
+  describe('realCurrentSeasonId$', () => {
+    it('bleibt auf der laufenden Saison, wenn der Umschalter zurueckgeht', () => {
+      const seen: (number | null)[] = [];
+      service.realCurrentSeasonId$.subscribe((id) => seen.push(id));
+
+      httpMock.expectOne(initUrl).flush(initPayload);
+      service.selectSeason(17);
+
+      expect(seen).toEqual([18]);
+    });
+
+    // Solange init offen ist, gibt es keine Antwort -- und keine Behauptung.
+    // Ein 0 wie in selectedSeasonId$ waere hier eine: Die Regeln entschieden
+    // dann gegen eine Saison, die es nicht gibt.
+    it('emittiert vor der Antwort von init nichts', () => {
+      const seen: (number | null)[] = [];
+      service.realCurrentSeasonId$.subscribe((id) => seen.push(id));
+
+      expect(seen).toEqual([]);
+
+      httpMock.expectOne(initUrl).flush(initPayload);
+      expect(seen).toEqual([18]);
     });
   });
 });
