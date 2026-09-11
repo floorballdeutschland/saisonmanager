@@ -253,6 +253,17 @@
               </option>
             </select>
           </label>
+          @if (unlistedCount) {
+            <span
+              class="text-xs px-2 py-1 rounded-[5px] bg-fb-gray-200 text-fb-gray-700"
+              [title]="'streamingAdmin.hosts.hint' | transloco"
+            >
+              {{
+                "streamingAdmin.hosts.summary"
+                  | transloco: { count: unlistedCount }
+              }}
+            </span>
+          }
           @if (creating) {
             <span class="text-xs text-fb-gray-400">
               {{ createdDone }} / {{ createdTotal }}
@@ -310,6 +321,9 @@
                 {{ "streamingAdmin.table.venue" | transloco }}
               </th>
               <th class="py-2 pr-4 font-bold">
+                {{ "streamingAdmin.table.visibility" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
                 {{ "streamingAdmin.table.status" | transloco }}
               </th>
             </tr>
@@ -351,6 +365,40 @@
                     <div class="text-xs">{{ game.game_day?.hosting_club }}</div>
                   }
                 </td>
+                <td class="py-2 pr-4 align-top whitespace-nowrap">
+                  <!-- Nur als Vorschau, solange nichts angelegt ist: Für eine
+                       bestehende Übertragung zeigte die Spalte sonst, womit sie
+                       HEUTE angelegt WÜRDE -- und widerspräche der Wirklichkeit,
+                       sobald der Schalter oben seither umgestellt wurde. -->
+                  @if (!game.broadcast) {
+                    @if (privacyFor(game) === "unlisted") {
+                      <span class="font-medium">
+                        {{
+                          "streamingAdmin.actions.privacyUnlisted" | transloco
+                        }}
+                      </span>
+                      @if (game.game_day?.hosting_club_unlisted) {
+                        <div class="text-xs text-fb-gray-500">
+                          {{ "streamingAdmin.hosts.becauseOfHost" | transloco }}
+                        </div>
+                      }
+                    } @else {
+                      <span class="text-fb-gray-500">
+                        {{ "streamingAdmin.actions.privacyPublic" | transloco }}
+                      </span>
+                    }
+                  }
+                  @if (game.broadcast?.promote_to_public) {
+                    <div class="text-xs text-fb-gray-500">
+                      {{
+                        (game.broadcast?.promoted_at
+                          ? "streamingAdmin.hosts.promoted"
+                          : "streamingAdmin.hosts.promotePending"
+                        ) | transloco
+                      }}
+                    </div>
+                  }
+                </td>
                 <td class="py-2 pr-4 align-top">
                   @if (game.broadcast) {
                     <a
@@ -386,6 +434,61 @@
             }
           </tbody>
         </table>
+
+        <!-- Pflegeliste der Zusagen -->
+        <div class="mt-6 border-t border-fb-gray-700 pt-4">
+          <button
+            type="button"
+            (click)="toggleHosts()"
+            class="text-sm font-bold underline"
+          >
+            {{
+              (hostsOpen
+                ? "streamingAdmin.hosts.close"
+                : "streamingAdmin.hosts.open"
+              ) | transloco
+            }}
+          </button>
+
+          @if (hostsOpen) {
+            <p class="text-xs text-fb-gray-500 mt-2 max-w-3xl">
+              {{ "streamingAdmin.hosts.explanation" | transloco }}
+            </p>
+
+            @if (hostsLoading) {
+              <div class="text-sm text-fb-gray-500 py-3">
+                {{ "streamingAdmin.loading" | transloco }}
+              </div>
+            } @else if (hostsError) {
+              <div class="text-sm py-3">
+                {{ "streamingAdmin.hosts.loadError" | transloco }}
+                <button
+                  type="button"
+                  (click)="reloadHosts()"
+                  class="underline font-bold ml-1"
+                >
+                  {{ "streamingAdmin.retry" | transloco }}
+                </button>
+              </div>
+            } @else {
+              <ul class="mt-3 grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
+                @for (host of hosts; track host.id) {
+                  <li>
+                    <label class="text-sm flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        [checked]="host.stream_default_unlisted"
+                        [disabled]="hostsBusy.has(host.id)"
+                        (change)="setHost(host, !host.stream_default_unlisted)"
+                      />
+                      <span>{{ host.name }}</span>
+                    </label>
+                  </li>
+                }
+              </ul>
+            }
+          }
+        </div>
       </div>
     }
   }

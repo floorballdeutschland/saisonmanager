@@ -12,7 +12,22 @@ export interface StreamingGameDay {
   date: string;
   league_id: number;
   hosting_club: string | null;
+  hosting_club_id: number | null;
+  /**
+   * Hat der Ausrichter die Zusage, dass wir während seiner Übertragung nicht
+   * öffentlich senden? Steht am Spieltag und nicht am Spiel, weil sie am
+   * Ausrichter hängt -- gesendet wird aus der Halle.
+   */
+  hosting_club_unlisted: boolean;
   arena: { name: string | null; city: string | null } | null;
+}
+
+/** Ein Verein in der Pflegeliste der Zusagen. */
+export interface StreamingHost {
+  id: number;
+  name: string;
+  short_name: string | null;
+  stream_default_unlisted: boolean;
 }
 
 export interface StreamingLeague {
@@ -36,6 +51,10 @@ export interface StreamingBroadcast {
   created_at: string;
   ended_at: string | null;
   ended_reason: string | null;
+  /** Wird nach Ablauf der Frist automatisch öffentlich geschaltet. */
+  promote_to_public: boolean;
+  /** Zeitpunkt der automatischen Freischaltung, oder null. */
+  promoted_at: string | null;
 }
 
 /**
@@ -68,6 +87,11 @@ export interface StreamingGame {
   /** Streamschlüssel des AUSRICHTERS, nicht der Heimmannschaft. */
   stream_key: string | null;
   streamable: boolean;
+  /**
+   * Sichtbarkeit, mit der dieses Spiel angelegt wird, wenn niemand etwas
+   * anderes einstellt. Je Spiel, weil ein Wochenende beide Fälle enthält.
+   */
+  privacy_default: 'public' | 'unlisted';
   game_day: StreamingGameDay | null;
   league: StreamingLeague | null;
   broadcast: StreamingBroadcast | null;

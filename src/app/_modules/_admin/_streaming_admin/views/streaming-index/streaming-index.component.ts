@@ -16,7 +16,12 @@ import {
   YoutubeService,
   YoutubeStatusError,
 } from '@floorball/core';
-import { League, StreamingGame, StreamingTemplates } from '@floorball/types';
+import {
+  League,
+  StreamingGame,
+  StreamingHost,
+  StreamingTemplates,
+} from '@floorball/types';
 import {
   filenameSlug,
   renderThumbnailPng,
@@ -117,6 +122,14 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   public titleTemplate = '';
   public descriptionTemplate = '';
   public privacy: 'public' | 'unlisted' = 'public';
+
+  /** Pflegeliste der Zusagen; erst beim Aufklappen geladen. */
+  public hosts: StreamingHost[] = [];
+  public hostsOpen = false;
+  public hostsLoading = false;
+  public hostsError = false;
+  /** Vereine, deren Zusage gerade gespeichert wird -- sperrt den zweiten Klick. */
+  public hostsBusy = new Set<number>();
   public templatesOpen = false;
   public savingTemplates = false;
 
@@ -400,6 +413,123 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Die Sichtbarkeit, mit der dieses Spiel angelegt wird.
+   *
+   * Die Zusage des Ausrichters schlägt die Einstellung oben, aber nur in EINE
+   * Richtung: Sie kann ein Spiel nicht gelistet machen, nie öffentlich. Wer den
+   * Schalter auf „nicht gelistet" stellt, meint den ganzen Lauf; wer ihn auf
+   * „öffentlich" stellt, meint die Spiele ohne Zusage -- eine Zusage stillschweigend
+   * zu überfahren wäre der eine Fehler, der sich nicht zurücknehmen lässt.
+   *
+   * Soll ein Zusage-Ausrichter ausnahmsweise doch öffentlich senden, wird die
+   * Zusage in der Pflegeliste abgewählt, angelegt und wieder gesetzt. Ein zweiter
+   * Schalter „Zusagen übergehen" wäre ein Knopf, den man versehentlich gedrückt
+   * lässt.
+   */
+  public privacyFor(
+    game: StreamingGame,
+    fallback: 'public' | 'unlisted' = this.privacy
+  ): 'public' | 'unlisted' {
+    return game.privacy_default === 'unlisted' ? 'unlisted' : fallback;
+  }
+
+  /** Wie viele der anzulegenden Spiele nicht gelistet laufen. */
+  public get unlistedCount(): number {
+    return this.creatable.filter((game) => this.privacyFor(game) === 'unlisted')
+      .length;
+  }
+
+  /**
+   * Die Pflegeliste der Zusagen, beim ersten Aufklappen geladen.
+   *
+   * Nicht beim Seitenaufbau: Sie wird selten gebraucht -- eine Zusage entsteht
+   * einmal und gilt dann die Saison über --, und jeder Abruf beim Laden der
+   * Seite verzögert die Liste, um die es hier eigentlich geht.
+   */
+  public async toggleHosts(): Promise<void> {
+    this.hostsOpen = !this.hostsOpen;
+    if (!this.hostsOpen || this.hosts.length || this.hostsLoading) return;
+
+    await this.reloadHosts();
+  }
+
+  public async reloadHosts(): Promise<void> {
+    if (this.hostsLoading) return;
+
+    this.hostsLoading = true;
+    this.hostsError = false;
+    this._cdr.markForCheck();
+
+    const hosts = await firstValueFrom(
+      this._streamingService.getHosts().pipe(
+        catchError((error) => {
+          // Wie überall sonst in diesem Bauteil: Der Benutzer sieht den
+          // Fehlschlag, der Betrieb erfährt sonst nie davon -- und ausgerechnet
+          // diese Liste trägt die Zusagen.
+          this._capture(error);
+          return of(null);
+        })
+      )
+    );
+
+    this.hostsLoading = false;
+    if (hosts === null) {
+      // Kein stilles „keine Vereine": Die leere Liste wäre von einem
+      // fehlgeschlagenen Abruf nicht zu unterscheiden, und wer daraufhin eine
+      // Zusage für nicht gesetzt hält, legt öffentlich an.
+      this.hostsError = true;
+    } else {
+      this.hosts = hosts;
+    }
+    this._cdr.markForCheck();
+  }
+
+  /**
+   * Setzt oder entfernt die Zusage eines Vereins.
+   *
+   * Die Spieleliste wird danach neu geladen: Ihre Sichtbarkeitsspalte stammt aus
+   * derselben Angabe, und eine Liste, die noch „öffentlich" zeigt, während die
+   * Zusage bereits steht, ist schlimmer als eine, die kurz lädt.
+   */
+  public async setHost(host: StreamingHost, unlisted: boolean): Promise<void> {
+    if (this.hostsBusy.has(host.id)) return;
+
+    // Den Wert SOFORT setzen und bei einem Fehlschlag zurückdrehen. Der Browser
+    // hat das Kästchen bereits selbst umgeschaltet; bliebe der gebundene Wert
+    // unverändert, schriebe Angular nichts zurück, und die Liste zeigte einen
+    // Haken, den der Server nicht hat. Wer sich darauf verlässt, legt
+    // öffentlich an -- der eine Fehler, der sich nicht zurücknehmen lässt.
+    const vorher = host.stream_default_unlisted;
+    host.stream_default_unlisted = unlisted;
+    this.hostsBusy.add(host.id);
+    this._cdr.markForCheck();
+
+    const antwort = await firstValueFrom(
+      this._streamingService.updateHost(host.id, unlisted).pipe(
+        catchError((error) => {
+          this._capture(error);
+          return of(null);
+        })
+      )
+    );
+
+    this.hostsBusy.delete(host.id);
+
+    if (antwort === null) {
+      host.stream_default_unlisted = vorher;
+      this._notificationService.error(
+        `Die Zusage für ${host.name} konnte nicht gespeichert werden.`
+      );
+      this._cdr.markForCheck();
+      return;
+    }
+
+    host.stream_default_unlisted = antwort.stream_default_unlisted;
+    this._cdr.markForCheck();
+    if (this.loaded) this.load();
+  }
+
   /** Ohne Vorlage entstünden titellose Übertragungen auf dem Verbandskanal. */
   public get canCreate(): boolean {
     return (
@@ -573,6 +703,7 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
       return true;
     }
 
+    const sichtbarkeit = this.privacyFor(game, lauf.privacy);
     const titel = sanitizeStreamTitle(applyStreamTemplate(lauf.titel, game));
     let broadcastId: string;
     try {
@@ -580,7 +711,7 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
         title: titel,
         description: applyStreamTemplate(lauf.beschreibung, game),
         scheduledStartTime: game.start_at,
-        privacyStatus: lauf.privacy,
+        privacyStatus: sichtbarkeit,
       });
     } catch (error) {
       this._capture(error);
@@ -617,7 +748,7 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
       broadcastId,
       stream.id,
       titel,
-      lauf.privacy,
+      sichtbarkeit,
       false
     );
 
@@ -639,7 +770,7 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
         broadcastId,
         stream.id,
         titel,
-        lauf.privacy,
+        sichtbarkeit,
         true
       );
       gemeldet = gemeldet && veroeffentlicht;

@@ -23,7 +23,8 @@
     "matchdayShort": "{{number}}. Spieltag",
     "pairing": "Partie",
     "venue": "Halle",
-    "status": "Übertragung"
+    "status": "Übertragung",
+    "visibility": "Sichtbarkeit"
   },
   "status": {
     "created": "Angelegt",
@@ -50,5 +51,16 @@
     "length": "{{count}} von {{max}} Zeichen",
     "save": "Vorlagen speichern",
     "reset": "Vorgabe wiederherstellen"
+  },
+  "hosts": {
+    "open": "Zusagen der Ausrichter verwalten",
+    "close": "Zusagen ausblenden",
+    "explanation": "Einzelne Vereine senden ihre Heimspiele selbst. Ist ein Verein hier angehakt, laufen die Übertragungen seiner Spieltage bei uns während des Spiels „nicht gelistet\" und werden drei Stunden nach Sendeschluss automatisch öffentlich geschaltet und im Spielplan verlinkt. Die Zusage gilt für alle Partien, die er ausrichtet – auch die, in denen er nicht Heim ist.",
+    "summary": "{{count}} nicht gelistet",
+    "hint": "Zusage an den Ausrichter: während der Übertragung nicht gelistet, danach öffentlich.",
+    "becauseOfHost": "Zusage an den Ausrichter",
+    "promotePending": "wird nach dem Spiel öffentlich",
+    "promoted": "nachträglich öffentlich geschaltet",
+    "loadError": "Die Zusagen konnten nicht geladen werden."
   }
 }

@@ -298,7 +298,9 @@ describe('LicenseUserLeagueDetailComponent', () => {
         valid_until: null,
       });
 
-      expect(fixture.nativeElement.textContent).toContain('noch 0 von 3 Spielen');
+      expect(fixture.nativeElement.textContent).toContain(
+        'noch 0 von 3 Spielen'
+      );
     });
 
     it('lässt eine erteilte Zeile grün und ohne Hinweis', () => {

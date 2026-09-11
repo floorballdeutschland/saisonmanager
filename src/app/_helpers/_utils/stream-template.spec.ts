@@ -19,12 +19,15 @@ describe('stream-template', () => {
       vod_link: null,
       stream_key: 'abcd',
       streamable: true,
+      privacy_default: 'public',
       game_day: {
         id: 1,
         number: 1,
         date: '2026-09-12',
         league_id: 5,
         hosting_club: 'MFBC Leipzig',
+        hosting_club_id: 7,
+        hosting_club_unlisted: false,
         arena: { name: 'Sporthalle Dösner Weg', city: 'Leipzig' },
       },
       league: {

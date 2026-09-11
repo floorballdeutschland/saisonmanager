@@ -76,8 +76,9 @@ describe('AvailabilityIndexComponent', () => {
         },
       ],
     });
-    component = TestBed.createComponent(AvailabilityIndexComponent)
-      .componentInstance;
+    component = TestBed.createComponent(
+      AvailabilityIndexComponent
+    ).componentInstance;
     component.weekends = [WOCHENENDE];
   });
 

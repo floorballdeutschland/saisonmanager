@@ -23,7 +23,8 @@
     "matchdayShort": "Match day {{number}}",
     "pairing": "Fixture",
     "venue": "Venue",
-    "status": "Broadcast"
+    "status": "Broadcast",
+    "visibility": "Visibility"
   },
   "status": {
     "created": "Created",
@@ -50,5 +51,16 @@
     "length": "{{count}} of {{max}} characters",
     "save": "Save templates",
     "reset": "Restore default"
+  },
+  "hosts": {
+    "open": "Manage host agreements",
+    "close": "Hide agreements",
+    "explanation": "Some clubs stream their home games themselves. If a club is ticked here, broadcasts of its game days run as \"unlisted\" while the game is on and are switched to public three hours after the stream ends, then linked in the schedule. The agreement covers every game it hosts, including those in which it is not the home team.",
+    "summary": "{{count}} unlisted",
+    "hint": "Agreement with the host: unlisted during the broadcast, public afterwards.",
+    "becauseOfHost": "host agreement",
+    "promotePending": "goes public after the game",
+    "promoted": "switched to public",
+    "loadError": "The agreements could not be loaded."
   }
 }
