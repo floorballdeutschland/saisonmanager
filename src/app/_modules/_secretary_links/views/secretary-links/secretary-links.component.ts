@@ -28,6 +28,14 @@ import {
  * Vorlage: Ohne diese Angabe sucht man einen weiter entfernten Spieltag
  * vergeblich in der Liste und hält es für einen Fehler. Wird die Konstante
  * geändert, gehört der Text mit angepasst.
+ *
+ * Genauso tragend ist der Hinweis auf den Ausrichter: Gelistet sind seit
+ * api#551 nur Spieltage, die der eigene Verein ausrichtet, nicht die
+ * Auswärtsspieltage der eigenen Mannschaften. Ein Verein, der im Fenster nur
+ * auswärts antritt, bekommt damit eine leere Liste – ohne die Begründung sucht
+ * er den Fehler bei sich und meldet ihn als Bug. Genau so geschehen am
+ * 11.09.2026 für den TSV Rohrdorf-Thansau, dessen erster eigener Spieltag der
+ * Saison zwölf Tage hinter dem Fensterende lag.
  */
 @Component({
   templateUrl: './secretary-links.component.html',

@@ -353,6 +353,28 @@ describe('SecretaryLinksComponent', () => {
       );
     });
 
+    // Das Zeitfenster ist nur die eine Haelfte der Erklaerung: Gelistet sind
+    // ausschliesslich Spieltage des eigenen Vereins als Ausrichter (api#551).
+    // Wer im Fenster nur auswaerts antritt, sieht sonst eine unerklaerte leere
+    // Liste und meldet sie als Fehler.
+    it('nennt den Ausrichter als Bedingung', () => {
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain(
+        'die dein Verein ausrichtet'
+      );
+    });
+
+    it('nennt den Ausrichter auch, wenn nichts gefunden wurde', () => {
+      gameService.getSecretaryGameDays.and.returnValue(of([]));
+
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain(
+        'was dein Verein selbst ausrichtet'
+      );
+    });
+
     it('zeigt den Kopieren-Button erst nach dem Erzeugen', () => {
       gameService.createSecretaryLink.and.returnValue(of(createResponse));
       fixture.detectChanges();
