@@ -73,13 +73,13 @@ export class LeagueService {
 
     this.leagues$ = combineLatest([
       this._associationService.selectedAssociation$,
-      this._associationService.currentSeasonId$,
+      this._associationService.selectedSeasonId$,
     ]).pipe(
-      switchMap(([association, currentSeasonId]) => {
-        if (!association || !currentSeasonId) {
+      switchMap(([association, selectedSeasonId]) => {
+        if (!association || !selectedSeasonId) {
           return of(null);
         }
-        return this.getLeagues(association.id, currentSeasonId);
+        return this.getLeagues(association.id, selectedSeasonId);
       }),
       shareReplay()
     );

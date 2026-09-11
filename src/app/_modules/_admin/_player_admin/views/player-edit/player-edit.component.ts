@@ -132,7 +132,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   confirmDeleteDocumentId: number | null = null;
 
   seasons: Season[] = [];
-  currentSeasonId?: number;
+  /** Die laufende Saison laut Backend (AssociationService#realCurrentSeasonId$). */
+  currentSeasonId?: number | null;
 
   suspensions: PlayerSuspension[] = [];
   // Ebene 1: id der Lizenz, für die gerade das Sperr-Formular offen ist
@@ -234,7 +235,19 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         this.seasons = seasons ?? [];
         this._cdr.markForCheck();
       });
-    this._associationService.currentSeasonId$
+    // Die LAUFENDE Saison, nicht die im Saison-Umschalter gewählte: Hier hängt
+    // eine Regel daran, keine Ansicht. Gelesen wird sie im TS nur von
+    // `isCurrentSeasonLicense` und `licenseSeasonGroups`; über die erste hängt
+    // im Template (`@if (isCurrentSeasonLicense(license))`) der ganze Block mit
+    // den Knöpfen zum Sperren, Löschen und Zurücksetzen.
+    //
+    // Mit `selectedSeasonId$` genügte deshalb ein Blick ins Archiv einer
+    // Vorsaison, damit das Profil die Lizenz der laufenden Saison nicht mehr
+    // als solche erkannte: kein Abzeichen, keine Knöpfe an der Lizenz und im
+    // Sperrformular keine Lizenz zur Auswahl. Geholfen hätte, den Umschalter
+    // zurückzustellen oder die Seite neu zu laden -- nur nannte die Maske
+    // diesen Hebel nirgends, und genau das machte den Fehler unauffindbar.
+    this._associationService.realCurrentSeasonId$
       .pipe(takeUntil(this._destroy$))
       .subscribe((id) => {
         this.currentSeasonId = id;
