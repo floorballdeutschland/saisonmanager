@@ -232,8 +232,9 @@ describe('LicenseAdminDetailComponent', () => {
     function withDocuments(
       documents: Record<string, unknown> | undefined
     ): LicenseAdminDetailComponent {
-      const component = TestBed.createComponent(LicenseAdminDetailComponent)
-        .componentInstance;
+      const component = TestBed.createComponent(
+        LicenseAdminDetailComponent
+      ).componentInstance;
       component.player = {
         team_license: { documents },
       } as unknown as PlayerWithLicense;
@@ -265,9 +266,10 @@ describe('LicenseAdminDetailComponent', () => {
 
     it('reicht einen booleschen Wert nicht als Zeitpunkt durch', () => {
       expect(
-        withDocuments({ id_copy: true, id_copy_uploaded_at: true }).docUploadedAt(
-          'id_copy'
-        )
+        withDocuments({
+          id_copy: true,
+          id_copy_uploaded_at: true,
+        }).docUploadedAt('id_copy')
       ).toBeNull();
     });
   });

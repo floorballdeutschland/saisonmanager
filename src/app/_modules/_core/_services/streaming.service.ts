@@ -6,6 +6,7 @@ import {
   StreamingBroadcastResult,
   StreamingFilter,
   StreamingGame,
+  StreamingHost,
   StreamingTemplates,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
@@ -42,6 +43,26 @@ export class StreamingService {
     return this.http.get<StreamingGame[]>(
       `${environment.apiURL}admin/streaming/games`,
       { params }
+    );
+  }
+
+  /**
+   * Die Vereine, denen zugesagt wurde, dass ihre Heimspieltage bei uns nicht
+   * gelistet laufen -- plus alle, die in dieser Saison ausrichten.
+   */
+  public getHosts(): Observable<StreamingHost[]> {
+    return this.http.get<StreamingHost[]>(
+      `${environment.apiURL}admin/streaming/hosts`
+    );
+  }
+
+  public updateHost(
+    clubId: number,
+    unlisted: boolean
+  ): Observable<StreamingHost> {
+    return this.http.put<StreamingHost>(
+      `${environment.apiURL}admin/streaming/hosts/${clubId}`,
+      { stream_default_unlisted: unlisted }
     );
   }
 

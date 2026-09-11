@@ -38,7 +38,11 @@ describe('StreamingIndexComponent', () => {
     public streams = new Map<string, { id: string }>([
       ['abcd-efgh', { id: 'stream-1' }],
     ]);
-    public created: { title: string; description: string }[] = [];
+    public created: {
+      title: string;
+      description: string;
+      privacyStatus?: string;
+    }[] = [];
     public bound: [string, string][] = [];
     public thumbnails: string[] = [];
     public playlisted: [string, string][] = [];
@@ -61,6 +65,7 @@ describe('StreamingIndexComponent', () => {
     async createBroadcast(input: {
       title: string;
       description: string;
+      privacyStatus?: string;
     }): Promise<string> {
       if (this.createError) {
         // Wie der echte Dienst: Bei 401 ist die Anmeldung weg.
@@ -242,12 +247,15 @@ describe('StreamingIndexComponent', () => {
       vod_link: null,
       stream_key: 'abcd-efgh',
       streamable: true,
+      privacy_default: 'public',
       game_day: {
         id: 1,
         number: 1,
         date: '2026-09-12',
         league_id: 5,
         hosting_club: 'MFBC Leipzig',
+        hosting_club_id: 7,
+        hosting_club_unlisted: false,
         arena: { name: 'Dösner Weg', city: 'Leipzig' },
       },
       league: {
@@ -394,6 +402,8 @@ describe('StreamingIndexComponent', () => {
             created_at: '2026-09-01T10:00:00Z',
             ended_at: null,
             ended_reason: null,
+            promote_to_public: false,
+            promoted_at: null,
           },
         }),
       ]);
@@ -773,6 +783,96 @@ describe('StreamingIndexComponent', () => {
         '2026-09-11',
         '2026-09-13',
       ]);
+    });
+  });
+  // Ein paar Vereine senden ihre Heimspiele selbst. Ihnen wurde zugesagt, dass
+  // unsere Übertragung währenddessen nicht gelistet läuft -- und danach
+  // öffentlich wird. Die Zusage darf die Einstellung oben nur in EINE Richtung
+  // schlagen.
+  describe('Zusage des Ausrichters', () => {
+    function mitZusage(id: number) {
+      return game(id, {
+        game_day: {
+          ...game(id).game_day!,
+          hosting_club_unlisted: true,
+        },
+        privacy_default: 'unlisted' as const,
+      });
+    }
+
+    it('legt ein Spiel mit Zusage nicht gelistet an, obwohl oben öffentlich steht', async () => {
+      start([mitZusage(1)]);
+      component.privacy = 'public';
+      component.toggleAll();
+
+      await settle(component.createStreams());
+
+      expect(youtube.created[0].privacyStatus).toBe('unlisted');
+    });
+
+    // Die Gegenrichtung: „nicht gelistet" oben meint den ganzen Lauf.
+    it('nimmt ein Spiel ohne Zusage mit, wenn oben nicht gelistet steht', async () => {
+      start([game(1)]);
+      component.privacy = 'unlisted';
+      component.toggleAll();
+
+      await settle(component.createStreams());
+
+      expect(youtube.created[0].privacyStatus).toBe('unlisted');
+    });
+
+    it('lässt ein Spiel ohne Zusage öffentlich', async () => {
+      start([game(1)]);
+      component.privacy = 'public';
+      component.toggleAll();
+
+      await settle(component.createStreams());
+
+      expect(youtube.created[0].privacyStatus).toBe('public');
+    });
+
+    it('zählt, wie viele des Laufs nicht gelistet laufen', () => {
+      start([mitZusage(1), game(2)]);
+      component.toggleAll();
+
+      expect(component.unlistedCount).toBe(1);
+    });
+
+    it('lädt die Pflegeliste erst beim Aufklappen', async () => {
+      start([game(1)]);
+
+      http.expectNone(`${environment.apiURL}admin/streaming/hosts`);
+
+      const lauf = component.toggleHosts();
+      http
+        .expectOne(`${environment.apiURL}admin/streaming/hosts`)
+        .flush([
+          {
+            id: 7,
+            name: 'MFBC Leipzig',
+            short_name: 'MFBC',
+            stream_default_unlisted: false,
+          },
+        ]);
+      await lauf;
+
+      expect(component.hosts.length).toBe(1);
+    });
+
+    // Eine leere Liste wäre von einem fehlgeschlagenen Abruf nicht zu
+    // unterscheiden -- und wer daraufhin eine Zusage für nicht gesetzt hält,
+    // legt öffentlich an.
+    it('meldet einen fehlgeschlagenen Abruf der Pflegeliste', async () => {
+      start([game(1)]);
+
+      const lauf = component.toggleHosts();
+      http
+        .expectOne(`${environment.apiURL}admin/streaming/hosts`)
+        .flush('kaputt', { status: 500, statusText: 'Server Error' });
+      await lauf;
+
+      expect(component.hostsError).toBeTrue();
+      expect(component.hosts).toEqual([]);
     });
   });
 });

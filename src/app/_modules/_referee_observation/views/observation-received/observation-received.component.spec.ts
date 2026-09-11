@@ -19,9 +19,7 @@ describe('ObservationReceivedComponent', () => {
   });
 
   it('zeigt die erhaltenen Rueckmeldungen', () => {
-    service.getReceived.and.returnValue(
-      of([{ id: 5 } as RefereeObservation])
-    );
+    service.getReceived.and.returnValue(of([{ id: 5 } as RefereeObservation]));
     component.ngOnInit();
 
     expect(component.observations.length).toBe(1);

@@ -62,12 +62,10 @@ describe('RefereeHistoryComponent', () => {
   it('klappt alle geladenen Saisons auf', () => {
     component.ngOnInit();
 
-    httpMock
-      .expectOne(environment.apiURL + 'referee/history/games')
-      .flush([
-        { season_id: 18, season_name: '2026/2027', games: [game()] },
-        { season_id: 17, season_name: '2025/2026', games: [] },
-      ]);
+    httpMock.expectOne(environment.apiURL + 'referee/history/games').flush([
+      { season_id: 18, season_name: '2026/2027', games: [game()] },
+      { season_id: 17, season_name: '2025/2026', games: [] },
+    ]);
     httpMock.expectOne(environment.apiURL + 'referee/history/tests').flush([]);
 
     expect(component.expandedSeasons.has(18)).toBeTrue();
