@@ -12,6 +12,12 @@
 
   <h2 class="text-[28px] lg:text-[32px] pt-4 lg:pt-0 my-4 lg:my-8">
     {{ "licenseAdmin.leagueDetail.manageLeague" | transloco }}
+    @if (league) {
+      <span class="block text-[22px] lg:text-[24px]">{{ league.name }}</span>
+      <span class="block text-[14px] text-fb-gray-500 pt-1">{{
+        league.game_operation_name
+      }}</span>
+    }
   </h2>
 </div>
 
