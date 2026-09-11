@@ -31,8 +31,16 @@ describe('TransferRequestListComponent', () => {
         last_name: 'Mustermann',
         birthdate: '1995-03-15',
       },
-      former_club: { id: 11, name: 'Heimverein' },
-      requesting_club: { id: 12, name: 'Zweitverein' },
+      former_club: {
+        id: 11,
+        name: 'Heimverein',
+        state_association_short_name: 'ALV',
+      },
+      requesting_club: {
+        id: 12,
+        name: 'Zweitverein',
+        state_association_short_name: 'BLV',
+      },
       ...overrides,
     }) as TransferRequest;
 
@@ -63,6 +71,28 @@ describe('TransferRequestListComponent', () => {
   });
 
   afterEach(() => httpMock.verify());
+
+  // downloadCsv haengt die Datei an ein <a> und klickt es an. Der Klick bleibt
+  // stumm, der Inhalt wird ueber den Blob gelesen -- gleiches Muster wie in
+  // player-vm-index.component.spec.ts.
+  async function csvZeilen(fixture: {
+    componentInstance: { exportCsv: () => void };
+  }): Promise<string[]> {
+    const blobs: Blob[] = [];
+    spyOn(URL, 'createObjectURL').and.callFake((blob: Blob | MediaSource) => {
+      blobs.push(blob as Blob);
+      return 'blob:test';
+    });
+    spyOn(URL, 'revokeObjectURL');
+    spyOn(HTMLAnchorElement.prototype, 'click');
+
+    fixture.componentInstance.exportCsv();
+
+    expect(blobs.length).toBe(1);
+    return (await blobs[0].text())
+      .split(/\r?\n/)
+      .filter((z) => z.trim().length);
+  }
 
   function geladen(zeilen: TransferRequest[]) {
     const fixture = TestBed.createComponent(TransferRequestListComponent);
@@ -123,29 +153,44 @@ describe('TransferRequestListComponent', () => {
       request({ id: 2, status: 'withdrawn' }),
     ]);
 
-    // downloadCsv haengt die Datei an ein <a> und klickt es an. Der Klick
-    // bleibt stumm, der Inhalt wird ueber den Blob gelesen -- gleiches Muster
-    // wie in player-vm-index.component.spec.ts.
-    const blobs: Blob[] = [];
-    spyOn(URL, 'createObjectURL').and.callFake((blob: Blob | MediaSource) => {
-      blobs.push(blob as Blob);
-      return 'blob:test';
-    });
-    spyOn(URL, 'revokeObjectURL');
-    spyOn(HTMLAnchorElement.prototype, 'click');
-
-    fixture.componentInstance.exportCsv();
-
-    expect(blobs.length).toBe(1);
-    const zeilen = (await blobs[0].text())
-      .split(/\r?\n/)
-      .filter((z) => z.trim().length);
+    const zeilen = await csvZeilen(fixture);
 
     // Kopfzeile plus genau eine Datenzeile: der annullierte Vorgang fehlt.
     expect(zeilen.length).toBe(2);
     expect(zeilen[0]).toContain('Status');
     expect(zeilen[1]).toContain('Mustermann');
     expect(zeilen[1]).toContain('02.09.2026');
+  });
+
+  // Die Abrechnung haengt an der Zuordnung Verein -> Landesverband. Geprueft
+  // wird die Reihenfolge mit, nicht nur das Vorkommen: Das Kuerzel steht
+  // jeweils direkt hinter seinem Verein, sonst liesse sich in der Datei nicht
+  // erkennen, welches Kuerzel zu welcher Seite gehoert.
+  it('schreibt das LV-Kuerzel hinter den jeweiligen Verein', async () => {
+    const fixture = geladen([request({ id: 1, status: 'approved' })]);
+    const zeilen = await csvZeilen(fixture);
+
+    expect(zeilen[1]).toContain('"Heimverein";"ALV";"Zweitverein";"BLV"');
+  });
+
+  // Kein Rueckfall auf den Verbandsnamen: `short_name` ist ein optionales Feld
+  // der Verbandsmaske, und ein Verein ohne Landesverband kommt im Bestand vor.
+  it('laesst die LV-Spalte leer, wenn kein Kuerzel mitkommt', async () => {
+    const fixture = geladen([
+      request({
+        id: 1,
+        status: 'approved',
+        former_club: { id: 11, name: 'Heimverein' },
+        requesting_club: {
+          id: 12,
+          name: 'Zweitverein',
+          state_association_short_name: null,
+        },
+      }),
+    ]);
+    const zeilen = await csvZeilen(fixture);
+
+    expect(zeilen[1]).toContain('"Heimverein";"";"Zweitverein";""');
   });
 
   // --- Saison-Schalter --------------------------------------------------------
