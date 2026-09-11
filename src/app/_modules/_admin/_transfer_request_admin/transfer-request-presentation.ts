@@ -82,7 +82,12 @@ export function exportTransferCsv(
     transloco.translate('transferRequestAdmin.list.csvType'),
     transloco.translate('transferRequestAdmin.list.csvDirect'),
     transloco.translate('transferRequestAdmin.list.csvFormerClub'),
+    // Der Verband jeweils direkt hinter seinem Verein: So stehen die beiden
+    // Angaben, die zusammengehoeren, nebeneinander, und die bestehenden
+    // Spalten behalten ihre Reihenfolge.
+    transloco.translate('transferRequestAdmin.list.csvFormerClubLv'),
     transloco.translate('transferRequestAdmin.list.csvRequestingClub'),
+    transloco.translate('transferRequestAdmin.list.csvRequestingClubLv'),
     transloco.translate('transferRequestAdmin.list.csvApprovedAt'),
     transloco.translate('transferRequestAdmin.list.csvStatus'),
   ];
@@ -95,7 +100,14 @@ export function exportTransferCsv(
       ? transloco.translate('transferRequestAdmin.list.csvYes')
       : transloco.translate('transferRequestAdmin.list.csvNo'),
     r.former_club.name,
+    // Ohne Rueckfall auf den Verbandsnamen: Das Kuerzel ist ein optionales
+    // Feld der Verbandsmaske, und eine Spalte, die mal ein Kuerzel und mal
+    // einen ausgeschriebenen Namen traegt, laesst sich nicht auswerten. Fehlt
+    // es -- oder hat der Verein gar keinen Landesverband --, bleibt die Zelle
+    // leer und das Kuerzel wird im Verband nachgetragen.
+    r.former_club.state_association_short_name ?? '',
     r.requesting_club.name,
+    r.requesting_club.state_association_short_name ?? '',
     r.lv_approved_at ? formatTransferDate(r.lv_approved_at) : '',
     // Der Status gehoert in die Ausfuhr, weil aus ihr abgerechnet wird: Eine
     // Freigabe, die spaeter widerrufen wurde, war trotzdem erteilt und hat die

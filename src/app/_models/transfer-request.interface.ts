@@ -40,6 +40,18 @@ export interface TransferRequestPlayer {
 export interface TransferRequestClub {
   id: number;
   name: string;
+
+  /**
+   * Kürzel des im Verein eingetragenen Landesverbands, für die CSV-Ausfuhr der
+   * Vorgänge (fe#439). Bewusst der eingetragene Verband und nicht der
+   * Spielverbund: Über den Antrag entscheidet die Wurzel des Verbandsbaums,
+   * abgerechnet wird aber beim eingetragenen Verband.
+   *
+   * Leer, wenn der Verband kein Kürzel gepflegt hat oder der Verein keinem
+   * Landesverband zugeordnet ist -- beides kommt im Bestand vor, und ein
+   * Rückfall auf den ausgeschriebenen Namen machte die Spalte unauswertbar.
+   */
+  state_association_short_name?: string | null;
 }
 
 /**
