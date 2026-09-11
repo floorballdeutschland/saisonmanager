@@ -69,7 +69,7 @@
     "nextStepsHeading": "What comes next",
     "nextStep1": "Send the key as an X-Api-Key header with every request.",
     "rateLimit": "The access is capped at {{limit}} requests per minute. Beyond that the API responds with status 429 and states the wait in seconds in the Retry-After header.",
-    "nextStep2": "The endpoint documentation is at doku.saisonmanager.org.",
+    "nextStep2": "The endpoint documentation is at doku.saisonmanager.de.",
     "nextStep3": "Get in touch if the key is lost or if you are planning a second project.",
     "alreadyRevealed": "The key has already been collected through this link. For security reasons we only store its check value, so we cannot show it again. Contact it@floorball.de if you need new access.",
     "expired": "This link has expired. Contact it@floorball.de and we will issue a new one.",
