@@ -22,4 +22,17 @@ describe('ScheduleIndexComponent', () => {
     const fixture = TestBed.createComponent(ScheduleIndexComponent);
     expect(fixture.componentInstance).toBeTruthy();
   });
+
+  it('exportUrl zeigt auf die gerade geöffnete Liga', () => {
+    const fixture = TestBed.createComponent(ScheduleIndexComponent);
+    const component = fixture.componentInstance;
+    component.leagueId = 944;
+
+    expect(component.exportUrl('xlsx')).toContain(
+      'admin/leagues/944/schedule_export.xlsx'
+    );
+    expect(component.exportUrl('csv')).toContain(
+      'admin/leagues/944/schedule_export.csv'
+    );
+  });
 });

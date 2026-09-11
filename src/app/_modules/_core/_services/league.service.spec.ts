@@ -155,6 +155,15 @@ describe('LeagueService', () => {
     expect(associationServiceMock.selectSeason).not.toHaveBeenCalled();
   });
 
+  it('adminScheduleExportUrl zeigt auf den Export der Liga', () => {
+    expect(service.adminScheduleExportUrl(944, 'xlsx')).toBe(
+      `${environment.apiURL}admin/leagues/944/schedule_export.xlsx`
+    );
+    expect(service.adminScheduleExportUrl(944, 'csv')).toBe(
+      `${environment.apiURL}admin/leagues/944/schedule_export.csv`
+    );
+  });
+
   it('changeSeason nach clearLeague stellt die Saison wieder direkt um', () => {
     const route = {
       snapshot: { params: { leagueId: '944', association: 'fvd' } },
