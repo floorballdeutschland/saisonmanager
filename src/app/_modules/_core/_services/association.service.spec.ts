@@ -50,6 +50,10 @@ describe('AssociationService', () => {
     service.seasons$.pipe(take(1)).subscribe();
     service.associations$.pipe(take(1)).subscribe();
     service.stateAssociations$.pipe(take(1)).subscribe();
+    // Ausdrücklich mit dabei: `realCurrentSeasonId$` hängt am selben `init` und
+    // trägt keinen eigenen `shareReplay`. Ohne diese Zeile hinge die Zusage nur
+    // implizit an den Geschwisterströmen.
+    service.realCurrentSeasonId$.pipe(take(1)).subscribe();
 
     // match statt expectOne: expectOne wirft bei zwei Requests mit einer
     // Jasmine-fremden Meldung, match liefert die Zahl und macht die Erwartung
@@ -102,10 +106,10 @@ describe('AssociationService', () => {
   // Der Umschalter darf die laufende Saison nicht umdefinieren. Genau das war
   // der Fehler: Beide Fragen hingen an derselben Quelle, und wer eine Liga der
   // Vorsaison angesehen hatte, dem galt im Spielerprofil danach die Vorsaison
-  // als laufend -- die Lizenz der laufenden Saison war dort weder zu sperren
-  // noch zu loeschen, ohne dass die Seite einen Grund genannt haette.
+  // als laufend – die Lizenz der laufenden Saison war dort weder zu sperren
+  // noch zu löschen, ohne dass die Seite einen Grund genannt hätte.
   describe('realCurrentSeasonId$', () => {
-    it('bleibt auf der laufenden Saison, wenn der Umschalter zurueckgeht', () => {
+    it('bleibt auf der laufenden Saison, wenn der Umschalter zurückgeht', () => {
       const seen: (number | null)[] = [];
       service.realCurrentSeasonId$.subscribe((id) => seen.push(id));
 
@@ -115,8 +119,8 @@ describe('AssociationService', () => {
       expect(seen).toEqual([18]);
     });
 
-    // Solange init offen ist, gibt es keine Antwort -- und keine Behauptung.
-    // Ein 0 wie in selectedSeasonId$ waere hier eine: Die Regeln entschieden
+    // Solange init offen ist, gibt es keine Antwort – und keine Behauptung.
+    // Eine 0 wie in selectedSeasonId$ wäre hier eine: Die Regeln entschieden
     // dann gegen eine Saison, die es nicht gibt.
     it('emittiert vor der Antwort von init nichts', () => {
       const seen: (number | null)[] = [];

@@ -31,16 +31,19 @@ export class AssociationService {
 
   /**
    * Die im Saison-Umschalter der Seitenleiste GEWÄHLTE Saison – eine reine
-   * Ansichtsangabe. Sie startet auf der laufenden Saison, folgt danach aber
-   * jeder Nutzerwahl und jeder geöffneten Liga vergangener Saisons
-   * (LeagueService, selectedLeague$).
+   * Ansichtsangabe. Sie steht bis zur Antwort von `init` auf 0, wird von dort
+   * auf die laufende Saison gesetzt und folgt danach jeder Nutzerwahl und
+   * jeder geöffneten Liga vergangener Saisons (LeagueService,
+   * selectedLeague$).
    *
    * Wer eine REGEL an der laufenden Saison festmacht – ob eine Lizenz noch
    * bearbeitet werden darf, ob ein Dokument dieser Saison vorliegt –, nimmt
-   * `realCurrentSeasonId$`. Solange diese Quelle `currentSeasonId$` hiess,
-   * griffen beide danach: Wer im Archiv einer Vorsaison gewesen war, sah im
+   * `realCurrentSeasonId$`. Der Fehler war, dass ein einziger Strom beide
+   * Fragen beantwortete: Wer im Archiv einer Vorsaison gewesen war, sah im
    * Spielerprofil danach keine Lizenz der laufenden Saison mehr und konnte den
-   * Spieler nicht sperren, ohne dass die Seite einen Grund genannt hätte.
+   * Spieler nicht sperren, ohne dass die Seite einen Grund genannt hätte. Die
+   * Umbenennung ist die Folge dieser Trennung, nicht der Fix – sie macht nur
+   * an jeder Aufrufstelle sichtbar, welche der beiden Fragen dort gemeint ist.
    */
   selectedSeasonId$: Observable<number>;
   /**
@@ -82,13 +85,20 @@ export class AssociationService {
     );
 
     // Aus `init` und nur von dort: Der Umschalter schreibt ausschliesslich in
-    // `_selectedSeasonId$`, diese Quelle bleibt davon unberührt. `null`, solange
-    // `init` nicht beantwortet ist – ein 0 wie oben wäre hier eine Behauptung
-    // („Saison 0 läuft") statt einer offenen Frage, und die Regeln darauf
-    // entschieden dann gegen eine Saison, die es nicht gibt.
+    // `_selectedSeasonId$`, diese Quelle bleibt davon unberührt.
+    //
+    // Vor der Antwort von `init` emittiert der Strom NICHTS – anders als oben,
+    // wo dieselbe Lage als 0 herauskommt. Das ist Absicht: Eine 0 wäre eine
+    // Behauptung („Saison 0 läuft") statt einer offenen Frage, und die Regeln
+    // darauf entschieden gegen eine Saison, die es nicht gibt. Wer den Strom
+    // abonniert, behält seinen eigenen Anfangswert, bis die Antwort da ist,
+    // und muss diesen Zustand als „noch unbekannt" behandeln.
+    //
+    // `?? null` fängt nur die Antwort ohne das Feld – nach `InitData` gibt es
+    // die nicht, aber eine ältere API soll hier keine `undefined` in die
+    // Vergleiche der Abnehmer schieben.
     this.realCurrentSeasonId$ = initData$.pipe(
-      map((_result) => _result.current_season_id ?? null),
-      shareReplay(1)
+      map((_result) => _result.current_season_id ?? null)
     );
 
     this.selectedSeason$ = combineLatest([

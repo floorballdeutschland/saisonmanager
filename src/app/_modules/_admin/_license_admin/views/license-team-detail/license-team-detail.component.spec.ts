@@ -6,7 +6,13 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { getTranslocoTestingModule } from '@floorball/core';
 import { UikitCommonModule } from '@floorball/uikit/common';
-import { LicenseHash, PlayerWithLicense } from '@floorball/types';
+import {
+  LicenseDocument,
+  LicenseHash,
+  PlayerWithLicense,
+} from '@floorball/types';
+import { AssociationService } from '@floorball/core';
+import { NEVER, Observable, of } from 'rxjs';
 
 describe('LicenseTeamDetailComponent', () => {
   beforeEach(async () => {
@@ -23,6 +29,89 @@ describe('LicenseTeamDetailComponent', () => {
   it('should create', () => {
     const fixture = TestBed.createComponent(LicenseTeamDetailComponent);
     expect(fixture.componentInstance).toBeTruthy();
+  });
+
+  // Ob ein `per_season`-Dokument vorliegt, entscheidet die LAUFENDE Saison:
+  // Der Upload von dieser Maske aus wird mit ihr gestempelt
+  // (Admin::LicenseDocumentsController#create). Hinge die Prüfung stattdessen
+  // am Saison-Umschalter der Seitenleiste, zählte nach einem Blick ins Archiv
+  // einer Vorsaison deren Zustimmung als vorliegend -- der Verein lüde nichts
+  // nach, und die API lehnte den Antrag später ab.
+  describe('getDoc', () => {
+    const dokumente = [
+      { id: 1, document_type: 'parental_consent', season_id: 17 },
+      { id: 2, document_type: 'parental_consent', season_id: 18 },
+      { id: 3, document_type: 'passport', season_id: 16 },
+    ] as LicenseDocument[];
+
+    /**
+     * Eigenes TestBed: Die Saison kommt über den Verbandsdienst in ngOnInit und
+     * wird bewusst nicht am Feld gesetzt -- geprüft ist sonst die Rechenregel
+     * und nicht die Verdrahtung, und nur die war der Fehler.
+     */
+    function build(
+      laufend: Observable<number | null>
+    ): LicenseTeamDetailComponent {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [
+          HttpClientTestingModule,
+          RouterTestingModule,
+          getTranslocoTestingModule(),
+        ],
+        declarations: [LicenseTeamDetailComponent],
+        providers: [
+          {
+            // Der Umschalter steht auf einer Vorsaison, die laufende ist 18.
+            provide: AssociationService,
+            useValue: {
+              selectedSeasonId$: of(17),
+              realCurrentSeasonId$: laufend,
+            },
+          },
+        ],
+      });
+
+      const component = TestBed.createComponent(
+        LicenseTeamDetailComponent
+      ).componentInstance;
+      component.licenseHash = {
+        document_types: [
+          { key: 'parental_consent', validity: 'per_season' },
+          { key: 'passport', validity: 'once' },
+        ],
+      } as unknown as LicenseHash;
+      component.documents = { 7: dokumente };
+      component.ngOnInit();
+
+      return component;
+    }
+
+    it('nimmt das Dokument der laufenden Saison, nicht der gewählten', () => {
+      const component = build(of(18));
+
+      expect(component.getDoc(7, 'parental_consent')?.id).toBe(2);
+    });
+
+    // `once` gilt saisonübergreifend -- der Saisonfilter darf hier gar nicht
+    // erst greifen, sonst forderte die Maske einen Spielerpass jede Saison neu.
+    it('lässt eine Dokumentart ohne Saisonbindung unberührt', () => {
+      const component = build(of(18));
+
+      expect(component.getDoc(7, 'passport')?.id).toBe(3);
+    });
+
+    // Solange `init` nicht geantwortet hat, steht die laufende Saison nicht
+    // fest. Ohne den Riegel in #getDoc fiele die Prüfung auf den Zweig ohne
+    // Saison zurück und meldete die Zustimmung der VORsaison als vorliegend --
+    // und beantwortet `init` gar nicht, bliebe es dabei.
+    it('meldet bei unbekannter Saison kein per_season-Dokument als vorliegend', () => {
+      const component = build(NEVER);
+
+      expect(component.currentSeasonId).toBeNull();
+      expect(component.getDoc(7, 'parental_consent')).toBeUndefined();
+      expect(component.getDoc(7, 'passport')?.id).toBe(3);
+    });
   });
 
   // Der Upload der Elternzustimmung wurde vorher bei jeder minderjährigen
