@@ -1079,6 +1079,152 @@ describe('PlayerEditComponent', () => {
     });
   });
 
+  // Zurücksetzen auf „beantragt" ist der Gegenpart zum Löschen: Der Antrag geht
+  // zurück in die Entscheidungsliste der Liga, statt zu verschwinden. Ob eine
+  // Lizenz überhaupt zurücksetzbar ist, entscheidet die API je Lizenz
+  // (License.resettable?: laufende Saison, Status erteilt, eigener
+  // Spielbetrieb) und liefert es als `reset_allowed` mit.
+  describe('Lizenz zurücksetzen', () => {
+    function license(resetAllowed?: boolean): PlayerLicense {
+      return {
+        id: 'lizenz-1',
+        team_id: 1,
+        season_id: 18,
+        league_class_id: '',
+        requested_at: '',
+        history: [{ license_status_id: 1 }],
+        reset_allowed: resetAllowed,
+      } as unknown as PlayerLicense;
+    }
+
+    function build(
+      permissions: Record<string, boolean>,
+      licenses: PlayerLicense[]
+    ): PlayerEditComponent {
+      currentUser$.next({ permissions } as unknown as User);
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.componentInstance.player = { id: 7, licenses } as Player;
+      fixture.detectChanges(false);
+      return fixture.componentInstance;
+    }
+
+    it('bietet das Zurücksetzen an, wenn Recht und Auskunft der API zusammenkommen', () => {
+      const lic = license(true);
+      const component = build({ player_reset_license: true }, [lic]);
+
+      expect(component.canResetLicense(lic)).toBe(true);
+    });
+
+    // Eigenes Recht, nicht das vom Löschen: Wer löschen darf, darf damit noch
+    // nicht zurücksetzen — und umgekehrt.
+    it('bietet es mit dem Recht zum Löschen allein nicht an', () => {
+      const lic = license(true);
+      const component = build({ player_delete_license: true }, [lic]);
+
+      expect(component.canResetLicense(lic)).toBe(false);
+    });
+
+    // Eine beantragte, abgelehnte, gesperrte oder abgerechnete Lizenz kommt mit
+    // reset_allowed: false, ebenso die Lizenz eines fremden Spielbetriebs. Der
+    // Knopf darf dort nicht stehen, sonst führte er in ein 422 oder 403.
+    it('bietet es nicht an, wenn die API die Lizenz nicht freigibt', () => {
+      const lic = license(false);
+      const component = build({ player_reset_license: true }, [lic]);
+
+      expect(component.canResetLicense(lic)).toBe(false);
+    });
+
+    // Frontend-Deploy vor API-Deploy: Fehlt das Feld, ist die API älter. Dann
+    // lieber kein Knopf als einer, dessen Endpunkt die Pflicht-Begründung noch
+    // nicht kennt.
+    it('bietet es nicht an, wenn die API das Feld nicht liefert', () => {
+      const lic = license(undefined);
+      const component = build({ player_reset_license: true }, [lic]);
+
+      expect(component.canResetLicense(lic)).toBe(false);
+    });
+
+    it('schickt den Status 2 mit der Begründung', () => {
+      const lic = license(true);
+      const component = build({ player_reset_license: true }, [lic]);
+
+      component.openLicenseReset(lic);
+      component.licenseResetReason = '  Spielerpass fehlte  ';
+      component.submitLicenseReset(lic);
+
+      const req = TestBed.inject(HttpTestingController).expectOne(
+        `${environment.apiURL}admin/players/7/handle_license_request.json`
+      );
+      expect(req.request.body.license_id).toBe('lizenz-1');
+      expect(req.request.body.license_status_id).toBe(2);
+      // Getrimmt wie in der API, sonst stünde die Begründung mit Leerzeichen
+      // in der Historie.
+      expect(req.request.body.reason).toBe('Spielerpass fehlte');
+      req.flush({ success: true });
+
+      expect(component.resetLicenseId).toBe(null);
+    });
+
+    // Die API weist eine Begründung aus lauter Leerzeichen ab. Die Maske soll
+    // dafür gar nicht erst losschicken.
+    it('schickt ohne Begründung nichts', () => {
+      const lic = license(true);
+      const component = build({ player_reset_license: true }, [lic]);
+
+      component.openLicenseReset(lic);
+      component.licenseResetReason = '   ';
+      component.submitLicenseReset(lic);
+
+      TestBed.inject(HttpTestingController).expectNone(
+        `${environment.apiURL}admin/players/7/handle_license_request.json`
+      );
+    });
+
+    // Der zweite Klick träfe eine Lizenz, die schon auf „beantragt" steht: Die
+    // API schreibt dafür nichts mehr, die Erfolgsmeldung erschiene aber zweimal.
+    it('schickt bei zwei schnellen Klicks nur eine Anfrage', () => {
+      const lic = license(true);
+      const component = build({ player_reset_license: true }, [lic]);
+
+      component.openLicenseReset(lic);
+      component.licenseResetReason = 'zu früh erteilt';
+      component.submitLicenseReset(lic);
+      component.submitLicenseReset(lic);
+
+      TestBed.inject(HttpTestingController).expectOne(
+        `${environment.apiURL}admin/players/7/handle_license_request.json`
+      );
+    });
+
+    // Getrennte Felder für die beiden Formulare: Sonst stünde die Begründung
+    // für das Löschen im Formular zum Zurücksetzen.
+    it('teilt den Freitext nicht mit dem Lösch-Formular', () => {
+      const lic = license(true);
+      const component = build(
+        { player_reset_license: true, player_delete_license: true },
+        [lic]
+      );
+
+      component.licenseDeleteReason = 'löschen, weil doppelt';
+      component.openLicenseReset(lic);
+
+      expect(component.licenseResetReason).toBe('');
+      expect(component.licenseDeleteReason).toBe('löschen, weil doppelt');
+    });
+
+    it('räumt das Formular beim Abbrechen ab', () => {
+      const lic = license(true);
+      const component = build({ player_reset_license: true }, [lic]);
+
+      component.openLicenseReset(lic);
+      component.licenseResetReason = 'Tippfehler';
+      component.cancelLicenseReset();
+
+      expect(component.resetLicenseId).toBe(null);
+      expect(component.licenseResetReason).toBe('');
+    });
+  });
+
   // fe#395: Dauer in Spielen und waehlbarer Geltungsbereich.
   describe('Sperrformular', () => {
     function licenseWithLeague(): PlayerLicense {
@@ -1547,7 +1693,10 @@ describe('PlayerEditComponent', () => {
       const component = build([pokalLizenz]);
 
       component.openSuspendForm();
-      expect(component.selectedSuspendGroups).toEqual(['liga', 'meisterschaft']);
+      expect(component.selectedSuspendGroups).toEqual([
+        'liga',
+        'meisterschaft',
+      ]);
 
       component.suspendPickedLicenseId = 'L1';
       component.onSuspendLicensePicked();
