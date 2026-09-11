@@ -844,19 +844,78 @@ describe('StreamingIndexComponent', () => {
       http.expectNone(`${environment.apiURL}admin/streaming/hosts`);
 
       const lauf = component.toggleHosts();
-      http
-        .expectOne(`${environment.apiURL}admin/streaming/hosts`)
-        .flush([
-          {
-            id: 7,
-            name: 'MFBC Leipzig',
-            short_name: 'MFBC',
-            stream_default_unlisted: false,
-          },
-        ]);
+      http.expectOne(`${environment.apiURL}admin/streaming/hosts`).flush([
+        {
+          id: 7,
+          name: 'MFBC Leipzig',
+          short_name: 'MFBC',
+          stream_default_unlisted: false,
+        },
+      ]);
       await lauf;
 
       expect(component.hosts.length).toBe(1);
+    });
+
+    // Beide Meldungen an den Server müssen dieselbe Sichtbarkeit tragen wie das
+    // tatsächlich Angelegte. Trügen sie „public", setzte der Server die Zusage
+    // nicht -- und schriebe zusätzlich den Link einer ungelisteten Übertragung
+    // in den öffentlichen Spielplan, wo er tot ist.
+    it('meldet dem Server dieselbe Sichtbarkeit, mit der angelegt wurde', async () => {
+      start([mitZusage(1)]);
+      component.privacy = 'public';
+      component.toggleAll();
+
+      await settle(component.createStreams());
+
+      expect(broadcastCalls.length).toBe(2);
+      for (const koerper of broadcastCalls) {
+        expect(koerper['privacy_status']).toBe('unlisted');
+      }
+    });
+
+    // Der Browser hat das Kästchen bereits umgeschaltet. Bleibt der gebundene
+    // Wert unverändert, zeigt die Liste eine Zusage, die der Server nicht hat --
+    // und wer sich darauf verlässt, legt öffentlich an.
+    it('dreht den Haken zurück, wenn das Speichern scheitert', async () => {
+      start([game(1)]);
+      const host = {
+        id: 7,
+        name: 'MFBC Leipzig',
+        short_name: 'MFBC',
+        stream_default_unlisted: false,
+      };
+
+      const lauf = component.setHost(host, true);
+      http
+        .expectOne(`${environment.apiURL}admin/streaming/hosts/7`)
+        .flush('kaputt', { status: 500, statusText: 'Server Error' });
+      await lauf;
+
+      expect(host.stream_default_unlisted).toBeFalse();
+    });
+
+    it('übernimmt den Wert aus der Antwort und lädt die Liste neu', async () => {
+      start([game(1)]);
+      const host = {
+        id: 7,
+        name: 'MFBC Leipzig',
+        short_name: 'MFBC',
+        stream_default_unlisted: false,
+      };
+
+      const lauf = component.setHost(host, true);
+      http.expectOne(`${environment.apiURL}admin/streaming/hosts/7`).flush({
+        ...host,
+        stream_default_unlisted: true,
+      });
+      await lauf;
+
+      expect(host.stream_default_unlisted).toBeTrue();
+      // Die Sichtbarkeitsspalte stammt aus derselben Angabe.
+      http.expectOne((request) =>
+        request.url.includes('admin/streaming/games')
+      );
     });
 
     // Eine leere Liste wäre von einem fehlgeschlagenen Abruf nicht zu

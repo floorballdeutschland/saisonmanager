@@ -366,19 +366,27 @@
                   }
                 </td>
                 <td class="py-2 pr-4 align-top whitespace-nowrap">
-                  @if (privacyFor(game) === "unlisted") {
-                    <span class="font-medium">
-                      {{ "streamingAdmin.actions.privacyUnlisted" | transloco }}
-                    </span>
-                    @if (game.game_day?.hosting_club_unlisted) {
-                      <div class="text-xs text-fb-gray-500">
-                        {{ "streamingAdmin.hosts.becauseOfHost" | transloco }}
-                      </div>
+                  <!-- Nur als Vorschau, solange nichts angelegt ist: Für eine
+                       bestehende Übertragung zeigte die Spalte sonst, womit sie
+                       HEUTE angelegt WÜRDE -- und widerspräche der Wirklichkeit,
+                       sobald der Schalter oben seither umgestellt wurde. -->
+                  @if (!game.broadcast) {
+                    @if (privacyFor(game) === "unlisted") {
+                      <span class="font-medium">
+                        {{
+                          "streamingAdmin.actions.privacyUnlisted" | transloco
+                        }}
+                      </span>
+                      @if (game.game_day?.hosting_club_unlisted) {
+                        <div class="text-xs text-fb-gray-500">
+                          {{ "streamingAdmin.hosts.becauseOfHost" | transloco }}
+                        </div>
+                      }
+                    } @else {
+                      <span class="text-fb-gray-500">
+                        {{ "streamingAdmin.actions.privacyPublic" | transloco }}
+                      </span>
                     }
-                  } @else {
-                    <span class="text-fb-gray-500">
-                      {{ "streamingAdmin.actions.privacyPublic" | transloco }}
-                    </span>
                   }
                   @if (game.broadcast?.promote_to_public) {
                     <div class="text-xs text-fb-gray-500">
@@ -456,7 +464,7 @@
                 {{ "streamingAdmin.hosts.loadError" | transloco }}
                 <button
                   type="button"
-                  (click)="toggleHosts(); toggleHosts()"
+                  (click)="reloadHosts()"
                   class="underline font-bold ml-1"
                 >
                   {{ "streamingAdmin.retry" | transloco }}
@@ -470,6 +478,7 @@
                       <input
                         type="checkbox"
                         [checked]="host.stream_default_unlisted"
+                        [disabled]="hostsBusy.has(host.id)"
                         (change)="setHost(host, !host.stream_default_unlisted)"
                       />
                       <span>{{ host.name }}</span>

@@ -128,6 +128,8 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   public hostsOpen = false;
   public hostsLoading = false;
   public hostsError = false;
+  /** Vereine, deren Zusage gerade gespeichert wird -- sperrt den zweiten Klick. */
+  public hostsBusy = new Set<number>();
   public templatesOpen = false;
   public savingTemplates = false;
 
@@ -449,12 +451,26 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     this.hostsOpen = !this.hostsOpen;
     if (!this.hostsOpen || this.hosts.length || this.hostsLoading) return;
 
+    await this.reloadHosts();
+  }
+
+  public async reloadHosts(): Promise<void> {
+    if (this.hostsLoading) return;
+
     this.hostsLoading = true;
     this.hostsError = false;
     this._cdr.markForCheck();
 
     const hosts = await firstValueFrom(
-      this._streamingService.getHosts().pipe(catchError(() => of(null)))
+      this._streamingService.getHosts().pipe(
+        catchError((error) => {
+          // Wie überall sonst in diesem Bauteil: Der Benutzer sieht den
+          // Fehlschlag, der Betrieb erfährt sonst nie davon -- und ausgerechnet
+          // diese Liste trägt die Zusagen.
+          this._capture(error);
+          return of(null);
+        })
+      )
     );
 
     this.hostsLoading = false;
@@ -477,13 +493,31 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
    * Zusage bereits steht, ist schlimmer als eine, die kurz lädt.
    */
   public async setHost(host: StreamingHost, unlisted: boolean): Promise<void> {
+    if (this.hostsBusy.has(host.id)) return;
+
+    // Den Wert SOFORT setzen und bei einem Fehlschlag zurückdrehen. Der Browser
+    // hat das Kästchen bereits selbst umgeschaltet; bliebe der gebundene Wert
+    // unverändert, schriebe Angular nichts zurück, und die Liste zeigte einen
+    // Haken, den der Server nicht hat. Wer sich darauf verlässt, legt
+    // öffentlich an -- der eine Fehler, der sich nicht zurücknehmen lässt.
+    const vorher = host.stream_default_unlisted;
+    host.stream_default_unlisted = unlisted;
+    this.hostsBusy.add(host.id);
+    this._cdr.markForCheck();
+
     const antwort = await firstValueFrom(
-      this._streamingService
-        .updateHost(host.id, unlisted)
-        .pipe(catchError(() => of(null)))
+      this._streamingService.updateHost(host.id, unlisted).pipe(
+        catchError((error) => {
+          this._capture(error);
+          return of(null);
+        })
+      )
     );
 
+    this.hostsBusy.delete(host.id);
+
     if (antwort === null) {
+      host.stream_default_unlisted = vorher;
       this._notificationService.error(
         `Die Zusage für ${host.name} konnte nicht gespeichert werden.`
       );
