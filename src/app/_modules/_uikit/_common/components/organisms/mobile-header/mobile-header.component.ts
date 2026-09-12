@@ -59,7 +59,7 @@ export class MobileHeaderComponent implements OnInit {
     this.isLoading$ = this._associationService.associationsIsLoading$;
     this.leagues$ = this._leagueService.leagues$;
     this.seasons$ = this._associationService.seasons$;
-    this.selectedSeasonId$ = this._associationService.currentSeasonId$;
+    this.selectedSeasonId$ = this._associationService.selectedSeasonId$;
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.selectedStateAssociation$ =
       this._associationService.selectedStateAssociation$;

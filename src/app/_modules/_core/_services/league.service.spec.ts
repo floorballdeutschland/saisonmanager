@@ -16,7 +16,7 @@ describe('LeagueService', () => {
   let httpMock: HttpTestingController;
   let associationServiceMock: {
     selectedAssociation$: unknown;
-    currentSeasonId$: unknown;
+    selectedSeasonId$: unknown;
     selectSeason: jasmine.Spy;
   };
   let routerMock: { navigate: jasmine.Spy };
@@ -36,7 +36,7 @@ describe('LeagueService', () => {
   beforeEach(() => {
     associationServiceMock = {
       selectedAssociation$: of(association),
-      currentSeasonId$: of(18),
+      selectedSeasonId$: of(18),
       selectSeason: jasmine.createSpy('selectSeason'),
     };
 

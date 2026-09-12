@@ -12,7 +12,7 @@ import {
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Club } from '@floorball/types';
+import { Club, Team } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { of } from 'rxjs';
 
@@ -342,6 +342,84 @@ describe('ClubEditComponent', () => {
     expect(input.value).toBe('');
   });
 
+  // Der Regelfall bleibt das Vereinslogo: `logo` ist das eigene Logo der
+  // Mannschaft, `logo_url` das, was sie zeigt. Nach dem Hochladen sind beide
+  // dasselbe Bild -- daran haengen Kennzeichnung und Zuruecksetzen-Knopf.
+  it('onTeamLogoSelected laedt hoch und markiert die Mannschaft als eigenes Logo', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const team = { id: 7, name: 'Alpha', manage_logo: true } as Team;
+    const input = pngInput();
+
+    component.onTeamLogoSelected(team, input);
+
+    const req = httpMock.expectOne(
+      `${environment.apiURL}admin/teams/7/upload_logo.json`
+    );
+    expect((req.request.body as FormData).get('logo')).toBeTruthy();
+    req.flush({ logo_url: '/t.png', logo_small_url: '/ts.png' });
+
+    expect(team.logo).toBe('/t.png');
+    expect(team.logo_url).toBe('/t.png');
+    expect(team.logo_small).toBe('/ts.png');
+    expect(input.value).toBe('');
+  });
+
+  // Zuruecknehmen fuehrt nicht in einen Zustand ohne Zeichen: Die Antwort nennt
+  // das Vereinslogo, und genau das muss die Maske danach zeigen.
+  it('removeTeamLogo setzt auf das zurueckgemeldete Vereinslogo zurueck', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const team = {
+      id: 7,
+      name: 'Alpha',
+      logo: '/t.png',
+      logo_url: '/t.png',
+      manage_logo: true,
+    } as Team;
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    component.removeTeamLogo(team);
+
+    const req = httpMock.expectOne(
+      `${environment.apiURL}admin/teams/7/logo.json`
+    );
+    expect(req.request.method).toBe('DELETE');
+    req.flush({ logo_url: '/club.png', logo_small_url: '/club-s.png' });
+
+    expect(team.logo).toBeUndefined();
+    expect(team.logo_url).toBe('/club.png');
+    expect(component.removingTeamLogoId).toBeUndefined();
+  });
+
+  it('removeTeamLogo schickt ohne Bestaetigung keine Anfrage', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    spyOn(window, 'confirm').and.returnValue(false);
+
+    component.removeTeamLogo({ id: 7, logo: '/t.png' } as Team);
+
+    expect(window.confirm).toHaveBeenCalled();
+    httpMock.expectNone(`${environment.apiURL}admin/teams/7/logo.json`);
+  });
+
+  it('onTeamLogoSelected weist eine Nicht-Bilddatei ohne Anfrage ab', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const errorSpy = spyOn(TestBed.inject(NotificationService), 'error');
+    const file = new File(['x'], 'logo.gif', { type: 'image/gif' });
+    const input = {
+      files: [file],
+      value: 'logo.gif',
+    } as unknown as HTMLInputElement;
+
+    component.onTeamLogoSelected({ id: 7, manage_logo: true } as Team, input);
+
+    expect(errorSpy).toHaveBeenCalled();
+    httpMock.expectNone(`${environment.apiURL}admin/teams/7/upload_logo.json`);
+    expect(input.value).toBe('');
+  });
+
   it('onLogoSelected rejects a non-image before any request goes out', () => {
     const fixture = TestBed.createComponent(ClubEditComponent);
     const component = fixture.componentInstance;
@@ -577,5 +655,81 @@ describe('ClubEditComponent im Bearbeiten-Modus', () => {
     const text = fixture.nativeElement.textContent;
     expect(text).not.toContain('clubAdmin.edit.saveChanges');
     expect(text).toContain('clubAdmin.edit.cancel');
+  });
+
+  // Die Mannschaftsliste kommt aus einem eigenen Endpunkt; ohne den Abruf beim
+  // Laden staende der Abschnitt dauerhaft leer da.
+  it('laedt die Mannschaften des Vereins und zeigt sie mit ihrer Kennzeichnung', async () => {
+    const fixture = TestBed.createComponent(ClubEditComponent);
+    fixture.detectChanges();
+
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
+      .flush({ notify_user_ids: [], managers: [] });
+    httpMock.expectOne(`${environment.apiURL}admin/clubs/42/teams.json`).flush([
+      {
+        id: 7,
+        name: 'Alpha',
+        logo: '/t.png',
+        logo_url: '/t.png',
+        manage_logo: true,
+      },
+      { id: 8, name: 'Beta', logo_url: '/club.png', manage_logo: true },
+      { id: 9, name: 'Gamma', logo_url: '/club.png', manage_logo: false },
+    ]);
+    // `edit_restricted` wie in den Nachbartests: Genau so sieht der
+    // Vereinsmanager die Maske, und das Suchfeld fuer den Landesverband (dessen
+    // Komponente in diesem TestBed fehlt) bleibt damit aussen vor.
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42.json`)
+      .flush(vollstaendigerVerein({ id: 42, edit_restricted: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Alpha');
+    expect(text).toContain('Beta');
+    // Eigenes Logo und Vereinslogo muessen unterscheidbar sein, sonst ist nicht
+    // zu sehen, welche Mannschaft ueberhaupt ein abweichendes Logo traegt.
+    expect(text).toContain('clubAdmin.edit.teamLogoOwn');
+    expect(text).toContain('clubAdmin.edit.teamLogoFromClub');
+    // Ohne Recht kein Knopf, sondern die Begruendung: Das Logo folgt dem
+    // Spielbetrieb der Liga.
+    expect(text).toContain('clubAdmin.edit.teamLogoForeignLeague');
+    expect(fixture.nativeElement.querySelectorAll('input[type=file]').length)
+      .withContext('Vereinslogo plus zwei pflegbare Mannschaften')
+      .toBe(3);
+  });
+
+  // „Keine Mannschaft gemeldet" ist eine Tatsachenbehauptung. Beim
+  // fehlgeschlagenen Abruf hat sie niemand geprueft -- dann gehoert dort ein
+  // Fehlerhinweis samt zweitem Versuch hin.
+  it('meldet einen fehlgeschlagenen Abruf statt eine leere Liste zu zeigen', async () => {
+    const fixture = TestBed.createComponent(ClubEditComponent);
+    fixture.detectChanges();
+
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
+      .flush({ notify_user_ids: [], managers: [] });
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42/teams.json`)
+      .flush(
+        { message: 'kaputt' },
+        { status: 500, statusText: 'Server Error' }
+      );
+    // `edit_restricted` wie in den Nachbartests: Genau so sieht der
+    // Vereinsmanager die Maske, und das Suchfeld fuer den Landesverband (dessen
+    // Komponente in diesem TestBed fehlt) bleibt damit aussen vor.
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42.json`)
+      .flush(vollstaendigerVerein({ id: 42, edit_restricted: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('clubAdmin.edit.teamLogosLoadError');
+    expect(text).not.toContain('clubAdmin.edit.teamLogosEmpty');
   });
 });

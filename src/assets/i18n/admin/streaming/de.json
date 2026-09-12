@@ -1,0 +1,66 @@
+{
+  "title": "Streaming",
+  "intro": "Die Spiele, für die Livestreams auf dem Verbandskanal eingerichtet werden.",
+  "loading": "Spiele werden geladen …",
+  "loadError": "Die Spiele ließen sich nicht laden.",
+  "retry": "Erneut versuchen",
+  "empty": "In diesem Zeitraum steht kein Spiel einer Liga an, in der gestreamt wird.",
+  "selectedCount": "{{selected}} von {{total}} ausgewählt",
+  "filter": {
+    "modeRange": "Zeitraum",
+    "modeMatchday": "Spieltag einer Liga",
+    "from": "Von",
+    "to": "Bis",
+    "league": "Liga",
+    "leaguePlaceholder": "Liga wählen",
+    "matchday": "Spieltag",
+    "apply": "Anzeigen"
+  },
+  "table": {
+    "selectAll": "Alle auswählen",
+    "kickoff": "Anwurf",
+    "league": "Liga",
+    "matchdayShort": "{{number}}. Spieltag",
+    "pairing": "Partie",
+    "venue": "Halle",
+    "status": "Übertragung",
+    "visibility": "Sichtbarkeit"
+  },
+  "status": {
+    "created": "Angelegt",
+    "ready": "Bereit",
+    "noKey": "Kein Streamschlüssel"
+  },
+  "actions": {
+    "thumbnails": "Thumbnails (ZIP)",
+    "thumbnailsBusy": "Thumbnails werden erzeugt …",
+    "create": "Streams anlegen ({{count}})",
+    "createBusy": "Streams werden angelegt …",
+    "privacy": "Sichtbarkeit",
+    "privacyPublic": "Öffentlich",
+    "privacyUnlisted": "Nicht gelistet",
+    "noGoogle": "Für dieses System ist kein Google-Zugang hinterlegt – Anlegen ist nicht möglich.",
+    "templatesFailed": "Die Titelvorlage ist nicht geladen – Anlegen gesperrt."
+  },
+  "templates": {
+    "heading": "Titel und Beschreibung",
+    "intro": "Die Vorlagen gelten für alle angelegten Übertragungen. Platzhalter:",
+    "title": "Titel",
+    "description": "Beschreibung",
+    "preview": "Vorschau am ersten ausgewählten Spiel",
+    "length": "{{count}} von {{max}} Zeichen",
+    "save": "Vorlagen speichern",
+    "reset": "Vorgabe wiederherstellen"
+  },
+  "hosts": {
+    "open": "Zusagen der Ausrichter verwalten",
+    "close": "Zusagen ausblenden",
+    "explanation": "Einzelne Vereine senden ihre Heimspiele selbst. Ist ein Verein hier angehakt, laufen die Übertragungen seiner Spieltage bei uns während des Spiels „nicht gelistet\" und werden drei Stunden nach Sendeschluss automatisch öffentlich geschaltet und im Spielplan verlinkt. Die Zusage gilt für alle Partien, die er ausrichtet – auch die, in denen er nicht Heim ist.",
+    "summary": "{{count}} nicht gelistet",
+    "hint": "Zusage an den Ausrichter: während der Übertragung nicht gelistet, danach öffentlich.",
+    "becauseOfHost": "Zusage an den Ausrichter",
+    "promotePending": "wird nach dem Spiel öffentlich",
+    "promoted": "nachträglich öffentlich geschaltet",
+    "loadError": "Die Zusagen konnten nicht geladen werden."
+  }
+}

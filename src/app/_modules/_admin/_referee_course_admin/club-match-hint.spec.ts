@@ -43,7 +43,9 @@ describe('clubMatchHintKey', () => {
 
   it('nennt den Treffer über die Namensliste', () => {
     expect(
-      clubMatchHintKey(zeile({ csv_club_match: { ...CLUB, match_type: 'alias' } }))
+      clubMatchHintKey(
+        zeile({ csv_club_match: { ...CLUB, match_type: 'alias' } })
+      )
     ).toBe('refereeCourseAdmin.detail.clubMatchAlias');
   });
 
@@ -64,7 +66,9 @@ describe('clubMatchHintKey', () => {
 
   it('sagt zum exakten Vereinsnamen nichts', () => {
     expect(
-      clubMatchHintKey(zeile({ csv_club_match: { ...CLUB, match_type: 'name' } }))
+      clubMatchHintKey(
+        zeile({ csv_club_match: { ...CLUB, match_type: 'name' } })
+      )
     ).toBeNull();
   });
 
@@ -146,7 +150,9 @@ describe('csvClubUnmatched', () => {
 
   it('meldet nichts, wenn die Datei keinen Verein nennt', () => {
     expect(
-      csvClubUnmatched(zeile({ csv: { verein: null }, csv_club_match: null } as never))
+      csvClubUnmatched(
+        zeile({ csv: { verein: null }, csv_club_match: null } as never)
+      )
     ).toBeFalse();
   });
 });

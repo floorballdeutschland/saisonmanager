@@ -12,7 +12,7 @@ import {
   NotificationService,
   SessionService,
 } from '@floorball/core';
-import { Club, ClubManager, StateAssociation } from '@floorball/types';
+import { Club, ClubManager, StateAssociation, Team } from '@floorball/types';
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -54,6 +54,18 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   clubManagers: ClubManager[] = [];
   notifyUserIds: number[] = [];
   confirmDeactivate = false;
+
+  // Mannschaften der laufenden Saison samt der Frage, ob dieses Konto ihr
+  // abweichendes Logo pflegen darf (`manage_logo`). Aus einem eigenen Endpunkt
+  // und nicht aus dem Vereins-Datensatz: Der reist serverseitig durch jede
+  // Spieltags-Antwort.
+  //
+  // `teamsFailed` getrennt von der leeren Liste: „keine Mannschaft gemeldet"
+  // und „Laden fehlgeschlagen" sehen sonst gleich aus, und das Erste ist eine
+  // Tatsachenbehauptung, die beim Fehler niemand geprüft hat.
+  clubTeams: Team[] = [];
+  clubTeamsFailed = false;
+  removingTeamLogoId?: number;
 
   // Auswahlliste des Suchfelds: einmal beim Laden gebildet, nicht als Getter.
   // Ein neues Array pro Change-Detection wuerde die Trefferliste des Suchfelds
@@ -133,6 +145,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   public getClub(id: string) {
     this.club$ = this._clubService.getAdminClub(parseInt(id)).pipe(share());
     this.loadClubManagers(parseInt(id));
+    this.loadClubTeams(parseInt(id));
 
     this.club$
       .pipe(
@@ -165,6 +178,27 @@ export class ClubEditComponent implements OnInit, OnDestroy {
         // überlagern, den niemand einordnen kann.
         error: () => {
           this.clubManagers = [];
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  // Anders als die Empfängerliste mit einem sichtbaren Fehlerzustand: Die
+  // Logo-Pflege ist der Zweck des Abschnitts, eine still leere Liste sähe wie
+  // „dieser Verein hat keine Mannschaften" aus.
+  public loadClubTeams(clubId: number): void {
+    this._clubService
+      .getAdminClubTeams(clubId)
+      .pipe(take(1), takeUntil(this._destroy$))
+      .subscribe({
+        next: (teams) => {
+          this.clubTeams = teams ?? [];
+          this.clubTeamsFailed = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.clubTeams = [];
+          this.clubTeamsFailed = true;
           this._cdr.markForCheck();
         },
       });
@@ -369,30 +403,31 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   ];
   private readonly _maxLogoSize = 3 * 1024 * 1024;
 
+  // Format und Groesse vor dem Hochladen, gemeinsam fuer Vereins- und
+  // Mannschaftslogo: dieselbe Zusage wie in der API
+  // (LOGO_ALLOWED_CONTENT_TYPES, LOGO_MAX_SIZE), und die Meldung soll fuer
+  // beide gleich lauten. Gibt true zurueck, wenn die Datei abgewiesen wurde.
+  private rejectedLogoFile(file: File, input: HTMLInputElement): boolean {
+    const errorKey = !this._allowedLogoTypes.includes(file.type)
+      ? 'clubAdmin.notifications.logoTypeError'
+      : file.size > this._maxLogoSize
+        ? 'clubAdmin.notifications.logoSizeError'
+        : null;
+
+    if (!errorKey) return false;
+
+    this._notificationService.error(this._transloco.translate(errorKey), {
+      autoClose: false,
+    });
+    input.value = '';
+    return true;
+  }
+
   public onLogoSelected(club: Club, input: HTMLInputElement) {
     if (!input.files?.length || !club.id) return;
     const file = input.files[0];
 
-    if (!this._allowedLogoTypes.includes(file.type)) {
-      this._notificationService.error(
-        this._transloco.translate('clubAdmin.notifications.logoTypeError'),
-        {
-          autoClose: false,
-        }
-      );
-      input.value = '';
-      return;
-    }
-    if (file.size > this._maxLogoSize) {
-      this._notificationService.error(
-        this._transloco.translate('clubAdmin.notifications.logoSizeError'),
-        {
-          autoClose: false,
-        }
-      );
-      input.value = '';
-      return;
-    }
+    if (this.rejectedLogoFile(file, input)) return;
 
     this._clubService
       .uploadClubLogo(club.id, file)
@@ -419,6 +454,83 @@ export class ClubEditComponent implements OnInit, OnDestroy {
           // genau die überdeckt (#84, #228). Hier nur die Dateiauswahl
           // zurücksetzen, damit dieselbe Datei erneut gewählt werden kann.
           input.value = '';
+        },
+      });
+  }
+
+  // Abweichendes Logo einer Mannschaft. Der Regelfall bleibt das Vereinslogo:
+  // Ohne eigenes Logo zeigt die Mannschaft es ueberall (Team#logo_url_fallback
+  // in der API), dieser Weg setzt also die Ausnahme.
+  public onTeamLogoSelected(team: Team, input: HTMLInputElement) {
+    if (!input.files?.length || !team.id) return;
+    const file = input.files[0];
+
+    if (this.rejectedLogoFile(file, input)) return;
+
+    this._clubService
+      .uploadTeamLogo(team.id, file)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          input.value = '';
+          // `logo` ist das eigene Logo der Mannschaft und entscheidet ueber
+          // Kennzeichnung und Zuruecksetzen-Knopf; `logo_url` ist das, was sie
+          // zeigt. Nach einem Upload sind beide dasselbe Bild.
+          team.logo = result.logo_url;
+          team.logo_url = result.logo_url;
+          team.logo_small = result.logo_small_url;
+          this._notificationService.success(
+            this._transloco.translate(
+              'clubAdmin.notifications.teamLogoUploadSuccess'
+            ),
+            { autoClose: true }
+          );
+          this._cdr.markForCheck();
+        },
+        // Wie beim Vereinslogo: Die Begruendung des Servers zeigt der
+        // ErrorInterceptor, ein zweiter Toast wuerde sie verdecken.
+        error: () => {
+          input.value = '';
+        },
+      });
+  }
+
+  public removeTeamLogo(team: Team) {
+    if (!team.id || this.removingTeamLogoId) return;
+    if (
+      !confirm(
+        this._transloco.translate(
+          'clubAdmin.notifications.confirmRemoveTeamLogo'
+        )
+      )
+    ) {
+      return;
+    }
+
+    this.removingTeamLogoId = team.id;
+    this._clubService
+      .deleteTeamLogo(team.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          // Die Antwort nennt, was jetzt gilt: das Vereinslogo. Deshalb nicht
+          // einfach leeren -- die Mannschaft ist nach dem Zuruecksetzen nicht
+          // ohne Zeichen.
+          team.logo = undefined;
+          team.logo_url = result.logo_url;
+          team.logo_small = result.logo_small_url;
+          this.removingTeamLogoId = undefined;
+          this._notificationService.success(
+            this._transloco.translate(
+              'clubAdmin.notifications.teamLogoRemoved'
+            ),
+            { autoClose: true }
+          );
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.removingTeamLogoId = undefined;
+          this._cdr.markForCheck();
         },
       });
   }

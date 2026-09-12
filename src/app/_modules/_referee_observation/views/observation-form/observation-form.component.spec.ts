@@ -2,7 +2,10 @@ import { ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { of, throwError } from 'rxjs';
-import { NotificationService, RefereeObservationService } from '@floorball/core';
+import {
+  NotificationService,
+  RefereeObservationService,
+} from '@floorball/core';
 import {
   RefereeObservation,
   RefereeObservationCandidate,
@@ -97,7 +100,9 @@ describe('ObservationFormComponent', () => {
   });
 
   it('weist ein bereits abgegebenes Spiel ab', () => {
-    service.getObservableGames.and.returnValue(of([{ ...candidate, done: true }]));
+    service.getObservableGames.and.returnValue(
+      of([{ ...candidate, done: true }])
+    );
     build();
     component.ngOnInit();
 

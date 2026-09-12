@@ -151,6 +151,15 @@ export const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/streaming').then(
+            (m) => m.AdminStreamingModule
+          ),
+        canActivate: [permissionGuard],
+        data: { permission: 'menu_item_streaming_admin' },
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/state-associations').then(
             (m) => m.AdminStateAssociationModule
           ),

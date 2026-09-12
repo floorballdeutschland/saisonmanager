@@ -65,14 +65,18 @@ export class FavoriteService {
   getFavorites(): void {
     const storageLeagues = this._storageService.getItem('fav');
 
-    this._associationService.currentSeasonId$
+    this._associationService.selectedSeasonId$
       .pipe(
-        tap((currentSeasonId) => {
+        tap((selectedSeasonId) => {
           if (storageLeagues) {
-            // filter favorites by current season id; leagues of previous seasons are not accessible anymore
+            // Gefiltert wird nach der GEWÄHLTEN Saison, nicht nach der
+            // laufenden: Die Favoritenliste steht in der Seitenleiste neben dem
+            // Saison-Umschalter und soll zeigen, was in der angesehenen Saison
+            // erreichbar ist. Gefiltert wird nur die Anzeige, der Speicher
+            // bleibt unangetastet.
             const filteredStorageLeagues = JSON.parse(storageLeagues).filter(
               (league: { league: League; operation: GameOperation }) => {
-                return league.league.season_id === currentSeasonId.toString();
+                return league.league.season_id === selectedSeasonId.toString();
               }
             );
 

@@ -48,6 +48,12 @@ export class LicenseTeamDetailComponent implements OnInit {
   // Dokumente gelten pro Spieler (saisonübergreifend), nicht mehr pro Lizenz;
   // per_season-Dokumentarten zählen nur mit Upload aus der laufenden Saison.
   documents: Record<number, LicenseDocument[]> = {};
+  /**
+   * Die laufende Saison laut Backend, `null` solange sie nicht feststeht --
+   * `realCurrentSeasonId$` antwortet erst mit `init.json`. Beide Bedeutungen
+   * fallen hier zusammen, deshalb behandelt #getDoc die offene Frage
+   * ausdrücklich wie „kein Dokument".
+   */
   currentSeasonId: number | null = null;
   uploadError: string | null = null;
 
@@ -78,7 +84,10 @@ export class LicenseTeamDetailComponent implements OnInit {
         )
       );
 
-    this._associationService.currentSeasonId$.subscribe((seasonId) => {
+    // Die laufende Saison, nicht die im Umschalter gewählte: Sie entscheidet
+    // hier, ob ein `per_season`-Dokument als vorliegend gilt (siehe #getDoc,
+    // dort steht auch, warum es die laufende sein muss).
+    this._associationService.realCurrentSeasonId$.subscribe((seasonId) => {
       this.currentSeasonId = seasonId;
       this._cdr.markForCheck();
     });
@@ -124,12 +133,28 @@ export class LicenseTeamDetailComponent implements OnInit {
     const documentType = this.licenseHash?.document_types?.find(
       (dt) => dt.key === type
     );
-    // per_season: nur Uploads aus der laufenden Saison gelten (gleiche Logik
-    // wie serverseitig in LicenseDocumentPresentation).
-    if (
-      documentType?.validity === 'per_season' &&
-      this.currentSeasonId !== null
-    ) {
+    // per_season: nur Uploads aus der laufenden Saison gelten. Maßgeblich ist
+    // sie, weil der Upload von hier aus mit genau ihr gestempelt wird
+    // (Admin::LicenseDocumentsController#create: `season_id:
+    // Setting.current_season_id`) -- diese Maske beantragt Lizenzen für die
+    // laufende Saison, und das Dokument gehört zu dem Antrag, der gleich
+    // gestellt wird.
+    //
+    // NICHT zu verwechseln mit der Darstellung der API: LicenseDocument-
+    // Presentation#current_document filtert gegen die Saison der LIGA der
+    // jeweiligen Lizenz, nicht gegen die laufende. Für eine Mannschaft der
+    // laufenden Saison -- der Fall dieser Maske -- ist das dasselbe.
+    if (documentType?.validity === 'per_season') {
+      // Solange die laufende Saison nicht feststeht, gilt kein Dokument als
+      // vorliegend. Ohne diesen Riegel fiele die Prüfung auf den Zweig ohne
+      // Saison zurück und meldete ein Pflichtdokument als vorhanden, obwohl
+      // nur eines aus einer Vorsaison vorliegt -- bei der Elternzustimmung
+      // die schlechtere der beiden Fehlerrichtungen. Die Frage ist hier nicht
+      // theoretisch: Beantwortet `init.json` gar nicht, bleibt das Feld
+      // dauerhaft leer, und der falsche Zustand wäre kein Fenster, sondern
+      // der Dauerzustand der Seite.
+      if (this.currentSeasonId === null) return undefined;
+
       return docs.find(
         (d) =>
           d.document_type === type &&

@@ -22,6 +22,13 @@ export interface Team {
   logo_small: string;
   contact_person?: string;
   contact_email?: string;
+
+  // Nur aus `admin/clubs/:id/teams`: Darf der angemeldete Benutzer das
+  // abweichende Logo DIESER Mannschaft pflegen? Pro Mannschaft und nicht pro
+  // Verein, weil das Recht am Spielbetrieb der Liga haengt: Ein SBK darf die
+  // Mannschaftsliste eines Vereins lesen, aber nicht das Logo einer Mannschaft
+  // aendern, die in der Liga eines anderen Verbands spielt.
+  manage_logo?: boolean;
 }
 
 export interface TeamWithPlayers extends Team {

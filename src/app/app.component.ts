@@ -140,7 +140,7 @@ export class AppComponent implements OnInit {
     this.selectedStateAssociation$ =
       this._associationService.selectedStateAssociation$;
     this.seasons$ = this._associationService.seasons$;
-    this.selectedSeasonId$ = this._associationService.currentSeasonId$;
+    this.selectedSeasonId$ = this._associationService.selectedSeasonId$;
     this.favoriteLeagues$ = this._favoriteService.favoriteLeagues$;
     this.favoriteTeams$ = this._favoriteService.favoriteTeams$;
     // Nur das eine Recht auswerten und Wiederholungen abschneiden:

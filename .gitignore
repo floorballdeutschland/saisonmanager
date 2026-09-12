@@ -69,3 +69,4 @@ produktivdaten/
 
 # Lokale Agenten-Anweisungen (maschinenspezifische Pfade, nicht geteilt)
 CLAUDE.md
+src/environments/.google-client-id

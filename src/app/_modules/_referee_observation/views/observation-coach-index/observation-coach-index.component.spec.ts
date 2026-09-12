@@ -57,7 +57,9 @@ describe('ObservationCoachIndexComponent', () => {
     service.getMyObservations.and.returnValue(of([]));
     component.ngOnInit();
 
-    expect(component.openCandidates.map((c) => c.game_id)).toEqual([2, 4, 1, 3]);
+    expect(component.openCandidates.map((c) => c.game_id)).toEqual([
+      2, 4, 1, 3,
+    ]);
   });
 
   it('trennt offene Spiele von bereits abgegebenen', () => {
@@ -79,9 +81,7 @@ describe('ObservationCoachIndexComponent', () => {
    * im Nebenteil die eigentliche Funktion der Seite.
    */
   it('haelt die Spielauswahl bedienbar, wenn die eigenen Boegen nicht laden', () => {
-    service.getObservableGames.and.returnValue(
-      of([candidate({ game_id: 1 })])
-    );
+    service.getObservableGames.and.returnValue(of([candidate({ game_id: 1 })]));
     service.getMyObservations.and.returnValue(
       throwError(() => new Error('kaputt'))
     );

@@ -41,3 +41,5 @@ export * from './email-template.service';
 export * from './referee-course-import.service';
 export * from './proceeding-proposal.service';
 export * from './live-stream.service';
+export * from './streaming.service';
+export * from './youtube.service';
