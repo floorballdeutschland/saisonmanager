@@ -1,14 +1,35 @@
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, Input, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of, throwError } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 
 import { GameService, NotificationService } from '@floorball/core';
 import { getTranslocoTestingModule } from '@floorball/core';
 import { Game } from '@floorball/types';
 
 import { MatchReportComponent } from './match-report.component';
+
+/**
+ * Statt der echten Fragenliste ein Platzhalter fester Höhe.
+ *
+ * Die Spec prüft den Rahmen des Fensters, nicht die Fragen darin -- die haben
+ * ihre eigene Spec. Gebraucht wird von ihnen hier nur die Bauhöhe, und die
+ * lässt sich so einstellen, statt sechzehn Fragen aufzubauen.
+ */
+@Component({
+  selector: 'fb-checklist-questions',
+  template: '<div [style.height.px]="hoehe"></div>',
+  standalone: false,
+})
+class ChecklistQuestionsStubComponent {
+  @Input() items: unknown[] = [];
+  @Input() answers: Record<number, boolean | null> = {};
+  @Input() disabled = false;
+
+  // Rund das, was sechzehn Fragen des Bundesverbands aufbauen.
+  public hoehe = 2400;
+}
 
 describe('MatchReportComponent', () => {
   let fixture: ComponentFixture<MatchReportComponent>;
@@ -36,10 +57,11 @@ describe('MatchReportComponent', () => {
         RouterTestingModule,
         getTranslocoTestingModule(),
       ],
-      declarations: [MatchReportComponent],
-      // Die Ansicht zieht ein Dutzend Kindkomponenten herein, die für diese
-      // Prüfungen nichts beitragen. Geprüft wird der Rahmen des Fensters, nicht
-      // die Fragenliste darin -- die hat ihre eigene Spec.
+      declarations: [MatchReportComponent, ChecklistQuestionsStubComponent],
+      // Die Ansicht zieht mehrere Kindkomponenten herein, die für diese
+      // Prüfungen nichts beitragen. Die Fragenliste ist davon ausgenommen: Sie
+      // steht als Platzhalter oben, weil ihre Bauhöhe hier der Prüfgegenstand
+      // ist.
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
@@ -69,8 +91,19 @@ describe('MatchReportComponent', () => {
     fixture.detectChanges();
   }
 
-  function overlay(): HTMLElement {
-    return fixture.nativeElement.querySelector('.fixed.inset-0');
+  function dialog(): HTMLElement {
+    return fixture.nativeElement.querySelector(
+      '[data-testid="checklist-dialog"]'
+    );
+  }
+
+  function knopf(beschriftung: string): HTMLButtonElement {
+    const treffer = Array.from(
+      dialog().querySelectorAll('button')
+    ) as HTMLButtonElement[];
+    const gefunden = treffer.find((b) => b.textContent?.includes(beschriftung));
+    if (!gefunden) throw new Error(`Knopf "${beschriftung}" nicht gefunden`);
+    return gefunden;
   }
 
   it('should create', () => {
@@ -79,61 +112,110 @@ describe('MatchReportComponent', () => {
   });
 
   describe('Spieltagscheckliste', () => {
-    // Der Fehler vom 12.09.2026: Das Fenster hatte keinen Scrollweg. Bei sechs
-    // Fragen ist es rund 870 Pixel hoch, bei sechzehn über 3000 -- die
-    // Knopfleiste lag damit außerhalb jedes üblichen Fensters, und weil
-    // `items-center` oben wie unten abschneidet, war weder Abschließen noch
-    // Abbrechen erreichbar. Ein Spieltag blieb deshalb unabgeschlossen.
-    it('macht den Hintergrund scrollbar, damit die Knöpfe erreichbar bleiben', () => {
+    // Der Fehler vom 12.09.2026: Das Fenster hatte keinen Scrollweg. Sobald die
+    // Fragenliste höher wurde als das Browserfenster, lag die Knopfleiste
+    // außerhalb -- und weil `fixed inset-0` die Höhe auf den Viewport nagelt
+    // und `items-center` oben wie unten abschneidet, half auch Hochscrollen
+    // nicht. Ein Dresdner Spieltag blieb deshalb unabgeschlossen.
+    //
+    // Geprüft wird deshalb die Erreichbarkeit selbst, nicht das Vorhandensein
+    // einer CSS-Klasse: Verschwindet etwa `bottom-0`, bleibt die Klasse
+    // `sticky` stehen, klebt aber nichts mehr.
+    it('lässt sich scrollen, wenn die Fragen höher bauen als das Fenster', () => {
       create();
       openChecklist();
 
-      expect(overlay().classList).toContain('overflow-y-auto');
+      const overlay = dialog();
+      overlay.scrollTop = 99999;
+
+      expect(overlay.scrollHeight).toBeGreaterThan(overlay.clientHeight);
+      expect(overlay.scrollTop).toBeGreaterThan(0);
     });
 
-    // Scrollbar allein genügt nicht: Bei sechzehn Fragen läge die Leiste sonst
-    // erst nach 3000 Pixeln, und das am Spieltisch unter Zeitdruck.
-    it('hält die Knopfleiste am unteren Rand fest', () => {
+    it('hält die Knopfleiste im Bild -- vor und nach dem Scrollen', () => {
       create();
       openChecklist();
 
-      const leiste = overlay().querySelector('.sticky');
-      expect(leiste).toBeTruthy();
-      expect(leiste!.textContent).toContain('Spielbericht abschließen');
-      expect(leiste!.textContent).toContain('Abbrechen');
+      const overlay = dialog();
+      const abschliessen = knopf('Spielbericht abschließen');
+
+      expect(abschliessen.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        overlay.clientHeight
+      );
+
+      overlay.scrollTop = 99999;
+      expect(abschliessen.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        overlay.clientHeight
+      );
     });
 
-    it('schließt sich über Abbrechen', () => {
+    it('schließt sich über den Abbrechen-Knopf', () => {
       create();
       openChecklist();
       expect(component.checklistVisible).toBeTrue();
 
-      component.cancelChecklist();
+      knopf('Abbrechen').click();
       fixture.detectChanges();
 
       expect(component.checklistVisible).toBeFalse();
-      expect(overlay()).toBeNull();
+      expect(dialog()).toBeNull();
     });
 
-    // Zuvor setzte der Fehlerzweig nur `checklistSaving` zurück. Der
-    // ErrorInterceptor verbraucht die Serverantwort, also entstand weder ein
-    // Toast noch ein Sentry-Eintrag: Der Knopf wirkte tot.
-    it('meldet einen gescheiterten Speicherversuch sichtbar', () => {
+    // Ohne Checkliste gibt es nichts zu bestätigen -- dann darf das Fenster
+    // nicht erscheinen und der Bericht muss direkt abschließen. Trifft jede
+    // Liga, deren Landesverband keine Fragen gepflegt hat.
+    it('überspringt das Fenster ganz, wenn keine Checkliste greift', () => {
+      create({ checklist_active: false } as unknown as Partial<Game>);
+      const status = spyOn(gameService, 'setGameStatus').and.returnValue(
+        of(component.game)
+      );
+
+      component.closeMatchRecord();
+      fixture.detectChanges();
+
+      expect(dialog()).toBeNull();
+      expect(status).toHaveBeenCalledWith(4711, 'match_record_closed');
+    });
+
+    // Gegenprobe zum vorigen Fall: Auch bei leerer Fragenliste. Fiele die
+    // Längenprüfung weg, liefe `allChecklistAnswered()` auf dem leeren Array
+    // ins Leere (`every` ist dort wahr) und das Fenster behauptete
+    // "0 von 0 Fragen beantwortet".
+    it('überspringt das Fenster auch bei leerer Fragenliste', () => {
+      create({
+        checklist_items: [],
+        checklist_answers: [],
+      } as unknown as Partial<Game>);
+      const status = spyOn(gameService, 'setGameStatus').and.returnValue(
+        of(component.game)
+      );
+
+      component.closeMatchRecord();
+      fixture.detectChanges();
+
+      expect(dialog()).toBeNull();
+      expect(status).toHaveBeenCalledWith(4711, 'match_record_closed');
+    });
+
+    // Der ErrorInterceptor meldet diesen Endpunkt bereits selbst. Eine zweite
+    // Meldung läge deckungsgleich darüber; die Komponente hält sich deshalb
+    // zurück und lässt nur das Fenster stehen, damit die Antworten nicht
+    // verloren gehen.
+    it('meldet einen gescheiterten Speicherversuch nicht selbst noch einmal', () => {
       create();
       openChecklist();
       const fehler = spyOn(notifications, 'error');
       spyOn(gameService, 'setChecklistAnswers').and.returnValue(
-        throwError(() => 'Die Spieltagscheckliste muss vollständig sein.')
+        throwError(() => ({
+          status: 422,
+          error: { message: 'Ungültiges Format.' },
+        }))
       );
 
-      component.submitChecklist();
+      knopf('Spielbericht abschließen').click();
       fixture.detectChanges();
 
-      expect(fehler).toHaveBeenCalledWith(
-        'Die Spieltagscheckliste muss vollständig sein.'
-      );
-      // Das Fenster bleibt stehen: Die Antworten sind nicht gespeichert, und
-      // ein stilles Schließen verlöre sie.
+      expect(fehler).not.toHaveBeenCalled();
       expect(component.checklistVisible).toBeTrue();
       expect(component.checklistSaving).toBeFalse();
     });
@@ -148,11 +230,40 @@ describe('MatchReportComponent', () => {
         of(component.game)
       );
 
-      component.submitChecklist();
+      knopf('Spielbericht abschließen').click();
       fixture.detectChanges();
 
       expect(status).toHaveBeenCalledWith(4711, 'match_record_closed');
       expect(component.checklistVisible).toBeFalse();
+    });
+
+    // Der Schreibweg wird beim Schließen nicht abbestellt: Sein Erfolgszweig
+    // schlösse den Spielbericht auch dann ab, wenn zwischendurch jemand
+    // abbricht -- und der ist nicht wieder zu öffnen.
+    it('sperrt alle Knöpfe während des Speicherns', () => {
+      create();
+      openChecklist();
+      // Ein Strom, der nie antwortet: haelt den Speichervorgang offen.
+      spyOn(gameService, 'setChecklistAnswers').and.returnValue(NEVER);
+
+      knopf('Spielbericht abschließen').click();
+      fixture.detectChanges();
+
+      // Der Bestätigungsknopf heißt währenddessen "Speichern…".
+      expect(knopf('Speichern').disabled).toBeTrue();
+      expect(knopf('Abbrechen').disabled).toBeTrue();
+    });
+
+    // Blieb eine Antwort aus (Funkloch in der Halle), stünde der
+    // Bestätigungsknopf sonst dauerhaft auf "Speichern…".
+    it('gibt die Knöpfe beim erneuten Öffnen wieder frei', () => {
+      create();
+      component.checklistSaving = true;
+
+      openChecklist();
+
+      expect(component.checklistSaving).toBeFalse();
+      expect(knopf('Spielbericht abschließen').disabled).toBeFalse();
     });
   });
 });
