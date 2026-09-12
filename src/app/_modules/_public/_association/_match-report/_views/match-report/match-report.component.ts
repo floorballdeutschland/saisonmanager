@@ -292,9 +292,17 @@ export class MatchReportComponent implements OnInit, OnChanges {
         this._cdr.markForCheck();
         this.handleGameStatusChange(this.MATCH_RECORD_CLOSED);
       },
-      error: () => {
+      // Ohne eigene Meldung bliebe das Fenster nach dem Klick einfach stehen:
+      // Der ErrorInterceptor reicht 422 als reinen String durch, verbraucht ihn
+      // aber, sodass hier weder ein Toast noch ein Sentry-Eintrag entstuende.
+      // Am Spieltisch liest sich das wie ein toter Knopf.
+      error: (err) => {
         this.checklistSaving = false;
         this._cdr.markForCheck();
+        this._notificationService.error(
+          (typeof err === 'string' ? err : err?.error?.message) ||
+            'Die Spieltagscheckliste konnte nicht gespeichert werden. Bitte erneut versuchen.'
+        );
       },
     });
   }
