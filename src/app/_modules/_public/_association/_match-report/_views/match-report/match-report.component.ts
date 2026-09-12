@@ -109,6 +109,14 @@ export class MatchReportComponent implements OnInit, OnChanges {
   public checklistAnswers: Record<number, boolean | null> = {};
   public checklistSaving = false;
 
+  // Zeigt das Fenster nur die Zusammenfassung statt aller Fragen? Gesetzt wird
+  // das einmal beim Oeffnen: War in der Spielvorbereitung schon alles
+  // beantwortet, gibt es nichts mehr auszufuellen, und die Liste waere bei
+  // sechzehn Fragen ein Bildschirm voll Wiederholung. Wer doch etwas aendern
+  // will, klappt sie ueber `expandChecklist` auf -- zurueck geht es bewusst
+  // nicht, sonst verdeckte die Zusammenfassung eine gerade getroffene Auswahl.
+  public checklistConfirmOnly = false;
+
   // scan upload
   public existingScan: GameScan | null = null;
   public selectedScanFile: File | null = null;
@@ -261,6 +269,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
       // Bestaetigungsknopf sonst dauerhaft auf "Speichern..." und waere
       // gesperrt, ohne dass etwas laeuft.
       this.checklistSaving = false;
+      this.checklistConfirmOnly = this.allChecklistAnswered();
       this.checklistVisible = true;
       this._cdr.markForCheck();
       return;
@@ -277,6 +286,25 @@ export class MatchReportComponent implements OnInit, OnChanges {
       [event.itemId]: event.answer,
     };
     this._cdr.markForCheck();
+  }
+
+  public expandChecklist(): void {
+    this.checklistConfirmOnly = false;
+    this._cdr.markForCheck();
+  }
+
+  public get checklistItemCount(): number {
+    return this.game.checklist_items?.length ?? 0;
+  }
+
+  // Verneinte Punkte stehen in der Zusammenfassung mit dabei: Sie setzen die
+  // zustaendige SBK auf BCC der Bestaetigungsmail (`GameMailer#checklist_
+  // confirmation` in der API), und wer nur eine Zahl liest, bestaetigt sonst
+  // ungewollt eine Beanstandung.
+  public get checklistDeniedCount(): number {
+    return (this.game.checklist_items ?? []).filter(
+      (item) => this.checklistAnswers[item.id] === false
+    ).length;
   }
 
   public allChecklistAnswered(): boolean {

@@ -410,6 +410,11 @@
   Die Knopfleiste klebt zusaetzlich am unteren Rand, sonst laege sie bei
   sechzehn Fragen erst hinter der ganzen Liste -- am Spieltisch unter
   Zeitdruck.
+
+  War in der Spielvorbereitung schon alles beantwortet, zeigt das Fenster nur
+  die Zusammenfassung -- die Liste waere dann reine Wiederholung. Es bleibt
+  trotzdem der Riegel: Bestaetigt wird weiterhin ausdruecklich, und ueber
+  "Aendern" kommt die volle Liste zurueck.
 -->
 <div
   *ngIf="checklistVisible"
@@ -425,18 +430,40 @@
         <h2 id="checklist-dialog-title" class="text-xl font-bold mb-2">
           Spieltagscheckliste
         </h2>
-        <p class="text-sm text-fb-gray-400 mb-5">
-          Bitte beantworte alle Fragen, bevor der Spielbericht abgeschlossen
-          wird. Was in der Spielvorbereitung schon eingetragen wurde, steht hier
-          vorbelegt und kann noch geändert werden.
-        </p>
+        @if (checklistConfirmOnly) {
+          <p class="text-sm text-fb-gray-400 mb-5">
+            Die Fragen des Landesverbands wurden schon in der Spielvorbereitung
+            beantwortet. Bitte kurz bestätigen.
+          </p>
 
-        <fb-checklist-questions
-          [items]="game.checklist_items || []"
-          [answers]="checklistAnswers"
-          [disabled]="checklistSaving"
-          (answerSet)="setChecklistAnswer($event)"
-        ></fb-checklist-questions>
+          <div
+            class="border border-fb-gray-200 rounded-[5px] p-4 bg-fb-gray-300"
+          >
+            <p class="font-bold">
+              {{ checklistItemCount }} von {{ checklistItemCount }} Fragen
+              beantwortet
+            </p>
+            @if (checklistDeniedCount > 0) {
+              <p class="text-sm text-fb-gray-500 mt-1">
+                Davon mit „Nein“ beantwortet: {{ checklistDeniedCount }}. Diese
+                Punkte gehen mit der Bestätigung an die Spielbetriebskommission.
+              </p>
+            }
+          </div>
+        } @else {
+          <p class="text-sm text-fb-gray-400 mb-5">
+            Bitte beantworte alle Fragen, bevor der Spielbericht abgeschlossen
+            wird. Was in der Spielvorbereitung schon eingetragen wurde, steht
+            hier vorbelegt und kann noch geändert werden.
+          </p>
+
+          <fb-checklist-questions
+            [items]="game.checklist_items || []"
+            [answers]="checklistAnswers"
+            [disabled]="checklistSaving"
+            (answerSet)="setChecklistAnswer($event)"
+          ></fb-checklist-questions>
+        }
       </div>
 
       <div
@@ -450,6 +477,16 @@
         >
           {{ checklistSaving ? "Speichern…" : "Spielbericht abschließen" }}
         </button>
+        @if (checklistConfirmOnly) {
+          <button
+            type="button"
+            (click)="expandChecklist()"
+            [disabled]="checklistSaving"
+            class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
+          >
+            Ändern
+          </button>
+        }
         <!--
           Auch Abbrechen ist waehrend des Speicherns gesperrt: Der laufende
           Schreibweg wird beim Schliessen nicht abbestellt, sein Erfolgszweig

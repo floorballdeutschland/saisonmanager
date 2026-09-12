@@ -122,7 +122,8 @@ describe('MatchReportComponent', () => {
     // einer CSS-Klasse: Verschwindet etwa `bottom-0`, bleibt die Klasse
     // `sticky` stehen, klebt aber nichts mehr.
     it('lässt sich scrollen, wenn die Fragen höher bauen als das Fenster', () => {
-      create();
+      // Mit offener Frage, denn nur dann steht die volle Liste im Fenster.
+      create({ checklist_answers: [] } as unknown as Partial<Game>);
       openChecklist();
 
       const overlay = dialog();
@@ -133,7 +134,7 @@ describe('MatchReportComponent', () => {
     });
 
     it('hält die Knopfleiste im Bild -- vor und nach dem Scrollen', () => {
-      create();
+      create({ checklist_answers: [] } as unknown as Partial<Game>);
       openChecklist();
 
       const overlay = dialog();
@@ -264,6 +265,74 @@ describe('MatchReportComponent', () => {
 
       expect(component.checklistSaving).toBeFalse();
       expect(knopf('Spielbericht abschließen').disabled).toBeFalse();
+    });
+
+    describe('kompakte Bestätigung', () => {
+      // Bei sechzehn Fragen war das Fenster auch scrollbar noch ein Bildschirm
+      // voll Wiederholung, obwohl in aller Regel schon alles beantwortet ist.
+      it('zeigt bei vollständigen Antworten nur die Zusammenfassung', () => {
+        create();
+        openChecklist();
+
+        expect(component.checklistConfirmOnly).toBeTrue();
+        expect(dialog().textContent).toContain('2 von 2 Fragen');
+        expect(dialog().querySelector('fb-checklist-questions')).toBeNull();
+      });
+
+      // Eine Verneinung setzt die zuständige SBK auf BCC der
+      // Bestätigungsmail. Wer nur eine Zahl liest, bestätigte sonst ungewollt
+      // eine Beanstandung.
+      it('nennt die verneinten Punkte', () => {
+        create();
+        openChecklist();
+
+        expect(component.checklistDeniedCount).toBe(1);
+        expect(dialog().textContent).toContain(
+          'Davon mit „Nein“ beantwortet: 1'
+        );
+      });
+
+      it('klappt über „Ändern“ die volle Liste auf', () => {
+        create();
+        openChecklist();
+
+        knopf('Ändern').click();
+        fixture.detectChanges();
+
+        expect(dialog().querySelector('fb-checklist-questions')).toBeTruthy();
+        expect(dialog().textContent).not.toContain('Fragen beantwortet');
+      });
+
+      // Fehlt auch nur eine Antwort, bleibt es beim Ausfüllen -- die
+      // Zusammenfassung darf den Riegel nicht aushebeln.
+      it('zeigt bei unvollständigen Antworten sofort die Fragen', () => {
+        create({
+          checklist_answers: [
+            { item_id: 7, question: items[0].question, answer: true },
+          ],
+        } as unknown as Partial<Game>);
+        openChecklist();
+
+        expect(component.checklistConfirmOnly).toBeFalse();
+        expect(dialog().querySelector('fb-checklist-questions')).toBeTruthy();
+      });
+
+      // Nach dem Abbrechen zeigt das Fenster wieder den GESPEICHERTEN Stand:
+      // Eine im Ändern-Modus getroffene, nicht gespeicherte Auswahl ist weg,
+      // und die Zusammenfassung ist zurück.
+      it('beginnt beim erneuten Öffnen wieder mit der Zusammenfassung', () => {
+        create();
+        openChecklist();
+        knopf('Ändern').click();
+        fixture.detectChanges();
+
+        knopf('Abbrechen').click();
+        fixture.detectChanges();
+        openChecklist();
+
+        expect(component.checklistConfirmOnly).toBeTrue();
+        expect(dialog().textContent).toContain('2 von 2 Fragen');
+      });
     });
   });
 });
