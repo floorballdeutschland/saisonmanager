@@ -25,6 +25,7 @@ import {
   NotificationService,
   SessionService,
 } from '@floorball/core';
+import * as Sentry from '@sentry/angular';
 
 @Component({
   selector: 'fb-match-report',
@@ -167,12 +168,18 @@ export class MatchReportComponent implements OnInit, OnChanges {
           this.reloadGame();
         },
         error: (err) => {
-          // Der ErrorInterceptor verschluckt 422 nicht, ersetzt den Fehler aber
-          // durch die bereits extrahierte Meldung als reinen String
-          // (throwError(() => err.error?.message || ...)). Beim Abschließen/
-          // Freigeben blockiert das Backend u. a., wenn Schiedsrichter 1 fehlt
-          // oder die Checkliste unvollständig ist – diese Meldung muss sichtbar
-          // werden, und der Status darf nicht vorrücken.
+          // Beim Abschließen/Freigeben blockiert das Backend u. a., wenn
+          // Schiedsrichter 1 fehlt oder die Checkliste unvollständig ist –
+          // diese Meldung muss sichtbar werden, und der Status darf nicht
+          // vorrücken.
+          //
+          // ACHTUNG, hier stand lange, der ErrorInterceptor ersetze den Fehler
+          // durch einen reinen String und zeige selbst nichts an. Beides gilt
+          // seit fbb73a54 (06.07.2026) nicht mehr: Er reicht die
+          // HttpErrorResponse unverändert weiter UND meldet jedes übrige 4xx
+          // selbst. Diese Meldung steht damit doppelt; der String-Zweig unten
+          // greift nur noch beim Prerender. Nicht kopieren – der neue Zweig in
+          // `submitChecklist` verzichtet deshalb auf eine eigene Meldung.
           const message =
             (typeof err === 'string' ? err : err?.error?.message) ||
             'Der Spielstatus konnte nicht geändert werden.';
@@ -250,6 +257,10 @@ export class MatchReportComponent implements OnInit, OnChanges {
       (this.game.checklist_items?.length ?? 0) > 0
     ) {
       this._initChecklistAnswers();
+      // Blieb eine vorige Antwort aus (Funkloch in der Halle), stuende der
+      // Bestaetigungsknopf sonst dauerhaft auf "Speichern..." und waere
+      // gesperrt, ohne dass etwas laeuft.
+      this.checklistSaving = false;
       this.checklistVisible = true;
       this._cdr.markForCheck();
       return;
@@ -292,9 +303,24 @@ export class MatchReportComponent implements OnInit, OnChanges {
         this._cdr.markForCheck();
         this.handleGameStatusChange(this.MATCH_RECORD_CLOSED);
       },
-      error: () => {
+      // Bewusst ohne eigene Meldung: Der ErrorInterceptor zeigt fuer diesen
+      // Endpunkt bereits einen Toast und liest die Serverbegruendung dabei
+      // genauer aus, als es hier moeglich waere (er wertet neben `message`
+      // auch `error` und `errors[]` aus und zieht Validierungs-Hashes flach).
+      // Eine zweite Meldung laege deckungsgleich darueber und muesste einzeln
+      // weggeklickt werden -- der Interceptor warnt an mehreren Stellen selbst
+      // davor.
+      //
+      // Das Fenster bleibt stehen, damit die Antworten nicht verloren gehen.
+      error: (err) => {
         this.checklistSaving = false;
         this._cdr.markForCheck();
+
+        // Einen Serverfehler meldet der Toast dem Anwender, aber niemandem
+        // sonst: Der eigene error-Zweig verbraucht ihn, Sentrys ErrorHandler
+        // sieht nur unbehandelte Fehler. 4xx sind hier fachliche Absagen und
+        // gehoeren nicht hinein.
+        if (err?.status >= 500) Sentry.captureException(err);
       },
     });
   }
