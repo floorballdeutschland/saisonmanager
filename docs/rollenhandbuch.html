@@ -8925,9 +8925,8 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                     <tr>
                       <td>5</td>
                       <td>
-                        Abschnitt mit Statuspunkt: vor Anpfiff
-                        <code>● GLEICH</code>, im Spiel etwa
-                        <code>1. DRITTEL</code> mit <code>● LIVE</code>
+                        Abschnitt, etwa <code>1. DRITTEL</code> oder
+                        <code>DRITTELPAUSE</code>
                       </td>
                     </tr>
                     <tr>
@@ -8940,7 +8939,9 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
               <p class="proc-text">
                 Die Leiste passt ihre Breite an: Blendest du die Spielzeit aus,
                 fällt das Feld weg und die Leiste wird kürzer, ohne Ligazeichen
-                entfällt das letzte Feld. Bauchbinden erscheinen zusätzlich,
+                entfällt das letzte Feld. Solange beide Felder stehen, bleibt
+                die Breite konstant: Weder die laufende Uhr noch ein Tor
+                verschieben die Leiste. Bauchbinden erscheinen zusätzlich,
                 sobald du sie im Bedienfeld auslöst.
               </p>
               <p class="proc-text">
@@ -10023,17 +10024,6 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                   <td>Nicht in OBS lösbar, bitte beim Verband melden</td>
                 </tr>
                 <tr>
-                  <td>Der Live-Punkt geht aus</td>
-                  <td>
-                    Längere Zeit keine neuen Daten, meist ein Netzproblem in der
-                    Halle
-                  </td>
-                  <td>
-                    Verbindung prüfen, die Anzeige behält bewusst den letzten
-                    Stand
-                  </td>
-                </tr>
-                <tr>
                   <td>
                     Statt der Grafik erscheint die normale Saisonmanager-Seite
                   </td>
@@ -10057,8 +10047,16 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 </tr>
                 <tr>
                   <td>Stand aktualisiert sich nicht mehr</td>
-                  <td>Browser-Quelle hängt</td>
-                  <td>Rechtsklick auf die Quelle, <em>Aktualisieren</em></td>
+                  <td>
+                    Netzproblem in der Halle oder hängende Browser-Quelle. Die
+                    Anzeige behält dann bewusst den letzten Stand, statt leer zu
+                    werden
+                  </td>
+                  <td>
+                    Verbindung prüfen; hilft das nicht, Rechtsklick auf die
+                    Quelle und <em>Aktualisieren</em>. Wie alt die Daten sind,
+                    zeigt die Statusfläche mit <code>&amp;debug=1</code>
+                  </td>
                 </tr>
                 <tr>
                   <td>OBS ruckelt, hohe CPU-Last</td>
