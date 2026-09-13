@@ -371,6 +371,79 @@
         </div>
       }
     </div>
+    <!-- Ergebnis der kampflosen Wertung. Ohne Eintrag greift die Liga-Vorgabe,
+         die daneben als Hinweis steht -- sonst ist nicht erkennbar, wovon eine
+         Eingabe abweicht. Nur sichtbar, solange eine Wertung gesetzt ist: ohne
+         sie gibt es nichts festzusetzen. -->
+    @if (existingGame && existingGame.forfait) {
+      <div class="hidden w-7 overflow-hidden md:inline-block">
+        <div class="h-7 bg-amber-300 rotate-45 transform origin-top-left"></div>
+      </div>
+      <div class="flex items-center font-medium text-fb-gray-900">
+        <span>{{
+          "scheduleAdmin.gameEdit.forfaitResultLabel" | transloco
+        }}</span>
+      </div>
+      <div class="col-span-2 flex items-center gap-2">
+        <input
+          class="w-16 bg-transparent border-gray-300 text-center"
+          type="number"
+          min="0"
+          step="1"
+          name="forfaitHomeGoals"
+          [attr.aria-label]="
+            'scheduleAdmin.gameEdit.forfaitResultHomeLabel' | transloco
+          "
+          [(ngModel)]="forfaitHomeGoals"
+          [disabled]="processing"
+          [ngModelOptions]="{ standalone: true }"
+        />
+        <span aria-hidden="true">:</span>
+        <input
+          class="w-16 bg-transparent border-gray-300 text-center"
+          type="number"
+          min="0"
+          step="1"
+          name="forfaitGuestGoals"
+          [attr.aria-label]="
+            'scheduleAdmin.gameEdit.forfaitResultGuestLabel' | transloco
+          "
+          [(ngModel)]="forfaitGuestGoals"
+          [disabled]="processing"
+          [ngModelOptions]="{ standalone: true }"
+        />
+        <button
+          type="button"
+          (click)="saveForfaitResult()"
+          [disabled]="processing || !hasForfaitResultChanges"
+          class="px-2 py-0.5 text-sm rounded border border-gray-400 hover:bg-fb-gray-700 disabled:text-gray-400 disabled:hover:bg-transparent"
+        >
+          {{ "scheduleAdmin.gameEdit.forfaitResultSave" | transloco }}
+        </button>
+        @if (forfaitHomeGoals !== null || forfaitGuestGoals !== null) {
+          <button
+            type="button"
+            (click)="clearForfaitResult()"
+            [disabled]="processing"
+            class="px-2 py-0.5 text-sm rounded border border-gray-400 hover:bg-fb-gray-700 disabled:text-gray-400 disabled:hover:bg-transparent"
+          >
+            {{ "scheduleAdmin.gameEdit.forfaitResultClear" | transloco }}
+          </button>
+        }
+      </div>
+      <div class="col-span-3 flex items-center text-xs text-gray-500">
+        @if (forfaitResultIncomplete) {
+          <span class="text-red-700">{{
+            "scheduleAdmin.gameEdit.forfaitResultIncomplete" | transloco
+          }}</span>
+        } @else if (forfaitDefaultResult) {
+          <span>{{
+            "scheduleAdmin.gameEdit.forfaitResultHint"
+              | transloco: { result: forfaitDefaultResult }
+          }}</span>
+        }
+      </div>
+    }
     @if (hasNotice) {
       <div class="hidden w-7 overflow-hidden md:inline-block">
         <div class="h-7 bg-red-300 rotate-45 transform origin-top-left"></div>
