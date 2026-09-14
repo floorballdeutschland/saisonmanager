@@ -48,8 +48,10 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
   loading = true;
   loadFailed = false;
 
-  /** Zuletzt erzeugte URL je Gruppe – der Rohtoken kommt nur genau einmal. */
-  urlByKey: Record<string, string> = {};
+  /** Zuletzt erzeugter Code je Gruppe – der Klartext kommt nur genau einmal. */
+  codeByKey: Record<string, string> = {};
+  /** Adresse, unter der der Code eingegeben wird. Für alle Gruppen dieselbe. */
+  entryUrl = '';
   /**
    * Gerade erzeugte Links. Getrennt von `hallDay.link` gehalten, damit die
    * Serverantwort unverändert bleibt und lokale Optimismen davon unterscheidbar
@@ -136,14 +138,29 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
     const key = this.key(hallDay);
     this.generatingKey = key;
     // Ein neuer Link entwertet den alten; die Erfolgsmeldung von vorhin darf
-    // nicht stehen bleiben und auf die inzwischen veraltete URL zeigen.
+    // nicht stehen bleiben und auf den inzwischen veralteten Code zeigen.
     this.copiedKey = null;
     this._gameService
       .createSecretaryLink(hallDay.game_days[0].id)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
-          this.urlByKey[key] = result.url;
+          // Antwort ohne Code: Der Server ist aelter als diese Oberflaeche
+          // (Frontend vor der API ausgerollt). Ohne diesen Zweig liest sich das
+          // wie der normale „nicht erneut anzeigbar"-Fall, und jeder weitere
+          // Klick entwertet den eben erzeugten Zugang.
+          if (!result.code) {
+            this.generatingKey = null;
+            this._notificationService.error(
+              'Der Zugang wurde erzeugt, aber der Server hat keinen Code mitgeliefert. ' +
+                'Bitte nicht erneut erzeugen und das melden.'
+            );
+            this._cdr.markForCheck();
+            return;
+          }
+
+          this.codeByKey[key] = result.code;
+          this.entryUrl = result.entry_url;
           this.linkByKey[key] = {
             expires_at: result.expires_at,
             created_by: result.created_by,
@@ -169,25 +186,36 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Der Code in zwei Vierergruppen. Abgeschrieben wird er von hier, und acht
+   * Zeichen am Stück verliest man.
+   */
+  formatCode(code: string): string {
+    return `${code.slice(0, 4)}-${code.slice(4)}`;
+  }
+
+  /**
    * „Kopiert" wird erst gemeldet, wenn die Zwischenablage den Text angenommen
    * hat. Ohne HTTPS gibt es `navigator.clipboard` gar nicht, und auch mit kann
    * der Browser die Freigabe verweigern – eine Erfolgsmeldung auf Verdacht
-   * hieße, dass jemand einen leeren Einfügen-Versuch macht und den Link für
+   * hieße, dass jemand einen leeren Einfügen-Versuch macht und den Code für
    * verschickt hält.
+   *
+   * Kopiert wird der Code ohne Trennstrich: Er geht meist in eine Nachricht an
+   * das Sekretariat, und dort soll stehen, was einzutippen ist.
    */
   async copy(hallDay: SecretaryHallDay): Promise<void> {
     const key = this.key(hallDay);
-    const url = this.urlByKey[key];
-    if (!url) return;
+    const code = this.codeByKey[key];
+    if (!code) return;
 
     try {
       if (!navigator.clipboard) throw new Error('clipboard unavailable');
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(code);
       this.copiedKey = key;
     } catch {
       this.copiedKey = null;
       this._notificationService.error(
-        'Kopieren war nicht möglich. Bitte markiere den Link und kopiere ihn von Hand.'
+        'Kopieren war nicht möglich. Bitte markiere den Code und kopiere ihn von Hand.'
       );
     }
     this._cdr.markForCheck();

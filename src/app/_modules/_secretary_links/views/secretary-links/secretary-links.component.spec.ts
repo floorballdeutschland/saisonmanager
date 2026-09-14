@@ -51,6 +51,8 @@ describe('SecretaryLinksComponent', () => {
     }) as SecretaryHallDay;
 
   const createResponse = {
+    code: 'K7QF3MXR',
+    entry_url: 'https://example.test/spielsekretariat',
     url: 'https://example.test/spielsekretariat?token=abc',
     token: 'abc',
     expires_at: '2026-01-13T12:00:00Z',
@@ -95,9 +97,9 @@ describe('SecretaryLinksComponent', () => {
     expect(component.leagueNames(component.hallDays[0])).toBe('U15 · U17');
   });
 
-  // Der Link wird immer für den ersten Spieltag angefordert; welche weiteren er
-  // abdeckt, entscheidet der Server anhand Halle, Datum und Berechtigung.
-  it('fordert den Link für den ersten Spieltag der Gruppe an', () => {
+  // Der Zugang wird immer für den ersten Spieltag angefordert; welche weiteren
+  // er abdeckt, entscheidet der Server anhand Halle, Datum und Berechtigung.
+  it('fordert den Zugang für den ersten Spieltag der Gruppe an', () => {
     gameService.createSecretaryLink.and.returnValue(of(createResponse));
     component.ngOnInit();
     const group = component.hallDays[0];
@@ -105,9 +107,8 @@ describe('SecretaryLinksComponent', () => {
     component.generate(group);
 
     expect(gameService.createSecretaryLink).toHaveBeenCalledWith(1);
-    expect(component.urlByKey[component.key(group)]).toBe(
-      'https://example.test/spielsekretariat?token=abc'
-    );
+    expect(component.codeByKey[component.key(group)]).toBe('K7QF3MXR');
+    expect(component.entryUrl).toBe('https://example.test/spielsekretariat');
     expect(component.linkFor(group)?.game_day_ids).toEqual([1, 2]);
     expect(component.generatingKey).toBeNull();
   });
@@ -165,7 +166,25 @@ describe('SecretaryLinksComponent', () => {
     expect(notificationService.warning).toHaveBeenCalled();
   });
 
-  it('warnt nicht, wenn der Link alles abdeckt', () => {
+  // Frontend vor der API ausgerollt: Die alte Antwort traegt keinen `code`.
+  // Ohne diesen Zweig sieht das aus wie der normale Fall „nicht erneut
+  // anzeigbar", und jeder weitere Klick entwertet den eben erzeugten Zugang.
+  it('meldet eine Antwort ohne Code, statt sie als Erfolg zu zeigen', () => {
+    const ohneCode = { ...createResponse, code: undefined };
+    gameService.createSecretaryLink.and.returnValue(
+      of(ohneCode as unknown as typeof createResponse)
+    );
+    component.ngOnInit();
+    const group = component.hallDays[0];
+
+    component.generate(group);
+
+    expect(component.codeByKey[component.key(group)]).toBeUndefined();
+    expect(notificationService.error).toHaveBeenCalled();
+    expect(component.generatingKey).toBeNull();
+  });
+
+  it('warnt nicht, wenn der Zugang alles abdeckt', () => {
     gameService.createSecretaryLink.and.returnValue(of(createResponse));
     component.ngOnInit();
 
@@ -223,14 +242,14 @@ describe('SecretaryLinksComponent', () => {
 
       await component.copy(component.hallDays[0]);
 
-      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-        'https://example.test/spielsekretariat?token=abc'
-      );
+      // Ohne Trennstrich: Der Code geht meist in eine Nachricht an das
+      // Sekretariat, und dort soll stehen, was einzutippen ist.
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith('K7QF3MXR');
       expect(component.copiedKey).toBe(component.key(component.hallDays[0]));
     });
 
     // Sonst liest der Button "Kopiert", während die Zwischenablage leer blieb,
-    // und der Link gilt als verschickt.
+    // und der Code gilt als verschickt.
     it('meldet nicht Kopiert, wenn die Zwischenablage ablehnt', async () => {
       spyOn(navigator.clipboard, 'writeText').and.rejectWith(
         new Error('denied')
@@ -330,7 +349,7 @@ describe('SecretaryLinksComponent', () => {
 
       const text: string = fixture.nativeElement.textContent;
       expect(text).toContain('Bezirksliga');
-      expect(text).toContain('im Link nicht enthalten');
+      expect(text).toContain('im Zugang nicht enthalten');
     });
 
     // Ein Spieltag ausserhalb des Fensters fehlt kommentarlos in der Liste. Der
@@ -379,14 +398,30 @@ describe('SecretaryLinksComponent', () => {
       gameService.createSecretaryLink.and.returnValue(of(createResponse));
       fixture.detectChanges();
       expect(fixture.nativeElement.textContent).not.toContain(
-        'Spielsekretariats-Link kopieren'
+        'Spielsekretariats-Code kopieren'
       );
 
       component.generate(component.hallDays[0]);
       fixture.detectChanges();
 
       expect(fixture.nativeElement.textContent).toContain(
-        'Spielsekretariats-Link kopieren'
+        'Spielsekretariats-Code kopieren'
+      );
+    });
+
+    // Am Spieltisch wird er abgeschrieben, deshalb in zwei Vierergruppen und
+    // gross genug zum Ablesen. Die Adresse zum Eingeben gehoert daneben, sonst
+    // weiss das Sekretariat nicht, wohin damit.
+    it('zeigt den Code getrennt und mit der Adresse zum Eingeben', () => {
+      gameService.createSecretaryLink.and.returnValue(of(createResponse));
+      fixture.detectChanges();
+
+      component.generate(component.hallDays[0]);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('K7QF-3MXR');
+      expect(fixture.nativeElement.textContent).toContain(
+        'https://example.test/spielsekretariat'
       );
     });
   });
