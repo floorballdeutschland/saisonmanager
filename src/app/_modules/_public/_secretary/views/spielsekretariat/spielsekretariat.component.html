@@ -13,6 +13,46 @@
     </div>
   }
 
+  <!-- Regelfall seit fe#450: Am Spieltisch steht ein Vereinsrechner ohne
+       Benutzerkonto. Der Vereinsmanager erzeugt den Zugang anderswo und gibt
+       den Code weiter, der hier abgetippt wird. -->
+  @if (!loading && showCodeForm) {
+    <div class="border border-fb-gray-600 rounded-[5px] p-4 max-w-md">
+      <p class="text-sm text-fb-gray-500 mb-4">
+        Gib den achtstelligen Code ein, den du von deinem Verein bekommen hast.
+        Groß- und Kleinschreibung spielen keine Rolle.
+      </p>
+      <form (ngSubmit)="redeemCode()">
+        <label class="block text-xs text-fb-gray-500 mb-1" for="secretary-code"
+          >Code</label
+        >
+        <input
+          id="secretary-code"
+          name="code"
+          type="text"
+          [(ngModel)]="codeInput"
+          [disabled]="redeeming"
+          autocomplete="off"
+          autocapitalize="characters"
+          spellcheck="false"
+          maxlength="12"
+          placeholder="ABCD-2345"
+          class="w-full border border-fb-gray-600 rounded-[5px] px-3 py-2 mb-3 font-mono text-lg tracking-widest uppercase"
+        />
+        @if (codeError) {
+          <div class="text-sm text-red-700 mb-3">{{ codeError }}</div>
+        }
+        <button
+          type="submit"
+          [disabled]="redeeming || !codeInput.trim()"
+          class="font-bold text-black leading-[17px] text-sm px-3 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] disabled:opacity-40"
+        >
+          {{ redeeming ? "Wird geprüft…" : "Weiter" }}
+        </button>
+      </form>
+    </div>
+  }
+
   @if (!loading && data) {
     <!-- Header -->
     <div class="border border-fb-gray-600 rounded-[5px] p-4 mb-4 text-sm">
@@ -35,6 +75,15 @@
       @if (data.created_by) {
         <span> Erstellt von {{ data.created_by }}.</span>
       }
+      <!-- Ein Zugang von gestern gilt heute noch; ohne diesen Weg laedt
+           dieselbe Registerkarte kommentarlos den Spieltag von gestern. -->
+      <button
+        type="button"
+        (click)="enterDifferentCode()"
+        class="ml-2 underline font-bold"
+      >
+        Anderen Code eingeben
+      </button>
     </div>
     <!-- Tabs -->
     <div class="flex gap-4 border-b border-fb-gray-300 mb-6">
