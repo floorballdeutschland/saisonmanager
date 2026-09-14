@@ -39,7 +39,7 @@ export class ScheduleIndexComponent implements OnInit {
 
   secretaryLinkByGameDay: Record<
     number,
-    { url: string; expires_at: string; leagues: string[] } | null
+    { code: string; expires_at: string; leagues: string[] } | null
   > = {};
   secretaryLinkGenerating: Record<number, boolean> = {};
 
@@ -146,7 +146,9 @@ export class ScheduleIndexComponent implements OnInit {
     this._gameService.createSecretaryLink(gameDayId).subscribe({
       next: (result) => {
         this.secretaryLinkByGameDay[gameDayId] = {
-          url: result.url,
+          // Weitergegeben wird der abtippbare Code: Am Spieltisch steht ein
+          // Vereinsrechner ohne Benutzerkonto, auf den der Link nicht kommt.
+          code: result.code,
           expires_at: result.expires_at,
           // Ein Link deckt alle Spieltage derselben Halle am selben Tag ab, für
           // die man berechtigt ist. Admin und SBK sind das meist für alle –

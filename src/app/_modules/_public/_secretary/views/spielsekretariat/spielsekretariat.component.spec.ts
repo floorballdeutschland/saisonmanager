@@ -1,13 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { environment } from 'src/environments/environment';
 
 import { SpielSekretariatComponent } from './spielsekretariat.component';
 
 describe('SpielSekretariatComponent', () => {
   let component: SpielSekretariatComponent;
   let fixture: ComponentFixture<SpielSekretariatComponent>;
+  let httpMock: HttpTestingController;
+  // Beweglich, damit die Tests zur Code-Eingabe ohne Token auskommen: Die
+  // Komponente liest den Parameter erst in ngOnInit, und das ruft hier jeder
+  // Test selbst auf.
+  let queryParams: Record<string, string>;
 
   const day = (overrides: Record<string, unknown> = {}) => ({
     id: 1,
@@ -31,23 +41,35 @@ describe('SpielSekretariatComponent', () => {
   };
 
   beforeEach(async () => {
+    queryParams = { token: 'tok en' };
+    sessionStorage.removeItem('secretary_token');
+
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [HttpClientTestingModule, FormsModule],
       declarations: [SpielSekretariatComponent],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { queryParamMap: convertToParamMap({ token: 'tok en' }) },
+            snapshot: {
+              get queryParamMap() {
+                return convertToParamMap(queryParams);
+              },
+            },
           },
         },
       ],
     }).compileComponents();
 
+    httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(SpielSekretariatComponent);
     component = fixture.componentInstance;
     component.token = 'tok en';
+  });
+
+  afterEach(() => {
+    sessionStorage.removeItem('secretary_token');
   });
 
   describe('matchReportUrl', () => {
@@ -382,6 +404,133 @@ describe('SpielSekretariatComponent', () => {
       expect(component.gameDays().length).toBe(1);
       expect(component.multipleLeagues).toBe(false);
       expect(component.headerTitle()).toBe('U15');
+    });
+  });
+
+  // Am Spieltisch steht ein Vereinsrechner ohne Benutzerkonto. Der Zugang kommt
+  // dort als achtstelliger Code an und wird abgetippt.
+  describe('Code-Eingabe', () => {
+    const redeemUrl = environment.apiURL + 'public/secretary/redeem';
+    const payload = {
+      game_day: null,
+      game_days: [day({ id: 1 })],
+      games: [],
+      license_lists: {},
+      expires_at: '2026-01-02T00:00:00Z',
+    };
+
+    beforeEach(() => {
+      queryParams = {};
+    });
+
+    it('zeigt die Eingabe, wenn weder Adresse noch Registerkarte einen Token tragen', () => {
+      component.ngOnInit();
+
+      expect(component.showCodeForm).toBe(true);
+      expect(component.loading).toBe(false);
+      httpMock.expectNone(() => true);
+    });
+
+    it('tauscht den Code und laedt damit den Spieltag', () => {
+      component.ngOnInit();
+      component.codeInput = 'k7qf-3mxr';
+
+      component.redeemCode();
+
+      const redeem = httpMock.expectOne(redeemUrl);
+      expect(redeem.request.method).toBe('POST');
+      expect(redeem.request.body).toEqual({ code: 'k7qf-3mxr' });
+      redeem.flush({
+        token: 'langer-token',
+        expires_at: '2026-01-02T00:00:00Z',
+      });
+
+      httpMock
+        .expectOne(environment.apiURL + 'public/secretary?token=langer-token')
+        .flush(payload);
+
+      expect(component.showCodeForm).toBe(false);
+      expect(component.token).toBe('langer-token');
+      expect(component.loading).toBe(false);
+    });
+
+    // Ohne das Ablegen verloere ein schlichtes Neuladen am Spieltisch den
+    // Zugang, und der Code muesste mitten im Spiel erneut abgetippt werden.
+    it('legt den Token erst ab, wenn er getragen hat', () => {
+      component.ngOnInit();
+      component.codeInput = 'K7QF3MXR';
+
+      component.redeemCode();
+      httpMock.expectOne(redeemUrl).flush({
+        token: 'langer-token',
+        expires_at: '2026-01-02T00:00:00Z',
+      });
+
+      expect(sessionStorage.getItem('secretary_token')).toBeNull();
+
+      httpMock
+        .expectOne(environment.apiURL + 'public/secretary?token=langer-token')
+        .flush(payload);
+
+      expect(sessionStorage.getItem('secretary_token')).toBe('langer-token');
+    });
+
+    it('nutzt den abgelegten Token derselben Registerkarte', () => {
+      sessionStorage.setItem('secretary_token', 'langer-token');
+
+      component.ngOnInit();
+
+      expect(component.showCodeForm).toBe(false);
+      httpMock
+        .expectOne(environment.apiURL + 'public/secretary?token=langer-token')
+        .flush(payload);
+      expect(component.loading).toBe(false);
+    });
+
+    // Sonst zeigt das Neuladen dauerhaft die Fehlermeldung, und der Weg zurueck
+    // zur Eingabe waere nur ueber eine neue Registerkarte zu finden.
+    it('verwirft einen abgelaufenen abgelegten Token und bietet die Eingabe an', () => {
+      sessionStorage.setItem('secretary_token', 'alt');
+
+      component.ngOnInit();
+      httpMock
+        .expectOne(environment.apiURL + 'public/secretary?token=alt')
+        .flush(
+          { message: 'Dieser Link ist ungültig oder abgelaufen.' },
+          { status: 410, statusText: 'Gone' }
+        );
+
+      expect(component.showCodeForm).toBe(true);
+      expect(component.error).toBe('Dieser Link ist ungültig oder abgelaufen.');
+      expect(sessionStorage.getItem('secretary_token')).toBeNull();
+    });
+
+    it('meldet einen ungueltigen Code am Feld und laesst die Eingabe stehen', () => {
+      component.ngOnInit();
+      component.codeInput = '2345ABCD';
+
+      component.redeemCode();
+      httpMock
+        .expectOne(redeemUrl)
+        .flush(
+          { message: 'Dieser Code ist ungültig oder abgelaufen.' },
+          { status: 410, statusText: 'Gone' }
+        );
+
+      expect(component.codeError).toBe(
+        'Dieser Code ist ungültig oder abgelaufen.'
+      );
+      expect(component.showCodeForm).toBe(true);
+      expect(component.redeeming).toBe(false);
+    });
+
+    it('schickt eine leere Eingabe nicht ab', () => {
+      component.ngOnInit();
+      component.codeInput = '   ';
+
+      component.redeemCode();
+
+      httpMock.expectNone(redeemUrl);
     });
   });
 });

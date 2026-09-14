@@ -13,17 +13,17 @@
     "gameDayLabel": "Spieltag {{ number }},",
     "gameCountSingular": "Spiel",
     "gameCountPlural": "Spiele",
-    "linkActiveUntil": "Link aktiv bis {{ date }}",
-    "copyLinkTitle": "Link kopieren",
-    "copyLink": "Link kopieren",
-    "secretaryLinkTitle": "Spielsekretariats-Link erzeugen. Der Link gilt 72 Stunden und deckt alle Spieltage ab, die an diesem Tag in derselben Halle stattfinden.",
+    "linkActiveUntil": "Code aktiv bis {{ date }}",
+    "copyLinkTitle": "Code kopieren",
+    "copyLink": "Code kopieren",
+    "secretaryLinkTitle": "Spielsekretariats-Code erzeugen. Der Code wird auf saisonmanager.org/spielsekretariat eingegeben, gilt 72 Stunden und deckt alle Spieltage ab, die an diesem Tag in derselben Halle stattfinden.",
     "secretaryLinkGenerating": "Wird generiert…",
-    "secretaryLink": "Spielsek-Link",
+    "secretaryLink": "Spielsek-Code",
     "editGameDayTitle": "Spieltag bearbeiten",
     "editGameDay": "Spieltag bearbeiten",
     "gamesHeading": "Spiele",
     "addNewGame": "Neues Spiel hinzufügen",
-    "linkCovers": "Der Link deckt ab: {{leagues}}"
+    "linkCovers": "Der Code deckt ab: {{leagues}}"
   },
   "gameDayEdit": {
     "title": "Spielplanverwaltung",
