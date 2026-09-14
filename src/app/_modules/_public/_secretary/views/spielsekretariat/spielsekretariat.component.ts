@@ -18,6 +18,9 @@ import { SecretaryTokenGameDay } from '@floorball/types';
 // seinen Spieltag. Diese Ansicht muss den Altfall deshalb nicht mehr kennen.
 type SecretaryGameDay = SecretaryPayload;
 
+// Derselbe Schlüssel wie im SecretaryTokenInterceptor.
+const STORAGE_KEY = 'secretary_token';
+
 /** Die Lizenzlisten einer Liga, in der Reihenfolge der Spieltage des Links. */
 interface LicenseGroup {
   leagueId: number | null;
@@ -42,6 +45,12 @@ export class SpielSekretariatComponent implements OnInit {
   activeTab: 'games' | 'licenses' = 'games';
   readonly today = new Date().toISOString().slice(0, 10);
 
+  /** Eingabe des abgetippten Kurzcodes, solange kein Token vorliegt. */
+  codeInput = '';
+  codeError?: string;
+  redeeming = false;
+  showCodeForm = false;
+
   constructor(
     private _route: ActivatedRoute,
     private _gameService: GameService,
@@ -51,18 +60,66 @@ export class SpielSekretariatComponent implements OnInit {
     this._title.setTitle('Spielsekretariat | Floorball Saisonmanager');
   }
 
+  /**
+   * Drei Wege auf diese Seite, in dieser Reihenfolge:
+   *
+   * 1. `?token=` – Links, die vor dem Kurzcode ausgegeben wurden, und der Weg,
+   *    den die Spielseite zurück hierher nimmt.
+   * 2. Der abgelegte Token derselben Registerkarte. Ohne ihn verlöre ein
+   *    schlichtes Neuladen am Spieltisch den Zugang, und der Code müsste
+   *    mitten im Spiel erneut abgetippt werden.
+   * 3. Sonst die Code-Eingabe. Das ist seit fe#450 der Regelfall: Am Tisch
+   *    steht ein Vereinsrechner, auf den weder Link noch Postfach kommen.
+   */
   ngOnInit(): void {
-    this.token = this._route.snapshot.queryParamMap.get('token') ?? '';
-    if (!this.token) {
-      this.error = 'Kein Token angegeben.';
+    const fromUrl = this._route.snapshot.queryParamMap.get('token') ?? '';
+    const token = fromUrl || this._storedToken();
+    if (!token) {
+      this.showCodeForm = true;
       this.loading = false;
       this._cdr.markForCheck();
       return;
     }
 
-    this._gameService.getSecretaryGameDay(this.token).subscribe({
+    this._load(token);
+  }
+
+  /** Löst den abgetippten Code ein und lädt damit den Spieltag. */
+  redeemCode(): void {
+    const code = this.codeInput.trim();
+    if (!code || this.redeeming) return;
+
+    this.redeeming = true;
+    this.codeError = undefined;
+    this._gameService.redeemSecretaryCode(code).subscribe({
+      next: (result) => {
+        this.redeeming = false;
+        this.showCodeForm = false;
+        this.loading = true;
+        this._cdr.markForCheck();
+        this._load(result.token);
+      },
+      // Der ErrorInterceptor lässt `public/secretary` bewusst durch, damit die
+      // Meldung hier am Eingabefeld steht statt als Toast über einer leeren
+      // Seite.
+      error: (err) => {
+        this.redeeming = false;
+        this.codeError =
+          err?.error?.message ?? 'Der Code ist ungültig oder abgelaufen.';
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  private _load(token: string): void {
+    this.token = token;
+    this._gameService.getSecretaryGameDay(token).subscribe({
       next: (data) => {
         this.data = data;
+        // Erst ablegen, wenn der Token wirklich getragen hat. Ein abgelaufener
+        // im Speicher hieße sonst: Neuladen zeigt die Fehlermeldung statt der
+        // Code-Eingabe, und der Weg zurück wäre nur über einen neuen Tab.
+        this._storeToken(token);
         // `loading` VOR dem Gruppenaufbau zurücksetzen: Wirft der Aufbau, trägt
         // RxJS die Ausnahme asynchron weiter und der error-Zweig unten greift
         // nicht mehr. Die Seite bliebe sonst dauerhaft im Ladezustand stehen,
@@ -81,9 +138,46 @@ export class SpielSekretariatComponent implements OnInit {
           (err instanceof Error ? err.message : null) ??
           'Der Link ist ungültig oder abgelaufen.';
         this.loading = false;
+        // Die Eingabe bleibt erreichbar: Wer hier mit einem abgelaufenen Link
+        // ankommt, hat den nächsten Code meist schon vor sich liegen.
+        this.showCodeForm = true;
+        this._clearStoredToken();
         this._cdr.markForCheck();
       },
     });
+  }
+
+  // sessionStorage gilt je Registerkarte und ist damit genau der richtige Ort:
+  // Der Zugang überlebt das Neuladen am Spieltisch, aber nicht das Schließen.
+  // Derselbe Schlüssel wie im SecretaryTokenInterceptor, der ihn an jede
+  // Anfrage hängt. Der Zugriff wirft im privaten Fenster und bei blockierten
+  // Website-Daten; dann läuft die Seite ohne ihn weiter und der Code wird nach
+  // einem Neuladen erneut abgetippt.
+  private _storedToken(): string {
+    try {
+      if (typeof sessionStorage === 'undefined') return '';
+      return sessionStorage.getItem(STORAGE_KEY) ?? '';
+    } catch {
+      return '';
+    }
+  }
+
+  private _storeToken(token: string): void {
+    try {
+      if (typeof sessionStorage === 'undefined') return;
+      sessionStorage.setItem(STORAGE_KEY, token);
+    } catch {
+      // Ohne Speicher funktioniert nur das Neuladen nicht.
+    }
+  }
+
+  private _clearStoredToken(): void {
+    try {
+      if (typeof sessionStorage === 'undefined') return;
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // s. o.
+    }
   }
 
   gameDays(): SecretaryTokenGameDay[] {

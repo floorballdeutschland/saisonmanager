@@ -456,6 +456,10 @@ export class GameService {
    */
   public createSecretaryLink(gameDayId: number) {
     return this.http.post<{
+      /** Der abtippbare Kurzcode – das, was weitergegeben wird. */
+      code: string;
+      /** Adresse zum Eingeben des Codes, ohne Token. */
+      entry_url: string;
       url: string;
       token: string;
       expires_at: string;
@@ -536,6 +540,20 @@ export class GameService {
           encodeURIComponent(token)
       )
       .pipe(map((wire) => normalizeSecretaryPayload(wire)));
+  }
+
+  /**
+   * Tauscht den am Spieltisch abgetippten Kurzcode gegen den regulären Token.
+   *
+   * Der Code gilt ausschließlich hier. Gearbeitet wird danach mit dem Token,
+   * den der SecretaryTokenInterceptor an jede Anfrage hängt – deshalb muss der
+   * Aufrufer ihn ablegen, bevor er die Spieltagsdaten holt.
+   */
+  public redeemSecretaryCode(code: string) {
+    return this.http.post<{ token: string; expires_at: string }>(
+      environment.apiURL + 'public/secretary/redeem',
+      { code }
+    );
   }
 
   public setChecklistAnswers(
