@@ -37,9 +37,6 @@
   // offen, fetch wartet ewig, und das Overlay friert für den Rest der
   // Übertragung ein. Deshalb harte Frist statt Vertrauen.
   var REQUEST_TIMEOUT_MS = 4000;
-  // Ab wann die Anzeige zugibt, dass sie nichts Neues mehr weiss. Der Live-Punkt
-  // geht dann aus, statt einen alten Stand als aktuell auszugeben.
-  var STALE_AFTER_MS = 20000;
   // Das mitgelieferte Ligazeichen. Es steht da, solange die Liga kein eigenes
   // hinterlegt hat, und es steht auch wieder da, sobald das Dock auf ein Spiel
   // ohne eigenes Ligazeichen wechselt.
@@ -100,8 +97,6 @@
     guestGoals: document.getElementById("guest-goals"),
     period: document.getElementById("period"),
     clock: document.getElementById("clock"),
-    live: document.getElementById("live"),
-    liveLabel: document.getElementById("live-label"),
     leagueMark: document.getElementById("league-mark"),
     fsMark: document.getElementById("fs-mark"),
     lowerThird: document.getElementById("lower-third"),
@@ -347,31 +342,6 @@
 
     var period = game.current_period_title || {};
     el.period.textContent = period.title || "";
-
-    renderLiveState(game);
-  }
-
-  // Der Live-Punkt behauptet, die Anzeige sei aktuell. Kommt seit einer Weile
-  // nichts mehr durch (totes Token, Netz weg), wäre das eine Falschaussage:
-  // Dann geht der Punkt aus, und der Regie faellt es auf.
-  function renderLiveState(game) {
-    game = game || state.game;
-    if (!game) return;
-
-    var fresh =
-      !state.terminal &&
-      state.lastOkAt !== null &&
-      Date.now() - state.lastOkAt < STALE_AFTER_MS;
-    var running = Boolean(game.started) && !game.ended;
-
-    el.live.classList.toggle("ov-live--idle", !running || !fresh);
-    el.liveLabel.textContent = !fresh
-      ? "Pause"
-      : game.ended
-        ? "Ende"
-        : running
-          ? "Live"
-          : "Gleich";
   }
 
   // Der Spielstand kommt aus dem Spielbericht, es sei denn, das Dock hat ihn
@@ -2489,10 +2459,4 @@
   // Anzeige, die nur Minuten und Sekunden zeigt, und übersteht das Drosseln
   // versteckter Quellen, weil jeder Tick neu aus dem Anker rechnet.
   window.setInterval(renderClock, 100);
-
-  // Getrennt vom Abruf: Ob die Anzeige veraltet ist, muss auch dann auffallen,
-  // wenn gar keine Antwort mehr kommt.
-  window.setInterval(function () {
-    renderLiveState();
-  }, 1000);
 })();

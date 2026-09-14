@@ -41,7 +41,6 @@
      Farbwert liesse die Zeile ohne Hinterlegung stehen, und das faellt erst
      auf Sendung auf. */
   --ov-accent-soft: rgb(233 69 96 / 16%);
-  --ov-live: #ff0000;
   --ov-success: #28a745;
   --ov-text: #f1f1f1;
   --ov-text-muted: #a0a0a0;
@@ -286,7 +285,9 @@ body {
 .ov-score {
   display: flex;
   align-items: center;
-  gap: 14px;
+  /* Knapper als die früheren 14px: Die festen Ziffernplätze unten bringen bei
+     einstelligen Ständen schon Luft um den Doppelpunkt mit. */
+  gap: 8px;
   padding: 18px 26px;
   background: rgb(0 0 0 / 28%);
   font-family: var(--ov-display);
@@ -296,17 +297,50 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Jede Trefferzahl bekommt aus demselben Grund einen festen Platz wie die Uhr
+   (siehe dort): Ohne ihn wurde die Tafel bei JEDEM Tor breiter oder schmaler,
+   gemessen 18px allein von 0:0 auf 1:1. Reserviert sind zwei Stellen; weil
+   `ch` die Breite der breitesten Ziffer ist, ist `2ch` genau der ungünstigste
+   Fall `00`. Dreistellig wird in dieser Sportart niemand. */
+.ov-score > span:not(.ov-score-sep) {
+  min-width: 2ch;
+  text-align: center;
+}
+
 .ov-score-sep {
   color: var(--ov-text-muted);
   font-weight: 500;
 }
 
 /* Spielzeit. Eigene Spalte zwischen Stand und Abschnitt, in derselben
-   schmalen Grotesk wie die Ziffern. Tabellenziffern, damit die Breite beim
-   Weiterlaufen nicht zappelt. */
+   schmalen Grotesk wie die Ziffern.
+
+   FESTER PLATZ, sonst atmet die ganze Anzeigetafel im Sekundentakt. Zwei
+   Gründe, und `font-variant-numeric: tabular-nums` deckt keinen davon ab:
+
+   1. Der mitgelieferte Oswald-Schnitt bringt gar keine Tabellenziffern mit.
+      Seine Ziffern sind unterschiedlich breit (bei 54px von 20.8px für die
+      „1" bis 29.7px für die „0"), schon der Sekundenwechsel zappelte also.
+      Die Angabe bleibt trotzdem stehen: Greift der Rückfall auf Impact, hilft
+      sie dort.
+   2. Selbst mit Tabellenziffern käme bei `9:59` -> `10:00` eine Stelle dazu.
+
+   Reserviert ist Platz für `00:00`, also vier Ziffern und ein Doppelpunkt.
+   `ch` ist die Breite der „0" und damit der breitesten Ziffer; `5ch` deckt die
+   vier Ziffern ab und lässt für den schmaleren Doppelpunkt reichlich Luft.
+   Dazu die seitlichen Innenabstände (2 x 24px). `min-width` und nicht `width`,
+   damit eine unerwartet längere Zeit nicht abgeschnitten wird. Mittig, sonst
+   klebte die einstellige Minute am linken Rand ihres Feldes.
+
+   Gemessen (headless Chrome, Oswald geladen): Die Tafelbreite bleibt über
+   alle Stände von `0:0` bis `12:11` und alle Zeiten von `0:00` bis `99:59`
+   konstant. Vorher schwankte dieselbe Tafel im Spielverlauf zwischen 964px
+   und 1027px. */
 .ov-clock {
   display: flex;
   align-items: center;
+  justify-content: center;
+  min-width: calc(5ch + 48px);
   padding: 18px 24px;
   border-left: 1px solid rgb(255 255 255 / 10%);
   font-family: var(--ov-display);
@@ -328,12 +362,14 @@ body {
   color: var(--ov-text-muted);
 }
 
-/* Abschnitt und Live-Punkt rechts, als eigene Spalte. */
+/* Abschnitt rechts, als eigene Spalte. Die Mindestbreite bleibt, obwohl der
+   Live-Punkt hier nicht mehr steht: Sie hält die Tafel ruhig, wenn der
+   Abschnittstitel wechselt (`1. DRITTEL` -> `DRITTELPAUSE`). */
 .ov-meta {
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 6px;
   padding: 18px 26px;
   min-width: 190px;
   border-left: 1px solid rgb(255 255 255 / 10%);
@@ -346,43 +382,6 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   white-space: nowrap;
-}
-
-.ov-live {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ov-text-muted);
-}
-
-.ov-live-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--ov-live);
-  animation: ov-pulse 2s ease-in-out infinite;
-}
-
-/* Kein Puls, solange nicht gespielt wird: Ein blinkender Punkt in der
-   Drittelpause behauptet etwas Falsches. */
-.ov-live--idle .ov-live-dot {
-  background: var(--ov-text-muted);
-  animation: none;
-}
-
-@keyframes ov-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.25;
-  }
 }
 
 .ov-league-mark {
@@ -490,10 +489,6 @@ body {
 /* Reduzierte Bewegung respektieren. In OBS ohne Wirkung, aber die Seite lässt
    sich auch im Browser prüfen. */
 @media (prefers-reduced-motion: reduce) {
-  .ov-live-dot {
-    animation: none;
-  }
-
   .ov-scoreboard,
   .ov-lower-third {
     transition: none;
