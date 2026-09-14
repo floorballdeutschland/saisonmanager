@@ -16,14 +16,15 @@
     "linkActiveUntil": "Code aktiv bis {{ date }}",
     "copyLinkTitle": "Code kopieren",
     "copyLink": "Code kopieren",
-    "secretaryLinkTitle": "Spielsekretariats-Code erzeugen. Der Code wird auf saisonmanager.org/spielsekretariat eingegeben, gilt 72 Stunden und deckt alle Spieltage ab, die an diesem Tag in derselben Halle stattfinden.",
+    "secretaryLinkTitle": "Spielsekretariats-Code erzeugen. Der Code wird auf der Seite „Spielsekretariat“ eingegeben, gilt 72 Stunden und deckt alle Spieltage ab, die an diesem Tag in derselben Halle stattfinden.",
     "secretaryLinkGenerating": "Wird generiert…",
     "secretaryLink": "Spielsek-Code",
     "editGameDayTitle": "Spieltag bearbeiten",
     "editGameDay": "Spieltag bearbeiten",
     "gamesHeading": "Spiele",
     "addNewGame": "Neues Spiel hinzufügen",
-    "linkCovers": "Der Code deckt ab: {{leagues}}"
+    "linkCovers": "Der Code deckt ab: {{leagues}}",
+    "codeEnteredAt": "Einzugeben auf {{ url }}"
   },
   "gameDayEdit": {
     "title": "Spielplanverwaltung",
