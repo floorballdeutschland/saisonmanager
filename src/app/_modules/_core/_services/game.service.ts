@@ -201,6 +201,22 @@ export class GameService {
     return this.http.put<{ success: boolean }>(path, { forfait: ratingMode });
   }
 
+  // Von der SBK festgesetztes Ergebnis einer kampflosen Wertung. `null` fuer
+  // beide Torzahlen loescht die Festsetzung, das Spiel faellt dann auf die
+  // Liga-Vorgabe zurueck. Die Wertung selbst bleibt dabei unberuehrt, dafuer
+  // gibt es updateGameRating.
+  public updateGameForfaitResult(
+    gameId: number,
+    homeGoals: number | null,
+    guestGoals: number | null
+  ) {
+    const path = environment.apiURL + 'games/' + gameId + '.json';
+    return this.http.put<{ success: boolean }>(path, {
+      forfait_home_goals: homeGoals,
+      forfait_guest_goals: guestGoals,
+    });
+  }
+
   public deleteGame(game: GameInput) {
     const path = environment.apiURL + 'games/' + (game.id ?? 0) + '.json';
     return this.http.delete<{ success: boolean }>(path);

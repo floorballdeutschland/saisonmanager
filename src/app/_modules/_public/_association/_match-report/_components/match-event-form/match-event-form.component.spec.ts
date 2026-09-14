@@ -759,15 +759,19 @@ describe('MatchEventFormComponent', () => {
       expect(payload.home_assist).toBe(9);
     });
 
-    it('should send the penalty-shot marker instead when that is selected', () => {
+    // Der Strafschuss ging frueher als Strafcode 23 raus. Die id war die eines
+    // Katalogeintrags und ist nicht stabil: Seit der Umstellung auf die
+    // 9xx-Codes liegt auf ihr „917 Bodenspiel", und jede Strafe mit diesem
+    // Grund wurde als Strafschuss angezeigt (api#676).
+    it('should send the penalty shot as a goal type, not as a penalty code', () => {
       const addEvent = spyOn(gameService, 'addEvent').and.returnValue(of([]));
       component.with_ps = true;
 
       component.submitEvent();
 
       const payload = addEvent.calls.mostRecent().args[1];
-      expect(payload.penalty_code_id).toBe(23);
-      expect(payload.goal_type).toBeUndefined();
+      expect(payload.goal_type).toBe('penalty_shot');
+      expect(payload.penalty_code_id).toBeUndefined();
     });
 
     // Ein Tor ist entweder erzielt oder zugesprochen, beides zusammen gibt es
@@ -816,8 +820,8 @@ describe('MatchEventFormComponent', () => {
   });
 
   // Die Entscheidung im Penalty-Schießen ist dasselbe gespeicherte Ereignis wie
-  // der Strafschuss (Tor mit penalty_code_id 23), die API unterscheidet beide am
-  // Spielabschnitt und liefert dafür „penalty_shots".
+  // der Strafschuss (Tor mit der Torart „penalty_shot"), die API unterscheidet
+  // beide am Spielabschnitt und liefert dafür „penalty_shots".
   describe('Entscheidung im Penalty-Schießen', () => {
     let gameService: GameService;
 
@@ -864,9 +868,9 @@ describe('MatchEventFormComponent', () => {
       expect(component.with_ps).toBeFalse();
     });
 
-    // Der eigentliche Fehler: ohne die Vorbelegung ging der Strafcode beim
+    // Der eigentliche Fehler: ohne die Vorbelegung ging die Markierung beim
     // Speichern verloren und aus der Entscheidung wurde ein gewöhnliches Tor.
-    it('should still send the penalty code when updating a shootout decision', () => {
+    it('should still send the marker when updating a shootout decision', () => {
       const updateEvent = spyOn(gameService, 'updateEvent').and.returnValue(
         of([])
       );
@@ -876,10 +880,10 @@ describe('MatchEventFormComponent', () => {
       component.submitEvent();
 
       const payload = updateEvent.calls.mostRecent().args[2];
-      // Die Torart selbst wird nicht übertragen, die API leitet sie aus
-      // Strafcode und Abschnitt ab. Beides muss also unverändert mitgehen:
-      // ohne den Abschnitt wäre die Entscheidung wieder ein Strafschuss.
-      expect(payload.penalty_code_id).toBe(23);
+      // Gespeichert wird beides als „penalty_shot"; dass daraus die
+      // Entscheidung wird, leitet die API aus dem Abschnitt ab. Beides muss
+      // also unverändert mitgehen, sonst wäre es wieder ein Strafschuss.
+      expect(payload.goal_type).toBe('penalty_shot');
       expect(payload.period).toBe(5);
     });
   });

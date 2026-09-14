@@ -351,7 +351,6 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         this.penalty = e.penalty_id ?? 0;
         this.penaltyCode = e.penalty_code_id ?? 0;
       } else if (e.event_type === 'goal') {
-        this.penaltyCode = e.penalty_code_id ?? 0;
         // Strafschuss („penalty_shot") und die Entscheidung im Penalty-Schießen
         // („penalty_shots") sind dasselbe gespeicherte Ereignis, die API leitet
         // die Unterscheidung aus dem Spielabschnitt ab. Ohne den zweiten Wert
@@ -686,7 +685,6 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
             home_assist?: number;
             guest_number?: number;
             guest_assist?: number;
-            penalty_code_id?: number;
             goal_type?: string;
           } =
             this.team === 'home'
@@ -702,10 +700,16 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
                   ),
                 };
 
+          // Torart statt Strafcode: Der Strafschuss wurde frueher ueber die
+          // Katalog-id 23 aus den Strafcodes markiert. Die id ist nicht stabil
+          // -- seit der Umstellung auf die 9xx-Codes liegt auf ihr der Code 917
+          // („Bodenspiel"), und jede Strafe mit diesem Grund erschien als
+          // Strafschuss (api#676). Beide Torarten schliessen sich aus, deshalb
+          // ein Feld und zwei Zweige.
           if (this.technicalGoal) {
             goal.goal_type = 'technical';
           } else if (this.with_ps) {
-            goal.penalty_code_id = 23;
+            goal.goal_type = 'penalty_shot';
           }
 
           const goalPayload = {

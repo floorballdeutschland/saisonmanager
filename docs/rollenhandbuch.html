@@ -4102,6 +4102,87 @@
 
           <details class="proc">
             <summary>
+              <span class="proc-icon">⚖️</span>
+              <div>
+                <div class="proc-title">Spiel kampflos werten (Forfait)</div>
+                <div class="proc-sub">
+                  Wertung setzen und bei Bedarf ein abweichendes Ergebnis
+                  festlegen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Tritt eine Mannschaft nicht an oder wird ein Spiel nachträglich
+                gegen sie entschieden, wertet die SBK es
+                <strong>kampflos</strong>. Das geht in
+                <code>Verwaltung &rarr; Spielplan</code>: am betreffenden Spiel
+                das Menü rechts (⋮) öffnen und zwischen
+                <em>Reguläre Wertung</em>, <em>Forfait Heim</em>,
+                <em>Forfait Gast</em> und <em>Forfait beide Teams</em> wählen.
+                <em>Forfait Heim</em> heißt: die Heimmannschaft verliert
+                kampflos. Das Spiel gilt damit als gespielt und beendet und geht
+                in Tabelle und Spielplan ein.
+              </p>
+              <p class="proc-text">
+                Ohne weitere Angabe wertet das System das in der Liga
+                hinterlegte <strong>Vorgabeergebnis</strong>: 0:5 im Großfeld,
+                sonst 0:8. Bei beidseitiger Wertung zählt es −8:−8 – beide
+                Mannschaften gehen leer aus und die Wertung belastet zusätzlich
+                ihr Torverhältnis.
+              </p>
+              <div class="proc-h">Abweichendes Ergebnis festsetzen</div>
+              <p class="proc-text">
+                Sobald eine Wertung gesetzt ist, erscheint unter dem Spiel eine
+                Zeile <strong>Forfait-Ergebnis</strong> mit zwei Torfeldern.
+                Trag dort ein, was gewertet werden soll, und speichere – das
+                festgesetzte Ergebnis zählt dann überall: Tabelle,
+                Torverhältnis und Spielplan rechnen mit ihm, nicht mit der
+                Vorgabe. Gebraucht wird das vor allem, wenn das Spiel
+                ausgetragen wurde und das erzielte Ergebnis zugunsten der nicht
+                schuldigen Mannschaft bestehen bleibt, weil es für sie
+                günstiger ist als die Vorgabe.
+              </p>
+              <p class="proc-text">
+                Neben den Feldern steht, was ohne Eintrag gewertet würde – so
+                ist erkennbar, wovon du abweichst. <em>Vorgabe verwenden</em>
+                nimmt eine Festsetzung wieder zurück. Es müssen immer
+                <strong>beide</strong> Torzahlen eingetragen sein oder beide
+                leer bleiben; eine halbe Angabe weist das System ab, weil die
+                fehlende Seite sonst stillschweigend aus der Vorgabe käme.
+              </p>
+              <p class="proc-text">
+                Bei <em>Forfait beide Teams</em> gilt ein eingetragenes Ergebnis
+                so, wie du es einträgst – es wird nicht ins Negative gedreht.
+                <strong>Punkte gibt es dabei weiterhin für keine der beiden
+                Mannschaften</strong>, unabhängig vom Ergebnis: Das entscheidet
+                die Wertungsart, nicht die Torzahl.
+              </p>
+              <div class="proc-h">Was dabei zu beachten ist</div>
+              <p class="proc-text">
+                Setzt du das Spiel zurück auf <em>Reguläre Wertung</em>,
+                verschwindet ein festgesetztes Ergebnis mit der Wertung. Das ist
+                Absicht: Es soll nicht unsichtbar stehen bleiben und bei einer
+                späteren kampflosen Wertung ungefragt wieder gelten.
+              </p>
+              <p class="proc-text">
+                <strong>Torschützen und Einsätze bleiben außen vor.</strong> Ein
+                kampflos gewertetes Spiel taucht weder in der Torschützenliste
+                noch in der Einsatzzählung der Spieler auf, auch nicht mit
+                festgesetztem Ergebnis – das Ergebnis ist gesetzt und nicht
+                erspielt. Die Wertung ist außerdem jederzeit änderbar und nicht
+                an die Frist des Spielberichts gebunden.
+              </p>
+              <div class="roles-inline">
+                <span class="rb sbk">SBK / LV</span>
+                <span class="rb admin">Admin</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
               <span class="proc-icon">🟥</span>
               <div>
                 <div class="proc-title">
@@ -5253,6 +5334,10 @@
                   Lizenzen, keine Verweise anderer Ligen)
                 </li>
                 <li>Spieltage und Spielpläne verwalten</li>
+                <li>
+                  Spiele kampflos werten (Forfait) und dabei bei Bedarf ein vom
+                  Liga-Vorgabeergebnis abweichendes Ergebnis festsetzen
+                </li>
                 <li>Liga-Kategorien und -Klassen pflegen</li>
               </ul>
             </div>
@@ -5906,6 +5991,10 @@
                   daran hängt
                 </li>
                 <li>Spieltage und Spielpläne verwalten</li>
+                <li>
+                  Spiele kampflos werten (Forfait) und dabei bei Bedarf ein vom
+                  Liga-Vorgabeergebnis abweichendes Ergebnis festsetzen
+                </li>
               </ul>
             </div>
             <div class="cap">
@@ -6310,6 +6399,10 @@
                   löschen, solange keine Historie daran hängt
                 </li>
                 <li>Spieltage und Spielpläne verwalten</li>
+                <li>
+                  Spiele kampflos werten (Forfait) und dabei bei Bedarf ein vom
+                  Liga-Vorgabeergebnis abweichendes Ergebnis festsetzen
+                </li>
               </ul>
             </div>
             <div class="cap">
@@ -8925,9 +9018,8 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                     <tr>
                       <td>5</td>
                       <td>
-                        Abschnitt mit Statuspunkt: vor Anpfiff
-                        <code>● GLEICH</code>, im Spiel etwa
-                        <code>1. DRITTEL</code> mit <code>● LIVE</code>
+                        Abschnitt, etwa <code>1. DRITTEL</code> oder
+                        <code>DRITTELPAUSE</code>
                       </td>
                     </tr>
                     <tr>
@@ -8940,7 +9032,9 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
               <p class="proc-text">
                 Die Leiste passt ihre Breite an: Blendest du die Spielzeit aus,
                 fällt das Feld weg und die Leiste wird kürzer, ohne Ligazeichen
-                entfällt das letzte Feld. Bauchbinden erscheinen zusätzlich,
+                entfällt das letzte Feld. Solange beide Felder stehen, bleibt
+                die Breite konstant: Weder die laufende Uhr noch ein Tor
+                verschieben die Leiste. Bauchbinden erscheinen zusätzlich,
                 sobald du sie im Bedienfeld auslöst.
               </p>
               <p class="proc-text">
@@ -10023,17 +10117,6 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                   <td>Nicht in OBS lösbar, bitte beim Verband melden</td>
                 </tr>
                 <tr>
-                  <td>Der Live-Punkt geht aus</td>
-                  <td>
-                    Längere Zeit keine neuen Daten, meist ein Netzproblem in der
-                    Halle
-                  </td>
-                  <td>
-                    Verbindung prüfen, die Anzeige behält bewusst den letzten
-                    Stand
-                  </td>
-                </tr>
-                <tr>
                   <td>
                     Statt der Grafik erscheint die normale Saisonmanager-Seite
                   </td>
@@ -10057,8 +10140,16 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 </tr>
                 <tr>
                   <td>Stand aktualisiert sich nicht mehr</td>
-                  <td>Browser-Quelle hängt</td>
-                  <td>Rechtsklick auf die Quelle, <em>Aktualisieren</em></td>
+                  <td>
+                    Netzproblem in der Halle oder hängende Browser-Quelle. Die
+                    Anzeige behält dann bewusst den letzten Stand, statt leer zu
+                    werden
+                  </td>
+                  <td>
+                    Verbindung prüfen; hilft das nicht, Rechtsklick auf die
+                    Quelle und <em>Aktualisieren</em>. Wie alt die Daten sind,
+                    zeigt die Statusfläche mit <code>&amp;debug=1</code>
+                  </td>
                 </tr>
                 <tr>
                   <td>OBS ruckelt, hohe CPU-Last</td>
