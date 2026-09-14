@@ -71,6 +71,14 @@ export class GameEditComponent implements OnInit, OnChanges {
 
   game!: GameInput;
   hasNotice = false;
+
+  // Von der SBK festgesetztes Ergebnis der kampflosen Wertung. `null` heisst
+  // „nicht festgesetzt" und damit Liga-Vorgabe -- deshalb nicht 0, das waere
+  // ein ausdrueckliches 0:0. Die Felder haengen nicht an `game`, weil sie ueber
+  // einen eigenen Weg gespeichert werden und nicht am Formular-Absenden
+  // mitfahren sollen.
+  forfaitHomeGoals: number | null = null;
+  forfaitGuestGoals: number | null = null;
   hasGameDependencies = false;
   hasMoveGameDay = false;
   processing = false;
@@ -169,6 +177,8 @@ export class GameEditComponent implements OnInit, OnChanges {
       this.game.game_day_id = this.gameDayId;
       this.game.game_number = this.existingGame.game_number;
       this.game.forfait = this.existingGame.forfait;
+      this.forfaitHomeGoals = this.existingGame.forfait_home_goals ?? null;
+      this.forfaitGuestGoals = this.existingGame.forfait_guest_goals ?? null;
       this.game.start_time = this.existingGame.start_time;
       this.game.home_team_id = this.existingGame.home_team_id;
       this.game.guest_team_id = this.existingGame.guest_team_id;
@@ -371,6 +381,83 @@ export class GameEditComponent implements OnInit, OnChanges {
     });
   }
 
+  // Torzahl, die ohne Festsetzung gewertet wuerde -- Liga-Vorgabe, bei
+  // beidseitiger Wertung negativ. Dient nur der Anzeige, damit sichtbar ist,
+  // wovon eine Eingabe abweicht. Ohne das Feld (aelterer API-Stand) bleibt der
+  // Hinweis weg, statt eine falsche Zahl zu behaupten.
+  public get forfaitDefaultResult(): string | null {
+    const goals = this.existingGame?.forfait_default_goals;
+    const forfait = this.existingGame?.forfait ?? 0;
+    if (goals === null || goals === undefined || !forfait) {
+      return null;
+    }
+
+    if (forfait === 1) return `0:${goals}`;
+    if (forfait === 2) return `${goals}:0`;
+    return `${-goals}:${-goals}`;
+  }
+
+  public get hasForfaitResultChanges(): boolean {
+    return (
+      this.forfaitHomeGoals !==
+        (this.existingGame?.forfait_home_goals ?? null) ||
+      this.forfaitGuestGoals !==
+        (this.existingGame?.forfait_guest_goals ?? null)
+    );
+  }
+
+  // Ein halbes Ergebnis waere kein Ergebnis: die fehlende Seite kaeme aus der
+  // Liga-Vorgabe und ergaebe eine Mischung, die niemand festgesetzt hat. Die
+  // API weist das ab, die Maske sagt es vorher.
+  public get forfaitResultIncomplete(): boolean {
+    return (
+      (this.forfaitHomeGoals === null) !== (this.forfaitGuestGoals === null)
+    );
+  }
+
+  public saveForfaitResult() {
+    if (this.forfaitResultIncomplete) {
+      this._notificationService.error(
+        this._transloco.translate(
+          'scheduleAdmin.gameEdit.forfaitResultIncomplete'
+        )
+      );
+      return;
+    }
+
+    this.processing = true;
+    this._gameService
+      .updateGameForfaitResult(
+        this.existingGame?.id || 0,
+        this.forfaitHomeGoals,
+        this.forfaitGuestGoals
+      )
+      .subscribe({
+        next: () => {
+          this.processing = false;
+          this.refreshSchedule.emit();
+          this._notificationService.success(
+            this._transloco.translate(
+              this.forfaitHomeGoals === null
+                ? 'scheduleAdmin.gameEdit.forfaitResultCleared'
+                : 'scheduleAdmin.gameEdit.forfaitResultSaved'
+            ),
+            { autoClose: true, keepAfterRouteChange: true }
+          );
+        },
+        error: () => {
+          this.processing = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  public clearForfaitResult() {
+    this.forfaitHomeGoals = null;
+    this.forfaitGuestGoals = null;
+    this.saveForfaitResult();
+  }
+
   public setRatingMode(ratingString: string) {
     this.processing = true;
     let message = '';
@@ -391,6 +478,14 @@ export class GameEditComponent implements OnInit, OnChanges {
         this.game.forfait = 0;
         message = 'Reguläre-Wertung gespeichert';
         break;
+    }
+
+    // Die API raeumt das festgesetzte Ergebnis mit der Wertung ab. Lokal
+    // nachziehen, damit die Felder nicht bis zum Neuladen der Liste einen Wert
+    // zeigen, den es serverseitig nicht mehr gibt.
+    if (this.game.forfait === 0) {
+      this.forfaitHomeGoals = null;
+      this.forfaitGuestGoals = null;
     }
 
     this._gameService

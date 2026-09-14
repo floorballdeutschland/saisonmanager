@@ -207,6 +207,15 @@ export interface Game {
   vod_link?: string | null;
   permission?: string[];
   forfait?: number;
+  // Von der SBK festgesetztes Ergebnis einer kampflosen Wertung, und daneben
+  // die Liga-Vorgabe, die ohne Festsetzung greift. Nur in der
+  // Verwaltungsansicht (meta_hash) enthalten.
+  //
+  // Optional, weil Frontend und API getrennt ausgerollt werden: Zwischen einem
+  // Frontend-Deploy und dem passenden API-Deploy fehlen die Felder noch.
+  forfait_home_goals?: number | null;
+  forfait_guest_goals?: number | null;
+  forfait_default_goals?: number | null;
   notice_type?: string;
   notice_string?: string;
   special_event_string?: string;
