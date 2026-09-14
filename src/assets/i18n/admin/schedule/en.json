@@ -16,14 +16,15 @@
     "linkActiveUntil": "Code active until {{ date }}",
     "copyLinkTitle": "Copy code",
     "copyLink": "Copy code",
-    "secretaryLinkTitle": "Create match secretariat code. The code is entered on saisonmanager.org/spielsekretariat, is valid for 72 hours and covers every game day taking place in the same arena on that date.",
+    "secretaryLinkTitle": "Create match secretariat code. The code is entered on the match secretariat page, is valid for 72 hours and covers every game day taking place in the same arena on that date.",
     "secretaryLinkGenerating": "Generating…",
     "secretaryLink": "Secretariat code",
     "editGameDayTitle": "Edit game day",
     "editGameDay": "Edit game day",
     "gamesHeading": "Games",
     "addNewGame": "Add new game",
-    "linkCovers": "The code covers: {{leagues}}"
+    "linkCovers": "The code covers: {{leagues}}",
+    "codeEnteredAt": "Enter it at {{ url }}"
   },
   "gameDayEdit": {
     "title": "Schedule management",

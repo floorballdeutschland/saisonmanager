@@ -16,16 +16,26 @@ export class SecretaryTokenInterceptor implements HttpInterceptor {
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
-    // Beim Server-Rendering (SSR/Prerender) gibt es keinen sessionStorage.
-    const token =
-      typeof sessionStorage === 'undefined'
-        ? null
-        : sessionStorage.getItem(STORAGE_KEY);
+    const token = this._storedToken();
     if (token && request.url.startsWith(environment.apiURL)) {
       request = request.clone({
         setHeaders: { 'X-Secretary-Token': token },
       });
     }
     return next.handle(request);
+  }
+
+  // Beim Server-Rendering (SSR/Prerender) gibt es keinen sessionStorage, und
+  // schon der Zugriff wirft, wo der Browser Website-Daten blockiert (privates
+  // Fenster, restriktives Vereinsprofil). Ohne das try/catch riss das JEDE
+  // Anfrage der Anwendung mit -- und am Spieltisch sah das aus wie ein
+  // ungueltiger Code, weil die Meldung dort aufschlaegt.
+  private _storedToken(): string | null {
+    try {
+      if (typeof sessionStorage === 'undefined') return null;
+      return sessionStorage.getItem(STORAGE_KEY);
+    } catch {
+      return null;
+    }
   }
 }

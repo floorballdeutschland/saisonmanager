@@ -439,7 +439,8 @@ describe('SpielSekretariatComponent', () => {
 
       const redeem = httpMock.expectOne(redeemUrl);
       expect(redeem.request.method).toBe('POST');
-      expect(redeem.request.body).toEqual({ code: 'k7qf-3mxr' });
+      // Normalisiert wie serverseitig: Trennstrich weg, Grossschreibung.
+      expect(redeem.request.body).toEqual({ code: 'K7QF3MXR' });
       redeem.flush({
         token: 'langer-token',
         expires_at: '2026-01-02T00:00:00Z',
@@ -531,6 +532,140 @@ describe('SpielSekretariatComponent', () => {
       component.redeemCode();
 
       httpMock.expectNone(redeemUrl);
+      expect(component.codeError).toBeTruthy();
+    });
+
+    // Rack::Attack zaehlt vor dem Router. Ein Vertipper, der erst am Server
+    // auffiele, verbrauchte einen der zehn Versuche pro Minute, die sich in der
+    // Halle alle Rechner hinter einer Adresse teilen.
+    it('schickt einen formfehlerhaften Code gar nicht erst ab', () => {
+      component.ngOnInit();
+
+      component.codeInput = 'K7QF3MX';
+      component.redeemCode();
+      httpMock.expectNone(redeemUrl);
+
+      // U gehoert als einziger Buchstabe nicht zum Alphabet und wird auch auf
+      // nichts abgebildet -- anders als O, I und L.
+      component.codeInput = 'K7QFUMXR';
+      component.redeemCode();
+      httpMock.expectNone(redeemUrl);
+
+      component.codeInput = 'K7QF3MXRA';
+      component.redeemCode();
+      httpMock.expectNone(redeemUrl);
+    });
+
+    // Gegenprobe zum Fall darueber: O, I und L sind keine Formfehler, sondern
+    // genau das, was beim Abtippen von 0 und 1 entsteht.
+    it('laesst O, I und L als 0 und 1 durch', () => {
+      component.ngOnInit();
+      component.codeInput = 'k7qf-3mxo';
+
+      component.redeemCode();
+
+      expect(httpMock.expectOne(redeemUrl).request.body).toEqual({
+        code: 'K7QF3MX0',
+      });
+    });
+
+    // Der Drossel-Responder antwortet mit `error`, nicht mit `message`. Ohne
+    // die Unterscheidung las das Sekretariat „Code ungueltig", liess sich einen
+    // neuen geben (der den bisherigen entwertet) und lief in dieselbe Drossel.
+    it('meldet eine Drosselung als Wartezeit, nicht als falschen Code', () => {
+      component.ngOnInit();
+      component.codeInput = 'K7QF3MXR';
+
+      component.redeemCode();
+      httpMock
+        .expectOne(redeemUrl)
+        .flush(
+          { error: 'Rate limit überschritten. Bitte später erneut versuchen.' },
+          { status: 429, statusText: 'Too Many Requests' }
+        );
+
+      expect(component.codeError).toContain('denselben Code');
+      expect(component.codeError).not.toContain('ungültig');
+    });
+
+    it('meldet einen Serverfehler nicht als falschen Code', () => {
+      component.ngOnInit();
+      component.codeInput = 'K7QF3MXR';
+
+      component.redeemCode();
+      httpMock
+        .expectOne(redeemUrl)
+        .flush({}, { status: 502, statusText: 'Bad Gateway' });
+
+      expect(component.codeError).toContain('bleibt gültig');
+    });
+  });
+
+  describe('Zugang behalten', () => {
+    const loadUrl = environment.apiURL + 'public/secretary?token=langer-token';
+    const payload = {
+      game_day: null,
+      game_days: [day({ id: 1 })],
+      games: [],
+      license_lists: {},
+      expires_at: '2026-01-02T00:00:00Z',
+    };
+
+    beforeEach(() => {
+      queryParams = {};
+    });
+
+    // Vorher loeschte JEDER Fehler den Token. Ein kurzer Netzaussetzer oder ein
+    // Neustart der API mitten im Spiel nahm damit den einzigen Zugang der
+    // Registerkarte, obwohl ein zweites Neuladen ihn zurueckgeholt haette.
+    it('behaelt den abgelegten Token bei einem voruebergehenden Fehler', () => {
+      sessionStorage.setItem('secretary_token', 'langer-token');
+
+      component.ngOnInit();
+      httpMock.expectOne(loadUrl).flush({}, { status: 502, statusText: 'Bad Gateway' });
+
+      expect(sessionStorage.getItem('secretary_token')).toBe('langer-token');
+      expect(component.showCodeForm).toBe(false);
+      expect(component.error).toContain('bleibt gültig');
+    });
+
+    // Der Service wirft bei unbrauchbarer Antwort einen eigenen Error. Die
+    // Eingabe darf dann nicht erscheinen: Ein neuer Code scheiterte genauso.
+    it('bietet bei einer unbrauchbaren Antwort keine neue Eingabe an', () => {
+      sessionStorage.setItem('secretary_token', 'langer-token');
+
+      component.ngOnInit();
+      httpMock.expectOne(loadUrl).flush({ game_days: [] });
+
+      expect(component.showCodeForm).toBe(false);
+      expect(sessionStorage.getItem('secretary_token')).toBe('langer-token');
+    });
+
+    // Die Meldung des vorigen Anlaufs darf nicht ueber dem geladenen Spieltag
+    // stehen bleiben.
+    it('raeumt die alte Fehlermeldung ab, sobald der Spieltag laedt', () => {
+      sessionStorage.setItem('secretary_token', 'langer-token');
+      component.error = 'Der Link ist ungültig oder abgelaufen.';
+      component.ngOnInit();
+
+      httpMock.expectOne(loadUrl).flush(payload);
+
+      expect(component.error).toBeUndefined();
+    });
+
+    // `revoke_coverage_of` entwertet nur Links derselben Spieltage -- der
+    // Zugang von Samstag gilt am Sonntag noch, und ohne diesen Weg laedt
+    // dieselbe Registerkarte kommentarlos den Spieltag von gestern.
+    it('kommt vom geladenen Spieltag zurueck zur Eingabe', () => {
+      sessionStorage.setItem('secretary_token', 'langer-token');
+      component.ngOnInit();
+      httpMock.expectOne(loadUrl).flush(payload);
+
+      component.enterDifferentCode();
+
+      expect(component.showCodeForm).toBe(true);
+      expect(component.data).toBeUndefined();
+      expect(sessionStorage.getItem('secretary_token')).toBeNull();
     });
   });
 });

@@ -145,6 +145,20 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
+          // Antwort ohne Code: Der Server ist aelter als diese Oberflaeche
+          // (Frontend vor der API ausgerollt). Ohne diesen Zweig liest sich das
+          // wie der normale „nicht erneut anzeigbar"-Fall, und jeder weitere
+          // Klick entwertet den eben erzeugten Zugang.
+          if (!result.code) {
+            this.generatingKey = null;
+            this._notificationService.error(
+              'Der Zugang wurde erzeugt, aber der Server hat keinen Code mitgeliefert. ' +
+                'Bitte nicht erneut erzeugen und das melden.'
+            );
+            this._cdr.markForCheck();
+            return;
+          }
+
           this.codeByKey[key] = result.code;
           this.entryUrl = result.entry_url;
           this.linkByKey[key] = {

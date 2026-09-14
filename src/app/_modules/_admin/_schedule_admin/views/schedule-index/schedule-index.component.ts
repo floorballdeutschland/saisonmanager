@@ -39,7 +39,8 @@ export class ScheduleIndexComponent implements OnInit {
 
   secretaryLinkByGameDay: Record<
     number,
-    { code: string; expires_at: string; leagues: string[] } | null
+    | { code: string; entryUrl: string; expires_at: string; leagues: string[] }
+    | null
   > = {};
   secretaryLinkGenerating: Record<number, boolean> = {};
 
@@ -145,10 +146,27 @@ export class ScheduleIndexComponent implements OnInit {
     this.secretaryLinkGenerating[gameDayId] = true;
     this._gameService.createSecretaryLink(gameDayId).subscribe({
       next: (result) => {
+        // Antwort ohne Code: Server aelter als diese Oberflaeche. Stillschweigend
+        // weiterzumachen hiesse, dass jeder weitere Klick den eben erzeugten
+        // Zugang wieder entwertet.
+        if (!result.code) {
+          this.secretaryLinkGenerating[gameDayId] = false;
+          this._notificationService.error(
+            'Der Zugang wurde erzeugt, aber der Server hat keinen Code mitgeliefert. ' +
+              'Bitte nicht erneut erzeugen und das melden.'
+          );
+          this._cdr.markForCheck();
+          return;
+        }
+
         this.secretaryLinkByGameDay[gameDayId] = {
           // Weitergegeben wird der abtippbare Code: Am Spieltisch steht ein
           // Vereinsrechner ohne Benutzerkonto, auf den der Link nicht kommt.
           code: result.code,
+          // Die Adresse zum Eingeben kommt vom Server, nicht aus den
+          // Uebersetzungen: FrontendUrl.base kennt den Unterschied zwischen
+          // Produktion und Testsystem, ein fest getippter Text nicht.
+          entryUrl: result.entry_url,
           expires_at: result.expires_at,
           // Ein Link deckt alle Spieltage derselben Halle am selben Tag ab, für
           // die man berechtigt ist. Admin und SBK sind das meist für alle –
@@ -177,7 +195,7 @@ export class ScheduleIndexComponent implements OnInit {
       await navigator.clipboard.writeText(text);
     } catch {
       this._notificationService.error(
-        'Kopieren war nicht möglich. Bitte markiere den Link und kopiere ihn von Hand.'
+        'Kopieren war nicht möglich. Bitte markiere den Code und kopiere ihn von Hand.'
       );
     }
   }

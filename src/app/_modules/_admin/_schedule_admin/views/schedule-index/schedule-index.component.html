@@ -206,9 +206,14 @@
                     <div
                       class="flex items-center gap-2 text-xs text-fb-gray-400"
                     >
-                      <span class="font-mono font-bold text-sm text-black">{{
-                        link.code
-                      }}</span>
+                      <span
+                        class="font-mono font-bold text-sm text-black"
+                        [title]="
+                          'scheduleAdmin.index.codeEnteredAt'
+                            | transloco: { url: link.entryUrl }
+                        "
+                        >{{ link.code }}</span
+                      >
                       <span class="hidden lg:inline">{{
                         "scheduleAdmin.index.linkActiveUntil"
                           | transloco

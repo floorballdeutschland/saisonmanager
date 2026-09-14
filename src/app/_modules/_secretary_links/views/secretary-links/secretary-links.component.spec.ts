@@ -166,6 +166,24 @@ describe('SecretaryLinksComponent', () => {
     expect(notificationService.warning).toHaveBeenCalled();
   });
 
+  // Frontend vor der API ausgerollt: Die alte Antwort traegt keinen `code`.
+  // Ohne diesen Zweig sieht das aus wie der normale Fall „nicht erneut
+  // anzeigbar", und jeder weitere Klick entwertet den eben erzeugten Zugang.
+  it('meldet eine Antwort ohne Code, statt sie als Erfolg zu zeigen', () => {
+    const ohneCode = { ...createResponse, code: undefined };
+    gameService.createSecretaryLink.and.returnValue(
+      of(ohneCode as unknown as typeof createResponse)
+    );
+    component.ngOnInit();
+    const group = component.hallDays[0];
+
+    component.generate(group);
+
+    expect(component.codeByKey[component.key(group)]).toBeUndefined();
+    expect(notificationService.error).toHaveBeenCalled();
+    expect(component.generatingKey).toBeNull();
+  });
+
   it('warnt nicht, wenn der Zugang alles abdeckt', () => {
     gameService.createSecretaryLink.and.returnValue(of(createResponse));
     component.ngOnInit();
