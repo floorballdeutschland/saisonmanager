@@ -18,7 +18,7 @@
     "apply": "Apply",
     "reset": "Reset",
     "comments": "Free text",
-    "onlyWithComment": "with comment only"
+    "onlyWithComment": "Only with comment"
   },
   "card": {
     "referees": "Referees:",

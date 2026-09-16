@@ -115,12 +115,18 @@ export class FeedbackCommentsIndexComponent implements OnInit, OnDestroy {
     };
   }
 
-  /** Eine Rueckmeldung ohne jeden Freitext, also reine Notenvergabe. */
+  /**
+   * Eine Rueckmeldung ohne jeden Freitext, also reine Notenvergabe.
+   *
+   * Getrimmt geprueft: Ein Kommentar aus reinem Leerraum kommt durch die
+   * Serverbedingung (`<> ''`) und laesst das Template eine Ueberschrift ohne
+   * Rumpf rendern. Dann gehoert der Hinweis dazu, nicht die leere Stelle.
+   */
   public hasNoComment(comment: FeedbackComment): boolean {
-    return (
-      !comment.line_comment &&
-      !comment.communication_comment &&
-      !comment.general_comment
+    return !(
+      comment.line_comment?.trim() ||
+      comment.communication_comment?.trim() ||
+      comment.general_comment?.trim()
     );
   }
 
