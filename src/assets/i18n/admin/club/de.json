@@ -111,6 +111,7 @@
     "teamLogoUploadSuccess": "Mannschaftslogo erfolgreich hochgeladen.",
     "teamLogoRemoved": "Mannschaftslogo entfernt – es gilt wieder das Vereinslogo.",
     "confirmRemoveTeamLogo": "Eigenes Logo dieser Mannschaft entfernen? Danach trägt sie wieder das Vereinslogo.",
-    "teamInfoSaved": "Mannschaft gespeichert."
+    "teamInfoSaved": "Mannschaft gespeichert.",
+    "teamInfoForbidden": "Diese Mannschaft lässt sich nicht mehr ändern. Der Verband hat das Ändern für die laufende Saison gesperrt oder der erste Spieltag ist inzwischen vorbei."
   }
 }

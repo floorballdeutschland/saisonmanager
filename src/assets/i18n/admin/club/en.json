@@ -111,6 +111,7 @@
     "teamLogoUploadSuccess": "Team logo uploaded successfully.",
     "teamLogoRemoved": "Team logo removed – the club logo applies again.",
     "confirmRemoveTeamLogo": "Remove this team's own logo? It will show the club logo again.",
-    "teamInfoSaved": "Team saved."
+    "teamInfoSaved": "Team saved.",
+    "teamInfoForbidden": "This team can no longer be changed. The association has locked changes for the running season, or the first match day has passed in the meantime."
   }
 }

@@ -14,6 +14,7 @@ import {
 } from '@floorball/core';
 import { Club, ClubManager, StateAssociation, Team } from '@floorball/types';
 import { Observable, of, share, Subject, take, takeUntil, tap } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
@@ -73,6 +74,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   teamInfoDrafts: { [teamId: number]: { name: string; short_name: string } } =
     {};
   savingTeamInfoId?: number;
+  private _clubTeamsClubId?: number;
 
   // Auswahlliste des Suchfelds: einmal beim Laden gebildet, nicht als Getter.
   // Ein neues Array pro Change-Detection wuerde die Trefferliste des Suchfelds
@@ -194,6 +196,10 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   // Logo-Pflege ist der Zweck des Abschnitts, eine still leere Liste sähe wie
   // „dieser Verein hat keine Mannschaften" aus.
   public loadClubTeams(clubId: number): void {
+    // Gemerkt fuer das Nachladen nach einer abgelehnten Aenderung. Nicht
+    // `team.club_id` nehmen: Bei einer Verbundmannschaft steht dort der
+    // fuehrende Verein, und der ist nicht zwingend der geoeffnete.
+    this._clubTeamsClubId = clubId;
     this._clubService
       .getAdminClubTeams(clubId)
       .pipe(take(1), takeUntil(this._destroy$))
@@ -466,9 +472,6 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Abweichendes Logo einer Mannschaft. Der Regelfall bleibt das Vereinslogo:
-  // Ohne eigenes Logo zeigt die Mannschaft es ueberall (Team#logo_url_fallback
-  // in der API), dieser Weg setzt also die Ausnahme.
   private _resetTeamInfoDrafts(): void {
     this.teamInfoDrafts = {};
     for (const team of this.clubTeams) {
@@ -495,6 +498,25 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     return (
       draft.name.trim() !== (team.name ?? '') ||
       draft.short_name.trim() !== (team.short_name ?? '')
+    );
+  }
+
+  /**
+   * Darf der Speichern-Knopf dieser Mannschaft anfassbar sein?
+   *
+   * Der leere Name gehoert hierher und nicht nur in `saveTeamInfo`: Das
+   * `required` am Feld ist folgenlos, weil die Maske gar kein `<form>` hat, und
+   * ein Knopf, der aktiv aussieht und beim Klick nichts tut, sieht kaputt aus.
+   *
+   * Waehrend einer laufenden Speicherung sind ALLE Knoepfe aus, nicht nur der
+   * betroffene: Die Sperre in `saveTeamInfo` gilt fuer die ganze Maske, sonst
+   * waere der Knopf der Nachbarmannschaft anfassbar und liefe ins Leere.
+   */
+  public canSaveTeamInfo(team: Team): boolean {
+    return (
+      !!this.teamInfoDraft(team).name.trim() &&
+      this.teamInfoChanged(team) &&
+      this.savingTeamInfoId === undefined
     );
   }
 
@@ -525,15 +547,35 @@ export class ClubEditComponent implements OnInit, OnDestroy {
           );
           this._cdr.markForCheck();
         },
-        // Den Grund zeigt der ErrorInterceptor aus der Antwort des Servers
-        // (etwa das zu lange Kuerzel); ein zweiter Toast wuerde ihn verdecken.
-        error: () => {
+        // Den Grund zeigt sonst der ErrorInterceptor aus der Antwort des
+        // Servers (etwa das zu lange Kuerzel); ein zweiter Toast wuerde ihn
+        // verdecken. Ausgenommen ist der 403: Den nimmt der Interceptor fuer
+        // diesen Weg bewusst nicht an, weil er sonst mitten aus dem
+        // Vereinsformular auf die Startseite umleiten wuerde. Erreichbar ist er
+        // ohne Fehlbedienung, naemlich wenn die Maske vor dem ersten Spieltag
+        // geoeffnet und an ihm gespeichert wird oder der Verband den Schalter
+        // in der Zwischenzeit umlegt. Deshalb hier die Meldung und ein frisch
+        // geladener Stand, damit die Zeile danach sagt, was gilt.
+        error: (err: HttpErrorResponse) => {
           this.savingTeamInfoId = undefined;
+          if (err.status === 403) {
+            this._notificationService.error(
+              this._transloco.translate(
+                'clubAdmin.notifications.teamInfoForbidden'
+              )
+            );
+            if (this._clubTeamsClubId) {
+              this.loadClubTeams(this._clubTeamsClubId);
+            }
+          }
           this._cdr.markForCheck();
         },
       });
   }
 
+  // Abweichendes Logo einer Mannschaft. Der Regelfall bleibt das Vereinslogo:
+  // Ohne eigenes Logo zeigt die Mannschaft es ueberall (Team#logo_url_fallback
+  // in der API), dieser Weg setzt also die Ausnahme.
   public onTeamLogoSelected(team: Team, input: HTMLInputElement) {
     if (!input.files?.length || !team.id) return;
     const file = input.files[0];

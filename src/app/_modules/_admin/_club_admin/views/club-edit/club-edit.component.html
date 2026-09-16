@@ -418,10 +418,7 @@
                             <button
                               type="button"
                               (click)="saveTeamInfo(team)"
-                              [disabled]="
-                                !teamInfoChanged(team) ||
-                                savingTeamInfoId === team.id
-                              "
+                              [disabled]="!canSaveTeamInfo(team)"
                               class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
                             >
                               {{

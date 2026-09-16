@@ -453,6 +453,85 @@ describe('ClubEditComponent', () => {
     httpMock.expectNone(`${environment.apiURL}admin/teams/7/info.json`);
   });
 
+  // Der 403 ist ohne Fehlbedienung erreichbar: Das Recht endet mit dem ersten
+  // Spieltag. Der ErrorInterceptor laesst ihn deshalb fuer diesen Weg durch, und
+  // die Maske muss ihn selbst melden -- sonst bliebe der Fall stumm.
+  it('saveTeamInfo meldet die Absage des Servers und laedt die Liste neu', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const notification = TestBed.inject(NotificationService);
+    spyOn(notification, 'error');
+    component.loadClubTeams(42);
+    httpMock.expectOne(`${environment.apiURL}admin/clubs/42/teams.json`).flush([
+      { id: 7, name: 'Alpha', short_name: 'ALP', manage_info: true },
+    ]);
+    const team = component.clubTeams[0];
+    component.teamInfoDraft(team).name = 'Zu spaet';
+
+    component.saveTeamInfo(team);
+
+    httpMock
+      .expectOne(`${environment.apiURL}admin/teams/7/info.json`)
+      .flush(
+        { message: 'Keine Berechtigung' },
+        { status: 403, statusText: 'Forbidden' }
+      );
+
+    expect(notification.error).toHaveBeenCalled();
+    expect(component.savingTeamInfoId).toBeUndefined();
+    // Nachgeladen wird der geoeffnete Verein, nicht `team.club_id`: Bei einer
+    // Verbundmannschaft steht dort der fuehrende Verein.
+    httpMock.expectOne(`${environment.apiURL}admin/clubs/42/teams.json`).flush([]);
+  });
+
+  // Ein 422 bleibt beim ErrorInterceptor: Der Server nennt den Grund in
+  // `message`, ein zweiter Toast wuerde ihn verdecken.
+  it('saveTeamInfo setzt nach einem 422 nur den Speicherzustand zurueck', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const notification = TestBed.inject(NotificationService);
+    spyOn(notification, 'error');
+    const team = { id: 7, name: 'Alpha', short_name: 'ALP' } as Team;
+    component.teamInfoDraft(team).short_name = 'VIEL ZU LANG';
+
+    component.saveTeamInfo(team);
+
+    httpMock
+      .expectOne(`${environment.apiURL}admin/teams/7/info.json`)
+      .flush(
+        { message: 'Kurzname ist zu lang (maximal 8 Zeichen)' },
+        { status: 422, statusText: 'Unprocessable Entity' }
+      );
+
+    expect(notification.error).not.toHaveBeenCalled();
+    expect(component.savingTeamInfoId).toBeUndefined();
+    // Der Entwurf bleibt stehen, damit die Eingabe korrigierbar ist.
+    expect(component.teamInfoDraft(team).short_name).toBe('VIEL ZU LANG');
+  });
+
+  // Ein Knopf, der aktiv aussieht und beim Klick nichts tut, sieht kaputt aus.
+  // Das `required` am Feld taugt dafuer nicht: Die Maske hat kein <form>.
+  it('canSaveTeamInfo sperrt den leeren Namen und jede fremde Speicherung', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const team = { id: 7, name: 'Alpha', short_name: 'ALP' } as Team;
+    const andere = { id: 8, name: 'Beta', short_name: 'BET' } as Team;
+
+    expect(component.canSaveTeamInfo(team)).toBeFalse();
+    component.teamInfoDraft(team).name = 'Alpha Loewen';
+    expect(component.canSaveTeamInfo(team)).toBeTrue();
+
+    component.teamInfoDraft(team).name = '   ';
+    expect(component.canSaveTeamInfo(team)).toBeFalse();
+
+    // Waehrend einer laufenden Speicherung ist auch der Knopf der
+    // Nachbarmannschaft aus, denn die Sperre gilt der ganzen Maske.
+    component.teamInfoDraft(team).name = 'Alpha Loewen';
+    component.teamInfoDraft(andere).name = 'Beta Baeren';
+    component.savingTeamInfoId = team.id;
+    expect(component.canSaveTeamInfo(andere)).toBeFalse();
+  });
+
   it('removeTeamLogo schickt ohne Bestaetigung keine Anfrage', () => {
     const component =
       TestBed.createComponent(ClubEditComponent).componentInstance;

@@ -75,7 +75,13 @@ describe('StateAssociationEditComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj<StateAssociationService>(
       'StateAssociationService',
-      ['adminGetAll', 'adminGet', 'adminGetReleaseCandidates', 'adminUpdate']
+      [
+        'adminGetAll',
+        'adminGet',
+        'adminGetReleaseCandidates',
+        'adminUpdate',
+        'adminCreate',
+      ]
     );
     // Bewusst leer: Ein regionaler SBK bekommt über adminGetAll nur die eigenen
     // Landesverbände, den übergeordneten Verbund nicht. Name und geerbte Werte
@@ -84,6 +90,7 @@ describe('StateAssociationEditComponent', () => {
     service.adminGet.and.returnValue(of(KIND_LV));
     service.adminGetReleaseCandidates.and.returnValue(of([]));
     service.adminUpdate.and.returnValue(of(KIND_LV));
+    service.adminCreate.and.returnValue(of(KIND_LV));
 
     await TestBed.configureTestingModule({
       imports: [
@@ -266,6 +273,27 @@ describe('StateAssociationEditComponent', () => {
     // Maske, fehlte aber im handgeschriebenen Payload-Block — die Checkbox
     // liess sich anhaken und der Wert verschwand beim Speichern spurlos.
     expect(payload.requested_license_playable).toBeTrue();
+  });
+
+  // Der strukturelle Test unten prueft nur, DASS jede Einstellung im Payload
+  // steht, nicht mit welchem Wert. Das genuegt nicht mehr, seit es eine
+  // Einstellung mit Standard „an" gibt: In der Anlage-Maske ist das Feld noch
+  // undefined, ein pauschales `?? false` haette den neuen Landesverband mit
+  // gesperrter Mannschaftspflege angelegt, ohne dass irgendwo etwas davon steht.
+  it('zeigt und sendet in der Anlage-Maske den Spaltenstandard', () => {
+    const component = createComponent();
+    component.stateAssociation = { name: 'Neuer LV', short_name: 'NLV' };
+    component['_persistedParentId'] = null;
+
+    expect(component.setting('team_info_editable_during_season')).toBeTrue();
+    expect(component.setting('scan_required')).toBeFalse();
+
+    component.submit();
+
+    const payload = service.adminCreate.calls.mostRecent()
+      .args[0] as StateAssociation;
+    expect(payload.team_info_editable_during_season).toBeTrue();
+    expect(payload.scan_required).toBeFalse();
   });
 
   // Strukturell und nicht Feld fuer Feld: Die naechste Einstellung, die jemand
