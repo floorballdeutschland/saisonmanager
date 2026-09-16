@@ -105,7 +105,9 @@
     "refereeAssignmentExternalLabel": "Ansetzungen außerhalb der SBK ermöglichen",
     "refereeAssignmentExternalHint": "Wenn aktiv, kann die RSK die Schiedsrichter zu den Spielen eintragen, entweder einen Verein, der die Schiedsrichter stellt, oder Personen und Paare als Freitext. Ohne diese Option trägt allein die SBK bei der Spielplanerstellung ein.",
     "personLevelDefaultLabel": "Standardmäßig durch Ansetzer*in",
-    "personLevelDefaultHint": "Neue Spiele sind von vornherein für die personenscharfe Ansetzung markiert. Die SBK muss das dann nicht mehr je Spieltag anklicken."
+    "personLevelDefaultHint": "Neue Spiele sind von vornherein für die personenscharfe Ansetzung markiert. Die SBK muss das dann nicht mehr je Spieltag anklicken.",
+    "teamInfoEditableLabel": "Vereinen während der laufenden Saison das Ändern von Teaminformationen erlauben (Name, Kürzel, Logo)",
+    "teamInfoEditableHint": "Vor dem ersten Spieltag einer Liga dürfen Vereine Name, Kürzel und Logo ihrer Mannschaften immer ändern. Ohne diesen Haken ist damit ab dem ersten Spieltag Schluss, und Änderungen laufen wieder über den Spielbetrieb. Verband und Spielbetriebskommission können unabhängig davon jederzeit berichtigen."
   },
   "notifications": {
     "confirmDelete": "Landesverband \"{{ name }}\" wirklich löschen?",

@@ -67,6 +67,13 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   clubTeamsFailed = false;
   removingTeamLogoId?: number;
 
+  // Entwurf je Mannschaft fuer Name und Kuerzel. Getrennt vom geladenen
+  // Datensatz, damit die Zeile erst nach dem Speichern umspringt und ein
+  // abgebrochener Versuch nichts hinterlaesst, was nur in der Maske steht.
+  teamInfoDrafts: { [teamId: number]: { name: string; short_name: string } } =
+    {};
+  savingTeamInfoId?: number;
+
   // Auswahlliste des Suchfelds: einmal beim Laden gebildet, nicht als Getter.
   // Ein neues Array pro Change-Detection wuerde die Trefferliste des Suchfelds
   // bei jedem Durchlauf neu aufbauen.
@@ -194,6 +201,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
         next: (teams) => {
           this.clubTeams = teams ?? [];
           this.clubTeamsFailed = false;
+          this._resetTeamInfoDrafts();
           this._cdr.markForCheck();
         },
         error: () => {
@@ -461,6 +469,71 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   // Abweichendes Logo einer Mannschaft. Der Regelfall bleibt das Vereinslogo:
   // Ohne eigenes Logo zeigt die Mannschaft es ueberall (Team#logo_url_fallback
   // in der API), dieser Weg setzt also die Ausnahme.
+  private _resetTeamInfoDrafts(): void {
+    this.teamInfoDrafts = {};
+    for (const team of this.clubTeams) {
+      this.teamInfoDrafts[team.id] = {
+        name: team.name ?? '',
+        short_name: team.short_name ?? '',
+      };
+    }
+  }
+
+  public teamInfoDraft(team: Team): { name: string; short_name: string } {
+    // Zugriff ueber eine Methode und nicht direkt im Template: Eine Mannschaft,
+    // die erst nach dem Laden dazukommt, haette sonst keinen Entwurf und die
+    // Bindung liefe ins Leere.
+    this.teamInfoDrafts[team.id] ??= {
+      name: team.name ?? '',
+      short_name: team.short_name ?? '',
+    };
+    return this.teamInfoDrafts[team.id];
+  }
+
+  public teamInfoChanged(team: Team): boolean {
+    const draft = this.teamInfoDraft(team);
+    return (
+      draft.name.trim() !== (team.name ?? '') ||
+      draft.short_name.trim() !== (team.short_name ?? '')
+    );
+  }
+
+  public saveTeamInfo(team: Team): void {
+    if (!team.id || this.savingTeamInfoId) return;
+
+    const draft = this.teamInfoDraft(team);
+    const name = draft.name.trim();
+    const short_name = draft.short_name.trim();
+    if (!name) return;
+
+    this.savingTeamInfoId = team.id;
+    this._clubService
+      .updateTeamInfo(team.id, { name, short_name })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          team.name = updated.name;
+          team.short_name = updated.short_name;
+          this.teamInfoDrafts[team.id] = {
+            name: updated.name ?? '',
+            short_name: updated.short_name ?? '',
+          };
+          this.savingTeamInfoId = undefined;
+          this._notificationService.success(
+            this._transloco.translate('clubAdmin.notifications.teamInfoSaved'),
+            { autoClose: true }
+          );
+          this._cdr.markForCheck();
+        },
+        // Den Grund zeigt der ErrorInterceptor aus der Antwort des Servers
+        // (etwa das zu lange Kuerzel); ein zweiter Toast wuerde ihn verdecken.
+        error: () => {
+          this.savingTeamInfoId = undefined;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
   public onTeamLogoSelected(team: Team, input: HTMLInputElement) {
     if (!input.files?.length || !team.id) return;
     const file = input.files[0];

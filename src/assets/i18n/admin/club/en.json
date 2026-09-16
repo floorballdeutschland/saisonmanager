@@ -56,8 +56,6 @@
     "uploadLogo": "Upload logo",
     "logoHint": "PNG, JPG or WebP · square (width = height) · max. 3 MB · resized to 100×100 pixels",
     "logoTransparencyHint": "Ideally upload a cut-out image, i.e. a PNG with a transparent background. The logo will also appear on dark backgrounds, for example in livestream overlays, where a white box is clearly visible.",
-    "teamLogos": "Team-specific logos",
-    "teamLogosHint": "Without its own logo, a team always shows the club logo. A separate logo makes sense for teams that appear differently – a joint team or a second squad with its own emblem, for example.",
     "teamLogosEmpty": "No team registered for the current season.",
     "teamLogosLoadError": "The teams could not be loaded.",
     "teamLogosRetry": "Try again",
@@ -78,7 +76,15 @@
     "saveError": "Saving not possible",
     "saveChanges": "Save changes",
     "editPlayers": "Edit players",
-    "loading": "Loading data..."
+    "loading": "Loading data...",
+    "teams": "Teams of the club",
+    "teamsHint": "Name, short name and logo of the teams entered for the current season. The short name is the abbreviation shown on the scoreboard and the match report. Without its own logo a team always carries the club logo. League, cup competitions and the assignment to the club remain with the responsible game operation.",
+    "teamName": "Name",
+    "teamShortName": "Short name",
+    "teamShortNameHint": "At most 8 characters, for example “BW96 III”.",
+    "saveTeamInfo": "Save",
+    "savingTeamInfo": "Saving …",
+    "teamInfoLocked": "The association has locked changes to name, short name and logo for the running season. Please contact your game operation."
   },
   "notifications": {
     "deleteSuccess": "Club was permanently deleted.",
@@ -104,6 +110,7 @@
     "stateAssociationRequired": "Please select a state federation.",
     "teamLogoUploadSuccess": "Team logo uploaded successfully.",
     "teamLogoRemoved": "Team logo removed – the club logo applies again.",
-    "confirmRemoveTeamLogo": "Remove this team's own logo? It will show the club logo again."
+    "confirmRemoveTeamLogo": "Remove this team's own logo? It will show the club logo again.",
+    "teamInfoSaved": "Team saved."
   }
 }

@@ -63,6 +63,12 @@ export interface StateAssociation {
   // hier gelesen, sondern am Spiel (Game#requested_license_playable) --
   // zustaendig ist der Verband der Liga.
   requested_license_playable?: boolean;
+
+  // Duerfen Vereine Name, Kuerzel und Logo ihrer Mannschaften auch nach dem
+  // ersten Spieltag aendern? Standard an. Vor dem ersten Spieltag duerfen sie
+  // unabhaengig davon; gelesen wird der Wert am Spielbetrieb der Liga.
+  team_info_editable_during_season?: boolean;
+  effective_team_info_editable_during_season?: boolean;
   // Drei gestaffelte Ansetzungs-Optionen: der Hauptschalter erlaubt die
   // Ansetzung ausserhalb der SBK, referee_assignment_enabled hebt sie auf die
   // Personenebene (Rolle Ansetzer*in), die Voreinstellung markiert neue Spiele

@@ -48,6 +48,7 @@ export const INHERITED_SETTINGS = [
   'report_form_email_enabled',
   'manual_proceeding_creation',
   'requested_license_playable',
+  'team_info_editable_during_season',
 ] as const;
 
 type InheritedSetting = (typeof INHERITED_SETTINGS)[number];
@@ -64,6 +65,8 @@ const EFFECTIVE_SETTING: Record<InheritedSetting, keyof StateAssociation> = {
   report_form_email_enabled: 'effective_report_form_email_enabled',
   manual_proceeding_creation: 'effective_manual_proceeding_creation',
   requested_license_playable: 'effective_requested_license_playable',
+  team_info_editable_during_season:
+    'effective_team_info_editable_during_season',
 };
 
 @Component({

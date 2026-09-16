@@ -105,7 +105,9 @@
     "refereeAssignmentExternalLabel": "Allow assignments outside the SBK",
     "refereeAssignmentExternalHint": "When active, the RSK can enter the referees for each game, either a club that provides the pair, or people and pairs as free text. Without this option, only the SBK enters them when creating the schedule.",
     "personLevelDefaultLabel": "By assigner by default",
-    "personLevelDefaultHint": "New games are marked for person-level assignment from the start, so the SBK no longer has to tick it per game day."
+    "personLevelDefaultHint": "New games are marked for person-level assignment from the start, so the SBK no longer has to tick it per game day.",
+    "teamInfoEditableLabel": "Allow clubs to change team information (name, short name, logo) during the running season",
+    "teamInfoEditableHint": "Before the first match day of a league clubs may always change name, short name and logo of their teams. Without this option that ends with the first match day and changes go through the game operation again. The association itself can always correct them."
   },
   "notifications": {
     "confirmDelete": "Really delete state association \"{{ name }}\"?",

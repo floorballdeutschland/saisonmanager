@@ -29,6 +29,18 @@ export interface Team {
   // Mannschaftsliste eines Vereins lesen, aber nicht das Logo einer Mannschaft
   // aendern, die in der Liga eines anderen Verbands spielt.
   manage_logo?: boolean;
+
+  // Ebenfalls nur aus `admin/clubs/:id/teams`: Darf der angemeldete Benutzer
+  // Name und Kuerzel DIESER Mannschaft aendern? Fuer den Verein haengt das
+  // zusaetzlich am Spielkalender – bis zum ersten Spieltag immer, danach nur,
+  // solange der Landesverband es zulaesst (Team#club_may_edit_info?).
+  manage_info?: boolean;
+
+  // Ebenfalls nur aus `admin/clubs/:id/teams`: Liegt es an der Sperre des
+  // Landesverbands waehrend der laufenden Saison, dass hier nichts zu aendern
+  // ist? Ohne diese Angabe waere das nicht von einer fremden Liga zu
+  // unterscheiden, bei der ebenfalls beide Rechte fehlen.
+  info_locked_by_season?: boolean;
 }
 
 export interface TeamWithPlayers extends Team {
