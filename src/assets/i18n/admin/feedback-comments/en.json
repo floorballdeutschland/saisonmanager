@@ -1,11 +1,11 @@
 {
   "index": {
-    "title": "Feedback (qualitative)",
+    "title": "Feedback (individual ratings)",
     "manageThemes": "Manage themes",
-    "loading": "Loading comments…",
-    "loadError": "The comments could not be loaded.",
-    "count": "{{ count }} comments",
-    "empty": "No comments found for these filters."
+    "loading": "Loading ratings…",
+    "loadError": "The ratings could not be loaded.",
+    "count": "{{ count }} ratings",
+    "empty": "No ratings found for these filters."
   },
   "filter": {
     "group": "Top group",
@@ -16,7 +16,9 @@
     "to": "To",
     "all": "All",
     "apply": "Apply",
-    "reset": "Reset"
+    "reset": "Reset",
+    "comments": "Free text",
+    "onlyWithComment": "with comment only"
   },
   "card": {
     "referees": "Referees:",
@@ -32,7 +34,8 @@
     "done": "Done",
     "noThemesDefined": "No themes defined yet. Create some first under \"Manage themes\".",
     "viaInvitation": "via invitation link",
-    "viaAccount": "via user account"
+    "viaAccount": "via user account",
+    "noComment": "No free text, ratings only."
   },
   "stats": {
     "show": "Show theme evaluation",
