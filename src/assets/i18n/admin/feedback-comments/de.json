@@ -1,11 +1,11 @@
 {
   "index": {
-    "title": "Feedback (qualitativ)",
+    "title": "Feedback (Einzelbewertungen)",
     "manageThemes": "Themen verwalten",
-    "loading": "Lade Kommentare…",
-    "loadError": "Die Kommentare konnten nicht geladen werden.",
-    "count": "{{ count }} Kommentare",
-    "empty": "Keine Kommentare für diese Filter gefunden."
+    "loading": "Lade Bewertungen…",
+    "loadError": "Die Bewertungen konnten nicht geladen werden.",
+    "count": "{{ count }} Bewertungen",
+    "empty": "Keine Bewertungen für diese Filter gefunden."
   },
   "filter": {
     "group": "Top-Gruppe",
@@ -16,7 +16,9 @@
     "to": "Bis",
     "all": "Alle",
     "apply": "Anwenden",
-    "reset": "Zurücksetzen"
+    "reset": "Zurücksetzen",
+    "comments": "Freitexte",
+    "onlyWithComment": "Nur mit Kommentar"
   },
   "card": {
     "referees": "Schiedsrichter:",
@@ -32,7 +34,8 @@
     "done": "Fertig",
     "noThemesDefined": "Noch keine Themen angelegt. Lege zuerst welche unter „Themen verwalten\" an.",
     "viaInvitation": "über Einladungslink",
-    "viaAccount": "über Benutzerkonto"
+    "viaAccount": "über Benutzerkonto",
+    "noComment": "Ohne Freitext, nur Noten abgegeben."
   },
   "stats": {
     "show": "Themen-Auswertung anzeigen",

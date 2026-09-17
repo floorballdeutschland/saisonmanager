@@ -44,6 +44,7 @@ export class FeedbackCommentsIndexComponent implements OnInit, OnDestroy {
     max_rating: null,
     from: null,
     to: null,
+    with_comment: false,
   };
 
   // Pagination (clientseitig)
@@ -99,13 +100,34 @@ export class FeedbackCommentsIndexComponent implements OnInit, OnDestroy {
 
   private _cleanFilter(): FeedbackCommentsFilter {
     // Leere Werte werden im Service ohnehin entfernt; max_rating als Zahl casten.
+    //
+    // `with_comment` nur im gesetzten Fall mitschicken: Der Service haengt jeden
+    // Wert ausser null/undefined/'' an die Anfrage, ein abgewaehltes Kaestchen
+    // wuerde also als `with_comment=false` in der URL stehen. Das liest der
+    // Server zwar richtig, steht aber als Filter da, wo keiner gesetzt ist.
     return {
       ...this.filter,
       max_rating:
         this.filter.max_rating != null && `${this.filter.max_rating}` !== ''
           ? Number(this.filter.max_rating)
           : null,
+      with_comment: this.filter.with_comment ? true : null,
     };
+  }
+
+  /**
+   * Eine Rueckmeldung ohne jeden Freitext, also reine Notenvergabe.
+   *
+   * Getrimmt geprueft: Ein Kommentar aus reinem Leerraum kommt durch die
+   * Serverbedingung (`<> ''`) und laesst das Template eine Ueberschrift ohne
+   * Rumpf rendern. Dann gehoert der Hinweis dazu, nicht die leere Stelle.
+   */
+  public hasNoComment(comment: FeedbackComment): boolean {
+    return !(
+      comment.line_comment?.trim() ||
+      comment.communication_comment?.trim() ||
+      comment.general_comment?.trim()
+    );
   }
 
   load(): void {
@@ -142,6 +164,7 @@ export class FeedbackCommentsIndexComponent implements OnInit, OnDestroy {
       max_rating: null,
       from: null,
       to: null,
+      with_comment: false,
     };
     this.load();
   }

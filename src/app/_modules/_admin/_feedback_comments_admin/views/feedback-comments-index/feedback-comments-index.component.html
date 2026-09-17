@@ -92,6 +92,21 @@
       />
     </div>
 
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "feedbackComments.filter.comments" | transloco
+      }}</label>
+      <label class="flex items-center gap-2 text-sm py-2">
+        <input
+          type="checkbox"
+          [(ngModel)]="filter.with_comment"
+          name="with_comment"
+          class="h-4 w-4 rounded border-fb-gray-600 accent-black"
+        />
+        {{ "feedbackComments.filter.onlyWithComment" | transloco }}
+      </label>
+    </div>
+
     <div class="flex items-center gap-2">
       <fb-button variant="default" (handleClick)="apply()">{{
         "feedbackComments.filter.apply" | transloco
@@ -296,6 +311,11 @@
 
           <!-- Freitexte -->
           <div class="flex flex-col gap-2 mb-3">
+            @if (hasNoComment(comment)) {
+              <div class="text-sm text-fb-gray-500 italic">
+                {{ "feedbackComments.card.noComment" | transloco }}
+              </div>
+            }
             @if (comment.line_comment) {
               <div>
                 <div class="text-xs font-bold uppercase text-fb-gray-500">

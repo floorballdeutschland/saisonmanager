@@ -57,6 +57,11 @@ export interface FeedbackCommentsFilter {
   to?: string | null;
   max_rating?: number | null;
   theme_id?: number | null;
+  /**
+   * Nur Rückmeldungen mit Freitext. Ohne den Schalter führt der Feed jede
+   * sichtbare Bewertung auf, auch die reine Notenvergabe.
+   */
+  with_comment?: boolean | null;
 }
 
 /** Ein Themen-Eintrag im Ranking der Auswertung. */
