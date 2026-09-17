@@ -127,6 +127,17 @@ export class ClubService {
     return this.http.delete<{ logo_url: string; logo_small_url: string }>(path);
   }
 
+  // Name und Kuerzel der Mannschaft. Eigener, enger Endpunkt und nicht
+  // `admin/teams` – dort haengen Liga, Pokal-Ligen und Verein mit im Formular,
+  // und die bleiben beim Verband.
+  public updateTeamInfo(
+    teamId: number,
+    info: { name: string; short_name: string }
+  ) {
+    const path = environment.apiURL + 'admin/teams/' + teamId + '/info.json';
+    return this.http.patch<Team>(path, { team: info });
+  }
+
   public uploadTeamLogo(teamId: number, file: File) {
     const path =
       environment.apiURL + 'admin/teams/' + teamId + '/upload_logo.json';

@@ -392,6 +392,146 @@ describe('ClubEditComponent', () => {
     expect(component.removingTeamLogoId).toBeUndefined();
   });
 
+  // Name und Kuerzel gehen ueber den engen Endpunkt, nicht ueber admin/teams:
+  // Dort haengen Liga, Pokal-Ligen und Verein mit im Formular.
+  it('saveTeamInfo schickt nur Name und Kuerzel und uebernimmt die Antwort', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const team = {
+      id: 7,
+      name: 'Alpha',
+      short_name: 'ALP',
+      manage_info: true,
+    } as Team;
+    component.clubTeams = [team];
+    component.teamInfoDraft(team).name = '  Alpha Loewen  ';
+    component.teamInfoDraft(team).short_name = ' ALW ';
+
+    component.saveTeamInfo(team);
+
+    const req = httpMock.expectOne(
+      `${environment.apiURL}admin/teams/7/info.json`
+    );
+    expect(req.request.method).toBe('PATCH');
+    // Getrimmt, und ausschliesslich diese beiden Felder.
+    expect(req.request.body).toEqual({
+      team: { name: 'Alpha Loewen', short_name: 'ALW' },
+    });
+    req.flush({ id: 7, name: 'Alpha Loewen', short_name: 'ALW' });
+
+    expect(team.name).toBe('Alpha Loewen');
+    expect(team.short_name).toBe('ALW');
+    expect(component.savingTeamInfoId).toBeUndefined();
+    // Der Entwurf traegt danach den gespeicherten Stand, der Knopf ist also
+    // wieder aus.
+    expect(component.teamInfoChanged(team)).toBeFalse();
+  });
+
+  it('teamInfoChanged meldet erst eine echte Aenderung', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const team = { id: 7, name: 'Alpha', short_name: 'ALP' } as Team;
+
+    expect(component.teamInfoChanged(team)).toBeFalse();
+    // Nur Leerraum ist keine Aenderung.
+    component.teamInfoDraft(team).name = ' Alpha ';
+    expect(component.teamInfoChanged(team)).toBeFalse();
+    component.teamInfoDraft(team).short_name = 'ALW';
+    expect(component.teamInfoChanged(team)).toBeTrue();
+  });
+
+  // Der Name ist Pflicht. Ohne diese Klammer liefe die Maske in einen 422, den
+  // der Benutzer selbst verhindern kann.
+  it('saveTeamInfo schickt ohne Namen keine Anfrage', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const team = { id: 7, name: 'Alpha', short_name: 'ALP' } as Team;
+    component.teamInfoDraft(team).name = '   ';
+
+    component.saveTeamInfo(team);
+
+    httpMock.expectNone(`${environment.apiURL}admin/teams/7/info.json`);
+  });
+
+  // Der 403 ist ohne Fehlbedienung erreichbar: Das Recht endet mit dem ersten
+  // Spieltag. Der ErrorInterceptor laesst ihn deshalb fuer diesen Weg durch, und
+  // die Maske muss ihn selbst melden -- sonst bliebe der Fall stumm.
+  it('saveTeamInfo meldet die Absage des Servers und laedt die Liste neu', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const notification = TestBed.inject(NotificationService);
+    spyOn(notification, 'error');
+    component.loadClubTeams(42);
+    httpMock.expectOne(`${environment.apiURL}admin/clubs/42/teams.json`).flush([
+      { id: 7, name: 'Alpha', short_name: 'ALP', manage_info: true },
+    ]);
+    const team = component.clubTeams[0];
+    component.teamInfoDraft(team).name = 'Zu spaet';
+
+    component.saveTeamInfo(team);
+
+    httpMock
+      .expectOne(`${environment.apiURL}admin/teams/7/info.json`)
+      .flush(
+        { message: 'Keine Berechtigung' },
+        { status: 403, statusText: 'Forbidden' }
+      );
+
+    expect(notification.error).toHaveBeenCalled();
+    expect(component.savingTeamInfoId).toBeUndefined();
+    // Nachgeladen wird der geoeffnete Verein, nicht `team.club_id`: Bei einer
+    // Verbundmannschaft steht dort der fuehrende Verein.
+    httpMock.expectOne(`${environment.apiURL}admin/clubs/42/teams.json`).flush([]);
+  });
+
+  // Ein 422 bleibt beim ErrorInterceptor: Der Server nennt den Grund in
+  // `message`, ein zweiter Toast wuerde ihn verdecken.
+  it('saveTeamInfo setzt nach einem 422 nur den Speicherzustand zurueck', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const notification = TestBed.inject(NotificationService);
+    spyOn(notification, 'error');
+    const team = { id: 7, name: 'Alpha', short_name: 'ALP' } as Team;
+    component.teamInfoDraft(team).short_name = 'VIEL ZU LANG';
+
+    component.saveTeamInfo(team);
+
+    httpMock
+      .expectOne(`${environment.apiURL}admin/teams/7/info.json`)
+      .flush(
+        { message: 'Kurzname ist zu lang (maximal 8 Zeichen)' },
+        { status: 422, statusText: 'Unprocessable Entity' }
+      );
+
+    expect(notification.error).not.toHaveBeenCalled();
+    expect(component.savingTeamInfoId).toBeUndefined();
+    // Der Entwurf bleibt stehen, damit die Eingabe korrigierbar ist.
+    expect(component.teamInfoDraft(team).short_name).toBe('VIEL ZU LANG');
+  });
+
+  // Ein Knopf, der aktiv aussieht und beim Klick nichts tut, sieht kaputt aus.
+  // Das `required` am Feld taugt dafuer nicht: Die Maske hat kein <form>.
+  it('canSaveTeamInfo sperrt den leeren Namen und jede fremde Speicherung', () => {
+    const component =
+      TestBed.createComponent(ClubEditComponent).componentInstance;
+    const team = { id: 7, name: 'Alpha', short_name: 'ALP' } as Team;
+    const andere = { id: 8, name: 'Beta', short_name: 'BET' } as Team;
+
+    expect(component.canSaveTeamInfo(team)).toBeFalse();
+    component.teamInfoDraft(team).name = 'Alpha Loewen';
+    expect(component.canSaveTeamInfo(team)).toBeTrue();
+
+    component.teamInfoDraft(team).name = '   ';
+    expect(component.canSaveTeamInfo(team)).toBeFalse();
+
+    // Waehrend einer laufenden Speicherung ist auch der Knopf der
+    // Nachbarmannschaft aus, denn die Sperre gilt der ganzen Maske.
+    component.teamInfoDraft(team).name = 'Alpha Loewen';
+    component.teamInfoDraft(andere).name = 'Beta Baeren';
+    component.savingTeamInfoId = team.id;
+    expect(component.canSaveTeamInfo(andere)).toBeFalse();
+  });
+
   it('removeTeamLogo schickt ohne Bestaetigung keine Anfrage', () => {
     const component =
       TestBed.createComponent(ClubEditComponent).componentInstance;
@@ -731,5 +871,64 @@ describe('ClubEditComponent im Bearbeiten-Modus', () => {
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('clubAdmin.edit.teamLogosLoadError');
     expect(text).not.toContain('clubAdmin.edit.teamLogosEmpty');
+  });
+
+  // Drei Zustaende, die sich nicht verwechseln duerfen: pflegbar, vom Verband
+  // fuer die laufende Saison gesperrt, und Mannschaft in fremder Liga. Die
+  // beiden letzten sehen in den Rechten gleich aus, deshalb nennt der Server
+  // die Saison-Sperre eigens (`info_locked_by_season`).
+  it('zeigt Eingabefelder nur fuer pflegbare Mannschaften und nennt sonst den Grund', async () => {
+    const fixture = TestBed.createComponent(ClubEditComponent);
+    fixture.detectChanges();
+
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
+      .flush({ notify_user_ids: [], managers: [] });
+    httpMock.expectOne(`${environment.apiURL}admin/clubs/42/teams.json`).flush([
+      {
+        id: 7,
+        name: 'Alpha',
+        short_name: 'ALP',
+        logo_url: '/club.png',
+        manage_logo: true,
+        manage_info: true,
+        info_locked_by_season: false,
+      },
+      {
+        id: 8,
+        name: 'Beta',
+        short_name: 'BET',
+        logo_url: '/club.png',
+        manage_logo: false,
+        manage_info: false,
+        info_locked_by_season: true,
+      },
+      {
+        id: 9,
+        name: 'Gamma',
+        short_name: 'GAM',
+        logo_url: '/club.png',
+        manage_logo: false,
+        manage_info: false,
+        info_locked_by_season: false,
+      },
+    ]);
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42.json`)
+      .flush(vollstaendigerVerein({ id: 42, edit_restricted: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('#team_name_7')).not.toBeNull();
+    expect(el.querySelector('#team_short_name_7')).not.toBeNull();
+    // Gesperrt heisst: kein Feld, sondern die Begruendung.
+    expect(el.querySelector('#team_name_8')).toBeNull();
+    const text = el.textContent ?? '';
+    expect(text).toContain('clubAdmin.edit.teamInfoLocked');
+    // Die fremde Liga behaelt ihre eigene, andere Begruendung.
+    expect(text).toContain('clubAdmin.edit.teamLogoForeignLeague');
+    expect(text).toContain('Beta');
   });
 });

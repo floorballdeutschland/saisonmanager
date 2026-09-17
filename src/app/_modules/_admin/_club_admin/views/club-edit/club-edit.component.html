@@ -340,10 +340,10 @@
             @if (club.id > 0) {
               <div class="bg-white my-[5px] py-[15px] px-[30px]">
                 <div class="uppercase font-bold text-gray-400 text-sm mb-3">
-                  {{ "clubAdmin.edit.teamLogos" | transloco }}
+                  {{ "clubAdmin.edit.teams" | transloco }}
                 </div>
                 <p class="text-sm text-gray-500 mb-5">
-                  {{ "clubAdmin.edit.teamLogosHint" | transloco }}
+                  {{ "clubAdmin.edit.teamsHint" | transloco }}
                 </p>
                 @if (clubTeamsFailed) {
                   <div class="text-sm text-red-600">
@@ -379,7 +379,69 @@
                         }
                       </div>
                       <div class="grow min-w-[12rem]">
-                        <div class="font-bold">{{ team.name }}</div>
+                        @if (team.manage_info) {
+                          <div class="flex flex-wrap items-end gap-3 mb-1">
+                            <div class="grow min-w-[10rem]">
+                              <label
+                                class="block text-xs uppercase text-gray-400"
+                                [attr.for]="'team_name_' + team.id"
+                                >{{
+                                  "clubAdmin.edit.teamName" | transloco
+                                }}</label
+                              >
+                              <input
+                                type="text"
+                                [id]="'team_name_' + team.id"
+                                [(ngModel)]="teamInfoDraft(team).name"
+                                [ngModelOptions]="{ standalone: true }"
+                                class="w-full"
+                                required
+                              />
+                            </div>
+                            <div class="w-32">
+                              <label
+                                class="block text-xs uppercase text-gray-400"
+                                [attr.for]="'team_short_name_' + team.id"
+                                >{{
+                                  "clubAdmin.edit.teamShortName" | transloco
+                                }}</label
+                              >
+                              <input
+                                type="text"
+                                [id]="'team_short_name_' + team.id"
+                                [(ngModel)]="teamInfoDraft(team).short_name"
+                                [ngModelOptions]="{ standalone: true }"
+                                class="w-full"
+                                maxlength="8"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              (click)="saveTeamInfo(team)"
+                              [disabled]="!canSaveTeamInfo(team)"
+                              class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+                            >
+                              {{
+                                (savingTeamInfoId === team.id
+                                  ? "clubAdmin.edit.savingTeamInfo"
+                                  : "clubAdmin.edit.saveTeamInfo"
+                                ) | transloco
+                              }}
+                            </button>
+                          </div>
+                          <p class="text-xs text-gray-500 mb-1">
+                            {{ "clubAdmin.edit.teamShortNameHint" | transloco }}
+                          </p>
+                        } @else {
+                          <div class="font-bold">
+                            {{ team.name }}
+                            @if (team.short_name) {
+                              <span class="text-gray-500 font-normal"
+                                >({{ team.short_name }})</span
+                              >
+                            }
+                          </div>
+                        }
                         <div class="text-sm text-gray-500">
                           {{ team.league_name }}
                           <span
@@ -424,7 +486,10 @@
                           }
                         } @else {
                           <span class="text-sm text-gray-400">{{
-                            "clubAdmin.edit.teamLogoForeignLeague" | transloco
+                            (team.info_locked_by_season && !team.manage_info
+                              ? "clubAdmin.edit.teamInfoLocked"
+                              : "clubAdmin.edit.teamLogoForeignLeague"
+                            ) | transloco
                           }}</span>
                         }
                       </div>

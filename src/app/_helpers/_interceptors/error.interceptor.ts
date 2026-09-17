@@ -154,6 +154,25 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Name und Kürzel einer Mannschaft sind ein Nachschlag im
+        // Vereinsformular, keine eigene Ansicht – wie die Lizenzdokumente
+        // darüber. Ein 403 heißt hier „diese Mannschaft gerade nicht", nicht
+        // „diese Seite nicht", und ist ohne Fehlbedienung erreichbar: Das Recht
+        // endet mit dem ersten Spieltag der Liga, sobald der Landesverband das
+        // Ändern während der Saison abgeschaltet hat. Eine Maske, die am
+        // Vorabend geöffnet und am Spieltag gespeichert wird, bekommt ihn.
+        //
+        // Der generische Zweig weiter unten würde mitten aus dem Formular auf
+        // die Startseite umleiten und dabei auch die übrigen Eingaben
+        // wegwerfen. Die Maske meldet den Fall selbst und lädt die
+        // Mannschaftsliste neu, es geht also nichts still verloren.
+        if (
+          err.status === 403 &&
+          /\/admin\/teams\/\d+\/info(\.json)?$/.test(request.url)
+        ) {
+          return throwError(() => err);
+        }
+
         // Die Spielersuche der Transfermaske meldet ihre eigenen Absagen an Ort
         // und Stelle: Beide Masken, die Direktzuweisung und der reguläre
         // Antrag, schreiben `err.error.error` in `searchError` und zeigen ihn

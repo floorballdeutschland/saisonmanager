@@ -48,6 +48,7 @@ export const INHERITED_SETTINGS = [
   'report_form_email_enabled',
   'manual_proceeding_creation',
   'requested_license_playable',
+  'team_info_editable_during_season',
 ] as const;
 
 type InheritedSetting = (typeof INHERITED_SETTINGS)[number];
@@ -64,6 +65,30 @@ const EFFECTIVE_SETTING: Record<InheritedSetting, keyof StateAssociation> = {
   report_form_email_enabled: 'effective_report_form_email_enabled',
   manual_proceeding_creation: 'effective_manual_proceeding_creation',
   requested_license_playable: 'effective_requested_license_playable',
+  team_info_editable_during_season:
+    'effective_team_info_editable_during_season',
+};
+
+// Der Spaltenstandard jeder Einstellung, gebraucht fuer die Anlage-Maske: Dort
+// gibt es noch keinen Datensatz, die Felder sind also alle undefined.
+//
+// Bis auf `team_info_editable_during_season` steht alles auf „aus", weshalb ein
+// pauschales `?? false` lange getragen hat. Mit der ersten Einstellung, deren
+// Standard „an" ist, war es falsch: Der Haken stand in der Anlage-Maske leer da,
+// und weil der Block dort nicht gesperrt ist, haette das Speichern den neuen
+// Landesverband mit gesperrter Mannschaftspflege angelegt, ohne dass irgendwo
+// etwas davon steht.
+const SETTING_DEFAULT: Record<InheritedSetting, boolean> = {
+  express_license_enabled: false,
+  referee_license_review_enabled: false,
+  scan_required: false,
+  referee_assignment_external_enabled: false,
+  referee_assignment_enabled: false,
+  person_level_assignment_default: false,
+  report_form_email_enabled: false,
+  manual_proceeding_creation: false,
+  requested_license_playable: false,
+  team_info_editable_during_season: true,
 };
 
 @Component({
@@ -309,7 +334,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     const value = this.showInheritedValues
       ? (this.stateAssociation[EFFECTIVE_SETTING[key]] as boolean | undefined)
       : this.stateAssociation[key];
-    return value ?? false;
+    return value ?? SETTING_DEFAULT[key];
   }
 
   setSetting(key: InheritedSetting, value: boolean): void {
@@ -333,7 +358,7 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
       this.stateAssociation[key] =
         (this.stateAssociation[EFFECTIVE_SETTING[key]] as
           | boolean
-          | undefined) ?? false;
+          | undefined) ?? SETTING_DEFAULT[key];
     }
   }
 
