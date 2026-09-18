@@ -214,12 +214,43 @@ body {
   vertical-align: 2px;
 }
 
+/* Die große Anzeige IST das Eingabefeld, sie sieht nur nicht danach aus:
+   Ohne Rahmen und ohne eigene Fläche steht sie wie bisher als Zahl in der
+   Karte, nimmt aber einen eingetippten Stand entgegen. Erst der Fokus macht
+   sie sichtbar zum Feld.
+
+   `font: inherit` reicht hier nicht: Ein `input` erbt die Schrift des
+   Browsers und nicht die der Seite, und die eigenen Angaben (Größe, Schnitt,
+   Laufweite) müssten danach doppelt stehen. Deshalb die Familie ausdrücklich
+   erben und den Rest wie gehabt setzen. */
 .dk-clock {
+  width: 100%;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dk-text);
+  font-family: inherit;
   font-size: 34px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: center;
   letter-spacing: 0.02em;
+}
+
+.dk-clock:focus {
+  border-color: var(--dk-accent);
+  background: var(--dk-bg);
+  outline: none;
+}
+
+/* Getippt, aber nicht lesbar als Zeit. Der Hinweis gehört ans Feld und nicht
+   in die Statuszeile: Die überschreibt die nächste Abfrage nach zwei Sekunden
+   mit „Verbunden", und die Meldung wäre weg, bevor sie jemand gelesen hat. */
+.dk-clock--invalid,
+.dk-clock--invalid:focus {
+  border-color: var(--dk-accent);
+  color: #ff9b9b;
 }
 
 .dk-score {

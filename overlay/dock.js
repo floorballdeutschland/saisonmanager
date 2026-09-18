@@ -55,6 +55,8 @@
     "clock-start",
     "clock-minus",
     "clock-plus",
+    "clock-minus-fine",
+    "clock-plus-fine",
     "clock-reset",
     "clock-drift",
     "lt-goal",
@@ -102,6 +104,11 @@
     { key: " ", sel: "#clock-start", badge: "Leer" },
     { key: "-", sel: "#clock-minus", badge: "−" },
     { key: "+", sel: "#clock-plus", badge: "+" },
+    // Komma und Punkt für die Sekundenschritte, wie der Einzelbildschritt in
+    // jedem Schnittprogramm. Sie liegen nebeneinander und in derselben
+    // Reihenfolge wie die Wirkung: links zurück, rechts vor.
+    { key: ",", sel: "#clock-minus-fine", badge: "," },
+    { key: ".", sel: "#clock-plus-fine", badge: "." },
     { key: "r", sel: "#clock-reset", badge: "R" },
     { key: "x", sel: "#override-toggle", badge: "X" },
     { key: "q", sel: '[data-ov="home-1"]', badge: "Q" },
@@ -361,6 +368,17 @@
     });
   }
 
+  // Die Uhr auf einen eingetippten Stand setzen. Wie `nudgeClock`, nur absolut
+  // -- und mit demselben Grund für den wandernden Anker: Bliebe er stehen,
+  // rechnete `elapsedMs` den eingetippten Stand sofort wieder um die Zeit seit
+  // dem alten Anker hoch, und die Korrektur wäre nach einem Wimpernschlag weg.
+  function setClockTo(ms) {
+    setClock({
+      elapsed_ms: Math.max(0, ms),
+      anchor_ms: clockState().running ? serverNow() : null,
+    });
+  }
+
   // ── Anzeige ─────────────────────────────────────────────────────────────
 
   function render() {
@@ -492,7 +510,21 @@
     // untereinander, und das sieht nach einem Fehler aus.
     var ms = elapsedMs();
 
-    el["clock-display"].textContent = formatClock(ms);
+    // NICHT während des Tippens. Die Anzeige ist zugleich das Eingabefeld und
+    // wird zehnmal je Sekunde neu gesetzt: Ohne diese Ausnahme wäre jede
+    // eingetippte Ziffer nach 100 ms wieder überschrieben.
+    var feld = el["clock-display"];
+    if (document.activeElement !== feld) {
+      // In einem älteren, zwischengespeicherten dock.html steht hier noch ein
+      // `div`. `value` liefe dort ins Leere, und die Uhr stünde still, ohne
+      // dass etwas darauf hindeutet.
+      if (feld.tagName === "INPUT") {
+        feld.value = formatClock(ms);
+      } else {
+        feld.textContent = formatClock(ms);
+      }
+      feld.classList.remove("dk-clock--invalid");
+    }
     el["clock-start"].textContent = c.running ? "Anhalten" : "Start";
 
     var visible = c.visible !== false;
@@ -552,6 +584,32 @@
     var m = /^(\d{1,3}):(\d{2})$/.exec(String(text).trim());
     if (!m) return null;
     return (Number(m[1]) * 60 + Number(m[2])) * 1000;
+  }
+
+  // Dasselbe aus der Hand der Regie, und deshalb großzügiger als `parseClock`:
+  // Das dort erwartete `12:34` kommt aus der Datenbank, hier tippt ein Mensch
+  // unter Zeitdruck. Ein Ziffernblock hat keinen Doppelpunkt, also gilt auch
+  // eine reine Ziffernfolge -- die letzten beiden Stellen sind die Sekunden,
+  // der Rest sind Minuten (`1234` -> 12:34, `45` -> 0:45).
+  //
+  // Sekunden ab 60 werden abgewiesen statt umgerechnet: `1:75` ist mit hoher
+  // Wahrscheinlichkeit ein Vertipper, und eine stillschweigend auf 2:15
+  // gestellte Uhr fiele erst auf Sendung auf.
+  function parseClockInput(text) {
+    var roh = String(text).trim();
+    var direkt = parseClock(roh);
+    if (direkt !== null) return direkt;
+
+    if (!/^\d{1,5}$/.test(roh)) return null;
+
+    // `slice(-2)` nimmt bei einer ein- oder zweistelligen Eingabe alles und
+    // `slice(0, -2)` bleibt leer -- „45" sind damit ohne Sonderfall 45
+    // Sekunden.
+    var sekunden = Number(roh.slice(-2));
+    var minuten = Number(roh.slice(0, -2) || "0");
+    if (sekunden > 59) return null;
+
+    return (minuten * 60 + sekunden) * 1000;
   }
 
   // ── Farben ──────────────────────────────────────────────────────────────
@@ -891,8 +949,51 @@
   el["clock-plus"].addEventListener("click", function () {
     nudgeClock(10000);
   });
+  // Über `on`, weil es diese beiden Knöpfe in einem älteren,
+  // zwischengespeicherten dock.html noch nicht gibt.
+  on("clock-minus-fine", "click", function () {
+    nudgeClock(-1000);
+  });
+  on("clock-plus-fine", "click", function () {
+    nudgeClock(1000);
+  });
   el["clock-reset"].addEventListener("click", function () {
     setClock({ running: false, elapsed_ms: 0, anchor_ms: null });
+  });
+
+  // Eingetippter Stand. Übernommen wird NUR mit der Eingabetaste: Wer das Feld
+  // anklickt und dann woandershin, hat nichts gewollt, und ein beim Verlassen
+  // übernommener Halbsatz stünde auf Sendung.
+  //
+  // Danach den Fokus abgeben, und zwar in JEDEM Ausgang. Ein Feld behält ihn
+  // sonst, und `isTypingTarget` schaltet die Tastenkürzel ab, solange er dort
+  // liegt -- die Leertaste startete die Uhr nicht mehr, ohne dass etwas darauf
+  // hindeutet. Derselbe Grund wie bei `releaseSelectFocus` weiter unten.
+  on("clock-display", "keydown", function (event) {
+    var feld = el["clock-display"];
+
+    if (event.key === "Escape") {
+      // Der nächste Durchlauf von `renderClockUi` füllt das Feld wieder mit
+      // dem laufenden Stand, sobald der Fokus weg ist.
+      feld.blur();
+      return;
+    }
+
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+
+    var ms = parseClockInput(feld.value);
+    if (ms === null) {
+      // Kein Blur: Die Regie soll die Eingabe verbessern können, ohne das Feld
+      // neu anzuklicken.
+      feld.classList.add("dk-clock--invalid");
+      setStatus("Die Zeit muss wie 12:34 oder 1234 geschrieben sein.", true);
+      return;
+    }
+
+    feld.classList.remove("dk-clock--invalid");
+    setClockTo(ms);
+    feld.blur();
   });
 
   el["lt-goal"].addEventListener("click", function () {
