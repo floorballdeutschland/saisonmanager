@@ -31,6 +31,8 @@ describe('LicenseAdminGlobalListComponent', () => {
                 csvLastName: 'Nachname',
                 csvFirstName: 'Vorname',
                 csvBirthdate: 'Geburtsdatum',
+                csvHauptlizenz: 'Hauptlizenz',
+                csvZusatzlizenz: 'Zusatzlizenz',
               },
             },
           },
@@ -835,6 +837,28 @@ describe('LicenseAdminGlobalListComponent', () => {
       ]);
 
       expect(row.startsWith('"12";"Ohne";"Test";"";')).toBeTrue();
+    });
+
+    // Die Spalte trennt Haupt- von Zusatzlizenz. Eine abgelehnte oder
+    // zurueckgezogene Lizenz ist keine von beiden, die API liefert dafuer kein
+    // Etikett -- und in der Datei, aus der abgerechnet wird, bleibt die Zelle
+    // dann leer. Vorher fiel sie in den Sonst-Zweig und stand als
+    // Zusatzlizenz da, also als haette der Spieler seine Hauptlizenz woanders.
+    it('laesst die Lizenztyp-Spalte ohne Etikett leer', async () => {
+      const zeilen = await exportRows([
+        { ...entry('Haupt'), license_type: 'primary' } as AdminLicenseEntry,
+        { ...entry('Zusatz'), license_type: 'secondary' } as AdminLicenseEntry,
+        {
+          ...entry('Abgelehnt'),
+          license_type: null,
+        } as unknown as AdminLicenseEntry,
+      ]);
+      const zeile = (name: string) =>
+        zeilen.find((z) => z.includes(`"${name}"`)) ?? '';
+
+      expect(zeile('Haupt')).toContain('"Hauptlizenz"');
+      expect(zeile('Zusatz')).toContain('"Zusatzlizenz"');
+      expect(zeile('Abgelehnt')).not.toContain('lizenz"');
     });
   });
 });
