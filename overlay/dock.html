@@ -64,8 +64,14 @@
           value="0:00"
           aria-label="Spielzeit"
         />
-        <div class="dk-hint">
-          Zeit eintippen und mit der Eingabetaste übernehmen, Esc verwirft.
+        <!-- Der Hinweis nennt die Form, weil die Absage nicht in die
+             Statuszeile gehört: Die überschreibt die nächste Abfrage nach zwei
+             Sekunden mit „Verbunden", und die Meldung wäre weg, bevor sie
+             jemand gelesen hat. Bei einer unlesbaren Eingabe steht sie
+             deshalb hier. -->
+        <div class="dk-hint" id="clock-input-hint">
+          Zeit eintippen, etwa 12:34 oder 1234, und mit der Eingabetaste
+          übernehmen. Esc verwirft.
         </div>
 
         <div class="dk-buttons">
