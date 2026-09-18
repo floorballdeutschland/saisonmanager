@@ -472,7 +472,10 @@ describe('SpielSekretariatComponent', () => {
 
     // Ohne das Ablegen verloere ein schlichtes Neuladen am Spieltisch den
     // Zugang, und der Code muesste mitten im Spiel erneut abgetippt werden.
-    it('legt den Token erst ab, wenn er getragen hat', () => {
+    // Abgelegt wird schon nach dem Einloesen, nicht erst nach dem Laden: Der
+    // Token ist frisch ausgestellt, und auf dem Weg ueber die Adresse ist er
+    // das Einzige, was die Registerkarte noch hat.
+    it('legt den frisch eingeloesten Token sofort ab', () => {
       component.ngOnInit();
       component.codeInput = 'K7QF3MXR';
 
@@ -482,7 +485,7 @@ describe('SpielSekretariatComponent', () => {
         expires_at: '2026-01-02T00:00:00Z',
       });
 
-      expect(sessionStorage.getItem('secretary_token')).toBeNull();
+      expect(sessionStorage.getItem('secretary_token')).toBe('langer-token');
 
       httpMock
         .expectOne(environment.apiURL + 'public/secretary?token=langer-token')
@@ -651,11 +654,14 @@ describe('SpielSekretariatComponent', () => {
       expect(sessionStorage.getItem('secretary_token')).toBe('langer-token');
     });
 
-    // Der wichtigste Teil: Rack::Attack zaehlt zehn Versuche pro Minute je IP,
-    // und in der Halle haengen alle Rechner hinter derselben. Bliebe der Code
-    // in der Adresse stehen, verbrauchte jedes Neuladen am Spieltisch einen
-    // davon -- bis das Sekretariat mitten im Spiel ausgesperrt waere.
-    it('raeumt den Code aus der Adresse, bevor er eingeloest wird', () => {
+    // Der wichtigste Teil: Rack::Attack zaehlt das Einloesen je IP, zehn pro
+    // Minute und sechzig pro Stunde, und in der Halle haengen alle Rechner
+    // hinter derselben Adresse. Bliebe der Code stehen, verbrauchte jedes
+    // Neuladen am Spieltisch einen Versuch -- bis das Sekretariat mitten im
+    // Spiel ausgesperrt waere. Geprueft wird der Zustand nach ngOnInit, nicht
+    // die Reihenfolge innerhalb: Beides laeuft synchron, und fuer das
+    // Neuladen zaehlt allein, dass die Adresse danach sauber ist.
+    it('traegt den Code nicht mehr in der Adresse, wenn ngOnInit zurueckkommt', () => {
       queryParams = { code: 'K7QF3MXR' };
       currentPath = '/spielsekretariat?code=K7QF3MXR';
 
@@ -696,15 +702,19 @@ describe('SpielSekretariatComponent', () => {
       expect(component.token).toBe('langer-token');
     });
 
-    // Der fertige Token ist das staerkere Recht und kostet keinen Drosselversuch.
-    it('nimmt den Token, wenn beides in der Adresse steht', () => {
+    // Der fertige Token ist das staerkere Recht und kostet keinen
+    // Drosselversuch. Der Code wird trotzdem aus der Adresse geraeumt: Er
+    // bleibt ein Zugangsgeheimnis, auch wenn ihn hier niemand braucht.
+    it('nimmt den Token, wenn beides in der Adresse steht, und raeumt den Code trotzdem', () => {
       queryParams = { token: 'langer-token', code: 'K7QF3MXR' };
       currentPath = '/spielsekretariat?token=langer-token&code=K7QF3MXR';
 
       component.ngOnInit();
 
+      expect(replacedPaths).toEqual(['/spielsekretariat?token=langer-token']);
       httpMock.expectNone(redeemUrl);
       httpMock.expectOne(loadUrl).flush(payload);
+      expect(component.token).toBe('langer-token');
     });
 
     // Ein verstuemmelter QR-Code darf keinen der zehn Versuche verbrauchen.
@@ -718,9 +728,15 @@ describe('SpielSekretariatComponent', () => {
       expect(component.showCodeForm).toBe(true);
       expect(component.loading).toBe(false);
       expect(component.codeError).toBeTruthy();
-      // Abgetippt wird nichts mehr: Der Code steht im Feld und braucht nur den
-      // Knopf.
+      // Der unvollstaendige Code bleibt im Feld stehen, damit sichtbar ist,
+      // was angekommen ist, und die fehlende Stelle nachgetragen werden kann,
+      // statt alles neu zu tippen. Ein zweiter Druck auf „Weiter" allein
+      // ergaebe denselben Formfehler.
       expect(component.codeInput).toBe('K7QF3MX');
+      // Auch ein Formfehler raeumt die Adresse: Ein gueltiger, aber vom Server
+      // abgelehnter Code bliebe sonst stehen und verbrannte bei jedem
+      // Neuladen einen Drosselversuch.
+      expect(replacedPaths).toEqual(['/spielsekretariat']);
     });
 
     // Der Code bleibt gueltig; wer ihn im Feld stehen hat, drueckt einfach
@@ -737,6 +753,112 @@ describe('SpielSekretariatComponent', () => {
       expect(component.showCodeForm).toBe(true);
       expect(component.codeInput).toBe('K7QF3MXR');
       expect(component.codeError).toContain('bleibt gültig');
+      // Ohne das bliebe die Seite auf „Lade Daten…" stehen, und die Meldung
+      // am Feld haette gar keinen Platz -- das Template rendert sie nur unter
+      // `!loading && showCodeForm`.
+      expect(component.loading).toBe(false);
+      expect(replacedPaths).toEqual(['/spielsekretariat']);
+    });
+
+    // Der Befund, der diesen Weg gefaehrlich machte: Der Code ist aus der
+    // Adresse gestrichen, das Einloesen scheitert (429 aus der Drossel ist der
+    // wahrscheinlichste Grund, weil sich die Halle eine IP teilt) -- und der
+    // Reflex am Spieltisch ist F5. Bliebe der Token von gestern liegen, zeigte
+    // das Neuladen kommentarlos den falschen Spieltag: kein Fehler, keine
+    // Meldung, eine Seite, die richtig aussieht.
+    it('faellt nach einem gescheiterten Einloesen nicht auf den alten Token zurueck', () => {
+      sessionStorage.setItem('secretary_token', 'alter-token');
+      queryParams = { code: 'K7QF3MXR' };
+      currentPath = '/spielsekretariat?code=K7QF3MXR';
+
+      component.ngOnInit();
+      httpMock
+        .expectOne(redeemUrl)
+        .flush({}, { status: 429, statusText: 'Too Many Requests' });
+
+      expect(sessionStorage.getItem('secretary_token')).toBeNull();
+
+      // Das Neuladen: dieselbe Registerkarte, Adresse ohne Code.
+      queryParams = {};
+      currentPath = '/spielsekretariat';
+      const nachDemNeuladen = TestBed.createComponent(
+        SpielSekretariatComponent
+      );
+      nachDemNeuladen.componentInstance.ngOnInit();
+
+      httpMock.expectNone(
+        environment.apiURL + 'public/secretary?token=alter-token'
+      );
+      expect(nachDemNeuladen.componentInstance.showCodeForm).toBe(true);
+    });
+
+    // Der Token ist gueltig, nur der Spieltagsabruf kam nicht durch. Die
+    // Meldung sagt „Der Zugang bleibt gueltig -- bitte die Seite neu laden";
+    // das stimmt nur, wenn er auch abgelegt ist. Der Code steht ja nicht mehr
+    // in der Adresse, ein Neuladen haette ihn sonst nicht mehr.
+    it('legt den Token ab, auch wenn der Spieltag danach nicht laedt', () => {
+      queryParams = { code: 'K7QF3MXR' };
+      currentPath = '/spielsekretariat?code=K7QF3MXR';
+
+      component.ngOnInit();
+      httpMock.expectOne(redeemUrl).flush({
+        token: 'langer-token',
+        expires_at: '2026-01-02T00:00:00Z',
+      });
+      httpMock
+        .expectOne(loadUrl)
+        .flush({}, { status: 502, statusText: 'Bad Gateway' });
+
+      expect(sessionStorage.getItem('secretary_token')).toBe('langer-token');
+      expect(component.error).toContain('bleibt gültig');
+    });
+
+    // Ein abgeschnittener QR-Code oder ein in der Mail umgebrochener Link
+    // liefert `?code=` ohne Wert. Das ist etwas anderes als „gar kein Code":
+    // Still auf den abgelegten Token zurueckzufallen hiesse, den gescannten
+    // Spieltag durch einen anderen zu ersetzen, ohne es zu sagen.
+    it('meldet einen leeren Code aus der Adresse an der Maske', () => {
+      sessionStorage.setItem('secretary_token', 'alter-token');
+      queryParams = { code: '' };
+      currentPath = '/spielsekretariat?code=';
+
+      component.ngOnInit();
+
+      httpMock.expectNone(redeemUrl);
+      httpMock.expectNone(
+        environment.apiURL + 'public/secretary?token=alter-token'
+      );
+      expect(component.showCodeForm).toBe(true);
+      expect(component.codeError).toBeTruthy();
+      expect(replacedPaths).toEqual(['/spielsekretariat']);
+    });
+
+    // Location und der Snapshot der Route sind zwei Quellen. Laufen sie
+    // auseinander -- Umleitung, Server-Rendering --, darf die Adresse nicht
+    // ohne Not neu geschrieben werden.
+    it('schreibt die Adresse nicht zurueck, wenn sie keinen Suchteil hat', () => {
+      queryParams = { code: 'K7QF3MXR' };
+      currentPath = '/spielsekretariat';
+
+      component.ngOnInit();
+
+      expect(replacedPaths).toEqual([]);
+      httpMock.expectOne(redeemUrl);
+    });
+
+    // Zeichengenau: URLSearchParams schriebe aus einem Leerzeichen ein `+`
+    // zurueck, das Angulars UrlSerializer als Pluszeichen zurueckliest.
+    it('laesst die Kodierung der uebrigen Parameter unveraendert', () => {
+      queryParams = { code: 'K7QF3MXR', zurueck: '/fd/42/spiel/7' };
+      currentPath =
+        '/spielsekretariat?code=K7QF3MXR&zurueck=/fd/42/spiel/7&hinweis=Halle%202';
+
+      component.ngOnInit();
+
+      expect(replacedPaths).toEqual([
+        '/spielsekretariat?zurueck=/fd/42/spiel/7&hinweis=Halle%202',
+      ]);
+      httpMock.expectOne(redeemUrl);
     });
   });
 
