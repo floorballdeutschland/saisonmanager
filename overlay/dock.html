@@ -91,6 +91,27 @@
         <div class="dk-hint dk-hidden" id="clock-drift"></div>
       </section>
 
+      <!-- Laufende Strafen. Die Liste rechnet penalties.js aus den Ereignissen
+           des Spielberichts und der Uhr darüber aus -- ohne Uhr steht hier
+           nichts, weil es dann keine Bezugsgröße gibt.
+
+           „Beendet" ist die Notbremse und der Grund, warum es diese Karte
+           gibt: Eine kleine Strafe endet beim Überzahltor, und das rechnet die
+           Bühne zwar mit, aber der Spielbericht kennt keinen Vermerk darüber,
+           wann jemand die Strafbank wirklich verlassen hat. Wer es im Bild
+           sieht, drückt hier. -->
+      <section class="dk-card">
+        <div class="dk-row">
+          <span class="dk-label">Strafen</span>
+          <button class="dk-toggle" id="pen-visible" type="button">
+            Einblenden
+          </button>
+        </div>
+
+        <div class="dk-hint" id="pen-empty">Keine laufende Strafe.</div>
+        <div class="dk-penalties dk-hidden" id="pen-list"></div>
+      </section>
+
       <section class="dk-card">
         <div class="dk-row">
           <span class="dk-label">Bauchbinde</span>
@@ -209,6 +230,10 @@
       </p>
     </div>
 
+    <!-- Vor dock.js: Die Strafenliste wird dort als `SmPenalties` erwartet.
+         Fehlt sie, bleibt die Karte leer und der Rest des Bedienfelds läuft
+         weiter. -->
+    <script src="penalties.js"></script>
     <script src="dock.js"></script>
   </body>
 </html>

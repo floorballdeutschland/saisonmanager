@@ -9026,6 +9026,14 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                       <td>6</td>
                       <td>Ligazeichen, sofern hinterlegt</td>
                     </tr>
+                    <tr>
+                      <td>7</td>
+                      <td>
+                        Zeile darunter: laufende Strafen, links die Heim-,
+                        rechts die Gastmannschaft (etwa <code>#17 1:23</code>).
+                        Sie erscheint nur, solange eine Strafe läuft
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -9529,6 +9537,12 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                   <td>Uhr zurücksetzen</td>
                 </tr>
                 <tr>
+                  <td><code>Z</code></td>
+                  <td>Strafen auf der Anzeigetafel ein und aus</td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
                   <td><code>0</code></td>
                   <td>Bauchbinde ausblenden</td>
                   <td><code>X</code></td>
@@ -9702,6 +9716,94 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 Bist du unsicher, ob du die Uhr sauber mitführen kannst, blende
                 sie einfach aus. Eine fehlende Uhr ist besser als eine falsche,
                 die im Stream sichtbar zwei Minuten danebenliegt.
+              </div>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🟨</span>
+              <div>
+                <div class="proc-title">Block Strafen</div>
+                <div class="proc-sub">
+                  Restzeiten auf der Tafel, beendet wird von Hand
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Trägt das Sekretariat eine Strafe ein, erscheint sie binnen
+                weniger Sekunden in der Zeile unter der Anzeigetafel: links die
+                Heimmannschaft, rechts die Gastmannschaft, je mit Trikotnummer
+                und Restzeit. Läuft keine Strafe, ist die Zeile weg. Im
+                Bedienfeld stehen dieselben Einträge, dort mit einem Knopf
+                daneben.
+              </p>
+              <div class="note">
+                <strong>Die Restzeit hängt an deiner Uhr.</strong> Gerechnet
+                wird gegen die Spielzeit im Bedienfeld, nicht gegen eine
+                Serveruhr -- es gibt keine. Ist die Spielzeit ausgeblendet oder
+                steht sie auf 0:00, zeigt die Tafel deshalb auch keine Strafen.
+              </div>
+              <p class="proc-text">
+                <strong
+                  >Fällt ein Tor der Mannschaft in Überzahl, endet die kleine
+                  Strafe automatisch</strong
+                >, bei einer doppelten (2+2) die erste Hälfte. Das rechnet die
+                Bühne mit. Was sie nicht wissen kann: ob der Spieler tatsächlich
+                schon wieder auf dem Feld steht. Im Spielbericht steht nur der
+                Beginn einer Strafe, nie ihr Ende. Siehst du eine Restzeit
+                laufen, die es nicht mehr gibt, drück im Bedienfeld
+                <strong>Beendet</strong> -- das schlägt jede Rechnung.
+              </p>
+              <div class="matrix-wrap">
+                <table class="matrix">
+                  <thead>
+                    <tr>
+                      <th>Strafe</th>
+                      <th>Auf der Anzeigetafel</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>2 Minuten</strong></td>
+                      <td>Restzeit, endet beim Überzahltor</td>
+                    </tr>
+                    <tr>
+                      <td><strong>2+2 Minuten</strong></td>
+                      <td>
+                        Restzeit über vier Minuten, ein Überzahltor kürzt sie um
+                        zwei
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>10 Minuten</strong></td>
+                      <td>
+                        nichts. Die Mannschaft spielt vollzählig weiter, eine
+                        Zeit auf der Tafel läse sich als Unterzahl
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Matchstrafe</strong></td>
+                      <td>
+                        nichts. Die Zeit sitzt ein anderer Spieler ab, und wer
+                        das ist, steht in keinem Feld des Spielberichts
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="proc-text">
+                Für alles, was hier nicht steht, ist die Bauchbinde
+                <em>Letzte Strafe</em> der richtige Weg: Sie nennt Spieler,
+                Dauer und Grund, und zwar für jede Strafart.
+              </p>
+              <div class="note">
+                Eine Strafe, die über die Drittelpause hinausläuft, verschwindet
+                mit dem Pausenpfiff aus der Zeile und kommt im neuen Abschnitt
+                nicht wieder. Die Spieluhr fängt dort wieder bei 0:00 an, und
+                wie viel Reststrafe hinüberläuft, rechnet die Bühne nicht aus --
+                lieber nichts als eine falsche Zeit.
               </div>
             </div>
           </details>
