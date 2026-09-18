@@ -50,7 +50,29 @@
           </button>
         </div>
 
-        <div class="dk-clock" id="clock-display">0:00</div>
+        <!-- Die Anzeige ist zugleich das Eingabefeld: Ein Stand wie 12:34
+             lässt sich eintippen und mit der Eingabetaste übernehmen. Die
+             Schritte darunter allein reichen zum Angleichen nicht -- eine
+             Abweichung von drei Sekunden ließ sich damit nur gegen eine von
+             sieben tauschen. -->
+        <input
+          class="dk-clock"
+          id="clock-display"
+          type="text"
+          inputmode="numeric"
+          maxlength="6"
+          value="0:00"
+          aria-label="Spielzeit"
+        />
+        <!-- Der Hinweis nennt die Form, weil die Absage nicht in die
+             Statuszeile gehört: Die überschreibt die nächste Abfrage nach zwei
+             Sekunden mit „Verbunden", und die Meldung wäre weg, bevor sie
+             jemand gelesen hat. Bei einer unlesbaren Eingabe steht sie
+             deshalb hier. -->
+        <div class="dk-hint" id="clock-input-hint">
+          Zeit eintippen, etwa 12:34 oder 1234, und mit der Eingabetaste
+          übernehmen. Esc verwirft.
+        </div>
 
         <div class="dk-buttons">
           <button class="dk-btn dk-btn--primary" id="clock-start" type="button">
@@ -58,6 +80,12 @@
           </button>
           <button class="dk-btn" id="clock-minus" type="button">−10 s</button>
           <button class="dk-btn" id="clock-plus" type="button">+10 s</button>
+          <button class="dk-btn" id="clock-minus-fine" type="button">
+            −1 s
+          </button>
+          <button class="dk-btn" id="clock-plus-fine" type="button">
+            +1 s
+          </button>
           <button class="dk-btn" id="clock-reset" type="button">
             Zurücksetzen
           </button>
