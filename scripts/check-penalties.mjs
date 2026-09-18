@@ -196,8 +196,12 @@ pruef(
   [min(3)]
 );
 
+// Das Tor beendet die erste Haelfte IN DIESEM AUGENBLICK, die zweite laeuft von
+// dort zwei Minuten: 5:00 + Tor um 5:30 endet um 7:30. Ein pauschaler Abzug von
+// zwei Minuten haette 7:00 ergeben und den Eintrag eine halbe Minute zu frueh
+// von der Tafel geraeumt.
 pruef(
-  '2+2: ein Gegentor kürzt um zwei Minuten, beendet sie aber nicht',
+  '2+2: ein Gegentor beendet die erste Haelfte, die zweite laeuft ab dem Tor',
   rest(
     P.laufende(
       spiel([
@@ -208,7 +212,22 @@ pruef(
       min(6)
     )
   ),
-  [min(1)]
+  [min(1, 30)]
+);
+
+pruef(
+  '2+2: kurz vor dem Ende der zweiten Haelfte',
+  rest(
+    P.laufende(
+      spiel([
+        strafe({ id: 1, time: '5:00', type: 'penalty_2and2' }),
+        tor({ id: 2, side: 'guest', time: '5:45' }),
+      ]),
+      {},
+      min(7, 15)
+    )
+  ),
+  [min(0, 30)]
 );
 
 pruef(
@@ -377,6 +396,105 @@ pruef(
   'Restzeit wird aufgerundet',
   [P.restText(1400), P.restText(61000), P.restText(0), P.restText(600000)],
   ['0:02', '1:01', '0:00', '10:00']
+);
+
+// ── Unterzahl: nur ein Ueberzahltor beendet eine Strafe ─────────────────────
+
+// Vier gegen vier. Das Gasttor faellt bei gleicher Staerke und beendet die
+// Heimstrafe deshalb NICHT. Vorher verschwand sie von der Tafel, obwohl der
+// Spieler weiter auf der Strafbank sass.
+pruef(
+  'bei vier gegen vier beendet ein Tor keine Strafe',
+  rest(
+    P.laufende(
+      spiel([
+        strafe({ id: 1, time: '5:00', side: 'home' }),
+        strafe({ id: 2, time: '5:05', side: 'guest' }),
+        tor({ id: 3, side: 'guest', time: '5:30' }),
+      ]),
+      {},
+      min(6)
+    )
+  ),
+  [min(1), min(1, 5)]
+);
+
+// Drei gegen fuenf: Das Tor beendet genau eine Strafe, naemlich die, die als
+// naechste ablaeuft. Die zweite bleibt stehen.
+pruef(
+  'bei drei gegen fuenf beendet das Tor nur die vordere Strafe',
+  ids(
+    P.laufende(
+      spiel([
+        strafe({ id: 1, time: '5:00', side: 'home' }),
+        strafe({ id: 2, time: '5:30', side: 'home', number: 8 }),
+        tor({ id: 3, side: 'guest', time: '5:40' }),
+      ]),
+      {},
+      min(6)
+    )
+  ),
+  [2]
+);
+
+// Nach Ablauf der ersten Strafe ist die Mannschaft wieder in Unterzahl von
+// einem Spieler -- ein Tor beendet dann auch die zweite.
+pruef(
+  'danach beendet das naechste Tor die zweite Strafe',
+  P.laufende(
+    spiel([
+      strafe({ id: 1, time: '5:00', side: 'home' }),
+      strafe({ id: 2, time: '5:30', side: 'home', number: 8 }),
+      tor({ id: 3, side: 'guest', time: '5:40' }),
+      tor({ id: 4, side: 'guest', time: '6:10' }),
+    ]),
+    {},
+    min(6, 30)
+  ),
+  []
+);
+
+// ── Abschnittsnummer als Zeichenkette ──────────────────────────────────────
+//
+// `events` ist eine JSONB-Spalte, der Spielbericht schreibt die Nummer
+// ungeprueft. Steht sie als Zeichenkette, darf weder die Strafe verschwinden
+// noch die Verkuerzung ausfallen.
+
+pruef(
+  'Strafe mit Abschnitt als Zeichenkette laeuft mit',
+  rest(
+    P.laufende(spiel([strafe({ id: 1, time: '5:00', period: '1' })]), {}, min(6))
+  ),
+  [min(1)]
+);
+
+pruef(
+  'Ueberzahltor mit Abschnitt als Zeichenkette beendet die Strafe',
+  P.laufende(
+    spiel([
+      strafe({ id: 1, time: '5:00' }),
+      tor({ id: 2, side: 'guest', time: '5:30', period: '1' }),
+    ]),
+    {},
+    min(6)
+  ),
+  []
+);
+
+// ── Uhr weit hinter dem Sekretariat ────────────────────────────────────────
+
+pruef(
+  'eine Minute Uhrversatz zeigt die volle Dauer',
+  rest(P.laufende(spiel([strafe({ id: 1, time: '5:00' })]), {}, min(4))),
+  [min(2)]
+);
+
+// Nach einem Zuruecksetzen steht die Uhr auf 0:00. Ohne Grenze tauchten alle
+// Strafen des Abschnitts wieder mit voller Dauer auf.
+pruef(
+  'auf 0:00 zurueckgesetzte Uhr zeigt keine Strafen',
+  P.laufende(spiel([strafe({ id: 1, time: '5:00' })]), {}, 0),
+  []
 );
 
 if (fehler > 0) {

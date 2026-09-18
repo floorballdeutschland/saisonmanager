@@ -640,9 +640,22 @@
     // Ohne eingeblendete Uhr zeigt die Bühne keine Strafen. Dann hier auch
     // keine anbieten, sonst beendet die Regie etwas, das gar nicht im Bild
     // steht.
-    if (clockState().visible === false) return [];
+    if (!uhrImBild()) return [];
 
     return window.SmPenalties.laufende(state.game, state.control, elapsedMs());
+  }
+
+  // Steht die Spielzeit im Bild? Genau die Frage, die die Bühne stellt
+  // (`clockElapsedMs` in overlay.js): Sie zeigt ohne GESCHRIEBENEN Uhrzustand
+  // keine Uhr und damit auch keine Strafen.
+  //
+  // `clockState()` fällt dagegen auf `visible: true` zurück, damit die Knöpfe
+  // darüber von Anfang an bedienbar sind. An einem frisch erzeugten Link hätte
+  // das Bedienfeld deshalb Strafen samt „Beendet" angeboten, die auf Sendung
+  // nirgends standen.
+  function uhrImBild() {
+    var clock = state.control.clock;
+    return !!clock && clock.visible !== false;
   }
 
   function renderPenalties() {
@@ -684,8 +697,8 @@
   }
 
   function penaltyHint() {
-    if (clockState().visible === false) {
-      return "Die Spielzeit ist ausgeblendet. Ohne sie zeigt die Bühne auch keine Strafen.";
+    if (!uhrImBild()) {
+      return "Ohne eingeblendete Spielzeit zeigt die Bühne keine Strafen.";
     }
     return "Keine laufende Strafe.";
   }
