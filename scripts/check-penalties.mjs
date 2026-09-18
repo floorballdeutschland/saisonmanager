@@ -228,13 +228,64 @@ pruef(
 // ── Arten, die nicht auf die Anzeigetafel gehören ───────────────────────────
 
 pruef(
-  'persönliche Strafe (10 Minuten) nicht dabei',
-  P.laufende(
-    spiel([strafe({ id: 1, time: '5:00', type: 'penalty_10' })]),
-    {},
-    min(6)
+  'persönliche Strafe (10 Minuten) läuft mit',
+  rest(
+    P.laufende(
+      spiel([strafe({ id: 1, time: '5:00', type: 'penalty_10' })]),
+      {},
+      min(6)
+    )
   ),
-  []
+  [min(9)]
+);
+
+pruef(
+  'die zehn Minuten kürzt ein Überzahltor nicht',
+  rest(
+    P.laufende(
+      spiel([
+        strafe({ id: 1, time: '5:00', type: 'penalty_10' }),
+        tor({ id: 2, side: 'guest', time: '5:30' }),
+      ]),
+      {},
+      min(6)
+    )
+  ),
+  [min(9)]
+);
+
+// Der Regelfall: zehn Minuten kommen nie allein. Das Überzahltor beendet die
+// begleitende Zeitstrafe, die persönliche läuft weiter -- und genau so steht es
+// dann auch auf der Tafel.
+pruef(
+  'begleitende Zeitstrafe endet, die persönliche läuft weiter',
+  rest(
+    P.laufende(
+      spiel([
+        strafe({ id: 1, time: '5:00', type: 'penalty_10' }),
+        strafe({ id: 2, time: '5:00', type: 'penalty_2' }),
+        tor({ id: 3, side: 'guest', time: '5:30' }),
+      ]),
+      {},
+      min(6)
+    )
+  ),
+  [min(9)]
+);
+
+pruef(
+  'ohne Überzahltor stehen beide nebeneinander, die kürzere zuerst',
+  ids(
+    P.laufende(
+      spiel([
+        strafe({ id: 1, time: '5:00', type: 'penalty_10' }),
+        strafe({ id: 2, time: '5:00', type: 'penalty_2' }),
+      ]),
+      {},
+      min(6)
+    )
+  ),
+  [2, 1]
 );
 
 pruef(

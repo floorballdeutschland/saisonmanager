@@ -23,20 +23,19 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  // Dauer je Strafart in Millisekunden.
+  // Dauer je Strafart in Millisekunden. Angezeigt wird, was ein Spieler
+  // nachweislich absitzt.
   //
-  // NUR die Arten, bei denen die Mannschaft in Unterzahl spielt UND feststeht,
-  // wer die Zeit absitzt. Ausdruecklich NICHT dabei:
+  // Die persoenliche Strafe ueber zehn Minuten gehoert dazu: Sie kommt nie
+  // allein, sondern immer zusammen mit einer Zeitstrafe, und die steht als
+  // eigenes Ereignis daneben. Die Unterzahl liest sich also weiterhin an der
+  // Zwei-Minuten-Strafe ab, und die zehn Minuten sagen, wie lange der Spieler
+  // noch fehlt.
   //
-  //   penalty_10       Persoenliche Strafe. Der Spieler ist zehn Minuten
-  //                    draussen, die Mannschaft spielt aber vollzaehlig
-  //                    weiter. Eine mitlaufende Zeit auf der Anzeigetafel
-  //                    laese sich als Unterzahl, und das waere falsch.
-  //   penalty_ms_*     Matchstrafe. Der bestrafte Spieler ist fuer den Rest
-  //                    der Partie draussen, die Zeit sitzt ein ANDERER ab --
-  //                    und wer das ist, steht in keinem Feld des
-  //                    Spielberichts. Die Tafel wuerde eine Nummer nennen, die
-  //                    gar nicht auf der Strafbank sitzt.
+  // NICHT dabei ist die Matchstrafe (`penalty_ms_*`): Der bestrafte Spieler
+  // ist fuer den Rest der Partie draussen, die Zeit sitzt ein ANDERER ab --
+  // und wer das ist, steht in keinem Feld des Spielberichts. Die Tafel wuerde
+  // eine Nummer nennen, die gar nicht auf der Strafbank sitzt.
   //
   // `penalty_5` ist im Strafenkatalog inzwischen ausgeblendet (die grosse
   // Strafe gibt es im Regelwerk nicht mehr), steht aber in aelteren Spielen
@@ -45,6 +44,7 @@
     penalty_2: 120000,
     penalty_2and2: 240000,
     penalty_5: 300000,
+    penalty_10: 600000,
   };
 
   // Kleine Strafen enden vorzeitig, wenn die Mannschaft in Ueberzahl trifft.
@@ -52,13 +52,18 @@
   // zweite laeuft weiter -- deshalb wird je Tor um zwei Minuten gekuerzt und
   // nicht auf null gesetzt.
   //
-  // Die grosse Strafe laeuft dagegen in jedem Fall ab.
+  // Die grosse und die persoenliche Strafe laufen dagegen in jedem Fall ab.
+  // Bei den zehn Minuten faellt das auf der Tafel auf: Nach dem Ueberzahltor
+  // steht dort weiter eine Zeit, obwohl die Mannschaft wieder vollzaehlig ist
+  // -- denn beendet wurde die begleitende Zeitstrafe, nicht diese hier.
   var KLEINE_STRAFE = { penalty_2: true, penalty_2and2: true };
   var KUERZUNG_MS = 120000;
 
-  // Mehr als drei je Mannschaft sind sportlich nicht moeglich (weiter als zwei
-  // Spieler geht keine Unterzahl, eine dritte Strafe wartet), und mehr Platz
-  // hat die Anzeigetafel ohnehin nicht.
+  // Mehr als drei Eintraege je Mannschaft passen nicht neben das Wort in der
+  // Mitte, ohne die Anzeigetafel zu verbreitern. Weiter als zwei Spieler geht
+  // keine Unterzahl; die dritte Zeile deckt eine wartende Strafe oder eine
+  // mitlaufende persoenliche Strafe ab. Angezeigt wird, was zuerst ablaeuft,
+  // die Sortierung weiter unten entscheidet das.
   var MAX_JE_SEITE = 3;
 
   // „12:34" -> Millisekunden. Das Sekretariat tippt die Zeit von Hand, die
