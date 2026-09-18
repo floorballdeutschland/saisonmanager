@@ -425,9 +425,15 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       e.game_operation_name ?? '',
       e.league_name,
       e.license_status,
+      // Leer, wenn die API kein Etikett liefert: Eine abgelehnte oder
+      // zurueckgezogene Lizenz ist keine Spielberechtigung, und aus dieser
+      // Datei wird abgerechnet. Vorher fiel sie in den Sonst-Zweig und stand
+      // als Zusatzlizenz in der Spalte.
       e.license_type === 'primary'
         ? t('licenseAdmin.globalList.csvHauptlizenz')
-        : t('licenseAdmin.globalList.csvZusatzlizenz'),
+        : e.license_type === 'secondary'
+          ? t('licenseAdmin.globalList.csvZusatzlizenz')
+          : '',
       e.gf_role === 'erstlizenz'
         ? t('licenseAdmin.globalList.csvErstlizenz')
         : e.gf_role === 'zweitlizenz'

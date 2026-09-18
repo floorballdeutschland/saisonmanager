@@ -26,8 +26,10 @@ export interface AdminLicenseEntry {
   game_operation_name: string | null;
   season_id: number | string | null;
   license_id: string;
-  // Haupt-/Zusatzlizenz (automatisch bestimmt, reine Anzeige).
-  license_type: 'primary' | 'secondary';
+  // Haupt-/Zusatzlizenz (automatisch bestimmt, reine Anzeige). null bei einer
+  // Lizenz, die keine Spielberechtigung ist (abgelehnt, zurueckgezogen): Dort
+  // waere jedes der beiden Etiketten eine Aussage, die nicht zutrifft.
+  license_type: 'primary' | 'secondary' | null;
   // Manuelle Erst-/Zweitlizenz-Zuordnung im GF-Erwachsenenbereich
   // (Spielberechtigung, z. B. FD-Pokal). null = nicht zugeordnet.
   gf_role: 'erstlizenz' | 'zweitlizenz' | null;
