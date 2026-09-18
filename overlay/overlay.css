@@ -171,8 +171,11 @@ body {
   position: absolute;
   left: 60px;
   bottom: 60px;
+  /* Spalte, nicht Reihe: Die eigentliche Leiste ist `.ov-sb-row`, darunter
+     hängt die Strafenzeile. Ohne diese Ebene stünden die Strafen als weitere
+     Spalte NEBEN dem Ligazeichen. */
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
   border-radius: 10px;
   overflow: hidden;
   background: var(--ov-grad-dark);
@@ -209,6 +212,14 @@ body {
   inset: 0 auto 0 0;
   width: 6px;
   background: var(--ov-grad-accent);
+}
+
+/* Die Leiste selbst: Mannschaften, Stand, Uhr, Abschnitt, Ligazeichen. Die
+   Spalten sind gleich hoch (`stretch`), damit die Trennlinien zwischen ihnen
+   durchlaufen. */
+.ov-sb-row {
+  display: flex;
+  align-items: stretch;
 }
 
 .ov-team {
@@ -414,6 +425,87 @@ body {
    Marke gibt, liegt diese Entscheidung in overlay.js, wo die Zuordnung steht. */
 .ov-mark-empty {
   display: none;
+}
+
+/* ── Laufende Strafen ──────────────────────────────────────────────────────
+   Eine schmale Zeile unter der Leiste: links die Heim-, rechts die
+   Gastmannschaft, dazwischen das Wort. Ohne die Mitte wäre bei einem einzelnen
+   Eintrag nicht zu erkennen, welche Mannschaft in Unterzahl spielt -- und das
+   ist die einzige Aussage, um die es hier geht.
+
+   Gezeigt wird die Trikotnummer, nicht der Name: Die Zeile darf die Leiste
+   darüber nicht verbreitern, sonst stünde die Anzeigetafel plötzlich anders im
+   Bild als in der Szene daneben. Der Name steht in der Bauchbinde. */
+.ov-penalties {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 9px 26px 11px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  background: rgb(0 0 0 / 26%);
+}
+
+/* Ohne laufende Strafe ganz weg und nicht bloß durchsichtig: `.ov-hidden`
+   setzt allein die Deckkraft, die Zeile behielte ihre Höhe, und die
+   Anzeigetafel wäre den ganzen Abend um eine leere Zeile höher. Dieselbe
+   Ausnahme wie bei der Uhr. */
+.ov-penalties.ov-hidden {
+  display: none;
+}
+
+.ov-pen-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* Beide Seiten gleich breit, damit das Wort in der Mitte stehen bleibt und
+     nicht mit jeder neuen Strafe zur Seite wandert. */
+  flex: 1 1 0;
+}
+
+.ov-pen-side--guest {
+  justify-content: flex-end;
+}
+
+.ov-pen-title {
+  font-family: var(--ov-display);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ov-text-muted);
+}
+
+.ov-pen {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 3px 11px 4px;
+  border-radius: 4px;
+  /* Die Akzentkante nimmt die Farbe des Wettbewerbs auf, wie die Kante links
+     an der Anzeigetafel. Rot wäre die naheliegende Farbe für eine Strafe, sie
+     stünde in einer Damenpartie oder im Pokal aber neben der falschen
+     Farbwelt. */
+  border-left: 3px solid var(--ov-accent);
+  background: rgb(255 255 255 / 8%);
+}
+
+.ov-pen-number {
+  font-family: var(--ov-display);
+  font-weight: 600;
+  font-size: 21px;
+}
+
+/* Fester Platz für `0:00`, aus demselben Grund wie bei der Uhr: Der
+   mitgelieferte Oswald-Schnitt bringt keine Tabellenziffern mit, die Einträge
+   rückten sonst im Sekundentakt hin und her. */
+.ov-pen-time {
+  min-width: 4ch;
+  text-align: right;
+  font-family: var(--ov-display);
+  font-weight: 500;
+  font-size: 21px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ov-accent);
 }
 
 /* ══ Bauchbinde ════════════════════════════════════════════════════════════

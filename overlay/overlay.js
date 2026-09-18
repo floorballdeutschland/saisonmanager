@@ -84,6 +84,11 @@
     // Antwort des ligaweiten Abrufs (Tabelle, Torschuetzen oder Spielplan),
     // je nach Szene. Nur im Vollbild belegt.
     league: null,
+    // Was in der Strafenzeile zuletzt stand. Sie wird zehnmal je Sekunde
+    // geprueft, der Inhalt aendert sich aber hoechstens einmal je Sekunde --
+    // ohne diesen Vergleich baute die Buehne die Zeile einen Abend lang
+    // hunderttausendfach neu auf.
+    penaltySignature: null,
   };
 
   var el = {
@@ -97,6 +102,9 @@
     guestGoals: document.getElementById("guest-goals"),
     period: document.getElementById("period"),
     clock: document.getElementById("clock"),
+    penalties: document.getElementById("penalties"),
+    penHome: document.getElementById("pen-home"),
+    penGuest: document.getElementById("pen-guest"),
     leagueMark: document.getElementById("league-mark"),
     fsMark: document.getElementById("fs-mark"),
     lowerThird: document.getElementById("lower-third"),
@@ -669,21 +677,32 @@
     return Date.now() + (state.clockOffset || 0);
   }
 
+  // Stand der Uhr in Millisekunden, oder null, wenn es keine anzeigbare gibt
+  // (kein Dock geoeffnet oder Uhr ausgeblendet).
+  //
   // Wird bei JEDEM Tick neu aus dem Ankerzeitpunkt gerechnet, nie
   // hochgezählt: OBS drosselt versteckte Quellen, ein Zähler liefe weg.
-  function renderClock() {
+  function clockElapsedMs() {
     var clock = state.control.clock;
+    if (!clock || clock.visible === false) return null;
 
-    if (!clock || clock.visible === false) {
+    var elapsed = Number(clock.elapsed_ms) || 0;
+    if (clock.running && typeof clock.anchor_ms === "number") {
+      elapsed += Math.max(0, serverNow() - Number(clock.anchor_ms));
+    }
+    return elapsed;
+  }
+
+  function renderClock() {
+    var elapsed = clockElapsedMs();
+
+    if (elapsed === null) {
       el.clock.classList.add("ov-hidden");
       return;
     }
 
+    var clock = state.control.clock;
     var anchored = typeof clock.anchor_ms === "number";
-    var elapsed = Number(clock.elapsed_ms) || 0;
-    if (clock.running && anchored) {
-      elapsed += Math.max(0, serverNow() - Number(clock.anchor_ms));
-    }
 
     el.clock.classList.remove("ov-hidden");
     // „läuft" ohne Anker wäre eine stehende Uhr, die sich als laufend gibt.
@@ -696,6 +715,72 @@
     var minutes = Math.floor(total / 60);
     var seconds = total % 60;
     return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+  }
+
+  // ── Laufende Strafen ────────────────────────────────────────────────────
+  //
+  // Gerechnet wird in penalties.js, gemeinsam mit dem Bedienfeld: Dort stehen
+  // die Regeln (welche Strafart in Unterzahl führt, wann ein Überzahltor sie
+  // verkürzt), hier steht nur, wie sie aussehen.
+
+  function penaltyEntries() {
+    // Kein `SmPenalties`: Ein Zwischenspeicher liefert noch ein index.html
+    // ohne das neue Skript aus. Dann bleibt die Zeile leer, statt dass die
+    // ganze Bühne an einem `undefined` stirbt.
+    if (!window.SmPenalties) return [];
+    // Das Bedienfeld kann die Zeile abschalten. Ohne Dock steht sie, wie die
+    // Anzeigetafel selbst, auf sichtbar.
+    if (state.control.penalties_visible === false) return [];
+
+    var elapsed = clockElapsedMs();
+    if (elapsed === null) return [];
+
+    return window.SmPenalties.laufende(state.game, state.control, elapsed);
+  }
+
+  function renderPenalties() {
+    // Dasselbe für die Zeile selbst: Sie steht erst seit dieser Fassung im
+    // index.html.
+    if (!el.penalties || !el.penHome || !el.penGuest) return;
+
+    var entries = penaltyEntries();
+    var signature = entries
+      .map(function (entry) {
+        return (
+          entry.side +
+          entry.event_id +
+          window.SmPenalties.restText(entry.remaining_ms)
+        );
+      })
+      .join("|");
+
+    if (signature === state.penaltySignature) return;
+    state.penaltySignature = signature;
+
+    el.penHome.textContent = "";
+    el.penGuest.textContent = "";
+
+    for (var i = 0; i < entries.length; i++) {
+      var side = entries[i].side === "home" ? el.penHome : el.penGuest;
+      side.appendChild(penaltyNode(entries[i]));
+    }
+
+    el.penalties.classList.toggle("ov-hidden", entries.length === 0);
+  }
+
+  function penaltyNode(entry) {
+    var box = node("div", "ov-pen");
+    box.appendChild(
+      node("span", "ov-pen-number", window.SmPenalties.nummerText(entry))
+    );
+    box.appendChild(
+      node(
+        "span",
+        "ov-pen-time",
+        window.SmPenalties.restText(entry.remaining_ms)
+      )
+    );
+    return box;
   }
 
   // ── Bauchbinde ──────────────────────────────────────────────────────────
@@ -2458,5 +2543,11 @@
   // die Sekundenanzeige im Sekundenraster der Antworten. 10 Hz reicht für eine
   // Anzeige, die nur Minuten und Sekunden zeigt, und übersteht das Drosseln
   // versteckter Quellen, weil jeder Tick neu aus dem Anker rechnet.
-  window.setInterval(renderClock, 100);
+  window.setInterval(function () {
+    renderClock();
+    // Im selben Takt: Die Strafen zählen gegen dieselbe Uhr herunter, und eine
+    // Restzeit, die eine halbe Sekunde später springt als die Spielzeit
+    // daneben, sieht nach einem Fehler aus.
+    renderPenalties();
+  }, 100);
 })();

@@ -48,46 +48,64 @@
     -->
     <div class="ov-stage" id="stage">
       <section class="ov-scoreboard ov-hidden" id="scoreboard">
-        <div class="ov-team ov-team--home">
-          <div class="ov-logo-chip ov-hidden" id="home-logo"></div>
-          <span class="ov-team-name" id="home-name"></span>
-        </div>
+        <div class="ov-sb-row">
+          <div class="ov-team ov-team--home">
+            <div class="ov-logo-chip ov-hidden" id="home-logo"></div>
+            <span class="ov-team-name" id="home-name"></span>
+          </div>
 
-        <div class="ov-score">
-          <span id="home-goals">0</span>
-          <span class="ov-score-sep">:</span>
-          <span id="guest-goals">0</span>
-        </div>
+          <div class="ov-score">
+            <span id="home-goals">0</span>
+            <span class="ov-score-sep">:</span>
+            <span id="guest-goals">0</span>
+          </div>
 
-        <div class="ov-team ov-team--guest">
-          <div class="ov-logo-chip ov-hidden" id="guest-logo"></div>
-          <span class="ov-team-name" id="guest-name"></span>
-        </div>
+          <div class="ov-team ov-team--guest">
+            <div class="ov-logo-chip ov-hidden" id="guest-logo"></div>
+            <span class="ov-team-name" id="guest-name"></span>
+          </div>
 
-        <!-- Die Uhr wird ausschließlich vom Dock gestellt. Ohne geöffnetes
+          <!-- Die Uhr wird ausschließlich vom Dock gestellt. Ohne geöffnetes
              Dock bleibt sie leer und die Spalte fällt weg. -->
-        <div class="ov-clock ov-hidden" id="clock"></div>
+          <div class="ov-clock ov-hidden" id="clock"></div>
 
-        <!-- Nur der Abschnitt. Ein Live-Punkt stand hier einmal daneben; auf
+          <!-- Nur der Abschnitt. Ein Live-Punkt stand hier einmal daneben; auf
              Sendung sagte er nichts, was das Videoportal nicht schon selbst
              anzeigt. Ob die Anzeige veraltet ist, steht weiterhin in der
              Statusfläche (`debug=1`) und im OBS-Protokoll. -->
-        <div class="ov-meta">
-          <span class="ov-period" id="period"></span>
-        </div>
+          <div class="ov-meta">
+            <span class="ov-period" id="period"></span>
+          </div>
 
-        <!-- Zeichen des Wettbewerbs, gesetzt von overlay.js: ein hochgeladenes
+          <!-- Zeichen des Wettbewerbs, gesetzt von overlay.js: ein hochgeladenes
              Ligazeichen, sonst die mitgelieferte Marke des erkannten
              Wettbewerbs, sonst nichts. Ohne `src` und ausgeblendet, bis die
              Spieldaten da sind -- sonst stünde für einen Moment das Zeichen
              einer fremden Liga im Bild. Ein Landesverbandslogo kommt hier
              bewusst nicht in Frage, es stünde für den falschen Zusammenhang. -->
-        <div class="ov-league-mark ov-mark-empty">
-          <!-- Ohne `width`/`height`: Die mitgelieferten Zeichen sind 600x600, das
+          <div class="ov-league-mark ov-mark-empty">
+            <!-- Ohne `width`/`height`: Die mitgelieferten Zeichen sind 600x600, das
                Pokalzeichen 600x563, und ein hochgeladenes hat beliebige Maße.
                Ein festes Verhältnis ergäbe hier nur einen Sprung beim Laden;
                die Größe steht in der CSS (`height: 54px; width: auto`). -->
-          <img id="league-mark" alt="" />
+            <img id="league-mark" alt="" />
+          </div>
+        </div>
+
+        <!-- Laufende Strafen, als eigene Zeile UNTER der Leiste. Nicht darin:
+             Die Leiste hat feste Plätze für Stand und Uhr, damit sie im
+             Spielverlauf nicht atmet; ein Feld, das kommt und geht, machte
+             genau das wieder zunichte.
+
+             Steht keine Strafe an, ist die Zeile ganz weg (`display: none`
+             über `.ov-penalties.ov-hidden`) und nicht bloß durchsichtig,
+             sonst wüchse die Anzeigetafel um eine leere Zeile.
+
+             Gerechnet wird in penalties.js, gemeinsam mit dem Bedienfeld. -->
+        <div class="ov-penalties ov-hidden" id="penalties">
+          <div class="ov-pen-side" id="pen-home"></div>
+          <span class="ov-pen-title">Strafen</span>
+          <div class="ov-pen-side ov-pen-side--guest" id="pen-guest"></div>
         </div>
       </section>
 
@@ -126,6 +144,11 @@
       <div class="ov-debug ov-hidden" id="debug"></div>
     </div>
 
+    <!-- Vor overlay.js: Dort wird die Strafenrechnung als `SmPenalties`
+         erwartet. Fehlt sie -- etwa weil ein Zwischenspeicher noch ein altes
+         index.html ohne diese Zeile ausliefert --, bleibt die Strafenzeile
+         leer, und der Rest der Bühne läuft unbeeindruckt weiter. -->
+    <script src="penalties.js"></script>
     <script src="overlay.js"></script>
   </body>
 </html>
