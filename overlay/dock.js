@@ -65,6 +65,9 @@
     "clock-plus-fine",
     "clock-reset",
     "clock-drift",
+    "pen-visible",
+    "pen-empty",
+    "pen-list",
     "clock-input-hint",
     "lt-goal",
     "lt-penalty",
@@ -117,6 +120,8 @@
     { key: ",", sel: "#clock-minus-fine", badge: "," },
     { key: ".", sel: "#clock-plus-fine", badge: "." },
     { key: "r", sel: "#clock-reset", badge: "R" },
+    // Z wie Zeitstrafe. S ist die Anzeigetafel, U die Uhr.
+    { key: "z", sel: "#pen-visible", badge: "Z" },
     { key: "x", sel: "#override-toggle", badge: "X" },
     { key: "q", sel: '[data-ov="home-1"]', badge: "Q" },
     { key: "w", sel: '[data-ov="home+1"]', badge: "W" },
@@ -392,6 +397,7 @@
     renderGameSelect();
     renderScoreboard();
     renderClockUi();
+    renderPenalties();
     renderLowerThird();
     renderColors();
     renderInterview();
@@ -655,6 +661,124 @@
     if (sekunden > 59) return null;
 
     return (minuten * 60 + sekunden) * 1000;
+  }
+
+  // ── Strafen ─────────────────────────────────────────────────────────────
+  //
+  // Gerechnet wird in penalties.js, gemeinsam mit der Bühne: Was hier in der
+  // Liste steht, steht dort im Bild.
+  //
+  // Der Knopf „Beendet" ist der Grund, warum es diese Karte überhaupt gibt.
+  // Eine kleine Strafe endet beim Überzahltor, das rechnet die Bühne mit --
+  // aber der Spielbericht hält nicht fest, wann jemand die Strafbank
+  // tatsächlich verlassen hat. Wer es im Bild sieht, drückt hier.
+
+  // Aufgebaute Zeilen je Ereigniskennung. Die Restzeit wird im Sekundentakt
+  // nachgezogen, die Zeile selbst nur, wenn sich die Liste ändert: Ein Knopf,
+  // der zwischen Druck und Loslassen ausgetauscht wird, verschluckt den Druck.
+  var penaltyRows = {};
+  var penaltyKeys = null;
+
+  function penaltyEntries() {
+    // Ein Zwischenspeicher kann ein dock.html ohne penalties.js ausliefern.
+    if (!window.SmPenalties) return [];
+    // Ohne eingeblendete Uhr zeigt die Bühne keine Strafen. Dann hier auch
+    // keine anbieten, sonst beendet die Regie etwas, das gar nicht im Bild
+    // steht.
+    if (!uhrImBild()) return [];
+
+    return window.SmPenalties.laufende(state.game, state.control, elapsedMs());
+  }
+
+  // Steht die Spielzeit im Bild? Genau die Frage, die die Bühne stellt
+  // (`clockElapsedMs` in overlay.js): Sie zeigt ohne GESCHRIEBENEN Uhrzustand
+  // keine Uhr und damit auch keine Strafen.
+  //
+  // `clockState()` fällt dagegen auf `visible: true` zurück, damit die Knöpfe
+  // darüber von Anfang an bedienbar sind. An einem frisch erzeugten Link hätte
+  // das Bedienfeld deshalb Strafen samt „Beendet" angeboten, die auf Sendung
+  // nirgends standen.
+  function uhrImBild() {
+    var clock = state.control.clock;
+    return !!clock && clock.visible !== false;
+  }
+
+  function renderPenalties() {
+    if (!el["pen-visible"] || !el["pen-empty"] || !el["pen-list"]) return;
+
+    var visible = state.control.penalties_visible !== false;
+    el["pen-visible"].textContent = visible ? "Sichtbar" : "Ausgeblendet";
+    el["pen-visible"].classList.toggle("dk-toggle--on", visible);
+
+    var entries = penaltyEntries();
+    var keys = entries
+      .map(function (entry) {
+        return String(entry.event_id);
+      })
+      .join(",");
+
+    if (keys !== penaltyKeys) {
+      penaltyKeys = keys;
+      penaltyRows = {};
+      el["pen-list"].textContent = "";
+
+      entries.forEach(function (entry) {
+        var row = buildPenaltyRow(entry);
+        penaltyRows[String(entry.event_id)] = row;
+        el["pen-list"].appendChild(row.row);
+      });
+    }
+
+    entries.forEach(function (entry) {
+      var row = penaltyRows[String(entry.event_id)];
+      if (row) {
+        row.time.textContent = window.SmPenalties.restText(entry.remaining_ms);
+      }
+    });
+
+    el["pen-list"].classList.toggle("dk-hidden", entries.length === 0);
+    el["pen-empty"].textContent = penaltyHint();
+    el["pen-empty"].classList.toggle("dk-hidden", entries.length > 0);
+  }
+
+  function penaltyHint() {
+    if (!uhrImBild()) {
+      return "Ohne eingeblendete Spielzeit zeigt die Bühne keine Strafen.";
+    }
+    return "Keine laufende Strafe.";
+  }
+
+  function buildPenaltyRow(entry) {
+    var row = document.createElement("div");
+    row.className = "dk-pen";
+
+    var label = document.createElement("span");
+    label.className = "dk-pen-text";
+    // textContent: Das Mannschaftskürzel kommt aus der Datenbank.
+    label.textContent =
+      penaltySideLabel(entry.side) + " " + window.SmPenalties.nummerText(entry);
+
+    var time = document.createElement("span");
+    time.className = "dk-pen-time";
+    time.textContent = window.SmPenalties.restText(entry.remaining_ms);
+
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "dk-btn";
+    button.textContent = "Beendet";
+    button.setAttribute("data-pen", String(entry.event_id));
+
+    row.appendChild(label);
+    row.appendChild(time);
+    row.appendChild(button);
+
+    return { row: row, time: time };
+  }
+
+  function penaltySideLabel(side) {
+    var game = state.game;
+    var team = game && (side === "home" ? game.home : game.guest);
+    return teamLabel(team) || (side === "home" ? "Heim" : "Gast");
   }
 
   // ── Farben ──────────────────────────────────────────────────────────────
@@ -969,6 +1093,10 @@
       },
       lower_third: null,
       score_override: null,
+      // Die Kennungen gehören zum alten Spiel. Blieben sie stehen, wüchse der
+      // Steuerzustand über den Spieltag, und im schlimmsten Fall verdeckte
+      // eine Kennung aus dem ersten Spiel eine Strafe im zweiten.
+      penalties_ended: [],
     });
     state.lastVersion = null;
   });
@@ -1051,6 +1179,25 @@
     clockHint(null);
     setClockTo(ms);
     feld.blur();
+  });
+
+  on("pen-visible", "click", function () {
+    writeState({
+      penalties_visible: state.control.penalties_visible === false,
+    });
+  });
+
+  // EIN Zuhörer an der Liste statt einer je Knopf: Die Knöpfe entstehen und
+  // vergehen mit den Strafen.
+  on("pen-list", "click", function (event) {
+    var ziel = event.target;
+    var id = ziel && ziel.getAttribute && ziel.getAttribute("data-pen");
+    if (!id) return;
+
+    var beendet = (state.control.penalties_ended || []).slice();
+    if (beendet.indexOf(id) === -1) beendet.push(id);
+
+    writeState({ penalties_ended: beendet });
   });
 
   // Verlässt das Fenster den Fokus, während er im Feld liegt, gibt das Feld ihn
@@ -1338,5 +1485,11 @@
 
   bindHotkeys();
   poll();
-  window.setInterval(renderClockUi, 100);
+  window.setInterval(function () {
+    renderClockUi();
+    // Im selben Takt: Die Restzeiten laufen gegen dieselbe Uhr, und eine
+    // Liste, die erst mit der nächsten Abfrage nachzieht, stünde bis zu zwei
+    // Sekunden falsch.
+    renderPenalties();
+  }, 100);
 })();

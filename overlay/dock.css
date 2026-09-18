@@ -299,6 +299,41 @@ body {
   gap: 6px;
 }
 
+/* Je laufender Strafe eine Zeile: Mannschaft, Nummer, Restzeit, Knopf. Die
+   Zeilen werden im Sekundentakt nachgezogen, aber NICHT neu aufgebaut -- ein
+   Knopf, der zwischen Druck und Loslassen ausgetauscht wird, verschluckt den
+   Druck. */
+.dk-penalties {
+  display: grid;
+  gap: 6px;
+}
+
+.dk-pen {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dk-pen-text {
+  flex: 1 1 auto;
+}
+
+/* Fester Platz für `0:00`, sonst wandert der Knopf daneben im Sekundentakt. */
+.dk-pen-time {
+  flex: 0 0 auto;
+  min-width: 4ch;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.dk-pen .dk-btn {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
 /* Die Absage zur getippten Zeit. Sie steht am Feld und nicht in der
    Statuszeile, die die nächste Abfrage nach zwei Sekunden überschreibt. */
 .dk-hint--error {
