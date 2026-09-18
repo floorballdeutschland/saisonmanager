@@ -43,6 +43,12 @@
     terminal: false,
   };
 
+  // Standardtext des Hinweises unter der Zeitanzeige. Steht hier und nicht nur
+  // im dock.html, weil er nach einer Absage wiederhergestellt wird.
+  var CLOCK_HINT =
+    "Zeit eintippen, etwa 12:34 oder 1234, und mit der Eingabetaste " +
+    "übernehmen. Esc verwirft.";
+
   var el = {};
   [
     "dock",
@@ -62,6 +68,7 @@
     "pen-visible",
     "pen-empty",
     "pen-list",
+    "clock-input-hint",
     "lt-goal",
     "lt-penalty",
     "lt-venue",
@@ -519,8 +526,13 @@
     // NICHT während des Tippens. Die Anzeige ist zugleich das Eingabefeld und
     // wird zehnmal je Sekunde neu gesetzt: Ohne diese Ausnahme wäre jede
     // eingetippte Ziffer nach 100 ms wieder überschrieben.
+    //
+    // `document.hasFocus()` gehört dazu: Wer ins Feld klickt und dann zum
+    // OBS-Hauptfenster wechselt, lässt den Fokus dort liegen. Ohne diese
+    // Bedingung stand die Uhr im Bedienfeld danach still, und zwar ohne
+    // Hinweis -- auf Sendung läuft sie weiter, sie wird hier nur angezeigt.
     var feld = el["clock-display"];
-    if (document.activeElement !== feld) {
+    if (!tippt(feld)) {
       // In einem älteren, zwischengespeicherten dock.html steht hier noch ein
       // `div`. `value` liefe dort ins Leere, und die Uhr stünde still, ohne
       // dass etwas darauf hindeutet.
@@ -529,7 +541,12 @@
       } else {
         feld.textContent = formatClock(ms);
       }
-      feld.classList.remove("dk-clock--invalid");
+      // Nur wenn etwas zurückzunehmen ist: `renderClockUi` läuft zehnmal je
+      // Sekunde, der Hinweis würde sonst in jedem Durchlauf neu geschrieben.
+      if (feld.classList.contains("dk-clock--invalid")) {
+        feld.classList.remove("dk-clock--invalid");
+        clockHint(null);
+      }
     }
     el["clock-start"].textContent = c.running ? "Anhalten" : "Start";
 
@@ -537,7 +554,26 @@
     el["clock-visible"].textContent = visible ? "Sichtbar" : "Ausgeblendet";
     el["clock-visible"].classList.toggle("dk-toggle--on", visible);
 
-    renderDrift(ms);
+    // Beim Tippen auch den Abweichungshinweis stehen lassen: Sonst stünde
+    // unter der getippten Zeit ein Satz über den laufenden Stand, also zwei
+    // Zeiten, die sich widersprechen.
+    if (!tippt(feld)) renderDrift(ms);
+  }
+
+  // Liegt der Fokus zum Tippen in diesem Feld? Nur dann, wenn auch das Fenster
+  // ihn hat -- siehe oben.
+  function tippt(feld) {
+    return document.activeElement === feld && document.hasFocus();
+  }
+
+  // Der Hinweis unter dem Feld. `null` stellt den Standardtext wieder her: Er
+  // nennt die Form, und genau die braucht es nach einer Absage erst recht.
+  function clockHint(text, fehler) {
+    var hinweis = el["clock-input-hint"];
+    if (!hinweis) return;
+
+    hinweis.textContent = text || CLOCK_HINT;
+    hinweis.classList.toggle("dk-hint--error", !!fehler);
   }
 
   // Ohne Mannschaft bleibt das Feld leer statt „null": OverlayPayload liefert
@@ -603,8 +639,17 @@
   // gestellte Uhr fiele erst auf Sendung auf.
   function parseClockInput(text) {
     var roh = String(text).trim();
-    var direkt = parseClock(roh);
-    if (direkt !== null) return direkt;
+
+    // NICHT über `parseClock`: Das liest die Zeiten des Spielberichts und
+    // rechnet `1:75` stillschweigend in 2:15 um. Hier tippt ein Mensch, und
+    // genau dieser Wert ist mit hoher Wahrscheinlichkeit ein Vertipper -- eine
+    // stillschweigend umgerechnete Uhr fiele erst auf Sendung auf.
+    var geteilt = /^(\d{1,3}):(\d{2})$/.exec(roh);
+    if (geteilt) {
+      var sek = Number(geteilt[2]);
+      if (sek > 59) return null;
+      return (Number(geteilt[1]) * 60 + sek) * 1000;
+    }
 
     if (!/^\d{1,5}$/.test(roh)) return null;
 
@@ -1097,6 +1142,14 @@
   // sonst, und `isTypingTarget` schaltet die Tastenkürzel ab, solange er dort
   // liegt -- die Leertaste startete die Uhr nicht mehr, ohne dass etwas darauf
   // hindeutet. Derselbe Grund wie bei `releaseSelectFocus` weiter unten.
+  // Beim Hineinklicken den ganzen Stand markieren, damit die getippte Zeit ihn
+  // ERSETZT. Ohne das schiebt der Browser die Ziffern an die Stelle des Cursors:
+  // Aus „12:34" wurde mit „1500" ein „112:34", und das ist lesbar -- die Uhr
+  // sprang auf 112 Minuten, ohne dass etwas nach einem Fehler aussah.
+  on("clock-display", "focus", function () {
+    el["clock-display"].select();
+  });
+
   on("clock-display", "keydown", function (event) {
     var feld = el["clock-display"];
 
@@ -1115,11 +1168,15 @@
       // Kein Blur: Die Regie soll die Eingabe verbessern können, ohne das Feld
       // neu anzuklicken.
       feld.classList.add("dk-clock--invalid");
-      setStatus("Die Zeit muss wie 12:34 oder 1234 geschrieben sein.", true);
+      clockHint(
+        "So nicht lesbar. Bitte wie 12:34 oder 1234 schreiben, Sekunden bis 59.",
+        true
+      );
       return;
     }
 
     feld.classList.remove("dk-clock--invalid");
+    clockHint(null);
     setClockTo(ms);
     feld.blur();
   });
@@ -1141,6 +1198,15 @@
     if (beendet.indexOf(id) === -1) beendet.push(id);
 
     writeState({ penalties_ended: beendet });
+  });
+
+  // Verlässt das Fenster den Fokus, während er im Feld liegt, gibt das Feld ihn
+  // ab. Sonst behielte es ihn über den Wechsel zum OBS-Hauptfenster hinaus, und
+  // `isTypingTarget` hielte danach alle Tastenkürzel still -- die Leertaste
+  // startete die Uhr nicht mehr, ohne dass etwas darauf hindeutet.
+  window.addEventListener("blur", function () {
+    var feld = el["clock-display"];
+    if (feld && document.activeElement === feld) feld.blur();
   });
 
   el["lt-goal"].addEventListener("click", function () {

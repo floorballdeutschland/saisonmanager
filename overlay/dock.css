@@ -334,6 +334,12 @@ body {
   font-size: 12px;
 }
 
+/* Die Absage zur getippten Zeit. Sie steht am Feld und nicht in der
+   Statuszeile, die die nächste Abfrage nach zwei Sekunden überschreibt. */
+.dk-hint--error {
+  color: #ff9b9b;
+}
+
 .dk-hint {
   font-size: 12px;
   color: var(--dk-muted);
