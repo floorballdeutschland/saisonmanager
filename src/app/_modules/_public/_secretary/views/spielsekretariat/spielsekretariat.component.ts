@@ -6,6 +6,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import {
@@ -63,6 +64,7 @@ export class SpielSekretariatComponent implements OnInit, OnDestroy {
 
   constructor(
     private _route: ActivatedRoute,
+    private _location: Location,
     private _gameService: GameService,
     private _cdr: ChangeDetectorRef,
     private _title: Title
@@ -71,27 +73,55 @@ export class SpielSekretariatComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Drei Wege auf diese Seite, in dieser Reihenfolge:
+   * Vier Wege auf diese Seite, in dieser Reihenfolge:
    *
    * 1. `?token=` – Links, die vor dem Kurzcode ausgegeben wurden, und der Weg,
    *    den die Spielseite zurück hierher nimmt.
-   * 2. Der abgelegte Token derselben Registerkarte. Ohne ihn verlöre ein
+   * 2. `?code=` – derselbe Kurzcode, nur in der Adresse statt im Feld. Das ist
+   *    der Weg für alles, was einen Link zustellen kann, wo der Spieltisch
+   *    aber keines hat: QR-Code auf dem Spielplan-Ausdruck, Aushang in der
+   *    Halle. Der Code steht bewusst VOR dem abgelegten Token: Wer den QR-Code
+   *    des heutigen Spieltags scannt, meint diesen und nicht den von gestern,
+   *    der in derselben Registerkarte noch liegt.
+   * 3. Der abgelegte Token derselben Registerkarte. Ohne ihn verlöre ein
    *    schlichtes Neuladen am Spieltisch den Zugang, und der Code müsste
    *    mitten im Spiel erneut abgetippt werden.
-   * 3. Sonst die Code-Eingabe. Das ist seit fe#450 der Regelfall: Am Tisch
+   * 4. Sonst die Code-Eingabe. Das ist seit fe#450 der Regelfall: Am Tisch
    *    steht ein Vereinsrechner, auf den weder Link noch Postfach kommen.
    */
   ngOnInit(): void {
-    const fromUrl = this._route.snapshot.queryParamMap.get('token') ?? '';
-    const token = fromUrl || this._storedToken();
-    if (!token) {
+    const params = this._route.snapshot.queryParamMap;
+
+    const fromUrl = params.get('token') ?? '';
+    if (fromUrl) {
+      this._load(fromUrl);
+      return;
+    }
+
+    const fromCode = params.get('code') ?? '';
+    if (fromCode) {
+      this.codeInput = fromCode;
+      // Der Code fliegt VOR dem Einlösen aus der Adresszeile. Sonst schickt
+      // jedes Neuladen am Spieltisch denselben Code erneut, und die zehn
+      // Versuche pro Minute zählt Rack::Attack je IP – in der Halle hängen
+      // alle Rechner hinter derselben. Nach dem Aufräumen trägt das Neuladen
+      // der abgelegte Token, genau wie bei einer Eingabe von Hand.
+      this._removeCodeFromUrl();
+      this.showCodeForm = true;
+      this.loading = false;
+      this.redeemCode();
+      return;
+    }
+
+    const stored = this._storedToken();
+    if (!stored) {
       this.showCodeForm = true;
       this.loading = false;
       this._cdr.markForCheck();
       return;
     }
 
-    this._load(token);
+    this._load(stored);
   }
 
   ngOnDestroy(): void {
@@ -158,6 +188,24 @@ export class SpielSekretariatComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Nimmt `code` aus der Adresse, ohne die übrigen Parameter anzufassen.
+   *
+   * Über `Location` statt über `window`: Die Anwendung wird auch serverseitig
+   * gerendert, und dort gibt es kein `window`. `replaceState` ersetzt den
+   * aktuellen Eintrag, legt also keinen zweiten an – sonst führte der
+   * Zurück-Knopf zurück auf die Adresse mit dem Code und löste ihn erneut ein.
+   */
+  private _removeCodeFromUrl(): void {
+    const [path, query] = this._location.path().split('?');
+    if (!query) return;
+
+    const params = new URLSearchParams(query);
+    params.delete('code');
+    const rest = params.toString();
+    this._location.replaceState(rest ? `${path}?${rest}` : path);
+  }
+
   private _normalizeCode(input: string): string {
     return input
       .toUpperCase()
@@ -201,49 +249,49 @@ export class SpielSekretariatComponent implements OnInit, OnDestroy {
       .getSecretaryGameDay(token)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-      next: (data) => {
-        this.data = data;
-        // Die Meldung des vorigen Anlaufs abräumen. Ohne das stünde über dem
-        // geladenen Spieltag den Rest des Tages „Der Link ist ungültig oder
-        // abgelaufen." – die Ansicht widerspräche dem, was darunter steht.
-        this.error = undefined;
-        this.showCodeForm = false;
-        // Erst ablegen, wenn der Token wirklich getragen hat. Ein abgelaufener
-        // im Speicher hieße sonst: Neuladen zeigt die Fehlermeldung statt der
-        // Code-Eingabe, und der Weg zurück wäre nur über einen neuen Tab.
-        this._storeToken(token);
-        // `loading` VOR dem Gruppenaufbau zurücksetzen: Wirft der Aufbau, trägt
-        // RxJS die Ausnahme asynchron weiter und der error-Zweig unten greift
-        // nicht mehr. Die Seite bliebe sonst dauerhaft im Ladezustand stehen,
-        // ohne Meldung und ohne dass ein neuer Link etwas ändert.
-        this.loading = false;
-        this.licenseGroups = this._buildLicenseGroups(data);
-        this._cdr.markForCheck();
-      },
-      // Nur ein totes Recht raeumt den abgelegten Token weg. Vorher tat das
-      // jeder Fehler: Ein kurzer Netzaussetzer oder ein Neustart der API
-      // mitten im Spiel loeschte den einzigen Zugang der Registerkarte,
-      // obwohl ein zweites Neuladen ihn zurueckgeholt haette.
-      //
-      // err.message stammt aus normalizeSecretaryPayload und meldet eine
-      // unbrauchbare Antwort. Diesen Fall nicht als abgelaufenen Link ausgeben
-      // und erst recht nicht die Eingabe anbieten: Das Sekretariat ließe sich
-      // sonst einen neuen Zugang geben, der genauso scheitert.
-      error: (err) => {
-        const gone = err?.status === 410 || err?.status === 401;
-        this.error = gone
-          ? (err?.error?.message ?? 'Der Link ist ungültig oder abgelaufen.')
-          : ((err instanceof Error ? err.message : null) ??
-            `Die Daten konnten gerade nicht geladen werden (Fehler ${
-              err?.status ?? 0
-            }). Der Zugang bleibt gültig – bitte die Seite neu laden.`);
-        this.loading = false;
-        // Wer mit einem abgelaufenen Zugang ankommt, hat den nächsten Code
-        // meist schon vor sich liegen.
-        this.showCodeForm = gone;
-        if (gone) this._clearStoredToken();
-        this._cdr.markForCheck();
-      },
+        next: (data) => {
+          this.data = data;
+          // Die Meldung des vorigen Anlaufs abräumen. Ohne das stünde über dem
+          // geladenen Spieltag den Rest des Tages „Der Link ist ungültig oder
+          // abgelaufen." – die Ansicht widerspräche dem, was darunter steht.
+          this.error = undefined;
+          this.showCodeForm = false;
+          // Erst ablegen, wenn der Token wirklich getragen hat. Ein abgelaufener
+          // im Speicher hieße sonst: Neuladen zeigt die Fehlermeldung statt der
+          // Code-Eingabe, und der Weg zurück wäre nur über einen neuen Tab.
+          this._storeToken(token);
+          // `loading` VOR dem Gruppenaufbau zurücksetzen: Wirft der Aufbau, trägt
+          // RxJS die Ausnahme asynchron weiter und der error-Zweig unten greift
+          // nicht mehr. Die Seite bliebe sonst dauerhaft im Ladezustand stehen,
+          // ohne Meldung und ohne dass ein neuer Link etwas ändert.
+          this.loading = false;
+          this.licenseGroups = this._buildLicenseGroups(data);
+          this._cdr.markForCheck();
+        },
+        // Nur ein totes Recht raeumt den abgelegten Token weg. Vorher tat das
+        // jeder Fehler: Ein kurzer Netzaussetzer oder ein Neustart der API
+        // mitten im Spiel loeschte den einzigen Zugang der Registerkarte,
+        // obwohl ein zweites Neuladen ihn zurueckgeholt haette.
+        //
+        // err.message stammt aus normalizeSecretaryPayload und meldet eine
+        // unbrauchbare Antwort. Diesen Fall nicht als abgelaufenen Link ausgeben
+        // und erst recht nicht die Eingabe anbieten: Das Sekretariat ließe sich
+        // sonst einen neuen Zugang geben, der genauso scheitert.
+        error: (err) => {
+          const gone = err?.status === 410 || err?.status === 401;
+          this.error = gone
+            ? (err?.error?.message ?? 'Der Link ist ungültig oder abgelaufen.')
+            : ((err instanceof Error ? err.message : null) ??
+              `Die Daten konnten gerade nicht geladen werden (Fehler ${
+                err?.status ?? 0
+              }). Der Zugang bleibt gültig – bitte die Seite neu laden.`);
+          this.loading = false;
+          // Wer mit einem abgelaufenen Zugang ankommt, hat den nächsten Code
+          // meist schon vor sich liegen.
+          this.showCodeForm = gone;
+          if (gone) this._clearStoredToken();
+          this._cdr.markForCheck();
+        },
       });
   }
 
