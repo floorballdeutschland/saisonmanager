@@ -8,7 +8,7 @@ import {
 import { ChecklistItem } from '@floorball/types';
 
 /**
- * Die Fragen der Spieltagscheckliste, je Frage ein Ja und ein Nein.
+ * Die Fragen der Spieltagsbericht, je Frage ein Ja und ein Nein.
  *
  * Reine Darstellung: Die Komponente hält keinen Stand und speichert nichts,
  * sie bekommt die Antworten gereicht und meldet jede Auswahl nach oben. Eigene

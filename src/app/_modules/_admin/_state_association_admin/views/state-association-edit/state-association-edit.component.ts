@@ -37,7 +37,7 @@ import {
 // (StateAssociation::INHERITED_SETTINGS) und liest sie ueberall ueber die
 // effective_*-Methoden. Nicht dabei sind die Postfaecher, die anders erben (ein
 // eigener Eintrag am Kind-LV gewinnt) sowie Stammdaten, Zustaendigkeitsbereich,
-// Logo, Banner, Spieltagscheckliste und Freigaben.
+// Logo, Banner, Spieltagsbericht und Freigaben.
 export const INHERITED_SETTINGS = [
   'express_license_enabled',
   'referee_license_review_enabled',

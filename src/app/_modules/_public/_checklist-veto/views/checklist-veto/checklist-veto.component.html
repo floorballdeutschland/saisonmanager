@@ -1,5 +1,5 @@
 <div class="p-4 lg:p-8 max-w-3xl mx-auto">
-  <h1 class="text-2xl font-bold mb-2">Einspruch Spieltagscheckliste</h1>
+  <h1 class="text-2xl font-bold mb-2">Einspruch Spieltagsbericht</h1>
 
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-4">Lade…</div>
@@ -45,7 +45,7 @@
       </p>
     } @else if (!veto.checklist_items.length) {
       <p class="text-sm text-fb-gray-500 py-4">
-        Für diesen Spieltag ist keine Checkliste hinterlegt. Es gibt daher
+        Für diesen Spieltag ist kein Spieltagsbericht hinterlegt. Es gibt daher
         nichts zu beanstanden.
       </p>
     } @else {

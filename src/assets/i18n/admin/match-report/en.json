@@ -76,7 +76,7 @@
     "refereeReport": "Referee report form from {{date}}",
     "proceedingProposal": "Proceeding proposal",
     "openProposals": "Go to overview",
-    "checklistNegative": "{{count}} item(s) answered with no in the game day checklist",
+    "checklistNegative": "{{count}} item(s) answered with no in the game day report",
     "checklistVeto": "Host objection from {{date}} with {{count}} item(s) answered with no"
   },
   "proposalStatus": {

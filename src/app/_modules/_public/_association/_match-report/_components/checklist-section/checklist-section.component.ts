@@ -25,7 +25,7 @@ import { ChecklistAnswer, ChecklistItem, Game } from '@floorball/types';
 const SAVE_DEBOUNCE_MS = 600;
 
 /**
- * Die Spieltagscheckliste des Landesverbands, ausfüllbar schon in der
+ * Die Spieltagsbericht des Landesverbands, ausfüllbar schon in der
  * Spielvorbereitung.
  *
  * Gefragt wurde sie bisher ausschließlich im Fenster beim Abschließen des
@@ -133,7 +133,7 @@ export class ChecklistSectionComponent implements OnInit, OnChanges, OnDestroy {
         } else {
           this.saved = false;
           this._notificationService.error(
-            'Die Spieltagscheckliste konnte nicht gespeichert werden. Bitte erneut versuchen.',
+            'Der Spieltagsbericht konnte nicht gespeichert werden. Bitte erneut versuchen.',
             { autoClose: true }
           );
         }
