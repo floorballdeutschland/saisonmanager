@@ -396,7 +396,9 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <input
+                    #minimumAgeInput
                     [(ngModel)]="league.minimum_age"
+                    (input)="onMinimumAgeInput(minimumAgeInput)"
                     name="minimum_age"
                     type="number"
                     min="1"

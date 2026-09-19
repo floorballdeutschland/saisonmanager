@@ -59,5 +59,41 @@ describe('LeagueEditComponent', () => {
       expect(errorsFor(100)).toContain(errMinimumAge);
       expect(errorsFor(15.5)).toContain(errMinimumAge);
     });
+
+    // Text im Zahlenfeld kommt im Modell als null an, sieht also aus wie
+    // "keine Untergrenze", steht aber sichtbar im Feld. Ohne die native
+    // Auskunft des Feldes wuerde der Editor still das Gegenteil speichern.
+    it('meldet eine Eingabe, die der Browser nicht als Zahl lesen kann', () => {
+      const fixture = TestBed.createComponent(LeagueEditComponent);
+      const component = fixture.componentInstance;
+      component.newLeague();
+
+      let league!: League;
+      component.league$?.subscribe((l) => (league = l));
+      league.minimum_age = null;
+      component.onMinimumAgeInput({
+        validity: { badInput: true },
+      } as HTMLInputElement);
+
+      expect(component.errorMsg(league)).toContain(errMinimumAge);
+    });
+
+    it('vergisst die unlesbare Eingabe, sobald das Feld wieder lesbar ist', () => {
+      const fixture = TestBed.createComponent(LeagueEditComponent);
+      const component = fixture.componentInstance;
+      component.newLeague();
+
+      let league!: League;
+      component.league$?.subscribe((l) => (league = l));
+      component.onMinimumAgeInput({
+        validity: { badInput: true },
+      } as HTMLInputElement);
+      component.onMinimumAgeInput({
+        validity: { badInput: false },
+      } as HTMLInputElement);
+      league.minimum_age = 15;
+
+      expect(component.errorMsg(league)).not.toContain(errMinimumAge);
+    });
   });
 });
