@@ -35,6 +35,12 @@ export interface AdminLicenseEntry {
   gf_role: 'erstlizenz' | 'zweitlizenz' | null;
   license_status_id: number;
   license_status: string;
+  /**
+   * Wie viele Lizenzen diese Person ueber alle Saisons hinweg schon erteilt
+   * bekommen hat. Gemeint ist die Vorgeschichte, nicht der heutige Bestand.
+   * Optional, damit die Ansicht auch gegen eine aeltere API laeuft.
+   */
+  licenses_approved_total?: number;
   // Der Status ohne Sperre und die Sperre selbst (api#605). Bis dahin
   // verschwand eine gesperrte Lizenz ganz aus der Übersicht.
   base_status_id?: number;

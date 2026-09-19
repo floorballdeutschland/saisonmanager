@@ -407,6 +407,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       t('licenseAdmin.globalList.csvStatus'),
       t('licenseAdmin.globalList.csvLicenseType'),
       t('licenseAdmin.globalList.csvGfRole'),
+      t('licenseAdmin.globalList.csvLicensesTotal'),
       t('licenseAdmin.globalList.csvExpress'),
       t('licenseAdmin.globalList.csvRequested'),
       t('licenseAdmin.globalList.csvApproved'),
@@ -439,6 +440,9 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
         : e.gf_role === 'zweitlizenz'
           ? t('licenseAdmin.globalList.csvZweitlizenz')
           : '',
+      // Leer statt 0, wenn die API die Zahl nicht liefert: Eine 0 waere die
+      // Aussage, die Person habe noch nie eine Lizenz gehabt.
+      e.licenses_approved_total ?? '',
       e.express
         ? t('licenseAdmin.globalList.csvYes')
         : t('licenseAdmin.globalList.csvNo'),

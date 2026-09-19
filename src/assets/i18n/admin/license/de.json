@@ -151,7 +151,10 @@
     "liftConfirmContent": "Die Sperre wird aufgehoben und die Lizenz gilt wieder. Der Vorgang bleibt im Lizenzverlauf stehen.",
     "liftConfirmSubmit": "Sperre aufheben",
     "liftedNotice": "Die Sperre wurde aufgehoben.",
-    "liftError": "Die Sperre konnte nicht aufgehoben werden."
+    "liftError": "Die Sperre konnte nicht aufgehoben werden.",
+    "colLicensesTotal": "Lizenzen",
+    "colLicensesTotalTitle": "Wie viele Lizenzen diese Person insgesamt schon erteilt bekommen hat, über alle Saisons und Vereine hinweg",
+    "csvLicensesTotal": "Lizenzen gesamt"
   },
   "leagueDetail": {
     "title": "Lizenzverwaltung",
