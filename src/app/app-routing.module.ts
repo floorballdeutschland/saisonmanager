@@ -259,7 +259,7 @@ export const routes: Routes = [
           import('@floorball/team-game-days').then((m) => m.TeamGameDaysModule),
         canActivate: [permissionGuard],
         // Rollenbasierter Schlüssel, nicht der Menü-Schlüssel: der Menüpunkt
-        // erscheint nur bei hinterlegter Spieltagscheckliste, die Seite muss
+        // erscheint nur bei hinterlegtem Spieltagsbericht, die Seite muss
         // aber erreichbar bleiben, wenn ein Landesverband seine erste Frage erst
         // während der Saison anlegt (Berechtigungen stammen aus dem Login).
         data: { permission: 'page_team_game_days' },
@@ -411,7 +411,7 @@ export const routes: Routes = [
     data: { preload: true },
   },
   {
-    // Einspruch des Ausrichtervereins gegen die Spieltagscheckliste, über den
+    // Einspruch des Ausrichtervereins gegen den Spieltagsbericht, über den
     // Einmal-Link aus der Bestätigungsmail. Bewusst ohne Guard und ohne
     // Vorabladen: Die Seite ruft nur auf, wer den Link hat.
     path: '',

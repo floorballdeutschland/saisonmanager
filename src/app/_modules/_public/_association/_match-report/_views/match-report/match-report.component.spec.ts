@@ -111,7 +111,7 @@ describe('MatchReportComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('Spieltagscheckliste', () => {
+  describe('Spieltagsbericht', () => {
     // Der Fehler vom 12.09.2026: Das Fenster hatte keinen Scrollweg. Sobald die
     // Fragenliste höher wurde als das Browserfenster, lag die Knopfleiste
     // außerhalb -- und weil `fixed inset-0` die Höhe auf den Viewport nagelt

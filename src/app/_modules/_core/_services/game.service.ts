@@ -566,7 +566,7 @@ export class GameService {
     );
   }
 
-  // Einspruch des Ausrichtervereins gegen die Spieltagscheckliste. Der Token aus
+  // Einspruch des Ausrichtervereins gegen den Spieltagsbericht. Der Token aus
   // der Bestätigungsmail ist die einzige Berechtigung, es gibt kein Konto dazu –
   // deshalb liegen beide Endpunkte unter `public/`-Semantik ohne Cookie-Session.
   public getChecklistVeto(gameId: number, token: string) {

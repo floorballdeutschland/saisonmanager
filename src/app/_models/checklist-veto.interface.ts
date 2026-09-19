@@ -10,8 +10,8 @@ export interface ChecklistVetoAnswer {
 }
 
 /**
- * Einspruch des Ausrichtervereins gegen die von der Spielleitung beantwortete
- * Spieltagscheckliste. Erreichbar ausschließlich über den Einmal-Token aus der
+ * Einspruch des Ausrichtervereins gegen den von der Spielleitung ausgefüllten
+ * Spieltagsbericht. Erreichbar ausschließlich über den Einmal-Token aus der
  * Bestätigungsmail, ohne Benutzerkonto.
  *
  * `original_answers` sind die Antworten der Spielleitung; sie werden dem
