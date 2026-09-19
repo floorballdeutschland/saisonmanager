@@ -367,6 +367,21 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
       .sort((a, b) => a.name.localeCompare(b.name, 'de'));
   }
 
+  // Was der Browser im Mindestalter-Feld nicht als Zahl lesen kann, kommt hier
+  // gar nicht an: Angular schreibt dann still null ins Modell
+  // (NumberValueAccessor: `value == '' ? null : parseFloat(value)`), waehrend
+  // der getippte Text sichtbar im Feld stehen bleibt. Bei den uebrigen
+  // Zahlenfeldern faengt die Pflichtpruefung diesen null-Fall ab; beim
+  // Mindestalter ist leer ein gueltiger Wert und hiesse "keine Untergrenze" --
+  // der Editor wuerde also genau das Gegenteil dessen speichern, was da steht.
+  // Deshalb die native Auskunft des Feldes (validity.badInput) mitfuehren.
+  minimumAgeBadInput = false;
+
+  public onMinimumAgeInput(input: HTMLInputElement): void {
+    this.minimumAgeBadInput = input.validity.badInput;
+    this._cdr.markForCheck();
+  }
+
   public getLeague(id: string) {
     this.league$ = this._leagueService
       .getSingleLeague(parseInt(id))
@@ -378,6 +393,7 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
           if (!league) {
             return;
           }
+          this.minimumAgeBadInput = false;
           this._currentLeagueId = league.id ?? null;
           this._persistedLeagueClassId = league.league_class_id ?? '';
           this._refreshOtherLeagues();
@@ -425,6 +441,7 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
       referee_feedback_enabled: false,
     };
 
+    this.minimumAgeBadInput = false;
     this.league$ = of(league);
     this._cdr.markForCheck();
   }
@@ -491,6 +508,21 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     if (league.league_modus === 'league' && !league.league_class_id) {
       msg.push(
         this._transloco.translate('leagueAdmin.notifications.errLeagueClass')
+      );
+    }
+
+    // Das Mindestalter ist optional. Ist es gesetzt, gelten dieselben Grenzen
+    // wie in der API-Validierung (1..99); ein leeres Feld liefert null und
+    // bedeutet "keine Untergrenze".
+    const minimumAge = league.minimum_age;
+    if (
+      this.minimumAgeBadInput ||
+      (minimumAge !== null &&
+        minimumAge !== undefined &&
+        (!Number.isInteger(minimumAge) || minimumAge < 1 || minimumAge > 99))
+    ) {
+      msg.push(
+        this._transloco.translate('leagueAdmin.notifications.errMinimumAge')
       );
     }
 
