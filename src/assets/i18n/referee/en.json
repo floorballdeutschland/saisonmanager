@@ -154,7 +154,7 @@
   },
   "gameDays": {
     "title": "My match days",
-    "intro": "If your state association has set up a match day report, confirm your match days here as properly conducted – or report them as not properly conducted and answer the match day report. Confirmation is possible from the start of the last game. Without confirmation within 48 hours, a match day is automatically considered confirmed.",
+    "intro": "If your state association has set up questions for the match day report, confirm your match days here as properly conducted – or report them as not properly conducted and fill in the match day report. Confirmation is possible from the start of the last game. Without confirmation within 48 hours, a match day is automatically considered confirmed.",
     "empty": "No match days found.",
     "openMatch": "Open game / match report",
     "saving": "Saving…",
