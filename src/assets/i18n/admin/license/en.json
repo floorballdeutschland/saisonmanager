@@ -151,7 +151,10 @@
     "liftConfirmContent": "The suspension is lifted and the licence is valid again. The action stays in the licence history.",
     "liftConfirmSubmit": "Lift suspension",
     "liftedNotice": "The suspension has been lifted.",
-    "liftError": "The suspension could not be lifted."
+    "liftError": "The suspension could not be lifted.",
+    "colLicensesTotal": "Licenses",
+    "colLicensesTotalTitle": "How many licenses this person has been granted in total, across all seasons and clubs",
+    "csvLicensesTotal": "Licenses total"
   },
   "leagueDetail": {
     "title": "License management",

@@ -326,6 +326,14 @@
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
+                [title]="
+                  'licenseAdmin.globalList.colLicensesTotalTitle' | transloco
+                "
+              >
+                {{ "licenseAdmin.globalList.colLicensesTotal" | transloco }}
+              </th>
+              <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
                 {{ "licenseAdmin.globalList.colExpress" | transloco }}
               </th>
@@ -354,7 +362,7 @@
           <tbody class="divide-y divide-gray-100">
             @if (filteredEntries.length === 0) {
               <tr>
-                <td colspan="11" class="px-4 py-8 text-center text-gray-400">
+                <td colspan="12" class="px-4 py-8 text-center text-gray-400">
                   {{ "licenseAdmin.globalList.noLicensesFound" | transloco }}
                 </td>
               </tr>
@@ -611,6 +619,17 @@
                         "licenseAdmin.globalList.zweitlizenzBadge" | transloco
                       }}</span
                     >
+                  }
+                </td>
+                <!-- Lizenzen gesamt. Eine Eigenschaft der Person, nicht
+                     dieser Zeile: gezaehlt wird ueber alle Saisons und
+                     Vereine. Fehlt das Feld (aeltere API), bleibt die Zelle
+                     leer statt eine 0 zu behaupten. -->
+                <td class="px-4 py-3 whitespace-nowrap text-gray-700">
+                  @if (e.licenses_approved_total !== undefined) {
+                    {{ e.licenses_approved_total }}
+                  } @else {
+                    <span class="text-gray-300">–</span>
                   }
                 </td>
                 <!-- Express -->

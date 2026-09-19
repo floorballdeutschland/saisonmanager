@@ -33,6 +33,7 @@ describe('LicenseAdminGlobalListComponent', () => {
                 csvBirthdate: 'Geburtsdatum',
                 csvHauptlizenz: 'Hauptlizenz',
                 csvZusatzlizenz: 'Zusatzlizenz',
+                csvLicensesTotal: 'Lizenzen gesamt',
               },
             },
           },
@@ -809,6 +810,28 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(blobs.length).toBe(1);
       return blobs[0].text().then((text) => text.split('\r\n'));
     }
+
+    // Die Zahl gehoert der Person, nicht der Zeile: Sie zaehlt ueber alle
+    // Saisons und Vereine. Fehlt sie (aeltere API), bleibt die Zelle leer --
+    // eine 0 waere die Aussage, die Person habe nie eine Lizenz gehabt.
+    it('fuehrt die Zahl der bisher erteilten Lizenzen mit', async () => {
+      const [header, row] = await exportRows([
+        { ...entry('Muster'), licenses_approved_total: 3 } as AdminLicenseEntry,
+      ]);
+
+      const spalte = header.split(';').indexOf('"Lizenzen gesamt"');
+      expect(spalte).toBeGreaterThan(-1);
+      expect(row.split(';')[spalte]).toBe('"3"');
+    });
+
+    it('laesst die Spalte leer, wenn die Zahl fehlt', async () => {
+      const [header, row] = await exportRows([
+        entry('Muster') as AdminLicenseEntry,
+      ]);
+
+      const spalte = header.split(';').indexOf('"Lizenzen gesamt"');
+      expect(row.split(';')[spalte]).toBe('""');
+    });
 
     it('fuehrt Spielernummer und volles Geburtsdatum vorne', async () => {
       const [header, row] = await exportRows([
