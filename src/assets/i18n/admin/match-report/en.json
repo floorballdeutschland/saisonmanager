@@ -77,7 +77,8 @@
     "proceedingProposal": "Proceeding proposal",
     "openProposals": "Go to overview",
     "checklistNegative": "{{count}} item(s) answered with no in the game day checklist",
-    "checklistVeto": "Host objection from {{date}} with {{count}} item(s) answered with no"
+    "checklistVeto": "Host objection from {{date}} with {{count}} item(s) answered with no",
+    "checklistItemRemoved": "Item was removed by the state association"
   },
   "proposalStatus": {
     "pending": "open",

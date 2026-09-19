@@ -81,6 +81,26 @@ describe('MatchReportIndexComponent', () => {
     req.flush({ truncated, games: rows });
   }
 
+  it('gibt den Fragetext eines verneinten Punktes aus', () => {
+    expect(
+      component.checklistQuestion({ item_id: 7, question: 'Halle in Ordnung?' })
+    ).toBe('Halle in Ordnung?');
+  });
+
+  // Ein vom Landesverband gelöschter Punkt kommt ohne Text. Die Verneinung
+  // steht weiter im Bericht, die Zeile darf also nicht leer bleiben.
+  it('setzt für einen Punkt ohne Text einen Hinweis ein', () => {
+    const fallback = component.checklistQuestion({
+      item_id: 7,
+      question: null,
+    });
+
+    expect(fallback).toBeTruthy();
+    expect(component.checklistQuestion({ item_id: 8, question: '   ' })).toBe(
+      fallback
+    );
+  });
+
   it('gruppiert Spiele nach Spieltag und zählt abgeschlossene Berichte', () => {
     loadWith([
       row({ id: 1, game_day_id: 100, game_status: 'finalized' }),
