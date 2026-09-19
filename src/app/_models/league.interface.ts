@@ -48,6 +48,13 @@ export interface League {
 
   deadline?: string;
   before_deadline?: boolean;
+  /**
+   * Mindestalter in Jahren, das am Tag der Lizenzbeantragung gegen das
+   * Geburtsdatum gerechnet wird und ab dem Geburtstag greift. Zweite Regel
+   * neben dem festen Stichtag (deadline), beide muessen erfuellt sein.
+   * null/undefined = keine Untergrenze.
+   */
+  minimum_age?: number | null;
   parental_consent_required: boolean;
   referee_feedback_enabled?: boolean;
 

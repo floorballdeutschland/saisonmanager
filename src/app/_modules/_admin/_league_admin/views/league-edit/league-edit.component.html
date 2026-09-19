@@ -386,6 +386,28 @@
                     class="flex-1"
                   />
                 </div>
+                <div>
+                  <div class="font-bold">
+                    {{ "leagueAdmin.edit.minimumAge" | transloco }}
+                  </div>
+                  <div class="text-sm text-fb-gray-400 mt-1">
+                    {{ "leagueAdmin.edit.minimumAgeHint" | transloco }}
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input
+                    [(ngModel)]="league.minimum_age"
+                    name="minimum_age"
+                    type="number"
+                    min="1"
+                    max="99"
+                    id="minimum_age"
+                    class="flex-1"
+                  />
+                  <span class="text-sm text-fb-gray-400">
+                    {{ "leagueAdmin.edit.years" | transloco }}
+                  </span>
+                </div>
               </div>
             </div>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">

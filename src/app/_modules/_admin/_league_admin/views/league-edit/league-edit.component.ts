@@ -494,6 +494,20 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
       );
     }
 
+    // Das Mindestalter ist optional. Ist es gesetzt, gelten dieselben Grenzen
+    // wie in der API-Validierung (1..99); ein leeres Feld liefert null und
+    // bedeutet "keine Untergrenze".
+    const minimumAge = league.minimum_age;
+    if (
+      minimumAge !== null &&
+      minimumAge !== undefined &&
+      (!Number.isInteger(minimumAge) || minimumAge < 1 || minimumAge > 99)
+    ) {
+      msg.push(
+        this._transloco.translate('leagueAdmin.notifications.errMinimumAge')
+      );
+    }
+
     if (league.legacy_league) {
       msg.push(
         this._transloco.translate('leagueAdmin.notifications.errLegacy')
