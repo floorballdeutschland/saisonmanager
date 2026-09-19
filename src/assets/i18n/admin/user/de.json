@@ -122,7 +122,8 @@
     "archiving": "Wird gespeichert …",
     "archiveDialogTitle": "Benutzer archivieren",
     "archiveDialogContent": "Soll das Konto „{{username}}\" wirklich archiviert werden? Der Login wird gesperrt; das Konto kann jederzeit reaktiviert werden.",
-    "archiveDialogSubmit": "Archivieren"
+    "archiveDialogSubmit": "Archivieren",
+    "teamAssignmentVmHint": "Dieses Konto ist zugleich Vereinsmanager. Die Auswahl gilt für seine Teammanager-Rolle; die Rechte als Vereinsmanager bleiben davon unberührt."
   },
   "notifications": {
     "userCreated": "Benutzer {{ name }} angelegt. Eine E-Mail zum Passwort setzen wurde versandt.",
