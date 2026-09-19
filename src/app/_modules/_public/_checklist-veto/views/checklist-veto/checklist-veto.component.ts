@@ -13,7 +13,7 @@ import { ChecklistVeto, ChecklistVetoAnswer } from '@floorball/types';
 
 /**
  * Einspruch des Ausrichtervereins gegen den Spieltagsbericht, den die
- * Spielleitung beim Abschluss des Spielberichts beantwortet hat. Erreichbar nur
+ * Spielleitung beim Abschluss des Spielberichts ausgefüllt hat. Erreichbar nur
  * über den Einmal-Link aus der Bestätigungsmail; der Token ist die einzige
  * Berechtigung, ein Benutzerkonto gibt es dazu nicht.
  *
