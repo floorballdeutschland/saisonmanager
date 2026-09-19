@@ -14,6 +14,7 @@ import {
   NotificationService,
 } from '@floorball/core';
 import {
+  ChecklistNegativeItem,
   GameDayReportOverview,
   GameDayReportRow,
   GameOperation,
@@ -282,6 +283,18 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       !!row.proceeding_proposal ||
       row.checklist_negative_count > 0 ||
       !!row.checklist_veto_submitted_at
+    );
+  }
+
+  /**
+   * Der Fragetext eines verneinten Punktes. Leer ist er, wenn der
+   * Landesverband den Punkt nachträglich gelöscht hat: Die Verneinung steht
+   * weiter im Bericht, einen verlässlichen Text gibt es dafür aber nicht mehr.
+   */
+  checklistQuestion(item: ChecklistNegativeItem): string {
+    return (
+      item.question?.trim() ||
+      this._transloco.translate('matchReportAdmin.linked.checklistItemRemoved')
     );
   }
 
