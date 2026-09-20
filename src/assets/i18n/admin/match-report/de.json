@@ -77,7 +77,8 @@
     "proceedingProposal": "Verfahrensvorschlag",
     "openProposals": "Zur Übersicht",
     "checklistNegative": "{{count}} verneinte(r) Punkt(e) im Spieltagsbericht",
-    "checklistVeto": "Einspruch des Ausrichters vom {{date}} mit {{count}} verneinten Punkt(en)"
+    "checklistVeto": "Einspruch des Ausrichters vom {{date}} mit {{count}} verneinten Punkt(en)",
+    "checklistItemRemoved": "Punkt wurde vom Landesverband entfernt"
   },
   "proposalStatus": {
     "pending": "offen",

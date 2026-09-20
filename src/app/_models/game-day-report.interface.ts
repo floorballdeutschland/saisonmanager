@@ -59,10 +59,27 @@ export interface GameDayReportRow {
   referee_report: { uploaded_at: string } | null;
   proceeding_proposal: { id: number; status: string } | null;
   checklist_negative_count: number;
+  /**
+   * Die verneinten Punkte des Spieltagsberichts, jeder mit seinem Fragetext.
+   * Optional, damit die Ansicht auch gegen eine ältere API läuft, die nur die
+   * Anzahl kennt.
+   */
+  checklist_negative_items?: ChecklistNegativeItem[];
   checklist_veto_submitted_at: string | null;
   checklist_veto_negative_count: number;
+  checklist_veto_negative_items?: ChecklistNegativeItem[];
 
   flags: GameReportFlags;
+}
+
+/**
+ * Ein verneinter Punkt des Spieltagsberichts. `question` ist leer, wenn der
+ * Landesverband den Punkt nachträglich gelöscht hat -- dann gibt es keinen
+ * verlässlichen Text mehr, die Verneinung selbst bleibt aber bestehen.
+ */
+export interface ChecklistNegativeItem {
+  item_id: number;
+  question: string | null;
 }
 
 export interface GameDayReportOverview {
