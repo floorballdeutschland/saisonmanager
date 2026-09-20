@@ -3,8 +3,10 @@
     <!-- Ein Symbol je Status, Zuordnung in STATUS_ICONS. Der Klartext steht als
          Tooltip und Vorlesetext daran: Die Form unterscheidet die Status, den
          Namen nennt sie nicht.
-         viewBox im 24er-Raster, in dem die Pfade gezeichnet sind -- die
-         Vorlage stand bis hierher auf 22 und schnitt den Kreis rechts unten an. -->
+         viewBox im 24er-Raster, in dem die Pfade gezeichnet sind. Die Vorlage
+         stand bis hierher auf 22: Abgeschnitten war nichts (der Kreis endet
+         mit Strichbreite bei 21,75), aber die Zeichnung saß neben der Mitte,
+         weil ihr Mittelpunkt bei 12 liegt und der der Box bei 11. -->
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
@@ -15,10 +17,10 @@
       [ngClass]="statusIcon.colorClass"
       role="img"
     >
-      <!-- Der Klartext als <title>-Kind, nicht als title-Attribut: Ein <svg>
-           hat keine title-Eigenschaft, Angular lehnt die Bindung ab (NG0303).
-           Das Kind ist ohnehin der richtige Weg -- es ist Tooltip und
-           Vorlesetext in einem. -->
+      <!-- Der Klartext als <title>-Kind, nicht als title-Attribut: Das Kind
+           ist bei SVG der vorgesehene Weg und ist Tooltip und Vorlesetext in
+           einem. Eine Bindung `[title]` am <svg> wies Angular hier
+           nachgemessen ab (NG0303, "isn't a known property of 'svg'"). -->
       <title>{{ statusIcon.labelKey | transloco }}</title>
       @for (path of statusIcon.paths; track path) {
         <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="path" />

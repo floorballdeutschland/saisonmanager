@@ -6,15 +6,15 @@ import { PlayerLicenseHistory } from '@floorball/types';
  * Schlüssel des Klartextes für Tooltip und Vorlesetext.
  */
 export interface LicenseStatusIcon {
-  labelKey: string;
-  colorClass: string;
-  paths: string[];
+  readonly labelKey: string;
+  readonly colorClass: string;
+  readonly paths: readonly string[];
 }
 
 /**
- * Der Kreis, in dem jedes Symbol steht. Die Statuszeile ist 20 Pixel hoch und
- * steht in einer Liste: Eine gemeinsame Außenform macht die Spalte ruhig, das
- * Innenzeichen trägt die Unterscheidung.
+ * Der Kreis, in dem jedes Symbol steht. Die Symbole sind klein (`w-5 h-5` in
+ * der Vorlage) und stehen untereinander: Eine gemeinsame Außenform macht die
+ * Spalte ruhig, das Innenzeichen trägt die Unterscheidung.
  */
 const CIRCLE = 'M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
 
@@ -22,9 +22,13 @@ const CIRCLE = 'M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
  * Ein Symbol je Lizenzstatus (License::NAMES in der API).
  *
  * Die Farbe sagt, ob der Spieler spielen darf: grün erteilt, gelb beantragt,
- * rot nicht spielberechtigt, grau ungültig. Innerhalb einer Farbe unterscheidet
- * die Form, denn `abgelehnt` und `gesperrt` sind beides Rot und `gelöscht`,
- * `ignoriert` und `zurückgezogen` beides Grau.
+ * rot nicht spielberechtigt, grau ohne Spielberechtigung aus einem Grund, der
+ * niemanden mehr betrifft (gelöscht, ignoriert, zurückgezogen, weitergezogen).
+ * Sie folgt damit derselben Einteilung wie `licenseStatusBadgeClass`
+ * (_helpers/_utils/license-status.ts), die das Statusabzeichen der
+ * Lizenzlisten färbt -- dasselbe Merkmal soll nicht zweimal verschieden
+ * beantwortet werden. Innerhalb einer Farbe unterscheidet die Form, denn
+ * `abgelehnt` und `gesperrt` sind beides Rot und vier Status sind Grau.
  *
  * Bis hierher gab es drei Symbole: Haken für erteilt, Kreuz für abgelehnt und
  * ein Fragezeichen für alles andere. In dem Fragezeichen lagen `beantragt`,
@@ -57,10 +61,11 @@ const STATUS_ICONS: Record<number, LicenseStatusIcon> = {
     paths: ['M15 12H9', CIRCLE],
   },
   // Transfer: Pfeil nach rechts -- die Lizenz ist zu einer anderen Mannschaft
-  // weitergezogen
+  // weitergezogen. Grau wie die übrigen ungültigen: `licenseStatusBadgeClass`
+  // führt für 6 keinen eigenen Fall und färbt das Abzeichen ebenfalls grau.
   6: {
     labelKey: 'licenseAdmin.teamEntry.status.transfer',
-    colorClass: 'text-blue-600',
+    colorClass: 'text-fb-gray-400',
     paths: ['M9 12h6m-2.25-2.25L15 12l-2.25 2.25', CIRCLE],
   },
   // ignoriert: Pause -- reiner Altbestand, stillgelegt statt gelöscht
@@ -125,8 +130,13 @@ export class LicenseAdminTeamEntryComponent {
   @Input()
   teamId!: number;
 
+  /**
+   * Der History-Eintrag, dessen Status die Zeile zeigt. Optional, weil der
+   * Aufrufer `license.history[license.history.length - 1]` übergibt und das
+   * bei leerer History `undefined` ist.
+   */
   @Input()
-  lastHistory!: PlayerLicenseHistory;
+  lastHistory?: PlayerLicenseHistory | null;
 
   /**
    * Aus der Lizenz der Liga-Antwort. Fehlt der Name, ist die Mannschaft nicht
@@ -140,21 +150,31 @@ export class LicenseAdminTeamEntryComponent {
   leagueName?: string | null;
 
   /**
-   * Symbol zum Status des jüngsten History-Eintrags.
+   * Symbol zum Status des übergebenen History-Eintrags.
    *
-   * Die Status-ID liegt in der JSONB-History nicht typgarantiert vor (siehe
-   * League#build_license_items, das an zwei Stellen `to_i` schreibt). Der
-   * vorherige `@switch` in der Vorlage verglich streng: Eine erteilte Lizenz
-   * mit '1' als Zeichenkette landete im Fragezeichen. Der Zugriff auf die
-   * Tabelle trifft beide Schreibweisen, weil Objektschlüssel in JavaScript
-   * ohnehin Zeichenketten sind; `Number()` sagt das ausdrücklich, statt es dem
-   * nächsten Umbau zu überlassen.
+   * ACHTUNG: Das ist der Eintrag, den der Aufrufer heraussucht, nicht
+   * zwangsläufig der jüngste. `license-admin-detail.component.html` nimmt das
+   * letzte Array-Element, während die API den aktuellen Status ausdrücklich
+   * über `max_by { created_at }` bestimmt (License.current_status_id, "sortiert
+   * ist sie nirgends garantiert"). Diese Zeile zeigt also, was sie bekommt.
    *
-   * Fehlt die History ganz, bleibt es beim Fragezeichen -- ein Status, der
-   * nicht dasteht, soll nicht als erteilt gelesen werden.
+   * `Number()` trifft die Tabelle typrichtig: Die Status-ID liegt in der
+   * JSONB-History nicht typgarantiert vor -- die API wandelt sie mehrfach mit
+   * `to_i` um (League#build_license_items) --, und ein Zugriff mit einer
+   * Zeichenkette wäre auf `Record<number, …>` ein Übersetzungsfehler.
+   * Randschreibweisen wie `'01'` nimmt die Umwandlung mit. Der vorherige
+   * `@switch` in der Vorlage verglich streng: Eine erteilte Lizenz mit '1' als
+   * Zeichenkette landete im Fragezeichen.
+   *
+   * Der Rückfall ist ausdrücklich getypt, weil `Record<number, …>` ohne
+   * `noUncheckedIndexedAccess` für jede Zahl einen Treffer behauptet und das
+   * `??` sonst wie toter Code aussieht. Fehlt der Eintrag ganz, bleibt es beim
+   * Fragezeichen -- ein Status, der nicht dasteht, soll nicht als erteilt
+   * gelesen werden.
    */
   public get statusIcon(): LicenseStatusIcon {
     const statusId = Number(this.lastHistory?.license_status_id);
-    return STATUS_ICONS[statusId] ?? UNKNOWN_ICON;
+    const icon: LicenseStatusIcon | undefined = STATUS_ICONS[statusId];
+    return icon ?? UNKNOWN_ICON;
   }
 }
