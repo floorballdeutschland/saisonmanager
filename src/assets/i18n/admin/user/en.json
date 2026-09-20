@@ -122,7 +122,8 @@
     "archiving": "Saving …",
     "archiveDialogTitle": "Archive user",
     "archiveDialogContent": "Do you really want to archive the account \"{{username}}\"? Login will be blocked; the account can be reactivated at any time.",
-    "archiveDialogSubmit": "Archive"
+    "archiveDialogSubmit": "Archive",
+    "teamAssignmentVmHint": "This account is also a club manager. The selection applies to its team manager role; its club manager rights are unaffected."
   },
   "notifications": {
     "userCreated": "User {{ name }} created. An email to set the password has been sent.",

@@ -144,9 +144,13 @@ export class UserEditComponent implements OnInit, OnDestroy {
           // vorliegen, daher auf number normalisieren: das Suchfeld selbst
           // vergleicht locker, die strikten Vergleiche in selectedClubName und
           // availableTeams brauchen aber eine Zahl.
-          const clubScopedRole = user.roles?.find((r) =>
-            [4, 5].includes(r.user_group_id)
-          );
+          // Die Teammanager-Rolle zuerst: An ihrem Verein hängt die
+          // Mannschaftsauswahl. Trägt das Konto beide Rollen, führen sie
+          // ohnehin denselben Verein -- ein Vereinswechsel zieht serverseitig
+          // beide mit (Admin::UsersController#apply_club_change).
+          const clubScopedRole =
+            user.roles?.find((r) => r.user_group_id === 5) ??
+            user.roles?.find((r) => r.user_group_id === 4);
           const clubId = clubScopedRole?.club_id ?? user.club_id;
           const parsedClubId = clubId != null ? Number(clubId) : null;
           // Kein NaN in selectedClubId zulassen – sonst würde ein defekter
@@ -260,6 +264,23 @@ export class UserEditComponent implements OnInit, OnDestroy {
     return vmOrTm?.user_group_id ?? null;
   }
 
+  get hasVmRole(): boolean {
+    return !!this.user?.roles?.some((r) => r.user_group_id === 4);
+  }
+
+  get hasTmRole(): boolean {
+    return !!this.user?.roles?.some((r) => r.user_group_id === 5);
+  }
+
+  /**
+   * Konto mit Vereins- UND Teammanager-Rolle. Beides nebeneinander ist erlaubt
+   * und im Verein üblich: Wer den Verein verwaltet, betreut oft zusätzlich eine
+   * bestimmte Mannschaft.
+   */
+  get hasVmAndTmRole(): boolean {
+    return this.hasVmRole && this.hasTmRole;
+  }
+
   get userPrimaryRoleId(): number | null {
     if (!this.user) return null;
     const role = this.user.roles?.find((r) =>
@@ -268,10 +289,17 @@ export class UserEditComponent implements OnInit, OnDestroy {
     return role?.user_group_id ?? null;
   }
 
+  /**
+   * Der Umschalter VM <-> TM ersetzt die Rolle, er ergänzt sie nicht: Der
+   * Server bildet dabei JEDE Vereinsrolle des Kontos auf die neue ab. Für ein
+   * Konto, das beide Rollen trägt, wäre das ein stiller Verlust -- dort werden
+   * die Rollen einzeln über den Abschnitt „Rollen" gepflegt.
+   */
   get canChangeRole(): boolean {
     return (
       !this.isSelf &&
       this.currentRoleId !== null &&
+      !this.hasVmAndTmRole &&
       (this.canAssignClubRoles || this.isVm)
     );
   }
@@ -282,12 +310,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
   }
 
   get showClubAssignment(): boolean {
-    const roleId = this.userPrimaryRoleId;
     return (
       (this.canAssignClubRoles || this.isVm) &&
       !this.isSelf &&
-      roleId !== null &&
-      [4, 5].includes(roleId)
+      (this.hasVmRole || this.hasTmRole)
     );
   }
 
@@ -308,8 +334,16 @@ export class UserEditComponent implements OnInit, OnDestroy {
     return club?.teams ?? [];
   }
 
+  /**
+   * An der vorhandenen Teammanager-Rolle, nicht an der „aktuellen" Rolle:
+   * `currentRoleId` liefert die erste Vereinsrolle des Kontos, und die ist bei
+   * einem Vereinsmanager mit zusätzlicher Teammanager-Rolle die VM-Rolle. Die
+   * Mannschaftsauswahl blieb damit verborgen, obwohl die Rolle vergeben war --
+   * das Konto trug eine Teammanager-Rolle ohne Mannschaft und damit ohne
+   * Wirkung.
+   */
   get showTeamAssignment(): boolean {
-    return this.currentRoleId === 5 && this.availableTeams.length > 0;
+    return this.hasTmRole && this.availableTeams.length > 0;
   }
 
   isTeamSelected(teamId: number): boolean {
