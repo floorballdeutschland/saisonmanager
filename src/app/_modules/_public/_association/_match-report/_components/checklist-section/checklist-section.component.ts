@@ -25,16 +25,16 @@ import { ChecklistAnswer, ChecklistItem, Game } from '@floorball/types';
 const SAVE_DEBOUNCE_MS = 600;
 
 /**
- * Die Spieltagscheckliste des Landesverbands, ausfüllbar schon in der
+ * Der Spieltagsbericht des Landesverbands, ausfüllbar schon in der
  * Spielvorbereitung.
  *
- * Gefragt wurde sie bisher ausschließlich im Fenster beim Abschließen des
+ * Gefragt wurde er bisher ausschließlich im Fenster beim Abschließen des
  * Spielberichts, also nach dem Schlusspfiff. Etliche Fragen betreffen aber den
  * Zustand der Halle und die Vorbereitung -- die weiß das Sekretariat vor dem
  * ersten Bully, und nach dem Spiel steht es unter Zeitdruck. Deshalb steht die
  * Liste zusätzlich hier, bei den übrigen Angaben zum Spiel.
  *
- * Sie ersetzt das Fenster am Ende nicht. Das bleibt der Riegel, an dem die
+ * Er ersetzt das Fenster am Ende nicht. Das bleibt der Riegel, an dem die
  * Vollständigkeit hängt, und es zeigt den hier gesetzten Stand vorbelegt: Wer
  * vorher ausgefüllt hat, bestätigt am Ende nur noch. Der Server prüft beim
  * Abschließen ohnehin gegen die aktuellen Fragen, ein vorab gesetzter Stand
@@ -133,7 +133,7 @@ export class ChecklistSectionComponent implements OnInit, OnChanges, OnDestroy {
         } else {
           this.saved = false;
           this._notificationService.error(
-            'Die Spieltagscheckliste konnte nicht gespeichert werden. Bitte erneut versuchen.',
+            'Der Spieltagsbericht konnte nicht gespeichert werden. Bitte erneut versuchen.',
             { autoClose: true }
           );
         }

@@ -71,9 +71,7 @@ describe('ChecklistSectionComponent', () => {
     create({ checklist_active: false, checklist_items: [] });
 
     expect(component.visible).toBeFalse();
-    expect(fixture.nativeElement.textContent).not.toContain(
-      'Spieltagscheckliste'
-    );
+    expect(fixture.nativeElement.textContent).not.toContain('Spieltagsbericht');
   });
 
   it('zeigt die Fragen und benennt die offenen', () => {

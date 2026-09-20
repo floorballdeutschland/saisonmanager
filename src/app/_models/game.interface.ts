@@ -1,4 +1,4 @@
-// Die Fragen der Spieltagscheckliste gehören dem Landesverband, der Typ steht
+// Die Fragen des Spieltagsberichts gehören dem Landesverband, der Typ steht
 // deshalb bei ihm.
 import { ChecklistItem } from './state-association.interface';
 
@@ -294,7 +294,7 @@ export interface GameScan {
 }
 
 /**
- * Die Antwort der Spielleitung auf eine Frage der Spieltagscheckliste. `question` steht
+ * Die Antwort der Spielleitung auf eine Frage des Spieltagsberichts. `question` steht
  * bewusst mit in der Antwort: Der Landesverband darf seine Fragen jederzeit
  * umformulieren oder löschen, und ein gespeicherter Spielbericht soll später
  * noch zeigen, was tatsächlich gefragt wurde.
