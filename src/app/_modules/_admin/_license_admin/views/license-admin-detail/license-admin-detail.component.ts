@@ -170,23 +170,28 @@ export class LicenseAdminDetailComponent implements OnInit {
    * trägt, ist das eine falsche Aussage statt eines blassen Hakens.
    *
    * Verglichen wird als Zeichenkette, wie in der API (`created_at.to_s`): Die
-   * Zeitstempel kommen als ISO-8601 aus JSON und sortieren so richtig. Ein
-   * Eintrag ohne Zeitstempel verliert gegen jeden datierten; bleiben nur
-   * undatierte übrig, gewinnt der letzte -- also die Reihenfolge von vorher.
+   * Zeitstempel kommen als ISO-8601 aus JSON und sortieren so richtig.
+   *
+   * Das letzte Array-Element ist der Startwert, und ersetzt wird nur bei einem
+   * ECHT jüngeren Eintrag. Damit bleibt alles beim Alten, wo die Zeitstempel
+   * nichts entscheiden: Bei gleichen Zeitstempeln und bei einer History ganz
+   * ohne sie gewinnt weiterhin der letzte Eintrag. Ein Eintrag ohne Zeitstempel
+   * verliert gegen jeden datierten, an welcher Stelle er auch steht.
+   *
+   * Rückgabetyp `PlayerLicenseHistory` wie bisher: Bei leerer History ist das
+   * Ergebnis `undefined`, genauso wie `history[history.length - 1]` vorher --
+   * ohne `noUncheckedIndexedAccess` sieht TypeScript weder das eine noch das
+   * andere. Die Zeile bekommt also denselben Vertrag wie zuvor.
    */
-  public latestHistory(
-    license: PlayerLicense
-  ): PlayerLicenseHistory | undefined {
-    return (license?.history ?? []).reduce<PlayerLicenseHistory | undefined>(
-      (newest, entry) => {
-        if (!newest) return entry;
+  public latestHistory(license: PlayerLicense): PlayerLicenseHistory {
+    const history = license?.history ?? [];
 
-        return String(entry?.created_at ?? '') >=
-          String(newest.created_at ?? '')
+    return history.reduce(
+      (newest, entry) =>
+        String(entry?.created_at ?? '') > String(newest?.created_at ?? '')
           ? entry
-          : newest;
-      },
-      undefined
+          : newest,
+      history[history.length - 1]
     );
   }
 
