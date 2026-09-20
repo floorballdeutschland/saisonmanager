@@ -301,9 +301,13 @@
         <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
           {{ "userAdmin.edit.teamAssignment" | transloco }}
         </div>
-        <p class="text-sm text-fb-gray-500 mb-3">
-          {{ "userAdmin.edit.teamAssignmentHint" | transloco }}
-        </p>
+        <!-- Der Satz nennt den TM ausdruecklich und passt an einem reinen
+             Vereinsmanager-Konto nicht; dort steht der Hinweis darunter. -->
+        @if (!isVmWithoutTmRole) {
+          <p class="text-sm text-fb-gray-500 mb-3">
+            {{ "userAdmin.edit.teamAssignmentHint" | transloco }}
+          </p>
+        }
         <!-- Konto mit beiden Vereinsrollen: Die Auswahl gehört zur
              Teammanager-Rolle, die Vereinsmanager-Rolle bleibt davon
              unberührt. Ohne den Hinweis wirkt die Mannschaftsauswahl an einem

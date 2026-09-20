@@ -101,6 +101,23 @@ describe('UserEditComponent', () => {
     expect(setup([role(5)]).isVmWithoutTmRole).toBeFalse();
   });
 
+  // Vorbelegt ist immer nur ein Verein. Wuerde nur gegen dessen Mannschaften
+  // eingedampft, loeschte das naechste Speichern die Zuordnungen des zweiten
+  // Vereins -- ohne dass jemand die Auswahl angefasst haette.
+  it('behaelt die Zuordnung eines zweiten Vereins beim Eindampfen', () => {
+    const component = setup([role(4, 7), role(4, 8)]);
+    component.clubsWithTeams = [
+      { id: 7, name: 'Verein A', teams: [{ id: 99, name: 'A 1' }] },
+      { id: 8, name: 'Verein B', teams: [{ id: 111, name: 'B 1' }] },
+    ] as unknown as ClubWithTeams[];
+    component.editableTeamIds = [99, 111, 4711];
+
+    component['_pruneUnassignableTeamIds']();
+
+    // 4711 gibt es in keiner sichtbaren Liste mehr -- tote Zuweisung.
+    expect(component.editableTeamIds).toEqual([99, 111]);
+  });
+
   // Ohne Mannschaften des Vereins gibt es nichts auszuwaehlen.
   it('zeigt sie ohne zuweisbare Mannschaften niemandem', () => {
     const component = setup([role(4)]);

@@ -124,7 +124,7 @@
     "archiveDialogContent": "Do you really want to archive the account \"{{username}}\"? Login will be blocked; the account can be reactivated at any time.",
     "archiveDialogSubmit": "Archive",
     "teamAssignmentVmHint": "This account is also a club manager. The selection applies to its team manager role; its club manager rights are unaffected.",
-    "teamAssignmentVmOnlyHint": "For the selected teams this account is treated like a team manager: it receives the team mail (game day report, referee feedback) instead of the club distribution list. Its club manager rights are unaffected, including for the remaining teams."
+    "teamAssignmentVmOnlyHint": "For the selected teams this account is treated like a team manager: the guest team's game day report goes to this account instead of the club distribution list, and referee feedback is added on top. Its club manager rights are unaffected, including for the club's remaining teams."
   },
   "notifications": {
     "userCreated": "User {{ name }} created. An email to set the password has been sent.",
