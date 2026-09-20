@@ -304,6 +304,15 @@
         <p class="text-sm text-fb-gray-500 mb-3">
           {{ "userAdmin.edit.teamAssignmentHint" | transloco }}
         </p>
+        <!-- Konto mit beiden Vereinsrollen: Die Auswahl gehört zur
+             Teammanager-Rolle, die Vereinsmanager-Rolle bleibt davon
+             unberührt. Ohne den Hinweis wirkt die Mannschaftsauswahl an einem
+             Vereinsmanager-Konto wie eine Einschränkung seiner Rechte. -->
+        @if (hasVmAndTmRole) {
+          <p class="text-sm text-fb-gray-500 mb-3">
+            {{ "userAdmin.edit.teamAssignmentVmHint" | transloco }}
+          </p>
+        }
         <div class="flex flex-col gap-1 mb-4">
           @for (team of availableTeams; track team) {
             <label class="flex items-center gap-2 text-sm cursor-pointer">
