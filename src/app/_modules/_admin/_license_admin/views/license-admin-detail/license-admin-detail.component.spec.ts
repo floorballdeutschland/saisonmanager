@@ -11,6 +11,7 @@ import {
   GenderKey,
   League,
   PlayerLicense,
+  PlayerLicenseHistory,
   PlayerOtherLicense,
   PlayerWithLicense,
   TeamWithPlayers,
@@ -31,6 +32,81 @@ describe('LicenseAdminDetailComponent', () => {
   it('should create', () => {
     const fixture = TestBed.createComponent(LicenseAdminDetailComponent);
     expect(fixture.componentInstance).toBeTruthy();
+  });
+
+  describe('latestHistory', () => {
+    function entry(statusId: number, createdAt?: string): PlayerLicenseHistory {
+      return {
+        license_status_id: statusId,
+        created_at: createdAt,
+        created_by: 1,
+      } as unknown as PlayerLicenseHistory;
+    }
+
+    function component(): LicenseAdminDetailComponent {
+      return TestBed.createComponent(LicenseAdminDetailComponent)
+        .componentInstance;
+    }
+
+    function withHistory(history: PlayerLicenseHistory[]): PlayerLicense {
+      return { id: 'l1', team_id: 1, history } as PlayerLicense;
+    }
+
+    // Der Kern: Die API hängt die History an vielen Stellen an und garantiert
+    // keine Sortierung; sie liest den aktuellen Status deshalb über
+    // `max_by { created_at }`. Die Vorlage nahm bis hierher das letzte
+    // Array-Element -- eine gesperrte Lizenz zeigte dann `erteilt`.
+    it('nimmt den jüngsten Eintrag, nicht den letzten im Array', () => {
+      const suspended = entry(9, '2026-09-20T10:00:00Z');
+      const approved = entry(1, '2026-09-01T10:00:00Z');
+
+      const latest = component().latestHistory(
+        withHistory([suspended, approved])
+      );
+
+      expect(latest?.license_status_id).toBe(9);
+    });
+
+    it('nimmt bei aufsteigender Reihenfolge weiterhin den letzten', () => {
+      const approved = entry(1, '2026-09-01T10:00:00Z');
+      const suspended = entry(9, '2026-09-20T10:00:00Z');
+
+      const latest = component().latestHistory(
+        withHistory([approved, suspended])
+      );
+
+      expect(latest?.license_status_id).toBe(9);
+    });
+
+    // Altbestand ohne Zeitstempel: Er darf einen datierten Eintrag nicht
+    // verdrängen, egal an welcher Stelle er steht.
+    it('lässt einen Eintrag ohne Zeitstempel gegen einen datierten verlieren', () => {
+      const undated = entry(2);
+      const approved = entry(1, '2026-09-01T10:00:00Z');
+
+      expect(
+        component().latestHistory(withHistory([approved, undated]))
+          ?.license_status_id
+      ).toBe(1);
+      expect(
+        component().latestHistory(withHistory([undated, approved]))
+          ?.license_status_id
+      ).toBe(1);
+    });
+
+    // Tragen alle Einträge keinen Zeitstempel, bleibt es bei der Reihenfolge
+    // von vorher.
+    it('nimmt unter lauter undatierten Einträgen den letzten', () => {
+      const latest = component().latestHistory(
+        withHistory([entry(2), entry(1)])
+      );
+
+      expect(latest?.license_status_id).toBe(1);
+    });
+
+    it('gibt ohne History nichts zurück', () => {
+      expect(component().latestHistory(withHistory([]))).toBeUndefined();
+    });
   });
 
   describe('currentSeasonLicenses', () => {

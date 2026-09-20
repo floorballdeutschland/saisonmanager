@@ -11,6 +11,7 @@ import {
   GfRole,
   League,
   PlayerLicense,
+  PlayerLicenseHistory,
   PlayerOtherLicense,
   PlayerWithLicense,
   TeamWithPlayers,
@@ -153,6 +154,39 @@ export class LicenseAdminDetailComponent implements OnInit {
     if (seasonId == null) return licenses;
     return licenses.filter(
       (l) => l.season_id != null && String(l.season_id) === String(seasonId)
+    );
+  }
+
+  /**
+   * Der jüngste History-Eintrag einer Lizenz -- der, dessen Status die Zeile
+   * zeigt.
+   *
+   * Nicht das letzte Array-Element, wie es die Vorlage bis hierher nahm: Die
+   * History wird in der API an vielen Stellen angehängt und ist nirgends
+   * sortiert. Die API liest den aktuellen Status deshalb ausdrücklich über
+   * `max_by { created_at }` (LicenseEffectiveStatus, "sortiert ist sie nirgends
+   * garantiert"). Eine Lizenz, deren jüngster Eintrag `gesperrt` lautet, konnte
+   * hier also `erteilt` zeigen -- seit die Zeile je Status ein eigenes Symbol
+   * trägt, ist das eine falsche Aussage statt eines blassen Hakens.
+   *
+   * Verglichen wird als Zeichenkette, wie in der API (`created_at.to_s`): Die
+   * Zeitstempel kommen als ISO-8601 aus JSON und sortieren so richtig. Ein
+   * Eintrag ohne Zeitstempel verliert gegen jeden datierten; bleiben nur
+   * undatierte übrig, gewinnt der letzte -- also die Reihenfolge von vorher.
+   */
+  public latestHistory(
+    license: PlayerLicense
+  ): PlayerLicenseHistory | undefined {
+    return (license?.history ?? []).reduce<PlayerLicenseHistory | undefined>(
+      (newest, entry) => {
+        if (!newest) return entry;
+
+        return String(entry?.created_at ?? '') >=
+          String(newest.created_at ?? '')
+          ? entry
+          : newest;
+      },
+      undefined
     );
   }
 
