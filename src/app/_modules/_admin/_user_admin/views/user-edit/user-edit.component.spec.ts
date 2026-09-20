@@ -85,10 +85,44 @@ describe('UserEditComponent', () => {
     expect(component.showTeamAssignment).toBeTrue();
   });
 
-  it('zeigt sie einem reinen Vereinsmanager nicht', () => {
+  // Ein Vereinsmanager kann sich Mannschaften seines Vereins zuordnen und wird
+  // für diese behandelt wie ein Teammanager -- ohne zweite Rolle. Vorher war
+  // dafür der Umweg über ein Downgrade zum TM und zurück nötig.
+  it('zeigt die Mannschaftsauswahl auch einem reinen Vereinsmanager', () => {
     const component = setup([role(4)]);
 
     expect(component.hasVmAndTmRole).toBeFalse();
+    expect(component.isVmWithoutTmRole).toBeTrue();
+    expect(component.showTeamAssignment).toBeTrue();
+  });
+
+  it('haelt den Hinweis fuer ein Konto mit beiden Rollen auseinander', () => {
+    expect(setup([role(4), role(5)]).isVmWithoutTmRole).toBeFalse();
+    expect(setup([role(5)]).isVmWithoutTmRole).toBeFalse();
+  });
+
+  // Vorbelegt ist immer nur ein Verein. Wuerde nur gegen dessen Mannschaften
+  // eingedampft, loeschte das naechste Speichern die Zuordnungen des zweiten
+  // Vereins -- ohne dass jemand die Auswahl angefasst haette.
+  it('behaelt die Zuordnung eines zweiten Vereins beim Eindampfen', () => {
+    const component = setup([role(4, 7), role(4, 8)]);
+    component.clubsWithTeams = [
+      { id: 7, name: 'Verein A', teams: [{ id: 99, name: 'A 1' }] },
+      { id: 8, name: 'Verein B', teams: [{ id: 111, name: 'B 1' }] },
+    ] as unknown as ClubWithTeams[];
+    component.editableTeamIds = [99, 111, 4711];
+
+    component['_pruneUnassignableTeamIds']();
+
+    // 4711 gibt es in keiner sichtbaren Liste mehr -- tote Zuweisung.
+    expect(component.editableTeamIds).toEqual([99, 111]);
+  });
+
+  // Ohne Mannschaften des Vereins gibt es nichts auszuwaehlen.
+  it('zeigt sie ohne zuweisbare Mannschaften niemandem', () => {
+    const component = setup([role(4)]);
+    component.clubsWithTeams = [];
+
     expect(component.showTeamAssignment).toBeFalse();
   });
 
