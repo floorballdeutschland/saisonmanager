@@ -1,6 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 
+import { By } from '@angular/platform-browser';
+
 import { LicenseAdminDetailComponent } from './license-admin-detail.component';
+import { LicenseAdminTeamEntryComponent } from '../license-admin-team-entry/license-admin-team-entry.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
@@ -94,14 +97,52 @@ describe('LicenseAdminDetailComponent', () => {
       ).toBe(1);
     });
 
-    // Tragen alle Einträge keinen Zeitstempel, bleibt es bei der Reihenfolge
-    // von vorher.
-    it('nimmt unter lauter undatierten Einträgen den letzten', () => {
+    // Tragen alle Einträge keinen Zeitstempel, entscheidet die Reihenfolge --
+    // und zwar wie in der API: `max_by` gibt bei Gleichstand den ersten
+    // Treffer zurück.
+    it('nimmt unter lauter undatierten Einträgen den ersten', () => {
       const latest = component().latestHistory(
         withHistory([entry(2), entry(1)])
       );
 
-      expect(latest?.license_status_id).toBe(1);
+      expect(latest?.license_status_id).toBe(2);
+    });
+
+    // Gleichstand ist der Fall, in dem eine naheliegende Umstellung (etwa auf
+    // `sort().reverse()[0]` oder auf `>=`) still etwas anderes liefert. Die
+    // API ist hier eindeutig: `max_by` nimmt den ersten der Gleichstehenden.
+    it('nimmt bei gleichen Zeitstempeln den ersten Eintrag', () => {
+      const latest = component().latestHistory(
+        withHistory([
+          entry(9, '2026-09-20T10:00:00Z'),
+          entry(1, '2026-09-20T10:00:00Z'),
+        ])
+      );
+
+      expect(latest?.license_status_id).toBe(9);
+    });
+
+    // Mit zwei Einträgen ist "der jüngste" nicht von "einer der beiden" zu
+    // unterscheiden. Produktionshistorien sind länger (beantragt, erteilt,
+    // gesperrt, entsperrt), und der jüngste steht dort auch mal in der Mitte.
+    it('findet den jüngsten Eintrag auch in der Mitte einer längeren History', () => {
+      const latest = component().latestHistory(
+        withHistory([
+          entry(2, '2026-08-01T10:00:00Z'),
+          entry(1, '2026-08-15T10:00:00Z'),
+          entry(9, '2026-09-20T10:00:00Z'),
+          entry(3, '2026-08-20T10:00:00Z'),
+        ])
+      );
+
+      expect(latest?.license_status_id).toBe(9);
+    });
+
+    // Der Schutzzweig `license?.history ?? []`: Altbestände ohne History-Feld.
+    it('kommt mit einer Lizenz ohne History-Feld zurecht', () => {
+      const withoutHistory = { id: 'l1', team_id: 1 } as PlayerLicense;
+
+      expect(component().latestHistory(withoutHistory)).toBeUndefined();
     });
 
     it('gibt ohne History nichts zurück', () => {
@@ -352,6 +393,70 @@ describe('LicenseAdminDetailComponent', () => {
 
   // Das Geschlecht liegt im Payload (Player#full_hash) und stand in der
   // Antragsmaske trotzdem nicht. Ein Getter-Test würde das nicht bemerken:
+  // Der Fehler sass in der BINDUNG, nicht in einer Methode: Die Vorlage gab
+  // `license.history[license.history.length - 1]` an die Zeile weiter. Eine
+  // Getter-Prüfung allein bemerkt es nicht, wenn jemand die Bindung wieder
+  // zurückdreht oder beim Umbau der Karte kopiert.
+  describe('Statusquelle der Lizenzzeile', () => {
+    it('reicht den jüngsten Eintrag an die Zeile weiter, nicht den letzten', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [
+          HttpClientTestingModule,
+          RouterTestingModule,
+          UikitPlayerModule,
+          UikitCommonModule,
+          FormsModule,
+          getTranslocoTestingModule(),
+        ],
+        declarations: [
+          LicenseAdminDetailComponent,
+          LicenseAdminTeamEntryComponent,
+        ],
+      });
+      const fixture = TestBed.createComponent(LicenseAdminDetailComponent);
+      const component = fixture.componentInstance;
+      component.initiallyOpen = true;
+      component.allClubs = [];
+      component.player = {
+        id: 1,
+        first_name: 'Mia',
+        last_name: 'Muster',
+        birthdate: '2000-05-01',
+        clubs: [],
+        // Unsortiert: der jüngste Eintrag steht vorn. Ohne Liga filtert
+        // currentSeasonLicenses() nicht, die Lizenz wird also gerendert.
+        licenses: [
+          {
+            id: 'l1',
+            team_id: 1,
+            history: [
+              { license_status_id: 9, created_at: '2026-09-20T10:00:00Z' },
+              { license_status_id: 1, created_at: '2026-09-01T10:00:00Z' },
+            ],
+          },
+        ],
+        team_license: {
+          license: { id: 'l1', team_id: 1, history: [] },
+          last_status: { license_status_id: 2 },
+          documents: {},
+          required_documents: [],
+        },
+      } as unknown as PlayerWithLicense;
+      component.team = {
+        id: 1,
+        name: 'Musterstadt',
+      } as unknown as TeamWithPlayers;
+      fixture.detectChanges();
+
+      const row = fixture.debugElement.query(
+        By.directive(LicenseAdminTeamEntryComponent)
+      );
+      expect(row).withContext('die Lizenzzeile wird gerendert').not.toBeNull();
+      expect(row.componentInstance.lastHistory.license_status_id).toBe(9);
+    });
+  });
+
   // Die Angabe hängt allein am Template.
   describe('Geschlecht in der Antragsmaske', () => {
     function render(gender: GenderKey): HTMLElement {

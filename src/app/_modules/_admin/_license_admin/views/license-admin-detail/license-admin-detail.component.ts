@@ -161,22 +161,32 @@ export class LicenseAdminDetailComponent implements OnInit {
    * Der jüngste History-Eintrag einer Lizenz -- der, dessen Status die Zeile
    * zeigt.
    *
-   * Nicht das letzte Array-Element, wie es die Vorlage bis hierher nahm: Die
-   * History wird in der API an vielen Stellen angehängt und ist nirgends
-   * sortiert. Die API liest den aktuellen Status deshalb ausdrücklich über
-   * `max_by { created_at }` (LicenseEffectiveStatus, "sortiert ist sie nirgends
-   * garantiert"). Eine Lizenz, deren jüngster Eintrag `gesperrt` lautet, konnte
-   * hier also `erteilt` zeigen -- seit die Zeile je Status ein eigenes Symbol
-   * trägt, ist das eine falsche Aussage statt eines blassen Hakens.
+   * Nicht das letzte Array-Element, wie es die Vorlage bis hierher nahm. Die
+   * History ist nicht sortiert: Beim Spieler-Merge werden die Verläufe zweier
+   * Profile schlicht aneinandergehängt (`Player#merge`, api), und gemischte
+   * Zeitzonen-Offsets können die Reihenfolge ohnehin umkehren. Die API liest
+   * den Eintrag deshalb über `max_by { created_at.to_s }`
+   * (LicenseEffectiveStatus).
    *
-   * Verglichen wird als Zeichenkette, wie in der API (`created_at.to_s`): Die
-   * Zeitstempel kommen als ISO-8601 aus JSON und sortieren so richtig.
+   * Diese Faltung bildet genau das nach, bis in den Gleichstand hinein: Sie
+   * beginnt beim ERSTEN Eintrag und ersetzt nur bei einem echt jüngeren.
+   * Tragen mehrere Einträge denselben Zeitstempel, gewinnt also der früheste
+   * im Array -- dasselbe tut Rubys `max_by`. Ein Eintrag ohne Zeitstempel
+   * verliert gegen jeden datierten, an welcher Stelle er auch steht; tragen
+   * alle keinen, bleibt es beim ersten.
    *
-   * Das letzte Array-Element ist der Startwert, und ersetzt wird nur bei einem
-   * ECHT jüngeren Eintrag. Damit bleibt alles beim Alten, wo die Zeitstempel
-   * nichts entscheiden: Bei gleichen Zeitstempeln und bei einer History ganz
-   * ohne sie gewinnt weiterhin der letzte Eintrag. Ein Eintrag ohne Zeitstempel
-   * verliert gegen jeden datierten, an welcher Stelle er auch steht.
+   * Zwei Grenzen, die diese Zeile nicht auflösen kann und die api#723
+   * beantwortet, sobald das Frontend `effective_status_id` liest:
+   *
+   * 1. Der Vergleich als Zeichenkette ist nur bei EINHEITLICHEM Offset auch
+   *    chronologisch. `Time#as_json` schreibt den Offset mit, und
+   *    `…T23:59:00.000+02:00` sortiert hinter `…T18:25:00.000+00:00`, obwohl
+   *    es früher liegt. Die API hat dieselbe Schwäche (`created_at.to_s`), die
+   *    Anzeige weicht davon also nicht ab.
+   * 2. Die Lizenzlisten der API nehmen nicht diesen Eintrag, sondern den
+   *    jüngsten OHNE Sperre und legen die aktiven Sperren getrennt darüber.
+   *    Eine abgelaufene Sperre, deren `gesperrt`-Eintrag in der History stehen
+   *    bleibt, zählt dort nicht mehr -- hier schon.
    *
    * Rückgabetyp `PlayerLicenseHistory` wie bisher: Bei leerer History ist das
    * Ergebnis `undefined`, genauso wie `history[history.length - 1]` vorher --
@@ -191,7 +201,7 @@ export class LicenseAdminDetailComponent implements OnInit {
         String(entry?.created_at ?? '') > String(newest?.created_at ?? '')
           ? entry
           : newest,
-      history[history.length - 1]
+      history[0]
     );
   }
 
