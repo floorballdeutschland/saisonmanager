@@ -335,15 +335,26 @@ export class UserEditComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * An der vorhandenen Teammanager-Rolle, nicht an der „aktuellen" Rolle:
-   * `currentRoleId` liefert die erste Vereinsrolle des Kontos, und die ist bei
-   * einem Vereinsmanager mit zusätzlicher Teammanager-Rolle die VM-Rolle. Die
-   * Mannschaftsauswahl blieb damit verborgen, obwohl die Rolle vergeben war --
-   * das Konto trug eine Teammanager-Rolle ohne Mannschaft und damit ohne
-   * Wirkung.
+   * An der vorhandenen Vereins- oder Teammanager-Rolle, nicht an der
+   * „aktuellen" Rolle: `currentRoleId` liefert die erste Vereinsrolle des
+   * Kontos, und die ist bei einem Vereinsmanager mit zusätzlicher
+   * Teammanager-Rolle die VM-Rolle. Die Mannschaftsauswahl blieb damit
+   * verborgen, obwohl die Rolle vergeben war.
+   *
+   * Der Vereinsmanager steht hier gleichberechtigt daneben: Er kann sich
+   * Mannschaften seines Vereins zuordnen und wird für diese behandelt wie ein
+   * Teammanager, ohne dafür eine zweite Rolle zu brauchen (siehe
+   * `User#permission_hash` in der API). Rechte kommen dadurch keine dazu --
+   * für die Mannschaften des eigenen Vereins trägt die VM-Rolle ohnehin jede
+   * Prüfung. Was sich ändert, ist, wen die Mannschaftsmails erreichen.
    */
   get showTeamAssignment(): boolean {
-    return this.hasTmRole && this.availableTeams.length > 0;
+    return (this.hasTmRole || this.hasVmRole) && this.availableTeams.length > 0;
+  }
+
+  /** Vereinsmanager ohne eigene Teammanager-Rolle. */
+  get isVmWithoutTmRole(): boolean {
+    return this.hasVmRole && !this.hasTmRole;
   }
 
   isTeamSelected(teamId: number): boolean {

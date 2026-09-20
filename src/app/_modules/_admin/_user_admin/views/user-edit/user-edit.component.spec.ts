@@ -85,10 +85,27 @@ describe('UserEditComponent', () => {
     expect(component.showTeamAssignment).toBeTrue();
   });
 
-  it('zeigt sie einem reinen Vereinsmanager nicht', () => {
+  // Ein Vereinsmanager kann sich Mannschaften seines Vereins zuordnen und wird
+  // für diese behandelt wie ein Teammanager -- ohne zweite Rolle. Vorher war
+  // dafür der Umweg über ein Downgrade zum TM und zurück nötig.
+  it('zeigt die Mannschaftsauswahl auch einem reinen Vereinsmanager', () => {
     const component = setup([role(4)]);
 
     expect(component.hasVmAndTmRole).toBeFalse();
+    expect(component.isVmWithoutTmRole).toBeTrue();
+    expect(component.showTeamAssignment).toBeTrue();
+  });
+
+  it('haelt den Hinweis fuer ein Konto mit beiden Rollen auseinander', () => {
+    expect(setup([role(4), role(5)]).isVmWithoutTmRole).toBeFalse();
+    expect(setup([role(5)]).isVmWithoutTmRole).toBeFalse();
+  });
+
+  // Ohne Mannschaften des Vereins gibt es nichts auszuwaehlen.
+  it('zeigt sie ohne zuweisbare Mannschaften niemandem', () => {
+    const component = setup([role(4)]);
+    component.clubsWithTeams = [];
+
     expect(component.showTeamAssignment).toBeFalse();
   });
 

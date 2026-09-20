@@ -313,6 +313,15 @@
             {{ "userAdmin.edit.teamAssignmentVmHint" | transloco }}
           </p>
         }
+        <!-- Vereinsmanager ohne eigene TM-Rolle: Die Auswahl entscheidet, für
+             welche Mannschaften er die Teammanager-Post bekommt. Ohne den
+             Hinweis wirkt sie an einem VM-Konto wie eine Einschränkung seiner
+             Zuständigkeit. -->
+        @if (isVmWithoutTmRole) {
+          <p class="text-sm text-fb-gray-500 mb-3">
+            {{ "userAdmin.edit.teamAssignmentVmOnlyHint" | transloco }}
+          </p>
+        }
         <div class="flex flex-col gap-1 mb-4">
           @for (team of availableTeams; track team) {
             <label class="flex items-center gap-2 text-sm cursor-pointer">

@@ -123,7 +123,8 @@
     "archiveDialogTitle": "Benutzer archivieren",
     "archiveDialogContent": "Soll das Konto „{{username}}\" wirklich archiviert werden? Der Login wird gesperrt; das Konto kann jederzeit reaktiviert werden.",
     "archiveDialogSubmit": "Archivieren",
-    "teamAssignmentVmHint": "Dieses Konto ist zugleich Vereinsmanager. Die Auswahl gilt für seine Teammanager-Rolle; die Rechte als Vereinsmanager bleiben davon unberührt."
+    "teamAssignmentVmHint": "Dieses Konto ist zugleich Vereinsmanager. Die Auswahl gilt für seine Teammanager-Rolle; die Rechte als Vereinsmanager bleiben davon unberührt.",
+    "teamAssignmentVmOnlyHint": "Für die ausgewählten Mannschaften wird dieses Konto behandelt wie ein Teammanager: Es bekommt die Mannschaftspost (Spieltagsbericht, Schiri-Feedback) statt des Vereinsverteilers. Die Rechte als Vereinsmanager bleiben davon unberührt, auch für die übrigen Mannschaften."
   },
   "notifications": {
     "userCreated": "Benutzer {{ name }} angelegt. Eine E-Mail zum Passwort setzen wurde versandt.",
