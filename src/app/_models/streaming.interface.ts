@@ -147,3 +147,25 @@ export interface StreamingTeam {
   has_stream_key: boolean;
   stream_key_hint: string | null;
 }
+
+/**
+ * Woran der Livestream-Wächter hängt.
+ *
+ * `source` unterscheidet den über die Oberfläche verbundenen Zugang ('db') von
+ * den Umgebungsvariablen am Container ('env') -- davon hängt ab, ob ein
+ * Neuverbinden überhaupt etwas ändert. `may_connect` beantwortet die Rolle:
+ * Verbinden darf nur ein Admin, und das steht nicht in den Berechtigungen, die
+ * im Browser liegen.
+ */
+export interface StreamingYoutubeStatus {
+  connected: boolean;
+  source: 'db' | 'env' | null;
+  channel_id: string | null;
+  channel_title: string | null;
+  connected_at: string | null;
+  connected_by: string | null;
+  can_connect: boolean;
+  may_connect: boolean;
+  missing_settings: string[];
+  client_id: string | null;
+}

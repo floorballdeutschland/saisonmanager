@@ -22,6 +22,7 @@ import {
   StreamingHost,
   StreamingTeam,
   StreamingTemplates,
+  StreamingYoutubeStatus,
 } from '@floorball/types';
 import {
   filenameSlug,
@@ -42,6 +43,23 @@ import {
 import { buildZip } from 'src/app/_helpers/_utils/zip-store';
 
 type Mode = 'range' | 'matchday';
+
+/**
+ * Gründe, nach denen jeder weitere Versuch genauso scheitert -- Zustände, keine
+ * Einzelereignisse. Der leere Grund steht für eine 403 ohne erkennbaren Grund:
+ * Auch die wiederholt sich.
+ */
+/**
+ * Hat der Anwender den Anmeldedialog selbst weggeklickt?
+ *
+ * Google meldet das über `error_callback` mit `type: 'popup_closed'`; der
+ * Dienst verpackt es in seine Meldung. Ein Abbruch ist eine Entscheidung und
+ * gehört nicht ins Fehlermonitoring.
+ */
+function istAbbruch(error: unknown): boolean {
+  const text = error instanceof Error ? error.message : String(error);
+  return /popup_closed|abgebrochen|nicht abgeschlossen/i.test(text);
+}
 
 /**
  * Gründe, nach denen jeder weitere Versuch genauso scheitert -- Zustände, keine
@@ -133,6 +151,13 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   public hostsBusy = new Set<number>();
   public templatesOpen = false;
   public savingTemplates = false;
+
+  /** Woran der Waechter haengt; erst beim Aufklappen geladen. */
+  public youtubeStatus: StreamingYoutubeStatus | null = null;
+  public youtubeOpen = false;
+  public youtubeLoading = false;
+  public youtubeError = false;
+  public connecting = false;
 
   /** Pflegeliste der Streamschlüssel; erst beim Aufklappen geladen. */
   public keys: StreamingTeam[] = [];
@@ -460,6 +485,128 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   public get unlistedCount(): number {
     return this.creatable.filter((game) => this.privacyFor(game) === 'unlisted')
       .length;
+  }
+
+  /**
+   * Der Zustand der YouTube-Verbindung, beim ersten Aufklappen geladen.
+   *
+   * Nicht beim Seitenaufbau: Er ändert sich fast nie, und jeder Abruf beim
+   * Laden verzögert die Liste, um die es hier eigentlich geht.
+   */
+  public async toggleYoutube(): Promise<void> {
+    this.youtubeOpen = !this.youtubeOpen;
+    if (!this.youtubeOpen || this.youtubeStatus || this.youtubeLoading) return;
+
+    await this.reloadYoutubeStatus();
+  }
+
+  public async reloadYoutubeStatus(): Promise<void> {
+    if (this.youtubeLoading) return;
+
+    this.youtubeLoading = true;
+    this.youtubeError = false;
+    this._cdr.markForCheck();
+
+    const status = await firstValueFrom(
+      this._streamingService.getYoutubeStatus().pipe(
+        catchError((error) => {
+          this._capture(error);
+          return of(null);
+        })
+      )
+    );
+
+    this.youtubeLoading = false;
+    // Kein stilles „nicht verbunden": Das wäre von einem fehlgeschlagenen
+    // Abruf nicht zu unterscheiden, und wer daraufhin neu verbindet, ersetzt
+    // einen Zugang, der in Ordnung war.
+    if (status === null) this.youtubeError = true;
+    else this.youtubeStatus = status;
+    this._cdr.markForCheck();
+  }
+
+  /**
+   * Verbindet den Wächter mit einem Google-Konto.
+   *
+   * Zwei Fehlerquellen, zwei Wege: Der Anmeldedialog von Google läuft an jedem
+   * Interceptor vorbei und braucht eine eigene Meldung. Was der Server zum
+   * eingelösten Code sagt, zeigt der ErrorInterceptor -- und das ist die
+   * eigentliche Auskunft, etwa dass der gewählte Kanal nicht senden darf.
+   */
+  public async connectYoutube(): Promise<void> {
+    const kennung = this.youtubeStatus?.client_id;
+    if (this.connecting || !kennung) return;
+
+    this.connecting = true;
+    this._cdr.markForCheck();
+
+    let anmeldung: { code: string; redirectUri: string };
+    try {
+      anmeldung = await this._youtubeService.requestAuthCode(kennung);
+    } catch (error) {
+      // Ein geschlossenes Anmeldefenster ist kein Fehler, sondern eine
+      // Entscheidung. Frontend und API teilen sich ein Sentry-Projekt samt
+      // Kontingent -- eine Einrichtungssitzung mit drei Fehlgriffen erzeugte
+      // sonst drei Meldungen, die nichts bedeuten.
+      if (!istAbbruch(error)) this._capture(error);
+      this._notificationService.error(
+        error instanceof Error
+          ? error.message
+          : 'Die Google-Anmeldung wurde nicht abgeschlossen.'
+      );
+      this.connecting = false;
+      this._cdr.markForCheck();
+      return;
+    }
+
+    const status = await firstValueFrom(
+      this._streamingService
+        .connectYoutube(anmeldung.code, anmeldung.redirectUri)
+        .pipe(
+          catchError((error) => {
+            this._capture(error);
+            return of(null);
+          })
+        )
+    );
+
+    this.connecting = false;
+    if (status) {
+      this.youtubeStatus = status;
+      this._notificationService.success(
+        `Der Wächter ist jetzt mit „${
+          status.channel_title ?? 'dem Kanal'
+        }" verbunden.`
+      );
+    }
+    this._cdr.markForCheck();
+  }
+
+  /**
+   * Trennt den gespeicherten Zugang und widerruft ihn bei Google.
+   *
+   * Die Rückfrage steht in der Vorlage (`fb-confirmation`): Danach beendet
+   * niemand mehr die Übertragungen nach dem Spiel, und das fällt erst auf,
+   * wenn eine Stunden später noch läuft.
+   */
+  public async disconnectYoutube(): Promise<void> {
+    if (this.connecting) return;
+
+    this.connecting = true;
+    this._cdr.markForCheck();
+
+    const status = await firstValueFrom(
+      this._streamingService.disconnectYoutube().pipe(
+        catchError((error) => {
+          this._capture(error);
+          return of(null);
+        })
+      )
+    );
+
+    this.connecting = false;
+    if (status) this.youtubeStatus = status;
+    this._cdr.markForCheck();
   }
 
   /**

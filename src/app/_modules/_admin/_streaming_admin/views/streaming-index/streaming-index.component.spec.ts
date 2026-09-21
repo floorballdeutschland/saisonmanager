@@ -9,6 +9,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import {
+  NotificationService,
   YoutubeOrphanError,
   YoutubeService,
   YoutubeStatusError,
@@ -55,6 +56,19 @@ describe('StreamingIndexComponent', () => {
 
     async signIn(): Promise<void> {
       this.signedIn = true;
+    }
+
+    /** Der Anmeldedialog für den dauerhaften Zugang; je Prüfsatz ersetzt. */
+    requestAuthCode(
+      clientId: string
+    ): Promise<{ code: string; redirectUri: string }> {
+      // Die Kennung faellt in die Antwort, damit ein Pruefsatz belegen kann,
+      // WELCHE benutzt wurde -- der Server und der Browser muessen dieselbe
+      // nehmen, sonst scheitert erst das Einloesen.
+      return Promise.resolve({
+        code: `code-${clientId}`,
+        redirectUri: 'https://test',
+      });
     }
 
     async streamsByKey(): Promise<Map<string, { id: string }>> {
@@ -1169,6 +1183,187 @@ describe('StreamingIndexComponent', () => {
 
       expect(component.keysError).toBeTrue();
       expect(component.keys).toEqual([]);
+    });
+  });
+
+  describe('YouTube-Verbindung', () => {
+    const status = (overrides = {}) => ({
+      connected: true,
+      source: 'db',
+      channel_id: 'UC-echt',
+      channel_title: 'floorball deutschland',
+      connected_at: '2026-09-21T12:00:00Z',
+      connected_by: 'Daniel Kehne',
+      can_connect: true,
+      may_connect: true,
+      missing_settings: [],
+      client_id: 'web-client.apps.googleusercontent.com',
+      ...overrides,
+    });
+
+    function openYoutube(antwort = status()): Promise<void> {
+      const lauf = component.toggleYoutube();
+      http
+        .expectOne(`${environment.apiURL}admin/streaming/youtube`)
+        .flush(antwort);
+      return lauf;
+    }
+
+    it('lädt den Zustand erst beim Aufklappen', async () => {
+      start([game(1)]);
+
+      http.expectNone(`${environment.apiURL}admin/streaming/youtube`);
+
+      await openYoutube();
+
+      expect(component.youtubeStatus?.channel_title).toBe(
+        'floorball deutschland'
+      );
+    });
+
+    // Eingelöst wird der Code mit dem Paar, das auf dem Server liegt. Nähme der
+    // Browser eine andere Kennung, scheiterte erst das Einlösen -- und niemand
+    // sähe, warum.
+    it('meldet den Code mit der Kennung des Servers an', async () => {
+      start([game(1)]);
+      await openYoutube(status({ connected: false, source: null }));
+      const anmeldung = spyOn(youtube, 'requestAuthCode').and.resolveTo({
+        code: 'code-1',
+        redirectUri: 'https://saisonmanager.org',
+      });
+
+      const lauf = component.connectYoutube();
+      await Promise.resolve();
+      const request = http.expectOne(
+        `${environment.apiURL}admin/streaming/youtube`
+      );
+      expect(request.request.body).toEqual({
+        code: 'code-1',
+        redirect_uri: 'https://saisonmanager.org',
+      });
+      request.flush(status());
+      await lauf;
+
+      expect(anmeldung).toHaveBeenCalledWith(
+        'web-client.apps.googleusercontent.com'
+      );
+      expect(component.youtubeStatus?.connected).toBeTrue();
+      expect(component.connecting).toBeFalse();
+    });
+
+    // Der Dialog von Google läuft an jedem Interceptor vorbei: Ohne eigene
+    // Meldung bliebe ein Abbruch stumm, und der Knopf sähe kaputt aus.
+    it('meldet einen abgebrochenen Google-Dialog selbst', async () => {
+      start([game(1)]);
+      await openYoutube(status({ connected: false, source: null }));
+      spyOn(youtube, 'requestAuthCode').and.rejectWith(
+        new Error('Die Anmeldung wurde abgebrochen (popup).')
+      );
+      const meldung = spyOn(
+        TestBed.inject(NotificationService),
+        'error'
+      ).and.callThrough();
+
+      await component.connectYoutube();
+
+      expect(meldung).toHaveBeenCalled();
+      http.expectNone(`${environment.apiURL}admin/streaming/youtube`);
+      expect(component.connecting).toBeFalse();
+    });
+
+    // Der Server weist den leeren Testkanal ab. Die Zeile darf danach nicht
+    // aussehen, als wäre verbunden worden.
+    it('übernimmt nichts, wenn der Server den Kanal ablehnt', async () => {
+      start([game(1)]);
+      await openYoutube(status({ connected: false, source: null }));
+      spyOn(youtube, 'requestAuthCode').and.resolveTo({
+        code: 'code-1',
+        redirectUri: 'https://saisonmanager.org',
+      });
+
+      const lauf = component.connectYoutube();
+      await Promise.resolve();
+      http.expectOne(`${environment.apiURL}admin/streaming/youtube`).flush(
+        {
+          error:
+            'Der gewaehlte Kanal ist nicht fuer Livestreaming freigeschaltet.',
+        },
+        { status: 422, statusText: 'Unprocessable Entity' }
+      );
+      await lauf;
+
+      expect(component.youtubeStatus?.connected).toBeFalse();
+      expect(component.connecting).toBeFalse();
+    });
+
+    it('trennt und übernimmt den Zustand aus der Antwort', async () => {
+      start([game(1)]);
+      await openYoutube();
+
+      const lauf = component.disconnectYoutube();
+      http
+        .expectOne(`${environment.apiURL}admin/streaming/youtube`)
+        .flush(status({ connected: false, source: null, channel_title: null }));
+      await lauf;
+
+      expect(component.youtubeStatus?.connected).toBeFalse();
+    });
+
+    // Ohne Rückfrage nähme ein verrutschter Klick dem Wächter den Zugang, und
+    // das fällt erst auf, wenn eine Übertragung nach dem Spiel weiterläuft.
+    it('das Trennen hängt hinter einer Rückfrage', async () => {
+      start([game(1)]);
+      await openYoutube();
+      fixture.detectChanges();
+
+      const rueckfrage = fixture.debugElement.query(
+        By.directive(ConfirmationComponent)
+      );
+
+      expect(rueckfrage).not.toBeNull();
+      http.expectNone(`${environment.apiURL}admin/streaming/youtube`);
+      const trennen = spyOn(component, 'disconnectYoutube');
+      rueckfrage.componentInstance.handleSubmit.emit();
+      expect(trennen).toHaveBeenCalled();
+    });
+
+    // Frontend und API teilen sich ein Sentry-Projekt samt Kontingent. Ein
+    // weggeklicktes Anmeldefenster ist eine Entscheidung, keine Störung.
+    it('meldet ein weggeklicktes Anmeldefenster nicht an Sentry', async () => {
+      start([game(1)]);
+      await openYoutube(status({ connected: false, source: null }));
+      spyOn(youtube, 'requestAuthCode').and.rejectWith(
+        new Error('Die Anmeldung wurde abgebrochen (popup_closed).')
+      );
+      // Auf `_capture` statt auf das Sentry-Modul: Dessen Export ist nicht
+      // ueberschreibbar, und geprueft werden soll ohnehin die Entscheidung
+      // dieser Komponente, nicht die Bibliothek.
+      const gemeldet = spyOn(
+        component as unknown as { _capture: (error: unknown) => void },
+        '_capture'
+      );
+      const meldung = spyOn(TestBed.inject(NotificationService), 'error');
+
+      await component.connectYoutube();
+
+      expect(gemeldet).not.toHaveBeenCalled();
+      // Der Anwender bekommt trotzdem eine Rückmeldung.
+      expect(meldung).toHaveBeenCalled();
+    });
+
+    // „Nicht verbunden" und „Abruf gescheitert" sind zwei verschiedene Dinge:
+    // Wer das eine für das andere hält, ersetzt einen Zugang, der in Ordnung war.
+    it('meldet einen fehlgeschlagenen Abruf', async () => {
+      start([game(1)]);
+
+      const lauf = component.toggleYoutube();
+      http
+        .expectOne(`${environment.apiURL}admin/streaming/youtube`)
+        .flush('kaputt', { status: 500, statusText: 'Server Error' });
+      await lauf;
+
+      expect(component.youtubeError).toBeTrue();
+      expect(component.youtubeStatus).toBeNull();
     });
   });
 });

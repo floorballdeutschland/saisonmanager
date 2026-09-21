@@ -345,6 +345,145 @@
     }
   </div>
 
+  <!-- YouTube-Verbindung des Wächters -->
+  <div class="border border-fb-gray-700 rounded-[5px] mb-6">
+    <button
+      type="button"
+      (click)="toggleYoutube()"
+      class="w-full flex items-center justify-between p-4 text-sm font-bold"
+    >
+      <span>{{ "streamingAdmin.youtube.heading" | transloco }}</span>
+      <span aria-hidden="true">{{ youtubeOpen ? "−" : "+" }}</span>
+    </button>
+
+    @if (youtubeOpen) {
+      <div class="p-4 pt-0">
+        <p class="text-sm text-fb-gray-500 mb-3 max-w-3xl">
+          {{ "streamingAdmin.youtube.intro" | transloco }}
+        </p>
+
+        @if (youtubeLoading) {
+          <div class="text-sm text-fb-gray-500 py-3">
+            {{ "streamingAdmin.loading" | transloco }}
+          </div>
+        } @else if (youtubeError) {
+          <div class="text-sm py-3">
+            {{ "streamingAdmin.youtube.loadError" | transloco }}
+            <button
+              type="button"
+              (click)="reloadYoutubeStatus()"
+              class="underline font-bold ml-1"
+            >
+              {{ "streamingAdmin.retry" | transloco }}
+            </button>
+          </div>
+        } @else if (youtubeStatus) {
+          <dl class="text-sm grid gap-1 sm:grid-cols-[12rem_1fr] mb-4">
+            <dt class="font-bold">
+              {{ "streamingAdmin.youtube.state" | transloco }}
+            </dt>
+            <dd>
+              @if (youtubeStatus.connected) {
+                {{ "streamingAdmin.youtube.connected" | transloco }}
+              } @else {
+                <span class="text-fb-red-500 font-bold">
+                  {{ "streamingAdmin.youtube.disconnected" | transloco }}
+                </span>
+              }
+            </dd>
+
+            @if (youtubeStatus.channel_title) {
+              <dt class="font-bold">
+                {{ "streamingAdmin.youtube.channel" | transloco }}
+              </dt>
+              <dd>{{ youtubeStatus.channel_title }}</dd>
+            }
+
+            @if (youtubeStatus.connected) {
+              <dt class="font-bold">
+                {{ "streamingAdmin.youtube.source" | transloco }}
+              </dt>
+              <dd>
+                {{
+                  (youtubeStatus.source === "db"
+                    ? "streamingAdmin.youtube.sourceDb"
+                    : "streamingAdmin.youtube.sourceEnv"
+                  ) | transloco
+                }}
+              </dd>
+            }
+
+            @if (youtubeStatus.connected_at) {
+              <dt class="font-bold">
+                {{ "streamingAdmin.youtube.since" | transloco }}
+              </dt>
+              <dd>
+                {{ youtubeStatus.connected_at | date: "dd.MM.yyyy HH:mm" }}
+                @if (youtubeStatus.connected_by) {
+                  · {{ youtubeStatus.connected_by }}
+                }
+              </dd>
+            }
+          </dl>
+
+          @if (!youtubeStatus.can_connect) {
+            <p class="text-sm text-fb-gray-500 mb-3 max-w-3xl">
+              {{
+                "streamingAdmin.youtube.notSetUp"
+                  | transloco
+                    : { settings: youtubeStatus.missing_settings.join(", ") }
+              }}
+            </p>
+          } @else if (!youtubeStatus.may_connect) {
+            <p class="text-sm text-fb-gray-500 mb-3 max-w-3xl">
+              {{ "streamingAdmin.youtube.adminOnly" | transloco }}
+            </p>
+          } @else {
+            <p class="text-xs text-fb-gray-500 mb-3 max-w-3xl">
+              {{ "streamingAdmin.youtube.channelHint" | transloco }}
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                type="button"
+                (click)="connectYoutube()"
+                [disabled]="connecting"
+                class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+              >
+                {{
+                  (connecting
+                    ? "streamingAdmin.youtube.connecting"
+                    : "streamingAdmin.youtube.connect"
+                  ) | transloco
+                }}
+              </button>
+              @if (youtubeStatus.source === "db") {
+                <fb-confirmation
+                  [title]="'streamingAdmin.youtube.disconnectTitle' | transloco"
+                  [content]="
+                    'streamingAdmin.youtube.disconnectContent' | transloco
+                  "
+                  [submitButtonTitle]="
+                    'streamingAdmin.youtube.disconnect' | transloco
+                  "
+                  buttonVariant="error"
+                  (handleSubmit)="disconnectYoutube()"
+                >
+                  <button
+                    type="button"
+                    [disabled]="connecting"
+                    class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200 disabled:opacity-40"
+                  >
+                    {{ "streamingAdmin.youtube.disconnect" | transloco }}
+                  </button>
+                </fb-confirmation>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-8 text-center">
       {{ "streamingAdmin.loading" | transloco }}
