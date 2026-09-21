@@ -62,5 +62,28 @@
     "promotePending": "goes public after the game",
     "promoted": "switched to public",
     "loadError": "The agreements could not be loaded."
+  },
+  "keys": {
+    "heading": "Team stream keys",
+    "intro": "The key belongs to the host: the broadcast comes from the venue, and whoever provides the venue provides the equipment. Listed are the teams of every league that already holds a key; the league selector adds another one. A stored key is never shown, only its last four characters — this list is for maintenance, not for looking a key up. A new value replaces the old one immediately.",
+    "league": "Show another league",
+    "leaguePlaceholder": "only leagues with a key",
+    "apply": "Load list",
+    "loadError": "The teams could not be loaded.",
+    "empty": "No team holds a key yet. Add a league above.",
+    "set": "set (…{{hint}})",
+    "unset": "not set",
+    "placeholder": "new key",
+    "inputLabel": "Stream key for {{team}}",
+    "save": "Save",
+    "clear": "Remove",
+    "table": {
+      "league": "League",
+      "team": "Team",
+      "state": "State",
+      "key": "Enter key"
+    },
+    "clearTitle": "Remove stream key?",
+    "clearContent": "No broadcast can be created for {{team}} until a key is entered again."
   }
 }

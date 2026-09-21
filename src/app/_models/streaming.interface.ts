@@ -129,3 +129,21 @@ export interface StreamingTemplates {
   default_title: string;
   default_description: string;
 }
+
+/**
+ * Eine Mannschaft in der Pflegeliste der Streamschlüssel.
+ *
+ * Der Schlüssel selbst steht bewusst NICHT darin: Wer ihn hat, sendet auf den
+ * Verbandskanal, und die Liste ist zum Pflegen da und nicht zum Nachschlagen.
+ * `stream_key_hint` trägt die letzten vier Zeichen -- genug, um zu erkennen, ob
+ * der eingetragene derselbe ist, und zu wenig, um damit zu senden.
+ */
+export interface StreamingTeam {
+  id: number;
+  name: string;
+  club_name: string | null;
+  league_id: number;
+  league_name: string | null;
+  has_stream_key: boolean;
+  stream_key_hint: string | null;
+}

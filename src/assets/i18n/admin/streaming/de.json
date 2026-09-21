@@ -62,5 +62,28 @@
     "promotePending": "wird nach dem Spiel öffentlich",
     "promoted": "nachträglich öffentlich geschaltet",
     "loadError": "Die Zusagen konnten nicht geladen werden."
+  },
+  "keys": {
+    "heading": "Streamschlüssel der Mannschaften",
+    "intro": "Der Schlüssel gehört dem Ausrichter: Gesendet wird aus der Halle, und wer die Halle stellt, stellt die Technik. Gezeigt werden die Mannschaften jeder Liga, in der schon ein Schlüssel hinterlegt ist; über die Ligaauswahl kommt eine weitere dazu. Der gespeicherte Schlüssel wird nicht angezeigt, nur seine letzten vier Zeichen — zum Nachschlagen ist diese Liste nicht gedacht. Ein neuer Wert ersetzt den alten sofort.",
+    "league": "Weitere Liga einblenden",
+    "leaguePlaceholder": "nur Ligen mit Schlüssel",
+    "apply": "Liste laden",
+    "loadError": "Die Mannschaften konnten nicht geladen werden.",
+    "empty": "Keine Mannschaft mit Schlüssel. Eine Liga lässt sich oben einblenden.",
+    "set": "gesetzt (…{{hint}})",
+    "unset": "nicht gesetzt",
+    "placeholder": "neuer Schlüssel",
+    "inputLabel": "Streamschlüssel für {{team}}",
+    "save": "Speichern",
+    "clear": "Entfernen",
+    "table": {
+      "league": "Liga",
+      "team": "Mannschaft",
+      "state": "Stand",
+      "key": "Schlüssel eintragen"
+    },
+    "clearTitle": "Streamschlüssel entfernen?",
+    "clearContent": "Für {{team}} lässt sich danach keine Übertragung mehr anlegen, bis wieder ein Schlüssel eingetragen ist."
   }
 }
