@@ -170,6 +170,12 @@ export class LicenseAdminDetailComponent implements OnInit {
    * Fehlt es, entscheidet wie zuvor der jüngste History-Eintrag. Das ist kein
    * theoretischer Zweig: Die API lässt das Feld weg, wenn die Mannschaft der
    * Lizenz nicht auflösbar ist oder ihre History keinen Basis-Status hergibt.
+   *
+   * `??` und nicht `||`: Die API setzt das Feld nur mit einem echten Status
+   * (`if status_id.to_i.positive?`), eine 0 wäre also ein Vertragsbruch und
+   * keine Einladung, ersatzweise die History zu lesen. Sie landet beim
+   * Fragezeichen der Zeile, was eine kaputte Angabe sichtbar lässt, statt sie
+   * durch eine zweite Quelle zu überdecken.
    */
   public licenseStatusId(license: PlayerLicense): number | undefined {
     return (
@@ -179,8 +185,8 @@ export class LicenseAdminDetailComponent implements OnInit {
   }
 
   /**
-   * Der jüngste History-Eintrag einer Lizenz -- der, dessen Status die Zeile
-   * zeigt.
+   * Der jüngste History-Eintrag einer Lizenz -- die Rückfallquelle von
+   * `licenseStatusId`, wenn die API kein `effective_status_id` liefert.
    *
    * Nicht das letzte Array-Element, wie es die Vorlage bis hierher nahm. Die
    * History ist nicht sortiert: Beim Spieler-Merge werden die Verläufe zweier
@@ -196,8 +202,8 @@ export class LicenseAdminDetailComponent implements OnInit {
    * verliert gegen jeden datierten, an welcher Stelle er auch steht; tragen
    * alle keinen, bleibt es beim ersten.
    *
-   * Zwei Grenzen, die diese Zeile nicht auflösen kann und die api#723
-   * beantwortet, sobald das Frontend `effective_status_id` liest:
+   * Zwei Grenzen, die nur noch auf diesem Rückfallpfad greifen -- mit
+   * `effective_status_id` beantwortet die API beide:
    *
    * 1. Der Vergleich als Zeichenkette ist nur bei EINHEITLICHEM Offset auch
    *    chronologisch. `Time#as_json` schreibt den Offset mit, und
@@ -209,10 +215,9 @@ export class LicenseAdminDetailComponent implements OnInit {
    *    Eine abgelaufene Sperre, deren `gesperrt`-Eintrag in der History stehen
    *    bleibt, zählt dort nicht mehr -- hier schon.
    *
-   * Rückgabetyp `PlayerLicenseHistory` wie bisher: Bei leerer History ist das
-   * Ergebnis `undefined`, genauso wie `history[history.length - 1]` vorher --
-   * ohne `noUncheckedIndexedAccess` sieht TypeScript weder das eine noch das
-   * andere. Die Zeile bekommt also denselben Vertrag wie zuvor.
+   * Rückgabetyp `PlayerLicenseHistory`, obwohl bei leerer History `undefined`
+   * herauskommt -- ohne `noUncheckedIndexedAccess` sieht TypeScript das nicht.
+   * Empfänger ist `licenseStatusId`, dessen `?.` den Fall abfängt.
    */
   public latestHistory(license: PlayerLicense): PlayerLicenseHistory {
     const history = license?.history ?? [];
