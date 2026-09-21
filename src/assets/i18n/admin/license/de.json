@@ -68,6 +68,10 @@
     "retry": "Erneut versuchen",
     "colPlayer": "Spieler",
     "openPlayerTitle": "Lizenzen dieser Liga öffnen und zu diesem Spieler springen",
+    "colLicenseCount": "Liz.",
+    "colLicenseCountTitle": "Lizenzen dieses Spielers in der angezeigten Saison, über alle Verbände gezählt",
+    "licenseCountTitle": "Erteilte Lizenzen dieses Spielers in der angezeigten Saison, über alle Verbände gezählt",
+    "licenseCountPendingTitle": "dazu {{ count }} noch offen beantragt",
     "colTeam": "Team",
     "colCompetition": "Wettbewerb",
     "colLeague": "Liga",
@@ -151,7 +155,9 @@
     "liftConfirmContent": "Die Sperre wird aufgehoben und die Lizenz gilt wieder. Der Vorgang bleibt im Lizenzverlauf stehen.",
     "liftConfirmSubmit": "Sperre aufheben",
     "liftedNotice": "Die Sperre wurde aufgehoben.",
-    "liftError": "Die Sperre konnte nicht aufgehoben werden."
+    "liftError": "Die Sperre konnte nicht aufgehoben werden.",
+    "csvLicensesApproved": "Lizenzen Saison",
+    "csvLicensesRequested": "davon offen beantragt"
   },
   "leagueDetail": {
     "title": "Lizenzverwaltung",

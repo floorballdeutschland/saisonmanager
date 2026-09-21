@@ -31,6 +31,8 @@ describe('LicenseAdminGlobalListComponent', () => {
                 csvLastName: 'Nachname',
                 csvFirstName: 'Vorname',
                 csvBirthdate: 'Geburtsdatum',
+                csvLicensesApproved: 'Lizenzen Saison',
+                csvLicensesRequested: 'davon offen beantragt',
                 csvHauptlizenz: 'Hauptlizenz',
                 csvZusatzlizenz: 'Zusatzlizenz',
               },
@@ -783,6 +785,60 @@ describe('LicenseAdminGlobalListComponent', () => {
   // Landesverband. Ohne Nummer laesst sich eine Zeile nicht eindeutig einem
   // Profil zuordnen, und das Geburtsjahr allein trennt zwei namensgleiche
   // Personen desselben Jahrgangs nicht.
+  // Einige Landesverbaende genehmigen je Spieler hoechstens sechs oder acht
+  // Lizenzen. Ohne die Zahl musste man die Zeilen der Person durchzaehlen --
+  // und sah dabei die Lizenzen anderer Verbaende gar nicht (api#713).
+  describe('Lizenzanzahl der Saison', () => {
+    function renderRow(
+      counts: Partial<AdminLicenseEntry>
+    ): HTMLTableCellElement {
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      const component = fixture.componentInstance;
+      component.allEntries = [
+        { ...entry('Muster'), player_id: 42, ...counts } as AdminLicenseEntry,
+      ];
+      component.applyFilters();
+      component.loading = false;
+      fixture.detectChanges();
+
+      // Zweite Zelle der Zeile: direkt neben dem Namen, damit die Zahl auch
+      // bei waagerecht gescrollter Tabelle bei der Person steht.
+      return fixture.nativeElement.querySelectorAll('tbody td')[1];
+    }
+
+    it('zeigt die erteilten Lizenzen und die offenen Antraege getrennt', () => {
+      const zelle = renderRow({
+        licenses_approved_season: 6,
+        licenses_requested_season: 2,
+      });
+
+      // Zwei Zahlen, nicht eine Summe: Sechs sind erteilt, zwei weitere
+      // liegen noch als Antrag vor. Der Abstand dazwischen ist Rand (ml-1),
+      // deshalb steht hier kein Leerzeichen.
+      const zahlen = Array.from(zelle.querySelectorAll('span')).map((s) =>
+        s.textContent?.trim()
+      );
+      expect(zahlen).toEqual(['6', '+2']);
+    });
+
+    it('nennt nur die erteilten, wenn kein Antrag offen ist', () => {
+      const zelle = renderRow({
+        licenses_approved_season: 3,
+        licenses_requested_season: 0,
+      });
+
+      expect(zelle.textContent?.trim()).toBe('3');
+      expect(zelle.textContent).not.toContain('+');
+    });
+
+    // Eine aeltere API kennt die Felder nicht. Eine leere Zelle waere dort
+    // schwer von "keine Lizenz" zu unterscheiden, eine 0 ist die ehrlichere
+    // Anzeige und faellt nicht als Luecke auf.
+    it('zeigt 0, wenn die API die Zahlen nicht mitliefert', () => {
+      expect(renderRow({}).textContent?.trim()).toBe('0');
+    });
+  });
+
   describe('CSV-Ausfuhr', () => {
     let blobs: Blob[];
 
@@ -823,6 +879,23 @@ describe('LicenseAdminGlobalListComponent', () => {
         header.startsWith('"Spieler-ID";"Nachname";"Vorname";"Geburtsdatum";')
       ).toBeTrue();
       expect(row.startsWith('"4711";"Muster";"Test";"04.05.2012";')).toBeTrue();
+    });
+
+    it('fuehrt die Lizenzzahlen der Saison hinter dem Geburtsdatum', async () => {
+      const [header, row] = await exportRows([
+        {
+          ...entry('Muster'),
+          player_id: 4711,
+          player_birthdate: '2012-05-04',
+          licenses_approved_season: 6,
+          licenses_requested_season: 1,
+        } as AdminLicenseEntry,
+      ]);
+
+      expect(header).toContain('"Lizenzen Saison";"davon offen beantragt"');
+      expect(
+        row.startsWith('"4711";"Muster";"Test";"04.05.2012";"6";"1";')
+      ).toBeTrue();
     });
 
     // Das Geburtsdatum ist ein Pflichtfeld am Profil, aber der Altbestand

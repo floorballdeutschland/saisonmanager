@@ -68,6 +68,10 @@
     "retry": "Try again",
     "colPlayer": "Player",
     "openPlayerTitle": "Open this league's licenses and jump to this player",
+    "colLicenseCount": "Lic.",
+    "colLicenseCountTitle": "Licences held by this player in the displayed season, counted across all associations",
+    "licenseCountTitle": "Approved licences of this player in the displayed season, counted across all associations",
+    "licenseCountPendingTitle": "plus {{ count }} still pending",
     "colTeam": "Team",
     "colCompetition": "Competition",
     "colLeague": "League",
@@ -151,7 +155,9 @@
     "liftConfirmContent": "The suspension is lifted and the licence is valid again. The action stays in the licence history.",
     "liftConfirmSubmit": "Lift suspension",
     "liftedNotice": "The suspension has been lifted.",
-    "liftError": "The suspension could not be lifted."
+    "liftError": "The suspension could not be lifted.",
+    "csvLicensesApproved": "Licences season",
+    "csvLicensesRequested": "of which pending"
   },
   "leagueDetail": {
     "title": "License management",
