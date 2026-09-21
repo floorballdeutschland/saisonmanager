@@ -300,6 +300,17 @@
                 {{ "licenseAdmin.globalList.colPlayer" | transloco }}
               </th>
               <th
+                class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap text-right"
+                [attr.aria-label]="
+                  'licenseAdmin.globalList.colLicenseCountTitle' | transloco
+                "
+                [title]="
+                  'licenseAdmin.globalList.colLicenseCountTitle' | transloco
+                "
+              >
+                {{ "licenseAdmin.globalList.colLicenseCount" | transloco }}
+              </th>
+              <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap"
               >
                 {{ "licenseAdmin.globalList.colTeam" | transloco }}
@@ -354,7 +365,7 @@
           <tbody class="divide-y divide-gray-100">
             @if (filteredEntries.length === 0) {
               <tr>
-                <td colspan="11" class="px-4 py-8 text-center text-gray-400">
+                <td colspan="12" class="px-4 py-8 text-center text-gray-400">
                   {{ "licenseAdmin.globalList.noLicensesFound" | transloco }}
                 </td>
               </tr>
@@ -406,6 +417,45 @@
                         | transloco: { year: e.player_birthdate | date: "yyyy" }
                     }}
                   </p>
+                </td>
+                <!-- Lizenzen dieser Saison (api#713). Eigenschaft der
+                     Person, nicht der Lizenz: Alle Zeilen eines Spielers
+                     tragen dieselbe Zahl. Sie steht neben dem Namen, weil
+                     einige Landesverbaende je Spieler hoechstens sechs oder
+                     acht Lizenzen genehmigen und man sie sonst in der Liste
+                     durchzaehlen muesste. Gezaehlt wird ueber alle Verbaende,
+                     also auch ueber Lizenzen, die in dieser Liste gar nicht
+                     stehen. -->
+                <td
+                  class="px-4 py-3 whitespace-nowrap text-right"
+                  data-testid="license-count"
+                >
+                  <!-- Ohne die Zahl steht hier ein Strich und keine 0: Die
+                       Zeile gibt es nur, WEIL es die Lizenz gibt, eine 0 waere
+                       also nachweislich falsch und saehe zugleich aus wie ein
+                       Messwert. Der Fall tritt auf, solange das Frontend vor
+                       der API ausgeliefert ist. -->
+                  <span
+                    class="font-semibold text-gray-800 tabular-nums"
+                    [title]="
+                      'licenseAdmin.globalList.licenseCountTitle' | transloco
+                    "
+                    >{{ e.licenses_approved_season ?? "–" }}</span
+                  >
+                  @if (e.licenses_requested_season) {
+                    <span
+                      class="ml-1 text-[11px] text-gray-500 tabular-nums"
+                      [attr.aria-label]="
+                        'licenseAdmin.globalList.licenseCountPendingTitle'
+                          | transloco: { count: e.licenses_requested_season }
+                      "
+                      [title]="
+                        'licenseAdmin.globalList.licenseCountPendingTitle'
+                          | transloco: { count: e.licenses_requested_season }
+                      "
+                      >+{{ e.licenses_requested_season }}</span
+                    >
+                  }
                 </td>
                 <!-- Team (Verein als Tooltip beim Hovern) -->
                 <td

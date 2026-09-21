@@ -400,6 +400,8 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       t('licenseAdmin.globalList.csvLastName'),
       t('licenseAdmin.globalList.csvFirstName'),
       t('licenseAdmin.globalList.csvBirthdate'),
+      t('licenseAdmin.globalList.csvLicensesApproved'),
+      t('licenseAdmin.globalList.csvLicensesRequested'),
       t('licenseAdmin.globalList.csvClub'),
       t('licenseAdmin.globalList.csvTeam'),
       t('licenseAdmin.globalList.csvGameOperation'),
@@ -420,6 +422,11 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       e.player_last_name,
       e.player_first_name,
       this._formatBirthdate(e.player_birthdate),
+      // Leer statt 0, wenn die API die Felder nicht liefert: Aus dieser Datei
+      // wird abgerechnet und gemeldet, eine erfundene 0 waere dort teurer als
+      // eine Luecke. Gleiche Linie wie die Spalte license_type darunter.
+      e.licenses_approved_season ?? '',
+      e.licenses_requested_season ?? '',
       e.club_name ?? '',
       e.team_name,
       e.game_operation_name ?? '',

@@ -26,6 +26,14 @@ export interface AdminLicenseEntry {
   game_operation_name: string | null;
   season_id: number | string | null;
   license_id: string;
+  // Lizenzen dieses Spielers in der angezeigten Saison, ueber alle Verbaende
+  // hinweg gezaehlt (api#713): erteilte und noch offen beantragte. Eine
+  // erteilte oder offen beantragte Lizenz steht in genau einer der beiden
+  // Zahlen; ein abgelehnter oder zurueckgezogener Antrag in keiner. Fehlen die
+  // Felder, ist die API aelter als das Frontend -- dann zeigt die Spalte einen
+  // Strich und nicht 0.
+  licenses_approved_season?: number;
+  licenses_requested_season?: number;
   // Haupt-/Zusatzlizenz (automatisch bestimmt, reine Anzeige). null bei einer
   // Lizenz, die keine Spielberechtigung ist (abgelehnt, zurueckgezogen): Dort
   // waere jedes der beiden Etiketten eine Aussage, die nicht zutrifft.
