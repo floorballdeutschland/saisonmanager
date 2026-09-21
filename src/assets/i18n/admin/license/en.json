@@ -283,7 +283,18 @@
   },
   "teamEntry": {
     "teamLabel": "{{ team }} ({{ id }})",
-    "teamIdOnly": "({{ id }})"
+    "teamIdOnly": "({{ id }})",
+    "status": {
+      "approved": "granted",
+      "requested": "requested",
+      "denied": "rejected",
+      "deleted": "invalid: deleted",
+      "transfer": "invalid due to transfer",
+      "ignored": "invalid: ignored",
+      "withdrawn": "withdrawn",
+      "suspended": "suspended",
+      "unknown": "unknown status"
+    }
   },
   "notifications": {
     "licenseGranted": "License granted for player {{ firstName }} {{ lastName }} ({{ id }})",

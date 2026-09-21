@@ -1,58 +1,31 @@
 <li class="flex">
   <div class="self-center">
-    @switch (lastHistory.license_status_id) {
-      @case (1) {
-        <!-- Heroicon name: check-circle -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 22 22"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-5 h-5 mr-2.5 mb-2 text-green-600"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
+    <!-- Ein Symbol je Status, Zuordnung in STATUS_ICONS. Der Klartext steht als
+         Tooltip und Vorlesetext daran: Die Form unterscheidet die Status, den
+         Namen nennt sie nicht.
+         viewBox im 24er-Raster, in dem die Pfade gezeichnet sind. Die Vorlage
+         stand bis hierher auf 22: Abgeschnitten war nichts (der Kreis endet
+         mit Strichbreite bei 21,75), aber die Zeichnung saß neben der Mitte,
+         weil ihr Mittelpunkt bei 12 liegt und der der Box bei 11. -->
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      class="w-5 h-5 mr-2.5 mb-2"
+      [ngClass]="statusIcon.colorClass"
+      role="img"
+    >
+      <!-- Der Klartext als <title>-Kind, nicht als title-Attribut: Das Kind
+           ist bei SVG der vorgesehene Weg und ist Tooltip und Vorlesetext in
+           einem. Eine Bindung `[title]` am <svg> wies Angular hier
+           nachgemessen ab (NG0303, "isn't a known property of 'svg'"). -->
+      <title>{{ statusIcon.labelKey | transloco }}</title>
+      @for (path of statusIcon.paths; track path) {
+        <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="path" />
       }
-      @case (3) {
-        <!-- Heroicon name: x-circle -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 22 22"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-5 h-5 mr-2.5 mb-2 text-red-600"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      }
-      @default {
-        <!-- Heroicon name: question-mark-circle -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 22 22"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-5 h-5 mr-2.5 mb-2 text-fb-gray-400"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
-          />
-        </svg>
-      }
-    }
+    </svg>
   </div>
   <div class="grid gap-1">
     <!-- Ohne Namen bleibt die Kennung allein stehen: „(9664)" sagt weniger als

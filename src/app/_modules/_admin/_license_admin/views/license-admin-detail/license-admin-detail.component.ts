@@ -11,6 +11,7 @@ import {
   GfRole,
   League,
   PlayerLicense,
+  PlayerLicenseHistory,
   PlayerOtherLicense,
   PlayerWithLicense,
   TeamWithPlayers,
@@ -153,6 +154,80 @@ export class LicenseAdminDetailComponent implements OnInit {
     if (seasonId == null) return licenses;
     return licenses.filter(
       (l) => l.season_id != null && String(l.season_id) === String(seasonId)
+    );
+  }
+
+  /**
+   * Die Statuskennung, die die Lizenzzeile zeigt.
+   *
+   * Bevorzugt `effective_status_id` aus der Liga-Antwort (api#723): Darin sind
+   * die Sperren eingerechnet, die in der History gar nicht stehen -- eine
+   * Wettbewerbs- und eine Ligasperre schreibt die API bewusst nicht hinein,
+   * weil dieselbe Lizenz zugleich in einem Wettbewerb gilt, in dem der Spieler
+   * spielen darf. Ohne das Feld sähe die Karte eine so gesperrte Lizenz als
+   * erteilt.
+   *
+   * Fehlt es, entscheidet wie zuvor der jüngste History-Eintrag. Das ist kein
+   * theoretischer Zweig: Die API lässt das Feld weg, wenn die Mannschaft der
+   * Lizenz nicht auflösbar ist oder ihre History keinen Basis-Status hergibt.
+   *
+   * `??` und nicht `||`: Die API setzt das Feld nur mit einem echten Status
+   * (`if status_id.to_i.positive?`), eine 0 wäre also ein Vertragsbruch und
+   * keine Einladung, ersatzweise die History zu lesen. Sie landet beim
+   * Fragezeichen der Zeile, was eine kaputte Angabe sichtbar lässt, statt sie
+   * durch eine zweite Quelle zu überdecken.
+   */
+  public licenseStatusId(license: PlayerLicense): number | undefined {
+    return (
+      license?.effective_status_id ??
+      this.latestHistory(license)?.license_status_id
+    );
+  }
+
+  /**
+   * Der jüngste History-Eintrag einer Lizenz -- die Rückfallquelle von
+   * `licenseStatusId`, wenn die API kein `effective_status_id` liefert.
+   *
+   * Nicht das letzte Array-Element, wie es die Vorlage bis hierher nahm. Die
+   * History ist nicht sortiert: Beim Spieler-Merge werden die Verläufe zweier
+   * Profile schlicht aneinandergehängt (`Player#merge`, api), und gemischte
+   * Zeitzonen-Offsets können die Reihenfolge ohnehin umkehren. Die API liest
+   * den Eintrag deshalb über `max_by { created_at.to_s }`
+   * (LicenseEffectiveStatus).
+   *
+   * Diese Faltung bildet genau das nach, bis in den Gleichstand hinein: Sie
+   * beginnt beim ERSTEN Eintrag und ersetzt nur bei einem echt jüngeren.
+   * Tragen mehrere Einträge denselben Zeitstempel, gewinnt also der früheste
+   * im Array -- dasselbe tut Rubys `max_by`. Ein Eintrag ohne Zeitstempel
+   * verliert gegen jeden datierten, an welcher Stelle er auch steht; tragen
+   * alle keinen, bleibt es beim ersten.
+   *
+   * Zwei Grenzen, die nur noch auf diesem Rückfallpfad greifen -- mit
+   * `effective_status_id` beantwortet die API beide:
+   *
+   * 1. Der Vergleich als Zeichenkette ist nur bei EINHEITLICHEM Offset auch
+   *    chronologisch. `Time#as_json` schreibt den Offset mit, und
+   *    `…T23:59:00.000+02:00` sortiert hinter `…T18:25:00.000+00:00`, obwohl
+   *    es früher liegt. Die API hat dieselbe Schwäche (`created_at.to_s`), die
+   *    Anzeige weicht davon also nicht ab.
+   * 2. Die Lizenzlisten der API nehmen nicht diesen Eintrag, sondern den
+   *    jüngsten OHNE Sperre und legen die aktiven Sperren getrennt darüber.
+   *    Eine abgelaufene Sperre, deren `gesperrt`-Eintrag in der History stehen
+   *    bleibt, zählt dort nicht mehr -- hier schon.
+   *
+   * Rückgabetyp `PlayerLicenseHistory`, obwohl bei leerer History `undefined`
+   * herauskommt -- ohne `noUncheckedIndexedAccess` sieht TypeScript das nicht.
+   * Empfänger ist `licenseStatusId`, dessen `?.` den Fall abfängt.
+   */
+  public latestHistory(license: PlayerLicense): PlayerLicenseHistory {
+    const history = license?.history ?? [];
+
+    return history.reduce(
+      (newest, entry) =>
+        String(entry?.created_at ?? '') > String(newest?.created_at ?? '')
+          ? entry
+          : newest,
+      history[0]
     );
   }
 

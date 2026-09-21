@@ -76,8 +76,9 @@
     "refereeReport": "Schiedsrichter-Berichtsformular vom {{date}}",
     "proceedingProposal": "Verfahrensvorschlag",
     "openProposals": "Zur Übersicht",
-    "checklistNegative": "{{count}} verneinte(r) Punkt(e) in der Spieltagscheckliste",
-    "checklistVeto": "Einspruch des Ausrichters vom {{date}} mit {{count}} verneinten Punkt(en)"
+    "checklistNegative": "{{count}} verneinte(r) Punkt(e) im Spieltagsbericht",
+    "checklistVeto": "Einspruch des Ausrichters vom {{date}} mit {{count}} verneinten Punkt(en)",
+    "checklistItemRemoved": "Punkt wurde vom Landesverband entfernt"
   },
   "proposalStatus": {
     "pending": "offen",

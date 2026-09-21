@@ -189,7 +189,7 @@
                     [teamId]="license.team_id"
                     [teamName]="license.team_name"
                     [leagueName]="license.league_name"
-                    [lastHistory]="license.history[license.history.length - 1]"
+                    [statusId]="licenseStatusId(license)"
                   ></fb-license-admin-team-entry>
                 </li>
               }

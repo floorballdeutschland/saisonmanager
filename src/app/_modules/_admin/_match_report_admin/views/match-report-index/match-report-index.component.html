@@ -532,6 +532,21 @@
                     "matchReportAdmin.linked.checklistNegative"
                       | transloco: { count: row.checklist_negative_count }
                   }}
+                  <!--
+                    Die Fragetexte stehen darunter, nicht in der Zeile: Eine
+                    Zeile mit mehreren verneinten Punkten wäre sonst ein
+                    Fließtext, in dem der einzelne Punkt wieder untergeht.
+                  -->
+                  @if (row.checklist_negative_items?.length) {
+                    <ul class="list-disc ml-5">
+                      @for (
+                        item of row.checklist_negative_items ?? [];
+                        track item.item_id
+                      ) {
+                        <li>{{ checklistQuestion(item) }}</li>
+                      }
+                    </ul>
+                  }
                 </li>
               }
               @if (row.checklist_veto_submitted_at) {
@@ -546,6 +561,16 @@
                             count: row.checklist_veto_negative_count,
                           }
                   }}
+                  @if (row.checklist_veto_negative_items?.length) {
+                    <ul class="list-disc ml-5">
+                      @for (
+                        item of row.checklist_veto_negative_items ?? [];
+                        track item.item_id
+                      ) {
+                        <li>{{ checklistQuestion(item) }}</li>
+                      }
+                    </ul>
+                  }
                 </li>
               }
             </ul>

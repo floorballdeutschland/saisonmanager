@@ -6,7 +6,7 @@ import { PublicChecklistVetoRoutingModule } from './public-checklist-veto-routin
 import * as Views from './views';
 
 /**
- * Einspruch des Ausrichtervereins gegen die Spieltagscheckliste, über den
+ * Einspruch des Ausrichtervereins gegen den Spieltagsbericht, über den
  * Einmal-Link aus der Bestätigungsmail und ohne Anmeldung.
  */
 @NgModule({
