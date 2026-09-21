@@ -141,6 +141,8 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   public keysError = false;
   /** Mannschaften, deren Schlüssel gerade gespeichert wird -- sperrt den zweiten Klick. */
   public keysBusy = new Set<number>();
+  /** Einmal erfolgreich geladen -- `keys` darf leer und trotzdem geladen sein. */
+  public keysLoaded = false;
   /**
    * Was gerade im Feld steht, je Mannschaft.
    *
@@ -552,7 +554,12 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
 
   public async toggleKeys(): Promise<void> {
     this.keysOpen = !this.keysOpen;
-    if (!this.keysOpen || this.keys.length || this.keysLoading) return;
+    // Eigener Marker statt `keys.length`: Eine Liga ohne jede Mannschaft
+    // liefert eine leere Liste, und die laese sich von „noch nicht geladen"
+    // nicht unterscheiden -- jedes Aufklappen holte sie erneut. Nach einem
+    // Fehlschlag ist `keysLoaded` falsch geblieben, also versucht es das
+    // naechste Aufklappen wieder, statt den alten Fehler stehenzulassen.
+    if (!this.keysOpen || this.keysLoaded || this.keysLoading) return;
 
     await this.reloadKeys();
   }
@@ -574,6 +581,7 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     );
 
     this.keysLoading = false;
+    this.keysLoaded = teams !== null;
     if (teams === null) {
       // Kein stilles „keine Mannschaften": Eine leere Liste wäre von einem
       // fehlgeschlagenen Abruf nicht zu unterscheiden, und wer daraufhin einen
@@ -616,13 +624,13 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   /**
    * Entfernt den Schlüssel.
    *
-   * Danach ist kein Spiel dieser Mannschaft mehr streambar, deshalb die
-   * Rückfrage -- ein verrutschter Klick in einer Liste aus 38 Zeilen nimmt
-   * sonst einem Ausrichter am Spieltag die Übertragung.
+   * Die Rückfrage steht in der Vorlage (`fb-confirmation`) und nicht hier:
+   * Danach ist kein Spiel dieser Mannschaft mehr streambar, und ein
+   * verrutschter Klick in einer Liste aus 38 Zeilen nähme einem Ausrichter am
+   * Spieltag die Übertragung.
    */
   public async clearKey(team: StreamingTeam): Promise<void> {
     if (this.keysBusy.has(team.id)) return;
-    if (!this._confirmClear(team)) return;
 
     await this._writeKey(team, '');
   }
@@ -647,9 +655,15 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
       return;
     }
 
-    team.has_stream_key = antwort.has_stream_key;
-    team.stream_key_hint = antwort.stream_key_hint;
-    this.keyDrafts.delete(team.id);
+    // Die Zeile NEU SUCHEN: Waehrend des Speicherns kann „Liste laden" die
+    // Liste ersetzt haben. Beschriebe man die festgehaltene Zeile, zeigte die
+    // sichtbare weiter „nicht gesetzt", waehrend die Meldung Erfolg meldet.
+    const zeile = this.keys.find((eintrag) => eintrag.id === antwort.id);
+    if (zeile) {
+      zeile.has_stream_key = antwort.has_stream_key;
+      zeile.stream_key_hint = antwort.stream_key_hint;
+    }
+    this.keyDrafts.delete(antwort.id);
     this._notificationService.success(
       wert
         ? `Streamschlüssel für ${team.name} gespeichert.`
@@ -660,14 +674,6 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     // Dieselbe Angabe steht in der Spalte „streambar" der Spieleliste. Eine
     // Liste, die noch das Gegenteil zeigt, ist schlimmer als eine, die lädt.
     if (this.loaded) this.load();
-  }
-
-  /** Gekapselt, damit der Spec die Rückfrage stilllegen kann. */
-  private _confirmClear(team: StreamingTeam): boolean {
-    return window.confirm(
-      `Streamschlüssel für ${team.name} entfernen? Danach lässt sich für diese ` +
-        'Mannschaft keine Übertragung mehr anlegen.'
-    );
   }
 
   /** Ohne Vorlage entstünden titellose Übertragungen auf dem Verbandskanal. */

@@ -82,6 +82,8 @@
       "team": "Mannschaft",
       "state": "Stand",
       "key": "Schlüssel eintragen"
-    }
+    },
+    "clearTitle": "Streamschlüssel entfernen?",
+    "clearContent": "Für {{team}} lässt sich danach keine Übertragung mehr anlegen, bis wieder ein Schlüssel eingetragen ist."
   }
 }

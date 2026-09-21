@@ -1,6 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { UikitCommonModule } from '@floorball/uikit/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { ConfirmationComponent } from 'src/app/_modules/_uikit/_common/components/organisms/confirmation/confirmation.component';
 import {
   HttpClientTestingModule,
   HttpTestingController,
@@ -106,6 +109,9 @@ describe('StreamingIndexComponent', () => {
         CommonModule,
         FormsModule,
         HttpClientTestingModule,
+        // Wegen `fb-confirmation` an der Schlüsselzeile: Die Rückfrage ist das
+        // Hausmuster und keine Browser-Abfrage.
+        UikitCommonModule,
         getTranslocoTestingModule(),
       ],
       declarations: [StreamingIndexComponent],
@@ -1034,14 +1040,12 @@ describe('StreamingIndexComponent', () => {
       component.setKeyDraft(eintrag, 'schon-vergeben');
 
       const lauf = component.saveKey(eintrag);
-      http
-        .expectOne(`${environment.apiURL}admin/streaming/teams/42`)
-        .flush(
-          {
-            error: 'Dieser Schluessel haengt schon an Floor Fighters Chemnitz',
-          },
-          { status: 422, statusText: 'Unprocessable Entity' }
-        );
+      http.expectOne(`${environment.apiURL}admin/streaming/teams/42`).flush(
+        {
+          error: 'Dieser Schluessel haengt schon an Floor Fighters Chemnitz',
+        },
+        { status: 422, statusText: 'Unprocessable Entity' }
+      );
       await lauf;
 
       expect(eintrag.has_stream_key).toBeFalse();
@@ -1050,10 +1054,9 @@ describe('StreamingIndexComponent', () => {
       expect(component.keysBusy.has(42)).toBeFalse();
     });
 
-    it('entfernt den Schlüssel nach Rückfrage mit einem leeren Wert', async () => {
+    it('entfernt den Schlüssel mit einem leeren Wert', async () => {
       start([game(1)]);
       await openKeys([team({ has_stream_key: true, stream_key_hint: 'qrst' })]);
-      spyOn(window, 'confirm').and.returnValue(true);
       const eintrag = component.keys[0];
 
       const lauf = component.clearKey(eintrag);
@@ -1074,15 +1077,66 @@ describe('StreamingIndexComponent', () => {
       );
     });
 
-    it('GEGENPROBE: eine abgelehnte Rückfrage schickt nichts', async () => {
+    // Die Rückfrage hängt in der Vorlage: Ohne sie nähme ein verrutschter Klick
+    // in einer Liste aus 38 Zeilen einem Ausrichter am Spieltag die Übertragung.
+    it('das Entfernen hängt hinter einer Rückfrage', async () => {
       start([game(1)]);
       await openKeys([team({ has_stream_key: true, stream_key_hint: 'qrst' })]);
-      spyOn(window, 'confirm').and.returnValue(false);
+      fixture.detectChanges();
 
-      await component.clearKey(component.keys[0]);
+      const rueckfrage = fixture.debugElement.query(
+        By.directive(ConfirmationComponent)
+      );
 
+      expect(rueckfrage).not.toBeNull();
+      // Erst die Zusage löst das Entfernen aus, nicht schon der Klick.
       http.expectNone(`${environment.apiURL}admin/streaming/teams/42`);
+      const entfernen = spyOn(component, 'clearKey');
+      rueckfrage.componentInstance.handleSubmit.emit();
+      expect(entfernen).toHaveBeenCalled();
+    });
+
+    // Der Zustand der Zeile darf nicht aus einer Liste stammen, die es nicht
+    // mehr gibt: „Liste laden" kann während des Speicherns gelaufen sein, und
+    // die festgehaltene Zeile hängt dann an keiner Anzeige mehr.
+    it('schreibt in die Zeile der aktuellen Liste, nicht in die alte', async () => {
+      start([game(1)]);
+      await openKeys();
+      const alteZeile = component.keys[0];
+      component.setKeyDraft(alteZeile, 'abcd-efgh-ijkl-mnop-qrst');
+
+      const lauf = component.saveKey(alteZeile);
+      const neuGeladen = component.reloadKeys();
+      // Die Liste kommt zuerst zurück und ersetzt die Zeile ...
+      http
+        .expectOne((request) => request.url.endsWith('admin/streaming/teams'))
+        .flush([team()]);
+      // ... erst danach die Antwort auf das Schreiben.
+      http
+        .expectOne(`${environment.apiURL}admin/streaming/teams/42`)
+        .flush({ ...team(), has_stream_key: true, stream_key_hint: 'qrst' });
+      await Promise.all([lauf, neuGeladen]);
+
       expect(component.keys[0].has_stream_key).toBeTrue();
+      expect(component.keys[0]).not.toBe(alteZeile);
+      http
+        .expectOne((request) => request.url.includes('admin/streaming/games'))
+        .flush([]);
+    });
+
+    // Eine leere Liste ist geladen und nicht ungeladen -- sonst holt jedes
+    // Aufklappen sie erneut.
+    it('holt eine leere Liste nicht bei jedem Aufklappen neu', async () => {
+      start([game(1)]);
+      await openKeys([]);
+
+      await component.toggleKeys();
+      await component.toggleKeys();
+
+      http.expectNone((request) =>
+        request.url.endsWith('admin/streaming/teams')
+      );
+      expect(component.keysLoaded).toBeTrue();
     });
 
     // Entwürfe gehören zur alten Liste: Bliebe einer stehen, zeigte das Feld

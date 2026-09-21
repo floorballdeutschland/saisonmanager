@@ -82,6 +82,8 @@
       "team": "Team",
       "state": "State",
       "key": "Enter key"
-    }
+    },
+    "clearTitle": "Remove stream key?",
+    "clearContent": "No broadcast can be created for {{team}} until a key is entered again."
   }
 }

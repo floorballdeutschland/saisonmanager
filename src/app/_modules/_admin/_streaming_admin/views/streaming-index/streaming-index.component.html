@@ -218,7 +218,7 @@
           <button
             type="button"
             (click)="reloadKeys()"
-            [disabled]="keysLoading"
+            [disabled]="keysLoading || keysBusy.size"
             class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
           >
             {{ "streamingAdmin.keys.apply" | transloco }}
@@ -313,14 +313,26 @@
                         {{ "streamingAdmin.keys.save" | transloco }}
                       </button>
                       @if (team.has_stream_key) {
-                        <button
-                          type="button"
-                          (click)="clearKey(team)"
-                          [disabled]="keysBusy.has(team.id)"
-                          class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200 disabled:opacity-40"
+                        <fb-confirmation
+                          [title]="'streamingAdmin.keys.clearTitle' | transloco"
+                          [content]="
+                            'streamingAdmin.keys.clearContent'
+                              | transloco: { team: team.name }
+                          "
+                          [submitButtonTitle]="
+                            'streamingAdmin.keys.clear' | transloco
+                          "
+                          buttonVariant="error"
+                          (handleSubmit)="clearKey(team)"
                         >
-                          {{ "streamingAdmin.keys.clear" | transloco }}
-                        </button>
+                          <button
+                            type="button"
+                            [disabled]="keysBusy.has(team.id)"
+                            class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200 disabled:opacity-40"
+                          >
+                            {{ "streamingAdmin.keys.clear" | transloco }}
+                          </button>
+                        </fb-confirmation>
                       }
                     </div>
                   </td>
