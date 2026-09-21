@@ -181,6 +181,324 @@
     }
   </div>
 
+  <!-- Streamschlüssel -->
+  <div class="border border-fb-gray-700 rounded-[5px] mb-6">
+    <button
+      type="button"
+      (click)="toggleKeys()"
+      class="w-full flex items-center justify-between p-4 text-sm font-bold"
+    >
+      <span>{{ "streamingAdmin.keys.heading" | transloco }}</span>
+      <span aria-hidden="true">{{ keysOpen ? "−" : "+" }}</span>
+    </button>
+
+    @if (keysOpen) {
+      <div class="p-4 pt-0">
+        <p class="text-sm text-fb-gray-500 mb-3 max-w-3xl">
+          {{ "streamingAdmin.keys.intro" | transloco }}
+        </p>
+
+        <div class="flex flex-wrap items-end gap-3 mb-4">
+          <label class="text-sm">
+            <span class="block font-bold mb-1">
+              {{ "streamingAdmin.keys.league" | transloco }}
+            </span>
+            <select
+              [(ngModel)]="keysLeagueId"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 max-w-[20rem]"
+            >
+              <option [ngValue]="null">
+                {{ "streamingAdmin.keys.leaguePlaceholder" | transloco }}
+              </option>
+              @for (league of leagues; track league.id) {
+                <option [ngValue]="league.id">{{ league.name }}</option>
+              }
+            </select>
+          </label>
+          <button
+            type="button"
+            (click)="reloadKeys()"
+            [disabled]="keysLoading || keysBusy.size"
+            class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+          >
+            {{ "streamingAdmin.keys.apply" | transloco }}
+          </button>
+        </div>
+
+        @if (keysLoading) {
+          <div class="text-sm text-fb-gray-500 py-3">
+            {{ "streamingAdmin.loading" | transloco }}
+          </div>
+        } @else if (keysError) {
+          <div class="text-sm py-3">
+            {{ "streamingAdmin.keys.loadError" | transloco }}
+            <button
+              type="button"
+              (click)="reloadKeys()"
+              class="underline font-bold ml-1"
+            >
+              {{ "streamingAdmin.retry" | transloco }}
+            </button>
+          </div>
+        } @else if (!keys.length) {
+          <div class="text-sm text-fb-gray-500 py-3">
+            {{ "streamingAdmin.keys.empty" | transloco }}
+          </div>
+        } @else {
+          <!-- Wie die Spieleliste: Auf dem Telefon scrollt die Tabelle für sich
+               und schiebt nicht die ganze Seite zur Seite. -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left border-b border-fb-gray-700">
+                  <th class="py-2 pr-3 font-bold">
+                    {{ "streamingAdmin.keys.table.league" | transloco }}
+                  </th>
+                  <th class="py-2 pr-3 font-bold">
+                    {{ "streamingAdmin.keys.table.team" | transloco }}
+                  </th>
+                  <th class="py-2 pr-3 font-bold">
+                    {{ "streamingAdmin.keys.table.state" | transloco }}
+                  </th>
+                  <th class="py-2 font-bold">
+                    {{ "streamingAdmin.keys.table.key" | transloco }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (team of keys; track team.id) {
+                  <tr class="border-b border-fb-gray-800 align-top">
+                    <td class="py-2 pr-3 text-fb-gray-500">
+                      {{ team.league_name }}
+                    </td>
+                    <td class="py-2 pr-3 font-bold">{{ team.name }}</td>
+                    <td class="py-2 pr-3">
+                      @if (team.has_stream_key) {
+                        <span class="text-fb-gray-500">
+                          {{
+                            "streamingAdmin.keys.set"
+                              | transloco: { hint: team.stream_key_hint }
+                          }}
+                        </span>
+                      } @else {
+                        <span class="text-fb-gray-400">
+                          {{ "streamingAdmin.keys.unset" | transloco }}
+                        </span>
+                      }
+                    </td>
+                    <td class="py-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <input
+                          type="text"
+                          autocomplete="off"
+                          spellcheck="false"
+                          [attr.aria-label]="
+                            'streamingAdmin.keys.inputLabel'
+                              | transloco: { team: team.name }
+                          "
+                          [placeholder]="
+                            'streamingAdmin.keys.placeholder' | transloco
+                          "
+                          [disabled]="keysBusy.has(team.id)"
+                          [ngModel]="keyDraft(team)"
+                          (ngModelChange)="setKeyDraft(team, $event)"
+                          [ngModelOptions]="{ standalone: true }"
+                          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 w-56 disabled:opacity-50"
+                        />
+                        <button
+                          type="button"
+                          (click)="saveKey(team)"
+                          [disabled]="
+                            keysBusy.has(team.id) || !keyDraft(team).trim()
+                          "
+                          class="px-3 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+                        >
+                          {{ "streamingAdmin.keys.save" | transloco }}
+                        </button>
+                        @if (team.has_stream_key) {
+                          <fb-confirmation
+                            [title]="
+                              'streamingAdmin.keys.clearTitle' | transloco
+                            "
+                            [content]="
+                              'streamingAdmin.keys.clearContent'
+                                | transloco: { team: team.name }
+                            "
+                            [submitButtonTitle]="
+                              'streamingAdmin.keys.clear' | transloco
+                            "
+                            buttonVariant="error"
+                            (handleSubmit)="clearKey(team)"
+                          >
+                            <button
+                              type="button"
+                              [disabled]="keysBusy.has(team.id)"
+                              class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200 disabled:opacity-40"
+                            >
+                              {{ "streamingAdmin.keys.clear" | transloco }}
+                            </button>
+                          </fb-confirmation>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- YouTube-Verbindung des Wächters -->
+  <div class="border border-fb-gray-700 rounded-[5px] mb-6">
+    <button
+      type="button"
+      (click)="toggleYoutube()"
+      class="w-full flex items-center justify-between p-4 text-sm font-bold"
+    >
+      <span>{{ "streamingAdmin.youtube.heading" | transloco }}</span>
+      <span aria-hidden="true">{{ youtubeOpen ? "−" : "+" }}</span>
+    </button>
+
+    @if (youtubeOpen) {
+      <div class="p-4 pt-0">
+        <p class="text-sm text-fb-gray-500 mb-3 max-w-3xl">
+          {{ "streamingAdmin.youtube.intro" | transloco }}
+        </p>
+
+        @if (youtubeLoading) {
+          <div class="text-sm text-fb-gray-500 py-3">
+            {{ "streamingAdmin.loading" | transloco }}
+          </div>
+        } @else if (youtubeError) {
+          <div class="text-sm py-3">
+            {{ "streamingAdmin.youtube.loadError" | transloco }}
+            <button
+              type="button"
+              (click)="reloadYoutubeStatus()"
+              class="underline font-bold ml-1"
+            >
+              {{ "streamingAdmin.retry" | transloco }}
+            </button>
+          </div>
+        } @else if (youtubeStatus) {
+          <dl class="text-sm grid gap-1 sm:grid-cols-[12rem_1fr] mb-4">
+            <dt class="font-bold">
+              {{ "streamingAdmin.youtube.state" | transloco }}
+            </dt>
+            <dd>
+              @if (youtubeStatus.connected) {
+                {{ "streamingAdmin.youtube.connected" | transloco }}
+              } @else {
+                <span class="text-fb-red-500 font-bold">
+                  {{ "streamingAdmin.youtube.disconnected" | transloco }}
+                </span>
+              }
+            </dd>
+
+            @if (youtubeStatus.channel_title) {
+              <dt class="font-bold">
+                {{ "streamingAdmin.youtube.channel" | transloco }}
+              </dt>
+              <dd>{{ youtubeStatus.channel_title }}</dd>
+            }
+
+            @if (youtubeStatus.connected) {
+              <dt class="font-bold">
+                {{ "streamingAdmin.youtube.source" | transloco }}
+              </dt>
+              <dd>
+                {{
+                  (youtubeStatus.source === "db"
+                    ? "streamingAdmin.youtube.sourceDb"
+                    : "streamingAdmin.youtube.sourceEnv"
+                  ) | transloco
+                }}
+              </dd>
+            }
+
+            @if (youtubeStatus.connected_at) {
+              <dt class="font-bold">
+                {{ "streamingAdmin.youtube.since" | transloco }}
+              </dt>
+              <dd>
+                {{ youtubeStatus.connected_at | date: "dd.MM.yyyy HH:mm" }}
+                @if (youtubeStatus.connected_by) {
+                  · {{ youtubeStatus.connected_by }}
+                }
+              </dd>
+            }
+          </dl>
+
+          @if (youtubeStatus.stored_present && !youtubeStatus.stored_active) {
+            <p
+              class="text-sm text-fb-red-500 font-bold mb-3 max-w-3xl"
+              role="status"
+            >
+              {{ "streamingAdmin.youtube.storedInactive" | transloco }}
+            </p>
+          }
+
+          @if (!youtubeStatus.can_connect) {
+            <p class="text-sm text-fb-gray-500 mb-3 max-w-3xl">
+              {{
+                "streamingAdmin.youtube.notSetUp"
+                  | transloco
+                    : { settings: youtubeStatus.missing_settings.join(", ") }
+              }}
+            </p>
+          } @else if (!youtubeStatus.may_connect) {
+            <p class="text-sm text-fb-gray-500 mb-3 max-w-3xl">
+              {{ "streamingAdmin.youtube.adminOnly" | transloco }}
+            </p>
+          } @else {
+            <p class="text-xs text-fb-gray-500 mb-3 max-w-3xl">
+              {{ "streamingAdmin.youtube.channelHint" | transloco }}
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                type="button"
+                (click)="connectYoutube()"
+                [disabled]="connecting"
+                class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+              >
+                {{
+                  (connecting
+                    ? "streamingAdmin.youtube.connecting"
+                    : "streamingAdmin.youtube.connect"
+                  ) | transloco
+                }}
+              </button>
+              @if (youtubeStatus.source === "db") {
+                <fb-confirmation
+                  [title]="'streamingAdmin.youtube.disconnectTitle' | transloco"
+                  [content]="
+                    'streamingAdmin.youtube.disconnectContent' | transloco
+                  "
+                  [submitButtonTitle]="
+                    'streamingAdmin.youtube.disconnect' | transloco
+                  "
+                  buttonVariant="error"
+                  (handleSubmit)="disconnectYoutube()"
+                >
+                  <button
+                    type="button"
+                    [disabled]="connecting"
+                    class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200 disabled:opacity-40"
+                  >
+                    {{ "streamingAdmin.youtube.disconnect" | transloco }}
+                  </button>
+                </fb-confirmation>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-8 text-center">
       {{ "streamingAdmin.loading" | transloco }}

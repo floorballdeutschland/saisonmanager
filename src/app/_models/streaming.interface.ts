@@ -129,3 +129,53 @@ export interface StreamingTemplates {
   default_title: string;
   default_description: string;
 }
+
+/**
+ * Eine Mannschaft in der Pflegeliste der Streamschlüssel.
+ *
+ * Der Schlüssel selbst steht bewusst NICHT darin: Wer ihn hat, sendet auf den
+ * Verbandskanal, und die Liste ist zum Pflegen da und nicht zum Nachschlagen.
+ * `stream_key_hint` trägt die letzten vier Zeichen -- genug, um zu erkennen, ob
+ * der eingetragene derselbe ist, und zu wenig, um damit zu senden.
+ */
+export interface StreamingTeam {
+  id: number;
+  name: string;
+  club_name: string | null;
+  league_id: number;
+  league_name: string | null;
+  has_stream_key: boolean;
+  stream_key_hint: string | null;
+}
+
+/**
+ * Woran der Livestream-Wächter hängt.
+ *
+ * `source` unterscheidet den über die Oberfläche verbundenen Zugang ('db') von
+ * den Umgebungsvariablen am Container ('env') -- davon hängt ab, ob ein
+ * Neuverbinden überhaupt etwas ändert. `may_connect` beantwortet die Rolle:
+ * Verbinden darf nur ein Admin, und das steht nicht in den Berechtigungen, die
+ * im Browser liegen.
+ */
+export interface StreamingYoutubeStatus {
+  connected: boolean;
+  source: 'db' | 'env' | null;
+  /** Liegt überhaupt ein über die Oberfläche verbundener Zugang vor? */
+  stored_present: boolean;
+  /**
+   * Wird dieser gespeicherte Zugang auch benutzt?
+   *
+   * Nach einem Wechsel der Client-Kennung oder des Schlüssels fällt der Server
+   * still auf die Umgebung zurück. Ohne diese Angabe stünde auf der Seite
+   * weiter Kanal und Zeitpunkt eines Zugangs, den niemand mehr benutzt.
+   */
+  stored_active: boolean;
+  channel_id: string | null;
+  channel_title: string | null;
+  connected_at: string | null;
+  connected_by: string | null;
+  can_connect: boolean;
+  may_connect: boolean;
+  missing_settings: string[];
+  client_id: string | null;
+}

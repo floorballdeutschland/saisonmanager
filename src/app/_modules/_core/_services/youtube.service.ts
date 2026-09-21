@@ -6,6 +6,17 @@ interface TokenClient {
   requestAccessToken(overrides?: { prompt?: string }): void;
 }
 
+/** Der Code-Modus: liefert einen Code, den nur der Server einlösen kann. */
+interface CodeClient {
+  requestCode(): void;
+}
+
+interface CodeResponse {
+  code?: string;
+  error?: string;
+  error_description?: string;
+}
+
 interface TokenResponse {
   access_token?: string;
   error?: string;
@@ -23,6 +34,14 @@ declare global {
             callback: (response: TokenResponse) => void;
             error_callback?: (error: { type?: string }) => void;
           }): TokenClient;
+          initCodeClient(config: {
+            client_id: string;
+            scope: string;
+            ux_mode?: 'popup' | 'redirect';
+            select_account?: boolean;
+            callback: (response: CodeResponse) => void;
+            error_callback?: (error: { type?: string }) => void;
+          }): CodeClient;
         };
       };
     };
@@ -65,6 +84,17 @@ export class YoutubeError extends Error {}
  * Übertragung auf demselben Schlüssel an. Die hier muss von Hand gesucht werden.
  */
 export class YoutubeOrphanError extends YoutubeError {}
+
+/**
+ * Der Anwender hat den Anmeldedialog selbst weggeklickt oder die Zustimmung
+ * verweigert.
+ *
+ * Eigene Klasse, weil der Aufrufer daraus etwas anderes schliesst als aus einem
+ * Fehlschlag: Eine Entscheidung gehoert nicht ins Fehlermonitoring. Am Text zu
+ * erkennen ist sie NICHT -- „abgebrochen" steht auch in der Meldung eines
+ * blockierten Aufklappfensters, und das ist sehr wohl eine Stoerung.
+ */
+export class YoutubeCancelledError extends YoutubeError {}
 
 const GIS_SRC = 'https://accounts.google.com/gsi/client';
 /**
@@ -182,6 +212,102 @@ export class YoutubeService {
 
       this._tokenClient.requestAccessToken();
     });
+  }
+
+  /**
+   * Holt einen Anmeldecode für den dauerhaften Zugang des Wächters.
+   *
+   * ANDERER DIALOG ALS `signIn`, und der Unterschied ist der ganze Zweck: Ein
+   * Zugriffstoken gilt eine Stunde und lebt im Browser. Der Wächter läuft
+   * nachts allein und braucht einen dauerhaften Zugang -- und der entsteht nur
+   * aus einem Code, den der SERVER einlöst. Deshalb kommt hier nichts zurück,
+   * womit dieser Dienst selbst etwas anfangen könnte.
+   *
+   * `select_account` ist Absicht: Am Verbandskonto hängen zwei gleichnamige
+   * Kanäle, und ohne die Auswahl nimmt Google still den zuletzt benutzten --
+   * genau so ist der leere Testkanal in die alte Zugangsdatei geraten.
+   *
+   * Die Kennung kommt vom Aufrufer und nicht aus `environment`: Einlösen kann
+   * den Code nur der Server, und zwar mit dem Paar, das dort liegt.
+   */
+  public async requestAuthCode(
+    clientId: string
+  ): Promise<{ code: string; redirectUri: string }> {
+    if (!clientId) {
+      throw new YoutubeError(
+        'Für dieses System ist kein Google-Zugang hinterlegt.'
+      );
+    }
+
+    await this._loadScript();
+
+    const oauth2 = window.google?.accounts?.oauth2;
+    if (!oauth2) {
+      throw new YoutubeError(
+        'Die Google-Anmeldung ließ sich nicht laden. Blockiert ein Browser-Add-on accounts.google.com?'
+      );
+    }
+
+    const code = await new Promise<string>((resolve, reject) => {
+      const frist = setTimeout(
+        () =>
+          reject(
+            new YoutubeError(
+              'Die Google-Anmeldung wurde nicht abgeschlossen. Wurde das Fenster geschlossen?'
+            )
+          ),
+        SIGN_IN_TIMEOUT_MS
+      );
+      const fertig =
+        <T>(fn: (wert: T) => void) =>
+        (wert: T) => {
+          clearTimeout(frist);
+          fn(wert);
+        };
+
+      const client = oauth2.initCodeClient({
+        client_id: clientId,
+        scope: SCOPE,
+        ux_mode: 'popup',
+        select_account: true,
+        callback: fertig((response: CodeResponse) => {
+          if (response.code) {
+            resolve(response.code);
+            return;
+          }
+          const meldung = `Die Anmeldung wurde nicht abgeschlossen (${
+            response.error_description || response.error || 'abgebrochen'
+          }).`;
+          // `access_denied` heisst: Der Anwender hat die Zustimmung verweigert.
+          reject(
+            response.error === 'access_denied'
+              ? new YoutubeCancelledError(meldung)
+              : new YoutubeError(meldung)
+          );
+        }),
+        error_callback: fertig((error: { type?: string }) => {
+          // `popup_closed` ist die Entscheidung des Anwenders,
+          // `popup_failed_to_open` dagegen ein blockiertes Fenster -- das ist
+          // eine Stoerung und soll gemeldet werden.
+          const abbruch = error.type === 'popup_closed';
+          const meldung = `Die Anmeldung wurde abgebrochen (${
+            error.type || 'unbekannt'
+          }).`;
+          reject(
+            abbruch
+              ? new YoutubeCancelledError(meldung)
+              : new YoutubeError(meldung)
+          );
+        }),
+      });
+
+      client.requestCode();
+    });
+
+    // Im Aufklappfenster setzt Google die Umleitungsadresse selbst auf den
+    // Ursprung dieser Seite. Beim Einlösen muss derselbe Wert stehen, deshalb
+    // reicht ihn der Server nicht, sondern bekommt ihn von hier.
+    return { code, redirectUri: window.location.origin };
   }
 
   public signOut(): void {
@@ -400,11 +526,26 @@ export class YoutubeService {
     });
   }
 
+  /**
+   * `thumbnails/SET` und nicht `thumbnails`: Das Bild hochzuladen ist bei
+   * YouTube kein Anlegen in einer Sammlung, sondern eine eigene Methode
+   * (`thumbnails.set`), und die steht mit ihrem Namen im Pfad. Ohne das `/set`
+   * gibt es den Endpunkt schlicht nicht.
+   *
+   * WARUM DAS SO SCHWER ZU SEHEN WAR: Der Hochladeserver beantwortet den
+   * unbekannten Pfad mit einem **404 ohne Körper**. In der Zeile stand damit
+   * „Thumbnail nicht hochgeladen (404)." -- nicht zu unterscheiden von dem
+   * 404, den dieselbe Schnittstelle liefert, wenn sie die eben angelegte
+   * Übertragung noch nicht kennt. Genau den wiederholt `uploadThumbnail`
+   * zweimal, also sah der Fehlschlag nach einem Zeitproblem aus und war ein
+   * falscher Pfad: Am 21.09.2026 scheiterten so alle 19 Thumbnails eines
+   * Bundesliga-Wochenendes, während Anlegen, Binden und Playlist durchliefen.
+   */
   private async _upload(
     videoId: string,
     blob: Blob
   ): Promise<YoutubeApiResponse> {
-    const url = `${UPLOAD_ROOT}/thumbnails?videoId=${encodeURIComponent(
+    const url = `${UPLOAD_ROOT}/thumbnails/set?videoId=${encodeURIComponent(
       videoId
     )}&uploadType=media`;
 
