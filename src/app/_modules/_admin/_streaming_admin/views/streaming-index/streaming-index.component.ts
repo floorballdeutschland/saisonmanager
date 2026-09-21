@@ -12,6 +12,7 @@ import {
   LeagueService,
   NotificationService,
   StreamingService,
+  YoutubeCancelledError,
   YoutubeOrphanError,
   YoutubeService,
   YoutubeStatusError,
@@ -43,23 +44,6 @@ import {
 import { buildZip } from 'src/app/_helpers/_utils/zip-store';
 
 type Mode = 'range' | 'matchday';
-
-/**
- * Gründe, nach denen jeder weitere Versuch genauso scheitert -- Zustände, keine
- * Einzelereignisse. Der leere Grund steht für eine 403 ohne erkennbaren Grund:
- * Auch die wiederholt sich.
- */
-/**
- * Hat der Anwender den Anmeldedialog selbst weggeklickt?
- *
- * Google meldet das über `error_callback` mit `type: 'popup_closed'`; der
- * Dienst verpackt es in seine Meldung. Ein Abbruch ist eine Entscheidung und
- * gehört nicht ins Fehlermonitoring.
- */
-function istAbbruch(error: unknown): boolean {
-  const text = error instanceof Error ? error.message : String(error);
-  return /popup_closed|abgebrochen|nicht abgeschlossen/i.test(text);
-}
 
 /**
  * Gründe, nach denen jeder weitere Versuch genauso scheitert -- Zustände, keine
@@ -547,8 +531,10 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
       // Ein geschlossenes Anmeldefenster ist kein Fehler, sondern eine
       // Entscheidung. Frontend und API teilen sich ein Sentry-Projekt samt
       // Kontingent -- eine Einrichtungssitzung mit drei Fehlgriffen erzeugte
-      // sonst drei Meldungen, die nichts bedeuten.
-      if (!istAbbruch(error)) this._capture(error);
+      // sonst drei Meldungen, die nichts bedeuten. An der KLASSE erkannt und
+      // nicht am Text: „abgebrochen" steht auch in der Meldung eines
+      // blockierten Aufklappfensters, und das ist sehr wohl eine Störung.
+      if (!(error instanceof YoutubeCancelledError)) this._capture(error);
       this._notificationService.error(
         error instanceof Error
           ? error.message
@@ -564,7 +550,7 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
         .connectYoutube(anmeldung.code, anmeldung.redirectUri)
         .pipe(
           catchError((error) => {
-            this._capture(error);
+            this._captureUnerwartet(error);
             return of(null);
           })
         )
@@ -789,7 +775,7 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     const antwort = await firstValueFrom(
       this._streamingService.updateTeamKey(team.id, wert).pipe(
         catchError((error) => {
-          this._capture(error);
+          this._captureUnerwartet(error);
           return of(null);
         })
       )
@@ -1347,6 +1333,22 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     return `thumbnails-${filenameSlug(this.from)}-bis-${filenameSlug(
       this.to
     )}.zip`;
+  }
+
+  /**
+   * Meldet nur, was NICHT die geplante Antwort des Servers ist.
+   *
+   * Eine 4xx ist hier die Auskunft und keine Störung: „dieser Schlüssel hängt
+   * schon an jener Mannschaft", „der Kanal darf nicht senden", „Google hat
+   * keinen dauerhaften Zugang geliefert". Der ErrorInterceptor zeigt sie dem
+   * Anwender an; in Sentry wäre sie Rauschen auf einem Kontingent, das sich
+   * Frontend und API teilen.
+   */
+  private _captureUnerwartet(error: unknown): void {
+    const status = error instanceof HttpErrorResponse ? error.status : 0;
+    if (status >= 400 && status < 500) return;
+
+    this._capture(error);
   }
 
   private _capture(error: unknown): void {

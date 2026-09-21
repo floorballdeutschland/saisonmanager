@@ -160,6 +160,16 @@ export interface StreamingTeam {
 export interface StreamingYoutubeStatus {
   connected: boolean;
   source: 'db' | 'env' | null;
+  /** Liegt überhaupt ein über die Oberfläche verbundener Zugang vor? */
+  stored_present: boolean;
+  /**
+   * Wird dieser gespeicherte Zugang auch benutzt?
+   *
+   * Nach einem Wechsel der Client-Kennung oder des Schlüssels fällt der Server
+   * still auf die Umgebung zurück. Ohne diese Angabe stünde auf der Seite
+   * weiter Kanal und Zeitpunkt eines Zugangs, den niemand mehr benutzt.
+   */
+  stored_active: boolean;
   channel_id: string | null;
   channel_title: string | null;
   connected_at: string | null;

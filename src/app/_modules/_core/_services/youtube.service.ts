@@ -85,6 +85,17 @@ export class YoutubeError extends Error {}
  */
 export class YoutubeOrphanError extends YoutubeError {}
 
+/**
+ * Der Anwender hat den Anmeldedialog selbst weggeklickt oder die Zustimmung
+ * verweigert.
+ *
+ * Eigene Klasse, weil der Aufrufer daraus etwas anderes schliesst als aus einem
+ * Fehlschlag: Eine Entscheidung gehoert nicht ins Fehlermonitoring. Am Text zu
+ * erkennen ist sie NICHT -- „abgebrochen" steht auch in der Meldung eines
+ * blockierten Aufklappfensters, und das ist sehr wohl eine Stoerung.
+ */
+export class YoutubeCancelledError extends YoutubeError {}
+
 const GIS_SRC = 'https://accounts.google.com/gsi/client';
 /**
  * Frist für den Anmeldedialog. Google ruft für die üblichen Abbrüche
@@ -260,24 +271,34 @@ export class YoutubeService {
         ux_mode: 'popup',
         select_account: true,
         callback: fertig((response: CodeResponse) => {
-          if (response.code) resolve(response.code);
-          else {
-            reject(
-              new YoutubeError(
-                `Die Anmeldung wurde nicht abgeschlossen (${
-                  response.error_description || response.error || 'abgebrochen'
-                }).`
-              )
-            );
+          if (response.code) {
+            resolve(response.code);
+            return;
           }
-        }),
-        error_callback: fertig((error: { type?: string }) =>
+          const meldung = `Die Anmeldung wurde nicht abgeschlossen (${
+            response.error_description || response.error || 'abgebrochen'
+          }).`;
+          // `access_denied` heisst: Der Anwender hat die Zustimmung verweigert.
           reject(
-            new YoutubeError(
-              `Die Anmeldung wurde abgebrochen (${error.type || 'unbekannt'}).`
-            )
-          )
-        ),
+            response.error === 'access_denied'
+              ? new YoutubeCancelledError(meldung)
+              : new YoutubeError(meldung)
+          );
+        }),
+        error_callback: fertig((error: { type?: string }) => {
+          // `popup_closed` ist die Entscheidung des Anwenders,
+          // `popup_failed_to_open` dagegen ein blockiertes Fenster -- das ist
+          // eine Stoerung und soll gemeldet werden.
+          const abbruch = error.type === 'popup_closed';
+          const meldung = `Die Anmeldung wurde abgebrochen (${
+            error.type || 'unbekannt'
+          }).`;
+          reject(
+            abbruch
+              ? new YoutubeCancelledError(meldung)
+              : new YoutubeError(meldung)
+          );
+        }),
       });
 
       client.requestCode();
