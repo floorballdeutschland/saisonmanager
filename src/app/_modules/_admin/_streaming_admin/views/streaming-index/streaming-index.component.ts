@@ -44,6 +44,18 @@ import { buildZip } from 'src/app/_helpers/_utils/zip-store';
 type Mode = 'range' | 'matchday';
 
 /**
+ * Hat der Anwender den Anmeldedialog selbst weggeklickt?
+ *
+ * Google meldet das über `error_callback` mit `type: 'popup_closed'`; der
+ * Dienst verpackt es in seine Meldung. Ein Abbruch ist eine Entscheidung und
+ * gehört nicht ins Fehlermonitoring.
+ */
+function istAbbruch(error: unknown): boolean {
+  const text = error instanceof Error ? error.message : String(error);
+  return /popup_closed|abgebrochen|nicht abgeschlossen/i.test(text);
+}
+
+/**
  * Gründe, nach denen jeder weitere Versuch genauso scheitert -- Zustände, keine
  * Einzelereignisse. Der leere Grund steht für eine 403 ohne erkennbaren Grund:
  * Auch die wiederholt sich.
@@ -449,11 +461,10 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Die Pflegeliste der Zusagen, beim ersten Aufklappen geladen.
+   * Der Zustand der YouTube-Verbindung, beim ersten Aufklappen geladen.
    *
-   * Nicht beim Seitenaufbau: Sie wird selten gebraucht -- eine Zusage entsteht
-   * einmal und gilt dann die Saison über --, und jeder Abruf beim Laden der
-   * Seite verzögert die Liste, um die es hier eigentlich geht.
+   * Nicht beim Seitenaufbau: Er ändert sich fast nie, und jeder Abruf beim
+   * Laden verzögert die Liste, um die es hier eigentlich geht.
    */
   public async toggleYoutube(): Promise<void> {
     this.youtubeOpen = !this.youtubeOpen;
@@ -506,7 +517,11 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     try {
       anmeldung = await this._youtubeService.requestAuthCode(kennung);
     } catch (error) {
-      this._capture(error);
+      // Ein geschlossenes Anmeldefenster ist kein Fehler, sondern eine
+      // Entscheidung. Frontend und API teilen sich ein Sentry-Projekt samt
+      // Kontingent -- eine Einrichtungssitzung mit drei Fehlgriffen erzeugte
+      // sonst drei Meldungen, die nichts bedeuten.
+      if (!istAbbruch(error)) this._capture(error);
       this._notificationService.error(
         error instanceof Error
           ? error.message
@@ -541,14 +556,14 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Trennt den gespeicherten Zugang.
+   * Trennt den gespeicherten Zugang und widerruft ihn bei Google.
    *
-   * Mit Rückfrage: Danach beendet niemand mehr die Übertragungen nach dem
-   * Spiel, und das fällt erst auf, wenn eine Stunden später noch läuft.
+   * Die Rückfrage steht in der Vorlage (`fb-confirmation`): Danach beendet
+   * niemand mehr die Übertragungen nach dem Spiel, und das fällt erst auf,
+   * wenn eine Stunden später noch läuft.
    */
   public async disconnectYoutube(): Promise<void> {
     if (this.connecting) return;
-    if (!this._confirmDisconnect()) return;
 
     this.connecting = true;
     this._cdr.markForCheck();
@@ -567,14 +582,13 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
-  /** Gekapselt, damit der Spec die Rückfrage stilllegen kann. */
-  private _confirmDisconnect(): boolean {
-    return window.confirm(
-      'Verbindung zu YouTube trennen? Der Wächter beendet danach keine ' +
-        'Übertragung mehr, bis er neu verbunden wird.'
-    );
-  }
-
+  /**
+   * Die Pflegeliste der Zusagen, beim ersten Aufklappen geladen.
+   *
+   * Nicht beim Seitenaufbau: Sie wird selten gebraucht -- eine Zusage entsteht
+   * einmal und gilt dann die Saison über --, und jeder Abruf beim Laden der
+   * Seite verzögert die Liste, um die es hier eigentlich geht.
+   */
   public async toggleHosts(): Promise<void> {
     this.hostsOpen = !this.hostsOpen;
     if (!this.hostsOpen || this.hosts.length || this.hostsLoading) return;

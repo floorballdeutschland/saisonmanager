@@ -80,6 +80,8 @@
     "disconnect": "Verbindung trennen",
     "adminOnly": "Verbinden und Trennen kann nur ein Admin. Wer hier zustimmt, hängt den Verbandskanal dauerhaft an ein Google-Konto.",
     "notSetUp": "Der Verbindungsweg ist auf diesem System nicht eingerichtet, es fehlt: {{settings}}. Solange läuft der Wächter über die Umgebung des Servers.",
-    "channelHint": "Im Google-Dialog das Konto und den Kanal wählen, der die Videos trägt. Am Verbandskonto hängen zwei gleichnamige Kanäle, und der leere kann nicht senden — er wird abgewiesen, gespeichert wird dann nichts."
+    "channelHint": "Im Google-Dialog das Konto und den Kanal wählen, der die Videos trägt. Am Verbandskonto hängen zwei gleichnamige Kanäle, und der leere kann nicht senden — er wird abgewiesen, gespeichert wird dann nichts. Meldet Google „keinen dauerhaften Zugang\", hat dieses Konto der Anwendung schon einmal zugestimmt: dann zuerst „Verbindung trennen\" (das widerruft bei Google) oder den Zugriff unter myaccount.google.com/permissions entfernen.",
+    "disconnectTitle": "Verbindung zu YouTube trennen?",
+    "disconnectContent": "Der Wächter beendet danach keine Übertragung mehr und schaltet keine zugesagte Aufzeichnung öffentlich, bis er neu verbunden wird. Der Zugang wird dabei auch bei Google widerrufen."
   }
 }

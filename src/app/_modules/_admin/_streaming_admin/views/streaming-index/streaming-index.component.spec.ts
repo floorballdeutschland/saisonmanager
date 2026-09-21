@@ -1,6 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { UikitCommonModule } from '@floorball/uikit/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { ConfirmationComponent } from 'src/app/_modules/_uikit/_common/components/organisms/confirmation/confirmation.component';
 import {
   HttpClientTestingModule,
   HttpTestingController,
@@ -120,6 +123,9 @@ describe('StreamingIndexComponent', () => {
         CommonModule,
         FormsModule,
         HttpClientTestingModule,
+        // Wegen `fb-confirmation` am Trennen: Die Rückfrage ist das Hausmuster
+        // und keine Browser-Abfrage.
+        UikitCommonModule,
         getTranslocoTestingModule(),
       ],
       declarations: [StreamingIndexComponent],
@@ -1059,10 +1065,9 @@ describe('StreamingIndexComponent', () => {
       expect(component.connecting).toBeFalse();
     });
 
-    it('trennt nach Rückfrage', async () => {
+    it('trennt und übernimmt den Zustand aus der Antwort', async () => {
       start([game(1)]);
       await openYoutube();
-      spyOn(window, 'confirm').and.returnValue(true);
 
       const lauf = component.disconnectYoutube();
       http
@@ -1073,15 +1078,46 @@ describe('StreamingIndexComponent', () => {
       expect(component.youtubeStatus?.connected).toBeFalse();
     });
 
-    it('GEGENPROBE: eine abgelehnte Rückfrage trennt nicht', async () => {
+    // Ohne Rückfrage nähme ein verrutschter Klick dem Wächter den Zugang, und
+    // das fällt erst auf, wenn eine Übertragung nach dem Spiel weiterläuft.
+    it('das Trennen hängt hinter einer Rückfrage', async () => {
       start([game(1)]);
       await openYoutube();
-      spyOn(window, 'confirm').and.returnValue(false);
+      fixture.detectChanges();
 
-      await component.disconnectYoutube();
+      const rueckfrage = fixture.debugElement.query(
+        By.directive(ConfirmationComponent)
+      );
 
+      expect(rueckfrage).not.toBeNull();
       http.expectNone(`${environment.apiURL}admin/streaming/youtube`);
-      expect(component.youtubeStatus?.connected).toBeTrue();
+      const trennen = spyOn(component, 'disconnectYoutube');
+      rueckfrage.componentInstance.handleSubmit.emit();
+      expect(trennen).toHaveBeenCalled();
+    });
+
+    // Frontend und API teilen sich ein Sentry-Projekt samt Kontingent. Ein
+    // weggeklicktes Anmeldefenster ist eine Entscheidung, keine Störung.
+    it('meldet ein weggeklicktes Anmeldefenster nicht an Sentry', async () => {
+      start([game(1)]);
+      await openYoutube(status({ connected: false, source: null }));
+      spyOn(youtube, 'requestAuthCode').and.rejectWith(
+        new Error('Die Anmeldung wurde abgebrochen (popup_closed).')
+      );
+      // Auf `_capture` statt auf das Sentry-Modul: Dessen Export ist nicht
+      // ueberschreibbar, und geprueft werden soll ohnehin die Entscheidung
+      // dieser Komponente, nicht die Bibliothek.
+      const gemeldet = spyOn(
+        component as unknown as { _capture: (error: unknown) => void },
+        '_capture'
+      );
+      const meldung = spyOn(TestBed.inject(NotificationService), 'error');
+
+      await component.connectYoutube();
+
+      expect(gemeldet).not.toHaveBeenCalled();
+      // Der Anwender bekommt trotzdem eine Rückmeldung.
+      expect(meldung).toHaveBeenCalled();
     });
 
     // „Nicht verbunden" und „Abruf gescheitert" sind zwei verschiedene Dinge:

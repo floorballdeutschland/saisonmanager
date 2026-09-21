@@ -293,14 +293,25 @@
                 }}
               </button>
               @if (youtubeStatus.source === "db") {
-                <button
-                  type="button"
-                  (click)="disconnectYoutube()"
-                  [disabled]="connecting"
-                  class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200 disabled:opacity-40"
+                <fb-confirmation
+                  [title]="'streamingAdmin.youtube.disconnectTitle' | transloco"
+                  [content]="
+                    'streamingAdmin.youtube.disconnectContent' | transloco
+                  "
+                  [submitButtonTitle]="
+                    'streamingAdmin.youtube.disconnect' | transloco
+                  "
+                  buttonVariant="error"
+                  (handleSubmit)="disconnectYoutube()"
                 >
-                  {{ "streamingAdmin.youtube.disconnect" | transloco }}
-                </button>
+                  <button
+                    type="button"
+                    [disabled]="connecting"
+                    class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200 disabled:opacity-40"
+                  >
+                    {{ "streamingAdmin.youtube.disconnect" | transloco }}
+                  </button>
+                </fb-confirmation>
               }
             </div>
           }

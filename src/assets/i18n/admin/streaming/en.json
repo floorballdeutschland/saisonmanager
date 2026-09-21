@@ -80,6 +80,8 @@
     "disconnect": "Disconnect",
     "adminOnly": "Only an admin can connect or disconnect. Consenting here ties the association channel to a Google account for good.",
     "notSetUp": "This system is not set up for connecting, missing: {{settings}}. Until then the watchdog runs off the server environment.",
-    "channelHint": "In the Google dialog pick the account and the channel that holds the videos. Two channels of the same name hang off the association account, and the empty one cannot broadcast — it is rejected and nothing is stored."
+    "channelHint": "In the Google dialog pick the account and the channel that holds the videos. Two channels of the same name hang off the association account, and the empty one cannot broadcast — it is rejected and nothing is stored. If Google reports no lasting access, this account has already consented once: use \"Disconnect\" first (which revokes at Google) or remove the access at myaccount.google.com/permissions.",
+    "disconnectTitle": "Disconnect from YouTube?",
+    "disconnectContent": "The watchdog will no longer end broadcasts or publish promised recordings until it is connected again. The access is revoked at Google as well."
   }
 }
