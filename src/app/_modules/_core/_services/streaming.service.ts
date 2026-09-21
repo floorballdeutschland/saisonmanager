@@ -9,6 +9,7 @@ import {
   StreamingHost,
   StreamingTeam,
   StreamingTemplates,
+  StreamingYoutubeStatus,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -103,6 +104,40 @@ export class StreamingService {
     return this.http.put<StreamingTeam>(
       `${environment.apiURL}admin/streaming/teams/${teamId}`,
       { stream_key: streamKey }
+    );
+  }
+
+  /**
+   * Woran der Livestream-Wächter hängt.
+   *
+   * Der Wächter läuft als Cronjob; ein abgelaufener Zugang fällt sonst erst
+   * auf, wenn eine Übertragung nach dem Spiel weiterläuft.
+   */
+  public getYoutubeStatus(): Observable<StreamingYoutubeStatus> {
+    return this.http.get<StreamingYoutubeStatus>(
+      `${environment.apiURL}admin/streaming/youtube`
+    );
+  }
+
+  /**
+   * Löst den Anmeldecode aus dem Browser beim Server ein.
+   *
+   * Nur der Server kann das -- nur dabei entsteht der dauerhafte Zugang, und
+   * nur er kennt das Client-Geheimnis.
+   */
+  public connectYoutube(
+    code: string,
+    redirectUri: string
+  ): Observable<StreamingYoutubeStatus> {
+    return this.http.post<StreamingYoutubeStatus>(
+      `${environment.apiURL}admin/streaming/youtube`,
+      { code, redirect_uri: redirectUri }
+    );
+  }
+
+  public disconnectYoutube(): Observable<StreamingYoutubeStatus> {
+    return this.http.delete<StreamingYoutubeStatus>(
+      `${environment.apiURL}admin/streaming/youtube`
     );
   }
 
