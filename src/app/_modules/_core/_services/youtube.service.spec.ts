@@ -225,13 +225,21 @@ describe('YoutubeService', () => {
   describe('uploadThumbnail', () => {
     const blob = new Blob(['x'], { type: 'image/png' });
 
-    it('lädt das Bild hoch', async () => {
+    // AUF DEN GANZEN PFAD PRÜFEN, nicht auf `/thumbnails`: Die frühere Fassung
+    // dieser Erwartung war ein `toContain('/upload/youtube/v3/thumbnails')` und
+    // lief für den kaputten Pfad ohne `/set` genauso grün -- er enthält den
+    // gesuchten Teilstring ja. Deshalb steht hier die Adresse vollständig, samt
+    // des Fragezeichens, hinter dem die Parameter beginnen.
+    it('lädt das Bild an thumbnails/set hoch', async () => {
       antworten.push(response({}));
 
       await service.uploadThumbnail('yt-1', blob);
 
-      expect(aufrufe[0].url).toContain('/upload/youtube/v3/thumbnails');
+      expect(aufrufe[0].url).toContain(
+        'https://www.googleapis.com/upload/youtube/v3/thumbnails/set?'
+      );
       expect(aufrufe[0].url).toContain('videoId=yt-1');
+      expect(aufrufe[0].url).toContain('uploadType=media');
     });
 
     // Kurz nach dem Anlegen kennt die Video-Schnittstelle die Übertragung
