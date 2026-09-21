@@ -21,6 +21,7 @@ import {
   StreamingGame,
   StreamingHost,
   StreamingTemplates,
+  StreamingYoutubeStatus,
 } from '@floorball/types';
 import {
   filenameSlug,
@@ -132,6 +133,13 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   public hostsBusy = new Set<number>();
   public templatesOpen = false;
   public savingTemplates = false;
+
+  /** Woran der Waechter haengt; erst beim Aufklappen geladen. */
+  public youtubeStatus: StreamingYoutubeStatus | null = null;
+  public youtubeOpen = false;
+  public youtubeLoading = false;
+  public youtubeError = false;
+  public connecting = false;
 
   public creating = false;
   public createdDone = 0;
@@ -447,6 +455,126 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
    * einmal und gilt dann die Saison über --, und jeder Abruf beim Laden der
    * Seite verzögert die Liste, um die es hier eigentlich geht.
    */
+  public async toggleYoutube(): Promise<void> {
+    this.youtubeOpen = !this.youtubeOpen;
+    if (!this.youtubeOpen || this.youtubeStatus || this.youtubeLoading) return;
+
+    await this.reloadYoutubeStatus();
+  }
+
+  public async reloadYoutubeStatus(): Promise<void> {
+    if (this.youtubeLoading) return;
+
+    this.youtubeLoading = true;
+    this.youtubeError = false;
+    this._cdr.markForCheck();
+
+    const status = await firstValueFrom(
+      this._streamingService.getYoutubeStatus().pipe(
+        catchError((error) => {
+          this._capture(error);
+          return of(null);
+        })
+      )
+    );
+
+    this.youtubeLoading = false;
+    // Kein stilles „nicht verbunden": Das wäre von einem fehlgeschlagenen
+    // Abruf nicht zu unterscheiden, und wer daraufhin neu verbindet, ersetzt
+    // einen Zugang, der in Ordnung war.
+    if (status === null) this.youtubeError = true;
+    else this.youtubeStatus = status;
+    this._cdr.markForCheck();
+  }
+
+  /**
+   * Verbindet den Wächter mit einem Google-Konto.
+   *
+   * Zwei Fehlerquellen, zwei Wege: Der Anmeldedialog von Google läuft an jedem
+   * Interceptor vorbei und braucht eine eigene Meldung. Was der Server zum
+   * eingelösten Code sagt, zeigt der ErrorInterceptor -- und das ist die
+   * eigentliche Auskunft, etwa dass der gewählte Kanal nicht senden darf.
+   */
+  public async connectYoutube(): Promise<void> {
+    const kennung = this.youtubeStatus?.client_id;
+    if (this.connecting || !kennung) return;
+
+    this.connecting = true;
+    this._cdr.markForCheck();
+
+    let anmeldung: { code: string; redirectUri: string };
+    try {
+      anmeldung = await this._youtubeService.requestAuthCode(kennung);
+    } catch (error) {
+      this._capture(error);
+      this._notificationService.error(
+        error instanceof Error
+          ? error.message
+          : 'Die Google-Anmeldung wurde nicht abgeschlossen.'
+      );
+      this.connecting = false;
+      this._cdr.markForCheck();
+      return;
+    }
+
+    const status = await firstValueFrom(
+      this._streamingService
+        .connectYoutube(anmeldung.code, anmeldung.redirectUri)
+        .pipe(
+          catchError((error) => {
+            this._capture(error);
+            return of(null);
+          })
+        )
+    );
+
+    this.connecting = false;
+    if (status) {
+      this.youtubeStatus = status;
+      this._notificationService.success(
+        `Der Wächter ist jetzt mit „${
+          status.channel_title ?? 'dem Kanal'
+        }" verbunden.`
+      );
+    }
+    this._cdr.markForCheck();
+  }
+
+  /**
+   * Trennt den gespeicherten Zugang.
+   *
+   * Mit Rückfrage: Danach beendet niemand mehr die Übertragungen nach dem
+   * Spiel, und das fällt erst auf, wenn eine Stunden später noch läuft.
+   */
+  public async disconnectYoutube(): Promise<void> {
+    if (this.connecting) return;
+    if (!this._confirmDisconnect()) return;
+
+    this.connecting = true;
+    this._cdr.markForCheck();
+
+    const status = await firstValueFrom(
+      this._streamingService.disconnectYoutube().pipe(
+        catchError((error) => {
+          this._capture(error);
+          return of(null);
+        })
+      )
+    );
+
+    this.connecting = false;
+    if (status) this.youtubeStatus = status;
+    this._cdr.markForCheck();
+  }
+
+  /** Gekapselt, damit der Spec die Rückfrage stilllegen kann. */
+  private _confirmDisconnect(): boolean {
+    return window.confirm(
+      'Verbindung zu YouTube trennen? Der Wächter beendet danach keine ' +
+        'Übertragung mehr, bis er neu verbunden wird.'
+    );
+  }
+
   public async toggleHosts(): Promise<void> {
     this.hostsOpen = !this.hostsOpen;
     if (!this.hostsOpen || this.hosts.length || this.hostsLoading) return;
