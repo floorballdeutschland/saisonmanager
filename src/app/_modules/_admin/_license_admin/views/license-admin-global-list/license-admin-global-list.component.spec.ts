@@ -789,21 +789,29 @@ describe('LicenseAdminGlobalListComponent', () => {
   // Lizenzen. Ohne die Zahl musste man die Zeilen der Person durchzaehlen --
   // und sah dabei die Lizenzen anderer Verbaende gar nicht (api#713).
   describe('Lizenzanzahl der Saison', () => {
-    function renderRow(
-      counts: Partial<AdminLicenseEntry>
-    ): HTMLTableCellElement {
+    function renderCells(entries: AdminLicenseEntry[]): HTMLTableCellElement[] {
       const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
       const component = fixture.componentInstance;
-      component.allEntries = [
-        { ...entry('Muster'), player_id: 42, ...counts } as AdminLicenseEntry,
-      ];
+      component.allEntries = entries;
       component.applyFilters();
       component.loading = false;
       fixture.detectChanges();
 
-      // Zweite Zelle der Zeile: direkt neben dem Namen, damit die Zahl auch
-      // bei waagerecht gescrollter Tabelle bei der Person steht.
-      return fixture.nativeElement.querySelectorAll('tbody td')[1];
+      // Ueber die Marke und nicht ueber den Spaltenindex: Eine spaeter davor
+      // eingefuegte Spalte wuerde sonst still die falsche Zelle pruefen.
+      return Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'tbody td[data-testid="license-count"]'
+        )
+      );
+    }
+
+    function renderRow(
+      counts: Partial<AdminLicenseEntry>
+    ): HTMLTableCellElement {
+      return renderCells([
+        { ...entry('Muster'), player_id: 42, ...counts } as AdminLicenseEntry,
+      ])[0];
     }
 
     it('zeigt die erteilten Lizenzen und die offenen Antraege getrennt', () => {
@@ -831,11 +839,35 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(zelle.textContent).not.toContain('+');
     });
 
-    // Eine aeltere API kennt die Felder nicht. Eine leere Zelle waere dort
-    // schwer von "keine Lizenz" zu unterscheiden, eine 0 ist die ehrlichere
-    // Anzeige und faellt nicht als Luecke auf.
-    it('zeigt 0, wenn die API die Zahlen nicht mitliefert', () => {
-      expect(renderRow({}).textContent?.trim()).toBe('0');
+    // Eine aeltere API kennt die Felder nicht -- das passiert, solange das
+    // Frontend vor der API ausgeliefert ist. Eine 0 waere dort nachweislich
+    // falsch, denn die Zeile gibt es nur, WEIL diese Lizenz existiert, und sie
+    // saehe zugleich aus wie ein Messwert: Der Verband laese "noch keine
+    // Lizenz" und genehmigte die naechste.
+    it('zeigt einen Strich, wenn die API die Zahlen nicht mitliefert', () => {
+      expect(renderRow({}).textContent?.trim()).toBe('–');
+    });
+
+    // Die Zahl gehoert zur Person. Haelt eine Zeile eine eigene, ist die
+    // Spalte wertlos -- dann zaehlt man wieder von Hand.
+    it('zeigt an allen Zeilen desselben Spielers dieselbe Zahl', () => {
+      const zellen = renderCells([
+        {
+          ...entry('Muster'),
+          player_id: 42,
+          team_name: 'Liga-Mannschaft',
+          licenses_approved_season: 4,
+        } as AdminLicenseEntry,
+        {
+          ...entry('Muster'),
+          player_id: 42,
+          team_name: 'Pokal-Mannschaft',
+          licenses_approved_season: 4,
+        } as AdminLicenseEntry,
+      ]);
+
+      expect(zellen.length).toBe(2);
+      expect(zellen.map((z) => z.textContent?.trim())).toEqual(['4', '4']);
     });
   });
 
@@ -896,6 +928,16 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(
         row.startsWith('"4711";"Muster";"Test";"04.05.2012";"6";"1";')
       ).toBeTrue();
+    });
+
+    // Aus dieser Datei wird abgerechnet und an den Landesverband gemeldet.
+    // Eine erfundene 0 waere dort teurer als eine leere Zelle.
+    it('laesst die Lizenzspalten leer, wenn die API sie nicht liefert', async () => {
+      const [, row] = await exportRows([
+        { ...entry('Ohne'), player_id: 12 } as AdminLicenseEntry,
+      ]);
+
+      expect(row.startsWith('"12";"Ohne";"Test";"";"";"";')).toBeTrue();
     });
 
     // Das Geburtsdatum ist ein Pflichtfeld am Profil, aber der Altbestand

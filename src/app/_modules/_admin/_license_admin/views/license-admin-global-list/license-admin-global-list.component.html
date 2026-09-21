@@ -301,6 +301,9 @@
               </th>
               <th
                 class="px-4 py-3 font-semibold text-gray-500 uppercase text-xs whitespace-nowrap text-right"
+                [attr.aria-label]="
+                  'licenseAdmin.globalList.colLicenseCountTitle' | transloco
+                "
                 [title]="
                   'licenseAdmin.globalList.colLicenseCountTitle' | transloco
                 "
@@ -423,17 +426,29 @@
                      durchzaehlen muesste. Gezaehlt wird ueber alle Verbaende,
                      also auch ueber Lizenzen, die in dieser Liste gar nicht
                      stehen. -->
-                <td class="px-4 py-3 whitespace-nowrap text-right">
+                <td
+                  class="px-4 py-3 whitespace-nowrap text-right"
+                  data-testid="license-count"
+                >
+                  <!-- Ohne die Zahl steht hier ein Strich und keine 0: Die
+                       Zeile gibt es nur, WEIL es die Lizenz gibt, eine 0 waere
+                       also nachweislich falsch und saehe zugleich aus wie ein
+                       Messwert. Der Fall tritt auf, solange das Frontend vor
+                       der API ausgeliefert ist. -->
                   <span
                     class="font-semibold text-gray-800 tabular-nums"
                     [title]="
                       'licenseAdmin.globalList.licenseCountTitle' | transloco
                     "
-                    >{{ e.licenses_approved_season ?? 0 }}</span
+                    >{{ e.licenses_approved_season ?? "–" }}</span
                   >
                   @if (e.licenses_requested_season) {
                     <span
                       class="ml-1 text-[11px] text-gray-500 tabular-nums"
+                      [attr.aria-label]="
+                        'licenseAdmin.globalList.licenseCountPendingTitle'
+                          | transloco: { count: e.licenses_requested_season }
+                      "
                       [title]="
                         'licenseAdmin.globalList.licenseCountPendingTitle'
                           | transloco: { count: e.licenses_requested_season }

@@ -70,7 +70,7 @@
     "openPlayerTitle": "Lizenzen dieser Liga öffnen und zu diesem Spieler springen",
     "colLicenseCount": "Liz.",
     "colLicenseCountTitle": "Lizenzen dieses Spielers in der angezeigten Saison, über alle Verbände gezählt",
-    "licenseCountTitle": "Erteilte Lizenzen dieses Spielers in der angezeigten Saison, über alle Verbände gezählt",
+    "licenseCountTitle": "Erteilte Lizenzen dieses Spielers in der angezeigten Saison, über alle Verbände gezählt — einschließlich später zurückgezogener, gelöschter oder durch Transfer ungültiger, denn erteilt waren sie",
     "licenseCountPendingTitle": "dazu {{ count }} noch offen beantragt",
     "colTeam": "Team",
     "colCompetition": "Wettbewerb",

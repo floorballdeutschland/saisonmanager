@@ -70,7 +70,7 @@
     "openPlayerTitle": "Open this league's licenses and jump to this player",
     "colLicenseCount": "Lic.",
     "colLicenseCountTitle": "Licences held by this player in the displayed season, counted across all associations",
-    "licenseCountTitle": "Approved licences of this player in the displayed season, counted across all associations",
+    "licenseCountTitle": "Approved licences of this player in the displayed season, counted across all associations — including those later withdrawn, deleted or invalidated by a transfer, as they were approved",
     "licenseCountPendingTitle": "plus {{ count }} still pending",
     "colTeam": "Team",
     "colCompetition": "Competition",
