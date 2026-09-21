@@ -20,6 +20,7 @@ import {
   League,
   StreamingGame,
   StreamingHost,
+  StreamingTeam,
   StreamingTemplates,
 } from '@floorball/types';
 import {
@@ -132,6 +133,25 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   public hostsBusy = new Set<number>();
   public templatesOpen = false;
   public savingTemplates = false;
+
+  /** Pflegeliste der Streamschlüssel; erst beim Aufklappen geladen. */
+  public keys: StreamingTeam[] = [];
+  public keysOpen = false;
+  public keysLoading = false;
+  public keysError = false;
+  /** Mannschaften, deren Schlüssel gerade gespeichert wird -- sperrt den zweiten Klick. */
+  public keysBusy = new Set<number>();
+  /**
+   * Was gerade im Feld steht, je Mannschaft.
+   *
+   * Getrennt von der Liste, weil die Liste den gespeicherten Wert nicht kennt:
+   * Der Server gibt nur die letzten vier Zeichen zurück. Ein gebundenes Feld
+   * am Datensatz zeigte sonst den Hinweis als Eingabe und schriebe ihn beim
+   * nächsten Speichern als vollständigen Schlüssel zurück.
+   */
+  public keyDrafts = new Map<number, string>();
+  /** Zusätzlich eingeblendete Liga -- eine, die noch keinen Schlüssel trägt. */
+  public keysLeagueId: number | null = null;
 
   public creating = false;
   public createdDone = 0;
@@ -528,6 +548,126 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
     host.stream_default_unlisted = antwort.stream_default_unlisted;
     this._cdr.markForCheck();
     if (this.loaded) this.load();
+  }
+
+  public async toggleKeys(): Promise<void> {
+    this.keysOpen = !this.keysOpen;
+    if (!this.keysOpen || this.keys.length || this.keysLoading) return;
+
+    await this.reloadKeys();
+  }
+
+  public async reloadKeys(): Promise<void> {
+    if (this.keysLoading) return;
+
+    this.keysLoading = true;
+    this.keysError = false;
+    this._cdr.markForCheck();
+
+    const teams = await firstValueFrom(
+      this._streamingService.getTeams(this.keysLeagueId).pipe(
+        catchError((error) => {
+          this._capture(error);
+          return of(null);
+        })
+      )
+    );
+
+    this.keysLoading = false;
+    if (teams === null) {
+      // Kein stilles „keine Mannschaften": Eine leere Liste wäre von einem
+      // fehlgeschlagenen Abruf nicht zu unterscheiden, und wer daraufhin einen
+      // Schlüssel für nicht gesetzt hält, trägt einen zweiten ein.
+      this.keysError = true;
+    } else {
+      this.keys = teams;
+      // Entwürfe gehören zur alten Liste. Bliebe einer stehen, zeigte das Feld
+      // einer Mannschaft den Schlüssel einer anderen.
+      this.keyDrafts.clear();
+    }
+    this._cdr.markForCheck();
+  }
+
+  public keyDraft(team: StreamingTeam): string {
+    return this.keyDrafts.get(team.id) ?? '';
+  }
+
+  public setKeyDraft(team: StreamingTeam, wert: string): void {
+    this.keyDrafts.set(team.id, wert);
+  }
+
+  /**
+   * Trägt den eingetippten Schlüssel ein.
+   *
+   * Ohne eigene Fehlermeldung: Der globale ErrorInterceptor zeigt die Antwort
+   * des Servers an, und die ist hier die eigentliche Auskunft -- an welcher
+   * Mannschaft der Schlüssel schon hängt oder dass er ein Leerzeichen trägt.
+   * Eine zweite Meldung daneben stapelte sich nur.
+   */
+  public async saveKey(team: StreamingTeam): Promise<void> {
+    if (this.keysBusy.has(team.id)) return;
+
+    const wert = this.keyDraft(team).trim();
+    if (!wert) return;
+
+    await this._writeKey(team, wert);
+  }
+
+  /**
+   * Entfernt den Schlüssel.
+   *
+   * Danach ist kein Spiel dieser Mannschaft mehr streambar, deshalb die
+   * Rückfrage -- ein verrutschter Klick in einer Liste aus 38 Zeilen nimmt
+   * sonst einem Ausrichter am Spieltag die Übertragung.
+   */
+  public async clearKey(team: StreamingTeam): Promise<void> {
+    if (this.keysBusy.has(team.id)) return;
+    if (!this._confirmClear(team)) return;
+
+    await this._writeKey(team, '');
+  }
+
+  private async _writeKey(team: StreamingTeam, wert: string): Promise<void> {
+    this.keysBusy.add(team.id);
+    this._cdr.markForCheck();
+
+    const antwort = await firstValueFrom(
+      this._streamingService.updateTeamKey(team.id, wert).pipe(
+        catchError((error) => {
+          this._capture(error);
+          return of(null);
+        })
+      )
+    );
+
+    this.keysBusy.delete(team.id);
+
+    if (antwort === null) {
+      this._cdr.markForCheck();
+      return;
+    }
+
+    team.has_stream_key = antwort.has_stream_key;
+    team.stream_key_hint = antwort.stream_key_hint;
+    this.keyDrafts.delete(team.id);
+    this._notificationService.success(
+      wert
+        ? `Streamschlüssel für ${team.name} gespeichert.`
+        : `Streamschlüssel für ${team.name} entfernt.`
+    );
+    this._cdr.markForCheck();
+
+    // Dieselbe Angabe steht in der Spalte „streambar" der Spieleliste. Eine
+    // Liste, die noch das Gegenteil zeigt, ist schlimmer als eine, die lädt.
+    if (this.loaded) this.load();
+  }
+
+  /** Gekapselt, damit der Spec die Rückfrage stilllegen kann. */
+  private _confirmClear(team: StreamingTeam): boolean {
+    return window.confirm(
+      `Streamschlüssel für ${team.name} entfernen? Danach lässt sich für diese ` +
+        'Mannschaft keine Übertragung mehr anlegen.'
+    );
   }
 
   /** Ohne Vorlage entstünden titellose Übertragungen auf dem Verbandskanal. */

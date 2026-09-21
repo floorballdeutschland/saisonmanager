@@ -934,4 +934,187 @@ describe('StreamingIndexComponent', () => {
       expect(component.hosts).toEqual([]);
     });
   });
+
+  describe('Streamschlüssel', () => {
+    const team = (overrides = {}) => ({
+      id: 42,
+      name: 'MFBC Leipzig',
+      club_name: 'MFBC Leipzig e.V.',
+      league_id: 5,
+      league_name: '1. FBL Herren',
+      has_stream_key: false,
+      stream_key_hint: null,
+      ...overrides,
+    });
+
+    function openKeys(teams = [team()]): Promise<void> {
+      const lauf = component.toggleKeys();
+      http
+        .expectOne((request) => request.url.endsWith('admin/streaming/teams'))
+        .flush(teams);
+      return lauf;
+    }
+
+    it('lädt die Pflegeliste erst beim Aufklappen', async () => {
+      start([game(1)]);
+
+      http.expectNone(`${environment.apiURL}admin/streaming/teams`);
+
+      await openKeys();
+
+      expect(component.keys.length).toBe(1);
+    });
+
+    it('schickt die zusätzlich gewählte Liga mit', async () => {
+      start([game(1)]);
+      component.keysLeagueId = 9;
+
+      const lauf = component.reloadKeys();
+      const request = http.expectOne((req) =>
+        req.url.endsWith('admin/streaming/teams')
+      );
+      expect(request.request.params.get('league_id')).toBe('9');
+      request.flush([]);
+      await lauf;
+    });
+
+    it('trägt einen Schlüssel ein und übernimmt die Antwort', async () => {
+      start([game(1)]);
+      await openKeys();
+      const eintrag = component.keys[0];
+      component.setKeyDraft(eintrag, ' abcd-efgh-ijkl-mnop-qrst ');
+
+      const lauf = component.saveKey(eintrag);
+      const request = http.expectOne(
+        `${environment.apiURL}admin/streaming/teams/42`
+      );
+      // Getrimmt, weil ein kopierter Wert regelmäßig ein Leerzeichen mitbringt
+      // und der Server ihn sonst als Kopierfehler abweist.
+      expect(request.request.body).toEqual({
+        stream_key: 'abcd-efgh-ijkl-mnop-qrst',
+      });
+      request.flush({
+        ...eintrag,
+        has_stream_key: true,
+        stream_key_hint: 'qrst',
+      });
+      await lauf;
+
+      expect(eintrag.has_stream_key).toBeTrue();
+      expect(eintrag.stream_key_hint).toBe('qrst');
+      // Das Feld ist wieder leer: Der gespeicherte Wert steht nirgends in der
+      // Antwort, ein stehengebliebener Entwurf sähe aus wie der Bestand.
+      expect(component.keyDraft(eintrag)).toBe('');
+      // Dieselbe Angabe trägt die Spalte „streambar" der Spieleliste.
+      http.expectOne((request2) =>
+        request2.url.includes('admin/streaming/games')
+      );
+    });
+
+    // Ohne diesen Riegel schickte ein Fehlklick einen leeren Wert -- und der
+    // löscht auf dem Server.
+    it('GEGENPROBE: ein leeres Feld löst keinen Aufruf aus', async () => {
+      start([game(1)]);
+      await openKeys([team({ has_stream_key: true, stream_key_hint: 'qrst' })]);
+      component.setKeyDraft(component.keys[0], '   ');
+
+      await component.saveKey(component.keys[0]);
+
+      http.expectNone(`${environment.apiURL}admin/streaming/teams/42`);
+      expect(component.keys[0].has_stream_key).toBeTrue();
+    });
+
+    // Der Server weist die Dublette ab. Bliebe der Stand der Zeile stehen, als
+    // wäre gespeichert worden, trüge die Mannschaft scheinbar einen Schlüssel,
+    // den sie nicht hat.
+    it('lässt Stand und Entwurf stehen, wenn der Server ablehnt', async () => {
+      start([game(1)]);
+      await openKeys();
+      const eintrag = component.keys[0];
+      component.setKeyDraft(eintrag, 'schon-vergeben');
+
+      const lauf = component.saveKey(eintrag);
+      http
+        .expectOne(`${environment.apiURL}admin/streaming/teams/42`)
+        .flush(
+          {
+            error: 'Dieser Schluessel haengt schon an Floor Fighters Chemnitz',
+          },
+          { status: 422, statusText: 'Unprocessable Entity' }
+        );
+      await lauf;
+
+      expect(eintrag.has_stream_key).toBeFalse();
+      // Der getippte Wert darf nicht verloren gehen, sonst tippt man ihn neu.
+      expect(component.keyDraft(eintrag)).toBe('schon-vergeben');
+      expect(component.keysBusy.has(42)).toBeFalse();
+    });
+
+    it('entfernt den Schlüssel nach Rückfrage mit einem leeren Wert', async () => {
+      start([game(1)]);
+      await openKeys([team({ has_stream_key: true, stream_key_hint: 'qrst' })]);
+      spyOn(window, 'confirm').and.returnValue(true);
+      const eintrag = component.keys[0];
+
+      const lauf = component.clearKey(eintrag);
+      const request = http.expectOne(
+        `${environment.apiURL}admin/streaming/teams/42`
+      );
+      expect(request.request.body).toEqual({ stream_key: '' });
+      request.flush({
+        ...eintrag,
+        has_stream_key: false,
+        stream_key_hint: null,
+      });
+      await lauf;
+
+      expect(eintrag.has_stream_key).toBeFalse();
+      http.expectOne((request2) =>
+        request2.url.includes('admin/streaming/games')
+      );
+    });
+
+    it('GEGENPROBE: eine abgelehnte Rückfrage schickt nichts', async () => {
+      start([game(1)]);
+      await openKeys([team({ has_stream_key: true, stream_key_hint: 'qrst' })]);
+      spyOn(window, 'confirm').and.returnValue(false);
+
+      await component.clearKey(component.keys[0]);
+
+      http.expectNone(`${environment.apiURL}admin/streaming/teams/42`);
+      expect(component.keys[0].has_stream_key).toBeTrue();
+    });
+
+    // Entwürfe gehören zur alten Liste: Bliebe einer stehen, zeigte das Feld
+    // einer Mannschaft den Schlüssel einer anderen.
+    it('leert die Entwürfe beim Neuladen', async () => {
+      start([game(1)]);
+      await openKeys();
+      component.setKeyDraft(component.keys[0], 'halb-getippt');
+
+      const lauf = component.reloadKeys();
+      http
+        .expectOne((request) => request.url.endsWith('admin/streaming/teams'))
+        .flush([team()]);
+      await lauf;
+
+      expect(component.keyDraft(component.keys[0])).toBe('');
+    });
+
+    // Eine leere Liste wäre von einem fehlgeschlagenen Abruf nicht zu
+    // unterscheiden -- und wer daraufhin einen Schlüssel für nicht gesetzt
+    // hält, trägt einen zweiten ein.
+    it('meldet einen fehlgeschlagenen Abruf', async () => {
+      start([game(1)]);
+
+      const lauf = component.toggleKeys();
+      http
+        .expectOne((request) => request.url.endsWith('admin/streaming/teams'))
+        .flush('kaputt', { status: 500, statusText: 'Server Error' });
+      await lauf;
+
+      expect(component.keysError).toBeTrue();
+      expect(component.keys).toEqual([]);
+    });
+  });
 });
