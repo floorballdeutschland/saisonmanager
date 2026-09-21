@@ -400,11 +400,26 @@ export class YoutubeService {
     });
   }
 
+  /**
+   * `thumbnails/SET` und nicht `thumbnails`: Das Bild hochzuladen ist bei
+   * YouTube kein Anlegen in einer Sammlung, sondern eine eigene Methode
+   * (`thumbnails.set`), und die steht mit ihrem Namen im Pfad. Ohne das `/set`
+   * gibt es den Endpunkt schlicht nicht.
+   *
+   * WARUM DAS SO SCHWER ZU SEHEN WAR: Der Hochladeserver beantwortet den
+   * unbekannten Pfad mit einem **404 ohne Körper**. In der Zeile stand damit
+   * „Thumbnail nicht hochgeladen (404)." -- nicht zu unterscheiden von dem
+   * 404, den dieselbe Schnittstelle liefert, wenn sie die eben angelegte
+   * Übertragung noch nicht kennt. Genau den wiederholt `uploadThumbnail`
+   * zweimal, also sah der Fehlschlag nach einem Zeitproblem aus und war ein
+   * falscher Pfad: Am 21.09.2026 scheiterten so alle 19 Thumbnails eines
+   * Bundesliga-Wochenendes, während Anlegen, Binden und Playlist durchliefen.
+   */
   private async _upload(
     videoId: string,
     blob: Blob
   ): Promise<YoutubeApiResponse> {
-    const url = `${UPLOAD_ROOT}/thumbnails?videoId=${encodeURIComponent(
+    const url = `${UPLOAD_ROOT}/thumbnails/set?videoId=${encodeURIComponent(
       videoId
     )}&uploadType=media`;
 
