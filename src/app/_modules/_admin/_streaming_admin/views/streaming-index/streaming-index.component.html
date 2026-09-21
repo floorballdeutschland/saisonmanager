@@ -245,101 +245,107 @@
             {{ "streamingAdmin.keys.empty" | transloco }}
           </div>
         } @else {
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-left border-b border-fb-gray-700">
-                <th class="py-2 pr-3 font-bold">
-                  {{ "streamingAdmin.keys.table.league" | transloco }}
-                </th>
-                <th class="py-2 pr-3 font-bold">
-                  {{ "streamingAdmin.keys.table.team" | transloco }}
-                </th>
-                <th class="py-2 pr-3 font-bold">
-                  {{ "streamingAdmin.keys.table.state" | transloco }}
-                </th>
-                <th class="py-2 font-bold">
-                  {{ "streamingAdmin.keys.table.key" | transloco }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (team of keys; track team.id) {
-                <tr class="border-b border-fb-gray-800 align-top">
-                  <td class="py-2 pr-3 text-fb-gray-500">
-                    {{ team.league_name }}
-                  </td>
-                  <td class="py-2 pr-3 font-bold">{{ team.name }}</td>
-                  <td class="py-2 pr-3">
-                    @if (team.has_stream_key) {
-                      <span class="text-fb-gray-500">
-                        {{
-                          "streamingAdmin.keys.set"
-                            | transloco: { hint: team.stream_key_hint }
-                        }}
-                      </span>
-                    } @else {
-                      <span class="text-fb-gray-400">
-                        {{ "streamingAdmin.keys.unset" | transloco }}
-                      </span>
-                    }
-                  </td>
-                  <td class="py-2">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <input
-                        type="text"
-                        autocomplete="off"
-                        spellcheck="false"
-                        [attr.aria-label]="
-                          'streamingAdmin.keys.inputLabel'
-                            | transloco: { team: team.name }
-                        "
-                        [placeholder]="
-                          'streamingAdmin.keys.placeholder' | transloco
-                        "
-                        [disabled]="keysBusy.has(team.id)"
-                        [ngModel]="keyDraft(team)"
-                        (ngModelChange)="setKeyDraft(team, $event)"
-                        [ngModelOptions]="{ standalone: true }"
-                        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 w-56 disabled:opacity-50"
-                      />
-                      <button
-                        type="button"
-                        (click)="saveKey(team)"
-                        [disabled]="
-                          keysBusy.has(team.id) || !keyDraft(team).trim()
-                        "
-                        class="px-3 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
-                      >
-                        {{ "streamingAdmin.keys.save" | transloco }}
-                      </button>
+          <!-- Wie die Spieleliste: Auf dem Telefon scrollt die Tabelle für sich
+               und schiebt nicht die ganze Seite zur Seite. -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left border-b border-fb-gray-700">
+                  <th class="py-2 pr-3 font-bold">
+                    {{ "streamingAdmin.keys.table.league" | transloco }}
+                  </th>
+                  <th class="py-2 pr-3 font-bold">
+                    {{ "streamingAdmin.keys.table.team" | transloco }}
+                  </th>
+                  <th class="py-2 pr-3 font-bold">
+                    {{ "streamingAdmin.keys.table.state" | transloco }}
+                  </th>
+                  <th class="py-2 font-bold">
+                    {{ "streamingAdmin.keys.table.key" | transloco }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (team of keys; track team.id) {
+                  <tr class="border-b border-fb-gray-800 align-top">
+                    <td class="py-2 pr-3 text-fb-gray-500">
+                      {{ team.league_name }}
+                    </td>
+                    <td class="py-2 pr-3 font-bold">{{ team.name }}</td>
+                    <td class="py-2 pr-3">
                       @if (team.has_stream_key) {
-                        <fb-confirmation
-                          [title]="'streamingAdmin.keys.clearTitle' | transloco"
-                          [content]="
-                            'streamingAdmin.keys.clearContent'
+                        <span class="text-fb-gray-500">
+                          {{
+                            "streamingAdmin.keys.set"
+                              | transloco: { hint: team.stream_key_hint }
+                          }}
+                        </span>
+                      } @else {
+                        <span class="text-fb-gray-400">
+                          {{ "streamingAdmin.keys.unset" | transloco }}
+                        </span>
+                      }
+                    </td>
+                    <td class="py-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <input
+                          type="text"
+                          autocomplete="off"
+                          spellcheck="false"
+                          [attr.aria-label]="
+                            'streamingAdmin.keys.inputLabel'
                               | transloco: { team: team.name }
                           "
-                          [submitButtonTitle]="
-                            'streamingAdmin.keys.clear' | transloco
+                          [placeholder]="
+                            'streamingAdmin.keys.placeholder' | transloco
                           "
-                          buttonVariant="error"
-                          (handleSubmit)="clearKey(team)"
+                          [disabled]="keysBusy.has(team.id)"
+                          [ngModel]="keyDraft(team)"
+                          (ngModelChange)="setKeyDraft(team, $event)"
+                          [ngModelOptions]="{ standalone: true }"
+                          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 w-56 disabled:opacity-50"
+                        />
+                        <button
+                          type="button"
+                          (click)="saveKey(team)"
+                          [disabled]="
+                            keysBusy.has(team.id) || !keyDraft(team).trim()
+                          "
+                          class="px-3 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
                         >
-                          <button
-                            type="button"
-                            [disabled]="keysBusy.has(team.id)"
-                            class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200 disabled:opacity-40"
+                          {{ "streamingAdmin.keys.save" | transloco }}
+                        </button>
+                        @if (team.has_stream_key) {
+                          <fb-confirmation
+                            [title]="
+                              'streamingAdmin.keys.clearTitle' | transloco
+                            "
+                            [content]="
+                              'streamingAdmin.keys.clearContent'
+                                | transloco: { team: team.name }
+                            "
+                            [submitButtonTitle]="
+                              'streamingAdmin.keys.clear' | transloco
+                            "
+                            buttonVariant="error"
+                            (handleSubmit)="clearKey(team)"
                           >
-                            {{ "streamingAdmin.keys.clear" | transloco }}
-                          </button>
-                        </fb-confirmation>
-                      }
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+                            <button
+                              type="button"
+                              [disabled]="keysBusy.has(team.id)"
+                              class="px-3 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] bg-white hover:bg-fb-gray-200 disabled:opacity-40"
+                            >
+                              {{ "streamingAdmin.keys.clear" | transloco }}
+                            </button>
+                          </fb-confirmation>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         }
       </div>
     }
@@ -425,6 +431,15 @@
               </dd>
             }
           </dl>
+
+          @if (youtubeStatus.stored_present && !youtubeStatus.stored_active) {
+            <p
+              class="text-sm text-fb-red-500 font-bold mb-3 max-w-3xl"
+              role="status"
+            >
+              {{ "streamingAdmin.youtube.storedInactive" | transloco }}
+            </p>
+          }
 
           @if (!youtubeStatus.can_connect) {
             <p class="text-sm text-fb-gray-500 mb-3 max-w-3xl">

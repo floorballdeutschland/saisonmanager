@@ -10,6 +10,8 @@ import {
 } from '@angular/common/http/testing';
 import {
   NotificationService,
+  YoutubeCancelledError,
+  YoutubeError,
   YoutubeOrphanError,
   YoutubeService,
   YoutubeStatusError,
@@ -1052,6 +1054,10 @@ describe('StreamingIndexComponent', () => {
       await openKeys();
       const eintrag = component.keys[0];
       component.setKeyDraft(eintrag, 'schon-vergeben');
+      const gemeldet = spyOn(
+        component as unknown as { _capture: (error: unknown) => void },
+        '_capture'
+      );
 
       const lauf = component.saveKey(eintrag);
       http.expectOne(`${environment.apiURL}admin/streaming/teams/42`).flush(
@@ -1066,6 +1072,9 @@ describe('StreamingIndexComponent', () => {
       // Der getippte Wert darf nicht verloren gehen, sonst tippt man ihn neu.
       expect(component.keyDraft(eintrag)).toBe('schon-vergeben');
       expect(component.keysBusy.has(42)).toBeFalse();
+      // Die Dublette ist die geplante Auskunft des Servers und kein Vorfall
+      // fuer Sentry -- Frontend und API teilen sich das Kontingent.
+      expect(gemeldet).not.toHaveBeenCalled();
     });
 
     it('entfernt den Schlüssel mit einem leeren Wert', async () => {
@@ -1194,6 +1203,8 @@ describe('StreamingIndexComponent', () => {
       channel_title: 'floorball deutschland',
       connected_at: '2026-09-21T12:00:00Z',
       connected_by: 'Daniel Kehne',
+      stored_present: true,
+      stored_active: true,
       can_connect: true,
       may_connect: true,
       missing_settings: [],
@@ -1208,6 +1219,22 @@ describe('StreamingIndexComponent', () => {
         .flush(antwort);
       return lauf;
     }
+
+    // „Verbunden" aus der Umgebung, waehrend die gespeicherte Zeile tot ist:
+    // Ohne den Hinweis liest man Kanal und Zeitpunkt eines Zugangs, den
+    // niemand mehr benutzt, und verbindet nicht neu.
+    it('weist auf eine unbrauchbar gewordene gespeicherte Verbindung hin', async () => {
+      start([game(1)]);
+      await openYoutube(
+        status({ source: 'env', stored_present: true, stored_active: false })
+      );
+      fixture.detectChanges();
+
+      // Der Testmodus von Transloco liefert die Schluessel, nicht die Texte.
+      expect(fixture.nativeElement.textContent).toContain(
+        'streamingAdmin.youtube.storedInactive'
+      );
+    });
 
     it('lädt den Zustand erst beim Aufklappen', async () => {
       start([game(1)]);
@@ -1333,7 +1360,9 @@ describe('StreamingIndexComponent', () => {
       start([game(1)]);
       await openYoutube(status({ connected: false, source: null }));
       spyOn(youtube, 'requestAuthCode').and.rejectWith(
-        new Error('Die Anmeldung wurde abgebrochen (popup_closed).')
+        new YoutubeCancelledError(
+          'Die Anmeldung wurde abgebrochen (popup_closed).'
+        )
       );
       // Auf `_capture` statt auf das Sentry-Modul: Dessen Export ist nicht
       // ueberschreibbar, und geprueft werden soll ohnehin die Entscheidung
@@ -1349,6 +1378,78 @@ describe('StreamingIndexComponent', () => {
       expect(gemeldet).not.toHaveBeenCalled();
       // Der Anwender bekommt trotzdem eine Rückmeldung.
       expect(meldung).toHaveBeenCalled();
+    });
+
+    // GEGENPROBE zum Abbruch: Ein blockiertes Aufklappfenster trägt denselben
+    // Text („abgebrochen"), ist aber eine Störung -- an der Klasse zu erkennen
+    // und nicht am Wortlaut.
+    it('meldet ein blockiertes Anmeldefenster sehr wohl', async () => {
+      start([game(1)]);
+      await openYoutube(status({ connected: false, source: null }));
+      spyOn(youtube, 'requestAuthCode').and.rejectWith(
+        new YoutubeError(
+          'Die Anmeldung wurde abgebrochen (popup_failed_to_open).'
+        )
+      );
+      const gemeldet = spyOn(
+        component as unknown as { _capture: (error: unknown) => void },
+        '_capture'
+      );
+
+      await component.connectYoutube();
+
+      expect(gemeldet).toHaveBeenCalled();
+    });
+
+    // Die Ablehnung des Servers ist die geplante Auskunft, kein Zwischenfall.
+    // Sentry teilt sich das Kontingent mit der API.
+    it('meldet eine 422 des Servers nicht an Sentry', async () => {
+      start([game(1)]);
+      await openYoutube(status({ connected: false, source: null }));
+      spyOn(youtube, 'requestAuthCode').and.resolveTo({
+        code: 'code-1',
+        redirectUri: 'https://saisonmanager.org',
+      });
+      const gemeldet = spyOn(
+        component as unknown as { _capture: (error: unknown) => void },
+        '_capture'
+      );
+
+      const lauf = component.connectYoutube();
+      await Promise.resolve();
+      http.expectOne(`${environment.apiURL}admin/streaming/youtube`).flush(
+        {
+          error:
+            'Der gewaehlte Kanal ist nicht fuer Livestreaming freigeschaltet.',
+        },
+        { status: 422, statusText: 'Unprocessable Entity' }
+      );
+      await lauf;
+
+      expect(gemeldet).not.toHaveBeenCalled();
+    });
+
+    // GEGENPROBE: Ein Serverfehler ist keine geplante Antwort.
+    it('meldet einen 500 des Servers', async () => {
+      start([game(1)]);
+      await openYoutube(status({ connected: false, source: null }));
+      spyOn(youtube, 'requestAuthCode').and.resolveTo({
+        code: 'code-1',
+        redirectUri: 'https://saisonmanager.org',
+      });
+      const gemeldet = spyOn(
+        component as unknown as { _capture: (error: unknown) => void },
+        '_capture'
+      );
+
+      const lauf = component.connectYoutube();
+      await Promise.resolve();
+      http
+        .expectOne(`${environment.apiURL}admin/streaming/youtube`)
+        .flush('kaputt', { status: 500, statusText: 'Server Error' });
+      await lauf;
+
+      expect(gemeldet).toHaveBeenCalled();
     });
 
     // „Nicht verbunden" und „Abruf gescheitert" sind zwei verschiedene Dinge:
