@@ -7,6 +7,7 @@ import {
   StreamingFilter,
   StreamingGame,
   StreamingHost,
+  StreamingTeam,
   StreamingTemplates,
   StreamingYoutubeStatus,
 } from '@floorball/types';
@@ -64,6 +65,45 @@ export class StreamingService {
     return this.http.put<StreamingHost>(
       `${environment.apiURL}admin/streaming/hosts/${clubId}`,
       { stream_default_unlisted: unlisted }
+    );
+  }
+
+  /**
+   * Die Pflegeliste der Streamschlüssel.
+   *
+   * Enthalten sind die Mannschaften der laufenden Saison aus jeder Liga, in der
+   * schon ein Schlüssel hängt. `leagueId` blendet eine weitere Liga ein -- ohne
+   * das wäre die Liste einer neu gestreamten Liga leer, bevor der erste
+   * Schlüssel drin ist.
+   *
+   * Der gespeicherte Schlüssel kommt nicht mit zurück, nur seine letzten vier
+   * Zeichen.
+   */
+  public getTeams(leagueId?: number | null): Observable<StreamingTeam[]> {
+    const params = leagueId
+      ? new HttpParams().set('league_id', leagueId)
+      : new HttpParams();
+
+    return this.http.get<StreamingTeam[]>(
+      `${environment.apiURL}admin/streaming/teams`,
+      { params }
+    );
+  }
+
+  /**
+   * Setzt den Streamschlüssel einer Mannschaft; ein leerer Wert löscht ihn.
+   *
+   * Die Riegel sitzen im Server: keine Leerzeichen, und derselbe Schlüssel nicht
+   * zweimal in derselben Saison -- der Wächter ordnet eine Übertragung sonst
+   * keinem Spiel mehr zu.
+   */
+  public updateTeamKey(
+    teamId: number,
+    streamKey: string
+  ): Observable<StreamingTeam> {
+    return this.http.put<StreamingTeam>(
+      `${environment.apiURL}admin/streaming/teams/${teamId}`,
+      { stream_key: streamKey }
     );
   }
 

@@ -20,6 +20,7 @@ import {
   League,
   StreamingGame,
   StreamingHost,
+  StreamingTeam,
   StreamingTemplates,
   StreamingYoutubeStatus,
 } from '@floorball/types';
@@ -43,6 +44,11 @@ import { buildZip } from 'src/app/_helpers/_utils/zip-store';
 
 type Mode = 'range' | 'matchday';
 
+/**
+ * Gründe, nach denen jeder weitere Versuch genauso scheitert -- Zustände, keine
+ * Einzelereignisse. Der leere Grund steht für eine 403 ohne erkennbaren Grund:
+ * Auch die wiederholt sich.
+ */
 /**
  * Hat der Anwender den Anmeldedialog selbst weggeklickt?
  *
@@ -152,6 +158,27 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
   public youtubeLoading = false;
   public youtubeError = false;
   public connecting = false;
+
+  /** Pflegeliste der Streamschlüssel; erst beim Aufklappen geladen. */
+  public keys: StreamingTeam[] = [];
+  public keysOpen = false;
+  public keysLoading = false;
+  public keysError = false;
+  /** Mannschaften, deren Schlüssel gerade gespeichert wird -- sperrt den zweiten Klick. */
+  public keysBusy = new Set<number>();
+  /** Einmal erfolgreich geladen -- `keys` darf leer und trotzdem geladen sein. */
+  public keysLoaded = false;
+  /**
+   * Was gerade im Feld steht, je Mannschaft.
+   *
+   * Getrennt von der Liste, weil die Liste den gespeicherten Wert nicht kennt:
+   * Der Server gibt nur die letzten vier Zeichen zurück. Ein gebundenes Feld
+   * am Datensatz zeigte sonst den Hinweis als Eingabe und schriebe ihn beim
+   * nächsten Speichern als vollständigen Schlüssel zurück.
+   */
+  public keyDrafts = new Map<number, string>();
+  /** Zusätzlich eingeblendete Liga -- eine, die noch keinen Schlüssel trägt. */
+  public keysLeagueId: number | null = null;
 
   public creating = false;
   public createdDone = 0;
@@ -669,6 +696,130 @@ export class StreamingIndexComponent implements OnInit, OnDestroy {
 
     host.stream_default_unlisted = antwort.stream_default_unlisted;
     this._cdr.markForCheck();
+    if (this.loaded) this.load();
+  }
+
+  public async toggleKeys(): Promise<void> {
+    this.keysOpen = !this.keysOpen;
+    // Eigener Marker statt `keys.length`: Eine Liga ohne jede Mannschaft
+    // liefert eine leere Liste, und die laese sich von „noch nicht geladen"
+    // nicht unterscheiden -- jedes Aufklappen holte sie erneut. Nach einem
+    // Fehlschlag ist `keysLoaded` falsch geblieben, also versucht es das
+    // naechste Aufklappen wieder, statt den alten Fehler stehenzulassen.
+    if (!this.keysOpen || this.keysLoaded || this.keysLoading) return;
+
+    await this.reloadKeys();
+  }
+
+  public async reloadKeys(): Promise<void> {
+    if (this.keysLoading) return;
+
+    this.keysLoading = true;
+    this.keysError = false;
+    this._cdr.markForCheck();
+
+    const teams = await firstValueFrom(
+      this._streamingService.getTeams(this.keysLeagueId).pipe(
+        catchError((error) => {
+          this._capture(error);
+          return of(null);
+        })
+      )
+    );
+
+    this.keysLoading = false;
+    this.keysLoaded = teams !== null;
+    if (teams === null) {
+      // Kein stilles „keine Mannschaften": Eine leere Liste wäre von einem
+      // fehlgeschlagenen Abruf nicht zu unterscheiden, und wer daraufhin einen
+      // Schlüssel für nicht gesetzt hält, trägt einen zweiten ein.
+      this.keysError = true;
+    } else {
+      this.keys = teams;
+      // Entwürfe gehören zur alten Liste. Bliebe einer stehen, zeigte das Feld
+      // einer Mannschaft den Schlüssel einer anderen.
+      this.keyDrafts.clear();
+    }
+    this._cdr.markForCheck();
+  }
+
+  public keyDraft(team: StreamingTeam): string {
+    return this.keyDrafts.get(team.id) ?? '';
+  }
+
+  public setKeyDraft(team: StreamingTeam, wert: string): void {
+    this.keyDrafts.set(team.id, wert);
+  }
+
+  /**
+   * Trägt den eingetippten Schlüssel ein.
+   *
+   * Ohne eigene Fehlermeldung: Der globale ErrorInterceptor zeigt die Antwort
+   * des Servers an, und die ist hier die eigentliche Auskunft -- an welcher
+   * Mannschaft der Schlüssel schon hängt oder dass er ein Leerzeichen trägt.
+   * Eine zweite Meldung daneben stapelte sich nur.
+   */
+  public async saveKey(team: StreamingTeam): Promise<void> {
+    if (this.keysBusy.has(team.id)) return;
+
+    const wert = this.keyDraft(team).trim();
+    if (!wert) return;
+
+    await this._writeKey(team, wert);
+  }
+
+  /**
+   * Entfernt den Schlüssel.
+   *
+   * Die Rückfrage steht in der Vorlage (`fb-confirmation`) und nicht hier:
+   * Danach ist kein Spiel dieser Mannschaft mehr streambar, und ein
+   * verrutschter Klick in einer Liste aus 38 Zeilen nähme einem Ausrichter am
+   * Spieltag die Übertragung.
+   */
+  public async clearKey(team: StreamingTeam): Promise<void> {
+    if (this.keysBusy.has(team.id)) return;
+
+    await this._writeKey(team, '');
+  }
+
+  private async _writeKey(team: StreamingTeam, wert: string): Promise<void> {
+    this.keysBusy.add(team.id);
+    this._cdr.markForCheck();
+
+    const antwort = await firstValueFrom(
+      this._streamingService.updateTeamKey(team.id, wert).pipe(
+        catchError((error) => {
+          this._capture(error);
+          return of(null);
+        })
+      )
+    );
+
+    this.keysBusy.delete(team.id);
+
+    if (antwort === null) {
+      this._cdr.markForCheck();
+      return;
+    }
+
+    // Die Zeile NEU SUCHEN: Waehrend des Speicherns kann „Liste laden" die
+    // Liste ersetzt haben. Beschriebe man die festgehaltene Zeile, zeigte die
+    // sichtbare weiter „nicht gesetzt", waehrend die Meldung Erfolg meldet.
+    const zeile = this.keys.find((eintrag) => eintrag.id === antwort.id);
+    if (zeile) {
+      zeile.has_stream_key = antwort.has_stream_key;
+      zeile.stream_key_hint = antwort.stream_key_hint;
+    }
+    this.keyDrafts.delete(antwort.id);
+    this._notificationService.success(
+      wert
+        ? `Streamschlüssel für ${team.name} gespeichert.`
+        : `Streamschlüssel für ${team.name} entfernt.`
+    );
+    this._cdr.markForCheck();
+
+    // Dieselbe Angabe steht in der Spalte „streambar" der Spieleliste. Eine
+    // Liste, die noch das Gegenteil zeigt, ist schlimmer als eine, die lädt.
     if (this.loaded) this.load();
   }
 
