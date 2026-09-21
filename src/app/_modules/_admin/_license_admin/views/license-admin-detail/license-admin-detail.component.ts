@@ -158,6 +158,27 @@ export class LicenseAdminDetailComponent implements OnInit {
   }
 
   /**
+   * Die Statuskennung, die die Lizenzzeile zeigt.
+   *
+   * Bevorzugt `effective_status_id` aus der Liga-Antwort (api#723): Darin sind
+   * die Sperren eingerechnet, die in der History gar nicht stehen -- eine
+   * Wettbewerbs- und eine Ligasperre schreibt die API bewusst nicht hinein,
+   * weil dieselbe Lizenz zugleich in einem Wettbewerb gilt, in dem der Spieler
+   * spielen darf. Ohne das Feld sähe die Karte eine so gesperrte Lizenz als
+   * erteilt.
+   *
+   * Fehlt es, entscheidet wie zuvor der jüngste History-Eintrag. Das ist kein
+   * theoretischer Zweig: Die API lässt das Feld weg, wenn die Mannschaft der
+   * Lizenz nicht auflösbar ist oder ihre History keinen Basis-Status hergibt.
+   */
+  public licenseStatusId(license: PlayerLicense): number | undefined {
+    return (
+      license?.effective_status_id ??
+      this.latestHistory(license)?.license_status_id
+    );
+  }
+
+  /**
    * Der jüngste History-Eintrag einer Lizenz -- der, dessen Status die Zeile
    * zeigt.
    *

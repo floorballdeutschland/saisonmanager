@@ -37,6 +37,51 @@ describe('LicenseAdminDetailComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
+  describe('licenseStatusId', () => {
+    function component(): LicenseAdminDetailComponent {
+      return TestBed.createComponent(LicenseAdminDetailComponent)
+        .componentInstance;
+    }
+
+    // Der Grund für das Feld: Eine Wettbewerbs- oder Ligasperre steht nicht in
+    // der History. Aus ihr allein gelesen gälte die Lizenz als erteilt.
+    it('nimmt den wirksamen Status der API, nicht den aus der History', () => {
+      const license = {
+        id: 'l1',
+        team_id: 1,
+        effective_status_id: 9,
+        history: [{ license_status_id: 1, created_at: '2026-09-01T10:00:00Z' }],
+      } as unknown as PlayerLicense;
+
+      expect(component().licenseStatusId(license)).toBe(9);
+    });
+
+    // Ältere API, nicht auflösbare Mannschaft oder eine History ohne
+    // Basis-Status: Dann liefert die API das Feld nicht.
+    it('fällt ohne das Feld auf den jüngsten History-Eintrag zurück', () => {
+      const license = {
+        id: 'l1',
+        team_id: 1,
+        history: [
+          { license_status_id: 9, created_at: '2026-09-20T10:00:00Z' },
+          { license_status_id: 1, created_at: '2026-09-01T10:00:00Z' },
+        ],
+      } as unknown as PlayerLicense;
+
+      expect(component().licenseStatusId(license)).toBe(9);
+    });
+
+    it('gibt ohne History und ohne Feld nichts zurück', () => {
+      const license = {
+        id: 'l1',
+        team_id: 1,
+        history: [],
+      } as unknown as PlayerLicense;
+
+      expect(component().licenseStatusId(license)).toBeUndefined();
+    });
+  });
+
   describe('latestHistory', () => {
     function entry(statusId: number, createdAt?: string): PlayerLicenseHistory {
       return {
@@ -398,7 +443,7 @@ describe('LicenseAdminDetailComponent', () => {
   // Getter-Prüfung allein bemerkt es nicht, wenn jemand die Bindung wieder
   // zurückdreht oder beim Umbau der Karte kopiert.
   describe('Statusquelle der Lizenzzeile', () => {
-    it('reicht den jüngsten Eintrag an die Zeile weiter, nicht den letzten', () => {
+    it('reicht den Status des jüngsten Eintrags an die Zeile weiter', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         imports: [
@@ -453,7 +498,7 @@ describe('LicenseAdminDetailComponent', () => {
         By.directive(LicenseAdminTeamEntryComponent)
       );
       expect(row).withContext('die Lizenzzeile wird gerendert').not.toBeNull();
-      expect(row.componentInstance.lastHistory.license_status_id).toBe(9);
+      expect(row.componentInstance.statusId).toBe(9);
     });
   });
 

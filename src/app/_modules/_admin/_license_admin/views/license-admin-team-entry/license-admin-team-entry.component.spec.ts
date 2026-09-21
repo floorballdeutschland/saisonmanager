@@ -6,7 +6,6 @@ import {
 
 import { LicenseAdminTeamEntryComponent } from './license-admin-team-entry.component';
 import { getTranslocoTestingModule } from '@floorball/core';
-import { PlayerLicenseHistory } from '@floorball/models';
 
 /**
  * Der Transloco-Scope `admin/license` hängt am AdminLicenseModule. Die
@@ -32,9 +31,7 @@ describe('LicenseAdminTeamEntryComponent', () => {
     fixture.componentInstance.teamId = 9664;
     fixture.componentInstance.teamName = teamName;
     fixture.componentInstance.leagueName = leagueName;
-    fixture.componentInstance.lastHistory = {
-      license_status_id: statusId,
-    } as PlayerLicenseHistory;
+    fixture.componentInstance.statusId = statusId as number;
     fixture.detectChanges();
     return fixture;
   }
@@ -216,7 +213,7 @@ describe('LicenseAdminTeamEntryComponent', () => {
     );
   });
 
-  it('zeigt eine Lizenz ohne History als Fragezeichen', () => {
+  it('zeigt eine Lizenz ohne Statuskennung als Fragezeichen', () => {
     const fixture = TestBed.createComponent(LicenseAdminTeamEntryComponent);
     fixture.componentInstance.teamId = 9664;
     fixture.componentInstance.teamName = 'Lilienthaler Wölfe';

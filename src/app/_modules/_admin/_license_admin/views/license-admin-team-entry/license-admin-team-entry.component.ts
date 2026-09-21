@@ -1,5 +1,4 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
-import { PlayerLicenseHistory } from '@floorball/types';
 
 /**
  * Ein Statussymbol der Lizenzliste: Pfade im 24er-Raster, Farbe und der
@@ -131,12 +130,13 @@ export class LicenseAdminTeamEntryComponent {
   teamId!: number;
 
   /**
-   * Der History-Eintrag, dessen Status die Zeile zeigt. Optional, weil der
-   * Aufrufer `license.history[license.history.length - 1]` übergibt und das
-   * bei leerer History `undefined` ist.
+   * Die Statuskennung, die die Zeile zeigt. Der Aufrufer sucht sie heraus:
+   * bevorzugt `effective_status_id` der API (Sperren eingerechnet), sonst aus
+   * dem jüngsten History-Eintrag. Optional, weil eine Lizenz ohne History
+   * keine hat.
    */
   @Input()
-  lastHistory?: PlayerLicenseHistory | null;
+  statusId?: number | string | null;
 
   /**
    * Aus der Lizenz der Liga-Antwort. Fehlt der Name, ist die Mannschaft nicht
@@ -150,13 +150,10 @@ export class LicenseAdminTeamEntryComponent {
   leagueName?: string | null;
 
   /**
-   * Symbol zum Status des übergebenen History-Eintrags.
+   * Symbol zur übergebenen Statuskennung.
    *
-   * ACHTUNG: Das ist der Eintrag, den der Aufrufer heraussucht, nicht
-   * zwangsläufig der jüngste. `license-admin-detail.component.html` nimmt das
-   * letzte Array-Element, während die API den aktuellen Status ausdrücklich
-   * über `max_by { created_at }` bestimmt (License.current_status_id, "sortiert
-   * ist sie nirgends garantiert"). Diese Zeile zeigt also, was sie bekommt.
+   * Woher sie stammt, entscheidet der Aufrufer (siehe `statusId`). Diese Zeile
+   * zeigt, was sie bekommt.
    *
    * `Number()` trifft die Tabelle typrichtig: Die Status-ID liegt in der
    * JSONB-History nicht typgarantiert vor -- die API wandelt sie mehrfach mit
@@ -173,8 +170,8 @@ export class LicenseAdminTeamEntryComponent {
    * gelesen werden.
    */
   public get statusIcon(): LicenseStatusIcon {
-    const statusId = Number(this.lastHistory?.license_status_id);
-    const icon: LicenseStatusIcon | undefined = STATUS_ICONS[statusId];
+    const icon: LicenseStatusIcon | undefined =
+      STATUS_ICONS[Number(this.statusId)];
     return icon ?? UNKNOWN_ICON;
   }
 }
