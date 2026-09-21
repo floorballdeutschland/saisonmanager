@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { By } from '@angular/platform-browser';
 
@@ -35,6 +35,66 @@ describe('LicenseAdminDetailComponent', () => {
   it('should create', () => {
     const fixture = TestBed.createComponent(LicenseAdminDetailComponent);
     expect(fixture.componentInstance).toBeTruthy();
+  });
+
+  describe('licenseStatusId', () => {
+    function component(): LicenseAdminDetailComponent {
+      return TestBed.createComponent(LicenseAdminDetailComponent)
+        .componentInstance;
+    }
+
+    // Der Grund für das Feld: Eine Wettbewerbs- oder Ligasperre steht nicht in
+    // der History. Aus ihr allein gelesen gälte die Lizenz als erteilt.
+    it('nimmt den wirksamen Status der API, nicht den aus der History', () => {
+      const license = {
+        id: 'l1',
+        team_id: 1,
+        effective_status_id: 9,
+        history: [{ license_status_id: 1, created_at: '2026-09-01T10:00:00Z' }],
+      } as unknown as PlayerLicense;
+
+      expect(component().licenseStatusId(license)).toBe(9);
+    });
+
+    // Ältere API, nicht auflösbare Mannschaft oder eine History ohne
+    // Basis-Status: Dann liefert die API das Feld nicht.
+    it('fällt ohne das Feld auf den jüngsten History-Eintrag zurück', () => {
+      const license = {
+        id: 'l1',
+        team_id: 1,
+        history: [
+          { license_status_id: 9, created_at: '2026-09-20T10:00:00Z' },
+          { license_status_id: 1, created_at: '2026-09-01T10:00:00Z' },
+        ],
+      } as unknown as PlayerLicense;
+
+      expect(component().licenseStatusId(license)).toBe(9);
+    });
+
+    // Gegenrichtung, und ebenso real: Nach einer abgelaufenen Sperre bleibt
+    // der `gesperrt`-Eintrag in der History stehen, die API rechnet die Lizenz
+    // aber wieder als erteilt. Ohne diese Prüfung bliebe eine "Verbesserung"
+    // unbemerkt, die das Feld nur bei einer Sperre gewinnen lässt.
+    it('nimmt den wirksamen Status auch, wenn er milder ist als die History', () => {
+      const license = {
+        id: 'l1',
+        team_id: 1,
+        effective_status_id: 1,
+        history: [{ license_status_id: 9, created_at: '2026-09-20T10:00:00Z' }],
+      } as unknown as PlayerLicense;
+
+      expect(component().licenseStatusId(license)).toBe(1);
+    });
+
+    it('gibt ohne History und ohne Feld nichts zurück', () => {
+      const license = {
+        id: 'l1',
+        team_id: 1,
+        history: [],
+      } as unknown as PlayerLicense;
+
+      expect(component().licenseStatusId(license)).toBeUndefined();
+    });
   });
 
   describe('latestHistory', () => {
@@ -393,12 +453,17 @@ describe('LicenseAdminDetailComponent', () => {
 
   // Das Geschlecht liegt im Payload (Player#full_hash) und stand in der
   // Antragsmaske trotzdem nicht. Ein Getter-Test würde das nicht bemerken:
-  // Der Fehler sass in der BINDUNG, nicht in einer Methode: Die Vorlage gab
-  // `license.history[license.history.length - 1]` an die Zeile weiter. Eine
-  // Getter-Prüfung allein bemerkt es nicht, wenn jemand die Bindung wieder
-  // zurückdreht oder beim Umbau der Karte kopiert.
+  // Der Fehler sass seinerzeit in der BINDUNG, nicht in einer Methode: Die
+  // Vorlage gab `license.history[license.history.length - 1]` an die Zeile
+  // weiter. Eine Getter-Prüfung allein bemerkt es nicht, wenn jemand die
+  // Bindung zurückdreht oder beim Umbau der Karte kopiert.
   describe('Statusquelle der Lizenzzeile', () => {
-    it('reicht den jüngsten Eintrag an die Zeile weiter, nicht den letzten', () => {
+    // Zwei Lizenzen in einer Karte: die erste mit dem wirksamen Status der
+    // API (der von ihrer History abweicht), die zweite ohne das Feld. Damit
+    // deckt derselbe Durchgang beide Zweige der Bindung ab -- und ein
+    // Zurückdrehen auf `latestHistory(...)` faellt an der ersten auf, was mit
+    // einer Fixture ohne `effective_status_id` nicht der Fall waere.
+    function render(): ComponentFixture<LicenseAdminDetailComponent> {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         imports: [
@@ -424,12 +489,24 @@ describe('LicenseAdminDetailComponent', () => {
         last_name: 'Muster',
         birthdate: '2000-05-01',
         clubs: [],
-        // Unsortiert: der jüngste Eintrag steht vorn. Ohne Liga filtert
-        // currentSeasonLicenses() nicht, die Lizenz wird also gerendert.
+        // Ohne Liga filtert currentSeasonLicenses() nicht, beide Lizenzen
+        // werden also gerendert.
         licenses: [
           {
+            // Wettbewerbssperre: Die History weiss nichts davon, die API
+            // schon. Genau dafür gibt es das Feld.
             id: 'l1',
             team_id: 1,
+            effective_status_id: 9,
+            history: [
+              { license_status_id: 1, created_at: '2026-09-01T10:00:00Z' },
+            ],
+          },
+          {
+            // Ohne das Feld (ältere API, nicht auflösbare Mannschaft, keine
+            // Basis): der jüngste Eintrag entscheidet, hier unsortiert.
+            id: 'l2',
+            team_id: 2,
             history: [
               { license_status_id: 9, created_at: '2026-09-20T10:00:00Z' },
               { license_status_id: 1, created_at: '2026-09-01T10:00:00Z' },
@@ -448,12 +525,31 @@ describe('LicenseAdminDetailComponent', () => {
         name: 'Musterstadt',
       } as unknown as TeamWithPlayers;
       fixture.detectChanges();
+      return fixture;
+    }
 
-      const row = fixture.debugElement.query(
+    function rows(fixture: ComponentFixture<LicenseAdminDetailComponent>) {
+      return fixture.debugElement.queryAll(
         By.directive(LicenseAdminTeamEntryComponent)
       );
+    }
+
+    it('zeigt die gesperrte Lizenz als gesperrt, obwohl ihre History erteilt sagt', () => {
+      const fixture = render();
+      const row = rows(fixture)[0];
+
       expect(row).withContext('die Lizenzzeile wird gerendert').not.toBeNull();
-      expect(row.componentInstance.lastHistory.license_status_id).toBe(9);
+      expect(row.componentInstance.statusId).toBe(9);
+      // Nicht nur die Eingabe, sondern das, was die SBK sieht.
+      expect(
+        (row.nativeElement as HTMLElement).querySelector('title')?.textContent
+      ).toContain('teamEntry.status.suspended');
+    });
+
+    it('nimmt ohne das Feld den Status des jüngsten Eintrags', () => {
+      const fixture = render();
+
+      expect(rows(fixture)[1].componentInstance.statusId).toBe(9);
     });
   });
 

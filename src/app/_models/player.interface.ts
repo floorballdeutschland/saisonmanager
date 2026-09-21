@@ -252,6 +252,19 @@ export interface PlayerLicense {
   // Mannschaft gelöscht oder die API älter als api#555.
   team_name?: string | null;
   league_name?: string | null;
+  /**
+   * Der Status dieser Lizenz einschließlich der Sperren, die auf ihr liegen
+   * (api#723). Eine Wettbewerbs- und eine Ligasperre stehen NICHT in der
+   * History: Der gespeicherte Status ist einer je Lizenz, während diese
+   * Sperren nur einen Teil der Wettbewerbe treffen, in denen dieselbe Lizenz
+   * gilt. Wer den Status aus der History liest, hält eine so gesperrte Lizenz
+   * für spielberechtigt.
+   *
+   * Fehlt das Feld, ist die API älter als api#723, die Mannschaft der Lizenz
+   * nicht auflösbar oder ihre History ohne Basis-Status; dann entscheidet der
+   * jüngste History-Eintrag wie zuvor.
+   */
+  effective_status_id?: number;
 }
 
 /**
