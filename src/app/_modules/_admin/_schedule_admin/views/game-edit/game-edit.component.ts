@@ -22,7 +22,6 @@ import {
   NotificationService,
 } from '@floorball/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'fb-game-edit',
@@ -488,19 +487,13 @@ export class GameEditComponent implements OnInit, OnChanges {
       this.forfaitGuestGoals = null;
     }
 
+    // Die Spielmarken started/ended setzt die API mit der Wertung selbst. Sie
+    // hier vorab ueber set_flag zu schicken, scheiterte immer: an started haengt
+    // dort die Startpruefung des Spielberichts, also Aufstellung beider
+    // Mannschaften und Schiedsrichter 1 -- beides hat ein kampflos gewertetes
+    // Spiel nie (api#738).
     this._gameService
-      .setGameFlags(this.existingGame?.id || 0, {
-        started: this.game.forfait > 0,
-        ended: this.game.forfait > 0,
-      })
-      .pipe(
-        switchMap(() =>
-          this._gameService.updateGameRating(
-            this.game.id || 0,
-            this.game.forfait || 0
-          )
-        )
-      )
+      .updateGameRating(this.game.id || 0, this.game.forfait || 0)
       .subscribe({
         next: () => {
           this.processing = false;
