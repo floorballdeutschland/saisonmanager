@@ -1,4 +1,5 @@
-import { getTranslocoTestingModule } from '@floorball/core';
+import { GameService, getTranslocoTestingModule } from '@floorball/core';
+import { of } from 'rxjs';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { GameEditComponent } from './game-edit.component';
@@ -129,6 +130,54 @@ describe('GameEditComponent', () => {
     } as unknown as typeof component.existingGame;
 
     expect(component.forfaitDefaultResult).toBeNull();
+  });
+
+  // api#738: Vor der Wertung wurden started/ended ueber set_flag geschickt. Dort
+  // haengt an started die Startpruefung des Spielberichts -- Aufstellung beider
+  // Mannschaften und Schiedsrichter 1 -- die ein kampflos gewertetes Spiel nie
+  // erfuellt. Die Wertung war damit ueberhaupt nicht setzbar. Die Marken setzt
+  // jetzt die API zusammen mit der Wertung.
+  it('setzt die Wertung ohne den Umweg ueber die Spielmarken', () => {
+    const gameService = TestBed.inject(GameService);
+    const rating = spyOn(gameService, 'updateGameRating').and.returnValue(
+      of({ success: true })
+    );
+    const flags = spyOn(gameService, 'setGameFlags');
+    // Bewusst verschiedene IDs: die Wertung haengt an `game.id`. Waeren beide
+    // gleich, bliebe der Test auch dann gruen, wenn jemand auf `existingGame`
+    // zurueckbaut.
+    component.game.id = 7;
+    component.existingGame = {
+      id: 99,
+      forfait: 0,
+    } as unknown as typeof component.existingGame;
+
+    component.setRatingMode('forfait-home');
+
+    expect(rating).toHaveBeenCalledWith(7, 1);
+    expect(flags).not.toHaveBeenCalled();
+  });
+
+  // Die Gegenrichtung: Genau hier tat der alte set_flag-Aufruf tatsaechlich
+  // etwas, er setzte started/ended bedingungslos auf false. Das entscheidet
+  // jetzt die API, die die Marken nur ohne Ereignisse und ohne Aufstellung
+  // raeumt -- ein wirklich gespieltes Spiel behaelt sein Ergebnis.
+  it('nimmt die Wertung ebenfalls ohne Spielmarken zurueck', () => {
+    const gameService = TestBed.inject(GameService);
+    const rating = spyOn(gameService, 'updateGameRating').and.returnValue(
+      of({ success: true })
+    );
+    const flags = spyOn(gameService, 'setGameFlags');
+    component.game.id = 7;
+    component.existingGame = {
+      id: 99,
+      forfait: 1,
+    } as unknown as typeof component.existingGame;
+
+    component.setRatingMode('regular');
+
+    expect(rating).toHaveBeenCalledWith(7, 0);
+    expect(flags).not.toHaveBeenCalled();
   });
 
   it('laesst ein bestehendes Spiel unangetastet', () => {
