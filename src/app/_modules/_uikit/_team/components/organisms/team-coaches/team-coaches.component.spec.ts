@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TeamCoachesComponent } from './team-coaches.component';
 import { GameCoach } from '@floorball/models';
+import { TeamSectionTitleComponent } from '../team-section-title/team-section-title.component';
 
 describe('TeamCoachesComponent', () => {
   let component: TeamCoachesComponent;
@@ -16,7 +17,7 @@ describe('TeamCoachesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TeamCoachesComponent],
+      declarations: [TeamCoachesComponent, TeamSectionTitleComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TeamCoachesComponent);
@@ -44,6 +45,17 @@ describe('TeamCoachesComponent', () => {
     expect(text).toContain('Wolf, Carla');
     expect(text.indexOf('Meier, Anna')).toBeLessThan(
       text.indexOf('Sanchez, Bruno')
+    );
+  });
+
+  it('nennt das Mannschaftskuerzel neben der Ueberschrift', () => {
+    component.coaches = [coach(1, 'Meier, Anna')];
+    component.teamShortName = 'FBB 2';
+
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'FBB 2'
     );
   });
 
