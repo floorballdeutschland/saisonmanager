@@ -114,25 +114,26 @@ describe('MatchPublicComponent', () => {
     expect(inhalte[5]).toContain('Wertvollste:r Spieler:in');
   });
 
-  // Das Karma-Fenster ist breiter als der md-Breakpoint und laedt die gebaute
-  // Tailwind-Datei. Die zweispaltige Ansicht laesst sich hier deshalb als
-  // Wirkung pruefen statt als Klassenname: ein Tippfehler in md:col-start-2
-  // faellt auf, ein `toContain` auf die Klasse wuerde ihn durchlassen.
+  // Zweispaltig muss jede Kachel auf ihrem alten Platz landen. Geprueft werden
+  // die Utility-Klassen, nicht ihre Wirkung: Die Karma-Fensterbreite steht
+  // nicht fest und liegt auf CI unter dem md-Breakpoint, getComputedStyle
+  // haette dort 'auto' gemeldet und die Aussage stillschweigend umgedreht.
   it('haelt Heim und Gast auf dem Desktop in je einer Spalte', () => {
-    const host = render();
-    const grid = host.querySelector<HTMLElement>('.grid.md\\:grid-cols-2');
+    const plaetze = tiles(render()).map((tile) =>
+      Array.from(tile.classList)
+        .filter((k) => k.startsWith('md:'))
+        .sort()
+        .join(' ')
+    );
 
-    expect(getComputedStyle(grid!).gridTemplateColumns.split(' ').length)
-      .withContext('Karma-Fenster liegt unter dem md-Breakpoint')
-      .toBe(2);
-
-    const plaetze = tiles(host).map((tile) => {
-      const stil = getComputedStyle(tile);
-
-      return `${stil.gridColumnStart}/${stil.gridRowStart}`;
-    });
-
-    expect(plaetze).toEqual(['1/1', '1/2', '1/3', '2/1', '2/2', '2/3']);
+    expect(plaetze).toEqual([
+      'md:col-start-1 md:row-start-1',
+      'md:col-start-1 md:row-start-2',
+      'md:col-start-1 md:row-start-3',
+      'md:col-start-2 md:row-start-1',
+      'md:col-start-2 md:row-start-2',
+      'md:col-start-2 md:row-start-3',
+    ]);
   });
 
   it('setzt jeder Zwischenueberschrift das Kuerzel ihrer eigenen Mannschaft zu', () => {
@@ -146,13 +147,12 @@ describe('MatchPublicComponent', () => {
   });
 
   it('blendet das Kuerzel auf dem Desktop aus', () => {
-    const host = render();
-    const kuerzel = host.querySelector<HTMLElement>(
+    const kuerzel = render().querySelector<HTMLElement>(
       'fb-team-section-title h4 span'
     );
 
     expect(kuerzel?.textContent).toContain('FBB 2');
-    expect(getComputedStyle(kuerzel!).display).toBe('none');
+    expect(kuerzel?.classList).toContain('md:hidden');
   });
 
   // Ohne Auszeichnungen faellt die Kachel weg, statt als leerer Platz zwei
