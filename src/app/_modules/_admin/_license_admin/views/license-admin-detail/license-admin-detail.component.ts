@@ -264,7 +264,17 @@ export class LicenseAdminDetailComponent implements OnInit {
     return `${year}-07-31`;
   }
 
-  public approveLicense(player: PlayerWithLicense) {
+  // Ein Expressantrag traegt den Zuschlag aus dem Antrag, nicht aus der
+  // Bearbeitung: Wird er wegen fehlender Unterlagen abgelehnt und erst Wochen
+  // spaeter erteilt, hat die Eilbearbeitung nie stattgefunden. Deshalb zwei
+  // Knoepfe, und der zweite streicht den Zuschlag (express: false). Fuer einen
+  // gewoehnlichen Antrag gibt es nichts zu entscheiden, dort bleibt der eine
+  // Knopf und schickt das Feld gar nicht erst mit.
+  public isExpressRequest(player: PlayerWithLicense): boolean {
+    return player.team_license.express === true;
+  }
+
+  public approveLicense(player: PlayerWithLicense, express?: boolean) {
     const licenseId = player.team_license.license.id;
     const validUntil =
       this.validUntilDates[licenseId] || this.defaultValidUntil();
@@ -279,7 +289,8 @@ export class LicenseAdminDetailComponent implements OnInit {
         1,
         this.reasons[licenseId],
         validUntil,
-        gfRole
+        gfRole,
+        express
       )
       .subscribe({
         next: () => {
@@ -287,7 +298,12 @@ export class LicenseAdminDetailComponent implements OnInit {
           this.hidePlayer[player.id] = true;
           this._notificationService.success(
             this._transloco.translate(
-              'licenseAdmin.notifications.licenseGranted',
+              // Die Streichung des Zuschlags ist eine Geldentscheidung und
+              // gehoert in die Bestaetigung: Die Zeile verschwindet danach aus
+              // der Liste, eine Nachkontrolle am Bildschirm gibt es nicht.
+              express === false
+                ? 'licenseAdmin.notifications.licenseGrantedWithoutExpress'
+                : 'licenseAdmin.notifications.licenseGranted',
               {
                 firstName: player.first_name,
                 lastName: player.last_name,

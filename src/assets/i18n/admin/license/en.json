@@ -26,6 +26,9 @@
     "approvals": "Approvals",
     "validUntil": "Valid until",
     "grantLicense": "Grant license",
+    "grantAsExpress": "Grant as express license",
+    "grantAsStandard": "Grant as regular license",
+    "grantAsStandardHint": "Without the express surcharge under the fee regulations. Intended for requests granted only after corrections, which therefore triggered no express handling.",
     "rejectRequest": "Reject request",
     "resetToPending": "Reset to “requested”",
     "reason": "Reason",
@@ -304,6 +307,7 @@
   },
   "notifications": {
     "licenseGranted": "License granted for player {{ firstName }} {{ lastName }} ({{ id }})",
+    "licenseGrantedWithoutExpress": "License granted for player {{ firstName }} {{ lastName }} ({{ id }}) without the express surcharge",
     "requestRejected": "License request rejected for player {{ firstName }} {{ lastName }} ({{ id }})",
     "licenseReset": "License for player {{ firstName }} {{ lastName }} ({{ id }}) reset to \"requested\"",
     "documentsLoadError": "Documents could not be loaded.",

@@ -82,13 +82,18 @@ export class PlayerService {
     });
   }
 
+  // express nur mitschicken, wenn es gesetzt ist: Ohne das Feld laesst die API
+  // den Expresszuschlag unangetastet, und genau das ist der Regelfall. Ein
+  // mitgeschicktes `true` waere fuer eine gewoehnliche Lizenz sogar ein Fehler
+  // (die API weist das Hochstufen ab), deshalb kein Vorbelegen auf false.
   public updateLicenseStatus(
     playerId: number,
     licenseId: string,
     licenseStatusId: number,
     reason: string,
     validUntil?: string,
-    gfRole?: GfRole
+    gfRole?: GfRole,
+    express?: boolean
   ) {
     const path =
       environment.apiURL +
@@ -102,6 +107,7 @@ export class PlayerService {
       reason: reason,
       ...(validUntil ? { valid_until: validUntil } : {}),
       ...(gfRole ? { gf_role: gfRole } : {}),
+      ...(express === undefined ? {} : { express: express }),
     });
   }
 
