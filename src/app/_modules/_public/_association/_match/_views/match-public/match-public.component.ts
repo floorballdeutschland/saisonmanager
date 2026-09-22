@@ -24,6 +24,22 @@ export class MatchPublicComponent implements OnInit {
   @Input()
   additionalFields?: GameAdditionalFields;
 
+  get startingPlayersTitle(): string {
+    return this.fieldSize === 'GF' ? 'Starting six' : 'Starting four';
+  }
+
+  // Für die Zwischenüberschriften der Handy-Ansicht. Der volle Mannschaftsname
+  // als Rückfall ist länger, aber nicht falsch, und bleibt auch nach dem
+  // API-Deploy nötig: Zu einer noch nicht ausgelosten Paarung gehört keine
+  // Mannschaft und damit auch kein Kürzel.
+  get homeShortName(): string {
+    return this.game.home_team_short_name || this.game.home_team_name;
+  }
+
+  get guestShortName(): string {
+    return this.game.guest_team_short_name || this.game.guest_team_name;
+  }
+
   constructor(
     private _leagueService: LeagueService,
     private _cdr: ChangeDetectorRef
