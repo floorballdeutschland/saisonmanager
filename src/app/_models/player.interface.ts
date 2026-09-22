@@ -40,6 +40,31 @@ export interface Player {
    * Rollen-Flag `player_deactivate`.
    */
   can_deactivate?: boolean;
+  /**
+   * Gesetzt = der NACHname dieses Profils faellt in der oeffentlichen Anzeige
+   * weg (Antrag nach Art. 17/21 DSGVO). Scorerlisten, Aufstellungen,
+   * Statistikseiten und Livestream-Overlays fuehren dann nur noch den
+   * Vornamen; ein Platzhalter oder eine Initiale tritt nicht an seine Stelle.
+   *
+   * In der Verwaltung, also auch in diesem Profil, steht weiter der volle
+   * Name: Ohne ihn liesse sich dieselbe Person ein zweites Mal anlegen, und
+   * Sperren wie Lizenzhistorie haengen daran.
+   */
+  public_last_name_hidden_at?: string | null;
+  /**
+   * Interner Vermerk zum Antrag, etwa dessen Aktenzeichen. Bleibt auch nach
+   * einer Ruecknahme stehen, er ist der Beleg nach Art. 5 Abs. 2 DSGVO.
+   */
+  public_last_name_hidden_reason?: string | null;
+  /**
+   * Nur in der Antwort zu einem einzelnen Profil (`admin/players/:id`): Darf
+   * der angemeldete Benutzer den Schalter setzen und zuruecknehmen?
+   *
+   * Anders als `can_deactivate` gibt es dazu kein Rollen-Flag im Browser.
+   * Fehlt das Feld, ist die API aelter als die Funktion und die Maske bietet
+   * sie nicht an.
+   */
+  can_hide_public_last_name?: boolean;
 }
 
 // Bericht des CSV-Nachtrags in der Vereinssicht (admin/vm/players/import).

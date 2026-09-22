@@ -87,6 +87,9 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   confirmDeactivate = false;
   deactivateReason = '';
   deactivateReasonOther = '';
+  confirmHidePublicLastName = false;
+  confirmShowPublicLastName = false;
+  hidePublicLastNameReason = '';
 
   changeRequestType: CorrectionType | '' = '';
   changeRequestValue = '';
@@ -954,6 +957,90 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             autoClose: true,
             keepAfterRouteChange: false,
           });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  get isPublicLastNameHidden(): boolean {
+    return !!this.player?.public_last_name_hidden_at;
+  }
+
+  /**
+   * Darf dieses Konto den Nachnamen aus der oeffentlichen Anzeige nehmen?
+   *
+   * Maßgeblich ist `can_hide_public_last_name` aus der Antwort zum Profil, also
+   * dieselbe Quelle wie die Prüfung beim Schreiben. Anders als bei der
+   * Deaktivierung gibt es dazu kein Rollen-Flag im Browser, auf das
+   * zurückzufallen wäre: Fehlt das Feld, ist die API älter als die Funktion
+   * und die Maske bietet sie nicht an.
+   */
+  private get mayHidePublicLastName(): boolean {
+    return this.player?.can_hide_public_last_name === true;
+  }
+
+  get canHidePublicLastName(): boolean {
+    return (
+      !this.isPublicLastNameHidden && this.editMode && this.mayHidePublicLastName
+    );
+  }
+
+  get canShowPublicLastName(): boolean {
+    return this.isPublicLastNameHidden && this.editMode && this.mayHidePublicLastName;
+  }
+
+  public cancelHidePublicLastName(): void {
+    this.confirmHidePublicLastName = false;
+    this.hidePublicLastNameReason = '';
+  }
+
+  public cancelShowPublicLastName(): void {
+    this.confirmShowPublicLastName = false;
+  }
+
+  public hidePublicLastName(): void {
+    if (!this.player) return;
+    this._playerService
+      .hidePublicLastName(this.player.id, this.hidePublicLastNameReason.trim())
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.player = updated;
+          this.cancelHidePublicLastName();
+          this._notificationService.success(
+            this._transloco.translate('playerAdmin.edit.publicLastNameHiddenDone'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this._cdr.markForCheck();
+        },
+        // Ohne eigenen Zweig: Den Text zeigt der ErrorInterceptor, eine zweite
+        // Meldung stapelte sich darüber. Die Rückfrage bleibt dabei offen und
+        // der getippte Vermerk stehen, weil der Interceptor diese beiden
+        // Aktionen ausdrücklich von seiner Umleitung auf die Startseite
+        // ausnimmt (`publicLastNameDecision`). Ohne diese Ausnahme wäre die ganze
+        // Maske nach einer Absage weg.
+        error: () => {
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  public showPublicLastName(): void {
+    if (!this.player) return;
+    this._playerService
+      .showPublicLastName(this.player.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.player = updated;
+          this.cancelShowPublicLastName();
+          this._notificationService.success(
+            this._transloco.translate('playerAdmin.edit.publicLastNameShownDone'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
           this._cdr.markForCheck();
         },
         error: () => {
