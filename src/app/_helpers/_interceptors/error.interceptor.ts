@@ -5,11 +5,21 @@ import {
   HttpHandler,
   HttpInterceptor,
   HttpRequest,
+  HttpResponse,
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { NotificationService, SessionService } from '@floorball/core';
+import { catchError, tap } from 'rxjs/operators';
+import {
+  NotificationService,
+  SessionService,
+  SILENT_REFRESH,
+} from '@floorball/core';
 import { Router } from '@angular/router';
+
+// Anzeigen und Zurücknehmen müssen denselben Text benutzen: `dismiss` sucht die
+// stehende Meldung über Textgleichheit.
+export const CONNECTION_LOST_MESSAGE =
+  'Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
@@ -24,6 +34,16 @@ export class ErrorInterceptor implements HttpInterceptor {
   // 401-Zweig. Der Interceptor ist ein Singleton, der Merker hält also für die
   // Lebensdauer der Registerkarte.
   private secretaryLinkRejected = false;
+
+  // Wurde die Verbindungsmeldung gezeigt? Der Merker entscheidet NICHT, ob sie
+  // erscheint (das Doppeln verhindert die Meldungsleiste selbst), sondern nur,
+  // ob nach einer Antwort ein Zurücknehmen nötig ist. Ein Merker, der die
+  // Anzeige gesteuert hätte, wäre stehen geblieben, sobald die Meldung anders
+  // verschwindet: über das X am Toast oder beim zweiten Routenwechsel, denn die
+  // Meldungsleiste nimmt `keepAfterRouteChange` nach dem ersten Wechsel wieder
+  // ab. Danach bliebe die nächste echte Störung stumm, also genau der Fehler,
+  // den dieser Zweig beseitigen soll.
+  private connectionNoticeShown = false;
 
   // Fehlerdetails aus dem Response-Body ziehen. Rails-Endpunkte liefern
   // wahlweise { message }, { error } oder { errors: [...] } (z. B. bei 422
@@ -72,7 +92,22 @@ export class ErrorInterceptor implements HttpInterceptor {
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
+    // Anfragen, die eine Ansicht von sich aus im Takt nachlädt, ohne Zutun des
+    // Benutzers. Ein Transport- oder Serverfehler dabei bleibt still, siehe
+    // SILENT_REFRESH.
+    const silentRefresh = request.context.get(SILENT_REFRESH);
+
     return next.handle(request).pipe(
+      tap((event) => {
+        // Eine Antwort ist der Beleg, dass die Verbindung wieder steht. Die
+        // Meldung nimmt sich damit selbst zurück, statt bis zum nächsten
+        // Routenwechsel stehen zu bleiben: Genau dieses Stehenbleiben war der
+        // Grund, warum Leute "keine Verbindung" lasen, während die Seite
+        // längst wieder aktuell war.
+        if (event instanceof HttpResponse) {
+          this.withdrawConnectionNotice();
+        }
+      }),
       catchError((err) => {
         // Beim Server-Rendering (Prerender) keine Browser-Seiteneffekte
         // (logout, Navigation, Notifications). Zudem ein echtes Error-Objekt
@@ -601,18 +636,19 @@ export class ErrorInterceptor implements HttpInterceptor {
           );
         }
 
-        if (err.status >= 500) {
+        if (err.status >= 500 && !silentRefresh) {
           this._notificationService.error(
             'Server-Fehler. Bitte versuche es später erneut.',
             { autoClose: false, keepAfterRouteChange: false }
           );
         }
 
-        if (err.status === 0) {
-          this._notificationService.error(
-            'Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
+        if (err.status === 0 && !silentRefresh) {
+          this.connectionNoticeShown = true;
+          this._notificationService.error(CONNECTION_LOST_MESSAGE, {
+            autoClose: false,
+            keepAfterRouteChange: false,
+          });
         }
 
         // Fehler mit einem Erfolgsstatus erreichen keinen der Zweige oben:
@@ -625,13 +661,21 @@ export class ErrorInterceptor implements HttpInterceptor {
         if (err.status > 0 && err.status < 400) {
           // Wie oben: kein ganzes Fehlerobjekt in die Konsole, sonst landet der
           // Antwortkörper über die Sentry-Wegmarken im Monitoring (#230).
+          //
+          // Die Zeile steht bewusst VOR der Ausnahme fürs Nachladen: Still ist
+          // nur der Toast. Bliebe auch die Konsole leer, hinterließe eine
+          // Wartungsseite, die mit Status 200 ausgeliefert wird, im Hintergrund
+          // gar keine Spur mehr.
           console.error(
             `Unlesbare Antwort (${err.status}): ${request.method} ${request.url}`
           );
-          this._notificationService.error(
-            'Die Antwort des Servers war unlesbar. Bitte versuche es erneut.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
+
+          if (!silentRefresh) {
+            this._notificationService.error(
+              'Die Antwort des Servers war unlesbar. Bitte versuche es erneut.',
+              { autoClose: false, keepAfterRouteChange: false }
+            );
+          }
         }
 
         // Die ursprüngliche HttpErrorResponse weiterreichen (statt eines bloßen
@@ -640,5 +684,19 @@ export class ErrorInterceptor implements HttpInterceptor {
         return throwError(() => err);
       })
     );
+  }
+
+  // Nimmt genau die Verbindungsmeldung zurück, keine anderen: `clear` nähme
+  // alles bis auf die Einträge mit `keepAfterRouteChange` und damit auch eine
+  // Validierungsmeldung, die die Maske daneben gerade noch braucht.
+  //
+  // Ist die Meldung inzwischen anders verschwunden, geht der Aufruf ins Leere.
+  // Genau deshalb hängt der Merker hier und nicht an der Anzeige: Er darf
+  // falsch liegen, ohne etwas zu verbergen.
+  private withdrawConnectionNotice(): void {
+    if (!this.connectionNoticeShown) return;
+
+    this.connectionNoticeShown = false;
+    this._notificationService.dismiss(CONNECTION_LOST_MESSAGE);
   }
 }

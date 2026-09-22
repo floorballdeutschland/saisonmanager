@@ -44,6 +44,20 @@ export class NotificationComponent implements OnInit {
     this.notificationSubscription = this._notificationService
       .onNotification(this.id)
       .subscribe((notification) => {
+        // Gezieltes Wegräumen: nur die Meldungen mit diesem Text, der Rest
+        // bleibt stehen. Damit kann der ErrorInterceptor seinen
+        // Verbindungshinweis zurücknehmen, sobald wieder eine Antwort ankommt,
+        // ohne dabei fremde Meldungen mitzunehmen.
+        if (notification.remove !== undefined) {
+          this.notifications = this.notifications.filter(
+            (x) => x.message !== notification.remove
+          );
+
+          this._cdr.markForCheck();
+
+          return;
+        }
+
         // clear notifications when an empty notification is received
         if (!notification.message) {
           // filter out notifications without 'keepAfterRouteChange' flag
@@ -54,6 +68,23 @@ export class NotificationComponent implements OnInit {
           // remove 'keepAfterRouteChange' flag on the rest
           this.notifications.forEach((x) => delete x.keepAfterRouteChange);
 
+          this._cdr.markForCheck();
+
+          return;
+        }
+
+        // Dieselbe Meldung nicht zweimal. Die Toasts liegen `fixed`
+        // übereinander und eine Meldung ohne `autoClose` geht erst beim
+        // Routenwechsel oder per Klick wieder weg: Eine Seite, die mehrere
+        // Abrufe gleichzeitig verliert, stapelte sonst deckungsgleiche Bänder,
+        // die einzeln weggeklickt werden mussten. Meldungen mit `autoClose`
+        // bleiben ausgenommen, die räumen sich nach drei Sekunden selbst ab und
+        // sollen eine wiederholte Rückmeldung auch wiederholt zeigen.
+        const alreadyShowing = this.notifications.some(
+          (x) => x.message === notification.message
+        );
+
+        if (!notification.autoClose && alreadyShowing) {
           return;
         }
 

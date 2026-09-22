@@ -102,7 +102,7 @@ export class MatchComponent implements OnInit, OnDestroy {
 
           this.intervalSub = interval(30000)
             .pipe(
-              tap(() => this.getMatch(params['matchId'])),
+              tap(() => this.getMatch(params['matchId'], true)),
               takeUntil(this._destroy$)
             )
             .subscribe();
@@ -115,32 +115,47 @@ export class MatchComponent implements OnInit, OnDestroy {
     return !!sessionStorage.getItem('secretary_token');
   }
 
-  getMatch(id: string) {
-    this._gameService.getGame(parseInt(id, 10)).subscribe({
+  /**
+   * `silent` unterscheidet den ersten Abruf vom Nachladen im 30-Sekunden-Takt:
+   * Beim Nachladen bleibt ein Aussetzer ohne Meldung, die Ansicht behält ihren
+   * Stand und der nächste Takt holt ihn nach.
+   */
+  getMatch(id: string, silent = false) {
+    this._gameService.getGame(parseInt(id, 10), silent).subscribe({
       next: (game) => {
         if (
           this.tab !== 'public' ||
           this._sessionService.currentUser ||
           this.hasSecretaryToken
         ) {
-          this._gameService.getAdditionalFields(parseInt(id, 10)).subscribe({
-            next: (additionalFields) => {
-              this.additionalFields = additionalFields;
-              this.updateGame(game);
+          this._gameService
+            .getAdditionalFields(parseInt(id, 10), silent)
+            .subscribe({
+              next: (additionalFields) => {
+                this.additionalFields = additionalFields;
+                this.updateGame(game);
 
-              if (this._sessionService.currentUser) {
-                this._gameService.getRefereeReport(parseInt(id, 10)).subscribe({
-                  next: (report) => {
-                    if (report.uploaded) {
-                      this.refereeReportUploaded = true;
-                      this.refereeReportFilename = report.filename ?? '';
-                    }
-                    this._cdr.markForCheck();
-                  },
-                });
-              }
-            },
-          });
+                if (this._sessionService.currentUser) {
+                  this._gameService
+                    .getRefereeReport(parseInt(id, 10), silent)
+                    .subscribe({
+                      next: (report) => {
+                        if (report.uploaded) {
+                          this.refereeReportUploaded = true;
+                          this.refereeReportFilename = report.filename ?? '';
+                        }
+                        this._cdr.markForCheck();
+                      },
+                    });
+                }
+              },
+              // Der Spielstand hängt sonst an einem Abruf, der ihn gar nicht
+              // liefert: `updateGame` stand nur im Erfolgsfall der
+              // Zusatzfelder, ein Fehlschlag dort ließ also auch das bereits
+              // geladene Spiel liegen. Seit das Nachladen schweigt, wäre das
+              // ein einfrierender Spielstand ohne jeden Hinweis.
+              error: () => this.updateGame(game),
+            });
         } else {
           this.updateGame(game);
         }

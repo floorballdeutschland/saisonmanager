@@ -25,6 +25,7 @@ import {
   TableEntry,
 } from '@floorball/types';
 import {
+  catchError,
   interval,
   Observable,
   shareReplay,
@@ -33,6 +34,7 @@ import {
   take,
   takeUntil,
   tap,
+  throwError,
 } from 'rxjs';
 
 @Component({
@@ -151,7 +153,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
             if (league.league_type === 'league') {
               this.intervalSub = interval(30000)
                 .pipe(
-                  tap(() => this.getMatches(league)),
+                  tap(() => this.getMatches(league, true)),
                   takeUntil(this._destroy$)
                 )
                 .subscribe();
@@ -190,7 +192,12 @@ export class OverviewComponent implements OnInit, OnDestroy {
     );
   }
 
-  getMatches(league: League) {
+  /**
+   * `silent` trennt das Nachladen im Takt von den Abrufen, die an einer
+   * Handlung hängen: Erstaufruf und Spieltagswechsel melden einen Fehlschlag,
+   * der Takt nicht. Siehe SILENT_REFRESH.
+   */
+  getMatches(league: League, silent = false) {
     // Ohne eigene Auswahl bestimmt die API den Spieltag, mit Auswahl wird genau
     // dieser nachgeladen. Beide Fälle laufen durch dieselbe Auswertung, damit
     // das Polling die Ansicht aktuell hält, ohne sie zu verschieben.
@@ -198,13 +205,28 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
     const games$ =
       requestedMatchDay === undefined
-        ? this._leagueService.getGameScheduleForCurrentGameDay(league.id)
+        ? this._leagueService.getGameScheduleForCurrentGameDay(
+            league.id,
+            silent
+          )
         : this._leagueService.getGameScheduleForGameDay(
             league.id,
-            requestedMatchDay
+            requestedMatchDay,
+            silent
           );
 
-    this.matches$ = games$.pipe(shareReplay());
+    // Scheitert ein stiller Takt, bleibt die zuletzt geladene Liste stehen.
+    // Ohne diesen Rückfall wäre das Schweigen eine Zumutung: `matches$` wird
+    // bei jedem Takt neu gesetzt, die `async`-Pipe verwirft dabei ihren Wert,
+    // und der Spielplan verschwände wortlos bis zum nächsten Takt.
+    const previous$ = this.matches$;
+
+    this.matches$ = games$.pipe(
+      catchError((err) =>
+        silent && previous$ ? previous$ : throwError(() => err)
+      ),
+      shareReplay()
+    );
 
     this.matches$
       .pipe(
@@ -235,8 +257,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
               // Und gleich den von der API bestimmten Spieltag holen, sonst
               // stünde die Ansicht bis zum nächsten Takt leer da -- bis zu 30
               // Sekunden nach einem Lesezeichen auf einen leer gewordenen
-              // Spieltag.
-              this.getMatches(league);
+              // Spieltag. `silent` wird durchgereicht, damit ein Takt nicht
+              // über diesen Umweg doch noch eine Meldung auslöst.
+              this.getMatches(league, silent);
             }
 
             this._cdr.markForCheck();

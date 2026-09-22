@@ -16,10 +16,11 @@ import { Router } from '@angular/router';
 import {
   getTranslocoTestingModule,
   NotificationService,
+  refreshContext,
   SessionService,
 } from '@floorball/core';
 import { environment } from 'src/environments/environment';
-import { ErrorInterceptor } from './error.interceptor';
+import { CONNECTION_LOST_MESSAGE, ErrorInterceptor } from './error.interceptor';
 
 // Diese Specs sichern den Vertrag ab, auf den sich Komponenten stützen, die
 // bewusst keinen eigenen Fehler-Toast mehr zeigen (#84, #228): Wer den lokalen
@@ -30,6 +31,7 @@ describe('ErrorInterceptor', () => {
   let http: HttpClient;
   let httpMock: HttpTestingController;
   let errorSpy: jasmine.Spy;
+  let dismissSpy: jasmine.Spy;
 
   // Ein Endpunkt, dessen Komponenten auf einen eigenen Toast verzichten.
   const uploadUrl = `${environment.apiURL}admin/teams/42/upload_logo.json`;
@@ -53,6 +55,7 @@ describe('ErrorInterceptor', () => {
     http = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
     errorSpy = spyOn(TestBed.inject(NotificationService), 'error');
+    dismissSpy = spyOn(TestBed.inject(NotificationService), 'dismiss');
     // Der Sekretariats-Zweig fragt SessionService#currentUserValue, und das liest
     // aus dem localStorage. Der ueberlebt im Karma-Browser jeden Spec, also hier
     // und nach jedem Lauf ausdruecklich raeumen: Ein Rest aus einem fremden Spec
@@ -152,19 +155,128 @@ describe('ErrorInterceptor', () => {
     );
   });
 
-  it('reports a missing connection for status 0', () => {
-    http.post(uploadUrl, {}).subscribe({
-      next: () => fail('expected the request to fail'),
-      error: () => undefined,
-    });
-    httpMock.expectOne(uploadUrl).error(new ProgressEvent('error'), {
+  // Ein Netzwerkfehler im Sinne von Angular: keine Antwort, nur ein
+  // abgebrochener Transport. Genau das liefert ein gesperrter Bildschirm, ein
+  // Wechsel von WLAN auf Mobilfunk oder ein Neuladen mitten im Abruf.
+  function connectionFails(url = uploadUrl, options?: { silent?: boolean }) {
+    http
+      .get(url, { context: refreshContext(options?.silent ?? false) })
+      .subscribe({
+        next: () => fail('expected the request to fail'),
+        error: () => undefined,
+      });
+    httpMock.expectOne(url).error(new ProgressEvent('error'), {
       status: 0,
       statusText: 'Unknown Error',
     });
+  }
 
-    expect(errorSpy.calls.mostRecent().args[0]).toBe(
-      'Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.'
+  function succeeds(url = uploadUrl) {
+    http.get(url).subscribe();
+    httpMock.expectOne(url).flush({});
+  }
+
+  it('reports a missing connection for status 0', () => {
+    connectionFails();
+
+    expect(errorSpy.calls.mostRecent().args[0]).toBe(CONNECTION_LOST_MESSAGE);
+  });
+
+  // Der Interceptor meldet jeden Fehlschlag; dass daraus kein Stapel wird,
+  // entscheidet die Meldungsleiste (siehe notification.component.spec). Eine
+  // Wache hier wäre stehen geblieben, sobald die Meldung anders verschwindet,
+  // und hätte danach jede echte Störung verschluckt.
+  it('reports every failed request and leaves the stacking to the bar', () => {
+    connectionFails();
+    connectionFails();
+
+    expect(errorSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('lets the notice go with the next route change', () => {
+    connectionFails();
+
+    expect(errorSpy.calls.mostRecent().args[1]).toEqual({
+      autoClose: false,
+      keepAfterRouteChange: false,
+    });
+  });
+
+  // Der eigentliche Fehlerbericht: Die Seite lud längst wieder, die Meldung
+  // stand trotzdem noch. Eine erfolgreiche Antwort nimmt sie jetzt zurück, und
+  // zwar gezielt diese eine und nicht den ganzen Stapel.
+  it('withdraws the connection notice as soon as a response arrives', () => {
+    connectionFails();
+    succeeds();
+
+    expect(dismissSpy).toHaveBeenCalledWith(CONNECTION_LOST_MESSAGE);
+  });
+
+  it('withdraws the notice only once per outage', () => {
+    connectionFails();
+    succeeds();
+    succeeds();
+
+    expect(dismissSpy).toHaveBeenCalledTimes(1);
+  });
+
+  // Das Nachladen im 30-Sekunden-Takt läuft ohne Zutun der Zuschauerin. Ein
+  // Aussetzer dabei ist keine Meldung wert: Die Liste steht weiter, der nächste
+  // Takt holt den Stand nach.
+  it('stays silent when a background refresh loses the connection', () => {
+    connectionFails(uploadUrl, { silent: true });
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it('stays silent when a background refresh hits a server error', () => {
+    http
+      .get(uploadUrl, { context: refreshContext(true) })
+      .subscribe({ next: () => undefined, error: () => undefined });
+    httpMock
+      .expectOne(uploadUrl)
+      .flush({ message: 'PG::Error' }, { status: 500, statusText: 'Error' });
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  // Die Ausnahme gilt dem Transport, nicht der Berechtigung: Eine im
+  // Hintergrund abgelaufene Sitzung muss weiterhin auffallen.
+  // Die Ausnahme gilt dem Transport, nicht der Anmeldung. Der Spielbericht
+  // laedt im Takt nach, auch angemeldet: Eine dabei abgelaufene Sitzung muss
+  // weiterhin abmelden, sonst sieht die Person eine Seite, die nie wieder
+  // aktuell wird.
+  it('still logs out when a background refresh hits an expired session', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+    http
+      .get(uploadUrl, { context: refreshContext(true) })
+      .subscribe({ next: () => undefined, error: () => undefined });
+    httpMock
+      .expectOne(uploadUrl)
+      .flush(
+        { success: false, message: 'Not authenticated' },
+        { status: 401, statusText: 'Error' }
+      );
+
+    expect(logoutSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/login'],
+      jasmine.objectContaining({ queryParams: jasmine.anything() })
     );
+  });
+
+  it('still reports a 404 on a background refresh', () => {
+    http
+      .get(uploadUrl, { context: refreshContext(true) })
+      .subscribe({ next: () => undefined, error: () => undefined });
+    httpMock
+      .expectOne(uploadUrl)
+      .flush({ message: 'Weg' }, { status: 404, statusText: 'Error' });
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
   });
 
   it('prefixes a 403 and keeps it across the forced navigation', () => {
