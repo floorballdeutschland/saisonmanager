@@ -9,60 +9,103 @@
     </div>
     <div class="mt-8">
       <h2 class="font-bold text-xl lg:text-2xl">Aufstellung</h2>
+      <!--
+        Die Kacheln stehen im Quelltext nach Mannschaft: erst Aufstellung,
+        Starting six und Auszeichnungen der Heimmannschaft, dann dieselben drei
+        der Gastmannschaft. Einspaltig auf dem Handy ist das die Reihenfolge,
+        in der man sie liest; vorher standen sie abschnittsweise und man
+        scrollte je Abschnitt an der anderen Mannschaft vorbei.
+
+        Die zweispaltige Ansicht bleibt davon unberuehrt: md:col-start und
+        md:row-start setzen jede Kachel an ihren alten Platz, Heim links, Gast
+        rechts, Abschnitt fuer Abschnitt in einer Zeile. Feste Plaetze statt
+        order-Angaben, damit eine fehlende Kachel (eine Mannschaft ohne
+        Auszeichnungen) die uebrigen nicht in die falsche Spalte rutschen
+        laesst -- und weil order nur die Optik dreht, nicht die Reihenfolge
+        fuer Tastatur und Screenreader. Die Spielernamen sind Links.
+      -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 lg:mt-8">
-        <div>
-          <h3 class="font-bold mb-4 lg:mb-8">{{ game.home_team_name }}</h3>
-          <fb-team-lineup [lineup]="game.players.home || []"></fb-team-lineup>
-          <fb-team-coaches [coaches]="game.home_coaches"></fb-team-coaches>
-        </div>
-        <div>
-          <h3 class="font-bold mb-4 lg:mb-8">
-            {{ game.guest_team_name }}
+        <div class="md:col-start-1 md:row-start-1">
+          <h3
+            class="font-bold text-lg lg:text-xl border-b-2 border-fb-gray-200 pb-2 mb-4 lg:mb-6"
+          >
+            {{ game.home_team_name }}
           </h3>
-          <fb-team-lineup [lineup]="game.players.guest || []"></fb-team-lineup>
-          <fb-team-coaches [coaches]="game.guest_coaches"></fb-team-coaches>
+          <fb-team-lineup [lineup]="game.players.home || []"></fb-team-lineup>
+          <fb-team-coaches
+            [coaches]="game.home_coaches"
+            [teamShortName]="homeShortName"
+          ></fb-team-coaches>
         </div>
-        <div>
-          <h4 class="font-bold mb-2 lg:mb-4">
-            {{ fieldSize === "GF" ? "Starting six" : "Starting four" }}
-          </h4>
+        <div class="md:col-start-1 md:row-start-2">
+          <fb-team-section-title
+            [title]="startingPlayersTitle"
+            [teamShortName]="homeShortName"
+          ></fb-team-section-title>
           <fb-team-starting-players
             [players]="game.starting_players.home"
             [fieldSize]="fieldSize"
           ></fb-team-starting-players>
         </div>
-        <div>
-          <h4 class="font-bold mb-2 lg:mb-4">
-            {{ fieldSize === "GF" ? "Starting six" : "Starting four" }}
-          </h4>
+        @if (
+          game.ended && (game.awards.home | completedAwards);
+          as homeAwards
+        ) {
+          @if (homeAwards.length) {
+            <div class="md:col-start-1 md:row-start-3">
+              @for (award of homeAwards; track award) {
+                <fb-team-section-title
+                  [title]="award.award | awardTitle"
+                  [teamShortName]="homeShortName"
+                ></fb-team-section-title>
+                <fb-player-lineup-item
+                  [trikot_number]="award.trikot_number"
+                  [player_name]="award | fullName"
+                ></fb-player-lineup-item>
+              }
+            </div>
+          }
+        }
+        <div class="md:col-start-2 md:row-start-1">
+          <h3
+            class="font-bold text-lg lg:text-xl border-b-2 border-fb-gray-200 pb-2 mb-4 lg:mb-6"
+          >
+            {{ game.guest_team_name }}
+          </h3>
+          <fb-team-lineup [lineup]="game.players.guest || []"></fb-team-lineup>
+          <fb-team-coaches
+            [coaches]="game.guest_coaches"
+            [teamShortName]="guestShortName"
+          ></fb-team-coaches>
+        </div>
+        <div class="md:col-start-2 md:row-start-2">
+          <fb-team-section-title
+            [title]="startingPlayersTitle"
+            [teamShortName]="guestShortName"
+          ></fb-team-section-title>
           <fb-team-starting-players
             [players]="game.starting_players.guest"
             [fieldSize]="fieldSize"
           ></fb-team-starting-players>
         </div>
-        @if (game.ended) {
-          <div>
-            @for (award of game.awards.home | completedAwards; track award) {
-              <h4 class="font-bold mb-2 lg:mb-4">
-                {{ award.award | awardTitle }}
-              </h4>
-              <fb-player-lineup-item
-                [trikot_number]="award.trikot_number"
-                [player_name]="award | fullName"
-              ></fb-player-lineup-item>
-            }
-          </div>
-          <div>
-            @for (award of game.awards.guest | completedAwards; track award) {
-              <h4 class="font-bold mb-2 lg:mb-4">
-                {{ award.award | awardTitle }}
-              </h4>
-              <fb-player-lineup-item
-                [trikot_number]="award.trikot_number"
-                [player_name]="award | fullName"
-              ></fb-player-lineup-item>
-            }
-          </div>
+        @if (
+          game.ended && (game.awards.guest | completedAwards);
+          as guestAwards
+        ) {
+          @if (guestAwards.length) {
+            <div class="md:col-start-2 md:row-start-3">
+              @for (award of guestAwards; track award) {
+                <fb-team-section-title
+                  [title]="award.award | awardTitle"
+                  [teamShortName]="guestShortName"
+                ></fb-team-section-title>
+                <fb-player-lineup-item
+                  [trikot_number]="award.trikot_number"
+                  [player_name]="award | fullName"
+                ></fb-player-lineup-item>
+              }
+            </div>
+          }
         }
       </div>
     </div>

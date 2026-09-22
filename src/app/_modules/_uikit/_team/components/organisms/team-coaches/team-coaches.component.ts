@@ -19,4 +19,9 @@ import { GameCoach } from '@floorball/models';
 export class TeamCoachesComponent {
   @Input()
   coaches?: GameCoach[];
+
+  // Steht auf dem Handy neben der Überschrift, wo der Mannschaftsname
+  // weggescrollt ist.
+  @Input()
+  teamShortName?: string;
 }

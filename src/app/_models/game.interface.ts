@@ -138,6 +138,14 @@ export interface Game {
   home_team_id: number;
   home_team_name: string;
   guest_team_name: string;
+  // Kürzel der Mannschaft, sonst das des Vereins, sonst der Mannschaftsname —
+  // in jedem der drei Fälle auf acht Zeichen gekappt (Team::SHORT_NAME_MAX).
+  //
+  // Optional, weil Frontend und API getrennt ausgerollt werden, und dauerhaft
+  // leer, solange die Mannschaft noch nicht feststeht: home_team und
+  // guest_team sind nullable, etwa in einer noch unausgelosten Pokalpaarung.
+  home_team_short_name?: string;
+  guest_team_short_name?: string;
   home_team_logo: string;
   home_team_small_logo: string;
   guest_team_id: number;
