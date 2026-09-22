@@ -18,6 +18,7 @@ import {
 } from '@floorball/types';
 import { NotificationService, PlayerService } from '@floorball/core';
 import { TranslocoService } from '@jsverse/transloco';
+import { finalize } from 'rxjs/operators';
 import { readUploadedAt } from '../../_utils/document-upload-date';
 
 @Component({
@@ -56,6 +57,14 @@ export class LicenseAdminDetailComponent implements OnInit {
   gfRoles: { [key: string]: GfRole } = {};
 
   hidePlayer: { [key: number]: boolean } = {};
+
+  // Riegel gegen den zweiten Klick, solange die Genehmigung laeuft. Erst mit
+  // zwei benachbarten Erteilen-Knoepfen ist der Fehlklick realistisch, und er
+  // waere teuer: Der zweite Aufruf laeuft in das 422 "Diese Lizenz ist bereits
+  // erteilt", dessen Meldung sich ohne Selbstschliessung ueber die
+  // Erfolgsmeldung legt. Je Lizenz und nicht global, damit der Riegel nicht die
+  // Entscheidung eines anderen Spielers in derselben Liste sperrt.
+  approvingLicenseId: string | null = null;
 
   open = false;
 
@@ -270,12 +279,20 @@ export class LicenseAdminDetailComponent implements OnInit {
   // Knoepfe, und der zweite streicht den Zuschlag (express: false). Fuer einen
   // gewoehnlichen Antrag gibt es nichts zu entscheiden, dort bleibt der eine
   // Knopf und schickt das Feld gar nicht erst mit.
+  //
+  // Gelesen wird `team_license.license.express` und nicht `team_license.express`:
+  // In dieser Ansicht ist `team_license` ein Umschlag um den rohen Lizenz-Eintrag
+  // (League#build_license_items), das Merkmal steht also eine Ebene tiefer. Im
+  // Lizenzwesen des Vereins ist `team_license` der rohe Eintrag selbst, dort
+  // stimmt der kurze Pfad -- deshalb stand er faelschlich auch hier.
   public isExpressRequest(player: PlayerWithLicense): boolean {
-    return player.team_license.express === true;
+    return player.team_license.license?.express === true;
   }
 
   public approveLicense(player: PlayerWithLicense, express?: boolean) {
     const licenseId = player.team_license.license.id;
+    if (this.approvingLicenseId === licenseId) return;
+    this.approvingLicenseId = licenseId;
     const validUntil =
       this.validUntilDates[licenseId] || this.defaultValidUntil();
     const gfRole = this.gfRoleSelectable()
@@ -292,6 +309,10 @@ export class LicenseAdminDetailComponent implements OnInit {
         gfRole,
         express
       )
+      // Der Riegel gehoert in finalize und nicht in die Rueckrufaktionen: Sonst
+      // bliebe er nach einem Fehlschlag gesetzt, und der zweite Versuch waere
+      // bis zum Neuladen ein stiller Fehlschlag.
+      .pipe(finalize(() => (this.approvingLicenseId = null)))
       .subscribe({
         next: () => {
           this.handledPlayer.emit(player.id);

@@ -10,7 +10,10 @@ import {
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
-import { getTranslocoTestingModule } from '@floorball/core';
+import {
+  getTranslocoTestingModule,
+  NotificationService,
+} from '@floorball/core';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import {
@@ -636,6 +639,7 @@ describe('LicenseAdminDetailComponent', () => {
     function render(express: boolean | undefined): {
       root: HTMLElement;
       http: HttpTestingController;
+      success: jasmine.Spy;
     } {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
@@ -652,6 +656,11 @@ describe('LicenseAdminDetailComponent', () => {
                   grantLicense: 'Lizenz erteilen',
                   grantAsExpress: 'Als Expresslizenz erteilen',
                   grantAsStandard: 'Als normale Lizenz erteilen',
+                },
+                notifications: {
+                  licenseGranted: 'Lizenz erteilt',
+                  licenseGrantedWithoutExpress:
+                    'Lizenz ohne Expresszuschlag erteilt',
                 },
               },
             },
@@ -672,11 +681,18 @@ describe('LicenseAdminDetailComponent', () => {
         clubs: [],
         licenses: [],
         team_license: {
-          license: { id: 'l1', team_id: 1, history: [] },
+          // express steht am rohen Lizenz-Eintrag. `team_license` ist in dieser
+          // Ansicht nur der Umschlag darum (League#build_license_items) -- ein
+          // `express` eine Ebene hoeher waere ein erfundener API-Vertrag.
+          license: {
+            id: 'l1',
+            team_id: 1,
+            history: [],
+            ...(express === undefined ? {} : { express }),
+          },
           last_status: { license_status_id: 2 },
           documents: {},
           required_documents: [],
-          ...(express === undefined ? {} : { express }),
         },
       } as unknown as PlayerWithLicense;
       component.team = {
@@ -687,6 +703,7 @@ describe('LicenseAdminDetailComponent', () => {
       return {
         root: fixture.nativeElement,
         http: TestBed.inject(HttpTestingController),
+        success: spyOn(TestBed.inject(NotificationService), 'success'),
       };
     }
 
@@ -698,11 +715,16 @@ describe('LicenseAdminDetailComponent', () => {
       button!.click();
     }
 
+    // Die Anfrage wird beantwortet und nicht nur abgeholt: Ohne flush laeuft der
+    // next-Zweig nie, und die Erfolgsmeldung -- eine Geldaussage -- bliebe
+    // ungedeckt.
     function sentBody(http: HttpTestingController): Record<string, unknown> {
       const request = http.expectOne((r) =>
         r.url.endsWith('admin/players/7/handle_license_request.json')
       );
-      return request.request.body as Record<string, unknown>;
+      const body = request.request.body as Record<string, unknown>;
+      request.flush({ success: true });
+      return body;
     }
 
     it('bietet bei einem Expressantrag beide Wege an', () => {
@@ -760,6 +782,60 @@ describe('LicenseAdminDetailComponent', () => {
       click(root, 'grant-license');
 
       expect(Object.keys(sentBody(http))).not.toContain('express');
+      http.verify();
+    });
+
+    // Eine bereits gestrichene Lizenz ist keine Expresslizenz mehr und darf die
+    // Entscheidung nicht erneut anbieten.
+    it('bietet die Wahl nach einer Streichung nicht mehr an', () => {
+      const { root } = render(false);
+
+      expect(
+        root.querySelector('[data-testid="grant-license"]')
+      ).not.toBeNull();
+      expect(
+        root.querySelector('[data-testid="grant-as-standard"]')
+      ).toBeNull();
+    });
+
+    // Die Zeile faellt nach der Entscheidung aus der Liste, eine Nachkontrolle
+    // am Bildschirm gibt es nicht. Die Meldung ist der einzige Beleg, und sie
+    // darf die Streichung nicht behaupten, wo keine war.
+    it('benennt die Streichung in der Bestaetigung', () => {
+      const { root, http, success } = render(true);
+
+      click(root, 'grant-as-standard');
+      sentBody(http);
+
+      expect(success.calls.mostRecent().args[0]).toBe(
+        'Lizenz ohne Expresszuschlag erteilt'
+      );
+    });
+
+    it('meldet den Expressweg ohne diesen Zusatz', () => {
+      const { root, http, success } = render(true);
+
+      click(root, 'grant-as-express');
+      sentBody(http);
+
+      expect(success.calls.mostRecent().args[0]).toBe('Lizenz erteilt');
+    });
+
+    // Zwei benachbarte Erteilen-Knoepfe machen den Fehlklick realistisch, und
+    // der zweite Aufruf liefe in ein 422, dessen Meldung sich ueber die
+    // Erfolgsmeldung legt.
+    it('sperrt den zweiten Klick, solange die Genehmigung laeuft', () => {
+      const { root, http } = render(true);
+
+      click(root, 'grant-as-express');
+      const second = root.querySelector<HTMLButtonElement>(
+        '[data-testid="grant-as-standard"]'
+      );
+      second!.click();
+
+      http.expectOne((r) =>
+        r.url.endsWith('admin/players/7/handle_license_request.json')
+      );
       http.verify();
     });
   });
