@@ -1998,4 +1998,99 @@ describe('PlayerEditComponent', () => {
       expect(component.licenseSuspendScope).toBe('team');
     });
   });
+  // Anonymisierung der oeffentlichen Anzeige (DSGVO Art. 17/21). Maskiert wird
+  // die Ausgabe von Spiel- und Statistikdaten; hier in der Verwaltung steht
+  // weiter der echte Name.
+  describe('oeffentliche Anzeige des Namens', () => {
+    function build(player: Partial<Player>): PlayerEditComponent {
+      const component =
+        TestBed.createComponent(PlayerEditComponent).componentInstance;
+      component.editMode = true;
+      component.player = player as Player;
+      return component;
+    }
+
+    it('bietet den Schalter an, wenn das Profil ihn erlaubt', () => {
+      const component = build({ id: 7, can_hide_public_name: true });
+
+      expect(component.canHidePublicName).toBe(true);
+      expect(component.canShowPublicName).toBe(false);
+    });
+
+    // Anders als bei der Deaktivierung gibt es kein Rollen-Flag, auf das
+    // zurueckzufallen waere: Ein Frontend, das vor der API ausgeliefert wird,
+    // darf den Schalter nicht anbieten.
+    it('bietet ihn ohne das Feld nicht an', () => {
+      const component = build({ id: 7 });
+
+      expect(component.canHidePublicName).toBe(false);
+      expect(component.canShowPublicName).toBe(false);
+    });
+
+    it('bietet am anonymisierten Profil den Gegenknopf an', () => {
+      const component = build({
+        id: 7,
+        can_hide_public_name: true,
+        public_name_hidden_at: '2026-09-22T10:00:00Z',
+      });
+
+      expect(component.canShowPublicName).toBe(true);
+      expect(component.canHidePublicName).toBe(false);
+    });
+
+    it('schickt den Vermerk mit und uebernimmt die Antwort', () => {
+      const component = build({ id: 7, can_hide_public_name: true });
+      component.hidePublicNameReason = '  DSGVO 2026-09-22  ';
+
+      component.hidePublicName();
+      const req = TestBed.inject(HttpTestingController).expectOne(
+        `${environment.apiURL}admin/players/7/hide_public_name.json`
+      );
+
+      expect(req.request.body).toEqual({ reason: 'DSGVO 2026-09-22' });
+      req.flush({
+        id: 7,
+        can_hide_public_name: true,
+        public_name_hidden_at: '2026-09-22T10:00:00Z',
+        public_name_hidden_reason: 'DSGVO 2026-09-22',
+      });
+
+      expect(component.canShowPublicName).toBe(true);
+      expect(component.confirmHidePublicName).toBe(false);
+      expect(component.hidePublicNameReason).toBe('');
+    });
+
+    it('nimmt die Anonymisierung zurueck', () => {
+      const component = build({
+        id: 7,
+        can_hide_public_name: true,
+        public_name_hidden_at: '2026-09-22T10:00:00Z',
+      });
+
+      component.showPublicName();
+      TestBed.inject(HttpTestingController)
+        .expectOne(`${environment.apiURL}admin/players/7/show_public_name.json`)
+        .flush({ id: 7, can_hide_public_name: true });
+
+      expect(component.canHidePublicName).toBe(true);
+      expect(component.canShowPublicName).toBe(false);
+    });
+
+    // Die Rueckfrage bleibt bei einer Absage offen, damit ein getippter
+    // Vermerk nicht verloren geht. Den Fehlertext zeigt der ErrorInterceptor.
+    it('haelt die Rueckfrage nach einer Absage offen', () => {
+      const component = build({ id: 7, can_hide_public_name: true });
+      component.confirmHidePublicName = true;
+      component.hidePublicNameReason = 'DSGVO 2026-09-22';
+
+      component.hidePublicName();
+      TestBed.inject(HttpTestingController)
+        .expectOne(`${environment.apiURL}admin/players/7/hide_public_name.json`)
+        .flush({ message: 'Keine Berechtigung.' }, { status: 403, statusText: 'Forbidden' });
+
+      expect(component.confirmHidePublicName).toBe(true);
+      expect(component.hidePublicNameReason).toBe('DSGVO 2026-09-22');
+      expect(component.canHidePublicName).toBe(true);
+    });
+  });
 });

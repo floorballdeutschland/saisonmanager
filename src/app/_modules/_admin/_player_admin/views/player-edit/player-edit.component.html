@@ -1242,6 +1242,95 @@
           </div>
         }
 
+        <!-- Oeffentliche Anzeige des Namens (DSGVO Art. 17/21) -->
+        @if (editMode && player && (canHidePublicName || canShowPublicName)) {
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div
+              class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
+            >
+              {{ "playerAdmin.edit.publicName" | transloco }}
+              @if (isPublicNameHidden) {
+                <span
+                  class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800 normal-case"
+                >
+                  {{ "playerAdmin.edit.publicNameHiddenSince" | transloco }}
+                  {{ player.public_name_hidden_at | date: "dd.MM.yyyy" }}
+                </span>
+              }
+            </div>
+            @if (isPublicNameHidden) {
+              <p class="text-sm text-gray-500 mb-4">
+                {{ "playerAdmin.edit.publicNameHiddenHint" | transloco }}
+              </p>
+              @if (player.public_name_hidden_reason) {
+                <p class="text-sm text-gray-500 mb-4">
+                  {{ "playerAdmin.edit.publicNameReasonLabel" | transloco }}:
+                  {{ player.public_name_hidden_reason }}
+                </p>
+              }
+            } @else {
+              <p class="text-sm text-gray-500 mb-4">
+                {{ "playerAdmin.edit.publicNameVisibleHint" | transloco }}
+              </p>
+            }
+            @if (canShowPublicName) {
+              <div class="mb-2">
+                <fb-button size="small" variant="success" (click)="showPublicName()">
+                  {{ "playerAdmin.edit.publicNameShow" | transloco }}
+                </fb-button>
+              </div>
+            }
+            @if (canHidePublicName && !confirmHidePublicName) {
+              <div>
+                <button
+                  (click)="confirmHidePublicName = true"
+                  class="font-bold text-amber-700 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
+                >
+                  {{ "playerAdmin.edit.publicNameHide" | transloco }}
+                </button>
+              </div>
+            }
+            @if (confirmHidePublicName) {
+              <div class="border border-amber-300 rounded p-4 bg-amber-50">
+                <p class="text-sm font-semibold text-amber-900 mb-1">
+                  {{ "playerAdmin.edit.publicNameHideConfirm" | transloco }}
+                </p>
+                <p class="text-sm text-amber-800 mb-4">
+                  {{ "playerAdmin.edit.publicNameHideWarning" | transloco }}
+                </p>
+                <div class="mb-4">
+                  <label class="block text-sm font-semibold text-amber-900 mb-1">{{
+                    "playerAdmin.edit.publicNameReasonOptional" | transloco
+                  }}</label>
+                  <input
+                    [(ngModel)]="hidePublicNameReason"
+                    type="text"
+                    maxlength="255"
+                    [placeholder]="
+                      'playerAdmin.edit.publicNameReasonPlaceholder' | transloco
+                    "
+                    class="w-full xl:w-1/2 border border-amber-300 rounded-[5px] px-3 py-2 text-sm"
+                  />
+                </div>
+                <div class="flex gap-3">
+                  <button
+                    (click)="hidePublicName()"
+                    class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer"
+                  >
+                    {{ "playerAdmin.edit.publicNameHideYes" | transloco }}
+                  </button>
+                  <button
+                    (click)="cancelHidePublicName()"
+                    class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                  >
+                    {{ "playerAdmin.edit.cancel" | transloco }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
         <!-- Sperren (Issue #508) -->
         @if (editMode && can("player_suspend") && player) {
           <div class="bg-white my-[5px] py-[15px] px-[30px]">

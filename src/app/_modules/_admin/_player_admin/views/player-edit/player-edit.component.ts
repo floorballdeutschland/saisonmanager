@@ -87,6 +87,8 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   confirmDeactivate = false;
   deactivateReason = '';
   deactivateReasonOther = '';
+  confirmHidePublicName = false;
+  hidePublicNameReason = '';
 
   changeRequestType: CorrectionType | '' = '';
   changeRequestValue = '';
@@ -954,6 +956,82 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
             autoClose: true,
             keepAfterRouteChange: false,
           });
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  get isPublicNameHidden(): boolean {
+    return !!this.player?.public_name_hidden_at;
+  }
+
+  /**
+   * Darf dieses Konto die Anonymisierung schalten?
+   *
+   * Maßgeblich ist `can_hide_public_name` aus der Antwort zum Profil, also
+   * dieselbe Quelle wie die Prüfung beim Schreiben. Anders als bei der
+   * Deaktivierung gibt es dazu kein Rollen-Flag im Browser, auf das
+   * zurückzufallen wäre: Fehlt das Feld, ist die API älter als die Funktion
+   * und die Maske bietet sie nicht an.
+   */
+  private get mayHidePublicName(): boolean {
+    return this.player?.can_hide_public_name === true;
+  }
+
+  get canHidePublicName(): boolean {
+    return (
+      !this.isPublicNameHidden && this.editMode && this.mayHidePublicName
+    );
+  }
+
+  get canShowPublicName(): boolean {
+    return this.isPublicNameHidden && this.editMode && this.mayHidePublicName;
+  }
+
+  public cancelHidePublicName(): void {
+    this.confirmHidePublicName = false;
+    this.hidePublicNameReason = '';
+  }
+
+  public hidePublicName(): void {
+    if (!this.player) return;
+    this._playerService
+      .hidePublicName(this.player.id, this.hidePublicNameReason.trim())
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.player = updated;
+          this.cancelHidePublicName();
+          this._notificationService.success(
+            this._transloco.translate('playerAdmin.edit.publicNameHiddenDone'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this._cdr.markForCheck();
+        },
+        // Ohne eigenen Zweig: Den 4xx-Text zeigt der ErrorInterceptor, eine
+        // zweite Meldung stapelte sich darüber. Die Rückfrage bleibt offen,
+        // damit der Vermerk nicht verloren geht.
+        error: () => {
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  public showPublicName(): void {
+    if (!this.player) return;
+    this._playerService
+      .showPublicName(this.player.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.player = updated;
+          this._notificationService.success(
+            this._transloco.translate('playerAdmin.edit.publicNameShownDone'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
           this._cdr.markForCheck();
         },
         error: () => {

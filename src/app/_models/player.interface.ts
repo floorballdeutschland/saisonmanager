@@ -40,6 +40,27 @@ export interface Player {
    * Rollen-Flag `player_deactivate`.
    */
   can_deactivate?: boolean;
+  /**
+   * Gesetzt = der Name dieses Profils ist aus der oeffentlichen Anzeige
+   * genommen (Antrag nach Art. 17/21 DSGVO). In Scorerlisten, Aufstellungen,
+   * Statistikseiten und Livestream-Overlays steht dann ein Platzhalter.
+   *
+   * In der Verwaltung, also auch in diesem Profil, steht weiter der echte
+   * Name: Ohne ihn liesse sich dieselbe Person ein zweites Mal anlegen, und
+   * Sperren wie Lizenzhistorie haengen daran.
+   */
+  public_name_hidden_at?: string | null;
+  /** Interner Vermerk zur Anonymisierung, etwa das Aktenzeichen des Antrags. */
+  public_name_hidden_reason?: string | null;
+  /**
+   * Nur in der Antwort zu einem einzelnen Profil (`admin/players/:id`): Darf
+   * der angemeldete Benutzer die Anonymisierung setzen und zuruecknehmen?
+   *
+   * Anders als `can_deactivate` gibt es dazu kein Rollen-Flag im Browser.
+   * Fehlt das Feld, ist die API aelter als die Funktion und die Maske bietet
+   * sie nicht an.
+   */
+  can_hide_public_name?: boolean;
 }
 
 // Bericht des CSV-Nachtrags in der Vereinssicht (admin/vm/players/import).
