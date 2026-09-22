@@ -120,10 +120,14 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
     this.matches$ = timer(1, 30000).pipe(
       switchMap(() =>
         this._leagueService
-          .getGameScheduleForCurrentGameDay(leagueNumber)
+          .getGameScheduleForCurrentGameDay(leagueNumber, true)
           .pipe()
       ),
-      retry(),
+      // Mit Wartezeit: `retry()` ohne Argument abonniert sofort neu, und weil
+      // der Neuaufbau den Timer bei 1 ms wieder anwirft, fragte die Ansicht bei
+      // einer gestörten Verbindung im Dauerlauf nach. Jetzt hält sie denselben
+      // Takt wie im Normalfall.
+      retry({ delay: 30000 }),
       takeUntil(this._destroy$)
     );
   }

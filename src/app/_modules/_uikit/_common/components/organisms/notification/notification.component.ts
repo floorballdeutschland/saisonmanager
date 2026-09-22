@@ -44,6 +44,20 @@ export class NotificationComponent implements OnInit {
     this.notificationSubscription = this._notificationService
       .onNotification(this.id)
       .subscribe((notification) => {
+        // Gezieltes Wegräumen: nur die Meldungen mit diesem Text, der Rest
+        // bleibt stehen. Damit kann der ErrorInterceptor seinen
+        // Verbindungshinweis zurücknehmen, sobald wieder eine Antwort ankommt,
+        // ohne dabei fremde Meldungen mitzunehmen.
+        if (notification.remove) {
+          this.notifications = this.notifications.filter(
+            (x) => x.message !== notification.remove
+          );
+
+          this._cdr.markForCheck();
+
+          return;
+        }
+
         // clear notifications when an empty notification is received
         if (!notification.message) {
           // filter out notifications without 'keepAfterRouteChange' flag

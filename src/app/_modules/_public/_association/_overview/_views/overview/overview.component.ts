@@ -151,7 +151,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
             if (league.league_type === 'league') {
               this.intervalSub = interval(30000)
                 .pipe(
-                  tap(() => this.getMatches(league)),
+                  tap(() => this.getMatches(league, true)),
                   takeUntil(this._destroy$)
                 )
                 .subscribe();
@@ -190,7 +190,11 @@ export class OverviewComponent implements OnInit, OnDestroy {
     );
   }
 
-  getMatches(league: League) {
+  /**
+   * `silent` trennt das Nachladen im Takt vom Klick auf einen Spieltag: Nur der
+   * Klick soll einen Fehlschlag melden.
+   */
+  getMatches(league: League, silent = false) {
     // Ohne eigene Auswahl bestimmt die API den Spieltag, mit Auswahl wird genau
     // dieser nachgeladen. Beide Fälle laufen durch dieselbe Auswertung, damit
     // das Polling die Ansicht aktuell hält, ohne sie zu verschieben.
@@ -198,10 +202,14 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
     const games$ =
       requestedMatchDay === undefined
-        ? this._leagueService.getGameScheduleForCurrentGameDay(league.id)
+        ? this._leagueService.getGameScheduleForCurrentGameDay(
+            league.id,
+            silent
+          )
         : this._leagueService.getGameScheduleForGameDay(
             league.id,
-            requestedMatchDay
+            requestedMatchDay,
+            silent
           );
 
     this.matches$ = games$.pipe(shareReplay());

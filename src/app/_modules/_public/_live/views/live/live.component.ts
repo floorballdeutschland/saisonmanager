@@ -62,7 +62,7 @@ export class LiveComponent implements OnInit, OnDestroy {
       `${this._transloco.translate('live.pageTitle')} | Floorball Saisonmanager`
     );
     this.load();
-    this._timer = window.setInterval(() => this.load(), this._refreshMs);
+    this._timer = window.setInterval(() => this.load(true), this._refreshMs);
   }
 
   ngOnDestroy(): void {
@@ -81,8 +81,12 @@ export class LiveComponent implements OnInit, OnDestroy {
     );
   }
 
-  public load(): void {
-    this._liveStreamService.getToday().subscribe({
+  /**
+   * `silent` ist das Nachladen im Takt: Es zeigt keinen Toast, passend zu dem
+   * Grundsatz unten, dass ein Aussetzer die stehende Liste nicht anrührt.
+   */
+  public load(silent = false): void {
+    this._liveStreamService.getToday(silent).subscribe({
       next: (day) => {
         this.date = day.date;
         this.running = day.games.filter((g) => g.status === 'running');

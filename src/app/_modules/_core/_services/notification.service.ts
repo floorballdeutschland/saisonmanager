@@ -58,4 +58,13 @@ export class NotificationService {
   public clear(id = this.defaultId) {
     this.notificationSubject.next({ id });
   }
+
+  /**
+   * Nimmt stehende Meldungen mit genau diesem Text weg und lässt alle anderen
+   * stehen. `clear` räumt dagegen den ganzen Stapel und würde damit auch eine
+   * Validierungsmeldung mitnehmen, die gerade noch gebraucht wird.
+   */
+  public dismiss(message: string, id = this.defaultId) {
+    this.notificationSubject.next({ id, remove: message });
+  }
 }

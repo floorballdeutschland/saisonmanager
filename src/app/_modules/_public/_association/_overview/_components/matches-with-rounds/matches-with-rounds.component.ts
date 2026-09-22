@@ -55,7 +55,7 @@ export class MatchesWithRoundsComponent implements OnInit, OnDestroy {
 
             this.intervalSub = interval(30000)
               .pipe(
-                tap(() => this.getMatches(league.id)),
+                tap(() => this.getMatches(league.id, true)),
                 takeUntil(this._destroy$)
               )
               .subscribe();
@@ -66,9 +66,13 @@ export class MatchesWithRoundsComponent implements OnInit, OnDestroy {
       .subscribe();
   }
 
-  getMatches(leagueNumber: number) {
+  /**
+   * `silent` trennt den ersten Abruf vom Nachladen im Takt: Nur der erste soll
+   * einen Fehlschlag melden, siehe SILENT_REFRESH.
+   */
+  getMatches(leagueNumber: number, silent = false) {
     this.matches$ = this._leagueService
-      .getGameScheduleForCurrentGameDay(leagueNumber)
+      .getGameScheduleForCurrentGameDay(leagueNumber, silent)
       .pipe(shareReplay());
 
     this.matches$

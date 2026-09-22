@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { refreshContext } from '../_http/silent-refresh';
 import { environment } from 'src/environments/environment';
 import {
   AdminLicenseEntry,
@@ -126,7 +127,16 @@ export class LeagueService {
     return this.http.get<GameScheduleEntry[]>(path);
   }
 
-  public getGameScheduleForGameDay(league: number, game_day_number: number) {
+  /**
+   * `silent` markiert das Nachladen im Hintergrund: Ein Aussetzer dabei meldet
+   * sich nicht, weil die Ansicht ihre Daten behält und der nächste Takt den
+   * Stand nachholt.
+   */
+  public getGameScheduleForGameDay(
+    league: number,
+    game_day_number: number,
+    silent = false
+  ) {
     const path =
       environment.apiURL +
       'leagues/' +
@@ -134,16 +144,20 @@ export class LeagueService {
       '/game_days/' +
       game_day_number +
       '/schedule.json';
-    return this.http.get<GameScheduleEntry[]>(path);
+    return this.http.get<GameScheduleEntry[]>(path, {
+      context: refreshContext(silent),
+    });
   }
 
-  public getGameScheduleForCurrentGameDay(league: number) {
+  public getGameScheduleForCurrentGameDay(league: number, silent = false) {
     const path =
       environment.apiURL +
       'leagues/' +
       league +
       '/game_days/current/schedule.json';
-    return this.http.get<GameScheduleEntry[]>(path);
+    return this.http.get<GameScheduleEntry[]>(path, {
+      context: refreshContext(silent),
+    });
   }
 
   public getTable(league: number) {

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { refreshContext } from '../_http/silent-refresh';
 import { map } from 'rxjs/operators';
 
 import {
@@ -158,9 +159,14 @@ export interface GameSchedulingConflict {
 export class GameService {
   constructor(private http: HttpClient) {}
 
-  public getGame(gameId: number) {
+  /**
+   * `silent` markiert das Nachladen im Hintergrund: Ein Aussetzer dabei meldet
+   * sich nicht, weil die Ansicht ihre Daten behält und der nächste Takt den
+   * Stand nachholt.
+   */
+  public getGame(gameId: number, silent = false) {
     const path = environment.apiURL + 'games/' + gameId + '.json';
-    return this.http.get<Game>(path);
+    return this.http.get<Game>(path, { context: refreshContext(silent) });
   }
 
   // Prüft, ob ein (geplantes) Spiel zeitlich mit anderen Spielen in derselben
@@ -385,10 +391,12 @@ export class GameService {
     });
   }
 
-  public getAdditionalFields(gameId: number) {
+  public getAdditionalFields(gameId: number, silent = false) {
     const path =
       environment.apiURL + 'user/games/' + gameId + '/additional_fields.json';
-    return this.http.get<GameAdditionalFields>(path);
+    return this.http.get<GameAdditionalFields>(path, {
+      context: refreshContext(silent),
+    });
   }
 
   public deleteEvent(gameId: number, eventId: number) {
@@ -590,14 +598,16 @@ export class GameService {
     );
   }
 
-  public getRefereeReport(gameId: number) {
+  public getRefereeReport(gameId: number, silent = false) {
     return this.http.get<{
       uploaded: boolean;
       filename?: string;
       content_type?: string;
       uploaded_at?: string;
       url?: string;
-    }>(environment.apiURL + 'games/' + gameId + '/referee_report');
+    }>(environment.apiURL + 'games/' + gameId + '/referee_report', {
+      context: refreshContext(silent),
+    });
   }
 
   public uploadRefereeReport(gameId: number, file: File) {
