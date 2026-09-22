@@ -82,8 +82,8 @@ export class LiveComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * `silent` ist das Nachladen im Takt: Es zeigt keinen Toast, passend zu dem
-   * Grundsatz unten, dass ein Aussetzer die stehende Liste nicht anrührt.
+   * `silent` ist das Nachladen im Takt: Ein Verbindungs- oder Serverfehler
+   * bleibt dabei ohne Meldung, siehe SILENT_REFRESH.
    */
   public load(silent = false): void {
     this._liveStreamService.getToday(silent).subscribe({

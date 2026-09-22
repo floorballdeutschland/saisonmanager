@@ -159,11 +159,7 @@ export interface GameSchedulingConflict {
 export class GameService {
   constructor(private http: HttpClient) {}
 
-  /**
-   * `silent` markiert das Nachladen im Hintergrund: Ein Aussetzer dabei meldet
-   * sich nicht, weil die Ansicht ihre Daten behält und der nächste Takt den
-   * Stand nachholt.
-   */
+  /** `silent`: Hintergrund-Aktualisierung, siehe SILENT_REFRESH. */
   public getGame(gameId: number, silent = false) {
     const path = environment.apiURL + 'games/' + gameId + '.json';
     return this.http.get<Game>(path, { context: refreshContext(silent) });

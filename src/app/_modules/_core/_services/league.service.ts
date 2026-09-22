@@ -127,11 +127,7 @@ export class LeagueService {
     return this.http.get<GameScheduleEntry[]>(path);
   }
 
-  /**
-   * `silent` markiert das Nachladen im Hintergrund: Ein Aussetzer dabei meldet
-   * sich nicht, weil die Ansicht ihre Daten behält und der nächste Takt den
-   * Stand nachholt.
-   */
+  /** `silent`: Hintergrund-Aktualisierung, siehe SILENT_REFRESH. */
   public getGameScheduleForGameDay(
     league: number,
     game_day_number: number,

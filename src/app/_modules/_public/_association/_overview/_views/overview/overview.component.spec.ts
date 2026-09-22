@@ -47,15 +47,25 @@ class LeagueServiceStub {
   // ist. Die API antwortet dort mit einer leeren Liste, nicht mit einem Fehler.
   emptyGameDays: number[] = [];
 
-  getGameScheduleForCurrentGameDay(leagueId: number) {
+  // Wurde der Abruf als Hintergrund-Aktualisierung geschickt? Daran haengt, ob
+  // ein Fehlschlag gemeldet wird, siehe SILENT_REFRESH.
+  silentFlags: boolean[] = [];
+
+  getGameScheduleForCurrentGameDay(leagueId: number, silent = false) {
     this.currentGameDayCalls += 1;
     this.requestedLeagueIds.push(leagueId);
+    this.silentFlags.push(silent);
     return of(scheduleFor(2));
   }
 
-  getGameScheduleForGameDay(leagueId: number, gameDayNumber: number) {
+  getGameScheduleForGameDay(
+    leagueId: number,
+    gameDayNumber: number,
+    silent = false
+  ) {
     this.requestedGameDays.push(gameDayNumber);
     this.requestedLeagueIds.push(leagueId);
+    this.silentFlags.push(silent);
 
     return of(
       this.emptyGameDays.includes(gameDayNumber)
@@ -185,6 +195,33 @@ describe('OverviewComponent', () => {
 
     expect(leagueService.requestedGameDays).toEqual([4, 4, 4]);
     expect(leagueService.currentGameDayCalls).toBe(1);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  // Der Kern von fe#489: Nur der Takt schweigt. Faellt das Argument bei einem
+  // Umbau weg, meldet jeder Aussetzer beim Nachladen wieder ein Band, das bis
+  // zum Routenwechsel stehen bleibt.
+  it('schickt erst den lauten Erstaufruf, dann stille Takte', fakeAsync(() => {
+    const fixture = startWith(leagueWith(1));
+
+    tick(30000);
+
+    expect(leagueService.silentFlags).toEqual([false, true]);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  it('meldet den Klick auf einen Spieltag weiterhin', fakeAsync(() => {
+    const league = leagueWith(1);
+    const fixture = startWith(league);
+    leagueService.silentFlags = [];
+
+    fixture.componentInstance.selectMatchDay(4, league);
+
+    expect(leagueService.silentFlags).toEqual([false]);
 
     fixture.componentInstance.ngOnDestroy();
     discardPeriodicTasks();

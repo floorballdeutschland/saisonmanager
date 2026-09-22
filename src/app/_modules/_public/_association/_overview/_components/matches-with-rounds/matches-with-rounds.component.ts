@@ -8,6 +8,7 @@ import {
 import { LeagueService } from '@floorball/core';
 import { GameScheduleEntry, League } from '@floorball/types';
 import {
+  catchError,
   interval,
   Observable,
   shareReplay,
@@ -16,6 +17,7 @@ import {
   take,
   takeUntil,
   tap,
+  throwError,
 } from 'rxjs';
 
 @Component({
@@ -71,9 +73,20 @@ export class MatchesWithRoundsComponent implements OnInit, OnDestroy {
    * einen Fehlschlag melden, siehe SILENT_REFRESH.
    */
   getMatches(leagueNumber: number, silent = false) {
+    // Scheitert ein stiller Takt, bleibt die zuletzt geladene Liste stehen.
+    // Ohne diesen Rückfall wäre das Schweigen eine Zumutung: `matches$` wird
+    // bei jedem Takt neu gesetzt, die `async`-Pipe verwirft dabei ihren Wert,
+    // und die Begegnungen verschwänden wortlos bis zum nächsten Takt.
+    const previous$ = this.matches$;
+
     this.matches$ = this._leagueService
       .getGameScheduleForCurrentGameDay(leagueNumber, silent)
-      .pipe(shareReplay());
+      .pipe(
+        catchError((err) =>
+          silent && previous$ ? previous$ : throwError(() => err)
+        ),
+        shareReplay()
+      );
 
     this.matches$
       .pipe(

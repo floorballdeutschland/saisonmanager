@@ -19,11 +19,7 @@ import { environment } from 'src/environments/environment';
 export class LiveStreamService {
   constructor(private http: HttpClient) {}
 
-  /**
-   * `silent` markiert das Nachladen im Hintergrund: Ein Aussetzer dabei meldet
-   * sich nicht, weil die Ansicht ihre Daten behält und der nächste Takt den
-   * Stand nachholt.
-   */
+  /** `silent`: Hintergrund-Aktualisierung, siehe SILENT_REFRESH. */
   public getToday(silent = false) {
     return this.http.get<LiveStreamDay>(
       `${environment.apiURL}live_streams.json`,

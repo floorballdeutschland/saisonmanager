@@ -118,10 +118,15 @@ export class LeagueHostComponent implements OnInit, OnDestroy {
 
   getMatches(leagueNumber: number) {
     this.matches$ = timer(1, 30000).pipe(
-      switchMap(() =>
-        this._leagueService
-          .getGameScheduleForCurrentGameDay(leagueNumber, true)
-          .pipe()
+      // `tick > 0`: Die erste Emission kommt nach 1 ms, ist also der Aufruf der
+      // Seite und kein Nachladen im Hintergrund. Ohne die Unterscheidung bliebe
+      // ein gescheiterter Erstaufruf ohne jede Meldung, und die Ansicht zeigte
+      // dauerhaft ihr Ladegerüst.
+      switchMap((tick) =>
+        this._leagueService.getGameScheduleForCurrentGameDay(
+          leagueNumber,
+          tick > 0
+        )
       ),
       // Mit Wartezeit: `retry()` ohne Argument abonniert sofort neu, und weil
       // der Neuaufbau den Timer bei 1 ms wieder anwirft, fragte die Ansicht bei

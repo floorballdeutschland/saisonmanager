@@ -182,15 +182,24 @@ describe('ErrorInterceptor', () => {
     expect(errorSpy.calls.mostRecent().args[0]).toBe(CONNECTION_LOST_MESSAGE);
   });
 
-  // Die Meldung schließt sich nicht von selbst und die Meldungsleiste räumt nur
-  // beim Routenwechsel auf: Ohne diese Wache lagen auf einer Seite mit mehreren
-  // gleichzeitigen Abrufen drei deckungsgleiche Hinweise übereinander.
-  it('shows the connection notice only once while it stands', () => {
-    connectionFails();
+  // Der Interceptor meldet jeden Fehlschlag; dass daraus kein Stapel wird,
+  // entscheidet die Meldungsleiste (siehe notification.component.spec). Eine
+  // Wache hier wäre stehen geblieben, sobald die Meldung anders verschwindet,
+  // und hätte danach jede echte Störung verschluckt.
+  it('reports every failed request and leaves the stacking to the bar', () => {
     connectionFails();
     connectionFails();
 
-    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('lets the notice go with the next route change', () => {
+    connectionFails();
+
+    expect(errorSpy.calls.mostRecent().args[1]).toEqual({
+      autoClose: false,
+      keepAfterRouteChange: false,
+    });
   });
 
   // Der eigentliche Fehlerbericht: Die Seite lud längst wieder, die Meldung
@@ -203,12 +212,12 @@ describe('ErrorInterceptor', () => {
     expect(dismissSpy).toHaveBeenCalledWith(CONNECTION_LOST_MESSAGE);
   });
 
-  it('shows the connection notice again after a recovery', () => {
+  it('withdraws the notice only once per outage', () => {
     connectionFails();
     succeeds();
-    connectionFails();
+    succeeds();
 
-    expect(errorSpy).toHaveBeenCalledTimes(2);
+    expect(dismissSpy).toHaveBeenCalledTimes(1);
   });
 
   // Das Nachladen im 30-Sekunden-Takt läuft ohne Zutun der Zuschauerin. Ein
@@ -233,6 +242,32 @@ describe('ErrorInterceptor', () => {
 
   // Die Ausnahme gilt dem Transport, nicht der Berechtigung: Eine im
   // Hintergrund abgelaufene Sitzung muss weiterhin auffallen.
+  // Die Ausnahme gilt dem Transport, nicht der Anmeldung. Der Spielbericht
+  // laedt im Takt nach, auch angemeldet: Eine dabei abgelaufene Sitzung muss
+  // weiterhin abmelden, sonst sieht die Person eine Seite, die nie wieder
+  // aktuell wird.
+  it('still logs out when a background refresh hits an expired session', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+    http
+      .get(uploadUrl, { context: refreshContext(true) })
+      .subscribe({ next: () => undefined, error: () => undefined });
+    httpMock
+      .expectOne(uploadUrl)
+      .flush(
+        { success: false, message: 'Not authenticated' },
+        { status: 401, statusText: 'Error' }
+      );
+
+    expect(logoutSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/login'],
+      jasmine.objectContaining({ queryParams: jasmine.anything() })
+    );
+  });
+
   it('still reports a 404 on a background refresh', () => {
     http
       .get(uploadUrl, { context: refreshContext(true) })

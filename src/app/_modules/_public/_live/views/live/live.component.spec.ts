@@ -265,4 +265,21 @@ describe('LiveComponent', () => {
     fixture.destroy();
     discardPeriodicTasks();
   }));
+
+  // fe#489: Der Erstaufruf meldet einen Fehlschlag, das Nachladen im Takt
+  // nicht. Faellt das Argument weg, steht nach dem ersten Aussetzer wieder ein
+  // Band auf einer Seite, die auf einem Hallenmonitor stundenlang offen bleibt.
+  it('laedt den ersten Abruf laut und die Takte still nach', fakeAsync(() => {
+    serviceSpy.getToday.and.returnValue(of({ date: '2026-08-10', games: [] }));
+    create();
+
+    expect(serviceSpy.getToday).toHaveBeenCalledWith(false);
+
+    tick(60_000);
+
+    expect(serviceSpy.getToday).toHaveBeenCalledWith(true);
+
+    fixture.destroy();
+    discardPeriodicTasks();
+  }));
 });

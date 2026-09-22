@@ -149,6 +149,12 @@ export class MatchComponent implements OnInit, OnDestroy {
                     });
                 }
               },
+              // Der Spielstand hängt sonst an einem Abruf, der ihn gar nicht
+              // liefert: `updateGame` stand nur im Erfolgsfall der
+              // Zusatzfelder, ein Fehlschlag dort ließ also auch das bereits
+              // geladene Spiel liegen. Seit das Nachladen schweigt, wäre das
+              // ein einfrierender Spielstand ohne jeden Hinweis.
+              error: () => this.updateGame(game),
             });
         } else {
           this.updateGame(game);

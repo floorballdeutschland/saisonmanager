@@ -16,8 +16,8 @@ import {
 } from '@floorball/core';
 import { Router } from '@angular/router';
 
-// Der Text steht als Konstante, weil er an drei Stellen gebraucht wird: beim
-// Anzeigen, beim Zurücknehmen und im Spec.
+// Anzeigen und Zurücknehmen müssen denselben Text benutzen: `dismiss` sucht die
+// stehende Meldung über Textgleichheit.
 export const CONNECTION_LOST_MESSAGE =
   'Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.';
 
@@ -35,11 +35,15 @@ export class ErrorInterceptor implements HttpInterceptor {
   // Lebensdauer der Registerkarte.
   private secretaryLinkRejected = false;
 
-  // Steht die Verbindungsmeldung gerade? Solange sie steht, kommt keine zweite
-  // dazu: Eine Seite mit mehreren gleichzeitigen Abrufen legte sonst drei
-  // deckungsgleiche Hinweise übereinander, und die Meldungsleiste räumt nur
-  // beim Routenwechsel auf.
-  private connectionNoticeStanding = false;
+  // Wurde die Verbindungsmeldung gezeigt? Der Merker entscheidet NICHT, ob sie
+  // erscheint (das Doppeln verhindert die Meldungsleiste selbst), sondern nur,
+  // ob nach einer Antwort ein Zurücknehmen nötig ist. Ein Merker, der die
+  // Anzeige gesteuert hätte, wäre stehen geblieben, sobald die Meldung anders
+  // verschwindet: über das X am Toast oder beim zweiten Routenwechsel, denn die
+  // Meldungsleiste nimmt `keepAfterRouteChange` nach dem ersten Wechsel wieder
+  // ab. Danach bliebe die nächste echte Störung stumm, also genau der Fehler,
+  // den dieser Zweig beseitigen soll.
+  private connectionNoticeShown = false;
 
   // Fehlerdetails aus dem Response-Body ziehen. Rails-Endpunkte liefern
   // wahlweise { message }, { error } oder { errors: [...] } (z. B. bei 422
@@ -88,8 +92,8 @@ export class ErrorInterceptor implements HttpInterceptor {
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
-    // Anfragen, die eine Ansicht von sich aus im Takt nachlädt (Spielansicht,
-    // Spielplan, Live-Seite). Ein Aussetzer dabei bleibt still, siehe
+    // Anfragen, die eine Ansicht von sich aus im Takt nachlädt, ohne Zutun des
+    // Benutzers. Ein Transport- oder Serverfehler dabei bleibt still, siehe
     // SILENT_REFRESH.
     const silentRefresh = request.context.get(SILENT_REFRESH);
 
@@ -639,20 +643,11 @@ export class ErrorInterceptor implements HttpInterceptor {
           );
         }
 
-        if (
-          err.status === 0 &&
-          !silentRefresh &&
-          !this.connectionNoticeStanding
-        ) {
-          // `keepAfterRouteChange`, damit allein der Erfolgsfall darüber
-          // entscheidet, wann die Meldung verschwindet. Mit dem
-          // Routenwechsel-Aufraeumen verschwände sie zwar auch, der Merker
-          // oben bliebe aber gesetzt und die nächste echte Störung bliebe
-          // stumm.
-          this.connectionNoticeStanding = true;
+        if (err.status === 0 && !silentRefresh) {
+          this.connectionNoticeShown = true;
           this._notificationService.error(CONNECTION_LOST_MESSAGE, {
             autoClose: false,
-            keepAfterRouteChange: true,
+            keepAfterRouteChange: false,
           });
         }
 
@@ -663,16 +658,24 @@ export class ErrorInterceptor implements HttpInterceptor {
         // Ohne diesen Zweig bleibt so ein Fehlschlag völlig stumm, seit
         // Komponenten sich auf den Interceptor verlassen statt auf einen
         // eigenen Toast (#228).
-        if (err.status > 0 && err.status < 400 && !silentRefresh) {
+        if (err.status > 0 && err.status < 400) {
           // Wie oben: kein ganzes Fehlerobjekt in die Konsole, sonst landet der
           // Antwortkörper über die Sentry-Wegmarken im Monitoring (#230).
+          //
+          // Die Zeile steht bewusst VOR der Ausnahme fürs Nachladen: Still ist
+          // nur der Toast. Bliebe auch die Konsole leer, hinterließe eine
+          // Wartungsseite, die mit Status 200 ausgeliefert wird, im Hintergrund
+          // gar keine Spur mehr.
           console.error(
             `Unlesbare Antwort (${err.status}): ${request.method} ${request.url}`
           );
-          this._notificationService.error(
-            'Die Antwort des Servers war unlesbar. Bitte versuche es erneut.',
-            { autoClose: false, keepAfterRouteChange: false }
-          );
+
+          if (!silentRefresh) {
+            this._notificationService.error(
+              'Die Antwort des Servers war unlesbar. Bitte versuche es erneut.',
+              { autoClose: false, keepAfterRouteChange: false }
+            );
+          }
         }
 
         // Die ursprüngliche HttpErrorResponse weiterreichen (statt eines bloßen
@@ -683,13 +686,17 @@ export class ErrorInterceptor implements HttpInterceptor {
     );
   }
 
-  // Nimmt genau die Verbindungsmeldung zurück, keine anderen: `clear` räumte
-  // den ganzen Stapel und damit auch eine Validierungsmeldung, die die Maske
-  // daneben gerade noch braucht.
+  // Nimmt genau die Verbindungsmeldung zurück, keine anderen: `clear` nähme
+  // alles bis auf die Einträge mit `keepAfterRouteChange` und damit auch eine
+  // Validierungsmeldung, die die Maske daneben gerade noch braucht.
+  //
+  // Ist die Meldung inzwischen anders verschwunden, geht der Aufruf ins Leere.
+  // Genau deshalb hängt der Merker hier und nicht an der Anzeige: Er darf
+  // falsch liegen, ohne etwas zu verbergen.
   private withdrawConnectionNotice(): void {
-    if (!this.connectionNoticeStanding) return;
+    if (!this.connectionNoticeShown) return;
 
-    this.connectionNoticeStanding = false;
+    this.connectionNoticeShown = false;
     this._notificationService.dismiss(CONNECTION_LOST_MESSAGE);
   }
 }
