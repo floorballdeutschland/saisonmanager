@@ -534,20 +534,20 @@ describe('ErrorInterceptor', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
-  // Anonymisieren und Zuruecknehmen sind Knoepfe im geoeffneten Spielerprofil.
+  // Nachname weglassen und zurueckholen sind Knoepfe im geoeffneten Profil.
   // Der 403 ist ohne Fehlbedienung erreichbar: Der Knopf haengt an
-  // `can_hide_public_name` aus der Profilantwort, und eine Registerkarte, die
+  // `can_hide_public_last_name` aus der Profilantwort, und eine Registerkarte, die
   // offen stand, waehrend die Rolle sich aenderte, trifft beim Klick auf die
   // Absage. Der generische Zweig warf dafuer auf die Startseite und nahm den
   // getippten Vermerk mit.
-  it('keeps the user in the player mask on a 403 for the anonymisation switch', () => {
+  it('keeps the user in the player mask on a 403 for the surname switch', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigate');
 
     failWith(
       { message: 'Keine Berechtigung.' },
       403,
-      `${environment.apiURL}admin/players/4711/hide_public_name.json`
+      `${environment.apiURL}admin/players/4711/hide_public_last_name.json`
     );
 
     expect(errorSpy).toHaveBeenCalledWith(
@@ -564,7 +564,7 @@ describe('ErrorInterceptor', () => {
     failWith(
       { message: 'Keine Berechtigung.' },
       403,
-      `${environment.apiURL}admin/players/4711/show_public_name.json`
+      `${environment.apiURL}admin/players/4711/show_public_last_name.json`
     );
 
     expect(navigateSpy).not.toHaveBeenCalled();

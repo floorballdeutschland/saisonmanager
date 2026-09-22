@@ -1998,10 +1998,10 @@ describe('PlayerEditComponent', () => {
       expect(component.licenseSuspendScope).toBe('team');
     });
   });
-  // Anonymisierung der oeffentlichen Anzeige (DSGVO Art. 17/21). Maskiert wird
-  // die Ausgabe von Spiel- und Statistikdaten; hier in der Verwaltung steht
-  // weiter der echte Name.
-  describe('oeffentliche Anzeige des Namens', () => {
+  // Der Nachname faellt in der oeffentlichen Ausgabe von Spiel- und
+  // Statistikdaten weg (DSGVO Art. 17/21); hier in der Verwaltung steht weiter
+  // der volle Name.
+  describe('Nachname in der oeffentlichen Anzeige', () => {
     function build(player: Partial<Player>): PlayerEditComponent {
       const component =
         TestBed.createComponent(PlayerEditComponent).componentInstance;
@@ -2011,10 +2011,10 @@ describe('PlayerEditComponent', () => {
     }
 
     it('bietet den Schalter an, wenn das Profil ihn erlaubt', () => {
-      const component = build({ id: 7, can_hide_public_name: true });
+      const component = build({ id: 7, can_hide_public_last_name: true });
 
-      expect(component.canHidePublicName).toBe(true);
-      expect(component.canShowPublicName).toBe(false);
+      expect(component.canHidePublicLastName).toBe(true);
+      expect(component.canShowPublicLastName).toBe(false);
     });
 
     // Anders als bei der Deaktivierung gibt es kein Rollen-Flag, auf das
@@ -2023,63 +2023,63 @@ describe('PlayerEditComponent', () => {
     it('bietet ihn ohne das Feld nicht an', () => {
       const component = build({ id: 7 });
 
-      expect(component.canHidePublicName).toBe(false);
-      expect(component.canShowPublicName).toBe(false);
+      expect(component.canHidePublicLastName).toBe(false);
+      expect(component.canShowPublicLastName).toBe(false);
     });
 
-    it('bietet am anonymisierten Profil den Gegenknopf an', () => {
+    it('bietet am geschalteten Profil den Gegenknopf an', () => {
       const component = build({
         id: 7,
-        can_hide_public_name: true,
-        public_name_hidden_at: '2026-09-22T10:00:00Z',
+        can_hide_public_last_name: true,
+        public_last_name_hidden_at: '2026-09-22T10:00:00Z',
       });
 
-      expect(component.canShowPublicName).toBe(true);
-      expect(component.canHidePublicName).toBe(false);
+      expect(component.canShowPublicLastName).toBe(true);
+      expect(component.canHidePublicLastName).toBe(false);
     });
 
     it('schickt den Vermerk mit und uebernimmt die Antwort', () => {
-      const component = build({ id: 7, can_hide_public_name: true });
-      component.hidePublicNameReason = '  DSGVO 2026-09-22  ';
+      const component = build({ id: 7, can_hide_public_last_name: true });
+      component.hidePublicLastNameReason = '  DSGVO 2026-09-22  ';
 
-      component.hidePublicName();
+      component.hidePublicLastName();
       const req = TestBed.inject(HttpTestingController).expectOne(
-        `${environment.apiURL}admin/players/7/hide_public_name.json`
+        `${environment.apiURL}admin/players/7/hide_public_last_name.json`
       );
 
       expect(req.request.body).toEqual({ reason: 'DSGVO 2026-09-22' });
       req.flush({
         id: 7,
-        can_hide_public_name: true,
-        public_name_hidden_at: '2026-09-22T10:00:00Z',
-        public_name_hidden_reason: 'DSGVO 2026-09-22',
+        can_hide_public_last_name: true,
+        public_last_name_hidden_at: '2026-09-22T10:00:00Z',
+        public_last_name_hidden_reason: 'DSGVO 2026-09-22',
       });
 
-      expect(component.canShowPublicName).toBe(true);
-      expect(component.confirmHidePublicName).toBe(false);
-      expect(component.hidePublicNameReason).toBe('');
+      expect(component.canShowPublicLastName).toBe(true);
+      expect(component.confirmHidePublicLastName).toBe(false);
+      expect(component.hidePublicLastNameReason).toBe('');
     });
 
-    // Das Zurueckholen stellt einen auf Antrag entfernten Namen wieder ins Netz.
-    // Es bekommt deshalb dieselbe Rueckfrage wie das Entfernen, statt am
+    // Das Zurueckholen stellt einen auf Antrag entfernten Nachnamen wieder ins
+    // Netz. Es bekommt deshalb dieselbe Rueckfrage wie das Weglassen, statt am
     // einzelnen Fehlklick zu haengen.
-    it('nimmt die Anonymisierung erst nach der Rueckfrage zurueck', () => {
+    it('holt den Nachnamen erst nach der Rueckfrage zurueck', () => {
       const component = build({
         id: 7,
-        can_hide_public_name: true,
-        public_name_hidden_at: '2026-09-22T10:00:00Z',
+        can_hide_public_last_name: true,
+        public_last_name_hidden_at: '2026-09-22T10:00:00Z',
       });
 
-      expect(component.confirmShowPublicName).toBe(false);
-      component.confirmShowPublicName = true;
-      component.showPublicName();
+      expect(component.confirmShowPublicLastName).toBe(false);
+      component.confirmShowPublicLastName = true;
+      component.showPublicLastName();
       TestBed.inject(HttpTestingController)
-        .expectOne(`${environment.apiURL}admin/players/7/show_public_name.json`)
-        .flush({ id: 7, can_hide_public_name: true });
+        .expectOne(`${environment.apiURL}admin/players/7/show_public_last_name.json`)
+        .flush({ id: 7, can_hide_public_last_name: true });
 
-      expect(component.canHidePublicName).toBe(true);
-      expect(component.canShowPublicName).toBe(false);
-      expect(component.confirmShowPublicName).toBe(false);
+      expect(component.canHidePublicLastName).toBe(true);
+      expect(component.canShowPublicLastName).toBe(false);
+      expect(component.confirmShowPublicLastName).toBe(false);
     });
 
     // Die Rueckfrage bleibt bei einer Absage offen, damit ein getippter Vermerk
@@ -2087,18 +2087,18 @@ describe('PlayerEditComponent', () => {
     // er die Maske dabei stehen laesst, sichert error.interceptor.spec.ts --
     // hier haengt kein Interceptor, diese Zusage traegt der Test also nicht.
     it('haelt die Rueckfrage nach einer Absage offen', () => {
-      const component = build({ id: 7, can_hide_public_name: true });
-      component.confirmHidePublicName = true;
-      component.hidePublicNameReason = 'DSGVO 2026-09-22';
+      const component = build({ id: 7, can_hide_public_last_name: true });
+      component.confirmHidePublicLastName = true;
+      component.hidePublicLastNameReason = 'DSGVO 2026-09-22';
 
-      component.hidePublicName();
+      component.hidePublicLastName();
       TestBed.inject(HttpTestingController)
-        .expectOne(`${environment.apiURL}admin/players/7/hide_public_name.json`)
+        .expectOne(`${environment.apiURL}admin/players/7/hide_public_last_name.json`)
         .flush({ message: 'Keine Berechtigung.' }, { status: 403, statusText: 'Forbidden' });
 
-      expect(component.confirmHidePublicName).toBe(true);
-      expect(component.hidePublicNameReason).toBe('DSGVO 2026-09-22');
-      expect(component.canHidePublicName).toBe(true);
+      expect(component.confirmHidePublicLastName).toBe(true);
+      expect(component.hidePublicLastNameReason).toBe('DSGVO 2026-09-22');
+      expect(component.canHidePublicLastName).toBe(true);
     });
   });
 });

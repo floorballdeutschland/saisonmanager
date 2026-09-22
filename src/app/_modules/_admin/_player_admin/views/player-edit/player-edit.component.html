@@ -1242,64 +1242,64 @@
           </div>
         }
 
-        <!-- Oeffentliche Anzeige des Namens (DSGVO Art. 17/21) -->
-        @if (editMode && player && (canHidePublicName || canShowPublicName)) {
+        <!-- Nachname in der oeffentlichen Anzeige (DSGVO Art. 17/21) -->
+        @if (editMode && player && (canHidePublicLastName || canShowPublicLastName)) {
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div
               class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
             >
-              {{ "playerAdmin.edit.publicName" | transloco }}
-              @if (isPublicNameHidden) {
+              {{ "playerAdmin.edit.publicLastName" | transloco }}
+              @if (isPublicLastNameHidden) {
                 <span
                   class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800 normal-case"
                 >
-                  {{ "playerAdmin.edit.publicNameHiddenSince" | transloco }}
-                  {{ player.public_name_hidden_at | date: "dd.MM.yyyy" }}
+                  {{ "playerAdmin.edit.publicLastNameHiddenSince" | transloco }}
+                  {{ player.public_last_name_hidden_at | date: "dd.MM.yyyy" }}
                 </span>
               }
             </div>
-            @if (isPublicNameHidden) {
+            @if (isPublicLastNameHidden) {
               <p class="text-sm text-gray-500 mb-4">
-                {{ "playerAdmin.edit.publicNameHiddenHint" | transloco }}
+                {{ "playerAdmin.edit.publicLastNameHiddenHint" | transloco }}
               </p>
-              @if (player.public_name_hidden_reason) {
+              @if (player.public_last_name_hidden_reason) {
                 <p class="text-sm text-gray-500 mb-4">
-                  {{ "playerAdmin.edit.publicNameReasonLabel" | transloco }}:
-                  {{ player.public_name_hidden_reason }}
+                  {{ "playerAdmin.edit.publicLastNameReasonLabel" | transloco }}:
+                  {{ player.public_last_name_hidden_reason }}
                 </p>
               }
             } @else {
               <p class="text-sm text-gray-500 mb-4">
-                {{ "playerAdmin.edit.publicNameVisibleHint" | transloco }}
+                {{ "playerAdmin.edit.publicLastNameVisibleHint" | transloco }}
               </p>
             }
-            @if (canShowPublicName && !confirmShowPublicName) {
+            @if (canShowPublicLastName && !confirmShowPublicLastName) {
               <div class="mb-2">
                 <button
-                  (click)="confirmShowPublicName = true"
+                  (click)="confirmShowPublicLastName = true"
                   class="font-bold text-amber-700 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
                 >
-                  {{ "playerAdmin.edit.publicNameShow" | transloco }}
+                  {{ "playerAdmin.edit.publicLastNameShow" | transloco }}
                 </button>
               </div>
             }
-            @if (confirmShowPublicName) {
+            @if (confirmShowPublicLastName) {
               <div class="border border-amber-300 rounded p-4 bg-amber-50 mb-2">
                 <p class="text-sm font-semibold text-amber-900 mb-1">
-                  {{ "playerAdmin.edit.publicNameShowConfirm" | transloco }}
+                  {{ "playerAdmin.edit.publicLastNameShowConfirm" | transloco }}
                 </p>
                 <p class="text-sm text-amber-800 mb-4">
-                  {{ "playerAdmin.edit.publicNameShowWarning" | transloco }}
+                  {{ "playerAdmin.edit.publicLastNameShowWarning" | transloco }}
                 </p>
                 <div class="flex gap-3">
                   <button
-                    (click)="showPublicName()"
+                    (click)="showPublicLastName()"
                     class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer"
                   >
-                    {{ "playerAdmin.edit.publicNameShowYes" | transloco }}
+                    {{ "playerAdmin.edit.publicLastNameShowYes" | transloco }}
                   </button>
                   <button
-                    (click)="cancelShowPublicName()"
+                    (click)="cancelShowPublicLastName()"
                     class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                   >
                     {{ "playerAdmin.edit.cancel" | transloco }}
@@ -1307,47 +1307,47 @@
                 </div>
               </div>
             }
-            @if (canHidePublicName && !confirmHidePublicName) {
+            @if (canHidePublicLastName && !confirmHidePublicLastName) {
               <div>
                 <button
-                  (click)="confirmHidePublicName = true"
+                  (click)="confirmHidePublicLastName = true"
                   class="font-bold text-amber-700 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
                 >
-                  {{ "playerAdmin.edit.publicNameHide" | transloco }}
+                  {{ "playerAdmin.edit.publicLastNameHide" | transloco }}
                 </button>
               </div>
             }
-            @if (confirmHidePublicName) {
+            @if (confirmHidePublicLastName) {
               <div class="border border-amber-300 rounded p-4 bg-amber-50">
                 <p class="text-sm font-semibold text-amber-900 mb-1">
-                  {{ "playerAdmin.edit.publicNameHideConfirm" | transloco }}
+                  {{ "playerAdmin.edit.publicLastNameHideConfirm" | transloco }}
                 </p>
                 <p class="text-sm text-amber-800 mb-4">
-                  {{ "playerAdmin.edit.publicNameHideWarning" | transloco }}
+                  {{ "playerAdmin.edit.publicLastNameHideWarning" | transloco }}
                 </p>
                 <div class="mb-4">
                   <label class="block text-sm font-semibold text-amber-900 mb-1">{{
-                    "playerAdmin.edit.publicNameReasonOptional" | transloco
+                    "playerAdmin.edit.publicLastNameReasonOptional" | transloco
                   }}</label>
                   <input
-                    [(ngModel)]="hidePublicNameReason"
+                    [(ngModel)]="hidePublicLastNameReason"
                     type="text"
                     maxlength="255"
                     [placeholder]="
-                      'playerAdmin.edit.publicNameReasonPlaceholder' | transloco
+                      'playerAdmin.edit.publicLastNameReasonPlaceholder' | transloco
                     "
                     class="w-full xl:w-1/2 border border-amber-300 rounded-[5px] px-3 py-2 text-sm"
                   />
                 </div>
                 <div class="flex gap-3">
                   <button
-                    (click)="hidePublicName()"
+                    (click)="hidePublicLastName()"
                     class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer"
                   >
-                    {{ "playerAdmin.edit.publicNameHideYes" | transloco }}
+                    {{ "playerAdmin.edit.publicLastNameHideYes" | transloco }}
                   </button>
                   <button
-                    (click)="cancelHidePublicName()"
+                    (click)="cancelHidePublicLastName()"
                     class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
                   >
                     {{ "playerAdmin.edit.cancel" | transloco }}

@@ -212,25 +212,25 @@ export class PlayerService {
   }
 
   /**
-   * Nimmt den Namen des Profils aus der oeffentlichen Anzeige (Antrag nach
-   * Art. 17/21 DSGVO). Der Datensatz behaelt ihn, maskiert wird die Ausgabe
-   * von Spiel- und Statistikdaten.
+   * Nimmt den Nachnamen des Profils aus der oeffentlichen Anzeige (Antrag nach
+   * Art. 17/21 DSGVO). Der Datensatz behaelt ihn, weggelassen wird er in der
+   * Ausgabe von Spiel- und Statistikdaten; der Vorname bleibt stehen.
    */
-  public hidePublicName(playerId: number, reason?: string) {
+  public hidePublicLastName(playerId: number, reason?: string) {
     const path =
       environment.apiURL +
       'admin/players/' +
       playerId +
-      '/hide_public_name.json';
+      '/hide_public_last_name.json';
     return this.http.post<Player>(path, { reason: reason ?? null });
   }
 
-  public showPublicName(playerId: number) {
+  public showPublicLastName(playerId: number) {
     const path =
       environment.apiURL +
       'admin/players/' +
       playerId +
-      '/show_public_name.json';
+      '/show_public_last_name.json';
     return this.http.post<Player>(path, {});
   }
 

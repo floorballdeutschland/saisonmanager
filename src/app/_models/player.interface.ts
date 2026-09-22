@@ -41,26 +41,30 @@ export interface Player {
    */
   can_deactivate?: boolean;
   /**
-   * Gesetzt = der Name dieses Profils ist aus der oeffentlichen Anzeige
-   * genommen (Antrag nach Art. 17/21 DSGVO). In Scorerlisten, Aufstellungen,
-   * Statistikseiten und Livestream-Overlays steht dann ein Platzhalter.
+   * Gesetzt = der NACHname dieses Profils faellt in der oeffentlichen Anzeige
+   * weg (Antrag nach Art. 17/21 DSGVO). Scorerlisten, Aufstellungen,
+   * Statistikseiten und Livestream-Overlays fuehren dann nur noch den
+   * Vornamen; ein Platzhalter oder eine Initiale tritt nicht an seine Stelle.
    *
-   * In der Verwaltung, also auch in diesem Profil, steht weiter der echte
+   * In der Verwaltung, also auch in diesem Profil, steht weiter der volle
    * Name: Ohne ihn liesse sich dieselbe Person ein zweites Mal anlegen, und
    * Sperren wie Lizenzhistorie haengen daran.
    */
-  public_name_hidden_at?: string | null;
-  /** Interner Vermerk zur Anonymisierung, etwa das Aktenzeichen des Antrags. */
-  public_name_hidden_reason?: string | null;
+  public_last_name_hidden_at?: string | null;
+  /**
+   * Interner Vermerk zum Antrag, etwa dessen Aktenzeichen. Bleibt auch nach
+   * einer Ruecknahme stehen, er ist der Beleg nach Art. 5 Abs. 2 DSGVO.
+   */
+  public_last_name_hidden_reason?: string | null;
   /**
    * Nur in der Antwort zu einem einzelnen Profil (`admin/players/:id`): Darf
-   * der angemeldete Benutzer die Anonymisierung setzen und zuruecknehmen?
+   * der angemeldete Benutzer den Schalter setzen und zuruecknehmen?
    *
    * Anders als `can_deactivate` gibt es dazu kein Rollen-Flag im Browser.
    * Fehlt das Feld, ist die API aelter als die Funktion und die Maske bietet
    * sie nicht an.
    */
-  can_hide_public_name?: boolean;
+  can_hide_public_last_name?: boolean;
 }
 
 // Bericht des CSV-Nachtrags in der Vereinssicht (admin/vm/players/import).
