@@ -2060,13 +2060,18 @@ describe('PlayerEditComponent', () => {
       expect(component.hidePublicNameReason).toBe('');
     });
 
-    it('nimmt die Anonymisierung zurueck', () => {
+    // Das Zurueckholen stellt einen auf Antrag entfernten Namen wieder ins Netz.
+    // Es bekommt deshalb dieselbe Rueckfrage wie das Entfernen, statt am
+    // einzelnen Fehlklick zu haengen.
+    it('nimmt die Anonymisierung erst nach der Rueckfrage zurueck', () => {
       const component = build({
         id: 7,
         can_hide_public_name: true,
         public_name_hidden_at: '2026-09-22T10:00:00Z',
       });
 
+      expect(component.confirmShowPublicName).toBe(false);
+      component.confirmShowPublicName = true;
       component.showPublicName();
       TestBed.inject(HttpTestingController)
         .expectOne(`${environment.apiURL}admin/players/7/show_public_name.json`)
@@ -2074,10 +2079,13 @@ describe('PlayerEditComponent', () => {
 
       expect(component.canHidePublicName).toBe(true);
       expect(component.canShowPublicName).toBe(false);
+      expect(component.confirmShowPublicName).toBe(false);
     });
 
-    // Die Rueckfrage bleibt bei einer Absage offen, damit ein getippter
-    // Vermerk nicht verloren geht. Den Fehlertext zeigt der ErrorInterceptor.
+    // Die Rueckfrage bleibt bei einer Absage offen, damit ein getippter Vermerk
+    // nicht verloren geht. Den Fehlertext zeigt der ErrorInterceptor, und dass
+    // er die Maske dabei stehen laesst, sichert error.interceptor.spec.ts --
+    // hier haengt kein Interceptor, diese Zusage traegt der Test also nicht.
     it('haelt die Rueckfrage nach einer Absage offen', () => {
       const component = build({ id: 7, can_hide_public_name: true });
       component.confirmHidePublicName = true;

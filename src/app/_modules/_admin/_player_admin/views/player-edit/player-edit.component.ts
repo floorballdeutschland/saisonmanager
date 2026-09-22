@@ -88,6 +88,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   deactivateReason = '';
   deactivateReasonOther = '';
   confirmHidePublicName = false;
+  confirmShowPublicName = false;
   hidePublicNameReason = '';
 
   changeRequestType: CorrectionType | '' = '';
@@ -996,6 +997,10 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     this.hidePublicNameReason = '';
   }
 
+  public cancelShowPublicName(): void {
+    this.confirmShowPublicName = false;
+  }
+
   public hidePublicName(): void {
     if (!this.player) return;
     this._playerService
@@ -1011,9 +1016,12 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           );
           this._cdr.markForCheck();
         },
-        // Ohne eigenen Zweig: Den 4xx-Text zeigt der ErrorInterceptor, eine
-        // zweite Meldung stapelte sich darüber. Die Rückfrage bleibt offen,
-        // damit der Vermerk nicht verloren geht.
+        // Ohne eigenen Zweig: Den Text zeigt der ErrorInterceptor, eine zweite
+        // Meldung stapelte sich darüber. Die Rückfrage bleibt dabei offen und
+        // der getippte Vermerk stehen, weil der Interceptor diese beiden
+        // Aktionen ausdrücklich von seiner Umleitung auf die Startseite
+        // ausnimmt (`publicNameDecision`). Ohne diese Ausnahme wäre die ganze
+        // Maske nach einer Absage weg.
         error: () => {
           this._cdr.markForCheck();
         },
@@ -1028,6 +1036,7 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (updated) => {
           this.player = updated;
+          this.cancelShowPublicName();
           this._notificationService.success(
             this._transloco.translate('playerAdmin.edit.publicNameShownDone'),
             { autoClose: true, keepAfterRouteChange: false }

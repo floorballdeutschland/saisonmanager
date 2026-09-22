@@ -534,6 +534,42 @@ describe('ErrorInterceptor', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
+  // Anonymisieren und Zuruecknehmen sind Knoepfe im geoeffneten Spielerprofil.
+  // Der 403 ist ohne Fehlbedienung erreichbar: Der Knopf haengt an
+  // `can_hide_public_name` aus der Profilantwort, und eine Registerkarte, die
+  // offen stand, waehrend die Rolle sich aenderte, trifft beim Klick auf die
+  // Absage. Der generische Zweig warf dafuer auf die Startseite und nahm den
+  // getippten Vermerk mit.
+  it('keeps the user in the player mask on a 403 for the anonymisation switch', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung.' },
+      403,
+      `${environment.apiURL}admin/players/4711/hide_public_name.json`
+    );
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Berechtigungsfehler: Keine Berechtigung.',
+      { autoClose: true, keepAfterRouteChange: false }
+    );
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it('keeps the user in the player mask on a 403 when taking it back', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { message: 'Keine Berechtigung.' },
+      403,
+      `${environment.apiURL}admin/players/4711/show_public_name.json`
+    );
+
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
   // Der Profilabruf selbst: Die Spielersuche (/verwaltung/spieler/suche) geht
   // ueber den gesamten Bestand, das Profil dahinter ist auf den
   // Heimat-Spielbetrieb begrenzt. Jeder Treffer aus einem anderen Landesverband

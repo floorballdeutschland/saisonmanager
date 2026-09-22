@@ -509,6 +509,23 @@ export class ErrorInterceptor implements HttpInterceptor {
             request.url
           );
 
+        // Anonymisieren und Zurücknehmen laufen aus dem geöffneten Spielerprofil
+        // heraus, es ist kein Seiteneinstieg. Der 403 ist erreichbar, ohne dass
+        // jemand etwas falsch macht: Der Knopf hängt an `can_hide_public_name`
+        // aus der Profilantwort, und eine Registerkarte, die offen stand,
+        // während die Rolle sich änderte, trifft beim Klick auf die Absage. Der
+        // generische Zweig warf dafür auf die Startseite und nahm den getippten
+        // Vermerk mit.
+        //
+        // Nur der 403 ist gemeint. Der 401 muss weiter abmelden, und die
+        // übrigen Absagen dieser beiden Aktionen (bereits anonymisiert, nicht
+        // anonymisiert, zu langer Vermerk) antworten mit 422 und landen im
+        // generischen 4xx-Zweig, der ohnehin auf der Seite bleibt.
+        const publicNameDecision =
+          /admin\/players\/\d+\/(hide|show)_public_name(\.json)?$/.test(
+            request.url
+          );
+
         if (err.status === 401 && !request.url.includes('login.json')) {
           if (secretaryMode) {
             // Nur einmal je Sitzung: Die Spielansicht fragt die internen Felder
@@ -556,7 +573,8 @@ export class ErrorInterceptor implements HttpInterceptor {
             overlayLinkRequest ||
             playerClubDecision ||
             licenseDecision ||
-            gfRoleDecision;
+            gfRoleDecision ||
+            publicNameDecision;
           this._notificationService.error(
             'Berechtigungsfehler: ' + (this.errorDetail(err) || 'Kein Zugriff'),
             {

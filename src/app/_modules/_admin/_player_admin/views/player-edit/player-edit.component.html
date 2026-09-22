@@ -1273,11 +1273,38 @@
                 {{ "playerAdmin.edit.publicNameVisibleHint" | transloco }}
               </p>
             }
-            @if (canShowPublicName) {
+            @if (canShowPublicName && !confirmShowPublicName) {
               <div class="mb-2">
-                <fb-button size="small" variant="success" (click)="showPublicName()">
+                <button
+                  (click)="confirmShowPublicName = true"
+                  class="font-bold text-amber-700 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
+                >
                   {{ "playerAdmin.edit.publicNameShow" | transloco }}
-                </fb-button>
+                </button>
+              </div>
+            }
+            @if (confirmShowPublicName) {
+              <div class="border border-amber-300 rounded p-4 bg-amber-50 mb-2">
+                <p class="text-sm font-semibold text-amber-900 mb-1">
+                  {{ "playerAdmin.edit.publicNameShowConfirm" | transloco }}
+                </p>
+                <p class="text-sm text-amber-800 mb-4">
+                  {{ "playerAdmin.edit.publicNameShowWarning" | transloco }}
+                </p>
+                <div class="flex gap-3">
+                  <button
+                    (click)="showPublicName()"
+                    class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer"
+                  >
+                    {{ "playerAdmin.edit.publicNameShowYes" | transloco }}
+                  </button>
+                  <button
+                    (click)="cancelShowPublicName()"
+                    class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                  >
+                    {{ "playerAdmin.edit.cancel" | transloco }}
+                  </button>
+                </div>
               </div>
             }
             @if (canHidePublicName && !confirmHidePublicName) {
