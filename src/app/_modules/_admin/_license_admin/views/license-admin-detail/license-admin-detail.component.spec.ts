@@ -4,10 +4,16 @@ import { By } from '@angular/platform-browser';
 
 import { LicenseAdminDetailComponent } from './license-admin-detail.component';
 import { LicenseAdminTeamEntryComponent } from '../license-admin-team-entry/license-admin-team-entry.component';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
-import { getTranslocoTestingModule } from '@floorball/core';
+import {
+  getTranslocoTestingModule,
+  NotificationService,
+} from '@floorball/core';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import {
@@ -623,6 +629,214 @@ describe('LicenseAdminDetailComponent', () => {
 
       expect(root.textContent).toContain('Geschlecht');
       expect(genderText(root)).toBe('–');
+    });
+  });
+  // Der Expresszuschlag stammt aus dem Antrag, nicht aus der Bearbeitung: Ein
+  // wegen fehlender Unterlagen abgelehnter und spaeter nachgebesserter Antrag
+  // wird ohne Eilbearbeitung erteilt und soll dann auch nicht als Expresslizenz
+  // abgerechnet werden. Die Entscheidung faellt an diesen beiden Knoepfen.
+  describe('Expresszuschlag bei der Genehmigung', () => {
+    function render(express: boolean | undefined): {
+      root: HTMLElement;
+      http: HttpTestingController;
+      success: jasmine.Spy;
+    } {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [
+          HttpClientTestingModule,
+          RouterTestingModule,
+          UikitPlayerModule,
+          UikitCommonModule,
+          FormsModule,
+          getTranslocoTestingModule({
+            de: {
+              licenseAdmin: {
+                detail: {
+                  grantLicense: 'Lizenz erteilen',
+                  grantAsExpress: 'Als Expresslizenz erteilen',
+                  grantAsStandard: 'Als normale Lizenz erteilen',
+                },
+                notifications: {
+                  licenseGranted: 'Lizenz erteilt',
+                  licenseGrantedWithoutExpress:
+                    'Lizenz ohne Expresszuschlag erteilt',
+                },
+              },
+            },
+          }),
+        ],
+        declarations: [LicenseAdminDetailComponent],
+      });
+      const fixture = TestBed.createComponent(LicenseAdminDetailComponent);
+      const component = fixture.componentInstance;
+      component.initiallyOpen = true;
+      component.allClubs = [];
+      component.player = {
+        id: 7,
+        first_name: 'Mia',
+        last_name: 'Muster',
+        birthdate: '2000-05-01',
+        gender: 'W',
+        clubs: [],
+        licenses: [],
+        team_license: {
+          // express steht am rohen Lizenz-Eintrag. `team_license` ist in dieser
+          // Ansicht nur der Umschlag darum (League#build_license_items) -- ein
+          // `express` eine Ebene hoeher waere ein erfundener API-Vertrag.
+          license: {
+            id: 'l1',
+            team_id: 1,
+            history: [],
+            ...(express === undefined ? {} : { express }),
+          },
+          last_status: { license_status_id: 2 },
+          documents: {},
+          required_documents: [],
+        },
+      } as unknown as PlayerWithLicense;
+      component.team = {
+        id: 1,
+        name: 'Musterstadt',
+      } as unknown as TeamWithPlayers;
+      fixture.detectChanges();
+      return {
+        root: fixture.nativeElement,
+        http: TestBed.inject(HttpTestingController),
+        success: spyOn(TestBed.inject(NotificationService), 'success'),
+      };
+    }
+
+    function click(root: HTMLElement, testid: string): void {
+      const button = root.querySelector<HTMLButtonElement>(
+        `[data-testid="${testid}"]`
+      );
+      expect(button).withContext(testid).not.toBeNull();
+      button!.click();
+    }
+
+    // Die Anfrage wird beantwortet und nicht nur abgeholt: Ohne flush laeuft der
+    // next-Zweig nie, und die Erfolgsmeldung -- eine Geldaussage -- bliebe
+    // ungedeckt.
+    function sentBody(http: HttpTestingController): Record<string, unknown> {
+      const request = http.expectOne((r) =>
+        r.url.endsWith('admin/players/7/handle_license_request.json')
+      );
+      const body = request.request.body as Record<string, unknown>;
+      request.flush({ success: true });
+      return body;
+    }
+
+    it('bietet bei einem Expressantrag beide Wege an', () => {
+      const { root } = render(true);
+
+      expect(
+        root.querySelector('[data-testid="grant-as-express"]')?.textContent
+      ).toContain('Als Expresslizenz erteilen');
+      expect(
+        root.querySelector('[data-testid="grant-as-standard"]')?.textContent
+      ).toContain('Als normale Lizenz erteilen');
+      expect(root.querySelector('[data-testid="grant-license"]')).toBeNull();
+    });
+
+    // Ohne Expressantrag gibt es nichts zu entscheiden. Ein zweiter Knopf
+    // legte nahe, dass sich eine gewoehnliche Lizenz hochstufen liesse -- die
+    // API weist genau das ab.
+    it('laesst den gewoehnlichen Antrag bei einem Knopf', () => {
+      const { root } = render(undefined);
+
+      expect(
+        root.querySelector('[data-testid="grant-license"]')?.textContent
+      ).toContain('Lizenz erteilen');
+      expect(root.querySelector('[data-testid="grant-as-express"]')).toBeNull();
+      expect(
+        root.querySelector('[data-testid="grant-as-standard"]')
+      ).toBeNull();
+    });
+
+    it('streicht den Zuschlag ueber den zweiten Knopf', () => {
+      const { root, http } = render(true);
+
+      click(root, 'grant-as-standard');
+
+      const body = sentBody(http);
+      expect(body['express']).toBe(false);
+      expect(body['license_status_id']).toBe(1);
+      http.verify();
+    });
+
+    it('laesst den Zuschlag ueber den ersten Knopf stehen', () => {
+      const { root, http } = render(true);
+
+      click(root, 'grant-as-express');
+
+      expect(sentBody(http)['express']).toBe(true);
+      http.verify();
+    });
+
+    // Ohne das Feld laesst die API den Zuschlag unangetastet. Ein mitgesendetes
+    // `false` waere hier kein Unterschied, ein `true` dagegen eine Absage.
+    it('schickt ohne Expressantrag gar kein Merkmal mit', () => {
+      const { root, http } = render(undefined);
+
+      click(root, 'grant-license');
+
+      expect(Object.keys(sentBody(http))).not.toContain('express');
+      http.verify();
+    });
+
+    // Eine bereits gestrichene Lizenz ist keine Expresslizenz mehr und darf die
+    // Entscheidung nicht erneut anbieten.
+    it('bietet die Wahl nach einer Streichung nicht mehr an', () => {
+      const { root } = render(false);
+
+      expect(
+        root.querySelector('[data-testid="grant-license"]')
+      ).not.toBeNull();
+      expect(
+        root.querySelector('[data-testid="grant-as-standard"]')
+      ).toBeNull();
+    });
+
+    // Die Zeile faellt nach der Entscheidung aus der Liste, eine Nachkontrolle
+    // am Bildschirm gibt es nicht. Die Meldung ist der einzige Beleg, und sie
+    // darf die Streichung nicht behaupten, wo keine war.
+    it('benennt die Streichung in der Bestaetigung', () => {
+      const { root, http, success } = render(true);
+
+      click(root, 'grant-as-standard');
+      sentBody(http);
+
+      expect(success.calls.mostRecent().args[0]).toBe(
+        'Lizenz ohne Expresszuschlag erteilt'
+      );
+    });
+
+    it('meldet den Expressweg ohne diesen Zusatz', () => {
+      const { root, http, success } = render(true);
+
+      click(root, 'grant-as-express');
+      sentBody(http);
+
+      expect(success.calls.mostRecent().args[0]).toBe('Lizenz erteilt');
+    });
+
+    // Zwei benachbarte Erteilen-Knoepfe machen den Fehlklick realistisch, und
+    // der zweite Aufruf liefe in ein 422, dessen Meldung sich ueber die
+    // Erfolgsmeldung legt.
+    it('sperrt den zweiten Klick, solange die Genehmigung laeuft', () => {
+      const { root, http } = render(true);
+
+      click(root, 'grant-as-express');
+      const second = root.querySelector<HTMLButtonElement>(
+        '[data-testid="grant-as-standard"]'
+      );
+      second!.click();
+
+      http.expectOne((r) =>
+        r.url.endsWith('admin/players/7/handle_license_request.json')
+      );
+      http.verify();
     });
   });
 });

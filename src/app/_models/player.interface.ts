@@ -130,6 +130,11 @@ export interface PlayerWithLicense extends Player {
     // brauchten – eine Zweitvereins-Zugehörigkeit ohne Freigabeverfahren
     // zählt bewusst nicht.
     released_at?: string | null;
+    // Der Expresszuschlag steht NICHT hier, sondern an der Lizenz selbst
+    // (`license.express`). In der Ligaliste ist `team_license` ein Umschlag um
+    // den rohen Eintrag (League#build_license_items), im Lizenzwesen des
+    // Vereins ist `team_license` der rohe Eintrag selbst
+    // (ClubsController#team_licenses_hash) und traegt das Feld deshalb direkt.
     express?: boolean;
     // Je Dokumentart drei Einträge: <key> (liegt vor), <key>_url (Abruf) und
     // <key>_uploaded_at (Zeitpunkt des Uploads, nur gesetzt, wenn auch eine
@@ -230,6 +235,10 @@ export interface PlayerLicense {
   league?: League;
   league_class_id: string;
   requested_at: string;
+  // Als Expresslizenz beantragt, also mit Zuschlag nach Gebührenordnung. Gesetzt
+  // beim Antrag; die Genehmigung kann den Zuschlag streichen, dann steht hier
+  // `false`.
+  express?: boolean;
   // Darf DIESE Lizenz gelöscht werden? Die Regel dahinter steht in der API an
   // einer Stelle (License.deletable?): laufende Saison, Status erteilt oder
   // beantragt. Sie hier nachzubauen hieße, einen Knopf anzubieten, der in ein
