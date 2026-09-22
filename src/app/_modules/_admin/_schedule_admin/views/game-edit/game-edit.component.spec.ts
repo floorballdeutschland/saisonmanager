@@ -143,15 +143,40 @@ describe('GameEditComponent', () => {
       of({ success: true })
     );
     const flags = spyOn(gameService, 'setGameFlags');
+    // Bewusst verschiedene IDs: die Wertung haengt an `game.id`. Waeren beide
+    // gleich, bliebe der Test auch dann gruen, wenn jemand auf `existingGame`
+    // zurueckbaut.
     component.game.id = 7;
     component.existingGame = {
-      id: 7,
+      id: 99,
       forfait: 0,
     } as unknown as typeof component.existingGame;
 
     component.setRatingMode('forfait-home');
 
     expect(rating).toHaveBeenCalledWith(7, 1);
+    expect(flags).not.toHaveBeenCalled();
+  });
+
+  // Die Gegenrichtung: Genau hier tat der alte set_flag-Aufruf tatsaechlich
+  // etwas, er setzte started/ended bedingungslos auf false. Das entscheidet
+  // jetzt die API, die die Marken nur ohne Ereignisse und ohne Aufstellung
+  // raeumt -- ein wirklich gespieltes Spiel behaelt sein Ergebnis.
+  it('nimmt die Wertung ebenfalls ohne Spielmarken zurueck', () => {
+    const gameService = TestBed.inject(GameService);
+    const rating = spyOn(gameService, 'updateGameRating').and.returnValue(
+      of({ success: true })
+    );
+    const flags = spyOn(gameService, 'setGameFlags');
+    component.game.id = 7;
+    component.existingGame = {
+      id: 99,
+      forfait: 1,
+    } as unknown as typeof component.existingGame;
+
+    component.setRatingMode('regular');
+
+    expect(rating).toHaveBeenCalledWith(7, 0);
     expect(flags).not.toHaveBeenCalled();
   });
 
