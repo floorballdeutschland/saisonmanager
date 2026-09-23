@@ -254,6 +254,45 @@ describe('PlayerEditComponent', () => {
       expect(text).toContain('beantragt');
     });
 
+    it('zeigt einen unsortierten Verlauf in zeitlicher Reihenfolge', () => {
+      currentUser$.next({ permissions: {} } as unknown as User);
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.componentInstance.seasons = [
+        { id: 18, name: '2026/2027', current: true },
+      ] as Season[];
+      fixture.componentInstance.currentSeasonId = 18;
+      fixture.componentInstance.player = {
+        id: 7,
+        licenses: [
+          {
+            id: 'a',
+            team_id: 1,
+            season_id: 18,
+            league_class_id: '',
+            requested_at: '',
+            history: [
+              {
+                created_at: '2026-09-01T10:00:00Z',
+                license_status: 'geloescht',
+                created_by_name: 'Testkonto',
+              },
+              {
+                created_at: '2026-08-01T10:00:00Z',
+                license_status: 'erteilt',
+                created_by_name: 'Testkonto',
+              },
+            ],
+          } as unknown as PlayerLicense,
+        ],
+      } as Player;
+      fixture.detectChanges(false);
+
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain('erteilt');
+      expect(text).toContain('geloescht');
+      expect(text.indexOf('erteilt')).toBeLessThan(text.indexOf('geloescht'));
+    });
+
     it('formatiert einen lesbaren Zeitstempel weiterhin', () => {
       const fixture = renderMitVerlauf('2026-08-24T19:16:15Z');
 
@@ -401,6 +440,39 @@ describe('PlayerEditComponent', () => {
       const component = build([legacy]);
 
       expect(component.gfRoleEditable(legacy)).toBe(true);
+    });
+
+    // #480: Nach einem Spieler-Merge steht die History unsortiert. Das letzte
+    // Array-Element ist dann nicht der aktuelle Status.
+    it('zählt eine gelöschte Lizenz nicht als Partner, auch wenn ein älterer aktiver Eintrag hinten steht', () => {
+      const own = gfLicense('eigen', true);
+      const deleted = {
+        ...gfLicense('geloescht', true),
+        history: [
+          { license_status_id: 8, created_at: '2026-09-01T10:00:00.000+00:00' },
+          { license_status_id: 1, created_at: '2026-08-01T10:00:00.000+00:00' },
+        ],
+      } as unknown as PlayerLicense;
+      const component = build([own, deleted]);
+
+      expect(component.isActiveLicense(deleted)).toBe(false);
+      expect(component.gfPartnerLicenses(own)).toEqual([]);
+      expect(component.gfRoleEditable(own)).toBe(false);
+    });
+
+    it('erkennt eine aktive Lizenz, auch wenn ein älterer gelöschter Eintrag hinten steht', () => {
+      const own = gfLicense('eigen', true);
+      const active = {
+        ...gfLicense('aktiv', true),
+        history: [
+          { license_status_id: 1, created_at: '2026-09-01T10:00:00.000+00:00' },
+          { license_status_id: 8, created_at: '2026-08-01T10:00:00.000+00:00' },
+        ],
+      } as unknown as PlayerLicense;
+      const component = build([own, active]);
+
+      expect(component.isActiveLicense(active)).toBe(true);
+      expect(component.gfPartnerLicenses(own)).toEqual([active]);
     });
   });
 
@@ -2074,7 +2146,9 @@ describe('PlayerEditComponent', () => {
       component.confirmShowPublicLastName = true;
       component.showPublicLastName();
       TestBed.inject(HttpTestingController)
-        .expectOne(`${environment.apiURL}admin/players/7/show_public_last_name.json`)
+        .expectOne(
+          `${environment.apiURL}admin/players/7/show_public_last_name.json`
+        )
         .flush({ id: 7, can_hide_public_last_name: true });
 
       expect(component.canHidePublicLastName).toBe(true);
@@ -2093,8 +2167,13 @@ describe('PlayerEditComponent', () => {
 
       component.hidePublicLastName();
       TestBed.inject(HttpTestingController)
-        .expectOne(`${environment.apiURL}admin/players/7/hide_public_last_name.json`)
-        .flush({ message: 'Keine Berechtigung.' }, { status: 403, statusText: 'Forbidden' });
+        .expectOne(
+          `${environment.apiURL}admin/players/7/hide_public_last_name.json`
+        )
+        .flush(
+          { message: 'Keine Berechtigung.' },
+          { status: 403, statusText: 'Forbidden' }
+        );
 
       expect(component.confirmHidePublicLastName).toBe(true);
       expect(component.hidePublicLastNameReason).toBe('DSGVO 2026-09-22');
