@@ -25,6 +25,7 @@ import {
   Nation,
   Player,
   PlayerLicense,
+  PlayerLicenseHistory,
   PlayerSuspension,
   SuspensionScopeKind,
   CompetitionGroup,
@@ -36,6 +37,10 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { PLAYER_GENDERS } from '@floorball/types';
+import {
+  chronologicalLicenseHistory,
+  isActiveLicenseHistory,
+} from 'src/app/_helpers/_utils/license-status';
 
 // License::DELETED in der API. Der Endpunkt handle_license_request nimmt die
 // Statusnummer entgegen; eine nackte 4 im Aufruf sagte nicht, worum es geht.
@@ -984,12 +989,16 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
 
   get canHidePublicLastName(): boolean {
     return (
-      !this.isPublicLastNameHidden && this.editMode && this.mayHidePublicLastName
+      !this.isPublicLastNameHidden &&
+      this.editMode &&
+      this.mayHidePublicLastName
     );
   }
 
   get canShowPublicLastName(): boolean {
-    return this.isPublicLastNameHidden && this.editMode && this.mayHidePublicLastName;
+    return (
+      this.isPublicLastNameHidden && this.editMode && this.mayHidePublicLastName
+    );
   }
 
   public cancelHidePublicLastName(): void {
@@ -1011,7 +1020,9 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           this.player = updated;
           this.cancelHidePublicLastName();
           this._notificationService.success(
-            this._transloco.translate('playerAdmin.edit.publicLastNameHiddenDone'),
+            this._transloco.translate(
+              'playerAdmin.edit.publicLastNameHiddenDone'
+            ),
             { autoClose: true, keepAfterRouteChange: false }
           );
           this._cdr.markForCheck();
@@ -1038,7 +1049,9 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
           this.player = updated;
           this.cancelShowPublicLastName();
           this._notificationService.success(
-            this._transloco.translate('playerAdmin.edit.publicLastNameShownDone'),
+            this._transloco.translate(
+              'playerAdmin.edit.publicLastNameShownDone'
+            ),
             { autoClose: true, keepAfterRouteChange: false }
           );
           this._cdr.markForCheck();
@@ -1233,9 +1246,18 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     return !/^U\d/.test(league.age_group ?? '');
   }
 
+  // Aus dem jüngsten History-Eintrag, nicht aus dem letzten Array-Element
+  // (#480): Nach einem Spieler-Merge ist die History unsortiert, und die
+  // Maske hielt dann eine gelöschte Lizenz für aktiv, worauf setGfRole
+  // Partnerlizenzen gegen sie buchte.
   public isActiveLicense(license: PlayerLicense): boolean {
-    const last = license.history?.[license.history.length - 1];
-    return last?.license_status_id === 1 || last?.license_status_id === 2;
+    return isActiveLicenseHistory(license.history);
+  }
+
+  // Der Verlauf in zeitlicher Reihenfolge; das Array selbst ist es nicht
+  // zwingend, siehe isActiveLicense.
+  public licenseHistory(license: PlayerLicense): PlayerLicenseHistory[] {
+    return chronologicalLicenseHistory(license.history);
   }
 
   // Weitere aktive Lizenzen im selben GF-Erwachsenen-Wettbewerb
