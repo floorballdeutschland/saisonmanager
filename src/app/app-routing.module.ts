@@ -454,9 +454,12 @@ export const routes: Routes = [
   },
   {
     // MUSS als letzte Route stehen: '**' fängt alles, was keine Route davor
-    // getroffen hat. Ohne sie warf jeder unbekannte Pfad mit mehr als einem
-    // Segment NG04002 und hinterließ eine leere Seite (#455). Ein-Segment-
-    // Pfade erreichen sie nicht, die nimmt der Spielbetriebs-Host vorher ab.
+    // getroffen hat. Ohne sie warf jeder unbekannte Pfad ab drei Segmenten
+    // NG04002 und hinterließ eine leere Seite (#455). Kürzere Pfade erreichen
+    // sie nicht, die nimmt der Spielbetriebs-Host vorher ab: ein Segment als
+    // ':association' mit leerem Rahmen, zwei Segmente als ':leagueId' mit der
+    // Ligaübersicht (/verwaltung/gibtsnicht wird so zur Übersicht der
+    // „Liga" gibtsnicht). Das gilt schon vor dieser Route.
     // Das Prerendering nimmt sie nicht mit: Es rendert nur die Liste aus
     // prerender-routes.txt (discoverRoutes: false).
     path: '',

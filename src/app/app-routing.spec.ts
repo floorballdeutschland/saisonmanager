@@ -109,5 +109,28 @@ describe('App-Routing', () => {
         expect(leaf.component).not.toBe(NotFoundComponent);
       });
     }
+
+    // Ist-Stand, keine Wunschvorstellung: Ein- und Zwei-Segment-Pfade nimmt
+    // der Spielbetriebs-Host über ':association' bzw. ':leagueId' ab, bevor
+    // die 404-Seite an die Reihe kommt. /verwaltung/gibtsnicht zeigt deshalb
+    // die Ligaübersicht einer „Liga" gibtsnicht. Prüft der Host künftig den
+    // Verband (canMatch), muss dieser Test auf die 404-Seite umgestellt werden.
+    for (const url of ['/verwaltung/gibtsnicht', '/gibts/nicht']) {
+      it(`überlässt zwei Segmente dem Spielbetriebs-Host: ${url}`, async () => {
+        const router = TestBed.inject(Router);
+        const recognized = firstValueFrom(
+          router.events.pipe(filter((e) => e instanceof RoutesRecognized))
+        );
+        router.navigateByUrl(url).catch(() => undefined);
+
+        let leaf: ActivatedRouteSnapshot = (await recognized).state.root;
+        while (leaf.firstChild) {
+          leaf = leaf.firstChild;
+        }
+
+        expect(leaf.component?.name).toBe('OverviewComponent');
+        expect(leaf.parent?.paramMap.has('leagueId')).toBeTrue();
+      });
+    }
   });
 });
