@@ -18,7 +18,9 @@ import {
 } from '@floorball/types';
 import { NotificationService, PlayerService } from '@floorball/core';
 import { TranslocoService } from '@jsverse/transloco';
+import { finalize } from 'rxjs/operators';
 import { readUploadedAt } from '../../_utils/document-upload-date';
+import { latestLicenseHistory } from 'src/app/_helpers/_utils/license-status';
 
 @Component({
   selector: 'fb-license-admin-detail',
@@ -56,6 +58,14 @@ export class LicenseAdminDetailComponent implements OnInit {
   gfRoles: { [key: string]: GfRole } = {};
 
   hidePlayer: { [key: number]: boolean } = {};
+
+  // Riegel gegen den zweiten Klick, solange die Genehmigung laeuft. Erst mit
+  // zwei benachbarten Erteilen-Knoepfen ist der Fehlklick realistisch, und er
+  // waere teuer: Der zweite Aufruf laeuft in das 422 "Diese Lizenz ist bereits
+  // erteilt", dessen Meldung sich ohne Selbstschliessung ueber die
+  // Erfolgsmeldung legt. Je Lizenz und nicht global, damit der Riegel nicht die
+  // Entscheidung eines anderen Spielers in derselben Liste sperrt.
+  approvingLicenseId: string | null = null;
 
   open = false;
 
@@ -187,48 +197,18 @@ export class LicenseAdminDetailComponent implements OnInit {
   /**
    * Der jüngste History-Eintrag einer Lizenz -- die Rückfallquelle von
    * `licenseStatusId`, wenn die API kein `effective_status_id` liefert.
+   * Auswahlregel und ihre Grenzen: `latestLicenseHistory`.
    *
-   * Nicht das letzte Array-Element, wie es die Vorlage bis hierher nahm. Die
-   * History ist nicht sortiert: Beim Spieler-Merge werden die Verläufe zweier
-   * Profile schlicht aneinandergehängt (`Player#merge`, api), und gemischte
-   * Zeitzonen-Offsets können die Reihenfolge ohnehin umkehren. Die API liest
-   * den Eintrag deshalb über `max_by { created_at.to_s }`
-   * (LicenseEffectiveStatus).
-   *
-   * Diese Faltung bildet genau das nach, bis in den Gleichstand hinein: Sie
-   * beginnt beim ERSTEN Eintrag und ersetzt nur bei einem echt jüngeren.
-   * Tragen mehrere Einträge denselben Zeitstempel, gewinnt also der früheste
-   * im Array -- dasselbe tut Rubys `max_by`. Ein Eintrag ohne Zeitstempel
-   * verliert gegen jeden datierten, an welcher Stelle er auch steht; tragen
-   * alle keinen, bleibt es beim ersten.
-   *
-   * Zwei Grenzen, die nur noch auf diesem Rückfallpfad greifen -- mit
-   * `effective_status_id` beantwortet die API beide:
-   *
-   * 1. Der Vergleich als Zeichenkette ist nur bei EINHEITLICHEM Offset auch
-   *    chronologisch. `Time#as_json` schreibt den Offset mit, und
-   *    `…T23:59:00.000+02:00` sortiert hinter `…T18:25:00.000+00:00`, obwohl
-   *    es früher liegt. Die API hat dieselbe Schwäche (`created_at.to_s`), die
-   *    Anzeige weicht davon also nicht ab.
-   * 2. Die Lizenzlisten der API nehmen nicht diesen Eintrag, sondern den
-   *    jüngsten OHNE Sperre und legen die aktiven Sperren getrennt darüber.
-   *    Eine abgelaufene Sperre, deren `gesperrt`-Eintrag in der History stehen
-   *    bleibt, zählt dort nicht mehr -- hier schon.
-   *
-   * Rückgabetyp `PlayerLicenseHistory`, obwohl bei leerer History `undefined`
-   * herauskommt -- ohne `noUncheckedIndexedAccess` sieht TypeScript das nicht.
-   * Empfänger ist `licenseStatusId`, dessen `?.` den Fall abfängt.
+   * Eine Grenze greift nur hier, weil nur hier die Lizenzlisten der API
+   * danebenstehen: Die nehmen nicht diesen Eintrag, sondern den jüngsten OHNE
+   * Sperre und legen die aktiven Sperren getrennt darüber. Eine abgelaufene
+   * Sperre, deren `gesperrt`-Eintrag in der History stehen bleibt, zählt dort
+   * nicht mehr -- hier schon. Mit `effective_status_id` beantwortet die API das.
    */
-  public latestHistory(license: PlayerLicense): PlayerLicenseHistory {
-    const history = license?.history ?? [];
-
-    return history.reduce(
-      (newest, entry) =>
-        String(entry?.created_at ?? '') > String(newest?.created_at ?? '')
-          ? entry
-          : newest,
-      history[0]
-    );
+  public latestHistory(
+    license: PlayerLicense
+  ): PlayerLicenseHistory | undefined {
+    return latestLicenseHistory(license?.history);
   }
 
   public toggleDetails(): void {
@@ -264,8 +244,26 @@ export class LicenseAdminDetailComponent implements OnInit {
     return `${year}-07-31`;
   }
 
-  public approveLicense(player: PlayerWithLicense) {
+  // Ein Expressantrag traegt den Zuschlag aus dem Antrag, nicht aus der
+  // Bearbeitung: Wird er wegen fehlender Unterlagen abgelehnt und erst Wochen
+  // spaeter erteilt, hat die Eilbearbeitung nie stattgefunden. Deshalb zwei
+  // Knoepfe, und der zweite streicht den Zuschlag (express: false). Fuer einen
+  // gewoehnlichen Antrag gibt es nichts zu entscheiden, dort bleibt der eine
+  // Knopf und schickt das Feld gar nicht erst mit.
+  //
+  // Gelesen wird `team_license.license.express` und nicht `team_license.express`:
+  // In dieser Ansicht ist `team_license` ein Umschlag um den rohen Lizenz-Eintrag
+  // (League#build_license_items), das Merkmal steht also eine Ebene tiefer. Im
+  // Lizenzwesen des Vereins ist `team_license` der rohe Eintrag selbst, dort
+  // stimmt der kurze Pfad -- deshalb stand er faelschlich auch hier.
+  public isExpressRequest(player: PlayerWithLicense): boolean {
+    return player.team_license.license?.express === true;
+  }
+
+  public approveLicense(player: PlayerWithLicense, express?: boolean) {
     const licenseId = player.team_license.license.id;
+    if (this.approvingLicenseId === licenseId) return;
+    this.approvingLicenseId = licenseId;
     const validUntil =
       this.validUntilDates[licenseId] || this.defaultValidUntil();
     const gfRole = this.gfRoleSelectable()
@@ -279,15 +277,25 @@ export class LicenseAdminDetailComponent implements OnInit {
         1,
         this.reasons[licenseId],
         validUntil,
-        gfRole
+        gfRole,
+        express
       )
+      // Der Riegel gehoert in finalize und nicht in die Rueckrufaktionen: Sonst
+      // bliebe er nach einem Fehlschlag gesetzt, und der zweite Versuch waere
+      // bis zum Neuladen ein stiller Fehlschlag.
+      .pipe(finalize(() => (this.approvingLicenseId = null)))
       .subscribe({
         next: () => {
           this.handledPlayer.emit(player.id);
           this.hidePlayer[player.id] = true;
           this._notificationService.success(
             this._transloco.translate(
-              'licenseAdmin.notifications.licenseGranted',
+              // Die Streichung des Zuschlags ist eine Geldentscheidung und
+              // gehoert in die Bestaetigung: Die Zeile verschwindet danach aus
+              // der Liste, eine Nachkontrolle am Bildschirm gibt es nicht.
+              express === false
+                ? 'licenseAdmin.notifications.licenseGrantedWithoutExpress'
+                : 'licenseAdmin.notifications.licenseGranted',
               {
                 firstName: player.first_name,
                 lastName: player.last_name,

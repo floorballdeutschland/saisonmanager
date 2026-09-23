@@ -58,4 +58,15 @@ export class NotificationService {
   public clear(id = this.defaultId) {
     this.notificationSubject.next({ id });
   }
+
+  /**
+   * Nimmt stehende Meldungen mit genau diesem Text weg und lässt alle anderen
+   * stehen. `clear` räumt dagegen alles bis auf die Meldungen mit
+   * `keepAfterRouteChange` und nähme damit auch eine Validierungsmeldung mit,
+   * die gerade noch gebraucht wird. Ein leerer Text wirkt deshalb nicht wie
+   * `clear`, sondern trifft nur Meldungen ohne Text, also keine.
+   */
+  public dismiss(message: string, id = this.defaultId) {
+    this.notificationSubject.next({ id, remove: message });
+  }
 }

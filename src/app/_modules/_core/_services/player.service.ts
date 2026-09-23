@@ -82,13 +82,18 @@ export class PlayerService {
     });
   }
 
+  // express nur mitschicken, wenn es gesetzt ist: Ohne das Feld laesst die API
+  // den Expresszuschlag unangetastet, und genau das ist der Regelfall. Ein
+  // mitgeschicktes `true` waere fuer eine gewoehnliche Lizenz sogar ein Fehler
+  // (die API weist das Hochstufen ab), deshalb kein Vorbelegen auf false.
   public updateLicenseStatus(
     playerId: number,
     licenseId: string,
     licenseStatusId: number,
     reason: string,
     validUntil?: string,
-    gfRole?: GfRole
+    gfRole?: GfRole,
+    express?: boolean
   ) {
     const path =
       environment.apiURL +
@@ -102,6 +107,7 @@ export class PlayerService {
       reason: reason,
       ...(validUntil ? { valid_until: validUntil } : {}),
       ...(gfRole ? { gf_role: gfRole } : {}),
+      ...(express === undefined ? {} : { express: express }),
     });
   }
 
@@ -208,6 +214,29 @@ export class PlayerService {
   public reactivatePlayer(playerId: number) {
     const path =
       environment.apiURL + 'admin/players/' + playerId + '/reactivate.json';
+    return this.http.post<Player>(path, {});
+  }
+
+  /**
+   * Nimmt den Nachnamen des Profils aus der oeffentlichen Anzeige (Antrag nach
+   * Art. 17/21 DSGVO). Der Datensatz behaelt ihn, weggelassen wird er in der
+   * Ausgabe von Spiel- und Statistikdaten; der Vorname bleibt stehen.
+   */
+  public hidePublicLastName(playerId: number, reason?: string) {
+    const path =
+      environment.apiURL +
+      'admin/players/' +
+      playerId +
+      '/hide_public_last_name.json';
+    return this.http.post<Player>(path, { reason: reason ?? null });
+  }
+
+  public showPublicLastName(playerId: number) {
+    const path =
+      environment.apiURL +
+      'admin/players/' +
+      playerId +
+      '/show_public_last_name.json';
     return this.http.post<Player>(path, {});
   }
 

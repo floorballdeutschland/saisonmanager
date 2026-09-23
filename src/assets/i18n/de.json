@@ -149,5 +149,10 @@
   "systemHealth": {
     "bannerCritical": "Der Speicherplatz auf dem Server ist zu {{percent}} % belegt.",
     "bannerLink": "Systemzustand ansehen"
+  },
+  "notFound": {
+    "title": "Diese Seite gibt es nicht",
+    "intro": "Die aufgerufene Adresse ist unbekannt. Vielleicht ist der Link veraltet oder falsch geschrieben.",
+    "home": "Zur Startseite"
   }
 }

@@ -15,10 +15,17 @@ import {
  * des Netzes, oder die Seite wurde während des Ladens verlassen. `401` ist der
  * erwartbare Zustand „nicht angemeldet", den vor allem Suchmaschinen auslösen.
  *
- * Beide erzeugen bereits eine sichtbare Meldung: Der ErrorInterceptor behandelt
- * `0` mit einem eigenen Hinweis und meldet bei `401` ab. Was hier ankommt, ist
- * die Dublette dazu – Komponenten ohne eigenen `error`-Zweig lassen den Fehler
- * zusätzlich in Angulars ErrorHandler laufen.
+ * Bei `401` meldet der ErrorInterceptor ab, bei `0` zeigt er einen Hinweis. Was
+ * hier ankommt, ist die Dublette dazu: Komponenten ohne eigenen `error`-Zweig
+ * lassen den Fehler zusätzlich in Angulars ErrorHandler laufen.
+ *
+ * Eine Ausnahme kennt der Hinweis seit fe#489: Anfragen, die eine Ansicht im
+ * Takt nachlädt (SILENT_REFRESH), zeigen bei `0` nichts mehr an. Diese Fälle
+ * sind damit nirgends sichtbar, und das ist Absicht. Status 0 entsteht bei
+ * jedem gesperrten Bildschirm und jedem Netzwechsel, eine Meldung je Vorfall
+ * ergäbe im Monitoring eine Flut ohne Aussage. Ein echter Ausfall fällt
+ * anders auf: Die Anfragen der Oberfläche selbst schlagen dann ebenfalls fehl,
+ * und die melden weiter.
  *
  * Bewusst NICHT gefiltert: 404 und die übrigen 4xx sowie 5xx. Ein 404 kann eine
  * falsche Annahme im Frontend sein, und ein 502 sieht nur der Browser – die API

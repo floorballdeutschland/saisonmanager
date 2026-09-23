@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import {
   getTranslocoTestingModule,
   NotificationService,
@@ -223,6 +223,31 @@ describe('RefereeEditComponent', () => {
       // Der Rückweg: Haken abwählen, Nummer eintragen, speichern.
       component.setGuest(false);
       expect(component.licenseNumberLocked).toBeFalse();
+    });
+  });
+
+  // api#744 lässt die Absage jetzt benennen, woran das Löschen scheitert
+  // (Kursergebnisse, Ansetzungen, zusammengeführte Profile, Feedback). Der
+  // ErrorInterceptor zeigt diesen Text; der feste Satz der Maske stünde als
+  // zweiter Toast darüber und sagte weniger.
+  describe('Löschen', () => {
+    it('meldet einen Fehlschlag nicht selbst und navigiert nicht weg', () => {
+      const component =
+        TestBed.createComponent(RefereeEditComponent).componentInstance;
+      const refereeService = TestBed.inject(RefereeService);
+      const notificationService = TestBed.inject(NotificationService);
+      spyOn(notificationService, 'error');
+      spyOn(notificationService, 'success');
+      spyOn(window, 'confirm').and.returnValue(true);
+      spyOn(refereeService, 'adminDelete').and.returnValue(
+        throwError(() => ({ status: 422 }))
+      );
+      component.referee = { id: 7, vorname: 'Anna', nachname: 'Schiri' };
+
+      component.delete();
+
+      expect(notificationService.error).not.toHaveBeenCalled();
+      expect(notificationService.success).not.toHaveBeenCalled();
     });
   });
 });

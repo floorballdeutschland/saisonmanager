@@ -392,12 +392,14 @@ export class RefereeEditComponent implements OnInit, OnDestroy {
           });
           this._router.navigate(['/', 'verwaltung', 'schiedsrichter']);
         },
-        error: () => {
-          this._notificationService.error('Fehler beim Löschen.', {
-            autoClose: false,
-            keepAfterRouteChange: false,
-          });
-        },
+        // Kein eigener Text: Der ErrorInterceptor zeigt die Meldung der API,
+        // und die benennt seit api#744 im Klartext, was den Datensatz
+        // festhält (Kursergebnisse, Ansetzungen, zusammengeführte Profile,
+        // Feedback). Das feste „Fehler beim Löschen." stünde als zweiter,
+        // ebenfalls nicht selbstschließender Toast darüber und sagte weniger
+        // als der darunter. Für 5xx und `status === 0` meldet der Interceptor
+        // ebenfalls, es geht also kein Fehlschlag still verloren.
+        error: () => undefined,
       });
   }
 

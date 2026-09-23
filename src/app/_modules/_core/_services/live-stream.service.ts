@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { LiveStreamDay } from '@floorball/types';
+import { refreshContext } from '../_http/silent-refresh';
 import { environment } from 'src/environments/environment';
 
 /**
@@ -18,9 +19,11 @@ import { environment } from 'src/environments/environment';
 export class LiveStreamService {
   constructor(private http: HttpClient) {}
 
-  public getToday() {
+  /** `silent`: Hintergrund-Aktualisierung, siehe SILENT_REFRESH. */
+  public getToday(silent = false) {
     return this.http.get<LiveStreamDay>(
-      `${environment.apiURL}live_streams.json`
+      `${environment.apiURL}live_streams.json`,
+      { context: refreshContext(silent) }
     );
   }
 }

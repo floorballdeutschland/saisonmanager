@@ -26,6 +26,9 @@
     "approvals": "Freigaben",
     "validUntil": "Gültig bis",
     "grantLicense": "Lizenz erteilen",
+    "grantAsExpress": "Als Expresslizenz erteilen",
+    "grantAsStandard": "Als normale Lizenz erteilen",
+    "grantAsStandardHint": "Ohne Expresszuschlag nach Gebührenordnung. Gedacht für Anträge, die erst nach Nachbesserung erteilt werden und deshalb keine Eilbearbeitung ausgelöst haben.",
     "rejectRequest": "Antrag ablehnen",
     "resetToPending": "Zurück auf „beantragt\"",
     "reason": "Begründung",
@@ -304,6 +307,7 @@
   },
   "notifications": {
     "licenseGranted": "Lizenz für Spieler {{ firstName }} {{ lastName }} ({{ id }}) erteilt",
+    "licenseGrantedWithoutExpress": "Lizenz für Spieler {{ firstName }} {{ lastName }} ({{ id }}) ohne Expresszuschlag erteilt",
     "requestRejected": "Lizenzantrag für Spieler {{ firstName }} {{ lastName }} ({{ id }}) abgelehnt",
     "licenseReset": "Lizenz für Spieler {{ firstName }} {{ lastName }} ({{ id }}) auf \"beantragt\" zurückgesetzt",
     "documentsLoadError": "Dokumente konnten nicht geladen werden.",

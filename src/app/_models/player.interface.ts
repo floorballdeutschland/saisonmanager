@@ -40,6 +40,31 @@ export interface Player {
    * Rollen-Flag `player_deactivate`.
    */
   can_deactivate?: boolean;
+  /**
+   * Gesetzt = der NACHname dieses Profils faellt in der oeffentlichen Anzeige
+   * weg (Antrag nach Art. 17/21 DSGVO). Scorerlisten, Aufstellungen,
+   * Statistikseiten und Livestream-Overlays fuehren dann nur noch den
+   * Vornamen; ein Platzhalter oder eine Initiale tritt nicht an seine Stelle.
+   *
+   * In der Verwaltung, also auch in diesem Profil, steht weiter der volle
+   * Name: Ohne ihn liesse sich dieselbe Person ein zweites Mal anlegen, und
+   * Sperren wie Lizenzhistorie haengen daran.
+   */
+  public_last_name_hidden_at?: string | null;
+  /**
+   * Interner Vermerk zum Antrag, etwa dessen Aktenzeichen. Bleibt auch nach
+   * einer Ruecknahme stehen, er ist der Beleg nach Art. 5 Abs. 2 DSGVO.
+   */
+  public_last_name_hidden_reason?: string | null;
+  /**
+   * Nur in der Antwort zu einem einzelnen Profil (`admin/players/:id`): Darf
+   * der angemeldete Benutzer den Schalter setzen und zuruecknehmen?
+   *
+   * Anders als `can_deactivate` gibt es dazu kein Rollen-Flag im Browser.
+   * Fehlt das Feld, ist die API aelter als die Funktion und die Maske bietet
+   * sie nicht an.
+   */
+  can_hide_public_last_name?: boolean;
 }
 
 // Bericht des CSV-Nachtrags in der Vereinssicht (admin/vm/players/import).
@@ -130,6 +155,11 @@ export interface PlayerWithLicense extends Player {
     // brauchten – eine Zweitvereins-Zugehörigkeit ohne Freigabeverfahren
     // zählt bewusst nicht.
     released_at?: string | null;
+    // Der Expresszuschlag steht NICHT hier, sondern an der Lizenz selbst
+    // (`license.express`). In der Ligaliste ist `team_license` ein Umschlag um
+    // den rohen Eintrag (League#build_license_items), im Lizenzwesen des
+    // Vereins ist `team_license` der rohe Eintrag selbst
+    // (ClubsController#team_licenses_hash) und traegt das Feld deshalb direkt.
     express?: boolean;
     // Je Dokumentart drei Einträge: <key> (liegt vor), <key>_url (Abruf) und
     // <key>_uploaded_at (Zeitpunkt des Uploads, nur gesetzt, wenn auch eine
@@ -230,6 +260,10 @@ export interface PlayerLicense {
   league?: League;
   league_class_id: string;
   requested_at: string;
+  // Als Expresslizenz beantragt, also mit Zuschlag nach Gebührenordnung. Gesetzt
+  // beim Antrag; die Genehmigung kann den Zuschlag streichen, dann steht hier
+  // `false`.
+  express?: boolean;
   // Darf DIESE Lizenz gelöscht werden? Die Regel dahinter steht in der API an
   // einer Stelle (License.deletable?): laufende Saison, Status erteilt oder
   // beantragt. Sie hier nachzubauen hieße, einen Knopf anzubieten, der in ein
