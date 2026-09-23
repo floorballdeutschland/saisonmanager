@@ -431,7 +431,7 @@ export const routes: Routes = [
       ),
   },
   {
-    // Öffentliche Seite „Heute live". MUSS vor der Auffangroute stehen: Die
+    // Öffentliche Seite „Heute live". MUSS vor dem Spielbetriebs-Host stehen: Der
     // fängt mit ':association' jedes erste URL-Segment ab, und /live landete
     // sonst beim Spielbetrieb statt hier.
     path: '',
@@ -440,7 +440,7 @@ export const routes: Routes = [
     data: { preload: true },
   },
   {
-    // MUSS als letzte Route stehen: Der Spielbetriebs-Host matcht mit
+    // MUSS direkt vor der 404-Seite stehen: Der Spielbetriebs-Host matcht mit
     // ':association' jedes erste URL-Segment. Bleibt danach nichts übrig (also
     // bei einer Ein-Segment-URL wie /email-bestaetigen), gilt die Route als
     // getroffen und die Seite bleibt leer, weil nur der Host-Rahmen ohne
@@ -451,6 +451,20 @@ export const routes: Routes = [
         (m) => m.PublicAssociationHostModule
       ),
     data: { preload: true },
+  },
+  {
+    // MUSS als letzte Route stehen: '**' fängt alles, was keine Route davor
+    // getroffen hat. Ohne sie warf jeder unbekannte Pfad ab drei Segmenten
+    // NG04002 und hinterließ eine leere Seite (#455). Kürzere Pfade erreichen
+    // sie nicht, die nimmt der Spielbetriebs-Host vorher ab: ein Segment als
+    // ':association' mit leerem Rahmen, zwei Segmente als ':leagueId' mit der
+    // Ligaübersicht (/verwaltung/gibtsnicht wird so zur Übersicht der
+    // „Liga" gibtsnicht). Das gilt schon vor dieser Route.
+    // Das Prerendering nimmt sie nicht mit: Es rendert nur die Liste aus
+    // prerender-routes.txt (discoverRoutes: false).
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/not-found').then((m) => m.PublicNotFoundModule),
   },
 ];
 
