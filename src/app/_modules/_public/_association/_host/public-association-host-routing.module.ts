@@ -2,15 +2,21 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import * as Views from './_views';
+import {
+  associationMatchGuard,
+  leagueIdMatchGuard,
+} from './association-host.guards';
 
 const routes: Routes = [
   {
     path: ':association',
     component: Views.AssociationHostComponent,
+    canMatch: [associationMatchGuard],
     children: [
       {
         path: ':leagueId',
         component: Views.LeagueHostComponent,
+        canMatch: [leagueIdMatchGuard],
         children: [
           {
             path: '',

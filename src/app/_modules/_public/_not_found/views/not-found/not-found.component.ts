@@ -11,9 +11,10 @@ import { Meta } from '@angular/platform-browser';
  *
  * Vorher warf jeder unbekannte Pfad ab drei Segmenten `NG04002` in den
  * globalen ErrorHandler: Der Besucher sah eine leere Seite, und Sentry sammelte
- * die Aufrufe alter Lesezeichen und verbogener Links (#455). Pfade mit einem
- * oder zwei Segmenten kommen hier nicht an, die nimmt der Spielbetriebs-Host
- * als Verband bzw. Liga ab.
+ * die Aufrufe alter Lesezeichen und verbogener Links (#455). Kürzere Pfade
+ * kommen hier an, wenn der Spielbetriebs-Host sie ablehnt: unbekanntes
+ * Verbandskürzel oder ein Liga-Segment ohne führende ID
+ * (association-host.guards.ts).
  *
  * nginx liefert für jeden Pfad die index.html mit Status 200 aus. Ohne das
  * `noindex` wäre die Seite ein Soft-404, den Suchmaschinen aufnehmen.

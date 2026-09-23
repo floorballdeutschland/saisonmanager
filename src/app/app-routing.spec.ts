@@ -1,14 +1,18 @@
 import { Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import {
   ActivatedRouteSnapshot,
   provideRouter,
   Router,
   RoutesRecognized,
 } from '@angular/router';
-import { filter, firstValueFrom } from 'rxjs';
+import { config, filter, firstValueFrom, tap } from 'rxjs';
+import { AssociationService } from '@floorball/core';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { getTranslocoTestingModule } from './_modules/_core/_i18n/transloco-testing';
 import { NotFoundComponent } from './_modules/_public/_not_found/views';
@@ -58,6 +62,10 @@ describe('App-Routing', () => {
   });
 
   describe('unbekannte Pfade', () => {
+    let httpMock: HttpTestingController;
+
+    const initRequest = (req: { url: string }) => req.url.endsWith('init.json');
+
     beforeEach(() => {
       TestBed.configureTestingModule({
         imports: [getTranslocoTestingModule()],
@@ -67,15 +75,63 @@ describe('App-Routing', () => {
           provideHttpClientTesting(),
         ],
       });
+      httpMock = TestBed.inject(HttpTestingController);
     });
 
-    // Die Pfade stammen aus Sentry (#455): ein Unterpfad, den es nie gab, und
-    // eine Streamadresse, die als Pfad im Spielbericht stand.
+    // Stellt sicher, dass die Verbandsprüfung keinen eigenen init.json-Request
+    // stellt, solange die erste Antwort nicht gescheitert ist.
+    afterEach(() => httpMock.verify());
+
+    // Die Verbandsprüfung des Hosts liest die Kürzel aus init.json. Der
+    // Service lädt sie einmal und hält sie danach vor, wie im Betrieb.
+    function answerInit(): void {
+      TestBed.inject(AssociationService);
+      httpMock.expectOne(initRequest).flush({
+        game_operations: [{ id: 1, name: 'Floorball Deutschland', path: 'fd' }],
+        seasons: [],
+        current_season_id: 18,
+      });
+    }
+
+    // Erkennung ohne Aktivierung: Die Navigation wird nach RoutesRecognized
+    // abgebrochen, damit keine Seite rendert und eigene Requests stellt, die
+    // httpMock.verify() dann anmahnen würde.
+    async function recognizedLeaf(
+      url: string,
+      whileWaiting?: () => Promise<void>
+    ): Promise<ActivatedRouteSnapshot> {
+      const router = TestBed.inject(Router);
+      const recognized = firstValueFrom(
+        router.events.pipe(
+          filter((e) => e instanceof RoutesRecognized),
+          tap(() => router.currentNavigation()?.abort())
+        )
+      );
+      router.navigateByUrl(url).catch(() => undefined);
+      await whileWaiting?.();
+
+      let leaf: ActivatedRouteSnapshot = (await recognized).state.root;
+      while (leaf.firstChild) {
+        leaf = leaf.firstChild;
+      }
+      return leaf;
+    }
+
+    // Die ersten beiden Pfade stammen aus Sentry (#455): ein Unterpfad, den es
+    // nie gab, und eine Streamadresse, die als Pfad im Spielbericht stand. Die
+    // übrigen nahm früher der Spielbetriebs-Host ab, als Verband mit leerem
+    // Rahmen bzw. als Übersicht einer Liga, die es nicht gibt.
     for (const url of [
       '/fd/2447-1-fbl-herren/spielplan',
       '/fd/1524-regionalligameisterschaft/spiel/www.twitch.tv/floorballtsc',
+      '/gibtsnicht',
+      '/verwaltung/gibtsnicht',
+      '/gibts/nicht',
+      '/fd/gibtsnicht',
+      '/gibtsnicht/2447-1-fbl-herren',
     ]) {
       it(`landen auf der 404-Seite: ${url}`, async () => {
+        answerInit();
         const harness = await RouterTestingHarness.create();
         const component = await harness.navigateByUrl(url, NotFoundComponent);
 
@@ -86,51 +142,61 @@ describe('App-Routing', () => {
       });
     }
 
-    // Gegenprobe: Bekannte tiefe Pfade des Spielbetriebs erreichen die
-    // 404-Seite nicht. Geprüft wird nur die Erkennung, nicht das Rendern, das
-    // echte Daten bräuchte.
-    for (const url of [
-      '/fd/2447-1-fbl-herren/tabelle',
-      '/fd/2447-1-fbl-herren/spiel/123',
+    // Gegenprobe mit echten Verbandspfaden, darunter die Formen aus
+    // prerender-routes.txt. Geprüft wird nur die Erkennung, nicht das Rendern,
+    // das echte Daten bräuchte.
+    for (const [url, component] of [
+      ['/fd', 'AssociationHostComponent'],
+      ['/fd/2447', 'OverviewComponent'],
+      ['/fd/2447-1-fbl-herren', 'OverviewComponent'],
+      ['/fd/2447-1-fbl-herren/tabelle', 'RankingComponent'],
+      ['/fd/2447-1-fbl-herren/scorer', 'ScorerComponent'],
+      ['/fd/2447-1-fbl-herren/spiel/123', 'MatchComponent'],
     ]) {
       it(`erkennt weiterhin den Spielbetrieb: ${url}`, async () => {
-        const router = TestBed.inject(Router);
-        const recognized = firstValueFrom(
-          router.events.pipe(filter((e) => e instanceof RoutesRecognized))
-        );
-        router.navigateByUrl(url).catch(() => undefined);
+        answerInit();
+        const leaf = await recognizedLeaf(url);
 
-        let leaf: ActivatedRouteSnapshot = (await recognized).state.root;
-        while (leaf.firstChild) {
-          leaf = leaf.firstChild;
-        }
-
-        expect(leaf.component).toBeDefined();
         expect(leaf.component).not.toBe(NotFoundComponent);
+        expect(leaf.component?.name).toBe(component);
       });
     }
 
-    // Ist-Stand, keine Wunschvorstellung: Ein- und Zwei-Segment-Pfade nimmt
-    // der Spielbetriebs-Host über ':association' bzw. ':leagueId' ab, bevor
-    // die 404-Seite an die Reihe kommt. /verwaltung/gibtsnicht zeigt deshalb
-    // die Ligaübersicht einer „Liga" gibtsnicht. Prüft der Host künftig den
-    // Verband (canMatch), muss dieser Test auf die 404-Seite umgestellt werden.
-    for (const url of ['/verwaltung/gibtsnicht', '/gibts/nicht']) {
-      it(`überlässt zwei Segmente dem Spielbetriebs-Host: ${url}`, async () => {
-        const router = TestBed.inject(Router);
-        const recognized = firstValueFrom(
-          router.events.pipe(filter((e) => e instanceof RoutesRecognized))
-        );
-        router.navigateByUrl(url).catch(() => undefined);
+    // Rückfall: Antwortet init.json nicht, entscheidet die Prüfung für den Host
+    // wie vor der Verbandsprüfung, statt eine 404 zu zeigen.
+    describe('wenn init.json scheitert', () => {
+      let previousHandler: typeof config.onUnhandledError;
 
-        let leaf: ActivatedRouteSnapshot = (await recognized).state.root;
-        while (leaf.firstChild) {
-          leaf = leaf.firstChild;
-        }
-
-        expect(leaf.component?.name).toBe('OverviewComponent');
-        expect(leaf.parent?.paramMap.has('leagueId')).toBeTrue();
+      // Die internen Abos des AssociationService haben keinen Fehlerzweig;
+      // rxjs würfe den Fehler sonst asynchron in einen fremden Test.
+      beforeEach(() => {
+        previousHandler = config.onUnhandledError;
+        config.onUnhandledError = () => undefined;
       });
-    }
+      afterEach(() => (config.onUnhandledError = previousHandler));
+
+      it('überlässt /gibtsnicht dem Spielbetriebs-Host', async () => {
+        TestBed.inject(AssociationService);
+        httpMock
+          .expectOne(initRequest)
+          .flush(null, { status: 0, statusText: 'Unknown Error' });
+
+        // Nach dem Fehler hält shareReplay nichts vor, die Prüfung stellt einen
+        // neuen Request. Auch der scheitert.
+        const leaf = await recognizedLeaf('/gibtsnicht', async () => {
+          let retry = httpMock.match(initRequest);
+          for (let i = 0; retry.length === 0 && i < 50; i++) {
+            await new Promise((resolve) => setTimeout(resolve));
+            retry = httpMock.match(initRequest);
+          }
+          expect(retry.length).toBe(1);
+          retry.forEach((req) =>
+            req.flush(null, { status: 0, statusText: 'Unknown Error' })
+          );
+        });
+
+        expect(leaf.component?.name).toBe('AssociationHostComponent');
+      });
+    });
   });
 });
