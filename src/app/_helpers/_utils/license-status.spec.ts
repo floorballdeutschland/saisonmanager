@@ -91,4 +91,70 @@ describe('Lizenzverlauf', () => {
 
     expect(sorted.map((h) => h.license_status_id)).toEqual([4, 1]);
   });
+
+  describe('Zeitpunkte statt Text, wie LicenseEffectiveStatus (api#747)', () => {
+    it('vergleicht gemischte Offsets als Zeitpunkte', () => {
+      // 19:59+02:00 ist 17:59 UTC, also früher als 18:25 UTC, sortiert als
+      // Text aber dahinter.
+      const earlier = entry(1, '2026-09-01T19:59:00+02:00');
+      const later = entry(8, '2026-09-01T18:25:00+00:00');
+
+      expect(latestLicenseHistory([earlier, later])).toBe(later);
+      expect(latestLicenseHistory([later, earlier])).toBe(later);
+      expect(chronologicalLicenseHistory([later, earlier])).toEqual([
+        earlier,
+        later,
+      ]);
+    });
+
+    it('liest "Z" und ".500+00:00" als Zeitpunkte', () => {
+      const whole = entry(1, '2026-09-01T18:25:00Z');
+      const half = entry(8, '2026-09-01T18:25:00.500+00:00');
+
+      expect(latestLicenseHistory([half, whole])).toBe(half);
+      expect(latestLicenseHistory([whole, half])).toBe(half);
+    });
+
+    it('lässt einen unlesbaren Zeitstempel gegen jeden lesbaren verlieren', () => {
+      const dated = entry(1, '2020-01-01T00:00:00Z');
+      const unreadable = entry(8, 'unbekannt');
+      // Date.parse läse das, die API nicht: ohne JJJJ-MM-TT am Anfang undatiert.
+      const usFormat = entry(3, '09/01/2026');
+
+      expect(latestLicenseHistory([unreadable, dated])).toBe(dated);
+      expect(latestLicenseHistory([dated, unreadable])).toBe(dated);
+      expect(latestLicenseHistory([usFormat, dated])).toBe(dated);
+      expect(chronologicalLicenseHistory([dated, unreadable])).toEqual([
+        unreadable,
+        dated,
+      ]);
+    });
+
+    it('bricht gleiche Zeitpunkte über den Text', () => {
+      const withOffset = entry(1, '2026-09-01T20:25:00+02:00');
+      const utc = entry(8, '2026-09-01T18:25:00Z');
+
+      // Gleicher Zeitpunkt, "2026-09-01T20…" ist als Text größer.
+      expect(latestLicenseHistory([utc, withOffset])).toBe(withOffset);
+      expect(latestLicenseHistory([withOffset, utc])).toBe(withOffset);
+    });
+
+    it('nimmt bei vollem Gleichstand den frühesten im Array, wie max_by', () => {
+      const first = entry(1, '2026-09-01T18:25:00Z');
+      const second = entry(8, '2026-09-01T18:25:00Z');
+
+      expect(latestLicenseHistory([first, second])).toBe(first);
+      expect(latestLicenseHistory([second, first])).toBe(second);
+    });
+
+    it('zeigt bei vollem Gleichstand den Status-Eintrag zuletzt', () => {
+      const first = entry(1, '2026-09-01T18:25:00Z');
+      const second = entry(8, '2026-09-01T18:25:00Z');
+      const history = [first, second];
+
+      const sorted = chronologicalLicenseHistory(history);
+
+      expect(sorted[sorted.length - 1]).toBe(latestLicenseHistory(history)!);
+    });
+  });
 });
