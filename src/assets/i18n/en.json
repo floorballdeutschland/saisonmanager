@@ -149,5 +149,10 @@
   "systemHealth": {
     "bannerCritical": "Server disk space is {{percent}} % full.",
     "bannerLink": "View system health"
+  },
+  "notFound": {
+    "title": "This page does not exist",
+    "intro": "The address you requested is unknown. The link may be outdated or mistyped.",
+    "home": "Go to the home page"
   }
 }
