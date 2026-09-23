@@ -20,6 +20,7 @@ import { NotificationService, PlayerService } from '@floorball/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs/operators';
 import { readUploadedAt } from '../../_utils/document-upload-date';
+import { latestLicenseHistory } from 'src/app/_helpers/_utils/license-status';
 
 @Component({
   selector: 'fb-license-admin-detail',
@@ -196,48 +197,18 @@ export class LicenseAdminDetailComponent implements OnInit {
   /**
    * Der jüngste History-Eintrag einer Lizenz -- die Rückfallquelle von
    * `licenseStatusId`, wenn die API kein `effective_status_id` liefert.
+   * Auswahlregel und ihre Grenzen: `latestLicenseHistory`.
    *
-   * Nicht das letzte Array-Element, wie es die Vorlage bis hierher nahm. Die
-   * History ist nicht sortiert: Beim Spieler-Merge werden die Verläufe zweier
-   * Profile schlicht aneinandergehängt (`Player#merge`, api), und gemischte
-   * Zeitzonen-Offsets können die Reihenfolge ohnehin umkehren. Die API liest
-   * den Eintrag deshalb über `max_by { created_at.to_s }`
-   * (LicenseEffectiveStatus).
-   *
-   * Diese Faltung bildet genau das nach, bis in den Gleichstand hinein: Sie
-   * beginnt beim ERSTEN Eintrag und ersetzt nur bei einem echt jüngeren.
-   * Tragen mehrere Einträge denselben Zeitstempel, gewinnt also der früheste
-   * im Array -- dasselbe tut Rubys `max_by`. Ein Eintrag ohne Zeitstempel
-   * verliert gegen jeden datierten, an welcher Stelle er auch steht; tragen
-   * alle keinen, bleibt es beim ersten.
-   *
-   * Zwei Grenzen, die nur noch auf diesem Rückfallpfad greifen -- mit
-   * `effective_status_id` beantwortet die API beide:
-   *
-   * 1. Der Vergleich als Zeichenkette ist nur bei EINHEITLICHEM Offset auch
-   *    chronologisch. `Time#as_json` schreibt den Offset mit, und
-   *    `…T23:59:00.000+02:00` sortiert hinter `…T18:25:00.000+00:00`, obwohl
-   *    es früher liegt. Die API hat dieselbe Schwäche (`created_at.to_s`), die
-   *    Anzeige weicht davon also nicht ab.
-   * 2. Die Lizenzlisten der API nehmen nicht diesen Eintrag, sondern den
-   *    jüngsten OHNE Sperre und legen die aktiven Sperren getrennt darüber.
-   *    Eine abgelaufene Sperre, deren `gesperrt`-Eintrag in der History stehen
-   *    bleibt, zählt dort nicht mehr -- hier schon.
-   *
-   * Rückgabetyp `PlayerLicenseHistory`, obwohl bei leerer History `undefined`
-   * herauskommt -- ohne `noUncheckedIndexedAccess` sieht TypeScript das nicht.
-   * Empfänger ist `licenseStatusId`, dessen `?.` den Fall abfängt.
+   * Eine Grenze greift nur hier, weil nur hier die Lizenzlisten der API
+   * danebenstehen: Die nehmen nicht diesen Eintrag, sondern den jüngsten OHNE
+   * Sperre und legen die aktiven Sperren getrennt darüber. Eine abgelaufene
+   * Sperre, deren `gesperrt`-Eintrag in der History stehen bleibt, zählt dort
+   * nicht mehr -- hier schon. Mit `effective_status_id` beantwortet die API das.
    */
-  public latestHistory(license: PlayerLicense): PlayerLicenseHistory {
-    const history = license?.history ?? [];
-
-    return history.reduce(
-      (newest, entry) =>
-        String(entry?.created_at ?? '') > String(newest?.created_at ?? '')
-          ? entry
-          : newest,
-      history[0]
-    );
+  public latestHistory(
+    license: PlayerLicense
+  ): PlayerLicenseHistory | undefined {
+    return latestLicenseHistory(license?.history);
   }
 
   public toggleDetails(): void {

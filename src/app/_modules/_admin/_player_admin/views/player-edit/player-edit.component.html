@@ -718,7 +718,7 @@
                       }
                       <br />
                       {{ "playerAdmin.edit.history" | transloco }}<br />
-                      @for (hist of license.history; track hist) {
+                      @for (hist of licenseHistory(license); track hist) {
                         <div>
                           {{
                             hist.created_at | safeDate: "dd.MM.yyyy HH:mm:ss"
