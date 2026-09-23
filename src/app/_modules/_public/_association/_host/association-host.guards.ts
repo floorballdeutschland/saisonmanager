@@ -5,8 +5,9 @@ import { catchError, map, of, take, timeout } from 'rxjs';
 
 // Wie lange die Prüfung auf `init.json` wartet, bevor sie den Host durchlässt.
 // Die Antwort braucht die Seite ohnehin; hängt sie, soll wenigstens die
-// Navigation nicht mit hängen.
-export const ASSOCIATION_MATCH_TIMEOUT_MS = 10_000;
+// Navigation nicht mit hängen. Knapp gehalten, weil ohne Hydration der
+// Inhaltsbereich während des Wartens leer bleibt.
+export const ASSOCIATION_MATCH_TIMEOUT_MS = 5_000;
 
 /**
  * Lässt den Spielbetriebs-Host nur für Kürzel zu, die es als Spielbetrieb gibt.
@@ -19,9 +20,12 @@ export const ASSOCIATION_MATCH_TIMEOUT_MS = 10_000;
  * gewählten Spielbetrieb leer, und die Liga wird darüber aufgelöst.
  *
  * Die Kürzel kommen aus `init.json`, die der AssociationService beim Start
- * einmal lädt und zwischenspeichert (`shareReplay`). Die Prüfung stellt also
- * keinen eigenen Request. Verglichen wird wie in `selectedAssociation$`, exakt
- * gegen `path` (in der API `GameOperation#slug`).
+ * einmal lädt und zwischenspeichert (`shareReplay`). Solange diese Antwort
+ * nicht scheitert, stellt die Prüfung keinen eigenen Request. Nach einem
+ * Fehler hält `shareReplay` nichts vor (resetOnError), und die nächste
+ * Navigation auf den Host stellt einen neuen Request. Verglichen wird wie in
+ * `selectedAssociation$`, exakt gegen `path` (in der API
+ * `GameOperation#slug`).
  *
  * Scheitert oder hängt `init.json`, geht der Pfad an den Host wie bisher:
  * Lieber einmal zu viel der leere Rahmen als eine 404 für einen echten

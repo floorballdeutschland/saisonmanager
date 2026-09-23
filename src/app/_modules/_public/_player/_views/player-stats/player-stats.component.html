@@ -82,7 +82,7 @@
                     <a
                       [routerLink]="[
                         '/',
-                        league.game_operation.toLowerCase(),
+                        associationPath(league.game_operation),
                         league.league_slug,
                       ]"
                       class="hover:underline"

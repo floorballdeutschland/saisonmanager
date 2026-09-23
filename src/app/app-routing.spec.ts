@@ -11,7 +11,7 @@ import {
   Router,
   RoutesRecognized,
 } from '@angular/router';
-import { filter, firstValueFrom } from 'rxjs';
+import { config, filter, firstValueFrom, tap } from 'rxjs';
 import { AssociationService } from '@floorball/core';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { getTranslocoTestingModule } from './_modules/_core/_i18n/transloco-testing';
@@ -62,6 +62,10 @@ describe('App-Routing', () => {
   });
 
   describe('unbekannte Pfade', () => {
+    let httpMock: HttpTestingController;
+
+    const initRequest = (req: { url: string }) => req.url.endsWith('init.json');
+
     beforeEach(() => {
       TestBed.configureTestingModule({
         imports: [getTranslocoTestingModule()],
@@ -71,29 +75,40 @@ describe('App-Routing', () => {
           provideHttpClientTesting(),
         ],
       });
-
-      // Die Verbandsprüfung des Hosts liest die Kürzel aus init.json. Der
-      // Service lädt sie einmal und hält sie danach vor, wie im Betrieb.
-      TestBed.inject(AssociationService);
-      TestBed.inject(HttpTestingController)
-        .expectOne((req) => req.url.endsWith('init.json'))
-        .flush({
-          game_operations: [
-            { id: 1, name: 'Floorball Deutschland', path: 'fd' },
-          ],
-          seasons: [],
-          current_season_id: 18,
-        });
+      httpMock = TestBed.inject(HttpTestingController);
     });
 
+    // Stellt sicher, dass die Verbandsprüfung keinen eigenen init.json-Request
+    // stellt, solange die erste Antwort nicht gescheitert ist.
+    afterEach(() => httpMock.verify());
+
+    // Die Verbandsprüfung des Hosts liest die Kürzel aus init.json. Der
+    // Service lädt sie einmal und hält sie danach vor, wie im Betrieb.
+    function answerInit(): void {
+      TestBed.inject(AssociationService);
+      httpMock.expectOne(initRequest).flush({
+        game_operations: [{ id: 1, name: 'Floorball Deutschland', path: 'fd' }],
+        seasons: [],
+        current_season_id: 18,
+      });
+    }
+
+    // Erkennung ohne Aktivierung: Die Navigation wird nach RoutesRecognized
+    // abgebrochen, damit keine Seite rendert und eigene Requests stellt, die
+    // httpMock.verify() dann anmahnen würde.
     async function recognizedLeaf(
-      url: string
+      url: string,
+      whileWaiting?: () => Promise<void>
     ): Promise<ActivatedRouteSnapshot> {
       const router = TestBed.inject(Router);
       const recognized = firstValueFrom(
-        router.events.pipe(filter((e) => e instanceof RoutesRecognized))
+        router.events.pipe(
+          filter((e) => e instanceof RoutesRecognized),
+          tap(() => router.currentNavigation()?.abort())
+        )
       );
       router.navigateByUrl(url).catch(() => undefined);
+      await whileWaiting?.();
 
       let leaf: ActivatedRouteSnapshot = (await recognized).state.root;
       while (leaf.firstChild) {
@@ -116,6 +131,7 @@ describe('App-Routing', () => {
       '/gibtsnicht/2447-1-fbl-herren',
     ]) {
       it(`landen auf der 404-Seite: ${url}`, async () => {
+        answerInit();
         const harness = await RouterTestingHarness.create();
         const component = await harness.navigateByUrl(url, NotFoundComponent);
 
@@ -138,11 +154,49 @@ describe('App-Routing', () => {
       ['/fd/2447-1-fbl-herren/spiel/123', 'MatchComponent'],
     ]) {
       it(`erkennt weiterhin den Spielbetrieb: ${url}`, async () => {
+        answerInit();
         const leaf = await recognizedLeaf(url);
 
         expect(leaf.component).not.toBe(NotFoundComponent);
         expect(leaf.component?.name).toBe(component);
       });
     }
+
+    // Rückfall: Antwortet init.json nicht, entscheidet die Prüfung für den Host
+    // wie vor der Verbandsprüfung, statt eine 404 zu zeigen.
+    describe('wenn init.json scheitert', () => {
+      let previousHandler: typeof config.onUnhandledError;
+
+      // Die internen Abos des AssociationService haben keinen Fehlerzweig;
+      // rxjs würfe den Fehler sonst asynchron in einen fremden Test.
+      beforeEach(() => {
+        previousHandler = config.onUnhandledError;
+        config.onUnhandledError = () => undefined;
+      });
+      afterEach(() => (config.onUnhandledError = previousHandler));
+
+      it('überlässt /gibtsnicht dem Spielbetriebs-Host', async () => {
+        TestBed.inject(AssociationService);
+        httpMock
+          .expectOne(initRequest)
+          .flush(null, { status: 0, statusText: 'Unknown Error' });
+
+        // Nach dem Fehler hält shareReplay nichts vor, die Prüfung stellt einen
+        // neuen Request. Auch der scheitert.
+        const leaf = await recognizedLeaf('/gibtsnicht', async () => {
+          let retry = httpMock.match(initRequest);
+          for (let i = 0; retry.length === 0 && i < 50; i++) {
+            await new Promise((resolve) => setTimeout(resolve));
+            retry = httpMock.match(initRequest);
+          }
+          expect(retry.length).toBe(1);
+          retry.forEach((req) =>
+            req.flush(null, { status: 0, statusText: 'Unknown Error' })
+          );
+        });
+
+        expect(leaf.component?.name).toBe('AssociationHostComponent');
+      });
+    });
   });
 });
