@@ -102,8 +102,8 @@
     "confirm": "Bestätigen",
     "reject": "Ablehnen",
     "transferApprovedEffective": "Transfer genehmigt, wird am",
-    "transferApprovedEffectiveSuffix": "wirksam.",
-    "dateReached": "Datum erreicht – Transfer kann jetzt vollzogen werden.",
+    "transferApprovedEffectiveSuffix": "automatisch vollzogen.",
+    "dateReached": "Datum erreicht: Der Transfer wird beim nächsten nächtlichen Lauf automatisch vollzogen oder kann jetzt von Hand vollzogen werden.",
     "executeTransfer": "Transfer jetzt vollziehen",
     "approveLv": "Genehmigen (LV)",
     "rejectPrompt": "Bitte gib einen Ablehnungsgrund an:",
@@ -153,7 +153,7 @@
   "direct": {
     "back": "← Zurück",
     "title": "Direktzuweisung",
-    "intro": "Weist einen Spieler direkt einem Verein zu – ohne den mehrstufigen Genehmigungsprozess. Der Wechsel wird sofort vollzogen und erscheint in der Transferliste. Zuweisen darf, wer für den abgebenden Verein zuständig ist; der aufnehmende Verein darf in jedem Landesverband liegen. Deaktivierte Vereine stehen nicht zur Auswahl. Auf dieser Seite können Transfers direkt durchgeführt werden. Spielerfreigaben können weiterhin auf den Spielerdetailseiten eingerichtet werden.",
+    "intro": "Weist einen Spieler direkt einem Verein zu – ohne den mehrstufigen Genehmigungsprozess. Der Wechsel wird sofort vollzogen und erscheint in der Transferliste. Mit Wunschdatum wird er stattdessen geplant und an diesem Tag automatisch vollzogen. Zuweisen darf, wer für den abgebenden Verein zuständig ist; der aufnehmende Verein darf in jedem Landesverband liegen. Deaktivierte Vereine stehen nicht zur Auswahl. Auf dieser Seite können Transfers direkt durchgeführt werden. Spielerfreigaben können weiterhin auf den Spielerdetailseiten eingerichtet werden.",
     "requestingClub": "Aufnehmender Verein",
     "chooseClub": "– Verein wählen –",
     "firstName": "Vorname",
@@ -165,7 +165,10 @@
     "submitting": "Wird zugewiesen…",
     "assignDirectly": "Direkt zuweisen",
     "deactivatedHint": "Dieses Profil ist von seinem Verein deaktiviert. Das ist kein Hindernis: Mit der Aufnahme entfällt die Kennzeichnung.",
-    "transferBlocked": "Für diesen Spieler läuft bereits ein Transfer. Er muss zuerst annulliert werden."
+    "transferBlocked": "Für diesen Spieler läuft bereits ein Transfer. Er muss zuerst annulliert werden.",
+    "effectiveDate": "Wunschdatum (optional)",
+    "effectiveDateHint": "Leer lassen, um sofort zuzuweisen. Bei einem späteren Datum bleibt der Spieler bis dahin im abgebenden Verein, der Transfer wird an diesem Tag automatisch vollzogen und lässt sich bis dahin annullieren.",
+    "assignScheduled": "Zum Wunschdatum zuweisen"
   },
   "notifications": {
     "loadError": "Transferanträge konnten nicht geladen werden.",
@@ -197,7 +200,8 @@
     "transferExecuted": "Transfer vollzogen.",
     "executeError": "Transfer konnte nicht vollzogen werden.",
     "directAssignSuccess": "Direktzuweisung durchgeführt.",
-    "directAssignError": "Direktzuweisung fehlgeschlagen."
+    "directAssignError": "Direktzuweisung fehlgeschlagen.",
+    "directAssignScheduled": "Direktzuweisung geplant, Vollzug am {{ date }}."
   },
   "incoming": {
     "title": "Eingehende Transfers & Freigaben",
