@@ -33,7 +33,7 @@
     "scanPending": "Paper sheet pending",
     "commentTitle": "Note for the committee",
     "scanTitle": "Paper match report sheet",
-    "scanUploaded": "Uploaded on {{date}} by {{name}}",
+    "scanUploaded": "Uploaded on {{date}} by",
     "scanDaysAfter": "{{days}} days after the game day",
     "scanDownload": "Download",
     "scanOpening": "Opening …",
@@ -74,6 +74,7 @@
   },
   "linked": {
     "refereeReport": "Referee report form from {{date}}",
+    "uploadedBy": "by",
     "proceedingProposal": "Proceeding proposal",
     "openProposals": "Go to overview",
     "checklistNegative": "{{count}} item(s) answered with no in the game day report",

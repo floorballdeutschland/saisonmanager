@@ -1,4 +1,6 @@
 import { getTranslocoTestingModule } from '@floorball/core';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import {
   HttpClientTestingModule,
@@ -7,6 +9,48 @@ import {
 import { GameDayReportRow, GameReportStatus } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { MatchReportIndexComponent } from './match-report-index.component';
+
+function row(overrides: Partial<GameDayReportRow> = {}): GameDayReportRow {
+  return {
+    id: 1,
+    game_number: '10',
+    start_time: '18:00',
+    game_day_id: 100,
+    game_day_number: 1,
+    date: '2026-02-01',
+    league_id: 5,
+    league_name: 'Regionalliga',
+    game_operation_slug: 'sbk-ost',
+    arena_name: 'Halle',
+    hosting_club_name: 'Verein',
+    home_team: 'Heim',
+    guest_team: 'Gast',
+    result_string: '3:2',
+    game_status: 'match_record_closed',
+    record_created_at: '2026-02-01T19:00:00Z',
+    record_updated_at: '2026-02-01T20:30:00Z',
+    record_updated_by_name: 'Anna Muster',
+    match_record_closed_at: '2026-02-01T20:35:00Z',
+    record_comment: null,
+    scan_required: false,
+    scan: null,
+    referee_report: null,
+    proceeding_proposal: null,
+    checklist_negative_count: 0,
+    checklist_veto_submitted_at: null,
+    checklist_veto_negative_count: 0,
+    flags: {
+      protest: false,
+      forfait: false,
+      special_event_string: null,
+      severe_penalty_count: 0,
+      missing_audience: false,
+      missing_signatures: false,
+      missing_referee2: false,
+    },
+    ...overrides,
+  };
+}
 
 describe('MatchReportIndexComponent', () => {
   let component: MatchReportIndexComponent;
@@ -29,48 +73,6 @@ describe('MatchReportIndexComponent', () => {
   });
 
   afterEach(() => httpMock.verify());
-
-  function row(overrides: Partial<GameDayReportRow> = {}): GameDayReportRow {
-    return {
-      id: 1,
-      game_number: '10',
-      start_time: '18:00',
-      game_day_id: 100,
-      game_day_number: 1,
-      date: '2026-02-01',
-      league_id: 5,
-      league_name: 'Regionalliga',
-      game_operation_slug: 'sbk-ost',
-      arena_name: 'Halle',
-      hosting_club_name: 'Verein',
-      home_team: 'Heim',
-      guest_team: 'Gast',
-      result_string: '3:2',
-      game_status: 'match_record_closed',
-      record_created_at: '2026-02-01T19:00:00Z',
-      record_updated_at: '2026-02-01T20:30:00Z',
-      record_updated_by_name: 'Anna Muster',
-      match_record_closed_at: '2026-02-01T20:35:00Z',
-      record_comment: null,
-      scan_required: false,
-      scan: null,
-      referee_report: null,
-      proceeding_proposal: null,
-      checklist_negative_count: 0,
-      checklist_veto_submitted_at: null,
-      checklist_veto_negative_count: 0,
-      flags: {
-        protest: false,
-        forfait: false,
-        special_event_string: null,
-        severe_penalty_count: 0,
-        missing_audience: false,
-        missing_signatures: false,
-        missing_referee2: false,
-      },
-      ...overrides,
-    };
-  }
 
   function loadWith(rows: GameDayReportRow[], truncated = false) {
     component['_load']();
@@ -600,5 +602,116 @@ describe('MatchReportIndexComponent', () => {
     expect(component.pagedRows.length).toBe(25);
     component.changePage(2);
     expect(component.pagedRows.length).toBe(1);
+  });
+});
+
+// Mit echtem Template: nur die Darstellung der aufgeklappten Spielzeile.
+describe('MatchReportIndexComponent (Uploader-Kontakt)', () => {
+  let component: MatchReportIndexComponent;
+  let element: HTMLElement;
+  let render: () => void;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        CommonModule,
+        getTranslocoTestingModule(),
+        HttpClientTestingModule,
+      ],
+      declarations: [MatchReportIndexComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    // Kein Laden von Spielbetrieben und Ligen, nur die gesetzten Zeilen. Angular
+    // liest den Hook vom Prototyp, ein Spion am Exemplar griffe nicht.
+    spyOn(MatchReportIndexComponent.prototype, 'ngOnInit');
+    const fixture = TestBed.createComponent(MatchReportIndexComponent);
+    component = fixture.componentInstance;
+    element = fixture.nativeElement;
+    component.viewMode = 'games';
+    render = () => fixture.detectChanges();
+  });
+
+  function show(r: GameDayReportRow) {
+    component.rows = [r];
+    component.expandedGameIds.add(r.id);
+    render();
+  }
+
+  function mailLinks(): HTMLAnchorElement[] {
+    return Array.from(
+      element.querySelectorAll<HTMLAnchorElement>(
+        '[data-testid="uploader-mail"]'
+      )
+    );
+  }
+
+  it('verlinkt den Uploader des Papierbogens per Mail', () => {
+    show(
+      row({
+        scan_required: true,
+        scan: {
+          uploaded_at: '2026-02-02T10:00:00Z',
+          uploaded_by_name: 'Anna Muster',
+          uploaded_by_email: 'anna@example.org',
+          days_after_game_day: 1,
+          expired: false,
+        },
+      })
+    );
+
+    const links = mailLinks();
+    expect(links.length).toBe(1);
+    expect(links[0].getAttribute('href')).toBe('mailto:anna@example.org');
+    expect(links[0].textContent?.trim()).toBe('Anna Muster');
+  });
+
+  it('zeigt den Namen ohne Link, wenn keine Adresse vorliegt', () => {
+    show(
+      row({
+        scan_required: true,
+        scan: {
+          uploaded_at: '2026-02-02T10:00:00Z',
+          uploaded_by_name: 'Anna Muster',
+          uploaded_by_email: null,
+          days_after_game_day: 1,
+          expired: false,
+        },
+      })
+    );
+
+    expect(mailLinks().length).toBe(0);
+    expect(element.textContent).toContain('Anna Muster');
+  });
+
+  it('verlinkt den Uploader des Schiedsrichter-Berichtsformulars', () => {
+    show(
+      row({
+        referee_report: {
+          uploaded_at: '2026-02-02T10:00:00Z',
+          uploaded_by_name: 'Sam Schiri',
+          uploaded_by_email: 'sam@example.org',
+        },
+      })
+    );
+
+    const links = mailLinks();
+    expect(links.length).toBe(1);
+    expect(links[0].getAttribute('href')).toBe('mailto:sam@example.org');
+    expect(links[0].textContent?.trim()).toBe('Sam Schiri');
+  });
+
+  it('nimmt die Adresse als Linktext, wenn der Name nur aus Leerzeichen besteht', () => {
+    show(
+      row({
+        referee_report: {
+          uploaded_at: '2026-02-02T10:00:00Z',
+          uploaded_by_name: ' ',
+          uploaded_by_email: 'sam@example.org',
+        },
+      })
+    );
+
+    expect(mailLinks()[0].textContent?.trim()).toBe('sam@example.org');
   });
 });
