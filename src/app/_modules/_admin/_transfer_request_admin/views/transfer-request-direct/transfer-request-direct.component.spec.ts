@@ -6,6 +6,7 @@ import {
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 
+import { NotificationService } from '@floorball/core';
 import { getTranslocoTestingModule } from 'src/app/_modules/_core/_i18n/transloco-testing';
 import { TransferRequestDirectComponent } from './transfer-request-direct.component';
 
@@ -17,7 +18,17 @@ describe('TransferRequestDirectComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
-        getTranslocoTestingModule(),
+        getTranslocoTestingModule({
+          de: {
+            transferRequestAdmin: {
+              notifications: {
+                directAssignSuccess: 'Direktzuweisung durchgeführt.',
+                directAssignScheduled:
+                  'Direktzuweisung geplant, Vollzug am {{ date }}.',
+              },
+            },
+          },
+        }),
       ],
       declarations: [TransferRequestDirectComponent],
       schemas: [NO_ERRORS_SCHEMA],
@@ -82,6 +93,7 @@ describe('TransferRequestDirectComponent', () => {
 
   it('schickt das Wunschdatum mit und meldet den geplanten Vollzug', () => {
     const component = setupWithFoundPlayer();
+    const success = spyOn(TestBed.inject(NotificationService), 'success');
     component.effectiveDate = '2027-07-01';
     component.submit();
 
@@ -92,6 +104,24 @@ describe('TransferRequestDirectComponent', () => {
       effective_date: '2027-07-01',
     });
     req.flush({ id: 1, status: 'scheduled', effective_date: '2027-07-01' });
+
+    expect(success).toHaveBeenCalledOnceWith(
+      jasmine.stringContaining('01.07.2027')
+    );
+  });
+
+  it('meldet ohne Wunschdatum die sofortige Zuweisung', () => {
+    const component = setupWithFoundPlayer();
+    const success = spyOn(TestBed.inject(NotificationService), 'success');
+    component.submit();
+
+    httpMock
+      .expectOne((r) => r.url.includes('direct_assign'))
+      .flush({ id: 1, status: 'approved' });
+
+    expect(success).toHaveBeenCalledOnceWith(
+      jasmine.stringContaining('durchgeführt')
+    );
   });
 
   it('bietet als fruehestes Wunschdatum den lokalen heutigen Tag an', () => {
