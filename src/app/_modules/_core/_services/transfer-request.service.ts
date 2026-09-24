@@ -149,10 +149,17 @@ export class TransferRequestService {
   }
 
   // SBK/Admin: Spieler direkt einem anderen Verein zuweisen (ohne Genehmigungsflow).
-  directAssign(playerId: number, requestingClubId: number) {
+  // effectiveDate (JJJJ-MM-TT) in der Zukunft plant den Transfer, leer oder
+  // heute vollzieht sofort.
+  directAssign(
+    playerId: number,
+    requestingClubId: number,
+    effectiveDate: string | null = null
+  ) {
     return this.http.post<TransferRequest>(`${this.base}/direct_assign.json`, {
       player_id: playerId,
       requesting_club_id: requestingClubId,
+      ...(effectiveDate ? { effective_date: effectiveDate } : {}),
     });
   }
 }

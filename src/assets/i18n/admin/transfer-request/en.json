@@ -101,9 +101,9 @@
     "processing": "Processing…",
     "confirm": "Confirm",
     "reject": "Reject",
-    "transferApprovedEffective": "Transfer approved, will take effect on",
+    "transferApprovedEffective": "Transfer approved, will be carried out automatically on",
     "transferApprovedEffectiveSuffix": ".",
-    "dateReached": "Date reached – transfer can now be executed.",
+    "dateReached": "Date reached: the transfer will be carried out automatically in the next nightly run, or can be executed manually now.",
     "executeTransfer": "Execute transfer now",
     "approveLv": "Approve (LV)",
     "rejectPrompt": "Please provide a rejection reason:",
@@ -153,7 +153,7 @@
   "direct": {
     "back": "← Back",
     "title": "Direct assignment",
-    "intro": "Assigns a player directly to a club – without the multi-step approval process. The change takes effect immediately and appears in the transfer list. Assigning requires responsibility for the releasing club; the receiving club may be in any state association. Deactivated clubs are not offered. Transfers can be carried out directly on this page. Player releases can still be set up on the player detail pages.",
+    "intro": "Assigns a player directly to a club – without the multi-step approval process. The change takes effect immediately and appears in the transfer list. With a requested date it is scheduled instead and carried out automatically on that day. Assigning requires responsibility for the releasing club; the receiving club may be in any state association. Deactivated clubs are not offered. Transfers can be carried out directly on this page. Player releases can still be set up on the player detail pages.",
     "requestingClub": "Receiving club",
     "chooseClub": "– Choose club –",
     "firstName": "First name",
@@ -165,7 +165,10 @@
     "submitting": "Assigning…",
     "assignDirectly": "Assign directly",
     "deactivatedHint": "This profile has been deactivated by its club. That is not an obstacle: the marking is removed when the player joins.",
-    "transferBlocked": "A transfer for this player is already running. It has to be cancelled first."
+    "transferBlocked": "A transfer for this player is already running. It has to be cancelled first.",
+    "effectiveDate": "Requested date (optional)",
+    "effectiveDateHint": "Leave empty to assign immediately. With a later date the player stays with the releasing club until then; the transfer is carried out automatically on that day and can be cancelled before.",
+    "assignScheduled": "Assign on requested date"
   },
   "notifications": {
     "loadError": "Transfer requests could not be loaded.",
@@ -197,7 +200,8 @@
     "transferExecuted": "Transfer executed.",
     "executeError": "Transfer could not be executed.",
     "directAssignSuccess": "Direct assignment completed.",
-    "directAssignError": "Direct assignment failed."
+    "directAssignError": "Direct assignment failed.",
+    "directAssignScheduled": "Direct assignment scheduled, takes effect on {{ date }}."
   },
   "incoming": {
     "title": "Incoming transfers & releases",

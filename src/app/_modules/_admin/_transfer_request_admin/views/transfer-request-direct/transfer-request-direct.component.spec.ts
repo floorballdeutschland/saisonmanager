@@ -6,6 +6,7 @@ import {
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 
+import { NotificationService } from '@floorball/core';
 import { getTranslocoTestingModule } from 'src/app/_modules/_core/_i18n/transloco-testing';
 import { TransferRequestDirectComponent } from './transfer-request-direct.component';
 
@@ -17,7 +18,17 @@ describe('TransferRequestDirectComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
-        getTranslocoTestingModule(),
+        getTranslocoTestingModule({
+          de: {
+            transferRequestAdmin: {
+              notifications: {
+                directAssignSuccess: 'Direktzuweisung durchgeführt.',
+                directAssignScheduled:
+                  'Direktzuweisung geplant, Vollzug am {{ date }}.',
+              },
+            },
+          },
+        }),
       ],
       declarations: [TransferRequestDirectComponent],
       schemas: [NO_ERRORS_SCHEMA],
@@ -53,5 +64,70 @@ describe('TransferRequestDirectComponent', () => {
       { id: 9, name: 'Adler' },
       { id: 7, name: 'Zebras' },
     ]);
+  });
+  function setupWithFoundPlayer() {
+    const fixture = TestBed.createComponent(TransferRequestDirectComponent);
+    fixture.detectChanges();
+    httpMock
+      .expectOne((r) => r.urlWithParams.includes('admin/clubs/all.json'))
+      .flush([]);
+    const component = fixture.componentInstance;
+    component.selectedClubId = 9;
+    component.foundPlayer = {
+      id: 42,
+      first_name: 'Max',
+      last_name: 'Mustermann',
+      birthdate: '1995-03-15',
+    } as never;
+    return component;
+  }
+
+  it('schickt ohne Wunschdatum kein effective_date mit (sofortiger Vollzug)', () => {
+    const component = setupWithFoundPlayer();
+    component.submit();
+
+    const req = httpMock.expectOne((r) => r.url.includes('direct_assign'));
+    expect(req.request.body).toEqual({ player_id: 42, requesting_club_id: 9 });
+    req.flush({ id: 1, status: 'approved' });
+  });
+
+  it('schickt das Wunschdatum mit und meldet den geplanten Vollzug', () => {
+    const component = setupWithFoundPlayer();
+    const success = spyOn(TestBed.inject(NotificationService), 'success');
+    component.effectiveDate = '2027-07-01';
+    component.submit();
+
+    const req = httpMock.expectOne((r) => r.url.includes('direct_assign'));
+    expect(req.request.body).toEqual({
+      player_id: 42,
+      requesting_club_id: 9,
+      effective_date: '2027-07-01',
+    });
+    req.flush({ id: 1, status: 'scheduled', effective_date: '2027-07-01' });
+
+    expect(success).toHaveBeenCalledOnceWith(
+      jasmine.stringContaining('01.07.2027')
+    );
+  });
+
+  it('meldet ohne Wunschdatum die sofortige Zuweisung', () => {
+    const component = setupWithFoundPlayer();
+    const success = spyOn(TestBed.inject(NotificationService), 'success');
+    component.submit();
+
+    httpMock
+      .expectOne((r) => r.url.includes('direct_assign'))
+      .flush({ id: 1, status: 'approved' });
+
+    expect(success).toHaveBeenCalledOnceWith(
+      jasmine.stringContaining('durchgeführt')
+    );
+  });
+
+  it('bietet als fruehestes Wunschdatum den lokalen heutigen Tag an', () => {
+    const component = setupWithFoundPlayer();
+    const d = new Date();
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    expect(component.minEffectiveDate).toBe(today);
   });
 });

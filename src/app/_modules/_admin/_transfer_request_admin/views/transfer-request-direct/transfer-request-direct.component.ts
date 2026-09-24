@@ -30,6 +30,11 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
   clubs: { id: number; name: string }[] = [];
   selectedClubId = 0;
 
+  // Leer heisst sofort. Ein spaeteres Datum plant den Transfer, die API
+  // vollzieht ihn an dem Tag automatisch (rake transfers:execute_scheduled).
+  effectiveDate = '';
+  readonly minEffectiveDate = TransferRequestDirectComponent._localToday();
+
   foundPlayer: PlayerSearchResult | null = null;
   searchError = '';
   searching = false;
@@ -150,15 +155,26 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
 
     this.submitting = true;
     this._transferService
-      .directAssign(this.foundPlayer.id, this.selectedClubId)
+      .directAssign(
+        this.foundPlayer.id,
+        this.selectedClubId,
+        this.effectiveDate || null
+      )
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: () => {
+        next: (created) => {
           this.submitting = false;
           this._notificationService.success(
-            this._transloco.translate(
-              'transferRequestAdmin.notifications.directAssignSuccess'
-            )
+            created.status === 'scheduled' && created.effective_date
+              ? this._transloco.translate(
+                  'transferRequestAdmin.notifications.directAssignScheduled',
+                  {
+                    date: created.effective_date.split('-').reverse().join('.'),
+                  }
+                )
+              : this._transloco.translate(
+                  'transferRequestAdmin.notifications.directAssignSuccess'
+                )
           );
           this._router.navigate(['/verwaltung/transfer-anfragen']);
         },
@@ -177,5 +193,14 @@ export class TransferRequestDirectComponent implements OnInit, OnDestroy {
 
   cancel(): void {
     this._router.navigate(['/verwaltung/transfer-anfragen']);
+  }
+
+  // Lokales Datum statt toISOString(): Das liefert UTC und waere zwischen
+  // Mitternacht und 2 Uhr deutscher Zeit noch der Vortag.
+  private static _localToday(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+      d.getDate()
+    ).padStart(2, '0')}`;
   }
 }
