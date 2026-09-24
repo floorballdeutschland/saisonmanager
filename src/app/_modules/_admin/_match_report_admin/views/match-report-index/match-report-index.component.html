@@ -647,9 +647,9 @@
       class="underline"
       data-testid="uploader-mail"
       [href]="'mailto:' + email"
-      >{{ name || email }}</a
+      >{{ name?.trim() || email }}</a
     >
   } @else {
-    {{ name || "–" }}
+    {{ name?.trim() || "–" }}
   }
 </ng-template>

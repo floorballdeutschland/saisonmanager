@@ -698,5 +698,20 @@ describe('MatchReportIndexComponent (Uploader-Kontakt)', () => {
     const links = mailLinks();
     expect(links.length).toBe(1);
     expect(links[0].getAttribute('href')).toBe('mailto:sam@example.org');
+    expect(links[0].textContent?.trim()).toBe('Sam Schiri');
+  });
+
+  it('nimmt die Adresse als Linktext, wenn der Name nur aus Leerzeichen besteht', () => {
+    show(
+      row({
+        referee_report: {
+          uploaded_at: '2026-02-02T10:00:00Z',
+          uploaded_by_name: ' ',
+          uploaded_by_email: 'sam@example.org',
+        },
+      })
+    );
+
+    expect(mailLinks()[0].textContent?.trim()).toBe('sam@example.org');
   });
 });
