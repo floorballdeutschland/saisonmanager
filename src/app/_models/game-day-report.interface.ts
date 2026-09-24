@@ -22,7 +22,7 @@ export interface GameReportFlags {
   protest: boolean;
   forfait: boolean;
   special_event_string: string | null;
-  // Strafen ab 5 Minuten inklusive Matchstrafen.
+  // Nur Matchstrafen; Zeitstrafen (auch 5 und 10 Minuten) zählen nicht.
   severe_penalty_count: number;
   missing_audience: boolean;
   missing_signatures: boolean;

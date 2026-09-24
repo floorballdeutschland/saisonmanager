@@ -66,7 +66,7 @@
   "flags": {
     "protest": "Protest lodged",
     "forfait": "Game awarded (forfait)",
-    "severePenalties": "{{count}} penalty/penalties of 5 minutes or more, including match penalties",
+    "severePenalties": "{{count}} match penalty/penalties",
     "specialEvent": "Special incident",
     "missingReferee2": "No second referee entered",
     "missingAudience": "No attendance figure entered",
