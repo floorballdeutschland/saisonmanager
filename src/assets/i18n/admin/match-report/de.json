@@ -66,7 +66,7 @@
   "flags": {
     "protest": "Protest eingelegt",
     "forfait": "Spiel gewertet (Forfait)",
-    "severePenalties": "{{count}} Strafe(n) ab 5 Minuten oder Matchstrafe",
+    "severePenalties": "{{count}} Matchstrafe(n)",
     "specialEvent": "Besonderes Ereignis",
     "missingReferee2": "Kein zweiter Schiedsrichter eingetragen",
     "missingAudience": "Keine Zuschauerzahl eingetragen",
