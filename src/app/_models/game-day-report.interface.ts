@@ -12,6 +12,8 @@ export type GameReportStatus =
 export interface GameReportScan {
   uploaded_at: string;
   uploaded_by_name: string | null;
+  // Nur in der SBK-Übersicht; null, wenn der Uploader keine Adresse hat.
+  uploaded_by_email: string | null;
   // Abstand zum Spieltag in Tagen. null, wenn das Spieltagsdatum nicht
   // parsebar ist (Altbestand). Bewusst ohne Bewertung: eine Frist gibt es nicht.
   days_after_game_day: number | null;
@@ -22,7 +24,7 @@ export interface GameReportFlags {
   protest: boolean;
   forfait: boolean;
   special_event_string: string | null;
-  // Strafen ab 5 Minuten inklusive Matchstrafen.
+  // Nur Matchstrafen; Zeitstrafen (auch 5 und 10 Minuten) zählen nicht.
   severe_penalty_count: number;
   missing_audience: boolean;
   missing_signatures: boolean;
@@ -56,7 +58,11 @@ export interface GameDayReportRow {
 
   scan_required: boolean;
   scan: GameReportScan | null;
-  referee_report: { uploaded_at: string } | null;
+  referee_report: {
+    uploaded_at: string;
+    uploaded_by_name: string | null;
+    uploaded_by_email: string | null;
+  } | null;
   proceeding_proposal: { id: number; status: string } | null;
   checklist_negative_count: number;
   /**

@@ -33,7 +33,7 @@
     "scanPending": "Papierbogen offen",
     "commentTitle": "Hinweis an die SBK",
     "scanTitle": "Papierspielberichtsbogen",
-    "scanUploaded": "Hochgeladen am {{date}} von {{name}}",
+    "scanUploaded": "Hochgeladen am {{date}} von",
     "scanDaysAfter": "{{days}} Tage nach dem Spieltag",
     "scanDownload": "Herunterladen",
     "scanOpening": "Wird geöffnet …",
@@ -66,7 +66,7 @@
   "flags": {
     "protest": "Protest eingelegt",
     "forfait": "Spiel gewertet (Forfait)",
-    "severePenalties": "{{count}} Strafe(n) ab 5 Minuten oder Matchstrafe",
+    "severePenalties": "{{count}} Matchstrafe(n)",
     "specialEvent": "Besonderes Ereignis",
     "missingReferee2": "Kein zweiter Schiedsrichter eingetragen",
     "missingAudience": "Keine Zuschauerzahl eingetragen",
@@ -74,6 +74,7 @@
   },
   "linked": {
     "refereeReport": "Schiedsrichter-Berichtsformular vom {{date}}",
+    "uploadedBy": "von",
     "proceedingProposal": "Verfahrensvorschlag",
     "openProposals": "Zur Übersicht",
     "checklistNegative": "{{count}} verneinte(r) Punkt(e) im Spieltagsbericht",

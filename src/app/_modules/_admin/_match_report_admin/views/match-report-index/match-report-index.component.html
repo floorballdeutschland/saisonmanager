@@ -409,9 +409,17 @@
                       : {
                           date:
                             row.scan.uploaded_at | date: "dd.MM.yyyy, HH:mm",
-                          name: row.scan.uploaded_by_name || "–",
                         }
                 }}
+                <ng-container
+                  *ngTemplateOutlet="
+                    uploader;
+                    context: {
+                      name: row.scan.uploaded_by_name,
+                      email: row.scan.uploaded_by_email,
+                    }
+                  "
+                ></ng-container>
                 @if (row.scan.days_after_game_day !== null) {
                   <span class="text-fb-gray-500">
                     ({{
@@ -506,6 +514,21 @@
                               | date: "dd.MM.yyyy, HH:mm",
                           }
                   }}
+                  @if (
+                    row.referee_report.uploaded_by_name ||
+                    row.referee_report.uploaded_by_email
+                  ) {
+                    {{ "matchReportAdmin.linked.uploadedBy" | transloco }}
+                    <ng-container
+                      *ngTemplateOutlet="
+                        uploader;
+                        context: {
+                          name: row.referee_report.uploaded_by_name,
+                          email: row.referee_report.uploaded_by_email,
+                        }
+                      "
+                    ></ng-container>
+                  }
                 </li>
               }
               @if (row.proceeding_proposal) {
@@ -615,4 +638,18 @@
       </div>
     }
   </div>
+</ng-template>
+
+<!-- Uploader eines Dokuments: mit Adresse als Mail-Link, sonst Klartext. -->
+<ng-template #uploader let-name="name" let-email="email">
+  @if (email) {
+    <a
+      class="underline"
+      data-testid="uploader-mail"
+      [href]="'mailto:' + email"
+      >{{ name?.trim() || email }}</a
+    >
+  } @else {
+    {{ name?.trim() || "–" }}
+  }
 </ng-template>
