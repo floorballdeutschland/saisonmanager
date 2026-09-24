@@ -54,4 +54,50 @@ describe('TransferRequestDirectComponent', () => {
       { id: 7, name: 'Zebras' },
     ]);
   });
+  function setupWithFoundPlayer() {
+    const fixture = TestBed.createComponent(TransferRequestDirectComponent);
+    fixture.detectChanges();
+    httpMock
+      .expectOne((r) => r.urlWithParams.includes('admin/clubs/all.json'))
+      .flush([]);
+    const component = fixture.componentInstance;
+    component.selectedClubId = 9;
+    component.foundPlayer = {
+      id: 42,
+      first_name: 'Max',
+      last_name: 'Mustermann',
+      birthdate: '1995-03-15',
+    } as never;
+    return component;
+  }
+
+  it('schickt ohne Wunschdatum kein effective_date mit (sofortiger Vollzug)', () => {
+    const component = setupWithFoundPlayer();
+    component.submit();
+
+    const req = httpMock.expectOne((r) => r.url.includes('direct_assign'));
+    expect(req.request.body).toEqual({ player_id: 42, requesting_club_id: 9 });
+    req.flush({ id: 1, status: 'approved' });
+  });
+
+  it('schickt das Wunschdatum mit und meldet den geplanten Vollzug', () => {
+    const component = setupWithFoundPlayer();
+    component.effectiveDate = '2027-07-01';
+    component.submit();
+
+    const req = httpMock.expectOne((r) => r.url.includes('direct_assign'));
+    expect(req.request.body).toEqual({
+      player_id: 42,
+      requesting_club_id: 9,
+      effective_date: '2027-07-01',
+    });
+    req.flush({ id: 1, status: 'scheduled', effective_date: '2027-07-01' });
+  });
+
+  it('bietet als fruehestes Wunschdatum den lokalen heutigen Tag an', () => {
+    const component = setupWithFoundPlayer();
+    const d = new Date();
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    expect(component.minEffectiveDate).toBe(today);
+  });
 });
