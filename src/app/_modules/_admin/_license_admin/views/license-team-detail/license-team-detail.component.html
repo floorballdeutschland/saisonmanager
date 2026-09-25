@@ -502,10 +502,30 @@
                             ? (p.birthdate | date: "dd.MM.yyyy")
                             : "-"
                         }})
+                        @if (p.reactivation) {
+                          –
+                          {{
+                            "licenseAdmin.teamDetail.reactivationOption"
+                              | transloco
+                          }}
+                        }
                       </option>
                     }
                   </select>
-                  @if (licenseHash.express_license_enabled) {
+                  @if (selectedIsReactivation) {
+                    <p
+                      class="mt-3 mb-2 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded p-3"
+                      data-testid="reactivation-hint"
+                    >
+                      {{
+                        "licenseAdmin.teamDetail.reactivationHint" | transloco
+                      }}
+                    </p>
+                  }
+                  @if (
+                    licenseHash.express_license_enabled &&
+                    !selectedIsReactivation
+                  ) {
                     <div class="mt-3 mb-2">
                       <label class="flex items-start gap-2 cursor-pointer">
                         <input

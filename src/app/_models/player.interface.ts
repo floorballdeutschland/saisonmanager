@@ -7,6 +7,9 @@ export const PLAYER_GENDERS = { M: 'männlich', W: 'weiblich', D: 'divers' };
 export type GenderKey = 'M' | 'W' | 'D' | null;
 
 export interface Player {
+  // Nur in `other_players` der Antragsmaske: Ein Antrag für diese Mannschaft
+  // reaktiviert eine durch Transfer ungültig gewordene Lizenz, kostenfrei.
+  reactivation?: boolean;
   id: number;
   last_name: string;
   first_name: string;
@@ -270,11 +273,6 @@ export interface PlayerLicense {
   // 422 läuft. Fehlt das Feld, ist die API älter, dann erscheint kein Knopf.
   delete_allowed?: boolean;
   reset_allowed?: boolean;
-  // Lizenz „ungültig wg. Transfer" nach Freigabe zurück wieder erteilen
-  // (Player#license_reactivation_blocked_reason in der API).
-  reactivate_allowed?: boolean;
-  // Grund, warum die Reaktivierung (noch) nicht geht; nur an Transferlizenzen.
-  reactivate_blocked_reason?: string | null;
   // Manuelle Erst-/Zweitlizenz-Zuordnung im GF-Erwachsenenbereich.
   gf_role?: GfRole | null;
   gf_role_history?: GfRoleHistoryEntry[];

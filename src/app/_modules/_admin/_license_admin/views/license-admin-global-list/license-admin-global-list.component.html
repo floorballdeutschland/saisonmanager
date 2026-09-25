@@ -673,7 +673,19 @@
                       }}</span
                     >
                   }
-                  @if (!e.express) {
+                  @if (e.reactivation) {
+                    <span
+                      class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-emerald-100 text-emerald-800"
+                      [title]="
+                        'licenseAdmin.globalList.reactivationTitle' | transloco
+                      "
+                      data-testid="reactivation-badge"
+                      >{{
+                        "licenseAdmin.globalList.reactivationBadge" | transloco
+                      }}</span
+                    >
+                  }
+                  @if (!e.express && !e.reactivation) {
                     <span class="text-gray-300">–</span>
                   }
                 </td>

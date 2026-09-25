@@ -160,7 +160,9 @@
     "liftedNotice": "The suspension has been lifted.",
     "liftError": "The suspension could not be lifted.",
     "csvLicensesApproved": "Licences season",
-    "csvLicensesRequested": "of which pending"
+    "csvLicensesRequested": "of which pending",
+    "reactivationBadge": "Reactivation",
+    "reactivationTitle": "Licence reactivated after transfer and release back, no new licence fee"
   },
   "leagueDetail": {
     "title": "License management",
@@ -256,7 +258,9 @@
     "metaTitle": "Floorball Saisonmanager My Licenses",
     "suspendedLabel": "Suspended:",
     "gamesRemaining": "{{ remaining }} of {{ total }} games remaining",
-    "suspendedUntil": "until"
+    "suspendedUntil": "until",
+    "reactivationOption": "reactivation, free of charge",
+    "reactivationHint": "The player already held a licence for this team before the transfer. This request reactivates that licence: no new licence fee is charged, and an express licence is not available for it. The association approves it like any other request."
   },
   "userLeagueDetail": {
     "title": "License lists",

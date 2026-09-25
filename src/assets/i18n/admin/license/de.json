@@ -160,7 +160,9 @@
     "liftedNotice": "Die Sperre wurde aufgehoben.",
     "liftError": "Die Sperre konnte nicht aufgehoben werden.",
     "csvLicensesApproved": "Lizenzen Saison",
-    "csvLicensesRequested": "davon offen beantragt"
+    "csvLicensesRequested": "davon offen beantragt",
+    "reactivationBadge": "Reaktivierung",
+    "reactivationTitle": "Lizenz nach Transfer und Freigabe zurück reaktiviert, keine neue Lizenzgebühr"
   },
   "leagueDetail": {
     "title": "Lizenzverwaltung",
@@ -256,7 +258,9 @@
     "metaTitle": "Floorball Saisonmanager Meine Lizenzen",
     "suspendedLabel": "Gesperrt:",
     "gamesRemaining": "noch {{ remaining }} von {{ total }} Spielen",
-    "suspendedUntil": "bis"
+    "suspendedUntil": "bis",
+    "reactivationOption": "Reaktivierung, kostenfrei",
+    "reactivationHint": "Für diese Mannschaft war der Spieler vor seinem Transfer schon lizenziert. Der Antrag reaktiviert diese Lizenz: Es fällt keine neue Lizenzgebühr an, und eine Expresslizenz ist dafür nicht vorgesehen. Genehmigt wird er wie jeder Antrag vom Verband."
   },
   "userLeagueDetail": {
     "title": "Lizenzlisten",
