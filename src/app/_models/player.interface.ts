@@ -270,6 +270,9 @@ export interface PlayerLicense {
   // 422 läuft. Fehlt das Feld, ist die API älter, dann erscheint kein Knopf.
   delete_allowed?: boolean;
   reset_allowed?: boolean;
+  // Lizenz „ungültig wg. Transfer" nach Freigabe zurück wieder erteilen
+  // (Player#license_reactivation_blocked_reason in der API).
+  reactivate_allowed?: boolean;
   // Manuelle Erst-/Zweitlizenz-Zuordnung im GF-Erwachsenenbereich.
   gf_role?: GfRole | null;
   gf_role_history?: GfRoleHistoryEntry[];

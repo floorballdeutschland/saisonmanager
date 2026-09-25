@@ -49,6 +49,14 @@ const LICENSE_STATUS_DELETED = 4;
 // License::REQUESTED in der API, das Ziel des Zuruecksetzens.
 const LICENSE_STATUS_REQUESTED = 2;
 
+// License::APPROVED in der API, das Ziel der Reaktivierung.
+const LICENSE_STATUS_APPROVED = 1;
+
+// Steht im Verlauf der Lizenz und ist damit auch für den Verein sichtbar.
+// Fester Text statt Eingabe: Der Anlass ist immer derselbe, und die
+// Freigabe selbst ist in der Transferübersicht nachlesbar.
+const LICENSE_REACTIVATION_REASON = 'Reaktiviert nach Freigabe';
+
 // Lizenzen des Spielers, nach Saison gruppiert (aktuelle Saison zuerst).
 export interface LicenseSeasonGroup {
   seasonId?: string;
@@ -161,6 +169,12 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   licenseResetReason = '';
   /** Lizenz, deren Zurücksetzen gerade läuft (Doppelklick-Riegel). */
   resettingLicenseId?: string;
+
+  // Reaktivieren einer Lizenz „ungültig wg. Transfer" nach Freigabe zurück.
+  reactivateLicenseId: string | null = null;
+  licenseReactivateGfRole: GfRole | null = null;
+  /** Lizenz, deren Reaktivierung gerade läuft (Doppelklick-Riegel). */
+  reactivatingLicenseId?: string;
   licenseSuspendUntil = '';
   licenseSuspendReason = '';
   // Dauer der Sperre: bis zu einem Datum oder über eine Anzahl von Spielen
@@ -1194,6 +1208,72 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         },
         // Kein eigener error-Zweig: Der ErrorInterceptor zeigt die Meldung der
         // API schon selbst an, eine zweite stapelte sich nur darüber.
+      });
+  }
+
+  // --- Lizenz „ungültig wg. Transfer" reaktivieren --------------------------
+  //
+  // Der Fall: Transfer von A nach B, danach Freigabe zurück an A. Statt dass A
+  // neu und kostenpflichtig beantragt, erteilt der Verband den alten
+  // Lizenzeintrag wieder. Ob das geht (laufende Saison, Mitgliedschaft, kein
+  // weiterer Antrag der Mannschaft, eigener Spielbetrieb), entscheidet die API
+  // und liefert es als `reactivate_allowed`
+  // (Player#license_reactivation_blocked_reason).
+
+  public canReactivateLicense(license: PlayerLicense): boolean {
+    return (
+      this.can('player_reactivate_license') &&
+      license.reactivate_allowed === true
+    );
+  }
+
+  // Dieselbe Bedingung, unter der die API ohne Zuordnung ablehnt: Die
+  // reaktivierte Lizenz bringt ihre alte Zuordnung mit, und neben einer
+  // Partnerlizenz stünden sonst womöglich zwei Erstlizenzen.
+  public reactivationNeedsGfRole(license: PlayerLicense): boolean {
+    return (
+      this.isGfAdultLicense(license) &&
+      this.gfPartnerLicenses(license).length > 0
+    );
+  }
+
+  public openLicenseReactivate(license: PlayerLicense): void {
+    this.reactivateLicenseId = license.id;
+    this.licenseReactivateGfRole = null;
+  }
+
+  public cancelLicenseReactivate(): void {
+    this.reactivateLicenseId = null;
+    this.licenseReactivateGfRole = null;
+  }
+
+  public submitLicenseReactivate(license: PlayerLicense): void {
+    if (!this.player?.id) return;
+    const gfRole = this.licenseReactivateGfRole;
+    if (this.reactivationNeedsGfRole(license) && !gfRole) return;
+    if (this.reactivatingLicenseId) return;
+    this.reactivatingLicenseId = license.id;
+
+    this._playerService
+      .updateLicenseStatus(
+        this.player.id,
+        license.id,
+        LICENSE_STATUS_APPROVED,
+        LICENSE_REACTIVATION_REASON,
+        undefined,
+        gfRole ?? undefined
+      )
+      .pipe(finalize(() => (this.reactivatingLicenseId = undefined)))
+      .subscribe({
+        next: () => {
+          this._notificationService.success(
+            this._transloco.translate('playerAdmin.edit.licenseReactivated'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this.cancelLicenseReactivate();
+          this.getPlayer('' + this.player?.id);
+        },
+        // Kein eigener error-Zweig, siehe submitLicenseReset.
       });
   }
 
