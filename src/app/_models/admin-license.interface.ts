@@ -49,6 +49,9 @@ export interface AdminLicenseEntry {
   base_status?: string | null;
   suspension?: LicenseRowSuspension | null;
   express: boolean;
+  // Antrag nach Transfer und Freigabe zurück auf dieselbe Mannschaft: derselbe
+  // Lizenzeintrag wie vor dem Transfer, keine neue Gebühr (api#760).
+  reactivation?: boolean;
   requested_at: string | null;
   approved_at: string | null;
   valid_until: string | null;

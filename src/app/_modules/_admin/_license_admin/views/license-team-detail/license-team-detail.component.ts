@@ -268,6 +268,13 @@ export class LicenseTeamDetailComponent implements OnInit {
     );
   }
 
+  // Der Antrag reaktiviert eine Lizenz „ungültig wg. Transfer" derselben
+  // Mannschaft (Freigabe zurück). Kostenfrei, deshalb ohne Expressoption: Die
+  // API weist eine Reaktivierung als Expresslizenz ab.
+  get selectedIsReactivation(): boolean {
+    return this.selectedPlayer?.reactivation === true;
+  }
+
   get needsMinorConsent(): boolean {
     const sp = this.selectedPlayer;
     return !!(
@@ -297,6 +304,7 @@ export class LicenseTeamDetailComponent implements OnInit {
   }
 
   public onPlayerChange() {
+    if (this.selectedIsReactivation) this.expressLicense = false;
     this.minorConsent = false;
     this.guardianEmail = '';
   }
@@ -318,7 +326,7 @@ export class LicenseTeamDetailComponent implements OnInit {
       .userCreateLicenseRequest(
         this.playerId,
         this.teamId,
-        this.expressLicense,
+        this.expressLicense && !this.selectedIsReactivation,
         this.needsMinorConsent ? this.guardianEmail : undefined,
         this.needsMinorConsent ? new Date().toISOString() : undefined
       )

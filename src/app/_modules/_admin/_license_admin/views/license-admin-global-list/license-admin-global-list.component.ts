@@ -410,6 +410,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       t('licenseAdmin.globalList.csvLicenseType'),
       t('licenseAdmin.globalList.csvGfRole'),
       t('licenseAdmin.globalList.csvExpress'),
+      t('licenseAdmin.globalList.csvReactivation'),
       t('licenseAdmin.globalList.csvRequested'),
       t('licenseAdmin.globalList.csvApproved'),
     ];
@@ -447,6 +448,12 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
           ? t('licenseAdmin.globalList.csvZweitlizenz')
           : '',
       e.express
+        ? t('licenseAdmin.globalList.csvYes')
+        : t('licenseAdmin.globalList.csvNo'),
+      // Aus dieser Datei wird abgerechnet: Eine Reaktivierung nach Transfer
+      // ist derselbe Eintrag wie vor dem Transfer und kostet nichts, trägt
+      // aber das Erteilungsdatum der Reaktivierung (api#760).
+      e.reactivation
         ? t('licenseAdmin.globalList.csvYes')
         : t('licenseAdmin.globalList.csvNo'),
       e.requested_at ? this._formatDate(e.requested_at) : '',
