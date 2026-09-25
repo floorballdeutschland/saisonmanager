@@ -1243,7 +1243,9 @@
         }
 
         <!-- Nachname in der oeffentlichen Anzeige (DSGVO Art. 17/21) -->
-        @if (editMode && player && (canHidePublicLastName || canShowPublicLastName)) {
+        @if (
+          editMode && player && (canHidePublicLastName || canShowPublicLastName)
+        ) {
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div
               class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
@@ -1264,7 +1266,9 @@
               </p>
               @if (player.public_last_name_hidden_reason) {
                 <p class="text-sm text-gray-500 mb-4">
-                  {{ "playerAdmin.edit.publicLastNameReasonLabel" | transloco }}:
+                  {{
+                    "playerAdmin.edit.publicLastNameReasonLabel" | transloco
+                  }}:
                   {{ player.public_last_name_hidden_reason }}
                 </p>
               }
@@ -1326,15 +1330,20 @@
                   {{ "playerAdmin.edit.publicLastNameHideWarning" | transloco }}
                 </p>
                 <div class="mb-4">
-                  <label class="block text-sm font-semibold text-amber-900 mb-1">{{
-                    "playerAdmin.edit.publicLastNameReasonOptional" | transloco
-                  }}</label>
+                  <label
+                    class="block text-sm font-semibold text-amber-900 mb-1"
+                    >{{
+                      "playerAdmin.edit.publicLastNameReasonOptional"
+                        | transloco
+                    }}</label
+                  >
                   <input
                     [(ngModel)]="hidePublicLastNameReason"
                     type="text"
                     maxlength="255"
                     [placeholder]="
-                      'playerAdmin.edit.publicLastNameReasonPlaceholder' | transloco
+                      'playerAdmin.edit.publicLastNameReasonPlaceholder'
+                        | transloco
                     "
                     class="w-full xl:w-1/2 border border-amber-300 rounded-[5px] px-3 py-2 text-sm"
                   />

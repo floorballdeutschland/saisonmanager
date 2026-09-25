@@ -636,7 +636,10 @@ describe('LicenseAdminDetailComponent', () => {
   // wird ohne Eilbearbeitung erteilt und soll dann auch nicht als Expresslizenz
   // abgerechnet werden. Die Entscheidung faellt an diesen beiden Knoepfen.
   describe('Expresszuschlag bei der Genehmigung', () => {
-    function render(express: boolean | undefined): {
+    function render(
+      express: boolean | undefined,
+      history: unknown[] = []
+    ): {
       root: HTMLElement;
       http: HttpTestingController;
       success: jasmine.Spy;
@@ -687,7 +690,7 @@ describe('LicenseAdminDetailComponent', () => {
           license: {
             id: 'l1',
             team_id: 1,
-            history: [],
+            history,
             ...(express === undefined ? {} : { express }),
           },
           last_status: { license_status_id: 2 },
@@ -706,6 +709,31 @@ describe('LicenseAdminDetailComponent', () => {
         success: spyOn(TestBed.inject(NotificationService), 'success'),
       };
     }
+
+    // Reaktivierung nach Transfer (api#760): Stammt die alte Lizenz aus einem
+    // Expressantrag, traegt sie das Flag noch. Die Erteilung ist trotzdem
+    // kostenfrei, also ein gewoehnlicher Knopf ohne Express-Angabe.
+    it('bietet bei einer Reaktivierung nur die gewoehnliche Erteilung an', () => {
+      const { root, http } = render(true, [
+        { license_status_id: 6, created_at: '2026-09-08T10:00:00Z' },
+        {
+          license_status_id: 2,
+          created_at: '2026-09-24T10:00:00Z',
+          reactivation: true,
+        },
+      ]);
+
+      expect(root.querySelector('[data-testid="grant-as-express"]')).toBeNull();
+      expect(
+        root.querySelector('[data-testid="reactivation-badge"]')
+      ).not.toBeNull();
+      click(root, 'grant-license');
+
+      const req = http.expectOne((r) =>
+        r.url.endsWith('handle_license_request.json')
+      );
+      expect(req.request.body.express).toBeUndefined();
+    });
 
     function click(root: HTMLElement, testid: string): void {
       const button = root.querySelector<HTMLButtonElement>(

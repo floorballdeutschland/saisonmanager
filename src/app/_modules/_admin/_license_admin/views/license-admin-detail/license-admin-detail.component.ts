@@ -257,7 +257,19 @@ export class LicenseAdminDetailComponent implements OnInit {
   // Lizenzwesen des Vereins ist `team_license` der rohe Eintrag selbst, dort
   // stimmt der kurze Pfad -- deshalb stand er faelschlich auch hier.
   public isExpressRequest(player: PlayerWithLicense): boolean {
+    if (this.isReactivationRequest(player)) return false;
     return player.team_license.license?.express === true;
+  }
+
+  // Reaktivierung nach Transfer (api#760): derselbe Eintrag wie vor dem
+  // Transfer, kostenfrei und nie express. Stammt die alte Lizenz aus einem
+  // Expressantrag, trägt sie das Flag noch; die zwei Express-Knöpfe hier
+  // böten dann eine Erteilung als Express an, und „ohne Zuschlag" wiese die
+  // API ab (bereits einmal erteilt). Also ein gewöhnlicher Knopf.
+  public isReactivationRequest(player: PlayerWithLicense): boolean {
+    return (player.team_license.license?.history ?? []).some(
+      (h) => h.reactivation === true
+    );
   }
 
   public approveLicense(player: PlayerWithLicense, express?: boolean) {

@@ -286,6 +286,93 @@ describe('LicenseTeamDetailComponent', () => {
     });
   });
 
+  // Beantragt der Verein für einen Spieler, der vor seinem Transfer schon für
+  // diese Mannschaft lizenziert war, reaktiviert der Antrag diese Lizenz
+  // (api#760). Das ist kostenfrei und nie eine Expresslizenz.
+  describe('Reaktivierung nach Transfer', () => {
+    function build(): {
+      fixture: ReturnType<
+        typeof TestBed.createComponent<LicenseTeamDetailComponent>
+      >;
+      component: LicenseTeamDetailComponent;
+    } {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [
+          HttpClientTestingModule,
+          RouterTestingModule,
+          UikitCommonModule,
+          FormsModule,
+          getTranslocoTestingModule({
+            de: {
+              licenseAdmin: {
+                teamDetail: {
+                  reactivationHint: 'Reaktivierung ohne Gebühr',
+                  expressLabel: 'Als Expresslizenz beantragen',
+                },
+              },
+            },
+          }),
+        ],
+        declarations: [LicenseTeamDetailComponent],
+      });
+      const fixture = TestBed.createComponent(LicenseTeamDetailComponent);
+      fixture.componentInstance.licenseHash = {
+        team: { id: 1, name: 'Musterstadt' },
+        current_requests: [],
+        express_license_enabled: true,
+        other_players: [
+          {
+            id: 7,
+            last_name: 'Zurück',
+            first_name: 'Kehrer',
+            reactivation: true,
+          },
+          { id: 8, last_name: 'Neu', first_name: 'Ling' },
+        ],
+      } as unknown as LicenseHash;
+      return { fixture, component: fixture.componentInstance };
+    }
+
+    it('zeigt den Hinweis und keine Expressoption für eine Reaktivierung', () => {
+      const { fixture, component } = build();
+      component.playerId = 7;
+      fixture.detectChanges();
+      const text = fixture.nativeElement.textContent ?? '';
+
+      expect(component.selectedIsReactivation).toBe(true);
+      expect(text).toContain('Reaktivierung ohne Gebühr');
+      expect(text).not.toContain('Als Expresslizenz beantragen');
+    });
+
+    it('bietet für einen gewöhnlichen Antrag weiter die Expresslizenz an', () => {
+      const { fixture, component } = build();
+      component.playerId = 8;
+      fixture.detectChanges();
+      const text = fixture.nativeElement.textContent ?? '';
+
+      expect(component.selectedIsReactivation).toBe(false);
+      expect(text).toContain('Als Expresslizenz beantragen');
+      expect(text).not.toContain('Reaktivierung ohne Gebühr');
+    });
+
+    // Ein vorher für einen anderen Spieler gesetztes Häkchen darf nicht mit
+    // der Reaktivierung verschickt werden, sonst lehnt die API mit 422 ab.
+    it('schickt eine Reaktivierung nie als Expresslizenz', () => {
+      const { component } = build();
+      const create = spyOn(
+        component['_clubService'],
+        'userCreateLicenseRequest'
+      ).and.returnValue(NEVER);
+      component.playerId = 7;
+      component.expressLicense = true;
+
+      component.createLicenseRequest();
+
+      expect(create.calls.mostRecent().args[2]).toBe(false);
+    });
+  });
+
   // Eine Sperre auf einen Wettbewerb oder eine Liga fasst den Lizenzstatus
   // nicht an (api#605). Die Zeile stand hier deshalb weiter auf „erteilt", und
   // der Verein sah von der Sperre nichts.

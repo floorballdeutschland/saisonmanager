@@ -55,7 +55,16 @@
               }}
               Uhr
             </p>
-            @if (player.team_license.license?.express) {
+            @if (isReactivationRequest(player)) {
+              <p class="mt-1">
+                <span
+                  class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-emerald-100 text-emerald-800"
+                  data-testid="reactivation-badge"
+                >
+                  {{ "licenseAdmin.detail.reactivation" | transloco }}
+                </span>
+              </p>
+            } @else if (player.team_license.license?.express) {
               <p class="mt-1">
                 <span
                   class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"
