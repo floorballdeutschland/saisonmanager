@@ -70,6 +70,7 @@
     "licenseResetReasonPlaceholder": "e.g. granted too early, player pass was missing",
     "reset": "Reset",
     "reactivateLicense": "Reactivate licence",
+    "reactivateBlocked": "Reactivation not possible:",
     "reactivateThisLicense": "Grant this licence again",
     "reactivateLicenseHint": "For a player who returned by release to the club this licence belonged to before the transfer. The licence is granted again without the club having to apply anew; it stays one licence entry and therefore one licence fee. The history shows “Reaktiviert nach Freigabe”.",
     "reactivateGfRoleLabel": "The player holds another licence in the same competition. The reactivated licence is:",

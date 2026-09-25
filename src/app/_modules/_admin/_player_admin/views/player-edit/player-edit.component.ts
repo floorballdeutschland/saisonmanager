@@ -1215,16 +1215,26 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
   //
   // Der Fall: Transfer von A nach B, danach Freigabe zurück an A. Statt dass A
   // neu und kostenpflichtig beantragt, erteilt der Verband den alten
-  // Lizenzeintrag wieder. Ob das geht (laufende Saison, Mitgliedschaft, kein
-  // weiterer Antrag der Mannschaft, eigener Spielbetrieb), entscheidet die API
-  // und liefert es als `reactivate_allowed`
-  // (Player#license_reactivation_blocked_reason).
+  // Lizenzeintrag wieder. Ob das geht (laufende Saison, Mitgliedschaft aus der
+  // Freigabe, kein weiterer Antrag der Mannschaft), entscheidet die API und
+  // liefert es als `reactivate_allowed`, sonst den Grund als
+  // `reactivate_blocked_reason` (Player#license_reactivation_blocked_reason;
+  // Spielbetrieb über LicenseScopeAnnotation). Sperre und Erst-/Zweitlizenz
+  // prüft erst der Endpunkt.
 
   public canReactivateLicense(license: PlayerLicense): boolean {
     return (
       this.can('player_reactivate_license') &&
       license.reactivate_allowed === true
     );
+  }
+
+  // Warum es (noch) nicht geht, etwa weil die Freigabe noch nicht vollzogen
+  // ist. Ohne diesen Hinweis fehlte nur der Knopf, und der naheliegende
+  // nächste Schritt wäre ein Neuantrag mit zweiter Gebühr.
+  public reactivationBlockedReason(license: PlayerLicense): string | null {
+    if (!this.can('player_reactivate_license')) return null;
+    return license.reactivate_blocked_reason ?? null;
   }
 
   // Dieselbe Bedingung, unter der die API ohne Zuordnung ablehnt: Die

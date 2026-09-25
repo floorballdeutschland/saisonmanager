@@ -1432,6 +1432,28 @@ describe('PlayerEditComponent', () => {
       });
     });
 
+    // Geht es (noch) nicht, zeigt die Maske den Grund der API statt nur den
+    // Knopf wegzulassen; sonst wäre ein Neuantrag der naheliegende Schritt.
+    it('nennt den Grund, wenn die API die Reaktivierung ablehnt', () => {
+      const lic = license(false, {
+        reactivate_blocked_reason: 'Freigabe noch nicht vollzogen',
+      } as Partial<PlayerLicense>);
+      const component = build({ player_reactivate_license: true }, [lic]);
+
+      expect(component.reactivationBlockedReason(lic)).toBe(
+        'Freigabe noch nicht vollzogen'
+      );
+    });
+
+    it('nennt ohne das Recht keinen Grund', () => {
+      const lic = license(false, {
+        reactivate_blocked_reason: 'Freigabe noch nicht vollzogen',
+      } as Partial<PlayerLicense>);
+      const component = build({ player_reset_license: true }, [lic]);
+
+      expect(component.reactivationBlockedReason(lic)).toBe(null);
+    });
+
     it('verlangt ohne Partnerlizenz keine Zuordnung', () => {
       const lic = license(true, {
         league: GF_LEAGUE,

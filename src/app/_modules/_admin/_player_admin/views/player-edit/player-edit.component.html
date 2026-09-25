@@ -566,6 +566,17 @@
                             }}
                           </a>
                         }
+                        @if (reactivationBlockedReason(license); as reason) {
+                          <p
+                            class="text-[11px] text-fb-gray-600 my-1"
+                            data-testid="license-reactivate-blocked"
+                          >
+                            {{
+                              "playerAdmin.edit.reactivateBlocked" | transloco
+                            }}
+                            {{ reason }}
+                          </p>
+                        }
                         @if (gfRoleEditable(license)) {
                           <div
                             class="border border-indigo-200 rounded p-3 bg-indigo-50 my-2"

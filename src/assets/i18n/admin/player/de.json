@@ -70,6 +70,7 @@
     "licenseResetReasonPlaceholder": "z. B. zu früh erteilt, Spielerpass fehlte",
     "reset": "Zurücksetzen",
     "reactivateLicense": "Lizenz reaktivieren",
+    "reactivateBlocked": "Reaktivieren nicht möglich:",
     "reactivateThisLicense": "Diese Lizenz wieder erteilen",
     "reactivateLicenseHint": "Für den Fall, dass der Spieler per Freigabe in den Verein zurückgekehrt ist, für den diese Lizenz vor dem Transfer galt. Die Lizenz wird wieder erteilt, ohne dass der Verein neu beantragen muss; es bleibt bei einem Lizenzeintrag und damit bei einer Lizenzgebühr. Im Verlauf steht „Reaktiviert nach Freigabe“.",
     "reactivateGfRoleLabel": "Der Spieler hat im selben Wettbewerb eine weitere Lizenz. Die reaktivierte Lizenz ist:",
