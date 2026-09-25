@@ -41,7 +41,8 @@
     "gfRoleOtherApproved": "granted",
     "gfRoleOtherRequested": "only applied for, not yet granted",
     "gfRoleOtherUnknown": "status unknown",
-    "gfRoleDemoteHint": "Existing large-field licenses in this competition will automatically become the second license upon approval."
+    "gfRoleDemoteHint": "Existing large-field licenses in this competition will automatically become the second license upon approval.",
+    "reactivation": "Reactivation, free of charge"
   },
   "globalList": {
     "title": "License management",
@@ -162,7 +163,8 @@
     "csvLicensesApproved": "Licences season",
     "csvLicensesRequested": "of which pending",
     "reactivationBadge": "Reactivation",
-    "reactivationTitle": "Licence reactivated after transfer and release back, no new licence fee"
+    "reactivationTitle": "Licence reactivated after transfer and release back, no new licence fee",
+    "csvReactivation": "Reactivation (free)"
   },
   "leagueDetail": {
     "title": "License management",
@@ -260,7 +262,10 @@
     "gamesRemaining": "{{ remaining }} of {{ total }} games remaining",
     "suspendedUntil": "until",
     "reactivationOption": "reactivation, free of charge",
-    "reactivationHint": "The player already held a licence for this team before the transfer. This request reactivates that licence: no new licence fee is charged, and an express licence is not available for it. The association approves it like any other request."
+    "reactivationHint": "The player already held a licence for this team before the transfer. This request reactivates that licence: no new licence fee is charged, and an express licence is not available for it. The association approves it like any other request.",
+    "withdrawTitleReactivation": "Withdraw reactivation?",
+    "withdrawContentReactivation": "The licence returns to “invalid due to transfer”. There is no charge, and the reactivation can be requested again later.",
+    "withdrawSubmitReactivation": "Withdraw reactivation"
   },
   "userLeagueDetail": {
     "title": "License lists",

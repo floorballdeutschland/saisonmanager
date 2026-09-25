@@ -41,7 +41,8 @@
     "gfRoleOtherApproved": "erteilt",
     "gfRoleOtherRequested": "erst beantragt, noch nicht erteilt",
     "gfRoleOtherUnknown": "Status unbekannt",
-    "gfRoleDemoteHint": "Bereits vorhandene GF-Lizenzen dieses Wettbewerbs werden bei der Genehmigung automatisch zur Zweitlizenz."
+    "gfRoleDemoteHint": "Bereits vorhandene GF-Lizenzen dieses Wettbewerbs werden bei der Genehmigung automatisch zur Zweitlizenz.",
+    "reactivation": "Reaktivierung, kostenfrei"
   },
   "globalList": {
     "title": "Lizenzverwaltung",
@@ -162,7 +163,8 @@
     "csvLicensesApproved": "Lizenzen Saison",
     "csvLicensesRequested": "davon offen beantragt",
     "reactivationBadge": "Reaktivierung",
-    "reactivationTitle": "Lizenz nach Transfer und Freigabe zurück reaktiviert, keine neue Lizenzgebühr"
+    "reactivationTitle": "Lizenz nach Transfer und Freigabe zurück reaktiviert, keine neue Lizenzgebühr",
+    "csvReactivation": "Reaktivierung (kostenfrei)"
   },
   "leagueDetail": {
     "title": "Lizenzverwaltung",
@@ -260,7 +262,10 @@
     "gamesRemaining": "noch {{ remaining }} von {{ total }} Spielen",
     "suspendedUntil": "bis",
     "reactivationOption": "Reaktivierung, kostenfrei",
-    "reactivationHint": "Für diese Mannschaft war der Spieler vor seinem Transfer schon lizenziert. Der Antrag reaktiviert diese Lizenz: Es fällt keine neue Lizenzgebühr an, und eine Expresslizenz ist dafür nicht vorgesehen. Genehmigt wird er wie jeder Antrag vom Verband."
+    "reactivationHint": "Für diese Mannschaft war der Spieler vor seinem Transfer schon lizenziert. Der Antrag reaktiviert diese Lizenz: Es fällt keine neue Lizenzgebühr an, und eine Expresslizenz ist dafür nicht vorgesehen. Genehmigt wird er wie jeder Antrag vom Verband.",
+    "withdrawTitleReactivation": "Reaktivierung zurückziehen?",
+    "withdrawContentReactivation": "Die Lizenz steht danach wieder auf „ungültig wg. Transfer“. Es entstehen keine Kosten, und die Reaktivierung lässt sich später erneut beantragen.",
+    "withdrawSubmitReactivation": "Reaktivierung zurückziehen"
   },
   "userLeagueDetail": {
     "title": "Lizenzlisten",

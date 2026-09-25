@@ -7,8 +7,10 @@ export const PLAYER_GENDERS = { M: 'männlich', W: 'weiblich', D: 'divers' };
 export type GenderKey = 'M' | 'W' | 'D' | null;
 
 export interface Player {
-  // Nur in `other_players` der Antragsmaske: Ein Antrag für diese Mannschaft
-  // reaktiviert eine durch Transfer ungültig gewordene Lizenz, kostenfrei.
+  // Nur in der Antragsmaske (api#760). In `other_players`: Ein Antrag für
+  // diese Mannschaft reaktiviert eine durch Transfer ungültig gewordene
+  // Lizenz, kostenfrei. In `current_requests`: Der laufende Antrag ist eine
+  // solche Reaktivierung, der Rückzug kostet nichts.
   reactivation?: boolean;
   id: number;
   last_name: string;
@@ -227,6 +229,8 @@ export interface PlayerLicenseHistory {
   created_by_name?: string;
   license_status_id: number;
   license_status?: string;
+  // Antrag, der eine Lizenz „ungültig wg. Transfer" reaktiviert (api#760).
+  reactivation?: boolean;
 }
 
 export interface PlayerSearchResult {
