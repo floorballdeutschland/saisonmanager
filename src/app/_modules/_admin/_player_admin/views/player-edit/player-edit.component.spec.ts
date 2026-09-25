@@ -1297,6 +1297,173 @@ describe('PlayerEditComponent', () => {
     });
   });
 
+  // Reaktivieren einer Lizenz „ungültig wg. Transfer" nach Freigabe zurück:
+  // Der alte Eintrag wird wieder erteilt, statt dass der Verein neu und
+  // kostenpflichtig beantragt. Ob das geht, entscheidet die API je Lizenz und
+  // liefert es als `reactivate_allowed`.
+  describe('Lizenz reaktivieren', () => {
+    const URL = `${environment.apiURL}admin/players/7/handle_license_request.json`;
+    const GF_LEAGUE = { field_size: 'GF', age_group: 'Herren', female: false };
+
+    function license(
+      reactivateAllowed?: boolean,
+      extra: Partial<PlayerLicense> = {}
+    ): PlayerLicense {
+      return {
+        id: 'alt',
+        team_id: 1,
+        season_id: 18,
+        league_class_id: '',
+        requested_at: '',
+        history: [
+          { license_status_id: 1, created_at: '2026-09-01T10:00:00Z' },
+          { license_status_id: 6, created_at: '2026-09-08T10:00:00Z' },
+        ],
+        reactivate_allowed: reactivateAllowed,
+        ...extra,
+      } as unknown as PlayerLicense;
+    }
+
+    function build(
+      permissions: Record<string, boolean>,
+      licenses: PlayerLicense[]
+    ): PlayerEditComponent {
+      currentUser$.next({ permissions } as unknown as User);
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      fixture.componentInstance.player = { id: 7, licenses } as Player;
+      fixture.detectChanges(false);
+      return fixture.componentInstance;
+    }
+
+    it('bietet die Reaktivierung an, wenn Recht und Auskunft der API zusammenkommen', () => {
+      const lic = license(true);
+      const component = build({ player_reactivate_license: true }, [lic]);
+
+      expect(component.canReactivateLicense(lic)).toBe(true);
+    });
+
+    it('bietet sie ohne das Recht nicht an', () => {
+      const lic = license(true);
+      const component = build({ player_reset_license: true }, [lic]);
+
+      expect(component.canReactivateLicense(lic)).toBe(false);
+    });
+
+    // Frontend vor API deployt: Fehlt das Feld, gibt es keinen Knopf.
+    it('bietet sie nicht an, wenn die API nicht freigibt oder das Feld fehlt', () => {
+      const component = build({ player_reactivate_license: true }, []);
+
+      expect(component.canReactivateLicense(license(false))).toBe(false);
+      expect(component.canReactivateLicense(license(undefined))).toBe(false);
+    });
+
+    it('schickt den Status 1 mit festem Verlaufstext und ohne Zuordnung', () => {
+      const lic = license(true);
+      const component = build({ player_reactivate_license: true }, [lic]);
+
+      component.openLicenseReactivate(lic);
+      component.submitLicenseReactivate(lic);
+
+      const req = TestBed.inject(HttpTestingController).expectOne(URL);
+      expect(req.request.body.license_id).toBe('alt');
+      expect(req.request.body.license_status_id).toBe(1);
+      expect(req.request.body.reason).toBe('Reaktiviert nach Freigabe');
+      expect(req.request.body.gf_role).toBeUndefined();
+      req.flush({ success: true });
+
+      expect(component.reactivateLicenseId).toBe(null);
+    });
+
+    it('schickt bei zwei schnellen Klicks nur eine Anfrage', () => {
+      const lic = license(true);
+      const component = build({ player_reactivate_license: true }, [lic]);
+
+      component.openLicenseReactivate(lic);
+      component.submitLicenseReactivate(lic);
+      component.submitLicenseReactivate(lic);
+
+      const req = TestBed.inject(HttpTestingController).expectOne(URL);
+      expect(req.request.body.license_id).toBe('alt');
+    });
+
+    // Mit einer aktiven Partnerlizenz im selben GF-Wettbewerb lehnt die API
+    // ohne Zuordnung ab. Die Maske fragt sie deshalb vorher ab.
+    describe('mit Partnerlizenz im GF-Wettbewerb', () => {
+      function setup(): { component: PlayerEditComponent; lic: PlayerLicense } {
+        const lic = license(true, {
+          league: GF_LEAGUE,
+        } as Partial<PlayerLicense>);
+        const partner = {
+          id: 'partner',
+          team_id: 2,
+          season_id: 18,
+          gf_role: 'erstlizenz',
+          league: GF_LEAGUE,
+          history: [
+            { license_status_id: 1, created_at: '2026-09-08T10:00:00Z' },
+          ],
+        } as unknown as PlayerLicense;
+        const component = build({ player_reactivate_license: true }, [
+          lic,
+          partner,
+        ]);
+        return { component, lic };
+      }
+
+      it('verlangt eine Zuordnung und schickt ohne sie nichts', () => {
+        const { component, lic } = setup();
+        expect(component.reactivationNeedsGfRole(lic)).toBe(true);
+
+        component.openLicenseReactivate(lic);
+        component.submitLicenseReactivate(lic);
+
+        TestBed.inject(HttpTestingController).expectNone(URL);
+      });
+
+      it('schickt die gewählte Zuordnung mit', () => {
+        const { component, lic } = setup();
+
+        component.openLicenseReactivate(lic);
+        component.licenseReactivateGfRole = 'zweitlizenz';
+        component.submitLicenseReactivate(lic);
+
+        const req = TestBed.inject(HttpTestingController).expectOne(URL);
+        expect(req.request.body.gf_role).toBe('zweitlizenz');
+      });
+    });
+
+    // Geht es (noch) nicht, zeigt die Maske den Grund der API statt nur den
+    // Knopf wegzulassen; sonst wäre ein Neuantrag der naheliegende Schritt.
+    it('nennt den Grund, wenn die API die Reaktivierung ablehnt', () => {
+      const lic = license(false, {
+        reactivate_blocked_reason: 'Freigabe noch nicht vollzogen',
+      } as Partial<PlayerLicense>);
+      const component = build({ player_reactivate_license: true }, [lic]);
+
+      expect(component.reactivationBlockedReason(lic)).toBe(
+        'Freigabe noch nicht vollzogen'
+      );
+    });
+
+    it('nennt ohne das Recht keinen Grund', () => {
+      const lic = license(false, {
+        reactivate_blocked_reason: 'Freigabe noch nicht vollzogen',
+      } as Partial<PlayerLicense>);
+      const component = build({ player_reset_license: true }, [lic]);
+
+      expect(component.reactivationBlockedReason(lic)).toBe(null);
+    });
+
+    it('verlangt ohne Partnerlizenz keine Zuordnung', () => {
+      const lic = license(true, {
+        league: GF_LEAGUE,
+      } as Partial<PlayerLicense>);
+      const component = build({ player_reactivate_license: true }, [lic]);
+
+      expect(component.reactivationNeedsGfRole(lic)).toBe(false);
+    });
+  });
+
   // fe#395: Dauer in Spielen und waehlbarer Geltungsbereich.
   describe('Sperrformular', () => {
     function licenseWithLeague(): PlayerLicense {
