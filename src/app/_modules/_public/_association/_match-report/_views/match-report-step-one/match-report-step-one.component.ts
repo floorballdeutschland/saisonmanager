@@ -59,6 +59,22 @@ export class MatchReportStepOneComponent implements OnInit, OnChanges {
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
+    // Beim Wechsel in ein anderes Spiel baut der Router die Spielseite nicht
+    // neu auf, sie bekommt nur ein neues `game`. Eine offene Kadermaske bliebe
+    // dann mit der Spielerliste des alten Spiels stehen, schriebe aber schon
+    // ins neue: So stand im Spiel 61889 der Schiedsrichter, ein Spieler der
+    // Heimmannschaft des Folgespiels, im Heimkader. Verglichen wird die ID,
+    // weil die Spielseite `game` alle 30 Sekunden als neues Objekt nachlädt.
+    const gameChange = changes['game'];
+    if (
+      gameChange &&
+      !gameChange.firstChange &&
+      gameChange.previousValue?.id !== gameChange.currentValue?.id
+    ) {
+      this.addDialogOpen = '';
+      this.squadHistoryDialogOpen = '';
+    }
+
     if (changes['additionalFields']) {
       const homeCount = this.initCoachCount(
         this.additionalFields?.home_team_coaches

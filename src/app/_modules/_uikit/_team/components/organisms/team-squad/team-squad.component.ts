@@ -15,7 +15,6 @@ import {
   SquatFilterType,
 } from '@floorball/models';
 import { ClubService, GameService } from '@floorball/core';
-import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
 @Component({
@@ -30,6 +29,9 @@ export class TeamSquadComponent implements OnInit {
   @Input() side!: string;
   @Input() team!: string;
   @Input() teamId!: number;
+  // Aus dem Spiel statt aus der Adresse, Begründung an
+  // TeamSquadPlayerComponent#gameId.
+  @Input() gameId?: number;
   @Input() events: GameEvent[] = [];
   /**
    * Der Landesverband der Liga dieses Spiels lässt Personen mit dem
@@ -45,7 +47,6 @@ export class TeamSquadComponent implements OnInit {
 
   licenseHash!: LicenseHash;
   captainPlayerId: number | null = null;
-  gameId?: number;
   playerFocus?: number;
 
   public filter: 'all' | 'selected' | 'not-selected' = 'all';
@@ -58,7 +59,6 @@ export class TeamSquadComponent implements OnInit {
   constructor(
     private _clubService: ClubService,
     private _gameService: GameService,
-    private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title
   ) {}
@@ -66,12 +66,6 @@ export class TeamSquadComponent implements OnInit {
   ngOnInit(): void {
     this.loadUserLicenses();
     this.updateLineup(this.players);
-
-    this._route.params.subscribe({
-      next: (value) => {
-        this.gameId = value['matchId'];
-      },
-    });
   }
 
   public loadUserLicenses() {

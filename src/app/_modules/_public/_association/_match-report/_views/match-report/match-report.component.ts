@@ -149,8 +149,12 @@ export class MatchReportComponent implements OnInit, OnChanges {
       this.appGameStatus = this.game.game_status;
     }
 
+    // Vor dem ersten Abschnitt gibt es noch keinen current_period_title. Die
+    // Abschnitte beginnen bei 1; mit 0 als Rückfall landete ein früh erfasstes
+    // Tor in Abschnitt 0, zählte im Spielstand mit, stand aber unter keinem
+    // Abschnitt und wurde doppelt eingetragen (Spiel 63201).
     this.currentPeriod = Math.floor(
-      this.game.current_period_title?.period || 0
+      this.game.current_period_title?.period || 1
     ).toString();
 
     if (
