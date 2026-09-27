@@ -1,4 +1,9 @@
-import { Component, Input, NO_ERRORS_SCHEMA } from '@angular/core';
+import {
+  Component,
+  Input,
+  NO_ERRORS_SCHEMA,
+  SimpleChange,
+} from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -109,6 +114,40 @@ describe('MatchReportComponent', () => {
   it('should create', () => {
     create();
     expect(component).toBeTruthy();
+  });
+
+  describe('Spielabschnitt für neue Ereignisse', () => {
+    function gameChange(overrides: Partial<Game>) {
+      const game = { id: 4711, game_status: 'ingame', ...overrides };
+      component.game = game as unknown as Game;
+      component.ngOnChanges({
+        game: new SimpleChange(undefined, game, true),
+      });
+    }
+
+    it('nimmt vor dem ersten Abschnitt Abschnitt 1 an, nicht 0', () => {
+      create();
+      gameChange({ ingame_status: '', current_period_title: undefined });
+      expect(component.currentPeriod).toBe('1');
+    });
+
+    it('übernimmt den laufenden Abschnitt', () => {
+      create();
+      gameChange({
+        ingame_status: 'period2',
+        current_period_title: { period: 2 } as Game['current_period_title'],
+      });
+      expect(component.currentPeriod).toBe('2');
+    });
+
+    it('rundet eine Pause auf den Abschnitt davor ab', () => {
+      create();
+      gameChange({
+        ingame_status: 'pause1',
+        current_period_title: { period: 1.5 } as Game['current_period_title'],
+      });
+      expect(component.currentPeriod).toBe('1');
+    });
   });
 
   describe('Spieltagsbericht', () => {
