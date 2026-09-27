@@ -13,6 +13,7 @@ import { getTranslocoTestingModule } from 'src/app/_modules/_core/_i18n/transloc
 @Component({ selector: 'fb-team-squad', template: '', standalone: false })
 class TeamSquadStubComponent {
   @Input() side!: string;
+  @Input() gameId?: number;
   @Input() teamId!: number;
   @Input() team!: string;
   @Input() players!: unknown[];
@@ -103,6 +104,11 @@ describe('MatchReportStepOneComponent', () => {
       .componentInstance as TeamSquadStubComponent;
   }
 
+  // Die Maske schreibt in das Spiel, dessen Kader sie zeigt (Spiel 61889).
+  it('reicht die Spiel-ID an den Kader-Dialog durch', () => {
+    expect(squad(true).gameId).toBe(1);
+  });
+
   it('reicht die Regel des Spiels an den Kader-Dialog durch', () => {
     expect(squad(true).requestedLicensePlayable).toBeTrue();
     expect(squad(false).requestedLicensePlayable).toBeFalse();
@@ -168,6 +174,7 @@ describe('MatchReportStepOneComponent', () => {
       fixture.detectChanges();
 
       expect(stepOne.addDialogOpen).toBe('home');
+      expect(stepOne.squadHistoryDialogOpen).toBe('home');
     });
   });
 });

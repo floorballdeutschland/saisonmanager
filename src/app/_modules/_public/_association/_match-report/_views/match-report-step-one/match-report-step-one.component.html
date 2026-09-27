@@ -48,6 +48,7 @@
     <fb-team-squad
       (handleClose)="closeAddDialog()"
       [side]="addDialogOpen"
+      [gameId]="game.id"
       [teamId]="
         addDialogOpen === 'guest' ? game.guest_team_id : game.home_team_id
       "
