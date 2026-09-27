@@ -16,7 +16,6 @@ import {
   PlayerWithLicense,
 } from '@floorball/types';
 import { GameService, NotificationService } from '@floorball/core';
-import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'fb-team-squad-player',
@@ -36,6 +35,13 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
   @Input() gamePlayerEntry!: GamePlayerEntry | null;
   @Input() captainPlayerId!: number | null;
   @Input() events: GameEvent[] = [];
+  /**
+   * Das Spiel, dessen Kader diese Zeile zeigt. Kommt von der Spielseite und
+   * nicht aus der Adresse: Beim Wechsel in ein anderes Spiel zeigt die Adresse
+   * sofort das neue Spiel, die Liste aber erst, wenn es geladen ist. Dazwischen
+   * schrieb ein Klick den Spieler des alten Spiels in das neue (Spiel 61889).
+   */
+  @Input() gameId?: number;
   @Output() updateLineup: EventEmitter<GamePlayerEntry[]> = new EventEmitter<
     GamePlayerEntry[]
   >();
@@ -45,7 +51,6 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
   @Output() setPlayerFocus: EventEmitter<number> = new EventEmitter<number>();
 
   hasError = false;
-  gameId?: number;
   trikotNumber?: string;
   checked = false;
   changed = false;
@@ -53,7 +58,6 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
 
   constructor(
     private _gameService: GameService,
-    private _route: ActivatedRoute,
     private _cdr: ChangeDetectorRef,
     private _notificationService: NotificationService
   ) {}
@@ -66,12 +70,6 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
       this.goalkeeper = this.gamePlayerEntry.goalkeeper || false;
       this.checked = true;
     }
-
-    this._route.params.subscribe({
-      next: (value) => {
-        this.gameId = value['matchId'];
-      },
-    });
   }
 
   ngAfterViewInit() {

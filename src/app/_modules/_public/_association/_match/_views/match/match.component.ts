@@ -37,6 +37,9 @@ export class MatchComponent implements OnInit, OnDestroy {
   selectedAssociation$!: Observable<GameOperation | null>;
 
   intervalSub?: Subscription;
+  // Das Spiel, das die Adresse gerade verlangt. Eine Antwort fuer ein anderes
+  // wird verworfen, siehe getMatch.
+  private _matchId?: string;
   public isLoggedIn$ = this._sessionService.isLoggedIn$;
   public tab = 'public';
 
@@ -94,6 +97,7 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._route.params.subscribe({
       next: (params) => {
         if (params['matchId']) {
+          this._matchId = params['matchId'];
           this.getMatch(params['matchId']);
 
           if (this.intervalSub) {
@@ -121,8 +125,16 @@ export class MatchComponent implements OnInit, OnDestroy {
    * Stand und der nächste Takt holt ihn nach.
    */
   getMatch(id: string, silent = false) {
+    // Beim Wechsel in ein anderes Spiel laufen Abrufe fuer das alte weiter,
+    // etwa das 30-Sekunden-Nachladen. Kaeme eine solche Antwort nach der des
+    // neuen Spiels an, stuende wieder das alte Spiel auf der Seite, waehrend
+    // die Adresse das neue zeigt.
+    const stillCurrent = () => id === this._matchId;
+
     this._gameService.getGame(parseInt(id, 10), silent).subscribe({
       next: (game) => {
+        if (!stillCurrent()) return;
+
         if (
           this.tab !== 'public' ||
           this._sessionService.currentUser ||
@@ -132,6 +144,8 @@ export class MatchComponent implements OnInit, OnDestroy {
             .getAdditionalFields(parseInt(id, 10), silent)
             .subscribe({
               next: (additionalFields) => {
+                if (!stillCurrent()) return;
+
                 this.additionalFields = additionalFields;
                 this.updateGame(game);
 
@@ -154,7 +168,9 @@ export class MatchComponent implements OnInit, OnDestroy {
               // Zusatzfelder, ein Fehlschlag dort ließ also auch das bereits
               // geladene Spiel liegen. Seit das Nachladen schweigt, wäre das
               // ein einfrierender Spielstand ohne jeden Hinweis.
-              error: () => this.updateGame(game),
+              error: () => {
+                if (stillCurrent()) this.updateGame(game);
+              },
             });
         } else {
           this.updateGame(game);
