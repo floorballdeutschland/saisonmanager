@@ -833,17 +833,26 @@
 
   // Die Trikotfarben des gewählten Spiels, jede geprüft. Gehören die
   // gespeicherten zu einem anderen Spiel, gelten sie hier als leer -- genauso
-  // behandelt sie die Bühne.
+  // behandelt sie die Bühne, sobald sie die Daten des Spiels hat.
   function jerseyState() {
     var jerseys = state.control.jerseys || {};
     var passt =
       activeGameId() !== null && Number(jerseys.game_id) === activeGameId();
 
     return {
-      home: passt && HEX_COLOR.test(String(jerseys.home)) ? jerseys.home : null,
-      guest:
-        passt && HEX_COLOR.test(String(jerseys.guest)) ? jerseys.guest : null,
+      home: passt ? jerseyHex(jerseys.home) : null,
+      guest: passt ? jerseyHex(jerseys.guest) : null,
     };
+  }
+
+  // Der GEPRÜFTE Wert als kleingeschriebene Zeichenkette, sonst null. Nicht
+  // der Rohwert: `String(["#ffffff"])` besteht die Prüfung, und das Array
+  // selbst liesse danach `.toLowerCase()` werfen. Weil `render` auch vor
+  // jedem Schreibvorgang läuft, ginge dann JEDER Druck im Bedienfeld verloren,
+  // bis jemand das Spiel wechselt. Der Steuerzustand ist frei beschreibbar.
+  function jerseyHex(raw) {
+    var text = String(raw);
+    return HEX_COLOR.test(text) ? text.toLowerCase() : null;
   }
 
   // Einmal aufbauen, danach nur noch markieren. Ein Neuaufbau bei jedem
@@ -894,7 +903,7 @@
   function jerseyName(hex) {
     if (!hex) return "keine";
     for (var i = 0; i < JERSEY_COLORS.length; i++) {
-      if (JERSEY_COLORS[i].hex === hex.toLowerCase()) {
+      if (JERSEY_COLORS[i].hex === hex) {
         return JERSEY_COLORS[i].name;
       }
     }
@@ -922,7 +931,7 @@
       var istListenfarbe = false;
       box.querySelectorAll("button[data-jersey-color]").forEach(function (b) {
         var wert = b.getAttribute("data-jersey-color");
-        var an = wert === (hex ? hex.toLowerCase() : "");
+        var an = wert === (hex || "");
         if (an && wert) istListenfarbe = true;
         b.classList.toggle("dk-swatch--on", an);
         b.setAttribute("aria-pressed", an ? "true" : "false");
@@ -955,7 +964,8 @@
     var neu = { game_id: id };
     JERSEY_SIDES.forEach(function (s) {
       var wert = s === side ? hex : bisher[s];
-      if (wert) neu[s] = wert.toLowerCase();
+      var geprueft = jerseyHex(wert);
+      if (geprueft) neu[s] = geprueft;
     });
 
     writeState({ jerseys: neu });
@@ -987,7 +997,11 @@
 
   function colorState() {
     var colors = state.control.colors || {};
-    var accent = HEX_COLOR.test(String(colors.accent)) ? colors.accent : null;
+    // `String()` auch hier, wie beim Verlauf darunter: Ein einelementiges
+    // Array bestünde die Prüfung, und `input.value` bekäme das Array.
+    var accent = HEX_COLOR.test(String(colors.accent))
+      ? String(colors.accent)
+      : null;
 
     return {
       accent: accent,
